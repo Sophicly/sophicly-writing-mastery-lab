@@ -1,0 +1,93 @@
+{
+    "planning": {
+        "always": [
+            "modules/foundation.md",
+            "modules/master-profile.md",
+            "modules/knowledge-techniques.md",
+            "modules/knowledge-mark-scheme.md",
+            "planning/b-intro.md",
+            "literature/modules/theme-check.md",
+            "literature/modules/socratic-literature.md",
+            "literature/modules/conclusion-scaffolding.md"
+        ],
+        "steps": {
+            "1": {
+                "files": [
+                    "planning/b-intro.md",
+                    "planning/b5-intro.md"
+                ]
+            },
+            "2": {
+                "files": [
+                    "planning/b5-intro.md"
+                ]
+            },
+            "3": {
+                "files": [
+                    "planning/b5-intro.md",
+                    "planning/b5-bodies.md",
+                    "modules/knowledge-techniques.md"
+                ]
+            },
+            "4": {
+                "files": [
+                    "planning/b5-bodies.md",
+                    "modules/knowledge-techniques.md"
+                ]
+            },
+            "5": {
+                "files": [
+                    "planning/b5-bodies.md",
+                    "modules/knowledge-techniques.md"
+                ]
+            },
+            "6": {
+                "files": [
+                    "planning/b5-bodies.md"
+                ]
+            },
+            "7": {
+                "files": [
+                    "planning/b2-1-setup.md",
+                    "planning/b2-2-goals.md",
+                    "planning/b2-3-rationale.md",
+                    "planning/b2-4-anchors.md"
+                ]
+            },
+            "8": {
+                "files": [
+                    "planning/b2-5-bodies.md",
+                    "planning/b2-6-thesis.md",
+                    "planning/b2-7-introduction.md",
+                    "planning/b2-8-conclusion.md",
+                    "planning/b2-9-review.md",
+                    "planning/b2-10-wrapup.md"
+                ]
+            }
+        }
+    },
+    "assessment": {
+        "always": [
+            "modules/foundation.md",
+            "modules/master-profile.md",
+            "modules/knowledge-techniques.md",
+            "modules/knowledge-mark-scheme.md",
+            "modules/protocol-a-assessment.md",
+            "literature/modules/theme-check.md",
+            "literature/modules/socratic-literature.md",
+            "literature/modules/conclusion-scaffolding.md"
+        ],
+        "steps": {}
+    },
+    "polishing": {
+        "always": [
+            "modules/foundation.md",
+            "modules/master-profile.md",
+            "modules/knowledge-techniques.md",
+            "modules/knowledge-mark-scheme.md",
+            "modules/protocol-c-polishing.md",
+            "literature/modules/socratic-literature.md"
+        ],
+        "steps": {}
+    }
+}

@@ -1,0 +1,100 @@
+{
+    "board": "edexcel",
+    "group": "unseen",
+    "version": "1.0.0",
+    "base_path": "protocols/edexcel/unseen",
+    "planning": {
+        "always": [
+            "modules/foundation.md",
+            "modules/knowledge-techniques.md",
+            "modules/knowledge-mark-scheme.md",
+            "literature/modules/theme-check.md",
+            "literature/modules/socratic-literature.md",
+            "literature/modules/conclusion-scaffolding.md"
+        ],
+        "steps": {
+            "1": {
+                "label": "B.1-B.2 Setup & Goals",
+                "files": [
+                    "planning/b-intro.md",
+                    "planning/b1-setup.md",
+                    "planning/b2-goals.md"
+                ]
+            },
+            "2": {
+                "label": "B.3 Diagnostic + B.4 Anchors",
+                "files": [
+                    "planning/b3-diagnostic.md",
+                    "planning/b4-anchors.md"
+                ]
+            },
+            "3": {
+                "label": "B.5 Body Paragraph 1",
+                "files": [
+                    "planning/b5-bodies.md"
+                ]
+            },
+            "4": {
+                "label": "B.5 Body Paragraph 2",
+                "files": [
+                    "planning/b5-bodies.md"
+                ]
+            },
+            "5": {
+                "label": "B.5 Body Paragraph 3",
+                "files": [
+                    "planning/b5-bodies.md"
+                ]
+            },
+            "6": {
+                "label": "B.6-B.7 Thesis & Introduction",
+                "files": [
+                    "planning/b6-thesis.md",
+                    "planning/b7-introduction.md"
+                ]
+            },
+            "7": {
+                "label": "B.8-B.9 Conclusion & Review",
+                "files": [
+                    "planning/b8-conclusion.md",
+                    "planning/b9-review.md"
+                ]
+            },
+            "8": {
+                "label": "B.10 Wrap-up",
+                "files": [
+                    "planning/b10-wrapup.md"
+                ]
+            },
+            "9": {
+                "label": "Q12 Comparative Planning",
+                "files": [
+                    "planning/b-q12-comparison.md"
+                ]
+            }
+        }
+    },
+    "assessment": {
+        "always": [
+            "modules/foundation.md",
+            "modules/knowledge-techniques.md",
+            "modules/knowledge-mark-scheme.md",
+            "modules/knowledge-model-answer.md",
+            "modules/protocol-a-assessment.md",
+            "literature/modules/theme-check.md",
+            "literature/modules/socratic-literature.md",
+            "literature/modules/conclusion-scaffolding.md"
+        ],
+        "steps": {}
+    },
+    "polishing": {
+        "always": [
+            "modules/foundation.md",
+            "modules/knowledge-techniques.md",
+            "modules/knowledge-mark-scheme.md",
+            "modules/protocol-c-polishing.md",
+            "literature/modules/socratic-literature.md"
+        ],
+        "steps": {}
+    }
+}

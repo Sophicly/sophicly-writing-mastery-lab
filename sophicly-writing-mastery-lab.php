@@ -1,0 +1,531 @@
+<?php
+/**
+ * Plugin Name: Sophicly Writing Mastery Lab
+ * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
+ * Version: 7.12.90
+ * Author: Sophicly
+ * Text Domain: sophicly-wml
+ */
+
+if (!defined('ABSPATH')) exit;
+
+define('SWML_VERSION', '7.12.90');
+define('SWML_PATH', plugin_dir_path(__FILE__));
+define('SWML_URL', plugin_dir_url(__FILE__));
+define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
+
+/**
+ * Main plugin class
+ */
+class Sophicly_Writing_Mastery_Lab {
+
+    private static $instance = null;
+
+    public static function instance() {
+        if (null === self::$instance) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    private function __construct() {
+        $this->load_includes();
+        $this->init_hooks();
+    }
+
+    private function load_includes() {
+        require_once SWML_PATH . 'includes/class-session-manager.php';
+        require_once SWML_PATH . 'includes/class-protocol-router.php';
+        require_once SWML_PATH . 'includes/class-function-handlers.php';
+        require_once SWML_PATH . 'includes/class-rest-api.php';
+        require_once SWML_PATH . 'includes/class-video-admin.php';
+        require_once SWML_PATH . 'includes/class-topic-parser.php';
+        require_once SWML_PATH . 'includes/class-topic-questions.php';
+    }
+
+    private function init_hooks() {
+        // Initialize components
+        add_action('init', [$this, 'register_rewrite_rules']);
+        add_action('init', [$this, 'register_shortcode']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_assets']);
+        add_filter('template_include', [$this, 'load_page_template']);
+        add_filter('query_vars', [$this, 'add_query_vars']);
+
+        // Initialize protocol router (hooks into AI Engine)
+        SWML_Protocol_Router::instance();
+
+        // Initialize function handlers (Code Engine)
+        SWML_Function_Handlers::instance();
+
+        // Initialize REST API
+        SWML_REST_API::instance();
+
+        // Initialize video admin (WP admin only)
+        if (is_admin()) {
+            SWML_Video_Admin::instance();
+        }
+
+        // Initialize topic question bank (admin UI + REST endpoint)
+        SWML_Topic_Questions::instance();
+
+        // Cover images admin page
+        if (is_admin()) {
+            add_action('admin_menu', [$this, 'add_covers_menu']);
+        }
+
+        // Flush rewrite rules on activation
+        register_activation_hook(__FILE__, [$this, 'activate']);
+        register_deactivation_hook(__FILE__, [$this, 'deactivate']);
+    }
+
+    /**
+     * Register the /writing-mastery-lab/ URL
+     */
+    public function register_rewrite_rules() {
+        add_rewrite_rule(
+            '^writing-mastery-lab/?$',
+            'index.php?swml_page=1',
+            'top'
+        );
+    }
+
+    public function add_query_vars($vars) {
+        $vars[] = 'swml_page';
+        return $vars;
+    }
+
+    /**
+     * Load our custom page template when /writing-mastery-lab/ is hit
+     */
+    public function load_page_template($template) {
+        if (get_query_var('swml_page')) {
+            // User must be logged in
+            if (!is_user_logged_in()) {
+                wp_redirect(wp_login_url(home_url('/writing-mastery-lab/')));
+                exit;
+            }
+            return SWML_PATH . 'templates/page-writing-mastery-lab.php';
+        }
+        return $template;
+    }
+
+    /**
+     * Enqueue frontend assets only on the WML page
+     */
+    public function enqueue_assets() {
+        if (!get_query_var('swml_page')) return;
+
+        wp_enqueue_style(
+            'swml-styles',
+            SWML_URL . 'frontend/wml-styles.css',
+            [],
+            SWML_VERSION
+        );
+
+        wp_enqueue_style(
+            'swml-theme-toggle',
+            SWML_URL . 'frontend/wml-theme-toggle.css',
+            [],
+            SWML_VERSION
+        );
+
+        // Shader background (pure WebGL, no dependencies)
+        wp_enqueue_script(
+            'swml-shader',
+            SWML_URL . 'frontend/wml-shader.js',
+            [],
+            SWML_VERSION,
+            true
+        );
+
+        // TipTap rich text editor bundle (exposes window.TipTap)
+        wp_enqueue_script(
+            'swml-tiptap',
+            SWML_URL . 'frontend/wml-tiptap.min.js',
+            [],
+            SWML_VERSION,
+            true
+        );
+
+        // Canvas workspace styles
+        wp_enqueue_style(
+            'swml-canvas',
+            SWML_URL . 'frontend/wml-canvas.css',
+            ['swml-styles'],
+            SWML_VERSION
+        );
+
+        // Core module: shared namespace, state, constants, utilities (window.WML)
+        wp_enqueue_script(
+            'swml-core',
+            SWML_URL . 'frontend/wml-core.js',
+            [],
+            SWML_VERSION,
+            true
+        );
+
+        // Assessment module: canvas workspace, document building, TipTap editor
+        wp_enqueue_script(
+            'swml-assessment',
+            SWML_URL . 'frontend/wml-assessment.js',
+            ['swml-core', 'swml-tiptap'],
+            SWML_VERSION,
+            true
+        );
+
+        // App module: navigation, planning, chat, boot (loads LAST — contains boot sequence)
+        wp_enqueue_script(
+            'swml-app',
+            SWML_URL . 'frontend/wml-app.js',
+            ['swml-core', 'swml-assessment', 'swml-shader'],
+            SWML_VERSION,
+            true
+        );
+
+        // Floating video player (HLS via Bunny Stream)
+        wp_enqueue_script(
+            'hls-js',
+            'https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js',
+            [],
+            null,
+            true
+        );
+        wp_enqueue_style(
+            'swml-video-player',
+            SWML_URL . 'frontend/wml-video-player.css',
+            [],
+            SWML_VERSION
+        );
+        wp_enqueue_script(
+            'swml-video-player',
+            SWML_URL . 'frontend/wml-video-player.js',
+            ['hls-js'],
+            SWML_VERSION,
+            true
+        );
+
+        // Pass config to JS
+        // Build course resume URL from LearnDash if available
+        $course_resume_url = '';
+        $unit_id = absint($_GET['unit_id'] ?? 0);
+        if ($unit_id && function_exists('learndash_get_course_id')) {
+            $course_id = learndash_get_course_id($unit_id);
+            if ($course_id) {
+                $course_resume_url = get_permalink($course_id);
+                // Try to get exact resume point
+                if (function_exists('learndash_get_course_resume_url') && get_current_user_id()) {
+                    $resume = learndash_get_course_resume_url($course_id, get_current_user_id());
+                    if ($resume) $course_resume_url = $resume;
+                }
+            }
+        }
+
+        // Get user tier from library plugin (SureMembers integration)
+        $user_tier = function_exists('sophicly_get_user_tier') ? sophicly_get_user_tier() : 'free';
+
+        // Admin-only tier override for testing: ?tier_test=silver
+        if (current_user_can('manage_options') && !empty($_GET['tier_test'])) {
+            $test_tier = sanitize_text_field($_GET['tier_test']);
+            if (in_array($test_tier, ['free', 'silver', 'gold', 'platinum', 'guest'])) {
+                $user_tier = $test_tier;
+            }
+        }
+
+        wp_localize_script('swml-core', 'swmlConfig', [
+            'restUrl'          => rest_url('sophicly-wml/v1/'),
+            'wpRestUrl'        => rest_url(),  // Generic WP REST base for cross-plugin calls
+            'nonce'            => wp_create_nonce('wp_rest'),
+            'userId'           => get_current_user_id(),
+            'userName'         => wp_get_current_user()->display_name,
+            'userAvatar'       => get_avatar_url(get_current_user_id(), ['size' => 64]),
+            'userTier'         => $user_tier,  // 'platinum', 'gold', 'silver', 'free', 'guest'
+            'isAdmin'          => current_user_can('manage_options'),
+            'canSignOff'       => current_user_can('manage_options')
+                                  || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'tutor'
+                                  || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'specialist',
+            'dashboardUrl'     => home_url('/my-dashboard/'),
+            'libraryUrl'       => home_url('/library/'),
+            'courseResumeUrl'   => $course_resume_url,
+            'covers'           => get_option('swml_cover_images', []),
+            'urlParams'  => [
+                'mode'    => sanitize_text_field($_GET['mode'] ?? ''),
+                'board'   => sanitize_text_field($_GET['board'] ?? ''),
+                'subject' => sanitize_text_field($_GET['subject'] ?? ''),
+                'text'    => sanitize_text_field($_GET['text'] ?? ''),
+                'task'    => sanitize_text_field($_GET['task'] ?? ''),
+                'topic'   => absint($_GET['topic'] ?? 0),
+                'poem'    => sanitize_text_field($_GET['poem'] ?? ''),
+                'type'    => sanitize_text_field($_GET['type'] ?? ''),
+                'draft'   => sanitize_text_field($_GET['draft'] ?? ''),
+                'redraft' => sanitize_text_field($_GET['redraft'] ?? ''),
+                'unit_id' => absint($_GET['unit_id'] ?? 0),
+            ],
+        ]);
+    }
+
+    /**
+     * Register the [wml_button] shortcode for LearnDash integration
+     */
+    public function register_shortcode() {
+        add_shortcode('wml_button', [$this, 'render_launch_button']);
+    }
+
+    /**
+     * Render the "Open The Writing Mastery Lab" button in LearnDash lessons
+     * 
+     * Usage: [wml_button task="planning"]
+     * Usage: [wml_button task="assessment"]
+     * Usage: [wml_button task="polishing"]
+     * Usage: [wml_button task="exam_question"]
+     * Usage: [wml_button board="aqa" subject="shakespeare" text="macbeth" task="planning"]
+     * Usage: [wml_button] (no task = shows task picker in WML)
+     * 
+     * When text is specified, WML skips straight to the workspace.
+     * When only board+subject are set, student picks their text in WML.
+     */
+    public function render_launch_button($atts) {
+        $atts = shortcode_atts([
+            'board'   => '',
+            'subject' => '',
+            'text'    => '',
+            'task'    => '', // planning | assessment | polishing | exam_question | ''
+            'topic'   => '', // Topic number for Mastery Programme (1-10+)
+        ], $atts, 'wml_button');
+
+        $unit_id = get_the_ID();
+
+        // Read from sophicly-student-data plugin meta (note _sophicly_ prefix)
+        $board   = $atts['board'] ?: get_post_meta($unit_id, '_sophicly_exam_board', true);
+        $subject = $atts['subject'] ?: get_post_meta($unit_id, '_sophicly_literature_type', true);
+        $text    = $atts['text'];
+        $task    = $atts['task'];
+        $topic   = $atts['topic'] ?: get_post_meta($unit_id, '_sophicly_topic_number', true);
+
+        // If no task specified, try to infer from course_type + lit_type
+        if (empty($task)) {
+            $lit_type = get_post_meta($unit_id, '_sophicly_lit_type', true);
+            $task = self::infer_task_from_lit_type($lit_type);
+        }
+
+        // Also read course_type to distinguish literature/language/creative_writing
+        $course_type = get_post_meta($unit_id, '_sophicly_course_type', true);
+        $is_redraft  = get_post_meta($unit_id, '_sophicly_is_redraft', true);
+
+        $params = [
+            'mode'    => 'guided',
+            'unit_id' => $unit_id,
+        ];
+        if ($board)       $params['board']   = $board;
+        if ($subject)     $params['subject'] = $subject;
+        if ($text)        $params['text']    = $text;
+        if ($task)        $params['task']    = $task;
+        if ($topic)       $params['topic']   = absint($topic);
+        if ($course_type) $params['type']    = $course_type;
+        if ($is_redraft)  $params['redraft'] = '1';
+
+        $url = add_query_arg($params, home_url('/writing-mastery-lab/'));
+
+        // Button label adapts to task
+        $labels = [
+            'planning'      => '📝 Plan Your Essay',
+            'assessment'    => '📊 Get Your Essay Assessed',
+            'polishing'     => '✨ Polish Your Essay',
+            'exam_question' => '✏️ Create an Exam Question',
+        ];
+        $label = $labels[$task] ?? '✍️ Open The Writing Mastery Lab';
+
+        return sprintf(
+            '<a href="%s" target="_blank" rel="noopener" class="swml-launch-btn" style="
+                display: inline-flex; align-items: center; gap: 10px;
+                padding: 14px 28px; border-radius: 12px;
+                background: linear-gradient(135deg, #5333ed, #2c003e);
+                color: #fff; font-weight: 600; font-size: 15px;
+                text-decoration: none; transition: all 0.3s ease;
+                box-shadow: 0 4px 16px rgba(83,51,237,0.3);
+            ">%s</a>',
+            esc_url($url),
+            esc_html($label)
+        );
+    }
+
+    /**
+     * Infer the WML task from the student-data lit_type field
+     */
+    private static function infer_task_from_lit_type($lit_type) {
+        $map = [
+            'diagnostic_essay'       => 'assessment',
+            'redraft_essay'          => 'assessment',
+            'extended_essay'         => 'assessment',
+            'exam_practice'          => 'assessment',
+            'mark_scheme_assessment' => 'assessment',
+            'conceptual_notes'       => '', // doesn't map to WML
+        ];
+        return $map[$lit_type] ?? '';
+    }
+
+    public function activate() {
+        $this->register_rewrite_rules();
+        flush_rewrite_rules();
+    }
+
+    public function deactivate() {
+        flush_rewrite_rules();
+    }
+
+    // ═══════════════════════════════════════════
+    //  COVER IMAGES ADMIN
+    // ═══════════════════════════════════════════
+
+    public function add_covers_menu() {
+        $parent = class_exists('Sophicly_Admin_Hub') ? 'sophicly' : 'options-general.php';
+        add_submenu_page(
+            $parent,
+            'WML Cover Images',
+            'WML Covers',
+            'manage_options',
+            'sophicly-wml-covers',
+            [$this, 'render_covers_page']
+        );
+    }
+
+    public function render_covers_page() {
+        global $wpdb;
+        $covers = get_option('swml_cover_images', []);
+
+        // Enumerate all texts and topic counts from the topic bank
+        $rows = $wpdb->get_results("SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE 'swml_topics_%'");
+        $texts = [];
+        foreach ($rows as $row) {
+            $parts = explode('_', str_replace('swml_topics_', '', $row->option_name), 2);
+            if (count($parts) === 2) {
+                $board = $parts[0];
+                $text = $parts[1];
+                $topics = get_option($row->option_name, []);
+                $count = is_array($topics) ? count($topics) : 0;
+                if (!isset($texts[$text]) || $texts[$text] < $count) {
+                    $texts[$text] = $count; // Keep highest topic count across boards
+                }
+            }
+        }
+        ksort($texts);
+
+        // Standard exercise types
+        $exercises = ['conceptual_notes', 'random_quote', 'exam_question', 'essay_plan', 'model_answer', 'memory_practice'];
+
+        // Build all possible keys as JSON for JS
+        $all_keys = [];
+        foreach ($texts as $text => $topicCount) {
+            $label = ucwords(str_replace(['-', '_'], ' ', $text));
+            $all_keys[] = ['key' => $text, 'label' => "$label (default)"];
+            for ($i = 1; $i <= $topicCount; $i++) {
+                $all_keys[] = ['key' => "$text:topic_$i", 'label' => "$label — Topic $i"];
+            }
+            foreach ($exercises as $ex) {
+                $exLabel = ucwords(str_replace('_', ' ', $ex));
+                $all_keys[] = ['key' => "$text:$ex", 'label' => "$label — $exLabel"];
+            }
+        }
+        $keys_json = wp_json_encode($all_keys);
+        ?>
+        <div class="wrap">
+            <h1>WML Cover Images</h1>
+            <p>Select a text and exercise from the dropdown, then paste the <strong>Bunny CDN URL</strong>.<br>
+            Recommended size: <code>1440 × 2036px</code> (A4 ratio, 2× retina). Images display as full-bleed first page in the canvas and Word export.</p>
+            <div id="swml-covers-app" style="max-width:900px">
+                <table class="wp-list-table widefat striped" id="swml-covers-table">
+                    <thead><tr><th style="width:35%">Text + Exercise</th><th>CDN URL</th><th style="width:60px">Preview</th><th style="width:50px"></th></tr></thead>
+                    <tbody>
+                    <?php foreach ($covers as $key => $url): ?>
+                        <tr>
+                            <td><select class="swml-cover-key" style="width:100%"><option value="<?php echo esc_attr($key); ?>"><?php echo esc_html($key); ?></option></select></td>
+                            <td><input type="url" class="swml-cover-url large-text" value="<?php echo esc_attr($url); ?>" style="width:100%"></td>
+                            <td><?php if ($url): ?><img src="<?php echo esc_url($url); ?>" style="height:40px;border-radius:3px"><?php endif; ?></td>
+                            <td><button type="button" class="button swml-cover-remove" style="color:#d63638">✕</button></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <p style="margin-top:12px">
+                    <button type="button" class="button" id="swml-cover-add">+ Add Cover</button>
+                    <button type="button" class="button button-primary" id="swml-cover-save" style="margin-left:8px">Save All</button>
+                    <span id="swml-cover-status" style="margin-left:12px;color:#1CD991;font-weight:600"></span>
+                </p>
+            </div>
+            <script>
+            (function(){
+                const allKeys = <?php echo $keys_json; ?>;
+                const tbl = document.getElementById('swml-covers-table').querySelector('tbody');
+
+                function buildSelect(selectedKey) {
+                    const sel = document.createElement('select');
+                    sel.className = 'swml-cover-key';
+                    sel.style.width = '100%';
+                    const blank = document.createElement('option');
+                    blank.value = ''; blank.textContent = '— Select —';
+                    sel.appendChild(blank);
+                    let currentGroup = null, optgroup = null;
+                    allKeys.forEach(k => {
+                        const text = k.key.split(':')[0];
+                        const groupLabel = text.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                        if (text !== currentGroup) {
+                            currentGroup = text;
+                            optgroup = document.createElement('optgroup');
+                            optgroup.label = groupLabel;
+                            sel.appendChild(optgroup);
+                        }
+                        const opt = document.createElement('option');
+                        opt.value = k.key;
+                        opt.textContent = k.label;
+                        if (k.key === selectedKey) opt.selected = true;
+                        (optgroup || sel).appendChild(opt);
+                    });
+                    return sel;
+                }
+
+                // Populate dropdowns for existing rows
+                tbl.querySelectorAll('tr').forEach(tr => {
+                    const oldSel = tr.querySelector('.swml-cover-key');
+                    if (!oldSel) return;
+                    const key = oldSel.value;
+                    const newSel = buildSelect(key);
+                    oldSel.replaceWith(newSel);
+                });
+
+                document.getElementById('swml-cover-add').addEventListener('click', () => {
+                    const tr = document.createElement('tr');
+                    const tdSel = document.createElement('td'); tdSel.appendChild(buildSelect('')); tr.appendChild(tdSel);
+                    const tdUrl = document.createElement('td'); tdUrl.innerHTML = '<input type="url" class="swml-cover-url large-text" placeholder="https://sophicly.b-cdn.net/covers/..." style="width:100%">'; tr.appendChild(tdUrl);
+                    const tdPrev = document.createElement('td'); tr.appendChild(tdPrev);
+                    const tdDel = document.createElement('td'); tdDel.innerHTML = '<button type="button" class="button swml-cover-remove" style="color:#d63638">✕</button>'; tr.appendChild(tdDel);
+                    tbl.appendChild(tr);
+                });
+
+                tbl.addEventListener('click', e => { if (e.target.classList.contains('swml-cover-remove')) e.target.closest('tr').remove(); });
+
+                document.getElementById('swml-cover-save').addEventListener('click', () => {
+                    const covers = {};
+                    tbl.querySelectorAll('tr').forEach(tr => {
+                        const key = tr.querySelector('.swml-cover-key')?.value?.trim();
+                        const url = tr.querySelector('.swml-cover-url')?.value?.trim();
+                        if (key && url) covers[key] = url;
+                    });
+                    fetch('<?php echo esc_url(rest_url('sophicly-wml/v1/covers')); ?>', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': '<?php echo wp_create_nonce('wp_rest'); ?>' },
+                        body: JSON.stringify({ covers })
+                    }).then(r => r.json()).then(res => {
+                        document.getElementById('swml-cover-status').textContent = res.success ? '✓ Saved' : '✕ Error';
+                        setTimeout(() => document.getElementById('swml-cover-status').textContent = '', 3000);
+                    });
+                });
+            })();
+            </script>
+        </div>
+        <?php
+    }
+}
+
+// Boot the plugin
+add_action('plugins_loaded', function() {
+    Sophicly_Writing_Mastery_Lab::instance();
+});

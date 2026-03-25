@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Session handoffs (working documents, not source code)
+session-handoff-*.md
+SESSION_HANDOFF_*.md
+
+# Research/reference docs (large, not source code)
+exam-paper-structures*.md
+question-bank-*.md
+
+# Misc
+*.html

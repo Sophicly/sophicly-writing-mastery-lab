@@ -1,0 +1,79 @@
+{
+    "board": "ccea",
+    "group": "unseen-prose",
+    "version": "1.0.0",
+    "base_path": "protocols/ccea/unseen-prose",
+    "planning": {
+        "always": [
+            "modules/foundation.md",
+            "modules/knowledge-algorithm.md",
+            "modules/knowledge-state.md",
+            "modules/knowledge-hub.md",
+            "modules/knowledge-rationale.md",
+            "literature/modules/socratic-literature.md"
+        ],
+        "steps": {
+            "1": {
+                "label": "Parts A-B: Setup & Goals",
+                "files": [
+                    "planning/b-intro.md",
+                    "planning/b1-setup.md"
+                ]
+            },
+            "2": {
+                "label": "Part C: Evidence Selection",
+                "files": [
+                    "planning/b2-evidence.md"
+                ]
+            },
+            "3": {
+                "label": "Part D: Body Paragraph 1",
+                "files": [
+                    "planning/b3-bodies.md"
+                ]
+            },
+            "4": {
+                "label": "Part D: Body Paragraph 2",
+                "files": [
+                    "planning/b3-bodies.md"
+                ]
+            },
+            "5": {
+                "label": "Part D: Body Paragraph 3",
+                "files": [
+                    "planning/b3-bodies.md"
+                ]
+            },
+            "6": {
+                "label": "Parts E-F: Structure & Review",
+                "files": [
+                    "planning/b4-structure.md",
+                    "planning/b5-review.md"
+                ]
+            }
+        }
+    },
+    "assessment": {
+        "always": [
+            "modules/foundation.md",
+            "modules/knowledge-algorithm.md",
+            "modules/knowledge-state.md",
+            "modules/knowledge-progress.md",
+            "modules/knowledge-persona.md",
+            "modules/knowledge-hub.md",
+            "modules/protocol-a-assessment.md",
+            "literature/modules/socratic-literature.md"
+        ],
+        "steps": {}
+    },
+    "polishing": {
+        "always": [
+            "modules/foundation.md",
+            "modules/knowledge-algorithm.md",
+            "modules/knowledge-hub.md",
+            "modules/protocol-c-polishing.md",
+            "literature/modules/socratic-literature.md"
+        ],
+        "steps": {}
+    }
+}

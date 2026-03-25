@@ -1,0 +1,165 @@
+{
+  "board": "eduqas",
+  "version": "3.0.0",
+  "base_path": "protocols/eduqas/literature",
+  "planning": {
+    "always": [
+      "modules/foundation.md",
+      "modules/protocol-integrity.md",
+      "modules/functions.md",
+      "modules/macros-utility.md",
+      "modules/macros-socratic.md",
+      "modules/macros-analysis.md",
+      "modules/macros-context-help.md",
+      "modules/question-redirection.md",
+      "modules/student-profiling.md",
+      "modules/guard-macros.md",
+      "modules/error-recovery.md",
+      "modules/session-state.md",
+      "modules/graceful-degradation.md",
+      "modules/progress-common.md",
+      "modules/progress-planning.md",
+      "modules/anti-hallucination.md",
+      "modules/workflow-entry.md",
+      "modules/knowledge-core.md",
+      "planning/b-intro.md"
+    ],
+    "steps": {
+      "1": {
+        "label": "B.1 Setup + B.2 Goals + B.2A Keywords + B.3 Diagnostic",
+        "files": [
+          "planning/b1-setup.md",
+          "planning/b2-goals.md",
+          "planning/b2a-keywords.md",
+          "planning/b3-diagnostic.md"
+        ]
+      },
+      "2": {
+        "label": "B.2 Goal Setting",
+        "files": [
+          "planning/b2-goals.md"
+        ]
+      },
+      "3": {
+        "label": "B.4 Anchor Quote Selection",
+        "files": [
+          "planning/b2a-keywords.md",
+          "planning/b4-anchors.md",
+          "modules/quote-validation.md"
+        ]
+      },
+      "4": {
+        "label": "B.5 Body Paragraph 1",
+        "files": [
+          "planning/b5-bodies.md",
+          "modules/macros-scanner.md",
+          "modules/quote-validation.md",
+          "modules/knowledge-ttecea.md",
+          "modules/knowledge-ttecea-rationale.md",
+          "modules/knowledge-model-plan.md"
+        ]
+      },
+      "5": {
+        "label": "B.5 Body Paragraph 2",
+        "files": [
+          "planning/b5-bodies.md",
+          "modules/macros-scanner.md",
+          "modules/quote-validation.md",
+          "modules/knowledge-ttecea.md",
+          "modules/knowledge-ttecea-rationale.md",
+          "modules/knowledge-model-plan.md"
+        ]
+      },
+      "6": {
+        "label": "B.5 Body Paragraph 3",
+        "files": [
+          "planning/b5-bodies.md",
+          "modules/macros-scanner.md",
+          "modules/quote-validation.md",
+          "modules/knowledge-ttecea.md",
+          "modules/knowledge-ttecea-rationale.md",
+          "modules/knowledge-model-plan.md"
+        ]
+      },
+      "7": {
+        "label": "B.6 Working Thesis + B.7 Introduction",
+        "files": [
+          "planning/b6-thesis.md",
+          "planning/b7-introduction.md",
+          "modules/macros-progressive-context.md",
+          "modules/knowledge-ttecea.md"
+        ]
+      },
+      "8": {
+        "label": "B.8 Conclusion + B.9 Review + B.10 Wrap-up",
+        "files": [
+          "planning/b8-conclusion.md",
+          "planning/b9-review.md",
+          "planning/b10-wrapup.md",
+          "modules/knowledge-model-plan.md"
+        ]
+      }
+    }
+  },
+  "assessment": {
+    "always": [
+      "modules/foundation.md",
+      "modules/protocol-integrity.md",
+      "modules/functions.md",
+      "modules/macros-utility.md",
+      "modules/macros-socratic.md",
+      "modules/macros-analysis.md",
+      "modules/macros-scanner.md",
+      "modules/macros-context-help.md",
+      "modules/question-redirection.md",
+      "modules/student-profiling.md",
+      "modules/guard-macros.md",
+      "modules/error-recovery.md",
+      "modules/session-state.md",
+      "modules/graceful-degradation.md",
+      "modules/progress-common.md",
+      "modules/progress-assessment.md",
+      "modules/knowledge-core.md",
+      "modules/knowledge-mark-scheme.md",
+      "modules/knowledge-model-answer.md",
+      "modules/knowledge-ttecea.md",
+      "modules/penalty-codes.md",
+      "modules/anti-hallucination.md",
+      "modules/quote-validation.md",
+      "modules/workflow-entry.md",
+      "modules/protocol-a-assessment.md"
+    ],
+    "steps": {}
+  },
+  "polishing": {
+    "always": [
+      "modules/foundation.md",
+      "modules/protocol-integrity.md",
+      "modules/functions.md",
+      "modules/macros-utility.md",
+      "modules/macros-socratic.md",
+      "modules/macros-analysis.md",
+      "modules/macros-context-help.md",
+      "modules/student-profiling.md",
+      "modules/guard-macros.md",
+      "modules/error-recovery.md",
+      "modules/session-state.md",
+      "modules/progress-common.md",
+      "modules/progress-polishing.md",
+      "modules/knowledge-core.md",
+      "modules/knowledge-ttecea.md",
+      "modules/knowledge-style-models.md",
+      "modules/anti-hallucination.md",
+      "modules/workflow-entry.md",
+      "modules/protocol-c-polishing.md"
+    ],
+    "steps": {}
+  },
+  "exam_question": {
+    "always": [
+      "../../shared/exam-question/modules/foundation.md",
+      "modules/exam-question-format.md"
+    ],
+    "steps": {}
+  }
+}

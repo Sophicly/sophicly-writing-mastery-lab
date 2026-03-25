@@ -1,0 +1,111 @@
+{
+    "board": "edexcel-igcse",
+    "group": "language1",
+    "version": "1.0.0",
+    "base_path": "protocols/edexcel-igcse/language1",
+    "planning": {
+        "always": [
+            "modules/foundation.md",
+            "modules/knowledge-algorithm.md",
+            "modules/knowledge-macros.md",
+            "modules/knowledge-validation.md",
+            "modules/knowledge-hub.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "language/modules/ttecea-rationale-lang.md"
+        ],
+        "steps": {
+            "1": {
+                "label": "Part A-B: Setup & Goals",
+                "files": [
+                    "planning/b-intro.md",
+                    "planning/b1-setup.md",
+                    "planning/b2-goals.md"
+                ]
+            },
+            "2": {
+                "label": "Part C: Evidence Selection",
+                "files": [
+                    "planning/b3-evidence.md"
+                ]
+            },
+            "3": {
+                "label": "Part D: Body Paragraph 1",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "4": {
+                "label": "Part D: Body Paragraph 2",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "5": {
+                "label": "Part D: Body Paragraph 3",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "6": {
+                "label": "Part E: Thesis, Introduction & Conclusion (Q5)",
+                "files": [
+                    "planning/b5-thesis.md"
+                ]
+            },
+            "7": {
+                "label": "Section B: Setup & Help Menu",
+                "files": [
+                    "planning/b6-sectionb.md",
+                    "language/modules/help-menu-devices.md"
+                ]
+            },
+            "8": {
+                "label": "Section B: IUMVCC Planning",
+                "files": [
+                    "planning/b7-iumvcc.md"
+                ]
+            },
+            "9": {
+                "label": "Section B: Audit & Final Plan",
+                "files": [
+                    "planning/b8-sectionb-final.md"
+                ]
+            }
+        }
+    },
+    "assessment": {
+        "always": [
+            "modules/foundation.md",
+            "modules/knowledge-algorithm.md",
+            "modules/knowledge-macros.md",
+            "modules/knowledge-validation.md",
+            "modules/knowledge-progress.md",
+            "modules/knowledge-state.md",
+            "modules/knowledge-hub.md",
+            "modules/protocol-a-assessment.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "language/modules/ttecea-rationale-lang.md"
+        ],
+        "steps": {}
+    },
+    "polishing": {
+        "always": [
+            "modules/foundation.md",
+            "modules/knowledge-algorithm.md",
+            "modules/knowledge-hub.md",
+            "modules/protocol-c-polishing.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "language/modules/ttecea-rationale-lang.md"
+        ],
+        "steps": {}
+    }
+}

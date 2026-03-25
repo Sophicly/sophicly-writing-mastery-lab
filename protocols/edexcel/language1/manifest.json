@@ -1,0 +1,108 @@
+{
+    "board": "edexcel",
+    "group": "language1",
+    "version": "1.0.0",
+    "base_path": "protocols/edexcel/language1",
+    "planning": {
+        "always": [
+            "modules/foundation-lang1.md",
+            "modules/knowledge-profiling.md",
+            "modules/knowledge-quotes.md",
+            "modules/knowledge-progress.md",
+            "modules/knowledge-integrity.md",
+            "modules/knowledge-persona.md",
+            "modules/knowledge-hub.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "language/modules/ttecea-rationale-lang.md"
+        ],
+        "steps": {
+            "1": {
+                "label": "Part A: Setup + Keywords",
+                "files": [
+                    "planning/b-intro.md",
+                    "planning/b1-setup.md",
+                    "planning/b1a-keywords.md"
+                ]
+            },
+            "2": {
+                "label": "Part B: Goals",
+                "files": [
+                    "planning/b2-goals.md"
+                ]
+            },
+            "3": {
+                "label": "Part C: Evidence Selection",
+                "files": [
+                    "planning/b3-evidence.md"
+                ]
+            },
+            "4": {
+                "label": "Part D: Body Paragraph 1",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "5": {
+                "label": "Part D: Body Paragraph 2",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "6": {
+                "label": "Part D: Body Paragraph 3",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "7": {
+                "label": "Q5 Creative Writing",
+                "files": [
+                    "planning/b5-creative.md"
+                ]
+            },
+            "8": {
+                "label": "Part F: Final Plan Compilation",
+                "files": [
+                    "planning/b6-final.md"
+                ]
+            }
+        }
+    },
+    "assessment": {
+        "always": [
+            "modules/foundation-lang1.md",
+            "modules/knowledge-profiling.md",
+            "modules/knowledge-quotes.md",
+            "modules/knowledge-progress.md",
+            "modules/knowledge-integrity.md",
+            "modules/knowledge-persona.md",
+            "modules/knowledge-hub.md",
+            "modules/protocol-a-assessment.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "language/modules/ttecea-rationale-lang.md"
+        ],
+        "steps": {}
+    },
+    "polishing": {
+        "always": [
+            "modules/foundation-lang1.md",
+            "modules/knowledge-profiling.md",
+            "modules/knowledge-progress.md",
+            "modules/knowledge-persona.md",
+            "modules/knowledge-hub.md",
+            "modules/protocol-c-polishing.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "language/modules/ttecea-rationale-lang.md"
+        ],
+        "steps": {}
+    }
+}

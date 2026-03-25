@@ -1,0 +1,111 @@
+{
+    "planning": {
+        "always": [
+            "modules/foundation.md",
+            "modules/protocol-integrity.md",
+            "modules/functions.md",
+            "modules/macros-utility.md",
+            "modules/student-profiling.md",
+            "modules/guard-macros.md",
+            "modules/error-recovery.md",
+            "modules/session-state.md",
+            "modules/graceful-degradation.md",
+            "modules/progress-common.md",
+            "modules/communication-standards.md",
+            "modules/knowledge-core.md",
+            "modules/quote-validation.md",
+            "planning/b-intro.md"
+        ],
+        "steps": {
+            "1": {
+                "files": [
+                    "planning/b1-setup.md",
+                    "planning/b2-goals.md",
+                    "planning/b2a-keywords.md",
+                    "planning/b3-diagnostic.md"
+                ]
+            },
+            "2": {
+                "files": [
+                    "planning/b2-goals.md"
+                ]
+            },
+            "3": {
+                "files": [
+                    "planning/b2a-keywords.md",
+                    "planning/b4-anchors.md",
+                    "modules/quote-validation.md"
+                ]
+            },
+            "4": {
+                "files": [
+                    "planning/b5-bodies.md",
+                    "modules/quote-validation.md"
+                ]
+            },
+            "5": {
+                "files": [
+                    "planning/b5-bodies.md",
+                    "modules/quote-validation.md"
+                ]
+            },
+            "6": {
+                "files": [
+                    "planning/b5-bodies.md",
+                    "modules/quote-validation.md"
+                ]
+            },
+            "7": {
+                "files": [
+                    "planning/b6-thesis.md",
+                    "planning/b7-introduction.md"
+                ]
+            },
+            "8": {
+                "files": [
+                    "planning/b8-conclusion.md",
+                    "planning/b9-review.md",
+                    "planning/b10-wrapup.md"
+                ]
+            }
+        }
+    },
+    "assessment": {
+        "always": [
+            "modules/foundation.md",
+            "modules/protocol-integrity.md",
+            "modules/functions.md",
+            "modules/macros-utility.md",
+            "modules/student-profiling.md",
+            "modules/guard-macros.md",
+            "modules/error-recovery.md",
+            "modules/session-state.md",
+            "modules/graceful-degradation.md",
+            "modules/progress-common.md",
+            "modules/communication-standards.md",
+            "modules/knowledge-core.md",
+            "modules/quote-validation.md",
+            "modules/protocol-a-assessment.md"
+        ],
+        "steps": {}
+    },
+    "polishing": {
+        "always": [
+            "modules/foundation.md",
+            "modules/protocol-integrity.md",
+            "modules/functions.md",
+            "modules/macros-utility.md",
+            "modules/student-profiling.md",
+            "modules/guard-macros.md",
+            "modules/error-recovery.md",
+            "modules/session-state.md",
+            "modules/graceful-degradation.md",
+            "modules/progress-common.md",
+            "modules/communication-standards.md",
+            "modules/knowledge-core.md",
+            "modules/quote-validation.md",
+            "modules/protocol-c-polishing.md"
+        ],
+        "steps": {}
+    }
+}

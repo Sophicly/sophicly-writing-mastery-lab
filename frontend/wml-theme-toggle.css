@@ -1,0 +1,70 @@
+/* ==========================================================================
+   THEME TOGGLE COMPONENT — Jhey's moon/sun toggle
+   Included as WML component. Size: --xs for header fit.
+   ========================================================================== */
+:root {
+  --theme-toggle-step: 0.5s;
+  --theme-toggle-offset: calc(var(--theme-toggle-step) * 0.5);
+  --theme-toggle-ease: linear(0 0%,0.2342 12.49%,0.4374 24.99%,0.6093 37.49%,0.6835 43.74%,0.7499 49.99%,0.8086 56.25%,0.8593 62.5%,0.9023 68.75%,0.9375 75%,0.9648 81.25%,0.9844 87.5%,0.9961 93.75%,1 100%);
+  --theme-toggle-button-light: hsl(223 4% 73%);
+  --theme-toggle-button-dark: hsl(220 27% 6%);
+  --theme-toggle-size: 48px;
+}
+.theme-toggle--xs { --theme-toggle-size: 24px; }
+.theme-toggle--sm { --theme-toggle-size: 32px; }
+.theme-toggle--wml { --theme-toggle-size: 40px; }
+.theme-toggle { background:transparent !important; font-size:var(--theme-toggle-size) !important; height:0.74em; padding:0 !important; border-radius:3em !important; border:0 !important; aspect-ratio:1.8/1; position:relative; cursor:pointer !important; }
+.theme-toggle::after { content:''; }
+.theme-toggle :is(.theme-toggle__socket,.theme-toggle__face) { position:absolute; border-radius:3em; }
+.theme-toggle::before { pointer-events:none; }
+.theme-toggle__socket { box-shadow:-0.05em 0.1em 0.2em -0.2em white; background:hsl(0 0% 90%); position:relative; inset:0; transition:background-color var(--theme-toggle-step) var(--theme-toggle-ease),box-shadow var(--theme-toggle-step) var(--theme-toggle-ease); }
+.theme-toggle__socket-shadow { position:absolute; inset:0; opacity:0; border-radius:inherit; box-shadow:0em 0.075em 0.1em 0em white; transition:opacity var(--theme-toggle-step) var(--theme-toggle-ease); }
+.theme-toggle__face { inset:0.15em; transition:scale var(--theme-toggle-step) var(--theme-toggle-ease); scale:1; }
+.theme-toggle__face-shadow,.theme-toggle__face-shadow::after,.theme-toggle__face-shadow::before { position:absolute; inset:0; border-radius:inherit; }
+.theme-toggle__face-shadow::after,.theme-toggle__face-shadow::before { content:''; transition:opacity var(--theme-toggle-step) var(--theme-toggle-ease),translate var(--theme-toggle-step) var(--theme-toggle-ease),filter var(--theme-toggle-step) var(--theme-toggle-ease),scale var(--theme-toggle-step) var(--theme-toggle-ease); }
+.theme-toggle__face-shadow::before { background:black; }
+.theme-toggle__face-shadow::after { background:white; scale:0.5; }
+.theme-toggle__face-plate { position:absolute; inset:0; border-radius:inherit; box-shadow:-0.05em 0.1em 0.2em -0.2em white inset; background:conic-gradient(from 45deg,#0000,hsl(0 0% 100%/0.05)),var(--theme-toggle-button-light); transition:background-color var(--theme-toggle-step) var(--theme-toggle-ease); }
+.theme-toggle__face-glowdrop { position:absolute; inset:0; border-radius:inherit; scale:0; transition:scale var(--theme-toggle-step) var(--theme-toggle-ease); }
+.theme-toggle__face-glowdrop::after,.theme-toggle__face-glowdrop::before { content:''; height:50%; aspect-ratio:1; background:#fff; filter:blur(6px); position:absolute; z-index:-1; border-radius:50%; }
+.theme-toggle__face-glowdrop::before { left:4%; width:56%; translate:0 -25%; }
+.theme-toggle__face-glowdrop::after { bottom:0; right:12%; width:34%; translate:0 20%; }
+.theme-toggle__face-shine { position:absolute; inset:0; opacity:0; border-radius:3em; transition:opacity var(--theme-toggle-step) var(--theme-toggle-ease); }
+.theme-toggle__face-shine-shadow { position:absolute; inset:0; border-radius:inherit; mask:conic-gradient(from 0deg,#fff 90deg,#0000 110deg 200deg,#fff 215deg 280deg,#0000 315deg); box-shadow:0.075em 0 0.025em -0.025em hsl(0 0% 0%/0.5) inset,-0.075em -0.05em 0.025em -0.025em hsl(0 0% 0%/0.5) inset; }
+.theme-toggle__face-shine::before { content:''; position:absolute; inset:0.05em; border-radius:3em; box-shadow:0 -0.05em 0.025em -0.025em hsl(0 0% 50%/0.5) inset,-0.025em 0.05em 0.025em -0.025em hsl(0 0% 100%/0.5) inset; }
+.theme-toggle__face-shine::after { content:''; position:absolute; inset:0; background:conic-gradient(from 45deg,#0000,hsl(0 0% 100%/0.25)); border-radius:3em; }
+.theme-toggle__face-glows { position:absolute; inset:-0.075em; opacity:0; border-radius:inherit; mix-blend-mode:plus-lighter; filter:blur(8px); z-index:20; mask:conic-gradient(from 280deg,#0000,#fff 20deg 45deg,#0000 95deg),conic-gradient(from 110deg,#0000,#fff 20deg,#0000 95deg); transition:opacity var(--theme-toggle-step) var(--theme-toggle-ease); }
+.theme-toggle__face-glows div { position:absolute; inset:0; border-radius:inherit; filter:blur(4px); border:0.1em solid white; }
+.theme-toggle__face svg { --glow:hsl(182 90% 92%); width:25%; position:absolute; top:50%; left:50%; translate:-52% -48%; overflow:visible !important; }
+.theme-toggle__face svg path { transform-box:fill-box; transform-origin:center center; }
+.theme-toggle__glow { z-index:3; filter:drop-shadow(0 0 0.2em var(--glow)); opacity:1; transition:opacity 1.25s var(--theme-toggle-offset) linear(0 0%,0.0039 6.25%,0.0156 12.5%,0.0352 18.75%,0.0625 25%,0.0977 31.25%,0.1407 37.5%,0.1914 43.74%,0.2499 49.99%,0.3164 56.25%,0.3906 62.5%,0.5625 75%,0.7656 87.5%,1 100%); }
+.theme-toggle__glow-path { fill:var(--glow); stroke:var(--glow); opacity:1; stroke-width:0; }
+.theme-toggle__trail-holder { z-index:2; filter:blur(10px); }
+.theme-toggle__trail-holder .theme-toggle__trail { stroke-width:4; }
+.theme-toggle__trail { stroke-dasharray:10 80; stroke-dashoffset:10; opacity:0; transition:stroke-dashoffset calc(var(--theme-toggle-step)*3) var(--theme-toggle-ease),opacity calc(var(--theme-toggle-step)*0.5) calc(var(--theme-toggle-offset)+(var(--theme-toggle-step)*2.5)); }
+.theme-toggle__inner-face { fill:hsl(230 5% 80%); }
+.theme-toggle__inner-bg { fill:black; transition:fill var(--theme-toggle-step) var(--theme-toggle-ease); }
+.theme-toggle__outline { transition:stroke var(--theme-toggle-step) var(--theme-toggle-ease); }
+.theme-toggle::before { transition:scale var(--theme-toggle-step) var(--theme-toggle-ease),opacity var(--theme-toggle-step) var(--theme-toggle-ease); }
+/* Active */
+.theme-toggle:active .theme-toggle__socket { box-shadow:-0.045em 0.1em 0.2em -0.15em white; }
+.theme-toggle:active .theme-toggle__face { scale:0.99; }
+/* Light mode (pressed=true) */
+.theme-toggle[aria-pressed='true'] .theme-toggle__face { scale:1.12; }
+.theme-toggle[aria-pressed='true'] .theme-toggle__outline { stroke:hsl(0 0% 30%); }
+.theme-toggle[aria-pressed='true'] .theme-toggle__inner-bg { fill:hsl(0 0% 20%); }
+.theme-toggle[aria-pressed='true'] .theme-toggle__socket { box-shadow:-0.025em 0.08em 0.2em -0.1em white; }
+.theme-toggle[aria-pressed='true'] .theme-toggle__glow { opacity:0; transition:opacity var(--theme-toggle-step) 0s var(--theme-toggle-ease); }
+.theme-toggle[aria-pressed='true'] .theme-toggle__face-glowdrop { scale:1; }
+.theme-toggle[aria-pressed='true'] .theme-toggle__face-shadow::before { translate:-15% 55%; filter:blur(1em); opacity:0.35; }
+.theme-toggle[aria-pressed='true'] .theme-toggle__face-shadow::after { filter:blur(0.5em); scale:1; }
+.theme-toggle[aria-pressed='true'] .theme-toggle__socket-shadow,.theme-toggle[aria-pressed='true'] .theme-toggle__face-glows,.theme-toggle[aria-pressed='true'] .theme-toggle__face-shine { opacity:1; }
+.theme-toggle[aria-pressed='true'] .theme-toggle__trail { transition:stroke-dashoffset 0s; opacity:1; stroke-dashoffset:-70; }
+/* Dark socket override (when WML is in dark mode) */
+[data-swml-theme="dark"] .theme-toggle__socket { background:hsl(0 0% 0%); }
+[data-swml-theme="dark"] .theme-toggle__face-plate { background:conic-gradient(from 45deg,#0000,hsl(0 0% 100%/0.05)),var(--theme-toggle-button-dark); }
+/* SR only */
+.theme-toggle__sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border-width:0; }
+.theme-toggle:focus { outline:none; }
+.theme-toggle:focus-visible { outline:2px solid hsl(182 90% 70%); outline-offset:4px; }
+@media (prefers-reduced-motion:reduce) { .theme-toggle,.theme-toggle *,.theme-toggle::before,.theme-toggle::after,.theme-toggle *::before,.theme-toggle *::after { transition-duration:0.01ms !important; animation-duration:0.01ms !important; } }

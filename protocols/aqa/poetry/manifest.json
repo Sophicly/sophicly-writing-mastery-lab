@@ -1,0 +1,93 @@
+{
+    "board": "aqa",
+    "group": "poetry",
+    "version": "3.5.1",
+    "base_path": "protocols/aqa/poetry",
+    "planning": {
+        "always": [
+            "modules/foundation-poetry.md",
+            "modules/communication-standards.md",
+            "modules/macros-poetry.md",
+            "modules/guards-progress-poetry.md",
+            "modules/knowledge-poetry.md"
+        ],
+        "steps": {
+            "1": {
+                "label": "B.1-B.2 Setup, Goals & Keywords",
+                "files": [
+                    "planning/b1-setup.md",
+                    "planning/b2-goals-keywords.md"
+                ]
+            },
+            "2": {
+                "label": "B.2A Keywords & B.3 Diagnostic",
+                "files": [
+                    "planning/b2-goals-keywords.md",
+                    "planning/b3-diagnostic.md"
+                ]
+            },
+            "3": {
+                "label": "B.4 Anchor Quotes",
+                "files": [
+                    "planning/b4-anchors.md"
+                ]
+            },
+            "4": {
+                "label": "B.5 Body Paragraph 1 (Form)",
+                "files": [
+                    "planning/b5-bodies.md"
+                ]
+            },
+            "5": {
+                "label": "B.5 Body Paragraph 2 (Structure)",
+                "files": [
+                    "planning/b5-bodies.md"
+                ]
+            },
+            "6": {
+                "label": "B.5 Body Paragraph 3 (Language)",
+                "files": [
+                    "planning/b5-bodies.md"
+                ]
+            },
+            "7": {
+                "label": "B.6-B.7 Thesis & Introduction",
+                "files": [
+                    "planning/b6-thesis.md",
+                    "planning/b7-introduction.md"
+                ]
+            },
+            "8": {
+                "label": "B.8-B.10 Conclusion & Review",
+                "files": [
+                    "planning/b8-conclusion.md",
+                    "planning/b9-review-wrapup.md"
+                ]
+            }
+        }
+    },
+    "assessment": {
+        "always": [
+            "modules/foundation-poetry.md",
+            "modules/communication-standards.md",
+            "modules/macros-poetry.md",
+            "modules/guards-progress-poetry.md",
+            "modules/knowledge-poetry.md",
+            "modules/model-answers-poetry.md",
+            "modules/protocol-a-assessment-poetry.md"
+        ],
+        "steps": {}
+    },
+    "polishing": {
+        "always": [
+            "modules/foundation-poetry.md",
+            "modules/communication-standards.md",
+            "modules/macros-poetry.md",
+            "modules/guards-progress-poetry.md",
+            "modules/knowledge-poetry.md",
+            "modules/model-answers-poetry.md",
+            "modules/protocol-c-polishing-poetry.md"
+        ],
+        "steps": {}
+    }
+}

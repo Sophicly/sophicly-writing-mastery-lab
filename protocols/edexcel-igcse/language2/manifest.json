@@ -1,0 +1,62 @@
+{
+  "board": "edexcel-igcse",
+  "group": "language2",
+  "version": "1.0.0",
+  "base_path": "protocols/edexcel-igcse/language2",
+  "planning": {
+    "always": [
+      "modules/foundation.md",
+      "modules/knowledge-text-bank.md",
+      "modules/knowledge-genre.md",
+      "modules/knowledge-form.md",
+      "modules/knowledge-structure.md",
+      "modules/knowledge-language.md",
+      "modules/knowledge-effects.md",
+      "modules/knowledge-model-answer.md",
+      "modules/knowledge-mark-scheme.md",
+      "modules/workflow-entry.md",
+      "modules/macros-socratic.md",
+      "modules/macros-analysis.md",
+      "modules/quote-validation.md"
+    ],
+    "steps": {
+      "1": ["steps/b-setup.md"],
+      "2": ["steps/b-goal.md"],
+      "3": ["steps/b5-preplanning.md"],
+      "4": ["steps/b5-body1.md"],
+      "5": ["steps/b5-body2.md"],
+      "6": ["steps/b5-body3.md"],
+      "7": ["steps/b5-complete.md"],
+      "8": ["steps/b-conclusion.md"],
+      "9": ["steps/b2-creative.md"]
+    }
+  },
+  "assessment": {
+    "always": [
+      "modules/foundation.md",
+      "modules/knowledge-text-bank.md",
+      "modules/knowledge-genre.md",
+      "modules/knowledge-form.md",
+      "modules/knowledge-structure.md",
+      "modules/knowledge-language.md",
+      "modules/knowledge-effects.md",
+      "modules/knowledge-model-answer.md",
+      "modules/knowledge-mark-scheme.md",
+      "modules/workflow-entry.md",
+      "modules/macros-socratic.md",
+      "modules/macros-analysis.md",
+      "modules/assessment-section-a.md",
+      "modules/assessment-section-b.md"
+    ]
+  },
+  "polishing": {
+    "always": [
+      "modules/foundation.md",
+      "modules/knowledge-model-answer.md",
+      "modules/knowledge-mark-scheme.md",
+      "modules/workflow-entry.md",
+      "modules/polishing-section-a.md",
+      "modules/polishing-section-b.md"
+    ]
+  }
+}

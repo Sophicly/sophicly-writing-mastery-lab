@@ -1,0 +1,107 @@
+{
+    "board": "eduqas",
+    "group": "language2",
+    "version": "1.0.0",
+    "base_path": "protocols/eduqas/language2",
+    "planning": {
+        "always": [
+            "modules/foundation-lang2.md",
+            "modules/knowledge-algorithm.md",
+            "modules/knowledge-progress.md",
+            "modules/knowledge-operations.md",
+            "modules/knowledge-penalties.md",
+            "modules/knowledge-mark-scheme.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "language/modules/ttecea-rationale-lang.md"
+        ],
+        "steps": {
+            "1": {
+                "label": "Part A-B: Setup & Goals",
+                "files": [
+                    "planning/b-intro.md",
+                    "planning/b1-setup.md",
+                    "planning/b2-goals.md"
+                ]
+            },
+            "2": {
+                "label": "Q2/Q3: Evidence & Body Paragraphs",
+                "files": [
+                    "planning/b3-q2q3-planning.md"
+                ]
+            },
+            "3": {
+                "label": "Q2/Q3: Body Paragraph 2",
+                "files": [
+                    "planning/b3-q2q3-planning.md"
+                ]
+            },
+            "4": {
+                "label": "Q2/Q3: Body Paragraph 3",
+                "files": [
+                    "planning/b3-q2q3-planning.md"
+                ]
+            },
+            "5": {
+                "label": "Q5: TECE Planning",
+                "files": [
+                    "planning/b4-q5-tece.md"
+                ]
+            },
+            "6": {
+                "label": "Q6: Comparative Planning",
+                "files": [
+                    "planning/b5-q6-comparative.md"
+                ]
+            },
+            "7": {
+                "label": "Section B: Help Menu & Techniques",
+                "files": [
+                    "language/modules/help-menu-devices.md"
+                ]
+            },
+            "8": {
+                "label": "Section B: IUMVCC Transactional Writing",
+                "files": [
+                    "planning/b7-iumvcc.md"
+                ]
+            }
+        }
+    },
+    "assessment": {
+        "always": [
+            "modules/foundation-lang2.md",
+            "modules/knowledge-algorithm.md",
+            "modules/knowledge-progress.md",
+            "modules/knowledge-operations.md",
+            "modules/knowledge-penalties.md",
+            "modules/knowledge-mark-scheme.md",
+            "modules/protocol-a-assessment.md",
+            "modules/knowledge-safeguarding.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "language/modules/ttecea-rationale-lang.md"
+        ],
+        "steps": {}
+    },
+    "polishing": {
+        "always": [
+            "modules/foundation-lang2.md",
+            "modules/knowledge-algorithm.md",
+            "modules/knowledge-operations.md",
+            "modules/knowledge-penalties.md",
+            "modules/knowledge-mark-scheme.md",
+            "modules/protocol-c-polishing.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "language/modules/ttecea-rationale-lang.md"
+        ],
+        "steps": {}
+    }
+}

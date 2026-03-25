@@ -1,0 +1,98 @@
+{
+    "board": "eduqas",
+    "group": "language1",
+    "version": "1.0.0",
+    "base_path": "protocols/eduqas/language1",
+    "planning": {
+        "always": [
+            "modules/foundation-lang1.md",
+            "modules/knowledge-progress.md",
+            "modules/knowledge-operations.md",
+            "modules/knowledge-persona.md",
+            "modules/knowledge-hub.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "language/modules/ttecea-rationale-lang.md"
+        ],
+        "steps": {
+            "1": {
+                "label": "Part A-B: Setup & Goals",
+                "files": [
+                    "planning/b-intro.md",
+                    "planning/b1-setup.md",
+                    "planning/b2-goals.md"
+                ]
+            },
+            "2": {
+                "label": "Part C: Evidence Selection",
+                "files": [
+                    "planning/b3-evidence.md"
+                ]
+            },
+            "3": {
+                "label": "Part D: Body Paragraph 1",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "4": {
+                "label": "Part D: Body Paragraph 2",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "5": {
+                "label": "Part D: Body Paragraph 3",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "6": {
+                "label": "Section B: Creative Writing",
+                "files": [
+                    "planning/b5-creative.md"
+                ]
+            },
+            "7": {
+                "label": "Part E: Final Plan Compilation",
+                "files": [
+                    "planning/b6-final.md"
+                ]
+            }
+        }
+    },
+    "assessment": {
+        "always": [
+            "modules/foundation-lang1.md",
+            "modules/knowledge-progress.md",
+            "modules/knowledge-operations.md",
+            "modules/knowledge-persona.md",
+            "modules/knowledge-hub.md",
+            "modules/protocol-a-assessment.md",
+            "modules/knowledge-safeguarding.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "language/modules/ttecea-rationale-lang.md"
+        ],
+        "steps": {}
+    },
+    "polishing": {
+        "always": [
+            "modules/foundation-lang1.md",
+            "modules/knowledge-operations.md",
+            "modules/knowledge-persona.md",
+            "modules/knowledge-hub.md",
+            "modules/protocol-c-polishing.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "language/modules/ttecea-rationale-lang.md"
+        ],
+        "steps": {}
+    }
+}

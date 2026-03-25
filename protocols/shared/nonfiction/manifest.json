@@ -1,0 +1,23 @@
+{
+    "board": "shared",
+    "version": "1.1.0",
+    "base_path": "protocols/shared/nonfiction",
+    "conceptual_notes": {
+        "always": [
+            "modules/socratic-core.md",
+            "modules/session-management.md",
+            "modules/language-techniques.md",
+            "modules/conceptual-notes/nfcn-foundation.md",
+            "modules/conceptual-notes/nfcn-reference.md",
+            "modules/conceptual-notes/nfcn-section-1-voice.md",
+            "modules/conceptual-notes/nfcn-section-2-context.md",
+            "modules/conceptual-notes/nfcn-section-3-structure.md",
+            "modules/conceptual-notes/nfcn-section-4-texttype.md",
+            "modules/conceptual-notes/nfcn-section-5-techniques.md",
+            "modules/conceptual-notes/nfcn-section-6-themes.md",
+            "modules/conceptual-notes/nfcn-section-7-purpose.md",
+            "modules/conceptual-notes/nfcn-section-8-message.md"
+        ],
+        "steps": {}
+    }
+}

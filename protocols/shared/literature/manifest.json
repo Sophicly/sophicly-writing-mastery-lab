@@ -1,0 +1,40 @@
+{
+    "board": "shared",
+    "version": "1.1.0",
+    "base_path": "protocols/shared/literature",
+    "essay_plan": {
+        "always": [
+            "modules/essay-plan.md"
+        ],
+        "steps": {}
+    },
+    "model_answer": {
+        "always": [
+            "modules/model-answer.md"
+        ],
+        "steps": {}
+    },
+    "verbal_rehearsal": {
+        "always": [
+            "modules/random-quote-analysis.md"
+        ],
+        "steps": {}
+    },
+    "conceptual_notes": {
+        "always": [
+            "modules/socratic-core.md",
+            "modules/session-management.md",
+            "modules/language-techniques.md",
+            "modules/conceptual-notes/cn-foundation.md",
+            "modules/conceptual-notes/cn-reference.md",
+            "modules/conceptual-notes/cn-section-1-protagonist.md",
+            "modules/conceptual-notes/cn-section-2-context.md",
+            "modules/conceptual-notes/cn-section-3-plot.md",
+            "modules/conceptual-notes/cn-section-4-genre.md",
+            "modules/conceptual-notes/cn-section-5-themes.md",
+            "modules/conceptual-notes/cn-section-6-purpose.md",
+            "modules/conceptual-notes/cn-section-7-message.md"
+        ],
+        "steps": {}
+    }
+}

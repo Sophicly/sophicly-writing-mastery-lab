@@ -1,0 +1,86 @@
+{
+    "board": "ocr",
+    "group": "poetry",
+    "version": "1.0.0",
+    "base_path": "protocols/ocr/poetry",
+    "planning": {
+        "always": [
+            "modules/foundation.md",
+            "modules/knowledge-algorithm.md",
+            "modules/knowledge-mark-scheme.md",
+            "modules/knowledge-effects.md",
+            "modules/knowledge-techniques.md",
+            "modules/knowledge-scoring-tables.md",
+            "modules/effects-knowledge-bank.md",
+            "modules/anti-hallucination.md"
+        ],
+        "steps": {
+            "1": {
+                "label": "B.1.1-B.1.3: Setup & Goals",
+                "files": [
+                    "planning/b-intro.md",
+                    "planning/b1-setup.md",
+                    "planning/b2-goals.md"
+                ]
+            },
+            "2": {
+                "label": "B.1.4-B.1.5: Diagnostic & Anchors",
+                "files": [
+                    "planning/b3-diagnostic-anchors.md"
+                ]
+            },
+            "3": {
+                "label": "B.1.6: Body 1 — Form Comparison",
+                "files": [
+                    "planning/b4-body1-form.md"
+                ]
+            },
+            "4": {
+                "label": "B.1.7: Body 2 — Language Comparison",
+                "files": [
+                    "planning/b5-body2-language.md"
+                ]
+            },
+            "5": {
+                "label": "B.1.8-B.1.10: Body 3 + Intro + Conclusion",
+                "files": [
+                    "planning/b6-intro-conclusion.md"
+                ]
+            },
+            "6": {
+                "label": "B.2: Part (b) Single Poem Planning",
+                "files": [
+                    "planning/b7-partb-single.md"
+                ]
+            }
+        }
+    },
+    "assessment": {
+        "always": [
+            "modules/foundation.md",
+            "modules/knowledge-algorithm.md",
+            "modules/knowledge-mark-scheme.md",
+            "modules/knowledge-effects.md",
+            "modules/knowledge-techniques.md",
+            "modules/knowledge-scoring-tables.md",
+            "modules/protocol-a-assessment.md",
+            "modules/protocol-a-part-b.md",
+            "modules/knowledge-quickref.md",
+            "modules/effects-knowledge-bank.md",
+            "modules/anti-hallucination.md"
+        ],
+        "steps": {}
+    },
+    "polishing": {
+        "always": [
+            "modules/foundation.md",
+            "modules/knowledge-algorithm.md",
+            "modules/knowledge-mark-scheme.md",
+            "modules/knowledge-effects.md",
+            "modules/protocol-c-polishing.md",
+            "modules/effects-knowledge-bank.md",
+            "modules/anti-hallucination.md"
+        ],
+        "steps": {}
+    }
+}

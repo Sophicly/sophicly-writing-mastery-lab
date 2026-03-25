@@ -1,0 +1,93 @@
+{
+    "board": "aqa",
+    "group": "unseen",
+    "version": "1.5.0",
+    "base_path": "protocols/aqa/unseen",
+    "planning": {
+        "always": [
+            "modules/foundation-unseen.md",
+            "modules/knowledge-unseen.md",
+            "modules/workflow-entry.md",
+            "literature/modules/theme-check.md",
+            "literature/modules/socratic-literature.md",
+            "literature/modules/conclusion-scaffolding.md"
+        ],
+        "steps": {
+            "1": {
+                "label": "B.1-B.2 Setup & Goals",
+                "files": [
+                    "planning/b-intro.md",
+                    "planning/b1-setup.md",
+                    "planning/b2-goals.md"
+                ]
+            },
+            "2": {
+                "label": "B.3 Diagnostic + B.4 Anchors",
+                "files": [
+                    "planning/b3-diagnostic.md",
+                    "planning/b4-anchors.md"
+                ]
+            },
+            "3": {
+                "label": "B.5 Body Paragraph 1",
+                "files": [
+                    "planning/b5-bodies.md"
+                ]
+            },
+            "4": {
+                "label": "B.5 Body Paragraph 2",
+                "files": [
+                    "planning/b5-bodies.md"
+                ]
+            },
+            "5": {
+                "label": "B.5 Body Paragraph 3",
+                "files": [
+                    "planning/b5-bodies.md"
+                ]
+            },
+            "6": {
+                "label": "B.6-B.7 Thesis & Introduction",
+                "files": [
+                    "planning/b6-thesis.md",
+                    "planning/b7-introduction.md"
+                ]
+            },
+            "7": {
+                "label": "B.8-B.9 Conclusion & Review",
+                "files": [
+                    "planning/b8-conclusion.md",
+                    "planning/b9-review.md"
+                ]
+            },
+            "8": {
+                "label": "Q27.2 Comparison Planning",
+                "files": [
+                    "planning/b-q272-comparison.md"
+                ]
+            }
+        }
+    },
+    "assessment": {
+        "always": [
+            "modules/foundation-unseen.md",
+            "modules/knowledge-unseen.md",
+            "modules/workflow-entry.md",
+            "modules/protocol-a-assessment-unseen.md",
+            "literature/modules/theme-check.md",
+            "literature/modules/socratic-literature.md",
+            "literature/modules/conclusion-scaffolding.md"
+        ],
+        "steps": {}
+    },
+    "polishing": {
+        "always": [
+            "modules/foundation-unseen.md",
+            "modules/knowledge-unseen.md",
+            "modules/workflow-entry.md",
+            "modules/protocol-c-polishing-unseen.md",
+            "literature/modules/socratic-literature.md"
+        ],
+        "steps": {}
+    }
+}

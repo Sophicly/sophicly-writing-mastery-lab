@@ -1,0 +1,22 @@
+{
+    "board": "shared",
+    "version": "1.0.0",
+    "base_path": "protocols/shared/poetry",
+    "conceptual_notes": {
+        "always": [
+            "modules/socratic-core.md",
+            "modules/session-management.md",
+            "modules/language-techniques.md",
+            "modules/conceptual-notes/pn-foundation.md",
+            "modules/conceptual-notes/pn-reference.md",
+            "modules/conceptual-notes/pn-section-1-speaker.md",
+            "modules/conceptual-notes/pn-section-2-context.md",
+            "modules/conceptual-notes/pn-section-3-form.md",
+            "modules/conceptual-notes/pn-section-4-techniques.md",
+            "modules/conceptual-notes/pn-section-5-themes.md",
+            "modules/conceptual-notes/pn-section-6-purpose.md",
+            "modules/conceptual-notes/pn-section-7-message.md"
+        ],
+        "steps": {}
+    }
+}
