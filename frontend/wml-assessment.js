@@ -3816,7 +3816,7 @@
                     footerRight: '<span style="font-size:10px;color:rgba(255,255,255,0.25);font-family:inherit">Page {page}</span>',
                 })] : []),
             ],
-            content: savedContent || getDefaultEssayTemplate(),
+            content: savedContent || (state.task === 'mark_scheme' ? '<p></p>' : getDefaultEssayTemplate()),
             editorProps: {
                 attributes: {
                     spellcheck: 'true',
@@ -5751,6 +5751,11 @@
      * and localStorage is empty (new device / cleared cache), inject it.
      */
     async function tryServerLoad() {
+        // Mark scheme has its own document — skip server load of the essay (v7.12.90)
+        if (state.task === 'mark_scheme') {
+            console.log('WML: Skipping server load — mark scheme uses its own template');
+            return;
+        }
         try {
             const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}`;
             const res = await fetch(url, { headers }).then(r => r.json());
@@ -5799,11 +5804,19 @@
             return;
         }
 
-        // Mark scheme study uses a different template entirely (v7.12.88)
+        // Mark scheme study uses a different template entirely (v7.12.90)
+        // Force-inject: ignore "already has sections" check — the essay sections
+        // may have leaked from localStorage or server load; mark scheme is a separate document.
         if (state.task === 'mark_scheme') {
+            const currentMS = canvasEditor.getHTML();
+            // Only skip if we already have mark_scheme sections (resumed mark scheme doc)
+            if (currentMS.includes('mark_scheme_ao') || currentMS.includes('mark_scheme_response')) {
+                console.log('WML: Mark scheme document already loaded, skipping template');
+                return;
+            }
             console.log('WML: Generating mark scheme study template');
             const msTemplate = getMarkSchemeTemplate(topicData);
-            if (canvasEditor && !canvasEditor.getHTML().includes('data-section-type')) {
+            if (canvasEditor) {
                 canvasEditor.commands.setContent(msTemplate, false);
                 console.log('WML: Mark scheme template injected');
             }
