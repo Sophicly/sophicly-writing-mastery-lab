@@ -80,7 +80,11 @@
         if (state.task === 'mark_scheme') return base + '_ms';
         return base;
     };
-    const CHAT_SAVE_KEY = () => `swml_chat_${state.board}_${state.text}_${state.topicNumber || 'free'}`;
+    const CHAT_SAVE_KEY = () => {
+        const base = `swml_chat_${state.board}_${state.text}_${state.topicNumber || 'free'}`;
+        if (state.task === 'mark_scheme') return base + '_ms';
+        return base;
+    };
     let chatSaveTimer = null;
 
     function saveCanvasChat(history, chatId) {
@@ -2684,7 +2688,8 @@
                                         (async () => {
                                         let savedChat = loadCanvasChat();
                                         // Server fallback if localStorage is empty
-                                        if (!savedChat || !savedChat.history || savedChat.history.length === 0) {
+                                        // Skip server chat for mark_scheme — server stores essay assessment chat (v7.12.91)
+                                        if (state.task !== 'mark_scheme' && (!savedChat || !savedChat.history || savedChat.history.length === 0)) {
                                             try {
                                                 const chatUrl = `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}`;
                                                 const serverChat = await fetch(chatUrl, { headers }).then(r => r.json());
