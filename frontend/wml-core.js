@@ -980,7 +980,7 @@ window.WML = (function() {
 
             const card = el('button', {
                 className: 'swml-stepper-card',
-                onClick: step.status === 'locked' ? () => {} : (step.onClick || (() => {}))
+                onClick: (step.status === 'locked' && !window.WML?._unlockAll) ? () => {} : (step.onClick || (() => {}))
             }, [
                 el('span', { className: 'swml-path-icon', innerHTML: step.icon }),
                 el('span', { className: 'swml-path-title', textContent: step.title }),

@@ -367,9 +367,9 @@ class SWML_Protocol_Router {
 
         $plugin_dir = plugin_dir_path(dirname(__FILE__));
 
-        // Mark Scheme Study: uses assessment protocol until dedicated protocol exists (v7.12.89)
+        // Mark Scheme Assessment: preamble-driven (no protocol file needed) (v7.12.93)
         if ($task === 'mark_scheme') {
-            $task = 'assessment';
+            return null; // preamble provides all instructions
         }
 
         // Memory Practice: universal single-file protocol — load directly, skip manifest
@@ -917,9 +917,10 @@ TEMPLATE;
 
         // Task → Protocol mapping
         $protocol_map = [
-            'planning'   => 'Protocol B (Essay Planning)',
-            'assessment' => 'Protocol A (Essay Assessment)',
-            'polishing'  => 'Protocol C (Prose Polishing)',
+            'planning'     => 'Protocol B (Essay Planning)',
+            'assessment'   => 'Protocol A (Essay Assessment)',
+            'polishing'    => 'Protocol C (Prose Polishing)',
+            'mark_scheme'  => 'Mark Scheme Self-Assessment',
         ];
         $task = $context['task'] ?? 'planning';
         $protocol_label = $protocol_map[$task] ?? 'Protocol B (Essay Planning)';
@@ -1103,6 +1104,36 @@ TEMPLATE;
             $preamble .= "If the student chose B (Saved question): The frontend shows a picker. Wait for the question text.\n";
             $preamble .= "If the student chose C (Paste your own): Wait for them to paste it.\n";
             $preamble .= "After the question is established, follow EVERY subsequent step (goals, keywords, anchors, body paragraphs, etc.) fully — do not rush or skip any step.\n\n";
+        }
+
+        // ── MARK SCHEME SELF-ASSESSMENT: dedicated preamble (v7.13.1 — rebuilt from correct Sureforms form) ──
+        if (($context['task'] ?? '') === 'mark_scheme') {
+            $preamble .= "\n### MARK SCHEME SELF-ASSESSMENT — CRITICAL INSTRUCTIONS\n\n";
+            $preamble .= "**THIS IS NOT AN ESSAY ASSESSMENT.** You must NEVER:\n";
+            $preamble .= "- Ask to see, read, or assess the student's essay\n";
+            $preamble .= "- Mention word counts, essay structure, or essay content\n";
+            $preamble .= "- Give grades or scores yourself — the student self-rates\n";
+            $preamble .= "- Calculate percentages or grades for the student\n\n";
+            $preamble .= "**Your role:** Guide the student through a mark scheme self-assessment form, section by section. The document on the left contains the form. Help them reflect honestly on their performance and fill in each field.\n\n";
+            $preamble .= "**Document sections (work through IN ORDER):**\n";
+            $preamble .= "1. **How You're Going** — Questions correct (/10), Weighted score (/20), Percentage, Predicted grade, Top missed areas, Opt-outs count, Opt-out items\n";
+            $preamble .= "2. **Trends** — Repeated errors across units (AO-linked), Improvements across units (AO-linked)\n";
+            $preamble .= "3. **What to Fix First** — Personalised summary of feedback (AO-linked)\n";
+            $preamble .= "4. **Metacognition** — Biggest challenges and why (AO-linked), Short-term aims (AO-linked)\n";
+            $preamble .= "5. **TTECEA Analysis** — 6 rubric items (1-5 each): Topic Sentence, Technical Terms, Evidence, Close Analysis, Effects, Author's Purpose\n";
+            $preamble .= "6. **Where You're Going** — Next focus (one precise area), Grade goal reminder\n";
+            $preamble .= "7. **Where to Next** — Action 1 (Course & Resources), Action 2 (Lessons), Action 3 (Support)\n\n";
+            $preamble .= "**For TTECEA rubric items (1-5 scale):**\n";
+            $preamble .= "- Name the criterion and ask the student to read the descriptors in their document\n";
+            $preamble .= "- Ask them to rate themselves honestly (1-5) based on their last assessment\n";
+            $preamble .= "- When they give a rating, ask them to JUSTIFY it with a specific example from their writing\n";
+            $preamble .= "- If their justification doesn't match the descriptor level, gently challenge them (Socratic)\n";
+            $preamble .= "- Once agreed, tell them to type their rating into the document, then move to the next item\n\n";
+            $preamble .= "**For free-text sections** (stats, trends, metacognition, actions):\n";
+            $preamble .= "- Read the field label and help text aloud\n";
+            $preamble .= "- Help the student formulate a specific, AO-linked answer\n";
+            $preamble .= "- Tell them to type their answer into the document\n\n";
+            $preamble .= "**Style:** ONE field at a time. Wait for the student to respond before moving on. Be warm, encouraging, Socratic. Always link back to specific AOs.\n\n";
         }
 
         // Function calling instructions — determine task from session context

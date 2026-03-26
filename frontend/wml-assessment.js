@@ -666,10 +666,13 @@
         if (state.topicNumber) {
             ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: `Topic ${state.topicNumber}` }));
         } else if (state.task && state.task !== 'planning') {
-            const taskNames = { assessment: 'Assessment', polishing: 'Polishing', exam_question: 'Exam Question', essay_plan: 'Essay Plan', model_answer: 'Model Answer', verbal_rehearsal: 'Quote Analysis', conceptual_notes: 'Conceptual Notes', memory_practice: 'Memory Practice' };
+            const taskNames = { assessment: 'Assessment', polishing: 'Polishing', exam_question: 'Exam Question', essay_plan: 'Essay Plan', model_answer: 'Model Answer', verbal_rehearsal: 'Quote Analysis', conceptual_notes: 'Conceptual Notes', memory_practice: 'Memory Practice', mark_scheme: 'Mark Scheme' };
             const tn = taskNames[state.task];
             if (tn) ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: tn }));
         }
+        // Phase badge (v7.12.98)
+        const phaseLabel = state.phase === 'redraft' ? 'Phase 2' : (state.phase === 'initial' ? 'Phase 1' : '');
+        if (phaseLabel) ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: phaseLabel }));
         const SVG_DIAGNOSTIC = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.91" stroke-miterlimit="10" style="display:inline-block;vertical-align:-2px;margin-right:3px"><path d="M8.18,16.77V13H4.36v3.82L2.09,19a2,2,0,0,0-.59,1.44h0a2,2,0,0,0,2,2H9a2,2,0,0,0,2-2h0a2,2,0,0,0-.6-1.44Z"/><line x1="2.45" y1="12.95" x2="10.09" y2="12.95"/><path d="M20.59,15.39V11.05H16.77v4.34a3.82,3.82,0,1,0,3.82,0Z"/><line x1="22.5" y1="11.05" x2="14.86" y2="11.05"/><path d="M18.68,11.05V3.89A2.39,2.39,0,0,0,16.3,1.5h0a2.39,2.39,0,0,0-2.39,2.39V6.27A1.91,1.91,0,0,1,12,8.18h0a1.91,1.91,0,0,1-1.91-1.91V5.32A1.9,1.9,0,0,0,8.18,3.41h0A1.91,1.91,0,0,0,6.27,5.32v.95"/><line x1="5.32" y1="9.14" x2="7.23" y2="9.14"/><line x1="14.86" y1="17.73" x2="19.64" y2="17.73"/><line x1="2.45" y1="18.68" x2="6.27" y2="18.68"/></svg>';
         const diagBadgeLabel = state.task === 'feedback_discussion' ? 'Discuss Feedback' : 'Diagnostic';
         const diagBadge = el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-diag', innerHTML: SVG_DIAGNOSTIC + diagBadgeLabel });
@@ -1315,12 +1318,19 @@
         }
         contentWrap.addEventListener('scroll', updatePageCount);
 
-        // Countdown timer — reuses the diagnostic start time
-        const countdownKey = `swml_diag_start_${state.board}_${(state.text || '').replace(/\s/g, '_')}`;
+        // Countdown timer — phase-aware: Phase 1 = 10 days, Phase 2 = 14 days (v7.12.99)
+        // Phase 2 gets its OWN start time — doesn't continue from Phase 1 diagnostic timer (v7.13.0)
+        const totalDays = state.phase === 'redraft' ? 14 : 10;
+        const phaseKey = state.phase === 'redraft' ? 'redraft' : 'diag';
+        const countdownKey = `swml_${phaseKey}_start_${state.board}_${(state.text || '').replace(/\s/g, '_')}`;
+        // Auto-create Phase 2 start time on first entry
+        if (state.phase === 'redraft' && !localStorage.getItem(countdownKey)) {
+            localStorage.setItem(countdownKey, new Date().toISOString());
+        }
         const countdownStart = localStorage.getItem(countdownKey);
         if (countdownStart) {
             const cStart = new Date(countdownStart);
-            const cDeadline = new Date(cStart.getTime() + 10 * 24 * 60 * 60 * 1000);
+            const cDeadline = new Date(cStart.getTime() + totalDays * 24 * 60 * 60 * 1000);
             const countdownDisplay = el('span', { className: 'swml-countdown-status' });
             function updateCountdown() {
                 const remaining = cDeadline.getTime() - Date.now();
@@ -1330,7 +1340,7 @@
                     return;
                 }
                 const daysLeft = Math.ceil(remaining / (24 * 60 * 60 * 1000));
-                const daysPassed = 10 - daysLeft;
+                const daysPassed = totalDays - daysLeft;
                 countdownDisplay.textContent = `Day ${daysPassed + 1} · ${daysLeft}d left`;
                 countdownDisplay.style.color = daysLeft <= 2 ? '#ff6b6b' : daysLeft <= 5 ? '#ffb432' : '';
             }
@@ -1855,15 +1865,30 @@
                         } else if (state.mode === 'exam_prep') {
                             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Exam Practice' }));
                         }
-                        protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge active', textContent: 'Assessment' }));
+                        // v7.12.99: Task-specific badge + phase indicator
+                        const sidebarTaskLabel = canvasInMarkScheme ? 'Mark Scheme' : 'Assessment';
+                        protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge active', textContent: sidebarTaskLabel }));
+                        if (state.phase === 'redraft') {
+                            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Phase 2' }));
+                        } else if (state.phase === 'initial') {
+                            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Phase 1' }));
+                        }
                         protoBody.appendChild(protoBadges);
 
                         // Protocol Progress label
                         protoBody.appendChild(el('div', { className: 'swml-sidebar-section-label', textContent: 'Protocol Progress' }));
 
-                        // Steps
+                        // Steps — different for mark scheme vs essay assessment (v7.12.98)
                         const protoSteps = el('div', { id: 'swml-progress-steps' });
-                        const assessSteps = [
+                        const assessSteps = canvasInMarkScheme ? [
+                            { step: 1, label: 'How You\'re Going' },
+                            { step: 2, label: 'Trends' },
+                            { step: 3, label: 'What to Fix First' },
+                            { step: 4, label: 'Metacognition' },
+                            { step: 5, label: 'TTECEA Analysis' },
+                            { step: 6, label: 'Where You\'re Going' },
+                            { step: 7, label: 'Where to Next' },
+                        ] : [
                             { step: 1, label: 'Setup & Details' },
                             { step: 2, label: 'Goal Setting' },
                             { step: 3, label: 'Self-Reflection' },
@@ -2053,7 +2078,8 @@
 
                         // Chat header with clear button
                         const chatHeader = el('div', { className: 'swml-canvas-chat-header', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } });
-                        chatHeader.appendChild(el('span', { innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;opacity:0.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Essay Assessment' }));
+                        const chatHeaderLabel = state.task === 'mark_scheme' ? 'Mark Scheme Assessment' : 'Essay Assessment'; // v7.12.98
+                        chatHeader.appendChild(el('span', { innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;opacity:0.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> ' + chatHeaderLabel }));
                         const clearChatBtn = el('button', {
                             className: 'swml-clear-chat-btn',
                             title: 'Clear chat and start fresh',
@@ -2451,7 +2477,7 @@
                             showCanvasTyping();
 
                             try {
-                                // Inject essay text as context — on EVERY message to prevent hallucination
+                                // Inject document content as context — on EVERY message to prevent hallucination
                                 let promptText = msg;
                                 const essay = getResponseText(canvasEditor);
                                 const userMsgCount = canvasChatHistory.filter(m => m.role === 'user').length;
@@ -2459,7 +2485,16 @@
                                 const subjectName = (state.subject || '').replace(/_/g, ' ');
                                 const textName = state.textName || state.text || '';
 
-                                if (essay.trim().length > 50) {
+                                // v7.12.98: Mark scheme gets different context labelling
+                                if (canvasInMarkScheme) {
+                                    const docContent = canvasEditor ? canvasEditor.getText() : '';
+                                    if (userMsgCount === 1) {
+                                        promptText = `[CONTEXT: ${boardName} ${subjectName} — ${textName} — MARK SCHEME SELF-ASSESSMENT]\n[MARK SCHEME DOCUMENT — student's self-ratings and reflections so far]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                                    } else {
+                                        promptText = `[MARK SCHEME DOCUMENT — current state of student's self-ratings]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                                    }
+                                    console.log('WML Canvas: Mark scheme doc injected. Length:', docContent.length);
+                                } else if (essay.trim().length > 50) {
                                     const wc = getResponseWordCount(canvasEditor);
                                     if (userMsgCount === 1) {
                                         // First message: full context header
@@ -2491,7 +2526,7 @@
                                         board: state.board,
                                         subject: state.subject,
                                         text: state.text || '',
-                                        task: 'assessment',
+                                        task: state.task || 'assessment', // v7.12.98: send actual task (mark_scheme, feedback_discussion, etc.)
                                         question: state.question || '',
                                         marks: state.marks || 30,
                                         aos: state.aos || [],
@@ -2592,19 +2627,13 @@
                                 // If multi-select has selections, click its submit button (v7.12.53)
                                 const multiSubmit = document.querySelector('.swml-quick-submit:not([disabled])');
                                 if (multiSubmit && !chatTextarea.value?.trim()) { multiSubmit.click(); return; }
-                                // If mic is recording, stop it and submit after final transcript arrives (v7.12.70)
+                                // If mic is recording, stop it and submit after final transcript (v7.12.70, simplified v7.12.99)
                                 if (canvasListening && canvasRecognition) {
                                     canvasRecognition.stop();
-                                    // Wait for final transcript, then submit — poll briefly for content
-                                    const preVal = chatTextarea.value.trim();
-                                    let tries = 0;
-                                    const trySubmit = () => {
-                                        const val = chatTextarea.value.trim();
-                                        if (val && (val !== preVal || tries > 3)) { sendCanvasMessage(); }
-                                        else if (tries < 8) { tries++; setTimeout(trySubmit, 100); }
-                                        else if (val) { sendCanvasMessage(); } // Submit whatever we have
-                                    };
-                                    setTimeout(trySubmit, 150);
+                                    // Wait 350ms for final transcript to land, then submit whatever is there
+                                    setTimeout(() => {
+                                        if (chatTextarea.value.trim()) sendCanvasMessage();
+                                    }, 350);
                                     return;
                                 }
                                 sendCanvasMessage();
@@ -2699,6 +2728,16 @@
                                                 }
                                             } catch (e) { console.log('WML Canvas: Server chat load unavailable'); }
                                         }
+                                        // v7.13.2: Discard stale cached chat for mark_scheme — check for v7.13.1+ greeting marker
+                                        if (canvasInMarkScheme && savedChat && savedChat.history && savedChat.history.length > 0) {
+                                            const firstAI = savedChat.history.find(m => m.role === 'assistant');
+                                            // The v7.13.1+ greeting contains "7 sections together". Anything without it is stale.
+                                            if (firstAI && !firstAI.content.includes('7 sections together')) {
+                                                console.log('WML Canvas: Discarding stale mark_scheme chat (pre-v7.13.1 greeting)');
+                                                savedChat = null;
+                                                try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+                                            }
+                                        }
                                         const hasSavedChat = savedChat && savedChat.history && savedChat.history.length > 0;
 
                                         // ── Unified assessment state initializer (v7.12.22) ──
@@ -2777,6 +2816,18 @@
 
                                             // Scroll to bottom after replay
                                             setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 100);
+                                        } else if (state.task === 'mark_scheme') {
+                                            // ── Mark Scheme Assessment: fresh greeting (v7.13.1 — matches correct Sureforms form) ──
+                                            setTimeout(() => {
+                                            const firstName = (config.userName || '').split(' ')[0] || 'there';
+                                            const textDisplay = state.textName || state.text || 'your text';
+                                            const greetingText = `Hi ${firstName}! Welcome to the Mark Scheme Assessment for ${textDisplay}.\n\nThis form helps you reflect on your performance and identify what to work on next. We'll go through 7 sections together:\n\n1. **How You're Going** — your scores and missed areas\n2. **Trends** — patterns across your work\n3. **What to Fix First** — personalised priorities\n4. **Metacognition** — challenges and aims\n5. **TTECEA Analysis** — rate yourself on 6 analytical skills\n6. **Where You're Going** — next focus and grade goal\n7. **Where to Next** — your action plan\n\nLet's start with **How You're Going**. How many questions did you answer correctly out of 10 in your last assessment?`;
+                                            const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This mark scheme assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">15\u201320 minutes</strong>. Work through each section honestly \u2014 your self-ratings will shape your redraft priorities.</div>';
+                                            addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the <strong>Mark Scheme Assessment</strong> for <strong>${textDisplay}</strong>.</p></div><div style="margin-bottom:12px"><p>This form helps you reflect on your performance and identify what to work on next. We\u2019ll go through 7 sections together:</p></div><div style="margin-bottom:12px"><p><strong>1.</strong> How You\u2019re Going \u2014 your scores and missed areas<br><strong>2.</strong> Trends \u2014 patterns across your work<br><strong>3.</strong> What to Fix First \u2014 personalised priorities<br><strong>4.</strong> Metacognition \u2014 challenges and aims<br><strong>5.</strong> TTECEA Analysis \u2014 rate yourself on 6 analytical skills<br><strong>6.</strong> Where You\u2019re Going \u2014 next focus and grade goal<br><strong>7.</strong> Where to Next \u2014 your action plan</p></div><p>Let\u2019s start with <strong>How You\u2019re Going</strong>. How many questions did you answer correctly out of 10 in your last assessment?</p>`, 'ai', greetingText);
+                                            canvasChatHistory.push({ role: 'assistant', content: greetingText });
+                                            saveCanvasChat(canvasChatHistory, canvasChatId);
+                                            // No grade buttons or initAssessmentState for mark_scheme
+                                            }, 200);
                                         } else {
                                             // Fresh start: show greeting (delay to let CharacterCount sync)
                                             setTimeout(() => {
@@ -2850,7 +2901,7 @@
                         // Mark assessment mode active (controls Note button visibility)
                         canvasInAssessment = true;
                         state.step = 0; // Reset so initAssessmentState can restore from chat history (v7.12.32)
-                        state.task = 'assessment'; // Required for extractAndSavePlan + Mark Complete detection
+                        if (state.task !== 'mark_scheme') state.task = 'assessment'; // Preserve mark_scheme task (v7.12.96)
 
                         // Show notepad in assessment mode (it was hidden during diagnostic)
                         if (snFab) snFab.style.display = '';
@@ -5082,6 +5133,17 @@
         if (!editor) return 0;
         const editorEl = editor.options.element;
         if (!editorEl) return editor.storage.characterCount?.words() || 0;
+        // v7.12.99: Mark scheme — count mark_scheme_response sections (student input only)
+        const msResponses = editorEl.querySelectorAll('[data-section-type="mark_scheme_response"]');
+        if (msResponses.length > 0) {
+            let total = 0;
+            msResponses.forEach(section => {
+                const text = section.textContent || '';
+                const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+                total += words.length;
+            });
+            return total;
+        }
         const responseSections = editorEl.querySelectorAll('[data-section-type="response"]');
         if (responseSections.length === 0) {
             // No section blocks — legacy template, count everything
@@ -5537,143 +5599,208 @@
     }
 
     /**
-     * Mark Scheme Study TipTap document template (v7.12.88).
-     * Board-specific AO descriptions with editable student response areas.
-     * Sections: Question → AO Criteria → Top-Grade Thinking → Self-Assessment → Notes.
+     * Mark Scheme Assessment TipTap document template (v7.12.93).
+     * Rebuilt from Sureforms JSON — matches the actual assessment form exactly.
+     * Sections: How You're Going → Trends → Metacognition → Introduction (rubric) →
+     *   TTECEA Body Paragraphs (rubric) → Conclusion (rubric) → Academic Writing (rubric) →
+     *   Where You're Going.
+     * Each rubric item shows 1-5 descriptors as read-only reference + editable response.
      */
     function getMarkSchemeTemplate(topicData) {
-        const board = (state.board || '').toLowerCase();
-        const marks = topicData ? (parseInt(topicData.marks) || 30) : 30;
-        const questionText = topicData?.question_text || topicData?.part_a_question || '';
-
-        // Board-specific AO descriptions
-        const AO_DATA = {
-            aqa: {
-                aos: [
-                    { id: 'AO1', weight: '~50%', title: 'The "WHAT" — Interpretation & Argument',
-                      desc: 'Read, understand and respond to texts. Maintain a critical style and develop an informed personal response. Use textual references, including quotations, to support and illustrate interpretations.',
-                      topLevel: 'Critical, exploratory, conceptualised response to task and whole text. Judicious use of precise references to support interpretation(s).' },
-                    { id: 'AO2', weight: '~30%', title: 'The "HOW" — Language, Form & Structure',
-                      desc: 'Analyse the language, form and structure used by a writer to create meanings and effects, using relevant subject terminology where appropriate.',
-                      topLevel: 'Analysis of the writer\'s methods with subject terminology used judiciously. Exploration of effects of writer\'s methods to create meanings.' },
-                    { id: 'AO3', weight: '~20%', title: 'The "WHY" — Context',
-                      desc: 'Show understanding of the relationships between texts and the contexts in which they were written.',
-                      topLevel: 'Exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task.' },
-                    { id: 'AO4', weight: 'SPaG', title: 'The "POLISH" — Precision of Expression',
-                      desc: 'Use a range of vocabulary and sentence structures for clarity, purpose and effect, with accurate spelling and punctuation.',
-                      topLevel: 'A compelling, fluent writing style with a wide vocabulary and varied sentence structures.' },
-                ],
-                structure: 'Introduction → 3 Body Paragraphs (TTECEA+C) → Conclusion',
-            },
-            eduqas: {
-                aos: [
-                    { id: 'AO1', weight: '~33%', title: 'The "WHAT" — Interpretation & Argument',
-                      desc: 'Read, understand and respond to texts. Students should be able to maintain a critical style and develop an informed personal response. Use textual references, including quotations, to support interpretations.',
-                      topLevel: 'Sensitive and evaluative approach with a perceptive understanding. Seamless integration of extract and whole text.' },
-                    { id: 'AO2', weight: '~33%', title: 'The "HOW" — Language, Form & Structure',
-                      desc: 'Analyse the language, form and structure used by a writer to create meanings and effects, using relevant subject terminology where appropriate.',
-                      topLevel: 'Assured reference to meanings and effects with cohesive evaluation of the writer\'s craft.' },
-                    { id: 'AO3', weight: '~33%', title: 'The "WHY" — Context (Equally Weighted!)',
-                      desc: 'Show understanding of the relationships between texts and the contexts in which they were written. In EDUQAS, context is worth a FULL THIRD of your marks — it must be central to your argument, not bolted on.',
-                      topLevel: 'Assured understanding of relationships between texts and contexts, integrated convincingly throughout.' },
-                ],
-                structure: 'Introduction → 3 Body Paragraphs (TTECEA+C) → Conclusion',
-            },
-            'edexcel-igcse': {
-                aos: [
-                    { id: 'AO1', weight: '~40%', title: 'The "WHAT" — Knowledge & Perceptive Engagement',
-                      desc: 'Show knowledge and understanding of a range of texts. Produce a personal and informed response with assured engagement.',
-                      topLevel: 'Assured and perceptive engagement with the text. Discriminating references that precisely support interpretation.' },
-                    { id: 'AO2', weight: '~40%', title: 'The "HOW" — Cohesive Evaluation of Methods',
-                      desc: 'Analyse and evaluate the ways in which writers use linguistic, structural and presentational features to achieve effects and engage the reader.',
-                      topLevel: 'Cohesive evaluation of the writer\'s methods with convincing analysis of effects on the reader.' },
-                    { id: 'AO4', weight: '~20%', title: 'The "WHY" — Context (Integrated Convincingly)',
-                      desc: 'Relate texts to their social, cultural and historical traditions. No extract is provided — you must select quotations from memory.',
-                      topLevel: 'Convincing contextual integration that shows how historical/social forces drove the author\'s message.' },
-                ],
-                structure: 'Introduction → 3 Body Paragraphs (TTECEA+C) → Conclusion',
-            },
-        };
-
-        // Fallback for boards not yet configured
-        const boardData = AO_DATA[board] || AO_DATA['aqa'];
-
+        // v7.13.1: Rebuilt from correct Sureforms form (ID 54228) — Modern Drama/Text Unit 4 Mark Scheme Assessment
         let html = '';
 
-        // ── Question section (read-only) ──
-        if (questionText) {
-            html += sectionHTML('question', 'Question', false, null,
-                `<p><strong>Your essay question:</strong></p><p><em>${escapeHTML(questionText)}</em></p><p><strong>Total marks: ${marks}</strong></p>`
+        // ── Helper: TTECEA rubric item (read-only descriptors + editable self-rating) ──
+        function rubricHTML(label, helpText, descriptors) {
+            let inner = `<h3>${escapeHTML(label)}</h3>`;
+            if (helpText) inner += `<p><em>${escapeHTML(helpText)}</em></p>`;
+            inner += '<p></p>';
+            descriptors.forEach(d => { inner += `<p>${escapeHTML(d)}</p>`; });
+            html += sectionHTML('mark_scheme_ao', label, false, null, inner);
+            html += sectionHTML('mark_scheme_response', `My rating: ${label}`, true, null,
+                `<p><em>My rating (1\u20135):</em> </p><p></p>`
             );
         }
 
-        // ── Divider: ASSESSMENT OBJECTIVES ──
-        html += dividerHTML('ASSESSMENT OBJECTIVES');
+        // ══════════════════════════════════════════════════════════
+        // 1. HOW YOU'RE GOING
+        // ══════════════════════════════════════════════════════════
+        html += dividerHTML('HOW YOU\'RE GOING');
 
-        // Each AO: read-only description + editable student response
-        boardData.aos.forEach(ao => {
-            // Read-only AO criteria
-            html += sectionHTML('mark_scheme_ao', `${ao.id}: ${ao.title}`, false, null,
-                `<h3>${ao.id} — ${ao.title} <em style="font-weight:400;opacity:0.6">(${ao.weight} of marks)</em></h3>`
-                + `<p>${escapeHTML(ao.desc)}</p>`
-                + `<p><strong>Top level:</strong> <em>"${escapeHTML(ao.topLevel)}"</em></p>`
-            );
-            // Editable student response
-            html += sectionHTML('mark_scheme_response', `My understanding of ${ao.id}`, true, null,
-                `<p></p>`
-            );
-        });
-
-        // ── Divider: TOP-GRADE THINKING ──
-        html += dividerHTML('TOP-GRADE THINKING');
-
-        html += sectionHTML('mark_scheme_ao', 'Key Definitions', false, null,
-            `<h3>Key Definitions for Top-Grade Thinkers</h3>`
-            + `<p><strong>Perceptive:</strong> Seeing what others miss — noticing subtle details, patterns, and layers of meaning not immediately obvious.</p>`
-            + `<p><strong>Detailed:</strong> Using specific, well-chosen evidence and explaining why it\'s significant. Zoom in on individual words.</p>`
-            + `<p><strong>Critical:</strong> Evaluating the author\'s argument, not just accepting it. Exploring ambiguities and weighing different interpretations.</p>`
-            + `<p><strong>Conceptual:</strong> Connecting specific moments in the text to the author\'s bigger argument about the world.</p>`
+        html += sectionHTML('mark_scheme_response', 'Questions Answered Correctly', true, null,
+            `<p><strong>Questions Answered Correctly (out of 10):</strong> </p>`
+            + `<p><em>How many questions did you answer correctly out of 10?</em></p>`
+        );
+        html += sectionHTML('mark_scheme_response', 'Weighted Score', true, null,
+            `<p><strong>Weighted Score (out of 20):</strong> </p>`
+            + `<p><em>What are your total marks out of 20?</em></p>`
+        );
+        html += sectionHTML('mark_scheme_response', 'Percentage', true, null,
+            `<p><strong>Percentage:</strong> </p>`
+            + `<p><em>What total percentage did you score for this assessment?</em></p>`
+        );
+        html += sectionHTML('mark_scheme_response', 'Predicted Grade', true, null,
+            `<p><strong>Predicted Grade (0\u20139):</strong> </p>`
+            + `<p><em>What grade did you score for this assessment?</em></p>`
+        );
+        html += sectionHTML('mark_scheme_response', 'Top Missed Areas', true, null,
+            `<p><strong>Top Missed Areas:</strong></p>`
+            + `<p><em>Which areas cost you the most marks? Specify AOs, e.g. AO1, AO2, AO3.</em></p><p></p>`
+        );
+        html += sectionHTML('mark_scheme_response', 'Opt-outs Count', true, null,
+            `<p><strong>Opt-outs This Attempt (0\u201310):</strong> </p>`
+            + `<p><em>How many questions did you opt out of in this assessment?</em></p>`
+        );
+        html += sectionHTML('mark_scheme_response', 'Opt-out Items', true, null,
+            `<p><strong>Opt-out Items:</strong></p>`
+            + `<p><em>Which types of questions did you opt out of, specifically?</em></p><p></p>`
         );
 
-        html += sectionHTML('mark_scheme_response', 'Grade boundary differences', true, null,
-            `<p><em>What separates a Grade 5 from a Grade 7? What separates a Grade 7 from a Grade 9?</em></p><p></p>`
+        // ══════════════════════════════════════════════════════════
+        // 2. TRENDS
+        // ══════════════════════════════════════════════════════════
+        html += dividerHTML('TRENDS');
+
+        html += sectionHTML('mark_scheme_response', 'Repeated Errors', true, null,
+            `<p><strong>Trend: Repeated Errors</strong></p>`
+            + `<p><em>What errors have you seen repeated across units? Specify AOs, e.g. AO1, AO2, AO3. Put \u201cN/A\u201d if this is your very first attempt.</em></p><p></p>`
+        );
+        html += sectionHTML('mark_scheme_response', 'Improvements', true, null,
+            `<p><strong>Trend: Improvements</strong></p>`
+            + `<p><em>Which areas have you been able to improve across units? Specify AOs, e.g. AO1, AO2, AO3. Put \u201cN/A\u201d if this is your very first attempt.</em></p><p></p>`
         );
 
-        // ── Divider: ESSAY STRUCTURE ──
-        html += dividerHTML('ESSAY STRUCTURE');
+        // ══════════════════════════════════════════════════════════
+        // 3. WHAT TO FIX FIRST
+        // ══════════════════════════════════════════════════════════
+        html += dividerHTML('WHAT TO FIX FIRST');
 
-        html += sectionHTML('mark_scheme_ao', 'Paragraph Toolkit: TTECEA+C', false, null,
-            `<h3>${boardData.structure}</h3>`
-            + `<p><strong>T</strong> — Topic Sentence: Your conceptual point (AO1)</p>`
-            + `<p><strong>T</strong> — Technique: The literary method the author uses (AO2)</p>`
-            + `<p><strong>E</strong> — Evidence: Your anchor quote, with inference (AO1/AO2)</p>`
-            + `<p><strong>C</strong> — Close Analysis: Break the quote down — connotations, word choice, sounds (AO2)</p>`
-            + `<p><strong>E</strong> — Effect: How this manipulates the reader\'s focus, emotions, or thoughts (AO2)</p>`
-            + `<p><strong>A</strong> — Author\'s Purpose: Why the author made this choice (AO1)</p>`
-            + `<p><strong>+C</strong> — Context: How the concepts and techniques are driven by the historical context (AO3)</p>`
+        html += sectionHTML('mark_scheme_response', 'Personalised Summary', true, null,
+            `<p><strong>Personalised Summary</strong></p>`
+            + `<p><em>Paste your personalised feedback below. Specify AOs, e.g. AO1, AO2, AO3.</em></p><p></p>`
         );
 
-        // ── Divider: SELF-ASSESSMENT ──
-        html += dividerHTML('SELF-ASSESSMENT');
+        // ══════════════════════════════════════════════════════════
+        // 4. METACOGNITION
+        // ══════════════════════════════════════════════════════════
+        html += dividerHTML('METACOGNITION');
 
-        html += sectionHTML('mark_scheme_response', 'My strongest AO', true, null,
-            `<p><em>Look at your assessed essay. Which Assessment Objective was your strongest? Why?</em></p><p></p>`
+        html += sectionHTML('mark_scheme_response', 'Biggest Challenges', true, null,
+            `<p><strong>Biggest Challenges</strong></p>`
+            + `<p><em>What felt hardest and why? Specify AOs, e.g. AO1, AO2, AO3.</em></p><p></p>`
+        );
+        html += sectionHTML('mark_scheme_response', 'Short-term Aims', true, null,
+            `<p><strong>Short-term Aims</strong></p>`
+            + `<p><em>What will you do differently next time? Specify AOs, e.g. AO1, AO2, AO3.</em></p><p></p>`
         );
 
-        html += sectionHTML('mark_scheme_response', 'My weakest AO', true, null,
-            `<p><em>Which Assessment Objective needs the most improvement? What specifically went wrong?</em></p><p></p>`
+        // ══════════════════════════════════════════════════════════
+        // 5. TTECEA ANALYSIS
+        // ══════════════════════════════════════════════════════════
+        html += dividerHTML('TTECEA ANALYSIS');
+
+        html += sectionHTML('mark_scheme_ao', 'TTECEA Introduction', false, null,
+            `<h3>TTECEA Analytical Paragraphs</h3>`
+            + `<p><em>The TTECEA paragraph structure helps you score against the top-level criteria in multiple assessment objectives (AOs), e.g. AO2, AO3, AO4, which focus on analysis.</em></p>`
+            + `<p><em>Rating scale (1\u20135): 1 = just starting \u2022 2 = improving \u2022 3 = secure \u2022 4 = strong \u2022 5 = excellent</em></p>`
         );
 
-        html += sectionHTML('mark_scheme_response', 'Redraft action plan', true, null,
-            `<p><em>Based on what you\'ve learned about the mark scheme, what three specific things will you change in your redraft?</em></p>`
-            + `<p>1. </p><p>2. </p><p>3. </p>`
+        rubricHTML('TOPIC SENTENCE strength',
+            'Rate how well you addressed questions about the TOPIC SENTENCE part of the TTECEA structure.',
+            [
+                '1: I described surface details only.',
+                '2: I hinted at an idea but mostly described.',
+                '3: I stated a clear idea and started analysing.',
+                '4: I clearly linked my idea to the text\u2019s big message.',
+                '5: I framed a perceptive insightful concept that guided my analysis.',
+            ]
         );
 
-        // ── Divider: NOTES ──
-        html += dividerHTML('NOTES');
+        rubricHTML('TECHNICAL TERMS strength',
+            'Rate how well you addressed questions about the TECHNICAL TERMS part of the TTECEA structure.',
+            [
+                '1: I misused or skipped methods.',
+                '2: I used some correct terms loosely.',
+                '3: I used the right terms accurately.',
+                '4: I used precise terms for language and structure.',
+                '5: I used varied, exact terms to show how methods combine.',
+            ]
+        );
 
-        html += sectionHTML('mark_scheme_response', 'My notes', true, null,
-            `<p><em>Use this space for any additional notes from the videos or your own research.</em></p><p></p>`
+        rubricHTML('EVIDENCE choice',
+            'Rate how well you addressed questions about the EVIDENCE part of the TTECEA structure.',
+            [
+                '1: I chose unhelpful or no evidence.',
+                '2: I quoted something loosely linked.',
+                '3: I chose an apt quote to support my point.',
+                '4: I picked a very apt, concise quote that set up analysis.',
+                '5: I chose a pinpoint quote that allowed rich analysis.',
+            ]
+        );
+
+        rubricHTML('CLOSE ANALYSIS',
+            'Rate how well you addressed questions about the CLOSE ANALYSIS part of the TTECEA structure.',
+            [
+                '1: I paraphrased instead of analysing.',
+                '2: I named words/devices with little meaning.',
+                '3: I explained key words and their connotations.',
+                '4: I analysed details with layered reasons.',
+                '5: I zoomed in at sound/word/structure to explore meaning.',
+            ]
+        );
+
+        rubricHTML('EFFECTS on the reader',
+            'Rate how well you addressed questions about the EFFECTS on the reader part of the TTECEA structure.',
+            [
+                '1: I gave a vague effect (\u201cmakes you read on\u201d).',
+                '2: I named an effect but barely explained why.',
+                '3: I explained a clear effect with a basic reason.',
+                '4: I weighed specific effects with alternatives.',
+                '5: I linked detailed & nuanced effects to audience and purpose.',
+            ]
+        );
+
+        rubricHTML('AUTHOR\'S PURPOSE',
+            'Rate how well you addressed questions about the AUTHOR\'S PURPOSE part of the TTECEA structure.',
+            [
+                '1: I gave a generic purpose with no evidence link.',
+                '2: I touched on purpose briefly.',
+                '3: I linked a clear purpose to my analysis.',
+                '4: I explored why the purpose matters.',
+                '5: I evaluated author\'s purpose & implications perceptively.',
+            ]
+        );
+
+        // ══════════════════════════════════════════════════════════
+        // 6. WHERE YOU'RE GOING
+        // ══════════════════════════════════════════════════════════
+        html += dividerHTML('WHERE YOU\'RE GOING');
+
+        html += sectionHTML('mark_scheme_response', 'Next Focus', true, null,
+            `<p><strong>Next Focus:</strong></p>`
+            + `<p><em>Name one precise area you want to focus on to make the most gains.</em></p><p></p>`
+        );
+        html += sectionHTML('mark_scheme_response', 'Grade Goal Reminder', true, null,
+            `<p><strong>Grade Goal Reminder (1\u20139):</strong> </p>`
+            + `<p><em>What grade are you aiming for?</em></p>`
+        );
+
+        // ══════════════════════════════════════════════════════════
+        // 7. WHERE TO NEXT
+        // ══════════════════════════════════════════════════════════
+        html += dividerHTML('WHERE TO NEXT');
+
+        html += sectionHTML('mark_scheme_response', 'Action 1: Course & Resources', true, null,
+            `<p><strong>Action 1 (Course &amp; Resources):</strong></p>`
+            + `<p><em>What\u2019s the next step you will take in your course (&amp; resources) towards your goals?</em></p><p></p>`
+        );
+        html += sectionHTML('mark_scheme_response', 'Action 2: Lessons', true, null,
+            `<p><strong>Action 2 (Lessons):</strong></p>`
+            + `<p><em>How will you use the lessons to help you reach your goals?</em></p><p></p>`
+        );
+        html += sectionHTML('mark_scheme_response', 'Action 3: Support', true, null,
+            `<p><strong>Action 3 (Support):</strong></p>`
+            + `<p><em>How will you use available support to help you reach your goals?</em></p><p></p>`
         );
 
         return html;
@@ -5724,9 +5851,11 @@
         const wc = getResponseWordCount(canvasEditor);
         // 1. Immediate localStorage write (instant, no latency)
         try { localStorage.setItem(CANVAS_SAVE_KEY(), html); } catch (e) { /* storage full */ }
-        // 2. Extract structured section data (v7.11.9)
+        // 2. Mark scheme: localStorage only — don't overwrite essay on server (v7.12.95)
+        if (state.task === 'mark_scheme') return;
+        // 3. Extract structured section data (v7.11.9)
         const sectionData = typeof _extractDocumentData === 'function' ? _extractDocumentData() : null;
-        // 3. Debounced server save (every 5s, not every 2s like localStorage)
+        // 4. Debounced server save (every 5s, not every 2s like localStorage)
         clearTimeout(canvasSaveToServerTimer);
         canvasSaveToServerTimer = setTimeout(() => {
             fetch(API.canvasSave, {
@@ -5797,6 +5926,30 @@
             refreshWordCountUI();
         }
 
+        // Mark scheme: ALWAYS check first — essay sections may have leaked from localStorage (v7.12.95)
+        if (state.task === 'mark_scheme') {
+            const currentMS = canvasEditor.getHTML();
+            // v7.13.2: Check for NEW template marker (TTECEA ANALYSIS divider). Old templates
+            // had mark_scheme_ao/response too, so we can't use those as "already loaded" signals.
+            const hasNewTemplate = currentMS.includes('TTECEA ANALYSIS');
+            if (hasNewTemplate) {
+                console.log('WML: Mark scheme document (v7.13.1+) already loaded, skipping template');
+                return;
+            }
+            // Old template or essay sections present — clear and inject fresh
+            if (currentMS.includes('mark_scheme_ao') || currentMS.includes('data-section-type')) {
+                console.log('WML: Clearing stale mark scheme document (pre-v7.13.1 template)');
+                try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
+            }
+            console.log('WML: Generating mark scheme study template');
+            const msTemplate = getMarkSchemeTemplate(topicData);
+            if (canvasEditor) {
+                canvasEditor.commands.setContent(msTemplate, false);
+                console.log('WML: Mark scheme template injected');
+            }
+            return;
+        }
+
         // Already has section blocks? Don't overwrite (user resumed a saved document)
         const currentHTML = canvasEditor.getHTML();
         if (currentHTML.includes('data-section-type')) {
@@ -5806,25 +5959,6 @@
 
         if (!topicData) {
             console.log('WML: No topic data available, keeping default template');
-            return;
-        }
-
-        // Mark scheme study uses a different template entirely (v7.12.90)
-        // Force-inject: ignore "already has sections" check — the essay sections
-        // may have leaked from localStorage or server load; mark scheme is a separate document.
-        if (state.task === 'mark_scheme') {
-            const currentMS = canvasEditor.getHTML();
-            // Only skip if we already have mark_scheme sections (resumed mark scheme doc)
-            if (currentMS.includes('mark_scheme_ao') || currentMS.includes('mark_scheme_response')) {
-                console.log('WML: Mark scheme document already loaded, skipping template');
-                return;
-            }
-            console.log('WML: Generating mark scheme study template');
-            const msTemplate = getMarkSchemeTemplate(topicData);
-            if (canvasEditor) {
-                canvasEditor.commands.setContent(msTemplate, false);
-                console.log('WML: Mark scheme template injected');
-            }
             return;
         }
 
@@ -5880,6 +6014,8 @@
      */
     function migrateDocument() {
         if (!canvasEditor) return;
+        // Mark scheme has its own sections — skip essay migration (v7.12.96)
+        if (state.task === 'mark_scheme') { console.log('WML Migration: Skipping — mark scheme document'); return; }
         const currentHTML = canvasEditor.getHTML();
         // Only run on documents that have section blocks (i.e. structured templates)
         if (!currentHTML.includes('data-section-type')) return;
@@ -6002,6 +6138,7 @@
      */
     function tryInjectCover() {
         if (!canvasEditor || !config.covers) return;
+        if (state.task === 'mark_scheme') return; // v7.12.98: no cover page for mark scheme
         const docWrap = document.querySelector('.swml-canvas-doc');
         const editorEl = document.getElementById('swml-tiptap-editor');
         if (!docWrap || !editorEl) return;
