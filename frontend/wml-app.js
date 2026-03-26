@@ -54,6 +54,33 @@
     //  ENTRY FLOW
     // ══════════════════════════════════════════
 
+    // ── Embedded Mode Detection (v7.13.11) ──
+    // When WML is embedded inside a LearnDash lesson via [writing_mastery_lab] shortcode,
+    // swmlEmbedConfig is set by PHP. WML strips its own chrome and reads exercise config from it.
+    const embedConfig = window.swmlEmbedConfig || null;
+    const isEmbedded = !!embedConfig;
+
+    if (isEmbedded) {
+        // Override state from embed config — skip setup wizard
+        if (embedConfig.board)   state.board   = embedConfig.board;
+        if (embedConfig.subject) state.subject = embedConfig.subject;
+        if (embedConfig.text)    state.text    = embedConfig.text;
+        if (embedConfig.task)    state.task    = embedConfig.task;
+        if (embedConfig.topic)   state.topicNumber = embedConfig.topic;
+        if (embedConfig.phase === 'redraft') {
+            state.phase = 'redraft';
+            state.isRedraft = true;
+        } else if (embedConfig.phase === 'initial') {
+            state.phase = 'initial';
+            state.isRedraft = false;
+        }
+        state.mode = 'exam_prep'; // Mastery programme context
+        // Resolve textName from catalogue
+        if (state.text && !state.textName) {
+            state.textName = getTextLabel(state.text, state.subject);
+        }
+    }
+
     let shaderInitialized = false;
     let isFirstPageLoad = true;
 
@@ -186,6 +213,7 @@
     // Enables copy/paste sharing, browser back, and dashboard deep links.
     const basePath = window.location.pathname;
     function syncUrl() {
+        if (isEmbedded) return; // Don't modify URL in embedded mode (v7.13.11)
         const p = {};
         if (state.board) p.board = state.board;
         if (state.subject) p.subject = state.subject;
@@ -222,6 +250,45 @@
         // Tier gate: Free and Guest cannot use WML at all
         if (!hasWMLAccess) {
             renderUpgradePrompt();
+            return;
+        }
+
+        // ── Embedded mode: skip setup, go straight to exercise (v7.13.12) ──
+        // PHP outputs #swml-root inside #swml-embedded-root — JS boot finds it normally.
+        if (isEmbedded && state.board && state.text) {
+            // Infer draftType and topic label for embedded context
+            if (state.topicNumber > 0 && !state.draftType) {
+                if (state.topicNumber === 2 && state.subject !== 'unseen_poetry') {
+                    state.draftType = 'notes';
+                } else if (state.topicNumber === 1) {
+                    state.draftType = state.isRedraft ? 'diagnostic_redraft' : 'diagnostic';
+                } else {
+                    state.draftType = state.isRedraft ? 'development_redraft' : 'development';
+                }
+            }
+            state.topicLabel = state.topicNumber ? `Topic ${state.topicNumber}` : '';
+
+            // Route to the right exercise based on manifest config
+            const exerciseConfig = WML.getExerciseConfig(state.task);
+
+            if (exerciseConfig.environment === 'canvas') {
+                // Canvas exercises: assessment, diagnostic, mark_scheme, feedback_discussion
+                state.canvasTimer = 0;
+                state.step = 0;
+                WML.renderCanvasWorkspace();
+            } else if (state.task === 'conceptual_notes') {
+                state.draftType = 'notes';
+                state.phase = null;
+                selectTask('conceptual_notes');
+            } else if (state.task) {
+                // Chat-based exercises: planning, polishing, etc.
+                selectTask(state.task);
+            } else {
+                // No task — show diagnostic canvas (write-only)
+                state.task = '';
+                state.canvasTimer = 0;
+                WML.renderCanvasWorkspace();
+            }
             return;
         }
 
@@ -5781,6 +5848,10 @@ Before marking the introduction, ask the student to confirm their essay structur
     WML.extractAndSavePlan = extractAndSavePlan;
     WML.refreshPlan = refreshPlan;
 
+    // Embedded mode flag — accessible from assessment module (v7.13.11)
+    WML.isEmbedded = isEmbedded;
+    WML.embedConfig = embedConfig;
+
     // Sync shaderInitialized with assessment module
     Object.defineProperty(WML, '_shaderInitialized', {
         get() { return shaderInitialized; },
@@ -5791,5 +5862,83 @@ Before marking the introduction, ask the student to confirm their essay structur
     // ── Boot ──
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderSetup);
     else renderSetup();
+
+    // ── SPA Re-initialization (v7.13.15) ──
+    // LearnDash Focus Mode uses AJAX navigation — content is replaced without page reload.
+    // Poll for embed root changes instead of MutationObserver to avoid infinite loops.
+    if (isEmbedded) {
+        let _lastEmbedPost = embedConfig?.postId || 0;
+        setInterval(() => {
+            const embedRoot = document.getElementById('swml-embedded-root');
+            if (!embedRoot) {
+                // Navigated away — clean up
+                const overlay = document.getElementById('swml-canvas-overlay');
+                if (overlay) { overlay.remove(); document.body.style.overflow = ''; }
+                document.body.classList.remove('swml-has-embed');
+                _lastEmbedPost = 0;
+                return;
+            }
+            // Check if the embed root has a different post ID (SPA navigated to new WML lesson)
+            try {
+                const cfg = JSON.parse(embedRoot.dataset.swmlEmbed || '{}');
+                if (cfg.postId && cfg.postId !== _lastEmbedPost) {
+                    _lastEmbedPost = cfg.postId;
+                    console.log('WML SPA: New lesson detected (post ' + cfg.postId + ') — re-initializing');
+
+                    // Clean up old canvas
+                    const oldOverlay = document.getElementById('swml-canvas-overlay');
+                    if (oldOverlay) oldOverlay.remove();
+                    document.body.style.overflow = '';
+
+                    // Update config and state
+                    window.swmlEmbedConfig = cfg;
+                    if (cfg.board)   state.board   = cfg.board;
+                    if (cfg.subject) state.subject = cfg.subject;
+                    if (cfg.text)    state.text    = cfg.text;
+                    if (cfg.task)    state.task    = cfg.task;
+                    if (cfg.topic)   state.topicNumber = cfg.topic;
+                    if (cfg.phase === 'redraft') { state.phase = 'redraft'; state.isRedraft = true; }
+                    else if (cfg.phase === 'initial') { state.phase = 'initial'; state.isRedraft = false; }
+                    state.mode = 'exam_prep';
+                    state.textName = cfg.text ? getTextLabel(cfg.text, cfg.subject) : '';
+
+                    renderSetup();
+                }
+            } catch (e) {}
+            // Also check: embed root exists but no canvas overlay (initial render failed)
+            if (!document.getElementById('swml-canvas-overlay') && embedRoot && _lastEmbedPost) {
+                console.log('WML SPA: Canvas missing — re-rendering');
+                renderSetup();
+            }
+        }, 1000);
+    }
+
+    // ── LD Theme Toggle Sync (v7.13.15) ──
+    // Poll-based sync to avoid MutationObserver infinite loops.
+    // Sophicly Focus Mode stores theme on <html data-theme="dark|light">.
+    if (isEmbedded) {
+        let _lastLdTheme = document.documentElement.dataset.theme || '';
+        setInterval(() => {
+            // Primary source: Sophicly Focus Mode template
+            const htmlTheme = document.documentElement.dataset.theme || '';
+            // Fallback: body classes
+            const body = document.body;
+            const ldTheme = htmlTheme ||
+                (body.classList.contains('light-mode') || body.classList.contains('spl-light') ? 'light' : '') ||
+                (body.classList.contains('dark-mode') || body.classList.contains('spl-dark') ? 'dark' : '');
+
+            if (ldTheme && ldTheme !== _lastLdTheme) {
+                _lastLdTheme = ldTheme;
+                if (ldTheme !== getTheme()) {
+                    console.log('WML Embed: Syncing theme to LD:', ldTheme);
+                    applyTheme(ldTheme);
+                    const overlay = document.getElementById('swml-canvas-overlay');
+                    if (overlay) overlay.dataset.swmlTheme = ldTheme;
+                    const canvas = document.querySelector('.swml-canvas');
+                    if (canvas) canvas.classList.toggle('swml-canvas-light', ldTheme === 'light');
+                }
+            }
+        }, 500);
+    }
 
 })();

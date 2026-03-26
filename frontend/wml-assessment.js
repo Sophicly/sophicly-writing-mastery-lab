@@ -666,9 +666,9 @@
         if (state.topicNumber) {
             ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: `Topic ${state.topicNumber}` }));
         } else if (state.task && state.task !== 'planning') {
-            const taskNames = { assessment: 'Assessment', polishing: 'Polishing', exam_question: 'Exam Question', essay_plan: 'Essay Plan', model_answer: 'Model Answer', verbal_rehearsal: 'Quote Analysis', conceptual_notes: 'Conceptual Notes', memory_practice: 'Memory Practice', mark_scheme: 'Mark Scheme' };
-            const tn = taskNames[state.task];
-            if (tn) ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: tn }));
+            // v7.13.11: read label from exercise manifest instead of hardcoded map
+            const headerConfig = WML.getExerciseConfig(state.task);
+            if (headerConfig.label) ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: headerConfig.label }));
         }
         // Phase badge (v7.12.98)
         const phaseLabel = state.phase === 'redraft' ? 'Phase 2' : (state.phase === 'initial' ? 'Phase 1' : '');
@@ -732,18 +732,37 @@
 
         headerRight.appendChild(el('span', { className: 'swml-canvas-ctx-mode', textContent: 'BETA' }));
 
-        // Theme toggle — shared Jhey moon/sun toggle, syncs with canvas light/dark
-        const canvasThemeToggle = createThemeToggleBtn('swml-canvas-theme-toggle', () => {
-            toggleTheme();
-            const t = getTheme();
-            canvas.classList.toggle('swml-canvas-light', t === 'light');
-            overlay.dataset.swmlTheme = t;
-        });
+        // Theme toggle — hidden in embedded mode (LD has its own) (v7.13.11)
+        if (!WML.isEmbedded) {
+            const canvasThemeToggle = createThemeToggleBtn('swml-canvas-theme-toggle', () => {
+                toggleTheme();
+                const t = getTheme();
+                canvas.classList.toggle('swml-canvas-light', t === 'light');
+                overlay.dataset.swmlTheme = t;
+            });
+            headerRight.appendChild(canvasThemeToggle);
+        }
+        // Fullscreen toggle — embedded mode only (v7.13.15)
+        if (WML.isEmbedded) {
+            const SVG_EXPAND = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+            const SVG_SHRINK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M3 21l7-7"/></svg>';
+            const fsBtn = el('button', {
+                className: 'swml-canvas-fullscreen-btn',
+                title: 'Toggle fullscreen',
+                innerHTML: SVG_EXPAND,
+                onClick: () => {
+                    const isFs = overlay.classList.toggle('swml-canvas-fullscreen');
+                    fsBtn.innerHTML = isFs ? SVG_SHRINK : SVG_EXPAND;
+                    fsBtn.title = isFs ? 'Exit fullscreen' : 'Toggle fullscreen';
+                }
+            });
+            headerRight.appendChild(fsBtn);
+        }
+
         // Apply user's theme immediately — canvas fades in with correct colours
         const initTheme = getTheme();
         if (initTheme === 'light') canvas.classList.add('swml-canvas-light');
         overlay.dataset.swmlTheme = initTheme;
-        headerRight.appendChild(canvasThemeToggle);
         headerRow.appendChild(headerRight);
 
         editorPane.appendChild(headerRow);
@@ -1266,12 +1285,15 @@
         const statusBar = el('div', { className: 'swml-canvas-status' });
         const wcDisplay = el('span', { className: 'swml-wc', textContent: '0 words' });
         const saveStatus = el('span', { className: 'swml-save-status', textContent: 'Ready' });
-        const backBtn = el('button', {
-            className: 'swml-status-btn',
-            textContent: '← Back to tasks',
-            onClick: () => closeCanvasOverlay(), // v7.12.60: unified cleanup (shader restart, etc.)
-        });
-        statusBar.appendChild(backBtn);
+        // Back button — hidden in embedded mode (LD handles navigation) (v7.13.11)
+        if (!WML.isEmbedded) {
+            const backBtn = el('button', {
+                className: 'swml-status-btn',
+                textContent: '← Back to tasks',
+                onClick: () => closeCanvasOverlay(),
+            });
+            statusBar.appendChild(backBtn);
+        }
         // Reset Document button — clears saved content and regenerates template
         const resetBtn = el('button', {
             className: 'swml-status-btn swml-status-reset',
@@ -1351,10 +1373,13 @@
         // Comment count
         const commentCountEl = el('span', { className: 'swml-comment-count', style: { cursor: 'pointer' } });
 
-        // ── Canvas State Flags ──
-        let canvasInAssessment = state.task === 'assessment' || state.task === 'mark_scheme'; // assessment or mark scheme study
-        const canvasInFeedback = state.task === 'feedback_discussion'; // true when reviewing feedback (v7.12.80)
-        const canvasInMarkScheme = state.task === 'mark_scheme'; // true for mark scheme study (v7.12.89)
+        // ── Canvas State Flags — manifest-driven (v7.13.11) ──
+        const exerciseConfig = WML.getExerciseConfig(state.task);
+        let canvasInAssessment = state.task === 'assessment' || state.task === 'mark_scheme' || state.task === 'redraft_assessment';
+        const canvasInFeedback = state.task === 'feedback_discussion';
+        const canvasInMarkScheme = state.task === 'mark_scheme';
+        const canvasChatHeaderLabel = exerciseConfig.chatHeaderLabel || 'Essay Assessment';
+        const canvasSidebarSteps = exerciseConfig.sidebarSteps || null;
 
         // ── Canvas Exam Timer (v7.11.0) ──
         let canvasTimerInterval = null;
@@ -1865,9 +1890,8 @@
                         } else if (state.mode === 'exam_prep') {
                             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Exam Practice' }));
                         }
-                        // v7.12.99: Task-specific badge + phase indicator
-                        const sidebarTaskLabel = canvasInMarkScheme ? 'Mark Scheme' : 'Assessment';
-                        protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge active', textContent: sidebarTaskLabel }));
+                        // v7.13.11: manifest-driven task label + phase indicator
+                        protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge active', textContent: exerciseConfig.label || 'Assessment' }));
                         if (state.phase === 'redraft') {
                             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Phase 2' }));
                         } else if (state.phase === 'initial') {
@@ -1878,17 +1902,9 @@
                         // Protocol Progress label
                         protoBody.appendChild(el('div', { className: 'swml-sidebar-section-label', textContent: 'Protocol Progress' }));
 
-                        // Steps — different for mark scheme vs essay assessment (v7.12.98)
+                        // Steps — manifest-driven (v7.13.11, replaces hardcoded if/else)
                         const protoSteps = el('div', { id: 'swml-progress-steps' });
-                        const assessSteps = canvasInMarkScheme ? [
-                            { step: 1, label: 'How You\'re Going' },
-                            { step: 2, label: 'Trends' },
-                            { step: 3, label: 'What to Fix First' },
-                            { step: 4, label: 'Metacognition' },
-                            { step: 5, label: 'TTECEA Analysis' },
-                            { step: 6, label: 'Where You\'re Going' },
-                            { step: 7, label: 'Where to Next' },
-                        ] : [
+                        const assessSteps = canvasSidebarSteps || [
                             { step: 1, label: 'Setup & Details' },
                             { step: 2, label: 'Goal Setting' },
                             { step: 3, label: 'Self-Reflection' },
@@ -2078,8 +2094,7 @@
 
                         // Chat header with clear button
                         const chatHeader = el('div', { className: 'swml-canvas-chat-header', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } });
-                        const chatHeaderLabel = state.task === 'mark_scheme' ? 'Mark Scheme Assessment' : 'Essay Assessment'; // v7.12.98
-                        chatHeader.appendChild(el('span', { innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;opacity:0.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> ' + chatHeaderLabel }));
+                        chatHeader.appendChild(el('span', { innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;opacity:0.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> ' + canvasChatHeaderLabel })); // v7.13.11: manifest-driven
                         const clearChatBtn = el('button', {
                             className: 'swml-clear-chat-btn',
                             title: 'Clear chat and start fresh',
@@ -3106,8 +3121,15 @@
         overlay.dataset.swmlTheme = getTheme(); // Ensure CSS variables work
         // Remove old overlay just before appending new one — zero-gap swap prevents shader flash (v7.12.32)
         if (existing) existing.remove();
-        document.body.appendChild(overlay);
-        document.body.style.overflow = 'hidden';
+        // v7.13.13: Embedded mode — render inside the embed container, not as fullscreen overlay
+        if (WML.isEmbedded) {
+            const embedHost = document.getElementById('swml-embedded-root') || document.body;
+            overlay.classList.add('swml-canvas-embedded');
+            embedHost.appendChild(overlay);
+        } else {
+            document.body.appendChild(overlay);
+            document.body.style.overflow = 'hidden';
+        }
 
         // Inject progress bar keyframes (failsafe — CSS file may not load in time)
         if (!document.getElementById('swml-progress-keyframes')) {
@@ -6858,8 +6880,15 @@ ${html}
         canvas.appendChild(statusBar);
 
         overlay.appendChild(canvas);
-        document.body.appendChild(overlay);
-        document.body.style.overflow = 'hidden';
+        // v7.13.13: Embedded mode — render inside embed container
+        if (WML.isEmbedded) {
+            const embedHost = document.getElementById('swml-embedded-root') || document.body;
+            overlay.classList.add('swml-canvas-embedded');
+            embedHost.appendChild(overlay);
+        } else {
+            document.body.appendChild(overlay);
+            document.body.style.overflow = 'hidden';
+        }
 
         // Hide notepad
         const fab = document.querySelector('.sn-fab');

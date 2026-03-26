@@ -503,6 +503,266 @@ window.WML = (function() {
         { type: 'exam_question_output', label: 'Generated Question', section: 'question' },
     ];
 
+    // ── EXERCISE MANIFEST — single source of truth for all exercise types (v7.13.11) ──
+    // Each entry defines what panels render, which protocol loads, how completion is detected,
+    // and what step/element arrays to use. The renderer reads from this instead of if/else chains.
+    //
+    // environment: 'canvas' = assessment canvas workspace, 'chat' = main chat interface, 'write_only' = document only (no AI chat)
+    // panels: which canvas panels to show (only relevant for environment: 'canvas')
+    // protocolSource: 'board' = board-specific protocol, 'shared' = shared/literature, 'preamble' = preamble-only (no file), null = none
+    // protocolTask: the task key sent to protocol router (may differ from manifest key)
+    // completionType: 'assessment_detect' = score/grade pattern matching, 'step_complete' = last step reached,
+    //                 'manual' = student clicks complete, 'learndash' = LD Mark Complete, 'none' = no completion tracking
+    // storageSuffix: appended to localStorage/DB keys to isolate data between exercise types
+    const EXERCISE_MANIFEST = {
+        // ── Phase 1: Initial Attempt ──
+        diagnostic: {
+            label: 'Write Essay',
+            environment: 'canvas',
+            panels: { sidebar: false, chat: false, guidance: false, document: true },
+            steps: null,
+            elements: null,
+            protocolSource: null,
+            protocolTask: null,
+            completionType: 'manual',
+            storageSuffix: '',
+            chatHeaderLabel: null,
+            sidebarSteps: null,
+            phase: 'initial',
+        },
+        assessment: {
+            label: 'Assessment',
+            environment: 'canvas',
+            panels: { sidebar: true, chat: true, guidance: false, document: true },
+            steps: 'ASSESSMENT_STEPS',
+            elements: 'ASSESSMENT_ELEMENTS',
+            protocolSource: 'board',
+            protocolTask: 'assessment',
+            completionType: 'assessment_detect',
+            storageSuffix: '',
+            chatHeaderLabel: 'Essay Assessment',
+            sidebarSteps: [
+                { step: 1, label: 'Setup & Details' },
+                { step: 2, label: 'Goal Setting' },
+                { step: 3, label: 'Self-Reflection' },
+                { step: 4, label: 'Scoring' },
+                { step: 5, label: 'AO Deep Dive' },
+                { step: 6, label: 'Feedback & Strengths' },
+                { step: 7, label: 'Action Plan' },
+                { step: 8, label: 'Session Complete' },
+            ],
+            phase: 'initial',
+        },
+        feedback_discussion: {
+            label: 'Discuss Feedback',
+            environment: 'canvas',
+            panels: { sidebar: false, chat: true, guidance: false, document: true },
+            steps: null,
+            elements: null,
+            protocolSource: 'board',
+            protocolTask: 'assessment',
+            completionType: 'manual',
+            storageSuffix: '_fb',
+            chatHeaderLabel: 'Discuss Feedback',
+            sidebarSteps: null,
+            phase: 'initial',
+        },
+
+        // ── Phase 2: Redraft ──
+        mark_scheme: {
+            label: 'Mark Scheme',
+            environment: 'canvas',
+            panels: { sidebar: true, chat: true, guidance: false, document: true },
+            steps: null,
+            elements: null,
+            protocolSource: 'preamble',
+            protocolTask: 'mark_scheme',
+            completionType: 'manual',
+            storageSuffix: '_ms',
+            chatHeaderLabel: 'Mark Scheme Assessment',
+            sidebarSteps: [
+                { step: 1, label: 'How You\'re Going' },
+                { step: 2, label: 'Trends' },
+                { step: 3, label: 'What to Fix First' },
+                { step: 4, label: 'Metacognition' },
+                { step: 5, label: 'TTECEA Analysis' },
+                { step: 6, label: 'Where You\'re Going' },
+                { step: 7, label: 'Where to Next' },
+            ],
+            phase: 'redraft',
+        },
+        model_answer_video: {
+            label: 'Model Answer',
+            environment: 'canvas',
+            panels: { sidebar: false, chat: false, guidance: true, document: true },
+            steps: null,
+            elements: null,
+            protocolSource: null,
+            protocolTask: null,
+            completionType: 'manual',
+            storageSuffix: '_mav',
+            chatHeaderLabel: null,
+            sidebarSteps: null,
+            phase: 'redraft',
+        },
+        outlining: {
+            label: 'Outline Essay',
+            environment: 'write_only',
+            panels: { sidebar: false, chat: false, guidance: true, document: true },
+            steps: null,
+            elements: null,
+            protocolSource: null,
+            protocolTask: null,
+            completionType: 'manual',
+            storageSuffix: '_outline',
+            chatHeaderLabel: null,
+            sidebarSteps: null,
+            phase: 'redraft',
+        },
+        redraft_assessment: {
+            label: 'Reassessment',
+            environment: 'canvas',
+            panels: { sidebar: true, chat: true, guidance: false, document: true },
+            steps: 'ASSESSMENT_STEPS',
+            elements: 'ASSESSMENT_ELEMENTS',
+            protocolSource: 'board',
+            protocolTask: 'assessment',
+            completionType: 'assessment_detect',
+            storageSuffix: '_redraft',
+            chatHeaderLabel: 'Essay Assessment',
+            sidebarSteps: [
+                { step: 1, label: 'Setup & Details' },
+                { step: 2, label: 'Goal Setting' },
+                { step: 3, label: 'Self-Reflection' },
+                { step: 4, label: 'Scoring' },
+                { step: 5, label: 'AO Deep Dive' },
+                { step: 6, label: 'Feedback & Strengths' },
+                { step: 7, label: 'Action Plan' },
+                { step: 8, label: 'Session Complete' },
+            ],
+            phase: 'redraft',
+        },
+
+        // ── Chat-based exercises (main chat interface with stepper) ──
+        planning: {
+            label: 'Essay Skills',
+            environment: 'chat',
+            panels: null,
+            steps: 'PLAN_STEPS',
+            elements: 'PLAN_ELEMENTS',
+            protocolSource: 'board',
+            protocolTask: 'planning',
+            completionType: 'step_complete',
+            storageSuffix: '',
+            chatHeaderLabel: null,
+            sidebarSteps: null,
+            phase: 'redraft',
+        },
+        polishing: {
+            label: 'Polishing',
+            environment: 'chat',
+            panels: null,
+            steps: 'POLISHING_STEPS',
+            elements: 'POLISHING_ELEMENTS',
+            protocolSource: 'board',
+            protocolTask: 'polishing',
+            completionType: 'step_complete',
+            storageSuffix: '',
+            chatHeaderLabel: null,
+            sidebarSteps: null,
+            phase: 'redraft',
+        },
+        exam_question: {
+            label: 'Exam Question',
+            environment: 'chat',
+            panels: null,
+            steps: 'EXAM_QUESTION_STEPS',
+            elements: 'EXAM_QUESTION_ELEMENTS',
+            protocolSource: 'board',
+            protocolTask: 'exam_question',
+            completionType: 'step_complete',
+            storageSuffix: '',
+            chatHeaderLabel: null,
+            sidebarSteps: null,
+            phase: null,
+        },
+        essay_plan: {
+            label: 'Essay Plan',
+            environment: 'chat',
+            panels: null,
+            steps: 'ESSAY_PLAN_STEPS',       // getSteps() handles mode A→RECALL variant
+            elements: null,
+            protocolSource: 'shared',
+            protocolTask: 'essay_plan',
+            completionType: 'step_complete',
+            storageSuffix: '',
+            chatHeaderLabel: null,
+            sidebarSteps: null,
+            phase: 'redraft',
+        },
+        model_answer: {
+            label: 'Model Answer',
+            environment: 'chat',
+            panels: null,
+            steps: 'MODEL_ANSWER_STEPS',     // getSteps() handles mode C→ADVANCED variant
+            elements: 'MODEL_ANSWER_ELEMENTS',
+            protocolSource: 'shared',
+            protocolTask: 'model_answer',
+            completionType: 'step_complete',
+            storageSuffix: '',
+            chatHeaderLabel: null,
+            sidebarSteps: null,
+            phase: 'redraft',
+        },
+        verbal_rehearsal: {
+            label: 'Quote Analysis',
+            environment: 'chat',
+            panels: null,
+            steps: 'QUOTE_ANALYSIS_STEPS',
+            elements: 'QUOTE_ANALYSIS_ELEMENTS',
+            protocolSource: 'shared',
+            protocolTask: 'verbal_rehearsal',
+            completionType: 'step_complete',
+            storageSuffix: '',
+            chatHeaderLabel: null,
+            sidebarSteps: null,
+            phase: null,
+        },
+        conceptual_notes: {
+            label: 'Conceptual Notes',
+            environment: 'chat',
+            panels: null,
+            steps: 'CONCEPTUAL_NOTES_STEPS', // getSteps() handles poetry/nonfiction variants
+            elements: 'CONCEPTUAL_NOTES_ELEMENTS', // getElements() handles variants
+            protocolSource: 'shared',
+            protocolTask: 'conceptual_notes',
+            completionType: 'step_complete',
+            storageSuffix: '',
+            chatHeaderLabel: null,
+            sidebarSteps: null,
+            phase: null,
+        },
+        memory_practice: {
+            label: 'Memory Practice',
+            environment: 'chat',
+            panels: null,
+            steps: 'MEMORY_PRACTICE_STEPS',
+            elements: null,
+            protocolSource: 'shared',
+            protocolTask: 'memory_practice',
+            completionType: 'step_complete',
+            storageSuffix: '',
+            chatHeaderLabel: null,
+            sidebarSteps: null,
+            phase: null,
+        },
+    };
+
+    // Helper: get manifest entry for current task (falls back to planning)
+    function getExerciseConfig(task) {
+        return EXERCISE_MANIFEST[task] || EXERCISE_MANIFEST.planning;
+    }
+
     // Active config based on current task
     // prose_anthology uses Literature CN, not Poetry CN
     const isPoetrySubject = () => ['poetry_anthology', 'unseen_poetry'].includes(state.subject);
@@ -1404,7 +1664,9 @@ window.WML = (function() {
         QUOTE_ANALYSIS_ELEMENTS, MODEL_ANSWER_ELEMENTS, PLAN_ELEMENTS,
         // Helpers
         isPoetrySubject, isLanguageSubject, isNonfictionSubject, isAnthologySubject,
-        getSteps, getElements,
+        getSteps, getElements, getExerciseConfig,
+        // Exercise manifest
+        EXERCISE_MANIFEST,
         // Revision map
         REVISION_MAP,
         // Utilities

@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.13.1
+ * Version: 7.13.15
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.13.1');
+define('SWML_VERSION', '7.13.15');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -110,10 +110,22 @@ class Sophicly_Writing_Mastery_Lab {
     }
 
     /**
-     * Enqueue frontend assets only on the WML page
+     * Enqueue frontend assets on the WML page OR any page with [writing_mastery_lab] shortcode
      */
     public function enqueue_assets() {
-        if (!get_query_var('swml_page')) return;
+        // Standalone WML page
+        $is_wml_page = get_query_var('swml_page');
+
+        // Embedded mode: detect [writing_mastery_lab] shortcode in current post content (v7.13.12)
+        $is_embedded = false;
+        if (!$is_wml_page && is_singular()) {
+            global $post;
+            if ($post && has_shortcode($post->post_content, 'writing_mastery_lab')) {
+                $is_embedded = true;
+            }
+        }
+
+        if (!$is_wml_page && !$is_embedded) return;
 
         wp_enqueue_style(
             'swml-styles',
@@ -268,6 +280,7 @@ class Sophicly_Writing_Mastery_Lab {
      */
     public function register_shortcode() {
         add_shortcode('wml_button', [$this, 'render_launch_button']);
+        add_shortcode('writing_mastery_lab', [$this, 'render_embedded_wml']);
     }
 
     /**
@@ -346,6 +359,195 @@ class Sophicly_Writing_Mastery_Lab {
             esc_url($url),
             esc_html($label)
         );
+    }
+
+    /**
+     * Render WML embedded inside a LearnDash lesson (v7.13.11)
+     *
+     * Usage: [writing_mastery_lab task="assessment" phase="initial" topic="1"]
+     *        [writing_mastery_lab task="mark_scheme" phase="redraft" topic="1" board="aqa" text="macbeth"]
+     *
+     * Detects LearnDash Focus Mode and adjusts: strips WML chrome, adds body class,
+     * removes LD content padding only for this lesson.
+     */
+    public function render_embedded_wml($atts) {
+        if (!is_user_logged_in()) {
+            return '<p>Please log in to access the Writing Mastery Lab.</p>';
+        }
+
+        $atts = shortcode_atts([
+            'task'    => '',
+            'phase'   => '',
+            'topic'   => '',
+            'board'   => '',
+            'subject' => '',
+            'text'    => '',
+        ], $atts, 'writing_mastery_lab');
+
+        $post_id = get_the_ID();
+
+        // Resolve board/subject/text from LearnDash course context if not in shortcode
+        $board   = $atts['board'] ?: get_post_meta($post_id, '_sophicly_exam_board', true);
+        $subject = $atts['subject'] ?: get_post_meta($post_id, '_sophicly_literature_type', true);
+        $text    = $atts['text'];
+        $task    = sanitize_key($atts['task']);
+        $phase   = sanitize_key($atts['phase']);
+        $topic   = absint($atts['topic']);
+
+        // Try to resolve from bridge mapping if board/text/subject not available (v7.13.14)
+        $course_id = function_exists('learndash_get_course_id') ? learndash_get_course_id($post_id) : 0;
+        if ($course_id) {
+            $ctx = $this->get_embed_course_context($course_id);
+            if (empty($board))   $board   = $ctx['board'] ?? '';
+            if (empty($text))    $text    = $ctx['text_slug'] ?? '';
+            // Subject = category from course map (shakespeare, modern_text, 19th_century, etc.)
+            if (empty($subject)) $subject = $ctx['category'] ?? $ctx['type'] ?? '';
+        }
+
+        // Detect LearnDash Focus Mode (template = focus, or body has ld-in-focus-mode)
+        $in_focus_mode = false;
+        if (function_exists('learndash_get_active_theme_key')) {
+            $ld_theme = learndash_get_active_theme_key();
+            $in_focus_mode = ($ld_theme === 'ld30'); // LD30 = Focus Mode theme
+        }
+        // Also check if this is a LearnDash topic at all
+        $is_ld_topic = (get_post_type($post_id) === 'sfwd-topic');
+
+        // Assets should be enqueued by enqueue_assets() via has_shortcode() detection.
+        // But on LD Focus Mode pages, $post may not be set during wp_enqueue_scripts,
+        // so we also enqueue here as fallback. Footer scripts still work from the_content. (v7.13.13)
+        $this->enqueue_embed_assets();
+
+        // Build the embedded config — JS reads this instead of URL params
+        $embed_config = [
+            'embedded'    => true,
+            'focusMode'   => $in_focus_mode,
+            'isLdTopic'   => $is_ld_topic,
+            'postId'      => $post_id,
+            'task'        => $task,
+            'phase'       => $phase,
+            'topic'       => $topic,
+            'board'       => $board,
+            'subject'     => $subject,
+            'text'        => $text,
+        ];
+
+        // Inline CSS: embedded mode layout fixes (v7.13.14)
+        $css = '<style>
+            /* Hide empty #swml-root — canvas overlay renders as sibling, not inside it */
+            #swml-root.swml-embedded { display: none !important; }
+
+            /* Embedded host fills content area */
+            .swml-embedded-host { width: 100%; }
+        </style>';
+        if ($is_ld_topic) {
+            $css .= '<style>
+                /* Remove LD content padding around WML (v7.13.14) */
+                body.swml-has-embed .spl-entry { padding: 0 !important; margin: 0 !important; }
+                body.swml-has-embed .spl-content { padding-left: 0 !important; padding-right: 0 !important; max-width: 100% !important; }
+                body.swml-has-embed .ld-focus-content .ld-tab-content { padding: 0 !important; }
+                body.swml-has-embed .ld-focus-content .learndash_content_wrap { padding: 0 !important; }
+
+                /* Keep padding on LD header (progress bar, COMPLETE button) */
+                body.swml-has-embed .spl-content-header { padding: 16px 30px; }
+
+                /* Keep padding on LD bottom navigation (Previous / Next buttons) */
+                body.swml-has-embed .spl-nav,
+                body.swml-has-embed .ld-content-actions,
+                body.swml-has-embed .learndash-wrapper .ld-content-actions { padding: 16px 30px !important; }
+
+                /* Hide LD lesson title when WML is embedded — title is redundant */
+                body.swml-has-embed .spl-content-header .spl-title { display: none; }
+            </style>';
+        }
+
+        // Body class injection via inline script
+        $body_class_js = '<script>document.body.classList.add("swml-has-embed");</script>';
+
+        ob_start();
+        echo $css;
+        echo $body_class_js;
+        // CRITICAL: inner div must be #swml-root — the JS boot sequence looks for this ID
+        echo '<div id="swml-embedded-root" class="swml-embedded-host" data-swml-embed="' . esc_attr(wp_json_encode($embed_config)) . '">';
+        echo '<div id="swml-root" class="swml-app swml-embedded"></div>';
+        echo '</div>';
+
+        // Pass embed config to JS — must be BEFORE wml-app.js boots
+        echo '<script>window.swmlEmbedConfig = ' . wp_json_encode($embed_config) . ';</script>';
+
+        return ob_get_clean();
+    }
+
+    /**
+     * Enqueue WML assets for embedded mode (called from shortcode render)
+     */
+    private function enqueue_embed_assets() {
+        // Styles
+        wp_enqueue_style('swml-styles', SWML_URL . 'frontend/wml-styles.css', [], SWML_VERSION);
+        wp_enqueue_style('swml-theme-toggle', SWML_URL . 'frontend/wml-theme-toggle.css', [], SWML_VERSION);
+        wp_enqueue_style('swml-canvas', SWML_URL . 'frontend/wml-canvas.css', ['swml-styles'], SWML_VERSION);
+
+        // Scripts
+        wp_enqueue_script('swml-shader', SWML_URL . 'frontend/wml-shader.js', [], SWML_VERSION, true);
+        wp_enqueue_script('swml-tiptap', SWML_URL . 'frontend/wml-tiptap.min.js', [], SWML_VERSION, true);
+        wp_enqueue_script('swml-core', SWML_URL . 'frontend/wml-core.js', [], SWML_VERSION, true);
+        wp_enqueue_script('swml-assessment', SWML_URL . 'frontend/wml-assessment.js', ['swml-core', 'swml-tiptap'], SWML_VERSION, true);
+        wp_enqueue_script('swml-app', SWML_URL . 'frontend/wml-app.js', ['swml-core', 'swml-assessment', 'swml-shader'], SWML_VERSION, true);
+
+        // Video player
+        wp_enqueue_script('hls-js', 'https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js', [], null, true);
+        wp_enqueue_style('swml-video-player', SWML_URL . 'frontend/wml-video-player.css', [], SWML_VERSION);
+        wp_enqueue_script('swml-video-player', SWML_URL . 'frontend/wml-video-player.js', ['hls-js'], SWML_VERSION, true);
+
+        // User tier
+        $user_tier = function_exists('sophicly_get_user_tier') ? sophicly_get_user_tier() : 'free';
+
+        // Localize swmlConfig (if not already done by standalone page)
+        if (!wp_script_is('swml-core', 'done')) {
+            wp_localize_script('swml-core', 'swmlConfig', [
+                'restUrl'        => rest_url('sophicly-wml/v1/'),
+                'wpRestUrl'      => rest_url(),
+                'nonce'          => wp_create_nonce('wp_rest'),
+                'userId'         => get_current_user_id(),
+                'userName'       => wp_get_current_user()->display_name,
+                'userAvatar'     => get_avatar_url(get_current_user_id(), ['size' => 64]),
+                'userTier'       => $user_tier,
+                'isAdmin'        => current_user_can('manage_options'),
+                'canSignOff'     => current_user_can('manage_options')
+                                    || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'tutor'
+                                    || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'specialist',
+                'dashboardUrl'   => home_url('/my-dashboard/'),
+                'libraryUrl'     => home_url('/library/'),
+                'courseResumeUrl' => '',
+                'covers'         => get_option('swml_cover_images', []),
+                'urlParams'      => [
+                    'mode' => 'guided', 'board' => '', 'subject' => '', 'text' => '',
+                    'task' => '', 'topic' => 0, 'poem' => '', 'type' => '',
+                    'draft' => '', 'redraft' => '', 'unit_id' => 0,
+                ],
+            ]);
+        }
+    }
+
+    /**
+     * Get board/text context from a course ID via the course map
+     */
+    private function get_embed_course_context($course_id) {
+        $course_map = function_exists('sophicly_get_course_map') ? sophicly_get_course_map() : [];
+        foreach ($course_map as $text_slug => $boards) {
+            foreach ($boards as $board => $cid) {
+                if (strpos($board, '_') === 0) continue;
+                if ((int) $cid === (int) $course_id) {
+                    return [
+                        'board'     => $board,
+                        'text_slug' => $text_slug,
+                        'type'      => $boards['_type'] ?? '',
+                        'category'  => $boards['_category'] ?? '',
+                    ];
+                }
+            }
+        }
+        return [];
     }
 
     /**
