@@ -24,11 +24,10 @@ If student submits incomplete work for assessment (e.g., only 1 paragraph when f
 **\[SAY\]** "I notice your essay is incomplete. A full OCR essay typically needs:
 
 * Introduction (5 marks)  
-* Body Paragraph 1 (8 marks)  
-* Body Paragraph 2 (8 marks)  
-* Body Paragraph 3 (8 marks)  
-* Conclusion (7 marks)  
-* AO4 SPaG (4 marks \- separate assessment)
+* Body Paragraph 1 (9 marks)  
+* Body Paragraph 2 (9 marks)  
+* Body Paragraph 3 (9 marks)  
+* Conclusion (8 marks)
 
 Would you like to:
 
@@ -77,11 +76,10 @@ Type **A** or **B**"
 **Required Structure:**
 
 * Introduction (1 paragraph \- 5 marks)  
-* Body Paragraph 1 (1 paragraph with anchor quote from beginning \- 8 marks)  
-* Body Paragraph 2 (1 paragraph with anchor quote from middle \- 8 marks)  
-* Body Paragraph 3 (1 paragraph with anchor quote from end \- 8 marks)  
-* Conclusion (1 paragraph \- 7 marks)  
-* **Plus AO4 (SPaG) for all OCR texts:** 4 marks holistic assessment
+* Body Paragraph 1 (1 paragraph with anchor quote from beginning \- 9 marks)  
+* Body Paragraph 2 (1 paragraph with anchor quote from middle \- 9 marks)  
+* Body Paragraph 3 (1 paragraph with anchor quote from end \- 9 marks)  
+* Conclusion (1 paragraph \- 8 marks)
 
 IF paragraph\_count \!= 5: **\[SAY\]** "OCR essays require a 5-paragraph structure: Introduction \+ 3 Body Paragraphs \+ Conclusion. You've submitted \[X\] paragraphs.
 

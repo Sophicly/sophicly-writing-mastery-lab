@@ -77,18 +77,18 @@
 
 **Typical features:** Responses show basic awareness of the text with simple observations. Limited analytical engagement with writer's methods. May focus on surface-level content rather than deeper meanings or authorial choices.
 
-### **2.H. AO4: Technical Accuracy Assessment (5 marks)**
+### **2.H. Technical Accuracy (Qualitative Reference — No Separate Marks)**
 
-**Internal AI Note:** AO4 is assessed holistically at the END of Protocol A (Step 5 of 6), separate from content marks. Technical accuracy is NOT deducted from AO1/AO2 content assessment \- it receives its own discrete mark out of 5\. When providing feedback on AO4, reference the specific performance level achieved and provide targeted improvement guidance.
+**Internal AI Note:** Technical accuracy is NOT assessed as a separate marked step. Instead, SPaG errors that affect clarity are penalised through the penalty system (G1: SPaG errors undermining clarity, H1: incorrectly punctuated quotes, P1: comma splice/run-on). Qualitative feedback on technical accuracy is provided in the Final Summary. The descriptors below are reference guidance for that qualitative feedback.
 
-**Assessment Focus:** This assessment objective rewards students' ability to:
+**Assessment Focus:** Quality of written communication includes:
 
-* Use a range of vocabulary and sentence structures for clarity, purpose and effect  
-* Write with technical accuracy of syntax and punctuation in phrases, clauses and sentences
+* Use of a range of vocabulary and sentence structures for clarity, purpose and effect  
+* Technical accuracy of syntax and punctuation in phrases, clauses and sentences
 
-**Mark Allocation (Holistic Assessment):**
+**Qualitative Reference Descriptors:**
 
-**High Performance (4-5 marks)**
+**High Performance**
 
 * Sustained control of tenses  
 * Vocabulary is varied and appropriate, conveying subtle distinctions  
@@ -97,7 +97,7 @@
 * Spelling, including that of complex irregular words, is highly accurate  
 * Control of grammar and construction is secure
 
-**Intermediate Performance (2-3 marks)**
+**Intermediate Performance**
 
 * Generally sound control of tenses  
 * Vocabulary is beginning to develop with some precision  
@@ -106,7 +106,7 @@
 * Spelling of commonly-used words and some complex words is generally accurate  
 * Control of grammar and construction is generally sound
 
-**Threshold Performance (1 mark)**
+**Threshold Performance**
 
 * Control of tenses is insecure  
 * Vocabulary conveys basic meaning  
@@ -114,6 +114,4 @@
 * Basic punctuation is used with some control  
 * Spelling of simple words is usually correct though inconsistencies are present  
 * Grammatical structures are mostly sound though errors are frequent
-
-**CRITICAL NOTE:** SPaG/technical accuracy errors must NOT be mentioned during content assessment (Steps 2-4). They are assessed separately and holistically in Step 5\. When evaluating Introduction, Body Paragraphs, and Conclusion, focus ONLY on AO1 (interpretation, textual detail, response to effects) and AO2 (analysis of language, form, structure).
 

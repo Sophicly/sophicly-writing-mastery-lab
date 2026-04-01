@@ -61,6 +61,8 @@
     const isEmbedded = !!embedConfig;
 
     if (isEmbedded) {
+        // v7.13.78: Add body class for LearnDash CSS overrides (.spl-content full-width)
+        document.body.classList.add('swml-embedded-active');
         // Override state from embed config — skip setup wizard
         if (embedConfig.board)   state.board   = embedConfig.board;
         if (embedConfig.subject) state.subject = embedConfig.subject;
@@ -78,6 +80,18 @@
         // Resolve textName from catalogue
         if (state.text && !state.textName) {
             state.textName = getTextLabel(state.text, state.subject);
+        }
+        // v7.13.34: CW embedded mode — set creative writing state + auto-load project
+        if (state.task && state.task.startsWith('cw_')) {
+            state.board = 'universal';
+            state.subject = 'creative_writing';
+            state.text = 'creative_writing';
+            state.textName = 'Creative Writing';
+            state.mode = 'creative';
+            const cwStepDef = WML.getCwStepDef(state.task);
+            state.cwStep = cwStepDef?.step || null;
+            state.cwTrial = cwStepDef?.trial || null;
+            // Project ID loaded async after boot (renderCanvasWorkspace will handle it)
         }
     }
 
@@ -142,6 +156,10 @@
                 shaderBg.style.background = 'linear-gradient(135deg, #5333ed, #2c003e)';
             }
             shaderInitialized = true;
+
+            // Remove anti-FOUC style injected by PHP (dark background + hidden content)
+            const antiFouc = document.getElementById('swml-anti-fouc');
+            if (antiFouc) antiFouc.remove();
         }
 
         // Crossfade: old content fades out, new content fades in
@@ -223,9 +241,11 @@
         // Include draftType for diagnostic/development canvas (when task is empty but canvas is active)
         if (state.draftType && !state.task) p.draft = state.draftType;
         if (state.phase === 'redraft' || state.isRedraft) p.redraft = '1';
-        if (state.mode && state.mode !== 'exam_prep') p.mode = state.mode;
+        if (state.mode) p.mode = state.mode; // v7.14.1: include all modes (was skipping exam_prep)
+        if (state.planningMode) p.planning_mode = state.planningMode;
         if (state.poem) p.poem = state.poem;
         if (state.unitId) p.unit_id = state.unitId;
+        if (state.exerciseId) p.eid = state.exerciseId; // v7.14.3: exercise unique ID
         const qs = Object.entries(p).filter(([,v]) => v).map(([k,v]) => `${k}=${encodeURIComponent(v)}`).join('&');
         const newUrl = qs ? `${basePath}?${qs}` : basePath;
         if (newUrl !== window.location.pathname + window.location.search) {
@@ -243,6 +263,7 @@
         state.canvasTimer = 0; state.canvasTimerLabel = '';
         state.poem = ''; state.poemTitle = ''; state.poemAuthor = ''; state.poemText = '';
         state.questionPart = ''; state.comparisonPoem = ''; state.comparisonPoemTitle = ''; state.comparisonPoemText = '';
+        state.exerciseId = ''; // v7.14.3: clear exercise ID on reset
         syncUrl(); // Clear URL params on reset
     }
 
@@ -271,8 +292,11 @@
             // Route to the right exercise based on manifest config
             const exerciseConfig = WML.getExerciseConfig(state.task);
 
-            if (exerciseConfig.environment === 'canvas') {
-                // Canvas exercises: assessment, diagnostic, mark_scheme, feedback_discussion
+            if (state.task === 'feedback_discussion' || state.task === 'model_answer_video') {
+                // Lightweight canvas: feedback discussion + model answer video (v7.13.16)
+                WML.renderFeedbackDiscussionCanvas();
+            } else if (exerciseConfig.environment === 'canvas' || exerciseConfig.environment === 'write_only') {
+                // Canvas/write-only exercises: assessment, diagnostic, mark_scheme, outlining, etc.
                 state.canvasTimer = 0;
                 state.step = 0;
                 WML.renderCanvasWorkspace();
@@ -349,6 +373,43 @@
             return;
         }
 
+        // ── Deep link: Creative Writing (v7.13.55) ──
+        // URL: ?task=cw_step_2 (board/subject may or may not be present)
+        if (state.task && state.task.startsWith('cw_')) {
+            state.mode = state.mode || 'creative';
+            state.subject = state.subject || 'creative_writing';
+            state.board = state.board || 'universal';
+            state.text = state.text || 'creative_writing';
+            state.textName = state.textName || 'Creative Writing';
+            // Load project context — use most recent project (or go to naming screen)
+            WML.cwProject.list().then(res => {
+                const projects = res?.projects || [];
+                if (projects.length === 0) {
+                    // No projects — show naming screen
+                    renderCwProjectNaming([], (newProject) => {
+                        state.cwProjectId = newProject.id;
+                        state.canvasTimer = 0;
+                        state.step = 0;
+                        WML.renderCanvasWorkspace();
+                    });
+                    return;
+                }
+                // Use most recently updated project
+                projects.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+                state.cwProjectId = projects[0].id;
+                state.cwProjectName = projects[0].name || '';
+                const exerciseConfig = WML.getExerciseConfig(state.task);
+                if (exerciseConfig.environment === 'canvas' || exerciseConfig.environment === 'write_only') {
+                    state.canvasTimer = 0;
+                    state.step = 0;
+                    WML.renderCanvasWorkspace();
+                } else {
+                    selectTask(state.task);
+                }
+            });
+            return;
+        }
+
         if (state.mode === 'guided' && state.board && state.subject) {
             if (state.text && state.task) {
                 selectTask(state.task);
@@ -359,6 +420,20 @@
                 return;
             }
             renderTextSelect();
+            return;
+        }
+        // v7.14.1: Free practice deep link — if board/text/task are in URL, go straight to exercise
+        if (state.mode === 'exam_prep' && state.board && state.text && state.task) {
+            if (!state.subject) {
+                // Infer subject from text catalogue
+                for (const [subj, cat] of Object.entries(WML.TEXT_CATALOGUE)) {
+                    if (cat.texts?.some(t => t.id === state.text) || cat.skipTextSelect) {
+                        state.subject = subj;
+                        break;
+                    }
+                }
+            }
+            selectTask(state.task);
             return;
         }
         renderExamPrepWizard();
@@ -784,12 +859,12 @@
                 const p2Complete = p2Status === 'complete' || p2Status === 'submitted';
                 const p2InProgress = p2Status === 'in_progress';
 
-                // Map to stepper status values
+                // Map to stepper status values — Phase 2 is never locked (LearnDash handles sequencing)
                 const p1StepperStatus = p1Complete ? 'complete' : p1InProgress ? 'active' : 'not_started';
-                const p2StepperStatus = p2Complete ? 'complete' : p2InProgress ? 'active' : p1Complete ? 'not_started' : 'locked';
+                const p2StepperStatus = p2Complete ? 'complete' : p2InProgress ? 'active' : 'not_started';
 
                 const p1Label = p1Complete ? `✓ Complete${res.initial?.grade ? ' · ' + res.initial.grade : ''}` : p1InProgress ? '◐ In progress' : '○ Not started';
-                const p2Label = p2Complete ? `✓ Complete${res.redraft?.grade ? ' · ' + res.redraft.grade : ''}` : p2InProgress ? '◐ In progress' : p1Complete ? '○ Not started' : '🔒 Locked';
+                const p2Label = p2Complete ? `✓ Complete${res.redraft?.grade ? ' · ' + res.redraft.grade : ''}` : p2InProgress ? '◐ In progress' : '○ Not started';
 
                 console.log('WML Phase Status:', { board: state.board, text: state.text, topic: topicNum, wmlPhase, studentProgress: res, effectiveP1, p1StepperStatus, p2StepperStatus, canvasDebug: debug });
 
@@ -811,9 +886,9 @@
                     },
                     {
                         id: 'phase2',
-                        icon: p1Complete ? SVG_REDRAFT : SVG_PHASE_LOCK,
+                        icon: SVG_REDRAFT,
                         title: 'Phase 2 — Redraft',
-                        desc: p1Complete ? 'Improve your essay with AI guidance. Plan, polish, and get reassessed.' : 'Complete Phase 1 first. Then plan, polish, and get reassessed.',
+                        desc: p1Complete ? 'Improve your essay with AI guidance. Plan, polish, and get reassessed.' : 'Plan, polish, and get reassessed.',
                         status: p2StepperStatus,
                         statusLabel: p2Label,
                         onClick: () => {
@@ -869,13 +944,14 @@
                 const fbStatus = localStorage.getItem(fbKey);
                 const fbDone = fbStatus === 'complete' || fbStatus === 'skipped';
 
+                // All sub-steps unlocked — LearnDash handles sequencing
                 const statuses = {
                     diagnostic: diagnosticDone ? 'complete' : p1InProgress ? 'active' : 'not_started',
                     diagnosticLabel: diagnosticDone ? '✓ Complete · Essay submitted' : p1InProgress ? '◐ In progress' : null,
                     diagnosticGrade: res?.initial?.grade,
-                    assessment: p1Complete ? 'complete' : diagnosticDone ? 'not_started' : 'locked',
+                    assessment: p1Complete ? 'complete' : 'not_started',
                     assessmentLabel: p1Complete ? `✓ Complete${res?.initial?.grade ? ' · ' + res.initial.grade : ''}` : null,
-                    feedback_discussion: fbDone ? 'complete' : p1Complete ? 'not_started' : 'locked',
+                    feedback_discussion: fbDone ? 'complete' : 'not_started',
                     feedbackDiscussionLabel: fbStatus === 'complete' ? '✓ Discussed' : fbStatus === 'skipped' ? '⏭ Skipped' : null,
                 };
 
@@ -898,18 +974,19 @@
                 const msDone = msStatus === 'complete' || msStatus === 'skipped';
                 const maDone = maStatus === 'complete' || maStatus === 'skipped';
 
+                // All sub-steps unlocked — LearnDash handles sequencing
                 const statuses = {
                     mark_scheme: msDone ? 'complete' : 'not_started',
                     markSchemeLabel: msStatus === 'complete' ? '✓ Complete' : msStatus === 'skipped' ? '⏭ Skipped' : null,
-                    model_answer: maDone ? 'complete' : msDone ? 'not_started' : 'locked',
+                    model_answer: maDone ? 'complete' : 'not_started',
                     modelAnswerLabel: maStatus === 'complete' ? '✓ Complete' : maStatus === 'skipped' ? '⏭ Skipped' : null,
-                    planning: redraftInProgress ? 'active' : redraftComplete ? 'complete' : maDone ? 'not_started' : 'locked',
+                    planning: redraftInProgress ? 'active' : redraftComplete ? 'complete' : 'not_started',
                     planningLabel: null,
-                    outlining: redraftComplete ? 'complete' : 'locked',
+                    outlining: redraftComplete ? 'complete' : 'not_started',
                     outliningLabel: null,
-                    polishing: redraftComplete ? 'complete' : 'locked',
+                    polishing: redraftComplete ? 'complete' : 'not_started',
                     polishingLabel: null,
-                    reassessment: redraftComplete ? 'complete' : 'locked',
+                    reassessment: redraftComplete ? 'complete' : 'not_started',
                     reassessmentLabel: redraftComplete ? `✓ Complete${redraftData.grade ? ' · ' + redraftData.grade : ''}` : null
                 };
 
@@ -1064,6 +1141,284 @@
         }
     }
 
+    // ── Creative Writing Step Dashboard (v7.13.30) ──
+    // Shows all 29 steps + 6 trials as cards grouped by phase.
+    // Loads project data from CW project storage to show progress.
+    // CW_STEPS moved to wml-core.js (v7.13.34) — use WML.CW_STEPS
+    const CW_STEPS = WML.CW_STEPS;
+
+    // ── Step 0: Project Naming Screen (v7.13.55) ──
+    function renderCwProjectNaming(projects, onCreated) {
+        const existingNames = (projects || []).map(p => (p.name || '').toLowerCase().trim());
+        transitionSetup(inner => {
+            inner.appendChild(renderLogo());
+            inner.appendChild(el('h2', { textContent: 'Name Your Project', style: { marginBottom: '8px' } }));
+            inner.appendChild(el('p', { className: 'swml-setup-hint', textContent: 'Every great story needs a working title. You can change it later.' }));
+
+            const card = el('div', { className: 'swml-context-card', style: { maxWidth: '480px', margin: '24px auto', padding: '28px' } });
+
+            const SVG_QUILL = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7DF9E9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1.5 -1.5"/><path d="M14.5 3.5c3.5 -1 6.5 0 7.5 1l-2 2c-1.5 -.5 -2.5 0 -3.5 1l-4 4c-1 1 -1.5 2.5 -1 3.5l2 2c-1 1 -3 2 -7 2l-1 1"/></svg>';
+            card.innerHTML = '<div style="text-align:center;margin-bottom:16px">' + SVG_QUILL + '</div>';
+
+            const nameInput = el('input', {
+                type: 'text',
+                placeholder: 'e.g. The Lost Garden, My Dystopian Future...',
+                maxLength: 60,
+                style: { width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '15px', outline: 'none', fontFamily: 'inherit' } });
+            card.appendChild(nameInput);
+
+            const errorMsg = el('div', { style: { color: '#ff6b6b', fontSize: '12px', marginTop: '6px', minHeight: '18px' } });
+            card.appendChild(errorMsg);
+
+            const createBtn = build3DButton('Create Project', '#5333ed', async () => {
+                const name = nameInput.value.trim();
+                if (!name) { errorMsg.textContent = 'Please enter a project name.'; return; }
+                if (name.length < 2) { errorMsg.textContent = 'Name must be at least 2 characters.'; return; }
+                if (existingNames.includes(name.toLowerCase())) { errorMsg.textContent = 'You already have a project with this name. Choose a different one.'; return; }
+                errorMsg.textContent = '';
+                createBtn.disabled = true;
+                createBtn.style.opacity = '0.5';
+                const res = await WML.cwProject.create(name, 'standalone');
+                if (res?.success && res.project) {
+                    onCreated(res.project);
+                } else {
+                    errorMsg.textContent = 'Failed to create project. Please try again.';
+                    createBtn.disabled = false;
+                    createBtn.style.opacity = '1';
+                }
+            });
+            createBtn.style.marginTop = '16px';
+            createBtn.style.width = '100%';
+            card.appendChild(createBtn);
+
+            // Enter key submits
+            nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') createBtn.click(); });
+
+            inner.appendChild(card);
+
+            const backRow = el('div', { className: 'swml-back-row', style: { justifyContent: 'center', marginTop: '12px' } });
+            backRow.appendChild(el('button', { className: 'swml-back-link', textContent: '\u2190 Back', onClick: () => { resetState(); renderExamPrepWizard(); } }));
+            inner.appendChild(backRow);
+
+            // Auto-focus the input
+            requestAnimationFrame(() => nameInput.focus());
+        });
+    }
+
+    // ── Project Selector (v7.13.55) ──
+    function renderCwProjectSelector(projects) {
+        // Sort by most recently updated
+        projects.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+        transitionSetup(inner => {
+            inner.appendChild(renderLogo());
+            inner.appendChild(el('h2', { textContent: 'Your Projects', style: { marginBottom: '8px' } }));
+            inner.appendChild(el('p', { className: 'swml-setup-hint', textContent: 'Continue a project or start something new' }));
+
+            const grid = el('div', { className: 'swml-cw-project-grid' });
+            projects.forEach(p => {
+                const pCard = el('div', { className: 'swml-cw-project-card' + (p.status === 'completed' ? ' completed' : '') });
+                const statusIcon = p.status === 'completed' ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="#1CD991"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M7.5 12.5l3 3 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>' : '';
+                pCard.innerHTML = statusIcon;
+                pCard.appendChild(el('div', { className: 'swml-cw-project-name', textContent: p.name || 'Untitled' }));
+                pCard.appendChild(el('div', { className: 'swml-cw-project-meta', textContent: p.status === 'completed' ? 'Completed' : `Step ${p.current_step || 0} of 29` }));
+                const updated = p.updated ? new Date(p.updated) : null;
+                if (updated) pCard.appendChild(el('div', { className: 'swml-cw-project-date', textContent: 'Last worked: ' + updated.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) }));
+                pCard.addEventListener('click', () => {
+                    renderCreativeWritingDashboard(p.id);
+                });
+                grid.appendChild(pCard);
+            });
+
+            // "New Project" card
+            const newCard = el('div', { className: 'swml-cw-project-card swml-cw-project-new' });
+            newCard.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+            newCard.appendChild(el('div', { className: 'swml-cw-project-name', textContent: 'New Project' }));
+            if (projects.some(p => p.status !== 'completed')) {
+                newCard.appendChild(el('div', { className: 'swml-cw-project-meta', textContent: 'Finish your current project first', style: { color: '#F1C40F' } }));
+            }
+            newCard.addEventListener('click', () => {
+                renderCwProjectNaming(projects, (newProject) => {
+                    renderCreativeWritingDashboard(newProject.id);
+                });
+            });
+            grid.appendChild(newCard);
+
+            inner.appendChild(grid);
+
+            const backRow = el('div', { className: 'swml-back-row', style: { justifyContent: 'center', marginTop: '12px' } });
+            backRow.appendChild(el('button', { className: 'swml-back-link', textContent: '\u2190 Back', onClick: () => { resetState(); renderExamPrepWizard(); } }));
+            inner.appendChild(backRow);
+        });
+    }
+
+    async function renderCreativeWritingDashboard(forceProjectId) {
+        // Load projects
+        let projectsRes = await WML.cwProject.list();
+        let projects = projectsRes?.projects || [];
+
+        // v7.13.55: No projects → show naming screen (Step 0)
+        if (projects.length === 0) {
+            renderCwProjectNaming([], (newProject) => {
+                renderCreativeWritingDashboard(newProject.id);
+            });
+            return;
+        }
+
+        // v7.13.55: Multiple projects + no forceProjectId → show selector
+        if (projects.length > 1 && !forceProjectId) {
+            renderCwProjectSelector(projects);
+            return;
+        }
+
+        // Select the requested project or most recent
+        let project = forceProjectId
+            ? projects.find(p => p.id === forceProjectId) || projects[0]
+            : projects.sort((a, b) => new Date(b.updated) - new Date(a.updated))[0];
+
+        // Load full project data for step completion
+        let projectData = null;
+        if (project) {
+            const loadRes = await WML.cwProject.load(project.id);
+            projectData = loadRes?.project || null;
+        }
+        const completedSteps = projectData?.step_completion || {};
+
+        transitionSetup(inner => {
+            inner.appendChild(renderLogo());
+
+            // Context card with project name
+            const card = el('div', { className: 'swml-context-card' });
+            card.appendChild(el('div', { className: 'swml-context-label', textContent: 'Creative Writing Masterclass' }));
+            card.appendChild(renderBadges([project?.name || 'My Story', `Step ${project?.current_step || 0} of 29`]));
+
+            const backRow = el('div', { className: 'swml-back-row' });
+            backRow.appendChild(el('button', { className: 'swml-back-link', textContent: '\u2190 Back', onClick: () => { resetState(); renderExamPrepWizard(); } }));
+
+            // Switch project (if multiple)
+            if (projects.length > 1) {
+                backRow.appendChild(el('button', { className: 'swml-back-link muted', textContent: 'Switch Project', onClick: () => {
+                    renderCwProjectSelector(projects);
+                }}));
+            }
+
+            // New Project button
+            backRow.appendChild(el('button', { className: 'swml-back-link muted', textContent: '+ New Project', onClick: () => {
+                renderCwProjectNaming(projects, (newProject) => {
+                    renderCreativeWritingDashboard(newProject.id);
+                });
+            }}));
+
+            card.appendChild(backRow);
+            inner.appendChild(card);
+
+            inner.appendChild(el('h2', { textContent: 'Your Creative Writing Journey' }));
+            inner.appendChild(el('p', { className: 'swml-setup-hint', textContent: 'Build your story step by step \u2014 each layer adds depth to your writing' }));
+
+            // Scrollable container for all phase sections
+            const scrollWrap = el('div', { className: 'swml-cw-scroll-wrap' });
+
+            // Phase groups
+            const phases = [
+                { key: 'planning', title: 'Planning Phase', desc: 'Discover your voice, find your story, and plan your plot' },
+                { key: 'drafting', title: 'Drafting Cycle', desc: '7 progressive drafts — each adding a new creative layer' },
+                { key: 'polish',   title: 'Polish Phase', desc: 'Perfect your final draft and reflect on your growth' },
+            ];
+
+            phases.forEach(phase => {
+                const section = el('div', { className: 'swml-cw-phase-section' });
+                section.appendChild(el('h3', { className: 'swml-cw-phase-title', textContent: phase.title }));
+                section.appendChild(el('p', { className: 'swml-cw-phase-desc', textContent: phase.desc }));
+
+                const grid = el('div', { className: 'swml-cw-step-grid' });
+                const phaseSteps = CW_STEPS.filter(s => s.phase === phase.key);
+
+                phaseSteps.forEach((stepDef, idx) => {
+                    const stepKey = stepDef.step || stepDef.id;
+                    const isComplete = !!completedSteps[stepKey];
+                    const isTrial = !!stepDef.trial;
+                    const isDraft = !!stepDef.draft;
+
+                    // Determine recommended order indicator
+                    const sequenceIdx = CW_STEPS.indexOf(stepDef);
+                    const prevStep = sequenceIdx > 0 ? CW_STEPS[sequenceIdx - 1] : null;
+                    const prevKey = prevStep ? (prevStep.step || prevStep.id) : null;
+                    const prevComplete = prevKey ? !!completedSteps[prevKey] : true;
+                    const highestComplete = project?.current_step || 0;
+                    const stepNum = stepDef.step || 0;
+                    const needsEarlierSteps = stepNum > 1 && highestComplete < stepNum - 1 && !isComplete;
+
+                    const stepCard = el('div', {
+                        className: 'swml-cw-step-card'
+                            + (isComplete ? ' complete' : '')
+                            + (isTrial ? ' trial' : '')
+                            + (isDraft ? ' draft' : ''),
+                    });
+
+                    // Step number badge
+                    const numBadge = el('div', { className: 'swml-cw-step-num' });
+                    if (isTrial) {
+                        numBadge.textContent = 'T' + stepDef.trial;
+                        numBadge.classList.add('trial-badge');
+                    } else {
+                        numBadge.textContent = stepDef.step;
+                    }
+                    stepCard.appendChild(numBadge);
+
+                    // Title
+                    stepCard.appendChild(el('div', { className: 'swml-cw-step-label', textContent: stepDef.label }));
+
+                    // Tier indicator
+                    const tierLabel = stepDef.tier === 'si' ? 'SI Guided' : 'Workbook';
+                    stepCard.appendChild(el('div', { className: 'swml-cw-step-tier ' + stepDef.tier, textContent: tierLabel }));
+
+                    // Status
+                    const statusEl = el('div', { className: 'swml-cw-step-status' });
+                    if (isComplete) {
+                        statusEl.textContent = 'Complete';
+                        statusEl.classList.add('complete');
+                    } else if (needsEarlierSteps) {
+                        statusEl.textContent = 'Start from Step ' + (highestComplete + 1);
+                        statusEl.classList.add('suggestion');
+                    } else {
+                        statusEl.textContent = 'Not started';
+                        statusEl.classList.add('not-started');
+                    }
+                    stepCard.appendChild(statusEl);
+
+                    // Click handler — store which CW step we're opening
+                    stepCard.addEventListener('click', () => {
+                        state.board = 'universal';
+                        state.subject = 'creative_writing';
+                        state.text = 'creative_writing';
+                        state.textName = 'Creative Writing';
+                        state.mode = 'creative';
+                        state.cwProjectId = project?.id;
+                        state.cwProjectName = project?.name || '';
+                        state.cwStep = stepDef.step || null;
+                        state.cwTrial = stepDef.trial || null;
+                        // Set task for protocol router
+                        if (stepDef.trial) {
+                            state.task = 'cw_trial_' + stepDef.trial;
+                        } else {
+                            state.task = 'cw_step_' + stepDef.step;
+                        }
+                        // v7.13.34: Render the CW exercise canvas
+                        state.canvasTimer = 0;
+                        state.step = 0;
+                        WML.renderCanvasWorkspace();
+                    });
+
+                    grid.appendChild(stepCard);
+                });
+
+                section.appendChild(grid);
+                scrollWrap.appendChild(section);
+            });
+
+            inner.appendChild(scrollWrap);
+        });
+    }
+
     // ── Task Selection (only for exam prep or guided without task) ──
     function renderTaskSelect() {
         transitionSetup(inner => {
@@ -1132,7 +1487,11 @@
                     const disabled = !t.enabled;
                     essayInner.appendChild(el('button', {
                         className: 'swml-task-btn',
-                        onClick: () => { if (!disabled) selectTask(t.id); },
+                        onClick: () => {
+                            if (disabled) return;
+                            if (t.id === 'polishing' && state.mode === 'exam_prep') { renderWorkSelect(); return; }
+                            selectTask(t.id);
+                        },
                         style: disabled ? { opacity: '0.4', cursor: 'not-allowed' } : {},
                     }, [
                         el('span', { className: 'icon', innerHTML: t.icon }),
@@ -1337,6 +1696,7 @@
                     onClick: () => {
                         state.planningMode = 'C';
                         state.advancedLevel = l.level;
+                        // Level 1 = fully random (no question needed), Levels 2-3 = student chooses question
                         selectTask('model_answer');
                     },
                 }, [
@@ -1351,6 +1711,216 @@
                 grid.appendChild(btn);
             });
             inner.appendChild(grid);
+        });
+    }
+
+    // ══════════════════════════════════════════
+    //  QUESTION SELECTOR (Free Practice)
+    // ══════════════════════════════════════════
+    // Shown before essay_plan, model_answer, planning, assessment in free practice mode.
+    // Three sources: mastery topics, saved questions from Exam Question Creator, custom input.
+
+    const TASKS_NEEDING_QUESTION = ['essay_plan', 'model_answer', 'planning', 'assessment'];
+
+    function needsQuestionSelect(taskId) {
+        // Only in free practice (not programme mode where topic is already set)
+        if (state.mode === 'guided' && state.topicNumber) return false;
+        return TASKS_NEEDING_QUESTION.includes(taskId);
+    }
+
+    function renderQuestionSelect(taskId) {
+        transitionSetup(inner => {
+            inner.appendChild(renderLogo());
+
+            const card = el('div', { className: 'swml-context-card' });
+            card.appendChild(el('div', { className: 'swml-context-label', textContent: 'Select a Question' }));
+            const taskLabel = taskId === 'essay_plan' ? 'Essay Plan' : taskId === 'model_answer' ? 'Model Answer' : taskId === 'assessment' ? 'Assessment' : 'Planning';
+            card.appendChild(renderBadges([state.board.toUpperCase(), ucfirst(state.subject), state.textName || ucfirst(state.text), taskLabel]));
+            const backRow = el('div', { className: 'swml-back-row' });
+            backRow.appendChild(el('button', { className: 'swml-back-link', textContent: '\u2190 Back', onClick: () => {
+                if (taskId === 'essay_plan') renderEssayPlanModeSelect();
+                else if (taskId === 'model_answer') renderModelAnswerSetup();
+                else renderTaskSelect('back');
+            }}));
+            card.appendChild(backRow);
+            inner.appendChild(card);
+
+            inner.appendChild(el('h2', { textContent: 'Which question?' }));
+            inner.appendChild(el('p', { className: 'swml-setup-hint', textContent: 'Choose a question from your topics, your question bank, or write your own' }));
+
+            const container = el('div', { className: 'swml-question-select' });
+            const loading = el('div', { className: 'swml-setup-hint', textContent: 'Loading questions...' });
+            container.appendChild(loading);
+            inner.appendChild(container);
+
+            // Fetch topics + saved questions in parallel
+            Promise.all([
+                apiGet(API.topicQuestions + `?board=${state.board}&text=${state.text}`).catch(() => ({ topics: [] })),
+                apiGet(API.savedQuestions + `?board=${state.board}&text=${state.text}`).catch(() => ({ questions: [] })),
+            ]).then(([topicRes, savedRes]) => {
+                container.innerHTML = '';
+                const topics = topicRes.topics || [];
+                const saved = savedRes.questions || [];
+
+                // ── Section 1: Mastery Programme Topics ──
+                if (topics.length > 0) {
+                    container.appendChild(el('div', { className: 'swml-qs-section-title', textContent: `Mastery Topics (${topics.length})` }));
+                    const topicGrid = el('div', { className: 'swml-qs-grid' });
+                    topics.forEach(t => {
+                        const label = t.label || `Topic ${t.topic_number}`;
+                        const qText = t.question_text || t.part_a_question || '';
+                        const marks = t.marks || (t.part_a_marks && t.part_b_marks ? (t.part_a_marks + t.part_b_marks) : 0);
+                        const aos = t.aos || [t.part_a_aos, t.part_b_aos].filter(Boolean).join(',');
+
+                        topicGrid.appendChild(el('button', { className: 'swml-qs-card', onClick: () => {
+                            state.question = qText;
+                            state.marks = marks;
+                            state.aos = aos;
+                            state.topicLabel = label;
+                            selectTask(taskId);
+                        }}, [
+                            el('div', { className: 'swml-qs-card-num', textContent: `T${t.topic_number}` }),
+                            el('div', { className: 'swml-qs-card-label', textContent: label }),
+                            qText ? el('div', { className: 'swml-qs-card-q', textContent: qText.length > 100 ? qText.slice(0, 100) + '...' : qText }) : null,
+                            marks ? el('div', { className: 'swml-qs-card-marks', textContent: `${marks} marks` }) : null,
+                        ].filter(Boolean)));
+                    });
+                    container.appendChild(topicGrid);
+                }
+
+                // ── Section 2: Saved Questions (from Exam Question Creator) ──
+                if (saved.length > 0) {
+                    container.appendChild(el('div', { className: 'swml-qs-section-title', textContent: `Your Questions (${saved.length})` }));
+                    const savedGrid = el('div', { className: 'swml-qs-grid' });
+                    saved.forEach((q, i) => {
+                        savedGrid.appendChild(el('button', { className: 'swml-qs-card', onClick: () => {
+                            state.question = q.full_text || q.summary || '';
+                            state.marks = q.marks || '';
+                            state.aos = q.aos || '';
+                            selectTask(taskId);
+                        }}, [
+                            q.theme ? el('div', { className: 'swml-qs-card-num', textContent: q.theme.slice(0, 20) }) : el('div', { className: 'swml-qs-card-num', textContent: `Q${i + 1}` }),
+                            el('div', { className: 'swml-qs-card-label', textContent: q.summary || `Question ${i + 1}` }),
+                            q.location ? el('div', { className: 'swml-qs-card-q', textContent: q.location }) : null,
+                        ].filter(Boolean)));
+                    });
+                    container.appendChild(savedGrid);
+                }
+
+                // ── Section 3: Custom Question ──
+                container.appendChild(el('div', { className: 'swml-qs-section-title', textContent: 'Custom Question' }));
+                const customWrap = el('div', { className: 'swml-qs-custom' });
+                const customInput = el('textarea', {
+                    className: 'swml-qs-custom-input',
+                    placeholder: 'Type or paste your own question here...',
+                    rows: '3',
+                });
+                customInput.style.cssText = 'width:100%;border:1px solid rgba(255,255,255,0.15);border-radius:8px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.9);padding:12px;font-size:13px;font-family:inherit;resize:vertical;min-height:70px;outline:none;';
+                customWrap.appendChild(customInput);
+                const customBtn = el('button', {
+                    className: 'swml-task-btn',
+                    style: { marginTop: '8px', maxWidth: '200px' },
+                    textContent: 'Use this question',
+                    onClick: () => {
+                        const q = customInput.value.trim();
+                        if (!q) { customInput.focus(); return; }
+                        state.question = q;
+                        state.marks = '';
+                        state.aos = '';
+                        selectTask(taskId);
+                    },
+                });
+                customWrap.appendChild(customBtn);
+                container.appendChild(customWrap);
+
+                // ── Section 4: Skip (no question) ──
+                container.appendChild(el('button', {
+                    className: 'swml-back-link muted',
+                    style: { marginTop: '16px', display: 'block', textAlign: 'center' },
+                    textContent: 'Skip \u2014 let the AI choose',
+                    onClick: () => { state.question = ''; selectTask(taskId); },
+                }));
+            });
+        });
+    }
+
+    // ══════════════════════════════════════════
+    //  WORK SELECTOR (Polish My Writing)
+    // ══════════════════════════════════════════
+    // Lists saved documents so the student can choose which one to polish.
+
+    function renderWorkSelect() {
+        transitionSetup(inner => {
+            inner.appendChild(renderLogo());
+
+            const card = el('div', { className: 'swml-context-card' });
+            card.appendChild(el('div', { className: 'swml-context-label', textContent: 'Select Work to Polish' }));
+            card.appendChild(renderBadges([state.board.toUpperCase(), ucfirst(state.subject), state.textName || ucfirst(state.text), 'Polishing']));
+            const backRow = el('div', { className: 'swml-back-row' });
+            backRow.appendChild(el('button', { className: 'swml-back-link', textContent: '\u2190 Back', onClick: () => renderTaskSelect('back') }));
+            card.appendChild(backRow);
+            inner.appendChild(card);
+
+            inner.appendChild(el('h2', { textContent: 'Which piece of work?' }));
+            inner.appendChild(el('p', { className: 'swml-setup-hint', textContent: 'Choose a previous essay or draft to refine and polish' }));
+
+            const container = el('div', { className: 'swml-question-select' });
+            const loading = el('div', { className: 'swml-setup-hint', textContent: 'Loading your saved work...' });
+            container.appendChild(loading);
+            inner.appendChild(container);
+
+            apiGet(API.canvasList + `?board=${state.board}&text=${state.text}`).then(res => {
+                container.innerHTML = '';
+                const docs = (res.documents || []).filter(d => (d.wordCount || 0) > 20);
+
+                if (docs.length === 0) {
+                    container.appendChild(el('div', { className: 'swml-setup-hint', style: { textAlign: 'center', padding: '24px 0' }, textContent: 'No saved work found for this text yet. Write an essay first, then come back to polish it.' }));
+                    container.appendChild(el('button', {
+                        className: 'swml-task-btn', style: { maxWidth: '260px', margin: '12px auto', display: 'block' },
+                        textContent: 'Write an essay first',
+                        onClick: () => renderTaskSelect('back'),
+                    }));
+                    return;
+                }
+
+                container.appendChild(el('div', { className: 'swml-qs-section-title', textContent: `Your Work (${docs.length})` }));
+                const grid = el('div', { className: 'swml-qs-grid' });
+                docs.forEach(d => {
+                    // Parse key to extract topic info: swml_canvas_board_text_topicN[_suffix]
+                    const keyParts = d.key.replace('swml_canvas_', '').split('_');
+                    const topicNum = d.topicNumber || '';
+                    const suffix = d.key.match(/_([a-z]+)$/)?.[1] || '';
+                    const suffixLabels = { eq: 'Exam Question', ep: 'Essay Plan', ma: 'Model Answer', qa: 'Quote Analysis', cn: 'Conceptual Notes', ms: 'Mark Scheme', redraft: 'Redraft', outline: 'Outline', fb: 'Feedback' };
+                    const typeLabel = suffixLabels[suffix] || (topicNum ? `Topic ${topicNum}` : 'Essay');
+                    const dateStr = d.savedAt ? new Date(d.savedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
+
+                    grid.appendChild(el('button', { className: 'swml-qs-card', onClick: () => {
+                        if (d.topicNumber) state.topicNumber = d.topicNumber;
+                        selectTask('polishing');
+                    }}, [
+                        el('div', { className: 'swml-qs-card-num', textContent: typeLabel }),
+                        el('div', { className: 'swml-qs-card-label', textContent: `${d.wordCount || 0} words` }),
+                        dateStr ? el('div', { className: 'swml-qs-card-q', textContent: `Saved ${dateStr}` }) : null,
+                    ].filter(Boolean)));
+                });
+                container.appendChild(grid);
+
+                // Option to polish without loading (start fresh)
+                container.appendChild(el('button', {
+                    className: 'swml-back-link muted',
+                    style: { marginTop: '16px', display: 'block', textAlign: 'center' },
+                    textContent: 'Skip \u2014 paste my own text',
+                    onClick: () => selectTask('polishing'),
+                }));
+            }).catch(() => {
+                container.innerHTML = '';
+                container.appendChild(el('div', { className: 'swml-setup-hint', textContent: 'Could not load saved work. You can still start polishing.' }));
+                container.appendChild(el('button', {
+                    className: 'swml-task-btn', style: { maxWidth: '260px', margin: '12px auto', display: 'block' },
+                    textContent: 'Start polishing',
+                    onClick: () => selectTask('polishing'),
+                }));
+            });
         });
     }
 
@@ -1473,7 +2043,7 @@
                 bottomRow.appendChild(el('button', { className: 'swml-welcome-pill', textContent: '✍️ Creative Writing', onClick: () => {
                     state.board = 'universal'; state.subject = 'creative_writing';
                     state.text = 'creative_writing'; state.textName = 'Creative Writing';
-                    state.mode = 'creative'; renderTaskSelect();
+                    state.mode = 'creative'; renderCreativeWritingDashboard();
                 }}));
                 bottomRow.appendChild(el('button', { className: 'swml-welcome-pill', textContent: '📢 Persuasive Writing', onClick: () => {
                     state.mode = 'exam_prep';
@@ -1602,12 +2172,12 @@
             // Board-specific subject availability
             const boardSubjects = {
                 'aqa':            ['shakespeare', 'modern_text', '19th_century', 'poetry_anthology', 'unseen_poetry', 'language1', 'language2'],
-                'ocr':            ['shakespeare', '19th_century', 'poetry_anthology', 'language1', 'language2'],
+                'ocr':            ['shakespeare', '19th_century', 'modern_prose', 'poetry_anthology', 'language1', 'language2'],
                 'eduqas':         ['shakespeare', 'modern_text', '19th_century', 'poetry_anthology', 'unseen_poetry', 'language1', 'language2'],
                 'edexcel':        ['shakespeare', 'modern_text', '19th_century', 'poetry_anthology', 'unseen_poetry', 'language1', 'language2'],
                 'edexcel-igcse':  ['shakespeare', '19th_century', 'modern_text', 'modern_prose', 'poetry_anthology', 'prose_anthology', 'nonfiction_anthology', 'language1', 'language2'],
                 'sqa':            ['critical_reading', 'poetry_anthology'],
-                'ccea':           ['prose', 'unseen_prose', 'poetry_anthology'],
+                'ccea':           ['prose', 'unseen_prose', 'drama', 'poetry_anthology'],
                 'cambridge-igcse':['poetry_anthology'],
             };
             const available = boardSubjects[state.board] || [];
@@ -2064,6 +2634,10 @@
         }
 
         state.task = taskId;
+        // v7.14.3: Generate exercise ID if not resuming an existing one
+        if (!state.exerciseId) {
+            state.exerciseId = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).slice(0, 12);
+        }
         syncUrl(); // Update URL bar with current task
         allVideosCache = null; // Reset video cache for new task
         videoTooltipShownForStep = 0;
@@ -2100,7 +2674,22 @@
             if (res.session_id) { state.sessionId = res.session_id; state.chatId = res.session_id; }
         } catch (e) { console.warn('Session creation failed:', e); }
 
-        if (taskId === 'planning' || taskId === 'assessment' || taskId === 'polishing' || taskId === 'exam_question' || taskId === 'essay_plan' || taskId === 'model_answer' || taskId === 'verbal_rehearsal' || taskId === 'conceptual_notes' || taskId === 'memory_practice') {
+        // v7.13.78: exam prep restored to chat — canvas needs dedicated renderer
+        const chatTasks = ['planning', 'assessment', 'polishing', 'exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'outlining'];
+        const exerciseConfig = WML.EXERCISE_MANIFEST?.[taskId] || {};
+
+        // v7.13.92: All canvas tasks (including exam prep) → renderCanvasWorkspace (one renderer for all)
+        if (exerciseConfig.environment === 'canvas') {
+            const root = $('#swml-root');
+            root.style.transition = 'opacity 0.3s ease';
+            root.style.opacity = '0';
+            setTimeout(() => {
+                destroyShader();
+                state.canvasTimer = 0;
+                WML.renderCanvasWorkspace();
+                root.style.opacity = '1';
+            }, 300);
+        } else if (chatTasks.includes(taskId)) {
             const root = $('#swml-root');
             root.style.transition = 'opacity 0.3s ease';
             root.style.opacity = '0';
@@ -5847,6 +6436,9 @@ Before marking the introduction, ask the student to confirm their essay structur
     WML.showPhaseCompleteCard = showPhaseCompleteCard;
     WML.extractAndSavePlan = extractAndSavePlan;
     WML.refreshPlan = refreshPlan;
+
+    // v7.13.34: CW dashboard — accessible from assessment module
+    WML.renderCreativeWritingDashboard = renderCreativeWritingDashboard;
 
     // Embedded mode flag — accessible from assessment module (v7.13.11)
     WML.isEmbedded = isEmbedded;

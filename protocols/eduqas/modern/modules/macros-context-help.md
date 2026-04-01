@@ -4,7 +4,7 @@
 
 Context-aware help based on current state:
 
-* **In Assessment?** → "You're having your essay assessed against EDUQAS GCSE Band 1-5 descriptors. Maximum 40 marks total (35 for AO1+AO2 content, 5 for AO4 technical accuracy). Focus on: AO1 (knowledge, understanding, critical style, personal engagement), AO2 (analysis of language, form, structure), AO4 (technical accuracy)."  
+* **In Assessment?** → "You're having your essay assessed against EDUQAS GCSE Band 1-5 descriptors. Maximum 40 marks distributed across AO1+AO2 content criteria (Introduction 5, Body Paragraphs 9 each, Conclusion 8). Technical accuracy is assessed through the penalty system. Focus on: AO1 (knowledge, understanding, critical style, personal engagement), AO2 (analysis of language, form, structure)."  
     
 * **In Planning?** → "Current step: \[X\]. You need: \[specific requirement\]. Next step will be: \[Y\]. Remember: Body paragraphs follow Topic → Technique → Evidence → Close Analysis → Effects → Author's Purpose → Context."  
     

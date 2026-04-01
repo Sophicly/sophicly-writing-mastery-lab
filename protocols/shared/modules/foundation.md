@@ -578,14 +578,12 @@ IF unable to justify: **REDIRECT:** "Let's work on developing your own analysis 
 
 ### **Mark Range Verification**
 
-* Before awarding marks, check they don't exceed section maximum:  
-  - Introduction: 3 marks max  
-  - Body Paragraph 1: 7 marks max  
-  - Body Paragraph 2: 7 marks max  
-  - Body Paragraph 3: 7 marks max  
-  - Conclusion: 6 marks max  
-  - **AO4** (Shakespeare/Modern only): 4 marks max — **DO NOT display AO4 marks to the student.** Calculate AO4 marks internally and add them silently to the total score. Only show AO4 qualitative feedback (spelling, punctuation, grammar observations). Never write "AO4: X/4" in your response.
-  - TOTAL: 30 marks max (19th Century/Poetry) OR 34 marks max (Shakespeare/Modern, includes AO4 added silently)  
+* Before awarding marks, check they don't exceed section maximum (exact marks vary by board — see board-specific protocol):  
+  - Introduction: check board protocol for max  
+  - Body Paragraphs: check board protocol for max per paragraph  
+  - Conclusion: check board protocol for max  
+  - AO4 marks are absorbed into section criteria — there is NO separate AO4 step. SPaG quality is handled through penalty codes (G1, H1, P1).  
+  - TOTAL: varies by board (AQA: 34, EDUQAS: 40, Edexcel: 40, OCR: 40)  
 * If calculation error detected, adjust to maximum and note the correction  
 * Execute RANGE\_CHECK() before delivering feedback
 

@@ -92,8 +92,7 @@ IF word\_count \< 650:
 * Body Paragraph 1 (1 paragraph with anchor quote from beginning \- 7 marks)  
 * Body Paragraph 2 (1 paragraph with anchor quote from middle \- 7 marks)  
 * Body Paragraph 3 (1 paragraph with anchor quote from end \- 7 marks)  
-* Conclusion (1 paragraph \- 6 marks)  
-* **Plus AO4 (SPaG) for Shakespeare/Modern texts:** 4 marks holistic assessment
+* Conclusion (1 paragraph \- marks vary by board)
 
 IF paragraph\_count \!= 5: **\[SAY\]** "AQA essays require a 5-paragraph structure: Introduction \+ 3 Body Paragraphs \+ Conclusion. You've submitted \[X\] paragraphs.
 

@@ -181,6 +181,37 @@ class SWML_REST_API {
             'methods' => 'GET', 'callback' => [$this, 'get_learning_profile'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
+
+        // Creative writing project storage (v7.13.30)
+        register_rest_route($namespace, '/cw-project', [
+            'methods' => 'POST', 'callback' => [$this, 'save_cw_project'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/cw-project', [
+            'methods' => 'GET', 'callback' => [$this, 'load_cw_project'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/cw-project/artifact', [
+            'methods' => 'POST', 'callback' => [$this, 'save_cw_artifact'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/cw-project/artifact', [
+            'methods' => 'GET', 'callback' => [$this, 'load_cw_artifact'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/cw-project/trial', [
+            'methods' => 'POST', 'callback' => [$this, 'save_cw_trial'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/cw-project/step', [
+            'methods' => 'POST', 'callback' => [$this, 'complete_cw_step'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        // v7.13.60: Plot structure templates — serves markdown as TipTap HTML
+        register_rest_route($namespace, '/cw-project/plot-template', [
+            'methods' => 'GET', 'callback' => [$this, 'get_plot_template'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
     }
 
     // ═══════════════════════════════════════════
@@ -835,16 +866,14 @@ class SWML_REST_API {
         $word_count = absint($params['wordCount'] ?? 0);
         $comments = $params['comments'] ?? null;
         $topic_number = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
+        $suffix = sanitize_text_field($params['suffix'] ?? '');
 
         if (empty($board) || empty($text)) {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
         }
 
-        // Build meta key — includes topic number for multi-document support
-        $meta_key = 'swml_canvas_' . $board . '_' . $text;
-        if ($topic_number !== null && $topic_number > 0) {
-            $meta_key .= '_t' . $topic_number;
-        }
+        // Build meta key — includes topic number + exercise suffix for document isolation
+        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix);
 
         $doc = [
             'html'       => $html,
@@ -859,12 +888,15 @@ class SWML_REST_API {
         if ($topic_number !== null) {
             $doc['topicNumber'] = $topic_number;
         }
+        if (!empty($suffix)) {
+            $doc['suffix'] = $suffix;
+        }
 
         // wp_slash prevents WordPress's internal wp_unslash from stripping backslashes in JSON
         $result = update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($doc)));
 
         // Also fire a hook so the student data plugin can pick this up
-        do_action('sophicly_canvas_saved', $user_id, $board, $text, $html, $word_count, $topic_number);
+        do_action('sophicly_canvas_saved', $user_id, $board, $text, $html, $word_count, $topic_number, $suffix);
 
         // Check if write actually succeeded
         if ($result === false) {
@@ -892,15 +924,13 @@ class SWML_REST_API {
         $text  = sanitize_text_field($request->get_param('text') ?? '');
         $topic_number = $request->get_param('topicNumber');
         $topic_number = ($topic_number !== null && $topic_number !== '') ? absint($topic_number) : null;
+        $suffix = sanitize_text_field($request->get_param('suffix') ?? '');
 
         if (empty($board) || empty($text)) {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
         }
 
-        $meta_key = 'swml_canvas_' . $board . '_' . $text;
-        if ($topic_number !== null && $topic_number > 0) {
-            $meta_key .= '_t' . $topic_number;
-        }
+        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix);
 
         $raw = get_user_meta($user_id, $meta_key, true);
         if (empty($raw)) {
@@ -1016,6 +1046,7 @@ class SWML_REST_API {
         $board        = sanitize_text_field($params['board'] ?? '');
         $text         = sanitize_text_field($params['text'] ?? '');
         $topic_number = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
+        $suffix       = sanitize_text_field($params['suffix'] ?? '');
         $student_id   = absint($params['studentId'] ?? get_current_user_id());
 
         // Security: verify tutor is authorized for this student (v7.12.37)
@@ -1035,10 +1066,7 @@ class SWML_REST_API {
             return new WP_Error('missing_data', 'Missing board or text', ['status' => 400]);
         }
 
-        $meta_key    = 'swml_canvas_' . $board . '_' . $text;
-        if ($topic_number !== null && $topic_number > 0) {
-            $meta_key .= '_t' . $topic_number;
-        }
+        $meta_key    = $this->canvas_meta_key($board, $text, $topic_number, $suffix);
         $signoff_key = $meta_key . '_signoff';
 
         $signoff_data = [
@@ -1066,15 +1094,13 @@ class SWML_REST_API {
         $text         = sanitize_text_field($request->get_param('text') ?? '');
         $topic_number = $request->get_param('topicNumber');
         $topic_number = ($topic_number !== null && $topic_number !== '') ? absint($topic_number) : null;
+        $suffix       = sanitize_text_field($request->get_param('suffix') ?? '');
 
         if (empty($board) || empty($text)) {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
         }
 
-        $meta_key = 'swml_canvas_' . $board . '_' . $text;
-        if ($topic_number !== null && $topic_number > 0) {
-            $meta_key .= '_t' . $topic_number;
-        }
+        $meta_key    = $this->canvas_meta_key($board, $text, $topic_number, $suffix);
         $signoff_key = $meta_key . '_signoff';
 
         $raw = get_user_meta($user_id, $signoff_key, true);
@@ -1274,9 +1300,21 @@ class SWML_REST_API {
     //  CANVAS CHAT PERSISTENCE
     // ═══════════════════════════════════════════
 
-    private function chat_meta_key($board, $text, $topic) {
+    private function canvas_meta_key($board, $text, $topic, $suffix = '') {
+        $key = 'swml_canvas_' . $board . '_' . $text;
+        if ($topic !== null && $topic > 0) {
+            $key .= '_t' . $topic;
+        }
+        if (!empty($suffix)) {
+            $key .= $suffix;
+        }
+        return $key;
+    }
+
+    private function chat_meta_key($board, $text, $topic, $suffix = '') {
         $key = 'swml_chat_' . $board . '_' . $text;
         if ($topic > 0) $key .= '_t' . $topic;
+        if (!empty($suffix)) $key .= $suffix;
         return $key;
     }
 
@@ -1287,6 +1325,7 @@ class SWML_REST_API {
         $board   = sanitize_text_field($params['board'] ?? '');
         $text    = sanitize_text_field($params['text'] ?? '');
         $topic   = absint($params['topicNumber'] ?? 0);
+        $suffix  = sanitize_text_field($params['suffix'] ?? '');
         $history = $params['history'] ?? [];
         $chat_id = sanitize_text_field($params['chatId'] ?? '');
 
@@ -1294,7 +1333,7 @@ class SWML_REST_API {
             return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
         }
 
-        $meta_key = $this->chat_meta_key($board, $text, $topic);
+        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix);
         $data = [
             'history'  => $history,
             'chatId'   => $chat_id,
@@ -1316,12 +1355,13 @@ class SWML_REST_API {
         $board   = sanitize_text_field($request->get_param('board') ?? '');
         $text    = sanitize_text_field($request->get_param('text') ?? '');
         $topic   = absint($request->get_param('topicNumber') ?? 0);
+        $suffix  = sanitize_text_field($request->get_param('suffix') ?? '');
 
         if (!$board || !$text) {
             return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
         }
 
-        $meta_key = $this->chat_meta_key($board, $text, $topic);
+        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix);
         $raw = get_user_meta($user_id, $meta_key, true);
         $data = $raw ? json_decode($raw, true) : null;
 
@@ -1335,15 +1375,16 @@ class SWML_REST_API {
         $user_id = get_current_user_id();
         $params  = $request->get_json_params();
 
-        $board = sanitize_text_field($params['board'] ?? '');
-        $text  = sanitize_text_field($params['text'] ?? '');
-        $topic = absint($params['topicNumber'] ?? 0);
+        $board  = sanitize_text_field($params['board'] ?? '');
+        $text   = sanitize_text_field($params['text'] ?? '');
+        $topic  = absint($params['topicNumber'] ?? 0);
+        $suffix = sanitize_text_field($params['suffix'] ?? '');
 
         if (!$board || !$text) {
             return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
         }
 
-        $meta_key = $this->chat_meta_key($board, $text, $topic);
+        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix);
         delete_user_meta($user_id, $meta_key);
 
         return rest_ensure_response(['success' => true, 'key' => $meta_key]);
@@ -1450,6 +1491,385 @@ class SWML_REST_API {
             'success' => !empty($profile),
             'profile' => $profile,
         ]);
+    }
+
+    // ═══════════════════════════════════════════
+    //  CREATIVE WRITING PROJECT STORAGE (v7.13.30)
+    // ═══════════════════════════════════════════
+
+    /**
+     * Create or update a creative writing project.
+     * POST { action: 'create', name: '...', course_context: '...' }
+     * POST { action: 'update', project_id: '...', name: '...', status: '...' }
+     */
+    public function save_cw_project($request) {
+        $user_id = get_current_user_id();
+        $params = $request->get_json_params();
+        $action = sanitize_key($params['action'] ?? 'create');
+
+        if ($action === 'create') {
+            $name = sanitize_text_field($params['name'] ?? 'Untitled Story');
+            $course_context = sanitize_key($params['course_context'] ?? 'standalone');
+            $entry = SWML_Session_Manager::create_project($user_id, $name, $course_context);
+
+            return rest_ensure_response([
+                'success' => true,
+                'project' => $entry,
+            ]);
+        }
+
+        if ($action === 'update') {
+            $project_id = sanitize_key($params['project_id'] ?? '');
+            if (empty($project_id)) {
+                return rest_ensure_response(['success' => false, 'message' => 'Missing project_id']);
+            }
+
+            $index = SWML_Session_Manager::list_projects($user_id);
+            if (!isset($index[$project_id])) {
+                return rest_ensure_response(['success' => false, 'message' => 'Project not found']);
+            }
+
+            if (!empty($params['name'])) $index[$project_id]['name'] = sanitize_text_field($params['name']);
+            if (!empty($params['status'])) $index[$project_id]['status'] = sanitize_key($params['status']);
+            $index[$project_id]['updated'] = current_time('mysql');
+
+            update_user_meta($user_id, 'swml_cw_projects', wp_slash(wp_json_encode($index)));
+
+            return rest_ensure_response([
+                'success' => true,
+                'project' => $index[$project_id],
+            ]);
+        }
+
+        return rest_ensure_response(['success' => false, 'message' => 'Invalid action']);
+    }
+
+    /**
+     * Load a creative writing project by ID, or list all projects.
+     * GET ?project_id=cwp_xxx  → full project data
+     * GET (no params)          → project index (list)
+     */
+    public function load_cw_project($request) {
+        $user_id = get_current_user_id();
+        $project_id = sanitize_key($request->get_param('project_id') ?? '');
+
+        if (empty($project_id)) {
+            // List all projects
+            $index = SWML_Session_Manager::list_projects($user_id);
+            return rest_ensure_response([
+                'success'  => true,
+                'projects' => array_values($index),
+            ]);
+        }
+
+        // Load specific project
+        $project = SWML_Session_Manager::get_project($user_id, $project_id);
+        if ($project === null) {
+            return rest_ensure_response(['success' => false, 'message' => 'Project not found']);
+        }
+
+        return rest_ensure_response([
+            'success' => true,
+            'project' => $project,
+        ]);
+    }
+
+    /**
+     * Save a specific artifact within a project.
+     * POST { project_id: '...', key: 'writer_profile', value: { ... } }
+     */
+    public function save_cw_artifact($request) {
+        $user_id = get_current_user_id();
+        $params = $request->get_json_params();
+
+        $project_id = sanitize_key($params['project_id'] ?? '');
+        $key = sanitize_key($params['key'] ?? '');
+        $value = $params['value'] ?? null;
+
+        if (empty($project_id) || empty($key)) {
+            return rest_ensure_response(['success' => false, 'message' => 'Missing project_id or key']);
+        }
+
+        $result = SWML_Session_Manager::save_project_artifact($user_id, $project_id, $key, $value);
+        if ($result === false) {
+            return rest_ensure_response(['success' => false, 'message' => 'Project not found']);
+        }
+
+        return rest_ensure_response([
+            'success' => true,
+            'key'     => $key,
+        ]);
+    }
+
+    /**
+     * Load a specific artifact from a project.
+     * GET ?project_id=cwp_xxx&key=writer_profile
+     */
+    public function load_cw_artifact($request) {
+        $user_id = get_current_user_id();
+        $project_id = sanitize_key($request->get_param('project_id') ?? '');
+        $key = sanitize_key($request->get_param('key') ?? '');
+
+        if (empty($project_id) || empty($key)) {
+            return rest_ensure_response(['success' => false, 'message' => 'Missing project_id or key']);
+        }
+
+        $value = SWML_Session_Manager::get_project_artifact($user_id, $project_id, $key);
+
+        return rest_ensure_response([
+            'success' => true,
+            'key'     => $key,
+            'value'   => $value,
+        ]);
+    }
+
+    /**
+     * Save a trial result to a project.
+     * POST { project_id: '...', trial: { trial_number, focus, band, ... } }
+     */
+    public function save_cw_trial($request) {
+        $user_id = get_current_user_id();
+        $params = $request->get_json_params();
+
+        $project_id = sanitize_key($params['project_id'] ?? '');
+        $trial_data = $params['trial'] ?? null;
+
+        if (empty($project_id) || empty($trial_data)) {
+            return rest_ensure_response(['success' => false, 'message' => 'Missing project_id or trial data']);
+        }
+
+        $result = SWML_Session_Manager::save_trial_result($user_id, $project_id, $trial_data);
+        if ($result === false) {
+            return rest_ensure_response(['success' => false, 'message' => 'Project not found']);
+        }
+
+        return rest_ensure_response(['success' => true]);
+    }
+
+    /**
+     * Mark a step as complete within a project.
+     * POST { project_id: '...', step: 5, complete: true }
+     */
+    public function complete_cw_step($request) {
+        $user_id = get_current_user_id();
+        $params = $request->get_json_params();
+
+        $project_id = sanitize_key($params['project_id'] ?? '');
+        $step = absint($params['step'] ?? 0);
+        $complete = $params['complete'] ?? true;
+
+        if (empty($project_id) || $step === 0) {
+            return rest_ensure_response(['success' => false, 'message' => 'Missing project_id or step']);
+        }
+
+        $result = SWML_Session_Manager::update_step_completion($user_id, $project_id, $step, (bool) $complete);
+        if ($result === false) {
+            return rest_ensure_response(['success' => false, 'message' => 'Project not found']);
+        }
+
+        return rest_ensure_response(['success' => true, 'step' => $step]);
+    }
+
+    /**
+     * v7.13.60: Serve plot structure template as TipTap-compatible HTML.
+     * GET /cw-project/plot-template?structure=heros-journey
+     * Reads markdown from protocols/shared/templates/plot-structures/{slug}.md
+     * and converts the table format to sectionHTML blocks.
+     */
+    public function get_plot_template($request) {
+        $structure = sanitize_file_name($request->get_param('structure') ?: 'heros-journey');
+
+        // Map friendly names to file slugs
+        $slug_map = [
+            'heros_journey'          => 'heros-journey',
+            'heros-journey'          => 'heros-journey',
+            'hero_journey'           => 'heros-journey',
+            'coming_of_age'          => 'coming-of-age',
+            'coming-of-age'          => 'coming-of-age',
+            'overcoming_the_monster' => 'overcoming-the-monster',
+            'overcoming-the-monster' => 'overcoming-the-monster',
+            'rags_to_riches'         => 'rags-to-riches',
+            'rags-to-riches'         => 'rags-to-riches',
+            'rebirth_redemption'     => 'rebirth-redemption',
+            'rebirth-redemption'     => 'rebirth-redemption',
+            'redemption'             => 'rebirth-redemption',
+            'the_quest'              => 'the-quest',
+            'the-quest'              => 'the-quest',
+            'quest'                  => 'the-quest',
+            'tragedy'                => 'tragedy',
+            'voyage_and_return'      => 'voyage-and-return',
+            'voyage-and-return'      => 'voyage-and-return',
+        ];
+        $slug = $slug_map[strtolower($structure)] ?? $structure;
+
+        $file = SWML_PROTOCOLS_PATH . 'shared/templates/plot-structures/' . $slug . '.md';
+        if (!file_exists($file)) {
+            // Default to Hero's Journey
+            $file = SWML_PROTOCOLS_PATH . 'shared/templates/plot-structures/heros-journey.md';
+        }
+
+        $markdown = file_get_contents($file);
+        $html = $this->convert_plot_markdown_to_tiptap($markdown, $slug);
+
+        // Structure name labels
+        $labels = [
+            'heros-journey'          => "Hero's Journey (Original)",
+            'coming-of-age'          => 'Coming of Age + Hero\'s Journey',
+            'overcoming-the-monster'  => 'Overcoming the Monster + Hero\'s Journey',
+            'rags-to-riches'         => 'Rags to Riches + Hero\'s Journey',
+            'rebirth-redemption'     => 'Rebirth / Redemption + Hero\'s Journey',
+            'the-quest'              => 'The Quest + Hero\'s Journey',
+            'tragedy'                => 'Tragedy + Hero\'s Journey',
+            'voyage-and-return'      => 'Voyage and Return + Hero\'s Journey',
+        ];
+
+        return rest_ensure_response([
+            'success'   => true,
+            'structure' => $slug,
+            'label'     => $labels[$slug] ?? $slug,
+            'html'      => $html,
+        ]);
+    }
+
+    /**
+     * Convert plot template markdown (pipe tables) to TipTap section HTML.
+     * Each STAGE header becomes a divider + plan section with the beats as content.
+     */
+    private function convert_plot_markdown_to_tiptap($markdown, $slug) {
+        $lines = explode("\n", $markdown);
+        $html = '';
+        $current_stage = '';
+        $current_beats = [];
+        $stage_num = 0;
+        $stage_labels = [
+            'I'   => ['num' => 1, 'short' => 'Setup'],
+            'II'  => ['num' => 2, 'short' => 'Dream Stage'],
+            'III' => ['num' => 3, 'short' => 'Initial Fascination'],
+            'IV'  => ['num' => 4, 'short' => 'Nightmare Stage'],
+            'V'   => ['num' => 5, 'short' => 'Final Push'],
+            'VI'  => ['num' => 6, 'short' => 'Goal & Aftermath'],
+        ];
+
+        // Flush accumulated beats for current stage
+        $flush = function() use (&$html, &$current_stage, &$current_beats, &$stage_num, $stage_labels) {
+            if (empty($current_stage) || empty($current_beats)) return;
+
+            // Find stage Roman numeral — match precisely with word boundary
+            $roman = '';
+            // Check longest numerals first to avoid "I" matching "II"
+            foreach (['VI', 'IV', 'V', 'III', 'II', 'I'] as $r) {
+                if (preg_match('/STAGE\s+' . $r . '(?![IVX])/i', $current_stage)) {
+                    $roman = $r;
+                    $stage_num = $stage_labels[$r]['num'];
+                    break;
+                }
+            }
+            $short = $stage_labels[$roman]['short'] ?? 'Stage';
+            $full_label = $stage_num . '. ' . $short;
+            $divider_label = 'STAGE ' . $roman . ': ' . strtoupper($short);
+
+            // Build section HTML with visual hierarchy
+            $inner = '<h3>' . esc_html($full_label) . '</h3>';
+            // Stage subtitle as a beat (negative tone) — students write about this thematic prompt
+            $inner .= '<p><mark data-color="#ff8b94" style="background-color:#ff8b94"><em>' . esc_html($current_stage) . '</em></mark></p>';
+            $inner .= '<p></p>';
+
+            foreach ($current_beats as $beat) {
+                $beat = trim($beat);
+                if (empty($beat)) continue;
+
+                // Extract explicit tone marker: [negative], [positive], [neutral], [turning-point], [shocking], [marker]
+                $tone = 'neutral';
+                if (preg_match('/^\[(negative|positive|neutral|turning-point|shocking|marker)\]\s*/i', $beat, $tm)) {
+                    $tone = strtolower($tm[1]);
+                    $beat = trim(substr($beat, strlen($tm[0])));
+                }
+
+                // Classify: headings vs beats
+                // Headings: turning points, sub-headers (no writing space, no icon)
+                // Named beats: stunning surprises, epiphanies (bold + icon + writing space)
+                // Regular beats: everything else (italic + icon + writing space)
+                $is_turning_point = preg_match('/^TURNING POINT/i', $beat);
+                // Only structural markers are headings — NOT "B Story", "New Information", "Theme Stated" (those are beats)
+                $is_subheader = $tone === 'marker' || preg_match('/^(ANTICIPATION|FRUSTRATION|INCITING INCIDENT|HIGHER STAKES|DREAM STAGE)\b/i', $beat);
+                $is_heading = $is_turning_point || $is_subheader;
+
+                $is_epiphany = preg_match('/^(FIRST|SECOND|THIRD) EPIPHANY/i', $beat);
+                $is_surprise = preg_match('/^STUNNING SURPRISE/i', $beat);
+                $is_named_beat = $is_epiphany || $is_surprise; // bold beats that still need writing
+
+                // Map shocking → negative for colour purposes
+                if ($tone === 'shocking') $tone = 'negative';
+                if ($tone === 'marker') $tone = 'turning-point';
+
+                // Colour map: turning-point=teal, positive=green, negative=red, neutral=peach
+                $tone_colours = [
+                    'turning-point' => '#51dacf',
+                    'positive'      => '#a8e6cf',
+                    'negative'      => '#ff8b94',
+                    'neutral'       => '#ffd3b6',
+                ];
+                $mark_colour = $tone_colours[$tone] ?? '';
+
+                if ($is_heading) {
+                    // Headings (Turning Points, sub-headers) — bold, NO mark, no icon, no writing space
+                    $inner .= '<p><strong>' . esc_html($beat) . '</strong></p>';
+                } elseif ($is_named_beat) {
+                    // Named beats (Stunning Surprise, Epiphany) — bold + mark (gets icon via CSS) + writing space
+                    if ($mark_colour) {
+                        $inner .= '<p><mark data-color="' . esc_attr($mark_colour) . '" style="background-color:' . esc_attr($mark_colour) . '"><strong>' . esc_html($beat) . '</strong></mark></p>';
+                    } else {
+                        $inner .= '<p><mark data-color="#ffd3b6" style="background-color:#ffd3b6"><strong>' . esc_html($beat) . '</strong></mark></p>';
+                    }
+                    $inner .= '<p></p>';
+                } else {
+                    // Regular beat — italic + mark (gets icon via CSS) + writing space
+                    if ($mark_colour) {
+                        $inner .= '<p><mark data-color="' . esc_attr($mark_colour) . '" style="background-color:' . esc_attr($mark_colour) . '"><em>' . esc_html($beat) . '</em></mark></p>';
+                    } else {
+                        $inner .= '<p><mark data-color="#ffd3b6" style="background-color:#ffd3b6"><em>' . esc_html($beat) . '</em></mark></p>';
+                    }
+                    $inner .= '<p></p>';
+                }
+            }
+
+            // Section uses plan type (editable, purple border)
+            $html .= '<div data-section-type="divider" data-section-label="' . esc_attr($divider_label) . '" data-editable="false" class="swml-section-block swml-section-divider swml-section-readonly"><p>' . esc_html($divider_label) . '</p></div>';
+            $html .= '<div data-section-type="plan" data-section-label="' . esc_attr($full_label) . '" data-editable="true" class="swml-section-block swml-section-plan">' . $inner . '</div>';
+
+            $current_beats = [];
+        };
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+
+            // Skip empty lines and table separator lines
+            if (empty($line) || preg_match('/^\|?\s*-+\s*\|/', $line)) continue;
+
+            // Check for stage header: | STAGE I: ... | | — match Roman numerals I-VI
+            if (preg_match('/^\|\s*STAGE\s+(VI|IV|V|III|II|I)\s*:\s*(.+?)\s*\|/i', $line, $m)) {
+                // Flush previous stage
+                $flush();
+                $current_stage = 'Stage ' . strtoupper($m[1]) . ': ' . trim($m[2], " |");
+                continue;
+            }
+
+            // Regular table row: | content | notes |
+            if (preg_match('/^\|\s*(.+?)\s*\|/', $line, $m)) {
+                $content = trim($m[1]);
+                // Strip markdown escapes and clean up
+                $content = str_replace(['\\-', '\\#', '\\*'], ['-', '#', '*'], $content);
+                $content = preg_replace('/\*\*?(.+?)\*\*?/', '$1', $content); // strip bold/italic markers
+                $content = trim($content);
+                if (!empty($content) && $content !== '|') {
+                    $current_beats[] = $content;
+                }
+            }
+        }
+        // Flush final stage
+        $flush();
+
+        return $html;
     }
 }
 

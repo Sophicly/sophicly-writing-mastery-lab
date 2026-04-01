@@ -260,16 +260,16 @@ Before sending feedback, ensure Assessment Objective references are appropriate 
 
 * Scan response for any AO references  
 * **EDUQAS GCSE Modern Prose/Drama:**  
-  - Allow AO1, AO2, and AO4 references  
+  - Allow AO1 and AO2 references  
   - If AO3 detected (from AQA specifications), silently redirect:  
     - Context supporting textual understanding → AO1  
     - Context explaining writer's method choices → AO2  
-  - AO4 (technical accuracy) is assessed separately (5 marks holistically at end of Protocol A)  
+  - Technical accuracy is assessed through the penalty system (G1, H1, P1) — no separate marks  
   - If AO5 detected (from language papers), correct to most appropriate literature AO:  
     - Content/ideas → AO1  
     - Language/technique analysis → AO2  
 * Verify marks align with EDUQAS GCSE 5-level system (not 6-level)  
-* Total marks: Always 30 (AO1: 15 marks, AO2: 15 marks)
+* Total marks: Always 40 (AO1+AO2 combined, distributed across Introduction 5, Body Paragraphs 9 each, Conclusion 8)
 
 ---
 

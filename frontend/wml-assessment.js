@@ -75,29 +75,30 @@
     let canvasSaveTimer = null;
     let canvasSignoffData = null;
     let canvasTimerInterval = null; // Module-scope declaration (was inside renderCanvasWorkspace — bug fix v7.12.62)
+    // v7.13.35: Use exerciseConfig.storageSuffix for ALL exercise types — prevents key collisions
+    // between assessment, mark_scheme, CW steps, etc. on the same board/text/topic.
     const CANVAS_SAVE_KEY = () => {
-        const base = `swml_canvas_${state.board}_${state.text}_${state.topicNumber || 'free'}`;
-        if (state.task === 'mark_scheme') return base + '_ms';
-        return base;
+        const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+        return `swml_canvas_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}`;
     };
     const CHAT_SAVE_KEY = () => {
-        const base = `swml_chat_${state.board}_${state.text}_${state.topicNumber || 'free'}`;
-        if (state.task === 'mark_scheme') return base + '_ms';
-        return base;
+        const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+        return `swml_chat_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}`;
     };
     let chatSaveTimer = null;
+    let canvasSilentSend = false; // v7.14.3: When true, sendCanvasMessage skips user bubble display
 
     function saveCanvasChat(history, chatId) {
-        // 1. Instant localStorage write
+        // 1. Instant localStorage write (include step + task for resume and stale detection)
         try {
-            localStorage.setItem(CHAT_SAVE_KEY(), JSON.stringify({ history, chatId, savedAt: new Date().toISOString(), count: history.length }));
+            localStorage.setItem(CHAT_SAVE_KEY(), JSON.stringify({ history, chatId, step: state.step || 1, task: state.task, exerciseId: state.exerciseId || '', savedAt: new Date().toISOString(), count: history.length }));
         } catch (e) { /* storage full */ }
         // 2. Debounced server write (every 8s — less frequent than doc save)
         clearTimeout(chatSaveTimer);
         chatSaveTimer = setTimeout(() => {
             fetch(API.chatSave, {
                 method: 'POST', headers,
-                body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, history, chatId })
+                body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.getExerciseConfig(state.task).storageSuffix || '', history, chatId })
             }).then(r => r.json()).then(res => {
                 if (res.success) console.log('WML: Chat saved to server', { count: res.count });
                 else console.warn('WML: Chat save failed', res);
@@ -117,7 +118,7 @@
         try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch (e) {}
         fetch(API.chatClear, {
             method: 'POST', headers,
-            body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null })
+            body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.getExerciseConfig(state.task).storageSuffix || '' })
         }).catch(() => {});
     }
 
@@ -169,7 +170,7 @@
         _canvasGuard = true;
         setTimeout(() => { _canvasGuard = false; }, 500);
 
-        const { Editor, StarterKit, Placeholder, TextAlign, Highlight, CharacterCount, TextStyle, Color, Node, Mark, PaginationPlus, PAGE_SIZES } = window.TipTap || {};
+        const { Editor, StarterKit, Placeholder, TextAlign, Highlight, CharacterCount, TextStyle, Color, Node, Mark, Extension, PaginationPlus, PAGE_SIZES } = window.TipTap || {};
         if (!Editor) {
             _canvasGuard = false;
             alert('TipTap editor failed to load. Please refresh the page.');
@@ -177,6 +178,23 @@
         }
 
         syncUrl(); // Update URL bar with canvas state (diagnostic/assessment/polishing)
+
+        // v7.13.34: CW project auto-load — ensure cwProjectId is set for embedded CW exercises
+        if (state.task && state.task.startsWith('cw_') && !state.cwProjectId) {
+            (async () => {
+                try {
+                    const res = await WML.cwProject.list();
+                    const projects = res?.projects || [];
+                    if (projects.length > 0) {
+                        state.cwProjectId = projects[0].id;
+                    } else {
+                        const createRes = await WML.cwProject.create('My Story', 'standalone');
+                        if (createRes?.success) state.cwProjectId = createRes.project.id;
+                    }
+                    console.log('WML CW: Auto-loaded project', state.cwProjectId);
+                } catch (e) { console.warn('WML CW: Failed to auto-load project', e); }
+            })();
+        }
 
         // Kill WebGL shader when entering canvas — prevents flash-through on transitions (v7.12.53)
         destroyShader();
@@ -657,10 +675,16 @@
         const headerRow = el('div', { className: 'swml-canvas-header' });
 
         // Context badges (left)
+        // v7.13.42: CW exercises — check BOTH state.task and state.mode for robust detection
         const ctxBadges = el('div', { className: 'swml-canvas-ctx' });
-        ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: boardLabel }));
-        ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: subjectLabel }));
-        ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: textLabel }));
+        const _isCwBadge = (state.task && state.task.startsWith('cw_')) || state.mode === 'creative' || state.subject === 'creative_writing';
+        if (_isCwBadge) {
+            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: 'Creative Writing Masterclass' }));
+        } else {
+            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: boardLabel }));
+            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: subjectLabel }));
+            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: textLabel }));
+        }
 
         // Topic / exercise badge
         if (state.topicNumber) {
@@ -670,13 +694,18 @@
             const headerConfig = WML.getExerciseConfig(state.task);
             if (headerConfig.label) ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: headerConfig.label }));
         }
-        // Phase badge (v7.12.98)
+        // Phase badge (v7.12.98) — skip for CW exercises
         const phaseLabel = state.phase === 'redraft' ? 'Phase 2' : (state.phase === 'initial' ? 'Phase 1' : '');
-        if (phaseLabel) ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: phaseLabel }));
+        if (phaseLabel && !_isCwBadge) ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: phaseLabel }));
         const SVG_DIAGNOSTIC = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.91" stroke-miterlimit="10" style="display:inline-block;vertical-align:-2px;margin-right:3px"><path d="M8.18,16.77V13H4.36v3.82L2.09,19a2,2,0,0,0-.59,1.44h0a2,2,0,0,0,2,2H9a2,2,0,0,0,2-2h0a2,2,0,0,0-.6-1.44Z"/><line x1="2.45" y1="12.95" x2="10.09" y2="12.95"/><path d="M20.59,15.39V11.05H16.77v4.34a3.82,3.82,0,1,0,3.82,0Z"/><line x1="22.5" y1="11.05" x2="14.86" y2="11.05"/><path d="M18.68,11.05V3.89A2.39,2.39,0,0,0,16.3,1.5h0a2.39,2.39,0,0,0-2.39,2.39V6.27A1.91,1.91,0,0,1,12,8.18h0a1.91,1.91,0,0,1-1.91-1.91V5.32A1.9,1.9,0,0,0,8.18,3.41h0A1.91,1.91,0,0,0,6.27,5.32v.95"/><line x1="5.32" y1="9.14" x2="7.23" y2="9.14"/><line x1="14.86" y1="17.73" x2="19.64" y2="17.73"/><line x1="2.45" y1="18.68" x2="6.27" y2="18.68"/></svg>';
-        const diagBadgeLabel = state.task === 'feedback_discussion' ? 'Discuss Feedback' : 'Diagnostic';
+        // v7.13.42: Skip diagnostic badge for CW exercises
+        const _epTasks = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice'];
+        const _epConfig = WML.getExerciseConfig(state.task);
+        const diagBadgeLabel = state.task === 'feedback_discussion' ? 'Discuss Feedback'
+            : _epTasks.includes(state.task) ? (_epConfig.chatHeaderLabel || ucfirst(state.task))
+            : 'Diagnostic';
         const diagBadge = el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-diag', innerHTML: SVG_DIAGNOSTIC + diagBadgeLabel });
-        ctxBadges.appendChild(diagBadge);
+        if (!_isCwBadge) ctxBadges.appendChild(diagBadge);
 
         // Overflow ... button — shows hidden badges on small screens
         const ctxOverflowBtn = el('button', { className: 'swml-canvas-ctx-overflow', textContent: '···', title: 'Show all' });
@@ -742,6 +771,27 @@
             });
             headerRight.appendChild(canvasThemeToggle);
         }
+        // v7.13.78: Embedded mode — sync WML theme with LearnDash theme toggle
+        if (WML.isEmbedded) {
+            const syncThemeFromLD = () => {
+                const bodyDark = document.body.classList.contains('dark-mode') || document.documentElement.getAttribute('data-theme') === 'dark' || document.body.getAttribute('data-theme') === 'dark';
+                const wmlTheme = bodyDark ? 'dark' : 'light';
+                const current = getTheme();
+                if (wmlTheme !== current) {
+                    localStorage.setItem('swml-theme', wmlTheme);
+                    applyTheme(wmlTheme);
+                    canvas.classList.toggle('swml-canvas-light', wmlTheme === 'light');
+                    overlay.dataset.swmlTheme = wmlTheme;
+                    console.log('WML: Synced theme from LearnDash →', wmlTheme);
+                }
+            };
+            // Initial sync
+            syncThemeFromLD();
+            // Watch for LD theme changes via MutationObserver on body + html
+            const themeObserver = new MutationObserver(syncThemeFromLD);
+            themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+            themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+        }
         // Fullscreen toggle — embedded mode only (v7.13.15)
         if (WML.isEmbedded) {
             const SVG_EXPAND = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
@@ -779,6 +829,9 @@
         // ── Document Outline ──
         const SVG_OUTLINE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6h11"/><path d="M12 12h8"/><path d="M15 18h5"/><path d="M5 6v.01"/><path d="M8 12v.01"/><path d="M11 18v.01"/></svg>';
 
+        // v7.13.53: Wrap outline + resources buttons in a sticky column
+        const btnColumn = el('div', { className: 'swml-outline-btn-column' });
+
         // Floating trigger on left edge of content area
         const outlineBtn = el('button', {
             className: 'swml-outline-btn',
@@ -786,7 +839,7 @@
             innerHTML: SVG_OUTLINE,
             onClick: (e) => { e.stopPropagation(); toggleOutlinePanel(); }
         });
-        contentWrap.appendChild(outlineBtn);
+        btnColumn.appendChild(outlineBtn);
 
         // Panel
         const outlinePanel = el('div', { className: 'swml-outline-panel' });
@@ -823,7 +876,110 @@
             h.dataset.dir = dir;
             outlinePanel.appendChild(h);
         });
+        contentWrap.appendChild(btnColumn); // sticky button column (outline + resources triggers)
         contentWrap.appendChild(outlinePanel);
+
+        // ── CW Resources Panel (v7.13.49) ──
+        // Collapsible panel like Document Outline, for step-specific resource links
+        const CW_PANEL_RESOURCES = {
+            2: [
+                { label: 'Explore Story Ideas Course', url: 'https://www.sophicly.com/courses/creative-writing-masterclass/units/3-how-to-come-up-with-compelling-story-ideas/lessons/3-step-2-explore-more-story-ideas/' },
+                { label: 'Read: When I Was 9 Years Old', url: 'https://docs.google.com/document/d/16qbgkyyz8pKyPb4udJa5DNlvbDKIalSwu8y5B8qHczU/copy' },
+                { label: 'Read: George Pickering', url: 'https://docs.google.com/document/d/101fH2I4oNmZeJSC2TQNZSs7Mme5zveXleqvqTvLhn6Y/copy' },
+                { label: 'Read: Juliane Diller', url: 'https://docs.google.com/document/d/1Lcbpwr_Ce4TH1BKUEexs1kctX3N9fVe3-T_MonAp6Xs/copy' },
+                { label: 'Grade 9 Stories', url: 'https://www.sophicly.com/category/grade-9-stories/' },
+            ],
+        };
+        const _isCw = state.task && state.task.startsWith('cw_');
+        const _cwDef = _isCw ? WML.getCwStepDef(state.task) : null;
+        const cwStepForRes = _isCw ? (_cwDef?.step || null) : null;
+        const cwPanelRes = CW_PANEL_RESOURCES[cwStepForRes];
+        let resPanel = null;
+        let resDetachBtn = null; // hoisted for floatRes/dockRes access
+        if (cwPanelRes && cwPanelRes.length > 0) {
+            const SVG_LINK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+
+            const SVG_ARROW_DASH = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12h.5m3 0h1.5m3 0h6"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/></svg>';
+
+            // Toggle button — inside btnColumn below outline button
+            const resTrigger = el('button', {
+                className: 'swml-outline-btn swml-resources-trigger',
+                title: 'Resources',
+                innerHTML: SVG_LINK,
+                onClick: (e) => {
+                    e.stopPropagation();
+                    const isOpen = resPanel.classList.toggle('swml-resources-open');
+                    resTrigger.classList.toggle('is-active', isOpen);
+                }
+            });
+            btnColumn.appendChild(resTrigger);
+
+            // Panel — independent from outline (uses swml-resources-open, not swml-outline-open)
+            resPanel = el('div', { className: 'swml-outline-panel swml-resources-panel' });
+            // Drag grip bar (detachable)
+            const resDragGrip = el('div', { className: 'swml-outline-grip' });
+            resDragGrip.innerHTML = '<span class="swml-outline-grip-dots">\u2837</span>';
+            resPanel.appendChild(resDragGrip);
+            const resPanelHeader = el('div', { className: 'swml-outline-header' });
+            resPanelHeader.innerHTML = SVG_LINK.replace('width="16"', 'width="12"').replace('height="16"', 'height="12"').replace('stroke-width="2"', 'stroke-width="2" style="opacity:0.5"') + '<span>Resources</span>';
+            // Detach button — same pattern as outline
+            resDetachBtn = el('button', {
+                className: 'swml-outline-detach-btn',
+                title: 'Detach panel',
+                innerHTML: SVG_DETACH,
+                onClick: (e) => { e.stopPropagation(); toggleResFloat(); }
+            });
+            resPanelHeader.appendChild(resDetachBtn);
+            const resClose = el('button', {
+                className: 'swml-outline-close',
+                innerHTML: '\u2715',
+                onClick: () => {
+                    resPanel.classList.remove('swml-resources-open');
+                    resTrigger.classList.remove('is-active');
+                    if (resFloating) {
+                        // Fade out first, then dock after transition completes
+                        resPanel.style.opacity = '0';
+                        resPanel.style.transform = 'translateX(-12px)';
+                        setTimeout(() => { dockRes(); resPanel.style.opacity = ''; resPanel.style.transform = ''; }, 250);
+                    }
+                }
+            });
+            resPanelHeader.appendChild(resClose);
+            resPanel.appendChild(resPanelHeader);
+
+            const resList = el('div', { className: 'swml-outline-list', style: { padding: '10px 6px' } });
+            cwPanelRes.forEach(r => {
+                const link = el('div', {
+                    className: 'swml-cw-resource-btn',
+                    innerHTML: SVG_ARROW_DASH + ' ' + r.label,
+                    onClick: () => window.open(r.url, '_blank', 'noopener')
+                });
+                link.style.cursor = 'pointer';
+                resList.appendChild(link);
+            });
+            resPanel.appendChild(resList);
+            // Resize handles for detached mode
+            ['n','s','e','w','nw','ne','sw','se'].forEach(dir => {
+                const h = el('div', { className: `swml-outline-rh swml-outline-rh-${dir.length > 1 ? 'corner' : 'edge'} swml-outline-rh-${dir}` });
+                h.dataset.dir = dir;
+                resPanel.appendChild(h);
+            });
+            contentWrap.appendChild(resPanel);
+
+            // v7.13.50: Glow the resources button when the Resources section scrolls into view
+            setTimeout(() => {
+                const resSec = editorEl.querySelector('[data-section-label="Resources"]');
+                if (resSec && contentWrap) {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            resTrigger.classList.toggle('swml-resources-glow', entry.isIntersecting && !resPanel.classList.contains('swml-resources-open'));
+                        });
+                    }, { root: contentWrap, threshold: 0.3 });
+                    observer.observe(resSec);
+                }
+            }, 1000);
+        }
+
         contentWrap.appendChild(docWrap);
         editorPane.appendChild(contentWrap);
 
@@ -873,9 +1029,9 @@
             outlinePanel.classList.add('swml-outline-detached');
             outlinePanel.style.position = 'fixed';
             outlinePanel.style.left = rect.left + 'px';
-            outlinePanel.style.top = rect.top + 'px';
+            outlinePanel.style.top = (rect.top - 24) + 'px'; // -24 to compensate for grip bar appearing at top
             outlinePanel.style.width = rect.width + 'px';
-            outlinePanel.style.height = rect.height + 'px';
+            outlinePanel.style.height = (rect.height + 24) + 'px'; // +24 for grip bar
             detachBtn.innerHTML = SVG_DOCK;
             detachBtn.title = 'Dock panel';
         }
@@ -934,21 +1090,100 @@
         });
         document.addEventListener('mouseup', () => { olResizing = false; });
 
+        // ── Detachable Resources Panel (v7.13.53) ──
+        let resFloating = false;
+        function toggleResFloat() {
+            if (!resPanel) return;
+            resFloating ? dockRes() : floatRes();
+        }
+        function floatRes() {
+            const rect = resPanel.getBoundingClientRect();
+            resFloating = true;
+            resPanel.classList.add('swml-outline-detached');
+            resPanel.style.position = 'fixed';
+            resPanel.style.left = rect.left + 'px';
+            resPanel.style.top = (rect.top - 24) + 'px'; // -24 to compensate for grip bar appearing at top
+            resPanel.style.width = rect.width + 'px';
+            resPanel.style.height = (rect.height + 24) + 'px'; // +24 for grip bar
+            if (resDetachBtn) { resDetachBtn.innerHTML = SVG_DOCK; resDetachBtn.title = 'Dock panel'; }
+        }
+        function dockRes() {
+            resFloating = false;
+            if (resPanel) {
+                resPanel.classList.remove('swml-outline-detached');
+                resPanel.style.cssText = '';
+            }
+            if (resDetachBtn) { resDetachBtn.innerHTML = SVG_DETACH; resDetachBtn.title = 'Detach panel'; }
+        }
+        // Drag resources panel via grip
+        if (resPanel) {
+            const resGrip = resPanel.querySelector('.swml-outline-grip');
+            let resDragging = false, resDragOX = 0, resDragOY = 0;
+            if (resGrip) {
+                resGrip.addEventListener('mousedown', (e) => {
+                    if (!resFloating || e.button !== 0) return;
+                    e.preventDefault(); e.stopPropagation();
+                    resDragging = true;
+                    const r = resPanel.getBoundingClientRect();
+                    resDragOX = e.clientX - r.left;
+                    resDragOY = e.clientY - r.top;
+                    resGrip.style.cursor = 'grabbing';
+                });
+                document.addEventListener('mousemove', (e) => {
+                    if (!resDragging) return;
+                    resPanel.style.left = (e.clientX - resDragOX) + 'px';
+                    resPanel.style.top = (e.clientY - resDragOY) + 'px';
+                });
+                document.addEventListener('mouseup', () => {
+                    if (resDragging) { resDragging = false; resGrip.style.cursor = ''; }
+                });
+            }
+            // Resize handles for resources panel
+            let rsResizing = false, rsDir = '', rsSX = 0, rsSY = 0, rsSW = 0, rsSH = 0, rsSL = 0, rsST = 0;
+            resPanel.querySelectorAll('.swml-outline-rh').forEach(h => {
+                h.addEventListener('mousedown', (e) => {
+                    if (!resFloating || e.button !== 0) return;
+                    e.preventDefault(); e.stopPropagation();
+                    rsResizing = true;
+                    rsDir = h.dataset.dir;
+                    const r = resPanel.getBoundingClientRect();
+                    rsSX = e.clientX; rsSY = e.clientY;
+                    rsSW = r.width; rsSH = r.height; rsSL = r.left; rsST = r.top;
+                });
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!rsResizing) return;
+                const dx = e.clientX - rsSX, dy = e.clientY - rsSY;
+                let w = rsSW, h = rsSH, l = rsSL, t = rsST;
+                if (rsDir.includes('e')) w = Math.max(180, rsSW + dx);
+                if (rsDir.includes('w')) { w = Math.max(180, rsSW - dx); l = rsSL + (rsSW - w); }
+                if (rsDir.includes('s')) h = Math.max(200, rsSH + dy);
+                if (rsDir.includes('n')) { h = Math.max(200, rsSH - dy); t = rsST + (rsSH - h); }
+                Object.assign(resPanel.style, { width: w+'px', height: h+'px', left: l+'px', top: t+'px' });
+            });
+            document.addEventListener('mouseup', () => { rsResizing = false; });
+        }
+
+        // v7.13.74: Unified scroll helper — used by outline panel and in-document TOC.
+        // Scrolls contentWrap only (not parent containers) to avoid multi-ancestor conflicts.
+        function scrollContentTo(target) {
+            if (!target || !contentWrap) return;
+            const containerRect = contentWrap.getBoundingClientRect();
+            const targetRect = target.getBoundingClientRect();
+            // Account for zoom: visual offset / scale = layout offset
+            const scale = canvasZoom || 1;
+            const visualOffset = targetRect.top - containerRect.top;
+            const scrollTarget = contentWrap.scrollTop + (visualOffset / scale) - (containerRect.height / 3);
+            contentWrap.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
+        }
+
         function scrollToPos(pos) {
             if (!canvasEditor) return;
-            canvasEditor.chain().setTextSelection(pos + 1).run();
-            requestAnimationFrame(() => {
-                try {
-                    const domNode = canvasEditor.view.domAtPos(pos + 1)?.node;
-                    const target = domNode?.nodeType === 1 ? domNode : domNode?.parentElement?.closest('[data-section-type], h2, h3') || domNode?.parentElement;
-                    if (target) {
-                        const containerRect = contentWrap.getBoundingClientRect();
-                        const targetRect = target.getBoundingClientRect();
-                        const scrollTarget = contentWrap.scrollTop + (targetRect.top - containerRect.top) - (containerRect.height / 3);
-                        contentWrap.scrollTo({ top: scrollTarget, behavior: 'smooth' });
-                    }
-                } catch(e) {}
-            });
+            try {
+                const domNode = canvasEditor.view.domAtPos(pos + 1)?.node;
+                const target = domNode?.nodeType === 1 ? domNode : domNode?.parentElement?.closest('[data-section-type], h2, h3') || domNode?.parentElement;
+                scrollContentTo(target);
+            } catch(e) {}
         }
 
         function updateOutline() {
@@ -960,6 +1195,8 @@
                 if (node.type.name === 'sectionBlock') {
                     const type = node.attrs.sectionType || 'response';
                     if (type === 'divider') return false; // skip group dividers (v7.12.59)
+                    // v7.14.11: Skip sections hidden in diagnostic mode (check DOM class for robustness)
+                    if (canvas.classList.contains('swml-canvas-diagnostic') && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) return false;
                     sections.push({ type, label: node.attrs.label || '', pos });
                 }
             });
@@ -1194,6 +1431,7 @@
                     // Parent group header (clicks to first child)
                     const header = el('button', {
                         className: 'swml-outline-item swml-outline-group',
+                        tabIndex: -1,
                         onClick: () => scrollToPos(g.children[0].pos)
                     });
                     const dot = el('span', { className: 'swml-outline-dot' });
@@ -1209,6 +1447,7 @@
                         const childIndicator = getSectionIndicator(child);
                         const item = el('button', {
                             className: 'swml-outline-item swml-outline-child',
+                            tabIndex: -1,
                             onClick: () => scrollToPos(child.pos)
                         });
                         item.appendChild(el('span', { className: 'swml-outline-label', textContent: (child._num ? child._num + ' ' : '') + (child.childLabel || child.label) }));
@@ -1227,6 +1466,7 @@
                     const indicator = getSectionIndicator(s);
                     const item = el('button', {
                         className: 'swml-outline-item',
+                        tabIndex: -1,
                         onClick: () => scrollToPos(s.pos)
                     });
                     const dot = el('span', { className: 'swml-outline-dot' });
@@ -1283,7 +1523,7 @@
 
         // Status bar
         const statusBar = el('div', { className: 'swml-canvas-status' });
-        const wcDisplay = el('span', { className: 'swml-wc', textContent: '0 words' });
+        const wcDisplay = el('span', { className: 'swml-wc', id: 'swml-footer-wc', textContent: '0 words' });
         const saveStatus = el('span', { className: 'swml-save-status', textContent: 'Ready' });
         // Back button — hidden in embedded mode (LD handles navigation) (v7.13.11)
         if (!WML.isEmbedded) {
@@ -1340,16 +1580,32 @@
         }
         contentWrap.addEventListener('scroll', updatePageCount);
 
+        // ── Canvas State Flags — moved before countdown timer so isExamPrep is available (v7.13.97) ──
+        const exerciseConfig = WML.getExerciseConfig(state.task);
+        const isCwTask = state.task && state.task.startsWith('cw_');
+        const cwStepDef = isCwTask ? WML.getCwStepDef(state.task) : null;
+        const isCwSi = isCwTask && cwStepDef?.tier === 'si';
+        const isCwWorkbook = isCwTask && cwStepDef?.tier === 'workbook';
+        const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice'];
+        const isExamPrep = EXAM_PREP_TASKS.includes(state.task);
+        let canvasInAssessment = state.task === 'assessment' || state.task === 'mark_scheme' || state.task === 'redraft_assessment' || isCwSi || isExamPrep;
+        const canvasInFeedback = state.task === 'feedback_discussion';
+        const canvasInMarkScheme = state.task === 'mark_scheme';
+        const canvasChatHeaderLabel = exerciseConfig.chatHeaderLabel || 'Essay Assessment';
+        const canvasSidebarSteps = exerciseConfig.sidebarSteps || null;
+        // v7.14.11: Diagnostic mode — hide assessment-only sections (feedback, scores, etc.)
+        const isDiagnosticEnv = !canvasInAssessment && !canvasInFeedback && !isCwTask;
+        if (isDiagnosticEnv) canvas.classList.add('swml-canvas-diagnostic');
+
         // Countdown timer — phase-aware: Phase 1 = 10 days, Phase 2 = 14 days (v7.12.99)
-        // Phase 2 gets its OWN start time — doesn't continue from Phase 1 diagnostic timer (v7.13.0)
+        // v7.13.39: Skip for CW exercises. v7.13.97: Skip for exam prep (no phase deadline)
         const totalDays = state.phase === 'redraft' ? 14 : 10;
         const phaseKey = state.phase === 'redraft' ? 'redraft' : 'diag';
         const countdownKey = `swml_${phaseKey}_start_${state.board}_${(state.text || '').replace(/\s/g, '_')}`;
-        // Auto-create Phase 2 start time on first entry
         if (state.phase === 'redraft' && !localStorage.getItem(countdownKey)) {
             localStorage.setItem(countdownKey, new Date().toISOString());
         }
-        const countdownStart = localStorage.getItem(countdownKey);
+        const countdownStart = (isCwTask || isExamPrep) ? null : localStorage.getItem(countdownKey);
         if (countdownStart) {
             const cStart = new Date(countdownStart);
             const cDeadline = new Date(cStart.getTime() + totalDays * 24 * 60 * 60 * 1000);
@@ -1373,13 +1629,7 @@
         // Comment count
         const commentCountEl = el('span', { className: 'swml-comment-count', style: { cursor: 'pointer' } });
 
-        // ── Canvas State Flags — manifest-driven (v7.13.11) ──
-        const exerciseConfig = WML.getExerciseConfig(state.task);
-        let canvasInAssessment = state.task === 'assessment' || state.task === 'mark_scheme' || state.task === 'redraft_assessment';
-        const canvasInFeedback = state.task === 'feedback_discussion';
-        const canvasInMarkScheme = state.task === 'mark_scheme';
-        const canvasChatHeaderLabel = exerciseConfig.chatHeaderLabel || 'Essay Assessment';
-        const canvasSidebarSteps = exerciseConfig.sidebarSteps || null;
+        // (Canvas State Flags moved above countdown timer — v7.13.97)
 
         // ── Canvas Exam Timer (v7.11.0) ──
         let canvasTimerInterval = null;
@@ -1544,7 +1794,10 @@
             }
         });
         extractBtn.innerHTML = SVG_EXTRACT + ' Extract';
-        statusBar.appendChild(extractBtn);
+        // v7.13.39: Hide extract button for CW exercises (no extract to show)
+        if (!(state.task && state.task.startsWith('cw_'))) {
+            statusBar.appendChild(extractBtn);
+        }
 
         editorPane.appendChild(statusBar);
 
@@ -1688,6 +1941,138 @@
         }
         // ── End Feedback Discussion Mode ──
 
+        // ── Exam Prep Canvas Mode (v7.13.76) — REMOVED in v7.13.96: exam prep now uses the same
+        // assessment chat infrastructure (canvasInAssessment = true). No separate branch needed.
+        // The isExamPrep flag is still used for template loading and badge labels.
+        else if (false && isExamPrep) { // DISABLED — exam prep flows through assessment path
+            console.log('WML EXAM PREP: Entering exam prep canvas branch for task:', state.task);
+            // Build protocol sidebar (left)
+            const epProtoPanel = el('div', { className: 'swml-sidebar swml-canvas-proto' });
+            const epProtoHead = el('div', { className: 'swml-sidebar-head' });
+            epProtoHead.appendChild(el('span', { textContent: exerciseConfig.chatHeaderLabel || ucfirst(state.task) }));
+            epProtoPanel.appendChild(epProtoHead);
+            const epProtoBody = el('div', { className: 'swml-sidebar-body' });
+            const epSteps = WML.getSteps();
+            if (epSteps?.length) {
+                epSteps.forEach(s => {
+                    const c = s.step < state.step ? 'complete' : s.step === state.step ? 'active' : '';
+                    epProtoBody.appendChild(el('div', { className: `swml-step ${c}`, 'data-step': s.step }, [
+                        el('div', { className: `swml-step-circle ${c}`, textContent: s.step < state.step ? '\u2713' : s.step }),
+                        el('span', { className: 'swml-step-label', textContent: s.label }),
+                    ]));
+                });
+            }
+            epProtoPanel.appendChild(epProtoBody);
+            // Deferred insertion — canvas DOM isn't assembled yet, store for later
+            canvas._epProtoPanel = epProtoPanel;
+
+            // Build chat panel (right) — reuses canvas chat DOM pattern
+            const epChatPanel = el('div', { className: 'swml-canvas-chat' });
+            const epChatHeader = el('div', { className: 'swml-canvas-chat-header', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } });
+            epChatHeader.appendChild(el('span', { innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;opacity:0.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> ' + (exerciseConfig.chatHeaderLabel || ucfirst(state.task)) }));
+            epChatPanel.appendChild(epChatHeader);
+
+            const epChatMessages = el('div', { className: 'swml-canvas-chat-messages', id: 'swml-canvas-chat-messages' });
+            epChatPanel.appendChild(epChatMessages);
+
+            // Chat input
+            const epInputWrap = el('div', { className: 'swml-canvas-chat-input', style: { display: 'flex', gap: '8px', padding: '8px 12px' } });
+            const epChatTextarea = el('textarea', { id: 'swml-canvas-chat-input', rows: '1', placeholder: 'Type your response...' });
+            epChatTextarea.addEventListener('input', () => { epChatTextarea.style.height = 'auto'; epChatTextarea.style.height = Math.min(epChatTextarea.scrollHeight, 120) + 'px'; });
+            epChatTextarea.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); epSendMessage(); } });
+            const epSendBtn = el('button', { className: 'swml-send-btn', innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>', onClick: () => epSendMessage() });
+            epInputWrap.appendChild(epChatTextarea);
+            epInputWrap.appendChild(epSendBtn);
+            epChatPanel.appendChild(epInputWrap);
+
+            // Replace rightPanel content with chat
+            rightPanel.innerHTML = '';
+            rightPanel.appendChild(epChatPanel);
+
+            // Canvas chat history + messaging
+            const epChatHistory = [];
+            let epChatId = state.sessionId || '';
+
+            function epAddMessage(role, content) {
+                const bubble = el('div', { className: 'swml-bubble swml-bubble-' + role });
+                const inner = el('div', { className: 'swml-bubble-content' });
+                inner.innerHTML = role === 'assistant' ? WML.formatAI(content) : content.replace(/</g, '&lt;').replace(/\n/g, '<br>');
+                bubble.appendChild(inner);
+                epChatMessages.appendChild(bubble);
+                epChatMessages.scrollTop = epChatMessages.scrollHeight;
+            }
+
+            async function epSendMessage() {
+                const msg = epChatTextarea.value.trim();
+                if (!msg) return;
+                epChatTextarea.value = '';
+                epChatTextarea.style.height = 'auto';
+                epAddMessage('user', msg);
+                epChatHistory.push({ role: 'user', content: msg });
+                epSendBtn.disabled = true;
+
+                // Typing indicator
+                const typing = el('div', { className: 'swml-bubble swml-bubble-assistant swml-typing' });
+                typing.appendChild(el('div', { className: 'swml-bubble-content', innerHTML: '<span class="swml-typing-dots"><span>.</span><span>.</span><span>.</span></span>' }));
+                epChatMessages.appendChild(typing);
+                epChatMessages.scrollTop = epChatMessages.scrollHeight;
+
+                try {
+                    const docContent = canvasEditor ? canvasEditor.getHTML() : '';
+                    const historyToSend = epChatHistory.slice(0, -1).slice(-24);
+                    const res = await WML.apiPost(WML.API.chat, {
+                        message: msg,
+                        history: historyToSend,
+                        document_content: docContent,
+                        session_id: epChatId || state.sessionId,
+                        board: state.board,
+                        subject: state.subject,
+                        text: state.text,
+                        task: state.task,
+                        step: state.step,
+                    });
+                    typing.remove();
+                    if (res.reply) {
+                        epChatHistory.push({ role: 'assistant', content: res.reply });
+                        epAddMessage('assistant', res.reply);
+                        saveCanvasChat(epChatHistory, epChatId);
+                    }
+                    // Step progression from AI response
+                    if (res.step && res.step > state.step) {
+                        state.step = res.step;
+                        epProtoBody.querySelectorAll('.swml-step').forEach(stepEl => {
+                            const sn = parseInt(stepEl.dataset.step);
+                            const circle = stepEl.querySelector('.swml-step-circle');
+                            stepEl.className = 'swml-step ' + (sn < state.step ? 'complete' : sn === state.step ? 'active' : '');
+                            if (circle) { circle.className = 'swml-step-circle ' + (sn < state.step ? 'complete' : sn === state.step ? 'active' : ''); circle.textContent = sn < state.step ? '\u2713' : sn; }
+                        });
+                    }
+                } catch (e) {
+                    typing.remove();
+                    epAddMessage('assistant', 'Sorry, something went wrong. Please try again.');
+                    console.error('Exam prep chat error:', e);
+                }
+                epSendBtn.disabled = false;
+                epChatTextarea.focus();
+            }
+
+            // Load saved chat or send greeting
+            (() => {
+                const saved = loadCanvasChat();
+                if (saved?.history?.length) {
+                    saved.history.forEach(m => { epChatHistory.push(m); epAddMessage(m.role, m.content); });
+                    if (saved.chatId) epChatId = saved.chatId;
+                    console.log('WML Exam Prep: Resumed chat with', saved.history.length, 'messages');
+                } else {
+                    // Auto-send greeting to start the exercise
+                    setTimeout(() => {
+                        epChatTextarea.value = "Let's begin!";
+                        epSendMessage();
+                    }, 500);
+                }
+            })();
+        }
+
         else if (hasPlan) {
             // Redraft mode — show plan
             rightPanel.appendChild(el('h3', { textContent: '📋 Your Plan' }));
@@ -1700,6 +2085,70 @@
                     rightPanel.appendChild(section);
                 }
             });
+        } else if (isCwWorkbook) {
+            // v7.13.34: CW Workbook mode — step-specific guidance
+            rightPanel.appendChild(el('h3', {
+                innerHTML: '<span class="swml-sidebar-close-icon">−</span> ' + (cwStepDef?.label || 'Workbook Exercise'),
+                style: { cursor: 'pointer' }
+            }));
+            const cwGuidanceContent = el('div', { className: 'swml-canvas-guidance' });
+
+            const cwTips = [
+                { icon: SVG_GUIDE_WRITING, colour: '#5333ed', text: 'This is a workbook exercise. Work through the content in the document at your own pace.' },
+                { icon: SVG_GUIDE_BRAIN, colour: '#51dacf', text: 'Use the toolbar to format your writing. Your work saves automatically.' },
+                { icon: SVG_GUIDE_TARGET, colour: '#4D76FD', text: 'When you\'re finished, click "Mark Complete" to save your progress and move to the next step.' },
+            ];
+
+            cwTips.forEach(t => {
+                const tip = el('div', { className: 'swml-canvas-plan-section' });
+                tip.appendChild(el('p', { innerHTML: `<span class="swml-guide-icon" style="color:${t.colour}">${t.icon}</span> ${t.text}` }));
+                cwGuidanceContent.appendChild(tip);
+            });
+            rightPanel.appendChild(cwGuidanceContent);
+
+            // CW workbook Mark Complete button
+            const cwCompleteBtn = el('button', {
+                className: 'swml-go-assess-btn',
+                textContent: 'Mark Complete',
+                onClick: async () => {
+                    // Save artifact
+                    const artifactKey = WML.CW_ARTIFACT_MAP[cwStepDef?.step];
+                    if (artifactKey && state.cwProjectId && canvasEditor) {
+                        const content = canvasEditor.getHTML();
+                        await WML.cwProject.saveArtifact(state.cwProjectId, artifactKey, content);
+                    }
+                    // Mark step complete
+                    if (state.cwProjectId) {
+                        const stepKey = cwStepDef?.step ? 'step_' + cwStepDef.step : cwStepDef?.id;
+                        await WML.cwProject.markStepComplete(state.cwProjectId, stepKey);
+                    }
+                    cwCompleteBtn.textContent = 'Complete';
+                    cwCompleteBtn.disabled = true;
+                    cwCompleteBtn.style.opacity = '0.5';
+                    showToast('Step complete! Your work has been saved.');
+                    // Return to dashboard after brief delay
+                    setTimeout(() => {
+                        if (WML.renderCreativeWritingDashboard) WML.renderCreativeWritingDashboard();
+                    }, 1500);
+                }
+            });
+            cwCompleteBtn.style.marginTop = '16px';
+            rightPanel.appendChild(cwCompleteBtn);
+
+            // Back to steps button
+            rightPanel.appendChild(el('button', {
+                className: 'swml-back-link',
+                textContent: '← Back to Steps',
+                style: { marginTop: '8px' },
+                onClick: () => {
+                    if (canvasEditor) saveCanvasContent();
+                    const artifactKey = WML.CW_ARTIFACT_MAP[cwStepDef?.step];
+                    if (artifactKey && state.cwProjectId && canvasEditor) {
+                        WML.cwProject.saveArtifact(state.cwProjectId, artifactKey, canvasEditor.getHTML()).catch(() => {});
+                    }
+                    if (WML.renderCreativeWritingDashboard) WML.renderCreativeWritingDashboard();
+                }
+            }));
         } else {
             // Diagnostic mode — guidance tips
             rightPanel.appendChild(el('h3', {
@@ -1708,10 +2157,18 @@
             }));
             const guidanceContent = el('div', { className: 'swml-canvas-guidance' });
 
+            function getWordGuidanceText() {
+                if (canvasDualTargets) {
+                    const { partA, partB } = canvasDualTargets;
+                    return `This is a two-part question. Part A: aim for ${partA.target} words (${partA.marks} marks). Part B: aim for ${partB.target} words (${partB.marks} marks). A "Mark Complete" button will appear once you reach the combined minimum.`;
+                }
+                return `Aim for ${canvasWordTarget} words. Once you reach ${canvasWordMinimum} words, a "Mark Complete" button will appear — but push for ${canvasWordTarget} if you can.`;
+            }
+
             const tips = [
                 { icon: SVG_GUIDE_LOCK, colour: '#5333ed', text: 'This is your independent assessment. No help is available — no AI, no notes, no resources. Rely entirely on what you\'ve learned.' },
                 { icon: SVG_GUIDE_BRAIN, colour: '#51dacf', text: 'Try to recall everything you were taught. Extract your best knowledge and put it on the page.' },
-                { icon: SVG_GUIDE_TARGET, colour: '#4D76FD', text: `Aim for ${canvasWordTarget} words. Once you reach ${canvasWordMinimum} words, a "Mark Complete" button will appear — but push for ${canvasWordTarget} if you can.` },
+                { icon: SVG_GUIDE_TARGET, colour: '#4D76FD', text: getWordGuidanceText(), id: 'swml-guide-word-target' },
                 { icon: SVG_GUIDE_STOPWATCH, colour: '#51dacf', text: 'Work efficiently. Get your ideas down as quickly as possible to the best of your ability.' },
                 { icon: SVG_GUIDE_ARM, colour: '#1CD991', text: 'Don\'t worry about grades. The purpose is to diagnose your strengths and areas for development, so we can build on them and eliminate weaknesses.' },
                 { icon: SVG_GUIDE_WRITING, colour: '#5333ed', text: 'Write the very best you know at this moment. Structure: Introduction → 3 Body Paragraphs → Conclusion.' },
@@ -1719,7 +2176,9 @@
 
             tips.forEach(t => {
                 const tip = el('div', { className: 'swml-canvas-plan-section' });
-                tip.appendChild(el('p', { innerHTML: `<span class="swml-guide-icon" style="color:${t.colour}">${t.icon}</span> ${t.text}` }));
+                const p = el('p', { innerHTML: `<span class="swml-guide-icon" style="color:${t.colour}">${t.icon}</span> ${t.text}` });
+                if (t.id) p.id = t.id;
+                tip.appendChild(p);
                 guidanceContent.appendChild(tip);
             });
             rightPanel.appendChild(guidanceContent);
@@ -1856,6 +2315,8 @@
                             rightPanel.classList.add('swml-canvas-plan-hidden');
                             if (ctxEl) ctxEl.style.display = 'none';
                             if (diagBadge) diagBadge.style.display = 'none';
+                            // v7.14.10: Reveal assessment sections (feedback, scores, etc.)
+                            canvas.classList.remove('swml-canvas-diagnostic');
 
                             // Build + insert assessment panels at SAME time as diagnostic collapse
                             {
@@ -1879,11 +2340,20 @@
                         // Body wrapper (matches original sidebar structure)
                         const protoBody = el('div', { className: 'swml-sidebar-body' });
 
-                        // Badges
+                        // Badges — v7.13.52: CW exercises show single "Creative Writing" badge instead of board/subject/text
                         const protoBadges = el('div', { className: 'swml-sidebar-badges' });
-                        [boardLabel, subjectLabel, textLabel].filter(Boolean).forEach(b =>
-                            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: b }))
-                        );
+                        if (isCwTask) {
+                            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Creative Writing Masterclass' }));
+                            // v7.13.58: Show project name in sidebar (synchronous from state)
+                            if (state.cwProjectName) {
+                                const nameEl = el('span', { className: 'swml-sidebar-badge', textContent: '\u201c' + state.cwProjectName + '\u201d', style: { fontStyle: 'italic', opacity: '0.7' } });
+                                protoBadges.appendChild(nameEl);
+                            }
+                        } else {
+                            [boardLabel, subjectLabel, textLabel].filter(Boolean).forEach(b =>
+                                protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: b }))
+                            );
+                        }
                         // Topic / mode badge
                         if (state.topicNumber && state.mode === 'guided') {
                             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Topic ${state.topicNumber}` }));
@@ -1899,12 +2369,14 @@
                         }
                         protoBody.appendChild(protoBadges);
 
-                        // Protocol Progress label
-                        protoBody.appendChild(el('div', { className: 'swml-sidebar-section-label', textContent: 'Protocol Progress' }));
+                        // Protocol Progress label — v7.13.35: CW shows step name
+                        const progressLabel = isCwTask ? `Step ${cwStepDef?.step || ''} Progress` : 'Protocol Progress';
+                        protoBody.appendChild(el('div', { className: 'swml-sidebar-section-label', textContent: progressLabel }));
 
                         // Steps — manifest-driven (v7.13.11, replaces hardcoded if/else)
                         const protoSteps = el('div', { id: 'swml-progress-steps' });
-                        const assessSteps = canvasSidebarSteps || [
+                        // v7.13.97: Use task-specific steps for exam prep, manifest sidebarSteps for assessment, fallback to defaults
+                        const assessSteps = canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
                             { step: 1, label: 'Setup & Details' },
                             { step: 2, label: 'Goal Setting' },
                             { step: 3, label: 'Self-Reflection' },
@@ -1913,7 +2385,7 @@
                             { step: 6, label: 'Body Paragraphs' },
                             { step: 7, label: 'Conclusion' },
                             { step: 8, label: 'Summary & Action Plan' },
-                        ];
+                        ]);
                         assessSteps.forEach((s, i) => {
                             const cls = i === 0 ? 'active' : '';
                             protoSteps.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
@@ -1934,8 +2406,24 @@
                         }
 
                         // ── Assessment Mark Complete button — 3D Push Button, hidden until complete (v7.12.35) ──
-                        const assessBtn = build3DButton('Mark Complete', 'Done!', () => {
+                        const assessBtn = build3DButton('Mark Complete', 'Done!', async () => {
                             if (state._phaseMarkedComplete) return;
+                            // v7.13.34: CW SI exercises — save artifact + mark step complete
+                            if (isCwSi && state.cwProjectId) {
+                                state._phaseMarkedComplete = true;
+                                const artifactKey = WML.CW_ARTIFACT_MAP[cwStepDef?.step];
+                                if (artifactKey && canvasEditor) {
+                                    await WML.cwProject.saveArtifact(state.cwProjectId, artifactKey, canvasEditor.getHTML());
+                                }
+                                const stepKey = cwStepDef?.step ? 'step_' + cwStepDef.step : cwStepDef?.id;
+                                await WML.cwProject.markStepComplete(state.cwProjectId, stepKey);
+                                assessBtn.style.display = 'none';
+                                showToast('Step complete! Your work has been saved.');
+                                setTimeout(() => {
+                                    if (WML.renderCreativeWritingDashboard) WML.renderCreativeWritingDashboard();
+                                }, 1500);
+                                return;
+                            }
                             showPhaseCompleteCard();
                         });
                         assessBtn.style.display = 'none';
@@ -1958,7 +2446,25 @@
                         protoSpacer.appendChild(iconBtn(SVG_DASHBOARD, 'My Dashboard', () => window.open('/dashboard/', '_blank')));
 
                         // Back to Writing — smooth reverse transition
-                        protoSpacer.appendChild(iconBtn(SVG_BACK, 'Back to Diagnostic', () => {
+                        // v7.13.34: CW exercises return to step dashboard instead of diagnostic
+                        protoSpacer.appendChild(iconBtn(SVG_BACK, isCwTask ? 'Back to Steps' : 'Back to Diagnostic', () => {
+                            if (isCwTask) {
+                                // Save current work before leaving
+                                if (canvasEditor) saveCanvasContent();
+                                // Save as project artifact
+                                const artifactKey = WML.CW_ARTIFACT_MAP[cwStepDef?.step];
+                                if (artifactKey && state.cwProjectId && canvasEditor) {
+                                    const content = canvasEditor.getHTML();
+                                    WML.cwProject.saveArtifact(state.cwProjectId, artifactKey, content).catch(() => {});
+                                }
+                                // Return to CW dashboard
+                                if (typeof renderCreativeWritingDashboard === 'function') {
+                                    renderCreativeWritingDashboard();
+                                } else if (WML.renderCreativeWritingDashboard) {
+                                    WML.renderCreativeWritingDashboard();
+                                }
+                                return;
+                            }
                             // Reset state when returning to diagnostic (v7.12.32)
                             state.task = 'diagnostic';
                             canvasInAssessment = false;
@@ -2094,7 +2600,9 @@
 
                         // Chat header with clear button
                         const chatHeader = el('div', { className: 'swml-canvas-chat-header', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } });
-                        chatHeader.appendChild(el('span', { innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;opacity:0.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> ' + canvasChatHeaderLabel })); // v7.13.11: manifest-driven
+                        // v7.13.58: Append project name for CW exercises
+                        const headerLabel = canvasChatHeaderLabel + (isCwTask && state.cwProjectName ? ' \u2014 \u201c' + state.cwProjectName + '\u201d' : '');
+                        chatHeader.appendChild(el('span', { innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;opacity:0.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> ' + headerLabel }));
                         const clearChatBtn = el('button', {
                             className: 'swml-clear-chat-btn',
                             title: 'Clear chat and start fresh',
@@ -2113,8 +2621,30 @@
                                         if (assessCompleteBtn) assessCompleteBtn.classList.remove('swml-assess-ready');
                                         // Reset protocol progress sidebar to step 1
                                         updateProgress(1);
-                                        // Show fresh greeting with essay question if available
                                         const fn = (config.userName || '').split(' ')[0] || 'there';
+
+                                        // v7.13.42: CW exercises get CW-specific greeting on chat clear
+                                        if (isCwTask && cwStepDef) {
+                                            const stepLabel = cwStepDef.label || 'this step';
+                                            const stepNum = cwStepDef.step || cwStepDef.trial || '';
+                                            const gt = `Welcome back to Step ${stepNum}: **${stepLabel}**\n\nLet\u2019s continue working on this step. When you\u2019re ready, hit the button below.`;
+                                            addChatMessage(formatAI(gt), 'ai', gt);
+                                            canvasChatHistory.push({ role: 'assistant', content: gt });
+                                            saveCanvasChat(canvasChatHistory, canvasChatId);
+                                            // "Let's begin" quick action
+                                            const startBar = el('div', { className: 'swml-quick-actions' });
+                                            startBar.appendChild(el('button', {
+                                                className: 'swml-quick-btn',
+                                                textContent: "Let's begin",
+                                                onClick: () => { startBar.remove(); chatTextarea.value = "Let's begin!"; sendCanvasMessage(); }
+                                            }));
+                                            const greetBubble = chatMessages.lastElementChild;
+                                            if (greetBubble) {
+                                                const bc = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
+                                                bc.appendChild(startBar);
+                                            }
+                                        } else {
+                                        // Show fresh assessment greeting with essay question if available
                                         const tn = state.textName || state.text || 'your text';
                                         const wc = getResponseWordCount(canvasEditor);
                                         // Retrieve essay question from document
@@ -2138,6 +2668,7 @@
                                             const ccContent = ccBubble.querySelector('.swml-bubble-content') || ccBubble;
                                             ccContent.appendChild(gradeBarCC);
                                         }
+                                        } // end else (non-CW)
                                         console.log('WML Canvas: Chat cleared');
                                     },
                                     { confirmText: 'Clear Chat', cancelText: 'Keep Chat' }
@@ -2336,6 +2867,12 @@
                                                 className: 'swml-quick-btn',
                                                 textContent: action.label,
                                                 onClick: () => {
+                                                    // v7.14.3: Intercept "Saved question" — check label (value is just the letter e.g. "B")
+                                                    if (isExamPrep && /saved\s*question/i.test(action.label || action.value)) {
+                                                        bar.remove();
+                                                        _showSavedQuestionOverlay(chatTextarea, sendCanvasMessage);
+                                                        return;
+                                                    }
                                                     bar.remove();
                                                     chatTextarea.value = action.value;
                                                     sendCanvasMessage();
@@ -2352,7 +2889,7 @@
                                     if (body.offsetHeight > 500) {
                                         const topBtn = el('button', {
                                             className: 'swml-msg-top-btn',
-                                            textContent: '↑ Back to top of message',
+                                            innerHTML: '<svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 17a.5.5 0 0 1-.5-.5V4.707L5.354 8.854a.5.5 0 1 1-.708-.708l5-5a.5.5 0 0 1 .708 0l5 5a.5.5 0 0 1-.708.708L10.5 4.707V16.5a.5.5 0 0 1-.5.5"/></svg> Back to top of message',
                                             onClick: () => { bubble.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
                                         });
                                         content.appendChild(topBtn);
@@ -2482,7 +3019,10 @@
                                 try { canvasRecognition.stop(); } catch(e) {}
                             }
 
-                            addChatMessage(msg, 'user');
+                            // v7.14.3: Silent send — add to history but don't show user bubble
+                            const isSilent = canvasSilentSend;
+                            canvasSilentSend = false;
+                            if (!isSilent) addChatMessage(msg, 'user');
                             canvasChatHistory.push({ role: 'user', content: msg });
                             chatTextarea.value = '';
                             chatTextarea.style.height = '40px';
@@ -2509,6 +3049,16 @@
                                         promptText = `[MARK SCHEME DOCUMENT — current state of student's self-ratings]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
                                     }
                                     console.log('WML Canvas: Mark scheme doc injected. Length:', docContent.length);
+                                } else if (isCwSi) {
+                                    // v7.13.34: Creative Writing — inject document as "CREATIVE WRITING DOCUMENT"
+                                    const docContent = canvasEditor ? canvasEditor.getText() : '';
+                                    const stepLabel = cwStepDef?.label || 'Creative Writing';
+                                    if (userMsgCount === 1) {
+                                        promptText = `[CONTEXT: Creative Writing Course — Step ${cwStepDef?.step || cwStepDef?.trial}: ${stepLabel}]\n[STUDENT'S CREATIVE WRITING DOCUMENT]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                                    } else if (docContent.trim().length > 50) {
+                                        promptText = `[CREATIVE WRITING DOCUMENT — current draft]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                                    }
+                                    console.log('WML Canvas: CW doc injected for', state.task, 'Length:', docContent.length);
                                 } else if (essay.trim().length > 50) {
                                     const wc = getResponseWordCount(canvasEditor);
                                     if (userMsgCount === 1) {
@@ -2731,17 +3281,34 @@
                                         // ── Chat persistence: resume or fresh start (v7.12.3) ──
                                         (async () => {
                                         let savedChat = loadCanvasChat();
-                                        // Server fallback if localStorage is empty
-                                        // Skip server chat for mark_scheme — server stores essay assessment chat (v7.12.91)
-                                        if (state.task !== 'mark_scheme' && (!savedChat || !savedChat.history || savedChat.history.length === 0)) {
+                                        // Server fallback if localStorage is empty (v7.14.4: suffix now isolates each exercise type)
+                                        // CW exercises use project artifact storage, not canvas chat
+                                        const skipServerChat = state.task && state.task.startsWith('cw_');
+                                        if (!skipServerChat && (!savedChat || !savedChat.history || savedChat.history.length === 0)) {
                                             try {
-                                                const chatUrl = `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}`;
+                                                const _chatSuffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+                                                const chatUrl = `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}`;
                                                 const serverChat = await fetch(chatUrl, { headers }).then(r => r.json());
                                                 if (serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
                                                     savedChat = serverChat.chat;
                                                     console.log('WML Canvas: Chat loaded from server (localStorage empty)');
                                                 }
                                             } catch (e) { console.log('WML Canvas: Server chat load unavailable'); }
+                                        }
+                                        // v7.14.1: Discard stale chat if task type doesn't match (e.g. assessment chat saved under exam prep key)
+                                        if (savedChat && savedChat.task && savedChat.task !== state.task) {
+                                            console.log('WML Canvas: Discarding stale chat — saved task:', savedChat.task, 'current task:', state.task);
+                                            savedChat = null;
+                                            try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+                                        }
+                                        // Also discard if chat contains "assessment phase" but current task is exam prep
+                                        if (isExamPrep && savedChat && savedChat.history && savedChat.history.length > 0) {
+                                            const firstAI = savedChat.history.find(m => m.role === 'assistant');
+                                            if (firstAI && firstAI.content.includes('assessment phase')) {
+                                                console.log('WML Canvas: Discarding stale assessment chat from exam prep exercise');
+                                                savedChat = null;
+                                                try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+                                            }
                                         }
                                         // v7.13.2: Discard stale cached chat for mark_scheme — check for v7.13.1+ greeting marker
                                         if (canvasInMarkScheme && savedChat && savedChat.history && savedChat.history.length > 0) {
@@ -2753,6 +3320,16 @@
                                                 try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
                                             }
                                         }
+                                        // v7.13.36: Discard stale chat for CW exercises — check that saved chat belongs to this exercise type
+                                        if (isCwSi && savedChat && savedChat.history && savedChat.history.length > 0) {
+                                            const firstAI = savedChat.history.find(m => m.role === 'assistant');
+                                            // CW chats should contain "Creative Writing" or step-related content, not "assessment phase"
+                                            if (firstAI && firstAI.content.includes('assessment phase')) {
+                                                console.log('WML Canvas: Discarding stale assessment chat from CW exercise');
+                                                savedChat = null;
+                                                try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+                                            }
+                                        }
                                         const hasSavedChat = savedChat && savedChat.history && savedChat.history.length > 0;
 
                                         // ── Unified assessment state initializer (v7.12.22) ──
@@ -2760,7 +3337,7 @@
                                         // Scans canvasChatHistory for sidebar progress + Session Complete,
                                         // checks phase status, shows Mark Complete if appropriate.
                                         async function initAssessmentState() {
-                                            if (state.task !== 'assessment') return;
+                                            if (state.task !== 'assessment' && state.task !== 'redraft_assessment' && !isCwSi && !isExamPrep) return;
                                             // 1. Scan ALL chat messages for sidebar step keywords
                                             const allAiMsgs = canvasChatHistory.filter(m => m.role === 'assistant');
                                             let maxStep = allAiMsgs.length > 0 ? 1 : 0; // Start at 1 only if there's chat history (v7.12.32)
@@ -2831,6 +3408,12 @@
 
                                             // Scroll to bottom after replay
                                             setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 100);
+                                        } else if (isExamPrep) {
+                                            // v7.14.3: Exam prep — silent auto-send (no user bubble)
+                                            setTimeout(() => {
+                                                console.log('WML Exam Prep: Sending initial greeting for', state.task);
+                                                if (chatTextarea) { canvasSilentSend = true; chatTextarea.value = "Let's begin!"; sendCanvasMessage(); }
+                                            }, 400);
                                         } else if (state.task === 'mark_scheme') {
                                             // ── Mark Scheme Assessment: fresh greeting (v7.13.1 — matches correct Sureforms form) ──
                                             setTimeout(() => {
@@ -2843,6 +3426,126 @@
                                             saveCanvasChat(canvasChatHistory, canvasChatId);
                                             // No grade buttons or initAssessmentState for mark_scheme
                                             }, 200);
+                                        } else if (isCwSi) {
+                                            // v7.13.35: Creative Writing SI-guided exercise — show greeting, then auto-trigger AI
+                                            setTimeout(async () => {
+                                            const firstName = (config.userName || '').split(' ')[0] || 'there';
+                                            const stepLabel = cwStepDef?.label || 'this step';
+                                            const stepNum = cwStepDef?.step || cwStepDef?.trial || '';
+                                            const projectId = state.cwProjectId;
+
+                                            // For draft steps, load predecessor draft into document
+                                            const draftPredKey = WML.CW_DRAFT_PREDECESSOR[cwStepDef?.step];
+                                            if (draftPredKey && projectId) {
+                                                try {
+                                                    const predArtifact = await WML.cwProject.loadArtifact(projectId, draftPredKey);
+                                                    if (predArtifact?.success && predArtifact.value && canvasEditor) {
+                                                        canvasEditor.commands.setContent(predArtifact.value);
+                                                        console.log('WML CW: Pre-populated document from', draftPredKey);
+                                                    }
+                                                } catch (e) { console.log('WML CW: No predecessor draft to load'); }
+                                            }
+
+                                            // For plot update steps, load current plot outline
+                                            const plotUpdateSteps = [11, 14, 17, 20, 23, 26];
+                                            if (plotUpdateSteps.includes(cwStepDef?.step) && projectId) {
+                                                try {
+                                                    const plotArtifact = await WML.cwProject.loadArtifact(projectId, 'plot_outline');
+                                                    if (plotArtifact?.success && plotArtifact.value && canvasEditor) {
+                                                        canvasEditor.commands.setContent(plotArtifact.value);
+                                                        console.log('WML CW: Pre-populated plot outline for update');
+                                                    }
+                                                } catch (e) { console.log('WML CW: No plot outline to load'); }
+                                            }
+
+                                            // v7.13.41: Load dependency artifacts into chat context
+                                            // Steps 2+ need the Writer Profile; steps 3+ also need story ideas, etc.
+                                            const cwDependencies = {
+                                                2: ['writer_profile'], 3: ['writer_profile', 'story_ideas'],
+                                                4: ['logline'], 5: ['brief_outline'], 6: ['plot_structure_choice'],
+                                                8: ['plot_outline'], 9: ['plot_outline', 'scene_selection'],
+                                            };
+                                            const deps = cwDependencies[cwStepDef?.step];
+                                            let missingPrereq = null;
+                                            if (deps && projectId) {
+                                                for (const depKey of deps) {
+                                                    try {
+                                                        const depArtifact = await WML.cwProject.loadArtifact(projectId, depKey);
+                                                        if (depArtifact?.success && depArtifact.value) {
+                                                            const depLabel = depKey.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                                                            const contextMsg = `[CONTEXT FROM PREVIOUS STEP] ${depLabel}:\n\n${depArtifact.value}`;
+                                                            canvasChatHistory.push({ role: 'user', content: contextMsg });
+                                                            console.log('WML CW: Loaded dependency artifact:', depKey);
+                                                        } else if (!missingPrereq) {
+                                                            // v7.13.45: Track first missing prerequisite
+                                                            missingPrereq = depKey;
+                                                        }
+                                                    } catch (e) {
+                                                        if (!missingPrereq) missingPrereq = depKey;
+                                                        console.log('WML CW: Could not load dependency:', depKey);
+                                                    }
+                                                }
+                                            }
+
+                                            // v7.13.45: Step-aware greeting — references previous step's work
+                                            const cwPrevContext = {
+                                                1: 'This is the starting point of your creative writing journey.',
+                                                2: 'In Step 1, you built your Writer\u2019s Profile \u2014 the themes, passions, and fears that matter most to you. Now we\u2019ll look outward for a spark that ignites those inner themes into a story.',
+                                                3: 'In Step 2, you explored story ideas by combining your personal themes with external inspiration. Now we\u2019ll distil your favourite idea into a powerful one-sentence logline.',
+                                                4: 'In Step 3, you crafted your logline \u2014 the DNA of your story. Now we\u2019ll give it a skeleton using the Pixar Story Spine.',
+                                                5: 'In Step 4, you outlined your story using the Story Spine. Now we\u2019ll choose the archetypal plot structure that best fits your story.',
+                                                6: 'In Step 5, you chose your plot structure. Now we\u2019ll build a detailed, stage-by-stage plot outline \u2014 your master document for the rest of the course.',
+                                                7: 'In Step 6, you built your plot outline. Now we\u2019ll explore the universal human values that will give your story its deeper meaning.',
+                                                8: 'You\u2019ve built your plot outline and explored your story\u2019s values. Now it\u2019s time to choose which scene(s) to bring to life in your first draft.',
+                                                9: 'You\u2019ve chosen your scene(s). Now it\u2019s time to write your first draft \u2014 focusing on basic prose style.',
+                                            };
+                                            const prevCtx = cwPrevContext[stepNum] || `You\u2019ve been building your story step by step. Let\u2019s continue with **${stepLabel}**.`;
+                                            const introLine = stepNum === 1
+                                                ? `Welcome to Step 1: **${stepLabel}**\n\n${prevCtx}`
+                                                : `Welcome to Step ${stepNum}: **${stepLabel}**\n\n${prevCtx}`;
+                                            let greetingText;
+                                            if (missingPrereq && stepNum > 1) {
+                                                // v7.13.45: Missing prerequisite — guide student back
+                                                const prereqLabel = missingPrereq.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                                                const prereqStep = missingPrereq === 'writer_profile' ? 1 : missingPrereq === 'story_ideas' ? 2 : missingPrereq === 'logline' ? 3 : missingPrereq === 'brief_outline' ? 4 : missingPrereq === 'plot_structure_choice' ? 5 : missingPrereq === 'plot_outline' ? 6 : stepNum - 1;
+                                                greetingText = `Welcome to Step ${stepNum}: **${stepLabel}**\n\nIt looks like you haven\u2019t completed **Step ${prereqStep}** yet \u2014 I need your **${prereqLabel}** from that step before we can begin this one.\n\nPlease go back to **Step ${prereqStep}** and complete it first. You can use the **Back to Steps** button below to return to the step dashboard.\n\nOnce you\u2019ve finished Step ${prereqStep}, come back here and everything will be ready to go.`;
+                                            } else if (stepNum === 1) {
+                                                // Step 1 only: full Inside Out intro
+                                                greetingText = `${introLine}\n\nIn this course, you\u2019ll experience what it\u2019s like to create a story from the inside \u2014 the same process that professional writers use. We call this the **Inside Out** technique.\n\nYou\u2019ll achieve two things: first, you\u2019ll craft a deeply meaningful and satisfying story of your own. Second, by experiencing the creative process yourself, you\u2019ll build a much deeper understanding of *why* authors make the choices they do \u2014 and that insight is exactly what powers top-level essays when you\u2019re analysing literature.\n\nWhen you\u2019re ready, hit the button below and let\u2019s get started.`;
+                                            } else {
+                                                // Steps 2+: context-aware, no generic Inside Out repeat
+                                                greetingText = `${introLine}\n\nWhen you\u2019re ready, hit the button below and let\u2019s get started.`;
+                                            }
+                                            addChatMessage(formatAI(greetingText), 'ai', greetingText);
+                                            canvasChatHistory.push({ role: 'assistant', content: greetingText });
+                                            saveCanvasChat(canvasChatHistory, canvasChatId);
+
+                                            // Quick action: "Let's begin" or "Back to Steps" button
+                                            setTimeout(() => {
+                                                const startBar = el('div', { className: 'swml-quick-actions' });
+                                                if (missingPrereq && stepNum > 1) {
+                                                    // Missing prerequisite — show "Back to Steps" button
+                                                    startBar.appendChild(el('button', {
+                                                        className: 'swml-quick-btn',
+                                                        textContent: 'Back to Steps',
+                                                        onClick: () => { startBar.remove(); closeCanvasOverlay(); WML.renderCreativeWritingDashboard(); }
+                                                    }));
+                                                } else {
+                                                    startBar.appendChild(el('button', {
+                                                        className: 'swml-quick-btn',
+                                                        textContent: "Let's begin",
+                                                        onClick: () => { startBar.remove(); chatTextarea.value = "Let's begin!"; sendCanvasMessage(); }
+                                                    }));
+                                                }
+                                                const greetBubble = chatMessages.lastElementChild;
+                                                if (greetBubble) {
+                                                    const bc = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
+                                                    bc.appendChild(startBar);
+                                                }
+                                            }, 50);
+
+                                            console.log('WML CW: Greeting shown for', state.task);
+                                            }, 400);
                                         } else {
                                             // Fresh start: show greeting (delay to let CharacterCount sync)
                                             setTimeout(() => {
@@ -2916,7 +3619,8 @@
                         // Mark assessment mode active (controls Note button visibility)
                         canvasInAssessment = true;
                         state.step = 0; // Reset so initAssessmentState can restore from chat history (v7.12.32)
-                        if (state.task !== 'mark_scheme') state.task = 'assessment'; // Preserve mark_scheme task (v7.12.96)
+                        // v7.13.37: Preserve CW task + mark_scheme task — only set 'assessment' for diagnostic→assessment transition
+                        if (state.task !== 'mark_scheme' && !(state.task && state.task.startsWith('cw_')) && !isExamPrep) state.task = 'assessment';
 
                         // Show notepad in assessment mode (it was hidden during diagnostic)
                         if (snFab) snFab.style.display = '';
@@ -3065,6 +3769,14 @@
         reopenBtn.style.pointerEvents = 'none';
         canvas.appendChild(rightPanel);
         canvas.appendChild(reopenBtn);
+
+        // v7.13.77: Insert exam prep protocol panel (deferred from earlier branch)
+        if (canvas._epProtoPanel) {
+            const editorPane = canvas.querySelector('.swml-canvas-editor-pane') || contentWrap.parentElement;
+            if (editorPane) canvas.insertBefore(canvas._epProtoPanel, editorPane);
+            else canvas.prepend(canvas._epProtoPanel);
+            delete canvas._epProtoPanel;
+        }
 
         // Direct assessment entry — hide diagnostic UI immediately (auto-trigger will transition)
         if (canvasInAssessment) {
@@ -3772,6 +4484,16 @@
             }
         });
 
+        // v7.13.45: CW resource buttons — open URL in new tab
+        editorEl.addEventListener('click', (e) => {
+            const btn = e.target.closest('.swml-cw-resource-btn');
+            if (btn && btn.dataset.href) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.open(btn.dataset.href, '_blank', 'noopener');
+            }
+        });
+
         // Close popover on outside click (exclude comment marks, bubbles, and theme toggle)
         canvas.addEventListener('click', (e) => {
             if (activePopover && !activePopover.contains(e.target) && !e.target.closest('[data-comment-id]') && !e.target.closest('.swml-comment-bubble') && !e.target.closest('.theme-toggle') && !e.target.closest('.swml-comment-popover')) {
@@ -3853,7 +4575,29 @@
         });
 
         // ── Initialise TipTap Editor ──
-        const savedContent = loadCanvasContent();
+        let savedContent = loadCanvasContent();
+        // v7.13.42: CW tasks — always clear stale localStorage so fresh template loads
+        // CW documents are saved as project artifacts on the server, not localStorage
+        if (isCwTask) {
+            savedContent = '';
+        }
+        // v7.14.9: Discard stale generic template (pre-v7.14.8 format without section blocks)
+        // The old getDefaultEssayTemplate() used bare <h2> headings with no data-section-type.
+        // If that's what's in localStorage, discard it so the board-aware template loads cleanly.
+        if (savedContent && !savedContent.includes('data-section-type') && /^<h2>Introduction<\/h2>/.test(savedContent.trim())) {
+            console.log('WML: Discarding stale generic template from localStorage');
+            try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
+            savedContent = '';
+        }
+
+        // v7.13.92: Section Guard — snapshot section count, revert if sections are deleted
+        // Uses onTransaction instead of ProseMirror Plugin (Plugin not exported from TipTap bundle)
+        let _sectionCount = 0;
+        function countSections(doc) {
+            let n = 0;
+            doc.descendants(node => { if (node.type.name === 'sectionBlock') n++; });
+            return n;
+        }
 
         canvasEditor = new Editor({
             element: editorEl,
@@ -3894,7 +4638,8 @@
                     footerRight: '<span style="font-size:10px;color:rgba(255,255,255,0.25);font-family:inherit">Page {page}</span>',
                 })] : []),
             ],
-            content: savedContent || (state.task === 'mark_scheme' ? '<p></p>' : getDefaultEssayTemplate()),
+            // v7.13.78: Don't flash generic template — start empty, async chain injects the right one
+            content: savedContent || (state.task === 'mark_scheme' ? '<p></p>' : isCwTask ? getCwDocTemplate(cwStepDef) : '<p></p>'),
             editorProps: {
                 attributes: {
                     spellcheck: 'true',
@@ -3952,7 +4697,23 @@
                 // Update comment count after any editor change (marks added/removed)
                 updateCommentCount();
             },
+            onTransaction: ({ editor, transaction }) => {
+                // v7.13.92: Section Guard — revert if sections were deleted
+                if (transaction.docChanged && _sectionCount > 0) {
+                    const newCount = countSections(editor.state.doc);
+                    if (newCount < _sectionCount) {
+                        console.warn('WML: Section deletion blocked — reverting (' + _sectionCount + ' → ' + newCount + ')');
+                        editor.commands.undo();
+                        return;
+                    }
+                    _sectionCount = newCount;
+                }
+            },
             onCreate: ({ editor }) => {
+                // v7.13.92: Snapshot initial section count for guard
+                _sectionCount = countSections(editor.state.doc);
+                // v7.13.53: Snapshot template word count BEFORE first getResponseWordCount
+                snapshotTemplateBaseline(editor);
                 const wc = getResponseWordCount(editor);
                 wcDisplay.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
 
@@ -3988,7 +4749,103 @@
         });
 
         // ── Server-side load + topic template (async, after editor is ready) ──
-        tryServerLoad().then(() => tryTopicTemplate()).then(() => {
+        // v7.13.34: CW workbook pre-population — load artifact from project if no saved content
+        const tryCwPrePopulate = async () => {
+            if (!isCwWorkbook || !state.cwProjectId || !canvasEditor) return;
+            // Only pre-populate if editor is empty (no server-saved content)
+            const currentContent = canvasEditor.getText().trim();
+            if (currentContent.length > 50) return; // Already has content
+            const plotUpdateSteps = [11, 14, 17, 20, 23, 26];
+            const artifactKey = plotUpdateSteps.includes(cwStepDef?.step) ? 'plot_outline' : WML.CW_ARTIFACT_MAP[cwStepDef?.step];
+            if (!artifactKey) return;
+            try {
+                const artifact = await WML.cwProject.loadArtifact(state.cwProjectId, artifactKey);
+                if (artifact?.success && artifact.value) {
+                    canvasEditor.commands.setContent(artifact.value);
+                    console.log('WML CW Workbook: Pre-populated from artifact', artifactKey);
+                }
+            } catch (e) { console.log('WML CW Workbook: No artifact to pre-populate'); }
+        };
+        // v7.13.60: Load plot structure template from server for Step 6 (and plot update steps)
+        const tryLoadPlotTemplate = async () => {
+            if (!isCwTask || !canvasEditor) return;
+            const stepNum = cwStepDef?.step;
+            // Only Step 6 gets server-loaded templates (plot update steps use tryCwPrePopulate)
+            if (stepNum !== 6) return;
+            // Check if the document still has the placeholder text (TipTap strips data attributes)
+            const editorText = canvasEditor.getText();
+            console.log('WML CW Plot: Step', stepNum, 'checking for placeholder. Text includes loading:', editorText.includes('Loading your plot structure template'), 'Text length:', editorText.length);
+            if (!editorText.includes('Loading your plot structure template')) return; // Already has real content
+
+            // Determine which plot structure to load
+            let structureSlug = 'heros-journey'; // default
+            if (state.cwProjectId) {
+                try {
+                    const choiceArtifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'plot_structure_choice');
+                    if (choiceArtifact?.success && choiceArtifact.value) {
+                        // The artifact value might be the slug directly or an object with a .structure field
+                        const val = typeof choiceArtifact.value === 'string' ? choiceArtifact.value : (choiceArtifact.value?.structure || choiceArtifact.value?.primary || '');
+                        if (val) structureSlug = val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                    }
+                } catch (e) { console.log('WML CW: No plot structure choice found, using default Hero\'s Journey'); }
+            }
+
+            // Fetch the template from the server
+            try {
+                const res = await WML.cwProject.loadPlotTemplate(structureSlug);
+                if (res?.success && res.html) {
+                    // Get current content and replace the placeholder paragraph with the full template
+                    const currentHtml = canvasEditor.getHTML();
+                    // TipTap converts the placeholder div to a <p><em>Loading...</em></p> — match that
+                    const newHtml = currentHtml.replace(/<p><em>Loading your plot structure template[\u2026.]*<\/em><\/p>/, res.html);
+                    canvasEditor.commands.setContent(newHtml);
+                    // Re-snapshot baseline for word count — ALL editable section text is template
+                    snapshotTemplateBaseline(canvasEditor);
+                    // Update word count display to 0
+                    const wcAfter = getResponseWordCount(canvasEditor);
+                    if (wcDisplay) wcDisplay.textContent = `${wcAfter} word${wcAfter !== 1 ? 's' : ''}`;
+                    if (wcWidgetLabel) wcWidgetLabel.textContent = `${wcAfter} / ${canvasWordTarget}`;
+                    console.log('WML CW: Loaded plot template:', res.label, '- baseline re-snapshotted, wc:', wcAfter);
+                }
+            } catch (e) { console.error('WML CW: Failed to load plot template:', e); }
+        };
+
+        // v7.14.3: Exam prep template injection — version-stamped cache busting
+        const EXAM_PREP_DOC_VER = 2;
+        const tryExamPrepTemplate = () => {
+            if (!isExamPrep || !canvasEditor) return;
+            const docVerKey = CANVAS_SAVE_KEY() + '_ver';
+            // Check stored template version
+            try {
+                const savedVer = parseInt(localStorage.getItem(docVerKey) || '0');
+                if (savedVer >= EXAM_PREP_DOC_VER) return; // Up to date
+            } catch(e) {}
+            // Outdated — check for real student writing before replacing
+            const currentHTML = canvasEditor.getHTML();
+            const respSections = currentHTML.match(/data-section-type="response"[^>]*>[\s\S]*?<\/div>/g) || [];
+            let studentChars = 0;
+            respSections.forEach(s => {
+                studentChars += s.replace(/<[^>]*>/g, '').replace(/Start writing.*|Write your.*|Your .* will appear.*/gi, '').trim().length;
+            });
+            if (studentChars > 50) {
+                // Real student work — stamp version, don't replace
+                try { localStorage.setItem(docVerKey, String(EXAM_PREP_DOC_VER)); } catch(e) {}
+                console.log('WML: Keeping student content (' + studentChars + ' chars), version stamped');
+                return;
+            }
+            // Inject fresh template
+            const template = getExamPrepDocTemplate(state.task);
+            if (template) {
+                try {
+                    localStorage.removeItem(CANVAS_SAVE_KEY());
+                    localStorage.setItem(docVerKey, String(EXAM_PREP_DOC_VER));
+                } catch(e) {}
+                canvasEditor.commands.setContent(template);
+                console.log('WML: Template upgraded to v' + EXAM_PREP_DOC_VER + ' for', state.task);
+            }
+        };
+
+        tryServerLoad().then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => {
             // Clean corrupted content from v7.11.8 (serialized selects as text)
             cleanCorruptedContent();
             // Migrate old documents — inject missing sections + dividers
@@ -3998,10 +4855,13 @@
             tryInjectCover();
             // Build table of contents (after cover + migration)
             buildTableOfContents();
+            // v7.13.48: CW resource buttons are now in the sidebar (not in document)
             // Inject dropdown overlays after template is ready
             setTimeout(() => buildDropdownOverlays(contentWrap), 200);
             // Re-position comment gutter after all content (cover, TOC, template) is loaded (v7.12.35)
             setTimeout(() => updateCommentGutter(), 400);
+            // v7.13.92: Re-snapshot section count after template injection (sections may have been added)
+            if (canvasEditor) _sectionCount = countSections(canvasEditor.state.doc);
 
             // ── Auto-extract essay question from document for all paths (v7.12.33) ──
             const autoQ = extractEssayQuestion(canvasEditor);
@@ -4010,6 +4870,8 @@
             // ── Direct Assessment Entry (v7.12.8) ──
             // When entering canvas with state.task = 'assessment' (from stepper "Get Assessed"),
             // auto-trigger the assessment transition after content loads.
+            // Auto-trigger the diagnostic-to-assessment transition (also used by CW SI exercises to build sidebar+chat)
+            // state.task is protected from overwrite by the guard at the transition handler (v7.13.38)
             if (canvasInAssessment && diagCompleteBtn) {
                 // Force button visible and show the right panel briefly for transition code
                 diagCompleteBtn.style.display = '';
@@ -4400,6 +5262,7 @@
                                 body: JSON.stringify({
                                     board: state.board, text: state.text,
                                     topicNumber: state.topicNumber || null,
+                                    suffix: WML.getExerciseConfig(state.task).storageSuffix || '',
                                     studentId: config.userId,
                                 })
                             }).then(r => r.json()).then(res => {
@@ -4449,7 +5312,7 @@
                 dropdownLayer.appendChild(wrapper);
 
                 // Load existing sign-off data
-                fetch(config.restUrl + `canvas/load-signoff?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}`, { headers })
+                fetch(config.restUrl + `canvas/load-signoff?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(WML.getExerciseConfig(state.task).storageSuffix || '')}`, { headers })
                     .then(r => r.ok ? r.json() : null)
                     .then(res => {
                         if (res && res.success && res.signoff && !res.signoff.revoked) {
@@ -5020,6 +5883,707 @@
         return `<h2>Introduction</h2><p></p><h2>Body Paragraph 1</h2><p></p><h2>Body Paragraph 2</h2><p></p><h2>Body Paragraph 3</h2><p></p><h2>Conclusion</h2><p></p>`;
     }
 
+    // ── CW Document Templates (v7.13.43) ──
+    // Uses sectionHTML() + dividerHTML() for proper section blocks (coloured borders, document outline, labels)
+    function getCwDocTemplate(stepDef) {
+        if (!stepDef) return '<p></p>';
+        const step = stepDef.step;
+        let html = '';
+
+        // ── Step 1: Writer Profile ──
+        if (step === 1) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 1: Build Your Writer\u2019s Profile</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> The Mentor\u2019s first question is always: \u201cWho are you? What matters to you?\u201d Your story must come from something authentic within you.</p>' +
+                '<p>John Truby writes in <em>Anatomy of Story: 22 Steps to Becoming a Master Storyteller</em>:</p>' +
+                '<p><em>\u201cStep 1: write something that may change your life. This is a very high standard, but it may be the most valuable piece of advice you\u2019ll ever get as a writer. I\u2019ve never seen a writer go wrong following it. Why? Because if a story is that important to you, it may be that important to a lot of people in the audience. And when you\u2019re done writing the story, no matter what else happens, you\u2019ve changed your life.\u201d</em></p>' +
+                '<p>The best story ideas come from within the author. Great writers draw from three wells of inspiration: <strong>Memory</strong> (life experience), <strong>Imagination</strong> (creative play), and <strong>External Sources</strong> (knowledge of stories).</p>' +
+                '<p>Answer the questions in the chat in a good amount of detail. Your answers will be compiled into your Writer\u2019s Profile below.</p>'
+            );
+            // Memory Well — Inner World (5 questions)
+            html += dividerHTML('MEMORY WELL \u2014 INNER WORLD');
+            html += sectionHTML('plan', 'Inner World', true, null,
+                '<h3>Your Inner World (Passions &amp; Fears)</h3>' +
+                '<p><strong>1. What excites you or makes you feel truly alive?</strong></p><p></p>' +
+                '<p><strong>2. What are you most passionate about in life?</strong></p><p></p>' +
+                '<p><strong>3. What do you fear the most?</strong></p><p></p>' +
+                '<p><strong>4. What makes you genuinely happy?</strong></p><p></p>' +
+                '<p><strong>5. Is there something you regret, or a failure that stayed with you?</strong></p><p></p>'
+            );
+            // Memory Well — Moral Compass (5 questions)
+            html += dividerHTML('MEMORY WELL \u2014 MORAL COMPASS');
+            html += sectionHTML('plan', 'Moral Compass', true, null,
+                '<h3>Your Moral Compass (Values &amp; Beliefs)</h3>' +
+                '<p><strong>6. What do you value most in people?</strong></p><p></p>' +
+                '<p><strong>7. What outrages you or makes you feel a sense of injustice?</strong></p><p></p>' +
+                '<p><strong>8. What is one social problem \u2014 past, present, or future \u2014 that you think about often?</strong></p><p></p>' +
+                '<p><strong>9. What event or discovery has made a huge difference in your life?</strong></p><p></p>' +
+                '<p><strong>10. Who or what inspires you?</strong></p><p></p>'
+            );
+            // Big Questions + Imagination Well (3 questions)
+            html += dividerHTML('IMAGINATION WELL');
+            html += sectionHTML('plan', 'Imagination Well', true, null,
+                '<h3>Your Imagination Well (Core Scenarios)</h3>' +
+                '<p><strong>11. What questions do you have about the world, life, or the future?</strong></p><p></p>' +
+                '<p><strong>12. What if you had to save the thing you\u2019re most passionate about from a powerful threat?</strong></p><p></p>' +
+                '<p><strong>13. What if a character had to face your greatest fear to achieve something they desperately wanted?</strong></p><p></p>'
+            );
+            // External Sources Well (2 questions)
+            html += dividerHTML('EXTERNAL SOURCES WELL');
+            html += sectionHTML('plan', 'External Sources', true, null,
+                '<h3>Your External Sources Well (Preferred Narrative Space)</h3>' +
+                '<p><strong>14. What are your favourite stories of all time? (books, films, TV, games)</strong></p><p></p>' +
+                '<p><strong>15. What are your favourite genres?</strong></p><p></p>'
+            );
+            // Writer's Profile (synthesised by AI — green response section for distinct colour)
+            html += dividerHTML('YOUR WRITER\u2019S PROFILE');
+            html += sectionHTML('response', 'Writer\u2019s Profile', true, null,
+                '<h3>Your Writer\u2019s Profile</h3>' +
+                '<p><em>Once you\u2019ve answered all the questions above, SI will compile your responses into a synthesised Writer\u2019s Profile here \u2014 a summary of your key themes, passions, and conflicts from all three wells.</em></p><p></p>'
+            );
+            // Seed Loglines
+            html += dividerHTML('SEED LOGLINES');
+            html += sectionHTML('response', 'Seed Loglines', true, null,
+                '<h3>Seed Loglines</h3>' +
+                '<p><em>Three story ideas inspired by your profile will be generated here after your Writer\u2019s Profile is complete.</em></p><p></p>'
+            );
+            return html;
+        }
+
+        // ── Step 2: Explore Story Ideas ──
+        if (step === 2) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 2: Explore Story Ideas</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> The Mentor shows you the wider world \u2014 stories from others that might spark inspiration.</p>' +
+                '<p>Some of the most famous stories in history like William Shakespeare\u2019s <em>Romeo and Juliet</em>, William Golding\u2019s <em>Lord of the Flies</em> (a retelling of R.M. Ballantyne\u2019s <em>Coral Island</em>) and even the <em>Lion King</em> (seemingly based on <em>Hamlet</em>) are all famous stories that authors retold in their own way.</p>' +
+                '<p>So, before you settle on an idea, have a look at the resources below that can help you spark an idea for a story.</p>' +
+                '<p>Remember that it is OK to come up with stories in the following ways:</p>' +
+                '<p>\u2605 <em>Write something that inspires you, means something to you, or that you just find interesting</em></p>' +
+                '<p>\u2605 <em>Write something that is completely original</em></p>' +
+                '<p>\u2605 <em>Retell a story that has already been told, but add something new and interesting to it</em></p>' +
+                '<p>\u2605 <em>Combine all of the above</em></p>'
+            );
+            html += dividerHTML('RESOURCES');
+            html += sectionHTML('outline', 'Resources', false, null,
+                '<h3>Resources to Explore</h3>' +
+                '<p><em>Click the link button on the left to open the resources panel \u2014 you\u2019ll find stories and articles to spark your imagination.</em></p>'
+            );
+            html += dividerHTML('EXAMPLE STORY IDEAS');
+            html += sectionHTML('question', 'Example Story Ideas', false, null,
+                '<h3>Read Some More Possible Story Ideas</h3>' +
+                '<p><strong>1.</strong> <em>\u201cGrief-stricken after the sudden loss of their daughter, a couple makes the controversial decision to bring her back to life as an exact replica AI robot. As she navigates the complexities of being both human and machine, the young girl must confront blurred lines between humanity and technology as she struggles to find her place in a world that no longer sees her as human.\u201d</em></p>' +
+                '<p><strong>2.</strong> <em>\u201cAfter a fiery explosion engulfs a high-rise building, a seasoned firefighter is sent in to rescue survivors. But when he fails to complete his mission, he is forced to confront his own mortality and the weight of his mistakes as he fights to redeem himself and save those still trapped in the inferno.\u201d</em></p>' +
+                '<p><strong>3.</strong> <em>\u201cWhen a routine flight suddenly loses its engines, the pilots are left with only one choice to make: an emergency landing in the icy waters of the Hudson River. As they struggle to keep the plane afloat and evacuate the passengers, they must use all their skills and resourcefulness to survive the chaos and the frigid conditions while being hailed as heroes.\u201d</em></p>' +
+                '<p><strong>4.</strong> <em>\u201cFeathers of Fate\u201d: In a dystopian future where birds have mysteriously gained heightened intelligence and become a dominant species, a group of survivors must navigate their way through a world overrun by these avian creatures. As they seek refuge, they stumble upon a hidden society of humans with the ability to communicate and control birds.</em></p>' +
+                '<p><strong>5.</strong> <em>\u201cVirtual Vengeance\u201d: In a near-future society, a brilliant programmer creates a groundbreaking virtual reality game that immerses players into an alternate world. However, as more and more people become obsessed with the game, they discover that their actions in the virtual world have real-life consequences. A group of gamers must band together to uncover the truth behind the game\u2019s origin.</em></p>' +
+                '<p><strong>6.</strong> <em>\u201cEchoes of Extinction\u201d: Set in a post-apocalyptic world where a cataclysmic event has rendered most of the Earth uninhabitable, a small group of survivors discovers a hidden underground sanctuary. As they explore this refuge, they uncover a dark secret: the remaining inhabitants possess magical abilities inherited from the ancient ones.</em></p>'
+            );
+            html += dividerHTML('YOUR STORY IDEAS');
+            html += sectionHTML('plan', 'Story Ideas', true, null,
+                '<h3>Your Story Ideas</h3>' +
+                '<p>Now, make a note of 3 story ideas that you might want to explore. Don\u2019t worry, you are not tied to these ideas. You will have more chances to settle on an idea before we start adding layers of depth to it.</p>' +
+                '<p><strong>Idea 1:</strong></p><p></p>' +
+                '<p><strong>Idea 2:</strong></p><p></p>' +
+                '<p><strong>Idea 3:</strong></p><p></p>'
+            );
+            return html;
+        }
+
+        // ── Step 3: Create Logline ──
+        if (step === 3) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 3: Create Your Logline</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> The Call to Adventure \u2014 you commit to one story idea and distil it to its DNA.</p>' +
+                '<p>A logline is a single, powerful sentence that captures the DNA of your story: a flawed <strong>protagonist</strong>, a clear <strong>goal</strong>, a formidable <strong>obstacle</strong>, and meaningful <strong>stakes</strong>. Professional screenwriters use loglines to pitch ideas in seconds \u2014 and it\u2019s an incredibly useful way to make sure your story concept is clear and strong before you start building it.</p>' +
+                '<p>John Truby writes in <em>The Anatomy of Story</em> that a great story premise captures the character\u2019s flaw, their moral argument, and the forces that will test them \u2014 all in a single line.</p>'
+            );
+            html += dividerHTML('YOUR LOGLINE');
+            html += sectionHTML('plan', 'Your Logline', true, null, '<h3>Your Logline</h3><p></p>');
+            return html;
+        }
+
+        // ── Step 4: Brief Outline (Story Spine) ──
+        if (step === 4) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 4: Brief Outline (Story Spine)</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials begins \u2014 mapping the ordinary world, inciting incident, and initial consequences.</p>' +
+                '<p>You\u2019ve got a strong logline \u2014 now it\u2019s time to give your story a skeleton. We\u2019re going to use a simple but powerful tool called the <strong>Story Spine</strong>, famously used by the storytellers at Pixar to make sure their plots are strong.</p>' +
+                '<p>The idea is straightforward: every great story is a chain of cause and effect. Each event <em>causes</em> the next. By answering six simple prompts, you\u2019ll map out your entire story from beginning to end.</p>'
+            );
+            html += dividerHTML('BEAT 1: AT FIRST...');
+            html += sectionHTML('plan', 'Beat 1: At First', true, null,
+                '<h3>Beat 1: At First\u2026</h3>' +
+                '<p><em>Your protagonist\u2019s ordinary world. What is their unmet need, their flaw, and their hidden strength?</em></p><p></p>');
+            html += dividerHTML('BEAT 2: AND THEN...');
+            html += sectionHTML('plan', 'Beat 2: And Then', true, null,
+                '<h3>Beat 2: And Then\u2026</h3>' +
+                '<p><em>Their repeated daily routine that proves their flawed state.</em></p><p></p>');
+            html += dividerHTML('BEAT 3: UNTIL...');
+            html += sectionHTML('plan', 'Beat 3: Until', true, null,
+                '<h3>Beat 3: Until\u2026</h3>' +
+                '<p><em>The inciting incident that disrupts everything. How is this event secretly an opportunity?</em></p><p></p>');
+            html += dividerHTML('BEAT 4: AND BECAUSE OF THIS...');
+            html += sectionHTML('plan', 'Beat 4: Because of This', true, null,
+                '<h3>Beat 4: And Because of This\u2026</h3>' +
+                '<p><em>The protagonist\u2019s goal is born \u2014 a physical quest representing their deeper need.</em></p><p></p>');
+            html += dividerHTML('BEAT 5: AND BECAUSE OF THIS...');
+            html += sectionHTML('plan', 'Beat 5: Because of This', true, null,
+                '<h3>Beat 5: And Because of This\u2026</h3>' +
+                '<p><em>The main obstacle and the Road of Trials.</em></p><p></p>');
+            html += dividerHTML('BEAT 6: UNTIL FINALLY...');
+            html += sectionHTML('plan', 'Beat 6: Until Finally', true, null,
+                '<h3>Beat 6: Until Finally\u2026</h3>' +
+                '<p><em>The climax, resolution, and self-revelation. How does what they get contrast with what they thought they wanted?</em></p><p></p>');
+            return html;
+        }
+
+        // ── Step 5: Choose Plot Structure ──
+        if (step === 5) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 5: Choose Your Archetypal Plot Structure</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> Choosing Your Path \u2014 understanding the eight variations of the universal Hero\u2019s Journey.</p>' +
+                '<p>Every great story follows one of a handful of universal plot patterns. Christopher Booker calls these the \u201cseven basic plots\u201d; Christopher Vogler maps them as stages of the Hero\u2019s Journey. Joseph Campbell discovered that the same story structure appears in every culture on Earth.</p>' +
+                '<p>You don\u2019t just accept a structure \u2014 you explore the <em>why</em> behind your choices. You\u2019re finding the structure that will best test your protagonist\u2019s flaw and illuminate their psychological transformation.</p>'
+            );
+            html += dividerHTML('THE 8 ARCHETYPAL PLOT STRUCTURES');
+            html += sectionHTML('question', 'Plot Structures Reference', false, null,
+                '<h3>The 8 Archetypal Plot Structures</h3>' +
+                '<p>Study these structures and their symbolism. You will choose the one that best fits your story concept.</p>' +
+                '<p><strong>1. Hero\u2019s Journey (Original)</strong><br>' +
+                '<em>Symbolism:</em> Transformation, self-discovery, the cyclical nature of life.<br>' +
+                '<em>Themes:</em> Adventure, courage, growth, personal development.<br>' +
+                '<em>Emotions:</em> Excitement, fear, anticipation, triumph, relief.<br>' +
+                '<em>Morals:</em> The importance of perseverance, facing fears, and self-discovery.<br>' +
+                '<em>Examples:</em> <em>The Odyssey</em> by Homer, <em>Star Wars</em> by George Lucas, <em>The Hobbit</em> by J.R.R. Tolkien.</p>' +
+                '<p><strong>2. Tragedy + Hero\u2019s Journey</strong><br>' +
+                '<em>Symbolism:</em> Human frailty, the inevitability of fate, the consequences of hubris.<br>' +
+                '<em>Themes:</em> Loss, downfall, fatal flaws, the inevitability of destiny.<br>' +
+                '<em>Emotions:</em> Sadness, pity, catharsis, despair.<br>' +
+                '<em>Morals:</em> The dangers of pride, the inescapability of fate, the consequences of moral failings.<br>' +
+                '<em>Examples:</em> <em>Hamlet</em> by Shakespeare, <em>Oedipus Rex</em> by Sophocles, <em>Death of a Salesman</em> by Arthur Miller.</p>' +
+                '<p><strong>3. Rags to Riches + Hero\u2019s Journey</strong><br>' +
+                '<em>Symbolism:</em> Transformation, the fulfilment of potential, the reward for virtue and hard work.<br>' +
+                '<em>Themes:</em> Ambition, perseverance, social mobility, transformation.<br>' +
+                '<em>Emotions:</em> Hope, joy, satisfaction, empathy.<br>' +
+                '<em>Morals:</em> Hard work and virtue lead to success, overcoming adversity is possible.<br>' +
+                '<em>Examples:</em> <em>Cinderella</em> by Charles Perrault, <em>Great Expectations</em> by Charles Dickens, <em>Rocky</em> by Sylvester Stallone.</p>' +
+                '<p><strong>4. Rebirth / Redemption + Hero\u2019s Journey</strong><br>' +
+                '<em>Symbolism:</em> Forgiveness, transformation, the power of second chances.<br>' +
+                '<em>Themes:</em> Guilt, atonement, forgiveness, transformation.<br>' +
+                '<em>Emotions:</em> Hope, relief, empathy, joy.<br>' +
+                '<em>Morals:</em> It\u2019s never too late to change, the power of forgiveness and personal transformation.<br>' +
+                '<em>Examples:</em> <em>A Christmas Carol</em> by Charles Dickens, <em>Les Mis\u00e9rables</em> by Victor Hugo, <em>The Kite Runner</em> by Khaled Hosseini.</p>' +
+                '<p><strong>5. The Quest + Hero\u2019s Journey</strong><br>' +
+                '<em>Symbolism:</em> The search for something greater, self-discovery, the journey of life.<br>' +
+                '<em>Themes:</em> Adventure, perseverance, the search for meaning, self-discovery.<br>' +
+                '<em>Emotions:</em> Excitement, anticipation, triumph, fulfilment.<br>' +
+                '<em>Morals:</em> The journey is as important as the destination, perseverance is key.<br>' +
+                '<em>Examples:</em> <em>The Lord of the Rings</em> by J.R.R. Tolkien, <em>Indiana Jones</em> by George Lucas, <em>Harry Potter</em> by J.K. Rowling.</p>' +
+                '<p><strong>6. Overcoming the Monster + Hero\u2019s Journey</strong><br>' +
+                '<em>Symbolism:</em> The triumph of good over evil, the power of courage and bravery.<br>' +
+                '<em>Themes:</em> Good vs. evil, bravery, heroism, sacrifice.<br>' +
+                '<em>Emotions:</em> Tension, fear, triumph, satisfaction.<br>' +
+                '<em>Morals:</em> Courage and bravery can conquer evil, standing up to threats is essential.<br>' +
+                '<em>Examples:</em> <em>Beowulf</em>, <em>Dracula</em> by Bram Stoker, <em>Jaws</em> by Peter Benchley.</p>' +
+                '<p><strong>7. Voyage and Return + Hero\u2019s Journey</strong><br>' +
+                '<em>Symbolism:</em> Exploration and return, personal growth, the cyclical nature of experience.<br>' +
+                '<em>Themes:</em> Adventure, discovery, growth, the familiar vs. the unfamiliar.<br>' +
+                '<em>Emotions:</em> Curiosity, excitement, relief, satisfaction.<br>' +
+                '<em>Morals:</em> Growth and self-discovery often come from venturing into the unknown and returning home changed.<br>' +
+                '<em>Examples:</em> <em>Alice in Wonderland</em> by Lewis Carroll, <em>The Chronicles of Narnia</em> by C.S. Lewis, <em>The Wizard of Oz</em> by L. Frank Baum.</p>' +
+                '<p><strong>8. Coming of Age + Hero\u2019s Journey</strong><br>' +
+                '<em>Symbolism:</em> Growth, maturity, the transition from innocence to experience.<br>' +
+                '<em>Themes:</em> Personal development, maturity, self-discovery, the trials of growing up.<br>' +
+                '<em>Emotions:</em> Empathy, nostalgia, hope, satisfaction.<br>' +
+                '<em>Morals:</em> Growth comes through overcoming challenges, the journey to adulthood is complex and rewarding.<br>' +
+                '<em>Examples:</em> <em>To Kill a Mockingbird</em> by Harper Lee, <em>The Catcher in the Rye</em> by J.D. Salinger, <em>Harry Potter</em> series by J.K. Rowling.</p>'
+            );
+            html += dividerHTML('THE HERO\u2019S JOURNEY');
+            html += sectionHTML('question', 'Hero\u2019s Journey Context', false, null,
+                '<h3>The Hero\u2019s Journey</h3>' +
+                '<p>Screenwriter and author of <em>The Writer\u2019s Journey</em>, Christopher Vogler, believes that the Hero\u2019s Journey should be understood as having both an inner and external dimension \u2014 each stage the \u201chero\u201d experiences has an internal, symbolic meaning.</p>' +
+                '<p>The Hero\u2019s Journey is a universal plot structure identified by Joseph Campbell (1904\u20131987). He proposed that it has been passed down from generation to generation because societies have historically used it to teach people how to live a fulfilling life. Many of the world\u2019s most popular stories can be understood through it: <em>Harry Potter</em>, <em>Star Wars</em>, <em>The Matrix</em>, <em>Spider-Man</em>, <em>The Lion King</em>, <em>The Lord of the Rings</em>.</p>' +
+                '<p><strong>The 6 stages you will build your story on:</strong></p>' +
+                '<p>Stage I: Setup \u2014 The Ordinary World: False Identity<br>' +
+                'Stage II: Dream Stage \u2014 Glimpse of True Self, Initial Success<br>' +
+                'Stage III: Initial Fascination \u2014 Protagonist Vacillates Between False Identity and True Self<br>' +
+                'Stage IV: Nightmare Stage \u2014 Complications, Protagonist Gradually Accepts True Self<br>' +
+                'Stage V: Final Push \u2014 Death and Rebirth<br>' +
+                'Stage VI: The Goal and the Aftermath \u2014 Final Union, Transformation Complete</p>'
+            );
+            html += dividerHTML('PRE-WORK REFLECTION');
+            html += sectionHTML('plan', 'Pre-Work Reflection', true, null,
+                '<h3>Pre-Work Reflection</h3>' +
+                '<p><strong>Context:</strong> <em>What inspired your story? (personal experience, observation, question)</em></p><p></p>' +
+                '<p><strong>Concept:</strong> <em>What is your story ABOUT beneath the plot? What idea or truth about life?</em></p><p></p>' +
+                '<p><strong>Technique Thinking:</strong> <em>Which 1\u20132 archetypes might best convey your concept? Why?</em></p><p></p>');
+            html += dividerHTML('YOUR PRIMARY CHOICE');
+            html += sectionHTML('plan', 'Primary Choice', true, null,
+                '<h3>Your Primary Archetype</h3>' +
+                '<p><em>Which plot structure best fits your story?</em></p><p></p>' +
+                '<p><strong>Why this structure fits:</strong></p><p></p>');
+            html += dividerHTML('SECONDARY ELEMENTS');
+            html += sectionHTML('plan', 'Secondary Elements', true, null,
+                '<h3>Secondary Elements</h3>' +
+                '<p><em>Are there elements from other archetypes that could enrich your story? (optional)</em></p><p></p>');
+            html += dividerHTML('AUTHORIAL INTENT');
+            html += sectionHTML('plan', 'Authorial Intent', true, null,
+                '<h3>Authorial Intent</h3>' +
+                '<p><strong>Desired reader emotion:</strong></p><p></p>' +
+                '<p><strong>Thematic message / moral:</strong></p><p></p>' +
+                '<p><strong>Connection to protagonist:</strong> <em>How will this structure test your protagonist\u2019s flaw and drive their transformation?</em></p><p></p>');
+            return html;
+        }
+
+        // ── Step 6: Plot Outline (v7.13.60: dynamic template from server) ──
+        // The actual template is loaded from the server based on the student's Step 5 choice.
+        // This preamble is rendered first, then the body is replaced with the full plot template.
+        // If no saved content exists, the canvas init calls loadAndInjectPlotTemplate().
+        if (step === 6) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 6: Plot Outline Workshop</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials \u2014 detailed mapping through all six stages of your story.</p>' +
+                '<p>This is where your story starts to take shape. We\u2019re going to build a detailed, beat-by-beat outline for your entire story, from Stage I all the way through to Stage VI.</p>' +
+                '<p>This is your <strong>master plot outline</strong> \u2014 a living document. You will return to it and update it <strong>six more times</strong> as you develop your story. Each update adds a new layer of depth: character goals, archetypes, empathy, theme, genre, and structural elements.</p>'
+            );
+            // Placeholder — will be replaced by loadAndInjectPlotTemplate()
+            html += '<div data-plot-template-placeholder="true"><p><em>Loading your plot structure template\u2026</em></p></div>';
+            return html;
+        }
+
+        // ── Step 7: Universal Human Values ──
+        if (step === 7) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 7: Universal Human Values</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> The Mentor reveals the Universal Constants \u2014 the deep values that drive all human stories.</p>' +
+                '<p>Psychologists Christopher Peterson and Martin Seligman spent three years studying what makes us fundamentally human. Their research spanned 40 cultures, involved 55 scientists, and drew on 2,500 years of thought. What they discovered was striking: across every culture, era, and belief system, <strong>six core moral values remain constant</strong>: Wisdom, Courage, Humanity, Justice, Temperance, and Transcendence.</p>' +
+                '<p>Every heroic character is on a journey to embody these values. Too much or too little of any virtue creates conflict \u2014 in the real world and in stories. <strong>Balance is the goal.</strong> Stories show characters finding \u2014 or failing to find \u2014 that equilibrium.</p>'
+            );
+            html += dividerHTML('VALUES AT THE BEGINNING');
+            html += sectionHTML('plan', 'Values at Beginning', true, null, '<h3>Your Protagonist\u2019s Values (Beginning)</h3><p></p>');
+            html += dividerHTML('VALUES AT THE END');
+            html += sectionHTML('plan', 'Values at End', true, null, '<h3>Your Protagonist\u2019s Values (End)</h3><p></p>');
+            return html;
+        }
+
+        // ── Step 8: Scene Selection (v7.13.74: full workbook match) ──
+        if (step === 8) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 8: Pick the Scene(s) You Want to Focus On</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> Selecting the Most Dramatically Powerful Moment \u2014 the scene you\u2019ll bring to life first.</p>' +
+                '<p>In the exam, you almost certainly won\u2019t have time to write a complete story from beginning to end. Instead, you have two options: write a short story with a compressed arc, or focus on one or two key scenes that read as a self-contained narrative. Either approach can achieve top marks \u2014 but both require careful planning.</p>' +
+                '<p><strong>Keep these five principles in mind:</strong></p>' +
+                '<p><strong>1. Know where you are in the story.</strong> Pay attention to whether your chosen scenes come from the beginning, middle, or end of your overall story. Your character\u2019s development should reflect where they are in their journey.</p>' +
+                '<p><strong>2. Choose moments that carry weight.</strong> Your scenes should be full of meaning and, ideally, show a moment of change \u2014 a shift in understanding, a decision that can\u2019t be undone, a revelation that alters everything.</p>' +
+                '<p><strong>3. Treat the structure as a guide, not rules.</strong> The Hero\u2019s Journey is a universal pattern, not a rigid template. Not every stage needs to appear.</p>' +
+                '<p><strong>4. Understand what scenes are made of.</strong> Scenes are built from multiple beats \u2014 individual moments of action, reaction, or change.</p>' +
+                '<p><strong>5. Stages are arcs, not scenes.</strong> Not every beat or stage translates directly into a separate scene. Skilled writers use stages as a foundation but avoid rigidity and transcend clich\u00e9.</p>'
+            );
+            html += dividerHTML('SCENE OVERVIEW');
+            html += sectionHTML('plan', 'Scene Overview', true, null,
+                '<h3>Scene Overview</h3>' +
+                '<p><strong>This extract from my story is from the following part of the plot:</strong></p><p></p>' +
+                '<p><strong>Describe the extract from your story in more detail, including dramatic situations:</strong></p><p></p>'
+            );
+            html += dividerHTML('SCENE STRUCTURE');
+            html += sectionHTML('plan', 'Hook', true, null,
+                '<h3>Hook</h3>' +
+                '<p><em>Grab your reader\u2019s attention.</em></p><p></p>');
+            html += sectionHTML('plan', 'Setup', true, null,
+                '<h3>Setup</h3>' +
+                '<p><em>Introduce the problem and the characters around it.</em></p><p></p>');
+            html += sectionHTML('plan', 'Reaction', true, null,
+                '<h3>Reaction</h3>' +
+                '<p><em>The protagonist deals with the problems the best they can: coping and not coping.</em></p><p></p>');
+            html += sectionHTML('plan', 'Epiphany', true, null,
+                '<h3>Epiphany</h3>' +
+                '<p><em>The protagonist begins to understand what\u2019s really going on and what to do.</em></p><p></p>');
+            html += sectionHTML('plan', 'Proaction', true, null,
+                '<h3>Proaction</h3>' +
+                '<p><em>The protagonist implements a plan. It fails.</em></p><p></p>');
+            html += sectionHTML('plan', 'Climax', true, null,
+                '<h3>Climax</h3>' +
+                '<p><em>The forces of good and evil collide.</em></p><p></p>');
+            html += sectionHTML('plan', 'Denouement', true, null,
+                '<h3>Denouement</h3>' +
+                '<p><em>You write an unforgettable ending.</em></p><p></p>');
+            return html;
+        }
+
+        // ── Draft steps (9, 12, 15, 18, 21, 24, 27) ──
+        if (stepDef.draft) {
+            const draftInfo = {
+                1: { layer: 'basic prose style', journey: 'Writing Your First Draft', desc: 'This is where your scene comes to life as actual writing. Stephen King says in <em>On Writing</em>: \u201cThe first draft is just you telling yourself the story.\u201d Focus on strong nouns, dynamic verbs, and well-chosen techniques. Every word choice needs to serve your story\u2019s goals.' },
+                2: { layer: 'character goals and needs', journey: 'The Road of Trials intensifies', desc: 'In your first draft you focused on prose style. Now add your protagonist\u2019s <strong>character arc</strong>. Robert McKee writes that the reader should <em>feel</em> the protagonist\u2019s internal struggle driving the external action. Every element of your scene should connect to this arc.' },
+                3: { layer: 'archetypes', journey: 'Making Character Transformation Visible', desc: 'In Steps 13 and 14, you defined the archetypal masks your protagonist wears. Now make that transformation visible in your prose. Christopher Vogler teaches that archetype shifts are the visible evidence of character change.' },
+                4: { layer: 'empathy techniques', journey: 'Making Readers Care Deeply', desc: 'This is the draft where we make your reader <em>care</em>. Karl Iglesias writes in <em>Writing for Emotional Impact</em> that empathy is the most important emotion a writer can generate. Weave victim, virtue, and desirable quality techniques into your prose.' },
+                5: { layer: 'theme and tone', journey: 'Making Your Story Mean Something', desc: 'Your theme must never be stated \u2014 it must emerge through what your protagonist <em>does</em>, what happens as a result, and the images you choose. John Truby calls this the \u201cmoral argument\u201d of your story. Every word choice should reinforce both theme and tone.' },
+                6: { layer: 'genre conventions', journey: 'Adding the Emotional Contract', desc: 'Genre is a <em>promise</em> to the reader about what emotional experience they will have. John Truby writes that most sophisticated stories <strong>blend genres</strong>. Your job is to deliver on that promise while keeping the character arc at the centre.' },
+                7: { layer: 'structural elements', journey: 'The Final Trial', desc: 'This is where everything comes together. You\u2019ve built this scene through six progressive drafts. Now add the final layer: hooks, irony, dialogue, symbolism, and pacing \u2014 the sophisticated techniques that separate good writing from writing that stays with the reader.' },
+            };
+            const info = draftInfo[stepDef.draft] || { layer: '', journey: '', desc: '' };
+            html += sectionHTML('question', 'About This Draft', false, null,
+                `<h2>Draft ${stepDef.draft}: ${info.layer.charAt(0).toUpperCase() + info.layer.slice(1)}</h2>` +
+                `<p><strong>The Hero\u2019s Journey Stage:</strong> ${info.journey}</p>` +
+                `<p>${info.desc}</p>`
+            );
+            html += dividerHTML('YOUR WRITING');
+            html += sectionHTML('response', 'Draft', true, null, '<p></p>');
+            return html;
+        }
+
+        // ── Step 10: Character Profile Parts 1-3 (v7.13.74: full workbook match) ──
+        if (step === 10) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 10: Create Your Protagonist\u2019s Character Profile \u2014 Parts 1\u20133</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials continues \u2014 understanding your protagonist\u2019s deeper psychology: GOALS vs. NEEDS.</p>' +
+                '<p>The engine of meaningful storytelling is the <strong>gap between what a character wants and what they need</strong>. A character\u2019s <strong>goal</strong> is external and conscious \u2014 something tangible like a crown, wealth, or adventure. A character\u2019s <strong>need</strong> is internal and usually unconscious \u2014 the thing they genuinely require to become whole but cannot yet see.</p>' +
+                '<p><em>Macbeth</em> chases power, blind to his need for honour and inner peace. <em>Scrooge</em> hoards wealth, unable to recognise his need for human connection. The story\u2019s entire momentum comes from this mismatch.</p>' +
+                '<p>The <strong>protagonist</strong> isn\u2019t simply the main character \u2014 they are the character who undergoes the greatest transformation, and whose journey of change reveals the story\u2019s controlling concept.</p>'
+            );
+            // Part 1: Goals and Need at the Beginning
+            html += dividerHTML('PART 1: GOALS AND NEED AT THE BEGINNING');
+            html += sectionHTML('plan', 'External Goals (Beginning)', true, null,
+                '<h3>External Goal(s) at the Beginning</h3>' +
+                '<p><em>What tangible thing does your protagonist consciously pursue? (e.g. win, stop, retrieve, escape, revenge, deliver, maintain)</em></p><p></p>');
+            html += sectionHTML('plan', 'Internal Goals (Beginning)', true, null,
+                '<h3>Internal Goal(s) at the Beginning</h3>' +
+                '<p><em>What deeper fulfilment do they believe the external goal will bring? (e.g. positive relationships, self-acceptance, personal growth, environmental mastery, autonomy)</em></p><p></p>');
+            html += sectionHTML('plan', 'Need (Beginning)', true, null,
+                '<h3>Need</h3>' +
+                '<p><em>Usually the complete opposite of their goals \u2014 what does your character truly need that they might not be aware of or are in denial about?</em></p><p></p>');
+            html += sectionHTML('plan', 'Stakes and Fears (Beginning)', true, null,
+                '<h3>Stakes / Fears at the Beginning</h3>' +
+                '<p><em>What is at risk or what is your protagonist most afraid of losing? (Survival, Love, Identity, Freedom, Justice/Revenge, Power, Knowledge/Truth, World-saving, Redemption, Achievement)</em></p><p></p>');
+            // Part 2: Goals and Need at the End
+            html += dividerHTML('PART 2: GOALS AND NEED AT THE END');
+            html += sectionHTML('plan', 'External Goals (End)', true, null,
+                '<h3>End-State of External Goal(s)</h3>' +
+                '<p><em>Does the character succeed, get defeated, abandon their goal, or is it unclear?</em></p><p></p>');
+            html += sectionHTML('plan', 'Internal Goals (End)', true, null,
+                '<h3>Internal Goals Achieved at the End</h3>' +
+                '<p><em>Which internal goals does your protagonist achieve? (positive relationships, self-acceptance, personal growth, environmental mastery, autonomy, none)</em></p><p></p>');
+            html += sectionHTML('plan', 'Need Recognised (End)', true, null,
+                '<h3>Does Your Protagonist Recognise Their Need?</h3><p></p>');
+            html += sectionHTML('plan', 'Dilemma', true, null,
+                '<h3>The Difficult Choice (Dilemma)</h3>' +
+                '<p><em>What difficult choice does your protagonist need to make? What do they choose and why?</em></p><p></p>');
+            html += sectionHTML('plan', 'Realisation', true, null,
+                '<h3>Realisation</h3>' +
+                '<p><em>What realisation does your character come to at the end? What do they learn about themselves and the world?</em></p><p></p>');
+            html += sectionHTML('plan', 'Ending Tone', true, null,
+                '<h3>Ending Tone</h3>' +
+                '<p><em>What tone does the end of your story have? (positive, negative, bitter-sweet, ambiguous)</em></p><p></p>');
+            html += sectionHTML('plan', 'Universal Meaning', true, null,
+                '<h3>Universal Meaning (Moral)</h3>' +
+                '<p><em>What is the universal meaning of your story?</em></p><p></p>');
+            // Part 3: Character Arc Type
+            html += dividerHTML('PART 3: CHARACTER ARC TYPE');
+            html += sectionHTML('plan', 'Character Arc', true, null,
+                '<h3>Which Type of Character Arc?</h3>' +
+                '<p><em>Choose one: <strong>Positive</strong> (e.g. weakling to hero, ignorance to knowledge, immature to mature, rags to riches), <strong>Negative</strong> (e.g. good to bad, strong to weak, hero to villain), <strong>Ambiguous Positive</strong>, or <strong>Ambiguous Negative</strong>.</em></p><p></p>');
+            return html;
+        }
+
+        // ── Step 13: Character Archetypes Parts 4-6 (v7.13.74: full workbook match) ──
+        if (step === 13) {
+            const archetypeRef =
+                '<p><strong>The 10 Core Archetypes:</strong></p>' +
+                '<p><strong>1. The Everyman</strong> \u2014 Relatable, ordinary \u2014 creates empathy</p>' +
+                '<p><strong>2. The Underdog</strong> \u2014 Lacks resources but determined \u2014 creates compassion and suspense</p>' +
+                '<p><strong>3. The Orphan</strong> \u2014 Independent, vulnerable, loyal \u2014 creates identification</p>' +
+                '<p><strong>4. The Lost Soul</strong> \u2014 Wounded outsider \u2014 creates warning and understanding</p>' +
+                '<p><strong>5. The Rebel</strong> \u2014 Outspoken, radical \u2014 creates admiration</p>' +
+                '<p><strong>6. The Explorer</strong> \u2014 Seeks new experiences \u2014 represents stepping outside comfort zones</p>' +
+                '<p><strong>7. The Mentor</strong> \u2014 Wise, knowledgeable \u2014 creates respect</p>' +
+                '<p><strong>8. The Trickster</strong> \u2014 Mischievous, disruptive \u2014 creates comic relief and new perspectives</p>' +
+                '<p><strong>9. The Shadow</strong> \u2014 Destructive, frightening \u2014 reflects fears and trauma</p>' +
+                '<p><strong>10. The Hero</strong> \u2014 Courageous, self-sacrificing \u2014 creates admiration and aspiration</p>';
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 13: Character Profile \u2014 Parts 4\u20136 (Archetypes)</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials deepens \u2014 understanding the MASKS your protagonist wears.</p>' +
+                '<p>Archetypes are universal character patterns recognised across all cultures. Your protagonist will shift between archetypes as they transform \u2014 this shift <em>is</em> the visible evidence of their change.</p>' +
+                archetypeRef
+            );
+            // Part 4: Beginning
+            html += dividerHTML('PART 4: ARCHETYPES AT THE BEGINNING');
+            html += sectionHTML('plan', 'Archetypes (Beginning)', true, null,
+                '<h3>Which Archetype(s) at the Beginning?</h3>' +
+                '<p><em>Which archetypes does your character embody at the start? You can mix and match. For each, explain the effect on the reader and give quotes if possible.</em></p><p></p>');
+            html += sectionHTML('plan', 'Physical Traits (Beginning)', true, null,
+                '<h3>Physical Appearance (Beginning)</h3>' +
+                '<p><em>Age, height, build, clothes, prop, bonds (relationships), hair, eyes, name \u2014 and the effect of each choice.</em></p><p></p>');
+            // Part 5: Middle
+            html += dividerHTML('PART 5: ARCHETYPES IN THE MIDDLE');
+            html += sectionHTML('plan', 'Archetypes (Middle)', true, null,
+                '<h3>Which Archetype(s) in the Middle?</h3>' +
+                '<p><em>How has the archetype shifted? What does this reveal about the transformation?</em></p><p></p>');
+            html += sectionHTML('plan', 'Physical Traits (Middle)', true, null,
+                '<h3>Physical Appearance (Middle)</h3>' +
+                '<p><em>Has anything changed since the beginning? Explain the effect of each change.</em></p><p></p>');
+            // Part 6: End
+            html += dividerHTML('PART 6: ARCHETYPES AT THE END');
+            html += sectionHTML('plan', 'Archetypes (End)', true, null,
+                '<h3>Which Archetype(s) at the End?</h3>' +
+                '<p><em>What is the final archetypal identity? How does the shift from beginning to end reveal the full transformation?</em></p><p></p>');
+            html += sectionHTML('plan', 'Physical Traits (End)', true, null,
+                '<h3>Physical Appearance (End)</h3>' +
+                '<p><em>Has anything changed since the beginning and middle? Explain the effect of each change.</em></p><p></p>');
+            return html;
+        }
+
+        // ── Step 16: Empathy Techniques (v7.13.74: full workbook match) ──
+        if (step === 16) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 16: Deepen Empathy for Your Protagonist</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials continues \u2014 making readers <em>care</em>.</p>' +
+                '<p>According to Carl Iglesias in <em>Writing for Emotional Impact</em>, empathy is <strong>the</strong> most important emotion a writer can generate. Every protagonist, without exception, must produce empathy in the reader. This includes protagonists who are morally reprehensible.</p>' +
+                '<p><strong>Empathy vs Sympathy:</strong> Sympathy means feeling sorry for someone; empathy means feeling <em>with</em> them \u2014 understanding their internal world, their fears, their reasoning, even when we disagree with their choices.</p>' +
+                '<p>The Joker works because we understand the forces that shaped him. Macbeth works because Shakespeare ensures we see him not only as a murderer but as a man consumed by ambition he cannot control. Empathy is the bridge between the character and the reader \u2014 everything depends on that bridge holding.</p>'
+            );
+            // Criteria 1: Making Protagonist a Victim
+            html += dividerHTML('CRITERIA 1: MAKE YOUR PROTAGONIST A VICTIM');
+            html += sectionHTML('plan', 'Unfair Injury', true, null,
+                '<h3>Unfair Injury, Mistreatment, Injustice</h3>' +
+                '<p><em>Is your protagonist teased, laughed at, embarrassed, humiliated, passed over, suffering prejudice, falsely accused, abused, exploited, or made to suffer?</em></p><p></p>');
+            html += sectionHTML('plan', 'Not Believed / Misunderstood', true, null,
+                '<h3>Not Believed When Telling the Truth / Misunderstood (Dramatic Irony)</h3>' +
+                '<p><em>Is your protagonist not believed, misunderstood, or unfairly judged?</em></p><p></p>');
+            html += sectionHTML('plan', 'Jeopardy', true, null,
+                '<h3>Jeopardy</h3>' +
+                '<p><em>Is your character put in a threatened position?</em></p><p></p>');
+            html += sectionHTML('plan', 'Universal Wishes', true, null,
+                '<h3>Wish for Something Universally Understood</h3>' +
+                '<p><em>Does your character wish for love, acceptance, a family, self-acceptance, personal growth, environmental mastery, or autonomy?</em></p><p></p>');
+            html += sectionHTML('plan', 'Mistakes and Regrets', true, null,
+                '<h3>Making Mistakes and Regretting Them</h3><p></p>');
+            // Criteria 2: Humanistic Virtues
+            html += dividerHTML('CRITERIA 2: GIVE YOUR PROTAGONIST HUMANISTIC VIRTUES');
+            html += sectionHTML('plan', 'Universal Virtues', true, null,
+                '<h3>Possessing Universal Human Virtues</h3>' +
+                '<p><em>Wisdom and knowledge, courage, humanity, justice, temperance, transcendence.</em></p><p></p>');
+            html += sectionHTML('plan', 'Caring for Others', true, null,
+                '<h3>Show Caring for Others, Especially at a Cost to Oneself</h3><p></p>');
+            html += sectionHTML('plan', 'Risking for Others', true, null,
+                '<h3>Risking Dying for the Sake of Others or for a Just Cause</h3><p></p>');
+            html += sectionHTML('plan', 'Important to Others', true, null,
+                '<h3>Being Important to Others</h3>' +
+                '<p><em>Loved at work, home, school, or in their community.</em></p><p></p>');
+            html += sectionHTML('plan', 'Ethical and Moral', true, null,
+                '<h3>Being Ethical, Moral, Dependable</h3><p></p>');
+            // Criteria 3: Desirable Qualities
+            html += dividerHTML('CRITERIA 3: GIVE YOUR PROTAGONIST DESIRABLE QUALITIES');
+            html += sectionHTML('plan', 'Courage', true, null,
+                '<h3>Possessing Courage (Compulsory)</h3><p></p>');
+            html += sectionHTML('plan', 'Wisdom and Wit', true, null,
+                '<h3>Wisdom, Wit, and Cleverness</h3><p></p>');
+            html += sectionHTML('plan', 'Childlike Innocence', true, null,
+                '<h3>Childlike Innocence or Enthusiasm</h3><p></p>');
+            html += sectionHTML('plan', 'Misfit or Rebel', true, null,
+                '<h3>Misfit, Rebel, or Eccentric</h3>' +
+                '<p><em>Does not follow anyone, flouts authority, does not care about what others think, an outsider.</em></p><p></p>');
+            return html;
+        }
+
+        // ── Step 19: Theme & Tone (v7.13.74: full workbook match) ──
+        if (step === 19) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 19: Theme and Tone</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials nears its end \u2014 your story\u2019s deeper meaning and emotional atmosphere.</p>' +
+                '<p><strong>Theme</strong> = your story\u2019s deeper meaning about life and humanity. Theme emerges from your protagonist\u2019s transformation, NOT from explicit statement. It\u2019s what your story is REALLY about beneath the surface plot.</p>' +
+                '<p><strong>Examples:</strong> <em>Macbeth</em>: \u201cUnchecked ambition corrupts absolutely.\u201d <em>An Inspector Calls</em>: \u201cWe are all responsible for each other.\u201d <em>A Christmas Carol</em>: \u201cGreed isolates; generosity connects.\u201d</p>' +
+                '<p><strong>Tone</strong> = the emotional atmosphere/mood of your story. Tone often <em>shifts</em> across your story, mirroring the protagonist\u2019s emotional journey.</p>' +
+                '<p><strong>Tone Categories:</strong> <strong>Positive</strong> (affectionate, calm, cheerful, ecstatic, nostalgic, optimistic, hopeful) | <strong>Neutral</strong> (impartial, indirect, matter-of-fact, questioning, speculative) | <strong>Negative</strong> (ambiguous, bitter, cold, despairing, fearful, foreboding, tense, ominous)</p>'
+            );
+            html += dividerHTML('THEME');
+            html += sectionHTML('plan', 'Universal Human Values', true, null,
+                '<h3>Universal Human Value(s)</h3>' +
+                '<p><em>What Universal Human Value(s) does your story explore? (from Step 7)</em></p><p></p>');
+            html += sectionHTML('plan', 'Theme Statement', true, null,
+                '<h3>Theme Statement</h3>' +
+                '<p><em>What is your story ultimately SAYING about this value? (This is your theme.)</em></p><p></p>');
+            html += dividerHTML('TONE');
+            html += sectionHTML('plan', 'Tone: Beginning', true, null,
+                '<h3>Tone at the Beginning</h3>' +
+                '<p><em>Which theme(s) does this part explore? Which tone(s) does it exude? (positive, neutral, negative) How does the tone tell us more about the theme?</em></p><p></p>');
+            html += sectionHTML('plan', 'Tone: Middle', true, null,
+                '<h3>Tone in the Middle</h3><p></p>');
+            html += sectionHTML('plan', 'Tone: End', true, null,
+                '<h3>Tone at the End</h3><p></p>');
+            html += sectionHTML('plan', 'Tone Shift Check', true, null,
+                '<h3>Tone Shift Check</h3>' +
+                '<p><em>Does your tone shift mirror your protagonist\u2019s emotional journey?</em></p><p></p>');
+            return html;
+        }
+
+        // ── Step 22: Genre (v7.13.74: full workbook match) ──
+        if (step === 22) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 22: Give Your Story Genre(s)</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> The Final Trial approaches \u2014 the emotional contract with your reader.</p>' +
+                '<p><strong>Genre = a promise to the reader about what emotional experience they will have.</strong> Genres are types of stories. When we understand how genres work, we can apply their styles to give our stories more depth and meaning. Most sophisticated stories <em>blend</em> genres. Your story can shift genres from beginning to middle to end.</p>'
+            );
+            // 5 Genre Categories
+            html += dividerHTML('1. COURAGE GENRES');
+            html += sectionHTML('plan', 'Courage Genres', true, null,
+                '<h3>Courage Genres (Excitement, Tension)</h3>' +
+                '<p><em>Action, Adventure, War, Western, Heroic Sci-Fi, Dystopian</em></p>' +
+                '<p><em>Conventions: enslavement or deprivation of free will, intensified settings, victory over death</em></p>' +
+                '<p><strong>Does your story suit any Courage genres?</strong></p><p></p>');
+            html += dividerHTML('2. FEAR AND LOATHING GENRES');
+            html += sectionHTML('plan', 'Fear and Loathing Genres', true, null,
+                '<h3>Fear and Loathing Genres (Dread, Unease)</h3>' +
+                '<p><em>Gothic, Horror, Supernatural, Dark Sci-Fi</em></p>' +
+                '<p><em>Conventions: mystery, terror, good vs evil, decay, dreams/nightmares, mental landscape, monsters, fearful atmosphere</em></p>' +
+                '<p><strong>Does your story suit any Fear and Loathing genres?</strong></p><p></p>');
+            html += dividerHTML('3. WONDER AND AWE GENRES');
+            html += sectionHTML('plan', 'Wonder and Awe Genres', true, null,
+                '<h3>Wonder and Awe Genres (Amazement, Possibility)</h3>' +
+                '<p><em>Fantasy, Science Fiction, Magical Realism</em></p>' +
+                '<p><em>Conventions: otherworldly settings, mythical creatures, epic quests, mystical lore, futuristic elements</em></p>' +
+                '<p><strong>Does your story suit any Wonder and Awe genres?</strong></p><p></p>');
+            html += dividerHTML('4. NEED TO KNOW GENRES');
+            html += sectionHTML('plan', 'Need to Know Genres', true, null,
+                '<h3>Need to Know (Mystery) Genres (Curiosity, Suspense)</h3>' +
+                '<p><em>Detective, Mystery, Spy, Suspense, Thriller</em></p>' +
+                '<p><em>Conventions: mystery, suspense, surprise, \u201cthe innocent man\u201d thrust into danger</em></p>' +
+                '<p><strong>Does your story suit any Need to Know genres?</strong></p><p></p>');
+            html += dividerHTML('5. HEART GENRES');
+            html += sectionHTML('plan', 'Heart Genres', true, null,
+                '<h3>Heart Genres (Connection, Growth)</h3>' +
+                '<p><em>Romance, Drama, Coming-of-Age</em></p>' +
+                '<p><em>Conventions: relationships, emotional intimacy, personal growth, emotional conflict</em></p>' +
+                '<p><strong>Does your story suit any Heart genres?</strong></p><p></p>');
+            return html;
+        }
+
+        // ── Step 25: Structural Elements (v7.13.74: full workbook match) ──
+        if (step === 25) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 25: Other Key Structural Elements</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> The Final Trial begins \u2014 these advanced structural techniques will elevate your writing to professional level.</p>' +
+                '<p>Study these 11 sophisticated techniques, then plan where and how you will use each one in your scene.</p>'
+            );
+            html += dividerHTML('1. HOOKS');
+            html += sectionHTML('plan', 'Hooks', true, null,
+                '<h3>Hooks</h3>' +
+                '<p><em>Which hook type best suits your story? action (in medias res), dialogue, internal monologue, mystery, premonition, profound statement, setting. You may combine more than one.</em></p><p></p>');
+            html += dividerHTML('2. IRONY (COMPULSORY)');
+            html += sectionHTML('plan', 'Irony', true, null,
+                '<h3>Irony (Compulsory)</h3>' +
+                '<p><em>Dramatic irony (reader knows more than character), Situational irony (opposite of expectation), Verbal irony (saying opposite of what\u2019s meant).</em></p><p></p>');
+            html += dividerHTML('3. DIALOGUE');
+            html += sectionHTML('plan', 'Dialogue', true, null,
+                '<h3>Dialogue (Optional)</h3>' +
+                '<p><em>Subtext (meaning beneath words), Character voice (each character sounds distinct), Conflict in dialogue (characters want different things).</em></p><p></p>');
+            html += dividerHTML('4. DUALITY (RECOMMENDED)');
+            html += sectionHTML('plan', 'Duality', true, null,
+                '<h3>Duality (Recommended)</h3>' +
+                '<p><em>Contrasting elements: light/dark, hope/despair, strength/weakness. Creates depth and complexity.</em></p><p></p>');
+            html += dividerHTML('5. POINT OF VIEW');
+            html += sectionHTML('plan', 'Point of View', true, null,
+                '<h3>Point of View</h3>' +
+                '<p><em>First person, second person (direct address), or third person? Limited vs omniscient? Reliable vs unreliable narrator?</em></p><p></p>');
+            html += dividerHTML('6. SETTINGS');
+            html += sectionHTML('plan', 'Settings', true, null,
+                '<h3>Settings</h3>' +
+                '<p><em>Does your setting reflect the protagonist\u2019s internal state (mental landscape)? Does it challenge the protagonist? What does it reveal about historical background, cultural attitudes, genre, plot, themes, and emotional tone?</em></p><p></p>');
+            html += dividerHTML('7. SYMBOLS');
+            html += sectionHTML('plan', 'Symbols', true, null,
+                '<h3>Symbols</h3>' +
+                '<p><em>Objects or images with deeper meaning. How do they recur or develop? How do they add meaning?</em></p><p></p>');
+            html += dividerHTML('8. DENOUEMENT TECHNIQUES');
+            html += sectionHTML('plan', 'Denouement Techniques', true, null,
+                '<h3>Denouement Techniques</h3>' +
+                '<p><em>Cyclical structure, cliff hanger, twist, ambiguity, framed narrative, epilogue, or resolved ending?</em></p><p></p>');
+            html += dividerHTML('9. FIVE SENSES');
+            html += sectionHTML('plan', 'Five Senses', true, null,
+                '<h3>Five Senses (Include All 5)</h3>' +
+                '<p><em>See, hear, smell, taste, touch. Which senses dominate in your story?</em></p><p></p>');
+            html += dividerHTML('10. SUSPENSE');
+            html += sectionHTML('plan', 'Suspense', true, null,
+                '<h3>Suspense</h3>' +
+                '<p><em>Foreshadowing, time pressure, dilemmas, cliffhangers, unpredictability, danger/threats, dramatic irony, rising stakes, internal conflict, pacing.</em></p><p></p>');
+            html += dividerHTML('11. PACING');
+            html += sectionHTML('plan', 'Pacing', true, null,
+                '<h3>Pacing</h3>' +
+                '<p><em>Varying sentence length. Scene tempo: fast action vs slow reflection.</em></p><p></p>');
+            return html;
+        }
+
+        // ── Plot update steps (11, 14, 17, 20, 23, 26) ──
+        if ([11, 14, 17, 20, 23, 26].includes(step)) {
+            const plotInfo = {
+                11: { layer: 'character goals and needs', desc: 'Map your protagonist\u2019s internal dynamics across your complete story. For each stage, identify what goal drives the protagonist and where their unconscious need surfaces.' },
+                14: { layer: 'archetypes', desc: 'Before layering archetypes into your scene, map them across your entire story. Identify which archetype your protagonist embodies at each stage and how the shifts reveal transformation.' },
+                17: { layer: 'empathy', desc: 'Map empathy-building techniques across your plot. For each stage, identify which techniques appear (victim, virtue, desirable quality) and what the reader feels for the protagonist.' },
+                20: { layer: 'theme and tone', desc: 'Map meaning and atmosphere across your complete story. For each stage, identify the dominant tone and explain how it connects to the theme. Words and images should reinforce both.' },
+                23: { layer: 'genre', desc: 'Map genre across your plot outline. For each stage, identify which genre(s) dominate, what conventions appear, and what emotion readers should feel.' },
+                26: { layer: 'structural elements', desc: 'This is the <strong>final update</strong>. Map advanced structural techniques across your complete story. You now have a <strong>complete story architecture</strong> \u2014 a professional-level blueprint.' },
+            };
+            const info = plotInfo[step] || { layer: '', desc: '' };
+            html += sectionHTML('question', 'Update Focus', false, null,
+                `<h2>Plot Outline \u2014 Update for ${info.layer.charAt(0).toUpperCase() + info.layer.slice(1)}</h2>` +
+                `<p><strong>Your plot outline is a living document.</strong> You created it in Step 6, and it has been updated after each new layer of learning. You are NOT starting fresh \u2014 you are adding to what already exists.</p>` +
+                `<p>${info.desc}</p>`
+            );
+            html += dividerHTML('STAGE I');
+            html += sectionHTML('plan', '1. Setup', true, null, '<h3>1. Setup</h3><p></p>');
+            html += dividerHTML('STAGE II');
+            html += sectionHTML('plan', '2. Dream Stage', true, null, '<h3>2. Dream Stage</h3><p></p>');
+            html += dividerHTML('STAGE III');
+            html += sectionHTML('plan', '3. Initial Fascination', true, null, '<h3>3. Initial Fascination</h3><p></p>');
+            html += dividerHTML('STAGE IV');
+            html += sectionHTML('plan', '4. Nightmare Stage', true, null, '<h3>4. Nightmare Stage</h3><p></p>');
+            html += dividerHTML('STAGE V');
+            html += sectionHTML('plan', '5. Final Push', true, null, '<h3>5. Final Push</h3><p></p>');
+            html += dividerHTML('STAGE VI');
+            html += sectionHTML('plan', '6. Goal &amp; Aftermath', true, null, '<h3>6. Goal &amp; Aftermath</h3><p></p>');
+            return html;
+        }
+
+        // ── Step 28: Final Draft ──
+        if (step === 28) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 28: Final Draft (SPAG Polish)</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> The Return with the Elixir \u2014 perfecting form.</p>' +
+                '<p>You\u2019ve built this scene through seven progressive drafts, adding layer after layer of craft. Now we\u2019re going to make sure every word is exactly right. This step is <strong>SPAG</strong> \u2014 Spelling, Punctuation, and Grammar. No more creative changes. This is about polish and precision.</p>' +
+                '<p>Read your work aloud \u2014 if a sentence sounds awkward, rewrite it. Check every comma, every full stop, every apostrophe.</p>'
+            );
+            html += dividerHTML('YOUR FINAL DRAFT');
+            html += sectionHTML('response', 'Final Draft', true, null, '<p></p>');
+            return html;
+        }
+
+        // ── Step 29: Metacognitive Reflection ──
+        if (step === 29) {
+            html += sectionHTML('question', 'About This Step', false, null,
+                '<h2>Step 29: Metacognitive Reflection</h2>' +
+                '<p><strong>The Hero\u2019s Journey Stage:</strong> The Return with the Elixir \u2014 understanding your transformation.</p>' +
+                '<p>The Hero\u2019s Journey concludes. You must now reflect \u2014 understanding <em>how</em> you\u2019ve been transformed. Write a short reflection (150\u2013250 words) comparing your understanding at the beginning to now.</p>' +
+                '<p>Which concept grew most? Which skill improved most dramatically? How will understanding story <em>creation</em> help you <em>analyse</em> literature? Congratulations \u2014 you\u2019ve completed the journey and returned transformed.</p>'
+            );
+            html += dividerHTML('YOUR REFLECTION');
+            html += sectionHTML('plan', 'Reflection', true, null, '<h3>Reflection</h3><p></p>');
+            return html;
+        }
+
+        // ── Trial steps ──
+        if (stepDef.trial) {
+            const trialFocus = { 1: 'story coherence', 2: 'character depth', 3: 'archetype coherence', 4: 'emotional impact', 5: 'thematic clarity', 6: 'technical proficiency' };
+            const focus = trialFocus[stepDef.trial] || '';
+            html += sectionHTML('question', 'Assessment Focus', false, null,
+                `<h2>Trial ${stepDef.trial} Assessment</h2>` +
+                `<p>This trial assesses your draft for <strong>${focus}</strong>. The AI will analyse your writing and provide structured feedback.</p>`
+            );
+            html += dividerHTML('ASSESSMENT');
+            html += sectionHTML('feedback', 'Assessment', true, null, '<p><em>Your draft will be assessed here.</em></p>');
+            return html;
+        }
+
+        return '<p></p>';
+    }
+
     // ══════════════════════════════════════════
     //  DOCUMENT TEMPLATE FACTORY (v7.11.9)
     // ══════════════════════════════════════════
@@ -5038,6 +6602,7 @@
     let canvasWordMinimum = 450;
     let canvasWordIdeal = 800;
     let canvasUsesWordCount = true;  // false for short-form (<20 marks)
+    let canvasDualTargets = null;    // { partA: {target,minimum,ideal}, partB: {target,minimum,ideal} } for dual questions
 
     // Word count colour tiers: orange (< min) → yellow (min→target) → green (target→ideal) → purple gradient (ideal+)
     function getWordCountColour(wc) {
@@ -5047,34 +6612,174 @@
         return '#E67E22';                                // Orange — below minimum
     }
     function getWordCountLabel(wc) {
+        if (canvasDualTargets) {
+            const { partA, partB } = canvasDualTargets;
+            const combined = partA.target + partB.target;
+            if (wc > partA.ideal + partB.ideal) return `${wc} words (A: ${partA.target} + B: ${partB.target}) ✓ Excellent length!`;
+            if (wc >= combined) return `${wc} words (A: ${partA.target} + B: ${partB.target}) ✓ Target reached`;
+            if (wc >= canvasWordMinimum) return `${wc} words (A: ${partA.target} + B: ${partB.target}) — Minimum reached`;
+            return `${wc} / ${combined} words (A: ${partA.target} + B: ${partB.target})`;
+        }
         if (wc > canvasWordIdeal) return `${wc} / ${canvasWordTarget} words ✓ Excellent length!`;
         if (wc >= canvasWordTarget) return `${wc} / ${canvasWordTarget} words ✓ Target reached`;
         if (wc >= canvasWordMinimum) return `${wc} / ${canvasWordTarget} words — Minimum reached`;
         return `${wc} / ${canvasWordTarget} words`;
     }
 
-    function getWordTargets(marks) {
-        if (!marks || marks < 20) return { target: 0, minimum: 0, ideal: 0, usesWordCount: false };
-        // Simple range model (Neil's approximation):
-        // 20–34 marks → 650 words (450 minimum to submit), 800 ideal
-        // 35+ marks  → 750 words (500 minimum to submit), 1000 ideal
-        if (marks <= 34) return { target: 650, minimum: 450, ideal: 800, usesWordCount: true };
-        return { target: 750, minimum: 500, ideal: 1000, usesWordCount: true };
+    // Literature essay word count targets (by total marks)
+    // minimum = mark complete threshold (lower bar), target = "aim for" display
+    const LIT_WORD_TARGETS = {
+        15: { minimum: 200, target: 300, ideal: 600 },
+        20: { minimum: 300, target: 400, ideal: 650 },
+        24: { minimum: 350, target: 500, ideal: 900 },
+        25: { minimum: 350, target: 500, ideal: 900 },
+        30: { minimum: 450, target: 650, ideal: 1000 },
+        34: { minimum: 450, target: 650, ideal: 1000 },
+        40: { minimum: 500, target: 700, ideal: 1100 },
+    };
+    // Language Section B writing word count targets (creative fiction, non-fiction, transactional)
+    // minimum = mark complete threshold, target = "aim for" display
+    const LANG_WORD_TARGETS = {
+        20: { minimum: 300, target: 400, ideal: 400 },   // EDUQAS C2 split (2 × 20m tasks)
+        30: { minimum: 350, target: 450, ideal: 500 },   // IGCSE Specs A P2 & B
+        40: { minimum: 450, target: 650, ideal: 700 },   // AQA/EDUQAS/Edexcel/OCR
+        45: { minimum: 450, target: 650, ideal: 750 },   // IGCSE Spec A P1 transactional
+    };
+    // First-diagnostic minimums (lower bar for very first attempt only)
+    const FIRST_DIAG_MINS = { 15: 200, 20: 300, 24: 350, 25: 350, 30: 450, 34: 450, 40: 500, 45: 450 };
+
+    function getWordTargets(marks, isLanguage) {
+        if (!marks || marks < 15) return { target: 0, minimum: 0, ideal: 0, usesWordCount: false };
+        // 8-mark (AQA Unseen Q2) — 2 TTECEA paragraphs, no word count tracking
+        if (marks < 15) return { target: 0, minimum: 0, ideal: 0, usesWordCount: false };
+
+        const table = isLanguage ? LANG_WORD_TARGETS : LIT_WORD_TARGETS;
+        // Find closest match (exact or nearest lower key)
+        const keys = Object.keys(table).map(Number).sort((a, b) => a - b);
+        let key = keys[0];
+        for (const k of keys) { if (k <= marks) key = k; }
+        const t = table[key];
+        return { target: t.target, minimum: t.minimum, ideal: t.ideal, usesWordCount: true };
     }
 
     // Board-level default marks when topic data doesn't specify
     const BOARD_DEFAULT_MARKS = {
-        aqa: { shakespeare: 30, modern_text: 30, '19th_century': 30, poetry_anthology: 30, unseen_poetry: 24 },
-        eduqas: { shakespeare: 40, modern: 40, literature: 40, poetry: 40, unseen: 24 }, // dual: A=15 + B=25
-        edexcel: { shakespeare: 40, modern: 40, '19th_century': 40, poetry: 30, unseen: 20 }, // dual: a=20 + b=20
-        'edexcel-igcse': { heritage: 25, literature: 25, modern: 30 },
+        aqa: { shakespeare: 34, modern_text: 34, '19th_century': 30, poetry_anthology: 30, unseen_poetry: 24 },
+        eduqas: { shakespeare: 40, modern: 40, literature: 40, poetry: 40, unseen: 40 }, // dual: A=15 + B=25
+        edexcel: { shakespeare: 40, modern: 40, '19th_century': 40, poetry: 20, unseen: 20 }, // dual: a=20 + b=20
+        'edexcel-igcse': { heritage: 30, literature: 30, modern: 30, 'modern-prose': 40, unseen: 20 },
         ocr: { literature: 40, poetry: 40 },
         sqa: { critical_reading: 20 },
-        ccea: { prose: 25 },
+        ccea: { prose: 40, 'unseen-prose': 20, drama: 40, poetry: 40 },
     };
 
     function getDefaultMarks(board, subject) {
         return BOARD_DEFAULT_MARKS[board]?.[subject] || 30;
+    }
+
+    // ── Board Format Defaults (v7.14.8) ──
+    // Complete format + marks + AOs for every board/subject.
+    // Used by buildSyntheticTopicData() when no topic template exists.
+    const BOARD_FORMAT_DEFAULTS = {
+        // AQA GCSE Literature (8702)
+        aqa: {
+            shakespeare:      { format: 'single', marks: 34, aos: 'AO1,AO2,AO3', hasExtract: true },
+            modern_text:      { format: 'single', marks: 34, aos: 'AO1,AO2,AO3', hasExtract: false },
+            '19th_century':   { format: 'single', marks: 30, aos: 'AO1,AO2', hasExtract: true },
+            poetry_anthology: { format: 'single', marks: 30, aos: 'AO1,AO2,AO3' },
+            unseen_poetry:    { format: 'single', marks: 24, aos: 'AO1,AO2' },
+        },
+        // EDUQAS GCSE Literature (C720QS) — Shakespeare + Poetry are dual; Modern Text + 19th Century are single 40m
+        eduqas: {
+            shakespeare:      { format: 'dual', partA: { marks: 15, aos: 'AO1,AO2' }, partB: { marks: 25, aos: 'AO1,AO2,AO3' }, hasExtract: true },
+            modern_text:      { format: 'single', marks: 40, aos: 'AO1,AO2,AO3' },
+            '19th_century':   { format: 'single', marks: 40, aos: 'AO1,AO2' },
+            poetry_anthology: { format: 'dual', partA: { marks: 15, aos: 'AO1,AO2' }, partB: { marks: 25, aos: 'AO1,AO2,AO3' } },
+            unseen_poetry:    { format: 'dual', partA: { marks: 15, aos: 'AO1,AO2' }, partB: { marks: 25, aos: 'AO1,AO2,AO3' } },
+        },
+        // Edexcel GCSE Literature (1ET0)
+        edexcel: {
+            shakespeare:      { format: 'dual', partA: { marks: 20, aos: 'AO2' }, partB: { marks: 20, aos: 'AO1,AO3' }, hasExtract: true },
+            '19th_century':   { format: 'dual', partA: { marks: 20, aos: 'AO1,AO2' }, partB: { marks: 20, aos: 'AO1,AO3' }, hasExtract: true },
+            modern_text:      { format: 'single', marks: 40, aos: 'AO1,AO2,AO3' },
+            poetry_anthology: { format: 'single', marks: 20, aos: 'AO1,AO2,AO3' },
+            unseen_poetry:    { format: 'single', marks: 20, aos: 'AO1,AO2' },
+        },
+        // Edexcel IGCSE Literature (4ET1)
+        'edexcel-igcse': {
+            shakespeare:          { format: 'single', marks: 30, aos: 'AO1,AO2' },
+            '19th_century':       { format: 'single', marks: 30, aos: 'AO1,AO2' },
+            modern_text:          { format: 'single', marks: 30, aos: 'AO1,AO2' },
+            modern_prose:         { format: 'single', marks: 40, aos: 'AO1,AO2' },
+            unseen_poetry:        { format: 'single', marks: 20, aos: 'AO1,AO2' },
+            poetry_anthology:     { format: 'single', marks: 30, aos: 'AO1,AO2,AO3' },
+            prose_anthology:      { format: 'single', marks: 30, aos: 'AO1,AO2' },
+            nonfiction_anthology: { format: 'single', marks: 30, aos: 'AO1,AO2' },
+        },
+        // OCR GCSE Literature (J352) — Modern Prose + Poetry are dual; Shakespeare + 19th C are single
+        ocr: {
+            shakespeare:      { format: 'single', marks: 40, aos: 'AO1,AO2,AO3' },
+            '19th_century':   { format: 'single', marks: 40, aos: 'AO1,AO2' },
+            modern_prose:     { format: 'dual', partA: { marks: 20, aos: 'AO1,AO2' }, partB: { marks: 20, aos: 'AO1,AO2' }, hasExtract: true },
+            poetry_anthology: { format: 'dual', partA: { marks: 20, aos: 'AO1,AO2' }, partB: { marks: 20, aos: 'AO1,AO2' } },
+        },
+        // CCEA GCSE Literature — Drama + Poetry are either_or; Prose is single
+        ccea: {
+            prose:            { format: 'single', marks: 40, aos: 'AO1,AO2' },
+            unseen_prose:     { format: 'single', marks: 20, aos: 'AO1,AO2' },
+            drama:            { format: 'either_or', marks: 40, aos: 'AO1,AO2' },
+            poetry_anthology: { format: 'either_or', marks: 40, aos: 'AO1,AO2,AO3' },
+        },
+        // SQA National 5
+        sqa: {
+            critical_reading: { format: 'single', marks: 20, aos: 'AO1,AO2' },
+        },
+    };
+
+    /**
+     * Generate synthetic topic data from board defaults when no template exists.
+     * Returns an object matching the shape of REST API topic data.
+     */
+    function buildSyntheticTopicData(board, subject) {
+        if (!board) return null;
+        const boardDefaults = BOARD_FORMAT_DEFAULTS[board];
+        const def = boardDefaults?.[subject];
+        // If no specific config, generate a sensible default from board marks
+        if (!def) {
+            const fallbackMarks = getDefaultMarks(board, subject);
+            return {
+                question_format: 'single',
+                marks: fallbackMarks,
+                aos: 'AO1,AO2',
+                question_text: 'Your exam question will appear here when your tutor assigns a topic.',
+                extract_text: '',
+            };
+        }
+
+        const placeholder = 'Your exam question will appear here when your tutor assigns a topic.';
+        const extractPlaceholder = 'The extract will appear here when your tutor assigns a topic.';
+
+        // Dual formats generate Part A + Part B document structure
+        if (def.format === 'dual' || def.format === 'dual_extract') {
+            return {
+                question_format: def.format,
+                part_a_marks: def.partA.marks,
+                part_a_aos: def.partA.aos,
+                part_a_question: placeholder,
+                part_a_extract: def.hasExtract ? extractPlaceholder : '',
+                part_b_marks: def.partB.marks,
+                part_b_aos: def.partB.aos,
+                part_b_question: placeholder,
+            };
+        }
+        // either_or, single — single-essay document
+        return {
+            question_format: def.format === 'either_or' ? 'either_or' : 'single',
+            marks: def.marks,
+            aos: def.aos,
+            question_text: placeholder,
+            extract_text: def.hasExtract ? extractPlaceholder : '',
+        };
     }
 
     // ── Paragraph Count Model (v7.10.170) ──
@@ -5155,29 +6860,41 @@
         if (!editor) return 0;
         const editorEl = editor.options.element;
         if (!editorEl) return editor.storage.characterCount?.words() || 0;
-        // v7.12.99: Mark scheme — count mark_scheme_response sections (student input only)
-        const msResponses = editorEl.querySelectorAll('[data-section-type="mark_scheme_response"]');
-        if (msResponses.length > 0) {
-            let total = 0;
-            msResponses.forEach(section => {
-                const text = section.textContent || '';
-                const words = text.trim().split(/\s+/).filter(w => w.length > 0);
-                total += words.length;
-            });
-            return total;
-        }
-        const responseSections = editorEl.querySelectorAll('[data-section-type="response"]');
-        if (responseSections.length === 0) {
-            // No section blocks — legacy template, count everything
+        // v7.13.53: Count only editable sections, minus template baseline.
+        // Baseline is snapshotted on editor create (see _swmlTemplateBaseline).
+        const editableSections = editorEl.querySelectorAll('[data-editable="true"]');
+        if (editableSections.length === 0) {
             return editor.storage.characterCount?.words() || 0;
         }
         let total = 0;
-        responseSections.forEach(section => {
-            const text = section.textContent || '';
+        editableSections.forEach(section => {
+            const clone = section.cloneNode(true);
+            clone.querySelectorAll('h3').forEach(el => el.remove());
+            const text = clone.textContent || '';
             const words = text.trim().split(/\s+/).filter(w => w.length > 0);
             total += words.length;
         });
-        return total;
+        // Subtract template baseline (instruction text, labels, prompts in fresh template)
+        const baseline = editorEl._swmlTemplateBaseline || 0;
+        return Math.max(0, total - baseline);
+    }
+    // Snapshot the template word count once when editor content is first loaded.
+    // Called from TipTap onCreate — captures instruction text before student types.
+    function snapshotTemplateBaseline(editor) {
+        if (!editor) return;
+        const editorEl = editor.options.element;
+        if (!editorEl) return;
+        const editableSections = editorEl.querySelectorAll('[data-editable="true"]');
+        if (editableSections.length === 0) return;
+        let total = 0;
+        editableSections.forEach(section => {
+            const clone = section.cloneNode(true);
+            clone.querySelectorAll('h3').forEach(el => el.remove());
+            const text = clone.textContent || '';
+            const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+            total += words.length;
+        });
+        editorEl._swmlTemplateBaseline = total;
     }
 
     /**
@@ -5366,16 +7083,155 @@
     }
 
     // ── Per-Paragraph Feedback — each paragraph is its own section ──
-    function buildFeedbackSection(markSplit) {
-        const s = markSplit || { intro: 3, body: 7, conclusion: 6 };
+    // Per-paragraph mark allocation from protocols (board → total_marks → split)
+    // When topic marks don't match a known split, scale proportionally from AQA 30-mark base.
+    const MARK_SPLITS = {
+        // EDUQAS Poetry Section A 15 marks (1+4+4+4+2=15)
+        15: { intro: 1, body: 4, conclusion: 2 },
+        // Edexcel GCSE poetry/unseen 20 marks / CCEA unseen prose 20 / SQA critical essay 20
+        20: { intro: 2, body: 5, conclusion: 3 },
+        // AQA unseen poetry 24 marks / EDUQAS unseen 24
+        24: { intro: 2, body: 6, conclusion: 4 },
+        // EDUQAS dual Part B 25 marks / Edexcel IGCSE anthology poetry 25
+        25: { intro: 3, body: 6, conclusion: 4 },
+        // AQA 19th Century 30 / Edexcel IGCSE Literary Heritage 30 / Edexcel IGCSE Modern Drama 30
+        30: { intro: 3, body: 7, conclusion: 6 },
+        // AQA Shakespeare 34 (30+4 AO4) / AQA Modern Text 34 (30+4 AO4)
+        34: { intro: 3, body: 8, conclusion: 7 },
+        // EDUQAS 40 / OCR 40 / Edexcel GCSE Shakespeare/Post-1914/19thC 40 / CCEA prose 40 / CCEA drama 40 / CCEA poetry 40
+        // EDUQAS protocol: intro 5 + body 9×3 + conclusion 8 = 40
+        40: { intro: 5, body: 9, conclusion: 8 },
+    };
+
+    function getMarkSplit(marks) {
+        if (MARK_SPLITS[marks]) return { ...MARK_SPLITS[marks] };
+        // Fallback: scale proportionally from 30-mark base
+        const scale = (marks || 30) / 30;
+        return {
+            intro: Math.max(1, Math.round(3 * scale)),
+            body: Math.max(2, Math.round(7 * scale)),
+            conclusion: Math.max(1, Math.round(6 * scale)),
+        };
+    }
+
+    /**
+     * Multi-question document template (Language papers).
+     * Renders source texts, then each question with its response area.
+     * For 20+ mark questions: full essay structure (intro, 3 body, conclusion).
+     * For <20 mark questions: paragraph-count based response.
+     * For writing questions (Section B): uses IUMVCC structure if persuasive,
+     * otherwise standard essay plan.
+     * Mode: 'diagnostic' = question + response (no plan).
+     *        'redraft' = question + response (no outline for Language).
+     */
+    function buildMultiQuestionTemplate(mode, topicData) {
+        const meta = typeof topicData.metadata === 'string' ? JSON.parse(topicData.metadata || '{}') : (topicData.metadata || {});
+        const questions = meta.questions || [];
+        const sources = meta.sources || [];
         let html = '';
-        html += sectionHTML('feedback', `Feedback: Introduction (— / ${s.intro})`, false, null,
+
+        // ── Source texts (if any) ──
+        if (sources.length > 0) {
+            html += dividerHTML('SOURCE MATERIAL');
+            sources.forEach(function(src) {
+                let inner = '';
+                if (src.title) inner += `<p><strong>${escapeHTML(src.title)}</strong></p>`;
+                if (src.author) inner += `<p><em>by ${escapeHTML(src.author)}</em></p>`;
+                if (src.date) inner += `<p><em>${escapeHTML(src.date)}</em></p>`;
+                if (src.text) {
+                    src.text.split('\n').forEach(function(line) {
+                        inner += `<p>${escapeHTML(line) || '&nbsp;'}</p>`;
+                    });
+                }
+                html += sectionHTML('source', escapeHTML(src.label), false, null, inner);
+            });
+        }
+
+        // ── Questions ──
+        let sectionLabel = '';
+        questions.forEach(function(q, idx) {
+            const qMarks = parseInt(q.marks) || 0;
+            const qId = q.id || q.label || ('Q' + (idx + 1));
+            const fullEssay = needsFullEssayStructure(qMarks);
+            const isWritingQ = qMarks >= 24 || /section\s*b|writing|creative|persuasive|narrative|descriptive/i.test(q.label || '');
+            const isPersuasive = /persuasive|speech|letter|article|argue|convince|advise/i.test(q.text || q.label || '');
+
+            // Section divider for grouping (e.g., "SECTION A: READING" / "SECTION B: WRITING")
+            const newSection = idx === 0 ? 'SECTION A: READING' :
+                (isWritingQ && sectionLabel !== 'SECTION B: WRITING') ? 'SECTION B: WRITING' : '';
+            if (newSection && newSection !== sectionLabel) {
+                sectionLabel = newSection;
+                html += dividerHTML(sectionLabel);
+            }
+
+            // Question header
+            let qInner = '';
+            if (q.line_ref) qInner += `<p><em>Lines: ${escapeHTML(q.line_ref)}</em></p>`;
+            if (q.extract) {
+                qInner += `<h3>Extract</h3>`;
+                q.extract.split('\n').forEach(function(line) {
+                    qInner += `<p>${escapeHTML(line) || '&nbsp;'}</p>`;
+                });
+            }
+            // Question text
+            if (q.text) {
+                q.text.split('\n').forEach(function(line) {
+                    if (line.trim()) qInner += `<p>${escapeHTML(line)}</p>`;
+                });
+            }
+            if (qMarks) qInner += `<p><em>[${qMarks} marks]</em></p>`;
+            if (q.aos) qInner += `<p><em>${escapeHTML(q.aos)}</em></p>`;
+            html += sectionHTML('question', `${qId}`, false, null, qInner);
+
+            // Plan (redraft mode only for writing questions, no plan for diagnostic Language)
+            if (mode === 'redraft' && isWritingQ) {
+                html += dividerHTML(`PLAN — ${qId}`);
+                if (isPersuasive) {
+                    html += buildIUMVCCPlanSection(qId);
+                } else if (fullEssay) {
+                    html += buildPlanSection(qId, qMarks);
+                }
+            }
+
+            // Response area
+            html += dividerHTML(`RESPONSE — ${qId}`);
+            if (fullEssay) {
+                // 20+ marks: structured response with paragraph sections
+                html += sectionHTML('response', `${qId} Introduction`, true, null,
+                    `<p><em>Write your introduction here.</em></p><p></p>`);
+                const bodyCount = qMarks >= 40 ? 4 : 3;
+                for (let i = 1; i <= bodyCount; i++) {
+                    html += sectionHTML('response', `${qId} Body ${i}`, true, null,
+                        `<p><em>Write body paragraph ${i} here.</em></p><p></p>`);
+                }
+                html += sectionHTML('response', `${qId} Conclusion`, true, null,
+                    `<p><em>Write your conclusion here.</em></p><p></p>`);
+            } else if (qMarks >= 4) {
+                // 4-19 marks: paragraph-count based response (1 per 4 marks)
+                const paraCount = getParagraphCount(qMarks);
+                for (let i = 1; i <= paraCount; i++) {
+                    html += sectionHTML('response', `${qId} Response ${i}`, true, null, `<p></p>`);
+                }
+            } else {
+                // 1-3 marks: simple open response
+                html += sectionHTML('response', `${qId} Response`, true, null, `<p></p>`);
+            }
+        });
+
+        return html;
+    }
+
+    function buildFeedbackSection(markSplit, partLabel) {
+        const s = markSplit || { intro: 3, body: 7, conclusion: 6 };
+        const prefix = partLabel ? `${partLabel} ` : '';
+        let html = '';
+        html += sectionHTML('feedback', `${prefix}Feedback: Introduction (— / ${s.intro})`, false, null,
             `<p><em>Feedback and revised paragraph example will appear after assessment.</em></p>`);
         for (let i = 1; i <= 3; i++) {
-            html += sectionHTML('feedback', `Feedback: Body ${i} (— / ${s.body})`, false, null,
+            html += sectionHTML('feedback', `${prefix}Feedback: Body ${i} (— / ${s.body})`, false, null,
                 `<p><em>Feedback and revised paragraph example will appear after assessment.</em></p>`);
         }
-        html += sectionHTML('feedback', `Feedback: Conclusion (— / ${s.conclusion})`, false, null,
+        html += sectionHTML('feedback', `${prefix}Feedback: Conclusion (— / ${s.conclusion})`, false, null,
             `<p><em>Feedback and revised paragraph example will appear after assessment.</em></p>`);
         return html;
     }
@@ -5441,7 +7297,22 @@
         'Discourse Markers': ['I mainly rely on connecting with \'the\' or \'this\'.', 'I used a few basic connecting words.', 'I used some appropriate discourse markers.', 'I used a good range of discourse markers for logical relationships.', 'I used sophisticated discourse markers seamlessly for a fluent, coherent argument.'],
     };
 
-    function buildSelfAssessmentSection() {
+    function buildSelfAssessmentSection(isDual) {
+        if (isDual) {
+            // v7.13.83: Dual-part papers — combined overall confidence per part + key skills
+            let inner = `<p><em>Rate your overall confidence (1 = not confident, 5 = very confident):</em></p>`;
+            inner += `<h3>Overall Confidence</h3>`;
+            inner += `<p>Part A (extract question): \u2014 / 5</p>`;
+            inner += `<p>Part B (essay question): \u2014 / 5</p>`;
+            inner += `<h3>Key Skills</h3>`;
+            inner += `<p>Evidence Selection: \u2014 / 5</p>`;
+            inner += `<p>Close Analysis: \u2014 / 5</p>`;
+            inner += `<p>Effects on Reader: \u2014 / 5</p>`;
+            inner += `<p>Author\u2019s Purpose: \u2014 / 5</p>`;
+            inner += `<p>Context Integration: \u2014 / 5</p>`;
+            inner += `<p>Academic Writing: \u2014 / 5</p>`;
+            return sectionHTML('action', 'Self-Assessment', true, null, inner);
+        }
         const skills = [
             { cat: 'Introduction', items: ['Hook', 'Building Sentences', 'Thesis'] },
             { cat: 'Body Paragraphs', items: ['Topic Sentence', 'Technical Terms', 'Evidence', 'Close Analysis', 'Effects on Reader', "Author's Purpose", 'Context'] },
@@ -5451,7 +7322,7 @@
         let inner = `<p><em>Rate your confidence in each skill (1 = basic, 5 = expert):</em></p>`;
         skills.forEach(s => {
             inner += `<h3>${s.cat}</h3>`;
-            s.items.forEach(item => { inner += `<p>${item}: — / 5</p>`; });
+            s.items.forEach(item => { inner += `<p>${item}: \u2014 / 5</p>`; });
         });
         return sectionHTML('action', 'Self-Assessment', true, null, inner);
     }
@@ -5502,6 +7373,318 @@
             `<p><em>Tutor:</em> —</p>` +
             `<p><em>Date:</em> —</p>`;
         return sectionHTML('signoff', 'Tutor Sign-off', false, null, inner);
+    }
+
+    // ══════════════════════════════════════════
+    //  EXERCISE-SPECIFIC DOCUMENT TEMPLATES (v7.13.17)
+    // ══════════════════════════════════════════
+    // These templates are for chat-to-canvas migrated exercises.
+    // Each exercise gets a document alongside the AI chat panel.
+
+    /**
+     * Exam Question Creator — document shows the generated question + analysis.
+     * Sections populated by the AI chat as the exercise progresses.
+     */
+    function getExamQuestionTemplate() {
+        let html = '';
+        html += dividerHTML('Exam Question Creator');
+        html += sectionHTML('question', 'Generated Question', false, null,
+            `<p><em>Your exam question will appear here once generated by the AI.</em></p>`);
+        html += sectionHTML('feedback', 'Question Analysis', false, null,
+            `<p><em>Past paper frequency data and theme patterns will appear here.</em></p>`);
+        html += dividerHTML('Your Notes');
+        html += sectionHTML('response', 'Question Notes', true, null,
+            `<p><em>Use this space to note down anything about this question — themes, key quotes, initial ideas.</em></p><p></p>`);
+        return html;
+    }
+
+    /**
+     * Essay Plan — structured TTECEA+C plan with Introduction, Body 1-3, Conclusion.
+     * Student fills in plan sections with AI guidance.
+     */
+    function getEssayPlanTemplate() {
+        let html = '';
+        html += dividerHTML('Essay Plan');
+        html += sectionHTML('question', 'Question', false, null,
+            `<p><em>The essay question will appear here.</em></p>`);
+        html += dividerHTML('Your Plan');
+        html += sectionHTML('plan', 'Plan: Introduction', true, null,
+            `<p><em>Hook:</em></p><p></p>` +
+            `<p><em>Building sentences (context):</em></p><p></p>` +
+            `<p><em>Thesis (3 key ideas):</em></p><p></p>`);
+        for (let i = 1; i <= 3; i++) {
+            html += sectionHTML('plan', `Plan: Body Paragraph ${i}`, true, null,
+                `<p><em>Topic sentence (key idea):</em></p><p></p>` +
+                `<p><em>Technical term + Evidence (quote):</em></p><p></p>` +
+                `<p><em>Close analysis + Effects:</em></p><p></p>` +
+                `<p><em>Author's purpose + Context:</em></p><p></p>`);
+        }
+        html += sectionHTML('plan', 'Plan: Conclusion', true, null,
+            `<p><em>Restated thesis:</em></p><p></p>` +
+            `<p><em>Controlling concept:</em></p><p></p>` +
+            `<p><em>Central purpose:</em></p><p></p>` +
+            `<p><em>Universal message:</em></p><p></p>`);
+        return html;
+    }
+
+    /**
+     * Model Answer — question + student attempt + AI model for comparison.
+     * Coached mode: student writes each section, AI refines. Instant mode: AI generates all.
+     */
+    function getModelAnswerTemplate() {
+        let html = '';
+        html += dividerHTML('Model Answer');
+        html += sectionHTML('question', 'Question', false, null,
+            `<p><em>The essay question will appear here.</em></p>`);
+        html += dividerHTML('Your Attempt');
+        html += sectionHTML('response', 'Your Introduction', true, null,
+            `<p><em>Write your introduction here (7-9 sentences).</em></p><p></p>`);
+        for (let i = 1; i <= 3; i++) {
+            html += sectionHTML('response', `Your Body Paragraph ${i}`, true, null,
+                `<p><em>Write body paragraph ${i} here (7-10 sentences, TTECEA+C structure).</em></p><p></p>`);
+        }
+        html += sectionHTML('response', 'Your Conclusion', true, null,
+            `<p><em>Write your conclusion here (7-9 sentences).</em></p><p></p>`);
+        html += dividerHTML('Grade 9 Model');
+        html += sectionHTML('feedback', 'Model: Introduction', false, null,
+            `<p><em>The Grade 9 model introduction will appear here after your attempt.</em></p>`);
+        for (let i = 1; i <= 3; i++) {
+            html += sectionHTML('feedback', `Model: Body Paragraph ${i}`, false, null,
+                `<p><em>The Grade 9 model body paragraph ${i} will appear here.</em></p>`);
+        }
+        html += sectionHTML('feedback', 'Model: Conclusion', false, null,
+            `<p><em>The Grade 9 model conclusion will appear here.</em></p>`);
+        return html;
+    }
+
+    /**
+     * Quote Analysis — random quote, student plan + paragraph, AI model for comparison.
+     */
+    function getQuoteAnalysisTemplate() {
+        let html = '';
+        html += dividerHTML('Random Quote Analysis');
+        html += sectionHTML('question', 'Random Quote', false, null,
+            `<p><em>A random quote will appear here for you to analyse.</em></p>`);
+        html += dividerHTML('Your Analysis');
+        html += sectionHTML('plan', 'Your Plan (TTECEA+C)', true, null,
+            `<p><em>Topic sentence:</em></p><p></p>` +
+            `<p><em>Technical term + Evidence:</em></p><p></p>` +
+            `<p><em>Close analysis:</em></p><p></p>` +
+            `<p><em>Effects on reader:</em></p><p></p>` +
+            `<p><em>Author's purpose + Context:</em></p><p></p>`);
+        html += sectionHTML('response', 'Your Paragraph', true, null,
+            `<p><em>Write your full paragraph here (200-250 words).</em></p><p></p>`);
+        html += dividerHTML('Grade 9 Comparison');
+        html += sectionHTML('feedback', 'AI Model Plan', false, null,
+            `<p><em>The Grade 9 model plan will appear here for comparison.</em></p>`);
+        html += sectionHTML('feedback', 'AI Model Paragraph', false, null,
+            `<p><em>The Grade 9 model paragraph will appear here for comparison.</em></p>`);
+        return html;
+    }
+
+    /**
+     * Memory Practice — quality gate reference, original writing, retrieval exercise.
+     */
+    function getMemoryPracticeTemplate() {
+        let html = '';
+        html += dividerHTML('Memory Practice');
+        html += sectionHTML('question', 'Original Writing', false, null,
+            `<p><em>Your submitted writing will appear here for reference during the quality gate.</em></p>`);
+        html += sectionHTML('feedback', 'Quality Gate Feedback', false, null,
+            `<p><em>The AI will assess your writing against grade-level criteria before proceeding.</em></p>`);
+        html += dividerHTML('Retrieval Exercise');
+        html += sectionHTML('response', 'Memory Exercise', true, null,
+            `<p><em>Your retrieval exercise will begin here once you pass the quality gate.</em></p><p></p>`);
+        html += sectionHTML('feedback', 'Results', false, null,
+            `<p><em>Your accuracy score and areas to revise will appear here after completion.</em></p>`);
+        return html;
+    }
+
+    /**
+     * Conceptual Notes — Literature (plays/novels).
+     * 7 thematic sections, each with a 3-column table: concept | notes | quote.
+     */
+    function getConceptualNotesLiteratureTemplate() {
+        const sections = [
+            { label: 'Understanding the Protagonist', cols: ['The Protagonist + Other Characters, Effects, Meaning and Author\'s Purpose', 'Notes', 'Quote'] },
+            { label: 'Understanding the Context', cols: ['Context, Meaning and Author\'s Purpose', 'Notes', 'Quote'] },
+            { label: 'Understanding the Plot Structure', cols: ['Plot Structure, Effects, Meaning and Author\'s Purpose', 'Notes', 'Quote'] },
+            { label: 'Understanding the Genre(s)', cols: ['Genre, Effects, Meaning and Author\'s Purpose', 'Notes', 'Quote'] },
+            { label: 'Understanding the Theme(s)', cols: ['Theme, Effects, Meaning and Author\'s Purpose', 'Notes', 'Quote'] },
+            { label: 'Understanding the Author\'s Purpose', cols: ['Author\'s Purpose', 'Notes', 'Quote / Historical Fact'] },
+            { label: 'Overall Message of the Story', cols: ['Moral, Message, Key Idea + Author\'s Purpose', 'Notes', 'Quote'] },
+        ];
+        let html = '';
+        html += dividerHTML('Grade 9 Conceptual Notes');
+        sections.forEach(s => {
+            let inner = `<h3>${escapeHTML(s.label)}</h3>`;
+            // Build a simple table with 5 empty rows
+            inner += `<table><thead><tr>`;
+            s.cols.forEach(c => { inner += `<th>${escapeHTML(c)}</th>`; });
+            inner += `</tr></thead><tbody>`;
+            for (let i = 0; i < 5; i++) {
+                inner += `<tr>`;
+                s.cols.forEach(() => { inner += `<td><p></p></td>`; });
+                inner += `</tr>`;
+            }
+            inner += `</tbody></table>`;
+            html += sectionHTML('response', s.label, true, null, inner);
+        });
+        return html;
+    }
+
+    /**
+     * Conceptual Notes — Poetry.
+     * Per-poem structure with 10 analysis categories per poem.
+     * The actual poems are injected by the AI chat based on the anthology.
+     */
+    function getConceptualNotesPoetryTemplate() {
+        const categories = [
+            { label: 'Understanding the Themes', cols: ['Theme', 'Quote / Author\'s Purpose / Effects on the Reader'] },
+            { label: 'Understanding the Speaker', cols: ['Idea', 'Quote / Author\'s Purpose / Effects on the Reader'] },
+            { label: 'Understanding the Form', cols: ['Form', 'Quote / Author\'s Purpose / Effects on the Reader'] },
+            { label: 'Understanding the Language', cols: ['Technique', 'Quote / Author\'s Purpose / Effects on the Reader'] },
+            { label: 'Understanding the Structure', cols: ['Technique', 'Quote / Author\'s Purpose / Effects on the Reader'] },
+            { label: 'Understanding the Historical Context', cols: ['Fact', 'Quote / Author\'s Purpose / Effects on the Reader'] },
+            { label: 'Understanding the Message / Moral / Idea', cols: ['Message', 'Quote / Author\'s Purpose / Effects on the Reader'] },
+            { label: 'The Author', cols: ['Fact', 'Quote / Author\'s Purpose / Effects on the Reader'] },
+            { label: 'Author\'s Purpose', cols: ['Purpose', 'Quote / Author\'s Purpose / Effects on the Reader'] },
+            { label: 'Comparable Poems', cols: ['Poem', 'Comparable Points'] },
+        ];
+        let html = '';
+        html += dividerHTML('Grade 9 Poetry Conceptual Notes');
+        // Poem text section (read-only — AI will populate with the current poem)
+        html += sectionHTML('question', 'Poem Text', false, null,
+            `<p><em>The poem text will appear here. The AI will guide you through each poem in your anthology.</em></p>`);
+        html += dividerHTML('Your Analysis');
+        // Build analysis tables for current poem
+        categories.forEach(cat => {
+            const rows = cat.label === 'Comparable Poems' ? 3 : 3;
+            let inner = '';
+            inner += `<table><thead><tr>`;
+            cat.cols.forEach(c => { inner += `<th>${escapeHTML(c)}</th>`; });
+            inner += `</tr></thead><tbody>`;
+            for (let i = 0; i < rows; i++) {
+                inner += `<tr>`;
+                cat.cols.forEach(() => { inner += `<td><p></p></td>`; });
+                inner += `</tr>`;
+            }
+            inner += `</tbody></table>`;
+            html += sectionHTML('response', cat.label, true, null, inner);
+        });
+        return html;
+    }
+
+    // Expose exercise templates on WML namespace (v7.13.17)
+    WML.getExamQuestionTemplate = getExamQuestionTemplate;
+    WML.getEssayPlanTemplate = getEssayPlanTemplate;
+    WML.getModelAnswerTemplate = getModelAnswerTemplate;
+    WML.getQuoteAnalysisTemplate = getQuoteAnalysisTemplate;
+    WML.getMemoryPracticeTemplate = getMemoryPracticeTemplate;
+    WML.getConceptualNotesLiteratureTemplate = getConceptualNotesLiteratureTemplate;
+    WML.getConceptualNotesPoetryTemplate = getConceptualNotesPoetryTemplate;
+
+    /**
+     * Exam Prep document templates (v7.13.74)
+     * Ready for canvas migration — switch environment: 'chat' → 'canvas' in EXERCISE_MANIFEST.
+     * Each template creates a structured document for the exam prep exercise type.
+     * @param {string} exerciseType — manifest key (exam_question, essay_plan, model_answer, etc.)
+     * @returns {string} TipTap-compatible HTML
+     */
+    function getExamPrepDocTemplate(exerciseType) {
+        let html = '';
+        const board = (WML.state.board || '').toUpperCase();
+        const text = WML.state.text ? ucfirst(WML.state.text.replace(/_/g, ' ')) : '';
+        const headerInfo = [board, text].filter(Boolean).join(' \u2014 ');
+
+        if (exerciseType === 'exam_question') {
+            html += sectionHTML('question', 'About This Exercise', false, null,
+                '<h2>Exam Question Creator</h2>' +
+                (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
+                '<p>Your AI tutor will generate exam-style questions tailored to your text and exam board. Work through them to build familiarity with exam question patterns.</p>'
+            );
+            for (let i = 1; i <= 10; i++) {
+                html += dividerHTML('QUESTION ' + i);
+                html += sectionHTML('plan', 'Question ' + i, true, null,
+                    '<h3>Question ' + i + '</h3><p></p>');
+            }
+        } else if (exerciseType === 'essay_plan') {
+            // v7.13.97: Full diagnostic-style structure — plan + response + feedback + scores
+            html += sectionHTML('question', 'About This Exercise', false, null,
+                '<h2>Essay Plan</h2>' +
+                (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
+                '<p>Build a structured essay plan with your AI tutor. Select a question, then plan each paragraph.</p>'
+            );
+            html += dividerHTML('ESSAY QUESTION');
+            html += sectionHTML('question', 'Essay Question', true, null,
+                '<h3>Essay Question</h3><p><em>Your question will appear here once selected.</em></p>');
+            html += dividerHTML('ESSAY PLAN');
+            html += buildPlanSection(null, 30);
+            html += dividerHTML('RESPONSE');
+            html += buildResponseSection(null);
+            html += dividerHTML('FEEDBACK');
+            html += buildFeedbackSection(getMarkSplit(30));
+            html += dividerHTML('RESULTS');
+            html += buildScoresSection(30);
+            html += buildSelfAssessmentSection(false);
+            html += buildAnalyticsSection();
+            html += buildActionPlanSection('diagnostic');
+            html += buildSignoffSection();
+        } else if (exerciseType === 'model_answer') {
+            html += sectionHTML('question', 'About This Exercise', false, null,
+                '<h2>Model Answer Generator</h2>' +
+                (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
+                '<p>Study a model answer broken down by assessment criteria. Understand what top-mark responses look like.</p>'
+            );
+            html += dividerHTML('QUESTION');
+            html += sectionHTML('plan', 'Question', true, null,
+                '<h3>Question</h3><p></p>');
+            html += dividerHTML('MODEL ANSWER');
+            html += sectionHTML('response', 'Model Answer', true, null,
+                '<h3>Model Answer</h3><p></p>');
+            html += dividerHTML('MARK BREAKDOWN');
+            html += sectionHTML('plan', 'Mark Breakdown', true, null,
+                '<h3>Criterion-by-Criterion Breakdown</h3><p></p>');
+        } else if (exerciseType === 'verbal_rehearsal' || exerciseType === 'quote_analysis') {
+            html += sectionHTML('question', 'About This Exercise', false, null,
+                '<h2>Random Quote Analysis</h2>' +
+                (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
+                '<p>Practise analysing quotes from your text. Each quote is presented randomly \u2014 build your speed and depth of analysis.</p>'
+            );
+            for (let i = 1; i <= 5; i++) {
+                html += dividerHTML('QUOTE ' + i);
+                html += sectionHTML('plan', 'Quote ' + i, true, null,
+                    '<h3>Quote ' + i + '</h3>' +
+                    '<p><strong>Quote:</strong></p><p></p>' +
+                    '<p><strong>Context:</strong></p><p></p>' +
+                    '<p><strong>Technique(s):</strong></p><p></p>' +
+                    '<p><strong>Effect:</strong></p><p></p>' +
+                    '<p><strong>Link to theme/character:</strong></p><p></p>');
+            }
+        } else if (exerciseType === 'conceptual_notes') {
+            html += sectionHTML('question', 'About This Exercise', false, null,
+                '<h2>Grade 9 Conceptual Notes</h2>' +
+                (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
+                '<p>Build deep conceptual understanding of your text. These notes go beyond surface-level plot to explore themes, context, and authorial intent.</p>'
+            );
+            const concepts = ['Characters', 'Themes', 'Context', 'Structure', 'Language', 'Writer\u2019s Intent', 'Critical Perspectives', 'Exam Technique'];
+            concepts.forEach(c => {
+                html += dividerHTML(c.toUpperCase());
+                html += sectionHTML('plan', c, true, null,
+                    '<h3>' + c + '</h3><p></p>');
+            });
+        } else if (exerciseType === 'memory_practice') {
+            html += sectionHTML('question', 'About This Exercise', false, null,
+                '<h2>Memory Practice</h2>' +
+                (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
+                '<p>Test your recall of key quotes, concepts, and analysis. Your AI tutor will challenge you with retrieval practice questions.</p>'
+            );
+            html += dividerHTML('RETRIEVAL RESULTS');
+            html += sectionHTML('response', 'Results', true, null,
+                '<h3>Retrieval Results</h3>' +
+                '<p><em>Your retrieval practice results will be compiled here as you work through the exercise.</em></p><p></p>');
+        }
+        return html || '<p></p>';
     }
 
     /**
@@ -5568,6 +7751,10 @@
                 html += buildResponseSection('Part B');
             }
         }
+        // ── MULTI-QUESTION (Language papers: AQA P1/P2, Edexcel P1/P2, etc.) ──
+        else if (format === 'multi_question' || format === 'multi_option' || format === 'dual_task') {
+            html += buildMultiQuestionTemplate(mode, topicData);
+        }
         // ── SINGLE-PART (AQA, most boards) ──
         else {
             const marks = parseInt(topicData.marks) || 30;
@@ -5596,23 +7783,48 @@
             }
         }
 
+        // v7.14.11: Diagnostic notice — shown only in diagnostic env, hidden in assessment
+        if (mode === 'diagnostic') {
+            html += sectionHTML('notice', 'What happens next?', false, null,
+                '<p><em>The rest of this document — feedback, scores, and your action plan — will appear when you move on to your <strong>assessment</strong> exercise. For now, focus on writing the best essay you can.</em></p>');
+        }
+
         // Feedback + scores + improvement + sign-off (always appended, populated later by AI)
-        // Mark split per paragraph — AQA 30 marks: Intro /3, Body /7 each, Conclusion /6
-        // Scale proportionally for other totals
-        const feedbackMarks = isDual
-            ? (parseInt(topicData.part_a_marks) || 0) + (parseInt(topicData.part_b_marks) || 0)
-            : parseInt(topicData.marks) || getDefaultMarks(state.board, state.subject);
-        const scale = feedbackMarks / 30;
-        const markSplit = {
-            intro: Math.round(3 * scale),
-            body: Math.round(7 * scale),
-            conclusion: Math.round(6 * scale),
-        };
-        html += dividerHTML('FEEDBACK');
-        html += buildFeedbackSection(markSplit);
-        html += dividerHTML('RESULTS');
-        html += buildScoresSection(feedbackMarks);
-        html += buildSelfAssessmentSection();
+        // Mark splits from protocol data (MARK_SPLITS lookup) rather than generic scaling
+        const isMultiQ = format === 'multi_question' || format === 'multi_option' || format === 'dual_task';
+        if (isMultiQ) {
+            // Multi-question (Language papers): feedback per question
+            const meta = typeof topicData.metadata === 'string' ? JSON.parse(topicData.metadata || '{}') : (topicData.metadata || {});
+            const questions = meta.questions || [];
+            let totalMarks = 0;
+            html += dividerHTML('FEEDBACK');
+            questions.forEach(function(q) {
+                const qMarks = parseInt(q.marks) || 0;
+                totalMarks += qMarks;
+                html += sectionHTML('feedback', `Feedback: ${q.id || q.label} (— / ${qMarks})`, false, null,
+                    `<p><em>Feedback and revised answer will appear after assessment.</em></p>`);
+            });
+            html += dividerHTML('RESULTS');
+            html += buildScoresSection(totalMarks || parseInt(topicData.marks) || 80);
+        } else if (isDual) {
+            // Dual format: separate feedback for Part A and Part B
+            const marksA = parseInt(topicData.part_a_marks) || 15;
+            const marksB = parseInt(topicData.part_b_marks) || 25;
+            html += dividerHTML('FEEDBACK — PART A');
+            html += buildFeedbackSection(getMarkSplit(marksA), 'Part A');
+            html += dividerHTML('FEEDBACK — PART B');
+            html += buildFeedbackSection(getMarkSplit(marksB), 'Part B');
+            html += dividerHTML('RESULTS');
+            html += buildScoresSection(marksA + marksB);
+        } else {
+            // Single format
+            const feedbackMarks = parseInt(topicData.marks) || getDefaultMarks(state.board, state.subject);
+            html += dividerHTML('FEEDBACK');
+            html += buildFeedbackSection(getMarkSplit(feedbackMarks));
+            html += dividerHTML('RESULTS');
+            html += buildScoresSection(feedbackMarks);
+        }
+        html += buildSelfAssessmentSection(isDual);
         html += buildAnalyticsSection();
         html += buildActionPlanSection(mode);
         html += buildSignoffSection();
@@ -5856,12 +8068,29 @@
         const totalMarks = isDual
             ? (parseInt(topicData.part_a_marks) || 0) + (parseInt(topicData.part_b_marks) || 0)
             : parseInt(topicData.marks) || boardDefault;
-        const targets = getWordTargets(totalMarks);
+        // Language subjects use lower word count aims than literature
+        const isLanguage = /^language|^lang_/i.test(state.subject || '') || /^(cw_|nonfiction)/i.test(state.task || '');
+        const targets = getWordTargets(totalMarks, isLanguage);
         canvasWordTarget = targets.target || 650;
         canvasWordMinimum = targets.minimum || 450;
         canvasWordIdeal = targets.ideal || 800;
         canvasUsesWordCount = targets.usesWordCount;
-        console.log(`WML: Word targets — ${totalMarks} marks (board default: ${boardDefault}) → min: ${canvasWordMinimum}, target: ${canvasWordTarget}, ideal: ${canvasWordIdeal}`);
+
+        // Dual questions: compute per-part targets for guidance display
+        if (isDual) {
+            const marksA = parseInt(topicData.part_a_marks) || 15;
+            const marksB = parseInt(topicData.part_b_marks) || 25;
+            const tA = getWordTargets(marksA, isLanguage);
+            const tB = getWordTargets(marksB, isLanguage);
+            canvasDualTargets = {
+                partA: { marks: marksA, target: tA.target, minimum: tA.minimum, ideal: tA.ideal },
+                partB: { marks: marksB, target: tB.target, minimum: tB.minimum, ideal: tB.ideal },
+            };
+            console.log(`WML: Dual word targets — Part A: ${marksA}m → ${tA.target}w, Part B: ${marksB}m → ${tB.target}w`);
+        } else {
+            canvasDualTargets = null;
+        }
+        console.log(`WML: Word targets — ${totalMarks} marks, ${isLanguage ? 'language' : 'literature'} → min: ${canvasWordMinimum}, target: ${canvasWordTarget}, ideal: ${canvasWordIdeal}`);
     }
 
     let canvasSaveToServerTimer = null;
@@ -5873,11 +8102,9 @@
         const wc = getResponseWordCount(canvasEditor);
         // 1. Immediate localStorage write (instant, no latency)
         try { localStorage.setItem(CANVAS_SAVE_KEY(), html); } catch (e) { /* storage full */ }
-        // 2. Mark scheme: localStorage only — don't overwrite essay on server (v7.12.95)
-        if (state.task === 'mark_scheme') return;
-        // 3. Extract structured section data (v7.11.9)
+        // 2. Extract structured section data (v7.11.9)
         const sectionData = typeof _extractDocumentData === 'function' ? _extractDocumentData() : null;
-        // 4. Debounced server save (every 5s, not every 2s like localStorage)
+        // 3. Debounced server save (every 5s, not every 2s like localStorage)
         clearTimeout(canvasSaveToServerTimer);
         canvasSaveToServerTimer = setTimeout(() => {
             fetch(API.canvasSave, {
@@ -5889,6 +8116,7 @@
                     wordCount: wc,
                     topicNumber: state.topicNumber || null,
                     sectionData: sectionData,
+                    suffix: WML.getExerciseConfig(state.task).storageSuffix || '',
                 })
             }).then(r => r.json()).then(res => {
                 if (res.success) console.log('WML: Canvas saved to server', { key: res.key, savedAt: res.savedAt, board: state.board, text: state.text, topic: state.topicNumber, wc: wc });
@@ -5907,13 +8135,14 @@
      * and localStorage is empty (new device / cleared cache), inject it.
      */
     async function tryServerLoad() {
-        // Mark scheme has its own document — skip server load of the essay (v7.12.90)
-        if (state.task === 'mark_scheme') {
-            console.log('WML: Skipping server load — mark scheme uses its own template');
+        // v7.13.36: CW exercises use project artifact storage, not essay canvas storage
+        if (state.task && state.task.startsWith('cw_')) {
+            console.log('WML: Skipping server load — CW exercise uses project storage');
             return;
         }
         try {
-            const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}`;
+            const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+            const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}`;
             const res = await fetch(url, { headers }).then(r => r.json());
             if (res.success && res.doc && res.doc.html) {
                 const localContent = loadCanvasContent();
@@ -5937,7 +8166,26 @@
      */
     async function tryTopicTemplate() {
         if (!canvasEditor) return;
-        if (!state.topicNumber || state.topicNumber < 1) return;
+        if (state.task && state.task.startsWith('cw_')) return; // v7.13.36: CW exercises don't use topic templates
+        // v7.13.93: Exam prep tasks use their own templates (via tryExamPrepTemplate), skip topic template
+        const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice'];
+        if (EXAM_PREP_TASKS.includes(state.task)) return;
+        if (!state.topicNumber || state.topicNumber < 1) {
+            // v7.14.8: Board-aware fallback for free practice (no topic number)
+            if (canvasEditor && canvasEditor.getText().trim().length < 10 && !canvasEditor.getHTML().includes('data-section-type')) {
+                const syntheticData = buildSyntheticTopicData(state.board, state.subject);
+                if (syntheticData) {
+                    setWordTargetsFromTopic(syntheticData);
+                    canvasEditor.commands.setContent(getDocumentTemplate('diagnostic', syntheticData), false);
+                    snapshotTemplateBaseline(canvasEditor);
+                    refreshWordCountUI();
+                    console.log(`WML: Free practice — board-aware template (${state.board}/${state.subject})`);
+                } else {
+                    canvasEditor.commands.setContent(getDefaultEssayTemplate(), false);
+                }
+            }
+            return;
+        }
 
         // Single fetch — used for both word targets and template generation
         const topicData = await fetchTopicData();
@@ -5945,8 +8193,21 @@
         // Always set word targets (even for resumed docs)
         if (topicData) {
             setWordTargetsFromTopic(topicData);
-            refreshWordCountUI();
+        } else {
+            // No topic data — use board default marks as fallback (v7.14.7)
+            canvasDualTargets = null; // No topic data = no dual info
+            const fallbackMarks = getDefaultMarks(state.board, state.subject);
+            if (fallbackMarks > 0) {
+                const isLanguage = /^language|^lang_/i.test(state.subject || '');
+                const targets = getWordTargets(fallbackMarks, isLanguage);
+                canvasWordTarget = targets.target || 650;
+                canvasWordMinimum = targets.minimum || 450;
+                canvasWordIdeal = targets.ideal || 800;
+                canvasUsesWordCount = targets.usesWordCount;
+                console.log(`WML: Word targets (board default fallback) — ${fallbackMarks} marks → min: ${canvasWordMinimum}, target: ${canvasWordTarget}, ideal: ${canvasWordIdeal}`);
+            }
         }
+        refreshWordCountUI();
 
         // Mark scheme: ALWAYS check first — essay sections may have leaked from localStorage (v7.12.95)
         if (state.task === 'mark_scheme') {
@@ -5979,17 +8240,34 @@
             return;
         }
 
-        if (!topicData) {
-            console.log('WML: No topic data available, keeping default template');
-            return;
-        }
-
-        // Determine mode from state
+        // Determine mode from state (must be before fallback paths that reference it)
         let mode = 'diagnostic';
         if (state.phase === 'redraft' || state.draftType?.includes('redraft')) {
             mode = 'redraft';
         } else if (state.mode === 'exam_prep') {
             mode = 'exam_practice';
+        }
+
+        if (!topicData) {
+            // v7.14.8: Board-aware fallback — generate correct document from board defaults
+            const syntheticData = buildSyntheticTopicData(state.board, state.subject);
+            if (syntheticData) {
+                setWordTargetsFromTopic(syntheticData);
+                refreshWordCountUI();
+                console.log(`WML: No topic data — board-aware fallback (${state.board}/${state.subject}, format: ${syntheticData.question_format})`);
+                const template = getDocumentTemplate(mode, syntheticData);
+                if (canvasEditor && !canvasEditor.getHTML().includes('data-section-type')) {
+                    canvasEditor.commands.setContent(template, false);
+                    snapshotTemplateBaseline(canvasEditor);
+                    refreshWordCountUI();
+                }
+            } else {
+                console.log('WML: No topic data, no board defaults — generic template');
+                if (canvasEditor && !canvasEditor.getHTML().includes('data-section-type')) {
+                    canvasEditor.commands.setContent(getDefaultEssayTemplate(), false);
+                }
+            }
+            return;
         }
 
         console.log(`WML: Generating topic template — topic ${state.topicNumber}, mode: ${mode}`);
@@ -5998,6 +8276,7 @@
         // Only inject if we still have the default template (guard against race)
         if (canvasEditor && !canvasEditor.getHTML().includes('data-section-type')) {
             canvasEditor.commands.setContent(template, false);
+            snapshotTemplateBaseline(canvasEditor);
             refreshWordCountUI();
             console.log('WML: Topic template injected');
         }
@@ -6026,6 +8305,21 @@
         // Update mark complete visibility
         const btn = document.getElementById('swml-canvas-complete-btn');
         if (btn) btn.style.display = wc >= canvasWordMinimum ? 'block' : 'none';
+        // Update footer word count (same baseline-aware count as sidebar)
+        const footerWc = document.getElementById('swml-footer-wc');
+        if (footerWc) footerWc.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
+        // Update guidance tip text (fixes timing: guidance renders before async word targets)
+        const guideTip = document.getElementById('swml-guide-word-target');
+        if (guideTip) {
+            const icon = guideTip.querySelector('.swml-guide-icon');
+            const iconHTML = icon ? icon.outerHTML : '';
+            if (canvasDualTargets) {
+                const { partA, partB } = canvasDualTargets;
+                guideTip.innerHTML = `${iconHTML} This is a two-part question. Part A: aim for ${partA.target} words (${partA.marks} marks). Part B: aim for ${partB.target} words (${partB.marks} marks). A "Mark Complete" button will appear once you reach the combined minimum.`;
+            } else {
+                guideTip.innerHTML = `${iconHTML} Aim for ${canvasWordTarget} words. Once you reach ${canvasWordMinimum} words, a "Mark Complete" button will appear — but push for ${canvasWordTarget} if you can.`;
+            }
+        }
     }
 
     /**
@@ -6038,6 +8332,8 @@
         if (!canvasEditor) return;
         // Mark scheme has its own sections — skip essay migration (v7.12.96)
         if (state.task === 'mark_scheme') { console.log('WML Migration: Skipping — mark scheme document'); return; }
+        // v7.13.43: CW exercises have their own section structure — skip assessment migration
+        if (state.task && state.task.startsWith('cw_')) { console.log('WML Migration: Skipping — CW exercise document'); return; }
         const currentHTML = canvasEditor.getHTML();
         // Only run on documents that have section blocks (i.e. structured templates)
         if (!currentHTML.includes('data-section-type')) return;
@@ -6158,6 +8454,75 @@
      * Uses docWrap.insertBefore(coverEl, editorEl) so it's visually the first page
      * but TipTap never touches it. Also strips any broken cover sections from saved docs.
      */
+    // ── CW Resource Buttons (v7.13.46) ──
+    // Injects real clickable buttons into the Resources section block (TipTap strips data-href from content)
+    function injectCwResourceButtons(editorEl) {
+        if (!editorEl || !(state.task && state.task.startsWith('cw_'))) return;
+        const contentWrap = document.querySelector('.swml-canvas-content');
+        if (!contentWrap) return;
+        // Don't inject twice
+        if (contentWrap.querySelector('.swml-cw-resources-panel')) return;
+
+        // Find the Resources section to position relative to
+        const sections = editorEl.querySelectorAll('[data-section-label]');
+        let resourceSection = null;
+        sections.forEach(s => { if (s.getAttribute('data-section-label') === 'Resources') resourceSection = s; });
+        if (!resourceSection) return;
+
+        // Resource links per CW step
+        const CW_RESOURCES = {
+            2: [
+                { label: 'Explore More Story Ideas (Sophicly Course)', url: 'https://www.sophicly.com/courses/creative-writing-masterclass/units/3-how-to-come-up-with-compelling-story-ideas/lessons/3-step-2-explore-more-story-ideas/' },
+                { label: 'Read: When I Was 9 Years Old', url: 'https://docs.google.com/document/d/16qbgkyyz8pKyPb4udJa5DNlvbDKIalSwu8y5B8qHczU/copy' },
+                { label: 'Read: George Pickering', url: 'https://docs.google.com/document/d/101fH2I4oNmZeJSC2TQNZSs7Mme5zveXleqvqTvLhn6Y/copy' },
+                { label: 'Read: Juliane Diller \u2014 Miraculous Survival', url: 'https://docs.google.com/document/d/1Lcbpwr_Ce4TH1BKUEexs1kctX3N9fVe3-T_MonAp6Xs/copy' },
+                { label: 'Grade 9 Stories Collection', url: 'https://www.sophicly.com/category/grade-9-stories/' },
+            ],
+        };
+        const cwStep = WML.getCwStepDef(state.task);
+        const resources = CW_RESOURCES[cwStep?.step] || [];
+        if (resources.length === 0) return;
+
+        // v7.13.48: Create panel OUTSIDE TipTap entirely — appended to contentWrap (scroll area), NOT editorEl
+        const panel = document.createElement('div');
+        panel.className = 'swml-cw-resources-panel';
+        panel.style.cssText = 'position: absolute; z-index: 10; padding: 0 24px;';
+
+        resources.forEach(r => {
+            const btn = document.createElement('div');
+            btn.className = 'swml-cw-resource-btn';
+            btn.textContent = r.label;
+            if (r.url) {
+                btn.style.cursor = 'pointer';
+                btn.onclick = function() { window.open(r.url, '_blank', 'noopener'); };
+            } else {
+                btn.style.opacity = '0.4';
+                btn.style.cursor = 'default';
+            }
+            panel.appendChild(btn);
+        });
+
+        // Append to contentWrap (outside TipTap) and position below Resources section
+        contentWrap.style.position = 'relative';
+        contentWrap.appendChild(panel);
+
+        function positionPanel() {
+            if (!resourceSection.isConnected) return;
+            const secRect = resourceSection.getBoundingClientRect();
+            const wrapRect = contentWrap.getBoundingClientRect();
+            panel.style.left = (secRect.left - wrapRect.left) + 'px';
+            panel.style.top = (secRect.bottom - wrapRect.top + contentWrap.scrollTop + 4) + 'px';
+            panel.style.width = secRect.width + 'px';
+        }
+        positionPanel();
+        // Reposition on scroll
+        contentWrap.addEventListener('scroll', () => requestAnimationFrame(positionPanel), { passive: true });
+        // Reposition after pagination settles
+        setTimeout(positionPanel, 500);
+        setTimeout(positionPanel, 1500);
+        console.log('WML CW: Injected', resources.length, 'resource buttons (outside TipTap)');
+    }
+
     function tryInjectCover() {
         if (!canvasEditor || !config.covers) return;
         if (state.task === 'mark_scheme') return; // v7.12.98: no cover page for mark scheme
@@ -6262,20 +8627,29 @@
         // Group sections: top-level entries + children for accordion groups
         const tocEntries = [];
         const groupMap = {}; // prefix → { entry, children }
+        // v7.13.82: Extended grouping — 'Part A Feedback:' and 'Part B Feedback:' grouped under
+        // 'Feedback — Part A' and 'Feedback — Part B' respectively, plus standard prefixes.
         const groupPrefixes = ['Feedback', 'Plan', 'Outline'];
 
         sections.forEach(s => {
-            const matchedPrefix = groupPrefixes.find(p => s.label.startsWith(p + ':'));
-            if (matchedPrefix) {
-                if (!groupMap[matchedPrefix]) {
-                    const displayName = matchedPrefix === 'Plan' ? 'Essay Plan' : matchedPrefix;
+            // Check for dual-part feedback labels: "Part A Feedback: ..." → group key "Part A Feedback"
+            const dualMatch = s.label.match(/^(Part [AB] Feedback):\s*/);
+            // Check for standard prefixes: "Feedback: ..." / "Plan: ..." / "Outline: ..."
+            const matchedPrefix = !dualMatch ? groupPrefixes.find(p => s.label.startsWith(p + ':')) : null;
+            const groupKey = dualMatch ? dualMatch[1] : matchedPrefix;
+
+            if (groupKey) {
+                if (!groupMap[groupKey]) {
+                    let displayName = groupKey;
+                    if (groupKey === 'Plan') displayName = 'Essay Plan';
+                    else if (groupKey === 'Part A Feedback') displayName = 'Feedback \u2014 Part A';
+                    else if (groupKey === 'Part B Feedback') displayName = 'Feedback \u2014 Part B';
                     const entry = { type: s.type, label: s.label, displayLabel: displayName, children: [], isGroup: true };
-                    groupMap[matchedPrefix] = entry;
+                    groupMap[groupKey] = entry;
                     tocEntries.push(entry);
                 }
-                // Add child with cleaned label (part after "Prefix: ")
                 const childLabel = s.label.replace(/^[^:]+:\s*/, '');
-                groupMap[matchedPrefix].children.push({ type: s.type, label: s.label, displayLabel: childLabel });
+                groupMap[groupKey].children.push({ type: s.type, label: s.label, displayLabel: childLabel });
             } else {
                 tocEntries.push({ type: s.type, label: s.label, displayLabel: s.label, children: [], isGroup: false });
             }
@@ -6317,16 +8691,21 @@
             pageNum.textContent = sectionNum;
             row.appendChild(pageNum);
 
-            // Click to scroll (on the row)
+            // Click to scroll (on the row) — v7.13.74: manual scrollTo to avoid multi-ancestor scrollIntoView conflicts
             row.addEventListener('click', (e) => {
-                if (e.target.closest('.swml-toc-chevron')) return; // let chevron handle its own click
+                if (e.target.closest('.swml-toc-chevron')) return;
                 const editor = document.getElementById('swml-tiptap-editor');
-                if (!editor) return;
+                const cw = document.querySelector('.swml-canvas-content');
+                if (!editor || !cw) return;
                 let target = null;
                 editor.querySelectorAll('[data-section-label]').forEach(el => {
                     if (el.getAttribute('data-section-label') === entry.label) target = el;
                 });
-                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (target) {
+                    const cwRect = cw.getBoundingClientRect();
+                    const tRect = target.getBoundingClientRect();
+                    cw.scrollTo({ top: cw.scrollTop + (tRect.top - cwRect.top) - (cwRect.height / 3), behavior: 'smooth' });
+                }
             });
 
             item.appendChild(row);
@@ -6359,12 +8738,17 @@
 
                     subItem.addEventListener('click', () => {
                         const editor = document.getElementById('swml-tiptap-editor');
-                        if (!editor) return;
+                        const cw = document.querySelector('.swml-canvas-content');
+                        if (!editor || !cw) return;
                         let target = null;
                         editor.querySelectorAll('[data-section-label]').forEach(el => {
                             if (el.getAttribute('data-section-label') === child.label) target = el;
                         });
-                        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        if (target) {
+                            const cwRect = cw.getBoundingClientRect();
+                            const tRect = target.getBoundingClientRect();
+                            cw.scrollTo({ top: cw.scrollTop + (tRect.top - cwRect.top) - (cwRect.height / 3), behavior: 'smooth' });
+                        }
                     });
 
                     subList.appendChild(subItem);
@@ -6907,10 +9291,551 @@ ${html}
         });
     }
 
+    // ══════════════════════════════════════════════════════════════════════════
+    //  EXAM PREP CANVAS (v7.13.80)
+    //  Dedicated renderer for: exam_question, essay_plan, model_answer,
+    //  verbal_rehearsal, conceptual_notes, memory_practice.
+    //  Clean document + chat layout — no diagnostic/assessment state machine.
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // ── Question Selection Helpers (inside canvas) ──
+    const _TASKS_NEEDING_Q = ['essay_plan', 'model_answer', 'planning', 'assessment'];
+    function _needsQuestionSelection(task) {
+        // Programme mode has topic pre-set; only free practice needs selection
+        if (WML.state.mode === 'guided' && WML.state.topicNumber) return false;
+        return _TASKS_NEEDING_Q.includes(task);
+    }
+
+    function _showCanvasQuestionSelector(chatPanel, chatMessages, chatTextarea, sendMsgFn) {
+        const selectorOverlay = el('div', { className: 'swml-canvas-q-selector', id: 'swml-canvas-q-selector' });
+        selectorOverlay.style.cssText = 'position:absolute;inset:0;z-index:20;background:oklch(0.17 0.01 270 / 0.97);backdrop-filter:blur(12px);display:flex;flex-direction:column;overflow-y:auto;padding:24px 20px;';
+
+        const header = el('div', { style: { textAlign: 'center', marginBottom: '16px' } });
+        header.appendChild(el('h3', { textContent: 'Choose a Question', style: { color: 'rgba(255,255,255,0.9)', fontSize: '16px', fontWeight: '600', margin: '0 0 4px' } }));
+        header.appendChild(el('p', { textContent: 'Select a topic, a saved question, or write your own', style: { color: 'rgba(255,255,255,0.4)', fontSize: '12px', margin: '0' } }));
+        selectorOverlay.appendChild(header);
+
+        const container = el('div', { style: { flex: '1' } });
+        container.appendChild(el('div', { textContent: 'Loading...', style: { color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '20px 0', fontSize: '12px' } }));
+        selectorOverlay.appendChild(container);
+
+        // Make chatPanel position:relative so overlay covers it
+        chatPanel.style.position = 'relative';
+        chatPanel.appendChild(selectorOverlay);
+
+        function selectAndGo(question, marks, aos) {
+            state.question = question || '';
+            if (marks) state.marks = marks;
+            if (aos) state.aos = aos;
+            selectorOverlay.style.opacity = '0';
+            selectorOverlay.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => {
+                selectorOverlay.remove();
+                canvasSilentSend = true; // v7.14.3: Silent — question selection is the real user action
+                chatTextarea.value = "Let's begin!";
+                sendMsgFn();
+            }, 300);
+        }
+
+        // Fetch topics + saved questions
+        Promise.all([
+            fetch(`${API.topicQuestions}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}`, { headers }).then(r => r.json()).catch(() => ({ topics: [] })),
+            fetch(`${API.savedQuestions}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}`, { headers }).then(r => r.json()).catch(() => ({ questions: [] })),
+        ]).then(([topicRes, savedRes]) => {
+            container.innerHTML = '';
+            const topics = topicRes.topics || [];
+            const saved = savedRes.questions || [];
+
+            // ── Mastery Topics ──
+            if (topics.length > 0) {
+                container.appendChild(el('div', { className: 'swml-cqs-title', textContent: `MASTERY TOPICS (${topics.length})` }));
+                const tGrid = el('div', { className: 'swml-cqs-grid' });
+                topics.forEach(t => {
+                    const qText = t.question_text || t.part_a_question || '';
+                    const marks = t.marks || (t.part_a_marks && t.part_b_marks ? (t.part_a_marks + t.part_b_marks) : 0);
+                    const aos = t.aos || [t.part_a_aos, t.part_b_aos].filter(Boolean).join(',');
+                    tGrid.appendChild(el('button', { className: 'swml-cqs-card', onClick: () => selectAndGo(qText, marks, aos) }, [
+                        el('span', { className: 'swml-cqs-badge', textContent: `T${t.topic_number}` }),
+                        el('span', { className: 'swml-cqs-label', textContent: t.label || `Topic ${t.topic_number}` }),
+                        qText ? el('span', { className: 'swml-cqs-preview', textContent: qText.length > 80 ? qText.slice(0, 80) + '\u2026' : qText }) : null,
+                    ].filter(Boolean)));
+                });
+                container.appendChild(tGrid);
+            }
+
+            // ── Saved Questions ──
+            if (saved.length > 0) {
+                container.appendChild(el('div', { className: 'swml-cqs-title', textContent: `YOUR QUESTIONS (${saved.length})` }));
+                const sGrid = el('div', { className: 'swml-cqs-grid' });
+                saved.forEach((q, i) => {
+                    sGrid.appendChild(el('button', { className: 'swml-cqs-card', onClick: () => selectAndGo(q.full_text || q.summary || '', q.marks || '', q.aos || '') }, [
+                        el('span', { className: 'swml-cqs-badge', textContent: q.theme ? q.theme.slice(0, 16) : `Q${i + 1}` }),
+                        el('span', { className: 'swml-cqs-label', textContent: q.summary || `Question ${i + 1}` }),
+                        q.location ? el('span', { className: 'swml-cqs-preview', textContent: q.location }) : null,
+                    ].filter(Boolean)));
+                });
+                container.appendChild(sGrid);
+            }
+
+            // ── Custom Question ──
+            container.appendChild(el('div', { className: 'swml-cqs-title', textContent: 'CUSTOM QUESTION' }));
+            const customArea = el('textarea', { placeholder: 'Type or paste your own question\u2026', rows: '3' });
+            customArea.style.cssText = 'width:100%;border:1px solid rgba(255,255,255,0.12);border-radius:8px;background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.9);padding:10px 12px;font-size:12px;font-family:inherit;resize:vertical;min-height:60px;outline:none;box-sizing:border-box;';
+            container.appendChild(customArea);
+            const useBtn = el('button', { textContent: 'Use this question', onClick: () => {
+                const q = customArea.value.trim();
+                if (!q) { customArea.focus(); return; }
+                selectAndGo(q, '', '');
+            }});
+            useBtn.style.cssText = 'margin-top:8px;background:linear-gradient(135deg,#5333ed,#42A1EC);border:none;border-radius:8px;color:#fff;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;';
+            container.appendChild(useBtn);
+
+            // ── Skip ──
+            const skipBtn = el('button', { textContent: 'Skip \u2014 let the AI choose', onClick: () => selectAndGo('', '', '') });
+            skipBtn.style.cssText = 'display:block;margin:16px auto 0;background:none;border:none;color:rgba(255,255,255,0.3);font-size:11px;cursor:pointer;padding:4px;';
+            container.appendChild(skipBtn);
+        });
+    }
+
+    // ── Saved Question Overlay (v7.13.99) ──
+    // Shows an overlay on the document area with saved questions + mastery topics.
+    // When student selects one, it's injected into the Essay Question section and sent to chat.
+    function _showSavedQuestionOverlay(chatTextarea, sendFn) {
+        const contentWrap = document.querySelector('.swml-canvas-content');
+        if (!contentWrap) return;
+
+        const overlay = el('div', { className: 'swml-question-overlay', id: 'swml-question-overlay' });
+
+        const header = el('div', { className: 'swml-qo-header' });
+        header.appendChild(el('h3', { textContent: 'Select a Question', style: { margin: '0', fontSize: '15px', fontWeight: '600' } }));
+        header.appendChild(el('button', { className: 'swml-qo-close', innerHTML: '&times;', title: 'Close', onClick: () => overlay.remove() }));
+        overlay.appendChild(header);
+
+        const body = el('div', { className: 'swml-qo-body' });
+        body.appendChild(el('p', { textContent: 'Loading...', style: { color: 'rgba(255,255,255,0.4)', fontSize: '12px' } }));
+        overlay.appendChild(body);
+
+        contentWrap.style.position = 'relative';
+        contentWrap.appendChild(overlay);
+
+        // Fetch saved questions + mastery topics in parallel
+        Promise.all([
+            apiGet(API.savedQuestions + `?board=${state.board}&text=${state.text}`).catch(() => ({ questions: [] })),
+            apiGet(API.topicQuestions + `?board=${state.board}&text=${state.text}`).catch(() => ({ topics: [] })),
+        ]).then(([savedRes, topicRes]) => {
+            body.innerHTML = '';
+            const saved = savedRes.questions || [];
+            const topics = topicRes.topics || [];
+
+            function selectQuestion(qText) {
+                // Inject into document's Essay Question section
+                if (canvasEditor) {
+                    let injected = false;
+                    canvasEditor.state.doc.descendants((node, pos) => {
+                        if (!injected && node.type.name === 'sectionBlock' && (node.attrs.label || '').includes('Essay Question')) {
+                            const sectionStart = pos + 1;
+                            const sectionEnd = pos + node.nodeSize - 1;
+                            canvasEditor.chain().focus().setTextSelection({ from: sectionStart, to: sectionEnd })
+                                .insertContent(`<h3>Essay Question</h3><p>${qText.replace(/</g, '&lt;')}</p>`).run();
+                            injected = true;
+                        }
+                    });
+                }
+                // Send to chat
+                overlay.remove();
+                if (chatTextarea) chatTextarea.value = qText;
+                if (sendFn) sendFn();
+            }
+
+            // Saved questions
+            if (saved.length > 0) {
+                body.appendChild(el('div', { className: 'swml-qo-title', textContent: `YOUR QUESTIONS (${saved.length})` }));
+                saved.forEach((q, i) => {
+                    body.appendChild(el('button', { className: 'swml-qo-card', onClick: () => selectQuestion(q.full_text || q.summary || '') }, [
+                        q.theme ? el('span', { className: 'swml-qo-badge', textContent: q.theme.slice(0, 20) }) : el('span', { className: 'swml-qo-badge', textContent: `Q${i + 1}` }),
+                        el('span', { className: 'swml-qo-label', textContent: q.summary || `Question ${i + 1}` }),
+                        q.location ? el('span', { className: 'swml-qo-meta', textContent: q.location }) : null,
+                    ].filter(Boolean)));
+                });
+            }
+
+            // Mastery topics
+            if (topics.length > 0) {
+                body.appendChild(el('div', { className: 'swml-qo-title', textContent: `MASTERY TOPICS (${topics.length})` }));
+                topics.forEach(t => {
+                    const qText = t.question_text || t.part_a_question || '';
+                    if (!qText) return;
+                    body.appendChild(el('button', { className: 'swml-qo-card', onClick: () => selectQuestion(qText) }, [
+                        el('span', { className: 'swml-qo-badge', textContent: `T${t.topic_number}` }),
+                        el('span', { className: 'swml-qo-label', textContent: t.label || `Topic ${t.topic_number}` }),
+                        el('span', { className: 'swml-qo-meta', textContent: qText.length > 80 ? qText.slice(0, 80) + '\u2026' : qText }),
+                    ]));
+                });
+            }
+
+            if (saved.length === 0 && topics.length === 0) {
+                body.appendChild(el('p', { textContent: 'No saved questions found. Use the Exam Question Creator to generate questions first, or type your own in the chat.', style: { color: 'rgba(255,255,255,0.5)', fontSize: '12px', padding: '16px 0' } }));
+            }
+        });
+    }
+
+    let _examPrepGuard = false;
+
+    function renderExamPrepCanvas() {
+        if (_examPrepGuard) return;
+        _examPrepGuard = true;
+        setTimeout(() => { _examPrepGuard = false; }, 500);
+
+        const { Editor, StarterKit, Placeholder, TextAlign, Highlight, CharacterCount, TextStyle, Color } = window.TipTap || {};
+        if (!Editor) { _examPrepGuard = false; alert('Editor failed to load. Please refresh.'); return; }
+
+        // Kill shader + existing overlay
+        if (typeof destroyShader === 'function') destroyShader();
+        const shaderBg = document.getElementById('swml-shader-bg');
+        if (shaderBg) shaderBg.style.display = 'none';
+        const existing = document.getElementById('swml-canvas-overlay');
+        if (existing) { if (canvasEditor) { canvasEditor.destroy(); canvasEditor = null; } existing.remove(); }
+
+        syncUrl();
+        const exerciseConfig = WML.getExerciseConfig(state.task);
+
+        // ── Overlay + Canvas Shell ──
+        const overlay = el('div', { id: 'swml-canvas-overlay' });
+        const canvas = el('div', { className: 'swml-canvas' });
+
+        // ── Header Row ──
+        const headerRow = el('div', { className: 'swml-canvas-header' });
+        const ctxBadges = el('div', { className: 'swml-canvas-ctx' });
+        [state.board?.toUpperCase(), ucfirst(state.subject || ''), state.textName || ucfirst(state.text || '')].filter(Boolean).forEach(b => {
+            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: b }));
+        });
+        ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-diag', textContent: exerciseConfig.chatHeaderLabel || ucfirst(state.task || '') }));
+        headerRow.appendChild(ctxBadges);
+
+        // Simplified toolbar (essential tools only)
+        const toolbar = el('div', { className: 'swml-canvas-toolbar', style: { display: 'flex', gap: '2px', alignItems: 'center' } });
+        const tbTools = [
+            { id: 'bold', label: 'B', style: 'font-weight:700', action: () => canvasEditor?.chain().focus().toggleBold().run() },
+            { id: 'italic', label: 'I', style: 'font-style:italic', action: () => canvasEditor?.chain().focus().toggleItalic().run() },
+            { id: 'underline', label: 'U', style: 'text-decoration:underline', action: () => canvasEditor?.chain().focus().toggleUnderline().run() },
+            { id: 'h2', label: 'H2', style: '', action: () => canvasEditor?.chain().focus().toggleHeading({ level: 2 }).run() },
+            { id: 'h3', label: 'H3', style: '', action: () => canvasEditor?.chain().focus().toggleHeading({ level: 3 }).run() },
+            { id: 'undo', label: '\u21A9', style: '', action: () => canvasEditor?.chain().focus().undo().run() },
+            { id: 'redo', label: '\u21AA', style: '', action: () => canvasEditor?.chain().focus().redo().run() },
+        ];
+        tbTools.forEach(t => {
+            const btn = el('button', {
+                className: 'swml-tb-btn',
+                innerHTML: `<span style="${t.style}">${t.label}</span>`,
+                title: t.id,
+                tabIndex: -1,
+                onClick: t.action,
+            });
+            btn.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(255,255,255,0.6);cursor:pointer;padding:4px 8px;font-size:12px;min-width:28px;';
+            toolbar.appendChild(btn);
+        });
+        headerRow.appendChild(toolbar);
+
+        // Theme toggle + fullscreen
+        const headerRight = el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginLeft: 'auto' } });
+        if (!WML.isEmbedded) {
+            const themeBtn = createThemeToggleBtn('swml-ep-theme', () => {
+                toggleTheme();
+                const t = getTheme();
+                canvas.classList.toggle('swml-canvas-light', t === 'light');
+                overlay.dataset.swmlTheme = t;
+            });
+            headerRight.appendChild(themeBtn);
+        }
+        if (WML.isEmbedded) {
+            const SVG_EXPAND = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+            const SVG_SHRINK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M3 21l7-7"/></svg>';
+            const fsBtn = el('button', { className: 'swml-canvas-fullscreen-btn', title: 'Fullscreen', innerHTML: SVG_EXPAND, onClick: () => {
+                const isFs = overlay.classList.toggle('swml-canvas-fullscreen');
+                fsBtn.innerHTML = isFs ? SVG_SHRINK : SVG_EXPAND;
+            }});
+            headerRight.appendChild(fsBtn);
+            // Theme sync with LD
+            const syncLD = () => {
+                const dark = document.body.classList.contains('dark-mode') || document.documentElement.getAttribute('data-theme') === 'dark';
+                const t = dark ? 'dark' : 'light';
+                if (t !== getTheme()) { localStorage.setItem('swml-theme', t); applyTheme(t); canvas.classList.toggle('swml-canvas-light', t === 'light'); overlay.dataset.swmlTheme = t; }
+            };
+            syncLD();
+            new MutationObserver(syncLD).observe(document.body, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+        }
+        headerRow.appendChild(headerRight);
+
+        // ── Editor Pane (CENTER) ──
+        const editorPane = el('div', { className: 'swml-canvas-editor' });
+        editorPane.appendChild(headerRow);
+        const contentWrap = el('div', { className: 'swml-canvas-content' });
+        const docWrap = el('div', { className: 'swml-canvas-doc' });
+        const editorEl = el('div', { id: 'swml-tiptap-editor' });
+        docWrap.appendChild(editorEl);
+        contentWrap.appendChild(docWrap);
+        editorPane.appendChild(contentWrap);
+
+        // ── Protocol Sidebar (LEFT) ──
+        const protoPanel = el('div', { className: 'swml-sidebar swml-canvas-proto' });
+        const protoHead = el('div', { className: 'swml-sidebar-head' });
+        protoHead.appendChild(el('span', { textContent: exerciseConfig.chatHeaderLabel || ucfirst(state.task || '') }));
+        protoPanel.appendChild(protoHead);
+        const protoBody = el('div', { className: 'swml-sidebar-body' });
+        const stepList = WML.getSteps();
+        if (stepList?.length) {
+            stepList.forEach(s => {
+                const cls = s.step < state.step ? 'complete' : s.step === state.step ? 'active' : '';
+                protoBody.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
+                    el('div', { className: `swml-step-circle ${cls}`, textContent: s.step < state.step ? '\u2713' : s.step }),
+                    el('span', { className: 'swml-step-label', textContent: s.label }),
+                ]));
+            });
+        }
+        protoPanel.appendChild(protoBody);
+
+        // ── Chat Panel (RIGHT) ──
+        const chatPanel = el('div', { className: 'swml-canvas-chat' });
+
+        const chatHeader = el('div', { className: 'swml-canvas-chat-header' });
+        chatHeader.appendChild(el('span', {
+            innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px;opacity:0.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>' + (exerciseConfig.chatHeaderLabel || 'Sophic Intelligence')
+        }));
+        chatPanel.appendChild(chatHeader);
+
+        const chatMessages = el('div', { className: 'swml-canvas-chat-messages', id: 'swml-canvas-chat-messages' });
+        chatPanel.appendChild(chatMessages);
+
+        // Chat input
+        const chatInputWrap = el('div', { className: 'swml-canvas-chat-input' });
+        const chatTextarea = el('textarea', { id: 'swml-canvas-chat-input-field', rows: '1', placeholder: 'Type your response...' });
+        chatTextarea.style.cssText = 'flex:1;resize:none;border:1px solid rgba(255,255,255,0.12);border-radius:8px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.9);padding:10px 12px;font-size:13px;font-family:inherit;outline:none;min-height:40px;max-height:120px;';
+        chatTextarea.addEventListener('input', () => { chatTextarea.style.height = 'auto'; chatTextarea.style.height = Math.min(chatTextarea.scrollHeight, 120) + 'px'; });
+        chatTextarea.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); } });
+        const sendBtn = el('button', {
+            innerHTML: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>',
+            onClick: () => sendMsg(),
+        });
+        sendBtn.style.cssText = 'background:linear-gradient(135deg,#5333ed,#42A1EC);border:none;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;flex-shrink:0;';
+        chatInputWrap.style.cssText = 'display:flex;gap:8px;padding:10px 12px;align-items:flex-end;';
+        chatInputWrap.appendChild(chatTextarea);
+        chatInputWrap.appendChild(sendBtn);
+        chatPanel.appendChild(chatInputWrap);
+
+        // ── Chat State + Messaging ──
+        const chatHistory = [];
+        let chatId = state.sessionId || '';
+
+        function addMsg(role, content) {
+            const bubble = el('div', { className: `swml-bubble swml-bubble-${role}` });
+            const inner = el('div', { className: 'swml-bubble-content' });
+            inner.innerHTML = role === 'assistant' ? WML.formatAI(content) : content.replace(/</g, '&lt;').replace(/\n/g, '<br>');
+            bubble.appendChild(inner);
+            chatMessages.appendChild(bubble);
+            requestAnimationFrame(() => { chatMessages.scrollTop = chatMessages.scrollHeight; });
+        }
+
+        async function sendMsg() {
+            const msg = chatTextarea.value.trim();
+            if (!msg) return;
+            chatTextarea.value = '';
+            chatTextarea.style.height = 'auto';
+            addMsg('user', msg);
+            chatHistory.push({ role: 'user', content: msg });
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = '0.5';
+
+            // Typing indicator
+            const typing = el('div', { className: 'swml-bubble swml-bubble-assistant swml-typing' });
+            typing.innerHTML = '<div class="swml-bubble-content"><span class="swml-typing-dots"><span>.</span><span>.</span><span>.</span></span></div>';
+            chatMessages.appendChild(typing);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const docContent = canvasEditor ? canvasEditor.getHTML() : '';
+                const res = await fetch(API.chat, {
+                    method: 'POST', headers,
+                    body: JSON.stringify({
+                        prompt: msg,
+                        botId: config.botId,
+                        chatId: chatId || state.sessionId,
+                        history: chatHistory.slice(0, -1).slice(-24),
+                        planState: {},
+                        step: state.step,
+                        board: state.board,
+                        subject: state.subject,
+                        text: state.text,
+                        task: state.task,
+                        question: state.question || '',
+                        marks: state.marks || '',
+                        aos: state.aos || '',
+                        draftType: state.draftType || '',
+                        topicNumber: state.topicNumber || 0,
+                        phase: state.phase || '',
+                        documentContent: docContent.length < 15000 ? docContent : '',
+                    }),
+                });
+                const data = await res.json();
+                typing.remove();
+
+                if (data.reply) {
+                    chatHistory.push({ role: 'assistant', content: data.reply });
+                    addMsg('assistant', data.reply);
+                    saveCanvasChat(chatHistory, chatId);
+                    // Step progression
+                    if (data.step && data.step > state.step) {
+                        state.step = data.step;
+                        protoBody.querySelectorAll('.swml-step').forEach(stepEl => {
+                            const sn = parseInt(stepEl.dataset.step);
+                            const circle = stepEl.querySelector('.swml-step-circle');
+                            const cls = sn < state.step ? 'complete' : sn === state.step ? 'active' : '';
+                            stepEl.className = `swml-step ${cls}`;
+                            if (circle) { circle.className = `swml-step-circle ${cls}`; circle.textContent = sn < state.step ? '\u2713' : sn; }
+                        });
+                    }
+                } else {
+                    addMsg('assistant', 'Sorry, I didn\u2019t get a response. Please try again.');
+                }
+            } catch (e) {
+                typing.remove();
+                addMsg('assistant', 'Something went wrong. Please try again.');
+                console.error('WML exam prep chat error:', e);
+            }
+            sendBtn.disabled = false;
+            sendBtn.style.opacity = '1';
+            chatTextarea.focus();
+        }
+
+        // ── Status Bar ──
+        const statusBar = el('div', { className: 'swml-canvas-status' });
+        if (!WML.isEmbedded) {
+            statusBar.appendChild(el('button', { className: 'swml-status-btn', textContent: '\u2190 Back to tasks', onClick: () => closeCanvasOverlay() }));
+        }
+        const wcDisplay = el('span', { className: 'swml-wc-display', textContent: '0 words' });
+        statusBar.appendChild(wcDisplay);
+        const saveStatus = el('span', { className: 'swml-save-status' });
+        statusBar.appendChild(saveStatus);
+
+        // ── Assemble DOM ──
+        canvas.appendChild(protoPanel);
+        canvas.appendChild(editorPane);
+        canvas.appendChild(chatPanel);
+        canvas.appendChild(statusBar);
+
+        // Apply theme
+        const initTheme = getTheme();
+        if (initTheme === 'light') canvas.classList.add('swml-canvas-light');
+        overlay.dataset.swmlTheme = initTheme;
+
+        overlay.appendChild(canvas);
+        if (WML.isEmbedded) {
+            const embedHost = document.getElementById('swml-embedded-root') || document.body;
+            overlay.classList.add('swml-canvas-embedded');
+            embedHost.appendChild(overlay);
+        } else {
+            document.body.appendChild(overlay);
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Hide notepad
+        const fab = document.querySelector('.sn-fab');
+        const pnl = document.querySelector('.sn-panel');
+        if (fab) fab.style.display = 'none';
+        if (pnl) pnl.style.display = 'none';
+        document.querySelectorAll('.sn-tab, .sn-tab-trigger, #snTabTrigger').forEach(t => t.style.display = 'none');
+
+        // ── TipTap Editor ──
+        const SectionBlock = window.TipTap?.Node?.create({
+            name: 'sectionBlock', group: 'block', content: 'block+', defining: true,
+            addAttributes() { return { sectionType: { default: 'response' }, label: { default: '' }, editable: { default: 'true' }, readonly: { default: null }, part: { default: null } }; },
+            parseHTML() { return [{ tag: 'div[data-section-type]', getAttrs: d => ({ sectionType: d.getAttribute('data-section-type'), label: d.getAttribute('data-section-label') || '', editable: d.getAttribute('data-editable') || 'true', readonly: d.getAttribute('data-readonly') || null, part: d.getAttribute('data-part') || null }) }]; },
+            renderHTML({ HTMLAttributes: a }) { return ['div', { 'data-section-type': a.sectionType, 'data-section-label': a.label, 'data-editable': a.editable, ...(a.readonly ? { 'data-readonly': a.readonly } : {}), ...(a.part ? { 'data-part': a.part } : {}), class: `swml-section-block swml-section-${a.sectionType}${a.readonly ? ' swml-section-readonly' : ''}` }, 0]; },
+        });
+
+        // Load saved content or template
+        const savedKey = CANVAS_SAVE_KEY();
+        let savedContent = null;
+        try { savedContent = localStorage.getItem(savedKey); } catch (e) {}
+
+        canvasEditor = new Editor({
+            element: editorEl,
+            extensions: [
+                StarterKit.configure({ heading: { levels: [2, 3] } }),
+                Placeholder.configure({ placeholder: 'Start working here...' }),
+                TextAlign.configure({ types: ['heading', 'paragraph'] }),
+                Highlight.configure({ multicolor: true }),
+                CharacterCount, TextStyle, Color,
+                SectionBlock,
+            ],
+            content: savedContent || getExamPrepDocTemplate(state.task),
+            editorProps: { attributes: { spellcheck: 'true' } },
+            onUpdate: ({ editor }) => {
+                const wc = getResponseWordCount(editor);
+                wcDisplay.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
+                // Auto-save (debounced)
+                saveStatus.textContent = '';
+                clearTimeout(canvasSaveToServerTimer);
+                canvasSaveToServerTimer = setTimeout(() => {
+                    saveCanvasContent();
+                    saveStatus.textContent = '\u2713 Saved';
+                    setTimeout(() => { saveStatus.textContent = ''; }, 2000);
+                }, 2000);
+            },
+            onCreate: ({ editor }) => {
+                const wc = getResponseWordCount(editor);
+                wcDisplay.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
+            },
+        });
+
+        // Try loading from server if no localStorage content
+        if (!savedContent) {
+            fetch(`${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topic=${state.topicNumber || 0}`, { headers })
+                .then(r => r.json())
+                .then(data => {
+                    if (data?.html && canvasEditor && canvasEditor.getText().trim().length < 50) {
+                        canvasEditor.commands.setContent(data.html, false);
+                        console.log('WML Exam Prep: Loaded saved document from server');
+                    }
+                })
+                .catch(() => {});
+        }
+
+        // ── Load saved chat or show question selector or auto-greet ──
+        const savedChat = loadCanvasChat();
+        if (savedChat?.history?.length) {
+            savedChat.history.forEach(m => { chatHistory.push(m); addMsg(m.role, m.content); });
+            if (savedChat.chatId) chatId = savedChat.chatId;
+            // Restore step progression from saved state
+            if (savedChat.step && savedChat.step > 1) {
+                state.step = savedChat.step;
+                protoBody.querySelectorAll('.swml-step').forEach(stepEl => {
+                    const sn = parseInt(stepEl.dataset.step);
+                    const circle = stepEl.querySelector('.swml-step-circle');
+                    const cls = sn < state.step ? 'complete' : sn === state.step ? 'active' : '';
+                    stepEl.className = `swml-step ${cls}`;
+                    if (circle) { circle.className = `swml-step-circle ${cls}`; circle.textContent = sn < state.step ? '\u2713' : sn; }
+                });
+            }
+            console.log('WML Exam Prep: Resumed chat with', savedChat.history.length, 'messages, step:', savedChat.step || 1);
+        } else if (_needsQuestionSelection(state.task) && !state.question) {
+            // Show question selector overlay inside the canvas
+            _showCanvasQuestionSelector(chatPanel, chatMessages, chatTextarea, sendMsg);
+        } else {
+            // Auto-send greeting to start the exercise
+            setTimeout(() => {
+                chatTextarea.value = "Let's begin!";
+                sendMsg();
+            }, 500);
+        }
+
+        console.log('WML Exam Prep: Canvas rendered for', state.task, '— board:', state.board, 'text:', state.text);
+    }
+
     // ── Register assessment functions on WML namespace ──
     WML.renderCanvasWorkspace = renderCanvasWorkspace;
     WML.closeCanvasOverlay = closeCanvasOverlay;
     WML.renderFeedbackDiscussionCanvas = renderFeedbackDiscussionCanvas;
+    WML.renderExamPrepCanvas = renderExamPrepCanvas;
     WML.saveCanvasChat = saveCanvasChat;
     WML.loadCanvasChat = loadCanvasChat;
     WML.clearCanvasChat = clearCanvasChat;

@@ -89,23 +89,20 @@ Part C, Question 2 of 4:
 
 **Display Format:**
 
-📌 Assessment \> Step \[current\] of 6
+📌 Assessment \> Step \[current\] of 5
 
 \[Progress bar: ████████░░ 80%\]
 
 
 **Assessment Step Counting:**
 
-**total\_steps \= 6:**
+**total\_steps \= 5:**
 
 * Step 1: Essay submission and initial review  
 * Step 2: Introduction assessment (3 marks)  
-* Step 3: Body paragraphs assessment (7+7+7 marks \= 21\)  
-* Step 4: Conclusion assessment (6 marks)  
-* Step 5: **AO4** assessment (4 marks \- Shakespeare/Modern texts only; skip for 19th Century/Poetry)  
-* Step 6: Summary, action plan, and next steps
-
-**Note:** For 19th Century Novels and Poetry, skip Step 5 (**AO4**) and proceed directly from Step 4 to Step 6\.
+* Step 3: Body paragraphs assessment (8+8+8 marks \= 24\)  
+* Step 4: Conclusion assessment (7 marks)  
+* Step 5: Summary, action plan, and next steps
 
 **Progress Bar Calculation:**
 

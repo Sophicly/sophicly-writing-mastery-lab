@@ -366,4 +366,174 @@ class SWML_Session_Manager {
         ];
         return $labels[$draft_type] ?? 'Exam Practice';
     }
+
+    // ═══════════════════════════════════════════
+    //  CREATIVE WRITING PROJECTS (v7.13.30)
+    // ═══════════════════════════════════════════
+
+    /**
+     * Create a new creative writing project.
+     * Returns the full project index entry.
+     */
+    public static function create_project($user_id, $name, $course_context = 'standalone') {
+        $project_id = 'cwp_' . bin2hex(random_bytes(6));
+        $now = current_time('mysql');
+
+        $index_entry = [
+            'id'             => $project_id,
+            'name'           => sanitize_text_field($name),
+            'created'        => $now,
+            'updated'        => $now,
+            'current_step'   => 0,
+            'plot_template'  => '',
+            'status'         => 'in_progress',
+            'course_context' => sanitize_key($course_context),
+        ];
+
+        // Add to project index (stored as JSON string — must decode first)
+        $raw = get_user_meta($user_id, 'swml_cw_projects', true);
+        $index = is_string($raw) ? (json_decode($raw, true) ?: []) : (is_array($raw) ? $raw : []);
+        $index[$project_id] = $index_entry;
+        update_user_meta($user_id, 'swml_cw_projects', wp_slash(wp_json_encode($index)));
+
+        // Create empty project data blob
+        $project_data = [
+            'id'              => $project_id,
+            'writer_profile'  => null,
+            'story_ideas'     => [],
+            'logline'         => '',
+            'brief_outline'   => null,
+            'plot_template'   => '',
+            'scene_selection'  => null,
+            'character_profile' => null,
+            'universal_values' => [],
+            'theme_tone'      => null,
+            'genre'           => null,
+            'structural_elements' => null,
+            'trials'          => [],
+            'calibration_trend' => [],
+            'step_completion' => [],
+        ];
+        update_user_meta($user_id, 'swml_cw_' . $project_id, wp_slash(wp_json_encode($project_data)));
+
+        do_action('sophicly_cw_project_created', $user_id, $project_id, $index_entry);
+
+        return $index_entry;
+    }
+
+    /**
+     * List all creative writing projects for a user.
+     */
+    public static function list_projects($user_id) {
+        $raw = get_user_meta($user_id, 'swml_cw_projects', true);
+        if (empty($raw)) return [];
+        if (is_array($raw)) return $raw;
+        return json_decode($raw, true) ?: [];
+    }
+
+    /**
+     * Get full project data blob.
+     */
+    public static function get_project($user_id, $project_id) {
+        $raw = get_user_meta($user_id, 'swml_cw_' . sanitize_key($project_id), true);
+        if (empty($raw)) return null;
+        if (is_array($raw)) return $raw;
+        return json_decode($raw, true) ?: null;
+    }
+
+    /**
+     * Save a specific artifact key within a project.
+     * Also updates the project index timestamp.
+     */
+    public static function save_project_artifact($user_id, $project_id, $key, $value) {
+        $project_id = sanitize_key($project_id);
+        $project = self::get_project($user_id, $project_id);
+        if ($project === null) return false;
+
+        $key = sanitize_key($key);
+        $project[$key] = $value;
+        update_user_meta($user_id, 'swml_cw_' . $project_id, wp_slash(wp_json_encode($project)));
+
+        // Update index timestamp
+        $index = self::list_projects($user_id);
+        if (isset($index[$project_id])) {
+            $index[$project_id]['updated'] = current_time('mysql');
+            // Sync plot_template to index for quick display
+            if ($key === 'plot_template') {
+                $index[$project_id]['plot_template'] = $value;
+            }
+            update_user_meta($user_id, 'swml_cw_projects', wp_slash(wp_json_encode($index)));
+        }
+
+        do_action('sophicly_cw_artifact_saved', $user_id, $project_id, $key, $value);
+
+        return true;
+    }
+
+    /**
+     * Get a specific artifact key from a project.
+     */
+    public static function get_project_artifact($user_id, $project_id, $key) {
+        $project = self::get_project($user_id, sanitize_key($project_id));
+        if ($project === null) return null;
+        return $project[sanitize_key($key)] ?? null;
+    }
+
+    /**
+     * Append a trial result to a project.
+     * Updates the calibration_trend array automatically.
+     */
+    public static function save_trial_result($user_id, $project_id, $trial_data) {
+        $project_id = sanitize_key($project_id);
+        $project = self::get_project($user_id, $project_id);
+        if ($project === null) return false;
+
+        $project['trials'][] = $trial_data;
+
+        // Update calibration trend (delta between self-rating and AI rating)
+        if (isset($trial_data['calibration_delta'])) {
+            $project['calibration_trend'][] = (int) $trial_data['calibration_delta'];
+        }
+
+        update_user_meta($user_id, 'swml_cw_' . $project_id, wp_slash(wp_json_encode($project)));
+
+        // Update index timestamp
+        $index = self::list_projects($user_id);
+        if (isset($index[$project_id])) {
+            $index[$project_id]['updated'] = current_time('mysql');
+            update_user_meta($user_id, 'swml_cw_projects', wp_slash(wp_json_encode($index)));
+        }
+
+        do_action('sophicly_cw_trial_saved', $user_id, $project_id, $trial_data);
+
+        return true;
+    }
+
+    /**
+     * Mark a step as complete (or incomplete) within a project.
+     * Also updates current_step in the index if advancing.
+     */
+    public static function update_step_completion($user_id, $project_id, $step, $complete = true) {
+        $project_id = sanitize_key($project_id);
+        $step = absint($step);
+        $project = self::get_project($user_id, $project_id);
+        if ($project === null) return false;
+
+        $project['step_completion'][$step] = (bool) $complete;
+        update_user_meta($user_id, 'swml_cw_' . $project_id, wp_slash(wp_json_encode($project)));
+
+        // Update current_step in index (highest completed step)
+        $index = self::list_projects($user_id);
+        if (isset($index[$project_id])) {
+            if ($complete && $step > ($index[$project_id]['current_step'] ?? 0)) {
+                $index[$project_id]['current_step'] = $step;
+            }
+            $index[$project_id]['updated'] = current_time('mysql');
+            update_user_meta($user_id, 'swml_cw_projects', wp_slash(wp_json_encode($index)));
+        }
+
+        do_action('sophicly_cw_step_completed', $user_id, $project_id, $step, $complete);
+
+        return true;
+    }
 }

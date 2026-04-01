@@ -78,12 +78,11 @@ Type **A** or **B**"
 
 **Required Structure:**
 
-* Introduction (1 paragraph \- 4 marks)  
-* Body Paragraph 1 (1 paragraph with anchor quote from beginning \- 7.5 marks)  
-* Body Paragraph 2 (1 paragraph with anchor quote from middle \- 7.5 marks)  
-* Body Paragraph 3 (1 paragraph with anchor quote from end \- 7.5 marks)  
-* Conclusion (1 paragraph \- 5.5 marks)  
-* **Plus AO4 (SPaG) for Modern Drama/Prose texts:** 8 marks holistic assessment
+* Introduction (1 paragraph \- 5 marks)  
+* Body Paragraph 1 (1 paragraph with anchor quote from beginning \- 9 marks)  
+* Body Paragraph 2 (1 paragraph with anchor quote from middle \- 9 marks)  
+* Body Paragraph 3 (1 paragraph with anchor quote from end \- 9 marks)  
+* Conclusion (1 paragraph \- 8 marks)
 
 IF paragraph\_count \!= 5: **\[SAY\]** "Edexcel essays require a 5-paragraph structure: Introduction \+ 3 Body Paragraphs \+ Conclusion. You've submitted \[X\] paragraphs.
 

@@ -14,6 +14,11 @@
     overflow: hidden;
     background: oklch(0.17 0.01 270); /* #16181d — Opaque backdrop prevents shader flash on transition */
 }
+/* v7.13.78: Force LearnDash content area to fill viewport when WML is embedded */
+body.swml-embedded-active .spl-content {
+    max-width: 100vw !important;
+    padding: 0 !important;
+}
 /* Embedded mode: canvas renders within LD content area, not as fullscreen overlay (v7.13.15) */
 #swml-canvas-overlay.swml-canvas-embedded {
     position: sticky;
@@ -1500,12 +1505,20 @@
     color: rgba(255,255,255,0.25);
     line-height: 1.5;
 }
-/* Outline trigger — sticky float on left edge */
-.swml-outline-btn {
+/* v7.13.53: Sticky column for outline + resources buttons */
+.swml-outline-btn-column {
     position: sticky;
-    top: 0px; /* Aligns with document top */
+    top: 0;
     float: left;
     z-index: 8;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0 -30px 0 12px;
+    width: 30px;
+}
+/* Outline trigger — inside btn-column */
+.swml-outline-btn {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.06);
     color: rgba(255,255,255,0.4);
@@ -1518,7 +1531,6 @@
     transition: color 0.2s, background 0.2s, border-color 0.2s, opacity 0.2s;
     width: 30px;
     height: 30px;
-    margin: 0 -30px 0 12px; /* Float left, no layout shift */
 }
 .swml-outline-btn:hover {
     color: #fff;
@@ -1718,6 +1730,107 @@
 .swml-outline-rh-corner.swml-outline-rh-sw { bottom: 0; left: 0; cursor: sw-resize; }
 .swml-outline-rh-corner.swml-outline-rh-se { bottom: 0; right: 0; cursor: se-resize; }
 
+/* ── Resources Panel (v7.13.53) ── */
+/* Trigger button — inside btn-column, no special positioning needed */
+.swml-resources-trigger {
+    /* Sits below outline button via flex gap in .swml-outline-btn-column */
+}
+/* Override the .swml-outline-btn.is-active hide — resources trigger stays visible when panel is open */
+.swml-resources-trigger.is-active {
+    opacity: 1;
+    pointer-events: auto;
+    color: #7DF9E9;
+    background: rgba(81,218,207,0.12);
+    border-color: rgba(81,218,207,0.3);
+}
+/* Panel — uses swml-resources-open (independent from outline's swml-outline-open) */
+/* Override inherited .swml-outline-panel opacity/pointer-events/transform */
+.swml-resources-panel {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-12px);
+}
+.swml-resources-panel.swml-resources-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+}
+/* Glow animation when Resources section is in view */
+@keyframes resourcesGlow {
+    0%, 100% { box-shadow: 0 0 4px rgba(81,218,207,0.2); border-color: rgba(81,218,207,0.3); }
+    50% { box-shadow: 0 0 12px rgba(81,218,207,0.5); border-color: rgba(81,218,207,0.6); }
+}
+.swml-resources-glow {
+    animation: resourcesGlow 2s ease-in-out infinite;
+    color: #7DF9E9 !important;
+}
+/* Light mode overrides */
+.swml-canvas-light .swml-resources-trigger.is-active {
+    color: #2d7a78;
+    background: rgba(45,122,120,0.08);
+    border-color: rgba(45,122,120,0.2);
+}
+/* ── Neumorphic resource link buttons inside panel (v7.13.52) ── */
+.swml-resources-panel .swml-cw-resource-btn {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    margin: 4px 4px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Proxima Soft Complete', 'Proxima Soft', sans-serif;
+    color: #7DF9E9;
+    cursor: pointer;
+    --btn-inner: hsla(174deg 20% 20% / 50%);
+    --btn-outer: hsla(174deg 20% 15% / 40%);
+    --btn-glow: hsla(174deg 70% 60% / 0%);
+    background: radial-gradient(ellipse at 50% 10%, var(--btn-glow), transparent),
+                radial-gradient(var(--btn-inner), var(--btn-outer)) !important;
+    border: none !important;
+    box-shadow:
+        inset 0 2px 1px -1px rgba(255,255,255,0.12),
+        inset 0 2px 3px rgba(0,0,0,0.08),
+        0 1px 0 1px rgba(0,0,0,0.35),
+        0 1px 0 2px rgba(81,218,207,0.06);
+    transition: --btn-glow 200ms, --btn-inner 200ms, --btn-outer 300ms,
+                box-shadow 200ms, transform 200ms, color 200ms;
+}
+.swml-resources-panel .swml-cw-resource-btn svg {
+    flex-shrink: 0;
+    opacity: 0.6;
+}
+.swml-resources-panel .swml-cw-resource-btn:hover {
+    --btn-glow: hsla(174deg 70% 60% / 15%);
+    --btn-inner: hsla(174deg 50% 35% / 100%);
+    --btn-outer: hsla(174deg 60% 30% / 100%);
+    color: #fff;
+    transform: translateY(-1px) !important;
+    box-shadow:
+        inset 0 -1px 2px rgba(255,255,255,0.2),
+        inset 0 0 10px rgba(81,218,207,0.15),
+        0 1px 0 1px rgba(81,218,207,0.5),
+        0 2px 8px rgba(81,218,207,0.2);
+}
+.swml-resources-panel .swml-cw-resource-btn:active { transform: translateY(1px) !important; }
+/* Light mode resource buttons */
+.swml-canvas-light .swml-resources-panel .swml-cw-resource-btn {
+    color: #2d7a78;
+    --btn-inner: hsla(174deg 30% 96% / 100%);
+    --btn-outer: hsla(174deg 20% 90% / 100%);
+    box-shadow:
+        inset 0 2px 1px -1px rgba(255,255,255,0.6),
+        inset 0 2px 3px rgba(0,0,0,0.04),
+        0 1px 0 1px rgba(0,0,0,0.08),
+        0 1px 0 2px rgba(45,122,120,0.04);
+}
+.swml-canvas-light .swml-resources-panel .swml-cw-resource-btn:hover {
+    --btn-inner: hsla(174deg 60% 45% / 100%);
+    --btn-outer: hsla(174deg 50% 38% / 100%);
+    color: #fff;
+}
+
 /* ── Canvas Panning (v7.12.41) ── */
 /* Grab cursor on canvas background (outside the document) */
 .swml-canvas-content { cursor: grab; }
@@ -1726,6 +1839,77 @@
 .swml-canvas-content .swml-outline-btn { cursor: default; }
 .swml-canvas-content .swml-canvas-doc .ProseMirror { cursor: text; }
 .swml-panning-active { cursor: grabbing !important; }
+
+/* ── Saved Question Overlay (document area) ── */
+.swml-question-overlay {
+    position: absolute; inset: 0; z-index: 30;
+    background: oklch(0.17 0.01 270 / 0.95); backdrop-filter: blur(12px);
+    display: flex; flex-direction: column; overflow: hidden;
+    border-radius: 8px; animation: swml-qo-enter 0.3s ease;
+}
+@keyframes swml-qo-enter { from { opacity: 0; transform: translateY(8px); } }
+.swml-qo-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.9);
+}
+.swml-qo-close {
+    background: none; border: none; color: rgba(255,255,255,0.4); font-size: 20px;
+    cursor: pointer; padding: 0 4px; line-height: 1;
+}
+.swml-qo-close:hover { color: rgba(255,255,255,0.8); }
+.swml-qo-body { flex: 1; overflow-y: auto; padding: 12px 16px; }
+.swml-qo-title {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    color: rgba(81,218,207,0.8); margin: 14px 0 8px; padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.swml-qo-title:first-child { margin-top: 0; }
+.swml-qo-card {
+    width: 100%; text-align: left; padding: 10px 12px; border-radius: 8px; margin-bottom: 6px;
+    border: 1px solid rgba(255,255,255,0.08); cursor: pointer;
+    background: rgba(255,255,255,0.03); transition: all 0.2s ease;
+    color: rgba(255,255,255,0.9); font-size: 12px;
+    display: flex; flex-direction: column; gap: 2px;
+}
+.swml-qo-card:hover { border-color: rgba(81,218,207,0.5); background: rgba(81,218,207,0.08); }
+.swml-qo-badge { font-size: 9px; font-weight: 700; color: rgba(81,218,207,0.8); text-transform: uppercase; letter-spacing: 0.5px; }
+.swml-qo-label { font-weight: 600; font-size: 12px; line-height: 1.4; }
+.swml-qo-meta { font-size: 11px; line-height: 1.4; opacity: 0.5; }
+[data-swml-theme="light"] .swml-question-overlay { background: rgba(255,255,255,0.95); }
+[data-swml-theme="light"] .swml-qo-header { color: rgba(0,0,0,0.85); }
+[data-swml-theme="light"] .swml-qo-card { border-color: rgba(0,0,0,0.08); color: rgba(0,0,0,0.85); }
+[data-swml-theme="light"] .swml-qo-card:hover { border-color: rgba(83,51,237,0.4); background: rgba(83,51,237,0.05); }
+
+/* ── In-Canvas Question Selector ── */
+.swml-cqs-title {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    color: rgba(81,218,207,0.8); margin: 16px 0 8px; padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.swml-cqs-title:first-child { margin-top: 0; }
+.swml-cqs-grid {
+    display: flex; flex-direction: column; gap: 6px;
+}
+.swml-cqs-card {
+    text-align: left; padding: 10px 12px; border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.08); cursor: pointer;
+    background: rgba(255,255,255,0.03); transition: all 0.2s ease;
+    color: rgba(255,255,255,0.9); font-size: 12px;
+    display: flex; flex-direction: column; gap: 2px;
+}
+.swml-cqs-card:hover {
+    border-color: rgba(81,218,207,0.5); background: rgba(81,218,207,0.08);
+}
+.swml-cqs-badge {
+    font-size: 9px; font-weight: 700; color: rgba(81,218,207,0.8);
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.swml-cqs-label { font-weight: 600; font-size: 12px; line-height: 1.4; }
+.swml-cqs-preview { font-size: 11px; line-height: 1.4; opacity: 0.5; }
+[data-swml-theme="light"] .swml-canvas-q-selector { background: rgba(255,255,255,0.97) !important; }
+[data-swml-theme="light"] .swml-cqs-card { border-color: rgba(0,0,0,0.08); color: rgba(0,0,0,0.85); }
+[data-swml-theme="light"] .swml-cqs-card:hover { border-color: rgba(83,51,237,0.4); background: rgba(83,51,237,0.05); }
 
 /* ── Dictation Preview Bubble ── */
 .swml-dict-bubble {
@@ -2885,6 +3069,30 @@
    Structured document zones for template system
    ══════════════════════════════════════════ */
 
+/* ── Diagnostic Mode: hide assessment-only sections (v7.14.11) ──
+   Sections remain in DOM for assessment to populate later — just hidden from view */
+.swml-canvas-diagnostic .swml-section-feedback,
+.swml-canvas-diagnostic .swml-section-scores,
+.swml-canvas-diagnostic .swml-section-analytics,
+.swml-canvas-diagnostic .swml-section-action,
+.swml-canvas-diagnostic .swml-section-signoff,
+.swml-canvas-diagnostic .swml-section-improvement,
+.swml-canvas-diagnostic [data-section-type="divider"][data-section-label*="FEEDBACK"],
+.swml-canvas-diagnostic [data-section-type="divider"][data-section-label*="RESULTS"],
+.swml-canvas-diagnostic [data-section-type="divider"][data-section-label*="SELF-ASSESSMENT"],
+.swml-canvas-diagnostic [data-section-type="divider"][data-section-label*="ANALYTICS"],
+.swml-canvas-diagnostic [data-section-type="divider"][data-section-label*="ACTION PLAN"],
+.swml-canvas-diagnostic [data-section-type="divider"][data-section-label*="SIGN-OFF"] {
+    display: none !important;
+}
+/* Notice section: visible in diagnostic, hidden in assessment */
+.swml-section-notice {
+    border-left-color: rgba(81, 218, 207, 0.3) !important;
+    background: rgba(81, 218, 207, 0.05) !important;
+}
+.swml-section-notice em { color: rgba(255,255,255,0.6); font-size: 0.9em; }
+.swml-canvas:not(.swml-canvas-diagnostic) .swml-section-notice { display: none !important; }
+
 .swml-section-block {
     position: relative;
     border-left: 3px solid rgba(255,255,255,0.15);
@@ -2953,6 +3161,11 @@
     counter-reset: none !important;
     break-after: avoid; /* Keep divider with its following section — prevents orphaned headers at page bottom (v7.12.62) */
     break-inside: avoid;
+    /* v7.13.45: Force full width + isolate from pagination footer layout */
+    width: 100% !important;
+    box-sizing: border-box;
+    max-width: 100%;
+    position: relative;
 }
 /* Left line */
 .swml-section-block.swml-section-divider::before {
@@ -3011,6 +3224,52 @@
 .swml-section-block.swml-section-divider:focus-within {
     background: none !important;
     border-left-width: 0 !important;
+}
+
+/* ── CW Resource Buttons (v7.13.47) ── */
+div.swml-cw-resource-btn {
+    display: block !important;
+    padding: 12px 18px !important;
+    margin: 8px 0 !important;
+    background: rgba(81,218,207,0.12) !important;
+    border: 1.5px solid rgba(81,218,207,0.4) !important;
+    border-radius: 8px !important;
+    color: #7DF9E9 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    font-family: 'Proxima Soft Complete', 'Proxima Soft', sans-serif !important;
+    cursor: pointer !important;
+    pointer-events: all !important;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s !important;
+    user-select: none !important;
+    line-height: 1.4 !important;
+    letter-spacing: 0.2px !important;
+}
+/* Arrow prefix for in-document resource buttons (not panel buttons which use inline SVG) */
+div.swml-cw-resource-btn::before {
+    content: '\2192  ';
+    opacity: 0.6;
+}
+/* Kill the ::before arrow inside the resources panel — panel buttons use inline SVG arrow */
+.swml-resources-panel .swml-cw-resource-btn::before,
+.swml-outline-panel .swml-cw-resource-btn::before {
+    content: none !important;
+    display: none !important;
+}
+div.swml-cw-resource-btn:hover {
+    background: rgba(81,218,207,0.22) !important;
+    border-color: rgba(81,218,207,0.7) !important;
+    transform: translateY(-1px);
+}
+div.swml-cw-resource-btn:active { transform: translateY(0); }
+[data-swml-theme="light"] div.swml-cw-resource-btn {
+    background: rgba(45,122,120,0.08) !important;
+    border-color: rgba(45,122,120,0.3) !important;
+    color: #2d7a78 !important;
+}
+[data-swml-theme="light"] div.swml-cw-resource-btn:hover {
+    background: rgba(45,122,120,0.16) !important;
+    border-color: rgba(45,122,120,0.5) !important;
 }
 
 /* Section label badge (::before) */
@@ -3906,34 +4165,63 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-/* ── U1: Back-to-top of message button ── */
+/* ── U1: Back-to-top of message button (v7.13.52 neumorphic) ── */
 .swml-msg-top-btn {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     width: 100%;
-    padding: 8px 12px;
+    padding: 9px 14px;
     margin-top: 10px;
-    border: 1px solid rgba(81,218,207,0.2);
+    border: none;
     border-radius: 8px;
-    background: rgba(81,218,207,0.06);
-    color: #51dacf;
     font-size: 11px;
-    font-family: inherit;
+    font-weight: 500;
+    font-family: 'Proxima Soft Complete', 'Proxima Soft', sans-serif;
+    color: rgba(255,255,255,0.6);
     cursor: pointer;
-    text-align: center;
-    transition: background 0.2s ease, border-color 0.2s ease;
+    --btn-inner: hsla(240deg 4% 22% / 60%);
+    --btn-outer: hsla(240deg 4% 16% / 50%);
+    --btn-glow: hsla(174deg 70% 60% / 0%);
+    background: radial-gradient(ellipse at 50% 10%, var(--btn-glow), transparent),
+                radial-gradient(var(--btn-inner), var(--btn-outer));
+    box-shadow:
+        inset 0 2px 1px -1px rgba(255,255,255,0.12),
+        inset 0 2px 3px rgba(0,0,0,0.08),
+        0 1px 0 1px rgba(0,0,0,0.35),
+        0 1px 0 2px rgba(81,218,207,0.06);
+    transition: --btn-glow 200ms, --btn-inner 200ms, --btn-outer 300ms,
+                box-shadow 200ms, transform 200ms, color 200ms;
 }
 .swml-msg-top-btn:hover {
-    background: rgba(81,218,207,0.12);
-    border-color: rgba(81,218,207,0.4);
+    --btn-glow: hsla(174deg 70% 60% / 12%);
+    --btn-inner: hsla(174deg 30% 28% / 100%);
+    --btn-outer: hsla(174deg 40% 22% / 100%);
+    color: #7DF9E9;
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 -1px 2px rgba(255,255,255,0.15),
+        inset 0 0 10px rgba(81,218,207,0.1),
+        0 1px 0 1px rgba(81,218,207,0.4),
+        0 2px 8px rgba(81,218,207,0.15);
 }
+.swml-msg-top-btn:active { transform: translateY(1px); }
 .swml-canvas-light .swml-msg-top-btn {
-    background: rgba(83,51,237,0.04);
-    border-color: rgba(83,51,237,0.15);
-    color: #5333ed;
+    color: rgba(0,0,0,0.45);
+    --btn-inner: hsla(252deg 80% 97% / 100%);
+    --btn-outer: hsla(252deg 50% 92% / 100%);
+    box-shadow:
+        inset 0 2px 1px -1px rgba(255,255,255,0.6),
+        inset 0 2px 3px rgba(0,0,0,0.04),
+        0 1px 0 1px rgba(0,0,0,0.08),
+        0 1px 0 2px rgba(83,51,237,0.04);
 }
 .swml-canvas-light .swml-msg-top-btn:hover {
-    background: rgba(83,51,237,0.08);
-    border-color: rgba(83,51,237,0.3);
+    color: #5333ed;
+    --btn-inner: hsla(252deg 83% 56% / 100%);
+    --btn-outer: hsla(252deg 60% 50% / 100%);
+    color: #fff;
 }
 
 /* ── U3: Smart copy (assessment only) button ── */
@@ -3947,9 +4235,9 @@
 .swml-copy-assess::after {
     content: 'Copy assessment only';
     position: absolute;
-    top: 100%;
+    bottom: 100%;
     right: 0;
-    margin-top: 4px;
+    margin-bottom: 4px;
     padding: 5px 10px;
     border-radius: 6px;
     font-size: 10px;
@@ -4826,4 +5114,95 @@
 }
 .swml-canvas-light .swml-section-block.swml-section-mark_scheme_response p em {
     color: rgba(0, 0, 0, 0.35);
+}
+
+/* ─── Plot template: feather pen "write here" icon ─── */
+/* Icon appears on ALL mark elements in plan sections (only beats have marks now) */
+.swml-section-plan mark {
+    position: relative;
+    padding-left: 28px !important;
+}
+.swml-section-plan mark::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+    margin-left: -28px;
+    vertical-align: middle;
+    border-radius: 5px;
+    background-color: #5333ed;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23fff' d='M54.98,61c0,.41-.34.75-.75.75h-29.44c-1.62,0-2.96-1-3.42-2.55s.12-3.12,1.47-4c.05-.03.1-.06.15-.07l9.97-3.7c.89-.62,1-1.58.79-2.28-.21-.71-.84-1.48-1.98-1.48h-15.33c-.41,0-.75-.34-.75-.75s.34-.75.75-.75h15.33c1.62,0,2.96,1,3.42,2.55.46,1.55-.12,3.12-1.47,4-.05.03-.1.06-.15.07l-9.97,3.7c-.89.62-1,1.58-.79,2.28.21.71.84,1.48,1.98,1.48h29.44c.41,0,.75.34.75.75ZM14.93,39.73c.39.04.79.06,1.21.06,3.14,0,7.09-1.01,9.22-2.48l1.27-.87c2.2-1.5,5.22-3.55,7.39-5.35.48-.4.62-1.04.36-1.6-.26-.56-.84-.87-1.46-.76-.41.07-.84.14-1.27.22-.37.06-.71.12-1.02.17,2.37-2.59,4.38-5.5,5.98-8.66.36-.71.26-1.54-.25-2.16-.1-.12-.22-.23-.34-.33.81-.74,1.53-1.68,2.12-2.76.96-1.79,1.48-3.74,1.99-5.64.15-.56.3-1.11.46-1.66.15-.51.31-1.02.48-1.52.4-1.13.14-2.36-.69-3.22-.82-.84-2.02-1.14-3.15-.78l-7.42,2.39c-1.24.4-2.64.85-3.82,1.7-.76.54-1.35,1.22-1.74,1.96-.28-.22-.61-.37-.98-.42-.7-.1-1.36.18-1.78.73-1.87,2.46-3.11,5.41-3.57,8.44-.07-.08-.13-.17-.2-.26-.41-.58-1.07-.88-1.77-.83-.68.05-1.27.45-1.57,1.06-2,4.01-3.31,8.3-3.89,12.73-.28,2.11-.53,6.48,1.58,8.6-1.13,2.13-2.12,4.12-2.96,5.92-.18.38-.01.82.36,1,.1.05.21.07.32.07.28,0,.55-.16.68-.43.81-1.74,1.77-3.66,2.85-5.71.04.02.07.04.11.05,4.35-8.23,10.95-18.63,20.41-28.73.28-.3.76-.32,1.06-.03.3.28.32.76.03,1.06-9.21,9.84-15.67,19.95-19.98,28.03Z'/%3E%3C/svg%3E");
+    background-size: 13px 13px;
+    background-position: center;
+    background-repeat: no-repeat;
+    flex-shrink: 0;
+}
+/* Light theme: slightly lighter purple pill */
+.swml-canvas-light .swml-section-plan mark::before {
+    background-color: #6b4eff;
+}
+
+/* ─── Plot template: heading styling (no mark, just bold text) ─── */
+.swml-section-plan p > strong:only-child {
+    color: rgba(255, 255, 255, 0.65);
+    letter-spacing: 0.5px;
+    font-size: 0.92em;
+    text-transform: uppercase;
+}
+.swml-canvas-light .swml-section-plan p > strong:only-child {
+    color: rgba(0, 0, 0, 0.55);
+}
+
+/* ─── Plot template beat colour coding (dark canvas) ─── */
+/* Override inline background-color from PHP for dark canvas readability */
+.swml-section-plan mark[data-color="#ff8b94"] {
+    background-color: rgba(160, 50, 55, 0.28) !important;
+    color: #f0a8ab;
+    border-radius: 3px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-right: 4px;
+}
+.swml-section-plan mark[data-color="#a8e6cf"] {
+    background-color: rgba(50, 150, 90, 0.25) !important;
+    color: #a8e6cf;
+    border-radius: 3px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-right: 4px;
+}
+.swml-section-plan mark[data-color="#ffd3b6"] {
+    background-color: rgba(170, 130, 60, 0.25) !important;
+    color: #ffe0b2;
+    border-radius: 3px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-right: 4px;
+}
+.swml-section-plan mark[data-color="#51dacf"] {
+    background-color: rgba(60, 160, 155, 0.25) !important;
+    color: #7df9e9;
+    border-radius: 3px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-right: 4px;
+}
+
+/* Light canvas overrides — match original workbook colours (softer pastels) */
+.swml-canvas-light .swml-section-plan mark[data-color="#ff8b94"] {
+    background-color: #f4cccc !important;
+    color: #5a1a1a;
+}
+.swml-canvas-light .swml-section-plan mark[data-color="#a8e6cf"] {
+    background-color: #d9ead3 !important;
+    color: #1a3a1e;
+}
+.swml-canvas-light .swml-section-plan mark[data-color="#ffd3b6"] {
+    background-color: #fff2cc !important;
+    color: #3a3010;
+}
+.swml-canvas-light .swml-section-plan mark[data-color="#51dacf"] {
+    background-color: #51dacf !important;
+    color: #1a3a38;
 }

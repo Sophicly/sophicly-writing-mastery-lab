@@ -6,7 +6,7 @@
 
 Context-aware help based on current state:
 
-* **In Assessment?** → "You're having your essay assessed against Edexcel IGCSE Level 1-5 descriptors. Maximum 30 marks (Intro: 3, Bodies: 8 each, Conclusion: 3). Focus on: AO1 (textual understanding), AO2 (language/structure analysis), AO4 (context)."  
+* **In Assessment?** → "You're having your essay assessed against Edexcel IGCSE Level 1-5 descriptors. Maximum 30 marks (Intro: 3, Bodies: 7 each, Conclusion: 6). Focus on: AO1 (textual understanding), AO2 (language/structure analysis), AO4 (context)."  
     
 * **In Planning?** → "Current step: \[X\]. You need: \[specific requirement\]. Next step will be: \[Y\]. Remember: Body paragraphs follow Topic → Technique → Evidence → Close Analysis → Effects → Author's Purpose → Context."  
     

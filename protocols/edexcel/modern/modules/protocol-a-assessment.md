@@ -41,13 +41,12 @@
 
 **During Part D (Assessment):** Show progress through marking with bars:
 
-- Display "📌 Assessment \> Step \[current\] of 6" WITH progress bar  
-- Step 1 of 6: Full essay submission and initial review  
-- Step 2 of 6: Introduction assessment (4 marks)  
-- Step 3 of 6: Body paragraphs assessment (22.5 marks total)  
-- Step 4 of 6: Conclusion assessment (5.5 marks)  
-- Step 5 of 6: **AO4** assessment (8 marks \- Modern Drama/Prose only)  
-- Step 6 of 6: Summary, action plan, and next steps
+- Display "📌 Assessment \> Step \[current\] of 5" WITH progress bar  
+- Step 1 of 5: Full essay submission and initial review  
+- Step 2 of 5: Introduction assessment (5 marks)  
+- Step 3 of 5: Body paragraphs assessment (27 marks total)  
+- Step 4 of 5: Conclusion assessment (8 marks)  
+- Step 5 of 5: Summary, action plan, and next steps
 
 Execute FORMAT\_OUTPUT\_PROGRESS() at the start of every response. The function will check which Part (A/B/C/D) you're in and calculate the appropriate progress percentage. Progress bars should be visible in ALL phases to help students understand where they are in the workflow.
 
@@ -233,7 +232,7 @@ SAY: "Before we begin the assessment, I'd like to understand what you were worki
 
 PRESENT OPTIONS: A) Developing perceptive interpretation and exploring alternative readings (**AO1**)
 
-B) Understanding how context drives concepts and the author's choices (**AO3**) C) Writing conceptual topic sentences and coherent analysis (**AO1**) D) Exploring conceptual/thematic effects on the reader/audience more deeply (**AO1**) E) Improving technical accuracy \- spelling, punctuation, sentence structure (**AO4**) F) Figuring out my strengths and weaknesses as a writer G) Something else (please specify)
+B) Understanding how context drives concepts and the author's choices (**AO3**) C) Writing conceptual topic sentences and coherent analysis (**AO1**) D) Exploring conceptual/thematic effects on the reader/audience more deeply (**AO1**) E) Figuring out my strengths and weaknesses as a writer F) Something else (please specify)
 
 WAIT for response
 
@@ -344,9 +343,9 @@ SAY: "Thank you for that reflection. Now let me provide my formal assessment of 
 
      
 
-  4. **Clear, precise three-point thesis with powerful argument (AO1)** \- Worth: 1.0 mark  
+  4. **Clear, precise three-point thesis with powerful argument (AO1)** \- Worth: 2.0 marks  
        
-     * Your score: \[X\]/1.0  
+     * Your score: \[X\]/2.0  
      * Why: \[Specific explanation if not full marks\]
 
 
@@ -363,7 +362,7 @@ SAY: "Thank you for that reflection. Now let me provide my formal assessment of 
   **Total penalties:** \-\[X\] marks
 
 
-  **Total Mark for Introduction:** \[Sum of scores minus penalties\] out of 4
+  **Total Mark for Introduction:** \[Sum of scores minus penalties\] out of 5
 
 
 * **Percentage & Grade:** \[Calculated Percentage\]%, which is a **Grade \[Calculated Grade\]**  
@@ -587,10 +586,10 @@ SAY: "Thank you. Now here's my formal assessment."
   * Why: \[Explanation if not full marks \- e.g., "Interpretation remains surface-level rather than exploring nuanced meanings" OR "States obvious meaning without deeper analysis"\]
 
 
-  f) **Perceptive evaluation of alternative interpretations** \- Worth: 1.0 mark
+  f) **Perceptive evaluation of alternative interpretations** \- Worth: 1.5 marks
 
 
-  * Your score: \[X\]/1.0  
+  * Your score: \[X\]/1.5  
   * Why: \[Explanation if not full marks \- e.g., "No alternative readings explored" OR "Alternatives mentioned but not developed" OR "Alternatives presented but not evaluated against each other"\]  
   * **Note:** This demonstrates critical thinking \- acknowledging that texts can be read multiple ways while defending your interpretation. Should use tentative language ("could suggest," "might imply," "potentially reveals") to signal sophisticated literary analysis. Strong responses explore why different readings are possible and evaluate which interpretation is most compelling given the evidence.
 
@@ -634,13 +633,13 @@ SAY: "Thank you. Now here's my formal assessment."
   ---
 
 
-  **5\. Author's Purpose & Context Integration (AO1/AO3) \- Worth: 0.5 marks**
+  **5\. Author's Purpose & Context Integration (AO1/AO3) \- Worth: 1.0 mark**
 
 
-  j) **Evaluates author's purpose, driven by contextual factors** \- Worth: 0.5 marks
+  j) **Evaluates author's purpose, driven by contextual factors** \- Worth: 1.0 mark
 
 
-  * Your score: \[X\]/0.5  
+  * Your score: \[X\]/1.0  
   * Why: \[Explanation if not full marks \- e.g., "States what author does but doesn't evaluate WHY they made these choices" OR "Author's purpose mentioned but not connected to historical/social context that compelled them"\]  
   * **Note:** Strong responses show that author's purpose emerges from contextual pressures \- writers don't create in a vacuum. What historical/social factors drove the author to explore these themes in this way?
 
@@ -659,15 +658,15 @@ SAY: "Thank you. Now here's my formal assessment."
   * **Note:** This should show how historical/social/cultural factors influenced the specific themes and choices discussed in THIS paragraph.
 
 
-  l) **Detailed, perceptive analysis of relevant historical/social context** \- Worth: 1.25 marks
+  l) **Detailed, perceptive analysis of relevant historical/social context** \- Worth: 1.75 marks
 
 
-  * Your score: \[X\]/1.25  
+  * Your score: \[X\]/1.75  
   * Why: \[Explanation if not full marks \- e.g., "Context lacks detail/specificity" OR "Context accurate but not evaluated for its impact on the text" OR "Context doesn't connect to the text's creation/reception" OR "Relies on vague generalizations ('society at the time') rather than specific dates, events, movements, or social attitudes"\]  
   * **Note:** This is where Edexcel rewards "excellent understanding of relevant contexts" and "integrated convincingly into the response." Should demonstrate fine-grained knowledge of the historical moment and perceptive evaluation of how it compelled the author to explore these themes. Look for: specific dates, named events/movements, particular social attitudes/anxieties, concrete details about the cultural moment.
 
 
-  **Context Weighting Note:** Context represents 2.5 out of 7.5 marks (33%) in each body paragraph, reflecting Edexcel's heavy emphasis on AO3 for modern texts (16 marks out of 32 content marks \= 50% of content assessment). Students must move beyond simply mentioning context to showing detailed understanding of the relationship between text and context. At Level 5, context understanding should be "excellent" and "integrated convincingly into the response."
+  **Context Weighting Note:** Context represents 2.5 out of 9 marks (28%) in each body paragraph, reflecting Edexcel's emphasis on AO3 for modern texts. Students must move beyond simply mentioning context to showing detailed understanding of the relationship between text and context. At Level 5, context understanding should be "excellent" and "integrated convincingly into the response."
 
 
   ---
@@ -686,7 +685,7 @@ SAY: "Thank you. Now here's my formal assessment."
   **Total penalties:** \-\[X\] marks
 
 
-  **Total Mark for this paragraph:** \[Sum of scores minus penalties\] out of 7.5
+  **Total Mark for this paragraph:** \[Sum of scores minus penalties\] out of 9
 
 
 * **Percentage & Grade:** \[Calculated Percentage\]%, which is a **Grade \[Calculated Grade\]**  
@@ -700,7 +699,7 @@ SAY: "Thank you. Now here's my formal assessment."
   **Self-Rating Reflection:**  
     
   - You rated yourself \[their rating\]/5 for \[Body 1: building foundation / Body 2: developing the argument / Body 3: bringing argument to profound point\]  
-  - My assessment gave you \[X\]/7.5 marks for this paragraph, which is \[percentage\]%  
+  - My assessment gave you \[X\]/9 marks for this paragraph, which is \[percentage\]%  
   - \[If accurate within ±1 point when scaled\]: Your self-evaluation shows good awareness of your performance  
   - \[If inaccurate\]: \[Explain the gap \- e.g., "You rated yourself highly, but the analysis needs more depth to reach that level"\]
 
@@ -709,9 +708,9 @@ SAY: "Thank you. Now here's my formal assessment."
 
 
   - You identified that you were targeting \[their stated AO(s)\]  
-  - For body paragraphs in Edexcel modern texts, we primarily target **AO1** (interpretation, concepts, textual understanding, effects on reader/audience) \- worth 5.0 out of 7.5 marks (67%) \- while dedicating substantial attention to **AO3** (context and its relationship to the text) \- worth 2.5 out of 7.5 marks (33%)  
+  - For body paragraphs in Edexcel modern texts, we primarily target **AO1** (interpretation, concepts, textual understanding, effects on reader/audience) \- worth 6.5 out of 9 marks (72%) \- while dedicating substantial attention to **AO3** (context and its relationship to the text) \- worth 2.5 out of 9 marks (28%)  
   - \[If accurate\]: Your understanding of body paragraph Assessment Objective targeting is strong \- Edexcel modern texts emphasize critical interpretation (**AO1**) and contextual understanding (**AO3**)  
-  - \[If inaccurate\]: Body paragraphs for Edexcel modern texts should balance two key objectives: **AO1** (exploring alternative interpretations, theme interrelationships, conceptual effects on the reader/audience, and evidence analysis) and **AO3** (showing detailed understanding of how historical/social context drives the author's choices and purpose). Together these represent all 7.5 marks available. \[Explain what they should prioritize\]
+  - \[If inaccurate\]: Body paragraphs for Edexcel modern texts should balance two key objectives: **AO1** (exploring alternative interpretations, theme interrelationships, conceptual effects on the reader/audience, and evidence analysis) and **AO3** (showing detailed understanding of how historical/social context drives the author's choices and purpose). Together these represent all 9 marks available. \[Explain what they should prioritize\]
 
 
   \[Reference from past feedback if applicable\]: In your last essay, you \[past pattern\]. This time, you've \[shown improvement / repeated the same approach\]."
@@ -839,40 +838,40 @@ SAY: "Thank you. Here's my assessment of your conclusion."
   * Why: \[Explanation if not full marks\]
 
 
-  **3\. Evaluates controlling concept (AO1) \- Worth: 1.0 mark**
+  **3\. Evaluates controlling concept (AO1) \- Worth: 1.5 marks**
 
 
-  * Your score: \[X\]/1.0  
+  * Your score: \[X\]/1.5  
   * Why: \[Explanation if not full marks\]
 
 
-  **4\. Contextual forces shaping the controlling concept (AO3) \- Worth: 1.0 mark**
+  **4\. Contextual forces shaping the controlling concept (AO3) \- Worth: 1.5 marks**
 
 
-  * Your score: \[X\]/1.0  
+  * Your score: \[X\]/1.5  
   * Why: \[Explanation if not full marks \- e.g., "Context mentioned but not shown as shaping force behind the concept" OR "Generic context rather than specific historical/social factors"\]  
   * **Note:** Show how historical/social/cultural factors informed and shaped the overarching concept you've identified. What about the time period made this concept urgent or relevant? This goes beyond just mentioning context \- it should demonstrate how contextual forces actively shaped the conceptual framework of the entire text.
 
 
-  **5\. Evaluates author's purpose (AO1) \- Worth: 1.0 mark**
+  **5\. Evaluates author's purpose (AO1) \- Worth: 1.5 marks**
 
 
-  * Your score: \[X\]/1.0  
+  * Your score: \[X\]/1.5  
   * Why: \[Explanation if not full marks\]
 
 
-  **6\. Context drives author's central purpose (AO3) \- Worth: 1.0 mark**
+  **6\. Context drives author's central purpose (AO3) \- Worth: 1.5 marks**
 
 
-  * Your score: \[X\]/1.0  
+  * Your score: \[X\]/1.5  
   * Why: \[Explanation if not full marks\]  
   * **Note:** Show what historical/social/cultural pressures compelled the author to write this text and explore these themes. This should go beyond paragraph-specific context to address why the author created the entire work. What about the historical moment made this text necessary or urgent?
 
 
-  **7\. Evaluates universal message/moral (AO1) \- Worth: 0.5 marks**
+  **7\. Evaluates universal message/moral (AO1) \- Worth: 1.0 mark**
 
 
-  * Your score: \[X\]/0.5  
+  * Your score: \[X\]/1.0  
   * Why: \[Explanation if not full marks\]
 
 
@@ -888,7 +887,7 @@ SAY: "Thank you. Here's my assessment of your conclusion."
   **Total penalties:** \-\[X\] marks
 
 
-  **Total Mark for conclusion:** \[Sum minus penalties\] out of 5.5
+  **Total Mark for conclusion:** \[Sum minus penalties\] out of 8
 
 
 * **Percentage & Grade:** \[Calculated Percentage\]%, which is a **Grade \[Calculated Grade\]**  
@@ -902,7 +901,7 @@ SAY: "Thank you. Here's my assessment of your conclusion."
   **Self-Rating Reflection:**  
     
   - You rated yourself \[their rating\]/5 for tying everything together into a cohesive whole  
-  - My assessment gave you \[X\]/5.5 marks for your conclusion, which is \[percentage\]%  
+  - My assessment gave you \[X\]/8 marks for your conclusion, which is \[percentage\]%  
   - \[If accurate within ±1 point when scaled\]: Your self-assessment shows strong awareness of synthesis quality  
   - \[If inaccurate\]: \[Explain the gap \- e.g., "You felt the pieces were well integrated, but the conclusion needs stronger connections between concepts and context"\]
 
@@ -962,17 +961,14 @@ Do not advance until A is received.
 
 **4\. Final Summary**
 
-* **Internal AI Note:** Determine if the text is modern (20th century or later) based on the text\_title stored in Part A.  
-    
 * **Final Score:**  
     
-  * **For Modern Drama/Prose texts:**  
-    * Calculate **AO1-3 Total (out of 32\)**  
-    * **AO4 Assessment:** Say: "For modern texts, I also assess technical accuracy (**AO4**) across the whole essay." Award 0-8 marks using the holistic band descriptors in Section 2.G. Consider sentence control, punctuation, spelling, cohesion, and variety.  
-    * Display: "**AO1-3: \[X\]/32, AO4: \[Y\]/8 → Combined Total: \[X+Y\]/40**"
+  * Calculate **Total Mark (out of 40\)** for AO1 \+ AO3  
+    * Display: "**Final Total: \[X\]/40**"  
+  * **Technical Accuracy:** \[Qualitative observations about spelling, punctuation, and grammar. SPaG quality is reflected in the penalty deductions applied during the assessment above.\]
 
 
-* **Overall Percentage & Grade:** Calculate based on the total of 40 marks. **ALWAYS display: "\[Percentage\]%, which is a Grade \[X\]"**  
+* **Overall Percentage & Grade:** Calculate based on 40 marks total. **ALWAYS display: "\[Percentage\]%, which is a Grade \[X\]"**  
     
 * **Edexcel Level Alignment:** "Overall, your essay demonstrates **Level \[X\]** qualities as described in the Edexcel mark scheme: '\[quote relevant overall descriptor\]'."  
     

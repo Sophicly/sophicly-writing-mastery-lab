@@ -191,12 +191,12 @@ If Protocol B or C elements detected in Protocol A context: STOP and correct imm
   - Use relevant subject terminology where appropriate
 
 
-* **AO4:** Use a range of vocabulary and sentence structures for clarity, purpose and effect, with accurate spelling and punctuation.  
+* **AO4 (Technical Accuracy):** Use a range of vocabulary and sentence structures for clarity, purpose and effect, with accurate spelling and punctuation.  
     
-  - Technical accuracy of spelling, punctuation, grammar, and sentence structures  
-  - Assessed holistically (5 marks)
+  - Assessed through penalty system (G1, H1, P1) — no separate marks  
+  - Qualitative feedback provided in Final Summary
 
-**Mark Distribution:** AO1 \+ AO2 are assessed together holistically for **35 marks** (content), plus AO4 for **5 marks** (technical accuracy) \= **40 marks total**.
+**Mark Distribution:** AO1 \+ AO2 are assessed together for **40 marks total**, distributed across Introduction (5), Body Paragraphs (9 each × 3 = 27), Conclusion (8). Technical accuracy is embedded in the penalty system.
 
 **Important Note on Context:**
 
@@ -209,21 +209,21 @@ Students should integrate contextual understanding naturally into their analysis
 
 **Mark Distribution:**
 
-* **Total:** 40 marks (AO1+AO2: 35 marks \+ AO4: 5 marks)  
+* **Total:** 40 marks (AO1+AO2)  
 * EDUQAS GCSE uses a holistic best-fit approach for AO1+AO2 content assessment  
 * However, for pedagogical clarity, this protocol maintains structured feedback by section:  
-  - **Introduction:** 4 marks (Hook 1 mark, Building Sentences 1.5 marks, Thesis 1.5 marks)  
-  - **Body Paragraph 1-3:** 8 marks each (Topic 0.5, Technique+Evidence+Inference 1.5, Close Analysis 1.5, Interrelationships 0.5, Effect 1 \= 1.5, Effect 2 \= 1.5, Author's Purpose 1.5)  
-  - **Conclusion:** 7 marks (Restated Thesis 1.5, Controlling Concept 2.5, Author's Purpose 1.5, Moral/Message 1.5)  
-  - **AO4 (Technical Accuracy):** 5 marks (assessed holistically at end of Protocol A)
+  - **Introduction:** 5 marks (Hook 1.0, Building Sentences 2.5, Thesis 1.5)  
+  - **Body Paragraph 1-3:** 9 marks each (Topic 1.0, Evidence 1.0, Terminology 0.5, Analysis Links 0.5, Close Analysis 1.5, Interrelationships 1.0, Effects 2.0, Author's Purpose 1.5)  
+  - **Conclusion:** 8 marks (Restated Thesis 0.5, Links to Question 0.5, Controlling Concept 1.5, Links Techniques 1.5, Author's Purpose 2.0, Context 1.0, Moral/Message 1.0)  
+  - **Technical Accuracy:** Assessed through penalty system (G1, H1, P1) — qualitative feedback in Final Summary
 
-**Band System:** EDUQAS GCSE uses 5 bands for content assessment (Band 1: 1-7 marks, Band 2: 8-14, Band 3: 15-21, Band 4: 22-28, Band 5: 29-35)
+**Band System:** EDUQAS GCSE uses 5 bands for assessment (Band 1: 1-8 marks, Band 2: 9-16, Band 3: 17-24, Band 4: 25-32, Band 5: 33-40)
 
 **Before sending any feedback, execute AO\_LITERATURE\_SANITY():**
 
-* Ensure all Assessment Objective references are to AO1, AO2, or AO4  
-* AO4 (technical accuracy) is assessed holistically at the end of Protocol A \- NOT deducted from content marks  
-* Verify marks align with EDUQAS GCSE 5-band descriptors (Band 1: 1-7, Band 2: 8-14, Band 3: 15-21, Band 4: 22-28, Band 5: 29-35 for content; AO4: 5 marks separate)  
+* Ensure all Assessment Objective references are to AO1 and AO2  
+* Technical accuracy is assessed through the penalty system (G1, H1, P1) — no separate AO4 marks  
+* Verify marks align with EDUQAS GCSE 5-band descriptors (Band 1: 1-8, Band 2: 9-16, Band 3: 17-24, Band 4: 25-32, Band 5: 33-40)  
 * Context should be referenced naturally as supporting AO1/AO2, not as a separate objective
 
 ---

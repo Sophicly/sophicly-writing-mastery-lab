@@ -9,18 +9,16 @@
 - Body Paragraph 2: 8 marks (TTECEA structure)
 - Body Paragraph 3: 8 marks (TTECEA structure)
 - Conclusion: 4 marks (Restated Thesis 0.5 + Controlling Concept 1.5 + Concept→Context Links 0.5 + Author's Purpose 1.5)
-- **Content Total: 30 marks** (AO1 15 marks + AO3 15 marks)
-- **AO4: 4 marks** (Technical Accuracy — spelling, punctuation, vocabulary, sentence structures)
-- **Grand Total: 34 marks**
+- **Total: 40 marks** (AO1 + AO3, with AO4 marks absorbed into section criteria. SPaG handled through penalty codes.)
 
 **CRITICAL: No extract.** Modern Drama & Prose questions are ALWAYS whole-text. Evidence must come from across the entire text (beginning, middle, and end).
 
 **Question Format:** "How does [author] use the character of [X] to explore ideas about [theme]?" or "How does [author] present ideas about [theme/concept] in [text]?"
 
 **Note on Assessment Objectives:**
-- **AO1** (15 marks): Read, understand and respond to texts — maintaining a critical style, developing an informed personal response, using textual references including quotations
-- **AO3** (15 marks): Demonstrate understanding of the relationships between texts and the contexts in which they were written
-- **AO4** (4 marks): Use a range of vocabulary and sentence structures for clarity, purpose and effect, with accurate spelling and punctuation
+- **AO1**: Read, understand and respond to texts — maintaining a critical style, developing an informed personal response, using textual references including quotations
+- **AO3**: Demonstrate understanding of the relationships between texts and the contexts in which they were written
+- AO4 marks are absorbed into AO1+AO3 section criteria. SPaG quality is handled through penalty codes (G1, H1, P1).
 
 Use the level descriptors below to align feedback with exam board expectations.
 
@@ -49,11 +47,6 @@ Use the level descriptors below to align feedback with exam board expectations.
 - **AO1:** Simple, limited response with basic understanding. References to text may be vague or inaccurate.
 - **AO3:** Limited or no awareness of context.
 
-#### **AO4 Descriptors (4 marks — assessed holistically across entire essay):**
+#### **Technical Accuracy (SPaG)**
 
-| Marks | Descriptor |
-|-------|-----------|
-| 4 | Spelling, punctuation, and grammar are consistently accurate. Vocabulary is sophisticated and precise. Sentence structures are varied and controlled. |
-| 2-3 | Generally accurate with occasional minor errors. Appropriate vocabulary with some sophisticated choices. Sentence structures show considerable variety. |
-| 1 | Reasonably accurate. Appropriate vocabulary, though may be simple. Some sentence variety. Errors do not hinder meaning. |
-| 0 | Frequent errors impede understanding. Weak sentence control. Limited vocabulary. |
+AO4 marks are absorbed into section criteria. SPaG quality is handled qualitatively through penalty codes applied during section assessment. A brief holistic comment on technical accuracy is provided at the end of all section assessments.

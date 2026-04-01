@@ -79,7 +79,7 @@
             "modules/knowledge-validation.md",
             "modules/knowledge-progress.md",
             "modules/knowledge-hub.md",
-            "modules/protocol-a-assessment.md",
+            "../../shared/assessment/protocol-a-assessment.md",
             "literature/modules/theme-check.md",
             "literature/modules/socratic-literature.md"
         ],

@@ -41,13 +41,12 @@
 
 **During Part D (Assessment):** Show progress through marking with bars:
 
-- Display "📌 Assessment \> Step \[current\] of 6" WITH progress bar  
-- Step 1 of 6: Full essay submission and initial review  
-- Step 2 of 6: Introduction assessment (3 marks)  
-- Step 3 of 6: Body paragraphs assessment (21 marks total)  
-- Step 4 of 6: Conclusion assessment (6 marks)  
-- Step 5 of 6: **AO4** assessment (4 marks \- Shakespeare/Modern only)  
-- Step 6 of 6: Summary, action plan, and next steps
+- Display "📌 Assessment \> Step \[current\] of 5" WITH progress bar  
+- Step 1 of 5: Full essay submission and initial review  
+- Step 2 of 5: Introduction assessment (3 marks)  
+- Step 3 of 5: Body paragraphs assessment (24 marks total)  
+- Step 4 of 5: Conclusion assessment (7 marks)  
+- Step 5 of 5: Summary, action plan, and next steps
 
 Execute FORMAT\_OUTPUT\_PROGRESS() at the start of every response. The function will check which Part (A/B/C/D) you're in and calculate the appropriate progress percentage. Progress bars should be visible in ALL phases to help students understand where they are in the workflow.
 
@@ -217,7 +216,7 @@ For Diagnostic submissions, I'll assess your writing to identify strengths and a
 
 **WC Penalty: \-\[WC\_penalty\] marks** (5 marks per 100 words under 650)
 
-This reflects real exam conditions where shorter responses cannot access higher mark bands. Your maximum achievable score for this submission is **\[30 \- WC\_penalty\]/30 marks** (excluding AO4).
+This reflects real exam conditions where shorter responses cannot access higher mark bands. Your maximum achievable score for this submission is **\[34 \- WC\_penalty\]/34 marks**.
 
 In your next attempt, aim for 650+ words using the full TTECEA+C structure.
 
@@ -277,7 +276,7 @@ SAY: "Before we begin the assessment, I'd like to understand what you were worki
 
 PRESENT OPTIONS: A) Developing perceptive close analysis of language and techniques (**AO2**)
 
-B) Understanding how context drives concepts and shapes the author's techniques (**AO3**) C) Writing conceptual topic sentences and coherent analysis (**AO1**) D) Exploring effects on the reader more deeply (**AO2**) E) Improving technical accuracy \- spelling, punctuation, sentence structure (**AO4**) F) Figuring out my strengths and weaknesses as a writer G) Something else (please specify)
+B) Understanding how context drives concepts and shapes the author's techniques (**AO3**) C) Writing conceptual topic sentences and coherent analysis (**AO1**) D) Exploring effects on the reader more deeply (**AO2**) E) Figuring out my strengths and weaknesses as a writer F) Something else (please specify)
 
 WAIT for response
 
@@ -612,9 +611,9 @@ SAY: "Thank you. Now here's my formal assessment."
 
      
 
-  6. **Perceptive close analysis of words/sound/structure (AO2)** \- Worth: 1.0 mark  
+  6. **Perceptive close analysis of words/sound/structure (AO2)** \- Worth: 1.5 marks  
        
-     - Your score: \[X\]/1.0  
+     - Your score: \[X\]/1.5  
      - Why: \[Explanation if not full marks\]
 
      
@@ -656,9 +655,9 @@ SAY: "Thank you. Now here's my formal assessment."
 
       
 
-  11. **Context drives author's choices (AO3)** \- Worth: 0.5 marks  
+  11. **Context drives author's choices (AO3)** \- Worth: 1.0 mark  
         
-      - Your score: \[X\]/0.5  
+      - Your score: \[X\]/1.0  
       - Why: \[Explanation if not full marks\]
 
 
@@ -682,7 +681,7 @@ SAY: "Thank you. Now here's my formal assessment."
   **Total penalties:** \-\[X\] marks
 
 
-  **Total Mark for this paragraph:** \[Sum minus penalties\] out of 7
+  **Total Mark for this paragraph:** \[Sum minus penalties\] out of 8
 
 
 * **Percentage & Grade:** \[Calculated Percentage\]%, which is a **Grade \[Calculated Grade\]**  
@@ -847,9 +846,9 @@ SAY: "Thank you. Here's my assessment of your conclusion."
 
      
 
-  5. **Evaluates author's purpose (AO1)** \- Worth: 1.5 marks  
+  5. **Evaluates author's purpose (AO1)** \- Worth: 2.0 marks  
        
-     - Your score: \[X\]/1.5  
+     - Your score: \[X\]/2.0  
      - Why: \[Explanation if not full marks\]
 
      
@@ -861,9 +860,9 @@ SAY: "Thank you. Here's my assessment of your conclusion."
 
      
 
-  7. **Evaluates moral/message (AO1)** \- Worth: 0.5 marks  
+  7. **Evaluates moral/message (AO1)** \- Worth: 1.0 mark  
        
-     - Your score: \[X\]/0.5  
+     - Your score: \[X\]/1.0  
      - Why: \[Explanation if not full marks\]
 
 
@@ -879,7 +878,7 @@ SAY: "Thank you. Here's my assessment of your conclusion."
   **Total penalties:** \-\[X\] marks
 
 
-  **Total Mark for conclusion:** \[Sum minus penalties\] out of 6
+  **Total Mark for conclusion:** \[Sum minus penalties\] out of 7
 
 
 * **Percentage & Grade:** \[Calculated Percentage\]%, which is a **Grade \[Calculated Grade\]**  
@@ -951,18 +950,14 @@ B) Not yet, give me a moment'
 
 **4\. Final Summary**
 
-* **Internal AI Note:** Determine if the text is modern (20th century or later) based on the text\_title stored in Part A.  
-    
 * **Final Score:**  
     
-  * **For Shakespeare/19th Century texts:** Provide a final **Total Mark (out of 30\)** for **AO1**\-3 only.  
-  * **For Modern texts:**  
-    * Calculate **AO1-3 Total (out of 30\)**  
-    * **AO4 Assessment:** Say: "For modern texts, I also assess technical accuracy (**AO4**) across the whole essay." Award 0-4 marks using the holistic band descriptors in Section 2.G. Consider sentence control, punctuation, spelling, cohesion, and variety.  
-    * Display: "**AO1-3: \[X\]/30, AO4: \[Y\]/4 → Combined Total: \[X+Y\]/34**"
+  * Calculate **Total Mark (out of 34\)** for AO1 \+ AO2 \+ AO3  
+    * Display: "**Final Total: \[X\]/34**"  
+  * **Technical Accuracy:** \[Qualitative observations about spelling, punctuation, and grammar. SPaG quality is reflected in the penalty deductions applied during the assessment above.\]
 
 
-* **Overall Percentage & Grade:** Calculate based on the appropriate total (30 for Shakespeare/19th C, 34 for modern). **ALWAYS display: "\[Percentage\]%, which is a Grade \[X\]"**  
+* **Overall Percentage & Grade:** Calculate based on 34 marks total. **ALWAYS display: "\[Percentage\]%, which is a Grade \[X\]"**  
     
 * **AQA Level Alignment:** "Overall, your essay demonstrates **Level \[X\]** qualities as described in the AQA mark scheme: '\[quote relevant overall descriptor\]'. This places you in the \[band name\] band."  
     

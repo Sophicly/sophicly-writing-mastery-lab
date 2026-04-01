@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.13.15
+ * Version: 7.14.12
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.13.15');
+define('SWML_VERSION', '7.14.12');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -48,6 +48,7 @@ class Sophicly_Writing_Mastery_Lab {
         add_action('init', [$this, 'register_rewrite_rules']);
         add_action('init', [$this, 'register_shortcode']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_assets']);
+        add_action('wp_head', [$this, 'anti_fouc_dark_background'], 1); // Priority 1 = very early
         add_filter('template_include', [$this, 'load_page_template']);
         add_filter('query_vars', [$this, 'add_query_vars']);
 
@@ -67,6 +68,9 @@ class Sophicly_Writing_Mastery_Lab {
 
         // Initialize topic question bank (admin UI + REST endpoint)
         SWML_Topic_Questions::instance();
+
+        // One-time migration: AQA Shakespeare/Modern Text marks 30 → 34 (v7.14.6)
+        add_action('admin_init', [$this, 'migrate_aqa_marks_v7146']);
 
         // Cover images admin page
         if (is_admin()) {
@@ -107,6 +111,24 @@ class Sophicly_Writing_Mastery_Lab {
             return SWML_PATH . 'templates/page-writing-mastery-lab.php';
         }
         return $template;
+    }
+
+    /**
+     * Anti-FOUC: inject dark background as early as possible in <head> to prevent white flash.
+     * Runs at wp_head priority 1 — before any external CSS loads.
+     */
+    public function anti_fouc_dark_background() {
+        // Check if this is a WML page (standalone or embedded)
+        $is_wml = get_query_var('swml_page');
+        if (!$is_wml) {
+            global $post;
+            $is_wml = is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'writing_mastery_lab');
+        }
+        if (!$is_wml) return;
+
+        echo '<style id="swml-anti-fouc">
+            html, body { background: #16181d !important; color: #fff; }
+        </style>';
     }
 
     /**
@@ -271,6 +293,7 @@ class Sophicly_Writing_Mastery_Lab {
                 'draft'   => sanitize_text_field($_GET['draft'] ?? ''),
                 'redraft' => sanitize_text_field($_GET['redraft'] ?? ''),
                 'unit_id' => absint($_GET['unit_id'] ?? 0),
+                'planning_mode' => sanitize_text_field($_GET['planning_mode'] ?? ''),
             ],
         ]);
     }
@@ -724,6 +747,49 @@ class Sophicly_Writing_Mastery_Lab {
             </script>
         </div>
         <?php
+    }
+
+    /**
+     * One-time migration: AQA Shakespeare + Modern Text marks 30 → 34 (v7.14.6).
+     *
+     * AO4 (4 marks) is absorbed into the content total per our assessment principle.
+     * Updates any existing topic data in the database where marks=30 and ao4=4.
+     */
+    public function migrate_aqa_marks_v7146() {
+        if (get_option('swml_migrated_aqa_marks_v7146')) return;
+
+        global $wpdb;
+        $rows = $wpdb->get_results(
+            "SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE 'swml_topics_aqa_%'",
+            ARRAY_A
+        );
+
+        $updated = 0;
+        foreach ($rows as $row) {
+            $topics = maybe_unserialize($row['option_value']);
+            if (!is_array($topics)) continue;
+
+            $changed = false;
+            foreach ($topics as &$t) {
+                $marks = (int) ($t['marks'] ?? 0);
+                $ao4   = (int) ($t['ao4'] ?? 0);
+                if ($marks === 30 && $ao4 === 4) {
+                    $t['marks'] = 34;
+                    $changed = true;
+                }
+            }
+            unset($t);
+
+            if ($changed) {
+                update_option($row['option_name'], $topics, false);
+                $updated++;
+            }
+        }
+
+        update_option('swml_migrated_aqa_marks_v7146', true, false);
+        if ($updated > 0) {
+            error_log("WML Migration v7.14.6: Updated marks 30→34 for {$updated} AQA text(s)");
+        }
     }
 }
 

@@ -56,15 +56,15 @@ Before sending feedback, ensure Assessment Objective references are appropriate 
 
 * Scan response for any AO references  
 * **For all OCR texts (Shakespeare and 19th Century Prose):**  
-  - Allow AO1, AO2, AO3, and AO4 references  
-  - AO4 should be assessed holistically across entire essay (not per paragraph)  
-  - AO4 maximum: 4 marks for SPaG  
+  - Allow AO1, AO2, and AO3 references only  
+  - AO4 marks are absorbed into section criteria — there is NO separate AO4 assessment  
+  - SPaG quality is handled through penalty codes (G1, H1, P1) during section assessment  
   - If AO5 detected (from language papers), correct to most appropriate literature AO:  
     - Content/ideas → AO1  
     - Language/technique analysis → AO2  
     - Context references → AO3  
 * Verify marks align with OCR 6-level system (not 5-level)  
-* Total marks: 40 (36 for AO1-3, 4 for AO4)
+* Total marks: 40
 
 ---
 
@@ -73,9 +73,8 @@ Before sending feedback, ensure Assessment Objective references are appropriate 
 * Clamp the score for a section to its maximum value  
 * Section maximums:  
   - Intro: 5 marks  
-  - Body 1-3: 8 marks each  
-  - Conclusion: 7 marks  
-  - AO4 (all OCR texts): 4 marks  
+  - Body 1-3: 9 marks each  
+  - Conclusion: 8 marks  
 * If an adjustment is needed, state the corrected figure  
 * **Message:** "Adjusted to section maximum of \[X\] marks"
 
@@ -84,10 +83,8 @@ Before sending feedback, ensure Assessment Objective references are appropriate 
 **TOTALS\_RECALC():**
 
 * Sum all numeric marks (intro \+ body1 \+ body2 \+ body3 \+ conclusion)  
-* **IF text type is Shakespeare OR Modern Text:**  
-  - Add AO4 (SPaG) marks to total (all OCR texts include AO4)  
-  - Set totals.sum40 (maximum 40: 36 for AO1-3 \+ 4 for AO4)  
-  - Compute totals.percentage \= (sum40/40) \* 100  
+* Set totals.sum40 (maximum 40)  
+* Compute totals.percentage \= (sum40/40) \* 100  
 * Set the totals.grade using OCR 9-1 grade boundaries:  
   - 90-100%: Grade 9  
   - 80-89%: Grade 8  

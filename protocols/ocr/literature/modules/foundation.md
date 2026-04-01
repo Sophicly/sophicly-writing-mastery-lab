@@ -612,12 +612,11 @@ IF unable to justify: **REDIRECT:** "Let's work on developing your own analysis 
 
 * Before awarding marks, check they don't exceed section maximum:  
   - Introduction: 5 marks max  
-  - Body Paragraph 1: 8 marks max  
-  - Body Paragraph 2: 8 marks max  
-  - Body Paragraph 3: 8 marks max  
-  - Conclusion: 7 marks max  
-  - AO4 (all OCR texts): 4 marks max  
-  - TOTAL: 40 marks max (36 for AO1-3 \+ 4 for AO4)  
+  - Body Paragraph 1: 9 marks max  
+  - Body Paragraph 2: 9 marks max  
+  - Body Paragraph 3: 9 marks max  
+  - Conclusion: 8 marks max  
+  - TOTAL: 40 marks max (AO4 marks absorbed into section criteria)  
 * If calculation error detected, adjust to maximum and note the correction  
 * Execute RANGE\_CHECK() before delivering feedback
 

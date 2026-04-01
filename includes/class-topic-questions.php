@@ -31,6 +31,10 @@ class SWML_Topic_Questions {
      */
     private static $text_catalogue = [
         'aqa' => [
+            'language' => [
+                'language_p1' => 'Language Paper 1',
+                'language_p2' => 'Language Paper 2',
+            ],
             'shakespeare' => [
                 'macbeth' => 'Macbeth',
                 'romeo_juliet' => 'Romeo & Juliet',
@@ -70,11 +74,25 @@ class SWML_Topic_Questions {
             ],
         ],
         'ocr' => [
+            'language' => [
+                'language_c1' => 'Language Component 1',
+                'language_c2' => 'Language Component 2',
+            ],
             'shakespeare' => [
                 'macbeth' => 'Macbeth',
                 'romeo_juliet' => 'Romeo & Juliet',
                 'merchant_of_venice' => 'The Merchant of Venice',
                 'much_ado' => 'Much Ado About Nothing',
+            ],
+            'modern_text' => [
+                'aic' => 'An Inspector Calls',
+            ],
+            'modern_prose' => [
+                'animal_farm' => 'Animal Farm',
+                'lord_of_the_flies' => 'Lord of the Flies',
+                'never_let_me_go' => 'Never Let Me Go',
+                'anita_and_me' => 'Anita and Me',
+                'curious_incident' => 'The Curious Incident',
             ],
             '19th_century' => [
                 'acc' => 'A Christmas Carol',
@@ -91,6 +109,10 @@ class SWML_Topic_Questions {
             ],
         ],
         'eduqas' => [
+            'language' => [
+                'language_c1' => 'Language Component 1',
+                'language_c2' => 'Language Component 2',
+            ],
             'shakespeare' => [
                 'macbeth' => 'Macbeth',
                 'romeo_juliet' => 'Romeo & Juliet',
@@ -100,6 +122,10 @@ class SWML_Topic_Questions {
                 'henry_v' => 'Henry V',
                 'othello' => 'Othello',
                 'twelfth_night' => 'Twelfth Night',
+            ],
+            'modern_text' => [
+                'aic' => 'An Inspector Calls',
+                'leave_taking' => 'Leave Taking',
             ],
             '19th_century' => [
                 'acc' => 'A Christmas Carol',
@@ -112,9 +138,14 @@ class SWML_Topic_Questions {
             'poetry_anthology' => [
                 'eduqas_poetry' => 'EDUQAS Poetry (to 2026)',
                 'eduqas_poetry_2027' => 'EDUQAS Poetry (from 2027)',
+                'eduqas_leave_taking' => 'Leave Taking (Poetry)',
             ],
         ],
         'edexcel' => [
+            'language' => [
+                'language_p1' => 'Language Paper 1',
+                'language_p2' => 'Language Paper 2',
+            ],
             'shakespeare' => [
                 'macbeth' => 'Macbeth',
                 'romeo_juliet' => 'Romeo & Juliet',
@@ -123,6 +154,10 @@ class SWML_Topic_Questions {
                 'much_ado' => 'Much Ado About Nothing',
                 'twelfth_night' => 'Twelfth Night',
                 'othello' => 'Othello',
+            ],
+            'modern_text' => [
+                'aic' => 'An Inspector Calls',
+                'lord_of_the_flies' => 'Lord of the Flies',
             ],
             '19th_century' => [
                 'acc' => 'A Christmas Carol',
@@ -141,11 +176,27 @@ class SWML_Topic_Questions {
             ],
         ],
         'edexcel-igcse' => [
+            'language' => [
+                'language_p1' => 'Language Paper 1',
+                'language_p2' => 'Language Paper 2',
+            ],
             'shakespeare' => [
                 'macbeth' => 'Macbeth',
                 'merchant_of_venice' => 'The Merchant of Venice',
                 'romeo_juliet' => 'Romeo & Juliet',
                 'much_ado' => 'Much Ado About Nothing',
+            ],
+            'modern_text' => [
+                'aic' => 'An Inspector Calls',
+            ],
+            'modern_prose' => [
+                'lord_of_the_flies' => 'Lord of the Flies',
+                'animal_farm' => 'Animal Farm',
+                'tkam' => 'To Kill a Mockingbird',
+                'omam' => 'Of Mice and Men',
+                'old_man_sea' => 'The Old Man and the Sea',
+                'anita_and_me' => 'Anita and Me',
+                'curious_incident' => 'The Curious Incident',
             ],
             '19th_century' => [
                 'acc' => 'A Christmas Carol',
@@ -174,6 +225,30 @@ class SWML_Topic_Questions {
             ],
         ],
         'ccea' => [
+            'language' => [
+                'language_u1' => 'Language Unit 1',
+                'language_u4' => 'Language Unit 4',
+            ],
+            'prose' => [
+                'about_a_boy' => 'About a Boy',
+                'how_many_miles' => 'How Many Miles to Babylon?',
+                'tkam' => 'To Kill a Mockingbird',
+                'omam' => 'Of Mice and Men',
+                'animal_farm' => 'Animal Farm',
+                'lord_of_the_flies' => 'Lord of the Flies',
+            ],
+            'unseen_prose' => [
+                'unseen_prose' => 'Unseen Prose',
+            ],
+            'drama' => [
+                'aic' => 'An Inspector Calls',
+                'blood_brothers' => 'Blood Brothers',
+                'leave_taking' => 'Leave Taking',
+                'dna' => 'DNA',
+                'taste_of_honey' => 'A Taste of Honey',
+                'journeys_end' => "Journey's End",
+                'curious_incident_play' => 'The Curious Incident (Play)',
+            ],
             'poetry_anthology' => [
                 'ccea_identity' => 'Identity',
                 'ccea_relationships' => 'Relationships',
@@ -181,6 +256,10 @@ class SWML_Topic_Questions {
             ],
         ],
         'cambridge-igcse' => [
+            'language' => [
+                'language_p1' => 'Language Paper 1',
+                'language_p2' => 'Language Paper 2',
+            ],
             'poetry_anthology' => [
                 'songs_ourselves_v1' => 'Songs of Ourselves Vol. 1',
             ],
@@ -217,6 +296,8 @@ class SWML_Topic_Questions {
         add_action('wp_ajax_swml_import_poems', [$this, 'ajax_import_poems']);
         add_action('wp_ajax_swml_export_all', [$this, 'ajax_export_all']);
         add_action('wp_ajax_swml_import_all', [$this, 'ajax_import_all']);
+        add_action('wp_ajax_swml_overview', [$this, 'ajax_overview']);
+        add_action('wp_ajax_swml_bulk_import_files', [$this, 'ajax_bulk_import_files']);
     }
 
     // ═══════════════════════════════════════════
@@ -276,6 +357,53 @@ class SWML_Topic_Questions {
         update_option(self::option_key($board, $text), $topics, false);
     }
 
+    /**
+     * Map text IDs to template filename slugs for cases that don't follow
+     * the simple str_replace('_', '-', $text) pattern.
+     */
+    private static function text_to_template_slug($text) {
+        $map = [
+            'aic'                    => 'inspector-calls',
+            'acc'                    => 'christmas-carol',
+            'the_tempest'            => 'tempest',
+            'merchant_venice'        => 'merchant-of-venice',
+            'ccea_identity'          => 'identity',
+            'ccea_relationships'     => 'relationships',
+            'ccea_conflict'          => 'conflict',
+            'sqa_duffy'              => 'duffy',
+            'sqa_maccaig'            => 'maccaig',
+            'sqa_kay'                => 'kay',
+            'sqa_morgan'             => 'morgan',
+            'sqa_n5_collection'      => 'n5-collection',
+            'curious_incident_play'  => 'curious-incident',
+        ];
+        if (isset($map[$text])) return $map[$text];
+        return str_replace('_', '-', $text);
+    }
+
+    /**
+     * Auto-import topics from a template markdown file if DB is empty.
+     * Returns the imported topics array, or empty array if no template found.
+     */
+    private static function auto_import_from_template($board, $text) {
+        $slug = self::text_to_template_slug($text);
+        $board_slug = str_replace('_', '-', $board);
+        $template_dir = plugin_dir_path(dirname(__FILE__)) . 'protocols/shared/templates/topics/';
+        $file = $template_dir . $board_slug . '-' . $slug . '.md';
+
+        if (!file_exists($file)) return [];
+
+        $markdown = file_get_contents($file);
+        if (empty($markdown)) return [];
+
+        $parsed = SWML_Topic_Parser::parse($markdown);
+        if (empty($parsed)) return [];
+
+        // Save to DB so subsequent requests are fast
+        self::save_topics($board, $text, $parsed);
+        return $parsed;
+    }
+
     // ═══════════════════════════════════════════
     //  REST API
     // ═══════════════════════════════════════════
@@ -312,6 +440,17 @@ class SWML_Topic_Questions {
         }
 
         $data = self::get_topic($board, $text, $topic);
+
+        // Auto-import from template file if DB is empty
+        if (!$data) {
+            $imported = self::auto_import_from_template($board, $text);
+            if (!empty($imported)) {
+                foreach ($imported as $t) {
+                    if (($t['topic_number'] ?? 0) === $topic) { $data = $t; break; }
+                }
+            }
+        }
+
         if (!$data) {
             return new \WP_Error('not_found', "No question for topic {$topic}", ['status' => 404]);
         }
@@ -330,10 +469,17 @@ class SWML_Topic_Questions {
             return new \WP_Error('missing_params', 'board and text are required', ['status' => 400]);
         }
 
+        $topics = self::get_topics($board, $text);
+
+        // Auto-import from template file if DB is empty
+        if (empty($topics)) {
+            $topics = self::auto_import_from_template($board, $text);
+        }
+
         return rest_ensure_response([
             'board'  => $board,
             'text'   => $text,
-            'topics' => self::get_topics($board, $text),
+            'topics' => $topics,
         ]);
     }
 
@@ -701,6 +847,174 @@ class SWML_Topic_Questions {
      * Export all topics + poems as JSON download.
      * Gathers every swml_topics_* and swml_poems_* option from the database.
      */
+    /**
+     * Return topic counts for ALL board/text combinations (v7.13.18 overview panel).
+     */
+    public function ajax_overview() {
+        check_ajax_referer('swml_topics_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+
+        global $wpdb;
+
+        // Fetch all topic option keys and their sizes in one query.
+        $rows = $wpdb->get_results(
+            "SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE 'swml_topics_%'",
+            ARRAY_A
+        );
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $val = maybe_unserialize($row['option_value']);
+            if (is_array($val)) {
+                // Key format: swml_topics_{board}_{text}
+                $key = str_replace('swml_topics_', '', $row['option_name']);
+                $counts[$key] = count($val);
+            }
+        }
+
+        // Build overview grouped by board → subject → text with counts.
+        $overview = [];
+        $total_texts = 0;
+        $total_topics = 0;
+        $populated = 0;
+
+        foreach (self::$text_catalogue as $board => $subjects) {
+            foreach ($subjects as $subject => $texts) {
+                foreach ($texts as $slug => $label) {
+                    $total_texts++;
+                    $option_key = sanitize_key($board) . '_' . sanitize_key($slug);
+                    $count = $counts[$option_key] ?? 0;
+                    $total_topics += $count;
+                    if ($count > 0) $populated++;
+
+                    $overview[] = [
+                        'board'   => $board,
+                        'subject' => $subject,
+                        'slug'    => $slug,
+                        'label'   => $label,
+                        'count'   => $count,
+                    ];
+                }
+            }
+        }
+
+        wp_send_json_success([
+            'items'        => $overview,
+            'total_texts'  => $total_texts,
+            'total_topics' => $total_topics,
+            'populated'    => $populated,
+        ]);
+    }
+
+    /**
+     * Bulk import all topic files from protocols/shared/templates/topics/.
+     * Reads each .md file, maps filename to board/text slug, parses and saves.
+     */
+    public function ajax_bulk_import_files() {
+        check_ajax_referer('swml_topics_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+
+        $dir = plugin_dir_path(dirname(__FILE__)) . 'protocols/shared/templates/topics/';
+        if (!is_dir($dir)) {
+            wp_send_json_error('Topics directory not found: ' . $dir);
+        }
+
+        // Known aliases: filename slug → catalogue slug
+        $aliases = [
+            'christmas_carol' => 'acc',
+            'inspector_calls' => 'aic',
+            'tempest'         => 'the_tempest',
+        ];
+        // Board-specific prefix aliases
+        $board_prefix_aliases = [
+            'sqa'    => ['duffy' => 'sqa_duffy', 'maccaig' => 'sqa_maccaig', 'kay' => 'sqa_kay', 'morgan' => 'sqa_morgan'],
+            'ccea'   => ['identity' => 'ccea_identity', 'relationships' => 'ccea_relationships', 'conflict' => 'ccea_conflict'],
+            'eduqas' => ['poetry' => 'eduqas_poetry'],
+        ];
+        // Board prefixes in order (longest first to match edexcel-igcse before edexcel)
+        $board_prefixes = ['cambridge-igcse', 'edexcel-igcse', 'edexcel', 'eduqas', 'aqa', 'ocr', 'sqa', 'ccea'];
+
+        // Build slug lookup from catalogue
+        $slug_lookup = [];
+        foreach (self::$text_catalogue as $board => $subjects) {
+            foreach ($subjects as $subject => $texts) {
+                foreach ($texts as $slug => $label) {
+                    $slug_lookup[$board . '/' . $slug] = true;
+                }
+            }
+        }
+
+        $files = glob($dir . '*.md');
+        $results = ['imported' => [], 'skipped' => [], 'failed' => []];
+
+        foreach ($files as $filepath) {
+            $filename = basename($filepath, '.md');
+
+            // Determine board and text part
+            $board = null;
+            $text_part = null;
+            foreach ($board_prefixes as $prefix) {
+                if (strpos($filename, $prefix . '-') === 0) {
+                    $board = $prefix;
+                    $text_part = substr($filename, strlen($prefix) + 1);
+                    break;
+                }
+            }
+            if (!$board || !$text_part) {
+                $results['skipped'][] = $filename . '.md — unknown board';
+                continue;
+            }
+
+            // Convert kebab to snake
+            $slug = str_replace('-', '_', $text_part);
+
+            // Apply board-specific prefix aliases
+            if (isset($board_prefix_aliases[$board][$slug])) {
+                $slug = $board_prefix_aliases[$board][$slug];
+            }
+            // Apply generic aliases
+            if (isset($aliases[$slug])) {
+                $slug = $aliases[$slug];
+            }
+
+            // Verify slug exists in catalogue
+            if (!isset($slug_lookup[$board . '/' . $slug])) {
+                $results['skipped'][] = $filename . '.md — slug "' . $slug . '" not in catalogue for ' . $board;
+                continue;
+            }
+
+            // Read and parse file
+            $markdown = file_get_contents($filepath);
+            if (empty($markdown)) {
+                $results['failed'][] = $filename . '.md — empty file';
+                continue;
+            }
+
+            $parsed = self::parse_markdown_topics($markdown);
+            if (empty($parsed)) {
+                $results['failed'][] = $filename . '.md — parser returned 0 topics';
+                continue;
+            }
+
+            // Save (replace mode — fresh import)
+            self::save_topics($board, $slug, $parsed);
+            $results['imported'][] = [
+                'file'  => $filename . '.md',
+                'board' => $board,
+                'text'  => $slug,
+                'count' => count($parsed),
+            ];
+        }
+
+        wp_send_json_success([
+            'imported_count' => count($results['imported']),
+            'skipped_count'  => count($results['skipped']),
+            'failed_count'   => count($results['failed']),
+            'total_topics'   => array_sum(array_column($results['imported'], 'count')),
+            'details'        => $results,
+        ]);
+    }
+
     public function ajax_export_all() {
         check_ajax_referer('swml_topics_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
@@ -860,6 +1174,29 @@ class SWML_Topic_Questions {
         <div class="wrap" id="swml-topics-app">
             <h1>📚 WML Topic Question Bank</h1>
             <p class="description">Manage fixed questions for Mastery Programme topics. These questions are served to students when they enter a specific topic in the programme.</p>
+
+            <!-- Overview Panel (v7.13.18) -->
+            <div id="tq-overview" style="margin:20px 0 30px;background:#fff;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#f7f7ff;border-bottom:1px solid #eee;">
+                    <h3 style="margin:0;font-size:14px;">Topic Coverage Overview</h3>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div id="tq-overview-stats" style="font-size:12px;color:#666;">Loading...</div>
+                        <button class="button button-primary" id="tq-bulk-import-btn" style="font-size:12px;padding:4px 12px;">Import All from Files</button>
+                    </div>
+                </div>
+                <div id="tq-overview-body" style="max-height:400px;overflow-y:auto;padding:0;">
+                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                        <thead><tr style="background:#f9f9f9;position:sticky;top:0;z-index:1;">
+                            <th style="text-align:left;padding:6px 12px;border-bottom:1px solid #eee;">Board</th>
+                            <th style="text-align:left;padding:6px 12px;border-bottom:1px solid #eee;">Subject</th>
+                            <th style="text-align:left;padding:6px 12px;border-bottom:1px solid #eee;">Text</th>
+                            <th style="text-align:center;padding:6px 12px;border-bottom:1px solid #eee;width:80px;">Topics</th>
+                            <th style="text-align:center;padding:6px 12px;border-bottom:1px solid #eee;width:60px;">Status</th>
+                        </tr></thead>
+                        <tbody id="tq-overview-rows"></tbody>
+                    </table>
+                </div>
+            </div>
 
             <style>
                 #swml-topics-app { max-width: 960px; }
@@ -1124,6 +1461,84 @@ class SWML_Topic_Questions {
             const nonce = '<?php echo $nonce; ?>';
             const ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
             let currentBoard = '', currentSubject = '', currentText = '';
+
+            // ── Overview panel (v7.13.18) ──
+            $.post(ajaxurl, { action: 'swml_overview', nonce }, function(res) {
+                if (!res.success) return;
+                const d = res.data;
+                $('#tq-overview-stats').html(
+                    '<strong>' + d.populated + '</strong> / ' + d.total_texts + ' texts have topics (' + d.total_topics + ' total topics)'
+                );
+                let html = '';
+                let lastBoard = '';
+                d.items.forEach(function(item) {
+                    const boardLabel = item.board.toUpperCase().replace(/-/g, ' ');
+                    const subjectLabel = item.subject.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+                    const boardCell = item.board !== lastBoard ? boardLabel : '';
+                    lastBoard = item.board;
+                    const statusColor = item.count >= 8 ? '#1CD991' : (item.count > 0 ? '#f59e0b' : '#e5e7eb');
+                    const statusIcon = item.count >= 8 ? 'Ready' : (item.count > 0 ? 'Partial' : 'Empty');
+                    const statusTextColor = item.count >= 8 ? '#166534' : (item.count > 0 ? '#92400e' : '#9ca3af');
+                    const rowBg = item.count === 0 ? '' : (item.count >= 8 ? 'background:#f0fdf4;' : 'background:#fffbeb;');
+                    html += '<tr style="' + rowBg + 'cursor:pointer;" data-board="' + item.board + '" data-subject="' + item.subject + '" data-text="' + item.slug + '">';
+                    html += '<td style="padding:4px 12px;border-bottom:1px solid #f0f0f1;font-weight:' + (boardCell ? '600' : '400') + ';">' + boardCell + '</td>';
+                    html += '<td style="padding:4px 12px;border-bottom:1px solid #f0f0f1;">' + subjectLabel + '</td>';
+                    html += '<td style="padding:4px 12px;border-bottom:1px solid #f0f0f1;">' + item.label + '</td>';
+                    html += '<td style="padding:4px 12px;border-bottom:1px solid #f0f0f1;text-align:center;font-weight:600;">' + item.count + '</td>';
+                    html += '<td style="padding:4px 12px;border-bottom:1px solid #f0f0f1;text-align:center;">';
+                    html += '<span style="display:inline-block;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:600;background:' + statusColor + ';color:' + statusTextColor + ';">' + statusIcon + '</span>';
+                    html += '</td></tr>';
+                });
+                $('#tq-overview-rows').html(html);
+
+                // Click a row to auto-select that board/subject/text and load
+                $('#tq-overview-rows').on('click', 'tr', function() {
+                    var b = $(this).data('board'), s = $(this).data('subject'), t = $(this).data('text');
+                    $('#tq-board').val(b).trigger('change');
+                    setTimeout(function() {
+                        $('#tq-subject').val(s).trigger('change');
+                        setTimeout(function() {
+                            $('#tq-text').val(t).trigger('change');
+                            setTimeout(function() { $('#tq-load').trigger('click'); }, 50);
+                        }, 50);
+                    }, 50);
+                });
+            });
+
+            // ── Bulk import from files button ──
+            $('#tq-bulk-import-btn').on('click', function() {
+                if (!confirm('This will import ALL topic files from the server into the database (replace mode).\n\nContinue?')) return;
+                var btn = $(this);
+                btn.prop('disabled', true).text('Importing...');
+                $.post(ajaxurl, { action: 'swml_bulk_import_files', nonce }, function(res) {
+                    if (!res.success) {
+                        alert('Bulk import failed: ' + (res.data || 'Unknown error'));
+                        btn.prop('disabled', false).text('Import All from Files');
+                        return;
+                    }
+                    var d = res.data;
+                    var msg = 'Import complete!\n\n' +
+                        'Imported: ' + d.imported_count + ' files (' + d.total_topics + ' topics)\n' +
+                        'Skipped: ' + d.skipped_count + '\n' +
+                        'Failed: ' + d.failed_count;
+                    if (d.details.skipped.length) msg += '\n\nSkipped:\n- ' + d.details.skipped.join('\n- ');
+                    if (d.details.failed.length) msg += '\n\nFailed:\n- ' + d.details.failed.join('\n- ');
+                    alert(msg);
+                    btn.text('Import Complete').css('background', '#1CD991');
+                    // Reload overview
+                    $.post(ajaxurl, { action: 'swml_overview', nonce }, function(res2) {
+                        if (res2.success) {
+                            var d2 = res2.data;
+                            $('#tq-overview-stats').html(
+                                '<strong>' + d2.populated + '</strong> / ' + d2.total_texts + ' texts have topics (' + d2.total_topics + ' total topics)'
+                            );
+                        }
+                    });
+                }).fail(function() {
+                    alert('Request failed — check server logs.');
+                    btn.prop('disabled', false).text('Import All from Files');
+                });
+            });
 
             // ── Cascading dropdowns ──
             $('#tq-board').on('change', function() {

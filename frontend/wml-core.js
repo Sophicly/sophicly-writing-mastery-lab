@@ -25,12 +25,19 @@ window.WML = (function() {
         canvasLoad:    config.restUrl + 'canvas/load',
         canvasList:    config.restUrl + 'canvas/list',
         topicQuestion: config.restUrl + 'topic-question',
+        topicQuestions: config.restUrl + 'topic-questions',
         phaseComplete: config.restUrl + 'phase/complete',
         phaseStatus:   config.restUrl + 'phase/status',
         chatSave:      config.restUrl + 'canvas/chat-save',
         chatLoad:      config.restUrl + 'canvas/chat-load',
         chatClear:     config.restUrl + 'canvas/chat-clear',
         learningProfile: config.restUrl + 'learning-profile',
+        // Creative writing project storage (v7.13.30)
+        cwProject:       config.restUrl + 'cw-project',
+        cwArtifact:      config.restUrl + 'cw-project/artifact',
+        cwTrial:         config.restUrl + 'cw-project/trial',
+        cwStep:          config.restUrl + 'cw-project/step',
+        cwPlotTemplate:  config.restUrl + 'cw-project/plot-template',
     };
     const headers = { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce };
 
@@ -90,6 +97,18 @@ window.WML = (function() {
                 { id: 'old_man_sea', label: 'The Old Man and the Sea', icon: '🎣' },
                 { id: 'anita_and_me', label: 'Anita and Me', icon: '🎭' },
                 { id: 'curious_incident', label: 'The Curious Incident', icon: '🐕' },
+            ],
+        },
+        drama: {
+            label: 'Modern Drama',
+            texts: [
+                { id: 'aic', label: 'An Inspector Calls', icon: '🔍' },
+                { id: 'blood_brothers', label: 'Blood Brothers', icon: '👥' },
+                { id: 'leave_taking', label: 'Leave Taking', icon: '🚪' },
+                { id: 'dna', label: 'DNA', icon: '🧬' },
+                { id: 'taste_of_honey', label: 'A Taste of Honey', icon: '🍯' },
+                { id: 'journeys_end', label: "Journey's End", icon: '⚔️' },
+                { id: 'curious_incident_play', label: 'The Curious Incident (Play)', icon: '🐕' },
             ],
         },
         prose: {
@@ -305,7 +324,7 @@ window.WML = (function() {
         subject: config.urlParams?.subject || '',
         text: config.urlParams?.text || '',
         task: config.urlParams?.task || '',       // from URL in guided mode
-        planningMode: '',                        // essay_plan mode: A (Recall), B (Guided), C (Instant) | model_answer: A (Coached), B (Instant), C (Advanced)
+        planningMode: config.urlParams?.planning_mode || '',  // essay_plan mode: A/B/C | model_answer: A/B/C — restored from URL on refresh
         modelSection: '',                        // model_answer section: introduction, body1, body2, body3, conclusion
         advancedLevel: 0,                        // model_answer Advanced: 1 (Full Recall), 2 (Plan & Answer), 3 (Answer Only)
         essayTiming: '',                         // model_answer Advanced: 'paragraph' or 'full'
@@ -340,6 +359,8 @@ window.WML = (function() {
         draftType: null,
         phase: null,
         _phaseMarkedComplete: false,  // Prevents double-fire of Mark Complete
+        // v7.14.3: Exercise unique ID — UUID per attempt for deep linking + dashboard + tutor access
+        exerciseId: config.urlParams?.eid || '',
     };
 
     const PLAN_STEPS = [
@@ -503,6 +524,178 @@ window.WML = (function() {
         { type: 'exam_question_output', label: 'Generated Question', section: 'question' },
     ];
 
+    // ── CREATIVE WRITING CONSTANTS (v7.13.34) ──
+    const CW_STEPS = [
+        // Planning Phase
+        { step: 1,  label: 'Writer Profile',           tier: 'si', phase: 'planning' },
+        { step: 2,  label: 'Explore Story Ideas',      tier: 'si', phase: 'planning' },
+        { step: 3,  label: 'Create Logline',            tier: 'si', phase: 'planning' },
+        { step: 4,  label: 'Brief Outline',             tier: 'si', phase: 'planning' },
+        { step: 5,  label: 'Choose Plot Structure',     tier: 'si', phase: 'planning' },
+        { step: 6,  label: 'Plot Outline Workshop',     tier: 'si', phase: 'planning' },
+        { step: 7,  label: 'Universal Values',          tier: 'workbook', phase: 'planning' },
+        // Drafting Cycle
+        { step: 8,  label: 'Scene Selection',           tier: 'si', phase: 'drafting' },
+        { step: 9,  label: 'Draft 1: Prose Style',      tier: 'si', phase: 'drafting', draft: 1 },
+        { id: 'trial_1', label: 'Trial 1: Story Coherence', tier: 'si', phase: 'drafting', trial: 1 },
+        { step: 10, label: 'Character Profile',         tier: 'workbook', phase: 'drafting' },
+        { step: 11, label: 'Update Plot: Goals',        tier: 'workbook', phase: 'drafting' },
+        { step: 12, label: 'Draft 2: Character Arc',    tier: 'si', phase: 'drafting', draft: 2 },
+        { id: 'trial_2', label: 'Trial 2: Character Depth', tier: 'si', phase: 'drafting', trial: 2 },
+        { step: 13, label: 'Character Archetypes',      tier: 'workbook', phase: 'drafting' },
+        { step: 14, label: 'Update Plot: Archetypes',   tier: 'workbook', phase: 'drafting' },
+        { step: 15, label: 'Draft 3: Archetypes',       tier: 'si', phase: 'drafting', draft: 3 },
+        { id: 'trial_3', label: 'Trial 3: Archetype Coherence', tier: 'si', phase: 'drafting', trial: 3 },
+        { step: 16, label: 'Deepen Empathy',            tier: 'workbook', phase: 'drafting' },
+        { step: 17, label: 'Update Plot: Empathy',      tier: 'workbook', phase: 'drafting' },
+        { step: 18, label: 'Draft 4: Empathy',          tier: 'si', phase: 'drafting', draft: 4 },
+        { id: 'trial_4', label: 'Trial 4: Emotional Impact', tier: 'si', phase: 'drafting', trial: 4 },
+        { step: 19, label: 'Theme & Tone',              tier: 'workbook', phase: 'drafting' },
+        { step: 20, label: 'Update Plot: Theme',        tier: 'workbook', phase: 'drafting' },
+        { step: 21, label: 'Draft 5: Theme & Tone',     tier: 'si', phase: 'drafting', draft: 5 },
+        { id: 'trial_5', label: 'Trial 5: Thematic Clarity', tier: 'si', phase: 'drafting', trial: 5 },
+        { step: 22, label: 'Genre',                      tier: 'workbook', phase: 'drafting' },
+        { step: 23, label: 'Update Plot: Genre',        tier: 'workbook', phase: 'drafting' },
+        { step: 24, label: 'Draft 6: Genre',            tier: 'si', phase: 'drafting', draft: 6 },
+        { step: 25, label: 'Structural Elements',       tier: 'workbook', phase: 'drafting' },
+        { step: 26, label: 'Update Plot: Structural',   tier: 'workbook', phase: 'drafting' },
+        { step: 27, label: 'Draft 7: Structural',       tier: 'si', phase: 'drafting', draft: 7 },
+        { id: 'trial_6', label: 'Trial 6: Technical Proficiency', tier: 'si', phase: 'drafting', trial: 6 },
+        // Polish Phase
+        { step: 28, label: 'Final Draft — SPAG',        tier: 'si', phase: 'polish' },
+        { step: 29, label: 'Metacognitive Reflection',  tier: 'workbook', phase: 'polish' },
+    ];
+
+    // Lookup helper: task string → CW_STEPS entry
+    function getCwStepDef(task) {
+        if (!task || !task.startsWith('cw_')) return null;
+        if (task.startsWith('cw_trial_')) {
+            const trialNum = parseInt(task.replace('cw_trial_', ''), 10);
+            return CW_STEPS.find(s => s.trial === trialNum) || null;
+        }
+        const stepNum = parseInt(task.replace('cw_step_', ''), 10);
+        return CW_STEPS.find(s => s.step === stepNum) || null;
+    }
+
+    // Map CW step numbers to project artifact keys
+    const CW_ARTIFACT_MAP = {
+        1: 'writer_profile', 2: 'story_ideas', 3: 'logline', 4: 'brief_outline',
+        5: 'plot_structure_choice', 6: 'plot_outline', 7: 'universal_values',
+        8: 'scene_selection',
+        9: 'draft_1', 12: 'draft_2', 15: 'draft_3', 18: 'draft_4',
+        21: 'draft_5', 24: 'draft_6', 27: 'draft_7', 28: 'final_draft',
+        10: 'character_profile', 13: 'character_archetypes',
+        16: 'empathy_plan', 19: 'theme_tone', 22: 'genre',
+        25: 'structural_elements', 29: 'reflection',
+        // Plot updates save back to plot_outline
+        11: 'plot_outline', 14: 'plot_outline', 17: 'plot_outline',
+        20: 'plot_outline', 23: 'plot_outline', 26: 'plot_outline',
+    };
+
+    // Sidebar sub-steps for each CW SI exercise (from protocol sub-step tables)
+    const CW_SIDEBAR_STEPS = {
+        1: [
+            { step: 1, label: 'Inner World' },
+            { step: 2, label: 'Moral Compass' },
+            { step: 3, label: 'Imagination Well' },
+            { step: 4, label: 'External Sources' },
+            { step: 5, label: 'Review & Save' },
+        ],
+        2: [
+            { step: 1, label: 'Genre Exploration' },
+            { step: 2, label: 'Brainstorm Ideas' },
+            { step: 3, label: 'Narrow Down' },
+        ],
+        3: [
+            { step: 1, label: 'Logline Formulas' },
+            { step: 2, label: 'Draft Loglines' },
+            { step: 3, label: 'Refine & Save' },
+        ],
+        4: [
+            { step: 1, label: 'Story Spine' },
+            { step: 2, label: 'Draft Outline' },
+            { step: 3, label: 'Review & Save' },
+        ],
+        5: [
+            { step: 1, label: 'Explore Templates' },
+            { step: 2, label: 'Choose Structure' },
+            { step: 3, label: 'Confirm Choice' },
+        ],
+        6: [
+            { step: 1, label: 'Setup Stage' },
+            { step: 2, label: 'Dream Stage' },
+            { step: 3, label: 'Fascination' },
+            { step: 4, label: 'Nightmare Stage' },
+            { step: 5, label: 'Final Push' },
+            { step: 6, label: 'Goal & Aftermath' },
+            { step: 7, label: 'Review & Save' },
+        ],
+        8: [
+            { step: 1, label: 'Review Outline' },
+            { step: 2, label: 'Choose Scene(s)' },
+            { step: 3, label: 'Scene Plan' },
+        ],
+        9: [
+            { step: 1, label: 'Writing Focus' },
+            { step: 2, label: 'Draft Scene' },
+            { step: 3, label: 'Review & Save' },
+        ],
+        12: [
+            { step: 1, label: 'Character Review' },
+            { step: 2, label: 'Revise Draft' },
+            { step: 3, label: 'Review & Save' },
+        ],
+        15: [
+            { step: 1, label: 'Archetype Review' },
+            { step: 2, label: 'Revise Draft' },
+            { step: 3, label: 'Review & Save' },
+        ],
+        18: [
+            { step: 1, label: 'Empathy Review' },
+            { step: 2, label: 'Revise Draft' },
+            { step: 3, label: 'Review & Save' },
+        ],
+        21: [
+            { step: 1, label: 'Theme Review' },
+            { step: 2, label: 'Revise Draft' },
+            { step: 3, label: 'Review & Save' },
+        ],
+        24: [
+            { step: 1, label: 'Genre Review' },
+            { step: 2, label: 'Revise Draft' },
+            { step: 3, label: 'Review & Save' },
+        ],
+        27: [
+            { step: 1, label: 'Structure Review' },
+            { step: 2, label: 'Revise Draft' },
+            { step: 3, label: 'Review & Save' },
+        ],
+        28: [
+            { step: 1, label: 'SPAG Review' },
+            { step: 2, label: 'Final Polish' },
+            { step: 3, label: 'Submit Final Draft' },
+        ],
+    };
+
+    // Trial sidebar steps (assessment format)
+    CW_SIDEBAR_STEPS['trial_1'] = [
+        { step: 1, label: 'Read Draft' },
+        { step: 2, label: 'Plot Fidelity' },
+        { step: 3, label: 'Prose Quality' },
+        { step: 4, label: 'Feedback' },
+    ];
+    CW_SIDEBAR_STEPS['trial_2'] = CW_SIDEBAR_STEPS['trial_1'];
+    CW_SIDEBAR_STEPS['trial_3'] = CW_SIDEBAR_STEPS['trial_1'];
+    CW_SIDEBAR_STEPS['trial_4'] = CW_SIDEBAR_STEPS['trial_1'];
+    CW_SIDEBAR_STEPS['trial_5'] = CW_SIDEBAR_STEPS['trial_1'];
+    CW_SIDEBAR_STEPS['trial_6'] = CW_SIDEBAR_STEPS['trial_1'];
+
+    // Map draft steps to the artifact key of their predecessor (for pre-population)
+    const CW_DRAFT_PREDECESSOR = {
+        12: 'draft_1', 15: 'draft_2', 18: 'draft_3', 21: 'draft_4',
+        24: 'draft_5', 27: 'draft_6', 28: 'draft_7',
+    };
+
     // ── EXERCISE MANIFEST — single source of truth for all exercise types (v7.13.11) ──
     // Each entry defines what panels render, which protocol loads, how completion is detected,
     // and what step/element arrays to use. The renderer reads from this instead of if/else chains.
@@ -565,7 +758,7 @@ window.WML = (function() {
             storageSuffix: '_fb',
             chatHeaderLabel: 'Discuss Feedback',
             sidebarSteps: null,
-            phase: 'initial',
+            phase: null, // works in both phases — phase set by bridge dropdown
         },
 
         // ── Phase 2: Redraft ──
@@ -615,6 +808,20 @@ window.WML = (function() {
             protocolTask: null,
             completionType: 'manual',
             storageSuffix: '_outline',
+            chatHeaderLabel: null,
+            sidebarSteps: null,
+            phase: 'redraft',
+        },
+        response: {
+            label: 'Write Response',
+            environment: 'write_only',
+            panels: { sidebar: false, chat: false, guidance: false, document: true },
+            steps: null,
+            elements: null,
+            protocolSource: null,
+            protocolTask: null,
+            completionType: 'manual',
+            storageSuffix: '_redraft',
             chatHeaderLabel: null,
             sidebarSteps: null,
             phase: 'redraft',
@@ -674,84 +881,121 @@ window.WML = (function() {
         },
         exam_question: {
             label: 'Exam Question',
-            environment: 'chat',
-            panels: null,
+            environment: 'canvas',          // v7.13.92: routed through renderCanvasWorkspace (one renderer for all)
+            panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: 'EXAM_QUESTION_STEPS',
             elements: 'EXAM_QUESTION_ELEMENTS',
             protocolSource: 'board',
             protocolTask: 'exam_question',
             completionType: 'step_complete',
-            storageSuffix: '',
-            chatHeaderLabel: null,
+            storageSuffix: '_eq',
+            documentTemplate: 'exam_question',  // v7.13.17: template ready for canvas migration
+            chatHeaderLabel: 'Exam Question Creator',
             sidebarSteps: null,
             phase: null,
         },
         essay_plan: {
             label: 'Essay Plan',
-            environment: 'chat',
-            panels: null,
+            environment: 'canvas',          // v7.13.92: routed through renderCanvasWorkspace
+            panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: 'ESSAY_PLAN_STEPS',       // getSteps() handles mode A→RECALL variant
             elements: null,
             protocolSource: 'shared',
             protocolTask: 'essay_plan',
             completionType: 'step_complete',
-            storageSuffix: '',
-            chatHeaderLabel: null,
+            storageSuffix: '_ep',
+            documentTemplate: 'essay_plan',     // v7.13.17: template ready for canvas migration
+            chatHeaderLabel: 'Essay Plan',
             sidebarSteps: null,
             phase: 'redraft',
         },
         model_answer: {
             label: 'Model Answer',
-            environment: 'chat',
-            panels: null,
+            environment: 'canvas',          // v7.13.92: routed through renderCanvasWorkspace
+            panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: 'MODEL_ANSWER_STEPS',     // getSteps() handles mode C→ADVANCED variant
             elements: 'MODEL_ANSWER_ELEMENTS',
             protocolSource: 'shared',
             protocolTask: 'model_answer',
             completionType: 'step_complete',
-            storageSuffix: '',
-            chatHeaderLabel: null,
+            storageSuffix: '_ma',
+            documentTemplate: 'model_answer',   // v7.13.17: template ready for canvas migration
+            chatHeaderLabel: 'Model Answer',
             sidebarSteps: null,
             phase: 'redraft',
         },
         verbal_rehearsal: {
             label: 'Quote Analysis',
-            environment: 'chat',
-            panels: null,
+            environment: 'canvas',          // v7.13.92: routed through renderCanvasWorkspace
+            panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: 'QUOTE_ANALYSIS_STEPS',
             elements: 'QUOTE_ANALYSIS_ELEMENTS',
             protocolSource: 'shared',
             protocolTask: 'verbal_rehearsal',
             completionType: 'step_complete',
-            storageSuffix: '',
-            chatHeaderLabel: null,
+            storageSuffix: '_qa',
+            documentTemplate: 'quote_analysis', // v7.13.17: template ready for canvas migration
+            chatHeaderLabel: 'Quote Analysis',
             sidebarSteps: null,
             phase: null,
         },
         conceptual_notes: {
             label: 'Conceptual Notes',
-            environment: 'chat',
-            panels: null,
+            environment: 'canvas',          // v7.13.92: routed through renderCanvasWorkspace
+            panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: 'CONCEPTUAL_NOTES_STEPS', // getSteps() handles poetry/nonfiction variants
             elements: 'CONCEPTUAL_NOTES_ELEMENTS', // getElements() handles variants
             protocolSource: 'shared',
             protocolTask: 'conceptual_notes',
             completionType: 'step_complete',
-            storageSuffix: '',
-            chatHeaderLabel: null,
+            storageSuffix: '_cn',
+            documentTemplate: 'conceptual_notes', // v7.13.17: two variants — literature (plays/novels) + poetry
+            chatHeaderLabel: 'Conceptual Notes',
             sidebarSteps: null,
             phase: null,
         },
         memory_practice: {
             label: 'Memory Practice',
-            environment: 'chat',
-            panels: null,
+            environment: 'canvas',          // v7.13.92: routed through renderCanvasWorkspace
+            panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: 'MEMORY_PRACTICE_STEPS',
             elements: null,
             protocolSource: 'shared',
             protocolTask: 'memory_practice',
             completionType: 'step_complete',
-            storageSuffix: '',
+            storageSuffix: '_mp',
+            documentTemplate: 'memory_practice', // v7.13.17: template ready for canvas migration
+            chatHeaderLabel: 'Memory Practice',
+            sidebarSteps: null,
+            phase: null,
+        },
+
+        // ── Creative Writing: SI-Guided Steps (v7.13.34) ──
+        cw_si: {
+            label: 'Creative Writing',
+            environment: 'canvas',
+            panels: { sidebar: true, chat: true, guidance: false, document: true },
+            steps: null,
+            elements: null,
+            protocolSource: 'shared',
+            protocolTask: null,
+            completionType: 'manual',
+            storageSuffix: '_cw',
+            chatHeaderLabel: 'Sophic Intelligence',
+            sidebarSteps: null,
+            phase: null,
+        },
+        // ── Creative Writing: Workbook Steps (v7.13.34) ──
+        cw_workbook: {
+            label: 'Creative Writing',
+            environment: 'write_only',
+            panels: { sidebar: false, chat: false, guidance: true, document: true },
+            steps: null,
+            elements: null,
+            protocolSource: null,
+            protocolTask: null,
+            completionType: 'manual',
+            storageSuffix: '_cw',
             chatHeaderLabel: null,
             sidebarSteps: null,
             phase: null,
@@ -759,8 +1003,25 @@ window.WML = (function() {
     };
 
     // Helper: get manifest entry for current task (falls back to planning)
+    // v7.13.34: CW dynamic lookup — resolves cw_step_X / cw_trial_X to the correct base config
     function getExerciseConfig(task) {
-        return EXERCISE_MANIFEST[task] || EXERCISE_MANIFEST.planning;
+        if (EXERCISE_MANIFEST[task]) return EXERCISE_MANIFEST[task];
+        if (task && task.startsWith('cw_')) {
+            const stepDef = getCwStepDef(task);
+            if (stepDef) {
+                const base = stepDef.tier === 'si' ? EXERCISE_MANIFEST.cw_si : EXERCISE_MANIFEST.cw_workbook;
+                const stepKey = stepDef.step || stepDef.id;
+                return {
+                    ...base,
+                    label: stepDef.label,
+                    protocolTask: task,
+                    storageSuffix: '_cw_' + stepKey,
+                    sidebarSteps: CW_SIDEBAR_STEPS[stepKey] || null,
+                    chatHeaderLabel: 'Step ' + stepKey + ': ' + stepDef.label,
+                };
+            }
+        }
+        return EXERCISE_MANIFEST.planning;
     }
 
     // Active config based on current task
@@ -1141,8 +1402,60 @@ window.WML = (function() {
         return e;
     }
 
-    async function apiPost(url, body) { return (await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) })).json(); }
-    async function apiGet(url) { return (await fetch(url, { headers })).json(); }
+    async function apiPost(url, body) {
+        try {
+            const r = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
+            const text = await r.text();
+            return text ? JSON.parse(text) : { success: false, message: 'Empty server response' };
+        } catch (e) { console.error('WML apiPost error:', e); return { success: false, message: e.message }; }
+    }
+    async function apiGet(url) {
+        try {
+            const r = await fetch(url, { headers });
+            const text = await r.text();
+            return text ? JSON.parse(text) : { success: false, message: 'Empty server response' };
+        } catch (e) { console.error('WML apiGet error:', e); return { success: false, message: e.message }; }
+    }
+
+    // ── Creative Writing Project API (v7.13.30) ──
+    const cwProject = {
+        /** Create a new project. Returns { success, project }. */
+        create(name, courseContext = 'standalone') {
+            return apiPost(API.cwProject, { action: 'create', name, course_context: courseContext });
+        },
+        /** Update project metadata (name, status). */
+        update(projectId, updates = {}) {
+            return apiPost(API.cwProject, { action: 'update', project_id: projectId, ...updates });
+        },
+        /** List all projects. Returns { success, projects: [] }. */
+        list() {
+            return apiGet(API.cwProject);
+        },
+        /** Load full project data. Returns { success, project }. */
+        load(projectId) {
+            return apiGet(API.cwProject + '?project_id=' + encodeURIComponent(projectId));
+        },
+        /** Save a single artifact (e.g. 'writer_profile', 'logline'). */
+        saveArtifact(projectId, key, value) {
+            return apiPost(API.cwArtifact, { project_id: projectId, key, value });
+        },
+        /** Load a single artifact. Returns { success, key, value }. */
+        loadArtifact(projectId, key) {
+            return apiGet(API.cwArtifact + '?project_id=' + encodeURIComponent(projectId) + '&key=' + encodeURIComponent(key));
+        },
+        /** Save a trial assessment result. */
+        saveTrial(projectId, trialData) {
+            return apiPost(API.cwTrial, { project_id: projectId, trial: trialData });
+        },
+        /** Mark a step as complete. */
+        completeStep(projectId, step, complete = true) {
+            return apiPost(API.cwStep, { project_id: projectId, step, complete });
+        },
+        /** v7.13.60: Load plot structure template HTML from server. */
+        loadPlotTemplate(structureSlug = 'heros-journey') {
+            return apiGet(API.cwPlotTemplate + '?structure=' + encodeURIComponent(structureSlug));
+        },
+    };
 
     // ── 3D Push Button builder (v7.12.32) ──
     // Creates a Sophicly-branded 3D animated button with per-character text animation.
@@ -1623,6 +1936,9 @@ window.WML = (function() {
             return `<span class="swml-step-task">${label}</span> `;
         });
 
+        // v7.13.41: Auto-link URLs — convert bare https:// URLs to clickable links
+        html = html.replace(/(?<![="'])(https?:\/\/[^\s<>"']+)/g, '<a href="$1" target="_blank" rel="noopener" class="swml-chat-link">$1</a>');
+
         return html;
     }
 
@@ -1664,9 +1980,11 @@ window.WML = (function() {
         QUOTE_ANALYSIS_ELEMENTS, MODEL_ANSWER_ELEMENTS, PLAN_ELEMENTS,
         // Helpers
         isPoetrySubject, isLanguageSubject, isNonfictionSubject, isAnthologySubject,
-        getSteps, getElements, getExerciseConfig,
+        getSteps, getElements, getExerciseConfig, getCwStepDef,
         // Exercise manifest
         EXERCISE_MANIFEST,
+        // Creative Writing
+        CW_STEPS, CW_ARTIFACT_MAP, CW_DRAFT_PREDECESSOR, CW_SIDEBAR_STEPS,
         // Revision map
         REVISION_MAP,
         // Utilities
@@ -1706,5 +2024,7 @@ window.WML = (function() {
         stripAIInternals, detectAssessmentStep, formatAI,
         // Rendering
         renderLogo, renderBadges,
+        // Creative writing project API (v7.13.30)
+        cwProject,
     };
 })();

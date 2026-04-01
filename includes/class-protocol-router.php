@@ -383,6 +383,59 @@ class SWML_Protocol_Router {
             return null;
         }
 
+        // Creative Writing: direct protocol file load — no manifest needed (v7.13.34)
+        if (strpos($task, 'cw_step_') === 0 || strpos($task, 'cw_trial_') === 0) {
+            $cw_protocol_map = [
+                'cw_step_1'  => 'CW-STEP-01-writer-profile.md',
+                'cw_step_2'  => 'CW-STEP-02-explore-story-ideas.md',
+                'cw_step_3'  => 'CW-STEP-03-logline.md',
+                'cw_step_4'  => 'CW-STEP-04-brief-outline.md',
+                'cw_step_5'  => 'CW-STEP-05-choose-plot-structure.md',
+                'cw_step_6'  => 'CW-STEP-06-plot-outline.md',
+                'cw_step_7'  => 'CW-STEP-07-universal-values.md',
+                'cw_step_8'  => 'CW-STEP-08-scene-selection.md',
+                'cw_step_9'  => 'CW-STEP-09-draft-1-prose-style.md',
+                'cw_step_10' => 'CW-STEP-10-character-profile.md',
+                'cw_step_11' => 'CW-STEP-11-update-plot-goals.md',
+                'cw_step_12' => 'CW-STEP-12-draft-2-character-arc.md',
+                'cw_step_13' => 'CW-STEP-13-character-archetypes.md',
+                'cw_step_14' => 'CW-STEP-14-update-plot-archetypes.md',
+                'cw_step_15' => 'CW-STEP-15-draft-3-archetypes.md',
+                'cw_step_16' => 'CW-STEP-16-deepen-empathy.md',
+                'cw_step_17' => 'CW-STEP-17-update-plot-empathy.md',
+                'cw_step_18' => 'CW-STEP-18-draft-4-empathy.md',
+                'cw_step_19' => 'CW-STEP-19-theme-tone.md',
+                'cw_step_20' => 'CW-STEP-20-update-plot-theme.md',
+                'cw_step_21' => 'CW-STEP-21-draft-5-theme-tone.md',
+                'cw_step_22' => 'CW-STEP-22-genre.md',
+                'cw_step_23' => 'CW-STEP-23-update-plot-genre.md',
+                'cw_step_24' => 'CW-STEP-24-draft-6-genre.md',
+                'cw_step_25' => 'CW-STEP-25-structural-elements.md',
+                'cw_step_26' => 'CW-STEP-26-update-plot-structural.md',
+                'cw_step_27' => 'CW-STEP-27-draft-7-structural-elements.md',
+                'cw_step_28' => 'CW-STEP-28-final-draft-spag.md',
+                'cw_step_29' => 'CW-STEP-29-metacognitive-reflection.md',
+                'cw_trial_1' => 'CW-TRIAL-01-story-coherence.md',
+                'cw_trial_2' => 'CW-TRIAL-02-character-depth.md',
+                'cw_trial_3' => 'CW-TRIAL-03-archetype-coherence.md',
+                'cw_trial_4' => 'CW-TRIAL-04-emotional-impact.md',
+                'cw_trial_5' => 'CW-TRIAL-05-thematic-clarity.md',
+                'cw_trial_6' => 'CW-TRIAL-06-technical-proficiency.md',
+            ];
+
+            $filename = $cw_protocol_map[$task] ?? null;
+            if ($filename) {
+                $path = $plugin_dir . 'protocols/shared/creative-writing/' . $filename;
+                if (file_exists($path)) {
+                    $content = file_get_contents($path);
+                    error_log("WML Router: CW protocol loaded for '{$task}' (" . strlen($content) . " chars)");
+                    return !empty(trim($content)) ? $content : null;
+                }
+            }
+            error_log("WML Router: CW protocol file not found for task '{$task}'");
+            return null;
+        }
+
         // Map board + subject to protocol group directory
         $protocol_group = $this->resolve_protocol_group($board, $subject);
         $manifest_path = $plugin_dir . "protocols/{$board}/{$protocol_group}/manifest.json";
@@ -557,6 +610,12 @@ class SWML_Protocol_Router {
         // ── Universal Template Injection ──
         // Replace @CONFIRM_SAVE markers with the centralised confirm-before-save block
         $assembled = $this->inject_confirm_templates($assembled, $board);
+
+        // ── Board-specific template substitution (v7.14.6) ──
+        $board_config = $this->load_board_config($protocol_board, $protocol_group);
+        if ($board_config) {
+            $assembled = $this->apply_board_template($assembled, $board_config);
+        }
 
         $word_count = str_word_count($assembled);
         $step_label = $task_config['steps'][$step]['label'] ?? "Step {$step}";
@@ -804,12 +863,75 @@ TEMPLATE;
     }
 
     /**
+     * Get minimum word count target based on marks and subject type (v7.14.7).
+     * Returns the standard minimum (not first-diagnostic lower bar).
+     */
+    private function get_word_count_target($marks, $subject) {
+        $is_language = preg_match('/^language|^lang_/i', $subject);
+        if ($is_language) {
+            $targets = [20 => 400, 30 => 450, 40 => 650, 45 => 650];
+        } else {
+            $targets = [15 => 300, 20 => 400, 24 => 500, 25 => 500, 30 => 650, 34 => 650, 40 => 700];
+        }
+        // Find closest match (exact or nearest lower key)
+        $result = 0;
+        foreach ($targets as $key => $val) {
+            if ($key <= $marks) $result = $val;
+        }
+        return $result;
+    }
+
+    /**
+     * Load board-specific config for template substitution (v7.14.6).
+     *
+     * Reads protocols/shared/assessment/board-configs.json and returns
+     * the config for the given board/protocol_group key, or null.
+     */
+    private function load_board_config($board, $protocol_group) {
+        static $configs = null;
+        if ($configs === null) {
+            $path = SWML_PROTOCOLS_PATH . 'shared/assessment/board-configs.json';
+            if (file_exists($path)) {
+                $raw = file_get_contents($path);
+                $configs = json_decode($raw, true);
+                if (!is_array($configs)) {
+                    error_log('WML Router: Failed to parse board-configs.json');
+                    $configs = [];
+                }
+            } else {
+                $configs = [];
+            }
+        }
+        $key = "{$board}/{$protocol_group}";
+        return $configs[$key] ?? null;
+    }
+
+    /**
+     * Replace {{MARKER}} placeholders in protocol text with board-specific values (v7.14.6).
+     *
+     * Config keys are uppercased to match markers: 'board_name' → {{BOARD_NAME}}.
+     * Only string values are replaced. Returns text unchanged if no config.
+     */
+    private function apply_board_template($text, $config) {
+        if (!$config || !is_array($config)) {
+            return $text;
+        }
+        foreach ($config as $key => $value) {
+            if (is_string($value)) {
+                $marker = '{{' . strtoupper($key) . '}}';
+                $text = str_replace($marker, $value, $text);
+            }
+        }
+        return $text;
+    }
+
+    /**
      * Map board + subject to the protocol group directory name.
-     * 
+     *
      * Protocol groups bundle subjects that share the same protocol:
      * - AQA: Shakespeare + Modern + 19th Century all use "literature" protocol
      * - Other boards: each subject may need its own protocol
-     * 
+     *
      * Returns directory name (e.g., "literature", "poetry", "modern", "language1")
      */
     private function resolve_protocol_group($board, $subject) {
@@ -925,6 +1047,46 @@ TEMPLATE;
         $task = $context['task'] ?? 'planning';
         $protocol_label = $protocol_map[$task] ?? 'Protocol B (Essay Planning)';
 
+        // v7.13.34: Creative Writing preamble — entirely different context
+        if (strpos($task, 'cw_step_') === 0 || strpos($task, 'cw_trial_') === 0) {
+            $cw_step_labels = [
+                'cw_step_1' => 'Writer Profile', 'cw_step_2' => 'Explore Story Ideas',
+                'cw_step_3' => 'Create Logline', 'cw_step_4' => 'Brief Outline',
+                'cw_step_5' => 'Choose Plot Structure', 'cw_step_6' => 'Plot Outline Workshop',
+                'cw_step_7' => 'Universal Values', 'cw_step_8' => 'Scene Selection',
+                'cw_step_9' => 'Draft 1: Prose Style', 'cw_step_10' => 'Character Profile',
+                'cw_step_11' => 'Update Plot: Goals', 'cw_step_12' => 'Draft 2: Character Arc',
+                'cw_step_13' => 'Character Archetypes', 'cw_step_14' => 'Update Plot: Archetypes',
+                'cw_step_15' => 'Draft 3: Archetypes', 'cw_step_16' => 'Deepen Empathy',
+                'cw_step_17' => 'Update Plot: Empathy', 'cw_step_18' => 'Draft 4: Empathy',
+                'cw_step_19' => 'Theme & Tone', 'cw_step_20' => 'Update Plot: Theme',
+                'cw_step_21' => 'Draft 5: Theme & Tone', 'cw_step_22' => 'Genre',
+                'cw_step_23' => 'Update Plot: Genre', 'cw_step_24' => 'Draft 6: Genre',
+                'cw_step_25' => 'Structural Elements', 'cw_step_26' => 'Update Plot: Structural',
+                'cw_step_27' => 'Draft 7: Structural', 'cw_step_28' => 'Final Draft — SPAG',
+                'cw_step_29' => 'Metacognitive Reflection',
+                'cw_trial_1' => 'Trial 1: Story Coherence', 'cw_trial_2' => 'Trial 2: Character Depth',
+                'cw_trial_3' => 'Trial 3: Archetype Coherence', 'cw_trial_4' => 'Trial 4: Emotional Impact',
+                'cw_trial_5' => 'Trial 5: Thematic Clarity', 'cw_trial_6' => 'Trial 6: Technical Proficiency',
+            ];
+            $step_label = $cw_step_labels[$task] ?? ucwords(str_replace(['cw_step_', 'cw_trial_', '_'], ['Step ', 'Trial ', ' '], $task));
+
+            $preamble  = "## WRITING MASTERY LAB — CREATIVE WRITING SESSION\n\n";
+            $preamble .= "**Active Exercise:** {$step_label}\n";
+            $preamble .= "**Student:** {$student_name} (call them {$first_name})\n";
+            $preamble .= "**Course:** Creative Writing Masterclass\n";
+            $preamble .= "**Mode:** Sophic Intelligence Guided\n\n";
+            $preamble .= "You are Sophic Intelligence (SI), a creative writing tutor guiding {$first_name} through the Creative Writing Masterclass.\n";
+            $preamble .= "Follow the protocol instructions precisely. Be encouraging, specific, and constructive.\n";
+            $preamble .= "The student's creative writing document is attached to each message for context.\n\n";
+            $preamble .= "**The Inside Out Technique:** This creative writing course is not just about producing a story. It is the 'Inside Out' companion to the student's literature analysis work ('Outside In'). ";
+            $preamble .= "By experiencing the creative process themselves — generating ideas from personal meaning, making deliberate craft choices, understanding WHY a writer makes certain decisions — students develop genuine insight into authorial intent. ";
+            $preamble .= "At natural moments during the exercise, briefly connect what the student is doing to how published authors do the same. For example: 'Notice how you're drawing from your own values here — this is exactly what authors like Dickens and Priestley did.' ";
+            $preamble .= "Do NOT overdo this — one or two brief connections per exercise is enough. The priority is the creative writing exercise itself.\n";
+
+            return $preamble;
+        }
+
         // Subject label
         $subject_labels = [
             'shakespeare'      => 'Shakespeare',
@@ -1019,7 +1181,13 @@ TEMPLATE;
         if (!empty($context['question'])) {
             $preamble .= "\n**Essay Question:** \"{$context['question']}\"\n";
             if (!empty($context['marks'])) {
-                $preamble .= "**Marks:** {$context['marks']}\n";
+                $marks = (int) $context['marks'];
+                $preamble .= "**Marks:** {$marks}\n";
+                // Word count guidance based on marks (v7.14.7)
+                $wc_target = $this->get_word_count_target($marks, $context['subject'] ?? '');
+                if ($wc_target > 0) {
+                    $preamble .= "**Minimum Word Count:** {$wc_target} words for proper assessment. Students should aim higher where possible.\n";
+                }
             }
             if (!empty($context['aos'])) {
                 $preamble .= "**Assessment Objectives:** " . implode(', ', $context['aos']) . "\n";
@@ -1710,7 +1878,7 @@ TEMPLATE;
             $preamble .= "- `ao1_score` — AO1 score (e.g. '12/20')\n";
             $preamble .= "- `ao2_score` — AO2 score\n";
             $preamble .= "- `ao3_score` — AO3 score\n";
-            $preamble .= "- `ao4_score` — AO4/SPaG score (Shakespeare/Modern only)\n";
+            $preamble .= "- `ao4_score` — (deprecated, no longer used — AO4 marks absorbed into section criteria)\n";
             $preamble .= "- `total_score` — total marks\n";
             $preamble .= "- `grade` — grade/level achieved\n";
             $preamble .= "- `strength_1` — key strength identified\n";
@@ -1747,8 +1915,8 @@ TEMPLATE;
             $preamble .= "CRITICAL: Assess ONLY the text within each === PARAGRAPH N === boundary. Do NOT bleed content from one paragraph into another's assessment.\n\n";
             $preamble .= "### MARK CEILING — STATE UPFRONT\n";
             $preamble .= "If the essay is missing body paragraphs or has a word count penalty, state the MAXIMUM ACHIEVABLE SCORE immediately when you first identify the issue — do NOT defer it to the end.\n\n";
-            $preamble .= "### AO4 HANDLING (Shakespeare & Modern texts only)\n";
-            $preamble .= "For texts assessed out of 34 marks (30 content + 4 AO4/SPaG): add 1 extra mark to each body paragraph criterion total and 1 to the conclusion, making up the 4 extra marks. Do NOT assess AO4 as a separate section. Instead, at the end of ALL section assessments, provide a brief holistic comment on technical accuracy (spelling, punctuation, grammar) WITHOUT assigning a separate AO4 mark — the marks are already embedded in the section scores.\n";
+            $preamble .= "### TECHNICAL ACCURACY (SPaG)\n";
+            $preamble .= "AO4 marks are fully absorbed into the section criteria — there is NO separate AO4 assessment step. All marks are distributed across introduction, body paragraphs, and conclusion. SPaG quality is handled through penalty codes (G1, H1, P1) applied during section assessment. At the end of all section assessments, provide a brief qualitative comment on technical accuracy (spelling, punctuation, grammar) but do NOT assign any separate AO4 mark.\n";
 
             // ── END-OF-ASSESSMENT RULES (v7.11.99) ──
             $preamble .= "\n### ⛔ END-OF-ASSESSMENT — CRITICAL RULES\n";

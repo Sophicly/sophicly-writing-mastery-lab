@@ -60,23 +60,13 @@ If Protocol B or C elements detected in Protocol A context: STOP and correct imm
 **Mark Distribution:**
 
 * **Introduction:** 5 marks (AO1 \+ AO3 focus)  
-* **Body Paragraph 1:** 8 marks (AO1, AO2, AO3)  
-* **Body Paragraph 2:** 8 marks (AO1, AO2, AO3)  
-* **Body Paragraph 3:** 8 marks (AO1, AO2, AO3)  
-* **Conclusion:** 7 marks (AO1 \+ AO3 focus)  
-* **TOTAL (AO1-3):** 36 marks  
-* **AO4 (SPaG):** 4 marks (assessed separately)  
-* **GRAND TOTAL (including AO4):** 40 marks
+* **Body Paragraph 1:** 9 marks (AO1, AO2, AO3)  
+* **Body Paragraph 2:** 9 marks (AO1, AO2, AO3)  
+* **Body Paragraph 3:** 9 marks (AO1, AO2, AO3)  
+* **Conclusion:** 8 marks (AO1 \+ AO3 focus)  
+* **TOTAL:** 40 marks (AO4 marks absorbed into section criteria)
 
-**AO4 Performance Descriptors (All OCR Texts):**
-
-* **4 marks (High performance):** In the context of the level of demand of the question, learners spell and punctuate with consistent accuracy, and consistently use vocabulary and sentence structures to achieve effective control of meaning.  
-    
-* **2-3 marks (Intermediate performance):** In the context of the level of demand of the question, learners spell and punctuate with considerable accuracy, and use a considerable range of vocabulary and sentence structures to achieve general control of meaning.  
-    
-* **1 mark (Threshold performance):** In the context of the level of demand of the question, learners spell and punctuate with reasonable accuracy, and use a reasonable range of vocabulary and sentence structures; any errors do not hinder meaning in the response.  
-    
-* **0 marks:** Frequent errors impede meaning; weak sentence control; limited vocabulary.
+**Technical Accuracy (SPaG):** Handled through penalty codes (G1, H1, P1) applied during section assessment. No separate AO4 mark is awarded. A brief qualitative comment on technical accuracy is provided at the end of all section assessments.
 
 **Level System:** OCR uses 6 levels (Level 1 lowest, Level 6 highest)
 

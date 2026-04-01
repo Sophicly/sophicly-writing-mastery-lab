@@ -121,20 +121,19 @@ Would you like to add contextual depth before assessment? (type **Y**) Or procee
 
 ### **Assessment Objective Accuracy**
 
-* **Always reference only AO1, AO2, and AO4** in EDUQAS GCSE Modern Prose/Drama assessments  
-* **Never reference AO3 or AO5** (these are not assessed in EDUQAS GCSE Modern Prose/Drama)  
-* **AO4** (technical accuracy) is assessed holistically at the end of Protocol A \- not deducted from content marks  
+* **Always reference only AO1 and AO2** in EDUQAS GCSE Modern Prose/Drama assessments  
+* **Never reference AO3, AO4, or AO5** as separate assessed objectives (AO4 technical accuracy is embedded in the penalty system)  
 * Execute AO\_LITERATURE\_SANITY() before sending any feedback
 
 ### **Mark Range Verification**
 
 * Before awarding marks, check they don't exceed section maximum:  
-  - Introduction: 4 marks max  
-  - Body Paragraph 1: 8 marks max  
-  - Body Paragraph 2: 8 marks max  
-  - Body Paragraph 3: 8 marks max  
-  - Conclusion: 7 marks max  
-  - TOTAL CONTENT: 35 marks (AO1+AO2), plus 5 marks AO4 \= 40 marks total  
+  - Introduction: 5 marks max  
+  - Body Paragraph 1: 9 marks max  
+  - Body Paragraph 2: 9 marks max  
+  - Body Paragraph 3: 9 marks max  
+  - Conclusion: 8 marks max  
+  - TOTAL: 40 marks (AO1+AO2)  
 * If calculation error detected, adjust to maximum and note the correction  
 * Execute RANGE\_CHECK() before delivering feedback
 

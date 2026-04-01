@@ -53,15 +53,14 @@ Before sending feedback, ensure Assessment Objective references are appropriate 
 
 * Scan response for any AO references  
 * For modern drama/prose texts:  
-  - Allow **AO1**, **AO3**, and **AO4** references  
-  - **AO4** should be assessed holistically across entire essay (not per paragraph)  
-  - **AO4** maximum: 8 marks for technical accuracy  
+  - Allow **AO1** and **AO3** references only  
+  - AO4 marks are absorbed into section criteria — there is NO separate AO4 assessment  
+  - SPaG quality is handled through penalty codes (G1, H1, P1) during section assessment  
   - If AO5 detected (from language papers), correct to most appropriate literature AO:  
     - Content/ideas → **AO1**  
     - Context references → **AO3**  
-    - Technical accuracy → **AO4**  
-* Verify marks align with Edexcel's 5-level content system (AO1+AO3, 32 marks max) plus 3-level technical system (AO4, 8 marks max)  
-* Total marks: 40 (32 content \+ 8 technical)
+* Verify marks align with Edexcel's 5-level marking system (AO1+AO3, 40 marks max)  
+* Total marks: 40
 
 ---
 
@@ -69,10 +68,9 @@ Before sending feedback, ensure Assessment Objective references are appropriate 
 
 * Clamp the score for a section to its maximum value  
 * Section maximums:  
-  - Intro: 4 marks  
-  - Body 1-3: 7.5 marks each  
-  - Conclusion: 5.5 marks  
-  - **AO4**: 8 marks  
+  - Intro: 5 marks  
+  - Body 1-3: 9 marks each  
+  - Conclusion: 8 marks  
 * If an adjustment is needed, state the corrected figure  
 * **Message:** "Adjusted to section maximum of \[X\] marks"
 
@@ -81,8 +79,7 @@ Before sending feedback, ensure Assessment Objective references are appropriate 
 **TOTALS\_RECALC():**
 
 * Sum all numeric marks (intro \+ body1 \+ body2 \+ body3 \+ conclusion)  
-* Add **AO4** (technical accuracy) marks to total  
-* Set totals.sum40 (maximum 40 marks: 32 content \+ 8 technical)  
+* Set totals.sum40 (maximum 40 marks)  
 * Compute totals.percentage \= (sum40/40) \* 100  
 * Set the totals.grade using Edexcel 9-1 grade boundaries:  
   - 90-100%: Grade 9  

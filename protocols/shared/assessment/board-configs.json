@@ -1,0 +1,12 @@
+{
+  "eduqas/modern": {
+    "board_name": "EDUQAS",
+    "board_descriptor": "EDUQAS GCSE",
+    "question_prompt": "Thank you. For EDUQAS GCSE Modern Prose/Drama, you will have an essay question and a specific extract. Could you please provide **both the question and the extract** for me?"
+  },
+  "ccea/prose": {
+    "board_name": "CCEA",
+    "board_descriptor": "CEA GCSE",
+    "question_prompt": "Thank you. For CEA GCSE Prose, your exam question is about the whole text (no extract provided). Could you please provide the **essay question** for me?"
+  }
+}

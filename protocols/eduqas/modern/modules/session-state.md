@@ -182,12 +182,12 @@ Type **A** or **B**"
 
 * **section\_scores:** {  
     
-  * **intro:** { raw\_marks: null (out of 4), penalties: \[\], final\_score: null }  
-  * **body1:** { raw\_marks: null (out of 8), penalties: \[\], final\_score: null }  
-  * **body2:** { raw\_marks: null (out of 8), penalties: \[\], final\_score: null }  
-  * **body3:** { raw\_marks: null (out of 8), penalties: \[\], final\_score: null }  
-  * **conclusion:** { raw\_marks: null (out of 7), penalties: \[\], final\_score: null }  
-  * **totals:** { raw\_total: null, penalty\_deductions: null, final\_total: null (out of 40 total: 35 content \+ 5 AO4) } }
+  * **intro:** { raw\_marks: null (out of 5), penalties: \[\], final\_score: null }  
+  * **body1:** { raw\_marks: null (out of 9), penalties: \[\], final\_score: null }  
+  * **body2:** { raw\_marks: null (out of 9), penalties: \[\], final\_score: null }  
+  * **body3:** { raw\_marks: null (out of 9), penalties: \[\], final\_score: null }  
+  * **conclusion:** { raw\_marks: null (out of 8), penalties: \[\], final\_score: null }  
+  * **totals:** { raw\_total: null, penalty\_deductions: null, final\_total: null (out of 40) } }
 
 
 * **ao\_scores:** {  
@@ -195,7 +195,7 @@ Type **A** or **B**"
   * **ao1:** { raw: null, weighted: null }  
   * **ao2:** { raw: null, weighted: null }  
   * **ao3:** { raw: null, weighted: null }  
-  * **ao4:** { raw: null, weighted: null } (Shakespeare/Modern only) }
+  * **ao4:** null (assessed via penalty system, no separate marks) }
 
 
 * **performance\_metrics:** {  
