@@ -360,8 +360,25 @@ class SWML_Topic_Questions {
     /**
      * Map text IDs to template filename slugs for cases that don't follow
      * the simple str_replace('_', '-', $text) pattern.
+     *
+     * v7.14.14: $board param added for Language papers where each board uses
+     * different naming (AQA: -p1, EDUQAS: -c1, CCEA: -u1, etc.)
      */
-    private static function text_to_template_slug($text) {
+    private static function text_to_template_slug($text, $board = '') {
+        // Board-specific language paper mappings (v7.14.14)
+        $lang_map = [
+            'aqa'             => ['language1' => 'language-p1', 'language2' => 'language-p2'],
+            'edexcel'         => ['language1' => 'language-p1', 'language2' => 'language-p2'],
+            'eduqas'          => ['language1' => 'language-c1', 'language2' => 'language-c2'],
+            'ocr'             => ['language1' => 'language-c1', 'language2' => 'language-c2'],
+            'ccea'            => ['language1' => 'language-u1', 'language2' => 'language-u4'],
+            'edexcel-igcse'   => ['language1' => 'language-p1', 'language2' => 'language-p2'],
+            'cambridge-igcse' => ['language1' => 'language-p1', 'language2' => 'language-p2'],
+        ];
+        if ($board && isset($lang_map[$board][$text])) {
+            return $lang_map[$board][$text];
+        }
+
         $map = [
             'aic'                    => 'inspector-calls',
             'acc'                    => 'christmas-carol',
@@ -386,7 +403,7 @@ class SWML_Topic_Questions {
      * Returns the imported topics array, or empty array if no template found.
      */
     private static function auto_import_from_template($board, $text) {
-        $slug = self::text_to_template_slug($text);
+        $slug = self::text_to_template_slug($text, $board);
         $board_slug = str_replace('_', '-', $board);
         $template_dir = plugin_dir_path(dirname(__FILE__)) . 'protocols/shared/templates/topics/';
         $file = $template_dir . $board_slug . '-' . $slug . '.md';

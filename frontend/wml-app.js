@@ -2228,7 +2228,7 @@
                         if (skipText) {
                             state.text = s.id;
                             state.textName = s.label;
-                            renderTaskSelect();
+                            afterTextSelected(); // v7.14.14: route through afterTextSelected so mastery mode shows topic selector
                         } else {
                             renderTextSelect();
                         }

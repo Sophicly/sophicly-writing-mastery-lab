@@ -1,0 +1,215 @@
+{
+  "_version": "1.0.0",
+  "_description": "Verified language paper exam structures per board. NEVER estimate — all data from actual exam papers or official specifications.",
+  "_question_types": {
+    "multiple_choice": "Student selects correct answers from a list (e.g., AQA P2 Q1: choose 4 true from 8)",
+    "retrieval": "Short factual answer, 1-2 marks, single sentence",
+    "short_analysis": "5-10 marks, 1-2 paragraph analytical response",
+    "analysis": "10-15 marks, multi-paragraph analytical response with evidence",
+    "evaluation": "15-20 marks, extended evaluative response requiring personal judgement",
+    "extended_writing": "20-40 marks, full essay structure (intro + body + conclusion)",
+    "comparison": "Cross-text comparison requiring references to both sources",
+    "choice": "Student chooses one task from multiple options"
+  },
+
+  "aqa": {
+    "language_p1": {
+      "verified": true,
+      "source": "AQA 8700/1 specification + past papers",
+      "total": 80,
+      "time_minutes": 105,
+      "sections": [
+        {
+          "label": "Section A: Reading",
+          "marks": 40,
+          "questions": [
+            { "id": "Q1", "marks": 4, "aos": ["AO1"], "type": "multiple_choice", "description": "List 4 things from lines X-Y" },
+            { "id": "Q2", "marks": 8, "aos": ["AO2"], "type": "analysis", "description": "How does the writer use language to..." },
+            { "id": "Q3", "marks": 8, "aos": ["AO2"], "type": "analysis", "description": "How has the writer structured the text to..." },
+            { "id": "Q4", "marks": 20, "aos": ["AO4"], "type": "evaluation", "description": "To what extent do you agree..." }
+          ]
+        },
+        {
+          "label": "Section B: Writing",
+          "marks": 40,
+          "questions": [
+            { "id": "Q5", "marks": 40, "aos": ["AO5", "AO6"], "type": "extended_writing", "content_marks": 24, "spag_marks": 16, "description": "Descriptive or narrative writing (choice of 2 tasks)" }
+          ]
+        }
+      ]
+    },
+    "language_p2": {
+      "verified": true,
+      "source": "AQA 8700/2 specification + past papers",
+      "total": 80,
+      "time_minutes": 105,
+      "sections": [
+        {
+          "label": "Section A: Reading",
+          "marks": 40,
+          "questions": [
+            { "id": "Q1", "marks": 4, "aos": ["AO1"], "type": "multiple_choice", "description": "Choose 4 true statements from 8 about Source A" },
+            { "id": "Q2", "marks": 8, "aos": ["AO1"], "type": "short_analysis", "description": "Write a summary of differences/similarities using both sources" },
+            { "id": "Q3", "marks": 12, "aos": ["AO2"], "type": "analysis", "description": "How does the writer use language to..." },
+            { "id": "Q4", "marks": 16, "aos": ["AO3"], "type": "comparison", "description": "Compare how the writers convey different perspectives on..." }
+          ]
+        },
+        {
+          "label": "Section B: Writing",
+          "marks": 40,
+          "questions": [
+            { "id": "Q5", "marks": 40, "aos": ["AO5", "AO6"], "type": "extended_writing", "content_marks": 24, "spag_marks": 16, "description": "Transactional writing (article, letter, speech, etc.)" }
+          ]
+        }
+      ]
+    }
+  },
+
+  "eduqas": {
+    "language_c1": {
+      "verified": true,
+      "source": "EDUQAS C700U10 specification + past papers (verified by Neil 2026-04-02)",
+      "total": 80,
+      "time_minutes": 105,
+      "sections": [
+        {
+          "label": "Section A: Reading",
+          "marks": 40,
+          "questions": [
+            { "id": "Q1", "marks": 5, "aos": ["AO1"], "type": "retrieval", "description": "List five things you learn about X in these lines" },
+            { "id": "Q2", "marks": 5, "aos": ["AO2"], "type": "short_analysis", "description": "What impressions does the writer create of X? Refer to language." },
+            { "id": "Q3", "marks": 10, "aos": ["AO2"], "type": "analysis", "description": "In what ways does X change? How does the writer show these changes?" },
+            { "id": "Q4", "marks": 10, "aos": ["AO2"], "type": "analysis", "description": "What are the narrator's thoughts and feelings? How does the writer show them?" },
+            { "id": "Q5", "marks": 10, "aos": ["AO3"], "type": "evaluation", "description": "To what extent do you agree with this statement?" }
+          ]
+        },
+        {
+          "label": "Section B: Writing",
+          "marks": 40,
+          "questions": [
+            { "id": "Q6", "marks": 40, "aos": ["AO5", "AO6"], "type": "extended_writing", "content_marks": 24, "spag_marks": 16, "description": "Creative prose writing — choice of 4 titles/prompts. Aim for 450-600 words." }
+          ]
+        }
+      ]
+    },
+    "language_c2": {
+      "verified": true,
+      "source": "EDUQAS C700U20 past paper (verified by Neil 2026-04-02)",
+      "total": 80,
+      "time_minutes": 120,
+      "sections": [
+        {
+          "label": "Section A: Reading",
+          "marks": 40,
+          "source_count": 2,
+          "questions": [
+            { "id": "Q1a", "marks": 1, "aos": ["AO1"], "type": "retrieval", "description": "Single fact retrieval from Source 1" },
+            { "id": "Q1b", "marks": 1, "aos": ["AO1"], "type": "retrieval", "description": "Single fact retrieval from Source 1" },
+            { "id": "Q1c", "marks": 1, "aos": ["AO1"], "type": "retrieval", "description": "Single fact retrieval from Source 1" },
+            { "id": "Q2", "marks": 10, "aos": ["AO2", "AO4"], "type": "analysis", "description": "How does the writer try to show X? Comment on language, tone, structure." },
+            { "id": "Q3a", "marks": 1, "aos": ["AO1"], "type": "retrieval", "description": "Single fact retrieval from Source 2" },
+            { "id": "Q3b", "marks": 1, "aos": ["AO1"], "type": "retrieval", "description": "Single fact retrieval from Source 2" },
+            { "id": "Q3c", "marks": 1, "aos": ["AO1"], "type": "retrieval", "description": "Single fact retrieval from Source 2" },
+            { "id": "Q4", "marks": 10, "aos": ["AO2", "AO4"], "type": "evaluation", "description": "To what extent do you agree with this statement about Source 2?" },
+            { "id": "Q5", "marks": 4, "aos": ["AO1"], "type": "short_analysis", "description": "Using both texts, explain briefly X (comparison retrieval)" },
+            { "id": "Q6", "marks": 10, "aos": ["AO3"], "type": "comparison", "description": "Compare the impressions the writers create of X and Y" }
+          ]
+        },
+        {
+          "label": "Section B: Writing",
+          "marks": 40,
+          "questions": [
+            { "id": "Q7", "marks": 20, "aos": ["AO5", "AO6"], "type": "extended_writing", "content_marks": 12, "spag_marks": 8, "description": "Transactional writing task 1 (article, guide, etc.). Aim for 300-400 words." },
+            { "id": "Q8", "marks": 20, "aos": ["AO5", "AO6"], "type": "extended_writing", "content_marks": 12, "spag_marks": 8, "description": "Transactional writing task 2 (letter, speech, etc.). Aim for 300-400 words." }
+          ]
+        }
+      ]
+    }
+  },
+
+  "edexcel": {
+    "language_p1": {
+      "verified": true,
+      "source": "Edexcel 1EN0/01 past papers (verified by Neil 2026-04-02)",
+      "total": 64,
+      "time_minutes": 105,
+      "sections": [
+        {
+          "label": "Section A: Reading",
+          "marks": 24,
+          "questions": [
+            { "id": "Q1", "marks": 1, "aos": ["AO1"], "type": "retrieval", "description": "Identify a word which shows X" },
+            { "id": "Q2", "marks": 2, "aos": ["AO1"], "type": "retrieval", "description": "Give two ways the writer shows X" },
+            { "id": "Q3", "marks": 6, "aos": ["AO2"], "type": "short_analysis", "description": "How does the writer use language and structure to show X?" },
+            { "id": "Q4", "marks": 15, "aos": ["AO4"], "type": "evaluation", "description": "Evaluate how successfully the writer creates X. Support with detailed reference." }
+          ]
+        },
+        {
+          "label": "Section B: Imaginative Writing",
+          "marks": 40,
+          "questions": [
+            { "id": "Q5", "marks": 40, "aos": ["AO5", "AO6"], "type": "choice", "description": "Choice of 2 imaginative writing tasks (narrative or descriptive)" }
+          ]
+        }
+      ]
+    },
+    "language_p2": {
+      "verified": true,
+      "source": "Edexcel 1EN0/02 past papers (verified by Neil 2026-04-02)",
+      "total": 96,
+      "time_minutes": 125,
+      "sections": [
+        {
+          "label": "Section A: Reading — Text 1",
+          "marks": 19,
+          "questions": [
+            { "id": "Q1", "marks": 2, "aos": ["AO1"], "type": "retrieval", "description": "Identify two activities / facts from Text 1" },
+            { "id": "Q2", "marks": 2, "aos": ["AO1"], "type": "retrieval", "description": "Give two tasks / details from an extract of Text 1" },
+            { "id": "Q3", "marks": 15, "aos": ["AO2"], "type": "analysis", "description": "Analyse how the writer uses language and structure to interest and engage the reader" }
+          ]
+        },
+        {
+          "label": "Section A: Reading — Text 2",
+          "marks": 17,
+          "questions": [
+            { "id": "Q4", "marks": 1, "aos": ["AO1"], "type": "retrieval", "description": "Identify one feeling / fact from Text 2" },
+            { "id": "Q5", "marks": 1, "aos": ["AO1"], "type": "retrieval", "description": "Identify one reason / fact from Text 2" },
+            { "id": "Q6", "marks": 15, "aos": ["AO4"], "type": "evaluation", "description": "Evaluate how successfully the writer demonstrates X" }
+          ]
+        },
+        {
+          "label": "Section A: Reading — Both Texts",
+          "marks": 20,
+          "questions": [
+            { "id": "Q7a", "marks": 6, "aos": ["AO1"], "type": "comparison", "description": "What similarities do the two people share?" },
+            { "id": "Q7b", "marks": 14, "aos": ["AO3"], "type": "comparison", "description": "Compare how the writers present ideas and perspectives" }
+          ]
+        },
+        {
+          "label": "Section B: Transactional Writing",
+          "marks": 40,
+          "questions": [
+            { "id": "Q8", "marks": 40, "aos": ["AO5", "AO6"], "type": "choice", "description": "Choice of 2 transactional writing tasks (article, letter, guide, speech)" }
+          ]
+        }
+      ]
+    }
+  },
+
+  "ocr": {
+    "language_c1": { "verified": false, "note": "Awaiting verified spec from Neil" },
+    "language_c2": { "verified": false, "note": "Awaiting verified spec from Neil" }
+  },
+  "ccea": {
+    "language_u1": { "verified": false, "note": "Awaiting verified spec from Neil" },
+    "language_u4": { "verified": false, "note": "Awaiting verified spec from Neil" }
+  },
+  "edexcel-igcse": {
+    "language_p1": { "verified": false, "note": "Awaiting verified spec from Neil" },
+    "language_p2": { "verified": false, "note": "Awaiting verified spec from Neil" }
+  },
+  "cambridge-igcse": {
+    "language_p1": { "verified": false, "note": "Awaiting verified spec from Neil" },
+    "language_p2": { "verified": false, "note": "Awaiting verified spec from Neil" }
+  }
+}

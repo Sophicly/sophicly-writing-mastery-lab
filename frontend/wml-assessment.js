@@ -683,7 +683,10 @@
         } else {
             ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: boardLabel }));
             ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: subjectLabel }));
-            ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: textLabel }));
+            // v7.14.14: Skip text badge when it duplicates subject (skipTextSelect subjects like unseen_poetry, language1)
+            if (textLabel && textLabel.toLowerCase().replace(/[\s_-]/g, '') !== subjectLabel.toLowerCase().replace(/[\s_-]/g, '')) {
+                ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: textLabel }));
+            }
         }
 
         // Topic / exercise badge
