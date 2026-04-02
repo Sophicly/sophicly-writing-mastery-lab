@@ -775,17 +775,27 @@
             headerRight.appendChild(canvasThemeToggle);
         }
         // v7.13.78: Embedded mode — sync WML theme with LearnDash theme toggle
+        // v7.14.19: Fixed infinite loop — applyTheme() sets data-swml-theme on body,
+        // which re-triggers the MutationObserver. Guard flag prevents re-entry.
         if (WML.isEmbedded) {
+            let _themeSyncing = false;
             const syncThemeFromLD = () => {
+                if (_themeSyncing) return;
                 const bodyDark = document.body.classList.contains('dark-mode') || document.documentElement.getAttribute('data-theme') === 'dark' || document.body.getAttribute('data-theme') === 'dark';
                 const wmlTheme = bodyDark ? 'dark' : 'light';
-                const current = getTheme();
-                if (wmlTheme !== current) {
-                    localStorage.setItem('swml-theme', wmlTheme);
-                    applyTheme(wmlTheme);
-                    canvas.classList.toggle('swml-canvas-light', wmlTheme === 'light');
-                    overlay.dataset.swmlTheme = wmlTheme;
-                    console.log('WML: Synced theme from LearnDash →', wmlTheme);
+                // Check against the actual DOM attribute to avoid getTheme()/localStorage mismatch
+                const currentAttr = overlay.dataset.swmlTheme || '';
+                if (wmlTheme !== currentAttr) {
+                    _themeSyncing = true;
+                    try {
+                        localStorage.setItem('swml-theme', wmlTheme);
+                        applyTheme(wmlTheme);
+                        canvas.classList.toggle('swml-canvas-light', wmlTheme === 'light');
+                        overlay.dataset.swmlTheme = wmlTheme;
+                    } finally {
+                        // Release guard after microtask (allows MutationObserver to settle)
+                        setTimeout(() => { _themeSyncing = false; }, 50);
+                    }
                 }
             };
             // Initial sync
