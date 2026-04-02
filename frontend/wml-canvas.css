@@ -46,15 +46,13 @@ body.swml-embedded-active .spl-content {
 #swml-canvas-overlay.swml-canvas-embedded .swml-canvas-chat-panel {
     color: rgba(255,255,255,0.87);
 }
-/* v7.14.20: Badge tags overflow handling in narrow embedded mode */
-#swml-canvas-overlay.swml-canvas-embedded .swml-canvas-header {
-    flex-wrap: nowrap;
-    overflow: hidden;
-}
+/* v7.14.21: Badge tags overflow handling in narrow embedded mode */
 #swml-canvas-overlay.swml-canvas-embedded .swml-canvas-ctx-badge {
-    max-width: 80px;
+    max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex-shrink: 1;
+    min-width: 0;
 }
 /* Fullscreen toggle button (embedded mode) */
 .swml-canvas-fullscreen-btn {

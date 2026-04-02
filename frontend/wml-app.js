@@ -6524,32 +6524,7 @@ Before marking the introduction, ask the student to confirm their essay structur
         }, 1000);
     }
 
-    // ── LD Theme Toggle Sync (v7.13.15) ──
-    // Poll-based sync to avoid MutationObserver infinite loops.
-    // Sophicly Focus Mode stores theme on <html data-theme="dark|light">.
-    if (isEmbedded) {
-        let _lastLdTheme = document.documentElement.dataset.theme || '';
-        setInterval(() => {
-            // Primary source: Sophicly Focus Mode template
-            const htmlTheme = document.documentElement.dataset.theme || '';
-            // Fallback: body classes
-            const body = document.body;
-            const ldTheme = htmlTheme ||
-                (body.classList.contains('light-mode') || body.classList.contains('spl-light') ? 'light' : '') ||
-                (body.classList.contains('dark-mode') || body.classList.contains('spl-dark') ? 'dark' : '');
-
-            if (ldTheme && ldTheme !== _lastLdTheme) {
-                _lastLdTheme = ldTheme;
-                if (ldTheme !== getTheme()) {
-                    console.log('WML Embed: Syncing theme to LD:', ldTheme);
-                    applyTheme(ldTheme);
-                    const overlay = document.getElementById('swml-canvas-overlay');
-                    if (overlay) overlay.dataset.swmlTheme = ldTheme;
-                    const canvas = document.querySelector('.swml-canvas');
-                    if (canvas) canvas.classList.toggle('swml-canvas-light', ldTheme === 'light');
-                }
-            }
-        }, 500);
-    }
+    // ── LD Theme Toggle Sync — REMOVED v7.14.21 ──
+    // WML now uses its own independent toggle. Both respect system preferences.
 
 })();

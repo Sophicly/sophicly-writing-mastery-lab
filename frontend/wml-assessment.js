@@ -774,36 +774,14 @@
             });
             headerRight.appendChild(canvasThemeToggle);
         }
-        // v7.13.78: Embedded mode — sync WML theme with LearnDash theme toggle
-        // v7.14.19: Fixed infinite loop — applyTheme() sets data-swml-theme on body,
-        // which re-triggers the MutationObserver. Guard flag prevents re-entry.
-        if (WML.isEmbedded) {
-            let _themeSyncing = false;
-            const syncThemeFromLD = () => {
-                if (_themeSyncing) return;
-                const bodyDark = document.body.classList.contains('dark-mode') || document.documentElement.getAttribute('data-theme') === 'dark' || document.body.getAttribute('data-theme') === 'dark';
-                const wmlTheme = bodyDark ? 'dark' : 'light';
-                // Check against the actual DOM attribute to avoid getTheme()/localStorage mismatch
-                const currentAttr = overlay.dataset.swmlTheme || '';
-                if (wmlTheme !== currentAttr) {
-                    _themeSyncing = true;
-                    try {
-                        localStorage.setItem('swml-theme', wmlTheme);
-                        applyTheme(wmlTheme);
-                        canvas.classList.toggle('swml-canvas-light', wmlTheme === 'light');
-                        overlay.dataset.swmlTheme = wmlTheme;
-                    } finally {
-                        // Release guard after microtask (allows MutationObserver to settle)
-                        setTimeout(() => { _themeSyncing = false; }, 50);
-                    }
-                }
-            };
-            // Initial sync
-            syncThemeFromLD();
-            // Watch for LD theme changes via MutationObserver on body + html
-            const themeObserver = new MutationObserver(syncThemeFromLD);
-            themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class', 'data-theme'] });
-            themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+        // v7.14.21: LD↔WML theme sync REMOVED — caused infinite loops (v7.14.18/19) and partial updates.
+        // WML now uses its own independent toggle (already in canvas header). Both WML and LD
+        // respect system preferences by default, so they match automatically for most users.
+        // Apply current WML theme to canvas on boot:
+        {
+            const t = getTheme();
+            canvas.classList.toggle('swml-canvas-light', t === 'light');
+            overlay.dataset.swmlTheme = t;
         }
         // Fullscreen toggle — embedded mode only (v7.13.15)
         if (WML.isEmbedded) {

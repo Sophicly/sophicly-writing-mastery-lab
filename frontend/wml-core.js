@@ -1227,10 +1227,17 @@ window.WML = (function() {
         return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
     }
     function getTheme() {
-        // Manual override takes priority, otherwise follow system
+        // Manual override takes priority (v7.14.21: localStorage for persistence across sessions)
         try {
-            const manual = sessionStorage.getItem('swml-theme-manual');
+            const manual = localStorage.getItem('swml-theme-manual');
             if (manual) return manual;
+            // Migrate from old sessionStorage key
+            const oldManual = sessionStorage.getItem('swml-theme-manual');
+            if (oldManual) {
+                localStorage.setItem('swml-theme-manual', oldManual);
+                sessionStorage.removeItem('swml-theme-manual');
+                return oldManual;
+            }
         } catch(e) {}
         return getSystemTheme();
     }
@@ -1239,6 +1246,13 @@ window.WML = (function() {
         document.body.setAttribute('data-swml-theme', theme);
         const root = $('#swml-root');
         if (root) root.setAttribute('data-swml-theme', theme);
+        // v7.14.21: Also update canvas overlay and canvas element (embedded + standalone)
+        const overlay = document.getElementById('swml-canvas-overlay');
+        if (overlay) {
+            overlay.dataset.swmlTheme = theme;
+            const canvas = overlay.querySelector('.swml-canvas');
+            if (canvas) canvas.classList.toggle('swml-canvas-light', theme === 'light');
+        }
         // Update Jhey toggle if it exists (aria-pressed="true" = light mode)
         const toggle = $('#swml-theme-toggle');
         if (toggle) {
@@ -1253,8 +1267,8 @@ window.WML = (function() {
     }
     function toggleTheme() {
         const newTheme = getTheme() === 'dark' ? 'light' : 'dark';
-        // Save as manual override
-        try { sessionStorage.setItem('swml-theme-manual', newTheme); } catch(e) {}
+        // Save as manual override (v7.14.21: localStorage for persistence)
+        try { localStorage.setItem('swml-theme-manual', newTheme); } catch(e) {}
         applyTheme(newTheme);
     }
     // Apply theme on load (respects system preference)
