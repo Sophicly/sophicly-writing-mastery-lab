@@ -37,22 +37,15 @@ body.swml-embedded-active .spl-content {
     height: 100vh;
     z-index: 99999;
 }
-/* v7.14.20: Embedded mode — isolate WML theme from LD's body-level theme styles */
-#swml-canvas-overlay.swml-canvas-embedded {
-    color: rgba(255,255,255,0.87);
-    background: oklch(0.17 0.01 270); /* #16181d — explicit dark default */
-}
-#swml-canvas-overlay.swml-canvas-embedded .swml-canvas-sidebar,
-#swml-canvas-overlay.swml-canvas-embedded .swml-canvas-chat-panel {
-    color: rgba(255,255,255,0.87);
-}
-/* v7.14.21: Badge tags overflow handling in narrow embedded mode */
-#swml-canvas-overlay.swml-canvas-embedded .swml-canvas-ctx-badge {
-    max-width: 100px;
+/* v7.14.22: Embedded mode theme handled by JS sync from LD's <html data-theme> */
+/* v7.14.22: Badge tags — single row, overflow hidden in embedded mode */
+#swml-canvas-overlay.swml-canvas-embedded .swml-canvas-ctx {
+    flex-wrap: wrap;
+    max-height: 22px; /* Single row of badges */
     overflow: hidden;
-    text-overflow: ellipsis;
-    flex-shrink: 1;
-    min-width: 0;
+}
+#swml-canvas-overlay.swml-canvas-embedded .swml-canvas-ctx-badge {
+    flex-shrink: 0; /* Don't crush individual badges — overflow hides extras instead */
 }
 /* Fullscreen toggle button (embedded mode) */
 .swml-canvas-fullscreen-btn {

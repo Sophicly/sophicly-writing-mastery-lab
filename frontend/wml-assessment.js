@@ -774,14 +774,39 @@
             });
             headerRight.appendChild(canvasThemeToggle);
         }
-        // v7.14.21: LD↔WML theme sync REMOVED — caused infinite loops (v7.14.18/19) and partial updates.
-        // WML now uses its own independent toggle (already in canvas header). Both WML and LD
-        // respect system preferences by default, so they match automatically for most users.
-        // Apply current WML theme to canvas on boot:
+        // v7.14.22: Safe one-directional LD → WML theme sync.
+        // Observe ONLY <html data-theme> (LD controls this). Update canvas directly
+        // without calling applyTheme() (which sets body attrs and caused feedback loops).
+        // Also save to localStorage so WML's own getTheme() stays in sync.
         {
-            const t = getTheme();
-            canvas.classList.toggle('swml-canvas-light', t === 'light');
-            overlay.dataset.swmlTheme = t;
+            const syncCanvasTheme = (theme) => {
+                canvas.classList.toggle('swml-canvas-light', theme === 'light');
+                overlay.dataset.swmlTheme = theme;
+                document.body.setAttribute('data-swml-theme', theme);
+                const root = document.getElementById('swml-root');
+                if (root) root.setAttribute('data-swml-theme', theme);
+                try { localStorage.setItem('swml-theme-manual', theme); } catch(e) {}
+                // Update Jhey toggle if it exists
+                const toggle = document.getElementById('swml-theme-toggle');
+                if (toggle) {
+                    toggle.setAttribute('aria-pressed', theme === 'dark' ? 'false' : 'true');
+                }
+            };
+            // Initial: read LD's current theme, fall back to WML's own preference
+            const htmlTheme = document.documentElement.getAttribute('data-theme');
+            const initialTheme = htmlTheme || getTheme();
+            syncCanvasTheme(initialTheme);
+
+            // Watch LD toggle: observe <html data-theme> only (LD controls this, WML does NOT write to it)
+            if (WML.isEmbedded) {
+                const ldObserver = new MutationObserver(() => {
+                    const ldTheme = document.documentElement.getAttribute('data-theme');
+                    if (ldTheme && ldTheme !== overlay.dataset.swmlTheme) {
+                        syncCanvasTheme(ldTheme);
+                    }
+                });
+                ldObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+            }
         }
         // Fullscreen toggle — embedded mode only (v7.13.15)
         if (WML.isEmbedded) {
