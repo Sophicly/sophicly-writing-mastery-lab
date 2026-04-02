@@ -5206,3 +5206,218 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     background-color: #51dacf !important;
     color: #1a3a38;
 }
+
+/* ═══════════════════════════════════════════
+   Canvas Selection Overlay (v7.14.13)
+   Used for: question selection (essay plan),
+   essay plan selection (model answer).
+   ═══════════════════════════════════════════ */
+.swml-canvas-select-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(16, 18, 24, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    animation: swml-overlay-fade-in 0.3s ease;
+}
+@keyframes swml-overlay-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.swml-canvas-select-modal {
+    width: 90%;
+    max-width: 640px;
+    max-height: 80vh;
+    background: oklch(0.19 0.015 270);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+    animation: swml-modal-slide-up 0.35s ease;
+}
+@keyframes swml-modal-slide-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.swml-canvas-select-modal h2 {
+    margin: 0;
+    padding: 20px 24px 8px;
+    font-family: 'Proxima Soft Complete', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+}
+.swml-canvas-select-modal .swml-select-subtitle {
+    margin: 0;
+    padding: 0 24px 16px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+}
+.swml-canvas-select-tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.swml-canvas-select-tab {
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.5);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+    font-family: 'Proxima Soft Complete', sans-serif;
+}
+.swml-canvas-select-tab:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+.swml-canvas-select-tab.active {
+    color: #51dacf;
+    border-bottom-color: #51dacf;
+}
+.swml-canvas-select-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 24px 24px;
+}
+.swml-canvas-select-body::-webkit-scrollbar {
+    width: 6px;
+}
+.swml-canvas-select-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+}
+/* Selection cards — question or essay plan items */
+.swml-select-card {
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+.swml-select-card:hover {
+    background: rgba(81, 218, 207, 0.08);
+    border-color: rgba(81, 218, 207, 0.3);
+}
+.swml-select-card.selected {
+    background: rgba(81, 218, 207, 0.12);
+    border-color: #51dacf;
+}
+.swml-select-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 4px;
+}
+.swml-select-card-meta {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.45);
+}
+.swml-select-card-preview {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 6px;
+    line-height: 1.4;
+    max-height: 2.8em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* Custom question input area */
+.swml-select-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Proxima Soft Complete', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.swml-select-textarea:focus {
+    border-color: #51dacf;
+}
+.swml-select-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+/* Footer actions */
+.swml-canvas-select-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.swml-select-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Proxima Soft Complete', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s, opacity 0.2s;
+}
+.swml-select-btn-cancel {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.6);
+}
+.swml-select-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+.swml-select-btn-confirm {
+    background: linear-gradient(135deg, #51dacf 0%, #42A1EC 100%);
+    color: #fff;
+}
+.swml-select-btn-confirm:hover {
+    opacity: 0.9;
+}
+.swml-select-btn-confirm:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+/* Empty state */
+.swml-select-empty {
+    text-align: center;
+    padding: 32px 16px;
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 13px;
+}
+/* Loading spinner */
+.swml-select-loading {
+    text-align: center;
+    padding: 32px 16px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 13px;
+}
+.swml-select-loading::after {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-left: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #51dacf;
+    border-radius: 50%;
+    animation: swml-spin 0.6s linear infinite;
+    vertical-align: middle;
+}
+@keyframes swml-spin {
+    to { transform: rotate(360deg); }
+}

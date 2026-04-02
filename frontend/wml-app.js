@@ -504,6 +504,12 @@
                 texts = subjectData?.texts || [];
             }
 
+            // v7.14.13: Per-board text filtering — hide texts not on this board's syllabus
+            const boardFilter = WML.BOARD_TEXT_FILTER?.[state.subject]?.[state.board];
+            if (boardFilter) {
+                texts = texts.filter(t => boardFilter.includes(t.id));
+            }
+
             if (texts.length === 0) {
                 const input = el('input', { className: 'swml-text-input', placeholder: 'e.g. Macbeth, An Inspector Calls...',
                     style: { width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '15px', outline: 'none', fontFamily: 'inherit' } });

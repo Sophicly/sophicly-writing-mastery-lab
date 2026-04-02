@@ -3690,7 +3690,8 @@
 
         // ── Sequence Navigation Buttons (v7.12.85) ──
         // Show Previous / Next buttons for navigating between exercise steps
-        if (state.topicNumber) {
+        // v7.14.13: Skip for diagnostic (task='') — LearnDash handles exercise transitions
+        if (state.topicNumber && state.task) {
             const PHASE1_SEQ = [
                 { id: 'diagnostic', task: '', label: 'Write Essay' },
                 { id: 'assessment', task: 'assessment', label: 'Get Assessed' },
@@ -4811,7 +4812,7 @@
         };
 
         // v7.14.3: Exam prep template injection — version-stamped cache busting
-        const EXAM_PREP_DOC_VER = 2;
+        const EXAM_PREP_DOC_VER = 3; // v7.14.13: rebuilt all exam prep templates
         const tryExamPrepTemplate = () => {
             if (!isExamPrep || !canvasEditor) return;
             const docVerKey = CANVAS_SAVE_KEY() + '_ver';
@@ -7594,10 +7595,16 @@
     function getExamPrepDocTemplate(exerciseType) {
         let html = '';
         const board = (WML.state.board || '').toUpperCase();
+        const subject = WML.state.subject || '';
         const text = WML.state.text ? ucfirst(WML.state.text.replace(/_/g, ' ')) : '';
         const headerInfo = [board, text].filter(Boolean).join(' \u2014 ');
+        // v7.14.13: Board-aware marks for exam prep documents
+        const boardDefaults = BOARD_FORMAT_DEFAULTS[WML.state.board]?.[subject] || {};
+        const marks = parseInt(boardDefaults.marks) || getDefaultMarks(WML.state.board, subject);
 
         if (exerciseType === 'exam_question') {
+            // ── EXAM QUESTION CREATOR ──
+            // 10 question slots, each with space for the question + student notes
             html += sectionHTML('question', 'About This Exercise', false, null,
                 '<h2>Exam Question Creator</h2>' +
                 (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
@@ -7606,83 +7613,143 @@
             for (let i = 1; i <= 10; i++) {
                 html += dividerHTML('QUESTION ' + i);
                 html += sectionHTML('plan', 'Question ' + i, true, null,
-                    '<h3>Question ' + i + '</h3><p></p>');
+                    '<h3>Question ' + i + '</h3>' +
+                    '<p><strong>Question:</strong></p><p></p>' +
+                    '<p><strong>Theme / Character:</strong></p><p></p>' +
+                    '<p><strong>Key quotes to consider:</strong></p><p></p>' +
+                    '<p><strong>Your notes:</strong></p><p></p>');
             }
         } else if (exerciseType === 'essay_plan') {
-            // v7.13.97: Full diagnostic-style structure — plan + response + feedback + scores
+            // ── ESSAY PLAN ──
+            // v7.14.13: Diagnostic-style document — question + plan + response + feedback + scores.
+            // Question populated via overlay selection (mastery topics / saved / AI-generated / custom).
             html += sectionHTML('question', 'About This Exercise', false, null,
                 '<h2>Essay Plan</h2>' +
                 (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
-                '<p>Build a structured essay plan with your AI tutor. Select a question, then plan each paragraph.</p>'
+                '<p>Build a structured essay plan with your AI tutor. Choose a question, then plan each paragraph with quotes and analysis.</p>'
             );
             html += dividerHTML('ESSAY QUESTION');
-            html += sectionHTML('question', 'Essay Question', true, null,
-                '<h3>Essay Question</h3><p><em>Your question will appear here once selected.</em></p>');
+            html += sectionHTML('question', 'Essay Question', false, null,
+                '<p><em>Your question will appear here once selected.</em></p>');
             html += dividerHTML('ESSAY PLAN');
-            html += buildPlanSection(null, 30);
+            html += buildPlanSection(null, marks);
             html += dividerHTML('RESPONSE');
             html += buildResponseSection(null);
             html += dividerHTML('FEEDBACK');
-            html += buildFeedbackSection(getMarkSplit(30));
+            html += buildFeedbackSection(getMarkSplit(marks));
             html += dividerHTML('RESULTS');
-            html += buildScoresSection(30);
+            html += buildScoresSection(marks);
             html += buildSelfAssessmentSection(false);
             html += buildAnalyticsSection();
             html += buildActionPlanSection('diagnostic');
             html += buildSignoffSection();
         } else if (exerciseType === 'model_answer') {
+            // ── MODEL ANSWER ──
+            // v7.14.13: Diagnostic-style — student selects an essay plan first, then writes
+            // a model answer section by section. AI provides Grade 9 model for comparison.
             html += sectionHTML('question', 'About This Exercise', false, null,
-                '<h2>Model Answer Generator</h2>' +
+                '<h2>Model Answer</h2>' +
                 (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
-                '<p>Study a model answer broken down by assessment criteria. Understand what top-mark responses look like.</p>'
+                '<p>Write a model answer from one of your essay plans. Your AI tutor will guide you through each section and provide a Grade 9 comparison.</p>'
             );
-            html += dividerHTML('QUESTION');
-            html += sectionHTML('plan', 'Question', true, null,
-                '<h3>Question</h3><p></p>');
-            html += dividerHTML('MODEL ANSWER');
-            html += sectionHTML('response', 'Model Answer', true, null,
-                '<h3>Model Answer</h3><p></p>');
-            html += dividerHTML('MARK BREAKDOWN');
-            html += sectionHTML('plan', 'Mark Breakdown', true, null,
-                '<h3>Criterion-by-Criterion Breakdown</h3><p></p>');
+            html += dividerHTML('ESSAY QUESTION');
+            html += sectionHTML('question', 'Essay Question', false, null,
+                '<p><em>The question from your selected essay plan will appear here.</em></p>');
+            html += dividerHTML('YOUR ESSAY PLAN');
+            html += sectionHTML('plan', 'Essay Plan Reference', false, null,
+                '<p><em>Your selected essay plan will appear here as a reference.</em></p>');
+            html += dividerHTML('YOUR RESPONSE');
+            html += buildResponseSection(null);
+            html += dividerHTML('GRADE 9 MODEL');
+            html += sectionHTML('feedback', 'Model: Introduction', false, null,
+                '<p><em>The Grade 9 model introduction will appear here after your attempt.</em></p>');
+            for (let i = 1; i <= (marks >= 40 ? 4 : 3); i++) {
+                html += sectionHTML('feedback', 'Model: Body Paragraph ' + i, false, null,
+                    '<p><em>The Grade 9 body paragraph ' + i + ' will appear here.</em></p>');
+            }
+            html += sectionHTML('feedback', 'Model: Conclusion', false, null,
+                '<p><em>The Grade 9 model conclusion will appear here.</em></p>');
+            html += dividerHTML('FEEDBACK');
+            html += buildFeedbackSection(getMarkSplit(marks));
+            html += dividerHTML('RESULTS');
+            html += buildScoresSection(marks);
+            html += buildSelfAssessmentSection(false);
+            html += buildActionPlanSection('diagnostic');
+            html += buildSignoffSection();
         } else if (exerciseType === 'verbal_rehearsal' || exerciseType === 'quote_analysis') {
+            // ── RANDOM QUOTE ANALYSIS ──
+            // v7.14.13: 10 quote analysis slots with structured TTECEA response spaces.
             html += sectionHTML('question', 'About This Exercise', false, null,
                 '<h2>Random Quote Analysis</h2>' +
                 (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
-                '<p>Practise analysing quotes from your text. Each quote is presented randomly \u2014 build your speed and depth of analysis.</p>'
+                '<p>Practise analysing quotes from your text. Each quote is presented randomly \u2014 build your speed and depth of analysis using the TTECEA+C structure.</p>'
             );
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 10; i++) {
                 html += dividerHTML('QUOTE ' + i);
-                html += sectionHTML('plan', 'Quote ' + i, true, null,
-                    '<h3>Quote ' + i + '</h3>' +
-                    '<p><strong>Quote:</strong></p><p></p>' +
-                    '<p><strong>Context:</strong></p><p></p>' +
-                    '<p><strong>Technique(s):</strong></p><p></p>' +
-                    '<p><strong>Effect:</strong></p><p></p>' +
-                    '<p><strong>Link to theme/character:</strong></p><p></p>');
+                html += sectionHTML('question', 'Quote ' + i, false, null,
+                    '<p><em>Quote ' + i + ' will appear here.</em></p>');
+                html += sectionHTML('plan', 'Plan: Quote ' + i, true, null,
+                    '<p><strong>T</strong> \u2014 <em>Topic sentence (key idea):</em></p><p></p>' +
+                    '<p><strong>T</strong> \u2014 <em>Technical term (literary device):</em></p><p></p>' +
+                    '<p><strong>E</strong> \u2014 <em>Evidence (the quote itself):</em></p><p></p>' +
+                    '<p><strong>C</strong> \u2014 <em>Close analysis (word-level):</em></p><p></p>' +
+                    '<p><strong>E</strong> \u2014 <em>Effects on reader:</em></p><p></p>' +
+                    '<p><strong>A</strong> \u2014 <em>Author\u2019s purpose + context:</em></p><p></p>');
+                html += sectionHTML('response', 'Response: Quote ' + i, true, null,
+                    '<p><em>Write your full paragraph here.</em></p><p></p>');
+                html += sectionHTML('feedback', 'Feedback: Quote ' + i, false, null,
+                    '<p><em>AI feedback and Grade 9 model will appear here.</em></p>');
             }
         } else if (exerciseType === 'conceptual_notes') {
+            // ── CONCEPTUAL NOTES ──
+            // v7.14.13: 8 concept areas with structured editable spaces.
             html += sectionHTML('question', 'About This Exercise', false, null,
                 '<h2>Grade 9 Conceptual Notes</h2>' +
                 (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
                 '<p>Build deep conceptual understanding of your text. These notes go beyond surface-level plot to explore themes, context, and authorial intent.</p>'
             );
-            const concepts = ['Characters', 'Themes', 'Context', 'Structure', 'Language', 'Writer\u2019s Intent', 'Critical Perspectives', 'Exam Technique'];
-            concepts.forEach(c => {
-                html += dividerHTML(c.toUpperCase());
-                html += sectionHTML('plan', c, true, null,
-                    '<h3>' + c + '</h3><p></p>');
+            var concepts = [
+                { label: 'Characters', prompt: 'Key characters, their roles, relationships, and development. What does each character represent?' },
+                { label: 'Themes', prompt: 'Major themes explored in the text. How are they developed? What is the author saying about each?' },
+                { label: 'Context', prompt: 'Historical, social, cultural, and biographical context. How does context shape the text\u2019s meaning?' },
+                { label: 'Structure', prompt: 'Narrative structure, chronology, turning points. How does the author organise the text for effect?' },
+                { label: 'Language', prompt: 'Key techniques, imagery, motifs, symbolism. How does the author use language to create meaning?' },
+                { label: 'Writer\u2019s Intent', prompt: 'What is the author trying to achieve? What message are they communicating to the reader?' },
+                { label: 'Critical Perspectives', prompt: 'Alternative readings: feminist, Marxist, postcolonial, psychoanalytic. How might different readers interpret the text?' },
+                { label: 'Exam Technique', prompt: 'Key quotes to memorise, argument structures, common exam angles for this text.' },
+            ];
+            concepts.forEach(function(c) {
+                html += dividerHTML(c.label.toUpperCase());
+                html += sectionHTML('plan', c.label, true, null,
+                    '<h3>' + c.label + '</h3>' +
+                    '<p><em>' + c.prompt + '</em></p><p></p><p></p><p></p>');
             });
         } else if (exerciseType === 'memory_practice') {
+            // ── MEMORY PRACTICE ──
+            // v7.14.13: Full retrieval practice document with quality gate, multiple rounds,
+            // and a results summary. Student submits existing writing, AI tests recall.
             html += sectionHTML('question', 'About This Exercise', false, null,
                 '<h2>Memory Practice</h2>' +
                 (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
-                '<p>Test your recall of key quotes, concepts, and analysis. Your AI tutor will challenge you with retrieval practice questions.</p>'
+                '<p>Test your recall of key quotes, analysis, and essay plans. Submit a piece of your work, then try to recreate it from memory under timed conditions.</p>'
             );
-            html += dividerHTML('RETRIEVAL RESULTS');
-            html += sectionHTML('response', 'Results', true, null,
-                '<h3>Retrieval Results</h3>' +
-                '<p><em>Your retrieval practice results will be compiled here as you work through the exercise.</em></p><p></p>');
+            html += dividerHTML('YOUR ORIGINAL WRITING');
+            html += sectionHTML('question', 'Submitted Writing', false, null,
+                '<p><em>The writing you submit for testing will appear here.</em></p>');
+            html += sectionHTML('feedback', 'Quality Gate', false, null,
+                '<p><em>The AI will assess whether your writing meets the standard for memory practice. If not, it will suggest improvements first.</em></p>');
+            html += dividerHTML('RETRIEVAL EXERCISES');
+            for (let i = 1; i <= 5; i++) {
+                html += sectionHTML('response', 'Retrieval Round ' + i, true, null,
+                    '<p><em>Round ' + i + ': Recreate as much as you can from memory.</em></p><p></p>');
+                html += sectionHTML('feedback', 'Round ' + i + ' Results', false, null,
+                    '<p><em>Accuracy score and missed elements will appear here.</em></p>');
+            }
+            html += dividerHTML('OVERALL RESULTS');
+            html += sectionHTML('scores', 'Summary', false, null,
+                '<p><em>Your overall retrieval accuracy, areas of strength, and revision targets will appear here.</em></p>');
+            html += sectionHTML('action', 'Next Steps', false, null,
+                '<p><em>Personalised recommendations for what to revise next.</em></p>');
         }
         return html || '<p></p>';
     }
@@ -9210,7 +9277,8 @@ ${html}
         guidePanel.appendChild(completionWrap);
 
         // ── Sequence Navigation for lightweight canvas (v7.12.85) ──
-        if (state.topicNumber) {
+        // v7.14.13: Skip for diagnostic (task='') — LearnDash handles exercise transitions
+        if (state.topicNumber && state.task) {
             const FB_PHASE1_SEQ = [
                 { id: 'diagnostic', task: '', label: 'Write Essay', render: () => { state.task = ''; state.canvasTimer = 0; window.WML.renderCanvasWorkspace(); } },
                 { id: 'assessment', task: 'assessment', label: 'Get Assessed', render: () => { state.task = 'assessment'; state.canvasTimer = 0; state.step = 0; window.WML.renderCanvasWorkspace(); } },

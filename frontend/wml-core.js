@@ -255,6 +255,15 @@ window.WML = (function() {
         ],
     };
 
+    // ── Per-board text filtering for shared subject groups (v7.14.13) ──
+    // When a board has an entry here, only the listed text IDs from TEXT_CATALOGUE are shown.
+    // Boards without an entry show the full shared list (backwards compatible).
+    const BOARD_TEXT_FILTER = {
+        '19th_century': {
+            'eduqas': ['acc', 'jekyll_hyde', 'silas_marner', 'war_of_worlds', 'jane_eyre', 'pride_prejudice'],
+        },
+    };
+
     // ── Author lookup for texts ──
     const AUTHOR_MAP = {
         // Shakespeare
@@ -1968,7 +1977,7 @@ window.WML = (function() {
         state,
         // Data maps
         TEXT_CATALOGUE, POETRY_ANTHOLOGY_BY_BOARD, PROSE_ANTHOLOGY_BY_BOARD,
-        NONFICTION_ANTHOLOGY_BY_BOARD, AUTHOR_MAP, SECTION_COLOURS, getTextLabel,
+        NONFICTION_ANTHOLOGY_BY_BOARD, BOARD_TEXT_FILTER, AUTHOR_MAP, SECTION_COLOURS, getTextLabel,
         // Step arrays
         PLAN_STEPS, ASSESSMENT_STEPS, POLISHING_STEPS, QUOTE_ANALYSIS_STEPS,
         CONCEPTUAL_NOTES_STEPS, POETRY_CN_STEPS, NONFICTION_CN_STEPS,
