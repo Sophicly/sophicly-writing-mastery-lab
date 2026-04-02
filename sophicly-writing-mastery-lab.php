@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.14.19
+ * Version: 7.14.20
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.14.19');
+define('SWML_VERSION', '7.14.20');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -464,8 +464,8 @@ class Sophicly_Writing_Mastery_Lab {
 
         // Inline CSS: embedded mode layout fixes (v7.13.14)
         $css = '<style>
-            /* v7.14.16: #swml-root visible — chat exercises render here, canvas overlay renders as sibling */
-            #swml-root.swml-embedded { min-height: 0; }
+            /* v7.14.20: #swml-root in embedded mode — no height, no overflow trap */
+            #swml-root.swml-embedded { min-height: 0; height: auto; overflow: visible; }
 
             /* Embedded host fills content area */
             .swml-embedded-host { width: 100%; }
@@ -487,10 +487,10 @@ class Sophicly_Writing_Mastery_Lab {
                 /* Keep padding on LD header (progress bar, COMPLETE button) */
                 body.swml-has-embed .spl-content-header { padding: 16px 30px; }
 
-                /* Keep padding on LD bottom navigation (Previous / Next buttons) */
+                /* v7.14.20: LD bottom navigation — flush, no extra padding */
                 body.swml-has-embed .spl-nav,
                 body.swml-has-embed .ld-content-actions,
-                body.swml-has-embed .learndash-wrapper .ld-content-actions { padding: 16px 30px !important; }
+                body.swml-has-embed .learndash-wrapper .ld-content-actions { padding: 0 !important; }
 
                 /* Hide LD lesson title when WML is embedded — title is redundant */
                 body.swml-has-embed .spl-content-header .spl-title { display: none; }

@@ -37,6 +37,25 @@ body.swml-embedded-active .spl-content {
     height: 100vh;
     z-index: 99999;
 }
+/* v7.14.20: Embedded mode — isolate WML theme from LD's body-level theme styles */
+#swml-canvas-overlay.swml-canvas-embedded {
+    color: rgba(255,255,255,0.87);
+    background: oklch(0.17 0.01 270); /* #16181d — explicit dark default */
+}
+#swml-canvas-overlay.swml-canvas-embedded .swml-canvas-sidebar,
+#swml-canvas-overlay.swml-canvas-embedded .swml-canvas-chat-panel {
+    color: rgba(255,255,255,0.87);
+}
+/* v7.14.20: Badge tags overflow handling in narrow embedded mode */
+#swml-canvas-overlay.swml-canvas-embedded .swml-canvas-header {
+    flex-wrap: nowrap;
+    overflow: hidden;
+}
+#swml-canvas-overlay.swml-canvas-embedded .swml-canvas-ctx-badge {
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 /* Fullscreen toggle button (embedded mode) */
 .swml-canvas-fullscreen-btn {
     background: none;
@@ -3364,8 +3383,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     overflow-x: hidden;
 }
 .swml-toc-title {
-    font-family: 'Playfair Display Complete', 'Playfair Display', Georgia, serif;
-    font-style: italic;
+    font-family: 'Playfair Display Complete', 'Playfair Display', Georgia, serif !important;
+    font-style: italic !important;
     font-size: 13px;
     font-weight: 400;
     text-transform: uppercase;
