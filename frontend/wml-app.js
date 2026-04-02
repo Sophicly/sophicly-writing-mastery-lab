@@ -6517,11 +6517,10 @@ Before marking the introduction, ask the student to confirm their essay structur
                     renderSetup();
                 }
             } catch (e) {}
-            // Also check: embed root exists but no canvas overlay (initial render failed)
-            if (!document.getElementById('swml-canvas-overlay') && embedRoot && _lastEmbedPost) {
-                console.log('WML SPA: Canvas missing — re-rendering');
-                renderSetup();
-            }
+            // v7.14.18: REMOVED — this was causing infinite re-render loops.
+            // If canvas overlay doesn't exist (chat exercise, failed boot, or TipTap not loaded),
+            // this fired renderSetup() every 1s, freezing the browser.
+            // The SPA post-ID check above (line 6496) is sufficient for detecting navigation.
         }, 1000);
     }
 
