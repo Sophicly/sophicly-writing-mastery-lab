@@ -726,18 +726,28 @@
 
         // Observe overflow and hide/show badges dynamically
         const ctxAllBadges = Array.from(ctxBadges.querySelectorAll('.swml-canvas-ctx-badge'));
+        // v7.14.23: helper — check if badges collide with centered toolbar
+        function _badgesOverlapToolbar() {
+            const tb = ctxBadges.parentElement?.querySelector('.swml-canvas-toolbar');
+            if (!tb) return false;
+            const tbLeft = tb.getBoundingClientRect().left;
+            const visible = ctxAllBadges.filter(b => b.style.display !== 'none');
+            const last = visible[visible.length - 1];
+            if (!last) return false;
+            return last.getBoundingClientRect().right + 8 > tbLeft;
+        }
         function checkCtxOverflow() {
             // Reset all visible
             ctxAllBadges.forEach(b => b.style.display = '');
             ctxOverflowBtn.style.display = 'none';
             ctxOverflowDrop.innerHTML = '';
             ctxOverflowDrop.style.display = 'none';
-            // Force reflow so measurements are accurate
-            void ctxBadges.offsetWidth;
-            // Check if badges actually overflow — compare scrollWidth to clientWidth
-            if (ctxBadges.scrollWidth <= ctxBadges.clientWidth + 2) return; // +2px tolerance
-            // Overflow detected — find the break point
-            const containerRight = ctxBadges.getBoundingClientRect().right;
+            void ctxBadges.offsetWidth; // force reflow
+            // v7.14.23: dual check — scrollWidth overflow OR toolbar collision
+            const scrollOverflow = ctxBadges.scrollWidth > ctxBadges.clientWidth + 2;
+            if (!scrollOverflow && !_badgesOverlapToolbar()) return;
+            // v7.14.24: In embedded mode, cap at 1 visible badge to prevent toolbar overlap
+            const maxVisible = WML.isEmbedded ? 1 : 1;
             for (let i = ctxAllBadges.length - 1; i >= 1; i--) {
                 ctxAllBadges[i].style.display = 'none';
                 ctxOverflowDrop.insertBefore(
@@ -745,7 +755,10 @@
                     ctxOverflowDrop.firstChild
                 );
                 void ctxBadges.offsetWidth; // reflow
-                if (ctxBadges.scrollWidth <= ctxBadges.clientWidth + 2) break;
+                // Stop when remaining visible badges fit AND don't overlap toolbar
+                const visCount = ctxAllBadges.filter(b => b.style.display !== 'none').length;
+                if (visCount <= maxVisible) break;
+                if (ctxBadges.scrollWidth <= ctxBadges.clientWidth + 2 && !_badgesOverlapToolbar()) break;
             }
             if (ctxOverflowDrop.children.length > 0) ctxOverflowBtn.style.display = '';
         }
@@ -764,16 +777,15 @@
 
         headerRight.appendChild(el('span', { className: 'swml-canvas-ctx-mode', textContent: 'BETA' }));
 
-        // Theme toggle — hidden in embedded mode (LD has its own) (v7.13.11)
-        if (!WML.isEmbedded) {
-            const canvasThemeToggle = createThemeToggleBtn('swml-canvas-theme-toggle', () => {
-                toggleTheme();
-                const t = getTheme();
-                canvas.classList.toggle('swml-canvas-light', t === 'light');
-                overlay.dataset.swmlTheme = t;
-            });
-            headerRight.appendChild(canvasThemeToggle);
-        }
+        // Theme toggle — hidden in embedded mode unless fullscreen (v7.14.24)
+        const canvasThemeToggle = createThemeToggleBtn('swml-canvas-theme-toggle', () => {
+            toggleTheme();
+            const t = getTheme();
+            canvas.classList.toggle('swml-canvas-light', t === 'light');
+            overlay.dataset.swmlTheme = t;
+        });
+        if (WML.isEmbedded) canvasThemeToggle.style.display = 'none';
+        headerRight.appendChild(canvasThemeToggle);
         // v7.14.22: Safe one-directional LD → WML theme sync.
         // Observe ONLY <html data-theme> (LD controls this). Update canvas directly
         // without calling applyTheme() (which sets body attrs and caused feedback loops).
@@ -808,7 +820,7 @@
                 ldObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
             }
         }
-        // Fullscreen toggle — embedded mode only (v7.13.15)
+        // Fullscreen toggle — embedded mode only (v7.14.24: reworked to trigger LD sidebar + header collapse)
         if (WML.isEmbedded) {
             const SVG_EXPAND = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
             const SVG_SHRINK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M3 21l7-7"/></svg>';
@@ -820,6 +832,10 @@
                     const isFs = overlay.classList.toggle('swml-canvas-fullscreen');
                     fsBtn.innerHTML = isFs ? SVG_SHRINK : SVG_EXPAND;
                     fsBtn.title = isFs ? 'Exit fullscreen' : 'Toggle fullscreen';
+                    // v7.14.24: CSS handles sidebar + header collapse via body class
+                    document.body.classList.toggle('swml-fullscreen-active', isFs);
+                    // Show WML theme toggle when LD header is collapsed (LD's toggle disappears)
+                    canvasThemeToggle.style.display = isFs ? '' : 'none';
                 }
             });
             headerRight.appendChild(fsBtn);
@@ -1595,6 +1611,52 @@
             pageDisplay.textContent = `Page ${currentPage} of ${totalPages}`;
         }
         contentWrap.addEventListener('scroll', updatePageCount);
+
+        // v7.14.25: LD navigation proxy buttons — embedded mode only
+        // Uses exact selectors from SPL footer (.spl-btn-prev, .learndash_mark_complete_button, .spl-btn-next)
+        if (WML.isEmbedded) {
+            const ldNav = el('div', { className: 'swml-ld-nav' });
+            // Previous lesson
+            const ldPrevLink = document.querySelector('.spl-footer .spl-btn-prev, .ld-content-actions a.ld-button-reverse');
+            if (ldPrevLink) {
+                ldNav.appendChild(el('button', {
+                    className: 'swml-status-btn swml-ld-prev',
+                    innerHTML: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg> Previous',
+                    title: 'Previous lesson',
+                    onClick: () => { window.location.href = ldPrevLink.href; }
+                }));
+            }
+            // Mark Complete
+            const ldMarkBtn = document.querySelector('.spl-footer .learndash_mark_complete_button, .learndash_mark_complete_button');
+            if (ldMarkBtn) {
+                const markBtn = el('button', {
+                    className: 'swml-status-btn swml-ld-complete',
+                    innerHTML: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Mark Complete',
+                    title: 'Mark this lesson complete in LearnDash',
+                    onClick: () => {
+                        ldMarkBtn.click();
+                        markBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Completing\u2026';
+                        markBtn.disabled = true;
+                    }
+                });
+                ldNav.appendChild(markBtn);
+            }
+            // Next lesson
+            const ldNextLink = document.querySelector('.spl-footer .spl-btn-next, .ld-content-actions a.ld-button:not(.ld-button-reverse)');
+            if (ldNextLink) {
+                ldNav.appendChild(el('button', {
+                    className: 'swml-status-btn swml-ld-next',
+                    innerHTML: 'Next <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>',
+                    title: 'Next lesson',
+                    onClick: () => { window.location.href = ldNextLink.href; }
+                }));
+            }
+            if (ldNav.children.length > 0) statusBar.appendChild(ldNav);
+            // v7.14.25: Clean up fullscreen body class on page unload (prevents state leaking to next lesson)
+            window.addEventListener('beforeunload', () => {
+                document.body.classList.remove('swml-fullscreen-active');
+            });
+        }
 
         // ── Canvas State Flags — moved before countdown timer so isExamPrep is available (v7.13.97) ──
         const exerciseConfig = WML.getExerciseConfig(state.task);
@@ -2528,7 +2590,8 @@
                                     if (ww) { ww.style.display = ''; ww.style.opacity = '1'; }
 
                                     // ── Re-add "Go to Assessment" 3D button after returning from assessment (v7.12.32) ──
-                                    if (diagCompleteBtn && !rightPanel.querySelector('.swml-go-assess-btn')) {
+                                    // v7.14.24: Skip in embedded mode — LD handles exercise transitions
+                                    if (!WML.isEmbedded && diagCompleteBtn && !rightPanel.querySelector('.swml-go-assess-btn')) {
                                         diagCompleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><path d="M5 12l5 5L20 7"/></svg> Complete';
                                         diagCompleteBtn.disabled = true;
                                         diagCompleteBtn.style.opacity = '0.5';
@@ -3689,15 +3752,17 @@
                                 diagCompleteBtn.style.cursor = 'default';
                                 diagCompleteBtn.style.display = 'block';
                             }
-                            // Add "Go to Assessment" 3D navigation button (v7.12.32)
-                            const goAssessBtn = build3DButton('Go to Assessment', "Let's Go", () => {
-                                state.task = 'assessment';
-                                state.canvasTimer = 0;
-                                state.step = 0;
-                                renderCanvasWorkspace();
-                            });
-                            goAssessBtn.classList.add('swml-go-assess-btn');
-                            rightPanel.appendChild(goAssessBtn);
+                            // v7.14.24: Skip "Go to Assessment" in embedded mode — LD handles exercise transitions
+                            if (!WML.isEmbedded) {
+                                const goAssessBtn = build3DButton('Go to Assessment', "Let's Go", () => {
+                                    state.task = 'assessment';
+                                    state.canvasTimer = 0;
+                                    state.step = 0;
+                                    renderCanvasWorkspace();
+                                });
+                                goAssessBtn.classList.add('swml-go-assess-btn');
+                                rightPanel.appendChild(goAssessBtn);
+                            }
                         }
                     } catch (e) { console.log('WML: Diagnostic completion check failed:', e); }
                 })();
