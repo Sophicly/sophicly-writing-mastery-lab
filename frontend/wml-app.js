@@ -276,6 +276,14 @@
 
         // ── Embedded mode: skip setup, go straight to exercise (v7.13.12) ──
         // PHP outputs #swml-root inside #swml-embedded-root — JS boot finds it normally.
+        // v7.14.16: Fallback for missing embed config — show error instead of blank page
+        if (isEmbedded && !state.board && !state.text && !(state.task && state.task.startsWith('cw_'))) {
+            const root = $('#swml-root');
+            root.innerHTML = '<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.5);font-family:var(--swml-font-body,sans-serif)">' +
+                '<p style="font-size:15px;margin-bottom:8px">Exercise not configured</p>' +
+                '<p style="font-size:12px">This lesson is missing its board, subject, or text configuration. Please contact your tutor.</p></div>';
+            return;
+        }
         if (isEmbedded && state.board && state.text) {
             // Infer draftType and topic label for embedded context
             if (state.topicNumber > 0 && !state.draftType) {

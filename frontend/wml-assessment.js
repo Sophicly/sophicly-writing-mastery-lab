@@ -7119,20 +7119,81 @@
     }
 
     /**
+     * Look up a question's spec from the language-paper-specs.json data.
+     * Returns the question object { id, marks, type, aos, description, ... } or null.
+     * v7.14.16
+     */
+    function lookupQuestionSpec(questionId) {
+        const specs = window.swmlLangSpecs || {};
+        const board = (state.board || '').toLowerCase().replace(/-/g, '');
+        const subject = (state.subject || '').replace(/-/g, '_');
+        const paper = specs[board]?.[subject];
+        if (!paper?.sections) return null;
+        for (const sec of paper.sections) {
+            for (const q of sec.questions || []) {
+                if (q.id === questionId) return q;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Build section dividers from the specs JSON if available.
+     * Returns a map: questionId → sectionLabel for inserting dividers before each question.
+     * v7.14.16
+     */
+    function buildSectionMap() {
+        const specs = window.swmlLangSpecs || {};
+        const board = (state.board || '').toLowerCase().replace(/-/g, '');
+        const subject = (state.subject || '').replace(/-/g, '_');
+        const paper = specs[board]?.[subject];
+        if (!paper?.sections) return null;
+        const map = {};
+        for (const sec of paper.sections) {
+            const firstQ = sec.questions?.[0];
+            if (firstQ) map[firstQ.id] = sec.label;
+        }
+        return map;
+    }
+
+    /**
+     * Per-question word count target based on question type and marks.
+     * Returns { target, label } or null for list-format questions.
+     * v7.14.16
+     */
+    function getQuestionWordTarget(qType, marks) {
+        switch (qType) {
+            case 'multiple_choice': return null;
+            case 'retrieval':       return marks <= 2 ? null : { target: marks * 15, label: `~${marks * 15} words` };
+            case 'short_analysis':  return { target: marks * 25, label: `~${marks * 25} words` };
+            case 'analysis':        return { target: marks * 30, label: `~${marks * 30} words` };
+            case 'evaluation':      return { target: marks * 25, label: `~${marks * 25} words` };
+            case 'comparison':      return { target: marks * 25, label: `~${marks * 25} words` };
+            case 'extended_writing':
+            case 'choice':
+                return marks >= 40
+                    ? { target: 550, label: '~450\u2013600 words' }
+                    : { target: 350, label: '~300\u2013400 words' };
+            default: return marks >= 20 ? { target: 550, label: '~450\u2013600 words' } : null;
+        }
+    }
+
+    /**
      * Multi-question document template (Language papers).
-     * Renders source texts, then each question with its response area.
-     * For 20+ mark questions: full essay structure (intro, 3 body, conclusion).
-     * For <20 mark questions: paragraph-count based response.
-     * For writing questions (Section B): uses IUMVCC structure if persuasive,
-     * otherwise standard essay plan.
+     * v7.14.16: Type-aware response sections using language-paper-specs.json.
+     * Falls back to marks-based logic when no spec match is found.
+     *
      * Mode: 'diagnostic' = question + response (no plan).
-     *        'redraft' = question + response (no outline for Language).
+     *        'redraft' = question + plan + response for writing questions.
      */
     function buildMultiQuestionTemplate(mode, topicData) {
         const meta = typeof topicData.metadata === 'string' ? JSON.parse(topicData.metadata || '{}') : (topicData.metadata || {});
         const questions = meta.questions || [];
         const sources = meta.sources || [];
         let html = '';
+
+        // Build section divider map from specs (if available)
+        const sectionMap = buildSectionMap();
 
         // ── Source texts (if any) ──
         if (sources.length > 0) {
@@ -7152,20 +7213,30 @@
         }
 
         // ── Questions ──
-        let sectionLabel = '';
+        let lastSection = '';
         questions.forEach(function(q, idx) {
             const qMarks = parseInt(q.marks) || 0;
             const qId = q.id || q.label || ('Q' + (idx + 1));
-            const fullEssay = needsFullEssayStructure(qMarks);
-            const isWritingQ = qMarks >= 24 || /section\s*b|writing|creative|persuasive|narrative|descriptive/i.test(q.label || '');
+
+            // Look up type from specs JSON, fall back to topic metadata, then infer from marks
+            const specQ = lookupQuestionSpec(qId);
+            const qType = q.type || specQ?.type || null;
+            const isWritingQ = qType === 'extended_writing' || qType === 'choice'
+                || qMarks >= 24 || /section\s*b|writing|creative|persuasive|narrative|descriptive/i.test(q.label || '');
             const isPersuasive = /persuasive|speech|letter|article|argue|convince|advise/i.test(q.text || q.label || '');
 
-            // Section divider for grouping (e.g., "SECTION A: READING" / "SECTION B: WRITING")
-            const newSection = idx === 0 ? 'SECTION A: READING' :
-                (isWritingQ && sectionLabel !== 'SECTION B: WRITING') ? 'SECTION B: WRITING' : '';
-            if (newSection && newSection !== sectionLabel) {
-                sectionLabel = newSection;
-                html += dividerHTML(sectionLabel);
+            // Section dividers from specs (multi-section support for Edexcel P2 etc.)
+            if (sectionMap && sectionMap[qId] && sectionMap[qId] !== lastSection) {
+                lastSection = sectionMap[qId];
+                html += dividerHTML(lastSection.toUpperCase());
+            } else if (!sectionMap) {
+                // Fallback: simple Section A / Section B detection
+                const newSection = idx === 0 ? 'SECTION A: READING' :
+                    (isWritingQ && lastSection !== 'SECTION B: WRITING') ? 'SECTION B: WRITING' : '';
+                if (newSection && newSection !== lastSection) {
+                    lastSection = newSection;
+                    html += dividerHTML(lastSection);
+                }
             }
 
             // Question header
@@ -7185,22 +7256,86 @@
             }
             if (qMarks) qInner += `<p><em>[${qMarks} marks]</em></p>`;
             if (q.aos) qInner += `<p><em>${escapeHTML(q.aos)}</em></p>`;
+            // Per-question word target hint
+            const wordTarget = qType ? getQuestionWordTarget(qType, qMarks) : null;
+            if (wordTarget) qInner += `<p><em>Aim for ${wordTarget.label}.</em></p>`;
             html += sectionHTML('question', `${qId}`, false, null, qInner);
 
-            // Plan (redraft mode only for writing questions, no plan for diagnostic Language)
+            // Plan (redraft mode only for writing questions)
             if (mode === 'redraft' && isWritingQ) {
-                html += dividerHTML(`PLAN — ${qId}`);
+                html += dividerHTML(`PLAN \u2014 ${qId}`);
                 if (isPersuasive) {
                     html += buildIUMVCCPlanSection(qId);
-                } else if (fullEssay) {
+                } else if (qMarks >= 20 || qType === 'extended_writing' || qType === 'choice') {
                     html += buildPlanSection(qId, qMarks);
                 }
             }
 
-            // Response area
-            html += dividerHTML(`RESPONSE — ${qId}`);
-            if (fullEssay) {
-                // 20+ marks: structured response with paragraph sections
+            // ── Response area (type-aware) ──
+            html += dividerHTML(`RESPONSE \u2014 ${qId}`);
+
+            if (qType === 'multiple_choice') {
+                // Multiple choice: list of statements to tick (e.g., AQA P2 Q1)
+                const desc = specQ?.description || q.text || '';
+                html += sectionHTML('response', `${qId} Response`, true, null,
+                    `<p><em>${escapeHTML(desc)}</em></p>` +
+                    `<p></p><p><em>List the correct statements below:</em></p>` +
+                    `<ol><li></li><li></li><li></li><li></li></ol>`);
+
+            } else if (qType === 'retrieval' && qMarks <= 5) {
+                // Short retrieval: one bullet per mark
+                const count = Math.max(1, qMarks);
+                let items = '';
+                for (let i = 1; i <= count; i++) {
+                    items += `<li></li>`;
+                }
+                html += sectionHTML('response', `${qId} Response`, true, null,
+                    `<ol>${items}</ol>`);
+
+            } else if (qType === 'short_analysis') {
+                // Short analysis: 1-2 paragraphs with PEA hint
+                const paraCount = Math.max(1, Math.ceil(qMarks / 5));
+                for (let i = 1; i <= paraCount; i++) {
+                    html += sectionHTML('response', `${qId} Paragraph ${i}`, true, null,
+                        `<p><em>Point \u2192 Evidence \u2192 Analysis</em></p><p></p>`);
+                }
+
+            } else if (qType === 'analysis') {
+                // Multi-paragraph analysis with evidence
+                const paraCount = Math.max(2, Math.ceil(qMarks / 4));
+                for (let i = 1; i <= paraCount; i++) {
+                    html += sectionHTML('response', `${qId} Paragraph ${i}`, true, null,
+                        `<p><em>Point \u2192 Evidence \u2192 Analyse language/structure</em></p><p></p>`);
+                }
+
+            } else if (qType === 'evaluation') {
+                // Extended evaluative response with personal judgement
+                html += sectionHTML('response', `${qId} Introduction`, true, null,
+                    `<p><em>State your position clearly.</em></p><p></p>`);
+                const bodyCount = Math.max(2, Math.ceil((qMarks - 4) / 4));
+                for (let i = 1; i <= bodyCount; i++) {
+                    html += sectionHTML('response', `${qId} Body ${i}`, true, null,
+                        `<p><em>Point \u2192 Evidence \u2192 Analysis \u2192 Judgement</em></p><p></p>`);
+                }
+                html += sectionHTML('response', `${qId} Conclusion`, true, null,
+                    `<p><em>Overall judgement — to what extent do you agree?</em></p><p></p>`);
+
+            } else if (qType === 'comparison') {
+                // Cross-text comparison structure
+                html += sectionHTML('response', `${qId} Introduction`, true, null,
+                    `<p><em>Identify the key similarity or difference between the texts.</em></p><p></p>`);
+                const compParas = Math.max(2, Math.ceil(qMarks / 5));
+                for (let i = 1; i <= compParas; i++) {
+                    html += sectionHTML('response', `${qId} Comparison ${i}`, true, null,
+                        `<p><em>Text 1 point \u2192 Text 2 point \u2192 Analysis of difference/similarity</em></p><p></p>`);
+                }
+
+            } else if (qType === 'extended_writing' || qType === 'choice') {
+                // Full essay: intro + body + conclusion (existing pattern)
+                if (qType === 'choice') {
+                    html += sectionHTML('response', `${qId} \u2014 Choose ONE task`, false, null,
+                        `<p><em>Write your chosen task below.</em></p>`);
+                }
                 html += sectionHTML('response', `${qId} Introduction`, true, null,
                     `<p><em>Write your introduction here.</em></p><p></p>`);
                 const bodyCount = qMarks >= 40 ? 4 : 3;
@@ -7210,15 +7345,28 @@
                 }
                 html += sectionHTML('response', `${qId} Conclusion`, true, null,
                     `<p><em>Write your conclusion here.</em></p><p></p>`);
-            } else if (qMarks >= 4) {
-                // 4-19 marks: paragraph-count based response (1 per 4 marks)
-                const paraCount = getParagraphCount(qMarks);
-                for (let i = 1; i <= paraCount; i++) {
-                    html += sectionHTML('response', `${qId} Response ${i}`, true, null, `<p></p>`);
-                }
+
             } else {
-                // 1-3 marks: simple open response
-                html += sectionHTML('response', `${qId} Response`, true, null, `<p></p>`);
+                // Fallback: marks-based logic (for unverified boards or missing types)
+                const fullEssay = needsFullEssayStructure(qMarks);
+                if (fullEssay) {
+                    html += sectionHTML('response', `${qId} Introduction`, true, null,
+                        `<p><em>Write your introduction here.</em></p><p></p>`);
+                    const bodyCount = qMarks >= 40 ? 4 : 3;
+                    for (let i = 1; i <= bodyCount; i++) {
+                        html += sectionHTML('response', `${qId} Body ${i}`, true, null,
+                            `<p><em>Write body paragraph ${i} here.</em></p><p></p>`);
+                    }
+                    html += sectionHTML('response', `${qId} Conclusion`, true, null,
+                        `<p><em>Write your conclusion here.</em></p><p></p>`);
+                } else if (qMarks >= 4) {
+                    const paraCount = getParagraphCount(qMarks);
+                    for (let i = 1; i <= paraCount; i++) {
+                        html += sectionHTML('response', `${qId} Response ${i}`, true, null, `<p></p>`);
+                    }
+                } else {
+                    html += sectionHTML('response', `${qId} Response`, true, null, `<p></p>`);
+                }
             }
         });
 

@@ -1,8 +1,14 @@
+<!-- STRUCTURAL NOTE (v7.14.16): This file needs rebuilding to match the actual Edexcel P2 structure.
+     Missing: Q4(1), Q5(1), Q6(15) for Text 2 reading. Q7a(6) + Q7b(14) cross-text comparison.
+     Current Q4 (comparison) approximately maps to Q7b but the separate Text 2 questions are absent.
+     Writing should be Q8 or Q9 (choice of 2 tasks, 40 marks).
+     See protocols/shared/language-paper-specs.json for verified structure. -->
+
 # Topic 1: Diagnostic Paper — The Death Zone / London Snow
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Edexcel Language Paper 2 Diagnostic — Non-Fiction and Transactional Writing. Two non-fiction sources, five questions, 50 marks total. Section A tests reading (Q1-Q4), Section B tests transactional writing (Q5). Phase 1 (first draft) establishes your baseline; Phase 2 (redraft) targets specific improvements identified in assessment.
-**Marks:** 50
+**Teaching Point:** Edexcel Language Paper 2 Diagnostic — Non-Fiction and Transactional Writing. Two non-fiction sources, five questions, 96 marks total. Section A tests reading (Q1-Q4), Section B tests transactional writing (Q5). Phase 1 (first draft) establishes your baseline; Phase 2 (redraft) targets specific improvements identified in assessment.
+**Marks:** 96
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -125,7 +131,7 @@ Analyse how the writer uses language and structure to create a sense of danger a
 Both sources describe extreme weather events. Compare how the writers convey their different perspectives on the power of nature. Support your answer with detailed reference to both texts.
 
 ## Q5
-**Marks:** 16 (AO4 + AO5)
+**Marks:** 40 (AO4 + AO5)
 **AOs:** AO4, AO5
 
 You are going to enter a writing competition. Write an article in which you argue for or against the view: "The natural world is something to be feared, not admired."
@@ -146,12 +152,12 @@ N/A — Conceptual Notes topic.
 # Topic 3: Transactional Writing — Article
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Standalone transactional writing exercise — Article form. Practice crafting a persuasive article for a writing competition. 16 marks: assessed on content quality (AO4) and technical accuracy (AO5). Phase 1 (first draft) focuses on structure and argument; Phase 2 (redraft) refines style, vocabulary, and technical accuracy.
-**Marks:** 16
+**Teaching Point:** Standalone transactional writing exercise — Article form. Practice crafting a persuasive article for a writing competition. 40 marks: assessed on content quality (AO4) and technical accuracy (AO5). Phase 1 (first draft) focuses on structure and argument; Phase 2 (redraft) refines style, vocabulary, and technical accuracy.
+**Marks:** 40
 **AOs:** AO4, AO5
 
 ## Q1
-**Marks:** 16 (AO4 + AO5)
+**Marks:** 40 (AO4 + AO5)
 **AOs:** AO4, AO5
 
 You are going to enter a writing competition. Write an article in which you argue for or against the view: "Young people today have more opportunities than ever before, yet seem less satisfied."
@@ -161,8 +167,8 @@ You are going to enter a writing competition. Write an article in which you argu
 # Topic 4: Practice Paper 2 — The Crossing / Idle Days in Patagonia
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Edexcel Language Paper 2 Practice — Non-Fiction and Transactional Writing. Two non-fiction sources about perilous sea voyages, five questions, 50 marks total. Section A tests reading (Q1-Q4), Section B tests transactional writing (Q5). Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
-**Marks:** 50
+**Teaching Point:** Edexcel Language Paper 2 Practice — Non-Fiction and Transactional Writing. Two non-fiction sources about perilous sea voyages, five questions, 96 marks total. Section A tests reading (Q1-Q4), Section B tests transactional writing (Q5). Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
+**Marks:** 96
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -292,7 +298,7 @@ Analyse how the writer uses language and structure to create a sense of danger a
 Both sources describe perilous sea voyages. Compare how the writers convey their different experiences of being at the mercy of the sea. Support your answer with detailed reference to both texts.
 
 ## Q5
-**Marks:** 16 (AO4 + AO5)
+**Marks:** 40 (AO4 + AO5)
 **AOs:** AO4, AO5
 
 You are going to enter a writing competition. Write a speech in which you argue for or against the view: "Adventure and risk-taking are essential parts of a fulfilling life."
@@ -302,12 +308,12 @@ You are going to enter a writing competition. Write a speech in which you argue 
 # Topic 5: Transactional Writing — Speech
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Standalone transactional writing exercise — Speech form. Practice crafting a persuasive speech with rhetorical techniques (direct address, tricolon, rhetorical questions, anecdote, emotive language). 16 marks: assessed on content quality (AO4) and technical accuracy (AO5). Phase 1 (first draft) focuses on voice and rhetorical structure; Phase 2 (redraft) sharpens persuasive techniques and technical accuracy.
-**Marks:** 16
+**Teaching Point:** Standalone transactional writing exercise — Speech form. Practice crafting a persuasive speech with rhetorical techniques (direct address, tricolon, rhetorical questions, anecdote, emotive language). 40 marks: assessed on content quality (AO4) and technical accuracy (AO5). Phase 1 (first draft) focuses on voice and rhetorical structure; Phase 2 (redraft) sharpens persuasive techniques and technical accuracy.
+**Marks:** 40
 **AOs:** AO4, AO5
 
 ## Q1
-**Marks:** 16 (AO4 + AO5)
+**Marks:** 40 (AO4 + AO5)
 **AOs:** AO4, AO5
 
 You are going to enter a writing competition. Write the text of a speech in which you give your views on the topic: "Technology has made our lives easier, but at what cost?"
@@ -317,8 +323,8 @@ You are going to enter a writing competition. Write the text of a speech in whic
 # Topic 6: Practice Paper 3 — London Riots / Eastern Penitentiary
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Edexcel Language Paper 2 Practice — Non-Fiction and Transactional Writing. Two non-fiction sources about social injustice and punishment, five questions, 50 marks total. Section A tests reading (Q1-Q4), Section B tests transactional writing (Q5). Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
-**Marks:** 50
+**Teaching Point:** Edexcel Language Paper 2 Practice — Non-Fiction and Transactional Writing. Two non-fiction sources about social injustice and punishment, five questions, 96 marks total. Section A tests reading (Q1-Q4), Section B tests transactional writing (Q5). Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
+**Marks:** 96
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -452,7 +458,7 @@ Analyse how the writer uses language and structure to convey the horrors of soli
 Both sources describe injustice in society. Compare how the writers convey their different perspectives on the treatment of disadvantaged people. Support your answer with detailed reference to both texts.
 
 ## Q5
-**Marks:** 16 (AO4 + AO5)
+**Marks:** 40 (AO4 + AO5)
 **AOs:** AO4, AO5
 
 You are going to enter a writing competition. Write a letter to your local MP in which you argue for or against the view: "Prison should be about rehabilitation, not punishment."
@@ -462,12 +468,12 @@ You are going to enter a writing competition. Write a letter to your local MP in
 # Topic 7: Transactional Writing — Letter
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Standalone transactional writing exercise — Letter form. Practice crafting a formal persuasive letter with appropriate register, conventions (addresses, greeting, sign-off), and structured argumentation. 16 marks: assessed on content quality (AO4) and technical accuracy (AO5). Phase 1 (first draft) focuses on tone and formal register; Phase 2 (redraft) strengthens argument and technical precision.
-**Marks:** 16
+**Teaching Point:** Standalone transactional writing exercise — Letter form. Practice crafting a formal persuasive letter with appropriate register, conventions (addresses, greeting, sign-off), and structured argumentation. 40 marks: assessed on content quality (AO4) and technical accuracy (AO5). Phase 1 (first draft) focuses on tone and formal register; Phase 2 (redraft) strengthens argument and technical precision.
+**Marks:** 40
 **AOs:** AO4, AO5
 
 ## Q1
-**Marks:** 16 (AO4 + AO5)
+**Marks:** 40 (AO4 + AO5)
 **AOs:** AO4, AO5
 
 You are going to enter a writing competition. Write a letter to your local council in which you argue that more should be done to support local businesses.
@@ -477,8 +483,8 @@ You are going to enter a writing competition. Write a letter to your local counc
 # Topic 8: Practice Paper 4 — Cosmetics / Arts of Beauty
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Edexcel Language Paper 2 Practice — Non-Fiction and Transactional Writing. Two non-fiction sources about cosmetics and beauty standards, five questions, 50 marks total. Section A tests reading (Q1-Q4), Section B tests transactional writing (Q5). Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
-**Marks:** 50
+**Teaching Point:** Edexcel Language Paper 2 Practice — Non-Fiction and Transactional Writing. Two non-fiction sources about cosmetics and beauty standards, five questions, 96 marks total. Section A tests reading (Q1-Q4), Section B tests transactional writing (Q5). Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
+**Marks:** 96
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -596,7 +602,7 @@ Analyse how the writer uses language and structure to warn readers about commerc
 Both sources discuss cosmetics and the beauty industry. Compare how the writers convey their different attitudes towards vanity and the beauty industry. Support your answer with detailed reference to both texts.
 
 ## Q5
-**Marks:** 16 (AO4 + AO5)
+**Marks:** 40 (AO4 + AO5)
 **AOs:** AO4, AO5
 
 You are going to enter a writing competition. Write an article for a magazine aimed at young adults in which you argue for or against the view: "Social media has created unrealistic beauty standards that are damaging young people's mental health."
@@ -606,12 +612,12 @@ You are going to enter a writing competition. Write an article for a magazine ai
 # Topic 9: Transactional Writing — Leaflet
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Standalone transactional writing exercise — Leaflet form. Practice crafting a persuasive leaflet with engaging subheadings, direct address, facts/statistics, and a clear call to action. 16 marks: assessed on content quality (AO4) and technical accuracy (AO5). Phase 1 (first draft) focuses on layout-awareness and persuasive content; Phase 2 (redraft) refines tone, audience targeting, and technical accuracy.
-**Marks:** 16
+**Teaching Point:** Standalone transactional writing exercise — Leaflet form. Practice crafting a persuasive leaflet with engaging subheadings, direct address, facts/statistics, and a clear call to action. 40 marks: assessed on content quality (AO4) and technical accuracy (AO5). Phase 1 (first draft) focuses on layout-awareness and persuasive content; Phase 2 (redraft) refines tone, audience targeting, and technical accuracy.
+**Marks:** 40
 **AOs:** AO4, AO5
 
 ## Q1
-**Marks:** 16 (AO4 + AO5)
+**Marks:** 40 (AO4 + AO5)
 **AOs:** AO4, AO5
 
 You are going to enter a writing competition. Write a leaflet for young people in which you persuade them to take up volunteering.
@@ -621,8 +627,8 @@ You are going to enter a writing competition. Write a leaflet for young people i
 # Topic 10: Practice Paper 5 — Scientific Proof / Humane Understanding
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Edexcel Language Paper 2 Practice — Non-Fiction and Transactional Writing. Two non-fiction sources about the nature of knowledge and understanding, five questions, 50 marks total. Section A tests reading (Q1-Q4), Section B tests transactional writing (Q5). Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
-**Marks:** 50
+**Teaching Point:** Edexcel Language Paper 2 Practice — Non-Fiction and Transactional Writing. Two non-fiction sources about the nature of knowledge and understanding, five questions, 96 marks total. Section A tests reading (Q1-Q4), Section B tests transactional writing (Q5). Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
+**Marks:** 96
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -743,7 +749,7 @@ Analyse how the writer uses language and structure to explain his theory of how 
 Both sources explore the nature and limits of human knowledge. Compare how the writers convey their different perspectives on the role of observation and experience in gaining understanding. Support your answer with detailed reference to both texts.
 
 ## Q5
-**Marks:** 16 (AO4 + AO5)
+**Marks:** 40 (AO4 + AO5)
 **AOs:** AO4, AO5
 
 You are going to enter a writing competition. Write an essay in which you argue for or against the view: "We rely too heavily on science and not enough on our own common sense."

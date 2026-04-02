@@ -1,8 +1,8 @@
 # Topic 1: Practice Paper 1 — City of the Beasts (Isabel Allende)
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** EDUQAS Language Component 1 — 20th Century Literature Reading and Creative Prose Writing. One fiction source, six questions, 60 marks total. Section A tests reading (Q1-Q5, 40 marks), Section B tests writing (Q6, 20 marks). You have 1 hour 45 minutes.
-**Marks:** 60
+**Teaching Point:** EDUQAS Language Component 1 — 20th Century Literature Reading and Creative Prose Writing. One fiction source, six questions, 80 marks total. Section A tests reading (Q1-Q5, 40 marks), Section B tests writing (Q6, 40 marks). You have 1 hour 45 minutes.
+**Marks:** 80
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -58,13 +58,13 @@ Alex Cold lives with his parents and two younger sisters, Andrea and Nicole, in 
 44 dried in their tubes. His mother seemed to have shrunk; she was little more than a silent ghost.
 
 ## Q1
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO1
 
 Read lines 1 to 11. What do you learn about Alex's nightmare and his feelings when he wakes up? You must refer to the text to support your answer.
 
 ## Q2
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO2
 
 Look at lines 6 to 11. How does the writer use language to describe the effects of the storm on Alex?
@@ -75,13 +75,13 @@ You should comment on:
 - sentence forms.
 
 ## Q3
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does the writer use language and structure to create effects in lines 16 to 29?
 
 ## Q4
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 'The extract presents Alex as an angry and resentful boy who cannot accept what is happening to his family.' How far do you agree with this view?
@@ -91,7 +91,7 @@ You should write about:
 - how the writer has created these impressions.
 
 ## Q5
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 To what extent do you agree that the writer successfully creates a sense of loss and absence in the final part of the extract (lines 35 to 44)?
@@ -102,7 +102,7 @@ You should write about:
 - references to the text.
 
 ## Q6
-**Marks:** 20
+**Marks:** 40
 **AOs:** AO4, AO5
 
 Choose one of the following titles for your writing:
@@ -115,9 +115,9 @@ Write a description of a stormy morning as seen from inside a house.
 
 Write a story that begins: "This was going to be a terrible day, one of those days when it's best to stay in bed because everything is going to turn out bad."
 
-(12 marks for content and organisation)
-(8 marks for sentence structure, punctuation and spelling)
-[20 marks]
+(24 marks for content and organisation)
+(16 marks for sentence structure, punctuation and spelling)
+[40 marks]
 
 ---
 
@@ -135,8 +135,8 @@ N/A — Conceptual Notes topic.
 # Topic 3: Practice Paper 2 — The Hunger Games (Suzanne Collins)
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** EDUQAS Language Component 1 — 20th Century Literature Reading and Creative Prose Writing. One fiction source, six questions, 60 marks total. Section A tests reading (Q1-Q5, 40 marks), Section B tests writing (Q6, 20 marks). You have 1 hour 45 minutes.
-**Marks:** 60
+**Teaching Point:** EDUQAS Language Component 1 — 20th Century Literature Reading and Creative Prose Writing. One fiction source, six questions, 80 marks total. Section A tests reading (Q1-Q5, 40 marks), Section B tests writing (Q6, 40 marks). You have 1 hour 45 minutes.
+**Marks:** 80
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -192,13 +192,13 @@ Katniss lives with her mother, sister, Primrose, and Primrose's cat, Buttercup, 
 44 nothing even to bury. I was eleven then. Five years later, I still wake up screaming for him to run.
 
 ## Q1
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO1
 
 Read lines 1 to 8. What do you learn about Katniss's family and their circumstances? You must refer to the text to support your answer.
 
 ## Q2
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO2
 
 Look at lines 9 to 18. How does the writer use language to describe Buttercup and Katniss's relationship with him?
@@ -209,13 +209,13 @@ You should comment on:
 - sentence forms.
 
 ## Q3
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does the writer use language and structure to create effects in lines 24 to 38?
 
 ## Q4
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 'The writer presents Katniss as a tough, resourceful survivor who has learned to fend for herself.' How far do you agree with this view?
@@ -225,7 +225,7 @@ You should write about:
 - how the writer has created these impressions.
 
 ## Q5
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 To what extent do you agree that the writer successfully creates a sense of danger and oppression in the extract as a whole?
@@ -236,7 +236,7 @@ You should write about:
 - references to the text.
 
 ## Q6
-**Marks:** 20
+**Marks:** 40
 **AOs:** AO4, AO5
 
 Choose one of the following titles for your writing:
@@ -249,9 +249,9 @@ Write a description of a place where nature feels both beautiful and threatening
 
 Write a story about a character who must make a dangerous journey.
 
-(12 marks for content and organisation)
-(8 marks for sentence structure, punctuation and spelling)
-[20 marks]
+(24 marks for content and organisation)
+(16 marks for sentence structure, punctuation and spelling)
+[40 marks]
 
 ---
 
@@ -259,7 +259,7 @@ Write a story about a character who must make a dangerous journey.
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** This is your redraft opportunity for Practice Paper 2. You will work with the same source text and questions, but this time you will apply the feedback from your first attempt to produce a stronger, more developed response. Focus on the areas your tutor identified for improvement — this is where real progress happens.
-**Marks:** 60
+**Marks:** 80
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -315,13 +315,13 @@ Katniss lives with her mother, sister, Primrose, and Primrose's cat, Buttercup, 
 44 nothing even to bury. I was eleven then. Five years later, I still wake up screaming for him to run.
 
 ## Q1
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO1
 
 Read lines 1 to 8. What do you learn about Katniss's family and their circumstances? You must refer to the text to support your answer.
 
 ## Q2
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO2
 
 Look at lines 9 to 18. How does the writer use language to describe Buttercup and Katniss's relationship with him?
@@ -332,13 +332,13 @@ You should comment on:
 - sentence forms.
 
 ## Q3
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does the writer use language and structure to create effects in lines 24 to 38?
 
 ## Q4
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 'The writer presents Katniss as a tough, resourceful survivor who has learned to fend for herself.' How far do you agree with this view?
@@ -348,7 +348,7 @@ You should write about:
 - how the writer has created these impressions.
 
 ## Q5
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 To what extent do you agree that the writer successfully creates a sense of danger and oppression in the extract as a whole?
@@ -359,7 +359,7 @@ You should write about:
 - references to the text.
 
 ## Q6
-**Marks:** 20
+**Marks:** 40
 **AOs:** AO4, AO5
 
 Choose one of the following titles for your writing:
@@ -372,17 +372,17 @@ Write a description of a place where nature feels both beautiful and threatening
 
 Write a story about a character who must make a dangerous journey.
 
-(12 marks for content and organisation)
-(8 marks for sentence structure, punctuation and spelling)
-[20 marks]
+(24 marks for content and organisation)
+(16 marks for sentence structure, punctuation and spelling)
+[40 marks]
 
 ---
 
 # Topic 5: Practice Paper 3 — Life of Pi (Yann Martel)
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** EDUQAS Language Component 1 — 20th Century Literature Reading and Creative Prose Writing. One fiction source, six questions, 60 marks total. Section A tests reading (Q1-Q5, 40 marks), Section B tests writing (Q6, 20 marks). You have 1 hour 45 minutes.
-**Marks:** 60
+**Teaching Point:** EDUQAS Language Component 1 — 20th Century Literature Reading and Creative Prose Writing. One fiction source, six questions, 80 marks total. Section A tests reading (Q1-Q5, 40 marks), Section B tests writing (Q6, 40 marks). You have 1 hour 45 minutes.
+**Marks:** 80
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -431,13 +431,13 @@ Write a story about a character who must make a dangerous journey.
 39 they carried me in the air. Only when they threw me overboard did I begin to have doubts.
 
 ## Q1
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO1
 
 Read lines 1 to 12. What do you learn about what Pi discovers on the ship and how he reacts? You must refer to the text to support your answer.
 
 ## Q2
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO2
 
 Look at lines 19 to 25. How does the writer use language to describe the chaos on the ship?
@@ -448,13 +448,13 @@ You should comment on:
 - sentence forms.
 
 ## Q3
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does the writer use language and structure to create effects in lines 26 to 39?
 
 ## Q4
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 'The writer makes us share Pi's trust in the crew, which makes the ending so shocking.' How far do you agree with this view?
@@ -464,7 +464,7 @@ You should write about:
 - how the writer has created these impressions.
 
 ## Q5
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 To what extent do you agree that the writer successfully builds a sense of escalating panic throughout the extract?
@@ -475,7 +475,7 @@ You should write about:
 - references to the text.
 
 ## Q6
-**Marks:** 20
+**Marks:** 40
 **AOs:** AO4, AO5
 
 Choose one of the following titles for your writing:
@@ -488,9 +488,9 @@ Write a description of a time when you felt completely out of your depth.
 
 Write a story about a character who discovers they have been betrayed by someone they trusted.
 
-(12 marks for content and organisation)
-(8 marks for sentence structure, punctuation and spelling)
-[20 marks]
+(24 marks for content and organisation)
+(16 marks for sentence structure, punctuation and spelling)
+[40 marks]
 
 ---
 
@@ -498,7 +498,7 @@ Write a story about a character who discovers they have been betrayed by someone
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** This is your redraft opportunity for Practice Paper 3. You will work with the same source text and questions, but this time you will apply the feedback from your first attempt to produce a stronger, more developed response. Focus on the areas your tutor identified for improvement — this is where real progress happens.
-**Marks:** 60
+**Marks:** 80
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -547,13 +547,13 @@ Write a story about a character who discovers they have been betrayed by someone
 39 they carried me in the air. Only when they threw me overboard did I begin to have doubts.
 
 ## Q1
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO1
 
 Read lines 1 to 12. What do you learn about what Pi discovers on the ship and how he reacts? You must refer to the text to support your answer.
 
 ## Q2
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO2
 
 Look at lines 19 to 25. How does the writer use language to describe the chaos on the ship?
@@ -564,13 +564,13 @@ You should comment on:
 - sentence forms.
 
 ## Q3
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does the writer use language and structure to create effects in lines 26 to 39?
 
 ## Q4
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 'The writer makes us share Pi's trust in the crew, which makes the ending so shocking.' How far do you agree with this view?
@@ -580,7 +580,7 @@ You should write about:
 - how the writer has created these impressions.
 
 ## Q5
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 To what extent do you agree that the writer successfully builds a sense of escalating panic throughout the extract?
@@ -591,7 +591,7 @@ You should write about:
 - references to the text.
 
 ## Q6
-**Marks:** 20
+**Marks:** 40
 **AOs:** AO4, AO5
 
 Choose one of the following titles for your writing:
@@ -604,17 +604,17 @@ Write a description of a time when you felt completely out of your depth.
 
 Write a story about a character who discovers they have been betrayed by someone they trusted.
 
-(12 marks for content and organisation)
-(8 marks for sentence structure, punctuation and spelling)
-[20 marks]
+(24 marks for content and organisation)
+(16 marks for sentence structure, punctuation and spelling)
+[40 marks]
 
 ---
 
 # Topic 7: Practice Paper 4 — Mr Fisher (Joanne Harris)
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** EDUQAS Language Component 1 — 20th Century Literature Reading and Creative Prose Writing. One fiction source, six questions, 60 marks total. Section A tests reading (Q1-Q5, 40 marks), Section B tests writing (Q6, 20 marks). You have 1 hour 45 minutes.
-**Marks:** 60
+**Teaching Point:** EDUQAS Language Component 1 — 20th Century Literature Reading and Creative Prose Writing. One fiction source, six questions, 80 marks total. Section A tests reading (Q1-Q5, 40 marks), Section B tests writing (Q6, 40 marks). You have 1 hour 45 minutes.
+**Marks:** 80
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -672,13 +672,13 @@ Write a story about a character who discovers they have been betrayed by someone
 48 This was something new. Something entirely original.
 
 ## Q1
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO1
 
 Read lines 1 to 8. What do you learn about Mr Fisher and his working life? You must refer to the text to support your answer.
 
 ## Q2
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO2
 
 Look at lines 9 to 15. How does the writer use language to describe Mr Fisher's memories of the past?
@@ -689,13 +689,13 @@ You should comment on:
 - sentence forms.
 
 ## Q3
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does the writer use language and structure to create effects in lines 16 to 32?
 
 ## Q4
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 'The writer presents Mr Fisher as a man whose passion for literature has been completely destroyed by years of disappointment.' How far do you agree with this view?
@@ -705,7 +705,7 @@ You should write about:
 - how the writer has created these impressions.
 
 ## Q5
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 To what extent do you agree that the writer successfully conveys Mr Fisher's rediscovery of wonder and excitement in lines 33 to 48?
@@ -716,7 +716,7 @@ You should write about:
 - references to the text.
 
 ## Q6
-**Marks:** 20
+**Marks:** 40
 **AOs:** AO4, AO5
 
 Choose one of the following titles for your writing:
@@ -729,9 +729,9 @@ Write a description of a classroom at the end of a long day.
 
 Write a story about a moment that changed someone's life.
 
-(12 marks for content and organisation)
-(8 marks for sentence structure, punctuation and spelling)
-[20 marks]
+(24 marks for content and organisation)
+(16 marks for sentence structure, punctuation and spelling)
+[40 marks]
 
 ---
 
@@ -739,7 +739,7 @@ Write a story about a moment that changed someone's life.
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** This is your redraft opportunity for Practice Paper 4. You will work with the same source text and questions, but this time you will apply the feedback from your first attempt to produce a stronger, more developed response. Focus on the areas your tutor identified for improvement — this is where real progress happens.
-**Marks:** 60
+**Marks:** 80
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -797,13 +797,13 @@ Write a story about a moment that changed someone's life.
 48 This was something new. Something entirely original.
 
 ## Q1
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO1
 
 Read lines 1 to 8. What do you learn about Mr Fisher and his working life? You must refer to the text to support your answer.
 
 ## Q2
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO2
 
 Look at lines 9 to 15. How does the writer use language to describe Mr Fisher's memories of the past?
@@ -814,13 +814,13 @@ You should comment on:
 - sentence forms.
 
 ## Q3
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does the writer use language and structure to create effects in lines 16 to 32?
 
 ## Q4
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 'The writer presents Mr Fisher as a man whose passion for literature has been completely destroyed by years of disappointment.' How far do you agree with this view?
@@ -830,7 +830,7 @@ You should write about:
 - how the writer has created these impressions.
 
 ## Q5
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 To what extent do you agree that the writer successfully conveys Mr Fisher's rediscovery of wonder and excitement in lines 33 to 48?
@@ -841,7 +841,7 @@ You should write about:
 - references to the text.
 
 ## Q6
-**Marks:** 20
+**Marks:** 40
 **AOs:** AO4, AO5
 
 Choose one of the following titles for your writing:
@@ -854,17 +854,17 @@ Write a description of a classroom at the end of a long day.
 
 Write a story about a moment that changed someone's life.
 
-(12 marks for content and organisation)
-(8 marks for sentence structure, punctuation and spelling)
-[20 marks]
+(24 marks for content and organisation)
+(16 marks for sentence structure, punctuation and spelling)
+[40 marks]
 
 ---
 
 # Topic 9: Practice Paper 5 — Jamaica Inn (Daphne du Maurier)
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** EDUQAS Language Component 1 — 20th Century Literature Reading and Creative Prose Writing. One fiction source, six questions, 60 marks total. Section A tests reading (Q1-Q5, 40 marks), Section B tests writing (Q6, 20 marks). You have 1 hour 45 minutes.
-**Marks:** 60
+**Teaching Point:** EDUQAS Language Component 1 — 20th Century Literature Reading and Creative Prose Writing. One fiction source, six questions, 80 marks total. Section A tests reading (Q1-Q5, 40 marks), Section B tests writing (Q6, 40 marks). You have 1 hour 45 minutes.
+**Marks:** 80
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -917,13 +917,13 @@ Write a story about a moment that changed someone's life.
 43 shine for an instant as a forerunner of fortune.
 
 ## Q1
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO1
 
 Read lines 1 to 10. What do you learn about the weather and the conditions of the journey? You must refer to the text to support your answer.
 
 ## Q2
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO2
 
 Look at lines 11 to 18. How does the writer use language to describe the driver, horses and the journey?
@@ -934,13 +934,13 @@ You should comment on:
 - sentence forms.
 
 ## Q3
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does the writer use language and structure to create effects in lines 19 to 36?
 
 ## Q4
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 'The writer brings the passengers vividly to life through their contrasting reactions to the difficult journey.' How far do you agree with this view?
@@ -950,7 +950,7 @@ You should write about:
 - how the writer has created these impressions.
 
 ## Q5
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 To what extent do you agree that the writer successfully creates a mood of bleakness and discomfort throughout the extract?
@@ -961,7 +961,7 @@ You should write about:
 - references to the text.
 
 ## Q6
-**Marks:** 20
+**Marks:** 40
 **AOs:** AO4, AO5
 
 Choose one of the following titles for your writing:
@@ -974,9 +974,9 @@ Write a description of a journey through wild and dramatic scenery.
 
 Write a story set on a long journey where something unexpected happens.
 
-(12 marks for content and organisation)
-(8 marks for sentence structure, punctuation and spelling)
-[20 marks]
+(24 marks for content and organisation)
+(16 marks for sentence structure, punctuation and spelling)
+[40 marks]
 
 ---
 
@@ -984,7 +984,7 @@ Write a story set on a long journey where something unexpected happens.
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** This is your redraft opportunity for Practice Paper 5. You will work with the same source text and questions, but this time you will apply the feedback from your first attempt to produce a stronger, more developed response. Focus on the areas your tutor identified for improvement — this is where real progress happens.
-**Marks:** 60
+**Marks:** 80
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -1037,13 +1037,13 @@ Write a story set on a long journey where something unexpected happens.
 43 shine for an instant as a forerunner of fortune.
 
 ## Q1
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO1
 
 Read lines 1 to 10. What do you learn about the weather and the conditions of the journey? You must refer to the text to support your answer.
 
 ## Q2
-**Marks:** 8
+**Marks:** 5
 **AOs:** AO2
 
 Look at lines 11 to 18. How does the writer use language to describe the driver, horses and the journey?
@@ -1054,13 +1054,13 @@ You should comment on:
 - sentence forms.
 
 ## Q3
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does the writer use language and structure to create effects in lines 19 to 36?
 
 ## Q4
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 'The writer brings the passengers vividly to life through their contrasting reactions to the difficult journey.' How far do you agree with this view?
@@ -1070,7 +1070,7 @@ You should write about:
 - how the writer has created these impressions.
 
 ## Q5
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 To what extent do you agree that the writer successfully creates a mood of bleakness and discomfort throughout the extract?
@@ -1081,7 +1081,7 @@ You should write about:
 - references to the text.
 
 ## Q6
-**Marks:** 20
+**Marks:** 40
 **AOs:** AO4, AO5
 
 Choose one of the following titles for your writing:
@@ -1094,6 +1094,6 @@ Write a description of a journey through wild and dramatic scenery.
 
 Write a story set on a long journey where something unexpected happens.
 
-(12 marks for content and organisation)
-(8 marks for sentence structure, punctuation and spelling)
-[20 marks]
+(24 marks for content and organisation)
+(16 marks for sentence structure, punctuation and spelling)
+[40 marks]

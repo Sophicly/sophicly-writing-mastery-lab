@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.14.15
+ * Version: 7.14.16
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.14.15');
+define('SWML_VERSION', '7.14.16');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -296,6 +296,13 @@ class Sophicly_Writing_Mastery_Lab {
                 'planning_mode' => sanitize_text_field($_GET['planning_mode'] ?? ''),
             ],
         ]);
+
+        // v7.14.16: Embed language paper specs for type-aware document builder
+        $specs_file = SWML_PATH . 'protocols/shared/language-paper-specs.json';
+        if (file_exists($specs_file)) {
+            $specs_json = file_get_contents($specs_file);
+            wp_add_inline_script('swml-core', 'window.swmlLangSpecs=' . $specs_json . ';', 'before');
+        }
     }
 
     /**
@@ -457,8 +464,8 @@ class Sophicly_Writing_Mastery_Lab {
 
         // Inline CSS: embedded mode layout fixes (v7.13.14)
         $css = '<style>
-            /* Hide empty #swml-root — canvas overlay renders as sibling, not inside it */
-            #swml-root.swml-embedded { display: none !important; }
+            /* v7.14.16: #swml-root visible — chat exercises render here, canvas overlay renders as sibling */
+            #swml-root.swml-embedded { min-height: 0; }
 
             /* Embedded host fills content area */
             .swml-embedded-host { width: 100%; }
@@ -470,6 +477,12 @@ class Sophicly_Writing_Mastery_Lab {
                 body.swml-has-embed .spl-content { padding-left: 0 !important; padding-right: 0 !important; max-width: 100% !important; }
                 body.swml-has-embed .ld-focus-content .ld-tab-content { padding: 0 !important; }
                 body.swml-has-embed .ld-focus-content .learndash_content_wrap { padding: 0 !important; }
+
+                /* v7.14.16: Ensure sticky canvas positioning works — ancestors need overflow:visible */
+                body.swml-has-embed .spl-content,
+                body.swml-has-embed .ld-focus-content,
+                body.swml-has-embed .ld-tab-content,
+                body.swml-has-embed .learndash_content_wrap { overflow: visible !important; }
 
                 /* Keep padding on LD header (progress bar, COMPLETE button) */
                 body.swml-has-embed .spl-content-header { padding: 16px 30px; }
@@ -549,6 +562,16 @@ class Sophicly_Writing_Mastery_Lab {
                     'draft' => '', 'redraft' => '', 'unit_id' => 0,
                 ],
             ]);
+        } else {
+            // v7.14.16: Refresh nonce for LD Focus Mode AJAX transitions
+            wp_add_inline_script('swml-core', 'if(window.swmlConfig) swmlConfig.nonce="' . wp_create_nonce('wp_rest') . '";');
+        }
+
+        // v7.14.16: Embed language paper specs for type-aware document builder
+        $specs_file = SWML_PATH . 'protocols/shared/language-paper-specs.json';
+        if (file_exists($specs_file)) {
+            $specs_json = file_get_contents($specs_file);
+            wp_add_inline_script('swml-core', 'window.swmlLangSpecs=' . $specs_json . ';', 'before');
         }
     }
 

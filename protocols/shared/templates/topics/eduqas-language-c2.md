@@ -1,8 +1,14 @@
+<!-- STRUCTURAL NOTE (v7.14.16): This file needs rebuilding to match the actual EDUQAS C2 structure.
+     Missing: Q1a/Q1b/Q1c retrieval (3x1 mark), Q3a/Q3b/Q3c retrieval (3x1 mark), Q5 comparison (4 marks).
+     Current Q2-Q6 map approximately to the real Q2/Q4/Q6 but are missing the sub-question pairs.
+     Writing section should have TWO tasks (Q7+Q8, 20 marks each) not one.
+     See protocols/shared/language-paper-specs.json for verified structure. -->
+
 # Topic 1: Diagnostic Paper — The Death Zone / London Snow
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** EDUQAS Language Component 2 Diagnostic — 19th and 21st Century Non-Fiction Reading and Transactional/Persuasive Writing. Two non-fiction sources, five questions (Q2-Q6, no Q1), 60 marks total. Reading questions test engagement, impression, language analysis, and comparison. Q5 is a transactional writing task placed between reading questions. Phase 1 (first draft) establishes your baseline; Phase 2 (redraft) targets specific improvements identified in assessment.
-**Marks:** 60
+**Teaching Point:** EDUQAS Language Component 2 Diagnostic — 19th and 21st Century Non-Fiction Reading and Transactional/Persuasive Writing. Two non-fiction sources, five questions (Q2-Q6, no Q1), 80 marks total. Reading questions test engagement, impression, language analysis, and comparison. Q5 is a transactional writing task placed between reading questions. Phase 1 (first draft) establishes your baseline; Phase 2 (redraft) targets specific improvements identified in assessment.
+**Marks:** 80
 **AOs:** AO2, AO3, AO4, AO5
 
 ## Source A
@@ -101,19 +107,19 @@ British climber, Matt Dickinson, together with his team, is attempting to scale 
 35 night on a step in a sheltered corner, and felt 'as cold as a frog', she said.
 
 ## Q2
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does Dickinson try to engage the reader in his account of the storm on Everest? You should comment on: what the writer says to interest you, the writer's use of language and structure, the effectiveness of the text.
 
 ## Q3
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 What impressions do you get of London during the snow from Source B?
 
 ## Q4
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does Munby use language to describe the effects of snow on London and its people?
@@ -125,7 +131,7 @@ How does Munby use language to describe the effects of snow on London and its pe
 "The natural world is something to be feared, not admired." Write an article for a broadsheet newspaper in which you argue for or against this statement.
 
 ## Q6
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 Both of these texts are about extreme weather. Compare the following: the different experiences described, how the writers convey their different perspectives on the power of nature.
@@ -161,8 +167,8 @@ N/A — Conceptual Notes topic.
 # Topic 4: Practice Paper 2 — The Crossing / Idle Days in Patagonia
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** EDUQAS Language Component 2 Practice — 19th and 21st Century Non-Fiction Reading and Transactional/Persuasive Writing. Two non-fiction sources about perilous sea voyages, five questions (Q2-Q6), 60 marks total. Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
-**Marks:** 60
+**Teaching Point:** EDUQAS Language Component 2 Practice — 19th and 21st Century Non-Fiction Reading and Transactional/Persuasive Writing. Two non-fiction sources about perilous sea voyages, five questions (Q2-Q6), 80 marks total. Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
+**Marks:** 80
 **AOs:** AO2, AO3, AO4, AO5
 
 ## Source A
@@ -268,19 +274,19 @@ In 2005, Ben Fogle and James Cracknell set off together in a seven week race acr
 41 perilous one and I at once determined to land.
 
 ## Q2
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does Fogle try to engage the reader in his account of the capsizing? You should comment on: what the writer says to interest you, the writer's use of language and structure, the effectiveness of the text.
 
 ## Q3
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 What impressions do you get of the steamship journey from Source B?
 
 ## Q4
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does Hudson use language to create a sense of danger and tension during the voyage?
@@ -292,7 +298,7 @@ How does Hudson use language to create a sense of danger and tension during the 
 "Adventure and risk-taking are essential parts of a fulfilling life." Write the text of a speech to be delivered at a school assembly in which you argue for or against this statement.
 
 ## Q6
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 Both of these texts are about perilous sea voyages. Compare the following: the different experiences described, how the writers convey their different perspectives on danger and survival.
@@ -317,8 +323,8 @@ Both of these texts are about perilous sea voyages. Compare the following: the d
 # Topic 6: Practice Paper 3 — London Riots / Eastern Penitentiary
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** EDUQAS Language Component 2 Practice — 19th and 21st Century Non-Fiction Reading and Transactional/Persuasive Writing. Two non-fiction sources about social injustice and punishment, five questions (Q2-Q6), 60 marks total. Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
-**Marks:** 60
+**Teaching Point:** EDUQAS Language Component 2 Practice — 19th and 21st Century Non-Fiction Reading and Transactional/Persuasive Writing. Two non-fiction sources about social injustice and punishment, five questions (Q2-Q6), 80 marks total. Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
+**Marks:** 80
 **AOs:** AO2, AO3, AO4, AO5
 
 ## Source A
@@ -428,19 +434,19 @@ Both of these texts are about perilous sea voyages. Compare the following: the d
 52 despair.
 
 ## Q2
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does Fletcher try to persuade the reader that inequality is to blame for the London riots? You should comment on: what the writer says to interest you, the writer's use of language and structure, the effectiveness of the text.
 
 ## Q3
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 What impressions do you get of the Eastern Penitentiary from Source B?
 
 ## Q4
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does Dickens use language to convey the horrors of solitary confinement?
@@ -452,7 +458,7 @@ How does Dickens use language to convey the horrors of solitary confinement?
 "Prison should be about rehabilitation, not punishment." Write a letter to your local MP in which you argue for or against this view.
 
 ## Q6
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 Both of these texts are about injustice in society. Compare the following: the different perspectives on the treatment of disadvantaged people, how the writers convey their different viewpoints.
@@ -477,8 +483,8 @@ Both of these texts are about injustice in society. Compare the following: the d
 # Topic 8: Practice Paper 4 — Cosmetics / Arts of Beauty
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** EDUQAS Language Component 2 Practice — 19th and 21st Century Non-Fiction Reading and Transactional/Persuasive Writing. Two non-fiction sources about cosmetics and beauty standards, five questions (Q2-Q6), 60 marks total. Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
-**Marks:** 60
+**Teaching Point:** EDUQAS Language Component 2 Practice — 19th and 21st Century Non-Fiction Reading and Transactional/Persuasive Writing. Two non-fiction sources about cosmetics and beauty standards, five questions (Q2-Q6), 80 marks total. Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
+**Marks:** 80
 **AOs:** AO2, AO3, AO4, AO5
 
 ## Source A
@@ -572,19 +578,19 @@ Both of these texts are about injustice in society. Compare the following: the d
 39 buy the ingredients and compound them herself, as easily as Mr. Dickinson and Mrs. Vincent.
 
 ## Q2
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does Mitchell try to engage the reader in his discussion of cosmetics? You should comment on: what the writer says to interest you, the writer's use of language and structure, the effectiveness of the text.
 
 ## Q3
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 What impressions do you get of the cosmetics industry from Source B?
 
 ## Q4
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does Montez use language to warn her readers about commercial cosmetics?
@@ -596,7 +602,7 @@ How does Montez use language to warn her readers about commercial cosmetics?
 "Social media has created unrealistic beauty standards that are damaging young people's mental health." Write an article for a magazine aimed at young adults in which you argue for or against this view.
 
 ## Q6
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 Both of these texts are about cosmetics and the beauty industry. Compare the following: the different attitudes towards vanity and beauty, how the writers convey their different perspectives.
@@ -621,8 +627,8 @@ Both of these texts are about cosmetics and the beauty industry. Compare the fol
 # Topic 10: Practice Paper 5 — Scientific Proof / Humane Understanding
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** EDUQAS Language Component 2 Practice — 19th and 21st Century Non-Fiction Reading and Transactional/Persuasive Writing. Two non-fiction sources about the nature of knowledge and understanding, five questions (Q2-Q6), 60 marks total. Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
-**Marks:** 60
+**Teaching Point:** EDUQAS Language Component 2 Practice — 19th and 21st Century Non-Fiction Reading and Transactional/Persuasive Writing. Two non-fiction sources about the nature of knowledge and understanding, five questions (Q2-Q6), 80 marks total. Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
+**Marks:** 80
 **AOs:** AO2, AO3, AO4, AO5
 
 ## Source A
@@ -719,19 +725,19 @@ Both of these texts are about cosmetics and the beauty industry. Compare the fol
 40 furnishes the understanding with ideas of its own operations.
 
 ## Q2
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does Siegel try to engage the reader in his argument about the limits of scientific proof? You should comment on: what the writer says to interest you, the writer's use of language and structure, the effectiveness of the text.
 
 ## Q3
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 What impressions do you get of Locke's view of human understanding from Source B?
 
 ## Q4
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO2
 
 How does Locke use language to explain his theory of how the mind acquires knowledge?
@@ -743,7 +749,7 @@ How does Locke use language to explain his theory of how the mind acquires knowl
 "We rely too heavily on science and not enough on our own common sense." Write an essay in which you argue for or against this view.
 
 ## Q6
-**Marks:** 8
+**Marks:** 10
 **AOs:** AO3
 
 Both of these texts are about the nature and limits of human knowledge. Compare the following: the different perspectives on how we gain understanding, how the writers convey their different viewpoints on observation and experience.

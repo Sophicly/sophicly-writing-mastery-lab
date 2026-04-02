@@ -1,8 +1,8 @@
 # Topic 1: Practice Paper 1 — City of the Beasts (Isabel Allende)
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Edexcel Language Paper 1 — Fiction and Imaginative Writing. One fiction source, five questions, 50 marks total. Section A tests reading (Q1-Q4), Section B tests writing (Q5). You have 1 hour 45 minutes.
-**Marks:** 50
+**Teaching Point:** Edexcel Language Paper 1 — Fiction and Imaginative Writing. One fiction source, five questions, 64 marks total. Section A tests reading (Q1-Q4), Section B tests writing (Q5). You have 1 hour 45 minutes.
+**Marks:** 64
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -58,7 +58,7 @@ Alex Cold lives with his parents and two younger sisters, Andrea and Nicole, in 
 44 dried in their tubes. His mother seemed to have shrunk; she was little more than a silent ghost.
 
 ## Q1
-**Marks:** 2
+**Marks:** 1
 **AOs:** AO1
 
 From lines 1 to 5, give two things you learn about Alex's nightmare.
@@ -70,7 +70,7 @@ From lines 1 to 5, give two things you learn about Alex's nightmare.
 From lines 12 to 15, give two things you learn about how Alex feels about the day ahead.
 
 ## Q3
-**Marks:** 15
+**Marks:** 6
 **AOs:** AO2
 
 Analyse how the writer uses language and structure to describe the impact of the mother's illness on the family in lines 16 to 34.
@@ -88,7 +88,7 @@ Evaluate how successfully this is achieved.
 Support your views with detailed reference to the text.
 
 ## Q5
-**Marks:** 16
+**Marks:** 40
 **AOs:** AO4, AO5
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
@@ -101,7 +101,7 @@ Write a story about a character whose life is turned upside down by unexpected n
 
 Write a description of a house that has lost its warmth and happiness.
 
-(16 marks)
+(40 marks)
 
 ---
 
@@ -119,8 +119,8 @@ N/A — Conceptual Notes topic.
 # Topic 3: Practice Paper 2 — The Hunger Games (Suzanne Collins)
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Edexcel Language Paper 1 — Fiction and Imaginative Writing. One fiction source, five questions, 50 marks total. Section A tests reading (Q1-Q4), Section B tests writing (Q5). You have 1 hour 45 minutes.
-**Marks:** 50
+**Teaching Point:** Edexcel Language Paper 1 — Fiction and Imaginative Writing. One fiction source, five questions, 64 marks total. Section A tests reading (Q1-Q4), Section B tests writing (Q5). You have 1 hour 45 minutes.
+**Marks:** 64
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -176,7 +176,7 @@ Katniss lives with her mother, sister, Primrose, and Primrose's cat, Buttercup, 
 44 nothing even to bury. I was eleven then. Five years later, I still wake up screaming for him to run.
 
 ## Q1
-**Marks:** 2
+**Marks:** 1
 **AOs:** AO1
 
 From lines 1 to 8, identify the phrase which suggests that Katniss's mother has had a difficult life.
@@ -188,7 +188,7 @@ From lines 1 to 8, identify the phrase which suggests that Katniss's mother has 
 From lines 24 to 28, give two things you learn about the Seam on a normal day.
 
 ## Q3
-**Marks:** 15
+**Marks:** 6
 **AOs:** AO2
 
 Analyse how the writer uses language and structure to present the world Katniss lives in, in lines 24 to 44.
@@ -206,7 +206,7 @@ Evaluate how successfully this is achieved.
 Support your views with detailed reference to the text.
 
 ## Q5
-**Marks:** 16
+**Marks:** 40
 **AOs:** AO4, AO5
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
@@ -219,7 +219,7 @@ Write a story about a character who must break the rules in order to survive.
 
 Write a description of a place where danger is always close by.
 
-(16 marks)
+(40 marks)
 
 ---
 
@@ -227,7 +227,7 @@ Write a description of a place where danger is always close by.
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** This is your redraft opportunity for Practice Paper 2. You will work with the same source text and questions, but this time you will apply the feedback from your first attempt to produce a stronger, more developed response. Focus on the areas your tutor identified for improvement — this is where real progress happens.
-**Marks:** 50
+**Marks:** 64
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -283,7 +283,7 @@ Katniss lives with her mother, sister, Primrose, and Primrose's cat, Buttercup, 
 44 nothing even to bury. I was eleven then. Five years later, I still wake up screaming for him to run.
 
 ## Q1
-**Marks:** 2
+**Marks:** 1
 **AOs:** AO1
 
 From lines 1 to 8, identify the phrase which suggests that Katniss's mother has had a difficult life.
@@ -295,7 +295,7 @@ From lines 1 to 8, identify the phrase which suggests that Katniss's mother has 
 From lines 24 to 28, give two things you learn about the Seam on a normal day.
 
 ## Q3
-**Marks:** 15
+**Marks:** 6
 **AOs:** AO2
 
 Analyse how the writer uses language and structure to present the world Katniss lives in, in lines 24 to 44.
@@ -313,7 +313,7 @@ Evaluate how successfully this is achieved.
 Support your views with detailed reference to the text.
 
 ## Q5
-**Marks:** 16
+**Marks:** 40
 **AOs:** AO4, AO5
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
@@ -326,15 +326,15 @@ Write a story about a character who must break the rules in order to survive.
 
 Write a description of a place where danger is always close by.
 
-(16 marks)
+(40 marks)
 
 ---
 
 # Topic 5: Practice Paper 3 — Life of Pi (Yann Martel)
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Edexcel Language Paper 1 — Fiction and Imaginative Writing. One fiction source, five questions, 50 marks total. Section A tests reading (Q1-Q4), Section B tests writing (Q5). You have 1 hour 45 minutes.
-**Marks:** 50
+**Teaching Point:** Edexcel Language Paper 1 — Fiction and Imaginative Writing. One fiction source, five questions, 64 marks total. Section A tests reading (Q1-Q4), Section B tests writing (Q5). You have 1 hour 45 minutes.
+**Marks:** 64
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -383,7 +383,7 @@ Write a description of a place where danger is always close by.
 39 they carried me in the air. Only when they threw me overboard did I begin to have doubts.
 
 ## Q1
-**Marks:** 2
+**Marks:** 1
 **AOs:** AO1
 
 From lines 1 to 7, give two things you learn about what Pi finds inside the ship.
@@ -395,7 +395,7 @@ From lines 1 to 7, give two things you learn about what Pi finds inside the ship
 From lines 8 to 12, identify the phrase which suggests the situation is beyond Pi's comprehension.
 
 ## Q3
-**Marks:** 15
+**Marks:** 6
 **AOs:** AO2
 
 Analyse how the writer uses language and structure to create a sense of panic and chaos in lines 13 to 25.
@@ -413,7 +413,7 @@ Evaluate how successfully this is achieved.
 Support your views with detailed reference to the text.
 
 ## Q5
-**Marks:** 16
+**Marks:** 40
 **AOs:** AO4, AO5
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
@@ -426,7 +426,7 @@ Write a story about a moment when everything changed in an instant.
 
 Write a description of a scene of chaos and confusion.
 
-(16 marks)
+(40 marks)
 
 ---
 
@@ -434,7 +434,7 @@ Write a description of a scene of chaos and confusion.
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** This is your redraft opportunity for Practice Paper 3. You will work with the same source text and questions, but this time you will apply the feedback from your first attempt to produce a stronger, more developed response. Focus on the areas your tutor identified for improvement — this is where real progress happens.
-**Marks:** 50
+**Marks:** 64
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -483,7 +483,7 @@ Write a description of a scene of chaos and confusion.
 39 they carried me in the air. Only when they threw me overboard did I begin to have doubts.
 
 ## Q1
-**Marks:** 2
+**Marks:** 1
 **AOs:** AO1
 
 From lines 1 to 7, give two things you learn about what Pi finds inside the ship.
@@ -495,7 +495,7 @@ From lines 1 to 7, give two things you learn about what Pi finds inside the ship
 From lines 8 to 12, identify the phrase which suggests the situation is beyond Pi's comprehension.
 
 ## Q3
-**Marks:** 15
+**Marks:** 6
 **AOs:** AO2
 
 Analyse how the writer uses language and structure to create a sense of panic and chaos in lines 13 to 25.
@@ -513,7 +513,7 @@ Evaluate how successfully this is achieved.
 Support your views with detailed reference to the text.
 
 ## Q5
-**Marks:** 16
+**Marks:** 40
 **AOs:** AO4, AO5
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
@@ -526,15 +526,15 @@ Write a story about a moment when everything changed in an instant.
 
 Write a description of a scene of chaos and confusion.
 
-(16 marks)
+(40 marks)
 
 ---
 
 # Topic 7: Practice Paper 4 — Mr Fisher (Joanne Harris)
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Edexcel Language Paper 1 — Fiction and Imaginative Writing. One fiction source, five questions, 50 marks total. Section A tests reading (Q1-Q4), Section B tests writing (Q5). You have 1 hour 45 minutes.
-**Marks:** 50
+**Teaching Point:** Edexcel Language Paper 1 — Fiction and Imaginative Writing. One fiction source, five questions, 64 marks total. Section A tests reading (Q1-Q4), Section B tests writing (Q5). You have 1 hour 45 minutes.
+**Marks:** 64
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -592,7 +592,7 @@ Write a description of a scene of chaos and confusion.
 48 This was something new. Something entirely original.
 
 ## Q1
-**Marks:** 2
+**Marks:** 1
 **AOs:** AO1
 
 From lines 1 to 8, give two things you learn about Mr Fisher's working life.
@@ -604,7 +604,7 @@ From lines 1 to 8, give two things you learn about Mr Fisher's working life.
 From lines 16 to 24, identify the phrase which suggests Mr Fisher has lost hope in his profession.
 
 ## Q3
-**Marks:** 15
+**Marks:** 6
 **AOs:** AO2
 
 Analyse how the writer uses language and structure to show the contrast between Mr Fisher's past and present experience of teaching in lines 9 to 24.
@@ -622,7 +622,7 @@ Evaluate how successfully this is achieved.
 Support your views with detailed reference to the text.
 
 ## Q5
-**Marks:** 16
+**Marks:** 40
 **AOs:** AO4, AO5
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
@@ -635,7 +635,7 @@ Write a story about a person who discovers something extraordinary in an ordinar
 
 Write a description of a classroom at the end of a winter school day.
 
-(16 marks)
+(40 marks)
 
 ---
 
@@ -643,7 +643,7 @@ Write a description of a classroom at the end of a winter school day.
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** This is your redraft opportunity for Practice Paper 4. You will work with the same source text and questions, but this time you will apply the feedback from your first attempt to produce a stronger, more developed response. Focus on the areas your tutor identified for improvement — this is where real progress happens.
-**Marks:** 50
+**Marks:** 64
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -701,7 +701,7 @@ Write a description of a classroom at the end of a winter school day.
 48 This was something new. Something entirely original.
 
 ## Q1
-**Marks:** 2
+**Marks:** 1
 **AOs:** AO1
 
 From lines 1 to 8, give two things you learn about Mr Fisher's working life.
@@ -713,7 +713,7 @@ From lines 1 to 8, give two things you learn about Mr Fisher's working life.
 From lines 16 to 24, identify the phrase which suggests Mr Fisher has lost hope in his profession.
 
 ## Q3
-**Marks:** 15
+**Marks:** 6
 **AOs:** AO2
 
 Analyse how the writer uses language and structure to show the contrast between Mr Fisher's past and present experience of teaching in lines 9 to 24.
@@ -731,7 +731,7 @@ Evaluate how successfully this is achieved.
 Support your views with detailed reference to the text.
 
 ## Q5
-**Marks:** 16
+**Marks:** 40
 **AOs:** AO4, AO5
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
@@ -744,15 +744,15 @@ Write a story about a person who discovers something extraordinary in an ordinar
 
 Write a description of a classroom at the end of a winter school day.
 
-(16 marks)
+(40 marks)
 
 ---
 
 # Topic 9: Practice Paper 5 — Jamaica Inn (Daphne du Maurier)
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Edexcel Language Paper 1 — Fiction and Imaginative Writing. One fiction source, five questions, 50 marks total. Section A tests reading (Q1-Q4), Section B tests writing (Q5). You have 1 hour 45 minutes.
-**Marks:** 50
+**Teaching Point:** Edexcel Language Paper 1 — Fiction and Imaginative Writing. One fiction source, five questions, 64 marks total. Section A tests reading (Q1-Q4), Section B tests writing (Q5). You have 1 hour 45 minutes.
+**Marks:** 64
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -805,7 +805,7 @@ Write a description of a classroom at the end of a winter school day.
 43 shine for an instant as a forerunner of fortune.
 
 ## Q1
-**Marks:** 2
+**Marks:** 1
 **AOs:** AO1
 
 From lines 1 to 7, give two things you learn about the weather conditions.
@@ -817,7 +817,7 @@ From lines 1 to 7, give two things you learn about the weather conditions.
 From lines 19 to 26, identify the phrase which suggests the old man is frightened by the journey.
 
 ## Q3
-**Marks:** 15
+**Marks:** 6
 **AOs:** AO2
 
 Analyse how the writer uses language and structure to convey the harshness of the journey in lines 1 to 18.
@@ -835,7 +835,7 @@ Evaluate how successfully this is achieved.
 Support your views with detailed reference to the text.
 
 ## Q5
-**Marks:** 16
+**Marks:** 40
 **AOs:** AO4, AO5
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
@@ -848,7 +848,7 @@ Write a story set during a difficult journey where something unexpected happens.
 
 Write a description of travelling through wild and dramatic scenery in terrible weather.
 
-(16 marks)
+(40 marks)
 
 ---
 
@@ -856,7 +856,7 @@ Write a description of travelling through wild and dramatic scenery in terrible 
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** This is your redraft opportunity for Practice Paper 5. You will work with the same source text and questions, but this time you will apply the feedback from your first attempt to produce a stronger, more developed response. Focus on the areas your tutor identified for improvement — this is where real progress happens.
-**Marks:** 50
+**Marks:** 64
 **AOs:** AO1, AO2, AO3, AO4, AO5
 
 ## Source A
@@ -909,7 +909,7 @@ Write a description of travelling through wild and dramatic scenery in terrible 
 43 shine for an instant as a forerunner of fortune.
 
 ## Q1
-**Marks:** 2
+**Marks:** 1
 **AOs:** AO1
 
 From lines 1 to 7, give two things you learn about the weather conditions.
@@ -921,7 +921,7 @@ From lines 1 to 7, give two things you learn about the weather conditions.
 From lines 19 to 26, identify the phrase which suggests the old man is frightened by the journey.
 
 ## Q3
-**Marks:** 15
+**Marks:** 6
 **AOs:** AO2
 
 Analyse how the writer uses language and structure to convey the harshness of the journey in lines 1 to 18.
@@ -939,7 +939,7 @@ Evaluate how successfully this is achieved.
 Support your views with detailed reference to the text.
 
 ## Q5
-**Marks:** 16
+**Marks:** 40
 **AOs:** AO4, AO5
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
@@ -952,4 +952,4 @@ Write a story set during a difficult journey where something unexpected happens.
 
 Write a description of travelling through wild and dramatic scenery in terrible weather.
 
-(16 marks)
+(40 marks)
