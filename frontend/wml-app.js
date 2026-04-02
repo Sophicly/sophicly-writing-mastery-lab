@@ -77,6 +77,12 @@
             state.isRedraft = false;
         }
         state.mode = 'exam_prep'; // Mastery programme context
+        // v7.14.17: 'diagnostic' and 'development' are draftTypes, not exercise tasks.
+        // They arrive from shortcodes like [writing_mastery_lab task="diagnostic"].
+        // Clear them so the topicNumber-based draftType inference handles routing correctly.
+        if (state.task === 'diagnostic' || state.task === 'development') {
+            state.task = '';
+        }
         // Resolve textName from catalogue
         if (state.text && !state.textName) {
             state.textName = getTextLabel(state.text, state.subject);
