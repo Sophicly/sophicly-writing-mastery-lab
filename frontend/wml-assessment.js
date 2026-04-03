@@ -702,7 +702,8 @@
         if (phaseLabel && !_isCwBadge) ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: phaseLabel }));
         const SVG_DIAGNOSTIC = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.91" stroke-miterlimit="10" style="display:inline-block;vertical-align:-2px;margin-right:3px"><path d="M8.18,16.77V13H4.36v3.82L2.09,19a2,2,0,0,0-.59,1.44h0a2,2,0,0,0,2,2H9a2,2,0,0,0,2-2h0a2,2,0,0,0-.6-1.44Z"/><line x1="2.45" y1="12.95" x2="10.09" y2="12.95"/><path d="M20.59,15.39V11.05H16.77v4.34a3.82,3.82,0,1,0,3.82,0Z"/><line x1="22.5" y1="11.05" x2="14.86" y2="11.05"/><path d="M18.68,11.05V3.89A2.39,2.39,0,0,0,16.3,1.5h0a2.39,2.39,0,0,0-2.39,2.39V6.27A1.91,1.91,0,0,1,12,8.18h0a1.91,1.91,0,0,1-1.91-1.91V5.32A1.9,1.9,0,0,0,8.18,3.41h0A1.91,1.91,0,0,0,6.27,5.32v.95"/><line x1="5.32" y1="9.14" x2="7.23" y2="9.14"/><line x1="14.86" y1="17.73" x2="19.64" y2="17.73"/><line x1="2.45" y1="18.68" x2="6.27" y2="18.68"/></svg>';
         // v7.13.42: Skip diagnostic badge for CW exercises
-        const _epTasks = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice'];
+        // v7.14.34: Added planning + polishing (Phase 2 canvas exercises)
+        const _epTasks = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'planning', 'polishing'];
         const _epConfig = WML.getExerciseConfig(state.task);
         const diagBadgeLabel = state.task === 'feedback_discussion' ? 'Discuss Feedback'
             : _epTasks.includes(state.task) ? (_epConfig.chatHeaderLabel || ucfirst(state.task))
@@ -1374,18 +1375,29 @@
                 return '';
             }
 
-            // ── Compute section numbers (major.minor grouped format, matching TOC) (v7.12.56) ──
+            // ── Compute section numbers (v7.14.34: divider-based major.minor, matching TOC) ──
+            // Dividers start new groups (major++), sections after a divider get major.minor.
+            // Fallback: GROUP_PREFIXES for documents without dividers.
             const GROUP_PREFIXES = ['Plan:', 'Outline:', 'Feedback:'];
-            let _major = 0, _minor = 0, _lastGroup = null;
+            let _major = 0, _minor = 0, _inDividerGroup = false, _lastPrefixGroup = null;
             const sectionNumbers = sections.map(s => {
                 if (s.type === 'cover') return '';
+                if (s.type === 'divider') {
+                    _major++; _minor = 0; _inDividerGroup = true; _lastPrefixGroup = null;
+                    return ''; // dividers don't get a number
+                }
+                if (_inDividerGroup) {
+                    _minor++;
+                    return _major + '.' + _minor;
+                }
+                // Fallback: prefix-based grouping for docs without dividers
                 const gp = GROUP_PREFIXES.find(p => s.label.startsWith(p));
                 if (gp) {
-                    if (gp !== _lastGroup) { _major++; _minor = 0; _lastGroup = gp; }
+                    if (gp !== _lastPrefixGroup) { _major++; _minor = 0; _lastPrefixGroup = gp; }
                     _minor++;
                     return _major + '.' + _minor;
                 } else {
-                    _major++; _minor = 0; _lastGroup = null;
+                    _major++; _minor = 0; _lastPrefixGroup = null; _inDividerGroup = false;
                     return String(_major);
                 }
             });
@@ -1468,6 +1480,28 @@
                     groups.push({ key: null, section: s });
                 }
             });
+
+            // v7.14.34: "Table of Contents" link at top of outline
+            const tocEl = document.querySelector('.swml-toc');
+            if (tocEl) {
+                const tocLink = el('button', {
+                    className: 'swml-outline-item swml-outline-toc-link',
+                    tabIndex: -1,
+                    textContent: 'Table of Contents',
+                    onClick: () => {
+                        const cw = document.querySelector('.swml-canvas-content');
+                        if (cw && tocEl) {
+                            const cwRect = cw.getBoundingClientRect();
+                            const tRect = tocEl.getBoundingClientRect();
+                            cw.scrollTo({ top: cw.scrollTop + (tRect.top - cwRect.top) - 20, behavior: 'smooth' });
+                        }
+                    }
+                });
+                const tocDot = el('span', { className: 'swml-outline-dot' });
+                tocDot.style.background = 'rgba(255,255,255,0.3)';
+                tocLink.insertBefore(tocDot, tocLink.firstChild);
+                outlineList.appendChild(tocLink);
+            }
 
             // v7.14.31: Render grouped outline with accordion collapse + brand colour dots
             const OUTLINE_GROUP_COLOURS = ['#51dacf', '#42A1EC', '#4D76FD', '#5333ed', '#7DF9E9', '#1CD991', '#41aaa8'];
@@ -4840,6 +4874,8 @@
                 updateOutline();
                 // Inject section controls (for resumed documents that already have sections)
                 setTimeout(() => buildDropdownOverlays(contentWrap), 250);
+                // v7.14.34: Colorise section groups after DOM render
+                setTimeout(coloriseSectionGroups, 400);
             },
             onSelectionUpdate: ({ editor }) => {
                 updateToolbarState(toolbar, editor);
@@ -4953,8 +4989,10 @@
             tryInjectCover();
             // Build table of contents (after cover + migration)
             buildTableOfContents();
-            // v7.14.31: Assign group colours to sections based on their divider parent
-            coloriseSectionGroups();
+            // v7.14.34: Assign group colours after DOM settles (universal — works for all doc types)
+            setTimeout(coloriseSectionGroups, 300);
+            // Also re-run after template injection (async topic data may load later)
+            setTimeout(coloriseSectionGroups, 1500);
             // v7.13.48: CW resource buttons are now in the sidebar (not in document)
             // Inject dropdown overlays after template is ready
             setTimeout(() => buildDropdownOverlays(contentWrap), 200);
@@ -9071,7 +9109,8 @@
 
                     const subDot = document.createElement('span');
                     subDot.className = 'swml-toc-dot';
-                    subDot.style.background = SECTION_COLOURS[child.type] || '#888';
+                    // v7.14.34: Child dots match parent's brand colour
+                    subDot.style.background = dot.style.background || SECTION_COLOURS[child.type] || '#888';
                     subItem.appendChild(subDot);
 
                     const subLabel = document.createElement('span');
