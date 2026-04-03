@@ -1551,6 +1551,65 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-outline-item.swml-outline-child.swml-outline-active {
     padding-left: 30px;
 }
+/* v7.14.31: Outline accordion — collapsible children */
+.swml-outline-group-wrap {
+    margin: 0;
+}
+.swml-outline-children {
+    overflow: hidden;
+    transition: max-height 0.25s ease, opacity 0.2s ease;
+    max-height: 500px;
+    opacity: 1;
+}
+.swml-outline-children.swml-outline-collapsed {
+    max-height: 0;
+    opacity: 0;
+}
+/* Chevron indicator — sits left of dot */
+.swml-outline-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    color: rgba(255,255,255,0.35);
+    flex-shrink: 0;
+}
+.swml-outline-chevron:hover {
+    color: rgba(255,255,255,0.6);
+}
+.swml-outline-chevron-open {
+    transform: rotate(90deg);
+}
+/* Group header layout — chevron | dot | title */
+.swml-outline-group {
+    display: flex !important;
+    align-items: center;
+    gap: 4px;
+    cursor: default;
+}
+/* Group title — clickable link to section */
+.swml-outline-group-title {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+    flex: 1;
+}
+.swml-outline-group-title:hover {
+    color: #fff;
+}
+
 /* Legacy h3 support (fallback) */
 .swml-outline-item.swml-outline-h3 {
     padding-left: 28px;
@@ -3890,6 +3949,107 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 
 /* ══════════════════════════════════════════
+ *  INPUT FIELD COMPONENT (v7.14.28)
+ *  TipTap-native editable block with visible borders and prompt label.
+ *  Content managed by TipTap (inline*) — comments, dictation, toolbar all work.
+ * ══════════════════════════════════════════ */
+
+/* Base input field — visible bordered area with prompt as ::before label */
+.swml-input-field {
+    position: relative;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 6px 0 14px 0;
+    min-height: 36px;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Prompt label — displayed above the input area */
+.swml-input-field[data-prompt]::before {
+    content: attr(data-prompt);
+    display: block;
+    font-size: 11px;
+    font-style: italic;
+    color: rgba(255,255,255,0.25);
+    margin-bottom: 6px;
+    pointer-events: none;
+    line-height: 1.4;
+}
+/* Hide prompt label when field has content (student has typed) */
+.swml-input-field[data-prompt]:not(:empty)::before {
+    /* Always show — the prompt is a label, not a placeholder */
+}
+
+/* Focus state — section colour inherited from parent section */
+.swml-input-field:focus-within {
+    border-color: rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.05);
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.04);
+}
+
+/* Section-coloured focus borders */
+.swml-section-plan .swml-input-field:focus-within {
+    border-color: rgba(83, 51, 237, 0.45);
+    box-shadow: 0 0 0 2px rgba(83, 51, 237, 0.06);
+}
+.swml-section-outline .swml-input-field:focus-within {
+    border-color: rgba(66, 161, 236, 0.45);
+    box-shadow: 0 0 0 2px rgba(66, 161, 236, 0.06);
+}
+.swml-section-response .swml-input-field:focus-within {
+    border-color: rgba(28, 217, 145, 0.4);
+    box-shadow: 0 0 0 2px rgba(28, 217, 145, 0.06);
+}
+.swml-section-feedback .swml-input-field:focus-within {
+    border-color: rgba(255, 180, 50, 0.45);
+    box-shadow: 0 0 0 2px rgba(255, 180, 50, 0.06);
+}
+.swml-section-action .swml-input-field:focus-within {
+    border-color: rgba(77, 118, 253, 0.45);
+    box-shadow: 0 0 0 2px rgba(77, 118, 253, 0.06);
+}
+.swml-section-improvement .swml-input-field:focus-within {
+    border-color: rgba(125, 249, 233, 0.45);
+    box-shadow: 0 0 0 2px rgba(125, 249, 233, 0.06);
+}
+
+/* Light theme */
+[data-swml-theme="light"] .swml-input-field {
+    background: rgba(0,0,0,0.02);
+    border-color: rgba(0,0,0,0.1);
+}
+[data-swml-theme="light"] .swml-input-field[data-prompt]::before {
+    color: rgba(0,0,0,0.3);
+}
+[data-swml-theme="light"] .swml-input-field:focus-within {
+    background: rgba(0,0,0,0.035);
+    border-color: rgba(0,0,0,0.2);
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.03);
+}
+[data-swml-theme="light"] .swml-section-plan .swml-input-field:focus-within {
+    border-color: rgba(83, 51, 237, 0.35);
+    box-shadow: 0 0 0 2px rgba(83, 51, 237, 0.05);
+}
+[data-swml-theme="light"] .swml-section-outline .swml-input-field:focus-within {
+    border-color: rgba(66, 161, 236, 0.35);
+    box-shadow: 0 0 0 2px rgba(66, 161, 236, 0.05);
+}
+[data-swml-theme="light"] .swml-section-action .swml-input-field:focus-within {
+    border-color: rgba(77, 118, 253, 0.35);
+    box-shadow: 0 0 0 2px rgba(77, 118, 253, 0.05);
+}
+[data-swml-theme="light"] .swml-section-feedback .swml-input-field:focus-within {
+    border-color: rgba(255, 180, 50, 0.35);
+    box-shadow: 0 0 0 2px rgba(255, 180, 50, 0.05);
+}
+[data-swml-theme="light"] .swml-section-improvement .swml-input-field:focus-within {
+    border-color: rgba(125, 249, 233, 0.35);
+    box-shadow: 0 0 0 2px rgba(125, 249, 233, 0.05);
+}
+
+/* ══════════════════════════════════════════
  *  SECTION DROPDOWN OVERLAYS (v7.11.9)
  * ══════════════════════════════════════════ */
 
@@ -5145,8 +5305,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 
 /* Read-only AO criteria sections — distinct purple left border */
 .swml-section-block.swml-section-mark_scheme_ao {
-    border-left: 3px solid rgba(83, 51, 237, 0.5);
-    background: rgba(83, 51, 237, 0.04);
+    border-left: 3px solid rgba(83, 51, 237, 0.6);
+    background: rgba(83, 51, 237, 0.07);
     padding: 12pt 16pt;
 }
 .swml-section-block.swml-section-mark_scheme_ao h3 {
@@ -5167,8 +5327,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 
 /* Editable student response sections — teal left border, placeholder style */
 .swml-section-block.swml-section-mark_scheme_response {
-    border-left: 3px solid rgba(81, 218, 207, 0.4);
-    background: rgba(81, 218, 207, 0.03);
+    border-left: 3px solid rgba(81, 218, 207, 0.55);
+    background: rgba(81, 218, 207, 0.06);
     padding: 10pt 16pt;
     min-height: 60px;
 }

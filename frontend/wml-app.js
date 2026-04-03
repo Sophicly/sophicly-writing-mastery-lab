@@ -2695,7 +2695,8 @@
         } catch (e) { console.warn('Session creation failed:', e); }
 
         // v7.13.78: exam prep restored to chat — canvas needs dedicated renderer
-        const chatTasks = ['planning', 'assessment', 'polishing', 'exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'outlining'];
+        // v7.14.33: planning + polishing removed — now canvas-based via EXERCISE_MANIFEST
+        const chatTasks = ['assessment', 'exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'outlining'];
         const exerciseConfig = WML.EXERCISE_MANIFEST?.[taskId] || {};
 
         // v7.13.92: All canvas tasks (including exam prep) → renderCanvasWorkspace (one renderer for all)

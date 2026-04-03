@@ -1222,13 +1222,13 @@
             if (!canvasEditor) return;
             const editor = document.getElementById('swml-tiptap-editor');
             // Walk sectionBlock nodes for hierarchy
+            // v7.14.29: Include dividers — used as group boundaries in outline
             const sections = [];
             canvasEditor.state.doc.descendants((node, pos) => {
                 if (node.type.name === 'sectionBlock') {
                     const type = node.attrs.sectionType || 'response';
-                    if (type === 'divider') return false; // skip group dividers (v7.12.59)
                     // v7.14.11: Skip sections hidden in diagnostic mode (check DOM class for robustness)
-                    if (canvas.classList.contains('swml-canvas-diagnostic') && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) return false;
+                    if (type !== 'divider' && canvas.classList.contains('swml-canvas-diagnostic') && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) return false;
                     sections.push({ type, label: node.attrs.label || '', pos });
                 }
             });
@@ -1429,13 +1429,26 @@
             // Attach section numbers to sections for outline display (v7.12.56)
             sections.forEach((s, i) => { s._num = sectionNumbers[i] || ''; });
 
-            // Group consecutive sections by label prefix
+            // v7.14.29: Group sections using dividers as boundaries (fundamental fix — works for all doc types)
+            // Dividers become group headers in the outline. Fallback: PREFIX_MAP for docs without dividers.
             const groups = [];
-            let currentGroup = null;
+            let currentDividerGroup = null;
             const PREFIX_MAP = { 'Plan:': 'Essay Plan', 'Outline:': 'Outline', 'Feedback:': 'Feedback' };
             sections.forEach(s => {
-                // Skip cover images from outline
                 if (s.type === 'cover') return;
+                // Dividers start new groups
+                if (s.type === 'divider') {
+                    currentDividerGroup = { key: s.label, children: [], type: null, isDivider: true, pos: s.pos };
+                    groups.push(currentDividerGroup);
+                    return;
+                }
+                // If inside a divider group, add as child
+                if (currentDividerGroup) {
+                    if (!currentDividerGroup.type) currentDividerGroup.type = s.type;
+                    currentDividerGroup.children.push({ ...s, childLabel: s.label });
+                    return;
+                }
+                // Fallback: PREFIX_MAP grouping for sections before any divider
                 let groupKey = null, childLabel = s.label;
                 for (const [prefix, name] of Object.entries(PREFIX_MAP)) {
                     if (s.label.startsWith(prefix)) {
@@ -1445,36 +1458,77 @@
                     }
                 }
                 if (groupKey) {
-                    if (currentGroup && currentGroup.key === groupKey) {
-                        currentGroup.children.push({ ...s, childLabel });
+                    const lastGroup = groups[groups.length - 1];
+                    if (lastGroup && lastGroup.key === groupKey && !lastGroup.isDivider) {
+                        lastGroup.children.push({ ...s, childLabel });
                     } else {
-                        currentGroup = { key: groupKey, children: [{ ...s, childLabel }], type: s.type };
-                        groups.push(currentGroup);
+                        groups.push({ key: groupKey, children: [{ ...s, childLabel }], type: s.type });
                     }
                 } else {
-                    currentGroup = null;
                     groups.push({ key: null, section: s });
                 }
             });
 
-            // Render grouped outline (v7.12.56: grouped section numbers)
+            // v7.14.31: Render grouped outline with accordion collapse + brand colour dots
+            const OUTLINE_GROUP_COLOURS = ['#51dacf', '#42A1EC', '#4D76FD', '#5333ed', '#7DF9E9', '#1CD991', '#41aaa8'];
+            let _groupColorIdx = 0;
             groups.forEach(g => {
-                if (g.key && g.children.length > 1) {
-                    // Parent group header (clicks to first child)
-                    const header = el('button', {
+                // Skip divider groups with no children (empty structural dividers)
+                if (g.isDivider && (!g.children || g.children.length === 0)) return;
+                if (g.key && g.children && g.children.length >= 1) {
+                    // Brand colour for this group (divider-based get cycling colours, prefix-based get section colours)
+                    const groupColor = g.isDivider
+                        ? OUTLINE_GROUP_COLOURS[_groupColorIdx++ % OUTLINE_GROUP_COLOURS.length]
+                        : (SECTION_COLOURS[g.type] || '#888');
+
+                    // Wrapper div for group header + collapsible children
+                    const groupWrap = el('div', { className: 'swml-outline-group-wrap' });
+
+                    // Parent group header — chevron LEFT of dot, title clicks to scroll
+                    const header = el('div', {
                         className: 'swml-outline-item swml-outline-group',
-                        tabIndex: -1,
-                        onClick: () => scrollToPos(g.children[0].pos)
                     });
+
+                    // Chevron (left side) — toggles accordion
+                    const chevron = el('button', { className: 'swml-outline-chevron', tabIndex: -1 });
+                    chevron.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>';
+                    header.appendChild(chevron);
+
                     const dot = el('span', { className: 'swml-outline-dot' });
-                    dot.style.background = SECTION_COLOURS[g.type] || '#888';
+                    dot.style.background = groupColor;
                     header.appendChild(dot);
-                    // Extract major number from first child's number (e.g., "2.1" → "2")
+
+                    // Title — clicks to scroll to section
                     const groupMajor = (g.children[0]?._num || '').split('.')[0];
-                    header.appendChild(document.createTextNode((groupMajor ? groupMajor + '. ' : '') + g.key));
-                    outlineList.appendChild(header);
+                    const titleBtn = el('button', {
+                        className: 'swml-outline-group-title',
+                        tabIndex: -1,
+                        textContent: (groupMajor ? groupMajor + '. ' : '') + g.key,
+                        onClick: () => scrollToPos(g.children[0].pos),
+                    });
+                    header.appendChild(titleBtn);
+
+                    // Collapsible children container (starts collapsed)
+                    const childWrap = el('div', { className: 'swml-outline-children swml-outline-collapsed' });
+
+                    // Chevron click: toggle accordion
+                    chevron.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const isCollapsed = childWrap.classList.contains('swml-outline-collapsed');
+                        if (isCollapsed) {
+                            childWrap.classList.remove('swml-outline-collapsed');
+                            chevron.classList.add('swml-outline-chevron-open');
+                        } else {
+                            childWrap.classList.add('swml-outline-collapsed');
+                            chevron.classList.remove('swml-outline-chevron-open');
+                        }
+                    });
+
+                    groupWrap.appendChild(header);
+                    outlineList.appendChild(groupWrap);
                     outlineHeadingPositions.push({ pos: g.children[0].pos, itemEl: header });
-                    // Children
+
+                    // Children inside collapsible wrapper
                     g.children.forEach(child => {
                         const childIndicator = getSectionIndicator(child);
                         const item = el('button', {
@@ -1488,9 +1542,10 @@
                             chk.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#1CD991" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="4" fill="#1CD991"/><path d="M7.5 12.5l3 3 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
                             item.appendChild(chk);
                         }
-                        outlineList.appendChild(item);
+                        childWrap.appendChild(item);
                         outlineHeadingPositions.push({ pos: child.pos, itemEl: item });
                     });
+                    groupWrap.appendChild(childWrap);
                 } else {
                     // Single section (or single-child group)
                     const s = g.key ? g.children[0] : g.section;
@@ -2589,85 +2644,7 @@
                                     const ww = document.getElementById('swml-wc-widget');
                                     if (ww) { ww.style.display = ''; ww.style.opacity = '1'; }
 
-                                    // ── Re-add "Go to Assessment" 3D button after returning from assessment (v7.12.32) ──
-                                    // v7.14.24: Skip in embedded mode — LD handles exercise transitions
-                                    if (!WML.isEmbedded && diagCompleteBtn && !rightPanel.querySelector('.swml-go-assess-btn')) {
-                                        diagCompleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><path d="M5 12l5 5L20 7"/></svg> Complete';
-                                        diagCompleteBtn.disabled = true;
-                                        diagCompleteBtn.style.opacity = '0.5';
-                                        diagCompleteBtn.style.cursor = 'default';
-                                        diagCompleteBtn.style.display = 'block';
-                                        const goBackBtn = build3DButton('Go to Assessment', "Let's Go", () => {
-                                            // v7.12.45: Simultaneous width changes — one smooth document shift
-                                            state.task = 'assessment';
-                                            state.canvasTimer = 0;
-                                            state.step = 0;
-                                            canvasInAssessment = true;
-
-                                            // Fade out diagnostic panel content + badges
-                                            rightPanel.classList.add('swml-canvas-plan-fading');
-                                            if (ctxEl) { ctxEl.style.transition = 'opacity 0.3s ease'; ctxEl.style.opacity = '0'; }
-                                            if (diagBadge) { diagBadge.style.transition = 'opacity 0.3s ease'; diagBadge.style.opacity = '0'; }
-
-                                            // After content fades: collapse diagnostic + expand assessment SIMULTANEOUSLY
-                                            setTimeout(() => {
-                                                // Collapse diagnostic panel
-                                                rightPanel.classList.add('swml-canvas-plan-hidden');
-                                                if (ctxEl) ctxEl.style.display = 'none';
-                                                if (diagBadge) diagBadge.style.display = 'none';
-
-                                                // Show assessment panels (v7.12.46: background visible, children hidden)
-                                                protoPanel.style.display = '';
-                                                protoPanel.style.opacity = '';
-                                                protoPanel.style.transform = '';
-                                                protoPanel.classList.add('swml-panel-entering');
-                                                protoPanel.style.maxWidth = '0';
-                                                protoPanel.style.overflow = 'hidden';
-                                                chatPanel.style.display = '';
-                                                chatPanel.style.opacity = '';
-                                                chatPanel.style.transform = '';
-                                                chatPanel.classList.add('swml-panel-entering');
-                                                chatPanel.style.maxWidth = '0';
-                                                chatPanel.style.overflow = 'hidden';
-                                                if (chatResizeHandle) { chatResizeHandle.style.display = ''; chatResizeHandle.style.opacity = '0'; }
-
-                                                // All width changes in same frame — one smooth document shift
-                                                requestAnimationFrame(() => {
-                                                    const panelEase = 'max-width 0.4s cubic-bezier(0.16,1,0.3,1)';
-                                                    protoPanel.style.transition = panelEase;
-                                                    protoPanel.style.maxWidth = '280px';
-                                                    chatPanel.style.transition = panelEase;
-                                                    chatPanel.style.maxWidth = '500px';
-
-                                                    // After widths settle, GSAP stagger children in (v7.12.47)
-                                                    setTimeout(() => {
-                                                        protoPanel.classList.remove('swml-panel-entering');
-                                                        protoPanel.style.overflow = '';
-                                                        if (chatResizeHandle) { chatResizeHandle.style.transition = 'opacity 0.5s ease'; chatResizeHandle.style.opacity = '1'; }
-                                                        if (window.gsap) {
-                                                            gsap.from(protoPanel.children, { opacity: 0, y: -12, duration: 0.4, stagger: 0.1, ease: 'power2.out', clearProps: 'opacity,transform' });
-                                                        }
-                                                    }, 420);
-                                                    setTimeout(() => {
-                                                        chatPanel.classList.remove('swml-panel-entering');
-                                                        chatPanel.style.overflow = '';
-                                                        if (window.gsap) {
-                                                            gsap.from(chatPanel.children, { opacity: 0, y: -12, duration: 0.4, stagger: 0.1, ease: 'power2.out', clearProps: 'opacity,transform' });
-                                                        }
-                                                    }, 520);
-                                                });
-
-                                                // Hide diagnostic-only UI
-                                                reopenBtn.style.display = 'none';
-                                                resetBtn.style.display = 'none';
-                                                const wcW2 = document.getElementById('swml-wc-widget');
-                                                if (wcW2) { wcW2.style.transition = 'opacity 0.3s ease'; wcW2.style.opacity = '0'; setTimeout(() => { wcW2.style.display = 'none'; }, 300); }
-                                                if (canvasTimerInterval) { clearInterval(canvasTimerInterval); canvasTimerInterval = null; }
-                                            }, 580); // v7.12.47: wait for full staggered fade
-                                        });
-                                        goBackBtn.classList.add('swml-go-assess-btn');
-                                        rightPanel.appendChild(goBackBtn);
-                                    }
+                                    // v7.14.29: "Go to Assessment" button removed — exercises decoupled, LD handles sequencing
                                 }, 380);
                             }, 780); // v7.12.45: 350ms fade + 400ms collapse + margin
                         }));
@@ -3629,15 +3606,9 @@
                                             // Fresh start: show greeting (delay to let CharacterCount sync)
                                             setTimeout(() => {
                                             const assessTextName = state.textName || state.text || 'your text';
-                                            // Try section-based count first, fall back to full editor count, then DOM count
-                                            let assessWc = getResponseWordCount(canvasEditor);
-                                            if (assessWc === 0 && canvasEditor) {
-                                                assessWc = canvasEditor.storage.characterCount?.words() || 0;
-                                            }
-                                            if (assessWc === 0) {
-                                                const edEl = document.getElementById('swml-tiptap-editor');
-                                                if (edEl) assessWc = (edEl.textContent || '').trim().split(/\s+/).filter(w => w.length > 0).length;
-                                            }
+                                            // v7.14.28: Use response-only word count — no fallback to full doc count
+                                            // (fallbacks were counting template/prompt text as student words)
+                                            const assessWc = getResponseWordCount(canvasEditor);
                                             // Extract essay question from document + store in state (v7.12.33)
                                             const questionText = extractEssayQuestion(canvasEditor);
                                             if (questionText) state.question = questionText;
@@ -3752,17 +3723,7 @@
                                 diagCompleteBtn.style.cursor = 'default';
                                 diagCompleteBtn.style.display = 'block';
                             }
-                            // v7.14.24: Skip "Go to Assessment" in embedded mode — LD handles exercise transitions
-                            if (!WML.isEmbedded) {
-                                const goAssessBtn = build3DButton('Go to Assessment', "Let's Go", () => {
-                                    state.task = 'assessment';
-                                    state.canvasTimer = 0;
-                                    state.step = 0;
-                                    renderCanvasWorkspace();
-                                });
-                                goAssessBtn.classList.add('swml-go-assess-btn');
-                                rightPanel.appendChild(goAssessBtn);
-                            }
+                            // v7.14.29: "Go to Assessment" button removed — exercises decoupled, LD handles sequencing
                         }
                     } catch (e) { console.log('WML: Diagnostic completion check failed:', e); }
                 })();
@@ -4046,6 +4007,60 @@
                 return {
                     Backspace: () => isSectionBoundary(this.editor.state, 'backspace'),
                     Delete: () => isSectionBoundary(this.editor.state, 'delete'),
+                };
+            },
+        });
+
+        // ── InputField Node (v7.14.28) ──
+        // A styled paragraph-like block with visible borders and a prompt label.
+        // Content is managed by TipTap (inline*), so comments, dictation, and toolbar all work.
+        // Renders as: <div class="swml-input-field" data-prompt="..."><p>student text</p></div>
+        const InputField = Node.create({
+            name: 'inputField',
+            group: 'block',
+            content: 'inline*',
+            defining: true,
+
+            addAttributes() {
+                return {
+                    prompt: {
+                        default: '',
+                        parseHTML: el => el.getAttribute('data-prompt') || '',
+                        renderHTML: attrs => ({ 'data-prompt': attrs.prompt || '' }),
+                    },
+                    fieldId: {
+                        default: '',
+                        parseHTML: el => el.getAttribute('data-field-id') || '',
+                        renderHTML: attrs => attrs.fieldId ? { 'data-field-id': attrs.fieldId } : {},
+                    },
+                };
+            },
+
+            parseHTML() {
+                return [{ tag: 'div[data-input-field]' }];
+            },
+
+            renderHTML({ HTMLAttributes }) {
+                return ['div', {
+                    ...HTMLAttributes,
+                    'data-input-field': 'true',
+                    class: 'swml-input-field',
+                }, 0];
+            },
+
+            addKeyboardShortcuts() {
+                return {
+                    // Enter inside an input field creates a new line within the field (not a new paragraph outside)
+                    Enter: ({ editor }) => {
+                        const { $from } = editor.state.selection;
+                        for (let d = $from.depth; d >= 0; d--) {
+                            if ($from.node(d).type.name === 'inputField') {
+                                editor.commands.insertContent({ type: 'hardBreak' });
+                                return true;
+                            }
+                        }
+                        return false;
+                    },
                 };
             },
         });
@@ -4699,6 +4714,7 @@
                 Color,
                 CommentMark,
                 SectionBlock,
+                InputField,
                 ...(PaginationPlus ? [PaginationPlus.configure({
                     pageHeight: 1020,
                     pageWidth: 720,
@@ -4937,6 +4953,8 @@
             tryInjectCover();
             // Build table of contents (after cover + migration)
             buildTableOfContents();
+            // v7.14.31: Assign group colours to sections based on their divider parent
+            coloriseSectionGroups();
             // v7.13.48: CW resource buttons are now in the sidebar (not in document)
             // Inject dropdown overlays after template is ready
             setTimeout(() => buildDropdownOverlays(contentWrap), 200);
@@ -5655,7 +5673,15 @@
                 const contentText = section.textContent?.trim() || '';
                 const contentHTML = section.innerHTML || '';
 
-                sections.push({ type, label, readonly: isReadonly, marks, maxMarks, text: contentText, html: contentHTML });
+                // v7.14.28: Extract InputField values as structured key-value data
+                const inputFields = {};
+                section.querySelectorAll('[data-input-field]').forEach(field => {
+                    const fieldId = field.getAttribute('data-field-id');
+                    if (fieldId) inputFields[fieldId] = field.textContent?.trim() || '';
+                });
+                const fields = Object.keys(inputFields).length > 0 ? inputFields : null;
+
+                sections.push({ type, label, readonly: isReadonly, marks, maxMarks, text: contentText, html: contentHTML, fields });
             });
             return {
                 board: state.board, text: state.text, subject: state.subject,
@@ -7049,6 +7075,13 @@
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
+    // v7.14.28: InputField HTML generator — renders a styled, TipTap-managed editable block
+    // with a visible prompt label and bordered input area. Comments, dictation, toolbar all work.
+    function inputHTML(prompt, fieldId) {
+        const pid = fieldId ? ` data-field-id="${escapeHTML(fieldId)}"` : '';
+        return `<div data-input-field="true" data-prompt="${escapeHTML(prompt || '')}"${pid} class="swml-input-field"></div>`;
+    }
+
     function buildQuestionSection(questionText, extractText, extractLocation, marks, aos, partLabel) {
         const label = partLabel ? `Question & Extract — ${partLabel}` : 'Question & Extract';
         let inner = '';
@@ -7090,18 +7123,19 @@
         let html = '';
         if (fullEssay) {
             html += sectionHTML('plan', `Plan: Introduction${prefix}`, true, null,
-                `<p><em>Introduce your argument BRIEFLY.</em></p><p></p>`);
+                inputHTML('Introduce your argument BRIEFLY.', 'plan-intro'));
             const bodyCount = marks >= 40 ? 4 : 3;
             for (let i = 1; i <= bodyCount; i++) {
                 html += sectionHTML('plan', `Plan: Body Paragraph ${i}${prefix}`, true, null,
-                    `<p><em>Focus only on KEY IDEA #${i}.</em></p><p></p>`);
+                    inputHTML(`Focus only on KEY IDEA #${i}.`, `plan-body-${i}`));
             }
             html += sectionHTML('plan', `Plan: Conclusion${prefix}`, true, null,
-                `<p><em>Restate thesis. Central purpose. Universal message. CRUCIAL!</em></p><p></p>`);
+                inputHTML('Restate thesis. Central purpose. Universal message. CRUCIAL!', 'plan-conclusion'));
         } else {
             const paraCount = getParagraphCount(marks);
             for (let i = 1; i <= paraCount; i++) {
-                html += sectionHTML('plan', `Plan: Paragraph ${i}${prefix}`, true, null, `<p></p>`);
+                html += sectionHTML('plan', `Plan: Paragraph ${i}${prefix}`, true, null,
+                    inputHTML(`Plan for paragraph ${i}`, `plan-para-${i}`));
             }
         }
         return html;
@@ -7109,12 +7143,12 @@
 
     function buildIUMVCCPlanSection(partLabel) {
         const prefix = partLabel ? ` — ${partLabel}` : '';
-        return sectionHTML('plan', `Plan: Introduction${prefix}`, true, null, `<p><em>Hook the reader. Establish your voice and position.</em></p><p></p>`) +
-            sectionHTML('plan', `Plan: Urgency${prefix}`, true, null, `<p><em>Why does this matter NOW? Create emotional pressure.</em></p><p></p>`) +
-            sectionHTML('plan', `Plan: Methodology${prefix}`, true, null, `<p><em>What is the solution? Paint a vivid picture of how it works.</em></p><p></p>`) +
-            sectionHTML('plan', `Plan: Vision${prefix}`, true, null, `<p><em>What does the future look like if we act? Use imagery.</em></p><p></p>`) +
-            sectionHTML('plan', `Plan: Counter-Argument${prefix}`, true, null, `<p><em>Acknowledge the opposition, then dismantle it.</em></p><p></p>`) +
-            sectionHTML('plan', `Plan: Conclusion${prefix}`, true, null, `<p><em>Call to action. Leave a lasting image.</em></p><p></p>`);
+        return sectionHTML('plan', `Plan: Introduction${prefix}`, true, null, inputHTML('Hook the reader. Establish your voice and position.', 'iumvcc-intro')) +
+            sectionHTML('plan', `Plan: Urgency${prefix}`, true, null, inputHTML('Why does this matter NOW? Create emotional pressure.', 'iumvcc-urgency')) +
+            sectionHTML('plan', `Plan: Methodology${prefix}`, true, null, inputHTML('What is the solution? Paint a vivid picture of how it works.', 'iumvcc-method')) +
+            sectionHTML('plan', `Plan: Vision${prefix}`, true, null, inputHTML('What does the future look like if we act? Use imagery.', 'iumvcc-vision')) +
+            sectionHTML('plan', `Plan: Counter-Argument${prefix}`, true, null, inputHTML('Acknowledge the opposition, then dismantle it.', 'iumvcc-counter')) +
+            sectionHTML('plan', `Plan: Conclusion${prefix}`, true, null, inputHTML('Call to action. Leave a lasting image.', 'iumvcc-conclusion'));
     }
 
     function buildOutlineSection(aos, partLabel, marks) {
@@ -7130,28 +7164,27 @@
         let html = '';
         if (fullEssay) {
             html += sectionHTML('outline', `Outline: Introduction${prefix}`, true, null,
-                `<p><em>Hook (AO1): Quote, question, metaphor, or historical fact</em></p><p></p>` +
-                `<p><em>Building sentences (AO3): Context / counter-argument</em></p><p></p>` +
-                `<p><em>Thesis (AO1): Key idea 1, Key idea 2, Key idea 3</em></p><p></p>`);
+                inputHTML('Hook (AO1): Quote, question, metaphor, or historical fact', 'outline-intro-hook') +
+                inputHTML('Building sentences (AO3): Context / counter-argument', 'outline-intro-building') +
+                inputHTML('Thesis (AO1): Key idea 1, Key idea 2, Key idea 3', 'outline-intro-thesis'));
             const bodyCount = marks >= 40 ? 4 : 3;
             for (let i = 1; i <= bodyCount; i++) {
-                let aoInner = '';
-                aoInner += `<p><em>WHAT? Topic sentence (AO1): Key idea ${i}</em></p><p></p>`;
-                aoInner += `<p><em>HOW? Supporting sentences (AO2): Terminology → Evidence → Close analysis → Effects</em></p><p></p>`;
-                aoInner += `<p><em>WHY? Concluding sentences (AO2/AO3): Author's purpose / context</em></p><p></p>`;
-                html += sectionHTML('outline', `Outline: Body Paragraph ${i}${prefix}`, true, null, aoInner);
+                html += sectionHTML('outline', `Outline: Body Paragraph ${i}${prefix}`, true, null,
+                    inputHTML(`WHAT? Topic sentence (AO1): Key idea ${i}`, `outline-body-${i}-what`) +
+                    inputHTML('HOW? Supporting sentences (AO2): Terminology → Evidence → Close analysis → Effects', `outline-body-${i}-how`) +
+                    inputHTML("WHY? Concluding sentences (AO2/AO3): Author's purpose / context", `outline-body-${i}-why`));
             }
             html += sectionHTML('outline', `Outline: Conclusion${prefix}`, true, null,
-                `<p><em>Restated thesis (AO1)</em></p><p></p>` +
-                `<p><em>Controlling concept (AO1): Link thesis to central theme</em></p><p></p>` +
-                `<p><em>Central purpose (AO1/AO3): How does this reflect the author's purpose?</em></p><p></p>` +
-                `<p><em>Universal message (AO1): What is the MAIN message of the text?</em></p><p></p>`);
+                inputHTML('Restated thesis (AO1)', 'outline-conclusion-thesis') +
+                inputHTML('Controlling concept (AO1): Link thesis to central theme', 'outline-conclusion-concept') +
+                inputHTML("Central purpose (AO1/AO3): How does this reflect the author's purpose?", 'outline-conclusion-purpose') +
+                inputHTML('Universal message (AO1): What is the MAIN message of the text?', 'outline-conclusion-message'));
         } else {
             const paraCount = getParagraphCount(marks);
             for (let i = 1; i <= paraCount; i++) {
                 let aoInner = '';
                 aoList.forEach(ao => {
-                    aoInner += `<p><em>${ao}: ${aoPrompts[ao] || ao}</em></p><p></p>`;
+                    aoInner += inputHTML(`${ao}: ${aoPrompts[ao] || ao}`, `outline-para-${i}-${ao.toLowerCase()}`);
                 });
                 html += sectionHTML('outline', `Outline: Paragraph ${i}${prefix}`, true, null, aoInner);
             }
@@ -7499,8 +7532,8 @@
         let inner = '';
         for (let i = 1; i <= 3; i++) {
             inner += `<h3>Improvement ${i}</h3>`;
-            inner += `<p><em>What I need to improve:</em></p><p></p>`;
-            inner += `<p><em>How I will improve it:</em></p><p></p>`;
+            inner += inputHTML('What I need to improve', `improvement-${i}-what`);
+            inner += inputHTML('How I will improve it', `improvement-${i}-how`);
         }
         return sectionHTML('improvement', 'Improvement Plan', true, null, inner);
     }
@@ -7560,39 +7593,39 @@
     function buildAnalyticsSection() {
         const inner =
             `<h3>Top Missed Areas</h3>` +
-            `<p><em>Specify AO1, AO2, AO3, etc.</em></p><p></p>` +
+            inputHTML('Specify AO1, AO2, AO3, etc.', 'analytics-top-missed') +
             `<h3>Opt-outs This Attempt</h3>` +
             `<p><em>Number of opt-outs:</em> —</p>` +
-            `<p><em>Opt-out items (AO1, AO2, etc.):</em></p><p></p>` +
+            inputHTML('Opt-out items (AO1, AO2, etc.)', 'analytics-optouts') +
             `<h3>Trend: Repeated Errors</h3>` +
-            `<p><em>Specify AO1, AO2, AO3, etc.</em></p><p></p>` +
+            inputHTML('Specify AO1, AO2, AO3, etc.', 'analytics-repeated-errors') +
             `<h3>Trend: Improvements</h3>` +
-            `<p><em>Specify AO1, AO2, AO3, etc.</em></p><p></p>` +
+            inputHTML('Specify AO1, AO2, AO3, etc.', 'analytics-improvements') +
             `<h3>Biggest Challenges</h3>` +
-            `<p><em>Specify AO1, AO2, AO3, etc.</em></p><p></p>`;
+            inputHTML('Specify AO1, AO2, AO3, etc.', 'analytics-challenges');
         return sectionHTML('feedback', 'Analytics', true, null, inner);
     }
 
     function buildActionPlanSection(mode) {
         let inner =
             `<h3>Grade Goal</h3>` +
-            `<p><em>Your target grade:</em> —</p>` +
+            inputHTML('Your target grade', 'action-grade-goal') +
             `<h3>3 Priorities</h3>` +
-            `<p><em>Specify AO1, AO2, AO4, etc.</em></p><p></p>` +
+            inputHTML('Specify AO1, AO2, AO4, etc.', 'action-priorities') +
             `<h3>Short-term Aims</h3>` +
-            `<p><em>Specify AO1, AO2, AO4, etc.</em></p><p></p>` +
+            inputHTML('Specify AO1, AO2, AO4, etc.', 'action-short-term') +
             `<h3>Action 1: Course & Resources</h3>` +
-            `<p><em>Specify AO1, AO2, AO4, etc.</em></p><p></p>` +
+            inputHTML('Specify AO1, AO2, AO4, etc.', 'action-1-resources') +
             `<h3>Action 2: Lessons</h3>` +
-            `<p><em>Specify AO1, AO2, AO4, etc.</em></p><p></p>` +
+            inputHTML('Specify AO1, AO2, AO4, etc.', 'action-2-lessons') +
             `<h3>Action 3: Support</h3>` +
-            `<p><em>Specify AO1, AO2, AO4, etc.</em></p><p></p>`;
+            inputHTML('Specify AO1, AO2, AO4, etc.', 'action-3-support');
         // Next Topic only appears in redraft — student chooses their next topic after completing the cycle
         if (mode === 'redraft') {
             inner +=
                 `<h3>Next Topic</h3>` +
-                `<p><em>Your next topic:</em> —</p>` +
-                `<p><em>Reason for this choice:</em></p><p></p>`;
+                inputHTML('Your next topic', 'action-next-topic') +
+                inputHTML('Reason for this choice', 'action-next-reason');
         }
         return sectionHTML('action', 'Action Plan', true, null, inner);
     }
@@ -8148,7 +8181,7 @@
             descriptors.forEach(d => { inner += `<p>${escapeHTML(d)}</p>`; });
             html += sectionHTML('mark_scheme_ao', label, false, null, inner);
             html += sectionHTML('mark_scheme_response', `My rating: ${label}`, true, null,
-                `<p><em>My rating (1\u20135):</em> </p><p></p>`
+                inputHTML('My rating (1\u20135)', `ms-rating-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)
             );
         }
 
@@ -8158,32 +8191,32 @@
         html += dividerHTML('HOW YOU\'RE GOING');
 
         html += sectionHTML('mark_scheme_response', 'Questions Answered Correctly', true, null,
-            `<p><strong>Questions Answered Correctly (out of 10):</strong> </p>`
-            + `<p><em>How many questions did you answer correctly out of 10?</em></p>`
+            `<p><strong>Questions Answered Correctly (out of 10):</strong></p>`
+            + inputHTML('How many questions did you answer correctly out of 10?', 'ms-questions-correct')
         );
         html += sectionHTML('mark_scheme_response', 'Weighted Score', true, null,
-            `<p><strong>Weighted Score (out of 20):</strong> </p>`
-            + `<p><em>What are your total marks out of 20?</em></p>`
+            `<p><strong>Weighted Score (out of 20):</strong></p>`
+            + inputHTML('What are your total marks out of 20?', 'ms-weighted-score')
         );
         html += sectionHTML('mark_scheme_response', 'Percentage', true, null,
-            `<p><strong>Percentage:</strong> </p>`
-            + `<p><em>What total percentage did you score for this assessment?</em></p>`
+            `<p><strong>Percentage:</strong></p>`
+            + inputHTML('What total percentage did you score?', 'ms-percentage')
         );
         html += sectionHTML('mark_scheme_response', 'Predicted Grade', true, null,
-            `<p><strong>Predicted Grade (0\u20139):</strong> </p>`
-            + `<p><em>What grade did you score for this assessment?</em></p>`
+            `<p><strong>Predicted Grade (0\u20139):</strong></p>`
+            + inputHTML('What grade did you score?', 'ms-predicted-grade')
         );
         html += sectionHTML('mark_scheme_response', 'Top Missed Areas', true, null,
             `<p><strong>Top Missed Areas:</strong></p>`
-            + `<p><em>Which areas cost you the most marks? Specify AOs, e.g. AO1, AO2, AO3.</em></p><p></p>`
+            + inputHTML('Which areas cost you the most marks? Specify AOs, e.g. AO1, AO2, AO3', 'ms-top-missed')
         );
         html += sectionHTML('mark_scheme_response', 'Opt-outs Count', true, null,
-            `<p><strong>Opt-outs This Attempt (0\u201310):</strong> </p>`
-            + `<p><em>How many questions did you opt out of in this assessment?</em></p>`
+            `<p><strong>Opt-outs This Attempt (0\u201310):</strong></p>`
+            + inputHTML('How many questions did you opt out of?', 'ms-optouts-count')
         );
         html += sectionHTML('mark_scheme_response', 'Opt-out Items', true, null,
             `<p><strong>Opt-out Items:</strong></p>`
-            + `<p><em>Which types of questions did you opt out of, specifically?</em></p><p></p>`
+            + inputHTML('Which types of questions did you opt out of?', 'ms-optout-items')
         );
 
         // ══════════════════════════════════════════════════════════
@@ -8193,11 +8226,11 @@
 
         html += sectionHTML('mark_scheme_response', 'Repeated Errors', true, null,
             `<p><strong>Trend: Repeated Errors</strong></p>`
-            + `<p><em>What errors have you seen repeated across units? Specify AOs, e.g. AO1, AO2, AO3. Put \u201cN/A\u201d if this is your very first attempt.</em></p><p></p>`
+            + inputHTML('What errors have you seen repeated across units? Specify AOs. Put "N/A" if first attempt.', 'ms-repeated-errors')
         );
         html += sectionHTML('mark_scheme_response', 'Improvements', true, null,
             `<p><strong>Trend: Improvements</strong></p>`
-            + `<p><em>Which areas have you been able to improve across units? Specify AOs, e.g. AO1, AO2, AO3. Put \u201cN/A\u201d if this is your very first attempt.</em></p><p></p>`
+            + inputHTML('Which areas have you improved across units? Specify AOs. Put "N/A" if first attempt.', 'ms-improvements')
         );
 
         // ══════════════════════════════════════════════════════════
@@ -8207,7 +8240,7 @@
 
         html += sectionHTML('mark_scheme_response', 'Personalised Summary', true, null,
             `<p><strong>Personalised Summary</strong></p>`
-            + `<p><em>Paste your personalised feedback below. Specify AOs, e.g. AO1, AO2, AO3.</em></p><p></p>`
+            + inputHTML('Paste your personalised feedback below. Specify AOs.', 'ms-personalised-summary')
         );
 
         // ══════════════════════════════════════════════════════════
@@ -8217,11 +8250,11 @@
 
         html += sectionHTML('mark_scheme_response', 'Biggest Challenges', true, null,
             `<p><strong>Biggest Challenges</strong></p>`
-            + `<p><em>What felt hardest and why? Specify AOs, e.g. AO1, AO2, AO3.</em></p><p></p>`
+            + inputHTML('What felt hardest and why? Specify AOs.', 'ms-biggest-challenges')
         );
         html += sectionHTML('mark_scheme_response', 'Short-term Aims', true, null,
             `<p><strong>Short-term Aims</strong></p>`
-            + `<p><em>What will you do differently next time? Specify AOs, e.g. AO1, AO2, AO3.</em></p><p></p>`
+            + inputHTML('What will you do differently next time? Specify AOs.', 'ms-short-term-aims')
         );
 
         // ══════════════════════════════════════════════════════════
@@ -8308,11 +8341,11 @@
 
         html += sectionHTML('mark_scheme_response', 'Next Focus', true, null,
             `<p><strong>Next Focus:</strong></p>`
-            + `<p><em>Name one precise area you want to focus on to make the most gains.</em></p><p></p>`
+            + inputHTML('Name one precise area you want to focus on to make the most gains.', 'ms-next-focus')
         );
         html += sectionHTML('mark_scheme_response', 'Grade Goal Reminder', true, null,
-            `<p><strong>Grade Goal Reminder (1\u20139):</strong> </p>`
-            + `<p><em>What grade are you aiming for?</em></p>`
+            `<p><strong>Grade Goal Reminder (1\u20139):</strong></p>`
+            + inputHTML('What grade are you aiming for?', 'ms-grade-goal')
         );
 
         // ══════════════════════════════════════════════════════════
@@ -8322,15 +8355,15 @@
 
         html += sectionHTML('mark_scheme_response', 'Action 1: Course & Resources', true, null,
             `<p><strong>Action 1 (Course &amp; Resources):</strong></p>`
-            + `<p><em>What\u2019s the next step you will take in your course (&amp; resources) towards your goals?</em></p><p></p>`
+            + inputHTML('What\u2019s the next step you will take in your course towards your goals?', 'ms-action-1')
         );
         html += sectionHTML('mark_scheme_response', 'Action 2: Lessons', true, null,
             `<p><strong>Action 2 (Lessons):</strong></p>`
-            + `<p><em>How will you use the lessons to help you reach your goals?</em></p><p></p>`
+            + inputHTML('How will you use the lessons to help you reach your goals?', 'ms-action-2')
         );
         html += sectionHTML('mark_scheme_response', 'Action 3: Support', true, null,
             `<p><strong>Action 3 (Support):</strong></p>`
-            + `<p><em>How will you use available support to help you reach your goals?</em></p><p></p>`
+            + inputHTML('How will you use available support to help you reach your goals?', 'ms-action-3')
         );
 
         return html;
@@ -8391,7 +8424,6 @@
 
     let canvasSaveToServerTimer = null;
     let _extractDocumentData = null; // Assigned inside canvas builder, used by saveCanvasContent
-
     function saveCanvasContent() {
         if (!canvasEditor) return;
         const html = canvasEditor.getHTML();
@@ -8908,29 +8940,40 @@
         const existingTocGap = docWrap.querySelector('.swml-toc-gap');
         if (existingTocGap) existingTocGap.remove();
 
-        // Collect sections from TipTap model (skip dividers)
+        // v7.14.30: Collect sections INCLUDING dividers (used as group boundaries)
         const sections = [];
         canvasEditor.state.doc.descendants((node, pos) => {
             if (node.type.name === 'sectionBlock') {
                 const type = node.attrs.sectionType || 'response';
                 const label = node.attrs.label || '';
-                if (type !== 'cover' && type !== 'divider') sections.push({ type, label, pos });
+                if (type !== 'cover') sections.push({ type, label, pos });
             }
         });
 
         if (sections.length < 3) return; // Not enough sections for a TOC
 
-        // Group sections: top-level entries + children for accordion groups
+        // v7.14.30: Group using dividers as boundaries first, then prefix fallback.
+        // Dividers create accordion groups — all sections after a divider become its children.
         const tocEntries = [];
-        const groupMap = {}; // prefix → { entry, children }
-        // v7.13.82: Extended grouping — 'Part A Feedback:' and 'Part B Feedback:' grouped under
-        // 'Feedback — Part A' and 'Feedback — Part B' respectively, plus standard prefixes.
+        let currentDivGroup = null;
         const groupPrefixes = ['Feedback', 'Plan', 'Outline'];
+        const groupMap = {};
 
         sections.forEach(s => {
-            // Check for dual-part feedback labels: "Part A Feedback: ..." → group key "Part A Feedback"
+            // Dividers start new groups
+            if (s.type === 'divider') {
+                currentDivGroup = { type: null, label: s.label, displayLabel: s.label, children: [], isGroup: true, isDivider: true };
+                tocEntries.push(currentDivGroup);
+                return;
+            }
+            // If inside a divider group, add as child
+            if (currentDivGroup) {
+                if (!currentDivGroup.type) currentDivGroup.type = s.type;
+                currentDivGroup.children.push({ type: s.type, label: s.label, displayLabel: s.label });
+                return;
+            }
+            // Fallback: prefix-based grouping for sections before any divider
             const dualMatch = s.label.match(/^(Part [AB] Feedback):\s*/);
-            // Check for standard prefixes: "Feedback: ..." / "Plan: ..." / "Outline: ..."
             const matchedPrefix = !dualMatch ? groupPrefixes.find(p => s.label.startsWith(p + ':')) : null;
             const groupKey = dualMatch ? dualMatch[1] : matchedPrefix;
 
@@ -8972,7 +9015,11 @@
 
             const dot = document.createElement('span');
             dot.className = 'swml-toc-dot';
-            dot.style.background = SECTION_COLOURS[entry.type] || '#888';
+            // v7.14.30: Brand colour cycle for divider-based groups
+            const BRAND_DOT_COLOURS = ['#51dacf', '#42A1EC', '#4D76FD', '#5333ed', '#7DF9E9', '#1CD991', '#41aaa8'];
+            dot.style.background = entry.isDivider
+                ? BRAND_DOT_COLOURS[idx % BRAND_DOT_COLOURS.length]
+                : (SECTION_COLOURS[entry.type] || '#888');
             row.appendChild(dot);
 
             const labelSpan = document.createElement('span');
@@ -9078,6 +9125,33 @@
             docWrap.insertBefore(tocGap, editorEl);
             docWrap.insertBefore(toc, tocGap);
         }
+    }
+
+    // v7.14.31: Assign group colours to document sections based on their divider parent.
+    // Walks the editor DOM, finds dividers, assigns data-group-color to sibling sections.
+    // Colours cycle through brand palette matching the TOC dots.
+    const GROUP_COLOURS = ['#51dacf', '#42A1EC', '#4D76FD', '#5333ed', '#7DF9E9', '#1CD991', '#41aaa8'];
+    function coloriseSectionGroups() {
+        const editorEl = document.getElementById('swml-tiptap-editor');
+        if (!editorEl) return;
+        const allSections = editorEl.querySelectorAll('[data-section-type]');
+        let groupIdx = -1;
+        allSections.forEach(section => {
+            const type = section.getAttribute('data-section-type');
+            if (type === 'divider') {
+                groupIdx++;
+                return;
+            }
+            if (groupIdx >= 0) {
+                const color = GROUP_COLOURS[groupIdx % GROUP_COLOURS.length];
+                const r = parseInt(color.slice(1,3), 16);
+                const g = parseInt(color.slice(3,5), 16);
+                const b = parseInt(color.slice(5,7), 16);
+                // Use setProperty with 'important' to override CSS class specificity
+                section.style.setProperty('border-left-color', `rgba(${r},${g},${b},0.5)`, 'important');
+                section.style.setProperty('background', `rgba(${r},${g},${b},0.05)`, 'important');
+            }
+        });
     }
 
     function exportToDocx() {
