@@ -107,6 +107,11 @@ class SWML_Protocol_Router {
      * and that method may not be available/working in all AI Engine versions.
      */
     public function inject_session_context($query, $params = null) {
+        // v7.14.45: Trace logging for protocol routing debugging
+        global $swml_request_context;
+        $trace_task = $swml_request_context['task'] ?? 'none';
+        error_log("WML Router ENTRY: botId=" . ($query->botId ?? 'null') . ", request_task={$trace_task}");
+
         // Detect WML bot — matches 'wml-claude', 'wml', or any 'wml-*' variant
         $bot_id = $query->botId ?? '';
         $is_wml = ($bot_id === 'wml' || strpos($bot_id, 'wml-') === 0);
@@ -140,10 +145,27 @@ class SWML_Protocol_Router {
             }
         }
 
-        // Get active session context
+        // v7.14.45: Prefer request context (globals set by REST API) over session storage.
+        // Session storage has timing issues — update_user_meta may not be readable immediately
+        // within the same request. The request context is always authoritative.
+        global $swml_request_context;
+        $has_request_context = !empty($swml_request_context) && !empty($swml_request_context['board']) && !empty($swml_request_context['task']);
+
+        // Get active session context (fallback)
         $session = SWML_Session_Manager::get_active_session($user_id);
-        if (!$session || empty($session['context'])) {
-            // No session — if AI Engine didn't load instructions, load them manually
+
+        if ($has_request_context) {
+            // Use request context directly — most reliable source
+            $context = $swml_request_context;
+            // Merge any session fields not in request context
+            if ($session && !empty($session['context'])) {
+                $context = array_merge($session['context'], array_filter($swml_request_context));
+            }
+            error_log("WML Router: Using request context, task={$context['task']}, board={$context['board']}");
+        } elseif ($session && !empty($session['context'])) {
+            $context = $session['context'];
+        } else {
+            // No context at all — fallback to chatbot instructions
             if (empty(trim($query->instructions ?? ''))) {
                 $chatbot_instructions = $this->load_chatbot_instructions($bot_id);
                 if (!$chatbot_instructions) {
@@ -151,13 +173,11 @@ class SWML_Protocol_Router {
                 }
                 if ($chatbot_instructions) {
                     $query->instructions = $chatbot_instructions;
-                    error_log("WML Router: No session, loaded instructions manually, " . strlen($chatbot_instructions) . " chars");
+                    error_log("WML Router: No session or request context, loaded instructions manually, " . strlen($chatbot_instructions) . " chars");
                 }
             }
             return $query;
         }
-
-        $context = $session['context'];
 
         // ── Board-based chatbot routing ──
         $board = $context['board'] ?? 'aqa';

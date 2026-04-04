@@ -314,7 +314,32 @@
                 // v7.14.36: All canvas environments — training (protocol), free (independent), flexible (inline-AI)
                 state.canvasTimer = 0;
                 state.step = 0;
-                WML.renderCanvasWorkspace();
+                // v7.14.43: Create session BEFORE rendering canvas so Protocol Router has correct task context.
+                // Without this, training-env exercises (mark_scheme, planning, polishing) in embedded mode
+                // never create a session, so the Protocol Router falls back to generic instructions.
+                // Session MUST exist before the first chat message (silent auto-send fires after 400ms).
+                if (exerciseConfig.environment === 'training') {
+                    state.sessionId = '';
+                    state.chatId = '';
+                    apiPost(API.session, {
+                        mode: state.mode || 'exam_prep', board: state.board, subject: state.subject,
+                        text: state.text, unit_id: state.unitId, task: state.task,
+                        type: state.courseType, redraft: state.isRedraft ? '1' : '',
+                        question: state.question, marks: state.marks, aos: state.aos,
+                        topic_number: state.topicNumber || 0, topic_label: state.topicLabel || '',
+                        draft_type: state.draftType || '', phase: state.phase || '',
+                        poem: state.poem || '', poem_title: state.poemTitle || '',
+                    }).then(res => {
+                        if (res.session_id) { state.sessionId = res.session_id; state.chatId = res.session_id; }
+                        console.log('WML Embedded: Session created for training env, task=' + state.task);
+                        WML.renderCanvasWorkspace();
+                    }).catch(e => {
+                        console.warn('WML Embedded: Session creation failed, rendering anyway:', e);
+                        WML.renderCanvasWorkspace();
+                    });
+                } else {
+                    WML.renderCanvasWorkspace();
+                }
             } else if (state.task === 'conceptual_notes') {
                 state.draftType = 'notes';
                 state.phase = null;

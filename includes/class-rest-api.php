@@ -518,7 +518,7 @@ class SWML_REST_API {
         $user = get_userdata($user_id);
         $first_name = $user ? ($user->first_name ?: $user->display_name) : 'there';
 
-        // Signal to Protocol Router
+        // Signal to Protocol Router — globals read by inject_session_context()
         global $swml_active_bot_id;
         $swml_active_bot_id = $bot_id;
         global $swml_chat_history;
@@ -526,6 +526,20 @@ class SWML_REST_API {
         global $swml_plan_state, $swml_current_step, $swml_current_subject;
         $swml_plan_state = $params['planState'] ?? [];
         $swml_current_step = absint($params['step'] ?? 1);
+        // v7.14.45: Pass frontend context directly to Protocol Router via globals.
+        // This bypasses session storage timing issues (WP object cache may not reflect
+        // update_user_meta immediately within the same request).
+        global $swml_request_context;
+        $swml_request_context = [
+            'board'   => sanitize_text_field($params['board'] ?? ''),
+            'subject' => sanitize_text_field($params['subject'] ?? ''),
+            'task'    => sanitize_text_field($params['task'] ?? ''),
+            'text'    => sanitize_text_field($params['text'] ?? ''),
+            'step'    => absint($params['step'] ?? 1),
+            'topic_number' => absint($params['topicNumber'] ?? 0),
+            'phase'   => sanitize_text_field($params['phase'] ?? ''),
+            'marks'   => absint($params['marks'] ?? 0),
+        ];
 
         // Session context: prefer params sent with chat request (authoritative),
         // fall back to wml_active_session only if params not provided.
@@ -543,6 +557,20 @@ class SWML_REST_API {
                 $session['context']['subject'] = $req_subject;
                 $session['context']['task']    = $req_task;
                 SWML_Session_Manager::save_session($user_id, $session['session_id'], $session['context']);
+            } else {
+                // v7.14.44: No session exists yet — create one on the fly so Protocol Router
+                // gets the correct task context (fixes mark_scheme, planning, polishing protocols)
+                $new_context = [
+                    'board' => $req_board, 'subject' => $req_subject, 'task' => $req_task,
+                    'text' => sanitize_text_field($params['text'] ?? ''),
+                    'step' => absint($params['step'] ?? 1),
+                    'topic_number' => absint($params['topicNumber'] ?? 0),
+                    'phase' => sanitize_text_field($params['phase'] ?? ''),
+                ];
+                $new_session_id = 'chat_' . wp_generate_uuid4();
+                SWML_Session_Manager::save_session($user_id, $new_session_id, $new_context);
+                $session = ['session_id' => $new_session_id, 'context' => $new_context];
+                error_log("WML REST: Created on-the-fly session for task={$req_task}");
             }
             $swml_current_subject = $req_subject;
         } else {

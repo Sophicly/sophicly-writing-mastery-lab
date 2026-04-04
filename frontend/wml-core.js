@@ -1015,7 +1015,10 @@ window.WML = (function() {
     // v7.13.34: CW dynamic lookup — resolves cw_step_X / cw_trial_X to the correct base config
     function getExerciseConfig(task) {
         if (EXERCISE_MANIFEST[task]) return EXERCISE_MANIFEST[task];
-        if (task && task.startsWith('cw_')) {
+        // v7.14.44: Empty/null task = diagnostic (write-only canvas). Was incorrectly falling
+        // through to planning, causing diagnostics to load training env with chat + sidebar.
+        if (!task) return EXERCISE_MANIFEST.diagnostic;
+        if (task.startsWith('cw_')) {
             const stepDef = getCwStepDef(task);
             if (stepDef) {
                 const base = stepDef.tier === 'si' ? EXERCISE_MANIFEST.cw_si : EXERCISE_MANIFEST.cw_workbook;

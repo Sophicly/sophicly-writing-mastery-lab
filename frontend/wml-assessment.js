@@ -2040,41 +2040,9 @@
                 rightPanel.appendChild(qWrap);
             }
 
-            // Completion buttons
-            const compWrap = el('div', { style: { marginTop: 'auto' } });
-            const fbCompleteKey = `swml_fb_complete_${state.board}_${state.text}_t${state.topicNumber || 0}${fbCfg.storageKeySuffix}`;
-            const fbStatus = localStorage.getItem(fbCompleteKey);
-
-            if (fbStatus === 'complete' || fbStatus === 'skipped') {
-                compWrap.appendChild(el('div', { className: 'swml-feedback-done', innerHTML: fbStatus === 'complete'
-                    ? `<span style="color:#1CD991">${fbCfg.completeMsg}</span>`
-                    : `<span style="color:#F1C40F">${fbCfg.skipMsg}</span>` }));
-            } else {
-                const doneBtn = build3DButton(fbCfg.completeLabel, 'Done!', () => {
-                    showConfirm(fbCfg.completeConfirm, () => {
-                        try { localStorage.setItem(fbCompleteKey, 'complete'); } catch (e) {}
-                        apiPost(API.planElement, { type: 'feedback_discussion', content: JSON.stringify({ status: 'complete', method: 'self', completedAt: new Date().toISOString() }), step: 0 }).catch(() => {});
-                        doneBtn.style.display = 'none';
-                        skipBtn.style.display = 'none';
-                        compWrap.appendChild(el('div', { className: 'swml-feedback-done', innerHTML: `<span style="color:#1CD991">${fbCfg.completeMsg}</span>` }));
-                        showToast(fbCfg.completeToast, 4000, true);
-                    }, { confirmText: 'Yes, I\'m done' });
-                });
-                compWrap.appendChild(doneBtn);
-
-                const skipBtn = el('button', { className: 'swml-feedback-skip-btn', textContent: 'Skip — Come Back Later', onClick: () => {
-                    showConfirm('You can skip this for now, but completing it will help you write a better redraft.', () => {
-                        try { localStorage.setItem(fbCompleteKey, 'skipped'); } catch (e) {}
-                        apiPost(API.planElement, { type: 'feedback_discussion', content: JSON.stringify({ status: 'skipped', method: 'self', completedAt: new Date().toISOString() }), step: 0 }).catch(() => {});
-                        doneBtn.style.display = 'none';
-                        skipBtn.style.display = 'none';
-                        compWrap.appendChild(el('div', { className: 'swml-feedback-done', innerHTML: `<span style="color:#F1C40F">${fbCfg.skipMsg}</span>` }));
-                        showToast(fbCfg.skipToast, 4000, true);
-                    }, { confirmText: 'Skip for now', danger: true });
-                }});
-                compWrap.appendChild(skipBtn);
-            }
-            rightPanel.appendChild(compWrap);
+            // v7.14.45: Completion buttons suppressed — LearnDash handles Mark Complete and navigation.
+            // Buttons were: "I've Studied the Model Answer", "Skip — Come Back Later"
+            // Will be re-enabled when LearnDash bridge completion detection is built.
 
             // Auto-scroll to feedback section + open video player after document loads
             // Use polling instead of fixed timeout — async migration chain may not have finished
@@ -2703,7 +2671,9 @@
                                         // Retrieve essay question from document
                                         const qText = extractEssayQuestion(canvasEditor);
                                         const questionInfo = qText ? `\n\nYour essay question: **${qText}**` : '';
-                                        const gt = `Hi ${fn}! Welcome to the assessment phase. I've received your ${tn} diagnostic essay (${wc} words). Let's review your writing together.${questionInfo}\n\nBefore I begin marking, I need to know: **what grade are you aiming for?** This helps me tailor my feedback to where you want to be.`;
+                                        // v7.14.43: Context-aware greeting — exam practice has no "diagnostic"
+                                        const essayLabel = (state.mode === 'exam_prep') ? `${tn} essay` : `${tn} diagnostic essay`;
+                                        const gt = `Hi ${fn}! Welcome to the assessment phase. I've received your ${essayLabel} (${wc} words). Let's review your writing together.${questionInfo}\n\nBefore I begin marking, I need to know: **what grade are you aiming for?** This helps me tailor my feedback to where you want to be.`;
                                         addChatMessage(formatAI(gt), 'ai', gt);
                                         canvasChatHistory.push({ role: 'assistant', content: gt });
                                         saveCanvasChat(canvasChatHistory, canvasChatId);
@@ -3470,8 +3440,32 @@
                                                 } catch (err) { console.warn('WML Canvas: extraction chain failed:', err); }
                                             }
 
+                                            // v7.14.44: Re-add grade quick action buttons if chat only has the greeting
+                                            // (grade buttons are DOM elements that don't persist in saved history)
+                                            const userMsgs = savedChat.history.filter(m => m.role === 'user');
+                                            const aiMsgs = savedChat.history.filter(m => m.role === 'assistant');
+                                            if (canvasInAssessment && !canvasInMarkScheme && !canvasInFeedback && !isCwTask
+                                                && aiMsgs.length === 1 && userMsgs.length === 0) {
+                                                setTimeout(() => {
+                                                    const lastBubble = chatMessages.lastElementChild;
+                                                    if (lastBubble && !lastBubble.querySelector('.swml-quick-actions')) {
+                                                        const gradeBar = el('div', { className: 'swml-quick-actions' });
+                                                        ['Grade 9', 'Grade 8', 'Grade 7'].forEach(g => {
+                                                            gradeBar.appendChild(el('button', {
+                                                                className: 'swml-quick-btn',
+                                                                textContent: g,
+                                                                onClick: () => { gradeBar.remove(); chatTextarea.value = g; sendCanvasMessage(); }
+                                                            }));
+                                                        });
+                                                        const bc = lastBubble.querySelector('.swml-bubble-content') || lastBubble;
+                                                        bc.appendChild(gradeBar);
+                                                        console.log('WML: Restored grade buttons on resumed greeting');
+                                                    }
+                                                }, 100);
+                                            }
+
                                             // Scroll to bottom after replay
-                                            setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 100);
+                                            setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 150);
                                         } else if (isExamPrep) {
                                             // v7.14.3: Exam prep — silent auto-send (no user bubble)
                                             setTimeout(() => {
@@ -3623,9 +3617,11 @@
                                             const questionSnippet = questionText ? `\n\nYour essay question: **${questionText}**` : '';
                                             const questionHTML = questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your essay question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
                                             const firstName = (config.userName || '').split(' ')[0] || 'there';
-                                            const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessTextName} diagnostic essay (${assessWc} words). Let's review your writing together.${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
+                                            // v7.14.43: Context-aware greeting — exam practice has no "diagnostic"
+                                            const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} essay` : `${assessTextName} diagnostic essay`;
+                                            const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
                                             const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all 8 steps to receive your full score, grade, and personalised feedback.</div>';
-                                            addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> diagnostic essay (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
+                                            addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? 'essay' : 'diagnostic essay'} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
                                             canvasChatHistory.push({ role: 'assistant', content: greetingText });
                                             saveCanvasChat(canvasChatHistory, canvasChatId);
 
@@ -7098,10 +7094,17 @@
         const label = partLabel ? `Question & Extract — ${partLabel}` : 'Question & Extract';
         let inner = '';
         if (extractText) {
+            // v7.14.43: Decode HTML entities (e.g. &nbsp;) before escaping — extract data may contain pre-encoded entities
+            let cleanExtract = extractText;
+            if (cleanExtract.includes('&')) {
+                const tmp = document.createElement('textarea');
+                tmp.innerHTML = cleanExtract;
+                cleanExtract = tmp.value;
+            }
             inner += `<h3>Extract</h3>`;
             if (extractLocation) inner += `<p><em>${escapeHTML(extractLocation)}</em></p>`;
             // Preserve line breaks in extract
-            const lines = extractText.split('\n').map(l => `<p>${escapeHTML(l) || '&nbsp;'}</p>`).join('');
+            const lines = cleanExtract.split('\n').map(l => `<p>${escapeHTML(l) || '&nbsp;'}</p>`).join('');
             inner += lines;
             inner += `<h3>Question</h3>`;
         }
@@ -7163,35 +7166,40 @@
             sectionHTML('plan', `Plan: Conclusion${prefix}`, true, null, inputHTML('Call to action. Leave a lasting image.', 'iumvcc-conclusion'));
     }
 
+    // v7.14.46: Outline section — uses InputFields with criterion labels.
+    // TipTap doesn't have a Table extension, so we use InputFields (which TipTap manages)
+    // with CSS-styled criterion labels above each field.
     function buildOutlineSection(aos, partLabel, marks) {
         const aoList = (aos || 'AO1,AO2,AO3').split(',').map(a => a.trim());
-        const aoPrompts = {
-            AO1: 'What is the writer saying about human life? (Key ideas & interpretations)',
-            AO2: 'How does the writer say it? (Language, structure, symbolism)',
-            AO3: 'Why does the writer say it? (Context — social, historical, cultural)',
-            AO4: 'How does this compare to the other text? (Connections & contrasts)',
-        };
         const fullEssay = needsFullEssayStructure(marks);
         const prefix = partLabel ? ` — ${partLabel}` : '';
         let html = '';
         if (fullEssay) {
             html += sectionHTML('outline', `Outline: Introduction${prefix}`, true, null,
-                inputHTML('Hook (AO1): Quote, question, metaphor, or historical fact', 'outline-intro-hook') +
-                inputHTML('Building sentences (AO3): Context / counter-argument', 'outline-intro-building') +
-                inputHTML('Thesis (AO1): Key idea 1, Key idea 2, Key idea 3', 'outline-intro-thesis'));
+                inputHTML('Hook (AO1/AO3): An intriguing concept or contextual observation', 'outline-intro-hook') +
+                inputHTML('Building Sentences (AO3): Contextual backdrop \u2014 historical, social, or cultural', 'outline-intro-building') +
+                inputHTML('Thesis (AO1): Your 3-point argument \u2014 three key ideas that answer the question', 'outline-intro-thesis'));
             const bodyCount = marks >= 40 ? 4 : 3;
             for (let i = 1; i <= bodyCount; i++) {
                 html += sectionHTML('outline', `Outline: Body Paragraph ${i}${prefix}`, true, null,
-                    inputHTML(`WHAT? Topic sentence (AO1): Key idea ${i}`, `outline-body-${i}-what`) +
-                    inputHTML('HOW? Supporting sentences (AO2): Terminology → Evidence → Close analysis → Effects', `outline-body-${i}-how`) +
-                    inputHTML("WHY? Concluding sentences (AO2/AO3): Author's purpose / context", `outline-body-${i}-why`));
+                    inputHTML(`Topic Sentence (AO1): A conceptual idea linking to your thesis`, `outline-body-${i}-topic`) +
+                    inputHTML('Evidence + Technique (AO1/AO2): Quote + name the technique. Integrate, don\'t bolt on', `outline-body-${i}-evidence`) +
+                    inputHTML('Close Analysis (AO2): Examine specific words, sounds, or structural choices', `outline-body-${i}-analysis`) +
+                    inputHTML('Effects on Reader (AO2): Two specific emotional or intellectual effects', `outline-body-${i}-effects`) +
+                    inputHTML("Author's Purpose + Context (AO1/AO3): Why these choices? Link to context", `outline-body-${i}-purpose`));
             }
             html += sectionHTML('outline', `Outline: Conclusion${prefix}`, true, null,
-                inputHTML('Restated thesis (AO1)', 'outline-conclusion-thesis') +
-                inputHTML('Controlling concept (AO1): Link thesis to central theme', 'outline-conclusion-concept') +
-                inputHTML("Central purpose (AO1/AO3): How does this reflect the author's purpose?", 'outline-conclusion-purpose') +
-                inputHTML('Universal message (AO1): What is the MAIN message of the text?', 'outline-conclusion-message'));
+                inputHTML('Restated Thesis (AO1): Restate your argument \u2014 evolved, not repeated', 'outline-conclusion-thesis') +
+                inputHTML('Controlling Concept (AO1): The single most important idea connecting your paragraphs', 'outline-conclusion-concept') +
+                inputHTML("Author's Central Purpose (AO1/AO3): What the text ultimately argues or reveals", 'outline-conclusion-purpose') +
+                inputHTML('Universal Message (AO1): The broader moral or idea that transcends the text', 'outline-conclusion-message'));
         } else {
+            const aoPrompts = {
+                AO1: 'What is the writer saying about human life? (Key ideas & interpretations)',
+                AO2: 'How does the writer say it? (Language, structure, symbolism)',
+                AO3: 'Why does the writer say it? (Context \u2014 social, historical, cultural)',
+                AO4: 'How does this compare to the other text? (Connections & contrasts)',
+            };
             const paraCount = getParagraphCount(marks);
             for (let i = 1; i <= paraCount; i++) {
                 let aoInner = '';
@@ -7850,7 +7858,29 @@
         return html;
     }
 
+    /**
+     * Outline Table — v7.14.43: Two-column structured outline for Phase 2 redraft planning.
+     * Left column = read-only criterion (AO-tagged), right column = editable student response.
+     * Board-aware: criteria adapt to the board's AO structure and mark allocations.
+     * @param {object} topicData — topic question data (optional, for question text)
+     * @returns {string} TipTap-compatible HTML
+     */
+    // v7.14.44: Standalone outline table template — uses shared outlineTableHTML helper
+    function getOutlineTableTemplate(topicData) {
+        let html = '';
+        const questionText = topicData?.question || topicData?.part_a_question || '';
+        html += dividerHTML('Essay Outline');
+        html += sectionHTML('question', 'Question', false, null,
+            questionText ? `<p>${escapeHTML(questionText)}</p>` : `<p><em>The essay question will appear here.</em></p>`);
+        // Reuse buildOutlineSection for full structure
+        const marks = parseInt(topicData?.marks) || 34;
+        const aos = topicData?.aos || 'AO1,AO2,AO3';
+        html += buildOutlineSection(aos, null, marks);
+        return html;
+    }
+
     // Expose exercise templates on WML namespace (v7.13.17)
+    WML.getOutlineTableTemplate = getOutlineTableTemplate;
     WML.getExamQuestionTemplate = getExamQuestionTemplate;
     WML.getEssayPlanTemplate = getEssayPlanTemplate;
     WML.getModelAnswerTemplate = getModelAnswerTemplate;
@@ -8572,6 +8602,8 @@
             }
             return;
         }
+
+
 
         // Already has section blocks? Don't overwrite (user resumed a saved document)
         const currentHTML = canvasEditor.getHTML();
@@ -9527,7 +9559,9 @@ ${html}
             guidePanel.appendChild(questionsWrap);
         }
 
-        // ── Completion Buttons — driven by config ──
+        // v7.14.45: Completion + navigation buttons suppressed — LearnDash handles lesson completion
+        // and exercise sequencing. Will re-enable when LD bridge is built.
+        if (false) { // Suppressed
         const completionWrap = el('div', { className: 'swml-feedback-completion', style: { marginTop: 'auto' } });
 
         const fbCompleteKey = `swml_fb_complete_${state.board}_${state.text}_t${state.topicNumber || 0}${cfg.storageKeySuffix}`;
@@ -9591,46 +9625,10 @@ ${html}
         }
 
         guidePanel.appendChild(completionWrap);
+        } // end if(false) — v7.14.45 suppression
 
-        // ── Sequence Navigation for lightweight canvas (v7.12.85) ──
-        // v7.14.13: Skip for diagnostic (task='') — LearnDash handles exercise transitions
-        if (state.topicNumber && state.task) {
-            const FB_PHASE1_SEQ = [
-                { id: 'diagnostic', task: '', label: 'Write Essay', render: () => { state.task = ''; state.canvasTimer = 0; window.WML.renderCanvasWorkspace(); } },
-                { id: 'assessment', task: 'assessment', label: 'Get Assessed', render: () => { state.task = 'assessment'; state.canvasTimer = 0; state.step = 0; window.WML.renderCanvasWorkspace(); } },
-                { id: 'feedback_discussion', task: 'feedback_discussion', label: 'Discuss Feedback', render: () => { state.task = 'feedback_discussion'; window.WML.renderFeedbackDiscussionCanvas(); } },
-            ];
-            const FB_PHASE2_SEQ = [
-                { id: 'mark_scheme', task: 'mark_scheme', label: 'Mark Scheme', render: () => { state.task = 'mark_scheme'; state.canvasTimer = 0; window.WML.renderCanvasWorkspace(); } },
-                { id: 'model_answer', task: 'model_answer_video', label: 'Model Answer', render: () => { state.task = 'model_answer_video'; window.WML.renderFeedbackDiscussionCanvas(); } },
-                { id: 'planning', task: 'planning', label: 'Plan Redraft', render: () => { window.WML.selectTask('planning'); } },
-                { id: 'outlining', task: 'outlining', label: 'Outline Essay', render: () => { window.WML.selectTask('outlining'); } },
-                { id: 'polishing', task: 'polishing', label: 'Polish Essay', render: () => { window.WML.selectTask('polishing'); } },
-                { id: 'reassessment', task: 'assessment', label: 'Get Reassessed', render: () => { state.task = 'assessment'; state.canvasTimer = 0; state.step = 0; window.WML.renderCanvasWorkspace(); } },
-            ];
-            const fbSeq = state.phase === 'redraft' ? FB_PHASE2_SEQ : FB_PHASE1_SEQ;
-            const fbCurrentIdx = fbSeq.findIndex(s => s.task === taskKey);
-            if (fbCurrentIdx >= 0) {
-                const fbNavWrap = el('div', { className: 'swml-seq-nav' });
-                const fbPrev = fbCurrentIdx > 0 ? fbSeq[fbCurrentIdx - 1] : null;
-                const fbNext = fbCurrentIdx < fbSeq.length - 1 ? fbSeq[fbCurrentIdx + 1] : null;
-                if (fbPrev) {
-                    fbNavWrap.appendChild(el('button', {
-                        className: 'swml-seq-btn swml-seq-prev',
-                        innerHTML: `<span class="swml-seq-arrow">\u2190</span> <span class="swml-seq-label">${fbPrev.label}</span>`,
-                        onClick: () => { closeCanvasOverlay(); fbPrev.render(); }
-                    }));
-                }
-                if (fbNext) {
-                    fbNavWrap.appendChild(el('button', {
-                        className: 'swml-seq-btn swml-seq-next',
-                        innerHTML: `<span class="swml-seq-label">${fbNext.label}</span> <span class="swml-seq-arrow">\u2192</span>`,
-                        onClick: () => { closeCanvasOverlay(); fbNext.render(); }
-                    }));
-                }
-                guidePanel.appendChild(fbNavWrap);
-            }
-        }
+        // v7.14.45: Sequence navigation suppressed — LearnDash handles exercise transitions.
+        // Was: Previous/Next buttons for Phase 1 and Phase 2 step sequences.
 
         contentArea.appendChild(guidePanel);
         canvas.appendChild(contentArea);

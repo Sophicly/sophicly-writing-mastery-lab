@@ -1024,6 +1024,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 /* ── Single Header Row ── */
 .swml-canvas-header {
     position: relative;
+    z-index: 10; /* v7.14.43: above outline button column (z:8) so badges aren't overlapped */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1640,11 +1641,11 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     margin: 0 -30px 0 12px;
     width: 30px;
 }
-/* Outline trigger — inside btn-column */
+/* Outline trigger — inside btn-column (v7.14.43: solid background, not see-through) */
 .swml-outline-btn {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.06);
-    color: rgba(255,255,255,0.4);
+    background: #2a2b2d;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5);
     cursor: pointer;
     padding: 6px;
     border-radius: 8px;
