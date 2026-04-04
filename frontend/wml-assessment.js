@@ -3063,15 +3063,13 @@
                                 const subjectName = (state.subject || '').replace(/_/g, ' ');
                                 const textName = state.textName || state.text || '';
 
-                                // v7.12.98: Mark scheme gets different context labelling
+                                // v7.14.46: Mark scheme is a chat-only quiz — no document injection.
+                                // The protocol (shakespeare.md etc.) drives the quiz via chat.
                                 if (canvasInMarkScheme) {
-                                    const docContent = canvasEditor ? canvasEditor.getText() : '';
                                     if (userMsgCount === 1) {
-                                        promptText = `[CONTEXT: ${boardName} ${subjectName} — ${textName} — MARK SCHEME SELF-ASSESSMENT]\n[MARK SCHEME DOCUMENT — student's self-ratings and reflections so far]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
-                                    } else {
-                                        promptText = `[MARK SCHEME DOCUMENT — current state of student's self-ratings]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                                        promptText = `[CONTEXT: ${boardName} ${subjectName} — ${textName} — MARK SCHEME QUIZ]\n[STUDENT'S RESPONSE]\n${msg}`;
                                     }
-                                    console.log('WML Canvas: Mark scheme doc injected. Length:', docContent.length);
+                                    // No document content injected — quiz protocol handles everything
                                 } else if (state.task === 'planning' || state.task === 'polishing') {
                                     // v7.14.39: Planning/polishing — inject FULL document (not just response) so AI can see question, plan, etc.
                                     const docContent = canvasEditor ? canvasEditor.getText() : '';
