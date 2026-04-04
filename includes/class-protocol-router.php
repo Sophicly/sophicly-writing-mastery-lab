@@ -387,14 +387,36 @@ class SWML_Protocol_Router {
 
         $plugin_dir = plugin_dir_path(dirname(__FILE__));
 
-        // Mark Scheme Assessment: structured protocol + preamble complement (v7.14.38)
+        // Mark Scheme Assessment: subject-specific quiz protocols (v7.14.46)
+        // Protocols live in protocols/shared/mark-scheme/{subject}.md
+        // Full question bank + scoring + feedback for each subject type
         if ($task === 'mark_scheme') {
-            $ms_path = $plugin_dir . 'protocols/shared/modules/mark-scheme-assessment.md';
+            $ms_subject_map = [
+                'shakespeare'        => 'shakespeare.md',
+                'modern_text'        => 'modern_text.md',
+                '19th_century'       => '19th_century.md',
+                'poetry_anthology'   => 'poetry_anthology.md',
+                'unseen_poetry'      => 'poetry_anthology.md', // shares anthology protocol
+                'language_paper_1'   => 'language1.md',
+                'language_paper_2'   => 'language2.md',
+                'language1'          => 'language1.md',
+                'language2'          => 'language2.md',
+            ];
+            $ms_file = $ms_subject_map[$subject] ?? 'shakespeare.md'; // default to shakespeare
+            $ms_path = $plugin_dir . 'protocols/shared/mark-scheme/' . $ms_file;
             if (file_exists($ms_path)) {
                 $content = file_get_contents($ms_path);
+                error_log("WML Router: Loaded mark-scheme protocol: {$ms_file} (" . strlen($content) . " chars) for subject={$subject}");
                 return !empty(trim($content)) ? $content : null;
             }
-            error_log('WML Router: mark-scheme-assessment.md not found at ' . $ms_path);
+            // Fallback to generic mark-scheme-assessment.md
+            $fallback = $plugin_dir . 'protocols/shared/modules/mark-scheme-assessment.md';
+            if (file_exists($fallback)) {
+                error_log("WML Router: mark-scheme/{$ms_file} not found, using generic fallback");
+                $content = file_get_contents($fallback);
+                return !empty(trim($content)) ? $content : null;
+            }
+            error_log("WML Router: No mark-scheme protocol found for subject={$subject}");
             return null;
         }
 
