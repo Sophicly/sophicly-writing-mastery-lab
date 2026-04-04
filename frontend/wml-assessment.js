@@ -8598,6 +8598,8 @@
             const msTemplate = getMarkSchemeTemplate(topicData);
             if (canvasEditor) {
                 canvasEditor.commands.setContent(msTemplate, false);
+                snapshotTemplateBaseline(canvasEditor); // v7.14.46: fix word count showing template text
+                refreshWordCountUI();
                 console.log('WML: Mark scheme template injected');
             }
             return;
