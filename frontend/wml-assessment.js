@@ -3600,8 +3600,9 @@
 
                                             console.log('WML CW: Greeting shown for', state.task);
                                             }, 400);
-                                        } else {
+                                        } else if (!canvasInMarkScheme) {
                                             // Fresh start: show greeting (delay to let CharacterCount sync)
+                                            // v7.14.47: Mark scheme excluded — it uses silent auto-send to quiz protocol
                                             setTimeout(() => {
                                             const assessTextName = state.textName || state.text || 'your text';
                                             // v7.14.28: Use response-only word count — no fallback to full doc count

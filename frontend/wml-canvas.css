@@ -1418,7 +1418,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     max-height: calc(100vh - 140px);
     margin: -30px -220px 0 8px; /* Pull up to overlap hidden button, float over content */
     border-radius: 10px;
-    background: #1c1d1f; /* v7.14.47: match WML dark theme — no backdrop-filter (Chrome flickers) */
+    background: #28292b; /* v7.14.47: match document alt colour — no backdrop-filter (Chrome flickers) */
     border: 1px solid rgba(255,255,255,0.08);
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
     z-index: 10;
