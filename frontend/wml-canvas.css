@@ -1418,10 +1418,8 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     max-height: calc(100vh - 140px);
     margin: -30px -220px 0 8px; /* Pull up to overlap hidden button, float over content */
     border-radius: 10px;
-    background: oklch(0.30 0.015 280 / 0.95); /* #343440 */
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid oklch(0.38 0.01 270); /* oklch(0.38 0.01 270) */
+    background: #1c1d1f; /* v7.14.47: match WML dark theme — no backdrop-filter (Chrome flickers) */
+    border: 1px solid rgba(255,255,255,0.08);
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
     z-index: 10;
     overflow: hidden;

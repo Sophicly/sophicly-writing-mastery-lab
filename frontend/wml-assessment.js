@@ -2503,9 +2503,10 @@
                             );
                         }
                         // Topic / mode badge
-                        if (state.topicNumber && state.mode === 'guided') {
+                        // v7.14.47: Mark scheme always shows topic if available, never "Exam Practice"
+                        if (state.topicNumber && (state.mode === 'guided' || canvasInMarkScheme)) {
                             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Topic ${state.topicNumber}` }));
-                        } else if (state.mode === 'exam_prep') {
+                        } else if (state.mode === 'exam_prep' && !canvasInMarkScheme) {
                             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Exam Practice' }));
                         }
                         // v7.14.41: Context-aware task label — mastery uses redraft names, free practice uses manifest label
@@ -3340,17 +3341,14 @@
                                                 try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
                                             }
                                         }
-                                        // v7.14.41: Discard ALL cached mark_scheme chats — protocol now drives greeting via silent auto-send.
-                                        // Old hardcoded greetings (pre-v7.14.39) must not replay.
+                                        // v7.14.47: Discard ALL cached mark_scheme chats — the quiz protocol MUST
+                                        // drive from scratch. Any saved chat (stale greetings, old self-assessment
+                                        // form conversations, or generic assessment greetings) would confuse the
+                                        // quiz flow and cause Q1 to be skipped.
                                         if (canvasInMarkScheme && savedChat && savedChat.history && savedChat.history.length > 0) {
-                                            const firstAI = savedChat.history.find(m => m.role === 'assistant');
-                                            // v7.14.39+ chats are initiated by "Let's begin the mark scheme assessment" (user msg, silent).
-                                            // Any chat where the first AI message contains "assessment phase" or "7 sections together" is stale.
-                                            if (firstAI && (firstAI.content.includes('assessment phase') || firstAI.content.includes('7 sections together'))) {
-                                                console.log('WML Canvas: Discarding stale mark_scheme chat (pre-v7.14.39 hardcoded greeting)');
-                                                savedChat = null;
-                                                try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
-                                            }
+                                            console.log('WML Canvas: Discarding saved mark_scheme chat — protocol must drive from scratch');
+                                            savedChat = null;
+                                            try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
                                         }
                                         // v7.13.36: Discard stale chat for CW exercises — check that saved chat belongs to this exercise type
                                         if (isCwSi && savedChat && savedChat.history && savedChat.history.length > 0) {
