@@ -367,9 +367,15 @@ class SWML_Protocol_Router {
 
         $plugin_dir = plugin_dir_path(dirname(__FILE__));
 
-        // Mark Scheme Assessment: preamble-driven (no protocol file needed) (v7.12.93)
+        // Mark Scheme Assessment: structured protocol + preamble complement (v7.14.38)
         if ($task === 'mark_scheme') {
-            return null; // preamble provides all instructions
+            $ms_path = $plugin_dir . 'protocols/shared/modules/mark-scheme-assessment.md';
+            if (file_exists($ms_path)) {
+                $content = file_get_contents($ms_path);
+                return !empty(trim($content)) ? $content : null;
+            }
+            error_log('WML Router: mark-scheme-assessment.md not found at ' . $ms_path);
+            return null;
         }
 
         // Memory Practice: universal single-file protocol — load directly, skip manifest
@@ -1951,6 +1957,10 @@ TEMPLATE;
         $preamble .= "\nAlso call `update_progress` when moving to a new section.\n";
         $preamble .= "\n**DYNAMIC UPDATES:** If the student wants to change a previously saved element (e.g. change their question, update a quote, revise a goal), call `save_session_element` again with the same `element_type` and the new `content`. This will overwrite the old value. Always confirm the change with the student before saving.\n";
 
+        // v7.14.39: Notes reference update — the note-taking app has replaced the workbook Notes section
+        $preamble .= "\n### NOTES REFERENCE OVERRIDE\n";
+        $preamble .= "The protocol may reference 'the Notes section at the end of your workbook'. This is OUTDATED. Instead, tell the student: \"If you find any ideas useful but not right for this specific task, use the **Take Notes** button on the right side of your screen to save them for later.\"\n";
+
         // Protocol compliance reinforcement
         $preamble .= "\n### PROTOCOL COMPLIANCE RULES\n";
         $preamble .= "- Follow EVERY teaching step EXACTLY as written in the protocol. Do not summarise, abbreviate, compress, or skip steps.\n";
@@ -1976,6 +1986,23 @@ TEMPLATE;
             $preamble .= "4. Deliver CHUNK 4 (teaching benefit) → wait for A/B confirmation to proceed to quote selection\n";
             $preamble .= "If a student submits a quote BEFORE all 4 chunks are delivered, REJECT it with: \"Great that you're already thinking about quotes! But before we select them, I need to explain WHY we choose quotes from the beginning, middle, and end — this understanding will help you make much stronger choices. Let me walk you through it first.\"\n";
             $preamble .= "Then deliver from CHUNK 1 onwards. Do NOT skip ANY chunk. Do NOT combine chunks.\n";
+
+            // v7.14.39: Question detection for mastery programme
+            // v7.14.41: Question detection — mastery vs free practice
+            $is_mastery = !empty($context['phase']) && !empty($context['topicNumber']);
+            $preamble .= "\n### QUESTION DETECTION (B.1 Step 4 — Question Selection)\n";
+            $preamble .= "The student's FULL document (including the Question & Extract section) is injected into every message.\n";
+            $preamble .= "Look for: a 'Question & Extract' section, or text that reads like an exam question (e.g. 'How does Shakespeare present...', 'Starting with this extract...').\n\n";
+            if ($is_mastery) {
+                $preamble .= "**MASTERY PROGRAMME MODE** — the essay question is COMPULSORY and pre-assigned to this topic.\n";
+                $preamble .= "- Do NOT ask for confirmation or offer A/B/C selection.\n";
+                $preamble .= "- Acknowledge the question, save it immediately with `save_session_element`, and move directly to goal setting.\n";
+                $preamble .= "- If the question is not found in the document, say 'I can see this is a mastery session but I couldn't find the pre-assigned question in your document. Could you check the Question & Extract section?'\n";
+            } else {
+                $preamble .= "**FREE PRACTICE MODE** — the student may or may not have a question.\n";
+                $preamble .= "- If the document ALREADY CONTAINS a question: acknowledge it, read it back, and offer A/B confirmation before saving.\n";
+                $preamble .= "- If the document does NOT contain a question: proceed with the normal A/B/C question selection flow (generate / saved / paste).\n";
+            }
         }
         } // end else (non-exam_question tasks)
 

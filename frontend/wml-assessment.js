@@ -705,7 +705,10 @@
         // v7.14.34: Added planning + polishing (Phase 2 canvas exercises)
         const _epTasks = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'planning', 'polishing'];
         const _epConfig = WML.getExerciseConfig(state.task);
+        // v7.14.39: Context-aware badge labels — mastery programme uses redraft-specific names
         const diagBadgeLabel = state.task === 'feedback_discussion' ? 'Discuss Feedback'
+            : state.task === 'planning' && state.phase === 'redraft' ? 'Plan Redraft'
+            : state.task === 'polishing' && state.phase === 'redraft' ? 'Polish Redraft'
             : _epTasks.includes(state.task) ? (_epConfig.chatHeaderLabel || ucfirst(state.task))
             : 'Diagnostic';
         const diagBadge = el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-diag', innerHTML: SVG_DIAGNOSTIC + diagBadgeLabel });
@@ -1755,13 +1758,16 @@
         const isCwWorkbook = isCwTask && cwStepDef?.tier === 'workbook';
         const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice'];
         const isExamPrep = EXAM_PREP_TASKS.includes(state.task);
-        let canvasInAssessment = state.task === 'assessment' || state.task === 'mark_scheme' || state.task === 'redraft_assessment' || isCwSi || isExamPrep;
+        // v7.14.37: Environment detection from manifest (free/training/flexible)
+        const envType = exerciseConfig?.environment || 'free';
+        const useTrainingEnv = envType === 'training';
+        let canvasInAssessment = useTrainingEnv; // legacy alias — all training env exercises get chat + sidebar
         const canvasInFeedback = state.task === 'feedback_discussion';
         const canvasInMarkScheme = state.task === 'mark_scheme';
         const canvasChatHeaderLabel = exerciseConfig.chatHeaderLabel || 'Essay Assessment';
         const canvasSidebarSteps = exerciseConfig.sidebarSteps || null;
         // v7.14.11: Diagnostic mode — hide assessment-only sections (feedback, scores, etc.)
-        const isDiagnosticEnv = !canvasInAssessment && !canvasInFeedback && !isCwTask;
+        const isDiagnosticEnv = envType === 'free' && !canvasInFeedback;
         if (isDiagnosticEnv) canvas.classList.add('swml-canvas-diagnostic');
 
         // Countdown timer — phase-aware: Phase 1 = 10 days, Phase 2 = 14 days (v7.12.99)
@@ -2441,7 +2447,7 @@
                     modal.innerHTML = `
                         <div class="swml-confirm-icon">${SVG_ICON_SAVE.replace('width="14"', 'width="32"').replace('height="14"', 'height="32"')}</div>
                         <h3>Ready to submit?</h3>
-                        <p>Your diagnostic essay will be saved and you'll move on to the <strong>assessment phase</strong>, where the AI will walk you through detailed feedback on your writing.</p>
+                        <p>Your essay will be saved${WML.isEmbedded ? ' and marked as complete.' : ' and you\'ll move on to the <strong>assessment phase</strong>, where the AI will walk you through detailed feedback on your writing.'}</p>
                         <p style="font-size:12px;opacity:0.6;">You won't be able to edit your essay after this point.</p>
                         <div class="swml-confirm-actions">
                             <button class="swml-confirm-cancel">← Keep writing</button>
@@ -2466,7 +2472,14 @@
                             diagCompleteBtn.style.cursor = 'default';
                         }
 
-                        // ── ASSESSMENT TRANSITION ──
+                        // v7.14.41: In embedded mode, exercises are standalone — no assessment transition.
+                        // Mark Complete just saves and shows "Complete" state. LD handles navigation.
+                        if (WML.isEmbedded) {
+                            console.log('WML Embedded: Diagnostic complete — no assessment transition (LD handles sequencing)');
+                            return;
+                        }
+
+                        // ── ASSESSMENT TRANSITION (standalone mode only) ──
                         // 1. Keep canvas editable (student may want to fix things during assessment)
 
                         // 2. Fade out diagnostic guidance content
@@ -2527,8 +2540,11 @@
                         } else if (state.mode === 'exam_prep') {
                             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Exam Practice' }));
                         }
-                        // v7.13.11: manifest-driven task label + phase indicator
-                        protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge active', textContent: exerciseConfig.label || 'Assessment' }));
+                        // v7.14.41: Context-aware task label — mastery uses redraft names, free practice uses manifest label
+                        const sidebarTaskLabel = (state.task === 'planning' && state.mode === 'guided') ? 'Plan Redraft'
+                            : (state.task === 'polishing' && state.mode === 'guided') ? 'Polish Redraft'
+                            : exerciseConfig.label || 'Assessment';
+                        protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge active', textContent: sidebarTaskLabel }));
                         if (state.phase === 'redraft') {
                             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Phase 2' }));
                         } else if (state.phase === 'initial') {
@@ -2612,76 +2628,23 @@
                         // Dashboard
                         protoSpacer.appendChild(iconBtn(SVG_DASHBOARD, 'My Dashboard', () => window.open('/dashboard/', '_blank')));
 
-                        // Back to Writing — smooth reverse transition
-                        // v7.13.34: CW exercises return to step dashboard instead of diagnostic
-                        protoSpacer.appendChild(iconBtn(SVG_BACK, isCwTask ? 'Back to Steps' : 'Back to Diagnostic', () => {
-                            if (isCwTask) {
-                                // Save current work before leaving
+                        // v7.14.41: CW exercises keep "Back to Steps" for CW dashboard navigation
+                        // All other exercises are standalone — no "Back to Diagnostic" transition (LD handles sequencing)
+                        if (isCwTask) {
+                            protoSpacer.appendChild(iconBtn(SVG_BACK, 'Back to Steps', () => {
                                 if (canvasEditor) saveCanvasContent();
-                                // Save as project artifact
                                 const artifactKey = WML.CW_ARTIFACT_MAP[cwStepDef?.step];
                                 if (artifactKey && state.cwProjectId && canvasEditor) {
                                     const content = canvasEditor.getHTML();
                                     WML.cwProject.saveArtifact(state.cwProjectId, artifactKey, content).catch(() => {});
                                 }
-                                // Return to CW dashboard
                                 if (typeof renderCreativeWritingDashboard === 'function') {
                                     renderCreativeWritingDashboard();
                                 } else if (WML.renderCreativeWritingDashboard) {
                                     WML.renderCreativeWritingDashboard();
                                 }
-                                return;
-                            }
-                            // Reset state when returning to diagnostic (v7.12.32)
-                            state.task = 'diagnostic';
-                            canvasInAssessment = false;
-
-                            // 1. Fade out assessment panel content (v7.12.45)
-                            protoPanel.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                            protoPanel.style.opacity = '0';
-                            protoPanel.style.transform = 'translateX(-20px)';
-                            chatPanel.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                            chatPanel.style.opacity = '0';
-                            chatPanel.style.transform = 'translateX(20px)';
-                            if (chatResizeHandle) { chatResizeHandle.style.transition = 'opacity 0.3s ease'; chatResizeHandle.style.opacity = '0'; }
-
-                            // 2. After fade: collapse assessment + expand diagnostic SIMULTANEOUSLY
-                            setTimeout(() => {
-                                // Collapse assessment panels
-                                const panelEase = 'max-width 0.4s cubic-bezier(0.16,1,0.3,1)';
-                                protoPanel.style.transition = panelEase;
-                                protoPanel.style.maxWidth = '0';
-                                protoPanel.style.overflow = 'hidden';
-                                chatPanel.style.transition = panelEase;
-                                chatPanel.style.maxWidth = '0';
-                                chatPanel.style.overflow = 'hidden';
-                                if (chatResizeHandle) chatResizeHandle.style.display = 'none';
-
-                                // Simultaneously expand diagnostic panel
-                                rightPanel.classList.remove('swml-canvas-plan-hidden');
-                            }, 350);
-
-                            // 3. After widths settle, hide assessment + fade in diagnostic content
-                            setTimeout(() => {
-                                protoPanel.style.display = 'none';
-                                chatPanel.style.display = 'none';
-
-                                // Fade diagnostic children back in
-                                setTimeout(() => {
-                                    rightPanel.classList.remove('swml-canvas-plan-fading');
-                                    // Restore header badges
-                                    if (ctxEl) { ctxEl.style.display = ''; requestAnimationFrame(() => { ctxEl.style.transition = 'opacity 0.4s ease'; ctxEl.style.opacity = '1'; }); }
-                                    if (diagBadge) { diagBadge.style.display = ''; requestAnimationFrame(() => { diagBadge.style.transition = 'opacity 0.4s ease'; diagBadge.style.opacity = '1'; }); }
-                                    reopenBtn.style.display = '';
-                                    resetBtn.style.display = '';
-                                    sidebarOpen = true;
-                                    const ww = document.getElementById('swml-wc-widget');
-                                    if (ww) { ww.style.display = ''; ww.style.opacity = '1'; }
-
-                                    // v7.14.29: "Go to Assessment" button removed — exercises decoupled, LD handles sequencing
-                                }, 380);
-                            }, 780); // v7.12.45: 350ms fade + 400ms collapse + margin
-                        }));
+                            }));
+                        }
                         protoBody.appendChild(protoSpacer);
                         protoPanel.appendChild(protoBody);
 
@@ -3139,6 +3102,15 @@
                                         promptText = `[MARK SCHEME DOCUMENT — current state of student's self-ratings]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
                                     }
                                     console.log('WML Canvas: Mark scheme doc injected. Length:', docContent.length);
+                                } else if (state.task === 'planning' || state.task === 'polishing') {
+                                    // v7.14.39: Planning/polishing — inject FULL document (not just response) so AI can see question, plan, etc.
+                                    const docContent = canvasEditor ? canvasEditor.getText() : '';
+                                    if (userMsgCount === 1) {
+                                        promptText = `[CONTEXT: ${boardName} ${subjectName} — ${textName} — ${state.task.toUpperCase()}${state.phase === 'redraft' ? ' (REDRAFT)' : ''}]\n[STUDENT'S DOCUMENT — contains question, essay plan, and response sections]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                                    } else if (docContent.trim().length > 50) {
+                                        promptText = `[STUDENT'S DOCUMENT — current state]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                                    }
+                                    console.log('WML Canvas: Planning/polishing doc injected. Length:', docContent.length);
                                 } else if (isCwSi) {
                                     // v7.13.34: Creative Writing — inject document as "CREATIVE WRITING DOCUMENT"
                                     const docContent = canvasEditor ? canvasEditor.getText() : '';
@@ -3400,12 +3372,14 @@
                                                 try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
                                             }
                                         }
-                                        // v7.13.2: Discard stale cached chat for mark_scheme — check for v7.13.1+ greeting marker
+                                        // v7.14.41: Discard ALL cached mark_scheme chats — protocol now drives greeting via silent auto-send.
+                                        // Old hardcoded greetings (pre-v7.14.39) must not replay.
                                         if (canvasInMarkScheme && savedChat && savedChat.history && savedChat.history.length > 0) {
                                             const firstAI = savedChat.history.find(m => m.role === 'assistant');
-                                            // The v7.13.1+ greeting contains "7 sections together". Anything without it is stale.
-                                            if (firstAI && !firstAI.content.includes('7 sections together')) {
-                                                console.log('WML Canvas: Discarding stale mark_scheme chat (pre-v7.13.1 greeting)');
+                                            // v7.14.39+ chats are initiated by "Let's begin the mark scheme assessment" (user msg, silent).
+                                            // Any chat where the first AI message contains "assessment phase" or "7 sections together" is stale.
+                                            if (firstAI && (firstAI.content.includes('assessment phase') || firstAI.content.includes('7 sections together'))) {
+                                                console.log('WML Canvas: Discarding stale mark_scheme chat (pre-v7.14.39 hardcoded greeting)');
                                                 savedChat = null;
                                                 try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
                                             }
@@ -3505,17 +3479,17 @@
                                                 if (chatTextarea) { canvasSilentSend = true; chatTextarea.value = "Let's begin!"; sendCanvasMessage(); }
                                             }, 400);
                                         } else if (state.task === 'mark_scheme') {
-                                            // ── Mark Scheme Assessment: fresh greeting (v7.13.1 — matches correct Sureforms form) ──
+                                            // v7.14.39: Mark Scheme Assessment — silent auto-send to let protocol drive the greeting
                                             setTimeout(() => {
-                                            const firstName = (config.userName || '').split(' ')[0] || 'there';
-                                            const textDisplay = state.textName || state.text || 'your text';
-                                            const greetingText = `Hi ${firstName}! Welcome to the Mark Scheme Assessment for ${textDisplay}.\n\nThis form helps you reflect on your performance and identify what to work on next. We'll go through 7 sections together:\n\n1. **How You're Going** — your scores and missed areas\n2. **Trends** — patterns across your work\n3. **What to Fix First** — personalised priorities\n4. **Metacognition** — challenges and aims\n5. **TTECEA Analysis** — rate yourself on 6 analytical skills\n6. **Where You're Going** — next focus and grade goal\n7. **Where to Next** — your action plan\n\nLet's start with **How You're Going**. How many questions did you answer correctly out of 10 in your last assessment?`;
-                                            const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This mark scheme assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">15\u201320 minutes</strong>. Work through each section honestly \u2014 your self-ratings will shape your redraft priorities.</div>';
-                                            addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the <strong>Mark Scheme Assessment</strong> for <strong>${textDisplay}</strong>.</p></div><div style="margin-bottom:12px"><p>This form helps you reflect on your performance and identify what to work on next. We\u2019ll go through 7 sections together:</p></div><div style="margin-bottom:12px"><p><strong>1.</strong> How You\u2019re Going \u2014 your scores and missed areas<br><strong>2.</strong> Trends \u2014 patterns across your work<br><strong>3.</strong> What to Fix First \u2014 personalised priorities<br><strong>4.</strong> Metacognition \u2014 challenges and aims<br><strong>5.</strong> TTECEA Analysis \u2014 rate yourself on 6 analytical skills<br><strong>6.</strong> Where You\u2019re Going \u2014 next focus and grade goal<br><strong>7.</strong> Where to Next \u2014 your action plan</p></div><p>Let\u2019s start with <strong>How You\u2019re Going</strong>. How many questions did you answer correctly out of 10 in your last assessment?</p>`, 'ai', greetingText);
-                                            canvasChatHistory.push({ role: 'assistant', content: greetingText });
-                                            saveCanvasChat(canvasChatHistory, canvasChatId);
-                                            // No grade buttons or initAssessmentState for mark_scheme
-                                            }, 200);
+                                                console.log('WML Mark Scheme: Sending initial greeting via protocol');
+                                                if (chatTextarea) { canvasSilentSend = true; chatTextarea.value = "Let's begin the mark scheme assessment."; sendCanvasMessage(); }
+                                            }, 400);
+                                        } else if (state.task === 'planning' || state.task === 'polishing') {
+                                            // v7.14.35: Phase 2 planning/polishing — silent auto-send to trigger board protocol
+                                            setTimeout(() => {
+                                                console.log('WML Phase 2: Sending initial greeting for', state.task);
+                                                if (chatTextarea) { canvasSilentSend = true; chatTextarea.value = "Let's begin!"; sendCanvasMessage(); }
+                                            }, 400);
                                         } else if (isCwSi) {
                                             // v7.13.35: Creative Writing SI-guided exercise — show greeting, then auto-trigger AI
                                             setTimeout(async () => {
@@ -3704,7 +3678,7 @@
                         canvasInAssessment = true;
                         state.step = 0; // Reset so initAssessmentState can restore from chat history (v7.12.32)
                         // v7.13.37: Preserve CW task + mark_scheme task — only set 'assessment' for diagnostic→assessment transition
-                        if (state.task !== 'mark_scheme' && !(state.task && state.task.startsWith('cw_')) && !isExamPrep) state.task = 'assessment';
+                        if (state.task !== 'mark_scheme' && state.task !== 'planning' && state.task !== 'polishing' && !(state.task && state.task.startsWith('cw_')) && !isExamPrep) state.task = 'assessment';
 
                         // Show notepad in assessment mode (it was hidden during diagnostic)
                         if (snFab) snFab.style.display = '';
@@ -4755,7 +4729,7 @@
                     pageGap: 24,
                     pageGapBorderSize: 1,
                     pageGapBorderColor: 'rgba(255,255,255,0.08)',
-                    pageBreakBackground: '#16181d',
+                    pageBreakBackground: '#1c1d1f',
                     pageHeaderHeight: 0,
                     pageFooterHeight: 20,
                     marginTop: 48,

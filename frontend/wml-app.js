@@ -76,7 +76,8 @@
             state.phase = 'initial';
             state.isRedraft = false;
         }
-        state.mode = 'exam_prep'; // Mastery programme context
+        // v7.14.41: Infer mode — mastery programme has phase+topic, free practice doesn't
+        state.mode = (embedConfig.phase && embedConfig.topic) ? 'guided' : 'exam_prep';
         // v7.14.17: 'diagnostic' and 'development' are draftTypes, not exercise tasks.
         // They arrive from shortcodes like [writing_mastery_lab task="diagnostic"].
         // Clear them so the topicNumber-based draftType inference handles routing correctly.
@@ -309,8 +310,8 @@
             if (state.task === 'feedback_discussion' || state.task === 'model_answer_video') {
                 // Lightweight canvas: feedback discussion + model answer video (v7.13.16)
                 WML.renderFeedbackDiscussionCanvas();
-            } else if (exerciseConfig.environment === 'canvas' || exerciseConfig.environment === 'write_only') {
-                // Canvas/write-only exercises: assessment, diagnostic, mark_scheme, outlining, etc.
+            } else if (['training', 'free', 'flexible'].includes(exerciseConfig.environment)) {
+                // v7.14.36: All canvas environments — training (protocol), free (independent), flexible (inline-AI)
                 state.canvasTimer = 0;
                 state.step = 0;
                 WML.renderCanvasWorkspace();
@@ -413,7 +414,7 @@
                 state.cwProjectId = projects[0].id;
                 state.cwProjectName = projects[0].name || '';
                 const exerciseConfig = WML.getExerciseConfig(state.task);
-                if (exerciseConfig.environment === 'canvas' || exerciseConfig.environment === 'write_only') {
+                if (['training', 'free', 'flexible'].includes(exerciseConfig.environment)) {
                     state.canvasTimer = 0;
                     state.step = 0;
                     WML.renderCanvasWorkspace();
@@ -2699,8 +2700,8 @@
         const chatTasks = ['assessment', 'exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'outlining'];
         const exerciseConfig = WML.EXERCISE_MANIFEST?.[taskId] || {};
 
-        // v7.13.92: All canvas tasks (including exam prep) → renderCanvasWorkspace (one renderer for all)
-        if (exerciseConfig.environment === 'canvas') {
+        // v7.14.36: All canvas environments → renderCanvasWorkspace (training, free, flexible)
+        if (['training', 'free', 'flexible'].includes(exerciseConfig.environment)) {
             const root = $('#swml-root');
             root.style.transition = 'opacity 0.3s ease';
             root.style.opacity = '0';

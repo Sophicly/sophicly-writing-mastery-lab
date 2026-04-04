@@ -36,17 +36,17 @@
     --swml-shadow-strong: rgba(0,0,0,0.12);
 }
 
-/* Dark theme overrides — deep blue-grey palette (v7.12.72) */
+/* Dark theme overrides — deep cool grey palette (v7.14.40) */
 [data-swml-theme="dark"] {
-    --swml-bg: oklch(0.17 0.01 270); /* #16181d */
-    --swml-bg-alt: oklch(0.30 0.015 280); /* #343440 */
-    --swml-bg-card: oklch(0.17 0.01 270); /* #16181d */
+    --swml-bg: #1c1d1f;
+    --swml-bg-alt: #28292b;
+    --swml-bg-card: #1c1d1f;
     --swml-text: #e0e0ee;
     --swml-text-muted: #9da5b4;
-    --swml-border: oklch(0.31 0.01 270); /* #36363a */
-    --swml-input-bg: oklch(0.30 0.015 280); /* #343440 */
-    --swml-input-border: oklch(0.38 0.01 270); /* #4a4a4f */
-    --swml-bubble-ai-bg: oklch(0.30 0.015 280); /* #343440 */
+    --swml-border: #333438;
+    --swml-input-bg: #28292b;
+    --swml-input-border: #444549;
+    --swml-bubble-ai-bg: #28292b;
     --swml-bubble-ai-text: #e0e0ee;
     --swml-plan-element-bg: transparent;
     --swml-plan-complete-bg: rgba(28,217,145,0.08);
@@ -63,10 +63,10 @@
 .swml-setup-inner {
     --swml-text: #e0e0ee;
     --swml-text-muted: #9da5b4;
-    --swml-bg-card: oklch(0.17 0.01 270); /* #16181d */
-    --swml-border: oklch(0.31 0.01 270); /* #36363a */
-    --swml-input-bg: oklch(0.30 0.015 280); /* #343440 */
-    --swml-input-border: oklch(0.38 0.01 270); /* #4a4a4f */
+    --swml-bg-card: #1c1d1f;
+    --swml-border: #333438;
+    --swml-input-bg: #28292b;
+    --swml-input-border: #444549;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -78,7 +78,7 @@ body.swml-page {
     height: 100vh;
 }
 
-#swml-root { height: 100vh; display: flex; flex-direction: column; position: relative; overflow: hidden; background: oklch(0.17 0.01 270); /* #16181d — Always dark, shader covers this */ }
+#swml-root { height: 100vh; display: flex; flex-direction: column; position: relative; overflow: hidden; background: #1c1d1f; /* v7.14.40 — deep cool grey, shader covers this */ }
 
 /* ── Animations ── */
 @keyframes swml-fadeUp {
@@ -1328,7 +1328,7 @@ body.swml-page {
 }
 .swml-bubble-header {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 5px;
+    margin-bottom: 5px; overflow: visible;
 }
 .swml-bubble-copy {
     background: none; border: none; cursor: pointer;
@@ -1752,15 +1752,15 @@ body.swml-page {
 
 /* Copy feedback tooltip */
 .swml-copy-tooltip {
-    position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
     background: var(--swml-deep-purple); color: var(--swml-teal-light); font-size: 11px;
     font-weight: 600; padding: 3px 8px; border-radius: 6px; white-space: nowrap;
     pointer-events: none; animation: swml-tooltip-in 0.2s ease-out;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3); z-index: 10;
 }
 .swml-copy-tooltip::after {
-    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-    border: 4px solid transparent; border-top-color: var(--swml-deep-purple);
+    content: ''; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+    border: 4px solid transparent; border-bottom-color: var(--swml-deep-purple);
 }
 @keyframes swml-tooltip-in {
     from { opacity: 0; transform: translateX(-50%) translateY(4px); }
@@ -2337,7 +2337,7 @@ body.swml-page {
 /* ── Video Button Tooltip ── */
 .swml-video-tooltip {
     position: fixed;
-    width: 220px; background: oklch(0.17 0.01 270);
+    width: 220px; background: #1c1d1f;
     border: 1px solid rgba(81,218,207,0.25); border-radius: 10px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(81,218,207,0.08);
     z-index: 10000; cursor: pointer; overflow: hidden;
@@ -2378,7 +2378,7 @@ body.swml-page {
 
 /* ── Video Section Picker ── */
 .swml-video-picker {
-    position: fixed; width: 240px; background: oklch(0.17 0.01 270);
+    position: fixed; width: 240px; background: #1c1d1f;
     border: 1px solid rgba(81,218,207,0.2); border-radius: 10px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.6);
     z-index: 10000; overflow: hidden;

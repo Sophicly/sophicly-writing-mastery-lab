@@ -720,7 +720,7 @@ window.WML = (function() {
         // ── Phase 1: Initial Attempt ──
         diagnostic: {
             label: 'Write Essay',
-            environment: 'canvas',
+            environment: 'free',
             panels: { sidebar: false, chat: false, guidance: false, document: true },
             steps: null,
             elements: null,
@@ -734,7 +734,7 @@ window.WML = (function() {
         },
         assessment: {
             label: 'Assessment',
-            environment: 'canvas',
+            environment: 'training',
             panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: 'ASSESSMENT_STEPS',
             elements: 'ASSESSMENT_ELEMENTS',
@@ -757,12 +757,12 @@ window.WML = (function() {
         },
         feedback_discussion: {
             label: 'Discuss Feedback',
-            environment: 'canvas',
-            panels: { sidebar: false, chat: true, guidance: false, document: true },
+            environment: 'free',
+            panels: { sidebar: false, chat: false, guidance: true, document: true },
             steps: null,
             elements: null,
-            protocolSource: 'board',
-            protocolTask: 'assessment',
+            protocolSource: null,
+            protocolTask: null,
             completionType: 'manual',
             storageSuffix: '_fb',
             chatHeaderLabel: 'Discuss Feedback',
@@ -772,8 +772,8 @@ window.WML = (function() {
 
         // ── Phase 2: Redraft ──
         mark_scheme: {
-            label: 'Mark Scheme',
-            environment: 'canvas',
+            label: 'Mark Scheme Assessment',
+            environment: 'training',
             panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: null,
             elements: null,
@@ -795,7 +795,7 @@ window.WML = (function() {
         },
         model_answer_video: {
             label: 'Model Answer',
-            environment: 'canvas',
+            environment: 'free',
             panels: { sidebar: false, chat: false, guidance: true, document: true },
             steps: null,
             elements: null,
@@ -809,7 +809,7 @@ window.WML = (function() {
         },
         outlining: {
             label: 'Outline Essay',
-            environment: 'write_only',
+            environment: 'free',
             panels: { sidebar: false, chat: false, guidance: true, document: true },
             steps: null,
             elements: null,
@@ -823,7 +823,7 @@ window.WML = (function() {
         },
         response: {
             label: 'Write Response',
-            environment: 'write_only',
+            environment: 'free',
             panels: { sidebar: false, chat: false, guidance: false, document: true },
             steps: null,
             elements: null,
@@ -837,7 +837,7 @@ window.WML = (function() {
         },
         redraft_assessment: {
             label: 'Reassessment',
-            environment: 'canvas',
+            environment: 'training',
             panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: 'ASSESSMENT_STEPS',
             elements: 'ASSESSMENT_ELEMENTS',
@@ -862,7 +862,7 @@ window.WML = (function() {
         // ── Phase 2 canvas exercises (v7.14.29: migrated from chat to canvas) ──
         planning: {
             label: 'Essay Skills',
-            environment: 'canvas',
+            environment: 'training',
             panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: null,
             elements: null,
@@ -876,7 +876,7 @@ window.WML = (function() {
         },
         polishing: {
             label: 'Polishing',
-            environment: 'canvas',
+            environment: 'training', // placeholder — moves to 'flexible' when inline-AI environment is built
             panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: null,
             elements: null,
@@ -890,7 +890,7 @@ window.WML = (function() {
         },
         exam_question: {
             label: 'Exam Question',
-            environment: 'canvas',          // v7.13.92: routed through renderCanvasWorkspace (one renderer for all)
+            environment: 'training',        // v7.14.36: renamed from 'canvas'
             panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: 'EXAM_QUESTION_STEPS',
             elements: 'EXAM_QUESTION_ELEMENTS',
@@ -905,7 +905,7 @@ window.WML = (function() {
         },
         essay_plan: {
             label: 'Essay Plan',
-            environment: 'canvas',          // v7.13.92: routed through renderCanvasWorkspace
+            environment: 'training',        // v7.14.36: renamed from 'canvas'
             panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: 'ESSAY_PLAN_STEPS',       // getSteps() handles mode A→RECALL variant
             elements: null,
@@ -920,7 +920,7 @@ window.WML = (function() {
         },
         model_answer: {
             label: 'Model Answer',
-            environment: 'canvas',          // v7.13.92: routed through renderCanvasWorkspace
+            environment: 'training',        // v7.14.36: renamed from 'canvas'
             panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: 'MODEL_ANSWER_STEPS',     // getSteps() handles mode C→ADVANCED variant
             elements: 'MODEL_ANSWER_ELEMENTS',
@@ -935,7 +935,7 @@ window.WML = (function() {
         },
         verbal_rehearsal: {
             label: 'Quote Analysis',
-            environment: 'canvas',          // v7.13.92: routed through renderCanvasWorkspace
+            environment: 'training',        // v7.14.36: renamed from 'canvas'
             panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: 'QUOTE_ANALYSIS_STEPS',
             elements: 'QUOTE_ANALYSIS_ELEMENTS',
@@ -950,7 +950,7 @@ window.WML = (function() {
         },
         conceptual_notes: {
             label: 'Conceptual Notes',
-            environment: 'canvas',          // v7.13.92: routed through renderCanvasWorkspace
+            environment: 'training',        // v7.14.36: renamed from 'canvas'
             panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: 'CONCEPTUAL_NOTES_STEPS', // getSteps() handles poetry/nonfiction variants
             elements: 'CONCEPTUAL_NOTES_ELEMENTS', // getElements() handles variants
@@ -965,7 +965,7 @@ window.WML = (function() {
         },
         memory_practice: {
             label: 'Memory Practice',
-            environment: 'canvas',          // v7.13.92: routed through renderCanvasWorkspace
+            environment: 'training',        // v7.14.36: renamed from 'canvas'
             panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: 'MEMORY_PRACTICE_STEPS',
             elements: null,
@@ -982,7 +982,7 @@ window.WML = (function() {
         // ── Creative Writing: SI-Guided Steps (v7.13.34) ──
         cw_si: {
             label: 'Creative Writing',
-            environment: 'canvas',
+            environment: 'training',
             panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: null,
             elements: null,
@@ -997,7 +997,7 @@ window.WML = (function() {
         // ── Creative Writing: Workbook Steps (v7.13.34) ──
         cw_workbook: {
             label: 'Creative Writing',
-            environment: 'write_only',
+            environment: 'free',
             panels: { sidebar: false, chat: false, guidance: true, document: true },
             steps: null,
             elements: null,

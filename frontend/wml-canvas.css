@@ -12,7 +12,7 @@
     height: 100vh;
     z-index: 9985;
     overflow: hidden;
-    background: oklch(0.17 0.01 270); /* #16181d — Opaque backdrop prevents shader flash on transition */
+    background: #1c1d1f; /* #16181d — Opaque backdrop prevents shader flash on transition */
 }
 /* v7.13.78: Force LearnDash content area to fill viewport when WML is embedded */
 body.swml-embedded-active .spl-content {
@@ -133,7 +133,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     gap: 0;
     width: 100%;
     height: 100%;
-    background: oklch(0.17 0.01 270); /* #16181d */
+    background: #1c1d1f; /* #16181d */
     overflow: hidden;
 }
 /* Dark/light theme for canvas */
@@ -190,7 +190,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 /* Dark mode only: explicit backgrounds for chat area (v7.12.72) */
 .swml-canvas:not(.swml-canvas-light) .swml-canvas-chat-header,
 .swml-canvas:not(.swml-canvas-light) .swml-canvas-chat-messages,
-.swml-canvas:not(.swml-canvas-light) .swml-canvas-status { background-color: oklch(0.17 0.01 270); }
+.swml-canvas:not(.swml-canvas-light) .swml-canvas-status { background-color: #1c1d1f; }
 
 /* ── Editor Pane ── */
 .swml-canvas-editor {
@@ -199,7 +199,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     flex-direction: column;
     min-width: 0;
     position: relative;
-    background: oklch(0.17 0.01 270); /* #16181d */
+    background: #1c1d1f; /* #16181d */
     transition: flex 0.6s cubic-bezier(0.16,1,0.3,1), margin 0.6s cubic-bezier(0.16,1,0.3,1);
 }
 .swml-canvas-light .swml-canvas-editor {
@@ -218,7 +218,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     width: 720px;
     flex-shrink: 0; /* Never CSS-shrink — auto-fit uses transform: scale() */
     margin: 0 auto 40px;
-    background: oklch(0.30 0.015 280); /* #343440 */
+    background: #28292b; /* #343440 */
     border-left: 1px solid oklch(0.38 0.01 270); /* oklch(0.38 0.01 270) */
     border-right: 1px solid oklch(0.38 0.01 270);
     padding: 48px 56px;
@@ -247,12 +247,12 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 }
 .swml-canvas-doc .rm-pagination-gap {
     border: none !important;
-    background: oklch(0.17 0.01 270);
-    border-left: 1px solid oklch(0.17 0.01 270) !important;
-    border-right: 1px solid oklch(0.17 0.01 270) !important;
+    background: #1c1d1f;
+    border-left: 1px solid #1c1d1f !important;
+    border-right: 1px solid #1c1d1f !important;
     position: relative;
     left: -1px;
-    background-color: oklch(0.17 0.01 270);
+    background-color: #1c1d1f;
 }
 .swml-canvas-doc .rm-page-break {
     position: relative;
@@ -376,7 +376,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-comment-popover {
     position: absolute;
     width: 300px;
-    background: oklch(0.17 0.01 270);
+    background: #1c1d1f;
     border: 1px solid oklch(0.38 0.01 270);
     border-radius: 12px;
     box-shadow: 0 12px 40px rgba(0,0,0,0.5);
@@ -616,7 +616,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 }
 .swml-comment-reply input {
     flex: 1;
-    background: oklch(0.30 0.015 280);
+    background: #28292b;
     border: 1px solid oklch(0.38 0.01 270);
     border-radius: 8px;
     padding: 6px 10px;
@@ -1029,7 +1029,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     justify-content: space-between;
     gap: 6px;
     padding: 8px 12px;
-    background: oklch(0.17 0.01 270); /* #16181d */
+    background: #1c1d1f; /* #16181d */
     border-bottom: 1px solid oklch(0.31 0.01 270); /* oklch(0.31 0.01 270) */
     flex-shrink: 0;
     height: 50px;
@@ -1234,12 +1234,12 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-tb-gradient-left {
     left: 0;
     width: 32px;
-    background: linear-gradient(to right, oklch(0.17 0.01 270) 10%, oklch(0.17 0.01 270 / 0) 100%);
+    background: linear-gradient(to right, #1c1d1f 10%, oklch(0.17 0.01 270 / 0) 100%);
 }
 .swml-tb-gradient-right {
     right: 54px;
     width: 40px;
-    background: linear-gradient(to left, oklch(0.17 0.01 270) 10%, oklch(0.17 0.01 270 / 0) 100%);
+    background: linear-gradient(to left, #1c1d1f 10%, oklch(0.17 0.01 270 / 0) 100%);
 }
 /* ── Arrow buttons (plain neumorphic, no roll effect) ── */
 .swml-tb-arrows {
@@ -2501,7 +2501,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-canvas-input-wrapper:focus-within::after { opacity: 0.35; }
 .swml-canvas-input-inner {
     display: flex; gap: 8px;
-    background: oklch(0.30 0.015 280); /* #343440 — dark mode default */
+    background: #28292b; /* #343440 — dark mode default */
     border-radius: 12px;
     padding: 8px 12px;
     align-items: flex-end;
@@ -2628,7 +2628,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     gap: 4px;
     flex-wrap: wrap;
     width: 120px;
-    background: oklch(0.30 0.015 280);
+    background: #28292b;
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.5);
@@ -3477,12 +3477,12 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* Gap between cover and editor — match pagination gaps (v7.12.39) */
 .swml-cover-gap {
     height: 24px;
-    border-left: 1px solid oklch(0.17 0.01 270);
-    border-right: 1px solid oklch(0.17 0.01 270);
+    border-left: 1px solid #1c1d1f;
+    border-right: 1px solid #1c1d1f;
     position: relative;
     width: calc(100% + 2px) !important;
     left: -1px;
-    background-color: oklch(0.17 0.01 270);
+    background-color: #1c1d1f;
     margin: 0;
 }
 .swml-canvas-light .swml-cover-gap {
@@ -3497,7 +3497,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-toc {
     padding: 60px 56px 48px;
     margin: 0;
-    background: oklch(0.30 0.015 280); /* #343440 */
+    background: #28292b; /* #343440 */
     height: 1020px; /* match pagination page height */
     box-sizing: border-box;
     display: flex;
@@ -3613,12 +3613,12 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* TOC gap — same as pagination gaps */
 .swml-toc-gap {
     height: 24px;
-    border-left: 1px solid oklch(0.17 0.01 270);
-    border-right: 1px solid oklch(0.17 0.01 270);
+    border-left: 1px solid #1c1d1f;
+    border-right: 1px solid #1c1d1f;
     position: relative;
     width: calc(100% + 2px) !important;
     left: -1px;
-    background-color: oklch(0.17 0.01 270);
+    background-color: #1c1d1f;
     margin: 0;
 }
 
@@ -4100,7 +4100,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     box-shadow: 0 0 0 2px rgba(255, 180, 50, 0.3);
 }
 .swml-dropdown-select option {
-    background: oklch(0.30 0.015 280);
+    background: #28292b;
     color: #fff;
     font-weight: 600;
 }
@@ -4561,7 +4561,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 
 /* ── Light mode tooltip ── */
 .swml-canvas-light .swml-copy-assess::after {
-    background: oklch(0.30 0.015 280);
+    background: #28292b;
     box-shadow: 0 2px 8px rgba(0,0,0,0.25);
 }
 
@@ -4933,7 +4933,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     max-width: 800px;
     margin: 0 auto;
     aspect-ratio: 16/9;
-    background: oklch(0.17 0.01 270);
+    background: #1c1d1f;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
