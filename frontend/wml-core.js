@@ -774,7 +774,7 @@ window.WML = (function() {
         mark_scheme: {
             label: 'Mark Scheme Assessment',
             environment: 'training',
-            panels: { sidebar: true, chat: true, guidance: false, document: false },
+            panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: null,
             elements: null,
             protocolSource: 'preamble',

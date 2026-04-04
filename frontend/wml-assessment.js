@@ -87,6 +87,7 @@
     };
     let chatSaveTimer = null;
     let canvasSilentSend = false; // v7.14.3: When true, sendCanvasMessage skips user bubble display
+    let _currentAddComment = null; // v7.14.48: Module-level ref for context toolbar (survives re-renders)
 
     function saveCanvasChat(history, chatId) {
         // 1. Instant localStorage write (include step + task for resume and stale detection)
@@ -163,6 +164,779 @@
             if (t.textContent.trim() === 'Take Notes' || t.textContent.trim() === 'TakeNotes') t.style.display = '';
         });
     }
+
+    // ══════════════════════════════════════════════════════════════════
+    //  buildTrainingPanels() — extracted from diagnostic→assessment transition (v7.14.48)
+    //  Builds sidebar (protoPanel), chat panel, resize handle, and all wiring.
+    //  Called by both the diagnostic Mark Complete transition AND direct training-env rendering.
+    // ══════════════════════════════════════════════════════════════════
+    function buildTrainingPanels(ctx) {
+        const {
+            canvas, canvasEditor, exerciseConfig,
+            boardLabel, subjectLabel, textLabel,
+            isCwTask, cwStepDef, isCwSi, isExamPrep,
+            canvasInMarkScheme, canvasInFeedback,
+            canvasChatHeaderLabel, canvasSidebarSteps,
+        } = ctx;
+        // Mutable ref — caller passes { value: btn } so we can write back
+        const assessCompleteBtnRef = ctx.assessCompleteBtnRef; // { value: null }
+
+        // 1. Build left protocol panel — sidebar
+        const protoPanel = el('div', { className: 'swml-sidebar swml-canvas-proto' });
+
+        // Logo + collapse button
+        const protoHead = el('div', { className: 'swml-sidebar-head', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } });
+        protoHead.appendChild(renderLogo ? renderLogo() : el('span'));
+        const protoCollapseBtn = el('button', { className: 'swml-collapse-btn', textContent: '\u25C0', title: 'Collapse sidebar' });
+        protoCollapseBtn.addEventListener('click', () => {
+            protoPanel.classList.toggle('collapsed');
+            const isC = protoPanel.classList.contains('collapsed');
+            protoCollapseBtn.textContent = isC ? '\u25B6' : '\u25C0';
+            protoCollapseBtn.title = isC ? 'Expand sidebar' : 'Collapse sidebar';
+        });
+        protoHead.appendChild(protoCollapseBtn);
+        protoPanel.appendChild(protoHead);
+
+        // Body wrapper
+        const protoBody = el('div', { className: 'swml-sidebar-body' });
+
+        // Badges
+        const protoBadges = el('div', { className: 'swml-sidebar-badges' });
+        if (isCwTask) {
+            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Creative Writing Masterclass' }));
+            if (state.cwProjectName) {
+                const nameEl = el('span', { className: 'swml-sidebar-badge', textContent: '\u201c' + state.cwProjectName + '\u201d', style: { fontStyle: 'italic', opacity: '0.7' } });
+                protoBadges.appendChild(nameEl);
+            }
+        } else {
+            [boardLabel, subjectLabel, textLabel].filter(Boolean).forEach(b =>
+                protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: b }))
+            );
+        }
+        // Topic / mode badge
+        if (state.topicNumber && (state.mode === 'guided' || canvasInMarkScheme)) {
+            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Topic ${state.topicNumber}` }));
+        } else if (state.mode === 'exam_prep' && !canvasInMarkScheme) {
+            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Exam Practice' }));
+        }
+        // Task label
+        const sidebarTaskLabel = (state.task === 'planning' && state.mode === 'guided') ? 'Plan Redraft'
+            : (state.task === 'polishing' && state.mode === 'guided') ? 'Polish Redraft'
+            : exerciseConfig.label || 'Assessment';
+        protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge active', textContent: sidebarTaskLabel }));
+        if (state.phase === 'redraft') {
+            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Phase 2' }));
+        } else if (state.phase === 'initial') {
+            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Phase 1' }));
+        }
+        protoBody.appendChild(protoBadges);
+
+        // Protocol Progress label
+        const progressLabel = isCwTask ? `Step ${cwStepDef?.step || ''} Progress` : 'Protocol Progress';
+        protoBody.appendChild(el('div', { className: 'swml-sidebar-section-label', textContent: progressLabel }));
+
+        // Steps — manifest-driven
+        const protoSteps = el('div', { id: 'swml-progress-steps' });
+        const assessSteps = canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
+            { step: 1, label: 'Setup & Details' },
+            { step: 2, label: 'Goal Setting' },
+            { step: 3, label: 'Self-Reflection' },
+            { step: 4, label: 'Essay Review' },
+            { step: 5, label: 'Introduction' },
+            { step: 6, label: 'Body Paragraphs' },
+            { step: 7, label: 'Conclusion' },
+            { step: 8, label: 'Summary & Action Plan' },
+        ]);
+        assessSteps.forEach((s, i) => {
+            const cls = i === 0 ? 'active' : '';
+            protoSteps.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
+                el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
+                el('span', { className: 'swml-step-label', textContent: s.label }),
+            ]));
+        });
+        protoBody.appendChild(protoSteps);
+
+        // Bottom buttons
+        const protoSpacer = el('div', { style: { marginTop: 'auto' } });
+
+        function iconBtn(svgIcon, text, onClick) {
+            const btn = el('button', { className: 'swml-sidebar-btn swml-sidebar-icon-btn', onClick });
+            btn.appendChild(el('span', { className: 'swml-btn-icon', innerHTML: svgIcon }));
+            btn.appendChild(el('span', { className: 'swml-btn-text', innerHTML: svgIcon + ' ' + text }));
+            return btn;
+        }
+
+        // Assessment Mark Complete button — 3D Push Button
+        const assessBtn = build3DButton('Mark Complete', 'Done!', async () => {
+            if (state._phaseMarkedComplete) return;
+            if (isCwSi && state.cwProjectId) {
+                state._phaseMarkedComplete = true;
+                const artifactKey = WML.CW_ARTIFACT_MAP[cwStepDef?.step];
+                if (artifactKey && canvasEditor) {
+                    await WML.cwProject.saveArtifact(state.cwProjectId, artifactKey, canvasEditor.getHTML());
+                }
+                const stepKey = cwStepDef?.step ? 'step_' + cwStepDef.step : cwStepDef?.id;
+                await WML.cwProject.markStepComplete(state.cwProjectId, stepKey);
+                assessBtn.style.display = 'none';
+                showToast('Step complete! Your work has been saved.');
+                setTimeout(() => {
+                    if (WML.renderCreativeWritingDashboard) WML.renderCreativeWritingDashboard();
+                }, 1500);
+                return;
+            }
+            showPhaseCompleteCard();
+        });
+        assessBtn.style.display = 'none';
+        assessBtn.classList.add('swml-assess-complete-btn');
+        assessCompleteBtnRef.value = assessBtn;
+        protoSpacer.appendChild(assessBtn);
+
+        // Save button
+        const saveBtn = iconBtn(SVG_SAVE, 'Save Progress', () => {
+            if (canvasEditor) saveCanvasContent();
+            saveBtn.querySelector('.swml-btn-text').textContent = '\u2713 Saved';
+            setTimeout(() => { saveBtn.querySelector('.swml-btn-text').innerHTML = SVG_SAVE + ' Save Progress'; }, 2000);
+        });
+        protoSpacer.appendChild(saveBtn);
+
+        // Past Work — v7.14.50: hidden in embedded mode (LD handles navigation)
+        if (!WML.isEmbedded) {
+            protoSpacer.appendChild(iconBtn(SVG_FOLDER, 'Past Work', () => { closeCanvasOverlay(); if (window.WML.showPortfolio) window.WML.showPortfolio(); }));
+        }
+
+        // Dashboard
+        protoSpacer.appendChild(iconBtn(SVG_DASHBOARD, 'My Dashboard', () => window.open('/dashboard/', '_blank')));
+
+        // CW: Back to Steps
+        if (isCwTask) {
+            protoSpacer.appendChild(iconBtn(SVG_BACK, 'Back to Steps', () => {
+                if (canvasEditor) saveCanvasContent();
+                const artifactKey = WML.CW_ARTIFACT_MAP[cwStepDef?.step];
+                if (artifactKey && state.cwProjectId && canvasEditor) {
+                    const content = canvasEditor.getHTML();
+                    WML.cwProject.saveArtifact(state.cwProjectId, artifactKey, content).catch(() => {});
+                }
+                if (WML.renderCreativeWritingDashboard) {
+                    WML.renderCreativeWritingDashboard();
+                }
+            }));
+        }
+        protoBody.appendChild(protoSpacer);
+        protoPanel.appendChild(protoBody);
+
+        // 2. Build right chat panel
+        const chatPanel = el('div', { className: 'swml-canvas-chat' });
+
+        // Chat header with clear button
+        const chatHeader = el('div', { className: 'swml-canvas-chat-header', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } });
+        const headerLabel = canvasChatHeaderLabel + (isCwTask && state.cwProjectName ? ' \u2014 \u201c' + state.cwProjectName + '\u201d' : '');
+        chatHeader.appendChild(el('span', { innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;opacity:0.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> ' + headerLabel }));
+
+        // Chat messages area
+        const chatMessages = el('div', { className: 'swml-canvas-chat-messages', id: 'swml-canvas-chat-messages' });
+
+        // Canvas Chat — AI Engine Wiring
+        const canvasChatHistory = [];
+        let canvasChatId = '';
+        let canvasChatLoading = false;
+
+        // Chat message helper
+        function addChatMessage(text, role, rawText) {
+            chatMessages.querySelectorAll('.swml-quick-actions').forEach(q => q.remove());
+            const bubble = el('div', { className: `swml-bubble ${role === 'ai' ? 'ai' : 'user'}` });
+            const content = el('div', { className: 'swml-bubble-content' });
+            if (role === 'ai') {
+                const header = el('div', { className: 'swml-bubble-header' });
+                header.appendChild(el('span', { className: 'swml-bubble-sender', innerHTML: SENDER_HTML }));
+                const rawForCopy = rawText || text.replace(/<[^>]+>/g, '');
+                header.appendChild(el('button', { className: 'swml-bubble-copy', innerHTML: SVG_COPY, title: 'Copy this message',
+                    onClick: (e) => { e.stopPropagation(); clip(rawForCopy, e.currentTarget); } }));
+                const assessBlock = extractAssessmentContent(rawForCopy);
+                if (assessBlock) {
+                    header.appendChild(el('button', { className: 'swml-bubble-copy swml-copy-assess', innerHTML: SVG_COPY_ASSESS,
+                        onClick: (e) => { e.stopPropagation(); clipRich(assessBlock, e.currentTarget); } }));
+                }
+                content.appendChild(header);
+                const body = el('div', { className: 'swml-bubble-body' });
+                body.innerHTML = text;
+                content.appendChild(body);
+
+                // Quick action buttons
+                const detectText = rawText || text.replace(/<[^>]+>/g, '');
+                const canvasAssessDone = state.task === 'assessment' && state.plan.total_score && state.plan.grade;
+                const isHattieQuestion = /(?:Where\s+am\s+I\s+going|How\s+am\s+I\s+going|Where\s+to\s+next|transfer.*skills|how\s+will\s+you.*apply|Session\s+Complete)/i.test(detectText);
+                const actions = (canvasAssessDone || isHattieQuestion) ? [] : detectQuickActions(detectText);
+                if (actions.length > 0) {
+                    const isMulti = /(?:pick|choose|select|commit to)\s*(?:(?:up to|between|at least)?\s*)?(\d)\s*[-\u2013to]+\s*(\d)/i.test(detectText)
+                        || /(?:pick|choose|select)\s+(?:multiple|several|a few|some)\b/i.test(detectText)
+                        || /select\s+all\s+that\s+apply/i.test(detectText);
+                    const isAoContext = /assessment\s*objective|which\s*AO|AO1.*AO2.*AO3|targeting.*AO/i.test(detectText)
+                        && actions.some(a => /^AO\d/i.test(a.label || a.value || ''));
+
+                    const bar = el('div', { className: 'swml-quick-actions' });
+
+                    if ((isMulti || isAoContext) && actions.length >= 2) {
+                        const selected = new Set();
+                        actions.forEach(action => {
+                            const btn = el('button', {
+                                className: 'swml-quick-btn swml-quick-toggle',
+                                textContent: action.label,
+                                onClick: () => {
+                                    if (selected.has(action.value)) {
+                                        selected.delete(action.value);
+                                        btn.classList.remove('swml-quick-toggle-on');
+                                    } else {
+                                        selected.add(action.value);
+                                        btn.classList.add('swml-quick-toggle-on');
+                                    }
+                                    submitBtn.style.display = selected.size > 0 ? 'block' : 'none';
+                                }
+                            });
+                            btn.addEventListener('keydown', (e) => {
+                                if (e.key === 'Enter') { e.preventDefault(); if (selected.size > 0) submitBtn.click(); }
+                            });
+                            bar.appendChild(btn);
+                        });
+                        const submitBtn = el('button', {
+                            className: 'swml-quick-btn swml-quick-submit',
+                            textContent: '\u2713 Submit',
+                            style: { display: 'none' },
+                            onClick: () => {
+                                bar.remove();
+                                chatTextarea.value = Array.from(selected).join(', ');
+                                sendCanvasMessage();
+                            }
+                        });
+                        bar.appendChild(submitBtn);
+                    } else {
+                        actions.forEach(action => {
+                            const btn = el('button', {
+                                className: 'swml-quick-btn',
+                                textContent: action.label,
+                                onClick: () => {
+                                    if (isExamPrep && /saved\s*question/i.test(action.label || action.value)) {
+                                        bar.remove();
+                                        _showSavedQuestionOverlay(chatTextarea, sendCanvasMessage);
+                                        return;
+                                    }
+                                    bar.remove();
+                                    chatTextarea.value = action.value;
+                                    sendCanvasMessage();
+                                }
+                            });
+                            bar.appendChild(btn);
+                        });
+                    }
+                    content.appendChild(bar);
+                }
+
+                // Back-to-top button on long messages
+                setTimeout(() => {
+                    if (body.offsetHeight > 500) {
+                        const topBtn = el('button', {
+                            className: 'swml-msg-top-btn',
+                            innerHTML: '<svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 17a.5.5 0 0 1-.5-.5V4.707L5.354 8.854a.5.5 0 1 1-.708-.708l5-5a.5.5 0 0 1 .708 0l5 5a.5.5 0 0 1-.708.708L10.5 4.707V16.5a.5.5 0 0 1-.5.5"/></svg> Back to top of message',
+                            onClick: () => { bubble.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+                        });
+                        content.appendChild(topBtn);
+                    }
+                }, 100);
+            } else {
+                const userHeader = el('div', { className: 'swml-bubble-header', style: { justifyContent: 'flex-end' } });
+                userHeader.appendChild(el('button', { className: 'swml-bubble-copy swml-user-copy', innerHTML: SVG_COPY, title: 'Copy your message',
+                    onClick: (e) => { e.stopPropagation(); clip(text, e.currentTarget); } }));
+                content.appendChild(userHeader);
+                content.appendChild(el('p', { textContent: text }));
+            }
+            bubble.appendChild(content);
+            chatMessages.appendChild(bubble);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Clear chat button
+        const clearChatBtn = el('button', {
+            className: 'swml-clear-chat-btn',
+            title: 'Clear chat and start fresh',
+            innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
+            onClick: () => {
+                showConfirm(
+                    'Clear this assessment chat and start fresh? Your document and essay are preserved \u2014 only the chat messages will be removed.',
+                    () => {
+                        clearCanvasChat();
+                        canvasChatHistory.length = 0;
+                        canvasChatId = '';
+                        chatMessages.innerHTML = '';
+                        state.plan = {};
+                        state._phaseMarkedComplete = false;
+                        state.step = 1;
+                        if (assessCompleteBtnRef.value) assessCompleteBtnRef.value.classList.remove('swml-assess-ready');
+                        updateProgress(1);
+                        const fn = (config.userName || '').split(' ')[0] || 'there';
+
+                        if (isCwTask && cwStepDef) {
+                            const stepLabel = cwStepDef.label || 'this step';
+                            const stepNum = cwStepDef.step || cwStepDef.trial || '';
+                            const gt = `Welcome back to Step ${stepNum}: **${stepLabel}**\n\nLet\u2019s continue working on this step. When you\u2019re ready, hit the button below.`;
+                            addChatMessage(formatAI(gt), 'ai', gt);
+                            canvasChatHistory.push({ role: 'assistant', content: gt });
+                            saveCanvasChat(canvasChatHistory, canvasChatId);
+                            const startBar = el('div', { className: 'swml-quick-actions' });
+                            startBar.appendChild(el('button', {
+                                className: 'swml-quick-btn',
+                                textContent: "Let's begin",
+                                onClick: () => { startBar.remove(); chatTextarea.value = "Let's begin!"; sendCanvasMessage(); }
+                            }));
+                            const greetBubble = chatMessages.lastElementChild;
+                            if (greetBubble) {
+                                const bc = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
+                                bc.appendChild(startBar);
+                            }
+                        } else {
+                        const tn = state.textName || state.text || 'your text';
+                        const wc = getResponseWordCount(canvasEditor);
+                        const qText = extractEssayQuestion(canvasEditor);
+                        const questionInfo = qText ? `\n\nYour essay question: **${qText}**` : '';
+                        const essayLabel = (state.mode === 'exam_prep') ? `${tn} essay` : `${tn} diagnostic essay`;
+                        const gt = `Hi ${fn}! Welcome to the assessment phase. I've received your ${essayLabel} (${wc} words). Let's review your writing together.${questionInfo}\n\nBefore I begin marking, I need to know: **what grade are you aiming for?** This helps me tailor my feedback to where you want to be.`;
+                        addChatMessage(formatAI(gt), 'ai', gt);
+                        canvasChatHistory.push({ role: 'assistant', content: gt });
+                        saveCanvasChat(canvasChatHistory, canvasChatId);
+                        const gradeBarCC = el('div', { className: 'swml-quick-actions' });
+                        ['Grade 9', 'Grade 8', 'Grade 7'].forEach(g => {
+                            gradeBarCC.appendChild(el('button', {
+                                className: 'swml-quick-btn',
+                                textContent: g,
+                                onClick: () => { gradeBarCC.remove(); chatTextarea.value = g; sendCanvasMessage(); }
+                            }));
+                        });
+                        const ccBubble = chatMessages.lastElementChild;
+                        if (ccBubble) {
+                            const ccContent = ccBubble.querySelector('.swml-bubble-content') || ccBubble;
+                            ccContent.appendChild(gradeBarCC);
+                        }
+                        } // end else (non-CW)
+                        console.log('WML Canvas: Chat cleared');
+                    },
+                    { confirmText: 'Clear Chat', cancelText: 'Keep Chat' }
+                );
+            }
+        });
+        chatHeader.appendChild(clearChatBtn);
+        chatPanel.appendChild(chatHeader);
+
+        chatPanel.appendChild(chatMessages);
+
+        // Floating scroll buttons
+        const scrollDownBtn = el('div', { className: 'swml-scroll-down-btn',
+            innerHTML: '<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 3a.5.5 0 0 1 .5.5v11.793l4.147-4.146a.5.5 0 0 1 .707.707l-5 5a.5.5 0 0 1-.631.062l-.076-.062-5-5a.5.5 0 0 1 .707-.707L9.5 15.293V3.5A.5.5 0 0 1 10 3"/></svg>',
+            title: 'Scroll to latest message',
+            onClick: () => { chatMessages.scrollTop = chatMessages.scrollHeight; }
+        });
+        scrollDownBtn.style.display = 'none';
+        chatPanel.appendChild(scrollDownBtn);
+
+        const scrollUpBtn = el('div', { className: 'swml-scroll-up-btn',
+            innerHTML: '<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 17a.5.5 0 0 1-.5-.5V4.707L5.354 8.854a.5.5 0 1 1-.708-.708l5-5a.5.5 0 0 1 .708 0l5 5a.5.5 0 0 1-.708.708L10.5 4.707V16.5a.5.5 0 0 1-.5.5"/></svg>',
+            title: 'Scroll to top of chat',
+            onClick: () => { chatMessages.scrollTo({ top: 0, behavior: 'smooth' }); }
+        });
+        scrollUpBtn.style.display = 'none';
+        chatPanel.appendChild(scrollUpBtn);
+
+        chatMessages.addEventListener('scroll', () => {
+            const gap = chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight;
+            scrollDownBtn.style.display = gap > 150 ? 'flex' : 'none';
+            scrollUpBtn.style.display = chatMessages.scrollTop > 200 ? 'flex' : 'none';
+        }, { passive: true });
+
+        // Chat input
+        const chatInputArea = el('div', { className: 'swml-chat-input' });
+        const chatInputWrap = el('div', { className: 'swml-chat-input-wrapper' });
+        const chatInputInner = el('div', { className: 'swml-chat-input-inner' });
+
+        const chatAttachBtn = el('button', { className: 'swml-upload-btn', innerHTML: SVG_ATTACH, title: 'Upload file' });
+        chatInputInner.appendChild(chatAttachBtn);
+
+        const chatTextarea = el('textarea', { id: 'swml-canvas-chat-input', rows: '1', placeholder: 'Type your response...' });
+        chatTextarea.style.cssText = 'flex:1;border:none;background:transparent;font-size:13px;outline:none;color:var(--swml-text);font-family:inherit;resize:none;line-height:1.5;max-height:200px;min-height:22px;overflow-y:auto;';
+        chatTextarea.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; });
+        function autoGrowChatTextarea() {
+            requestAnimationFrame(() => {
+                chatTextarea.style.height = 'auto';
+                chatTextarea.style.height = Math.min(chatTextarea.scrollHeight, 200) + 'px';
+            });
+        }
+        chatInputInner.appendChild(chatTextarea);
+
+        // Mic button
+        let canvasRecognition = null, canvasListening = false;
+        const chatMicBtn = el('button', { className: 'swml-mic-btn', innerHTML: SVG_MIC, title: 'Voice input',
+            onClick: () => {
+                const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SR) { alert('Voice input is not supported in this browser.'); return; }
+                if (canvasListening && canvasRecognition) { canvasRecognition.stop(); return; }
+                if (!canvasRecognition) {
+                    canvasRecognition = new SR();
+                    canvasRecognition.continuous = true;
+                    canvasRecognition.interimResults = true;
+                    canvasRecognition.lang = 'en-GB';
+                    let finalTranscript = '';
+                    canvasRecognition.onresult = (e) => {
+                        if (canvasChatLoading) return;
+                        let interim = '';
+                        for (let i = e.resultIndex; i < e.results.length; i++) {
+                            if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript + ' ';
+                            else interim += e.results[i][0].transcript;
+                        }
+                        chatTextarea.value = finalTranscript + interim;
+                        chatTextarea.dispatchEvent(new Event('input'));
+                    };
+                    canvasRecognition.onstart = () => {
+                        canvasListening = true; finalTranscript = chatTextarea.value || '';
+                        chatMicBtn.innerHTML = SVG_MIC_STOP;
+                        chatMicBtn.classList.add('swml-mic-active');
+                    };
+                    canvasRecognition.onend = () => {
+                        canvasListening = false;
+                        chatMicBtn.innerHTML = SVG_MIC;
+                        chatMicBtn.classList.remove('swml-mic-active');
+                        chatTextarea.focus();
+                    };
+                    canvasRecognition.onerror = (e) => {
+                        console.warn('Canvas voice error:', e.error);
+                        canvasListening = false;
+                        chatMicBtn.innerHTML = SVG_MIC;
+                        chatMicBtn.classList.remove('swml-mic-active');
+                    };
+                }
+                try { canvasRecognition.start(); } catch(e) { console.warn('Canvas voice start error:', e); }
+            }
+        });
+        chatInputInner.appendChild(chatMicBtn);
+
+        // Send button
+        const chatSendBtn = el('button', { className: 'swml-send-btn', innerHTML: SVG_SEND, title: 'Send' });
+        chatInputInner.appendChild(chatSendBtn);
+
+        chatInputWrap.appendChild(chatInputInner);
+        chatInputArea.appendChild(chatInputWrap);
+        chatPanel.appendChild(chatInputArea);
+
+        // Selection toolbar
+        let canvasChatSelToolbar = null;
+        function removeChatSelToolbar() {
+            if (canvasChatSelToolbar) { canvasChatSelToolbar.remove(); canvasChatSelToolbar = null; }
+        }
+
+        chatMessages.addEventListener('mouseup', () => {
+            setTimeout(() => {
+                const sel = window.getSelection();
+                if (!sel || sel.isCollapsed || !sel.toString().trim()) { removeChatSelToolbar(); return; }
+                const selectedText = sel.toString().trim();
+                if (selectedText.length < 2 || selectedText.length > 2000) return;
+                const anchorEl = sel.anchorNode?.parentElement;
+                if (!anchorEl || !chatMessages.contains(anchorEl)) return;
+
+                removeChatSelToolbar();
+                const quote = selectedText.length > 80 ? selectedText.substring(0, 80) + '...' : selectedText;
+
+                const tb = el('div', { className: 'swml-selection-toolbar swml-sel-neumorphic' });
+                canvasChatSelToolbar = tb;
+
+                tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_REPLY + ' <span>Reply</span>',
+                    onClick: (ev) => {
+                        ev.stopPropagation();
+                        chatTextarea.value = `Regarding "${quote}" \u2014 `;
+                        chatTextarea.dispatchEvent(new Event('input'));
+                        autoGrowChatTextarea();
+                        chatTextarea.focus();
+                        removeChatSelToolbar(); sel.removeAllRanges();
+                    }
+                }));
+
+                tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_INSERT + ' <span>Insert into Doc</span>',
+                    onClick: (ev) => {
+                        ev.stopPropagation();
+                        if (canvasEditor) {
+                            canvasEditor.chain().focus().insertContent(selectedText + '\n').run();
+                        }
+                        removeChatSelToolbar(); sel.removeAllRanges();
+                    }
+                }));
+
+                tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_INSERT + ' <span>Insert</span>',
+                    onClick: (ev) => {
+                        ev.stopPropagation();
+                        chatTextarea.value += (chatTextarea.value && !chatTextarea.value.endsWith(' ') ? ' ' : '') + selectedText;
+                        chatTextarea.dispatchEvent(new Event('input'));
+                        autoGrowChatTextarea();
+                        chatTextarea.focus();
+                        removeChatSelToolbar(); sel.removeAllRanges();
+                    }
+                }));
+
+                tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_COPY + ' <span>Copy</span>',
+                    onClick: (ev) => {
+                        ev.stopPropagation();
+                        navigator.clipboard.writeText(selectedText).catch(() => document.execCommand('copy'));
+                        removeChatSelToolbar(); sel.removeAllRanges();
+                    }
+                }));
+
+                tb.appendChild(el('button', { className: 'swml-sel-btn swml-sel-notes', innerHTML: SVG_SEL_NOTE + ' <span>Note</span>',
+                    onClick: (ev) => {
+                        ev.stopPropagation();
+                        sendToNotes(selectedText);
+                        removeChatSelToolbar(); sel.removeAllRanges();
+                    }
+                }));
+
+                const range = sel.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                const msgsRect = chatMessages.getBoundingClientRect();
+                chatMessages.appendChild(tb);
+                const tbW = tb.offsetWidth;
+                tb.style.top = (rect.top - msgsRect.top + chatMessages.scrollTop - tb.offsetHeight - 8) + 'px';
+                tb.style.left = Math.max(4, Math.min(
+                    rect.left - msgsRect.left + (rect.width / 2) - (tbW / 2),
+                    msgsRect.width - tbW - 4
+                )) + 'px';
+            }, 10);
+        });
+
+        document.addEventListener('mousedown', (e) => {
+            if (canvasChatSelToolbar && !canvasChatSelToolbar.contains(e.target)) removeChatSelToolbar();
+        });
+
+        // Typing indicators
+        function removeCanvasTyping() { removeTypingBubble(chatMessages); }
+        function showCanvasTyping() { createTypingBubble(chatMessages); }
+
+        // sendCanvasMessage — AI Engine chat
+        async function sendCanvasMessage() {
+            const msg = chatTextarea.value.trim();
+            if (!msg || canvasChatLoading) return;
+            canvasChatLoading = true;
+
+            if (canvasListening && canvasRecognition) {
+                try { canvasRecognition.stop(); } catch(e) {}
+            }
+
+            const isSilent = canvasSilentSend;
+            canvasSilentSend = false;
+            if (!isSilent) addChatMessage(msg, 'user');
+            canvasChatHistory.push({ role: 'user', content: msg });
+            chatTextarea.value = '';
+            chatTextarea.style.height = '40px';
+            chatSendBtn.style.opacity = '0.4';
+            chatSendBtn.style.pointerEvents = 'none';
+
+            showCanvasTyping();
+
+            try {
+                let promptText = msg;
+                const essay = getResponseText(canvasEditor);
+                const userMsgCount = canvasChatHistory.filter(m => m.role === 'user').length;
+                const boardName = (state.board || '').toUpperCase().replace('-', ' ');
+                const subjectName = (state.subject || '').replace(/_/g, ' ');
+                const textName = state.textName || state.text || '';
+
+                if (canvasInMarkScheme) {
+                    if (userMsgCount === 1) {
+                        promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName} \u2014 MARK SCHEME QUIZ]\n[STUDENT'S RESPONSE]\n${msg}`;
+                    }
+                } else if (state.task === 'planning' || state.task === 'polishing') {
+                    const docContent = canvasEditor ? canvasEditor.getText() : '';
+                    if (userMsgCount === 1) {
+                        promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName} \u2014 ${state.task.toUpperCase()}${state.phase === 'redraft' ? ' (REDRAFT)' : ''}]\n[STUDENT'S DOCUMENT \u2014 contains question, essay plan, and response sections]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                    } else if (docContent.trim().length > 50) {
+                        promptText = `[STUDENT'S DOCUMENT \u2014 current state]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                    }
+                    console.log('WML Canvas: Planning/polishing doc injected. Length:', docContent.length);
+                } else if (isCwSi) {
+                    const docContent = canvasEditor ? canvasEditor.getText() : '';
+                    const stepLabel = cwStepDef?.label || 'Creative Writing';
+                    if (userMsgCount === 1) {
+                        promptText = `[CONTEXT: Creative Writing Course \u2014 Step ${cwStepDef?.step || cwStepDef?.trial}: ${stepLabel}]\n[STUDENT'S CREATIVE WRITING DOCUMENT]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                    } else if (docContent.trim().length > 50) {
+                        promptText = `[CREATIVE WRITING DOCUMENT \u2014 current draft]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                    }
+                    console.log('WML Canvas: CW doc injected for', state.task, 'Length:', docContent.length);
+                } else if (essay.trim().length > 50) {
+                    const wc = getResponseWordCount(canvasEditor);
+                    if (userMsgCount === 1) {
+                        promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName}]\n[STUDENT'S ESSAY \u2014 ${wc} words]\n\n${essay}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                    } else {
+                        promptText = `[REMINDER \u2014 STUDENT'S ACTUAL ESSAY (${wc} words) \u2014 assess ONLY this text, quote from it directly]\n\n${essay}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                    }
+                    const sectionLabels = (essay.match(/=== .+? ===/g) || []).join(', ');
+                    console.log('WML Canvas: Essay injected (' + wc + ' words). Sections: [' + (sectionLabels || 'no labels') + ']. First 200 chars:', essay.substring(0, 200));
+                } else if (userMsgCount === 1) {
+                    promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName}]\n[NOTE: The student's Response section is empty or very short. Ask them to paste or write their essay in the Response section of the document before continuing with the assessment.]\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                    console.warn('WML Canvas: Essay too short or empty. getResponseText returned:', essay.substring(0, 100));
+                }
+
+                const historyToSend = canvasChatHistory.slice(0, -1).slice(-24);
+
+                const response = await fetch(API.chat, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        prompt: promptText,
+                        botId: 'wml-claude',
+                        chatId: canvasChatId,
+                        history: historyToSend,
+                        planState: state.plan || {},
+                        step: state.step || 1,
+                        board: state.board,
+                        subject: state.subject,
+                        text: state.text || '',
+                        task: state.task || 'assessment',
+                        question: state.question || '',
+                        marks: state.marks || 30,
+                        aos: state.aos || [],
+                        draftType: state.draftType || 'diagnostic',
+                        topicNumber: state.topicNumber || 1,
+                        phase: state.phase || 'initial',
+                    })
+                });
+                const res = await response.json();
+                removeCanvasTyping();
+
+                if (res.success && res.reply) {
+                    const cleanReply = stripAIInternals(res.reply);
+                    const formatted = formatAI(cleanReply);
+                    addChatMessage(formatted, 'ai', cleanReply);
+                    canvasChatHistory.push({ role: 'assistant', content: res.reply });
+                    if (res.chatId) canvasChatId = res.chatId;
+                    if (res.method) console.log('WML Canvas:', res.method, 'model:', res.model);
+                    saveCanvasChat(canvasChatHistory, canvasChatId);
+                    if (/(?:question in (?:your|the) document|question at the top|look at the.*question|essay question section)/i.test(cleanReply)) {
+                        setTimeout(() => scrollToQuestionSection(), 400);
+                    }
+                    try {
+                        await refreshPlan();
+                        await extractAndSavePlan(msg, res.reply);
+                        console.log('WML Canvas: Plan state after extraction:', { total_score: state.plan.total_score, grade: state.plan.grade, task: state.task });
+
+                        if (state.task === 'assessment') {
+                            const detected = detectAssessmentStep(res.reply);
+                            console.log('WML Canvas: detectAssessmentStep \u2192', { step: detected.step, isComplete: detected.isComplete, totalScore: detected.totalScore, grade: detected.grade, currentStep: state.step });
+                            if (detected.step > state.step) updateProgress(detected.step);
+                            if (detected.isComplete) {
+                                console.log('WML Canvas: Assessment Complete detected in AI response');
+                                if (!state.plan.total_score && detected.totalScore) { state.plan.total_score = detected.totalScore; console.log('WML: Force-extracted total_score:', detected.totalScore); }
+                                if (!state.plan.grade && detected.grade) { state.plan.grade = detected.grade; console.log('WML: Force-extracted grade:', detected.grade); }
+                            }
+                            if (!state._phaseMarkedComplete && assessCompleteBtnRef.value && assessCompleteBtnRef.value.style.display === 'none') {
+                                const isAssessmentDone = detected.isComplete || state.step >= 8 || (state.plan.total_score && state.plan.grade);
+                                if (isAssessmentDone) {
+                                    assessCompleteBtnRef.value.style.display = '';
+                                    assessCompleteBtnRef.value.classList.add('swml-assess-ready');
+                                    assessCompleteBtnRef.value.style.opacity = '0';
+                                    assessCompleteBtnRef.value.style.transform = 'translateY(10px)';
+                                    requestAnimationFrame(() => {
+                                        assessCompleteBtnRef.value.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                                        assessCompleteBtnRef.value.style.opacity = '1';
+                                        assessCompleteBtnRef.value.style.transform = 'translateY(0)';
+                                    });
+                                    console.log('WML: Mark Complete button \u2192 VISIBLE (assessment complete detected)');
+                                }
+                            }
+                            if (!state._phaseMarkedComplete && assessCompleteBtnRef.value && assessCompleteBtnRef.value.style.display === 'none') {
+                                if (/Closing\s+Summary/i.test(res.reply) || /Session\s+Complete/i.test(res.reply)) {
+                                    assessCompleteBtnRef.value.style.display = '';
+                                    assessCompleteBtnRef.value.classList.add('swml-assess-ready');
+                                    assessCompleteBtnRef.value.style.opacity = '0';
+                                    assessCompleteBtnRef.value.style.transform = 'translateY(10px)';
+                                    requestAnimationFrame(() => {
+                                        assessCompleteBtnRef.value.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                                        assessCompleteBtnRef.value.style.opacity = '1';
+                                        assessCompleteBtnRef.value.style.transform = 'translateY(0)';
+                                    });
+                                    console.log('WML: Mark Complete button \u2192 VISIBLE (safety net: Closing Summary/Session Complete keyword)');
+                                }
+                            }
+                        }
+                    } catch (exErr) {
+                        console.warn('WML Canvas: extraction/completion check failed:', exErr);
+                    }
+                } else if (res.message) {
+                    addChatMessage(`<p>Sorry, there was an issue: <strong>${res.message}</strong></p><p>Please let your teacher know about this error.</p>`, 'ai');
+                } else {
+                    addChatMessage('<p>I had a momentary difficulty \u2014 could you try again?</p>', 'ai');
+                }
+            } catch (e) {
+                removeCanvasTyping();
+                console.error('WML Canvas chat error:', e);
+                addChatMessage(`<p>Connection error: <strong>${e.message}</strong></p><p>Check the browser console for details.</p>`, 'ai');
+            }
+
+            canvasChatLoading = false;
+            chatSendBtn.style.opacity = '';
+            chatSendBtn.style.pointerEvents = '';
+        }
+
+        // Send handlers
+        chatSendBtn.addEventListener('click', sendCanvasMessage);
+        chatTextarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const multiSubmit = document.querySelector('.swml-quick-submit:not([disabled])');
+                if (multiSubmit && !chatTextarea.value?.trim()) { multiSubmit.click(); return; }
+                if (canvasListening && canvasRecognition) {
+                    canvasRecognition.stop();
+                    setTimeout(() => {
+                        if (chatTextarea.value.trim()) sendCanvasMessage();
+                    }, 350);
+                    return;
+                }
+                sendCanvasMessage();
+            }
+        });
+
+        // Resize handle for chat panel
+        const chatResizeHandle = el('div', { className: 'swml-canvas-chat-resize' });
+        chatResizeHandle.style.opacity = '0';
+        let chatResizing = false;
+        chatResizeHandle.addEventListener('mousedown', (e) => {
+            chatResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            e.preventDefault();
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (!chatResizing) return;
+            const canvasRect = canvas.getBoundingClientRect();
+            const newWidth = canvasRect.right - e.clientX;
+            if (newWidth >= 280 && newWidth <= 600) {
+                chatPanel.style.width = newWidth + 'px';
+            }
+        });
+        document.addEventListener('mouseup', () => {
+            if (chatResizing) {
+                chatResizing = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        return {
+            protoPanel,
+            chatPanel,
+            chatResizeHandle,
+            chatMessages,
+            chatTextarea,
+            chatSendBtn,
+            addChatMessage,
+            sendCanvasMessage,
+            canvasChatHistory,
+            get canvasChatId() { return canvasChatId; },
+            set canvasChatId(v) { canvasChatId = v; },
+            autoGrowChatTextarea,
+        };
+    }
+    // ══════════════════════════════════════════════════════════════════
 
     let _canvasGuard = false; // Prevents double-render of canvas workspace (v7.12.61)
     function renderCanvasWorkspace() {
@@ -771,6 +1545,9 @@
         }
         setTimeout(checkCtxOverflow, 200);
 
+        // v7.14.50: Hide context badges for training-env exercises — sidebar already shows them
+        // Note: useTrainingEnv is declared later, so check inline from manifest
+        if ((WML.getExerciseConfig(state.task)?.environment || 'free') === 'training') ctxBadges.style.display = 'none';
         headerRow.appendChild(ctxBadges);
 
         // Toolbar buttons (centre)
@@ -1684,7 +2461,8 @@
                 }, { confirmText: 'Reset', danger: true });
             }
         });
-        statusBar.appendChild(resetBtn);
+        // v7.14.50: Hide Reset for training-env (document is protocol-driven, resetting breaks flow)
+        if ((WML.getExerciseConfig(state.task)?.environment || 'free') !== 'training') statusBar.appendChild(resetBtn);
         statusBar.appendChild(wcDisplay);
         // wcRestore added after widget creation below
         let wcRestore; // forward declaration
@@ -1769,6 +2547,8 @@
         // v7.14.11: Diagnostic mode — hide assessment-only sections (feedback, scores, etc.)
         const isDiagnosticEnv = envType === 'free' && !canvasInFeedback;
         if (isDiagnosticEnv) canvas.classList.add('swml-canvas-diagnostic');
+        // v7.14.50: Mark scheme class — enables notice section visibility via CSS
+        if (canvasInMarkScheme) canvas.classList.add('swml-canvas-mark-scheme');
 
         // Countdown timer — phase-aware: Phase 1 = 10 days, Phase 2 = 14 days (v7.12.99)
         // v7.13.39: Skip for CW exercises. v7.13.97: Skip for exam prep (no phase deadline)
@@ -1792,7 +2572,9 @@
                 }
                 const daysLeft = Math.ceil(remaining / (24 * 60 * 60 * 1000));
                 const daysPassed = totalDays - daysLeft;
-                countdownDisplay.textContent = `Day ${daysPassed + 1} · ${daysLeft}d left`;
+                // v7.14.50: Prepend phase label so students know this is the phase deadline, not the exercise
+                const phasePrefix = state.phase === 'redraft' ? 'Phase 2: ' : (state.phase === 'initial' ? 'Phase 1: ' : '');
+                countdownDisplay.textContent = `${phasePrefix}Day ${daysPassed + 1} · ${daysLeft}d left`;
                 countdownDisplay.style.color = daysLeft <= 2 ? '#ff6b6b' : daysLeft <= 5 ? '#ffb432' : '';
             }
             updateCountdown();
@@ -1968,13 +2750,21 @@
         });
         extractBtn.innerHTML = SVG_EXTRACT + ' Extract';
         // v7.13.39: Hide extract button for CW exercises (no extract to show)
-        if (!(state.task && state.task.startsWith('cw_'))) {
+        // v7.14.50: Also hide for mark_scheme (no question extract)
+        if (!(state.task && state.task.startsWith('cw_')) && state.task !== 'mark_scheme') {
             statusBar.appendChild(extractBtn);
         }
 
         editorPane.appendChild(statusBar);
 
         canvas.appendChild(editorPane);
+
+        // v7.14.48: Hide document panel when manifest says panels.document === false
+        // (e.g. mark_scheme is chat-only quiz — no document needed)
+        if (exerciseConfig.panels && exerciseConfig.panels.document === false) {
+            editorPane.style.display = 'none';
+            canvas.classList.add('swml-canvas-no-document');
+        }
 
         // ── Right Panel — Diagnostic Tips OR Plan ──
         const rightPanel = el('div', { className: 'swml-canvas-plan' });
@@ -2003,9 +2793,8 @@
             if (val) hasPlan = true;
         });
 
-        // Direct assessment entry — force diagnostic branch so diagCompleteBtn is created
-        // (the auto-trigger will click it after content loads, transitioning to assessment UI)
-        if (canvasInAssessment) hasPlan = false;
+        // v7.14.48: hasPlan override removed — training-env exercises use direct rendering branch,
+        // so they never reach the diagnostic else-branch. No need to force hasPlan = false.
 
         // ── Feedback Discussion Mode — guidance panel + auto-scroll + video (v7.12.80) ──
         if (canvasInFeedback) {
@@ -2041,8 +2830,35 @@
             }
 
             // v7.14.45: Completion buttons suppressed — LearnDash handles Mark Complete and navigation.
-            // Buttons were: "I've Studied the Model Answer", "Skip — Come Back Later"
-            // Will be re-enabled when LearnDash bridge completion detection is built.
+
+            // v7.14.48: Show Playlist button — appears when video player is dismissed
+            const fbPlaylistBtn = build3DButton('Show Playlist', 'Loading...', () => {
+                const taskKey = 'feedback_discussion';
+                fetch(`${config.restUrl}resources?task=${encodeURIComponent(taskKey)}&step=0&board=${encodeURIComponent(state.board)}&subject=${encodeURIComponent(state.subject)}`, { headers })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data?.videos?.length > 0 && window.wmlVideo) {
+                            wmlVideo.open(data.videos, { size: 'medium' });
+                            fbPlaylistBtn.style.display = 'none';
+                        }
+                    })
+                    .catch(() => {});
+            });
+            fbPlaylistBtn.style.display = 'none'; // Hidden initially — shown when video player closes
+            fbPlaylistBtn.style.marginTop = '16px';
+            rightPanel.appendChild(fbPlaylistBtn);
+
+            // Listen for video player close to show the re-trigger button
+            const _fbVideoObserver = setInterval(() => {
+                const playerEl = document.querySelector('.swml-video-player, .swml-video-overlay');
+                if (!playerEl && fbPlaylistBtn.style.display === 'none' && fbPlaylistBtn._wasOpened) {
+                    fbPlaylistBtn.style.display = '';
+                }
+                if (playerEl) fbPlaylistBtn._wasOpened = true;
+            }, 1000);
+            // Clean up observer when canvas closes
+            const _fbCleanup = () => { clearInterval(_fbVideoObserver); };
+            canvas.addEventListener('remove', _fbCleanup);
 
             // Auto-scroll to feedback section + open video player after document loads
             // Use polling instead of fixed timeout — async migration chain may not have finished
@@ -2290,6 +3106,345 @@
                     if (WML.renderCreativeWritingDashboard) WML.renderCreativeWritingDashboard();
                 }
             }));
+        } else if (useTrainingEnv) {
+            // ── v7.14.48: Training-environment direct rendering ──
+            // Exercises with environment:'training' (assessment, mark_scheme, planning, polishing, exam_prep, CW SI)
+            // build chat + sidebar panels DIRECTLY — no diagnostic canvas, no flash, no auto-trigger.
+            const _assessBtnRef = { value: null };
+            const tp = buildTrainingPanels({
+                canvas, canvasEditor, exerciseConfig,
+                boardLabel, subjectLabel, textLabel,
+                isCwTask, cwStepDef, isCwSi, isExamPrep,
+                canvasInMarkScheme, canvasInFeedback,
+                canvasChatHeaderLabel, canvasSidebarSteps,
+                assessCompleteBtnRef: _assessBtnRef,
+            });
+            assessCompleteBtn = _assessBtnRef.value;
+
+            // Insert panels directly — no animation needed, they render with the canvas
+            canvas.insertBefore(tp.protoPanel, editorPane);
+            canvas.appendChild(tp.chatResizeHandle);
+            canvas.appendChild(tp.chatPanel);
+
+            // Reveal resize handle
+            tp.chatResizeHandle.style.transition = 'opacity 0.5s ease';
+            tp.chatResizeHandle.style.opacity = '1';
+
+            // rightPanel is not used in training env — hide it
+            rightPanel.style.display = 'none';
+
+            // Set assessment mode state
+            state.step = 0;
+            if (state.task !== 'mark_scheme' && state.task !== 'planning' && state.task !== 'polishing' && !(state.task && state.task.startsWith('cw_')) && !isExamPrep) state.task = 'assessment';
+
+            // ── Chat persistence: resume or fresh start ──
+            // Deferred until TipTap editor initialises + template loads
+            const _initTrainingChat = async () => {
+                let savedChat = loadCanvasChat();
+                const skipServerChat = state.task && state.task.startsWith('cw_');
+                if (!skipServerChat && (!savedChat || !savedChat.history || savedChat.history.length === 0)) {
+                    try {
+                        const _chatSuffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+                        const chatUrl = `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}`;
+                        const serverChat = await fetch(chatUrl, { headers }).then(r => r.json());
+                        if (serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
+                            savedChat = serverChat.chat;
+                            console.log('WML Training: Chat loaded from server (localStorage empty)');
+                        }
+                    } catch (e) { console.log('WML Training: Server chat load unavailable'); }
+                }
+                // Discard stale chats
+                if (savedChat && savedChat.task && savedChat.task !== state.task) {
+                    console.log('WML Training: Discarding stale chat — saved task:', savedChat.task, 'current task:', state.task);
+                    savedChat = null;
+                    try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+                }
+                if (isExamPrep && savedChat && savedChat.history && savedChat.history.length > 0) {
+                    const firstAI = savedChat.history.find(m => m.role === 'assistant');
+                    if (firstAI && firstAI.content.includes('assessment phase')) {
+                        console.log('WML Training: Discarding stale assessment chat from exam prep exercise');
+                        savedChat = null;
+                        try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+                    }
+                }
+                if (canvasInMarkScheme && savedChat && savedChat.history && savedChat.history.length > 0) {
+                    console.log('WML Training: Discarding saved mark_scheme chat — protocol must drive from scratch');
+                    savedChat = null;
+                    try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+                }
+                if (isCwSi && savedChat && savedChat.history && savedChat.history.length > 0) {
+                    const firstAI = savedChat.history.find(m => m.role === 'assistant');
+                    if (firstAI && firstAI.content.includes('assessment phase')) {
+                        console.log('WML Training: Discarding stale assessment chat from CW exercise');
+                        savedChat = null;
+                        try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+                    }
+                }
+                const hasSavedChat = savedChat && savedChat.history && savedChat.history.length > 0;
+
+                // Unified assessment state initialiser
+                async function initAssessmentState() {
+                    if (state.task !== 'assessment' && state.task !== 'redraft_assessment' && !isCwSi && !isExamPrep) return;
+                    const allAiMsgs = tp.canvasChatHistory.filter(m => m.role === 'assistant');
+                    let maxStep = allAiMsgs.length > 0 ? 1 : 0;
+                    let sessionComplete = false;
+                    allAiMsgs.forEach(msg => {
+                        const detected = detectAssessmentStep(msg.content);
+                        if (detected.step > maxStep) maxStep = detected.step;
+                        if (detected.isComplete) {
+                            sessionComplete = true;
+                            if (!state.plan.total_score && detected.totalScore) state.plan.total_score = detected.totalScore;
+                            if (!state.plan.grade && detected.grade) state.plan.grade = detected.grade;
+                        }
+                    });
+                    if (maxStep > state.step) {
+                        updateProgress(maxStep);
+                        console.log('WML initAssessmentState: Sidebar → step', maxStep);
+                    }
+                    if (state._phaseMarkedComplete) return;
+                    try {
+                        const phaseUrl = `${API.phaseStatus}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topic=${state.topicNumber || 1}`;
+                        const phaseRes = await apiGet(phaseUrl);
+                        const currentPhase = state.phase === 'redraft' ? 'redraft' : 'initial';
+                        if (phaseRes[currentPhase]?.status === 'complete') {
+                            state._phaseMarkedComplete = true;
+                            console.log('WML initAssessmentState: Phase already complete');
+                            return;
+                        }
+                    } catch (e) { /* phase check failed */ }
+                    const isComplete = sessionComplete || (state.plan.total_score && state.plan.grade) || maxStep >= 8;
+                    if (isComplete && assessCompleteBtn) {
+                        assessCompleteBtn.style.display = '';
+                        assessCompleteBtn.classList.add('swml-assess-ready');
+                        console.log('WML initAssessmentState: Mark Complete → VISIBLE (restored)');
+                    }
+                }
+
+                if (hasSavedChat) {
+                    // Resume saved chat
+                    console.log('WML Training: Resuming chat with', savedChat.count, 'messages');
+                    savedChat.history.forEach(msg => {
+                        if (msg.role === 'assistant') {
+                            const clean = stripAIInternals(msg.content);
+                            tp.addChatMessage(formatAI(clean), 'ai', clean);
+                        } else if (msg.role === 'user') {
+                            tp.addChatMessage(msg.content, 'user');
+                        }
+                        tp.canvasChatHistory.push(msg);
+                    });
+                    if (savedChat.chatId) tp.canvasChatId = savedChat.chatId;
+
+                    await initAssessmentState();
+
+                    const lastAI = savedChat.history.filter(m => m.role === 'assistant').pop();
+                    if (lastAI) {
+                        try {
+                            const lastUser = savedChat.history.filter(m => m.role === 'user').pop();
+                            await refreshPlan();
+                            await extractAndSavePlan(lastUser?.content || '', lastAI.content);
+                            await initAssessmentState();
+                        } catch (err) { console.warn('WML Training: extraction chain failed:', err); }
+                    }
+
+                    // Restore grade buttons if only greeting exists
+                    const userMsgs = savedChat.history.filter(m => m.role === 'user');
+                    const aiMsgs = savedChat.history.filter(m => m.role === 'assistant');
+                    if (state.task === 'assessment' && !canvasInMarkScheme && !canvasInFeedback && !isCwTask
+                        && aiMsgs.length === 1 && userMsgs.length === 0) {
+                        setTimeout(() => {
+                            const lastBubble = tp.chatMessages.lastElementChild;
+                            if (lastBubble && !lastBubble.querySelector('.swml-quick-actions')) {
+                                const gradeBar = el('div', { className: 'swml-quick-actions' });
+                                ['Grade 9', 'Grade 8', 'Grade 7'].forEach(g => {
+                                    gradeBar.appendChild(el('button', {
+                                        className: 'swml-quick-btn',
+                                        textContent: g,
+                                        onClick: () => { gradeBar.remove(); tp.chatTextarea.value = g; tp.sendCanvasMessage(); }
+                                    }));
+                                });
+                                const bc = lastBubble.querySelector('.swml-bubble-content') || lastBubble;
+                                bc.appendChild(gradeBar);
+                                console.log('WML: Restored grade buttons on resumed greeting');
+                            }
+                        }, 100);
+                    }
+
+                    setTimeout(() => { tp.chatMessages.scrollTop = tp.chatMessages.scrollHeight; }, 150);
+                } else if (isCwSi) {
+                    // CW SI greeting — same as transition handler
+                    setTimeout(async () => {
+                    const firstName = (config.userName || '').split(' ')[0] || 'there';
+                    const stepLabel = cwStepDef?.label || 'this step';
+                    const stepNum = cwStepDef?.step || cwStepDef?.trial || '';
+                    const projectId = state.cwProjectId;
+
+                    // Load predecessor draft
+                    const draftPredKey = WML.CW_DRAFT_PREDECESSOR[cwStepDef?.step];
+                    if (draftPredKey && projectId) {
+                        try {
+                            const predArtifact = await WML.cwProject.loadArtifact(projectId, draftPredKey);
+                            if (predArtifact?.success && predArtifact.value && canvasEditor) {
+                                canvasEditor.commands.setContent(predArtifact.value);
+                            }
+                        } catch (e) { console.log('WML CW: No predecessor draft to load'); }
+                    }
+
+                    // Load plot outline for update steps
+                    const plotUpdateSteps = [11, 14, 17, 20, 23, 26];
+                    if (plotUpdateSteps.includes(cwStepDef?.step) && projectId) {
+                        try {
+                            const plotArtifact = await WML.cwProject.loadArtifact(projectId, 'plot_outline');
+                            if (plotArtifact?.success && plotArtifact.value && canvasEditor) {
+                                canvasEditor.commands.setContent(plotArtifact.value);
+                            }
+                        } catch (e) { console.log('WML CW: No plot outline to load'); }
+                    }
+
+                    // Load dependency artifacts
+                    const cwDependencies = {
+                        2: ['writer_profile'], 3: ['writer_profile', 'story_ideas'],
+                        4: ['logline'], 5: ['brief_outline'], 6: ['plot_structure_choice'],
+                        8: ['plot_outline'], 9: ['plot_outline', 'scene_selection'],
+                    };
+                    const deps = cwDependencies[cwStepDef?.step];
+                    let missingPrereq = null;
+                    if (deps && projectId) {
+                        for (const depKey of deps) {
+                            try {
+                                const depArtifact = await WML.cwProject.loadArtifact(projectId, depKey);
+                                if (depArtifact?.success && depArtifact.value) {
+                                    const depLabel = depKey.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                                    tp.canvasChatHistory.push({ role: 'user', content: `[CONTEXT FROM PREVIOUS STEP] ${depLabel}:\n\n${depArtifact.value}` });
+                                } else if (!missingPrereq) {
+                                    missingPrereq = depKey;
+                                }
+                            } catch (e) {
+                                if (!missingPrereq) missingPrereq = depKey;
+                            }
+                        }
+                    }
+
+                    // Step-aware greeting
+                    const cwPrevContext = {
+                        1: 'This is the starting point of your creative writing journey.',
+                        2: 'In Step 1, you built your Writer\u2019s Profile. Now we\u2019ll look outward for a spark.',
+                        3: 'In Step 2, you explored story ideas. Now we\u2019ll distil your favourite into a logline.',
+                        4: 'In Step 3, you crafted your logline. Now we\u2019ll give it a skeleton.',
+                        5: 'In Step 4, you outlined your story. Now we\u2019ll choose the plot structure.',
+                        6: 'In Step 5, you chose your plot structure. Now we\u2019ll build a detailed plot outline.',
+                        7: 'In Step 6, you built your plot outline. Now we\u2019ll explore your story\u2019s values.',
+                        8: 'You\u2019ve built your plot outline and explored values. Now choose your scene(s).',
+                        9: 'You\u2019ve chosen your scene(s). Now write your first draft.',
+                    };
+                    const prevCtx = cwPrevContext[stepNum] || `Let\u2019s continue with **${stepLabel}**.`;
+                    const introLine = `Welcome to Step ${stepNum}: **${stepLabel}**\n\n${prevCtx}`;
+                    let greetingText;
+                    if (missingPrereq && stepNum > 1) {
+                        const prereqLabel = missingPrereq.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                        const prereqStep = missingPrereq === 'writer_profile' ? 1 : missingPrereq === 'story_ideas' ? 2 : missingPrereq === 'logline' ? 3 : missingPrereq === 'brief_outline' ? 4 : missingPrereq === 'plot_structure_choice' ? 5 : missingPrereq === 'plot_outline' ? 6 : stepNum - 1;
+                        greetingText = `Welcome to Step ${stepNum}: **${stepLabel}**\n\nIt looks like you haven\u2019t completed **Step ${prereqStep}** yet \u2014 I need your **${prereqLabel}** from that step before we can begin this one.\n\nPlease go back to **Step ${prereqStep}** and complete it first.`;
+                    } else if (stepNum === 1) {
+                        greetingText = `${introLine}\n\nIn this course, you\u2019ll experience what it\u2019s like to create a story from the inside \u2014 the **Inside Out** technique.\n\nWhen you\u2019re ready, hit the button below and let\u2019s get started.`;
+                    } else {
+                        greetingText = `${introLine}\n\nWhen you\u2019re ready, hit the button below and let\u2019s get started.`;
+                    }
+                    tp.addChatMessage(formatAI(greetingText), 'ai', greetingText);
+                    tp.canvasChatHistory.push({ role: 'assistant', content: greetingText });
+                    saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
+
+                    setTimeout(() => {
+                        const startBar = el('div', { className: 'swml-quick-actions' });
+                        if (missingPrereq && stepNum > 1) {
+                            startBar.appendChild(el('button', { className: 'swml-quick-btn', textContent: 'Back to Steps',
+                                onClick: () => { startBar.remove(); closeCanvasOverlay(); WML.renderCreativeWritingDashboard(); }
+                            }));
+                        } else {
+                            startBar.appendChild(el('button', { className: 'swml-quick-btn', textContent: "Let's begin",
+                                onClick: () => { startBar.remove(); tp.chatTextarea.value = "Let's begin!"; tp.sendCanvasMessage(); }
+                            }));
+                        }
+                        const greetBubble = tp.chatMessages.lastElementChild;
+                        if (greetBubble) {
+                            const bc = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
+                            bc.appendChild(startBar);
+                        }
+                    }, 50);
+                    }, 400);
+                } else if (state.task === 'assessment') {
+                    // Assessment greeting — grade target question
+                    setTimeout(() => {
+                    const assessTextName = state.textName || state.text || 'your text';
+                    const assessWc = getResponseWordCount(canvasEditor);
+                    const questionText = extractEssayQuestion(canvasEditor);
+                    if (questionText) state.question = questionText;
+                    const questionSnippet = questionText ? `\n\nYour essay question: **${questionText}**` : '';
+                    const questionHTML = questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your essay question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
+                    const firstName = (config.userName || '').split(' ')[0] || 'there';
+                    const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} essay` : `${assessTextName} diagnostic essay`;
+                    const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
+                    const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all 8 steps to receive your full score, grade, and personalised feedback.</div>';
+                    tp.addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? 'essay' : 'diagnostic essay'} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
+                    tp.canvasChatHistory.push({ role: 'assistant', content: greetingText });
+                    saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
+
+                    setTimeout(() => {
+                        const gradeBar = el('div', { className: 'swml-quick-actions' });
+                        ['Grade 9', 'Grade 8', 'Grade 7'].forEach(g => {
+                            gradeBar.appendChild(el('button', {
+                                className: 'swml-quick-btn',
+                                textContent: g,
+                                onClick: () => { gradeBar.remove(); tp.chatTextarea.value = g; tp.sendCanvasMessage(); }
+                            }));
+                        });
+                        const greetBubble = tp.chatMessages.lastElementChild;
+                        if (greetBubble) {
+                            const bubbleContent = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
+                            bubbleContent.appendChild(gradeBar);
+                        }
+                    }, 50);
+                    initAssessmentState();
+                    }, 200);
+                } else if (canvasInMarkScheme) {
+                    // v7.14.50: Mark scheme — welcome message explaining why this matters, then silent auto-send
+                    const msFirstName = (config.userName || '').split(' ')[0] || 'there';
+                    const msGreeting = `Hi ${msFirstName}! Welcome to your **Mark Scheme Assessment**.\n\nUnderstanding the marking criteria is one of the most powerful ways to improve your grades. Many students lose marks in exams not because they can\u2019t write well, but because they forget what the examiner is actually looking for.\n\nThis quiz will test your knowledge of how essays are marked against the assessment objectives. Your results will help you see exactly which criteria to focus on in your next essay.\n\nWhen you\u2019re ready, I\u2019ll start with Question 1.`;
+                    tp.addChatMessage(formatAI(msGreeting), 'ai', msGreeting);
+                    tp.canvasChatHistory.push({ role: 'assistant', content: msGreeting });
+                    saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
+
+                    // Quick action: "Let's begin"
+                    setTimeout(() => {
+                        const startBar = el('div', { className: 'swml-quick-actions' });
+                        startBar.appendChild(el('button', { className: 'swml-quick-btn', textContent: "Let's begin",
+                            onClick: () => { startBar.remove(); canvasSilentSend = true; tp.chatTextarea.value = "Let's begin the mark scheme quiz."; tp.sendCanvasMessage(); }
+                        }));
+                        const greetBubble = tp.chatMessages.lastElementChild;
+                        if (greetBubble) {
+                            const bc = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
+                            bc.appendChild(startBar);
+                        }
+                    }, 50);
+                } else {
+                    // All other training-env exercises: silent auto-send (protocol drives greeting)
+                    setTimeout(() => {
+                        console.log('WML Training: Silent auto-send for', state.task);
+                        if (tp.chatTextarea) { canvasSilentSend = true; tp.chatTextarea.value = "Let's begin!"; tp.sendCanvasMessage(); }
+                    }, 400);
+                }
+
+                // Scroll document to top
+                setTimeout(() => {
+                    const editor = document.getElementById('swml-tiptap-editor');
+                    const scrollContainer = editor?.closest('.swml-canvas-content');
+                    if (scrollContainer) scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 600);
+            };
+
+            // Defer chat init until after template loads (editor needs content for word count etc.)
+            // Using the same timing as the transition handler — templates load by ~800ms
+            setTimeout(_initTrainingChat, 800);
+
+            console.log('WML: Training-env direct render for', state.task, '(no diagnostic flash)');
         } else {
             // Diagnostic mode — guidance tips
             rightPanel.appendChild(el('h3', {
@@ -3600,9 +4755,9 @@
 
                                             console.log('WML CW: Greeting shown for', state.task);
                                             }, 400);
-                                        } else if (!canvasInMarkScheme) {
-                                            // Fresh start: show greeting (delay to let CharacterCount sync)
-                                            // v7.14.47: Mark scheme excluded — it uses silent auto-send to quiz protocol
+                                        } else if (state.task === 'assessment') {
+                                            // v7.14.48: Narrowed to assessment only (was catch-all).
+                                            // Training-env exercises now render directly via buildTrainingPanels().
                                             setTimeout(() => {
                                             const assessTextName = state.textName || state.text || 'your text';
                                             // v7.14.28: Use response-only word count — no fallback to full doc count
@@ -3734,7 +4889,8 @@
         // ── Sequence Navigation Buttons (v7.12.85) ──
         // Show Previous / Next buttons for navigating between exercise steps
         // v7.14.13: Skip for diagnostic (task='') — LearnDash handles exercise transitions
-        if (state.topicNumber && state.task) {
+        // v7.14.48: Also skip for feedback_discussion (LD handles nav), and all training-env exercises
+        if (state.topicNumber && state.task && !canvasInFeedback && !useTrainingEnv) {
             const PHASE1_SEQ = [
                 { id: 'diagnostic', task: '', label: 'Write Essay' },
                 { id: 'assessment', task: 'assessment', label: 'Get Assessed' },
@@ -3822,8 +4978,9 @@
             delete canvas._epProtoPanel;
         }
 
-        // Direct assessment entry — hide diagnostic UI immediately (auto-trigger will transition)
-        if (canvasInAssessment) {
+        // v7.14.48: Training-env exercises hide rightPanel in their own branch (buildTrainingPanels).
+        // This guard is kept ONLY for the legacy diagnostic→assessment transition (no longer auto-triggered).
+        if (canvasInAssessment && !useTrainingEnv) {
             rightPanel.style.display = 'none';
             reopenBtn.style.display = 'none';
         }
@@ -3896,19 +5053,19 @@
         }
 
         // Hide notepad during diagnostic (no assistance allowed)
+        // v7.14.48: Training-env exercises get notepad immediately — only hide for diagnostic (free-env)
         const snFab = document.querySelector('.sn-fab');
         const snPanel = document.querySelector('.sn-panel');
-        if (snFab) snFab.style.display = 'none';
-        if (snPanel) snPanel.style.display = 'none';
-        // Also hide the vertical "Take Notes" sidebar tab (Sophicly Notes tab trigger)
-        document.querySelectorAll('.sn-tab, .sn-tab-trigger, #snTabTrigger, [class*="sticky-note-tab"], [class*="notes-tab"]').forEach(t => t.style.display = 'none');
-        // Hide mobile FAB trigger too
-        const snFabTrigger = document.getElementById('snFabTrigger');
-        if (snFabTrigger) snFabTrigger.style.display = 'none';
-        // Fallback: hide any fixed element containing "Take Notes" text on the right edge
-        document.querySelectorAll('div[style*="position: fixed"], div[style*="position:fixed"]').forEach(t => {
-            if (t.textContent.trim() === 'Take Notes' || t.textContent.trim() === 'TakeNotes') t.style.display = 'none';
-        });
+        if (!useTrainingEnv) {
+            if (snFab) snFab.style.display = 'none';
+            if (snPanel) snPanel.style.display = 'none';
+            document.querySelectorAll('.sn-tab, .sn-tab-trigger, #snTabTrigger, [class*="sticky-note-tab"], [class*="notes-tab"]').forEach(t => t.style.display = 'none');
+            const snFabTrigger = document.getElementById('snFabTrigger');
+            if (snFabTrigger) snFabTrigger.style.display = 'none';
+            document.querySelectorAll('div[style*="position: fixed"], div[style*="position:fixed"]').forEach(t => {
+                if (t.textContent.trim() === 'Take Notes' || t.textContent.trim() === 'TakeNotes') t.style.display = 'none';
+            });
+        }
 
         // Cinematic entrance handled by CSS @keyframes canvasRevealForward
 
@@ -4382,7 +5539,7 @@
         function addComment(selFrom, selTo) {
             const from = selFrom ?? canvasEditor.state.selection.from;
             const to = selTo ?? canvasEditor.state.selection.to;
-            if (from === to) { alert('Select some text to comment on.'); return; }
+            if (from === to) return; // v7.14.48: silent return instead of alert
             const selectedText = canvasEditor.state.doc.textBetween(from, to);
 
             const overlay = el('div', { className: 'swml-comment-modal-overlay', onClick: (e) => { if (e.target === overlay) overlay.remove(); } });
@@ -4459,6 +5616,10 @@
             setTimeout(() => textarea.focus(), 50);
         }
 
+        // v7.14.48: Expose addComment to module scope so the once-registered
+        // context toolbar event listener always calls the current render's function.
+        _currentAddComment = addComment;
+
         // ── Canvas Selection Toolbar ──
         // Uses fresh DOM lookups (not closure refs) to survive re-renders.
         // Listeners registered on document only ONCE via flag.
@@ -4510,8 +5671,8 @@
                             // Capture positions before toolbar removal (ProseMirror mutation may reset selection)
                             const capturedFrom = tFrom, capturedTo = tTo;
                             removeCanvasSelToolbar();
-                            // Microtask delay: let ProseMirror settle after DOM mutation before opening modal
-                            requestAnimationFrame(() => addComment(capturedFrom, capturedTo));
+                            // v7.14.48: Use module-level ref (survives re-renders) instead of closure addComment
+                            requestAnimationFrame(() => { if (_currentAddComment) _currentAddComment(capturedFrom, capturedTo); });
                         }
                     }));
 
@@ -4972,34 +6133,9 @@
             const autoQ = extractEssayQuestion(canvasEditor);
             if (autoQ && !state.question) { state.question = autoQ; console.log('WML: Auto-extracted essay question:', autoQ); }
 
-            // ── Direct Assessment Entry (v7.12.8) ──
-            // When entering canvas with state.task = 'assessment' (from stepper "Get Assessed"),
-            // auto-trigger the assessment transition after content loads.
-            // Auto-trigger the diagnostic-to-assessment transition (also used by CW SI exercises to build sidebar+chat)
-            // state.task is protected from overwrite by the guard at the transition handler (v7.13.38)
-            if (canvasInAssessment && diagCompleteBtn) {
-                // Force button visible and show the right panel briefly for transition code
-                diagCompleteBtn.style.display = '';
-                rightPanel.style.display = '';
-                // Pre-hide guidance so it doesn't flash
-                rightPanel.classList.add('swml-canvas-plan-fading');
-                rightPanel.classList.add('swml-canvas-plan-hidden');
-                setTimeout(() => {
-                    // Programmatically trigger the Mark Complete flow
-                    diagCompleteBtn.click();
-                    // Hide the confirm modal instantly (user shouldn't see "Ready to submit?")
-                    const overlay = canvas.querySelector('.swml-confirm-overlay');
-                    if (overlay) overlay.style.opacity = '0';
-                    // Auto-confirm immediately
-                    setTimeout(() => {
-                        const confirmBtn = canvas.querySelector('.swml-confirm-submit');
-                        if (confirmBtn) confirmBtn.click();
-                        // Clean up invisible overlay
-                        const ol = canvas.querySelector('.swml-confirm-overlay');
-                        if (ol) ol.remove();
-                    }, 20);
-                }, 100);
-            }
+            // v7.14.48: Auto-trigger REMOVED — training-env exercises now render directly
+            // via the useTrainingEnv branch + buildTrainingPanels(). No more diagnostic flash.
+            // The diagnostic Mark Complete flow still works for genuine diagnostic submissions.
         });
 
         // ── Content Cleanup (v7.11.10) ──
@@ -8223,6 +9359,14 @@
                 inputHTML('My rating (1\u20135)', `ms-rating-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)
             );
         }
+
+        // v7.14.50: Instruction banner — directs students to the chat panel first
+        html += sectionHTML('notice', 'How to Use This Document', false, null,
+            `<p><strong>Complete the Mark Scheme quiz using the chat panel on the right.</strong></p>`
+            + `<p>The AI will test your understanding of the assessment criteria through 10 questions. `
+            + `Once you\u2019ve finished the quiz, use your results and the AI\u2019s feedback to fill in this document \u2014 `
+            + `it\u2019s your personal record of where you are and what to focus on next.</p>`
+        );
 
         // ══════════════════════════════════════════════════════════
         // 1. HOW YOU'RE GOING

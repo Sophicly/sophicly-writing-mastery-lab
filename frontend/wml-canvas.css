@@ -376,7 +376,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-comment-popover {
     position: absolute;
     width: 300px;
-    background: #1c1d1f;
+    background: #28292b;
     border: 1px solid oklch(0.38 0.01 270);
     border-radius: 12px;
     box-shadow: 0 12px 40px rgba(0,0,0,0.5);
@@ -705,7 +705,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 }
 @keyframes swmlFadeIn { from { opacity: 0; } to { opacity: 1; } }
 .swml-comment-modal {
-    background: oklch(0.17 0.01 270 / 0.97);
+    background: rgba(40, 41, 43, 0.97);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 16px;
     padding: 20px 24px;
@@ -3097,7 +3097,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     position: absolute;
     top: 60px; right: 20px;
     width: 380px; max-height: 60vh;
-    background: rgba(28, 29, 31, 0.97);
+    background: rgba(40, 41, 43, 0.97);
     border: 1px solid rgba(81, 218, 207, 0.2);
     border-radius: 10px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
@@ -3232,7 +3232,8 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     background: rgba(81, 218, 207, 0.05) !important;
 }
 .swml-section-notice em { color: rgba(255,255,255,0.6); font-size: 0.9em; }
-.swml-canvas:not(.swml-canvas-diagnostic) .swml-section-notice { display: none !important; }
+/* v7.14.50: Show notice in diagnostic AND mark_scheme (training-env exercises that need it) */
+.swml-canvas:not(.swml-canvas-diagnostic):not(.swml-canvas-mark-scheme) .swml-section-notice { display: none !important; }
 
 .swml-section-block {
     position: relative;
@@ -5662,4 +5663,14 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 @keyframes swml-spin {
     to { transform: rotate(360deg); }
+}
+
+/* ── v7.14.48: No-document layout (mark scheme quiz, chat-only exercises) ── */
+.swml-canvas-no-document .swml-canvas-chat {
+    flex: 1;
+    width: auto;
+    max-width: none;
+}
+.swml-canvas-no-document .swml-canvas-chat-resize {
+    display: none;
 }

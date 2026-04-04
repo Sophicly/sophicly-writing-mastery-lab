@@ -1322,10 +1322,29 @@ TEMPLATE;
             $preamble .= "After the question is established, follow EVERY subsequent step (goals, keywords, anchors, body paragraphs, etc.) fully — do not rush or skip any step.\n\n";
         }
 
-        // ── MARK SCHEME SELF-ASSESSMENT: dedicated preamble (v7.13.1 — rebuilt from correct Sureforms form) ──
-        // v7.14.46: Mark scheme preamble removed — the subject-specific protocol files
-        // (protocols/shared/mark-scheme/*.md) contain their own complete instructions.
-        // The old preamble was overriding the real protocol with self-assessment form instructions.
+        // ── MARK SCHEME QUIZ: context injection (v7.14.49) ──
+        // The subject-specific protocol files (protocols/shared/mark-scheme/*.md) contain the
+        // full quiz instructions. This preamble injects session context so the AI skips setup
+        // questions that the system already knows the answers to.
+        if ($task === 'mark_scheme') {
+            $board_label = strtoupper(str_replace('-', ' ', $board));
+            $ms_unit = ($topic_num <= 1) ? 2 : 4;
+            $ms_phase_label = ($topic_num <= 1) ? 'First diagnostic checkpoint' : 'Progress check and reinforcement';
+
+            $preamble .= "\n### MARK SCHEME QUIZ — SESSION CONTEXT\n\n";
+            $preamble .= "The following details are already known. Do NOT ask the student for any of these — skip straight to the quiz questions.\n\n";
+            $preamble .= "- **Board:** {$board_label} (pre-selected)\n";
+            $preamble .= "- **Unit:** Unit {$ms_unit} ({$ms_phase_label})\n";
+            if ($phase) {
+                $preamble .= "- **Phase:** " . ucfirst($phase) . "\n";
+            }
+            $preamble .= "\n**SKIP THESE STEPS ENTIRELY:**\n";
+            $preamble .= "- Do NOT ask which exam board the student is on — it is {$board_label}.\n";
+            $preamble .= "- Do NOT ask which unit they are working on — it is Unit {$ms_unit}.\n";
+            $preamble .= "- Do NOT display the 'do not delete this chat' message — the system handles persistence.\n";
+            $preamble .= "- Do NOT ask any setup/confirmation questions.\n\n";
+            $preamble .= "**START DIRECTLY** with the Unit {$ms_unit} quiz questions. Your first message should present Question 1.\n\n";
+        }
 
         // Function calling instructions — determine task from session context
         $task = $context['task'] ?? sanitize_text_field($_POST['task'] ?? $_GET['task'] ?? 'planning');

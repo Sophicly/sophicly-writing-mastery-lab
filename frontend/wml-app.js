@@ -6486,6 +6486,7 @@ Before marking the introduction, ask the student to confirm their essay structur
 
     // v7.13.34: CW dashboard — accessible from assessment module
     WML.renderCreativeWritingDashboard = renderCreativeWritingDashboard;
+    WML.showPortfolio = showPortfolio; // v7.14.48: Expose for assessment module sidebar
 
     // Embedded mode flag — accessible from assessment module (v7.13.11)
     WML.isEmbedded = isEmbedded;
