@@ -5691,20 +5691,20 @@
             });
 
             // Render tier 1 (default) categories
-            const expandedWrap = el('div', { className: 'swml-quick-expanded', style: { display: 'none' } });
+            const expandedWrap = el('div', { className: 'swml-quick-expanded collapsed' });
             QUICK_COMMENTS.forEach(cat => {
                 const catEl = el('div', { className: 'swml-quick-cat' });
                 const catLabel = el('div', { className: 'swml-quick-cat-label', innerHTML: cat.icon + ' ' + cat.category });
                 const chipsWrap = el('div', { className: 'swml-quick-chips' });
                 // Collapsible: click header to toggle (expanded tier starts collapsed)
                 if (cat.tier === 'expanded') {
-                    chipsWrap.style.display = 'none';
+                    chipsWrap.classList.add('swml-quick-chips-collapsible', 'collapsed');
                     catLabel.style.cursor = 'pointer';
                     catLabel.classList.add('swml-quick-cat-collapsible', 'collapsed');
                     catLabel.addEventListener('click', () => {
-                        const isHidden = chipsWrap.style.display === 'none';
-                        chipsWrap.style.display = isHidden ? 'flex' : 'none';
-                        catLabel.classList.toggle('collapsed', !isHidden);
+                        const isCollapsed = chipsWrap.classList.contains('collapsed');
+                        chipsWrap.classList.toggle('collapsed', !isCollapsed);
+                        catLabel.classList.toggle('collapsed', !isCollapsed);
                     });
                 }
                 catEl.appendChild(catLabel);
@@ -5735,9 +5735,9 @@
                 className: 'swml-quick-more-btn',
                 textContent: 'More...',
                 onClick: () => {
-                    const isHidden = expandedWrap.style.display === 'none';
-                    expandedWrap.style.display = isHidden ? 'block' : 'none';
-                    moreBtn.textContent = isHidden ? 'Less' : 'More...';
+                    const isCollapsed = expandedWrap.classList.contains('collapsed');
+                    expandedWrap.classList.toggle('collapsed', !isCollapsed);
+                    moreBtn.textContent = isCollapsed ? 'Less' : 'More...';
                 }
             });
             quickWrap.appendChild(moreBtn);
