@@ -1038,6 +1038,37 @@ TEMPLATE;
     }
 
     /**
+     * v7.14.66: Return the step labels from the protocol manifest for sidebar display.
+     * Called by the REST endpoint /protocol-steps.
+     */
+    public function get_manifest_steps($board, $subject, $task = 'planning') {
+        $plugin_dir = plugin_dir_path(dirname(__FILE__));
+        $protocol_group = $this->resolve_protocol_group($board, $subject);
+
+        // Try board-specific manifest first, then AQA fallback
+        $paths = [
+            $plugin_dir . "protocols/{$board}/{$protocol_group}/manifest.json",
+            $plugin_dir . "protocols/aqa/{$protocol_group}/manifest.json",
+        ];
+
+        $manifest = null;
+        foreach ($paths as $path) {
+            if (file_exists($path)) {
+                $manifest = json_decode(file_get_contents($path), true);
+                if ($manifest) break;
+            }
+        }
+
+        if (!$manifest || empty($manifest[$task]['steps'])) return [];
+
+        $steps = [];
+        foreach ($manifest[$task]['steps'] as $num => $step_data) {
+            $steps[] = ['step' => (int) $num, 'label' => $step_data['label'] ?? "Step {$num}"];
+        }
+        return $steps;
+    }
+
+    /**
      * Get minimum word count target based on marks and subject type (v7.14.7).
      * Returns the standard minimum (not first-diagnostic lower bar).
      */
@@ -1352,29 +1383,45 @@ TEMPLATE;
             $preamble .= "**Plan Enforcement:** Essay plan is COMPULSORY for this session. The student must complete a plan before writing.\n";
         }
 
-        // v7.14.64: Planning on canvas — document content override
-        // The student's document is attached to every message. For language papers,
-        // it contains the exam questions and source texts. Tell the AI to read from it.
+        // v7.14.66: Planning on canvas — document content + mastery/free practice gating
+        // The student's document is attached to every message with labelled sections.
         if ($task === 'planning') {
             $is_lang = (strpos($subject, 'language') !== false);
-            $preamble .= "\n### DOCUMENT CONTENT AVAILABLE\n\n";
-            $preamble .= "The student's document is attached to each message as `[STUDENT'S DOCUMENT]`. It contains:\n";
+            $is_mastery = !empty($context['phase']) && !empty($context['topicNumber']);
+
+            $preamble .= "\n### THIS IS A PLANNING SESSION — NOT AN ASSESSMENT\n\n";
+            $preamble .= "You are helping the student PLAN their response. Do NOT assess, mark, or score their work.\n\n";
+
+            $preamble .= "### HOW TO READ THE STUDENT'S DOCUMENT\n\n";
+            $preamble .= "The student's document is attached to each message as `[STUDENT'S DOCUMENT]`.\n";
+            $preamble .= "Each section is labelled with `=== LABEL [type] ===`. Use these labels to find content:\n\n";
+
             if ($is_lang) {
-                $preamble .= "- **Source texts** (Source A and Source B) — already present in the document\n";
-                $preamble .= "- **Exam questions** for each question number — already present in the document\n";
-                $preamble .= "- **Response sections** — where the student writes their answers\n\n";
-                $preamble .= "**SKIP THESE PROTOCOL STEPS ENTIRELY:**\n";
-                $preamble .= "- Do NOT ask the student to paste the exam question — read it from the document.\n";
-                $preamble .= "- Do NOT ask the student to paste Source A or Source B — read them from the document.\n";
-                $preamble .= "- Do NOT ask for the title/author of sources — read them from the document headings.\n";
-                $preamble .= "- Do NOT ask if they are planning for Redraft or Exam Practice — this is a **redraft** session (confirmed by the system).\n";
-                $preamble .= "- Do NOT ask which questions to plan — plan ALL questions (Q2, Q3, Q4, and Section B) sequentially.\n";
-                $preamble .= "- Skip Part A Steps 1, 1b, 1c, and Step 2 of the protocol entirely.\n";
-                $preamble .= "- **START DIRECTLY** with Part B (Pre-Planning Goal Setting & Review), then proceed to Part C (Core Planning) for each question in order.\n\n";
+                $preamble .= "- **Source texts / extracts:** Look for sections labelled `[source]` — e.g. `=== SOURCE A — THE CROSSING [source] ===`. Read the FULL text from these sections.\n";
+                $preamble .= "- **Exam questions:** Look for sections labelled `[question]` — e.g. `=== Q3 [question] ===`. Read the question text, marks, and AOs from these sections.\n";
+                $preamble .= "- **Planning areas:** Look for sections labelled `[plan]` — these are where the student fills in their plan.\n";
+                $preamble .= "- **Response areas:** Look for sections labelled `[response]` — these are where the student writes their answer.\n\n";
+
+                $preamble .= "**CRITICAL: DO NOT ASK THE STUDENT TO PASTE OR PROVIDE ANY OF THE ABOVE.**\n";
+                $preamble .= "The source texts, extracts, and exam questions are ALREADY in the document. Read them directly.\n";
+                $preamble .= "Skip Part A Steps 1, 1b, 1c (question/source collection) and Step 2 (source pasting) of the protocol entirely — they are redundant.\n\n";
+
+                if ($is_mastery) {
+                    $preamble .= "### MASTERY MODE — ALL QUESTIONS SEQUENTIAL\n\n";
+                    $preamble .= "This student is in the **mastery programme** ({$phase} phase). ALL questions are compulsory.\n";
+                    $preamble .= "- Do NOT ask which questions to plan — plan ALL questions in document order.\n";
+                    $preamble .= "- Do NOT ask if this is Redraft or Exam Practice — this is confirmed as **{$phase}** by the system.\n";
+                    $preamble .= "- **START DIRECTLY** with Part B (Goal Setting), then proceed through Part C (Core Planning) for each question in sequence.\n\n";
+                } else {
+                    $preamble .= "### FREE PRACTICE MODE — STUDENT CHOOSES\n\n";
+                    $preamble .= "This is a free practice session. The student can choose which question(s) to plan.\n";
+                    $preamble .= "- Present the questions from the document as options and let the student choose.\n";
+                    $preamble .= "- Then proceed with Part B (Goal Setting) and Part C (Core Planning) for the chosen question(s).\n\n";
+                }
             } else {
-                $preamble .= "- **The essay question** — already present in the document\n";
-                $preamble .= "- **Response section** — where the student writes their essay\n\n";
-                $preamble .= "Read the essay question from the document. Do NOT ask the student to paste it.\n\n";
+                $preamble .= "- **The essay question / extract:** Look for sections labelled `[question]` or `[source]`. Read from there.\n";
+                $preamble .= "- **Response section:** Look for sections labelled `[response]`.\n\n";
+                $preamble .= "**DO NOT ask the student to paste the question or extract — read them from the document.**\n\n";
             }
         }
 

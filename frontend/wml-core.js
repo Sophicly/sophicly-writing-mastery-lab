@@ -853,7 +853,7 @@ window.WML = (function() {
 
         // ── Canvas exercises (v7.14.29: migrated from chat to canvas) ──
         planning: {
-            label: 'Essay Skills',
+            label: 'Response Planning',
             environment: 'training',
             panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: null,
@@ -863,7 +863,7 @@ window.WML = (function() {
             completionType: 'step_complete',
             storageSuffix: '_planning',
             chatHeaderLabel: 'Essay Planning',
-            sidebarSteps: null,
+            sidebarSteps: null, // v7.14.66: populated dynamically from manifest via /protocol-steps endpoint
         },
         polishing: {
             label: 'Polishing',

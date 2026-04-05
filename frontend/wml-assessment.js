@@ -2619,12 +2619,36 @@
         const canvasInFeedback = state.task === 'feedback_discussion';
         const canvasInMarkScheme = state.task === 'mark_scheme';
         const canvasChatHeaderLabel = exerciseConfig.chatHeaderLabel || 'Essay Assessment';
-        const canvasSidebarSteps = exerciseConfig.sidebarSteps || null;
+        let canvasSidebarSteps = exerciseConfig.sidebarSteps || null;
+
+        // v7.14.66: Fetch manifest step labels for planning/polishing sidebar
+        if (!canvasSidebarSteps && (state.task === 'planning' || state.task === 'polishing') && state.board) {
+            const stepsUrl = `${config.restUrl}protocol-steps?board=${encodeURIComponent(state.board)}&subject=${encodeURIComponent(state.subject || '')}&task=${encodeURIComponent(state.task)}`;
+            fetch(stepsUrl, { headers }).then(r => r.json()).then(data => {
+                if (data.success && data.steps && data.steps.length > 0) {
+                    const container = document.getElementById('swml-progress-steps');
+                    if (container) {
+                        container.innerHTML = '';
+                        data.steps.forEach((s, i) => {
+                            const cls = i === 0 ? 'active' : '';
+                            const stepEl = el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
+                                el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
+                                el('span', { className: 'swml-step-label', textContent: s.label }),
+                            ]);
+                            container.appendChild(stepEl);
+                        });
+                        console.log('WML: Loaded manifest sidebar steps:', data.steps.length);
+                    }
+                }
+            }).catch(e => console.warn('WML: Could not load protocol steps:', e));
+        }
         // v7.14.11: Diagnostic mode — hide assessment-only sections (feedback, scores, etc.)
         const isDiagnosticEnv = envType === 'free' && !canvasInFeedback;
         if (isDiagnosticEnv) canvas.classList.add('swml-canvas-diagnostic');
         // v7.14.50: Mark scheme class — enables notice section visibility via CSS
         if (canvasInMarkScheme) canvas.classList.add('swml-canvas-mark-scheme');
+        // v7.14.66: Flag when chat panel is present — used by CSS to reposition word count widget
+        if (useTrainingEnv) canvas.classList.add('swml-canvas-has-chat');
 
         // Countdown timer — phase-aware: Phase 1 = 10 days, Phase 2 = 14 days (v7.12.99)
         // v7.13.39: Skip for CW exercises. v7.13.97: Skip for exam prep (no phase deadline)
@@ -8929,11 +8953,11 @@
         // ── Questions ──
         let lastSection = '';
         questions.forEach(function(q, idx) {
-            const qMarks = parseInt(q.marks) || 0;
             const qId = q.id || q.label || ('Q' + (idx + 1));
 
-            // Look up type from specs JSON, fall back to topic metadata, then infer from marks
+            // v7.14.66: Prefer spec marks over topic metadata (specs are authoritative)
             const specQ = lookupQuestionSpec(qId);
+            const qMarks = parseInt(specQ?.marks ?? q.marks) || 0;
             const qType = q.type || specQ?.type || null;
             const isWritingQ = qType === 'extended_writing' || qType === 'choice'
                 || qMarks >= 24 || /section\s*b|writing|creative|persuasive|narrative|descriptive/i.test(q.label || '');
@@ -8975,8 +8999,8 @@
             if (wordTarget) qInner += `<p><em>Aim for ${wordTarget.label}.</em></p>`;
             html += sectionHTML('question', `${qId}`, false, null, qInner);
 
-            // v7.14.61: Plan for ALL questions >= 8 marks (except Q1 multiple_choice) in redraft mode
-            if (mode === 'redraft' && qType !== 'multiple_choice' && qMarks >= 8) {
+            // v7.14.66: Plan for ALL questions >= 6 marks in ALL modes (diagnostic + redraft)
+            if (qType !== 'multiple_choice' && qMarks >= 6) {
                 html += dividerHTML(`PLAN \u2014 ${qId}`);
                 if (isPersuasive) {
                     html += buildIUMVCCPlanSection(qId);

@@ -122,6 +122,12 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
+        // v7.14.66: Protocol manifest step labels — for sidebar
+        register_rest_route($namespace, '/protocol-steps', [
+            'methods' => 'GET', 'callback' => [$this, 'get_protocol_steps'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+
         // Diagnostic endpoint — lists all canvas meta keys for current user
         register_rest_route($namespace, '/canvas/debug', [
             'methods' => 'GET', 'callback' => [$this, 'debug_canvas_keys'],
@@ -873,6 +879,24 @@ class SWML_REST_API {
 
         $saved = SWML_Session_Manager::save_question($user_id, $board, $subject, $text, $question_data);
         return rest_ensure_response(['success' => true, 'count' => count($saved)]);
+    }
+
+    // ═══════════════════════════════════════════
+    //  PROTOCOL MANIFEST STEP LABELS (v7.14.66)
+    // ═══════════════════════════════════════════
+
+    /**
+     * Return sidebar step labels from the protocol manifest for the given board/subject/task.
+     */
+    public function get_protocol_steps($request) {
+        $board   = sanitize_text_field($request->get_param('board') ?? 'aqa');
+        $subject = sanitize_text_field($request->get_param('subject') ?? '');
+        $task    = sanitize_text_field($request->get_param('task') ?? 'planning');
+
+        $router = SWML_Protocol_Router::instance();
+        $steps  = $router->get_manifest_steps($board, $subject, $task);
+
+        return rest_ensure_response(['success' => true, 'steps' => $steps]);
     }
 
     // ═══════════════════════════════════════════

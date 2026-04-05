@@ -2310,6 +2310,9 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 /* v7.14.65: Hide Meow Apps AI Engine chatbot when canvas is open */
 .mwai-trigger { display: none !important; }
 
+/* v7.14.66: Move word count widget left when chat panel is present */
+.swml-canvas-has-chat .swml-wc-widget { left: 24px; right: auto; }
+
 /* Page breaks removed — canvas grows naturally */
 
 /* ── Assessment Mode: Left Protocol Panel (reuses .swml-sidebar) ── */
