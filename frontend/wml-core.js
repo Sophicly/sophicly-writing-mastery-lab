@@ -1939,6 +1939,7 @@ window.WML = (function() {
         html = html.replace(/^##\s+(.+?)(?=<br>|$)/g, '<strong class="swml-chat-h4">$1</strong>');
 
         // Render progress bar placeholders as CSS bars (v7.14.51)
+        const hasProgressBar = /\[SWML_PROGRESS_\d+\]/.test(html);
         html = html.replace(/\[SWML_PROGRESS_(\d+)\]/g, (_, pct) =>
             `<div class="swml-chat-progress-bar"><div class="swml-chat-progress-fill" style="width:${pct}%"></div><span class="swml-chat-progress-label">${pct}%</span></div>`
         );
@@ -1952,6 +1953,10 @@ window.WML = (function() {
         }
 
         // Render "Step X of Y" within AI messages as visual step blocks
+        // v7.14.55: Skip step blocks when a CSS progress bar already renders in the same message
+        if (hasProgressBar) {
+            html = html.replace(/(?:Step|Part [A-Z]\.\d+[A-Z]?:\s*\w[\w\s&]*?>\s*Step)\s+(\d+)\s+of\s+(\d+)/gi, '');
+        }
         html = html.replace(/(?:Step|Part [A-Z]\.\d+[A-Z]?:\s*\w[\w\s&]*?>\s*Step)\s+(\d+)\s+of\s+(\d+)/gi, (match, current, total) => {
             const c = parseInt(current), t = parseInt(total);
             let blocks = '';

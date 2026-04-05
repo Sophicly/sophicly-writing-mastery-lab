@@ -4079,10 +4079,11 @@
         // ══════════════════════════════════════════
         //  LETTER OPTIONS: A) B) C) / A. B. / **A** — / A — etc.
         //  Single unified pattern that handles all markdown variants
+        //  v7.14.55: Also handles emoji prefix (🧠 A — ...) for BBB classification
         // ══════════════════════════════════════════
         const letterOptions = [];
-        const letterRegex = /^[-•🔹]*\s*\*{0,2}([A-F])[).:—\-]\*{0,2}\s*[—\-]?\s*(.+)/i;
-        const letterBoldRegex = /^[-•]*\s*\*{0,2}([A-F])\*{0,2}\s*[).:—\-]+\s*(.+)/i;
+        const letterRegex = /^[-•🔹]*\s*(?:[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}]\s*)?(?:[\uFE00-\uFE0F]\s*)?\*{0,2}([A-F])[).:—\-]\*{0,2}\s*[—\-]?\s*(.+)/iu;
+        const letterBoldRegex = /^[-•]*\s*(?:[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}]\s*)?(?:[\uFE00-\uFE0F]\s*)?\*{0,2}([A-F])\*{0,2}\s*[).:—\-]+\s*(.+)/iu;
         for (const line of lines) {
             const m = line.match(letterRegex) || line.match(letterBoldRegex);
             if (m) {
@@ -4094,7 +4095,12 @@
                 }
             }
         }
-        if (letterOptions.length >= 2) return letterOptions;
+        if (letterOptions.length >= 2) {
+            // v7.14.55: Check for ranking context — if message asks to rank/order, flag for ranking mode
+            const isRankingContext = /(?:rank|order|arrange|sort)\s+(?:these|them|the|from)/i.test(text);
+            if (isRankingContext) letterOptions._ranking = true;
+            return letterOptions;
+        }
 
         // ══════════════════════════════════════════
         //  YES/NO: explicit or implied confirmation questions
@@ -4247,27 +4253,6 @@
                     scaleOptions.push({ label: desc ? `${n} — ${desc}` : String(n), value: String(n) });
                 }
                 return scaleOptions;
-            }
-        }
-
-        // ══════════════════════════════════════════
-        //  RANKING: "rank/order/arrange these" with lettered options (v7.14.51)
-        // ══════════════════════════════════════════
-        const isRankingContext = /(?:rank|order|arrange|sort)\s+(?:these|them|the|from)/i.test(text);
-        if (isRankingContext) {
-            const rankOptions = [];
-            const letterRx = /^[-•🔹]*\s*\*{0,2}([A-F])[).:—\-]\*{0,2}\s*[—\-]?\s*(.+)/i;
-            for (const line of lines) {
-                const m = line.match(letterRx);
-                if (m) {
-                    let label = m[2].replace(/[\*_]/g, '').trim();
-                    if (label.length > 55) label = label.substring(0, 52) + '...';
-                    rankOptions.push({ label: `${m[1].toUpperCase()}) ${label}`, value: m[1].toUpperCase() });
-                }
-            }
-            if (rankOptions.length >= 2) {
-                rankOptions._ranking = true;
-                return rankOptions;
             }
         }
 
