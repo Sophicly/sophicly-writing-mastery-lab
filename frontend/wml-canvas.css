@@ -817,6 +817,50 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-canvas-light .swml-quick-chip-ttecea:hover { background: rgba(83,51,237,0.08); }
 .swml-canvas-light .swml-quick-chip-praise { color: #0d9488; }
 .swml-canvas-light .swml-quick-chip-praise:hover { background: rgba(81,218,207,0.1); }
+
+/* Creative Writing quick comment chips (v7.14.53) */
+.swml-quick-chip-cw { color: #42a1ec; }
+.swml-quick-chip-cw:hover { background: rgba(66,161,236,0.12); }
+.swml-canvas-light .swml-quick-chip-cw { color: #4d76fd; }
+.swml-canvas-light .swml-quick-chip-cw:hover { background: rgba(77,118,253,0.08); }
+
+/* "More..." toggle button (v7.14.53) */
+.swml-quick-more-btn {
+    display: block;
+    width: 100%;
+    padding: 6px 0;
+    margin-top: 4px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.45);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.swml-quick-more-btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); }
+.swml-canvas-light .swml-quick-more-btn { background: rgba(0,0,0,0.03); color: rgba(0,0,0,0.4); }
+.swml-canvas-light .swml-quick-more-btn:hover { background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.6); }
+
+/* Collapsible category headers (v7.14.53) */
+.swml-quick-cat-collapsible { position: relative; padding-right: 18px; }
+.swml-quick-cat-collapsible::after {
+    content: '';
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: translateY(-50%) rotate(45deg);
+    transition: transform 0.2s ease;
+    opacity: 0.5;
+}
+.swml-quick-cat-collapsible.collapsed::after { transform: translateY(-50%) rotate(-45deg); }
+
 .swml-comment-modal-label {
     display: block;
     font-size: 11px;
@@ -4289,6 +4333,105 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     0%   { background-position: 0% 50%; }
     50%  { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
+}
+
+/* ── Chat Progress Bar (v7.14.51) ── */
+.swml-chat-progress-bar {
+    position: relative;
+    width: 100%;
+    height: 10px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 10px 0 6px;
+}
+.swml-chat-progress-fill {
+    height: 100%;
+    border-radius: 5px;
+    background: linear-gradient(270deg, #42a1ec, #4d76fd, #7DF9E9, #4d76fd);
+    background-size: 800% 800%;
+    animation: swmlProgressShimmer 20s ease infinite;
+    transition: width 0.4s ease;
+}
+.swml-chat-progress-label {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    line-height: 1;
+}
+.swml-canvas-light .swml-chat-progress-bar { background: rgba(0,0,0,0.06); }
+.swml-canvas-light .swml-chat-progress-label { color: rgba(0,0,0,0.5); }
+
+/* ── Fill-in-the-Blank Input (v7.14.51) ── */
+.swml-blank-input {
+    display: inline-block;
+    width: 14ch;
+    padding: 3px 8px;
+    margin: 0 2px;
+    border: 1.5px solid rgba(81,218,207,0.4);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.06);
+    color: inherit;
+    font-family: inherit;
+    font-size: 0.92em;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.swml-blank-input:focus {
+    border-color: #51dacf;
+    box-shadow: 0 0 0 2px rgba(81,218,207,0.15);
+}
+.swml-blank-input::placeholder { color: rgba(255,255,255,0.25); font-style: italic; }
+.swml-canvas-light .swml-blank-input {
+    background: rgba(0,0,0,0.03);
+    border-color: rgba(83,51,237,0.3);
+}
+.swml-canvas-light .swml-blank-input:focus {
+    border-color: #5333ed;
+    box-shadow: 0 0 0 2px rgba(83,51,237,0.1);
+}
+.swml-canvas-light .swml-blank-input::placeholder { color: rgba(0,0,0,0.3); }
+
+.swml-blank-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 7px 18px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #51dacf 0%, #4d76fd 100%);
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.88em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+}
+.swml-blank-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+.swml-blank-submit:active { transform: translateY(0); }
+
+/* ── Ranking Quick Action (v7.14.51) ── */
+.swml-rank-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #51dacf 0%, #4d76fd 100%);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
+.swml-rank-btn.selected {
+    border-color: rgba(81,218,207,0.5) !important;
 }
 
 /* ── U2: Scroll-to-bottom floating arrow (canvas chat) ── */

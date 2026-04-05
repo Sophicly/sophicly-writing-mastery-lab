@@ -69,15 +69,14 @@
         if (embedConfig.text)    state.text    = embedConfig.text;
         if (embedConfig.task)    state.task    = embedConfig.task;
         if (embedConfig.topic)   state.topicNumber = embedConfig.topic;
-        if (embedConfig.phase === 'redraft') {
-            state.phase = 'redraft';
-            state.isRedraft = true;
-        } else if (embedConfig.phase === 'initial') {
-            state.phase = 'initial';
-            state.isRedraft = false;
+        if (embedConfig.phase) {
+            state.phase = embedConfig.phase;
+            state.isRedraft = embedConfig.phase === 'redraft';
         }
-        // v7.14.41: Infer mode — mastery programme has phase+topic, free practice doesn't
-        state.mode = (embedConfig.phase && embedConfig.topic) ? 'guided' : 'exam_prep';
+        // v7.14.52: Infer mode — mastery has phase+topic, preliminary has phase+topic but sequential,
+        // free_practice/exam_practice are non-sequential
+        const guidedPhases = ['initial', 'redraft', 'preliminary'];
+        state.mode = (embedConfig.phase && embedConfig.topic && guidedPhases.includes(embedConfig.phase)) ? 'guided' : 'exam_prep';
         // v7.14.17: 'diagnostic' and 'development' are draftTypes, not exercise tasks.
         // They arrive from shortcodes like [writing_mastery_lab task="diagnostic"].
         // Clear them so the topicNumber-based draftType inference handles routing correctly.
@@ -3835,6 +3834,33 @@
         body.innerHTML = formatAI(text);
         content.appendChild(body);
 
+        // ── Fill-in-the-blank event handling (v7.14.51) ──
+        if (from === 'ai' && !silent) {
+            const blankInputs = body.querySelectorAll('.swml-blank-input');
+            const blankSubmit = body.querySelector('.swml-blank-submit');
+            if (blankInputs.length > 0 && blankSubmit) {
+                const submitBlanks = () => {
+                    const answers = [];
+                    blankInputs.forEach((inp, i) => {
+                        const val = inp.value.trim();
+                        if (val) answers.push(blankInputs.length > 1 ? `${i + 1}: ${val}` : val);
+                    });
+                    if (answers.length === 0) return;
+                    blankSubmit.disabled = true;
+                    blankInputs.forEach(inp => { inp.disabled = true; });
+                    const input = $('#swml-input');
+                    if (input) { input.value = answers.join(', '); }
+                    sendMessage();
+                };
+                blankSubmit.addEventListener('click', submitBlanks);
+                blankInputs.forEach(inp => {
+                    inp.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') { e.preventDefault(); submitBlanks(); }
+                    });
+                });
+            }
+        }
+
         // Copy button on user messages
         if (from === 'user') {
             const userCopy = el('button', { className: 'swml-bubble-copy swml-user-copy', innerHTML: SVG_COPY, title: 'Copy your message',
@@ -3896,6 +3922,60 @@
                         }
                     });
                     bar.appendChild(submitBtn);
+                } else if (actions._ranking && actions.length >= 2) {
+                    // ── Ranking mode: click to assign rank order (v7.14.51) ──
+                    const ranked = []; // ordered array of values
+                    const btnMap = new Map(); // value → button element
+                    const rankSubmitBtn = el('button', {
+                        className: 'swml-quick-btn swml-quick-submit',
+                        textContent: 'Submit Ranking →',
+                        disabled: true,
+                        onClick: () => {
+                            bar.remove();
+                            const input = $('#swml-input');
+                            if (input) {
+                                input.value = ranked.map((v, i) => `${i + 1}${i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'}: ${v}`).join(', ');
+                            }
+                            sendMessage();
+                        }
+                    });
+                    const updateRankLabels = () => {
+                        btnMap.forEach((btn, val) => {
+                            const idx = ranked.indexOf(val);
+                            const baseLabel = btn.dataset.baseLabel;
+                            if (idx >= 0) {
+                                btn.classList.add('selected');
+                                btn.innerHTML = `<span class="swml-rank-num">${idx + 1}</span> ${baseLabel}`;
+                            } else {
+                                btn.classList.remove('selected');
+                                btn.innerHTML = baseLabel;
+                            }
+                        });
+                        rankSubmitBtn.disabled = ranked.length === 0;
+                        rankSubmitBtn.textContent = ranked.length > 0 ? `Submit Ranking (${ranked.length}) →` : 'Submit Ranking →';
+                    };
+                    actions.forEach(action => {
+                        const cleanLabel = action.label.replace(/^[A-F]\)\s*/, '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2700}-\u{27BF}✅✏️🎲📋🔥⚡🚀📂💡🎙️📝📊✨📄📚🎯]\s*/gu, '');
+                        const btn = el('button', {
+                            className: 'swml-quick-btn swml-rank-btn',
+                            innerHTML: cleanLabel,
+                            onClick: () => {
+                                const idx = ranked.indexOf(action.value);
+                                if (idx >= 0) {
+                                    // Already ranked — remove it
+                                    ranked.splice(idx, 1);
+                                } else {
+                                    // Add to end of ranking
+                                    ranked.push(action.value);
+                                }
+                                updateRankLabels();
+                            }
+                        });
+                        btn.dataset.baseLabel = cleanLabel;
+                        btnMap.set(action.value, btn);
+                        bar.appendChild(btn);
+                    });
+                    bar.appendChild(rankSubmitBtn);
                 } else {
                     // Single-select mode: click to send immediately
                     actions.forEach(action => {
@@ -4152,7 +4232,8 @@
         //  SCALE: "on a scale of 1 to 5" / "rate 1-5" / "1–5" (em/en dash)
         // ══════════════════════════════════════════
         const scaleMatch = text.match(/(?:on a )?scale (?:of |from )?(\d)\s*(?:to|[-–—])\s*(\d)/i)
-            || text.match(/rate\s*(?:from\s*)?(\d)\s*(?:to|[-–—])\s*(\d)/i);
+            || text.match(/rate\s*(?:from\s*)?(\d)\s*(?:to|[-–—])\s*(\d)/i)
+            || text.match(/(?:type|enter|choose|confidence)\s*\(?(\d)\s*[-–—]\s*(\d)\)?/i);
         if (scaleMatch) {
             const lo = parseInt(scaleMatch[1]);
             const hi = parseInt(scaleMatch[2]);
@@ -4166,6 +4247,27 @@
                     scaleOptions.push({ label: desc ? `${n} — ${desc}` : String(n), value: String(n) });
                 }
                 return scaleOptions;
+            }
+        }
+
+        // ══════════════════════════════════════════
+        //  RANKING: "rank/order/arrange these" with lettered options (v7.14.51)
+        // ══════════════════════════════════════════
+        const isRankingContext = /(?:rank|order|arrange|sort)\s+(?:these|them|the|from)/i.test(text);
+        if (isRankingContext) {
+            const rankOptions = [];
+            const letterRx = /^[-•🔹]*\s*\*{0,2}([A-F])[).:—\-]\*{0,2}\s*[—\-]?\s*(.+)/i;
+            for (const line of lines) {
+                const m = line.match(letterRx);
+                if (m) {
+                    let label = m[2].replace(/[\*_]/g, '').trim();
+                    if (label.length > 55) label = label.substring(0, 52) + '...';
+                    rankOptions.push({ label: `${m[1].toUpperCase()}) ${label}`, value: m[1].toUpperCase() });
+                }
+            }
+            if (rankOptions.length >= 2) {
+                rankOptions._ranking = true;
+                return rankOptions;
             }
         }
 

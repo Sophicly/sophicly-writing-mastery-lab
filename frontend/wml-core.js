@@ -1845,9 +1845,15 @@ window.WML = (function() {
     }
 
     function formatAI(text) {
-        // ── Pre-process: strip ASCII progress bars (protocol artefact) ──
+        // ── Pre-process: render ASCII progress bars as CSS bars (v7.14.51) ──
         // Matches patterns like "[Progress: ████████░░░░ 50%]" or "Progress: ███░░░ 30%"
-        text = text.replace(/\[?Progress:\s*[█▓▒░■□●○\u2588-\u259F\s]+\d+%\]?/gi, '').trim();
+        text = text.replace(/\[?Progress(?:\s*bar)?:\s*[█▓▒░■□●○\u2588-\u259F\s]+(\d+)%\]?/gi,
+            (_, pct) => `\n[SWML_PROGRESS_${pct}]\n`
+        ).trim();
+
+        // ── Pre-process: render [BLANK] as inline input fields (v7.14.51) ──
+        let blankIdx = 0;
+        text = text.replace(/\[BLANK\]/gi, () => `[SWML_BLANK_${blankIdx++}]`);
 
         // ── Pre-process: split concatenated pipe table rows (AI sometimes omits newlines) ──
         // Pattern: "| cell |  | cell |" → "| cell |\n| cell |" (double-pipe = row boundary)
@@ -1932,8 +1938,18 @@ window.WML = (function() {
         html = html.replace(/(?:<br>)##\s+(.+?)(?=<br>|$)/g, '<br><strong class="swml-chat-h4">$1</strong>');
         html = html.replace(/^##\s+(.+?)(?=<br>|$)/g, '<strong class="swml-chat-h4">$1</strong>');
 
-        // Remove raw [Progress bar: ...] text — step blocks below handle the visual
-        html = html.replace(/\[Progress bar:\s*[█▓░■□\s]*\s*\d+%\]/gi, '');
+        // Render progress bar placeholders as CSS bars (v7.14.51)
+        html = html.replace(/\[SWML_PROGRESS_(\d+)\]/g, (_, pct) =>
+            `<div class="swml-chat-progress-bar"><div class="swml-chat-progress-fill" style="width:${pct}%"></div><span class="swml-chat-progress-label">${pct}%</span></div>`
+        );
+
+        // Render blank placeholders as inline inputs (v7.14.51)
+        html = html.replace(/\[SWML_BLANK_(\d+)\]/g, (_, idx) =>
+            `<input type="text" class="swml-blank-input" data-blank-idx="${idx}" placeholder="type here..." autocomplete="off" />`
+        );
+        if (blankIdx > 0) {
+            html += `<br><button class="swml-blank-submit" type="button">Submit Answer${blankIdx > 1 ? 's' : ''}</button>`;
+        }
 
         // Render "Step X of Y" within AI messages as visual step blocks
         html = html.replace(/(?:Step|Part [A-Z]\.\d+[A-Z]?:\s*\w[\w\s&]*?>\s*Step)\s+(\d+)\s+of\s+(\d+)/gi, (match, current, total) => {

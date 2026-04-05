@@ -224,10 +224,10 @@
             : (state.task === 'polishing' && state.mode === 'guided') ? 'Polish Redraft'
             : exerciseConfig.label || 'Assessment';
         protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge active', textContent: sidebarTaskLabel }));
-        if (state.phase === 'redraft') {
-            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Phase 2' }));
-        } else if (state.phase === 'initial') {
-            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Phase 1' }));
+        const PHASE_LABELS = { initial: 'Phase 1', redraft: 'Phase 2', preliminary: 'Preliminary', free_practice: 'Free Practice', exam_practice: 'Exam Practice' };
+        const sidebarPhaseLabel = PHASE_LABELS[state.phase] || '';
+        if (sidebarPhaseLabel) {
+            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: sidebarPhaseLabel }));
         }
         protoBody.appendChild(protoBadges);
 
@@ -408,6 +408,51 @@
                             }
                         });
                         bar.appendChild(submitBtn);
+                    } else if (actions._ranking && actions.length >= 2) {
+                        // ── Ranking mode for canvas chat (v7.14.51) ──
+                        const ranked = [];
+                        const btnMap = new Map();
+                        const rankSubmitBtn = el('button', {
+                            className: 'swml-quick-btn swml-quick-submit',
+                            textContent: 'Submit Ranking →',
+                            style: { display: 'none' },
+                            onClick: () => {
+                                bar.remove();
+                                chatTextarea.value = ranked.map((v, i) => `${i + 1}${i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'}: ${v}`).join(', ');
+                                sendCanvasMessage();
+                            }
+                        });
+                        const updateRankLabels = () => {
+                            btnMap.forEach((btn, val) => {
+                                const idx = ranked.indexOf(val);
+                                const baseLabel = btn.dataset.baseLabel;
+                                if (idx >= 0) {
+                                    btn.classList.add('swml-quick-toggle-on');
+                                    btn.innerHTML = `<span class="swml-rank-num">${idx + 1}</span> ${baseLabel}`;
+                                } else {
+                                    btn.classList.remove('swml-quick-toggle-on');
+                                    btn.innerHTML = baseLabel;
+                                }
+                            });
+                            rankSubmitBtn.style.display = ranked.length > 0 ? 'block' : 'none';
+                            rankSubmitBtn.textContent = ranked.length > 0 ? `Submit Ranking (${ranked.length}) →` : 'Submit Ranking →';
+                        };
+                        actions.forEach(action => {
+                            const cleanLabel = action.label.replace(/^[A-F]\)\s*/, '');
+                            const btn = el('button', {
+                                className: 'swml-quick-btn swml-rank-btn',
+                                textContent: cleanLabel,
+                                onClick: () => {
+                                    const idx = ranked.indexOf(action.value);
+                                    if (idx >= 0) { ranked.splice(idx, 1); } else { ranked.push(action.value); }
+                                    updateRankLabels();
+                                }
+                            });
+                            btn.dataset.baseLabel = cleanLabel;
+                            btnMap.set(action.value, btn);
+                            bar.appendChild(btn);
+                        });
+                        bar.appendChild(rankSubmitBtn);
                     } else {
                         actions.forEach(action => {
                             const btn = el('button', {
@@ -1472,7 +1517,8 @@
             if (headerConfig.label) ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: headerConfig.label }));
         }
         // Phase badge (v7.12.98) — skip for CW exercises
-        const phaseLabel = state.phase === 'redraft' ? 'Phase 2' : (state.phase === 'initial' ? 'Phase 1' : '');
+        const CANVAS_PHASE_LABELS = { initial: 'Phase 1', redraft: 'Phase 2', preliminary: 'Preliminary', free_practice: 'Free Practice', exam_practice: 'Exam Practice' };
+        const phaseLabel = CANVAS_PHASE_LABELS[state.phase] || '';
         if (phaseLabel && !_isCwBadge) ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: phaseLabel }));
         const SVG_DIAGNOSTIC = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.91" stroke-miterlimit="10" style="display:inline-block;vertical-align:-2px;margin-right:3px"><path d="M8.18,16.77V13H4.36v3.82L2.09,19a2,2,0,0,0-.59,1.44h0a2,2,0,0,0,2,2H9a2,2,0,0,0,2-2h0a2,2,0,0,0-.6-1.44Z"/><line x1="2.45" y1="12.95" x2="10.09" y2="12.95"/><path d="M20.59,15.39V11.05H16.77v4.34a3.82,3.82,0,1,0,3.82,0Z"/><line x1="22.5" y1="11.05" x2="14.86" y2="11.05"/><path d="M18.68,11.05V3.89A2.39,2.39,0,0,0,16.3,1.5h0a2.39,2.39,0,0,0-2.39,2.39V6.27A1.91,1.91,0,0,1,12,8.18h0a1.91,1.91,0,0,1-1.91-1.91V5.32A1.9,1.9,0,0,0,8.18,3.41h0A1.91,1.91,0,0,0,6.27,5.32v.95"/><line x1="5.32" y1="9.14" x2="7.23" y2="9.14"/><line x1="14.86" y1="17.73" x2="19.64" y2="17.73"/><line x1="2.45" y1="18.68" x2="6.27" y2="18.68"/></svg>';
         // v7.13.42: Skip diagnostic badge for CW exercises
@@ -2558,7 +2604,8 @@
         if (state.phase === 'redraft' && !localStorage.getItem(countdownKey)) {
             localStorage.setItem(countdownKey, new Date().toISOString());
         }
-        const countdownStart = (isCwTask || isExamPrep) ? null : localStorage.getItem(countdownKey);
+        const noDeadlinePhase = ['preliminary', 'free_practice', 'exam_practice'].includes(state.phase);
+        const countdownStart = (isCwTask || isExamPrep || noDeadlinePhase) ? null : localStorage.getItem(countdownKey);
         if (countdownStart) {
             const cStart = new Date(countdownStart);
             const cDeadline = new Date(cStart.getTime() + totalDays * 24 * 60 * 60 * 1000);
@@ -2573,7 +2620,8 @@
                 const daysLeft = Math.ceil(remaining / (24 * 60 * 60 * 1000));
                 const daysPassed = totalDays - daysLeft;
                 // v7.14.50: Prepend phase label so students know this is the phase deadline, not the exercise
-                const phasePrefix = state.phase === 'redraft' ? 'Phase 2: ' : (state.phase === 'initial' ? 'Phase 1: ' : '');
+                const CD_PHASE_LABELS = { initial: 'Phase 1', redraft: 'Phase 2', preliminary: 'Preliminary', free_practice: 'Free Practice', exam_practice: 'Exam Practice' };
+                const phasePrefix = CD_PHASE_LABELS[state.phase] ? CD_PHASE_LABELS[state.phase] + ': ' : '';
                 countdownDisplay.textContent = `${phasePrefix}Day ${daysPassed + 1} · ${daysLeft}d left`;
                 countdownDisplay.style.color = daysLeft <= 2 ? '#ff6b6b' : daysLeft <= 5 ? '#ffb432' : '';
             }
@@ -3669,10 +3717,10 @@
                             : (state.task === 'polishing' && state.mode === 'guided') ? 'Polish Redraft'
                             : exerciseConfig.label || 'Assessment';
                         protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge active', textContent: sidebarTaskLabel }));
-                        if (state.phase === 'redraft') {
-                            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Phase 2' }));
-                        } else if (state.phase === 'initial') {
-                            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Phase 1' }));
+                        const BTP_PHASE_LABELS = { initial: 'Phase 1', redraft: 'Phase 2', preliminary: 'Preliminary', free_practice: 'Free Practice', exam_practice: 'Exam Practice' };
+                        const btpPhaseLabel = BTP_PHASE_LABELS[state.phase] || '';
+                        if (btpPhaseLabel) {
+                            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: btpPhaseLabel }));
                         }
                         protoBody.appendChild(protoBadges);
 
@@ -4039,6 +4087,51 @@
                                             }
                                         });
                                         bar.appendChild(submitBtn);
+                                    } else if (actions._ranking && actions.length >= 2) {
+                                        // ── Ranking mode for training-env chat (v7.14.51) ──
+                                        const ranked = [];
+                                        const btnMap = new Map();
+                                        const rankSubmitBtn = el('button', {
+                                            className: 'swml-quick-btn swml-quick-submit',
+                                            textContent: 'Submit Ranking →',
+                                            style: { display: 'none' },
+                                            onClick: () => {
+                                                bar.remove();
+                                                chatTextarea.value = ranked.map((v, i) => `${i + 1}${i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'}: ${v}`).join(', ');
+                                                sendCanvasMessage();
+                                            }
+                                        });
+                                        const updateRankLabels = () => {
+                                            btnMap.forEach((btn, val) => {
+                                                const idx = ranked.indexOf(val);
+                                                const baseLabel = btn.dataset.baseLabel;
+                                                if (idx >= 0) {
+                                                    btn.classList.add('swml-quick-toggle-on');
+                                                    btn.innerHTML = `<span class="swml-rank-num">${idx + 1}</span> ${baseLabel}`;
+                                                } else {
+                                                    btn.classList.remove('swml-quick-toggle-on');
+                                                    btn.innerHTML = baseLabel;
+                                                }
+                                            });
+                                            rankSubmitBtn.style.display = ranked.length > 0 ? 'block' : 'none';
+                                            rankSubmitBtn.textContent = ranked.length > 0 ? `Submit Ranking (${ranked.length}) →` : 'Submit Ranking →';
+                                        };
+                                        actions.forEach(action => {
+                                            const cleanLabel = action.label.replace(/^[A-F]\)\s*/, '');
+                                            const btn = el('button', {
+                                                className: 'swml-quick-btn swml-rank-btn',
+                                                textContent: cleanLabel,
+                                                onClick: () => {
+                                                    const idx = ranked.indexOf(action.value);
+                                                    if (idx >= 0) { ranked.splice(idx, 1); } else { ranked.push(action.value); }
+                                                    updateRankLabels();
+                                                }
+                                            });
+                                            btn.dataset.baseLabel = cleanLabel;
+                                            btnMap.set(action.value, btn);
+                                            bar.appendChild(btn);
+                                        });
+                                        bar.appendChild(rankSubmitBtn);
                                     } else {
                                         // Single-select mode
                                         actions.forEach(action => {
@@ -5499,32 +5592,29 @@
             return `${days}d ago`;
         }
 
-        // Quick comment presets
+        // Quick comment presets — two-tier system (v7.14.53)
+        const SVG_QC_ISSUE = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+        const SVG_QC_DOC = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+        const SVG_QC_PRAISE = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-6 0v4"/><path d="M18 8h-2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2z"/><path d="M6 8H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2z"/></svg>';
+        const SVG_QC_PEN = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+        const SVG_QC_STAR = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+        const SVG_QC_CROP = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"/><path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"/></svg>';
+
         const QUICK_COMMENTS = [
-            { category: 'Issues', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>', items: [
-                { label: 'Spelling', text: 'Spelling error — please check and correct.' },
-                { label: 'Punctuation', text: 'Punctuation needs attention here.' },
-                { label: 'Grammar', text: 'Grammar issue — revise this sentence.' },
-                { label: 'Comma splice', text: 'Comma splice — two independent clauses joined with just a comma. Use a full stop, semicolon, or conjunction.' },
+            // ── Tier 1: shown by default ──
+            { category: 'Common Issues', tier: 'default', icon: SVG_QC_ISSUE, items: [
+                { label: 'Redo', text: 'This section needs to be rewritten — it doesn\'t meet the required standard.' },
+                { label: 'SPaG', text: 'Spelling, punctuation, and grammar errors here — please proofread carefully.' },
+                { label: 'Plan your essay', text: 'Plan your essay before writing — a clear plan leads to a stronger structure.' },
+                { label: 'Outline', text: 'Create a proper outline for this section before drafting.' },
+                { label: 'Polish', text: 'This needs polishing — refine the expression and tighten the language.' },
+                { label: 'Reassess', text: 'Reassess this section — the analysis doesn\'t align with the mark scheme criteria.' },
                 { label: 'More detail', text: 'More detail needed — develop this point further.' },
-                { label: 'More depth', text: 'More depth needed — go beyond surface-level analysis and explore deeper meaning.' },
                 { label: 'Be specific', text: 'Be more specific — avoid vague or general statements.' },
-                { label: 'More perceptive', text: 'This needs to be more perceptive — show deeper understanding.' },
-                { label: 'Follow structure', text: 'Follow the TTECEA structure more carefully — ensure each paragraph has all the required elements.' },
                 { label: 'Five paragraphs', text: 'Remember the five paragraph essay structure — introduction, three body paragraphs, conclusion.' },
                 { label: 'Discourse markers', text: 'Use discourse markers and transitional phrases to connect your ideas and improve flow.' },
             ]},
-            { category: 'TTECEA', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>', items: [
-                { label: 'Topic sentence', text: 'Conceptual topic sentence needed — link your point to the wider theme.' },
-                { label: 'Technique', text: 'Technique needed — identify the writer\'s method here (language, structure, symbolism).' },
-                { label: 'Evidence', text: 'Evidence needed — embed a quote to support this point.' },
-                { label: 'Inference', text: 'Inference needed — explain what this suggests about the character/theme.' },
-                { label: 'Close analysis', text: 'Close analysis needed — zoom into specific words/phrases and explore connotations.' },
-                { label: 'Effect 1', text: 'Effect on reader needed — how does this make the reader think or feel?' },
-                { label: 'Effect 2', text: 'Second effect needed — explore an alternative interpretation or deeper impact.' },
-                { label: 'Author\'s purpose', text: 'Author\'s purpose needed — why has the writer made this choice? Link to context.' },
-            ]},
-            { category: 'Praise', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-6 0v4"/><path d="M18 8h-2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2z"/><path d="M6 8H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2z"/></svg>', items: [
+            { category: 'Praise', tier: 'default', icon: SVG_QC_PRAISE, items: [
                 { label: 'Good detail', text: 'Good detail here — well-developed point.' },
                 { label: 'Perceptive', text: 'Perceptive response — this shows real insight.' },
                 { label: 'Excellent analysis', text: 'Excellent close analysis — strong engagement with language.' },
@@ -5533,6 +5623,42 @@
                 { label: 'Strong effect', text: 'Excellent exploration of effect on the reader.' },
                 { label: 'Clear purpose', text: 'Clear understanding of the author\'s purpose — well linked to context.' },
                 { label: 'Top level', text: 'Top level quality — this is exactly the standard we\'re aiming for.' },
+            ]},
+            // ── Tier 2: revealed by "More..." button ──
+            { category: 'TTECEA Breakdown', tier: 'expanded', icon: SVG_QC_DOC, items: [
+                { label: 'Needs topic sentence', text: 'Conceptual topic sentence needed — link your point to the wider theme.' },
+                { label: 'Needs technique', text: 'Technique needed — identify the writer\'s method here (language, structure, symbolism).' },
+                { label: 'Needs evidence', text: 'Evidence needed — embed a quote to support this point.' },
+                { label: 'Needs inference', text: 'Inference needed — explain what this suggests about the character/theme.' },
+                { label: 'Needs close analysis', text: 'Close analysis needed — zoom into specific words/phrases and explore connotations.' },
+                { label: 'Needs effect 1', text: 'Effect on reader needed — how does this make the reader think or feel?' },
+                { label: 'Needs effect 2', text: 'Second effect needed — explore an alternative interpretation or deeper impact.' },
+                { label: 'Needs author\'s purpose', text: 'Author\'s purpose needed — why has the writer made this choice? Link to context.' },
+                { label: 'Needs context', text: 'Context needed — connect this point to the historical, social, or literary context.' },
+            ]},
+            { category: 'Topic Sentence', tier: 'expanded', icon: SVG_QC_PEN, items: [
+                { label: 'Too descriptive', text: 'Topic sentence is too descriptive — make it conceptual. Link to theme, not plot.' },
+            ]},
+            { category: 'Creative Writing', tier: 'expanded', icon: SVG_QC_STAR, items: [
+                { label: 'Dynamic verbs & nouns', text: 'Use dynamic verbs and concrete nouns for vivid imagery.' },
+                { label: 'Replace with metaphor', text: 'Consider replacing this with a metaphor for stronger impact.' },
+                { label: 'Replace with simile', text: 'Consider using a simile here to create a vivid comparison.' },
+            ]},
+            { category: "Mad Father's Crops", tier: 'expanded', icon: SVG_QC_CROP, items: [
+                { label: 'Try metaphor', text: 'Try using a metaphor here.' },
+                { label: 'Try alliteration', text: 'Try using alliteration here for emphasis.' },
+                { label: 'Try direct address', text: 'Try direct address to engage the reader.' },
+                { label: 'Try foreshadowing', text: 'Try foreshadowing to build tension.' },
+                { label: 'Try assonance', text: 'Try assonance to create a musical quality.' },
+                { label: 'Try hyperbole', text: 'Try hyperbole to exaggerate for effect.' },
+                { label: 'Try emotive language', text: 'Try emotive language to evoke feeling.' },
+                { label: 'Try rhetorical question', text: 'Try a rhetorical question to provoke thought.' },
+                { label: 'Try simile', text: 'Try a simile to create a vivid comparison.' },
+                { label: 'Try contrast', text: 'Try contrast to highlight differences.' },
+                { label: 'Try repetition', text: 'Try repetition for emphasis and rhythm.' },
+                { label: 'Try onomatopoeia', text: 'Try onomatopoeia to bring sound into your writing.' },
+                { label: 'Try personification', text: 'Try personification to bring an object or idea to life.' },
+                { label: 'Try sibilance', text: 'Try sibilance (repeated "s" sounds) for a sinister or soothing effect.' },
             ]},
         ];
 
@@ -5556,13 +5682,31 @@
                 rows: 3,
             });
 
+            // Render tier 1 (default) categories
+            const expandedWrap = el('div', { className: 'swml-quick-expanded', style: { display: 'none' } });
             QUICK_COMMENTS.forEach(cat => {
                 const catEl = el('div', { className: 'swml-quick-cat' });
-                catEl.appendChild(el('div', { className: 'swml-quick-cat-label', innerHTML: cat.icon + ' ' + cat.category }));
+                const catLabel = el('div', { className: 'swml-quick-cat-label', innerHTML: cat.icon + ' ' + cat.category });
                 const chipsWrap = el('div', { className: 'swml-quick-chips' });
+                // Collapsible: click header to toggle (expanded tier starts collapsed)
+                if (cat.tier === 'expanded') {
+                    chipsWrap.style.display = 'none';
+                    catLabel.style.cursor = 'pointer';
+                    catLabel.classList.add('swml-quick-cat-collapsible', 'collapsed');
+                    catLabel.addEventListener('click', () => {
+                        const isHidden = chipsWrap.style.display === 'none';
+                        chipsWrap.style.display = isHidden ? 'flex' : 'none';
+                        catLabel.classList.toggle('collapsed', !isHidden);
+                    });
+                }
+                catEl.appendChild(catLabel);
+                const chipClass = cat.category === 'Praise' ? ' swml-quick-chip-praise'
+                    : cat.category.startsWith('TTECEA') ? ' swml-quick-chip-ttecea'
+                    : cat.category === 'Creative Writing' || cat.category === "Mad Father's Crops" ? ' swml-quick-chip-cw'
+                    : '';
                 cat.items.forEach(item => {
                     chipsWrap.appendChild(el('button', {
-                        className: 'swml-quick-chip' + (cat.category === 'Praise' ? ' swml-quick-chip-praise' : cat.category === 'TTECEA' ? ' swml-quick-chip-ttecea' : ''),
+                        className: 'swml-quick-chip' + chipClass,
                         textContent: item.label,
                         title: item.text,
                         onClick: () => {
@@ -5572,8 +5716,24 @@
                     }));
                 });
                 catEl.appendChild(chipsWrap);
-                quickWrap.appendChild(catEl);
+                if (cat.tier === 'expanded') {
+                    expandedWrap.appendChild(catEl);
+                } else {
+                    quickWrap.appendChild(catEl);
+                }
             });
+            // "More..." toggle button
+            const moreBtn = el('button', {
+                className: 'swml-quick-more-btn',
+                textContent: 'More...',
+                onClick: () => {
+                    const isHidden = expandedWrap.style.display === 'none';
+                    expandedWrap.style.display = isHidden ? 'block' : 'none';
+                    moreBtn.textContent = isHidden ? 'Less' : 'More...';
+                }
+            });
+            quickWrap.appendChild(moreBtn);
+            quickWrap.appendChild(expandedWrap);
             modal.appendChild(quickWrap);
 
             modal.appendChild(el('label', { className: 'swml-comment-modal-label', textContent: 'Comment' }));

@@ -1344,6 +1344,24 @@ TEMPLATE;
             $preamble .= "- Do NOT display the 'do not delete this chat' message — the system handles persistence.\n";
             $preamble .= "- Do NOT ask any setup/confirmation questions.\n\n";
             $preamble .= "**START DIRECTLY** with the Unit {$ms_unit} quiz questions. Your first message should present Question 1.\n\n";
+
+            // ── Text-specific key quotes for mark scheme examples (v7.14.52) ──
+            $text_name = $context['text'] ?? '';
+            if (!empty($text_name)) {
+                $text_slug = sanitize_title($text_name);
+                $data_path = SWML_PROTOCOLS_PATH . 'shared/mark-scheme/text-data/' . $text_slug . '.md';
+
+                $preamble .= "### TEXT-SPECIFIC EXAMPLES\n\n";
+                $preamble .= "The student is studying **{$text_name}**. When quiz questions contain example student responses, quotes, or passages, ADAPT them to use **{$text_name}** material instead of the default examples in the protocol. Keep the same difficulty level and pedagogical point — only change the text references.\n\n";
+
+                if (file_exists($data_path)) {
+                    $text_data = file_get_contents($data_path);
+                    if (!empty(trim($text_data))) {
+                        $preamble .= "Use these key quotes and scenes as source material for adapted examples:\n\n";
+                        $preamble .= $text_data . "\n\n";
+                    }
+                }
+            }
         }
 
         // Function calling instructions — determine task from session context
@@ -2087,6 +2105,41 @@ TEMPLATE;
 
             if (!$has_state) {
                 $preamble .= "- No plan elements established yet.\n";
+            }
+        }
+
+        // ── Universal learning profile injection (v7.14.52) ──
+        // Inject student's learning profile into ALL tasks so the AI can reference prior work
+        if ($profile && !empty($profile['assessment_count']) && $profile['assessment_count'] > 0) {
+            $preamble .= "\n### STUDENT LEARNING PROFILE\n\n";
+            $preamble .= "This student has completed {$profile['assessment_count']} assessment(s). ";
+
+            if (!empty($profile['recurring_targets'])) {
+                $targets = array_slice($profile['recurring_targets'], 0, 4);
+                $preamble .= "Recurring targets: " . implode(', ', $targets) . ". ";
+            }
+            if (!empty($profile['recurring_strengths'])) {
+                $strengths = array_slice($profile['recurring_strengths'], 0, 4);
+                $preamble .= "Recurring strengths: " . implode(', ', $strengths) . ". ";
+            }
+            if (!empty($profile['score_history'])) {
+                $recent = array_slice($profile['score_history'], -3);
+                $scores = array_map(function($s) { return ($s['score'] ?? '?') . '/' . ($s['total'] ?? '?'); }, $recent);
+                $preamble .= "Recent scores: " . implode(', ', $scores) . ". ";
+            }
+
+            $preamble .= "\n\n";
+
+            // Task-specific instructions for how to USE the profile
+            $task = $context['task'] ?? '';
+            if (in_array($task, ['assessment', 'redraft_assessment'], true)) {
+                $preamble .= "**Profile usage:** Reference targets when giving feedback. Do NOT alter the assessment workflow or skip any steps based on this profile.\n\n";
+            } elseif (in_array($task, ['planning', 'polishing', 'essay_plan'], true)) {
+                $preamble .= "**Profile usage:** Reference the student's prior targets when setting goals. If a recurring weakness appears, address it proactively in the plan.\n\n";
+            } elseif ($task === 'mark_scheme') {
+                $preamble .= "**Profile usage:** If the student's profile shows recurring weaknesses in specific AOs, note them when giving feedback on quiz answers.\n\n";
+            } else {
+                $preamble .= "**Profile usage:** Tailor examples and difficulty to the student's demonstrated level. Reference their strengths to build confidence and their targets to focus improvement. Do NOT skip protocol steps based on this profile.\n\n";
             }
         }
 

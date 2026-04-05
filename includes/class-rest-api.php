@@ -1252,8 +1252,8 @@ class SWML_REST_API {
         if (!$board || !$text || !$topic) {
             return new WP_Error('missing_params', 'board, text, and topic_number are required', ['status' => 400]);
         }
-        if (!in_array($phase, ['initial', 'redraft'], true)) {
-            return new WP_Error('invalid_phase', 'phase must be initial or redraft', ['status' => 400]);
+        if (!in_array($phase, ['initial', 'redraft', 'preliminary', 'free_practice', 'exam_practice'], true)) {
+            return new WP_Error('invalid_phase', 'phase must be initial, redraft, preliminary, free_practice, or exam_practice', ['status' => 400]);
         }
 
         $data = [
