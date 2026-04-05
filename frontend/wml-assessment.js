@@ -797,9 +797,9 @@
                         promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName} \u2014 MARK SCHEME QUIZ]\n[STUDENT'S RESPONSE]\n${msg}`;
                     }
                 } else if (state.task === 'planning' || state.task === 'polishing') {
-                    const docContent = canvasEditor ? canvasEditor.getText() : '';
+                    const docContent = canvasEditor ? getDocumentText(canvasEditor) : '';
                     if (userMsgCount === 1) {
-                        promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName} \u2014 ${state.task.toUpperCase()}${state.phase === 'redraft' ? ' (REDRAFT)' : ''}]\n[STUDENT'S DOCUMENT \u2014 contains question, essay plan, and response sections]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                        promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName} \u2014 ${state.task.toUpperCase()}${state.phase === 'redraft' ? ' (REDRAFT)' : ''}]\n[STUDENT'S DOCUMENT \u2014 contains source texts, exam questions, essay plan, and response sections. Each section is labelled with === LABEL [type] ===]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
                     } else if (docContent.trim().length > 50) {
                         promptText = `[STUDENT'S DOCUMENT \u2014 current state]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
                     }
@@ -5373,6 +5373,32 @@
                         }
                         return false;
                     },
+                    // v7.14.65: Prevent deleting InputField nodes — students must not remove them
+                    Backspace: ({ editor }) => {
+                        const { $from, empty } = editor.state.selection;
+                        if (!empty) return false; // let selection delete work normally
+                        // At position 0 inside an inputField? Block backspace to prevent node deletion
+                        for (let d = $from.depth; d >= 0; d--) {
+                            if ($from.node(d).type.name === 'inputField') {
+                                const startOfField = $from.before(d) + 1;
+                                if ($from.pos === startOfField) return true; // block
+                                return false;
+                            }
+                        }
+                        return false;
+                    },
+                    Delete: ({ editor }) => {
+                        const { $from, empty } = editor.state.selection;
+                        if (!empty) return false;
+                        for (let d = $from.depth; d >= 0; d--) {
+                            if ($from.node(d).type.name === 'inputField') {
+                                const endOfField = $from.after(d) - 1;
+                                if ($from.pos === endOfField) return true; // block
+                                return false;
+                            }
+                        }
+                        return false;
+                    },
                 };
             },
         });
@@ -8532,6 +8558,29 @@
             total += words.length;
         });
         editorEl._swmlTemplateBaseline = total;
+    }
+
+    /**
+     * Extract the FULL document with section labels preserved.
+     * Used for planning/polishing where the AI needs to see sources, questions, AND responses.
+     * v7.14.65: Replaces raw getText() which lost all section structure.
+     */
+    function getDocumentText(editor) {
+        if (!editor) return '';
+        const editorEl = editor.options.element;
+        if (!editorEl) return editor.getText() || '';
+        const sections = editorEl.querySelectorAll('[data-section-type]');
+        if (sections.length === 0) return editor.getText() || '';
+        const parts = [];
+        sections.forEach(section => {
+            const type = section.getAttribute('data-section-type') || '';
+            const label = section.getAttribute('data-section-label') || '';
+            const text = section.textContent?.trim() || '';
+            if (!text || type === 'divider') return;
+            const heading = label ? `=== ${label.toUpperCase()} [${type}] ===` : `=== ${type.toUpperCase()} ===`;
+            parts.push(`${heading}\n${text}`);
+        });
+        return parts.join('\n\n');
     }
 
     /**

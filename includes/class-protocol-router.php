@@ -860,6 +860,7 @@ TEMPLATE;
 {$goal_a}
 {$goal_b}
 {$goal_c}
+D) I have my own specific goal — let me type it
 
 Type the letter."
 
@@ -867,13 +868,15 @@ Type the letter."
 
 ---
 
-**[CONDITIONAL]** IF planning_goal == "C": [SAY] "{$resp_c}"
+**[CONDITIONAL]** IF planning_goal == "D": [ASK] "Great — tell me your specific goal for this plan." **[AI_INTERNAL]** Wait for response. Store their custom goal.
+
+ELIF planning_goal == "C": [SAY] "{$resp_c}"
 
 ELIF planning_goal == "B": [SAY] "{$resp_b}"
 
 ELIF planning_goal == "A": [SAY] "{$resp_a}"
 
-ELSE: Execute REQUIRE_MATCH("A, B, or C") HALT: true
+ELSE: Execute REQUIRE_MATCH("A, B, C, or D") HALT: true
 
 ---
 

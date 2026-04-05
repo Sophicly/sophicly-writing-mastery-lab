@@ -2307,6 +2307,9 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-wc-widget-close:hover { color: #ff6b6b; }
 .swml-canvas-light .swml-wc-widget-close { color: rgba(0,0,0,0.3); }
 
+/* v7.14.65: Hide Meow Apps AI Engine chatbot when canvas is open */
+.mwai-trigger { display: none !important; }
+
 /* Page breaks removed — canvas grows naturally */
 
 /* ── Assessment Mode: Left Protocol Panel (reuses .swml-sidebar) ── */
