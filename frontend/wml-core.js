@@ -716,6 +716,7 @@ window.WML = (function() {
     // completionType: 'assessment_detect' = score/grade pattern matching, 'step_complete' = last step reached,
     //                 'manual' = student clicks complete, 'learndash' = LD Mark Complete, 'none' = no completion tracking
     // storageSuffix: appended to localStorage/DB keys to isolate data between exercise types
+    // v7.14.59: Removed hardcoded phase from all entries — phase comes purely from bridge embed config
     const EXERCISE_MANIFEST = {
         // ── Phase 1: Initial Attempt ──
         diagnostic: {
@@ -730,7 +731,6 @@ window.WML = (function() {
             storageSuffix: '',
             chatHeaderLabel: null,
             sidebarSteps: null,
-            phase: 'initial',
         },
         assessment: {
             label: 'Assessment',
@@ -753,7 +753,6 @@ window.WML = (function() {
                 { step: 7, label: 'Action Plan' },
                 { step: 8, label: 'Session Complete' },
             ],
-            phase: 'initial',
         },
         feedback_discussion: {
             label: 'Discuss Feedback',
@@ -767,7 +766,6 @@ window.WML = (function() {
             storageSuffix: '_fb',
             chatHeaderLabel: 'Discuss Feedback',
             sidebarSteps: null,
-            phase: null, // works in both phases — phase set by bridge dropdown
         },
 
         // ── Phase 2: Redraft ──
@@ -790,7 +788,6 @@ window.WML = (function() {
                 { step: 5, label: 'Feedback' },
                 { step: 6, label: 'Action Plan' },
             ],
-            phase: 'redraft',
         },
         model_answer_video: {
             label: 'Model Answer',
@@ -804,7 +801,6 @@ window.WML = (function() {
             storageSuffix: '_mav',
             chatHeaderLabel: null,
             sidebarSteps: null,
-            phase: 'redraft',
         },
         outlining: {
             label: 'Outline Essay',
@@ -818,7 +814,6 @@ window.WML = (function() {
             storageSuffix: '_outline',
             chatHeaderLabel: null,
             sidebarSteps: null,
-            phase: 'redraft',
         },
         response: {
             label: 'Write Response',
@@ -832,7 +827,6 @@ window.WML = (function() {
             storageSuffix: '_redraft',
             chatHeaderLabel: null,
             sidebarSteps: null,
-            phase: 'redraft',
         },
         redraft_assessment: {
             label: 'Reassessment',
@@ -855,10 +849,9 @@ window.WML = (function() {
                 { step: 7, label: 'Action Plan' },
                 { step: 8, label: 'Session Complete' },
             ],
-            phase: 'redraft',
         },
 
-        // ── Phase 2 canvas exercises (v7.14.29: migrated from chat to canvas) ──
+        // ── Canvas exercises (v7.14.29: migrated from chat to canvas) ──
         planning: {
             label: 'Essay Skills',
             environment: 'training',
@@ -871,7 +864,6 @@ window.WML = (function() {
             storageSuffix: '_planning',
             chatHeaderLabel: 'Essay Planning',
             sidebarSteps: null,
-            phase: 'redraft',
         },
         polishing: {
             label: 'Polishing',
@@ -885,7 +877,6 @@ window.WML = (function() {
             storageSuffix: '_polishing',
             chatHeaderLabel: 'Essay Polishing',
             sidebarSteps: null,
-            phase: 'redraft',
         },
         exam_question: {
             label: 'Exam Question',
@@ -900,7 +891,6 @@ window.WML = (function() {
             documentTemplate: 'exam_question',  // v7.13.17: template ready for canvas migration
             chatHeaderLabel: 'Exam Question Creator',
             sidebarSteps: null,
-            phase: null,
         },
         essay_plan: {
             label: 'Essay Plan',
@@ -915,7 +905,6 @@ window.WML = (function() {
             documentTemplate: 'essay_plan',     // v7.13.17: template ready for canvas migration
             chatHeaderLabel: 'Essay Plan',
             sidebarSteps: null,
-            phase: 'redraft',
         },
         model_answer: {
             label: 'Model Answer',
@@ -930,7 +919,6 @@ window.WML = (function() {
             documentTemplate: 'model_answer',   // v7.13.17: template ready for canvas migration
             chatHeaderLabel: 'Model Answer',
             sidebarSteps: null,
-            phase: 'redraft',
         },
         verbal_rehearsal: {
             label: 'Quote Analysis',
@@ -945,7 +933,6 @@ window.WML = (function() {
             documentTemplate: 'quote_analysis', // v7.13.17: template ready for canvas migration
             chatHeaderLabel: 'Quote Analysis',
             sidebarSteps: null,
-            phase: null,
         },
         conceptual_notes: {
             label: 'Conceptual Notes',
@@ -960,7 +947,6 @@ window.WML = (function() {
             documentTemplate: 'conceptual_notes', // v7.13.17: two variants — literature (plays/novels) + poetry
             chatHeaderLabel: 'Conceptual Notes',
             sidebarSteps: null,
-            phase: null,
         },
         memory_practice: {
             label: 'Memory Practice',
@@ -975,7 +961,6 @@ window.WML = (function() {
             documentTemplate: 'memory_practice', // v7.13.17: template ready for canvas migration
             chatHeaderLabel: 'Memory Practice',
             sidebarSteps: null,
-            phase: null,
         },
 
         // ── Creative Writing: SI-Guided Steps (v7.13.34) ──
@@ -991,7 +976,6 @@ window.WML = (function() {
             storageSuffix: '_cw',
             chatHeaderLabel: 'Sophic Intelligence',
             sidebarSteps: null,
-            phase: null,
         },
         // ── Creative Writing: Workbook Steps (v7.13.34) ──
         cw_workbook: {
@@ -1006,7 +990,6 @@ window.WML = (function() {
             storageSuffix: '_cw',
             chatHeaderLabel: null,
             sidebarSteps: null,
-            phase: null,
         },
     };
 

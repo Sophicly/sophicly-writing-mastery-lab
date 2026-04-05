@@ -217,15 +217,20 @@
         if (state.topicNumber && (state.mode === 'guided' || canvasInMarkScheme)) {
             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Topic ${state.topicNumber}` }));
         } else if (state.mode === 'exam_prep' && !canvasInMarkScheme) {
-            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Exam Practice' }));
+            // v7.14.61: Only show "Exam Practice" if no phase is set — phase label takes priority
+            const PHASE_LABELS = { initial: 'Phase 1', redraft: 'Phase 2', preliminary: 'Preliminary', free_practice: 'Free Practice', exam_practice: 'Exam Practice' };
+            const phaseLabel = PHASE_LABELS[state.phase] || '';
+            if (!phaseLabel) {
+                protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Exam Practice' }));
+            }
         }
         // Task label
         const sidebarTaskLabel = (state.task === 'planning' && state.mode === 'guided') ? 'Plan Redraft'
             : (state.task === 'polishing' && state.mode === 'guided') ? 'Polish Redraft'
             : exerciseConfig.label || 'Assessment';
         protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge active', textContent: sidebarTaskLabel }));
-        const PHASE_LABELS = { initial: 'Phase 1', redraft: 'Phase 2', preliminary: 'Preliminary', free_practice: 'Free Practice', exam_practice: 'Exam Practice' };
-        const sidebarPhaseLabel = PHASE_LABELS[state.phase] || '';
+        const PHASE_LABELS_SB = { initial: 'Phase 1', redraft: 'Phase 2', preliminary: 'Preliminary', free_practice: 'Free Practice', exam_practice: 'Exam Practice' };
+        const sidebarPhaseLabel = PHASE_LABELS_SB[state.phase] || '';
         if (sidebarPhaseLabel) {
             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: sidebarPhaseLabel }));
         }
@@ -495,7 +500,8 @@
             }
             bubble.appendChild(content);
             chatMessages.appendChild(bubble);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            // v7.14.61: Skip scroll during history restore (prevents document jumping)
+            if (!chatMessages._suppressScroll) chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         // Clear chat button
@@ -1063,6 +1069,7 @@
             { id: 'sep2', sep: true },
             { id: 'blockquote', html: '❝', label: 'Quote' },
             { id: 'hr', html: '—', label: 'Rule' },
+            { id: 'checklist', html: '☑', label: 'Checklist' },
             { id: 'sep3', sep: true },
             { id: 'undo', html: '↩', label: 'Undo' },
             { id: 'redo', html: '↪', label: 'Redo' },
@@ -1096,6 +1103,29 @@
             textLarger: () => { textSizeIndex = Math.min(TEXT_SIZES.length - 1, textSizeIndex + 1); applyTextSize(); },
             blockquote: () => canvasEditor?.chain().focus().toggleBlockquote().run(),
             hr: () => canvasEditor?.chain().focus().setHorizontalRule().run(),
+            checklist: () => {
+                if (!canvasEditor) return;
+                const { $from } = canvasEditor.state.selection;
+                // v7.14.61: Toggle — convert current block to/from checklistItem (keeps cursor in place)
+                for (let d = $from.depth; d >= 0; d--) {
+                    if ($from.node(d).type.name === 'checklistItem') {
+                        canvasEditor.chain().focus().setNode('paragraph').run();
+                        return;
+                    }
+                }
+                // Convert current paragraph to checklist item (cursor stays on same line)
+                canvasEditor.chain().focus().command(({ tr, state }) => {
+                    const { $from } = state.selection;
+                    const blockPos = $from.before($from.depth);
+                    const node = state.doc.nodeAt(blockPos);
+                    if (node && node.type.name === 'paragraph') {
+                        const checklistType = state.schema.nodes.checklistItem;
+                        tr.setNodeMarkup(blockPos, checklistType, { checked: false });
+                        return true;
+                    }
+                    return false;
+                }).run();
+            },
             undo: () => canvasEditor?.chain().focus().undo().run(),
             redo: () => canvasEditor?.chain().focus().redo().run(),
             comment: () => addComment(),
@@ -1297,8 +1327,8 @@
         let tbLogicalX = 0;
         let tbVelocityX = 0;
         let tbMomentumId = null;
-        const TB_WHEEL_SENS = 0.8;
-        const TB_FRICTION = 0.92;
+        const TB_WHEEL_SENS = 0.25;    // v7.14.61: reduced from 0.35 — still a touch too fast
+        const TB_FRICTION = 0.88;      // v7.14.59: reduced from 0.92 — momentum decays faster
         const TB_MIN_VEL = 0.05;
 
         function initCarousel() {
@@ -1401,7 +1431,7 @@
             const now = performance.now();
             const dt = now - tbDragLastTime;
             if (dt > 0) {
-                tbVelocityX = (ev.clientX - tbDragLastX) / dt * 16;
+                tbVelocityX = (ev.clientX - tbDragLastX) / dt * 10; // v7.14.59: reduced from 16
             }
             tbDragLastX = ev.clientX;
             tbDragLastTime = now;
@@ -2695,113 +2725,130 @@
 
         statusBar.appendChild(saveStatus);
 
-        // ── Detachable Extract Panel (v7.11.6) ──
-        let extractPanel = null;
+        // ── Detachable Extract Panel (v7.11.6, v7.14.61: dual independent panels) ──
+        const extractPanels = {}; // keyed by source index (0, 1) or 'single' for non-multi
+        function closeAllExtractPanels() {
+            Object.keys(extractPanels).forEach(k => {
+                if (extractPanels[k]) extractPanels[k].remove();
+                delete extractPanels[k];
+            });
+            extractBtn.classList.remove('active');
+        }
+        function spawnExtractPanel(sourceEls, sourceIdx, position) {
+            // sourceIdx: number (specific source) or 'single' (non-multi / question extract)
+            if (extractPanels[sourceIdx]) { extractPanels[sourceIdx].remove(); delete extractPanels[sourceIdx]; return; }
+            const panel = el('div', { className: 'swml-extract-panel' });
+            const header = el('div', { className: 'swml-extract-panel-header' });
+            const srcEl = typeof sourceIdx === 'number' ? sourceEls[sourceIdx] : null;
+            const label = srcEl ? (srcEl.getAttribute('data-section-label') || ('Source ' + (sourceIdx + 1))) : (sourceEls.length > 0 ? 'Source Material' : 'Extract');
+            header.appendChild(el('span', { textContent: label }));
+            header.appendChild(el('button', {
+                className: 'swml-extract-panel-close', textContent: '✕',
+                onClick: () => { panel.remove(); delete extractPanels[sourceIdx]; if (!Object.keys(extractPanels).length) extractBtn.classList.remove('active'); }
+            }));
+            panel.appendChild(header);
+            const body = el('div', { className: 'swml-extract-panel-body' });
+            if (srcEl) {
+                body.appendChild(srcEl.cloneNode(true));
+            } else if (sourceEls.length > 0) {
+                sourceEls.forEach(src => body.appendChild(src.cloneNode(true)));
+            } else {
+                const questionEl = editorEl.querySelector('[data-section-type="question"]');
+                if (questionEl) body.innerHTML = questionEl.innerHTML;
+            }
+            panel.appendChild(body);
+            // Comment popover inside extract
+            body.addEventListener('click', (e) => {
+                const mark = e.target.closest('[data-comment-id]');
+                if (mark) { setTimeout(() => showCommentPopover(mark.dataset.commentId, mark, panel), 60); }
+            });
+
+                // ── Resize handles (all 4 edges + 4 corners) ──
+            // Resize handles
+            ['n','s','e','w','nw','ne','sw','se'].forEach(dir => {
+                const h = el('div', { className: `swml-extract-rh swml-extract-rh-${dir.length > 1 ? 'corner' : 'edge'} swml-extract-rh-${dir}` });
+                h.dataset.dir = dir;
+                panel.appendChild(h);
+            });
+            const EP_MIN_W = 280, EP_MIN_H = 200;
+            let epResizing = false, epDir = '', epSX, epSY, epSW, epSH, epSL, epST;
+            panel.querySelectorAll('.swml-extract-rh').forEach(h => {
+                h.addEventListener('mousedown', (e) => {
+                    if (e.button !== 0) return;
+                    e.preventDefault(); e.stopPropagation();
+                    epResizing = true; epDir = h.dataset.dir;
+                    const r = panel.getBoundingClientRect();
+                    epSX = e.clientX; epSY = e.clientY;
+                    epSW = r.width; epSH = r.height; epSL = r.left; epST = r.top;
+                });
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!epResizing || !panel.parentNode) return; e.preventDefault();
+                const dx = e.clientX - epSX, dy = e.clientY - epSY;
+                let w = epSW, h = epSH, l = epSL, t = epST;
+                if (epDir.indexOf('e') > -1) w = Math.max(EP_MIN_W, epSW + dx);
+                if (epDir.indexOf('w') > -1) { w = Math.max(EP_MIN_W, epSW - dx); l = epSL + (epSW - w); }
+                if (epDir.indexOf('s') > -1) h = Math.max(EP_MIN_H, epSH + dy);
+                if (epDir.indexOf('n') > -1) { h = Math.max(EP_MIN_H, epSH - dy); t = epST + (epSH - h); }
+                panel.style.width = w + 'px'; panel.style.maxHeight = 'none'; panel.style.height = h + 'px';
+                panel.style.left = l + 'px'; panel.style.top = t + 'px'; panel.style.right = 'auto';
+            });
+            document.addEventListener('mouseup', () => { epResizing = false; });
+            // Drag
+            let isDragging = false, dragX = 0, dragY = 0;
+            panel.style.cursor = 'grab';
+            panel.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                if (e.target.closest('.swml-extract-rh') || e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea') || e.target.closest('[data-comment-id]') || e.target.closest('.swml-comment-popover')) return;
+                isDragging = true;
+                dragX = e.clientX - panel.offsetLeft;
+                dragY = e.clientY - panel.offsetTop;
+                panel.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging || !panel.parentNode) return;
+                panel.style.left = (e.clientX - dragX) + 'px';
+                panel.style.top = (e.clientY - dragY) + 'px';
+                panel.style.right = 'auto';
+            });
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                if (panel.parentNode) panel.style.cursor = 'grab';
+            });
+            // Position
+            if (position) { panel.style.top = position.top; panel.style.right = position.right || 'auto'; panel.style.left = position.left || 'auto'; }
+            canvas.appendChild(panel);
+            extractPanels[sourceIdx] = panel;
+            extractBtn.classList.add('active');
+        }
+
         const extractBtn = el('button', {
             className: 'swml-extract-btn',
             title: 'Pop out the question extract so you can view it while writing',
             onClick: () => {
-                if (extractPanel) {
-                    extractPanel.remove();
-                    extractPanel = null;
-                    extractBtn.classList.remove('active');
-                    return;
-                }
-                // v7.14.56: Prefer source material over question text for extract panel
-                // Language papers have [data-section-type="source"] sections with extracts
+                if (Object.keys(extractPanels).length > 0) { closeAllExtractPanels(); return; }
                 const sourceEls = editorEl.querySelectorAll('[data-section-type="source"]');
                 const questionEl = editorEl.querySelector('[data-section-type="question"]');
-                const extractEl = sourceEls.length > 0 ? null : questionEl; // null = use sources
-                if (!extractEl && sourceEls.length === 0) return;
-
-                extractPanel = el('div', { className: 'swml-extract-panel' });
-                const extractHeader = el('div', { className: 'swml-extract-panel-header' });
-                extractHeader.appendChild(el('span', { textContent: sourceEls.length > 0 ? 'Source Material' : 'Extract' }));
-                extractHeader.appendChild(el('button', {
-                    className: 'swml-extract-panel-close',
-                    textContent: '✕',
-                    onClick: () => { extractPanel.remove(); extractPanel = null; extractBtn.classList.remove('active'); }
-                }));
-                extractPanel.appendChild(extractHeader);
-
-                const extractBody = el('div', { className: 'swml-extract-panel-body' });
-                if (sourceEls.length > 0) {
-                    // Clone all source sections into the extract panel
-                    sourceEls.forEach(src => { extractBody.appendChild(src.cloneNode(true)); });
-                } else {
-                    extractBody.innerHTML = questionEl.innerHTML;
-                }
-                extractPanel.appendChild(extractBody);
-
-                // Click on commented text inside extract → show comment popover INSIDE the extract panel
-                extractBody.addEventListener('click', (e) => {
-                    const mark = e.target.closest('[data-comment-id]');
-                    if (mark) {
-                        const cid = mark.dataset.commentId;
-                        setTimeout(() => showCommentPopover(cid, mark, extractPanel), 60);
-                    }
-                });
-
-                // ── Resize handles (all 4 edges + 4 corners) ──
-                const DIRS = ['n','s','e','w','nw','ne','sw','se'];
-                DIRS.forEach(dir => {
-                    const h = el('div', { className: `swml-extract-rh swml-extract-rh-${dir.length > 1 ? 'corner' : 'edge'} swml-extract-rh-${dir}` });
-                    h.dataset.dir = dir;
-                    extractPanel.appendChild(h);
-                });
-                const EP_MIN_W = 280, EP_MIN_H = 200;
-                let epResizing = false, epDir = '', epSX, epSY, epSW, epSH, epSL, epST;
-                extractPanel.querySelectorAll('.swml-extract-rh').forEach(h => {
-                    h.addEventListener('mousedown', (e) => {
-                        if (e.button !== 0) return;
-                        e.preventDefault(); e.stopPropagation();
-                        epResizing = true; epDir = h.dataset.dir;
-                        const r = extractPanel.getBoundingClientRect();
-                        epSX = e.clientX; epSY = e.clientY;
-                        epSW = r.width; epSH = r.height; epSL = r.left; epST = r.top;
+                if (sourceEls.length === 0 && !questionEl) return;
+                if (sourceEls.length > 1) {
+                    // Multi-source: spawn Source A on the right, show buttons to open Source B
+                    spawnExtractPanel(sourceEls, 0, { top: '60px', right: '20px' });
+                    // Add a small "Open Source B" button to the first panel header
+                    const openBBtn = el('button', {
+                        className: 'swml-extract-tab', textContent: '+ ' + (sourceEls[1].getAttribute('data-section-label') || 'Source B'),
+                        style: { marginLeft: '8px', fontSize: '10px', padding: '3px 8px' },
+                        onClick: (e) => {
+                            e.stopPropagation();
+                            if (extractPanels[1]) { extractPanels[1].remove(); delete extractPanels[1]; openBBtn.textContent = '+ ' + (sourceEls[1].getAttribute('data-section-label') || 'Source B'); }
+                            else { spawnExtractPanel(sourceEls, 1, { top: '100px', right: '60px' }); openBBtn.textContent = '− ' + (sourceEls[1].getAttribute('data-section-label') || 'Source B'); }
+                        }
                     });
-                });
-                const epMoveHandler = (e) => {
-                    if (!epResizing || !extractPanel) return; e.preventDefault();
-                    const dx = e.clientX - epSX, dy = e.clientY - epSY;
-                    let w = epSW, h = epSH, l = epSL, t = epST;
-                    if (epDir.indexOf('e') > -1) w = Math.max(EP_MIN_W, epSW + dx);
-                    if (epDir.indexOf('w') > -1) { w = Math.max(EP_MIN_W, epSW - dx); l = epSL + (epSW - w); }
-                    if (epDir.indexOf('s') > -1) h = Math.max(EP_MIN_H, epSH + dy);
-                    if (epDir.indexOf('n') > -1) { h = Math.max(EP_MIN_H, epSH - dy); t = epST + (epSH - h); }
-                    extractPanel.style.width = w + 'px'; extractPanel.style.maxHeight = 'none'; extractPanel.style.height = h + 'px';
-                    extractPanel.style.left = l + 'px'; extractPanel.style.top = t + 'px'; extractPanel.style.right = 'auto';
-                };
-                const epUpHandler = () => { epResizing = false; };
-                document.addEventListener('mousemove', epMoveHandler);
-                document.addEventListener('mouseup', epUpHandler);
-
-                // Make entire panel draggable (not just header) — exclude resize handles, buttons, inputs, comment marks
-                let isDragging = false, dragX = 0, dragY = 0;
-                extractPanel.style.cursor = 'grab';
-                extractPanel.addEventListener('mousedown', (e) => {
-                    if (e.button !== 0) return;
-                    // Don't drag from interactive elements
-                    if (e.target.closest('.swml-extract-rh') || e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea') || e.target.closest('[data-comment-id]') || e.target.closest('.swml-comment-popover')) return;
-                    isDragging = true;
-                    dragX = e.clientX - extractPanel.offsetLeft;
-                    dragY = e.clientY - extractPanel.offsetTop;
-                    extractPanel.style.cursor = 'grabbing';
-                    e.preventDefault();
-                });
-                document.addEventListener('mousemove', (e) => {
-                    if (!isDragging || !extractPanel) return;
-                    extractPanel.style.left = (e.clientX - dragX) + 'px';
-                    extractPanel.style.top = (e.clientY - dragY) + 'px';
-                    extractPanel.style.right = 'auto';
-                });
-                document.addEventListener('mouseup', () => {
-                    isDragging = false;
-                    if (extractPanel) extractPanel.style.cursor = 'grab';
-                });
-
-                canvas.appendChild(extractPanel);
-                extractBtn.classList.add('active');
+                    const hdr = extractPanels[0]?.querySelector('.swml-extract-panel-header');
+                    if (hdr) hdr.insertBefore(openBBtn, hdr.querySelector('.swml-extract-panel-close'));
+                } else {
+                    spawnExtractPanel(sourceEls, 'single', { top: '60px', right: '20px' });
+                }
             }
         });
         extractBtn.innerHTML = SVG_EXTRACT + ' Extract';
@@ -3278,7 +3325,9 @@
 
                 if (hasSavedChat) {
                     // Resume saved chat
+                    // v7.14.61: Suppress per-message scroll during restore to prevent document jumping
                     console.log('WML Training: Resuming chat with', savedChat.count, 'messages');
+                    if (tp.chatMessages) tp.chatMessages._suppressScroll = true;
                     savedChat.history.forEach(msg => {
                         if (msg.role === 'assistant') {
                             const clean = stripAIInternals(msg.content);
@@ -3288,6 +3337,10 @@
                         }
                         tp.canvasChatHistory.push(msg);
                     });
+                    if (tp.chatMessages) {
+                        tp.chatMessages._suppressScroll = false;
+                        tp.chatMessages.scrollTop = tp.chatMessages.scrollHeight;
+                    }
                     if (savedChat.chatId) tp.canvasChatId = savedChat.chatId;
 
                     await initAssessmentState();
@@ -5324,6 +5377,101 @@
             },
         });
 
+        // ── ChecklistItem Node (v7.14.60) ──
+        // A block with a clickable checkbox + inline text. Used for AQA LP2 Q1 (pick 4 from 8)
+        // and general-purpose checklists. Renders as: <div data-checklist-item data-checked="false"><p>text</p></div>
+        const ChecklistItem = Node.create({
+            name: 'checklistItem',
+            group: 'block',
+            content: 'inline*',
+            defining: true,
+
+            addAttributes() {
+                return {
+                    checked: {
+                        default: false,
+                        parseHTML: el => el.getAttribute('data-checked') === 'true',
+                        renderHTML: attrs => ({ 'data-checked': attrs.checked ? 'true' : 'false' }),
+                    },
+                    itemId: {
+                        default: '',
+                        parseHTML: el => el.getAttribute('data-item-id') || '',
+                        renderHTML: attrs => attrs.itemId ? { 'data-item-id': attrs.itemId } : {},
+                    },
+                };
+            },
+
+            parseHTML() {
+                return [{ tag: 'div[data-checklist-item]' }];
+            },
+
+            renderHTML({ HTMLAttributes }) {
+                return ['div', {
+                    ...HTMLAttributes,
+                    'data-checklist-item': 'true',
+                    class: 'swml-checklist-item',
+                }, 0];
+            },
+
+            addNodeView() {
+                return ({ node, getPos, editor }) => {
+                    const dom = document.createElement('div');
+                    dom.classList.add('swml-checklist-item');
+                    dom.setAttribute('data-checklist-item', 'true');
+                    dom.setAttribute('data-checked', node.attrs.checked ? 'true' : 'false');
+                    if (node.attrs.itemId) dom.setAttribute('data-item-id', node.attrs.itemId);
+
+                    const checkbox = document.createElement('span');
+                    checkbox.classList.add('swml-checklist-box');
+                    checkbox.contentEditable = 'false';
+                    checkbox.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (typeof getPos === 'function') {
+                            const pos = getPos();
+                            const currentChecked = editor.state.doc.nodeAt(pos)?.attrs.checked;
+                            editor.chain().focus()
+                                .command(({ tr }) => {
+                                    tr.setNodeMarkup(pos, undefined, { ...node.attrs, checked: !currentChecked });
+                                    return true;
+                                }).run();
+                        }
+                    });
+                    dom.appendChild(checkbox);
+
+                    const contentDOM = document.createElement('span');
+                    contentDOM.classList.add('swml-checklist-text');
+                    dom.appendChild(contentDOM);
+
+                    return { dom, contentDOM };
+                };
+            },
+
+            addKeyboardShortcuts() {
+                return {
+                    Enter: ({ editor }) => {
+                        const { $from } = editor.state.selection;
+                        for (let d = $from.depth; d >= 0; d--) {
+                            if ($from.node(d).type.name === 'checklistItem') {
+                                // If current item is empty, convert to paragraph (exit checklist)
+                                if ($from.parent.textContent.length === 0) {
+                                    editor.commands.setNode('paragraph');
+                                    return true;
+                                }
+                                // Otherwise insert a new checklist item after
+                                editor.chain().focus().insertContentAt($from.after(d), {
+                                    type: 'checklistItem', attrs: { checked: false },
+                                    content: [{ type: 'text', text: '' }],
+                                }).setTextSelection($from.after(d) + 1).run();
+                                return true;
+                            }
+                        }
+                        return false;
+                    },
+                };
+            },
+        });
+
         // ── Section Protection (v7.12.58) ──
         // Prevents students from accidentally deleting section structure via Backspace/Delete at boundaries.
         // Backspace at the start of a section → blocked (no merge with previous section)
@@ -5500,7 +5648,18 @@
                 threadWrap.innerHTML = '';
                 (c.thread || []).forEach((msg, idx) => {
                     const bubble = el('div', { className: 'swml-comment-msg' });
-                    bubble.appendChild(el('div', { className: 'swml-comment-msg-author', textContent: msg.author + ' · ' + formatTimeAgo(msg.timestamp) }));
+                    // v7.14.61: Avatar in comment thread
+                    const authorRow = el('div', { className: 'swml-comment-msg-author' });
+                    const msgAvatar = msg.avatar || config.userAvatar || '';
+                    if (msgAvatar) {
+                        const avi = el('img', { className: 'swml-comment-msg-avatar', src: msgAvatar, alt: msg.author || 'T' });
+                        avi.onerror = () => { avi.replaceWith(el('span', { className: 'swml-comment-msg-initials', textContent: (msg.author || 'T')[0].toUpperCase() })); };
+                        authorRow.appendChild(avi);
+                    } else {
+                        authorRow.appendChild(el('span', { className: 'swml-comment-msg-initials', textContent: (msg.author || 'T')[0].toUpperCase() }));
+                    }
+                    authorRow.appendChild(el('span', { textContent: msg.author + ' · ' + formatTimeAgo(msg.timestamp) }));
+                    bubble.appendChild(authorRow);
                     bubble.appendChild(el('div', { className: 'swml-comment-msg-text', textContent: msg.message }));
                     // Delete button on replies (not the original comment)
                     if (idx > 0) {
@@ -5533,7 +5692,7 @@
                 onKeydown: (e) => {
                     if (e.key === 'Enter' && replyInput.value.trim()) {
                         e.preventDefault();
-                        c.thread.push({ author: 'Tutor', message: replyInput.value.trim(), timestamp: Date.now() });
+                        c.thread.push({ author: 'Tutor', avatar: config.userAvatar || '', message: replyInput.value.trim(), timestamp: Date.now() });
                         saveComments();
                         renderThreadMessages();
                         replyInput.value = '';
@@ -5545,7 +5704,7 @@
                 textContent: '→',
                 onClick: () => {
                     if (!replyInput.value.trim()) return;
-                    c.thread.push({ author: 'Tutor', message: replyInput.value.trim(), timestamp: Date.now() });
+                    c.thread.push({ author: 'Tutor', avatar: config.userAvatar || '', message: replyInput.value.trim(), timestamp: Date.now() });
                     saveComments();
                     renderThreadMessages();
                     replyInput.value = '';
@@ -5763,7 +5922,8 @@
                         id,
                         text: selectedText,
                         author: 'Tutor',
-                        thread: [{ author: 'Tutor', message: msg, timestamp: Date.now() }],
+                        avatar: config.userAvatar || '',
+                        thread: [{ author: 'Tutor', avatar: config.userAvatar || '', message: msg, timestamp: Date.now() }],
                         resolved: false,
                         createdAt: Date.now(),
                     };
@@ -6044,6 +6204,7 @@
                 CommentMark,
                 SectionBlock,
                 InputField,
+                ChecklistItem,
                 ...(PaginationPlus ? [PaginationPlus.configure({
                     pageHeight: 1020,
                     pageWidth: 720,
@@ -6986,6 +7147,11 @@
                 section.querySelectorAll('[data-input-field]').forEach(field => {
                     const fieldId = field.getAttribute('data-field-id');
                     if (fieldId) inputFields[fieldId] = field.textContent?.trim() || '';
+                });
+                // v7.14.60: Extract checklist item states
+                section.querySelectorAll('[data-checklist-item]').forEach(item => {
+                    const itemId = item.getAttribute('data-item-id');
+                    if (itemId) inputFields[itemId] = item.getAttribute('data-checked') === 'true' ? '✓ SELECTED' : '✗ not selected';
                 });
                 const fields = Object.keys(inputFields).length > 0 ? inputFields : null;
 
@@ -8438,6 +8604,15 @@
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
+    // v7.14.60: Escape HTML then render markdown bold (**text**) and italic (*text*) as HTML tags
+    function richText(str) {
+        if (!str) return '';
+        let s = escapeHTML(str);
+        s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+        return s;
+    }
+
     // v7.14.28: InputField HTML generator — renders a styled, TipTap-managed editable block
     // with a visible prompt label and bordered input area. Comments, dictation, toolbar all work.
     function inputHTML(prompt, fieldId) {
@@ -8458,8 +8633,8 @@
             }
             inner += `<h3>Extract</h3>`;
             if (extractLocation) inner += `<p><em>${escapeHTML(extractLocation)}</em></p>`;
-            // Preserve line breaks in extract
-            const lines = cleanExtract.split('\n').map(l => `<p>${escapeHTML(l) || '&nbsp;'}</p>`).join('');
+            // Preserve line breaks in extract (v7.14.60: richText for markdown bold/italic)
+            const lines = cleanExtract.split('\n').map(l => `<p>${richText(l) || '&nbsp;'}</p>`).join('');
             inner += lines;
             inner += `<h3>Question</h3>`;
         }
@@ -8470,13 +8645,13 @@
             const preamble = parts[0];
             const bullets = parts.slice(1);
             if (preamble.endsWith(':') || bullets.length > 0) {
-                inner += `<p>${escapeHTML(preamble)}</p>`;
-                bullets.forEach(b => { inner += `<p>• ${escapeHTML(b)}</p>`; });
+                inner += `<p>${richText(preamble)}</p>`;
+                bullets.forEach(b => { inner += `<p>• ${richText(b)}</p>`; });
             } else {
-                inner += `<p>${escapeHTML(questionText)}</p>`;
+                inner += `<p>${richText(questionText)}</p>`;
             }
         } else {
-            inner += `<p>${escapeHTML(questionText)}</p>`;
+            inner += `<p>${richText(questionText)}</p>`;
         }
         if (marks || aos) {
             const meta = [];
@@ -8690,8 +8865,12 @@
                 if (src.author) inner += `<p><em>by ${escapeHTML(src.author)}</em></p>`;
                 if (src.date) inner += `<p><em>${escapeHTML(src.date)}</em></p>`;
                 if (src.text) {
+                    // v7.14.61: Filter out metadata lines already rendered from dedicated fields
+                    const metaLineRe = /^\*{0,2}(Title|Author|Context|Date|Poet|Source)\*{0,2}\s*:/i;
                     src.text.split('\n').forEach(function(line) {
-                        inner += `<p>${escapeHTML(line) || '&nbsp;'}</p>`;
+                        if (metaLineRe.test(line.trim())) return; // skip — already shown above
+                        // v7.14.60: richText converts **bold** and *italic* markdown to HTML
+                        inner += `<p>${richText(line) || '&nbsp;'}</p>`;
                     });
                 }
                 html += sectionHTML('source', escapeHTML(src.label), false, null, inner);
@@ -8731,13 +8910,13 @@
             if (q.extract) {
                 qInner += `<h3>Extract</h3>`;
                 q.extract.split('\n').forEach(function(line) {
-                    qInner += `<p>${escapeHTML(line) || '&nbsp;'}</p>`;
+                    qInner += `<p>${richText(line) || '&nbsp;'}</p>`;
                 });
             }
-            // Question text
+            // Question text (v7.14.60: richText for markdown bold/italic)
             if (q.text) {
                 q.text.split('\n').forEach(function(line) {
-                    if (line.trim()) qInner += `<p>${escapeHTML(line)}</p>`;
+                    if (line.trim()) qInner += `<p>${richText(line)}</p>`;
                 });
             }
             if (qMarks) qInner += `<p><em>[${qMarks} marks]</em></p>`;
@@ -8747,112 +8926,52 @@
             if (wordTarget) qInner += `<p><em>Aim for ${wordTarget.label}.</em></p>`;
             html += sectionHTML('question', `${qId}`, false, null, qInner);
 
-            // Plan (redraft mode only for writing questions)
-            if (mode === 'redraft' && isWritingQ) {
+            // v7.14.61: Plan for ALL questions >= 8 marks (except Q1 multiple_choice) in redraft mode
+            if (mode === 'redraft' && qType !== 'multiple_choice' && qMarks >= 8) {
                 html += dividerHTML(`PLAN \u2014 ${qId}`);
                 if (isPersuasive) {
                     html += buildIUMVCCPlanSection(qId);
-                } else if (qMarks >= 20 || qType === 'extended_writing' || qType === 'choice') {
+                } else if (isWritingQ || qMarks >= 20) {
                     html += buildPlanSection(qId, qMarks);
+                } else {
+                    // Analysis/evaluation/comparison: paragraph-based planning
+                    const planParas = Math.max(1, Math.ceil(qMarks / 5));
+                    for (let i = 1; i <= planParas; i++) {
+                        html += sectionHTML('plan', `Plan: Paragraph ${i} \u2014 ${qId}`, true, null,
+                            inputHTML(`Key points for paragraph ${i}`, `plan-${qId}-para-${i}`));
+                    }
                 }
             }
 
-            // ── Response area (type-aware) ──
-            html += dividerHTML(`RESPONSE \u2014 ${qId}`);
-
+            // ── Response area ──
+            // v7.14.61: multiple_choice = checkboxes only (no response area)
+            // All other types = single InputField per question
             if (qType === 'multiple_choice') {
-                // Multiple choice: list of statements to tick (e.g., AQA P2 Q1)
-                const desc = specQ?.description || q.text || '';
-                html += sectionHTML('response', `${qId} Response`, true, null,
-                    `<p><em>${escapeHTML(desc)}</em></p>` +
-                    `<p></p><p><em>List the correct statements below:</em></p>` +
-                    `<ol><li></li><li></li><li></li><li></li></ol>`);
+                // Checkboxes ARE the response — AI populates statement text via @POPULATE_CHECKLIST
+                const stmtCount = specQ?.description?.match(/(\d+)\s+true/i)?.[1] || 4;
+                const totalCount = specQ?.description?.match(/(\d+)\s+(?:about|from|statement)/i)?.[1] || 8;
+                html += dividerHTML(`STATEMENTS \u2014 ${qId}`);
+                let checkboxes = `<p><em>Tick the ${stmtCount} correct statements (the AI will generate these from the source material):</em></p>`;
+                for (let s = 1; s <= parseInt(totalCount); s++) {
+                    checkboxes += `<div data-checklist-item="true" data-checked="false" data-item-id="${qId}-stmt-${s}" class="swml-checklist-item swml-checklist-placeholder"><em>Waiting for statement ${s}...</em></div>`;
+                }
+                html += sectionHTML('response', `${qId} Statements`, true, null, checkboxes);
 
             } else if (qType === 'retrieval' && qMarks <= 5) {
-                // Short retrieval: one bullet per mark
+                // Short retrieval: one InputField per point (too simple for single area)
+                html += dividerHTML(`RESPONSE \u2014 ${qId}`);
                 const count = Math.max(1, qMarks);
-                let items = '';
+                let fields = '';
                 for (let i = 1; i <= count; i++) {
-                    items += `<li></li>`;
+                    fields += inputHTML(`Point ${i}`, `${qId}-point-${i}`);
                 }
-                html += sectionHTML('response', `${qId} Response`, true, null,
-                    `<ol>${items}</ol>`);
-
-            } else if (qType === 'short_analysis') {
-                // Short analysis: 1-2 paragraphs with PEA hint
-                const paraCount = Math.max(1, Math.ceil(qMarks / 5));
-                for (let i = 1; i <= paraCount; i++) {
-                    html += sectionHTML('response', `${qId} Paragraph ${i}`, true, null,
-                        `<p><em>Point \u2192 Evidence \u2192 Analysis</em></p><p></p>`);
-                }
-
-            } else if (qType === 'analysis') {
-                // Multi-paragraph analysis with evidence
-                const paraCount = Math.max(2, Math.ceil(qMarks / 4));
-                for (let i = 1; i <= paraCount; i++) {
-                    html += sectionHTML('response', `${qId} Paragraph ${i}`, true, null,
-                        `<p><em>Point \u2192 Evidence \u2192 Analyse language/structure</em></p><p></p>`);
-                }
-
-            } else if (qType === 'evaluation') {
-                // Extended evaluative response with personal judgement
-                html += sectionHTML('response', `${qId} Introduction`, true, null,
-                    `<p><em>State your position clearly.</em></p><p></p>`);
-                const bodyCount = Math.max(2, Math.ceil((qMarks - 4) / 4));
-                for (let i = 1; i <= bodyCount; i++) {
-                    html += sectionHTML('response', `${qId} Body ${i}`, true, null,
-                        `<p><em>Point \u2192 Evidence \u2192 Analysis \u2192 Judgement</em></p><p></p>`);
-                }
-                html += sectionHTML('response', `${qId} Conclusion`, true, null,
-                    `<p><em>Overall judgement — to what extent do you agree?</em></p><p></p>`);
-
-            } else if (qType === 'comparison') {
-                // Cross-text comparison structure
-                html += sectionHTML('response', `${qId} Introduction`, true, null,
-                    `<p><em>Identify the key similarity or difference between the texts.</em></p><p></p>`);
-                const compParas = Math.max(2, Math.ceil(qMarks / 5));
-                for (let i = 1; i <= compParas; i++) {
-                    html += sectionHTML('response', `${qId} Comparison ${i}`, true, null,
-                        `<p><em>Text 1 point \u2192 Text 2 point \u2192 Analysis of difference/similarity</em></p><p></p>`);
-                }
-
-            } else if (qType === 'extended_writing' || qType === 'choice') {
-                // Full essay: intro + body + conclusion (existing pattern)
-                if (qType === 'choice') {
-                    html += sectionHTML('response', `${qId} \u2014 Choose ONE task`, false, null,
-                        `<p><em>Write your chosen task below.</em></p>`);
-                }
-                html += sectionHTML('response', `${qId} Introduction`, true, null,
-                    `<p><em>Write your introduction here.</em></p><p></p>`);
-                const bodyCount = qMarks >= 40 ? 4 : 3;
-                for (let i = 1; i <= bodyCount; i++) {
-                    html += sectionHTML('response', `${qId} Body ${i}`, true, null,
-                        `<p><em>Write body paragraph ${i} here.</em></p><p></p>`);
-                }
-                html += sectionHTML('response', `${qId} Conclusion`, true, null,
-                    `<p><em>Write your conclusion here.</em></p><p></p>`);
+                html += sectionHTML('response', `${qId} Response`, true, null, fields);
 
             } else {
-                // Fallback: marks-based logic (for unverified boards or missing types)
-                const fullEssay = needsFullEssayStructure(qMarks);
-                if (fullEssay) {
-                    html += sectionHTML('response', `${qId} Introduction`, true, null,
-                        `<p><em>Write your introduction here.</em></p><p></p>`);
-                    const bodyCount = qMarks >= 40 ? 4 : 3;
-                    for (let i = 1; i <= bodyCount; i++) {
-                        html += sectionHTML('response', `${qId} Body ${i}`, true, null,
-                            `<p><em>Write body paragraph ${i} here.</em></p><p></p>`);
-                    }
-                    html += sectionHTML('response', `${qId} Conclusion`, true, null,
-                        `<p><em>Write your conclusion here.</em></p><p></p>`);
-                } else if (qMarks >= 4) {
-                    const paraCount = getParagraphCount(qMarks);
-                    for (let i = 1; i <= paraCount; i++) {
-                        html += sectionHTML('response', `${qId} Response ${i}`, true, null, `<p></p>`);
-                    }
-                } else {
-                    html += sectionHTML('response', `${qId} Response`, true, null, `<p></p>`);
-                }
+                // v7.14.61: Single InputField for ALL other question types
+                html += dividerHTML(`RESPONSE \u2014 ${qId}`);
+                html += sectionHTML('response', `${qId} Response`, true, null,
+                    inputHTML('Write your response here.', `${qId}-response`));
             }
         });
 
@@ -11379,7 +11498,8 @@ ${html}
             inner.innerHTML = role === 'assistant' ? WML.formatAI(content) : content.replace(/</g, '&lt;').replace(/\n/g, '<br>');
             bubble.appendChild(inner);
             chatMessages.appendChild(bubble);
-            requestAnimationFrame(() => { chatMessages.scrollTop = chatMessages.scrollHeight; });
+            // v7.14.61: Skip scroll during history restore
+            if (!chatMessages._suppressScroll) requestAnimationFrame(() => { chatMessages.scrollTop = chatMessages.scrollHeight; });
         }
 
         async function sendMsg() {
@@ -11512,7 +11632,7 @@ ${html}
                 TextAlign.configure({ types: ['heading', 'paragraph'] }),
                 Highlight.configure({ multicolor: true }),
                 CharacterCount, TextStyle, Color,
-                SectionBlock,
+                SectionBlock, InputField, ChecklistItem,
             ],
             content: savedContent || getExamPrepDocTemplate(state.task),
             editorProps: { attributes: { spellcheck: 'true' } },
@@ -11550,7 +11670,11 @@ ${html}
         // ── Load saved chat or show question selector or auto-greet ──
         const savedChat = loadCanvasChat();
         if (savedChat?.history?.length) {
+            // v7.14.61: Suppress per-message scroll during restore
+            chatMessages._suppressScroll = true;
             savedChat.history.forEach(m => { chatHistory.push(m); addMsg(m.role, m.content); });
+            chatMessages._suppressScroll = false;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
             if (savedChat.chatId) chatId = savedChat.chatId;
             // Restore step progression from saved state
             if (savedChat.step && savedChat.step > 1) {

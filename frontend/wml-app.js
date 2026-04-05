@@ -4088,7 +4088,7 @@
             const m = line.match(letterRegex) || line.match(letterBoldRegex);
             if (m) {
                 const letter = m[1].toUpperCase();
-                let label = m[2].replace(/[\*_]/g, '').replace(/["']/g, '').trim();
+                let label = m[2].replace(/[\*_]/g, '').replace(/["']/g, '').replace(/[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '').trim();
                 if (label.length > 55) label = label.substring(0, 52) + '...';
                 if (!letterOptions.some(o => o.value === letter)) {
                     letterOptions.push({ label: `${letter}) ${label}`, value: letter });
@@ -4169,7 +4169,7 @@
                     const pm = pl.match(letterRegex) || pl.match(letterBoldRegex);
                     if (pm) {
                         const letter = pm[1].toUpperCase();
-                        let plabel = pm[2].replace(/[\*_]/g, '').replace(/["']/g, '').trim();
+                        let plabel = pm[2].replace(/[\*_]/g, '').replace(/["']/g, '').replace(/[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '').trim();
                         if (plabel.length > 55) plabel = plabel.substring(0, 52) + '...';
                         if (!prevOptions.some(o => o.value === letter)) {
                             prevOptions.push({ label: `${letter}) ${plabel}`, value: letter });

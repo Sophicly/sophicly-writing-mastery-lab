@@ -1,7 +1,7 @@
 # CLAUDE.md — Writing Mastery Lab (WML) Project Guide
 
 **Plugin slug:** `sophicly-writing-mastery-lab`
-**Current version:** 7.14.58
+**Current version:** 7.14.64
 **Purpose:** AI-powered GCSE/IGCSE English tutoring interface — essay writing, assessment, planning, and polishing.
 **AI Provider:** Claude Sonnet 4.6 via MeowApps AI Engine (with GPT-5 fallback).
 **Owner:** Neil (Sophicly)

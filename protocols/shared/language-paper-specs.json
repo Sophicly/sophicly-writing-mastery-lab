@@ -47,6 +47,7 @@
         {
           "label": "Section A: Reading",
           "marks": 40,
+          "source_count": 2,
           "questions": [
             { "id": "Q1", "marks": 4, "aos": ["AO1"], "type": "multiple_choice", "description": "Choose 4 true statements from 8 about Source A" },
             { "id": "Q2", "marks": 8, "aos": ["AO1"], "type": "short_analysis", "description": "Write a summary of differences/similarities using both sources" },

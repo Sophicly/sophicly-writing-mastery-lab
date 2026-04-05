@@ -657,7 +657,7 @@ class SWML_Protocol_Router {
 
         // ── Universal Template Injection ──
         // Replace @CONFIRM_SAVE markers with the centralised confirm-before-save block
-        $assembled = $this->inject_confirm_templates($assembled, $board);
+        $assembled = $this->inject_confirm_templates($assembled, $board, $subject);
 
         // ── Board-specific template substitution (v7.14.6) ──
         $board_config = $this->load_board_config($protocol_board, $protocol_group);
@@ -684,12 +684,12 @@ class SWML_Protocol_Router {
      * Each marker is replaced with the corresponding universal block.
      * Protocol files only need the marker — the full flow lives here.
      */
-    private function inject_confirm_templates($text, $board = '') {
-        // ── @GOAL_SETUP — Two-step button-based goal setting ──
+    private function inject_confirm_templates($text, $board = '', $subject = '') {
+        // ── @GOAL_SETUP — Subject-aware goal setting (v7.14.64) ──
         $text = preg_replace_callback(
             '/<!-- @GOAL_SETUP\s*-->/',
-            function ($matches) use ($board) {
-                return $this->get_goal_setup_template($board);
+            function ($matches) use ($board, $subject) {
+                return $this->get_goal_setup_template($board, $subject);
             },
             $text
         );
@@ -816,10 +816,134 @@ TEMPLATE;
      * Replaces the open-ended goal question with structured level + skill selection.
      * Board determines level/band terminology and descriptors.
      */
-    private function get_goal_setup_template($board) {
-        // Determine level/band terminology per board
+    private function get_goal_setup_template($board, $subject = '') {
         $board_key = str_replace('-', '_', $board);
+        $is_language = (strpos($subject, 'language') !== false);
 
+        // ──────────────────────────────────────────────────────
+        // LANGUAGE PAPER 2 — Level-based A/B/C + past feedback + routing
+        // Faithful to AQA LP2 v6.58 / Edexcel LP2 v7.1.1 reference protocols
+        // ──────────────────────────────────────────────────────
+        if ($is_language && (strpos($subject, '2') !== false || strpos($subject, 'paper_2') !== false)) {
+            // Board-specific level labels for LP2
+            switch ($board_key) {
+                case 'edexcel':
+                    $goal_a = "A) Just trying to understand the structure";
+                    $goal_b = "B) Pushing for Level 5 (top marks)";
+                    $goal_c = "C) Aiming for 100% (flawless execution)";
+                    $resp_c = "That's the mindset I want to see! 100% means perfect quote selection, surgical analysis, and flawless execution at every step. Let's build a plan that leaves no marks on the table.";
+                    $resp_b = "Excellent goal! Level 5 requires sophisticated analysis, perceptive insights, and consistent high-quality throughout. Let's build a plan that gets you there.";
+                    $resp_a = "Perfect — understanding structure first is smart. I'll walk you through each element so you see how everything fits together.";
+                    break;
+                case 'eduqas':
+                    $goal_a = "A) Just trying to understand the structure";
+                    $goal_b = "B) Aiming for a solid Band 4 response";
+                    $goal_c = "C) Pushing for Band 5 (top marks)";
+                    $resp_c = "Ambitious — I like it! Band 5 requires sensitive, evaluative analysis and perceptive insights. Let's build a plan that gets you there.";
+                    $resp_b = "Great goal. Band 4 requires thoughtful, sustained analysis with well-selected evidence. Let's make sure your plan hits all those marks.";
+                    $resp_a = "Perfect — understanding structure first is smart. I'll walk you through each element so you see how everything fits together.";
+                    break;
+                case 'aqa':
+                default:
+                    $goal_a = "A) Just trying to understand the structure";
+                    $goal_b = "B) Aiming for a solid Level 3 response";
+                    $goal_c = "C) Pushing for Level 4 (top marks)";
+                    $resp_c = "Ambitious — I like it! Level 4 requires sophisticated analysis, perceptive insights, and flawless structure. Let's build a plan that gets you there.";
+                    $resp_b = "Great goal. Level 3 requires clear analysis, well-selected evidence, and consistent structure. Let's make sure your plan hits all those marks.";
+                    $resp_a = "Perfect — understanding structure first is smart. I'll walk you through each element so you see how everything fits together.";
+                    break;
+            }
+
+            return <<<TEMPLATE
+[ASK] "Before we start planning, what's your goal for this response?
+
+{$goal_a}
+{$goal_b}
+{$goal_c}
+
+Type the letter."
+
+**[AI_INTERNAL]** Wait for response. Store goal level in SESSION_STATE.planning_goal.
+
+---
+
+**[CONDITIONAL]** IF planning_goal == "C": [SAY] "{$resp_c}"
+
+ELIF planning_goal == "B": [SAY] "{$resp_b}"
+
+ELIF planning_goal == "A": [SAY] "{$resp_a}"
+
+ELSE: Execute REQUIRE_MATCH("A, B, or C") HALT: true
+
+---
+
+**[AI_INTERNAL]** If STUDENT_PROFILE contains past feedback relevant to the current question type, briefly reference it now:
+
+**[CONDITIONAL]** IF relevant_past_feedback EXISTS: [SAY] "Quick reminder from last time: [one strength] was strong, but watch out for [one weakness]. Let's make sure this plan addresses that."
+
+---
+
+**[AI_INTERNAL]** Wrap the student's chosen goal in [PANEL] tags for saving:
+[PANEL: goal]the student's goal level and any past feedback reference[/PANEL]
+
+<!-- @CONFIRM_ELEMENT: element_type="goal" label="Goal" -->
+
+---
+
+[SAY] "Let's start planning."
+
+**[AI_INTERNAL]** Branch to appropriate planning sub-protocol based on SESSION_STATE.current_question.
+
+**[CONDITIONAL]** IF SESSION_STATE.current_question == "2": PROCEED: Question 2 Planning Sub-Protocol
+
+ELIF SESSION_STATE.current_question == "3": PROCEED: Question 3 Planning Sub-Protocol
+
+ELIF SESSION_STATE.current_question == "4": PROCEED: Question 4 Planning Sub-Protocol
+
+ELIF SESSION_STATE.current_question IN ["Section B", "section b", "B", "5"]: [SAY] "For Section B transactional writing, we'll use the IUMVCC structure (Introduction, Urgency, Methodology, Vision, Counter-argument, Conclusion). This framework is specifically designed for persuasive writing." PROCEED: Section B Planning Sub-Protocol
+
+ELIF SESSION_STATE.current_question == "6": PROCEED: Question 6 Planning Sub-Protocol
+
+ELIF SESSION_STATE.current_question IN ["7a"]: PROCEED: Question 7a Planning Sub-Protocol
+
+ELIF SESSION_STATE.current_question IN ["7b"]: PROCEED: Question 7b Planning Sub-Protocol
+
+ELIF SESSION_STATE.current_question IN ["8", "9"]: PROCEED: Section B Planning Sub-Protocol
+
+TEMPLATE;
+        }
+
+        // ──────────────────────────────────────────────────────
+        // LANGUAGE PAPER 1 — Skill-based A-E options
+        // Faithful to AQA LP1 v3.2 / Edexcel LP1 v3.9.3 reference protocols
+        // ──────────────────────────────────────────────────────
+        if ($is_language) {
+            return <<<TEMPLATE
+Say: "Excellent. Before we begin planning, let's connect this to your ongoing progress."
+
+**AI-Led Progress Check:** Say: "In your last action plan, you decided to focus on your previously set goal. This planning session is a perfect opportunity to put that into practice."
+
+**Student-Led Goal Setting:** Ask: "So, with that in mind, what is **one specific thing** we should concentrate on during this plan to really master that skill? Please select:
+**A** — Writing about effects in more detail
+**B** — Tracking focus shifts for structure
+**C** — Using evaluative language like 'this suggests' or 'perhaps'
+**D** — Varying sentence length for control and accuracy
+**E** — Other (please specify)"
+
+**[AI_INTERNAL]** Store the student's stated goal to refer back to during the planning process.
+
+**[AI_INTERNAL]** Wrap the student's goal in [PANEL] tags for saving:
+[PANEL: goal]the student's stated skill focus goal[/PANEL]
+
+<!-- @CONFIRM_ELEMENT: element_type="goal" label="Goal" -->
+
+TEMPLATE;
+        }
+
+        // ──────────────────────────────────────────────────────
+        // LITERATURE / DEFAULT — Level target + skill focus
+        // Board-specific level descriptors from mark schemes
+        // ──────────────────────────────────────────────────────
         switch ($board_key) {
             case 'eduqas':
                 $level_term = 'Band';
@@ -1223,6 +1347,32 @@ TEMPLATE;
         $plan_required = $context['plan_required'] ?? false;
         if ($plan_required && in_array($task, ['planning', 'polishing'])) {
             $preamble .= "**Plan Enforcement:** Essay plan is COMPULSORY for this session. The student must complete a plan before writing.\n";
+        }
+
+        // v7.14.64: Planning on canvas — document content override
+        // The student's document is attached to every message. For language papers,
+        // it contains the exam questions and source texts. Tell the AI to read from it.
+        if ($task === 'planning') {
+            $is_lang = (strpos($subject, 'language') !== false);
+            $preamble .= "\n### DOCUMENT CONTENT AVAILABLE\n\n";
+            $preamble .= "The student's document is attached to each message as `[STUDENT'S DOCUMENT]`. It contains:\n";
+            if ($is_lang) {
+                $preamble .= "- **Source texts** (Source A and Source B) — already present in the document\n";
+                $preamble .= "- **Exam questions** for each question number — already present in the document\n";
+                $preamble .= "- **Response sections** — where the student writes their answers\n\n";
+                $preamble .= "**SKIP THESE PROTOCOL STEPS ENTIRELY:**\n";
+                $preamble .= "- Do NOT ask the student to paste the exam question — read it from the document.\n";
+                $preamble .= "- Do NOT ask the student to paste Source A or Source B — read them from the document.\n";
+                $preamble .= "- Do NOT ask for the title/author of sources — read them from the document headings.\n";
+                $preamble .= "- Do NOT ask if they are planning for Redraft or Exam Practice — this is a **redraft** session (confirmed by the system).\n";
+                $preamble .= "- Do NOT ask which questions to plan — plan ALL questions (Q2, Q3, Q4, and Section B) sequentially.\n";
+                $preamble .= "- Skip Part A Steps 1, 1b, 1c, and Step 2 of the protocol entirely.\n";
+                $preamble .= "- **START DIRECTLY** with Part B (Pre-Planning Goal Setting & Review), then proceed to Part C (Core Planning) for each question in order.\n\n";
+            } else {
+                $preamble .= "- **The essay question** — already present in the document\n";
+                $preamble .= "- **Response section** — where the student writes their essay\n\n";
+                $preamble .= "Read the essay question from the document. Do NOT ask the student to paste it.\n\n";
+            }
         }
 
         // Question if established
@@ -2108,10 +2258,31 @@ TEMPLATE;
             }
         }
 
-        // ── Universal learning profile injection (v7.14.52) ──
+        // ── Universal learning profile injection (v7.14.52, v7.14.61: subject-aware AO labels) ──
         // Inject student's learning profile into ALL tasks so the AI can reference prior work
         if ($profile && !empty($profile['assessment_count']) && $profile['assessment_count'] > 0) {
             $preamble .= "\n### STUDENT LEARNING PROFILE\n\n";
+
+            // v7.14.61: AO definitions differ between Language and Literature — tell the AI which subject
+            $subject = $context['subject'] ?? '';
+            $is_language = (strpos($subject, 'language') !== false);
+            if ($is_language) {
+                $preamble .= "**Subject: English Language.** AO definitions for Language:\n";
+                $preamble .= "- AO1 = Identify and interpret explicit and implicit information; synthesise ideas from different texts\n";
+                $preamble .= "- AO2 = Explain, comment, analyse how writers use language and structure for effect\n";
+                $preamble .= "- AO3 = Compare writers' ideas and perspectives across texts (NOT historical context)\n";
+                $preamble .= "- AO4 = (Section B only) Use vocabulary, sentence structures, spelling, punctuation accurately\n";
+                $preamble .= "- AO5 = (Section B only) Communicate clearly, effectively, imaginatively; organise information\n";
+                $preamble .= "- AO6 = (Section B only) Technical accuracy (some boards merge AO6 into AO4)\n\n";
+                $preamble .= "IMPORTANT: In Language, AO3 means COMPARISON, not historical/social context. There is NO context assessment in Language papers (except Edexcel IGCSE anthology).\n\n";
+            } else {
+                $preamble .= "**Subject: English Literature.** AO definitions for Literature:\n";
+                $preamble .= "- AO1 = Read, respond, develop a critical and personal interpretation of the text\n";
+                $preamble .= "- AO2 = Analyse language, form and structure used by the writer to create meanings and effects\n";
+                $preamble .= "- AO3 = Show understanding of the relationships between texts and the contexts they were written/received in\n";
+                $preamble .= "- AO4 = (Comparison questions only) Use a range of vocabulary and sentence structures for clarity; accurate spelling and punctuation\n\n";
+            }
+
             $preamble .= "This student has completed {$profile['assessment_count']} assessment(s). ";
 
             if (!empty($profile['recurring_targets'])) {
