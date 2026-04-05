@@ -2707,13 +2707,16 @@
                     extractBtn.classList.remove('active');
                     return;
                 }
-                // Find the question section in the editor
+                // v7.14.56: Prefer source material over question text for extract panel
+                // Language papers have [data-section-type="source"] sections with extracts
+                const sourceEls = editorEl.querySelectorAll('[data-section-type="source"]');
                 const questionEl = editorEl.querySelector('[data-section-type="question"]');
-                if (!questionEl) return;
+                const extractEl = sourceEls.length > 0 ? null : questionEl; // null = use sources
+                if (!extractEl && sourceEls.length === 0) return;
 
                 extractPanel = el('div', { className: 'swml-extract-panel' });
                 const extractHeader = el('div', { className: 'swml-extract-panel-header' });
-                extractHeader.appendChild(el('span', { textContent: '📋 Extract' }));
+                extractHeader.appendChild(el('span', { textContent: sourceEls.length > 0 ? 'Source Material' : 'Extract' }));
                 extractHeader.appendChild(el('button', {
                     className: 'swml-extract-panel-close',
                     textContent: '✕',
@@ -2722,7 +2725,12 @@
                 extractPanel.appendChild(extractHeader);
 
                 const extractBody = el('div', { className: 'swml-extract-panel-body' });
-                extractBody.innerHTML = questionEl.innerHTML;
+                if (sourceEls.length > 0) {
+                    // Clone all source sections into the extract panel
+                    sourceEls.forEach(src => { extractBody.appendChild(src.cloneNode(true)); });
+                } else {
+                    extractBody.innerHTML = questionEl.innerHTML;
+                }
                 extractPanel.appendChild(extractBody);
 
                 // Click on commented text inside extract → show comment popover INSIDE the extract panel
@@ -8073,13 +8081,13 @@
 
     // Board-level default marks when topic data doesn't specify
     const BOARD_DEFAULT_MARKS = {
-        aqa: { shakespeare: 34, modern_text: 34, '19th_century': 30, poetry_anthology: 30, unseen_poetry: 24 },
-        eduqas: { shakespeare: 40, modern: 40, literature: 40, poetry: 40, unseen: 40 }, // dual: A=15 + B=25
-        edexcel: { shakespeare: 40, modern: 40, '19th_century': 40, poetry: 20, unseen: 20 }, // dual: a=20 + b=20
-        'edexcel-igcse': { heritage: 30, literature: 30, modern: 30, 'modern-prose': 40, unseen: 20 },
-        ocr: { literature: 40, poetry: 40 },
+        aqa: { shakespeare: 34, modern_text: 34, '19th_century': 30, poetry_anthology: 30, unseen_poetry: 24, language1: 80, language2: 80, language_p1: 80, language_p2: 80 },
+        eduqas: { shakespeare: 40, modern: 40, literature: 40, poetry: 40, unseen: 40, language1: 80, language2: 80, language_c1: 80, language_c2: 80 },
+        edexcel: { shakespeare: 40, modern: 40, '19th_century': 40, poetry: 20, unseen: 20, language1: 64, language2: 96, language_p1: 64, language_p2: 96 },
+        'edexcel-igcse': { heritage: 30, literature: 30, modern: 30, 'modern-prose': 40, unseen: 20, language1: 80, language2: 80, language_p1: 80, language_p2: 80 },
+        ocr: { literature: 40, poetry: 40, language1: 80, language2: 80, language_c1: 80, language_c2: 80 },
         sqa: { critical_reading: 20 },
-        ccea: { prose: 40, 'unseen-prose': 20, drama: 40, poetry: 40 },
+        ccea: { prose: 40, 'unseen-prose': 20, drama: 40, poetry: 40, language1: 80, language2: 80, language_u1: 80, language_u4: 80 },
     };
 
     function getDefaultMarks(board, subject) {
@@ -8090,31 +8098,43 @@
     // Complete format + marks + AOs for every board/subject.
     // Used by buildSyntheticTopicData() when no topic template exists.
     const BOARD_FORMAT_DEFAULTS = {
-        // AQA GCSE Literature (8702)
+        // AQA GCSE Literature (8702) + Language (8700)
         aqa: {
             shakespeare:      { format: 'single', marks: 34, aos: 'AO1,AO2,AO3', hasExtract: true },
             modern_text:      { format: 'single', marks: 34, aos: 'AO1,AO2,AO3', hasExtract: false },
             '19th_century':   { format: 'single', marks: 30, aos: 'AO1,AO2', hasExtract: true },
             poetry_anthology: { format: 'single', marks: 30, aos: 'AO1,AO2,AO3' },
             unseen_poetry:    { format: 'single', marks: 24, aos: 'AO1,AO2' },
+            language1:        { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO4,AO5,AO6' },
+            language2:        { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO3,AO5,AO6' },
+            language_p1:      { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO4,AO5,AO6' },
+            language_p2:      { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO3,AO5,AO6' },
         },
-        // EDUQAS GCSE Literature (C720QS) — Shakespeare + Poetry are dual; Modern Text + 19th Century are single 40m
+        // EDUQAS GCSE Literature (C720QS) + Language (C700U)
         eduqas: {
             shakespeare:      { format: 'dual', partA: { marks: 15, aos: 'AO1,AO2' }, partB: { marks: 25, aos: 'AO1,AO2,AO3' }, hasExtract: true },
             modern_text:      { format: 'single', marks: 40, aos: 'AO1,AO2,AO3' },
             '19th_century':   { format: 'single', marks: 40, aos: 'AO1,AO2' },
             poetry_anthology: { format: 'dual', partA: { marks: 15, aos: 'AO1,AO2' }, partB: { marks: 25, aos: 'AO1,AO2,AO3' } },
             unseen_poetry:    { format: 'dual', partA: { marks: 15, aos: 'AO1,AO2' }, partB: { marks: 25, aos: 'AO1,AO2,AO3' } },
+            language1:        { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO3,AO5,AO6' },
+            language2:        { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO3,AO4,AO5,AO6' },
+            language_c1:      { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO3,AO5,AO6' },
+            language_c2:      { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO3,AO4,AO5,AO6' },
         },
-        // Edexcel GCSE Literature (1ET0)
+        // Edexcel GCSE Literature (1ET0) + Language (1EN0)
         edexcel: {
             shakespeare:      { format: 'dual', partA: { marks: 20, aos: 'AO2' }, partB: { marks: 20, aos: 'AO1,AO3' }, hasExtract: true },
             '19th_century':   { format: 'dual', partA: { marks: 20, aos: 'AO1,AO2' }, partB: { marks: 20, aos: 'AO1,AO3' }, hasExtract: true },
             modern_text:      { format: 'single', marks: 40, aos: 'AO1,AO2,AO3' },
             poetry_anthology: { format: 'single', marks: 20, aos: 'AO1,AO2,AO3' },
             unseen_poetry:    { format: 'single', marks: 20, aos: 'AO1,AO2' },
+            language1:        { format: 'multi_question', marks: 64, aos: 'AO1,AO2,AO4,AO5,AO6' },
+            language2:        { format: 'multi_question', marks: 96, aos: 'AO1,AO2,AO3,AO4,AO5,AO6' },
+            language_p1:      { format: 'multi_question', marks: 64, aos: 'AO1,AO2,AO4,AO5,AO6' },
+            language_p2:      { format: 'multi_question', marks: 96, aos: 'AO1,AO2,AO3,AO4,AO5,AO6' },
         },
-        // Edexcel IGCSE Literature (4ET1)
+        // Edexcel IGCSE Literature (4ET1) + Language
         'edexcel-igcse': {
             shakespeare:          { format: 'single', marks: 30, aos: 'AO1,AO2' },
             '19th_century':       { format: 'single', marks: 30, aos: 'AO1,AO2' },
@@ -8124,20 +8144,32 @@
             poetry_anthology:     { format: 'single', marks: 30, aos: 'AO1,AO2,AO3' },
             prose_anthology:      { format: 'single', marks: 30, aos: 'AO1,AO2' },
             nonfiction_anthology: { format: 'single', marks: 30, aos: 'AO1,AO2' },
+            language1:            { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO4,AO5,AO6' },
+            language2:            { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO3,AO5,AO6' },
+            language_p1:          { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO4,AO5,AO6' },
+            language_p2:          { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO3,AO5,AO6' },
         },
-        // OCR GCSE Literature (J352) — Modern Prose + Poetry are dual; Shakespeare + 19th C are single
+        // OCR GCSE Literature (J352) + Language
         ocr: {
             shakespeare:      { format: 'single', marks: 40, aos: 'AO1,AO2,AO3' },
             '19th_century':   { format: 'single', marks: 40, aos: 'AO1,AO2' },
             modern_prose:     { format: 'dual', partA: { marks: 20, aos: 'AO1,AO2' }, partB: { marks: 20, aos: 'AO1,AO2' }, hasExtract: true },
             poetry_anthology: { format: 'dual', partA: { marks: 20, aos: 'AO1,AO2' }, partB: { marks: 20, aos: 'AO1,AO2' } },
+            language1:        { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO4,AO5,AO6' },
+            language2:        { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO3,AO5,AO6' },
+            language_c1:      { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO4,AO5,AO6' },
+            language_c2:      { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO3,AO5,AO6' },
         },
-        // CCEA GCSE Literature — Drama + Poetry are either_or; Prose is single
+        // CCEA GCSE Literature + Language
         ccea: {
             prose:            { format: 'single', marks: 40, aos: 'AO1,AO2' },
             unseen_prose:     { format: 'single', marks: 20, aos: 'AO1,AO2' },
             drama:            { format: 'either_or', marks: 40, aos: 'AO1,AO2' },
             poetry_anthology: { format: 'either_or', marks: 40, aos: 'AO1,AO2,AO3' },
+            language1:        { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO5,AO6' },
+            language2:        { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO5,AO6' },
+            language_u1:      { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO5,AO6' },
+            language_u4:      { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO5,AO6' },
         },
         // SQA National 5
         sqa: {
@@ -8167,6 +8199,37 @@
 
         const placeholder = 'Your exam question will appear here when your tutor assigns a topic.';
         const extractPlaceholder = 'The extract will appear here when your tutor assigns a topic.';
+
+        // Multi-question format (language papers) — generate placeholder structure from specs (v7.14.56)
+        if (def.format === 'multi_question') {
+            // Try to load question structure from language-paper-specs.json
+            const specs = window.swmlLangSpecs || {};
+            const boardSpecs = specs[board];
+            // Try subject directly, then common slug variants
+            const subjectKey = subject.replace(/^language/, 'language_').replace(/-/g, '_');
+            const paperSpec = boardSpecs?.[subject] || boardSpecs?.[subjectKey] || null;
+            const questions = [];
+            const sources = [];
+            if (paperSpec?.sections) {
+                paperSpec.sections.forEach(sec => {
+                    (sec.questions || []).forEach(q => {
+                        questions.push({
+                            id: q.id, marks: q.marks, type: q.type,
+                            text: q.description || 'Question will appear when your tutor assigns a topic.',
+                            label: q.id, aos: (q.aos || []).join(','),
+                        });
+                    });
+                });
+            }
+            return {
+                question_format: 'multi_question',
+                marks: def.marks,
+                aos: def.aos,
+                question_text: questions[0]?.text || placeholder,
+                extract_text: '',
+                metadata: JSON.stringify({ questions, sources }),
+            };
+        }
 
         // Dual formats generate Part A + Part B document structure
         if (def.format === 'dual' || def.format === 'dual_extract') {

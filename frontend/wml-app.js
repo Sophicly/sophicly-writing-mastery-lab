@@ -3891,7 +3891,7 @@
                         const icon = getQuickActionIcon(action.label);
                         const btn = el('button', {
                             className: 'swml-quick-btn',
-                            innerHTML: icon ? icon + ' ' + action.label.replace(/^[A-F]\)\s*/, '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2700}-\u{27BF}✅✏️🎲📋🔥⚡🚀📂💡🎙️📝📊✨📄📚🎯]\s*/gu, '') : action.label,
+                            innerHTML: (icon || '') + ' ' + action.label.replace(/^[A-F]\)\s*/, '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2700}-\u{27BF}✅✏️✓✗🎲📋🔥⚡🚀📂💡🎙️📝📊✨📄📚🎯]\s*/gu, '').trim(),
                             onClick: () => {
                                 if (selected.has(action.value)) {
                                     selected.delete(action.value);
@@ -3982,7 +3982,7 @@
                         const icon = getQuickActionIcon(action.label);
                         const btn = el('button', {
                             className: 'swml-quick-btn',
-                            innerHTML: icon ? icon + ' ' + action.label.replace(/^[A-F]\)\s*/, '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2700}-\u{27BF}✅✏️🎲📋🔥⚡🚀📂💡🎙️📝📊✨📄📚🎯]\s*/gu, '') : action.label,
+                            innerHTML: (icon || '') + ' ' + action.label.replace(/^[A-F]\)\s*/, '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2700}-\u{27BF}✅✏️✓✗🎲📋🔥⚡🚀📂💡🎙️📝📊✨📄📚🎯]\s*/gu, '').trim(),
                             onClick: () => {
                                 bar.remove();
                                 const input = $('#swml-input');
@@ -6437,7 +6437,7 @@ Before marking the introduction, ask the student to confirm their essay structur
                             const icon = getQuickActionIcon(action.label);
                             bar.appendChild(el('button', {
                                 className: 'swml-quick-btn',
-                                innerHTML: icon ? icon + ' ' + action.label.replace(/^[A-F]\)\s*/, '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2700}-\u{27BF}✅✏️🎲📋🔥⚡🚀📂💡🎙️📝📊✨📄📚🎯]\s*/gu, '') : action.label,
+                                innerHTML: (icon || '') + ' ' + action.label.replace(/^[A-F]\)\s*/, '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2700}-\u{27BF}✅✏️✓✗🎲📋🔥⚡🚀📂💡🎙️📝📊✨📄📚🎯]\s*/gu, '').trim(),
                                 onClick: () => {
                                     const input = $('#swml-input');
                                     if (input) { input.value = action.value; sendMessage(); }

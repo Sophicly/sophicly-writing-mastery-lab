@@ -1851,9 +1851,10 @@ window.WML = (function() {
             (_, pct) => `\n[SWML_PROGRESS_${pct}]\n`
         ).trim();
 
-        // ── Pre-process: render [BLANK] as inline input fields (v7.14.51) ──
+        // ── Pre-process: render [BLANK] and underscore blanks as inline input fields (v7.14.56) ──
         let blankIdx = 0;
         text = text.replace(/\[BLANK\]/gi, () => `[SWML_BLANK_${blankIdx++}]`);
+        text = text.replace(/_{3,}/g, () => `[SWML_BLANK_${blankIdx++}]`);
 
         // ── Pre-process: split concatenated pipe table rows (AI sometimes omits newlines) ──
         // Pattern: "| cell |  | cell |" → "| cell |\n| cell |" (double-pipe = row boundary)
