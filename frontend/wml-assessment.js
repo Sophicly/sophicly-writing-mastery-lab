@@ -5635,6 +5635,7 @@
             // ── Tier 2: revealed by "More..." button ──
             { category: 'TTECEA Breakdown', tier: 'expanded', icon: SVG_QC_DOC, items: [
                 { label: 'Needs topic sentence', text: 'Conceptual topic sentence needed — link your point to the wider theme.' },
+                { label: 'Too descriptive', text: 'Topic sentence is too descriptive — make it conceptual. Link to theme, not plot.' },
                 { label: 'Needs technique', text: 'Technique needed — identify the writer\'s method here (language, structure, symbolism).' },
                 { label: 'Needs evidence', text: 'Evidence needed — embed a quote to support this point.' },
                 { label: 'Needs inference', text: 'Inference needed — explain what this suggests about the character/theme.' },
@@ -5643,9 +5644,6 @@
                 { label: 'Needs effect 2', text: 'Second effect needed — explore an alternative interpretation or deeper impact.' },
                 { label: 'Needs author\'s purpose', text: 'Author\'s purpose needed — why has the writer made this choice? Link to context.' },
                 { label: 'Needs context', text: 'Context needed — connect this point to the historical, social, or literary context.' },
-            ]},
-            { category: 'Topic Sentence', tier: 'expanded', icon: SVG_QC_PEN, items: [
-                { label: 'Too descriptive', text: 'Topic sentence is too descriptive — make it conceptual. Link to theme, not plot.' },
             ]},
             { category: 'Creative Writing', tier: 'expanded', icon: SVG_QC_STAR, items: [
                 { label: 'Dynamic verbs & nouns', text: 'Use dynamic verbs and concrete nouns for vivid imagery.' },
@@ -5667,6 +5665,7 @@
                 { label: 'Try onomatopoeia', text: 'Try onomatopoeia to bring sound into your writing.' },
                 { label: 'Try personification', text: 'Try personification to bring an object or idea to life.' },
                 { label: 'Try sibilance', text: 'Try sibilance (repeated "s" sounds) for a sinister or soothing effect.' },
+                { label: 'Try literary device', text: 'Try a literary device here to strengthen the effect — choose whatever technique fits best.' },
             ]},
         ];
 
