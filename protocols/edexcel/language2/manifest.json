@@ -6,11 +6,7 @@
     "planning": {
         "always": [
             "modules/foundation-lang2.md",
-            "modules/knowledge-algorithm.md",
-            "modules/knowledge-progress.md",
-            "modules/knowledge-operations.md",
-            "modules/knowledge-penalties.md",
-            "modules/knowledge-mark-scheme.md",
+            "language/modules/knowledge-algorithm-planning.md",
             "language/modules/communication-standards.md",
             "language/modules/graceful-degradation.md",
             "language/modules/anti-hallucination.md",

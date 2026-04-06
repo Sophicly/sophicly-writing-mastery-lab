@@ -6,14 +6,13 @@
   "planning": {
     "always": [
       "modules/foundation.md",
+      "language/modules/knowledge-algorithm-planning.md",
       "modules/knowledge-text-bank.md",
       "modules/knowledge-genre.md",
       "modules/knowledge-form.md",
       "modules/knowledge-structure.md",
       "modules/knowledge-language.md",
       "modules/knowledge-effects.md",
-      "modules/knowledge-model-answer.md",
-      "modules/knowledge-mark-scheme.md",
       "modules/workflow-entry.md",
       "modules/macros-socratic.md",
       "modules/macros-analysis.md",

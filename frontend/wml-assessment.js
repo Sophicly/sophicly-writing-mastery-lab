@@ -815,15 +815,23 @@
                     console.log('WML Canvas: CW doc injected for', state.task, 'Length:', docContent.length);
                 } else if (essay.trim().length > 50) {
                     const wc = getResponseWordCount(canvasEditor);
+                    // v7.14.67: Detect multi-question papers by counting distinct response sections
+                    const isMultiQ = (essay.match(/=== Q\d/g) || []).length > 1;
+                    const essayLabel = isMultiQ
+                        ? `STUDENT'S RESPONSES \u2014 multiple questions \u2014 ${wc} total words`
+                        : `STUDENT'S ESSAY \u2014 ${wc} words`;
                     if (userMsgCount === 1) {
-                        promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName}]\n[STUDENT'S ESSAY \u2014 ${wc} words]\n\n${essay}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                        promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName}]\n[${essayLabel}]\n\n${essay}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
                     } else {
-                        promptText = `[REMINDER \u2014 STUDENT'S ACTUAL ESSAY (${wc} words) \u2014 assess ONLY this text, quote from it directly]\n\n${essay}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                        const reminderLabel = isMultiQ
+                            ? `REMINDER \u2014 STUDENT'S RESPONSES (${wc} total words) \u2014 assess each question's response individually`
+                            : `REMINDER \u2014 STUDENT'S ACTUAL ESSAY (${wc} words) \u2014 assess ONLY this text, quote from it directly`;
+                        promptText = `[${reminderLabel}]\n\n${essay}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
                     }
                     const sectionLabels = (essay.match(/=== .+? ===/g) || []).join(', ');
                     console.log('WML Canvas: Essay injected (' + wc + ' words). Sections: [' + (sectionLabels || 'no labels') + ']. First 200 chars:', essay.substring(0, 200));
                 } else if (userMsgCount === 1) {
-                    promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName}]\n[NOTE: The student's Response section is empty or very short. Ask them to paste or write their essay in the Response section of the document before continuing with the assessment.]\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                    promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName}]\n[NOTE: The student's Response sections are empty or very short. Ask them to write their response in the Response sections of the document before continuing.]\n\n[STUDENT'S RESPONSE]\n${msg}`;
                     console.warn('WML Canvas: Essay too short or empty. getResponseText returned:', essay.substring(0, 100));
                 }
 
@@ -6229,6 +6237,7 @@
         // v7.13.92: Section Guard — snapshot section count, revert if sections are deleted
         // Uses onTransaction instead of ProseMirror Plugin (Plugin not exported from TipTap bundle)
         let _sectionCount = 0;
+        let _undoGuardActive = false; // v7.14.68: prevents section guard undo cascade
         function countSections(doc) {
             let n = 0;
             doc.descendants(node => { if (node.type.name === 'sectionBlock') n++; });
@@ -6302,6 +6311,44 @@
                         return cleaned;
                     });
                 },
+                // v7.14.68: Keep multi-paragraph paste inside InputField nodes
+                // InputField uses content:'inline*' so block paste escapes. Convert blocks to inline.
+                handlePaste(view, event) {
+                    const { $from } = view.state.selection;
+                    let insideInputField = false;
+                    for (let d = $from.depth; d >= 0; d--) {
+                        if ($from.node(d).type.name === 'inputField') {
+                            insideInputField = true;
+                            break;
+                        }
+                    }
+                    if (!insideInputField) return false; // default paste for non-inputField
+
+                    const html = event.clipboardData?.getData('text/html');
+                    const text = event.clipboardData?.getData('text/plain');
+                    let inlineHtml;
+
+                    if (html) {
+                        // Strip block wrappers and join with <br>
+                        inlineHtml = html
+                            .replace(/<\/?(html|head|body|meta)[^>]*>/gi, '')
+                            .replace(/<br\s*\/?>\s*<\/p>/gi, '</p>')
+                            .replace(/<\/(p|div|li|h[1-6])>\s*<\1[^>]*>/gi, '<br>')
+                            .replace(/<\/?(p|div|li|ul|ol|h[1-6]|blockquote)[^>]*>/gi, '')
+                            .replace(/^\s*<br\s*\/?>/i, '')
+                            .replace(/<br\s*\/?>\s*$/i, '')
+                            .trim();
+                    } else if (text) {
+                        inlineHtml = text.split('\n').map(l => l.replace(/</g, '&lt;').replace(/>/g, '&gt;')).join('<br>');
+                    } else {
+                        return false;
+                    }
+
+                    if (inlineHtml) {
+                        canvasEditor.chain().focus().insertContent(inlineHtml).run();
+                    }
+                    return true; // prevent default paste
+                },
             },
             onUpdate: ({ editor }) => {
                 // Word count — response sections only (v7.11.0)
@@ -6337,11 +6384,19 @@
             },
             onTransaction: ({ editor, transaction }) => {
                 // v7.13.92: Section Guard — revert if sections were deleted
+                // v7.14.68: Guard flag prevents undo cascade (guard triggers undo → undo triggers guard → loop)
                 if (transaction.docChanged && _sectionCount > 0) {
+                    if (_undoGuardActive) {
+                        _sectionCount = countSections(editor.state.doc);
+                        return;
+                    }
                     const newCount = countSections(editor.state.doc);
                     if (newCount < _sectionCount) {
                         console.warn('WML: Section deletion blocked — reverting (' + _sectionCount + ' → ' + newCount + ')');
+                        _undoGuardActive = true;
                         editor.commands.undo();
+                        _undoGuardActive = false;
+                        _sectionCount = countSections(editor.state.doc);
                         return;
                     }
                     _sectionCount = newCount;
@@ -6506,6 +6561,23 @@
             setTimeout(() => updateCommentGutter(), 400);
             // v7.13.92: Re-snapshot section count after template injection (sections may have been added)
             if (canvasEditor) _sectionCount = countSections(canvasEditor.state.doc);
+
+            // v7.14.68: Clear undo history so loaded/migrated content becomes the undo floor
+            // Without this, Cmd+Z can revert past the loaded state to an empty document
+            if (canvasEditor) {
+                try {
+                    const { state: edState } = canvasEditor;
+                    const histPlugin = edState.plugins.find(p => p.spec.key && p.spec.key.key === 'history$');
+                    if (histPlugin) {
+                        const tr = edState.tr.setMeta(histPlugin, { redo: [], done: { items: [], eventCount: 0 } });
+                        tr.setMeta('addToHistory', false);
+                        canvasEditor.view.dispatch(tr);
+                        console.log('WML: Undo history cleared — loaded content is now the undo floor');
+                    }
+                } catch (e) {
+                    console.warn('WML: Could not clear undo history:', e);
+                }
+            }
 
             // ── Auto-extract essay question from document for all paths (v7.12.33) ──
             const autoQ = extractEssayQuestion(canvasEditor);

@@ -6,7 +6,7 @@
     "planning": {
         "always": [
             "modules/foundation.md",
-            "modules/knowledge-algorithm.md",
+            "language/modules/knowledge-algorithm-planning.md",
             "modules/knowledge-macros.md",
             "modules/knowledge-validation.md",
             "modules/knowledge-hub.md",

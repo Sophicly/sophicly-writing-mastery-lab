@@ -6,9 +6,9 @@
     "planning": {
         "always": [
             "modules/foundation-lang1.md",
+            "language/modules/knowledge-algorithm-planning.md",
             "modules/knowledge-profiling.md",
             "modules/knowledge-quotes.md",
-            "modules/knowledge-progress.md",
             "modules/knowledge-integrity.md",
             "modules/knowledge-persona.md",
             "modules/knowledge-hub.md",
