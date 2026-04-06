@@ -575,6 +575,22 @@ class SWML_Protocol_Router {
             $files = array_merge($files, $step_files);
         }
 
+        // v7.14.68: Mastery planning — swap b1-setup.md for canvas-aware version
+        // The original b1-setup.md asks students to paste questions/sources (chat-only workflow).
+        // On the canvas, the document already has everything loaded. The canvas setup file
+        // tells the AI to read from the document sections instead.
+        $is_mastery_planning = ($task === 'planning')
+            && !empty($context['phase'])
+            && !empty($context['topic_number']);
+        if ($is_mastery_planning) {
+            $files = array_map(function($f) {
+                return (strpos($f, 'b1-setup') !== false && strpos($f, 'b1-setup-canvas') === false)
+                    ? 'language/planning/b1-setup-canvas.md'
+                    : $f;
+            }, $files);
+            $files = array_unique($files);
+        }
+
         // Deduplicate (a module might appear in both 'always' and step-specific)
         $files = array_unique($files);
 
@@ -1389,7 +1405,7 @@ TEMPLATE;
         if ($task === 'planning') {
             $raw_subject = $context['subject'] ?? '';
             $is_lang = (stripos($raw_subject, 'language') !== false);
-            $is_mastery = !empty($context['phase']) && !empty($context['topicNumber']);
+            $is_mastery = !empty($context['phase']) && !empty($context['topic_number']);
             $phase = ucfirst($context['phase'] ?? 'initial');
 
             $preamble .= "\n### PLANNING SESSION — ROLE & PURPOSE\n\n";
@@ -1411,11 +1427,17 @@ TEMPLATE;
                 $preamble .= "Skip Part A Steps 1-2 of the protocol (question/source collection and pasting) — the document already contains everything.\n\n";
 
                 if ($is_mastery) {
-                    $preamble .= "### MASTERY PROGRAMME — {$phase} PHASE\n\n";
-                    $preamble .= "This student is in the mastery programme ({$phase} phase). All questions are compulsory.\n";
-                    $preamble .= "Plan ALL questions in document order, starting with the first question. ";
-                    $preamble .= "Begin with Part B (Goal Setting), then proceed through Part C (Core Planning) for each question in sequence. ";
-                    $preamble .= "When one question's plan is complete, move to the next.\n\n";
+                    $topic_num = $context['topic_number'] ?? 0;
+                    $preamble .= "### MASTERY PROGRAMME — {$phase} PHASE (Topic {$topic_num})\n\n";
+                    $preamble .= "This student is in the mastery programme ({$phase} phase). All questions are compulsory.\n\n";
+                    $preamble .= "**SKIP THE ENTIRE Part A of the protocol.** Part A (setup, question selection, source collection) is completely redundant because:\n";
+                    $preamble .= "- The document already contains all source texts, questions, and response areas\n";
+                    $preamble .= "- This is confirmed as a {$phase} session — no need to ask\n";
+                    $preamble .= "- ALL questions are planned sequentially — no question selection needed\n\n";
+                    $preamble .= "**START DIRECTLY WITH Part B (Goal Setting)** for the first question in the document (typically Q2).\n";
+                    $preamble .= "Read the question text from the `[question]` section, then begin the goal-setting conversation.\n";
+                    $preamble .= "After completing planning for that question, move to the next question and repeat Part B → Part C.\n";
+                    $preamble .= "Continue until all questions have been planned.\n\n";
                 } else {
                     $preamble .= "### FREE PRACTICE — STUDENT CHOOSES\n\n";
                     $preamble .= "This is a free practice session. Present the questions from the document as options and let the student choose which to plan. ";
@@ -2247,7 +2269,7 @@ TEMPLATE;
 
             // v7.14.39: Question detection for mastery programme
             // v7.14.41: Question detection — mastery vs free practice
-            $is_mastery = !empty($context['phase']) && !empty($context['topicNumber']);
+            $is_mastery = !empty($context['phase']) && !empty($context['topic_number']);
             $preamble .= "\n### QUESTION DETECTION (B.1 Step 4 — Question Selection)\n";
             $preamble .= "The student's FULL document (including the Question & Extract section) is injected into every message.\n";
             $preamble .= "Look for: a 'Question & Extract' section, or text that reads like an exam question (e.g. 'How does Shakespeare present...', 'Starting with this extract...').\n\n";

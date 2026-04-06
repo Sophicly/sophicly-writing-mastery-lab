@@ -542,12 +542,23 @@
                                 const bc = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
                                 bc.appendChild(startBar);
                             }
+                        } else if (state.task === 'planning' || state.task === 'polishing') {
+                        // v7.14.68: Planning/polishing — silent auto-send after clear
+                        // Use setTimeout to let DOM settle; verify editor is alive before sending
+                        setTimeout(() => {
+                            if (canvasEditor && canvasEditor.options?.element) {
+                                canvasSilentSend = true; chatTextarea.value = "Let's begin!"; sendCanvasMessage();
+                            } else {
+                                console.warn('WML: Editor destroyed after clear — cannot auto-send. Reloading canvas.');
+                                renderCanvasWorkspace();
+                            }
+                        }, 200);
                         } else {
                         const tn = state.textName || state.text || 'your text';
                         const wc = getResponseWordCount(canvasEditor);
                         const qText = extractEssayQuestion(canvasEditor);
                         const questionInfo = qText ? `\n\nYour essay question: **${qText}**` : '';
-                        const essayLabel = (state.mode === 'exam_prep') ? `${tn} essay` : `${tn} diagnostic essay`;
+                        const essayLabel = (state.mode === 'exam_prep') ? `${tn} essay` : (state.phase === 'redraft') ? `${tn} redraft essay` : `${tn} diagnostic essay`;
                         const gt = `Hi ${fn}! Welcome to the assessment phase. I've received your ${essayLabel} (${wc} words). Let's review your writing together.${questionInfo}\n\nBefore I begin marking, I need to know: **what grade are you aiming for?** This helps me tailor my feedback to where you want to be.`;
                         addChatMessage(formatAI(gt), 'ai', gt);
                         canvasChatHistory.push({ role: 'assistant', content: gt });
@@ -797,13 +808,35 @@
                         promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName} \u2014 MARK SCHEME QUIZ]\n[STUDENT'S RESPONSE]\n${msg}`;
                     }
                 } else if (state.task === 'planning' || state.task === 'polishing') {
-                    const docContent = canvasEditor ? getDocumentText(canvasEditor) : '';
+                    // v7.14.68: Read document content — try editor first, fall back to DOM directly
+                    let docContent = canvasEditor ? getDocumentText(canvasEditor) : '';
+                    if (!docContent || docContent.length < 50) {
+                        // Editor reference may be stale (destroyed/recreated) — read from DOM directly
+                        const editorEl = document.getElementById('swml-tiptap-editor');
+                        if (editorEl) {
+                            const sections = editorEl.querySelectorAll('[data-section-type]');
+                            if (sections.length > 0) {
+                                const parts = [];
+                                sections.forEach(section => {
+                                    const type = section.getAttribute('data-section-type') || '';
+                                    const label = section.getAttribute('data-section-label') || '';
+                                    const text = section.textContent?.trim() || '';
+                                    if (!text || type === 'divider') return;
+                                    const heading = label ? `=== ${label.toUpperCase()} [${type}] ===` : `=== ${type.toUpperCase()} ===`;
+                                    parts.push(`${heading}\n${text}`);
+                                });
+                                docContent = parts.join('\n\n');
+                                console.log('WML Canvas: Planning doc read from DOM fallback —', docContent.length, 'chars,', sections.length, 'sections');
+                            }
+                        }
+                    }
+                    if (docContent.length < 50) console.warn('WML Canvas: Document content too short for planning!', docContent.length);
                     if (userMsgCount === 1) {
                         promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName} \u2014 ${state.task.toUpperCase()}${state.phase === 'redraft' ? ' (REDRAFT)' : ''}]\n[STUDENT'S DOCUMENT \u2014 contains source texts, exam questions, essay plan, and response sections. Each section is labelled with === LABEL [type] ===]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
                     } else if (docContent.trim().length > 50) {
                         promptText = `[STUDENT'S DOCUMENT \u2014 current state]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
                     }
-                    console.log('WML Canvas: Planning/polishing doc injected. Length:', docContent.length);
+                    console.log('WML Canvas: Planning/polishing doc injected. Length:', docContent.length, 'userMsgCount:', userMsgCount);
                 } else if (isCwSi) {
                     const docContent = canvasEditor ? canvasEditor.getText() : '';
                     const stepLabel = cwStepDef?.label || 'Creative Writing';
@@ -3315,6 +3348,22 @@
                         try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
                     }
                 }
+                // v7.14.68: Discard stale/broken planning chats — assessment bleed-through or paste requests
+                if ((state.task === 'planning' || state.task === 'polishing') && savedChat && savedChat.history && savedChat.history.length > 0) {
+                    const firstAI = savedChat.history.find(m => m.role === 'assistant');
+                    const aiText = firstAI?.content || '';
+                    const isBroken = aiText.includes('assessment phase')
+                        || aiText.includes('paste your document')
+                        || aiText.includes('paste the question')
+                        || aiText.includes('paste your essay')
+                        || aiText.includes('paste the full question')
+                        || (aiText.includes('Could you confirm') && aiText.includes('question number'));
+                    if (isBroken) {
+                        console.log('WML Training: Discarding broken planning chat —', state.task, 'reason:', aiText.substring(0, 80));
+                        savedChat = null;
+                        try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+                    }
+                }
                 const hasSavedChat = savedChat && savedChat.history && savedChat.history.length > 0;
 
                 // Unified assessment state initialiser
@@ -3511,6 +3560,20 @@
                         }
                     }, 50);
                     }, 400);
+                } else if (state.task === 'planning' || state.task === 'polishing') {
+                    // v7.14.68: Planning/polishing — wait for document to load, then silent auto-send
+                    // The template loads async from server — we must wait for content before sending
+                    // so the AI can read the questions and sources from the document.
+                    const _waitAndSend = (attempt) => {
+                        const docText = canvasEditor ? getDocumentText(canvasEditor) : '';
+                        if (docText.length > 100 || attempt >= 15) {
+                            console.log('WML Training: Silent auto-send for', state.task, '— doc length:', docText.length, 'attempt:', attempt);
+                            if (tp.chatTextarea) { canvasSilentSend = true; tp.chatTextarea.value = "Let's begin!"; tp.sendCanvasMessage(); }
+                        } else {
+                            setTimeout(() => _waitAndSend(attempt + 1), 500);
+                        }
+                    };
+                    setTimeout(() => _waitAndSend(0), 500);
                 } else if (state.task === 'assessment') {
                     // Assessment greeting — grade target question
                     setTimeout(() => {
@@ -3521,10 +3584,10 @@
                     const questionSnippet = questionText ? `\n\nYour essay question: **${questionText}**` : '';
                     const questionHTML = questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your essay question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
                     const firstName = (config.userName || '').split(' ')[0] || 'there';
-                    const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} essay` : `${assessTextName} diagnostic essay`;
+                    const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} essay` : (state.phase === 'redraft') ? `${assessTextName} redraft essay` : `${assessTextName} diagnostic essay`;
                     const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
                     const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all 8 steps to receive your full score, grade, and personalised feedback.</div>';
-                    tp.addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? 'essay' : 'diagnostic essay'} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
+                    tp.addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? 'essay' : (state.phase === 'redraft') ? 'redraft essay' : 'diagnostic essay'} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
                     tp.canvasChatHistory.push({ role: 'assistant', content: greetingText });
                     saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
 
@@ -3961,6 +4024,9 @@
                                                 const bc = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
                                                 bc.appendChild(startBar);
                                             }
+                                        } else if (state.task === 'planning' || state.task === 'polishing') {
+                                        // v7.14.68: Planning/polishing — silent auto-send after clear
+                                        canvasSilentSend = true; tp.chatTextarea.value = "Let's begin!"; tp.sendCanvasMessage();
                                         } else {
                                         // Show fresh assessment greeting with essay question if available
                                         const tn = state.textName || state.text || 'your text';
@@ -3969,7 +4035,7 @@
                                         const qText = extractEssayQuestion(canvasEditor);
                                         const questionInfo = qText ? `\n\nYour essay question: **${qText}**` : '';
                                         // v7.14.43: Context-aware greeting — exam practice has no "diagnostic"
-                                        const essayLabel = (state.mode === 'exam_prep') ? `${tn} essay` : `${tn} diagnostic essay`;
+                                        const essayLabel = (state.mode === 'exam_prep') ? `${tn} essay` : (state.phase === 'redraft') ? `${tn} redraft essay` : `${tn} diagnostic essay`;
                                         const gt = `Hi ${fn}! Welcome to the assessment phase. I've received your ${essayLabel} (${wc} words). Let's review your writing together.${questionInfo}\n\nBefore I begin marking, I need to know: **what grade are you aiming for?** This helps me tailor my feedback to where you want to be.`;
                                         addChatMessage(formatAI(gt), 'ai', gt);
                                         canvasChatHistory.push({ role: 'assistant', content: gt });
@@ -4956,10 +5022,10 @@
                                             const questionHTML = questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your essay question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
                                             const firstName = (config.userName || '').split(' ')[0] || 'there';
                                             // v7.14.43: Context-aware greeting — exam practice has no "diagnostic"
-                                            const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} essay` : `${assessTextName} diagnostic essay`;
+                                            const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} essay` : (state.phase === 'redraft') ? `${assessTextName} redraft essay` : `${assessTextName} diagnostic essay`;
                                             const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
                                             const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all 8 steps to receive your full score, grade, and personalised feedback.</div>';
-                                            addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? 'essay' : 'diagnostic essay'} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
+                                            addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? 'essay' : (state.phase === 'redraft') ? 'redraft essay' : 'diagnostic essay'} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
                                             canvasChatHistory.push({ role: 'assistant', content: greetingText });
                                             saveCanvasChat(canvasChatHistory, canvasChatId);
 
