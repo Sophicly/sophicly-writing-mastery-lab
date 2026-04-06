@@ -15,7 +15,7 @@
         ],
         "steps": {
             "1": {
-                "label": "Part A-B: Setup & Goals",
+                "label": "Setup & Goals",
                 "files": [
                     "planning/b-intro.md",
                     "planning/b1-setup.md",
@@ -23,43 +23,104 @@
                 ]
             },
             "2": {
-                "label": "Q2/Q3: Evidence & Body Paragraphs",
+                "label": "Q2: Anchor Quotes",
                 "files": [
                     "planning/b3-q2q3-planning.md"
                 ]
             },
             "3": {
-                "label": "Q2/Q3: Body Paragraph 2",
+                "label": "Q2: Body Paragraph 1",
                 "files": [
                     "planning/b3-q2q3-planning.md"
                 ]
             },
             "4": {
-                "label": "Q2/Q3: Body Paragraph 3",
+                "label": "Q2: Body Paragraph 2",
                 "files": [
                     "planning/b3-q2q3-planning.md"
                 ]
             },
             "5": {
-                "label": "Q5: TECE Planning",
+                "label": "Q3: Anchor Quotes",
+                "files": [
+                    "planning/b3-q2q3-planning.md"
+                ]
+            },
+            "6": {
+                "label": "Q3: Body Paragraphs 1-3",
+                "files": [
+                    "planning/b3-q2q3-planning.md"
+                ]
+            },
+            "7": {
+                "label": "Q3: Final Plan",
+                "files": [
+                    "planning/b3-q2q3-planning.md"
+                ]
+            },
+            "8": {
+                "label": "Q5: Evidence from Both Texts",
                 "files": [
                     "planning/b4-q5-tece.md"
                 ]
             },
-            "6": {
-                "label": "Q6: Comparative Planning",
+            "9": {
+                "label": "Q5: Close Analysis & Effects",
+                "files": [
+                    "planning/b4-q5-tece.md"
+                ]
+            },
+            "10": {
+                "label": "Q5: Final Plan",
+                "files": [
+                    "planning/b4-q5-tece.md"
+                ]
+            },
+            "11": {
+                "label": "Q6: Aspects & Anchor Quotes",
                 "files": [
                     "planning/b5-q6-comparative.md"
                 ]
             },
-            "7": {
+            "12": {
+                "label": "Q6: Body Paragraphs 1-2",
+                "files": [
+                    "planning/b5-q6-comparative.md"
+                ]
+            },
+            "13": {
+                "label": "Q6: Final Plan",
+                "files": [
+                    "planning/b5-q6-comparative.md"
+                ]
+            },
+            "14": {
                 "label": "Section B: Help Menu & Techniques",
                 "files": [
+                    "planning/b6-help-menu.md",
                     "language/modules/help-menu-devices.md"
                 ]
             },
-            "8": {
-                "label": "Section B: IUMVCC Transactional Writing",
+            "15": {
+                "label": "Section B: Task Analysis & Introduction",
+                "files": [
+                    "planning/b7-iumvcc.md"
+                ]
+            },
+            "16": {
+                "label": "Section B: Urgency & Methodology",
+                "files": [
+                    "planning/b7-iumvcc.md"
+                ]
+            },
+            "17": {
+                "label": "Section B: Vision & Counter-argument",
+                "files": [
+                    "planning/b7-iumvcc.md"
+                ]
+            },
+            "18": {
+                "label": "Section B: Conclusion & Final Plan",
                 "files": [
                     "planning/b7-iumvcc.md"
                 ]

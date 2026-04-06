@@ -20,51 +20,58 @@
         ],
         "steps": {
             "1": {
-                "label": "Part A: Setup + Keywords",
+                "label": "Setup & Goals",
                 "files": [
                     "planning/b-intro.md",
                     "planning/b1-setup.md",
-                    "planning/b1a-keywords.md"
-                ]
-            },
-            "2": {
-                "label": "Part B: Goals",
-                "files": [
+                    "planning/b1a-keywords.md",
                     "planning/b2-goals.md"
                 ]
             },
-            "3": {
-                "label": "Part C: Evidence Selection",
+            "2": {
+                "label": "Q3: Anchor Quotes",
                 "files": [
                     "planning/b3-evidence.md"
                 ]
             },
-            "4": {
-                "label": "Part D: Body Paragraph 1",
+            "3": {
+                "label": "Q3: Body Paragraphs 1-2",
                 "files": [
                     "planning/b4-bodies.md"
+                ]
+            },
+            "4": {
+                "label": "Q3: Final Plan",
+                "files": [
+                    "planning/b6-final.md"
                 ]
             },
             "5": {
-                "label": "Part D: Body Paragraph 2",
+                "label": "Q4: Anchor Quotes",
                 "files": [
-                    "planning/b4-bodies.md"
+                    "planning/b3-evidence.md"
                 ]
             },
             "6": {
-                "label": "Part D: Body Paragraph 3",
+                "label": "Q4: Body Paragraphs 1-4",
                 "files": [
                     "planning/b4-bodies.md"
                 ]
             },
             "7": {
-                "label": "Q5 Creative Writing",
+                "label": "Q4: Final Plan",
+                "files": [
+                    "planning/b6-final.md"
+                ]
+            },
+            "8": {
+                "label": "Q5: Story Spine",
                 "files": [
                     "planning/b5-creative.md"
                 ]
             },
-            "8": {
-                "label": "Part F: Final Plan Compilation",
+            "9": {
+                "label": "Q5: Final Plan",
                 "files": [
                     "planning/b6-final.md"
                 ]

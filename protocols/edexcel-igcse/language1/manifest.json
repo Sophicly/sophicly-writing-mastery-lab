@@ -18,7 +18,7 @@
         ],
         "steps": {
             "1": {
-                "label": "Part A-B: Setup & Goals",
+                "label": "Setup & Goals",
                 "files": [
                     "planning/b-intro.md",
                     "planning/b1-setup.md",
@@ -26,51 +26,88 @@
                 ]
             },
             "2": {
-                "label": "Part C: Evidence Selection",
+                "label": "Q4: Evidence Selection",
                 "files": [
                     "planning/b3-evidence.md"
                 ]
             },
             "3": {
-                "label": "Part D: Body Paragraph 1",
+                "label": "Q4: Body Paragraph 1",
                 "files": [
                     "planning/b4-bodies.md"
                 ]
             },
             "4": {
-                "label": "Part D: Body Paragraph 2",
+                "label": "Q4: Body Paragraph 2",
                 "files": [
                     "planning/b4-bodies.md"
                 ]
             },
             "5": {
-                "label": "Part D: Body Paragraph 3",
+                "label": "Q4: Body Paragraph 3",
                 "files": [
                     "planning/b4-bodies.md"
                 ]
             },
             "6": {
-                "label": "Part E: Thesis, Introduction & Conclusion (Q5)",
+                "label": "Q5: Evidence Selection",
+                "files": [
+                    "planning/b3-evidence.md"
+                ]
+            },
+            "7": {
+                "label": "Q5: Body Paragraph 1",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "8": {
+                "label": "Q5: Body Paragraph 2",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "9": {
+                "label": "Q5: Body Paragraph 3",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "10": {
+                "label": "Q5: Thesis, Introduction & Conclusion",
                 "files": [
                     "planning/b5-thesis.md"
                 ]
             },
-            "7": {
+            "11": {
                 "label": "Section B: Setup & Help Menu",
                 "files": [
                     "planning/b6-sectionb.md",
                     "language/modules/help-menu-devices.md"
                 ]
             },
-            "8": {
-                "label": "Section B: IUMVCC Planning",
+            "12": {
+                "label": "Section B: Task Analysis & Introduction",
                 "files": [
                     "planning/b7-iumvcc.md"
                 ]
             },
-            "9": {
-                "label": "Section B: Audit & Final Plan",
+            "13": {
+                "label": "Section B: Urgency & Methodology",
                 "files": [
+                    "planning/b7-iumvcc.md"
+                ]
+            },
+            "14": {
+                "label": "Section B: Vision & Counter-argument",
+                "files": [
+                    "planning/b7-iumvcc.md"
+                ]
+            },
+            "15": {
+                "label": "Section B: Conclusion & Audit",
+                "files": [
+                    "planning/b7-iumvcc.md",
                     "planning/b8-sectionb-final.md"
                 ]
             }

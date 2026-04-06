@@ -19,15 +19,38 @@
       "modules/quote-validation.md"
     ],
     "steps": {
-      "1": ["steps/b-setup.md"],
-      "2": ["steps/b-goal.md"],
-      "3": ["steps/b5-preplanning.md"],
-      "4": ["steps/b5-body1.md"],
-      "5": ["steps/b5-body2.md"],
-      "6": ["steps/b5-body3.md"],
-      "7": ["steps/b5-complete.md"],
-      "8": ["steps/b-conclusion.md"],
-      "9": ["steps/b2-creative.md"]
+      "1": {
+        "label": "Setup & Goals",
+        "files": ["steps/b-setup.md", "steps/b-goal.md"]
+      },
+      "2": {
+        "label": "Q1: Pre-Planning & Text Type",
+        "files": ["steps/b5-preplanning.md"]
+      },
+      "3": {
+        "label": "Q1: Body Paragraph 1 (Form/Genre)",
+        "files": ["steps/b5-body1.md"]
+      },
+      "4": {
+        "label": "Q1: Body Paragraph 2 (Structure)",
+        "files": ["steps/b5-body2.md"]
+      },
+      "5": {
+        "label": "Q1: Body Paragraph 3 (Language)",
+        "files": ["steps/b5-body3.md"]
+      },
+      "6": {
+        "label": "Q1: Working Thesis & Introduction",
+        "files": ["steps/b5-complete.md"]
+      },
+      "7": {
+        "label": "Q1: Conclusion & Final Plan",
+        "files": ["steps/b-conclusion.md"]
+      },
+      "8": {
+        "label": "Section B: Creative Writing Planning",
+        "files": ["steps/b2-creative.md"]
+      }
     }
   },
   "assessment": {

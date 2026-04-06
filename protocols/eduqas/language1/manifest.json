@@ -17,7 +17,7 @@
         ],
         "steps": {
             "1": {
-                "label": "Part A-B: Setup & Goals",
+                "label": "Setup & Goals",
                 "files": [
                     "planning/b-intro.md",
                     "planning/b1-setup.md",
@@ -25,37 +25,85 @@
                 ]
             },
             "2": {
-                "label": "Part C: Evidence Selection",
+                "label": "Q2: Evidence Selection",
                 "files": [
                     "planning/b3-evidence.md"
                 ]
             },
             "3": {
-                "label": "Part D: Body Paragraph 1",
+                "label": "Q2: Body Paragraph Planning",
                 "files": [
                     "planning/b4-bodies.md"
                 ]
             },
             "4": {
-                "label": "Part D: Body Paragraph 2",
+                "label": "Q3: Evidence Selection",
                 "files": [
-                    "planning/b4-bodies.md"
+                    "planning/b3-evidence.md"
                 ]
             },
             "5": {
-                "label": "Part D: Body Paragraph 3",
+                "label": "Q3: Body Paragraph 1",
                 "files": [
                     "planning/b4-bodies.md"
                 ]
             },
             "6": {
+                "label": "Q3: Body Paragraph 2",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "7": {
+                "label": "Q4: Evidence Selection",
+                "files": [
+                    "planning/b3-evidence.md"
+                ]
+            },
+            "8": {
+                "label": "Q4: Body Paragraph 1",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "9": {
+                "label": "Q4: Body Paragraph 2",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "10": {
+                "label": "Q5: Evidence Selection",
+                "files": [
+                    "planning/b3-evidence.md"
+                ]
+            },
+            "11": {
+                "label": "Q5: Body Paragraph 1",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "12": {
+                "label": "Q5: Body Paragraph 2",
+                "files": [
+                    "planning/b4-bodies.md"
+                ]
+            },
+            "13": {
+                "label": "Q5: Final Plan",
+                "files": [
+                    "planning/b6-final.md"
+                ]
+            },
+            "14": {
                 "label": "Section B: Creative Writing",
                 "files": [
                     "planning/b5-creative.md"
                 ]
             },
-            "7": {
-                "label": "Part E: Final Plan Compilation",
+            "15": {
+                "label": "Section B: Final Plan",
                 "files": [
                     "planning/b6-final.md"
                 ]
