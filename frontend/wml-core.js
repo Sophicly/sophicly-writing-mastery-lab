@@ -1735,6 +1735,8 @@ window.WML = (function() {
         text = text.replace(/\[PANEL:\s*\w+\]([\s\S]*?)\[\/PANEL\]/g, '$1').trim();
         // v7.14.68: Also strip [PANEL:...] without closing tag (AI sometimes omits [/PANEL])
         text = text.replace(/\[PANEL:\s*\w+\]/g, '').trim();
+        // v7.14.68: Strip [PROGRESS: N] step markers (used for sidebar tracking, not for display)
+        text = text.replace(/\[PROGRESS:\s*\d+\]/g, '').trim();
         // Strip LaTeX $$ blocks
         text = text.replace(/\$\$[^$]*?\$\$/g, '').trim();
         // Strip Python-style function calls

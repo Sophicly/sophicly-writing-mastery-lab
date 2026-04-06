@@ -1438,6 +1438,32 @@ TEMPLATE;
                     $preamble .= "Read the question text from the `[question]` section, then begin the goal-setting conversation.\n";
                     $preamble .= "After completing planning for that question, move to the next question and repeat Part B → Part C.\n";
                     $preamble .= "Continue until all questions have been planned.\n\n";
+
+                    // Build step map from manifest for progress markers
+                    $manifest_path = SWML_PATH . "protocols/{$context['board']}/{$raw_subject}/manifest.json";
+                    if (!file_exists($manifest_path)) {
+                        // Try shared path resolution
+                        $manifest_path = SWML_PATH . "protocols/shared/{$raw_subject}/manifest.json";
+                    }
+                    $planning_steps = [];
+                    if (file_exists($manifest_path)) {
+                        $man = json_decode(file_get_contents($manifest_path), true);
+                        if (!empty($man['planning']['steps'])) {
+                            foreach ($man['planning']['steps'] as $num => $step_data) {
+                                $planning_steps[] = "- Step {$num}: {$step_data['label']}";
+                            }
+                        }
+                    }
+                    if (!empty($planning_steps)) {
+                        $preamble .= "### PROGRESS TRACKING — MANDATORY\n\n";
+                        $preamble .= "The sidebar shows the student's progress. You MUST include a `[PROGRESS: N]` tag in your response whenever you move to a new step.\n";
+                        $preamble .= "The student will NOT see this tag — it is stripped from the display.\n\n";
+                        $preamble .= "**Steps:**\n" . implode("\n", $planning_steps) . "\n\n";
+                        $preamble .= "**Rules:**\n";
+                        $preamble .= "- Include `[PROGRESS: N]` ONCE per response, at the point where you transition to that step's content\n";
+                        $preamble .= "- Only include the tag when you BEGIN working on that step (not when you're still in the previous step)\n";
+                        $preamble .= "- Example: When you start asking about Q2 evidence, include `[PROGRESS: 2]`. When you move to Q2 paragraph planning, include `[PROGRESS: 3]`.\n\n";
+                    }
                 } else {
                     $preamble .= "### FREE PRACTICE — STUDENT CHOOSES\n\n";
                     $preamble .= "This is a free practice session. Present the questions from the document as options and let the student choose which to plan. ";

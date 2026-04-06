@@ -2351,6 +2351,49 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-canvas-proto.collapsed .swml-sidebar-head { margin-bottom: 10px; }
 .swml-canvas-proto.collapsed .swml-sidebar-body { gap: 6px; }
 
+/* ── v7.14.68: Step Group Accordion (planning/polishing sidebar) ── */
+.swml-step-group { margin: 2px 0; }
+.swml-step-group-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 4px; cursor: pointer;
+    background: transparent;
+    transition: opacity 0.2s ease;
+}
+.swml-step-group-header:hover { opacity: 0.8; }
+.swml-step-group-title {
+    font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.7);
+    letter-spacing: 0.02em;
+}
+.swml-step-group-count {
+    font-size: 10px; color: rgba(255,255,255,0.25);
+    margin-left: auto;
+}
+.swml-step-group-icon {
+    display: flex; align-items: center;
+    color: rgba(255,255,255,0.3);
+    font-size: 14px; font-weight: 300; width: 14px; text-align: center;
+    transition: transform 0.2s ease;
+}
+.swml-step-group-header.open .swml-step-group-icon { transform: rotate(45deg); }
+.swml-step-group-body {
+    overflow: hidden; transition: max-height 0.3s ease;
+    padding-left: 4px;
+}
+/* Active group header — teal accent */
+.swml-step-group-header.group-active .swml-step-group-title { color: #51dacf; }
+.swml-step-group-header.group-active .swml-step-group-icon { color: #51dacf; }
+/* Complete group header — green accent + tick */
+.swml-step-group-header.group-complete .swml-step-group-title { color: #1CD991; }
+.swml-step-group-header.group-complete .swml-step-group-icon { color: #1CD991; }
+.swml-step-group-header.group-complete .swml-step-group-count::after {
+    content: ' ✓'; color: #1CD991;
+}
+/* Hide icon + count when sidebar collapsed */
+.swml-canvas-proto.collapsed .swml-step-group-header { padding: 4px; justify-content: center; }
+.swml-canvas-proto.collapsed .swml-step-group-count,
+.swml-canvas-proto.collapsed .swml-step-group-icon,
+.swml-canvas-proto.collapsed .swml-step-group-body { display: none; }
+
 /* ── Panel entering state (v7.12.46) — background visible, children hidden ── */
 /* Background slides in via maxWidth, then children stagger-fade in */
 .swml-panel-entering > * {

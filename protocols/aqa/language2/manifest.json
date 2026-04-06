@@ -15,7 +15,7 @@
         ],
         "steps": {
             "1": {
-                "label": "Part A-B: Setup & Goals",
+                "label": "Setup & Goals",
                 "files": [
                     "planning/b-intro.md",
                     "planning/b1-setup.md",
@@ -23,43 +23,79 @@
                 ]
             },
             "2": {
-                "label": "Q2/Q3: Evidence & Body Paragraphs",
+                "label": "Q2: Evidence Selection",
                 "files": [
                     "planning/b3-q2q3-planning.md"
                 ]
             },
             "3": {
-                "label": "Q2/Q3: Body Paragraph 2",
+                "label": "Q2: Paragraph Planning",
                 "files": [
                     "planning/b3-q2q3-planning.md"
                 ]
             },
             "4": {
-                "label": "Q2/Q3: Body Paragraph 3",
+                "label": "Q3: Anchor Quotes",
                 "files": [
                     "planning/b3-q2q3-planning.md"
                 ]
             },
             "5": {
-                "label": "Q2/Q3: Final Summary",
+                "label": "Q3: Body Paragraphs 1-3",
+                "files": [
+                    "planning/b3-q2q3-planning.md"
+                ]
+            },
+            "6": {
+                "label": "Q3: Final Plan",
                 "files": [
                     "planning/b4-q2q3-final.md"
                 ]
             },
-            "6": {
-                "label": "Q4: Comparative Planning",
+            "7": {
+                "label": "Q4: Aspects & Anchor Quotes",
                 "files": [
                     "planning/b5-q4-comparative.md"
                 ]
             },
-            "7": {
+            "8": {
+                "label": "Q4: Body Paragraphs 1-3",
+                "files": [
+                    "planning/b5-q4-comparative.md"
+                ]
+            },
+            "9": {
+                "label": "Q4: Intro, Conclusion & Plan",
+                "files": [
+                    "planning/b5-q4-comparative.md"
+                ]
+            },
+            "10": {
                 "label": "Q5: Help Menu & Techniques",
                 "files": [
                     "language/modules/help-menu-devices.md"
                 ]
             },
-            "8": {
-                "label": "Q5: IUMVCC Transactional Writing",
+            "11": {
+                "label": "Q5: Task Analysis & Introduction",
+                "files": [
+                    "planning/b7-q5-iumvcc.md"
+                ]
+            },
+            "12": {
+                "label": "Q5: Urgency & Methodology",
+                "files": [
+                    "planning/b7-q5-iumvcc.md"
+                ]
+            },
+            "13": {
+                "label": "Q5: Vision & Counter-argument",
+                "files": [
+                    "planning/b7-q5-iumvcc.md"
+                ]
+            },
+            "14": {
+                "label": "Q5: Conclusion & Final Plan",
                 "files": [
                     "planning/b7-q5-iumvcc.md"
                 ]

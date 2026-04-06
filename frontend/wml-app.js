@@ -3761,6 +3761,34 @@
             el.className = `swml-step ${c}`; circle.className = `swml-step-circle ${c}`;
             circle.textContent = (s < step || (s === step && state._phaseMarkedComplete)) ? '✓' : s;
         });
+        // v7.14.68: Accordion group state — open the group containing the active step, update group headers
+        $$('.swml-step-group').forEach(group => {
+            const header = group.querySelector('.swml-step-group-header');
+            const body = group.querySelector('.swml-step-group-body');
+            if (!header || !body) return;
+            const groupSteps = body.querySelectorAll('.swml-step');
+            let hasActive = false, allComplete = true, anyStep = false;
+            groupSteps.forEach(gs => {
+                const s = parseInt(gs.dataset.step);
+                if (isNaN(s)) return;
+                anyStep = true;
+                if (s === step) hasActive = true;
+                if (s >= step && !state._phaseMarkedComplete) allComplete = false;
+            });
+            header.classList.remove('group-active', 'group-complete');
+            if (anyStep && allComplete) {
+                header.classList.add('group-complete');
+            } else if (hasActive) {
+                header.classList.add('group-active');
+            }
+            // Auto-open the active group, close others
+            if (hasActive && !header.classList.contains('open')) {
+                $$('.swml-step-group-header').forEach(h => h.classList.remove('open'));
+                $$('.swml-step-group-body').forEach(b => { b.style.maxHeight = '0'; });
+                header.classList.add('open');
+                body.style.maxHeight = body.scrollHeight + 'px';
+            }
+        });
         // Check for video hints when step changes
         checkVideoTooltip();
     }

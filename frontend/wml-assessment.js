@@ -60,6 +60,36 @@
     const extractAndSavePlan = (...args) => window.WML.extractAndSavePlan(...args);
     const refreshPlan = (...args) => window.WML.refreshPlan(...args);
 
+    // v7.14.68: Planning step detection — uses AI's [PROGRESS: N] markers (primary)
+    // with keyword fallback. Returns the detected step number.
+    function detectPlanningStep(aiText, currentStep) {
+        if (!aiText) return currentStep;
+        // Primary: explicit [PROGRESS: N] marker from the AI
+        const progressMatch = aiText.match(/\[PROGRESS:\s*(\d+)\]/);
+        if (progressMatch) {
+            const markerStep = parseInt(progressMatch[1]);
+            if (markerStep > currentStep) {
+                console.log('WML Planning: [PROGRESS] marker detected → step', markerStep);
+                return markerStep;
+            }
+        }
+        // Fallback: keyword detection (less precise, only advances by 1 step at most)
+        const stepEls = document.querySelectorAll('#swml-progress-steps .swml-step[data-step]');
+        const nextStep = currentStep + 1;
+        let nextLabel = '';
+        stepEls.forEach(el => { if (parseInt(el.dataset.step) === nextStep) nextLabel = (el.querySelector('.swml-step-label')?.textContent || '').toLowerCase(); });
+        if (!nextLabel) return currentStep;
+        // Check if AI content matches the next step's label keywords
+        const t = aiText.toLowerCase();
+        const labelWords = nextLabel.split(/[\s&,]+/).filter(w => w.length > 2);
+        const matchCount = labelWords.filter(w => t.includes(w)).length;
+        if (matchCount >= 2 || (labelWords.length <= 2 && matchCount >= 1)) {
+            console.log('WML Planning: Keyword fallback → step', nextStep, '(matched:', matchCount, '/', labelWords.length, 'words from "' + nextLabel + '")');
+            return nextStep;
+        }
+        return currentStep;
+    }
+
     // Pre-assessment functions (defined in wml-app.js entry flow section)
     const destroyShader = () => window.WML.destroyShader();
     const syncUrl = () => window.WML.syncUrl?.();
@@ -910,6 +940,15 @@
                         await refreshPlan();
                         await extractAndSavePlan(msg, res.reply);
                         console.log('WML Canvas: Plan state after extraction:', { total_score: state.plan.total_score, grade: state.plan.grade, task: state.task });
+
+                        // v7.14.68: Planning/polishing step detection — advance sidebar based on AI content
+                        if (state.task === 'planning' || state.task === 'polishing') {
+                            const planStep = detectPlanningStep(res.reply, state.step);
+                            if (planStep > state.step) {
+                                console.log('WML Canvas: Planning step advanced', state.step, '→', planStep);
+                                updateProgress(planStep);
+                            }
+                        }
 
                         if (state.task === 'assessment') {
                             const detected = detectAssessmentStep(res.reply);
@@ -2662,7 +2701,7 @@
         const canvasChatHeaderLabel = exerciseConfig.chatHeaderLabel || 'Essay Assessment';
         let canvasSidebarSteps = exerciseConfig.sidebarSteps || null;
 
-        // v7.14.66: Fetch manifest step labels for planning/polishing sidebar
+        // v7.14.68: Fetch manifest step labels for planning/polishing sidebar (accordion grouped by question)
         if (!canvasSidebarSteps && (state.task === 'planning' || state.task === 'polishing') && state.board) {
             const stepsUrl = `${config.restUrl}protocol-steps?board=${encodeURIComponent(state.board)}&subject=${encodeURIComponent(state.subject || '')}&task=${encodeURIComponent(state.task)}`;
             fetch(stepsUrl, { headers }).then(r => r.json()).then(data => {
@@ -2670,15 +2709,77 @@
                     const container = document.getElementById('swml-progress-steps');
                     if (container) {
                         container.innerHTML = '';
+                        // Group steps by question prefix (e.g. "Q2:", "Q3:", "Q4:", "Q5:")
+                        // Steps without a "Qn:" prefix render as standalone items
+                        const groups = [];
+                        let currentGroup = null;
                         data.steps.forEach((s, i) => {
-                            const cls = i === 0 ? 'active' : '';
-                            const stepEl = el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
-                                el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
-                                el('span', { className: 'swml-step-label', textContent: s.label }),
-                            ]);
-                            container.appendChild(stepEl);
+                            const prefixMatch = s.label.match(/^(Q\d+):/);
+                            const prefix = prefixMatch ? prefixMatch[1] : null;
+                            if (prefix) {
+                                if (!currentGroup || currentGroup.prefix !== prefix) {
+                                    currentGroup = { prefix, label: prefix, steps: [] };
+                                    groups.push(currentGroup);
+                                }
+                                currentGroup.steps.push({ ...s, index: i });
+                            } else {
+                                groups.push({ prefix: null, label: null, steps: [{ ...s, index: i }] });
+                                currentGroup = null;
+                            }
                         });
-                        console.log('WML: Loaded manifest sidebar steps:', data.steps.length);
+
+                        groups.forEach(group => {
+                            if (!group.prefix) {
+                                // Standalone step (e.g. "Setup & Goals")
+                                const s = group.steps[0];
+                                const cls = s.index === 0 ? 'active' : '';
+                                container.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
+                                    el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
+                                    el('span', { className: 'swml-step-label', textContent: s.label }),
+                                ]));
+                            } else {
+                                // Accordion group
+                                const groupEl = el('div', { className: 'swml-step-group', 'data-group': group.prefix });
+                                const isFirstGroup = container.children.length <= 1;
+                                const headerEl = el('div', {
+                                    className: `swml-step-group-header${isFirstGroup ? ' open' : ''}`,
+                                    onClick: (e) => {
+                                        const parent = e.currentTarget.parentElement;
+                                        const wasOpen = e.currentTarget.classList.contains('open');
+                                        // Close all groups
+                                        container.querySelectorAll('.swml-step-group-header').forEach(h => h.classList.remove('open'));
+                                        container.querySelectorAll('.swml-step-group-body').forEach(b => { b.style.maxHeight = '0'; });
+                                        // Toggle this one
+                                        if (!wasOpen) {
+                                            e.currentTarget.classList.add('open');
+                                            const body = parent.querySelector('.swml-step-group-body');
+                                            if (body) body.style.maxHeight = body.scrollHeight + 'px';
+                                        }
+                                    }
+                                }, [
+                                    el('span', { className: 'swml-step-group-title', textContent: group.prefix }),
+                                    el('span', { className: 'swml-step-group-count', textContent: `${group.steps.length} steps` }),
+                                    el('span', { className: 'swml-step-group-icon', textContent: '+' }),
+                                ]);
+                                groupEl.appendChild(headerEl);
+
+                                const bodyEl = el('div', {
+                                    className: 'swml-step-group-body',
+                                    style: { maxHeight: isFirstGroup ? '500px' : '0', overflow: 'hidden', transition: 'max-height 0.3s ease' }
+                                });
+                                group.steps.forEach(s => {
+                                    // Strip the "Q2: " prefix from sub-step labels
+                                    const subLabel = s.label.replace(/^Q\d+:\s*/, '');
+                                    bodyEl.appendChild(el('div', { className: 'swml-step', 'data-step': s.step }, [
+                                        el('div', { className: 'swml-step-circle', textContent: s.step }),
+                                        el('span', { className: 'swml-step-label', textContent: subLabel }),
+                                    ]));
+                                });
+                                groupEl.appendChild(bodyEl);
+                                container.appendChild(groupEl);
+                            }
+                        });
+                        console.log('WML: Loaded manifest sidebar steps:', data.steps.length, 'in', groups.length, 'groups');
                     }
                 }
             }).catch(e => console.warn('WML: Could not load protocol steps:', e));
