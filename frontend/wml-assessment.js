@@ -5561,12 +5561,16 @@
 
             addKeyboardShortcuts() {
                 return {
-                    // Enter inside an input field creates a new line within the field (not a new paragraph outside)
+                    // Enter inside an input field inserts a line break within the field
                     Enter: ({ editor }) => {
                         const { $from } = editor.state.selection;
                         for (let d = $from.depth; d >= 0; d--) {
                             if ($from.node(d).type.name === 'inputField') {
-                                editor.commands.insertContent({ type: 'hardBreak' });
+                                // Insert a hardBreak node directly via transaction (avoids schema split)
+                                const { tr } = editor.state;
+                                const hardBreak = editor.schema.nodes.hardBreak.create();
+                                tr.replaceSelectionWith(hardBreak, false).scrollIntoView();
+                                editor.view.dispatch(tr);
                                 return true;
                             }
                         }
@@ -6729,22 +6733,9 @@
             // v7.13.92: Re-snapshot section count after template injection (sections may have been added)
             if (canvasEditor) _sectionCount = countSections(canvasEditor.state.doc);
 
-            // v7.14.68: Clear undo history so loaded/migrated content becomes the undo floor
-            // Without this, Cmd+Z can revert past the loaded state to an empty document
-            if (canvasEditor) {
-                try {
-                    const { state: edState } = canvasEditor;
-                    const histPlugin = edState.plugins.find(p => p.spec.key && p.spec.key.key === 'history$');
-                    if (histPlugin) {
-                        const tr = edState.tr.setMeta(histPlugin, { redo: [], done: { items: [], eventCount: 0 } });
-                        tr.setMeta('addToHistory', false);
-                        canvasEditor.view.dispatch(tr);
-                        console.log('WML: Undo history cleared — loaded content is now the undo floor');
-                    }
-                } catch (e) {
-                    console.warn('WML: Could not clear undo history:', e);
-                }
-            }
+            // v7.14.68: Undo floor — snapshot the loaded state so section guard knows the baseline
+            // Note: Direct history plugin reset was removed (corrupted prevTime state).
+            // The section guard + _undoGuardActive flag prevents undo past the loaded content.
 
             // ── Auto-extract essay question from document for all paths (v7.12.33) ──
             const autoQ = extractEssayQuestion(canvasEditor);
