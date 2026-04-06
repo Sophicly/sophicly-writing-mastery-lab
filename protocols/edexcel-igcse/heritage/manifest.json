@@ -19,6 +19,7 @@
         ],
         "steps": {
             "1": {
+                "label": "Setup, Keywords & Goals",
                 "files": [
                     "planning/b1-setup.md",
                     "planning/b1-5-keywords.md",
@@ -27,11 +28,13 @@
                 ]
             },
             "2": {
+                "label": "Goal Setting",
                 "files": [
                     "planning/b2-goals.md"
                 ]
             },
             "3": {
+                "label": "BME Rationale & Anchor Quotes",
                 "files": [
                     "planning/b3-5-bme-rationale.md",
                     "planning/b4-anchors.md",
@@ -39,29 +42,34 @@
                 ]
             },
             "4": {
+                "label": "Body Paragraph 1",
                 "files": [
                     "planning/b5-bodies.md",
                     "modules/quote-validation.md"
                 ]
             },
             "5": {
+                "label": "Body Paragraph 2",
                 "files": [
                     "planning/b5-bodies.md",
                     "modules/quote-validation.md"
                 ]
             },
             "6": {
+                "label": "Body Paragraph 3",
                 "files": [
                     "planning/b5-bodies.md"
                 ]
             },
             "7": {
+                "label": "Thesis & Introduction",
                 "files": [
                     "planning/b6-thesis.md",
                     "planning/b7-introduction.md"
                 ]
             },
             "8": {
+                "label": "Conclusion & Review",
                 "files": [
                     "planning/b8-conclusion.md",
                     "planning/b9-review.md",

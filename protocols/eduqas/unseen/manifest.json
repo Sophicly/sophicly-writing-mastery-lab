@@ -12,17 +12,20 @@
         ],
         "steps": {
             "1": {
+                "label": "Poem 1: Setup & Framework",
                 "files": [
                     "planning/b-intro.md",
                     "planning/b5-intro.md"
                 ]
             },
             "2": {
+                "label": "Poem 1: TTECEA Introduction",
                 "files": [
                     "planning/b5-intro.md"
                 ]
             },
             "3": {
+                "label": "Poem 1: Body Paragraph 1",
                 "files": [
                     "planning/b5-intro.md",
                     "planning/b5-bodies.md",
@@ -30,23 +33,27 @@
                 ]
             },
             "4": {
+                "label": "Poem 1: Body Paragraph 2",
                 "files": [
                     "planning/b5-bodies.md",
                     "modules/knowledge-techniques.md"
                 ]
             },
             "5": {
+                "label": "Poem 1: Body Paragraph 3",
                 "files": [
                     "planning/b5-bodies.md",
                     "modules/knowledge-techniques.md"
                 ]
             },
             "6": {
+                "label": "Poem 1: Review",
                 "files": [
                     "planning/b5-bodies.md"
                 ]
             },
             "7": {
+                "label": "Comparison: Setup & Anchors",
                 "files": [
                     "planning/b2-1-setup.md",
                     "planning/b2-2-goals.md",
@@ -55,6 +62,7 @@
                 ]
             },
             "8": {
+                "label": "Comparison: Bodies, Thesis & Review",
                 "files": [
                     "planning/b2-5-bodies.md",
                     "planning/b2-6-thesis.md",

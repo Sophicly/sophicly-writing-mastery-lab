@@ -18,6 +18,7 @@
         ],
         "steps": {
             "1": {
+                "label": "Setup, Goals & Diagnostic",
                 "files": [
                     "planning/b1-setup.md",
                     "planning/b2-goals.md",
@@ -26,11 +27,13 @@
                 ]
             },
             "2": {
+                "label": "Goal Setting",
                 "files": [
                     "planning/b2-goals.md"
                 ]
             },
             "3": {
+                "label": "Keywords & Anchor Quotes",
                 "files": [
                     "planning/b2a-keywords.md",
                     "planning/b4-anchors.md",
@@ -38,30 +41,35 @@
                 ]
             },
             "4": {
+                "label": "Body Paragraph 1 (Form)",
                 "files": [
                     "planning/b5-bodies.md",
                     "modules/quote-validation.md"
                 ]
             },
             "5": {
+                "label": "Body Paragraph 2 (Structure)",
                 "files": [
                     "planning/b5-bodies.md",
                     "modules/quote-validation.md"
                 ]
             },
             "6": {
+                "label": "Body Paragraph 3 (Language)",
                 "files": [
                     "planning/b5-bodies.md",
                     "modules/quote-validation.md"
                 ]
             },
             "7": {
+                "label": "Thesis & Introduction",
                 "files": [
                     "planning/b6-thesis.md",
                     "planning/b7-introduction.md"
                 ]
             },
             "8": {
+                "label": "Conclusion & Review",
                 "files": [
                     "planning/b8-conclusion.md",
                     "planning/b9-review.md",
