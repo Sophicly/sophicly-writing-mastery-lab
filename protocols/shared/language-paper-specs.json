@@ -198,19 +198,225 @@
   },
 
   "ocr": {
-    "language_c1": { "verified": false, "note": "Awaiting verified spec from Neil" },
-    "language_c2": { "verified": false, "note": "Awaiting verified spec from Neil" }
+    "language_c1": {
+      "verified": true,
+      "source": "OCR J351/01 specification + June 2024 past papers",
+      "total": 80,
+      "time_minutes": 120,
+      "sections": [
+        {
+          "label": "Section A: Reading Information and Ideas",
+          "marks": 40,
+          "source_count": 2,
+          "questions": [
+            { "id": "Q1", "marks": 4, "aos": ["AO1"], "type": "retrieval", "sub_parts": "1a(1)+1b(1)+1c(2)", "description": "Retrieval from Text 1 — phrases and reasons" },
+            { "id": "Q2", "marks": 6, "aos": ["AO1"], "type": "comparison", "description": "Cross-text comparison — what are the similarities?" },
+            { "id": "Q3", "marks": 12, "aos": ["AO2"], "type": "analysis", "description": "How does the writer use language and structure to..." },
+            { "id": "Q4", "marks": 18, "aos": ["AO1", "AO2", "AO3"], "type": "evaluation", "description": "Evaluative cross-text comparison — how far do you agree?" }
+          ]
+        },
+        {
+          "label": "Section B: Writing for Audience, Impact and Purpose",
+          "marks": 40,
+          "questions": [
+            { "id": "Q5", "marks": 40, "aos": ["AO5", "AO6"], "type": "choice", "description": "Choice of 2 transactional writing tasks (speech, letter, article, etc.)" }
+          ]
+        }
+      ]
+    },
+    "language_c2": {
+      "verified": true,
+      "source": "OCR J351/02 specification + June 2024 past papers",
+      "total": 80,
+      "time_minutes": 120,
+      "sections": [
+        {
+          "label": "Section A: Reading Meaning and Effects",
+          "marks": 40,
+          "source_count": 2,
+          "questions": [
+            { "id": "Q1", "marks": 4, "aos": ["AO1"], "type": "retrieval", "sub_parts": "1a(3)+1b(1)", "description": "Retrieval from Text 1 — words/phrases and explanation" },
+            { "id": "Q2", "marks": 6, "aos": ["AO2"], "type": "short_analysis", "description": "How does the writer use language and structure to show X? (Text 1)" },
+            { "id": "Q3", "marks": 12, "aos": ["AO2"], "type": "analysis", "description": "Explore how the writer uses language and structure to... (Text 2)" },
+            { "id": "Q4", "marks": 18, "aos": ["AO1", "AO2", "AO3"], "type": "evaluation", "description": "Evaluative cross-text comparison — how far do you agree?" }
+          ]
+        },
+        {
+          "label": "Section B: Writing Imaginatively and Creatively",
+          "marks": 40,
+          "questions": [
+            { "id": "Q5", "marks": 40, "aos": ["AO5", "AO6"], "type": "choice", "description": "Choice of 2 imaginative/creative writing tasks (story, descriptive, personal)" }
+          ]
+        }
+      ]
+    }
   },
+
   "ccea": {
-    "language_u1": { "verified": false, "note": "Awaiting verified spec from Neil" },
-    "language_u4": { "verified": false, "note": "Awaiting verified spec from Neil" }
+    "language_u1": {
+      "verified": true,
+      "source": "CCEA GEN11 specification + Summer 2025 past papers",
+      "total": 150,
+      "time_minutes": 105,
+      "note": "CCEA uses Tasks not Questions. Writing FIRST, then Reading. 150-mark scale.",
+      "sections": [
+        {
+          "label": "Section A: Writing",
+          "marks": 87,
+          "time_minutes": 55,
+          "questions": [
+            { "id": "T1", "marks": 87, "aos": ["AO5", "AO6"], "type": "extended_writing", "content_marks": 57, "spag_marks": 30, "description": "Persuasive speech writing on a given topic" }
+          ]
+        },
+        {
+          "label": "Section B: Reading",
+          "marks": 63,
+          "time_minutes": 50,
+          "note": "Reading texts printed INLINE in question paper (not separate insert)",
+          "questions": [
+            { "id": "T2", "marks": 21, "aos": ["AO2"], "type": "analysis", "time_minutes": 15, "description": "How has the writer presented X to engage readers? (non-fiction)" },
+            { "id": "T3", "marks": 12, "aos": ["AO1"], "type": "retrieval", "time_minutes": 10, "sub_parts": "3a(4)+3b(2)+3c(4)+3d(2)", "description": "Structured comprehension — reasons + supporting evidence" },
+            { "id": "T4", "marks": 20, "aos": ["AO2"], "type": "analysis", "time_minutes": 17, "description": "How has language been used to develop X? (media text)" },
+            { "id": "T5", "marks": 10, "aos": ["AO2"], "type": "short_analysis", "time_minutes": 8, "sub_parts": "5a(1)+5b(4)+5c(1)+5d(4)", "description": "Presentational features — identify and explain intended effects" }
+          ]
+        }
+      ]
+    },
+    "language_u4": {
+      "verified": true,
+      "source": "CCEA GEN41 specification + Summer 2025 past papers",
+      "total": 150,
+      "time_minutes": 105,
+      "note": "Writing FIRST, then Reading. 150-mark scale. Choice of personal or creative writing.",
+      "sections": [
+        {
+          "label": "Section A: Writing",
+          "marks": 88,
+          "time_minutes": 55,
+          "questions": [
+            { "id": "T1", "marks": 88, "aos": ["AO5", "AO6"], "type": "choice", "description": "Choice: (a) personal writing OR (b) creative writing (image-prompted)" }
+          ]
+        },
+        {
+          "label": "Section B: Reading",
+          "marks": 62,
+          "time_minutes": 50,
+          "questions": [
+            { "id": "T2", "marks": 32, "aos": ["AO1", "AO2", "AO3"], "type": "comparison", "time_minutes": 26, "description": "Compare and contrast how writers create X in two literary extracts" },
+            { "id": "T3", "marks": 15, "aos": ["AO2"], "type": "analysis", "time_minutes": 12, "description": "How has the writer gained and held the reader's interest? (non-fiction)" },
+            { "id": "T4", "marks": 15, "aos": ["AO2"], "type": "analysis", "time_minutes": 12, "description": "How has the writer presented their views on X? (same article continued)" }
+          ]
+        }
+      ]
+    }
   },
+
   "edexcel-igcse": {
-    "language_p1": { "verified": false, "note": "Awaiting verified spec from Neil" },
-    "language_p2": { "verified": false, "note": "Awaiting verified spec from Neil" }
+    "language_p1": {
+      "verified": true,
+      "source": "Edexcel IGCSE 4EA1/01 Spec A + June 2024 past papers",
+      "total": 90,
+      "time_minutes": 135,
+      "sections": [
+        {
+          "label": "Section A: Reading",
+          "marks": 45,
+          "source_count": 2,
+          "questions": [
+            { "id": "Q1", "marks": 2, "aos": ["AO1"], "type": "retrieval", "description": "Select two words or phrases that describe X" },
+            { "id": "Q2", "marks": 4, "aos": ["AO1"], "type": "retrieval", "description": "In your own words, describe what happens" },
+            { "id": "Q3", "marks": 5, "aos": ["AO1", "AO2"], "type": "short_analysis", "description": "Explain the writer's thoughts and feelings" },
+            { "id": "Q4", "marks": 12, "aos": ["AO2"], "type": "analysis", "description": "How does the writer use language and structure to interest and engage?" },
+            { "id": "Q5", "marks": 22, "aos": ["AO3"], "type": "comparison", "description": "Compare how the writers present their ideas and perspectives" }
+          ]
+        },
+        {
+          "label": "Section B: Transactional Writing",
+          "marks": 45,
+          "questions": [
+            { "id": "Q6", "marks": 45, "aos": ["AO5", "AO6"], "type": "choice", "description": "Choice of 2 transactional writing tasks (review, article, speech, letter)" }
+          ]
+        }
+      ]
+    },
+    "language_p2": {
+      "verified": true,
+      "source": "Edexcel IGCSE 4EA1/02 Spec A + June 2024 past papers",
+      "total": 60,
+      "time_minutes": 90,
+      "sections": [
+        {
+          "label": "Section A: Reading — Poetry",
+          "marks": 30,
+          "questions": [
+            { "id": "Q1", "marks": 30, "aos": ["AO1", "AO2"], "type": "analysis", "description": "How does the writer present X? (single anthology poem, printed in full)" }
+          ]
+        },
+        {
+          "label": "Section B: Imaginative Writing",
+          "marks": 30,
+          "questions": [
+            { "id": "Q2", "marks": 30, "aos": ["AO5", "AO6"], "type": "choice", "description": "Choice of 3 imaginative writing tasks (personal, title-based, image-prompted)" }
+          ]
+        }
+      ]
+    }
   },
+
   "cambridge-igcse": {
-    "language_p1": { "verified": false, "note": "Awaiting verified spec from Neil" },
-    "language_p2": { "verified": false, "note": "Awaiting verified spec from Neil" }
+    "language_p1": {
+      "verified": true,
+      "source": "CAIE 0500/11 First Language English + June 2024 past papers",
+      "total": 80,
+      "time_minutes": 120,
+      "note": "3 texts on separate Insert. Answer ALL questions. No dictionaries.",
+      "sections": [
+        {
+          "label": "Comprehension and Summary",
+          "marks": 30,
+          "source_count": 2,
+          "questions": [
+            { "id": "Q1", "marks": 30, "aos": ["AO1"], "type": "retrieval", "sub_parts": "multiple (a-f)", "description": "Comprehension on Texts A+B (retrieval, own words, reasons) + summary (15 marks, 120 words max)" }
+          ]
+        },
+        {
+          "label": "Language Analysis",
+          "marks": 25,
+          "questions": [
+            { "id": "Q2", "marks": 25, "aos": ["AO2"], "type": "analysis", "sub_parts": "2a(4×1)+2b(3×1)+2c(3)+2d(15)", "description": "Language analysis on Text C — word identification, own words, feelings, extended analysis (200-300 words)" }
+          ]
+        },
+        {
+          "label": "Directed Writing",
+          "marks": 25,
+          "questions": [
+            { "id": "Q3", "marks": 25, "aos": ["AO5", "AO6"], "type": "extended_writing", "content_marks": 15, "spag_marks": 10, "description": "Role-play directed writing based on Text C (report, letter, article, etc., 250-350 words)" }
+          ]
+        }
+      ]
+    },
+    "language_p2": {
+      "verified": true,
+      "source": "CAIE 0500/21 First Language English + June 2024 past papers",
+      "total": 80,
+      "time_minutes": 120,
+      "sections": [
+        {
+          "label": "Section A: Directed Writing",
+          "marks": 40,
+          "source_count": 2,
+          "questions": [
+            { "id": "Q1", "marks": 40, "aos": ["AO1", "AO5", "AO6"], "type": "extended_writing", "content_marks": 15, "spag_marks": 25, "description": "Directed writing article based on two texts (250-350 words)" }
+          ]
+        },
+        {
+          "label": "Section B: Composition",
+          "marks": 40,
+          "questions": [
+            { "id": "Q2", "marks": 40, "aos": ["AO5", "AO6"], "type": "choice", "content_marks": 16, "spag_marks": 24, "description": "Choice of 4: 2 descriptive + 2 narrative compositions (350-450 words)" }
+          ]
+        }
+      ]
+    }
   }
 }

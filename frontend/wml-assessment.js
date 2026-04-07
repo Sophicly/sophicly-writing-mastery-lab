@@ -90,6 +90,42 @@
         return currentStep;
     }
 
+    // v7.14.69: CW sub-step detection — parses [SUBSTEP_COMPLETE: step_N, substep_N, "Name"] markers
+    // from AI responses and advances the sidebar sub-step indicators.
+    function detectCwSubstep(aiText) {
+        if (!aiText) return null;
+        const match = aiText.match(/\[SUBSTEP_COMPLETE:\s*step_(\d+),\s*substep_(\d+),\s*"([^"]+)"\]/);
+        if (!match) return null;
+        return { stepNum: parseInt(match[1]), substepNum: parseInt(match[2]), name: match[3] };
+    }
+
+    function applyCwSubstepProgress(detected) {
+        if (!detected) return;
+        const container = document.getElementById('swml-progress-steps');
+        if (!container) return;
+        // Find the step element matching the substep number and mark it complete
+        const stepEls = container.querySelectorAll('.swml-step[data-step]');
+        stepEls.forEach(el => {
+            const stepNum = parseInt(el.dataset.step);
+            if (stepNum <= detected.substepNum) {
+                el.classList.add('complete');
+                el.classList.remove('active');
+                const circle = el.querySelector('.swml-step-circle');
+                if (circle) circle.classList.add('complete');
+            }
+            if (stepNum === detected.substepNum + 1) {
+                el.classList.add('active');
+                const circle = el.querySelector('.swml-step-circle');
+                if (circle) circle.classList.add('active');
+            }
+        });
+        // Update the main step counter
+        if (detected.substepNum > state.step) {
+            updateProgress(detected.substepNum);
+        }
+        console.log('WML CW: Sub-step complete →', detected.name, `(step_${detected.stepNum}, substep_${detected.substepNum})`);
+    }
+
     // Pre-assessment functions (defined in wml-app.js entry flow section)
     const destroyShader = () => window.WML.destroyShader();
     const syncUrl = () => window.WML.syncUrl?.();
@@ -948,6 +984,11 @@
                                 console.log('WML Canvas: Planning step advanced', state.step, '→', planStep);
                                 updateProgress(planStep);
                             }
+                        }
+
+                        // v7.14.69: CW sub-step progress tracking
+                        if (state.task && state.task.startsWith('cw_')) {
+                            applyCwSubstepProgress(detectCwSubstep(res.reply));
                         }
 
                         if (state.task === 'assessment') {
@@ -4661,6 +4702,11 @@
                                         await extractAndSavePlan(msg, res.reply);
                                         console.log('WML Canvas: Plan state after extraction:', { total_score: state.plan.total_score, grade: state.plan.grade, task: state.task });
 
+                                        // v7.14.69: CW sub-step progress tracking (training-env pipeline)
+                                        if (state.task && state.task.startsWith('cw_')) {
+                                            applyCwSubstepProgress(detectCwSubstep(res.reply));
+                                        }
+
                                         // ── Assessment step + completion detection + Mark Complete (v7.12.35) ──
                                         if (state.task === 'assessment') {
                                             const detected = detectAssessmentStep(res.reply);
@@ -5701,6 +5747,160 @@
             },
         });
 
+        // ── OutlineRow Node (v7.14.70) ──
+        // Two-column layout for essay outlines: LEFT = read-only criteria (checkboxes, AO tags),
+        // RIGHT = editable writing area (contentDOM). Uses nodeView pattern from ChecklistItem.
+        // Criteria data is stored as JSON in the data-criteria attribute for persistence.
+        const OutlineRow = Node.create({
+            name: 'outlineRow',
+            group: 'block',
+            content: 'inline*',
+            defining: true,
+
+            addAttributes() {
+                return {
+                    prompt: {
+                        default: '',
+                        parseHTML: el => el.getAttribute('data-prompt') || '',
+                        renderHTML: attrs => ({ 'data-prompt': attrs.prompt || '' }),
+                    },
+                    fieldId: {
+                        default: '',
+                        parseHTML: el => el.getAttribute('data-field-id') || '',
+                        renderHTML: attrs => attrs.fieldId ? { 'data-field-id': attrs.fieldId } : {},
+                    },
+                    criteria: {
+                        default: '{}',
+                        parseHTML: el => el.getAttribute('data-criteria') || '{}',
+                        renderHTML: attrs => ({ 'data-criteria': attrs.criteria || '{}' }),
+                    },
+                };
+            },
+
+            parseHTML() {
+                return [{ tag: 'div[data-outline-row]' }];
+            },
+
+            renderHTML({ HTMLAttributes }) {
+                return ['div', {
+                    ...HTMLAttributes,
+                    'data-outline-row': 'true',
+                    class: 'swml-outline-row',
+                }, 0];
+            },
+
+            addNodeView() {
+                return ({ node }) => {
+                    const dom = document.createElement('div');
+                    dom.classList.add('swml-outline-row');
+                    dom.setAttribute('data-outline-row', 'true');
+                    if (node.attrs.fieldId) dom.setAttribute('data-field-id', node.attrs.fieldId);
+
+                    // ── LEFT: Criteria column (read-only) ──
+                    const criteriaEl = document.createElement('div');
+                    criteriaEl.classList.add('swml-outline-criteria');
+                    criteriaEl.contentEditable = 'false';
+
+                    let crit;
+                    try { crit = JSON.parse(node.attrs.criteria || '{}'); } catch(e) { crit = {}; }
+
+                    if (crit.ao) {
+                        const aoTag = document.createElement('span');
+                        aoTag.className = 'swml-outline-ao';
+                        aoTag.textContent = crit.ao;
+                        criteriaEl.appendChild(aoTag);
+                    }
+
+                    if (crit.label) {
+                        const labelEl = document.createElement('span');
+                        labelEl.className = 'swml-outline-criterion-label';
+                        labelEl.textContent = crit.label;
+                        criteriaEl.appendChild(labelEl);
+                    }
+
+                    // Render checklist items or single checkbox
+                    if (crit.type === 'checklist' && crit.items) {
+                        const list = document.createElement('div');
+                        list.className = 'swml-outline-checklist';
+                        crit.items.forEach(item => {
+                            const row = document.createElement('label');
+                            row.className = 'swml-outline-check';
+                            const cb = document.createElement('input');
+                            cb.type = 'checkbox';
+                            cb.addEventListener('click', e => e.stopPropagation());
+                            row.appendChild(cb);
+                            const txt = document.createElement('span');
+                            txt.className = 'swml-outline-check-label';
+                            txt.textContent = item;
+                            row.appendChild(txt);
+                            list.appendChild(row);
+                        });
+                        criteriaEl.appendChild(list);
+                    } else if (crit.type === 'checkbox') {
+                        const row = document.createElement('label');
+                        row.className = 'swml-outline-check';
+                        const cb = document.createElement('input');
+                        cb.type = 'checkbox';
+                        cb.addEventListener('click', e => e.stopPropagation());
+                        row.appendChild(cb);
+                        criteriaEl.appendChild(row);
+                    }
+
+                    dom.appendChild(criteriaEl);
+
+                    // ── RIGHT: Editable content area ──
+                    const contentDOM = document.createElement('div');
+                    contentDOM.classList.add('swml-outline-input');
+                    if (node.attrs.prompt) contentDOM.setAttribute('data-prompt', node.attrs.prompt);
+                    dom.appendChild(contentDOM);
+
+                    return { dom, contentDOM };
+                };
+            },
+
+            addKeyboardShortcuts() {
+                return {
+                    Enter: ({ editor }) => {
+                        const { $from } = editor.state.selection;
+                        for (let d = $from.depth; d >= 0; d--) {
+                            if ($from.node(d).type.name === 'outlineRow') {
+                                const { tr } = editor.state;
+                                const hardBreak = editor.schema.nodes.hardBreak.create();
+                                tr.replaceSelectionWith(hardBreak, false).scrollIntoView();
+                                editor.view.dispatch(tr);
+                                return true;
+                            }
+                        }
+                        return false;
+                    },
+                    Backspace: ({ editor }) => {
+                        const { $from, empty } = editor.state.selection;
+                        if (!empty) return false;
+                        for (let d = $from.depth; d >= 0; d--) {
+                            if ($from.node(d).type.name === 'outlineRow') {
+                                const startOfField = $from.before(d) + 1;
+                                if ($from.pos === startOfField) return true;
+                                return false;
+                            }
+                        }
+                        return false;
+                    },
+                    Delete: ({ editor }) => {
+                        const { $from, empty } = editor.state.selection;
+                        if (!empty) return false;
+                        for (let d = $from.depth; d >= 0; d--) {
+                            if ($from.node(d).type.name === 'outlineRow') {
+                                const endOfField = $from.after(d) - 1;
+                                if ($from.pos === endOfField) return true;
+                                return false;
+                            }
+                        }
+                        return false;
+                    },
+                };
+            },
+        });
+
         // ── Section Protection (v7.12.58) ──
         // Prevents students from accidentally deleting section structure via Backspace/Delete at boundaries.
         // Backspace at the start of a section → blocked (no merge with previous section)
@@ -6434,6 +6634,7 @@
                 CommentMark,
                 SectionBlock,
                 InputField,
+                OutlineRow,
                 ChecklistItem,
                 ...(PaginationPlus ? [PaginationPlus.configure({
                     pageHeight: 1020,
@@ -6488,7 +6689,8 @@
                     const { $from } = view.state.selection;
                     let insideInputField = false;
                     for (let d = $from.depth; d >= 0; d--) {
-                        if ($from.node(d).type.name === 'inputField') {
+                        const name = $from.node(d).type.name;
+                        if (name === 'inputField' || name === 'outlineRow') {
                             insideInputField = true;
                             break;
                         }
@@ -6714,9 +6916,13 @@
         tryServerLoad().then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => {
             // Clean corrupted content from v7.11.8 (serialized selects as text)
             cleanCorruptedContent();
-            // Migrate old documents — inject missing sections + dividers
+            // Migrate old documents — inject missing sections + dividers + plans + outlines + InputFields
             migrateDocument();
             migrateDividers();
+            migrateMissingPlans();
+            migrateMissingOutlines();
+            migrateOutlineCriteria();
+            migrateInputFields();
             // Inject cover image if missing from loaded document
             tryInjectCover();
             // Build table of contents (after cover + migration)
@@ -7422,9 +7628,9 @@
                 const contentText = section.textContent?.trim() || '';
                 const contentHTML = section.innerHTML || '';
 
-                // v7.14.28: Extract InputField values as structured key-value data
+                // v7.14.28: Extract InputField + OutlineRow values as structured key-value data
                 const inputFields = {};
-                section.querySelectorAll('[data-input-field]').forEach(field => {
+                section.querySelectorAll('[data-input-field], [data-outline-row]').forEach(field => {
                     const fieldId = field.getAttribute('data-field-id');
                     if (fieldId) inputFields[fieldId] = field.textContent?.trim() || '';
                 });
@@ -8999,34 +9205,160 @@
             sectionHTML('plan', `Plan: Conclusion${prefix}`, true, null, inputHTML('Call to action. Leave a lasting image.', 'iumvcc-conclusion'));
     }
 
-    // v7.14.46: Outline section — uses InputFields with criterion labels.
-    // TipTap doesn't have a Table extension, so we use InputFields (which TipTap manages)
-    // with CSS-styled criterion labels above each field.
+    // ══════════════════════════════════════════════════════════════
+    //  OUTLINE CRITERIA SYSTEM (v7.14.70)
+    //  Two-column layout: LEFT = read-only criteria (checkboxes/labels from mark scheme)
+    //                     RIGHT = InputField (student writes their plan)
+    //  Data-driven per board/type so each exam board gets correct AO weighting.
+    // ══════════════════════════════════════════════════════════════
+
+    // Criteria definitions per paragraph section. Each row = { id, label, ao, type, items? }
+    // type: 'checkbox' (single tick), 'checklist' (multi-tick), 'label' (read-only text)
+    const OUTLINE_CRITERIA = {
+        // ── Literature essay (TTECEA+C) — used by AQA, EDUQAS, Edexcel, OCR, CCEA, IGCSE ──
+        literature: {
+            intro: [
+                { id: 'hook', label: 'Hook', ao: 'AO1', type: 'checklist', items: ['Historical fact', 'Rhetorical question', 'Quote', 'Metaphor/image'], prompt: 'An intriguing concept or contextual observation' },
+                { id: 'building', label: 'Building Sentences', ao: 'AO3', type: 'checklist', items: ['Historical context', 'Social context', 'Cultural context', 'Counter-argument'], prompt: 'Contextual backdrop \u2014 historical, social, or cultural' },
+                { id: 'thesis', label: 'Thesis', ao: 'AO1', type: 'checklist', items: ['Key idea 1', 'Key idea 2', 'Key idea 3'], prompt: 'Your 3-point argument \u2014 three key ideas that answer the question' },
+            ],
+            body: [
+                { id: 'topic', label: 'Topic Sentence', ao: 'AO1', type: 'checkbox', prompt: 'A conceptual idea linking to your thesis' },
+                { id: 'evidence', label: 'Evidence + Technique', ao: 'AO1/AO2', type: 'checklist', items: ['Technique named', 'Quote integrated', 'Inference made'], prompt: 'Quote + name the technique. Integrate, don\'t bolt on' },
+                { id: 'analysis', label: 'Close Analysis', ao: 'AO2', type: 'checkbox', prompt: 'Examine specific words, sounds, or structural choices' },
+                { id: 'effects', label: 'Effects on Reader', ao: 'AO2', type: 'checklist', items: ['Emotional effect', 'Intellectual effect'], prompt: 'Two specific emotional or intellectual effects' },
+                { id: 'purpose', label: "Author's Purpose + Context", ao: 'AO1/AO3', type: 'checkbox', prompt: 'Why these choices? Link to context', aoRequired: 'AO3' },
+            ],
+            conclusion: [
+                { id: 'thesis', label: 'Restated Thesis', ao: 'AO1', type: 'checkbox', prompt: 'Restate your argument \u2014 evolved, not repeated' },
+                { id: 'concept', label: 'Controlling Concept', ao: 'AO1', type: 'checkbox', prompt: 'The single most important idea connecting your paragraphs' },
+                { id: 'purpose', label: "Author's Central Purpose", ao: 'AO1/AO3', type: 'checkbox', prompt: 'What the text ultimately argues or reveals' },
+                { id: 'message', label: 'Universal Message', ao: 'AO1', type: 'checkbox', prompt: 'The broader moral or idea that transcends the text' },
+            ],
+        },
+        // ── IUMVCC (persuasive/transactional writing) ──
+        iumvcc: {
+            sections: [
+                { id: 'intro', label: 'Introduction', criteria: [
+                    { id: 'hook', label: 'Hook Technique', type: 'checklist', items: ['Anecdote', 'Rhetorical question', 'Vivid image', 'Contrast', 'Shocking statistic'], prompt: 'Hook the reader. Establish your voice and position.' },
+                    { id: 'tone', label: 'Tone & Form', type: 'checkbox', prompt: 'Establish audience, purpose, and form upfront' },
+                ]},
+                { id: 'urgency', label: 'Urgency', criteria: [
+                    { id: 'problem', label: 'The Problem', type: 'checkbox', prompt: 'Why does this matter NOW? Show through specific imagery.' },
+                    { id: 'emotion', label: 'Emotional Appeal', type: 'checklist', items: ['Fear/concern', 'Empathy', 'Outrage', 'Guilt'], prompt: 'Evoke an emotional response in the reader' },
+                ]},
+                { id: 'method', label: 'Methodology', criteria: [
+                    { id: 'solution', label: 'The Solution', type: 'checkbox', prompt: 'What is the solution? Paint a vivid picture of how it works.' },
+                    { id: 'devices', label: 'Persuasive Devices', type: 'checklist', items: ['Rule of three', 'Direct address', 'Figurative language', 'Expert reference'], prompt: 'Layer persuasive techniques' },
+                ]},
+                { id: 'vision', label: 'Vision', criteria: [
+                    { id: 'future', label: 'Positive Outcome', type: 'checkbox', prompt: 'What does the future look like if we act? Use imagery.' },
+                    { id: 'contrast', label: 'Contrast', type: 'checkbox', prompt: 'Contrast the vision with the current problem' },
+                ]},
+                { id: 'counter', label: 'Counter-Argument', criteria: [
+                    { id: 'acknowledge', label: 'Acknowledge Opposition', type: 'checkbox', prompt: 'Acknowledge the opposing view fairly' },
+                    { id: 'dismantle', label: 'Refutation', type: 'checkbox', prompt: 'Dismantle it with evidence or reasoning' },
+                ]},
+                { id: 'conclusion', label: 'Conclusion', criteria: [
+                    { id: 'cta', label: 'Call to Action', type: 'checkbox', prompt: 'Call to action. Leave a lasting image.' },
+                    { id: 'echo', label: 'Echo / Final Image', type: 'checklist', items: ['Echoes opening', 'New synthesis', 'Memorable statement'], prompt: 'Leave the reader with something powerful' },
+                ]},
+            ],
+        },
+        // ── CW Plot Outline (6 stages) ──
+        cwPlot: {
+            sections: [
+                { id: 'setup', label: 'Stage I: Setup', criteria: [
+                    { id: 'world', label: 'Ordinary World', type: 'checkbox', prompt: "Describe the protagonist's everyday life \u2014 what's wrong with it?" },
+                    { id: 'identity', label: 'False Identity', type: 'checkbox', prompt: "What mask does the protagonist wear? What do they believe about themselves?" },
+                    { id: 'inciting', label: 'Inciting Incident', type: 'checkbox', prompt: 'What event disrupts the ordinary world and forces a choice?' },
+                ]},
+                { id: 'dream', label: 'Stage II: Dream', criteria: [
+                    { id: 'mentor', label: 'Mentor / Guide', type: 'checkbox', prompt: 'Who or what helps the protagonist take the first step?' },
+                    { id: 'success', label: 'Initial Success', type: 'checkbox', prompt: 'Early wins that build confidence \u2014 but hint at the real challenge' },
+                    { id: 'threshold', label: 'Threshold Crossing', type: 'checkbox', prompt: 'The point of no return \u2014 fully committed to the journey' },
+                ]},
+                { id: 'fascination', label: 'Stage III: Fascination', criteria: [
+                    { id: 'complications', label: 'Rising Complications', type: 'checkbox', prompt: 'Tests, allies, enemies \u2014 stakes escalate' },
+                    { id: 'betrayal', label: 'Betrayal / Setback', type: 'checkbox', prompt: 'A major blow that changes the direction' },
+                    { id: 'noreturn', label: 'Point of No Return', type: 'checkbox', prompt: 'The protagonist must fully commit \u2014 no going back' },
+                ]},
+                { id: 'nightmare', label: 'Stage IV: Nightmare', criteria: [
+                    { id: 'collapse', label: 'Everything Collapses', type: 'checkbox', prompt: 'The worst moment \u2014 all seems lost' },
+                    { id: 'stakes', label: 'Highest Stakes', type: 'checkbox', prompt: 'What will be lost forever if the protagonist fails?' },
+                    { id: 'lowest', label: 'Lowest Point', type: 'checkbox', prompt: 'Complete despair \u2014 the protagonist confronts their deepest fear' },
+                ]},
+                { id: 'push', label: 'Stage V: Final Push', criteria: [
+                    { id: 'trueself', label: 'Return to True Self', type: 'checkbox', prompt: 'The protagonist sheds their false identity' },
+                    { id: 'climax', label: 'Climax', type: 'checkbox', prompt: 'The decisive confrontation or moment of truth' },
+                    { id: 'transformation', label: 'Transformation', type: 'checkbox', prompt: 'Internal change is externalised \u2014 the protagonist becomes who they truly are' },
+                ]},
+                { id: 'aftermath', label: 'Stage VI: Goal & Aftermath', criteria: [
+                    { id: 'resolution', label: 'Resolution', type: 'checkbox', prompt: 'How is the world changed? What was gained and lost?' },
+                    { id: 'mirror', label: 'Mirror Image', type: 'checkbox', prompt: 'Echo the opening \u2014 show how far the protagonist has come' },
+                    { id: 'message', label: 'Universal Message', type: 'checkbox', prompt: "What truth about human life does this story reveal?" },
+                ]},
+            ],
+        },
+    };
+
+    /**
+     * Render a single outline row: LEFT = criteria (read-only), RIGHT = InputField (editable).
+     * @param {object} criterion - { id, label, ao, type, items?, prompt }
+     * @param {string} fieldId - unique TipTap field ID
+     * @returns {string} HTML for the row
+     */
+    function outlineRowHTML(criterion, fieldId) {
+        // v7.14.70: Emit a registered OutlineRow node — nodeView renders the two-column layout.
+        // Criteria stored as JSON attribute, parsed by the nodeView to build the read-only column.
+        const criteriaJSON = JSON.stringify(criterion).replace(/"/g, '&quot;');
+        const prompt = escapeHTML(criterion.prompt || criterion.label);
+        const fid = escapeHTML(fieldId);
+        return `<div data-outline-row="true" data-prompt="${prompt}" data-field-id="${fid}" data-criteria="${criteriaJSON}" class="swml-outline-row"></div>`;
+    }
+
+    /**
+     * Build outline section with two-column criteria layout.
+     * Uses OUTLINE_CRITERIA config per type (literature, iumvcc, cwPlot).
+     */
     function buildOutlineSection(aos, partLabel, marks) {
         const aoList = (aos || 'AO1,AO2,AO3').split(',').map(a => a.trim());
+        const hasAO3 = aoList.includes('AO3');
         const fullEssay = needsFullEssayStructure(marks);
-        const prefix = partLabel ? ` — ${partLabel}` : '';
+        const prefix = partLabel ? ` \u2014 ${partLabel}` : '';
         let html = '';
+
         if (fullEssay) {
-            html += sectionHTML('outline', `Outline: Introduction${prefix}`, true, null,
-                inputHTML('Hook (AO1/AO3): An intriguing concept or contextual observation', 'outline-intro-hook') +
-                inputHTML('Building Sentences (AO3): Contextual backdrop \u2014 historical, social, or cultural', 'outline-intro-building') +
-                inputHTML('Thesis (AO1): Your 3-point argument \u2014 three key ideas that answer the question', 'outline-intro-thesis'));
+            const criteria = OUTLINE_CRITERIA.literature;
+
+            // Introduction
+            let introRows = '';
+            criteria.intro.forEach(c => {
+                if (c.aoRequired && !aoList.includes(c.aoRequired)) return;
+                introRows += outlineRowHTML(c, `outline-intro-${c.id}${prefix ? '-' + partLabel?.replace(/\s/g,'').toLowerCase() : ''}`);
+            });
+            html += sectionHTML('outline', `Outline: Introduction${prefix}`, true, null, introRows);
+
+            // Body paragraphs
             const bodyCount = marks >= 40 ? 4 : 3;
             for (let i = 1; i <= bodyCount; i++) {
-                html += sectionHTML('outline', `Outline: Body Paragraph ${i}${prefix}`, true, null,
-                    inputHTML(`Topic Sentence (AO1): A conceptual idea linking to your thesis`, `outline-body-${i}-topic`) +
-                    inputHTML('Evidence + Technique (AO1/AO2): Quote + name the technique. Integrate, don\'t bolt on', `outline-body-${i}-evidence`) +
-                    inputHTML('Close Analysis (AO2): Examine specific words, sounds, or structural choices', `outline-body-${i}-analysis`) +
-                    inputHTML('Effects on Reader (AO2): Two specific emotional or intellectual effects', `outline-body-${i}-effects`) +
-                    inputHTML("Author's Purpose + Context (AO1/AO3): Why these choices? Link to context", `outline-body-${i}-purpose`));
+                let bodyRows = '';
+                criteria.body.forEach(c => {
+                    if (c.aoRequired && !aoList.includes(c.aoRequired)) return;
+                    bodyRows += outlineRowHTML(c, `outline-body-${i}-${c.id}`);
+                });
+                html += sectionHTML('outline', `Outline: Body Paragraph ${i}${prefix}`, true, null, bodyRows);
             }
-            html += sectionHTML('outline', `Outline: Conclusion${prefix}`, true, null,
-                inputHTML('Restated Thesis (AO1): Restate your argument \u2014 evolved, not repeated', 'outline-conclusion-thesis') +
-                inputHTML('Controlling Concept (AO1): The single most important idea connecting your paragraphs', 'outline-conclusion-concept') +
-                inputHTML("Author's Central Purpose (AO1/AO3): What the text ultimately argues or reveals", 'outline-conclusion-purpose') +
-                inputHTML('Universal Message (AO1): The broader moral or idea that transcends the text', 'outline-conclusion-message'));
+
+            // Conclusion
+            let concRows = '';
+            criteria.conclusion.forEach(c => {
+                if (c.aoRequired && !aoList.includes(c.aoRequired)) return;
+                concRows += outlineRowHTML(c, `outline-conclusion-${c.id}`);
+            });
+            html += sectionHTML('outline', `Outline: Conclusion${prefix}`, true, null, concRows);
         } else {
+            // Short-form outline (< 20 marks) — AO-based rows per paragraph
             const aoPrompts = {
                 AO1: 'What is the writer saying about human life? (Key ideas & interpretations)',
                 AO2: 'How does the writer say it? (Language, structure, symbolism)',
@@ -9037,11 +9369,47 @@
             for (let i = 1; i <= paraCount; i++) {
                 let aoInner = '';
                 aoList.forEach(ao => {
-                    aoInner += inputHTML(`${ao}: ${aoPrompts[ao] || ao}`, `outline-para-${i}-${ao.toLowerCase()}`);
+                    aoInner += outlineRowHTML(
+                        { id: ao.toLowerCase(), label: ao, ao: ao, type: 'checkbox', prompt: aoPrompts[ao] || ao },
+                        `outline-para-${i}-${ao.toLowerCase()}`
+                    );
                 });
                 html += sectionHTML('outline', `Outline: Paragraph ${i}${prefix}`, true, null, aoInner);
             }
         }
+        return html;
+    }
+
+    /**
+     * Build IUMVCC outline with two-column criteria layout (persuasive/transactional writing).
+     */
+    function buildIUMVCCOutlineSection(partLabel) {
+        const prefix = partLabel ? ` \u2014 ${partLabel}` : '';
+        const sections = OUTLINE_CRITERIA.iumvcc.sections;
+        let html = '';
+        sections.forEach(sec => {
+            let rows = '';
+            sec.criteria.forEach(c => {
+                rows += outlineRowHTML(c, `outline-iumvcc-${sec.id}-${c.id}`);
+            });
+            html += sectionHTML('outline', `Outline: ${sec.label}${prefix}`, true, null, rows);
+        });
+        return html;
+    }
+
+    /**
+     * Build CW plot outline with two-column criteria layout (creative writing 6-stage structure).
+     */
+    function buildCWPlotOutlineSection() {
+        const sections = OUTLINE_CRITERIA.cwPlot.sections;
+        let html = '';
+        sections.forEach(sec => {
+            let rows = '';
+            sec.criteria.forEach(c => {
+                rows += outlineRowHTML(c, `outline-cw-${sec.id}-${c.id}`);
+            });
+            html += sectionHTML('outline', `Outline: ${sec.label}`, true, null, rows);
+        });
         return html;
     }
 
@@ -9243,6 +9611,16 @@
                         html += sectionHTML('plan', `Plan: Paragraph ${i} \u2014 ${qId}`, true, null,
                             inputHTML(`Key points for paragraph ${i}`, `plan-${qId}-para-${i}`));
                     }
+                }
+            }
+
+            // v7.14.70: Outline with criteria columns for extended writing questions
+            if (qType !== 'multiple_choice' && qMarks >= 20) {
+                html += dividerHTML(`OUTLINE \u2014 ${qId}`);
+                if (isPersuasive) {
+                    html += buildIUMVCCOutlineSection(qId);
+                } else {
+                    html += buildOutlineSection(q.aos || topicData.aos, qId, qMarks);
                 }
             }
 
@@ -9915,6 +10293,8 @@
             if (mode === 'diagnostic') {
                 html += dividerHTML('ESSAY PLAN');
                 html += buildPlanSection(null, marks);
+                html += dividerHTML('OUTLINE');
+                html += buildOutlineSection(topicData.aos, null, marks);
                 html += dividerHTML('RESPONSE');
                 html += buildResponseSection(null);
             } else if (mode === 'redraft') {
@@ -10606,6 +10986,333 @@
             canvasEditor.commands.setContent(html, false);
             console.log('WML Migration: Dividers injected into legacy document');
         }
+    }
+
+    /**
+     * v7.14.69: Migrate old plan/outline sections to InputField format.
+     * Documents saved before v7.14.28 use <p><em>prompt</em></p><p>student text</p> pairs.
+     * This converts them to <div data-input-field> nodes so they get the bordered UI,
+     * toolbar support, and structured extraction. Student content is preserved.
+     */
+
+    /**
+     * v7.14.69: Inject missing plan sections into multi-question documents.
+     * Documents saved before v7.14.66 have question + response sections but no plan sections.
+     * This detects the gap and injects plan sections (with InputFields) between
+     * each question and its response, matching what buildMultiQuestionTemplate() now generates.
+     */
+    function migrateMissingPlans() {
+        if (!canvasEditor) return;
+        let html = canvasEditor.getHTML();
+        // Only multi-question documents (have multiple question sections with Q-prefixed labels)
+        const qSections = html.match(/data-section-label="Q\d+"/g);
+        if (!qSections || qSections.length < 2) return;
+        // Already has plan sections — skip
+        if (html.includes('data-section-type="plan"')) return;
+        // Skip non-essay document types
+        if (state.task === 'mark_scheme') return;
+        if (state.task && state.task.startsWith('cw_')) return;
+
+        console.log('WML Migration: Multi-question document missing plan sections — injecting');
+
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        let changed = false;
+
+        // Iterate each question section and inject a plan after it (before the response)
+        const questionSections = tmp.querySelectorAll('[data-section-type="question"]');
+        questionSections.forEach(qSection => {
+            const qLabel = qSection.getAttribute('data-section-label') || '';
+            const qId = qLabel.trim(); // e.g. "Q2", "Q3", "Q4", "Q5"
+            if (!qId || !/^Q\d/.test(qId)) return;
+
+            // Read marks from the section text ([N marks])
+            const marksMatch = (qSection.textContent || '').match(/\[(\d+)\s*marks?\]/i);
+            const qMarks = marksMatch ? parseInt(marksMatch[1]) : 0;
+
+            // Skip questions under 6 marks or multiple choice (Q1 is typically multiple choice)
+            if (qMarks < 6) return;
+            // Also check specs for type
+            const specQ = lookupQuestionSpec(qId);
+            if (specQ && specQ.type === 'multiple_choice') return;
+
+            // Check if plan already exists for this question (safety)
+            if (tmp.querySelector(`[data-section-label*="Plan"][data-section-label*="${qId}"]`)) return;
+
+            // Determine plan type
+            const qType = specQ?.type || null;
+            const isWritingQ = qType === 'extended_writing' || qType === 'choice'
+                || qMarks >= 24 || /section\s*b|writing|creative|persuasive|narrative|descriptive/i.test(qLabel);
+            const qText = qSection.textContent || '';
+            const isPersuasive = /persuasive|speech|letter|article|argue|convince|advise/i.test(qText);
+
+            // Build plan HTML
+            let planHTML = dividerHTML(`PLAN \u2014 ${qId}`);
+            if (isPersuasive) {
+                planHTML += buildIUMVCCPlanSection(qId);
+            } else if (isWritingQ || qMarks >= 20) {
+                planHTML += buildPlanSection(qId, qMarks);
+            } else {
+                const planParas = Math.max(1, Math.ceil(qMarks / 5));
+                for (let i = 1; i <= planParas; i++) {
+                    planHTML += sectionHTML('plan', `Plan: Paragraph ${i} \u2014 ${qId}`, true, null,
+                        inputHTML(`Key points for paragraph ${i}`, `plan-${qId}-para-${i}`));
+                }
+            }
+
+            // Insert plan after the question section
+            const planFragment = document.createElement('div');
+            planFragment.innerHTML = planHTML;
+            const nextSibling = qSection.nextElementSibling;
+            while (planFragment.firstChild) {
+                if (nextSibling) {
+                    qSection.parentNode.insertBefore(planFragment.firstChild, nextSibling);
+                } else {
+                    qSection.parentNode.appendChild(planFragment.firstChild);
+                }
+            }
+            changed = true;
+            console.log(`WML Migration: Injected plan for ${qId} (${qMarks} marks, ${isPersuasive ? 'IUMVCC' : isWritingQ ? 'full essay' : 'paragraph-based'})`);
+        });
+
+        if (changed) {
+            canvasEditor.commands.setContent(tmp.innerHTML, false);
+            console.log('WML Migration: Plan sections injected into multi-question document');
+        }
+    }
+
+    function migrateInputFields() {
+        if (!canvasEditor) return;
+        let html = canvasEditor.getHTML();
+        // Already has InputFields — skip
+        if (html.includes('data-input-field')) return;
+        // Only structured essay documents
+        if (!html.includes('data-section-type="plan"') && !html.includes('data-section-type="outline"')) return;
+        // Skip non-essay document types
+        if (state.task === 'mark_scheme') return;
+        if (state.task && state.task.startsWith('cw_')) return;
+
+        console.log('WML Migration: Upgrading plan/outline sections to InputField format');
+
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        let changed = false;
+
+        tmp.querySelectorAll('[data-section-type="plan"], [data-section-type="outline"]').forEach(section => {
+            if (section.querySelector('[data-input-field]')) return;
+
+            const sectionType = section.getAttribute('data-section-type');
+            const label = section.getAttribute('data-section-label') || '';
+            const children = Array.from(section.children);
+            const pairs = [];
+            let i = 0;
+
+            while (i < children.length) {
+                const child = children[i];
+                if (child.tagName === 'P') {
+                    const em = child.querySelector('em');
+                    // Prompt paragraph: <p><em>prompt text</em></p> where em is ≥80% of text
+                    const isPrompt = em && em.textContent.trim().length > 5
+                        && em.textContent.trim().length >= (child.textContent.trim().length || 1) * 0.8;
+
+                    if (isPrompt) {
+                        const promptText = em.textContent.trim();
+                        let studentHTML = '';
+                        // Check if next sibling is student content (not another prompt)
+                        if (i + 1 < children.length && children[i + 1].tagName === 'P') {
+                            const next = children[i + 1];
+                            const nextEm = next.querySelector('em');
+                            const nextIsPrompt = nextEm && nextEm.textContent.trim().length > 5
+                                && nextEm.textContent.trim().length >= (next.textContent.trim().length || 1) * 0.8;
+                            if (!nextIsPrompt) {
+                                studentHTML = next.textContent?.trim() || '';
+                                i += 2;
+                            } else {
+                                i += 1;
+                            }
+                        } else {
+                            i += 1;
+                        }
+                        pairs.push({ prompt: promptText, content: studentHTML });
+                    } else {
+                        // Non-prompt paragraph with actual content — preserve as InputField content
+                        const text = child.textContent?.trim() || '';
+                        if (text) {
+                            pairs.push({ prompt: '', content: text });
+                        }
+                        i += 1;
+                    }
+                } else {
+                    i += 1;
+                }
+            }
+
+            // Generate field-id base from section label
+            const idBase = _inputFieldIdBase(sectionType, label);
+
+            if (pairs.length === 0) {
+                // Empty section — add a single empty InputField
+                section.innerHTML = `<div data-input-field="true" data-field-id="${idBase}" class="swml-input-field"></div>`;
+                changed = true;
+                return;
+            }
+
+            let newInner = '';
+            pairs.forEach((pair, idx) => {
+                const fieldId = pairs.length === 1 ? idBase : `${idBase}-${idx + 1}`;
+                const promptAttr = pair.prompt ? ` data-prompt="${escapeHTML(pair.prompt)}"` : '';
+                const content = pair.content ? escapeHTML(pair.content) : '';
+                newInner += `<div data-input-field="true"${promptAttr} data-field-id="${fieldId}" class="swml-input-field">${content}</div>`;
+            });
+
+            section.innerHTML = newInner;
+            changed = true;
+        });
+
+        if (changed) {
+            canvasEditor.commands.setContent(tmp.innerHTML, false);
+            console.log('WML Migration: Plan/outline sections upgraded to InputField format');
+        }
+    }
+
+    /** Derive a stable field-id base from section type + label. */
+    function _inputFieldIdBase(type, label) {
+        let name = label.replace(/^(Plan|Outline):\s*/i, '').trim();
+        name = name.toLowerCase()
+            .replace(/\s*—\s*/g, '-')
+            .replace(/body\s*paragraph\s*/g, 'body-')
+            .replace(/^paragraph\s*/g, 'para-')
+            .replace(/^introduction$/g, 'intro')
+            .replace(/^conclusion$/g, 'conclusion')
+            .replace(/part\s+/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+        return `${type}-${name || 'field'}`;
+    }
+
+    /**
+     * v7.14.70: Migrate old outline sections to two-column criteria layout.
+     * Old outlines have InputFields directly inside outline sections with no .swml-outline-row wrapper.
+     * This rebuilds each outline section using the criteria-driven builder, preserving student content.
+     */
+    function migrateOutlineCriteria() {
+        if (!canvasEditor) return;
+        let html = canvasEditor.getHTML();
+        if (!html.includes('data-section-type="outline"')) return;
+        // Already has criteria columns — skip
+        if (html.includes('data-outline-row')) return;
+
+        console.log('WML Migration: Upgrading outline sections to criteria layout');
+
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        let changed = false;
+
+        tmp.querySelectorAll('[data-section-type="outline"]').forEach(section => {
+            const label = section.getAttribute('data-section-label') || '';
+            // Extract student content from existing InputFields + OutlineRows
+            const studentData = {};
+            section.querySelectorAll('[data-input-field], [data-outline-row]').forEach(field => {
+                const fid = field.getAttribute('data-field-id') || '';
+                const text = field.textContent?.trim() || '';
+                if (fid && text) studentData[fid] = text;
+            });
+
+            // Determine section type from label
+            const isIntro = /introduction/i.test(label);
+            const isConclusion = /conclusion/i.test(label);
+            const isBody = /body\s*paragraph/i.test(label);
+            const partMatch = label.match(/\u2014\s*(.+)/);
+            const partLabel = partMatch ? partMatch[1].trim() : null;
+            const bodyMatch = label.match(/body\s*paragraph\s*(\d+)/i);
+            const bodyNum = bodyMatch ? parseInt(bodyMatch[1]) : 0;
+
+            if (!isIntro && !isConclusion && !isBody) return; // skip non-standard outline sections
+
+            const criteria = OUTLINE_CRITERIA.literature;
+            let rows = '';
+
+            if (isIntro) {
+                criteria.intro.forEach(c => {
+                    const fid = `outline-intro-${c.id}${partLabel ? '-' + partLabel.replace(/\s/g,'').toLowerCase() : ''}`;
+                    rows += outlineRowHTML(c, fid);
+                });
+            } else if (isBody && bodyNum) {
+                criteria.body.forEach(c => {
+                    rows += outlineRowHTML(c, `outline-body-${bodyNum}-${c.id}`);
+                });
+            } else if (isConclusion) {
+                criteria.conclusion.forEach(c => {
+                    rows += outlineRowHTML(c, `outline-conclusion-${c.id}`);
+                });
+            }
+
+            if (rows) {
+                section.innerHTML = rows;
+                // Restore student content into matching InputFields
+                Object.entries(studentData).forEach(([fid, text]) => {
+                    const field = section.querySelector(`[data-field-id="${fid}"]`);
+                    if (field) field.textContent = text;
+                });
+                changed = true;
+            }
+        });
+
+        if (changed) {
+            canvasEditor.commands.setContent(tmp.innerHTML, false);
+            console.log('WML Migration: Outline sections upgraded to criteria layout');
+        }
+    }
+
+    /**
+     * v7.14.70: Inject missing outline sections into single-part documents.
+     * Documents saved before v7.14.70 in diagnostic mode had plan + response but no outline.
+     */
+    function migrateMissingOutlines() {
+        if (!canvasEditor) return;
+        let html = canvasEditor.getHTML();
+        // Already has outline sections — skip
+        if (html.includes('data-section-type="outline"')) return;
+        // Must have plan sections (otherwise not a structured essay document)
+        if (!html.includes('data-section-type="plan"')) return;
+        // Skip non-essay types
+        if (state.task === 'mark_scheme') return;
+        if (state.task && state.task.startsWith('cw_')) return;
+        // Skip multi-question documents (language papers handle outlines in buildMultiQuestionTemplate)
+        const qSections = html.match(/data-section-label="Q\d+"/g);
+        if (qSections && qSections.length >= 2) return;
+        // Only inject on redraft mode — diagnostic documents don't need outlines retroactively
+        if (state.phase !== 'redraft' && !state.draftType?.includes('redraft')) return;
+
+        // Find the last plan section — inject outline after it
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        const planSections = tmp.querySelectorAll('[data-section-type="plan"]');
+        if (planSections.length === 0) return;
+        const lastPlan = planSections[planSections.length - 1];
+
+        // Determine marks from board defaults
+        const marks = getDefaultMarks(state.board, state.subject) || 30;
+        const aos = state.subject ? (state.subject.includes('language') ? 'AO1,AO2' : 'AO1,AO2,AO3') : 'AO1,AO2,AO3';
+
+        const outlineHTML = dividerHTML('OUTLINE') + buildOutlineSection(aos, null, marks);
+        const frag = document.createElement('div');
+        frag.innerHTML = outlineHTML;
+
+        // Insert after the last plan section (before the response divider if present)
+        const nextSibling = lastPlan.nextElementSibling;
+        while (frag.firstChild) {
+            if (nextSibling) {
+                lastPlan.parentNode.insertBefore(frag.firstChild, nextSibling);
+            } else {
+                lastPlan.parentNode.appendChild(frag.firstChild);
+            }
+        }
+
+        canvasEditor.commands.setContent(tmp.innerHTML, false);
+        console.log('WML Migration: Outline section injected into document (was missing)');
     }
 
     /**

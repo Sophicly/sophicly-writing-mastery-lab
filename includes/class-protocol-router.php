@@ -1477,6 +1477,40 @@ TEMPLATE;
             }
         }
 
+        // v7.14.69: Polishing on canvas — same document-awareness as planning
+        if ($task === 'polishing') {
+            $raw_subject = $context['subject'] ?? '';
+            $is_lang = (stripos($raw_subject, 'language') !== false);
+            $is_mastery = !empty($context['phase']) && !empty($context['topic_number']);
+
+            $preamble .= "\n### POLISHING SESSION — ROLE & PURPOSE\n\n";
+            $preamble .= "You are a polishing tutor helping {$first_name} refine their written response to a {$board_label} {$subject} paper. ";
+            $preamble .= "Use Socratic questioning to help them identify weaknesses and rewrite specific sentences or paragraphs.\n\n";
+
+            $preamble .= "### THE STUDENT'S DOCUMENT\n\n";
+            $preamble .= "The student's document is attached to each message as `[STUDENT'S DOCUMENT]`. ";
+            $preamble .= "Each section is labelled with `=== LABEL [type] ===`. Key sections:\n\n";
+            $preamble .= "- `[response]` — The student's essay response. This is the text you will help them polish.\n";
+            $preamble .= "- `[question]` — The exam question with marks and AOs.\n";
+
+            if ($is_lang) {
+                $preamble .= "- `[source]` — Source texts and extracts.\n";
+            }
+
+            $preamble .= "\nThe student's essay is already in the document. Read it directly from the `[response]` section.\n";
+            $preamble .= "**SKIP protocol steps 3-6** (asking what they're polishing, asking to paste text, asking question number). ";
+            $preamble .= "You already have all of this information from the document.\n\n";
+
+            if ($is_mastery) {
+                $phase = ucfirst($context['phase'] ?? 'initial');
+                $topic_num = $context['topic_number'] ?? 0;
+                $preamble .= "### MASTERY PROGRAMME — {$phase} PHASE (Topic {$topic_num})\n\n";
+                $preamble .= "This is a mastery session. The question and response are pre-assigned.\n";
+                $preamble .= "**START DIRECTLY** by reading the student's response from the document, identifying the first area to polish, and beginning the Socratic polishing dialogue.\n";
+                $preamble .= "Do NOT ask the student to paste text, select a question, or choose what to polish.\n\n";
+            }
+        }
+
         // Question if established
         if (!empty($context['question'])) {
             $preamble .= "\n**Essay Question:** \"{$context['question']}\"\n";
@@ -2229,6 +2263,23 @@ TEMPLATE;
             $preamble .= "If the essay is missing body paragraphs or has a word count penalty, state the MAXIMUM ACHIEVABLE SCORE immediately when you first identify the issue — do NOT defer it to the end.\n\n";
             $preamble .= "### TECHNICAL ACCURACY (SPaG)\n";
             $preamble .= "AO4 marks are fully absorbed into the section criteria — there is NO separate AO4 assessment step. All marks are distributed across introduction, body paragraphs, and conclusion. SPaG quality is handled through penalty codes (G1, H1, P1) applied during section assessment. At the end of all section assessments, provide a brief qualitative comment on technical accuracy (spelling, punctuation, grammar) but do NOT assign any separate AO4 mark.\n";
+
+            // v7.14.69: Language paper multi-question assessment awareness
+            $raw_subject = $context['subject'] ?? '';
+            if (stripos($raw_subject, 'language') !== false) {
+                $preamble .= "\n### MULTI-QUESTION LANGUAGE PAPER ASSESSMENT\n\n";
+                $preamble .= "This is a LANGUAGE PAPER with multiple exam questions. The student's document contains separate response sections for each question (e.g. `=== Q2 RESPONSE [response] ===`, `=== Q3 RESPONSE [response] ===`, etc.).\n\n";
+                $preamble .= "**Assessment sequence:**\n";
+                $preamble .= "1. Assess EACH response section independently, in question order\n";
+                $preamble .= "2. Each question has its OWN mark allocation (from the `[question]` section) — do NOT use the same marks for every response\n";
+                $preamble .= "3. For each response: detect paragraph structure, confirm with student, assess, provide feedback + score table\n";
+                $preamble .= "4. After ALL responses are assessed, provide a combined summary with the grand total\n\n";
+                $preamble .= "**Important differences from single-essay assessment:**\n";
+                $preamble .= "- Short-answer questions (1-5 marks) need brief assessment, not full paragraph structure analysis\n";
+                $preamble .= "- Analysis questions (5-15 marks) need technique identification and evidence quality assessment\n";
+                $preamble .= "- Only extended writing responses (20+ marks) need the full paragraph structure detection + confirmation flow\n";
+                $preamble .= "- The `Total: X/Y` at the end should reflect the sum of ALL question scores, not just one response\n\n";
+            }
 
             // ── END-OF-ASSESSMENT RULES (v7.11.99) ──
             $preamble .= "\n### ⛔ END-OF-ASSESSMENT — CRITICAL RULES\n";

@@ -1737,6 +1737,8 @@ window.WML = (function() {
         text = text.replace(/\[PANEL:\s*\w+\]/g, '').trim();
         // v7.14.68: Strip [PROGRESS: N] step markers (used for sidebar tracking, not for display)
         text = text.replace(/\[PROGRESS:\s*\d+\]/g, '').trim();
+        // v7.14.69: Strip [SUBSTEP_COMPLETE: step_N, substep_N, "Name"] markers (CW sub-step tracking)
+        text = text.replace(/\[SUBSTEP_COMPLETE:\s*[^\]]*\]/g, '').trim();
         // Strip LaTeX $$ blocks
         text = text.replace(/\$\$[^$]*?\$\$/g, '').trim();
         // Strip Python-style function calls
