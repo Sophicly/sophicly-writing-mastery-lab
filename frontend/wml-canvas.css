@@ -4249,21 +4249,19 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
  *  RIGHT = InputField (student writes their plan)
  * ══════════════════════════════════════════ */
 
+/* v7.14.71: position:relative + padding-left + absolute criteria.
+   This is EXACTLY how InputField works (position:relative, no flex/grid/float).
+   position:relative does NOT create a BFC — only flex/grid/float/overflow do.
+   The contentDOM is a plain block that can flow and SPLIT across page breaks.
+   The criteria panel is absolutely positioned — it stays with the row start. */
 .swml-outline-row {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    margin: 6px 0 10px 0;
-}
-.swml-outline-row .swml-input-field,
-.swml-outline-input {
-    flex: 1;
-    margin: 0;
-    min-width: 0;
-}
-/* v7.14.70: contentDOM area in OutlineRow nodeView — matches InputField styling */
-.swml-outline-input {
     position: relative;
+    padding-left: 192px; /* 180px criteria + 12px gap */
+    margin: 6px 0 10px 0;
+    min-height: 50px;
+}
+/* The contentDOM — plain block, splittable across pages */
+.swml-outline-input {
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 6px;
@@ -4277,7 +4275,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     font-size: 11px;
     font-style: italic;
     color: rgba(255,255,255,0.25);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     pointer-events: none;
     line-height: 1.4;
 }
@@ -4298,9 +4296,15 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     border-color: rgba(66, 161, 236, 0.35);
     box-shadow: 0 0 0 2px rgba(66, 161, 236, 0.05);
 }
+/* Criteria panel — absolutely positioned left column.
+   z-index: 3 paints above PaginationPlus .breaker (z-index: 2) so checkboxes
+   near page footers stay clickable. Row must NOT set z-index (no stacking context). */
 .swml-outline-criteria {
+    position: absolute;
+    left: 0;
+    top: 0;
     width: 180px;
-    flex-shrink: 0;
+    z-index: 3;
     padding: 8px 10px;
     background: rgba(66, 161, 236, 0.06);
     border: 1px solid rgba(66, 161, 236, 0.12);
@@ -4309,17 +4313,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     line-height: 1.5;
     color: rgba(255,255,255,0.55);
     user-select: none;
-}
-.swml-outline-criterion-header {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 4px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.65);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
+    box-sizing: border-box;
 }
 .swml-outline-ao {
     display: inline-block;
@@ -4371,15 +4365,36 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     line-height: 1.4;
     color: rgba(255,255,255,0.5);
 }
+/* Dropdown select for single-choice criteria (Hook, Building Sentences) */
+.swml-outline-select {
+    display: block;
+    width: 100%;
+    margin-top: 4px;
+    padding: 4px 6px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: rgba(255,255,255,0.7);
+    background: rgba(66, 161, 236, 0.1);
+    border: 1px solid rgba(66, 161, 236, 0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    appearance: auto;
+}
+.swml-outline-select:focus {
+    border-color: rgba(66, 161, 236, 0.45);
+    outline: none;
+}
+[data-swml-theme="light"] .swml-outline-select {
+    color: rgba(0,0,0,0.65);
+    background: rgba(66, 161, 236, 0.06);
+    border-color: rgba(66, 161, 236, 0.18);
+}
 
 /* Light theme */
 [data-swml-theme="light"] .swml-outline-criteria {
     background: rgba(66, 161, 236, 0.05);
     border-color: rgba(66, 161, 236, 0.12);
     color: rgba(0,0,0,0.55);
-}
-[data-swml-theme="light"] .swml-outline-criterion-header {
-    color: rgba(0,0,0,0.65);
 }
 [data-swml-theme="light"] .swml-outline-ao {
     background: rgba(66, 161, 236, 0.12);
@@ -4395,8 +4410,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 
 /* Responsive: stack vertically on narrow screens */
 @media (max-width: 700px) {
-    .swml-outline-row { flex-direction: column; gap: 4px; }
-    .swml-outline-criteria { width: 100%; }
+    .swml-outline-row { padding-left: 0; }
+    .swml-outline-criteria { position: static; width: 100%; margin-bottom: 6px; }
 }
 
 /* ══════════════════════════════════════════

@@ -5774,6 +5774,17 @@
                         parseHTML: el => el.getAttribute('data-criteria') || '{}',
                         renderHTML: attrs => ({ 'data-criteria': attrs.criteria || '{}' }),
                     },
+                    // v7.14.72: Persisted checkbox/dropdown state as JSON.
+                    // Survives nodeView rebuilds (PaginationPlus) and saves to localStorage/server.
+                    // Format: { checked: [0, 2], selected: "Quote" }
+                    checkState: {
+                        default: '{}',
+                        parseHTML: el => el.getAttribute('data-check-state') || '{}',
+                        renderHTML: attrs => {
+                            const val = attrs.checkState || '{}';
+                            return val !== '{}' ? { 'data-check-state': val } : {};
+                        },
+                    },
                 };
             },
 
@@ -5789,20 +5800,45 @@
                 }, 0];
             },
 
+            // v7.14.71: position:relative + padding-left + absolute criteria.
+            // Same pattern as InputField (position:relative doesn't create a BFC).
+            // ContentDOM is a plain block — PaginationPlus can split it across pages.
+            // Criteria panel is absolutely positioned at left:0.
             addNodeView() {
-                return ({ node }) => {
+                return ({ node, getPos, editor }) => {
                     const dom = document.createElement('div');
                     dom.classList.add('swml-outline-row');
                     dom.setAttribute('data-outline-row', 'true');
                     if (node.attrs.fieldId) dom.setAttribute('data-field-id', node.attrs.fieldId);
 
+                    let crit;
+                    try { crit = JSON.parse(node.attrs.criteria || '{}'); } catch(e) { crit = {}; }
+
+                    // v7.14.72: Restore persisted checkbox/dropdown state
+                    let savedState;
+                    try { savedState = JSON.parse(node.attrs.checkState || '{}'); } catch(e) { savedState = {}; }
+
+                    // Helper: save current UI state back to the TipTap node attribute
+                    function persistState(stateObj) {
+                        if (typeof getPos !== 'function') return;
+                        const pos = getPos();
+                        if (pos == null) return;
+                        const json = JSON.stringify(stateObj);
+                        // Only update if changed (avoid infinite loops)
+                        const current = editor.state.doc.nodeAt(pos);
+                        if (current && current.attrs.checkState === json) return;
+                        editor.view.dispatch(
+                            editor.state.tr.setNodeMarkup(pos, undefined, {
+                                ...current.attrs,
+                                checkState: json,
+                            })
+                        );
+                    }
+
                     // ── LEFT: Criteria column (read-only) ──
                     const criteriaEl = document.createElement('div');
                     criteriaEl.classList.add('swml-outline-criteria');
                     criteriaEl.contentEditable = 'false';
-
-                    let crit;
-                    try { crit = JSON.parse(node.attrs.criteria || '{}'); } catch(e) { crit = {}; }
 
                     if (crit.ao) {
                         const aoTag = document.createElement('span');
@@ -5818,32 +5854,71 @@
                         criteriaEl.appendChild(labelEl);
                     }
 
-                    // Render checklist items or single checkbox
+                    const checkboxes = []; // track for state persistence
+
                     if (crit.type === 'checklist' && crit.items) {
                         const list = document.createElement('div');
                         list.className = 'swml-outline-checklist';
-                        crit.items.forEach(item => {
-                            const row = document.createElement('label');
-                            row.className = 'swml-outline-check';
+                        crit.items.forEach((item, idx) => {
+                            const lbl = document.createElement('label');
+                            lbl.className = 'swml-outline-check';
                             const cb = document.createElement('input');
                             cb.type = 'checkbox';
-                            cb.addEventListener('click', e => e.stopPropagation());
-                            row.appendChild(cb);
+                            // Restore saved state
+                            if (savedState.checked && savedState.checked.includes(idx)) cb.checked = true;
+                            cb.addEventListener('mousedown', e => e.stopPropagation());
+                            cb.addEventListener('click', e => {
+                                e.stopPropagation();
+                                // Collect current checked indices and persist
+                                const indices = [];
+                                checkboxes.forEach((c, i) => { if (c.checked) indices.push(i); });
+                                persistState({ checked: indices });
+                            });
+                            checkboxes.push(cb);
+                            lbl.appendChild(cb);
                             const txt = document.createElement('span');
                             txt.className = 'swml-outline-check-label';
                             txt.textContent = item;
-                            row.appendChild(txt);
-                            list.appendChild(row);
+                            lbl.appendChild(txt);
+                            list.appendChild(lbl);
                         });
                         criteriaEl.appendChild(list);
+                    } else if (crit.type === 'dropdown' && crit.items) {
+                        const sel = document.createElement('select');
+                        sel.className = 'swml-outline-select';
+                        const placeholder = document.createElement('option');
+                        placeholder.value = '';
+                        placeholder.textContent = 'Choose one\u2026';
+                        placeholder.disabled = true;
+                        if (!savedState.selected) placeholder.selected = true;
+                        sel.appendChild(placeholder);
+                        crit.items.forEach(item => {
+                            const opt = document.createElement('option');
+                            opt.value = item;
+                            opt.textContent = item;
+                            if (savedState.selected === item) opt.selected = true;
+                            sel.appendChild(opt);
+                        });
+                        sel.addEventListener('mousedown', e => e.stopPropagation());
+                        sel.addEventListener('change', e => {
+                            e.stopPropagation();
+                            persistState({ selected: sel.value });
+                        });
+                        criteriaEl.appendChild(sel);
                     } else if (crit.type === 'checkbox') {
-                        const row = document.createElement('label');
-                        row.className = 'swml-outline-check';
+                        const lbl = document.createElement('label');
+                        lbl.className = 'swml-outline-check';
                         const cb = document.createElement('input');
                         cb.type = 'checkbox';
-                        cb.addEventListener('click', e => e.stopPropagation());
-                        row.appendChild(cb);
-                        criteriaEl.appendChild(row);
+                        if (savedState.checked && savedState.checked.includes(0)) cb.checked = true;
+                        cb.addEventListener('mousedown', e => e.stopPropagation());
+                        cb.addEventListener('click', e => {
+                            e.stopPropagation();
+                            persistState({ checked: cb.checked ? [0] : [] });
+                        });
+                        checkboxes.push(cb);
+                        lbl.appendChild(cb);
+                        criteriaEl.appendChild(lbl);
                     }
 
                     dom.appendChild(criteriaEl);
@@ -5854,7 +5929,39 @@
                     if (node.attrs.prompt) contentDOM.setAttribute('data-prompt', node.attrs.prompt);
                     dom.appendChild(contentDOM);
 
-                    return { dom, contentDOM };
+                    // Calculate min-height synchronously from criteria data.
+                    let critH = 18;
+                    if (crit.ao || crit.label) {
+                        const labelLen = (crit.label || '').length;
+                        critH += labelLen > 20 ? 40 : 22;
+                    }
+                    if (crit.type === 'checklist' && crit.items) critH += crit.items.length * 24;
+                    else if (crit.type === 'checkbox') critH += 24;
+                    else if (crit.type === 'dropdown') critH += 32;
+                    dom.style.minHeight = critH + 'px';
+
+                    return {
+                        dom,
+                        contentDOM,
+                        update(updatedNode) {
+                            if (updatedNode.type.name !== 'outlineRow') return false;
+                            if (updatedNode.attrs.criteria !== node.attrs.criteria) return false;
+                            if (updatedNode.attrs.prompt !== node.attrs.prompt) return false;
+                            // v7.14.72: Restore state from attribute on rebuild
+                            // (PaginationPlus may rebuild nodeViews without changing attrs)
+                            try {
+                                const st = JSON.parse(updatedNode.attrs.checkState || '{}');
+                                if (st.checked) {
+                                    checkboxes.forEach((cb, i) => { cb.checked = st.checked.includes(i); });
+                                }
+                                if (st.selected) {
+                                    const sel = criteriaEl.querySelector('.swml-outline-select');
+                                    if (sel) sel.value = st.selected;
+                                }
+                            } catch(e) {}
+                            return true;
+                        },
+                    };
                 };
             },
 
@@ -6663,6 +6770,16 @@
                 attributes: {
                     spellcheck: 'true',
                 },
+                // v7.14.72: Prevent ProseMirror from capturing mouse events inside
+                // outline criteria panels (contentEditable=false). Without this, ProseMirror
+                // intercepts mousedown, triggers a selection change transaction, which causes
+                // PaginationPlus to re-paginate and recreate the nodeView — resetting checkboxes.
+                handleDOMEvents: {
+                    mousedown(view, event) {
+                        if (event.target.closest('.swml-outline-criteria')) return true; // absorb
+                        return false; // let ProseMirror handle normally
+                    },
+                },
                 // Strip inline styles and section containers from pasted content (v7.12.59)
                 transformPastedHTML(html) {
                     // Strip section block wrappers — paste text only, not the container
@@ -6938,6 +7055,17 @@
             setTimeout(() => updateCommentGutter(), 400);
             // v7.13.92: Re-snapshot section count after template injection (sections may have been added)
             if (canvasEditor) _sectionCount = countSections(canvasEditor.state.doc);
+
+            // v7.14.72: Reposition outline criteria panels after pagination settles.
+            // Runs on a delay (pagination needs time to insert page breaks).
+            // Also runs on scroll (criteria may enter/exit page break zones).
+            // NO MutationObserver — it creates infinite loops (repositioning triggers mutations).
+            setTimeout(repositionOutlineCriteria, 500);
+            setTimeout(repositionOutlineCriteria, 1500); // second pass after late pagination
+            const scrollContainer = contentWrap || editorEl.parentElement;
+            if (scrollContainer) {
+                scrollContainer.addEventListener('scroll', debouncedRepositionCriteria, { passive: true });
+            }
 
             // v7.14.68: Undo floor — snapshot the loaded state so section guard knows the baseline
             // Note: Direct history plugin reset was removed (corrupted prevTime state).
@@ -9218,15 +9346,15 @@
         // ── Literature essay (TTECEA+C) — used by AQA, EDUQAS, Edexcel, OCR, CCEA, IGCSE ──
         literature: {
             intro: [
-                { id: 'hook', label: 'Hook', ao: 'AO1', type: 'checklist', items: ['Historical fact', 'Rhetorical question', 'Quote', 'Metaphor/image'], prompt: 'An intriguing concept or contextual observation' },
-                { id: 'building', label: 'Building Sentences', ao: 'AO3', type: 'checklist', items: ['Historical context', 'Social context', 'Cultural context', 'Counter-argument'], prompt: 'Contextual backdrop \u2014 historical, social, or cultural' },
-                { id: 'thesis', label: 'Thesis', ao: 'AO1', type: 'checklist', items: ['Key idea 1', 'Key idea 2', 'Key idea 3'], prompt: 'Your 3-point argument \u2014 three key ideas that answer the question' },
+                { id: 'hook', label: 'Hook', ao: 'AO1', type: 'dropdown', items: ['Historical fact', 'Question', 'Quote', 'Metaphor/image'], prompt: 'An intriguing concept or contextual observation' },
+                { id: 'building', label: 'Building Sentences', ao: 'AO3', type: 'dropdown', items: ['Historical context', 'Social context', 'Cultural context', 'Counter-argument'], prompt: 'Contextual backdrop \u2014 historical, social, or cultural' },
+                { id: 'thesis', label: 'Thesis', ao: 'AO1', type: 'checklist', items: ['Key idea 1', 'Key idea 2', 'Key idea 3', 'Argument setup'], prompt: 'Your 3-point argument \u2014 three key ideas that answer the question' },
             ],
             body: [
                 { id: 'topic', label: 'Topic Sentence', ao: 'AO1', type: 'checkbox', prompt: 'A conceptual idea linking to your thesis' },
                 { id: 'evidence', label: 'Evidence + Technique', ao: 'AO1/AO2', type: 'checklist', items: ['Technique named', 'Quote integrated', 'Inference made'], prompt: 'Quote + name the technique. Integrate, don\'t bolt on' },
                 { id: 'analysis', label: 'Close Analysis', ao: 'AO2', type: 'checkbox', prompt: 'Examine specific words, sounds, or structural choices' },
-                { id: 'effects', label: 'Effects on Reader', ao: 'AO2', type: 'checklist', items: ['Emotional effect', 'Intellectual effect'], prompt: 'Two specific emotional or intellectual effects' },
+                { id: 'effects', label: 'Effects on Reader', ao: 'AO2', type: 'checklist', items: ['Manipulates focus', 'Manipulates emotions', 'Manipulates thoughts', 'Manipulates actions'], prompt: 'How does the author manipulate the reader? Be specific to the ideas and themes.' },
                 { id: 'purpose', label: "Author's Purpose + Context", ao: 'AO1/AO3', type: 'checkbox', prompt: 'Why these choices? Link to context', aoRequired: 'AO3' },
             ],
             conclusion: [
@@ -11320,6 +11448,104 @@
      * Uses docWrap.insertBefore(coverEl, editorEl) so it's visually the first page
      * but TipTap never touches it. Also strips any broken cover sections from saved docs.
      */
+    // ── Outline Criteria Panels (v7.14.71) ──
+    // Post-render injection: reads data-criteria JSON from each [data-outline-row] element
+    // and injects an absolutely-positioned criteria panel as a child.
+    // This avoids nodeView (which creates BFCs that PaginationPlus floats displace).
+    function injectOutlineCriteria() {
+        const editorEl = document.getElementById('swml-tiptap-editor');
+        if (!editorEl) return;
+        const rows = editorEl.querySelectorAll('[data-outline-row]');
+        rows.forEach(row => {
+            // Don't inject twice
+            if (row.querySelector('.swml-outline-criteria')) return;
+
+            let crit;
+            try { crit = JSON.parse(row.getAttribute('data-criteria') || '{}'); } catch(e) { crit = {}; }
+            if (!crit.label && !crit.ao) return; // no criteria data
+
+            const criteriaEl = document.createElement('div');
+            criteriaEl.classList.add('swml-outline-criteria');
+            criteriaEl.contentEditable = 'false';
+
+            if (crit.ao) {
+                const aoTag = document.createElement('span');
+                aoTag.className = 'swml-outline-ao';
+                aoTag.textContent = crit.ao;
+                criteriaEl.appendChild(aoTag);
+            }
+
+            if (crit.label) {
+                const labelEl = document.createElement('span');
+                labelEl.className = 'swml-outline-criterion-label';
+                labelEl.textContent = crit.label;
+                criteriaEl.appendChild(labelEl);
+            }
+
+            if (crit.type === 'checklist' && crit.items) {
+                const list = document.createElement('div');
+                list.className = 'swml-outline-checklist';
+                crit.items.forEach(item => {
+                    const lbl = document.createElement('label');
+                    lbl.className = 'swml-outline-check';
+                    const cb = document.createElement('input');
+                    cb.type = 'checkbox';
+                    cb.addEventListener('click', e => e.stopPropagation());
+                    lbl.appendChild(cb);
+                    const txt = document.createElement('span');
+                    txt.className = 'swml-outline-check-label';
+                    txt.textContent = item;
+                    lbl.appendChild(txt);
+                    list.appendChild(lbl);
+                });
+                criteriaEl.appendChild(list);
+            } else if (crit.type === 'checkbox') {
+                const lbl = document.createElement('label');
+                lbl.className = 'swml-outline-check';
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.addEventListener('click', e => e.stopPropagation());
+                lbl.appendChild(cb);
+                criteriaEl.appendChild(lbl);
+            }
+
+            // Insert as first child (absolutely positioned, won't affect content flow)
+            row.insertBefore(criteriaEl, row.firstChild);
+        });
+    }
+
+    // ── Outline Criteria Repositioning (v7.14.72) ──
+    // When PaginationPlus inserts a page break inside an outline row, the criteria panel
+    // (position:absolute, top:0) stays on page N while the input flows to page N+1.
+    // This function detects the split and repositions criteria to align with the input.
+    let _repositionTimer = null;
+    function repositionOutlineCriteria() {
+        const editorEl = document.getElementById('swml-tiptap-editor');
+        if (!editorEl) return;
+        const rows = editorEl.querySelectorAll('.swml-outline-row');
+        rows.forEach(row => {
+            const criteria = row.querySelector('.swml-outline-criteria');
+            const input = row.querySelector('.swml-outline-input');
+            if (!criteria || !input) return;
+
+            const rowRect = row.getBoundingClientRect();
+            const inputRect = input.getBoundingClientRect();
+            const offset = inputRect.top - rowRect.top;
+
+            // If the input has been pushed far below the row start (page break between them),
+            // move the criteria down to align with where the input actually starts.
+            // Only update if the value actually changed (avoid unnecessary style recalcs).
+            const newTop = offset > 80 ? Math.round(offset) + 'px' : '0px';
+            if (criteria.style.top !== newTop) {
+                criteria.style.top = newTop;
+            }
+        });
+    }
+    function debouncedRepositionCriteria() {
+        clearTimeout(_repositionTimer);
+        _repositionTimer = setTimeout(repositionOutlineCriteria, 150);
+    }
+
     // ── CW Resource Buttons (v7.13.46) ──
     // Injects real clickable buttons into the Resources section block (TipTap strips data-href from content)
     function injectCwResourceButtons(editorEl) {
@@ -12725,5 +12951,32 @@ ${html}
     WML.exportToDocx = exportToDocx;
     WML.getDocumentTemplate = getDocumentTemplate;
     WML.buildTableOfContents = buildTableOfContents;
+
+    // v7.14.71: Console utility to reset documents for testing.
+    // Usage: WML.resetDocuments()        — clears ALL saved docs + chats
+    //        WML.resetDocuments('current') — clears only the current topic
+    WML.resetDocuments = function(scope) {
+        if (scope === 'current') {
+            try {
+                localStorage.removeItem(CANVAS_SAVE_KEY());
+                localStorage.removeItem(CHAT_SAVE_KEY());
+                localStorage.removeItem(CANVAS_SAVE_KEY() + '_ver');
+                console.log('WML: Reset current document:', CANVAS_SAVE_KEY());
+            } catch(e) {}
+            return 'Current document cleared. Reload to get a fresh template.';
+        }
+        // Clear all WML keys
+        let count = 0;
+        const keys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('swml_canvas_') || key.startsWith('swml_chat_'))) {
+                keys.push(key);
+            }
+        }
+        keys.forEach(k => { localStorage.removeItem(k); count++; });
+        console.log('WML: Reset ' + count + ' saved documents/chats');
+        return count + ' documents cleared. Reload to get fresh templates.';
+    };
 
 })();
