@@ -595,7 +595,7 @@ Once you've written your piece, you can return for assessment or polishing.
 
 **\[AI\_INTERNAL\]** After student types READY:
 
-**\[CONDITIONAL\]** IF SESSION\_STATE.current\_question IN \["Section B", "section b", "B", "SB"\]: \[SAY\] "**Your writing should be 700+ words minimum.**"
+**\[CONDITIONAL\]** IF SESSION\_STATE.current\_question IN \["Section B", "section b", "B", "SB", "Q6", "6"\]: \[SAY\] "**Your writing should be 700+ words minimum.**"
 
 **\[AI\_INTERNAL\]** Check if planning multiple questions
 

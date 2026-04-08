@@ -182,7 +182,7 @@ Support your answer with detailed reference to both texts.
 
 [22 marks]
 
-## Section B: Transactional Writing
+## Q6
 **Marks:** 45 (AO4 27 + AO5 18)
 **AOs:** AO4, AO5
 
@@ -389,7 +389,7 @@ Support your answer with detailed reference to both texts.
 
 [22 marks]
 
-## Section B: Transactional Writing
+## Q6
 **Marks:** 45 (AO4 27 + AO5 18)
 **AOs:** AO4, AO5
 
@@ -575,7 +575,7 @@ Support your answer with detailed reference to both texts.
 
 [22 marks]
 
-## Section B: Transactional Writing
+## Q6
 **Marks:** 45 (AO4 27 + AO5 18)
 **AOs:** AO4, AO5
 
@@ -770,7 +770,7 @@ Support your answer with detailed reference to both texts.
 
 [22 marks]
 
-## Section B: Transactional Writing
+## Q6
 **Marks:** 45 (AO4 27 + AO5 18)
 **AOs:** AO4, AO5
 
@@ -947,7 +947,7 @@ Support your answer with detailed reference to both texts.
 
 [22 marks]
 
-## Section B: Transactional Writing
+## Q6
 **Marks:** 45 (AO4 27 + AO5 18)
 **AOs:** AO4, AO5
 
@@ -1149,7 +1149,7 @@ Support your answer with detailed reference to both texts.
 
 [22 marks]
 
-## Section B: Transactional Writing
+## Q6
 **Marks:** 45 (AO4 27 + AO5 18)
 **AOs:** AO4, AO5
 
@@ -1327,7 +1327,7 @@ Support your answer with detailed reference to both texts.
 
 [22 marks]
 
-## Section B: Transactional Writing
+## Q6
 **Marks:** 45 (AO4 27 + AO5 18)
 **AOs:** AO4, AO5
 
@@ -1515,7 +1515,7 @@ Support your answer with detailed reference to both texts.
 
 [22 marks]
 
-## Section B: Transactional Writing
+## Q6
 **Marks:** 45 (AO4 27 + AO5 18)
 **AOs:** AO4, AO5
 
@@ -1705,7 +1705,7 @@ Support your answer with detailed reference to both texts.
 
 [22 marks]
 
-## Section B: Transactional Writing
+## Q6
 **Marks:** 45 (AO4 27 + AO5 18)
 **AOs:** AO4, AO5
 
@@ -1906,7 +1906,7 @@ Support your answer with detailed reference to both texts.
 
 [22 marks]
 
-## Section B: Transactional Writing
+## Q6
 **Marks:** 45 (AO4 27 + AO5 18)
 **AOs:** AO4, AO5
 

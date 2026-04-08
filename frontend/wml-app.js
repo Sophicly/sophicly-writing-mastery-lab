@@ -2486,7 +2486,7 @@
             individualQuestions: [
                 { id: 'Q4', label: 'Q4 — Language & Structure', desc: '12 marks • Analyse language and structure in the anthology text (AO1/AO2)' },
                 { id: 'Q5', label: 'Q5 — Compare Texts', desc: '22 marks • Compare ideas and perspectives across both texts (AO1/AO3)' },
-                { id: 'SB', label: 'Section B — Transactional Writing', desc: '45 marks • Write to persuade/argue/advise (AO4/AO5)' },
+                { id: 'Q6', label: 'Q6 — Transactional Writing', desc: '45 marks • Write to persuade/argue/advise (AO4/AO5)' },
             ],
         },
         'edexcel-igcse_language2': {
