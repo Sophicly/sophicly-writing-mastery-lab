@@ -1155,7 +1155,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-canvas-ctx-badge {
     font-size: 10px;
     font-weight: 600;
-    padding: 2px 6px;
+    padding: 5px 8px;
     border-radius: 5px;
     background: rgba(81,218,207,0.1);
     color: #51dacf;
@@ -4259,6 +4259,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     padding-left: 192px; /* 180px criteria + 12px gap */
     margin: 6px 0 10px 0;
     min-height: 50px;
+    break-inside: avoid;      /* v7.14.73: keep row+criteria together across page breaks */
+    page-break-inside: avoid;
 }
 /* The contentDOM — plain block, splittable across pages */
 .swml-outline-input {

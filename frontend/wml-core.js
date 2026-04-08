@@ -1720,7 +1720,7 @@ window.WML = (function() {
                 onClick: () => {
                     state.draftType = baseType === 'diagnostic' ? 'diagnostic_redraft' : 'development_redraft';
                     state.phase = 'redraft';
-                    state.task = 'assessment';
+                    state.task = 'redraft_assessment'; // v7.14.78: was 'assessment' — caused Phase 1/2 storage collision
                     state.canvasTimer = 0;
                     state.step = 0; // Reset so initAssessmentState can restore from chat history (v7.12.32)
                     window.WML.renderCanvasWorkspace();

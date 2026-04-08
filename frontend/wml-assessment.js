@@ -139,6 +139,9 @@
 
     let canvasEditor = null;
     let canvasSaveTimer = null;
+    // v7.14.74: Checkbox/dropdown state stored OUTSIDE TipTap to avoid transactions on click.
+    // Keyed by fieldId. Flushed into TipTap attributes only before save.
+    const _outlineCheckState = new Map();
     let canvasSignoffData = null;
     let canvasTimerInterval = null; // Module-scope declaration (was inside renderCanvasWorkspace — bug fix v7.12.62)
     // v7.13.35: Use exerciseConfig.storageSuffix for ALL exercise types — prevents key collisions
@@ -2638,17 +2641,21 @@
             textContent: '↺ Reset',
             title: 'Clear saved content and regenerate the document template',
             onClick: () => {
-                showConfirm('Reset this document? All content will be cleared and the template will be regenerated from scratch.', () => {
+                showConfirm('Reset this document? All your writing will be erased and the template will be regenerated from scratch.', () => {
                     // Clear localStorage
                     try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
-                    // Clear server save
+                    // v7.14.78: Include suffix so the correct server key is cleared
+                    const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
                     fetch(API.canvasSave, {
                         method: 'POST', headers,
-                        body: JSON.stringify({ board: state.board, text: state.text, html: '', wordCount: 0, topicNumber: state.topicNumber || null })
+                        body: JSON.stringify({ board: state.board, text: state.text, html: '', wordCount: 0, topicNumber: state.topicNumber || null, suffix: suffix })
                     }).catch(() => {});
+                    // Clear outline checkbox state
+                    _outlineCheckState.clear();
                     // Regenerate template
                     if (canvasEditor) {
                         canvasEditor.commands.setContent(getDefaultEssayTemplate(), false);
+                        snapshotTemplateBaseline(canvasEditor);
                         // Re-run topic template injection, then rebuild dropdowns
                         tryTopicTemplate().then(() => {
                             if (dropdownLayer) { dropdownLayer.remove(); dropdownLayer = null; }
@@ -2666,18 +2673,12 @@
         const wcRestorePlaceholder = el('span', { id: 'swml-wc-restore-slot' });
         statusBar.appendChild(wcRestorePlaceholder);
 
-        // Page count display (approximate A4 pages)
-        const PAGE_HEIGHT = 1020; // A4 proportional height at 720px width
-        const pageDisplay = el('span', { className: 'swml-page-count', textContent: 'Page 1 of 1' });
+        // v7.14.76: Page count removed (PaginationPlus disabled — continuous scroll mode).
+        // Keep updatePageCount as no-op so existing calls don't error.
+        const pageDisplay = el('span', { className: 'swml-page-count' });
+        pageDisplay.style.display = 'none';
         statusBar.appendChild(pageDisplay);
-
-        function updatePageCount() {
-            const totalPages = Math.max(1, Math.ceil(docWrap.scrollHeight / PAGE_HEIGHT));
-            const scrollTop = contentWrap.scrollTop;
-            const currentPage = Math.min(totalPages, Math.max(1, Math.ceil((scrollTop + contentWrap.clientHeight / 2) / PAGE_HEIGHT)));
-            pageDisplay.textContent = `Page ${currentPage} of ${totalPages}`;
-        }
-        contentWrap.addEventListener('scroll', updatePageCount);
+        function updatePageCount() { /* no-op — pagination disabled */ }
 
         // v7.14.25: LD navigation proxy buttons — embedded mode only
         // Uses exact selectors from SPL footer (.spl-btn-prev, .learndash_mark_complete_button, .spl-btn-next)
@@ -5301,7 +5302,7 @@
                 { id: 'planning', task: 'planning', label: 'Plan Redraft' },
                 { id: 'outlining', task: 'outlining', label: 'Outline Essay' },
                 { id: 'polishing', task: 'polishing', label: 'Polish Essay' },
-                { id: 'reassessment', task: 'assessment', label: 'Get Reassessed' },
+                { id: 'reassessment', task: 'redraft_assessment', label: 'Get Reassessed' },
             ];
             const seq = state.phase === 'redraft' ? PHASE2_SEQ : PHASE1_SEQ;
             const currentTask = state.task || '';
@@ -5814,25 +5815,29 @@
                     let crit;
                     try { crit = JSON.parse(node.attrs.criteria || '{}'); } catch(e) { crit = {}; }
 
-                    // v7.14.72: Restore persisted checkbox/dropdown state
+                    // v7.14.74: Read checkbox state from Map first (live), fall back to TipTap attr (persisted)
+                    const fieldId = node.attrs.fieldId || '';
                     let savedState;
-                    try { savedState = JSON.parse(node.attrs.checkState || '{}'); } catch(e) { savedState = {}; }
+                    if (_outlineCheckState.has(fieldId)) {
+                        savedState = _outlineCheckState.get(fieldId);
+                    } else {
+                        try { savedState = JSON.parse(node.attrs.checkState || '{}'); } catch(e) { savedState = {}; }
+                        if (fieldId && Object.keys(savedState).length) _outlineCheckState.set(fieldId, savedState);
+                    }
 
-                    // Helper: save current UI state back to the TipTap node attribute
+                    // v7.14.74: Write to Map only — no TipTap transaction, no PaginationPlus re-pagination
                     function persistState(stateObj) {
-                        if (typeof getPos !== 'function') return;
-                        const pos = getPos();
-                        if (pos == null) return;
-                        const json = JSON.stringify(stateObj);
-                        // Only update if changed (avoid infinite loops)
-                        const current = editor.state.doc.nodeAt(pos);
-                        if (current && current.attrs.checkState === json) return;
-                        editor.view.dispatch(
-                            editor.state.tr.setNodeMarkup(pos, undefined, {
-                                ...current.attrs,
-                                checkState: json,
-                            })
-                        );
+                        if (fieldId) _outlineCheckState.set(fieldId, stateObj);
+                        // Trigger save indicator + debounced save (same as onUpdate path)
+                        saveStatus.textContent = 'Editing...';
+                        saveStatus.classList.remove('saving');
+                        clearTimeout(canvasSaveTimer);
+                        canvasSaveTimer = setTimeout(() => {
+                            saveCanvasContent();
+                            saveStatus.textContent = '✓ Saved';
+                            saveStatus.classList.add('saving');
+                            setTimeout(() => saveStatus.classList.remove('saving'), 1500);
+                        }, 2000);
                     }
 
                     // ── LEFT: Criteria column (read-only) ──
@@ -5943,22 +5948,32 @@
                     return {
                         dom,
                         contentDOM,
+                        // v7.14.74: Ignore DOM mutations inside the criteria panel (checkbox toggles,
+                        // dropdown changes). Prevents ProseMirror's DOM observer from creating
+                        // secondary transactions that trigger PaginationPlus re-pagination.
+                        ignoreMutation(mutation) {
+                            return criteriaEl.contains(mutation.target);
+                        },
                         update(updatedNode) {
                             if (updatedNode.type.name !== 'outlineRow') return false;
                             if (updatedNode.attrs.criteria !== node.attrs.criteria) return false;
                             if (updatedNode.attrs.prompt !== node.attrs.prompt) return false;
-                            // v7.14.72: Restore state from attribute on rebuild
-                            // (PaginationPlus may rebuild nodeViews without changing attrs)
-                            try {
-                                const st = JSON.parse(updatedNode.attrs.checkState || '{}');
-                                if (st.checked) {
-                                    checkboxes.forEach((cb, i) => { cb.checked = st.checked.includes(i); });
-                                }
-                                if (st.selected) {
-                                    const sel = criteriaEl.querySelector('.swml-outline-select');
-                                    if (sel) sel.value = st.selected;
-                                }
-                            } catch(e) {}
+                            // v7.14.74: Restore state from Map (live) or attribute (persisted).
+                            // PaginationPlus may rebuild nodeViews without changing attrs.
+                            const fid = updatedNode.attrs.fieldId || '';
+                            let st;
+                            if (fid && _outlineCheckState.has(fid)) {
+                                st = _outlineCheckState.get(fid);
+                            } else {
+                                try { st = JSON.parse(updatedNode.attrs.checkState || '{}'); } catch(e) { st = {}; }
+                            }
+                            if (st.checked) {
+                                checkboxes.forEach((cb, i) => { cb.checked = st.checked.includes(i); });
+                            }
+                            if (st.selected) {
+                                const sel = criteriaEl.querySelector('.swml-outline-select');
+                                if (sel) sel.value = st.selected;
+                            }
                             return true;
                         },
                     };
@@ -6743,26 +6758,12 @@
                 InputField,
                 OutlineRow,
                 ChecklistItem,
-                ...(PaginationPlus ? [PaginationPlus.configure({
-                    pageHeight: 1020,
-                    pageWidth: 720,
-                    pageGap: 24,
-                    pageGapBorderSize: 1,
-                    pageGapBorderColor: 'rgba(255,255,255,0.08)',
-                    pageBreakBackground: '#1c1d1f',
-                    pageHeaderHeight: 0,
-                    pageFooterHeight: 20,
-                    marginTop: 48,
-                    marginBottom: 32,
-                    marginLeft: 56,
-                    marginRight: 56,
-                    contentMarginTop: 0,
-                    contentMarginBottom: 0,
-                    headerLeft: '',
-                    headerRight: '',
-                    footerLeft: '',
-                    footerRight: '<span style="font-size:10px;color:rgba(255,255,255,0.25);font-family:inherit">Page {page}</span>',
-                })] : []),
+                // v7.14.76: PaginationPlus DISABLED — continuous scroll mode.
+                // Eliminates scroll-jump bugs, criteria splitting across page breaks,
+                // and NodeView recreation issues. Pages added no pedagogical value
+                // for structured planning/outline exercises.
+                // Preserved here for easy re-enable if needed:
+                // ...(PaginationPlus ? [PaginationPlus.configure({ pageHeight: 1020, pageWidth: 720, pageGap: 24, ... })] : []),
             ],
             // v7.13.78: Don't flash generic template — start empty, async chain injects the right one
             content: savedContent || (state.task === 'mark_scheme' ? '<p></p>' : isCwTask ? getCwDocTemplate(cwStepDef) : '<p></p>'),
@@ -6780,13 +6781,33 @@
                         return false; // let ProseMirror handle normally
                     },
                 },
-                // Strip inline styles and section containers from pasted content (v7.12.59)
+                // Strip structural containers and inline styles from pasted content (v7.12.59, v7.14.75)
                 transformPastedHTML(html) {
+                    // v7.14.75: Use DOM parser for reliable nested-element stripping
+                    const tmp = document.createElement('div');
+                    tmp.innerHTML = html;
+                    // Remove criteria panels entirely (read-only decoration — never paste these)
+                    tmp.querySelectorAll('.swml-outline-criteria').forEach(el => el.remove());
+                    // Unwrap outline rows — keep only the editable input content
+                    tmp.querySelectorAll('[data-outline-row]').forEach(row => {
+                        const input = row.querySelector('.swml-outline-input');
+                        const fragment = document.createDocumentFragment();
+                        if (input) {
+                            while (input.firstChild) fragment.appendChild(input.firstChild);
+                        } else {
+                            while (row.firstChild) fragment.appendChild(row.firstChild);
+                        }
+                        row.replaceWith(fragment);
+                    });
                     // Strip section block wrappers — paste text only, not the container
-                    html = html.replace(/<div[^>]*data-section-type="[^"]*"[^>]*>([\s\S]*?)<\/div>/gi, '$1');
+                    tmp.querySelectorAll('[data-section-type]').forEach(el => {
+                        const fragment = document.createDocumentFragment();
+                        while (el.firstChild) fragment.appendChild(el.firstChild);
+                        el.replaceWith(fragment);
+                    });
+                    html = tmp.innerHTML;
                     // Remove inline color, background, font-family, font-size styles
                     return html.replace(/\s*style="[^"]*"/gi, match => {
-                        // Strip color, background-color, font-family, font-size but keep other styles
                         let cleaned = match
                             .replace(/color\s*:\s*[^;"]*/gi, '')
                             .replace(/background-color\s*:\s*[^;"]*/gi, '')
@@ -7060,12 +7081,7 @@
             // Runs on a delay (pagination needs time to insert page breaks).
             // Also runs on scroll (criteria may enter/exit page break zones).
             // NO MutationObserver — it creates infinite loops (repositioning triggers mutations).
-            setTimeout(repositionOutlineCriteria, 500);
-            setTimeout(repositionOutlineCriteria, 1500); // second pass after late pagination
-            const scrollContainer = contentWrap || editorEl.parentElement;
-            if (scrollContainer) {
-                scrollContainer.addEventListener('scroll', debouncedRepositionCriteria, { passive: true });
-            }
+            // v7.14.76: repositionOutlineCriteria removed — only needed for PaginationPlus page breaks
 
             // v7.14.68: Undo floor — snapshot the loaded state so section guard knows the baseline
             // Note: Direct history plugin reset was removed (corrupted prevTime state).
@@ -9111,22 +9127,35 @@
         if (!editor) return 0;
         const editorEl = editor.options.element;
         if (!editorEl) return editor.storage.characterCount?.words() || 0;
-        // v7.13.53: Count only editable sections, minus template baseline.
-        // Baseline is snapshotted on editor create (see _swmlTemplateBaseline).
-        const editableSections = editorEl.querySelectorAll('[data-editable="true"]');
-        if (editableSections.length === 0) {
-            return editor.storage.characterCount?.words() || 0;
+        // v7.14.73: Count only response sections (not outline/plan/question sections).
+        const responseSections = editorEl.querySelectorAll('[data-section-type="response"]');
+        if (responseSections.length === 0) {
+            // Fallback for legacy templates without section types
+            const editableSections = editorEl.querySelectorAll('[data-editable="true"]');
+            if (editableSections.length === 0) {
+                return editor.storage.characterCount?.words() || 0;
+            }
+            let total = 0;
+            editableSections.forEach(section => {
+                const clone = section.cloneNode(true);
+                clone.querySelectorAll('h3').forEach(el => el.remove());
+                const text = clone.textContent || '';
+                const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+                total += words.length;
+            });
+            const baseline = editorEl._swmlTemplateBaseline || 0;
+            return Math.max(0, total - baseline);
         }
         let total = 0;
-        editableSections.forEach(section => {
+        responseSections.forEach(section => {
             const clone = section.cloneNode(true);
             clone.querySelectorAll('h3').forEach(el => el.remove());
             const text = clone.textContent || '';
             const words = text.trim().split(/\s+/).filter(w => w.length > 0);
             total += words.length;
         });
-        // Subtract template baseline (instruction text, labels, prompts in fresh template)
-        const baseline = editorEl._swmlTemplateBaseline || 0;
+        // Subtract response-only baseline
+        const baseline = editorEl._swmlResponseBaseline || 0;
         return Math.max(0, total - baseline);
     }
     // Snapshot the template word count once when editor content is first loaded.
@@ -9146,6 +9175,19 @@
             total += words.length;
         });
         editorEl._swmlTemplateBaseline = total;
+        // v7.14.73: Also snapshot response-only baseline for accurate word count
+        const responseSections = editorEl.querySelectorAll('[data-section-type="response"]');
+        if (responseSections.length > 0) {
+            let respTotal = 0;
+            responseSections.forEach(section => {
+                const clone = section.cloneNode(true);
+                clone.querySelectorAll('h3').forEach(el => el.remove());
+                const text = clone.textContent || '';
+                const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+                respTotal += words.length;
+            });
+            editorEl._swmlResponseBaseline = respTotal;
+        }
     }
 
     /**
@@ -9688,6 +9730,7 @@
             const isWritingQ = qType === 'extended_writing' || qType === 'choice'
                 || qMarks >= 24 || /section\s*b|writing|creative|persuasive|narrative|descriptive/i.test(q.label || '');
             const isPersuasive = /persuasive|speech|letter|article|argue|convince|advise/i.test(q.text || q.label || '');
+            const isCreative = qType === 'creative_writing' || /^(?:creative writing|narrative writing|descriptive writing|write a story|write a description)/i.test(q.text || q.label || '');
 
             // Section dividers from specs (multi-section support for Edexcel P2 etc.)
             if (sectionMap && sectionMap[qId] && sectionMap[qId] !== lastSection) {
@@ -9742,10 +9785,12 @@
                 }
             }
 
-            // v7.14.70: Outline with criteria columns for extended writing questions
-            if (qType !== 'multiple_choice' && qMarks >= 20) {
+            // v7.14.78: Outline with criteria columns — redraft only (diagnostic = write cold)
+            if (mode === 'redraft' && qType !== 'multiple_choice' && qMarks >= 20) {
                 html += dividerHTML(`OUTLINE \u2014 ${qId}`);
-                if (isPersuasive) {
+                if (isCreative) {
+                    html += buildCWPlotOutlineSection();
+                } else if (isPersuasive) {
                     html += buildIUMVCCOutlineSection(qId);
                 } else {
                     html += buildOutlineSection(q.aos || topicData.aos, qId, qMarks);
@@ -10419,17 +10464,21 @@
             );
 
             if (mode === 'diagnostic') {
+                // v7.14.78: Diagnostic = write cold — no outline (matches dual-part diagnostic pattern)
                 html += dividerHTML('ESSAY PLAN');
                 html += buildPlanSection(null, marks);
-                html += dividerHTML('OUTLINE');
-                html += buildOutlineSection(topicData.aos, null, marks);
                 html += dividerHTML('RESPONSE');
                 html += buildResponseSection(null);
             } else if (mode === 'redraft') {
                 html += dividerHTML('ESSAY PLAN');
                 html += buildPlanSection(null, marks);
                 html += dividerHTML('OUTLINE');
-                html += buildOutlineSection(topicData.aos, null, marks);
+                // v7.14.78: Route to correct outline type
+                if (state.subject === 'creative_writing' || /^(?:creative writing|narrative writing|descriptive writing|write a story|write a description)/i.test(topicData.question_text || '')) {
+                    html += buildCWPlotOutlineSection();
+                } else {
+                    html += buildOutlineSection(topicData.aos, null, marks);
+                }
                 html += dividerHTML('RESPONSE');
                 html += buildResponseSection(null);
             } else {
@@ -10759,9 +10808,28 @@
 
     let canvasSaveToServerTimer = null;
     let _extractDocumentData = null; // Assigned inside canvas builder, used by saveCanvasContent
+    // v7.14.77: Patch checkbox state into HTML string AFTER getHTML() —
+    // no TipTap transaction needed, zero scroll side-effects.
+    function patchCheckStateIntoHTML(html) {
+        if (_outlineCheckState.size === 0) return html;
+        // For each fieldId in the Map, find its data-field-id in the HTML
+        // and update/add the data-check-state attribute
+        _outlineCheckState.forEach((stateObj, fid) => {
+            const json = JSON.stringify(stateObj).replace(/"/g, '&quot;');
+            // Match the outline row div with this field ID
+            const fieldPattern = new RegExp(
+                `(<div[^>]*data-field-id="${fid.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*?)( data-check-state="[^"]*")?([^>]*>)`,
+                'i'
+            );
+            html = html.replace(fieldPattern, `$1 data-check-state="${json}"$3`);
+        });
+        return html;
+    }
+
     function saveCanvasContent() {
         if (!canvasEditor) return;
-        const html = canvasEditor.getHTML();
+        let html = canvasEditor.getHTML();
+        html = patchCheckStateIntoHTML(html);
         const wc = getResponseWordCount(canvasEditor);
         // 1. Immediate localStorage write (instant, no latency)
         try { localStorage.setItem(CANVAS_SAVE_KEY(), html); } catch (e) { /* storage full */ }
