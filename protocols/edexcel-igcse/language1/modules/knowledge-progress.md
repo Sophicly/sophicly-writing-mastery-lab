@@ -68,7 +68,7 @@
 * Step 2: Answer collection and verification  
 * Step 3: Marking and feedback
 
-**Question 2 (4 marks \- Own Words Summary):**
+**Question 2 (3 marks \- Own Words Summary):**
 
 * total\_steps \= 4  
 * Step 1: Question presentation  
@@ -76,11 +76,11 @@
 * Step 3: Completeness check  
 * Step 4: Marking and feedback
 
-**Question 3 (5 marks \- Five Sentences):**
+**Question 3 (6 marks \- Six Sentences):**
 
 * total\_steps \= 4  
 * Step 1: Question presentation  
-* Step 2: Answer collection (5 sentences with quotes)  
+* Step 2: Answer collection (6 sentences with quotes)  
 * Step 3: Completeness check  
 * Step 4: Marking and feedback
 
@@ -166,10 +166,10 @@
 
 **Part B: Evidence Selection (Q3, Q4, Q5 only)**
 
-For Question 3 (Five Sentences):
+For Question 3 (Six Sentences):
 
 * total\_steps \= 3  
-* Step 1: Select 5 quote positions (beginning/middle/end strategy)  
+* Step 1: Select 6 quote positions (beginning/middle/end strategy)  
 * Step 2: Quote quality validation (Section 0.10)  
 * Step 3: Quote approval
 
@@ -194,8 +194,8 @@ For Question 5 (Comparative Essay):
 
 For Question 3:
 
-* total\_steps \= 5  
-* Step 1: Five-sentence structure overview  
+* total\_steps \= 6  
+* Step 1: Six-sentence structure overview  
 * Steps 2-6: Plan each sentence individually (Each sentence: technique \+ effect \+ author's purpose)
 
 For Question 4:

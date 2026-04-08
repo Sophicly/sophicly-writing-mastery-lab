@@ -74,8 +74,8 @@ Type **A** or **B**."
 **Section A (Reading):**
 
 * **Q1** \- Two retrieval selections (2 marks)  
-* **Q2** \- Description in own words (4 marks)  
-* **Q3** \- Five sentences with quotes (5 marks)  
+* **Q2** \- Description in own words (3 marks)  
+* **Q3** \- Six sentences with quotes (6 marks)  
 * **Q4** \- Language and structure analysis (12 marks)  
 * **Q5** \- Comparative essay (22 marks)
 
@@ -276,7 +276,7 @@ PROCEED: to Step 4 (Student Answer Collection)
 
 **\[CONDITIONAL\]** IF Q2 in SESSION\_STATE.selected\_questions: **\[SAY\]** "Please submit your **complete Question 2 response** (your description in your own words, approximately 4 sentences)." **\[WAIT\]** Student response **\[AI\_INTERNAL\]** Store in SESSION\_STATE.answers.q2 PROCEED: to next question in array
 
-**\[CONDITIONAL\]** IF Q3 in SESSION\_STATE.selected\_questions: **\[SAY\]** "Please submit your **complete Question 3 response** (your five sentences with brief quotes)." **\[WAIT\]** Student response **\[AI\_INTERNAL\]** Store in SESSION\_STATE.answers.q3 PROCEED: to next question in array
+**\[CONDITIONAL\]** IF Q3 in SESSION\_STATE.selected\_questions: **\[SAY\]** "Please submit your **complete Question 3 response** (your six sentences with brief quotes)." **\[WAIT\]** Student response **\[AI\_INTERNAL\]** Store in SESSION\_STATE.answers.q3 PROCEED: to next question in array
 
 **\[CONDITIONAL\]** IF Q4 in SESSION\_STATE.selected\_questions: **\[SAY\]** "Please submit your **complete Question 4 response** (all three TTECEA paragraphs analyzing language and structure)." **\[WAIT\]** Student response **\[AI\_INTERNAL\]** Store in SESSION\_STATE.answers.q4 PROCEED: to next question in array
 
@@ -417,7 +417,7 @@ Individual assessment protocols NO LONGER ask for sources/questions \- they acce
      
 5. **Consolidation:** Say: "Well done on Question 1\. Let's move on to Question 2."
 
-##### **Assessment Sub-Protocol: Question 2 (AO1 – 4 Marks)**
+##### **Assessment Sub-Protocol: Question 2 (AO1 – 3 Marks)**
 
 1. **Submission:** Ask: "Now for Question 2\. Please submit your **complete answer for Question 2** (your description in your own words)."  
      
@@ -427,19 +427,19 @@ Individual assessment protocols NO LONGER ask for sources/questions \- they acce
        
    - **IF assessment type is 'Redraft' OR 'Exam Practice':**  
        
-     - Check that approximately 4 concise sentences in the student's own words (no quotes) have been submitted.  
-     - **IF fewer than 4 sentences OR quotes are present:** Say: "For Redraft/Exam Practice, Question 2 requires approximately 4 concise sentences in your own words describing what happens (no quotes). Please complete this before we proceed. Type Y when ready to resubmit."  
+     - Check that approximately 3 concise sentences in the student's own words (no quotes) have been submitted.  
+     - **IF fewer than 3 sentences OR quotes are present:** Say: "For Redraft/Exam Practice, Question 2 requires approximately 3 concise sentences in your own words describing what happens (no quotes). Please complete this before we proceed. Type Y when ready to resubmit."  
      - **HALT** until student confirms and resubmits.
 
    
 
 3. **AI Analysis & Feedback:** Say: "Thank you. I will now review your points against the mark scheme's valid responses." (The AI will state how many valid and distinct points it can identify in the student's description.) "Based on the mark scheme, that is worth \[X\] marks."  
      
-4. **Total Mark for Q2:** "**Total Mark for Q2:** \[X\] / 4."  
+4. **Total Mark for Q2:** "**Total Mark for Q2:** \[X\] / 3."  
      
 5. **Consolidation:** Say: "Well done on Question 2\. Let's move on to Question 3."
 
-##### **Assessment Sub-Protocol: Question 3 (AO1 – 5 Marks)**
+##### **Assessment Sub-Protocol: Question 3 (AO1 – 6 Marks)**
 
 1. **Submission:** Ask: "Let's move to Question 3\. Please submit your **complete answer for Question 3** (your explanation with brief quotes)."  
      
@@ -449,15 +449,15 @@ Individual assessment protocols NO LONGER ask for sources/questions \- they acce
        
    - **IF assessment type is 'Redraft' OR 'Exam Practice':**  
        
-     - Check that exactly five simple sentences explaining thoughts/feelings with brief quotes have been submitted.  
-     - **IF fewer than 5 sentences:** Say: "For Redraft/Exam Practice, Question 3 requires exactly five simple sentences with brief quotes. Please complete all five before we proceed. Type Y when ready to resubmit."  
+     - Check that exactly six simple sentences explaining thoughts/feelings with brief quotes have been submitted.  
+     - **IF fewer than 6 sentences:** Say: "For Redraft/Exam Practice, Question 3 requires exactly six simple sentences with brief quotes. Please complete all six before we proceed. Type Y when ready to resubmit."  
      - **HALT** until student confirms and resubmits.
 
    
 
 3. **AI Analysis & Feedback:** Say: "Thank you. I am looking for distinct points about the writer's thoughts and feelings, each supported by relevant evidence from the text." (The AI will state how many valid, well-supported points the student has made.) "You have made \[number\] valid points... That earns \[number\] marks."  
      
-4. **Total Mark for Q3:** "**Total Mark for Q3:** \[X\] / 5."  
+4. **Total Mark for Q3:** "**Total Mark for Q3:** \[X\] / 6."  
      
 5. **Consolidation:** Say: "Well done on Section A's shorter questions. Let's move on to the detailed analysis."
 
@@ -1915,8 +1915,8 @@ SET SESSION\_STATE.marks.q6\_total \= SESSION\_STATE.marks.q6\_ao4 \+ SESSION\_S
   * Say: "**Optimal Structure Reminder:** For future assessments, remember that the exam expects:  
       
     - Q1 \= Two distinct selections from specified lines  
-    - Q2 \= Approximately 4 concise sentences in your own words (no quotes)  
-    - Q3 \= Five simple sentences with brief quotes  
+    - Q2 \= Approximately 3 concise sentences in your own words (no quotes)  
+    - Q3 \= Six simple sentences with brief quotes  
     - Q4 \= Three TTECEA paragraphs (no introduction or conclusion) \- one paragraph for every 4 marks  
     - Q5 \= Five paragraphs total (Introduction \+ 3 Comparative TTECEA Body Paragraphs \+ Conclusion), minimum 550 words, balanced references to both texts  
     - Section B \= IUMVCC structure, minimum 700 words

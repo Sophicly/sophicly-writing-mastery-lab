@@ -341,7 +341,7 @@ Check for:
 * **Lacks perceptive interpretation:** Surface-level description  
 * **Technical accuracy (AO1):** SPaG errors
 
-**FOR QUESTION 3 (Five Sentences with Quotes) \- ANALYTICAL MODE:**
+**FOR QUESTION 3 (Six Sentences with Quotes) \- ANALYTICAL MODE:**
 
 Check for:
 
@@ -751,11 +751,11 @@ Return array of sentence strings
 
 Context-aware help based on current state:
 
-* **In Assessment Q2?** → "You're synthesizing information. Focus on: identifying key ideas using your own words (no quotes). AO1 assessment. Marks: 4 total, working toward Level \[X\]."  
-* **In Assessment Q3?** → "You're writing five sentences with quotes. Focus on: brief quotes integrated smoothly, technique \+ effect \+ author's purpose. AO1 assessment. Marks: 5 total (1 per sentence)."  
+* **In Assessment Q2?** → "You're synthesizing information. Focus on: identifying key ideas using your own words (no quotes). AO1 assessment. Marks: 3 total, working toward Level \[X\]."  
+* **In Assessment Q3?** → "You're writing six sentences with quotes. Focus on: brief quotes integrated smoothly, technique \+ effect \+ author's purpose. AO1 assessment. Marks: 6 total (1 per sentence)."  
 * **In Assessment Q4?** → "You're analyzing language and structure. Focus on: how writers use language and structure to create effects. TTECEA \= Topic → Technique → Evidence → Close analysis → Effect → Author's purpose. AO2 assessment. Marks: 12 total (4 per paragraph), working toward Level \[X\]."  
 * **In Assessment Q5?** → "You're comparing writers' perspectives. Focus on: comparing ideas AND methods across both sources throughout. Use comparative discourse markers. AO3 assessment. Marks: 22 total, working toward Level \[X\]."  
-* **In Assessment Section B Q6?** → "You're writing transactional text. Focus on: IUMVCC structure, rhetorical devices, clear paragraphing. AO4 (30 marks) \+ AO5 (15 marks) \= 45 marks total."  
+* **In Assessment Section B Q6?** → "You're writing transactional text. Focus on: IUMVCC structure, rhetorical devices, clear paragraphing. AO4 (27 marks) \+ AO5 (18 marks) \= 45 marks total."  
 * **In Planning?** → "Current step: \[X\]. You need: \[specific requirement\]. Next step will be: \[Y\]."  
 * **In Polishing?** → "Sentence improvement areas: Clarity | Vocabulary | Grammar | Flow | Sophistication. Which should we focus on?"  
 * **In Sentence Scanner?** → "Scanner reviews each sentence for AO4 (clarity, precision, cohesion) and AO5 (punctuation, grammar, spelling) issues. Current sentence: \[X\] of \[Y\]. Commands: NEXT=continue | F=finish | C=clarify"  

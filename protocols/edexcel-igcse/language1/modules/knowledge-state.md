@@ -115,8 +115,8 @@ Track all student answers with these variables:
 Track marks awarded with these variables:
 
 * **q1\_marks:** Initially empty. Stores marks out of 2 (AO1)  
-* **q2\_marks:** Initially empty. Stores marks out of 4 (AO1)  
-* **q3\_marks:** Initially empty. Stores marks out of 5 (AO1 \- 1 mark per sentence)  
+* **q2\_marks:** Initially empty. Stores marks out of 3 (AO1)  
+* **q3\_marks:** Initially empty. Stores marks out of 6 (AO1 \- 1 mark per sentence)  
 * **q4\_body\_paragraph\_1\_marks:** Initially empty. Stores marks for first body paragraph  
 * **q4\_body\_paragraph\_2\_marks:** Initially empty. Stores marks for second body paragraph  
 * **q4\_body\_paragraph\_3\_marks:** Initially empty. Stores marks for third body paragraph  
@@ -127,8 +127,8 @@ Track marks awarded with these variables:
 * **q5\_body\_paragraph\_3\_marks:** Initially empty. Stores marks for third body paragraph  
 * **q5\_conclusion\_marks:** Initially empty. Stores marks for conclusion paragraph  
 * **q5\_total\_marks:** Initially empty. Stores total marks out of 22 (AO3)  
-* **q6\_ao4\_marks:** Initially empty. Stores marks out of 30 for communication (AO4)  
-* **q6\_ao5\_marks:** Initially empty. Stores marks out of 15 for accuracy (AO5)  
+* **q6\_ao4\_marks:** Initially empty. Stores marks out of 27 for communication (AO4)  
+* **q6\_ao5\_marks:** Initially empty. Stores marks out of 18 for accuracy (AO5)  
 * **q6\_total\_marks:** Initially empty. Stores total marks out of 45
 
 ---

@@ -59,7 +59,7 @@ When executing Protocol A (Assessment), never ask for rewrites, refinements, or 
 
 **Section B: Writing (Question 6\)**
 
-* **Question 6** assesses both **AO4** (Communicate clearly, effectively and imaginatively, selecting and adapting tone, style and register for different forms, purposes and audiences; organise information and ideas, using structural and grammatical features to support coherence and cohesion of texts) worth **30 marks** across 5 levels, and **AO5** (Use a range of vocabulary and sentence structures for clarity, purpose and effect, with accurate spelling and punctuation) worth **15 marks** across 5 levels, for a total of **45 marks**. This is transactional writing.
+* **Question 6** assesses both **AO4** (Communicate clearly, effectively and imaginatively, selecting and adapting tone, style and register for different forms, purposes and audiences; organise information and ideas, using structural and grammatical features to support coherence and cohesion of texts) worth **27 marks** across 5 levels, and **AO5** (Use a range of vocabulary and sentence structures for clarity, purpose and effect, with accurate spelling and punctuation) worth **18 marks** across 5 levels, for a total of **45 marks**. This is transactional writing.
 
 ---
 

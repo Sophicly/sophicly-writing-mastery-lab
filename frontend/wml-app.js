@@ -2477,16 +2477,31 @@
             heading: 'What would you like to practise?',
             hint: 'Edexcel IGCSE Language Paper 1 has two sections. Choose how you\'d like to work.',
             options: [
-                { id: 'A', label: 'Section A — Reading', desc: 'Q1-Q5 • Analyse fiction and non-fiction extracts' },
-                { id: 'B', label: 'Section B — Persuasive Writing (Creative Non-Fiction)', desc: 'Q6 • Write to persuade/argue (AO4/AO5)' },
+                { id: 'A', label: 'Section A — Reading', desc: 'Q1-Q5 • Two non-fiction texts (45 marks)' },
+                { id: 'B', label: 'Section B — Transactional Writing', desc: 'Choose 1 of 2 tasks • Article, speech, letter, report, leaflet (45 marks, AO4/AO5)' },
                 { id: 'individual', label: 'Pick a Question', desc: 'Choose a specific question to practise' },
-                { id: 'both', label: 'Whole Paper', desc: 'All questions in order' },
+                { id: 'both', label: 'Whole Paper', desc: 'All questions in order (90 marks)' },
             ],
             needsComparisonPoem: false,
             individualQuestions: [
-                { id: 'Q4', label: 'Q4 — Analytical Response', desc: '15 marks • How does the writer use language and structure? (AO2/AO3)' },
-                { id: 'Q5', label: 'Q5 — Comparative Analysis', desc: '15 marks • Compare two texts (AO2/AO3)' },
-                { id: 'Q6', label: 'Q6 — Persuasive Writing (Creative Non-Fiction)', desc: '30 marks • Write to persuade/argue (AO4/AO5)' },
+                { id: 'Q4', label: 'Q4 — Language & Structure', desc: '12 marks • Analyse language and structure in the anthology text (AO1/AO2)' },
+                { id: 'Q5', label: 'Q5 — Compare Texts', desc: '22 marks • Compare ideas and perspectives across both texts (AO1/AO3)' },
+                { id: 'SB', label: 'Section B — Transactional Writing', desc: '45 marks • Write to persuade/argue/advise (AO4/AO5)' },
+            ],
+        },
+        'edexcel-igcse_language2': {
+            heading: 'What would you like to practise?',
+            hint: 'Edexcel IGCSE Language Paper 2 has two sections. Choose how you\'d like to work.',
+            options: [
+                { id: 'A', label: 'Section A — Analytical Essay', desc: 'Q1 • Analyse one anthology poem or prose text (30 marks, AO1/AO2)' },
+                { id: 'B', label: 'Section B — Imaginative Writing', desc: 'Choose 1 of 3 tasks • Descriptive, narrative, or story writing (30 marks, AO4/AO5)' },
+                { id: 'individual', label: 'Pick a Question', desc: 'Choose a specific question to practise' },
+                { id: 'both', label: 'Whole Paper', desc: '60 marks • Both sections in order' },
+            ],
+            needsComparisonPoem: false,
+            individualQuestions: [
+                { id: 'Q1', label: 'Q1 — Analytical Essay', desc: '30 marks • Explore how the writer presents [theme] (AO1/AO2)' },
+                { id: 'SB', label: 'Section B — Imaginative Writing', desc: '30 marks • Descriptive, narrative, or story writing (AO4/AO5)' },
             ],
         },
     };

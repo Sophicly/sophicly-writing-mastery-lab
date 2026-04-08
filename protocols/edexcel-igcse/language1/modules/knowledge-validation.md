@@ -170,7 +170,7 @@ Would you like to consider this alternative, or would you prefer to stick with y
 
 **Apply This Algorithm:**
 
-* Question 3 Part B (after quote selection for five sentences)  
+* Question 3 Part B (after quote selection for six sentences)  
 * Question 4 Part B (after anchor quote selection) \- Uses **TTECEA** framework  
 * Question 5 Part B (after evidence selection for each writer) \- Uses **TTECEA comparative** framework
 
@@ -224,7 +224,7 @@ IF Section A Reading Question 5:
 
 IF Section B Writing (Question 6):
 
-* Ensure Assessment Objective references are only to AO4 (content/organization \- 30 marks) and AO5 (technical accuracy \- 15 marks)  
+* Ensure Assessment Objective references are only to AO4 (content/organization \- 27 marks) and AO5 (technical accuracy \- 18 marks)  
 * If any other AO category is detected (e.g., AO1, AO2, AO3), silently correct it before generating the response
 
 **RANGE\_CHECK(section\_key, awarded):**

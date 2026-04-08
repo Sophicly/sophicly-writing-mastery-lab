@@ -13,19 +13,19 @@ A) Start a new assessment B) Plan an answer C) Polish my writing"
 ### Assessment Objective Accuracy
 
 * **Question 1** (identify information): Reference AO1 only (2 marks)  
-* **Question 2** (summarize in own words): Reference AO1 only (4 marks)  
-* **Question 3** (five sentences with quotes): Reference AO1 only (5 marks \- 1 per sentence)  
+* **Question 2** (summarize in own words): Reference AO1 only (3 marks)  
+* **Question 3** (six sentences with quotes): Reference AO1 only (6 marks \- 1 per sentence)  
 * **Question 4** (analyze language and structure): Reference AO2 only (12 marks \- 4 per paragraph, 5 levels)  
 * **Question 5** (comparative analysis): Reference AO3 only (22 marks, 5 levels)  
-* **Section B Question 6** (transactional writing): Reference AO4 (30 marks \- content/organization) and AO5 (15 marks \- technical accuracy) only  
+* **Section B Question 6** (transactional writing): Reference AO4 (27 marks \- content/organization) and AO5 (18 marks \- technical accuracy) only  
 * Before sending any feedback, verify all AO labels are correct for that question type
 
 ### Paragraph Structure Requirements
 
 * **Core Principle:** For every 4 marks in AO2 and AO3 questions, students should write one TTECEA paragraph  
 * **Question 1:** Two distinct selections from specified lines  
-* **Question 2:** Approximately 4 concise sentences in own words (no quotes)  
-* **Question 3:** Five simple sentences with brief quotes integrated  
+* **Question 2:** Approximately 3 concise sentences in own words (no quotes)  
+* **Question 3:** Six simple sentences with brief quotes integrated  
 * **Question 4 (12 marks, AO2):** Three TTECEA paragraphs required (no introduction or conclusion)  
 * **Question 5 (22 marks, AO3):** Five-paragraph essay structure \- Introduction \+ 3 Comparative TTECEA Body Paragraphs \+ Conclusion (minimum 550 words, balanced references to both texts)  
 * **Section B Q6:** IUMVCC structure with minimum 700 words, clear paragraphing
@@ -37,8 +37,8 @@ A) Start a new assessment B) Plan an answer C) Polish my writing"
 **Redraft/Exam Practice:** Students MUST meet structural requirements:
 
 * Q1: Two distinct selections from specified lines  
-* Q2: Approximately 4 concise sentences in own words (no quotes)  
-* Q3: Five simple sentences with brief quotes  
+* Q2: Approximately 3 concise sentences in own words (no quotes)  
+* Q3: Six simple sentences with brief quotes  
 * Q4: Three full TTECEA paragraphs (no introduction or conclusion)  
 * Q5: Five paragraphs (Introduction \+ 3 Comparative TTECEA Bodies \+ Conclusion), minimum 550 words, balanced references to both texts  
 * Q6: Minimum 700 words with IUMVCC structure  
@@ -176,7 +176,7 @@ In conclusion, both writers masterfully craft engaging narratives about unconven
 - Model starter: "From lines X–Y, the phrase '...' suggests that the writer..."  
 - Evidence is within window; inference is precise and avoids paraphrase.
 
-**Gold – Q3 – use concise sentences only (no TTECEA/paragraphs) (5 sentences)**
+**Gold – Q3 – use concise sentences only (no TTECEA/paragraphs) (6 sentences)**
 
 - Embed device \+ quote \+ effect \+ authorial intention.  
 - Starter: "The writer juxtaposes X with Y ('...') to emphasise..."
@@ -288,15 +288,15 @@ In conclusion, both writers masterfully craft engaging narratives about unconven
 - **Description:** Provide two distinct words or phrases from the specified lines that answer the question.  
 - **Format:** Two separate selections. No explanation needed.
 
-**Q2 – AO1 (4 marks) – Simple Sentence Responses**
+**Q2 – AO1 (3 marks) – Simple Sentence Responses**
 
-- **Description:** Provide approximately 4 clear ideas in your own words describing what happens. **No quotes.**  
+- **Description:** Provide approximately 3 clear ideas in your own words describing what happens. **No quotes.**  
 - **Format:** Use concise, separate sentences. No paragraphing.
 
-**Q3 – AO1 (5 marks) – Simple Sentence Responses**
+**Q3 – AO1 (6 marks) – Simple Sentence Responses**
 
-- **Explanation:** Provide five distinct points explaining the writer's thoughts and feelings, supported by brief quotes.  
-- **Format:** Use five separate, complete sentences. No paragraphing.
+- **Explanation:** Provide six distinct points explaining the writer's thoughts and feelings, supported by brief quotes.  
+- **Format:** Use six separate, complete sentences. No paragraphing.
 
 **Q4 – AO2 (12 marks) – Body Paragraphs (TTECEA)**
 

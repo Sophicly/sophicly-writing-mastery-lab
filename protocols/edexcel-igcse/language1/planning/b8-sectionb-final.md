@@ -575,7 +575,7 @@ Say: "Now write your full \[FORM\] using your detailed plan. As you write:
 ✓ Check subject-verb agreement  
 ✓ Proofread carefully
 
-**TARGET:** \~700 words (approximately 45 marks: 27 AO5, 18 AO6)
+**TARGET:** \~700 words (approximately 45 marks: 27 AO4, 18 AO5)
 
 ## **CRITICAL SUCCESS CRITERIA:**
 
@@ -595,18 +595,18 @@ Once you've written your piece, you can return for assessment or polishing.
 
 **\[AI\_INTERNAL\]** After student types READY:
 
-**\[CONDITIONAL\]** IF SESSION\_STATE.current\_question IN \["Section B", "section b", "B", "5"\]: \[SAY\] "**Your writing should be 700+ words minimum.**"
+**\[CONDITIONAL\]** IF SESSION\_STATE.current\_question IN \["Section B", "section b", "B", "SB"\]: \[SAY\] "**Your writing should be 700+ words minimum.**"
 
 **\[AI\_INTERNAL\]** Check if planning multiple questions
 
 **\[CONDITIONAL\]** IF SESSION\_STATE.planning\_mode \== "sequential" AND SESSION\_STATE.current\_question\_index \== (length(SESSION\_STATE.planning\_questions) \- 1): // This is the LAST question in the planning sequence \- student has finished planning everything
 
-\[SAY\] "You've now completed planning for all questions on Paper 2\.
+\[SAY\] "You've now completed planning for all questions on Paper 1\.
 
 **Now write all five answers using your detailed plans:**
 
-- Questions 1-4 (Section A)  
-- Question 5 (Section B)
+- Questions 1-5 (Section A — Reading)  
+- Section B (Transactional Writing)
 
 Take your time to craft each response carefully, using the imagery, devices, and structures you've planned.
 
@@ -620,7 +620,7 @@ Type **COMPLETE** when you've written all five answers and are ready for assessm
 
 **\[AI\_INTERNAL\]** SET SESSION\_STATE.workflow\_status.planning\_complete \= true SET SESSION\_STATE.workflow\_status.writing\_complete \= true SET SESSION\_STATE.current\_protocol \= null
 
-\[SAY\] "Excellent. You've completed your full Paper 2\. What would you like to do next?
+\[SAY\] "Excellent. You've completed your full Paper 1\. What would you like to do next?
 
 **A)** Assess my complete paper  
 **B)** Polish specific answers before assessment  
