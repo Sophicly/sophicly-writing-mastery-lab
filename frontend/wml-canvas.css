@@ -3560,6 +3560,122 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     border-left-width: 0 !important;
 }
 
+/* ── Transfer Buttons (v7.14.80) ──
+   Overlay-positioned buttons for transferring plan/outline text into the response section.
+   Layer sits outside TipTap DOM — buttons are never saved with the document. */
+.swml-transfer-layer {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    pointer-events: none;
+    z-index: 4;
+}
+/* Per-section transfer button (small arrow icon) */
+.swml-transfer-btn {
+    pointer-events: auto;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    border: 1px solid rgba(28,217,145,0.25);
+    cursor: pointer;
+    background: rgba(28,217,145,0.12);
+    color: rgba(255,255,255,0.55);
+    font-size: 12px;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    outline: none;
+    opacity: 0;
+}
+.swml-section-plan:hover ~ .swml-transfer-layer .swml-transfer-btn,
+.swml-section-outline:hover ~ .swml-transfer-layer .swml-transfer-btn,
+.swml-transfer-btn:hover {
+    opacity: 1;
+}
+.swml-transfer-btn.swml-transfer-visible {
+    opacity: 1;
+}
+.swml-transfer-btn:hover {
+    background: rgba(28,217,145,0.35);
+    border-color: rgba(28,217,145,0.6);
+    color: #fff;
+}
+.swml-transfer-btn:active {
+    transform: scale(0.92);
+}
+.swml-transfer-btn.swml-transfer-success {
+    background: rgba(28,217,145,0.5);
+    border-color: #1CD991;
+    color: #fff;
+}
+.swml-transfer-btn.swml-transfer-empty {
+    background: rgba(255,107,107,0.3);
+    border-color: rgba(255,107,107,0.5);
+    color: #ff6b6b;
+}
+/* "Transfer All" button on dividers (pill-shaped label) */
+.swml-transfer-all-btn {
+    pointer-events: auto;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid rgba(28,217,145,0.25);
+    cursor: pointer;
+    background: rgba(28,217,145,0.1);
+    color: rgba(255,255,255,0.5);
+    font-family: 'Proxima Soft Complete', 'Proxima Soft', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    outline: none;
+    white-space: nowrap;
+}
+.swml-transfer-all-btn:hover {
+    background: rgba(28,217,145,0.3);
+    border-color: rgba(28,217,145,0.6);
+    color: #fff;
+}
+.swml-transfer-all-btn:active {
+    transform: scale(0.96);
+}
+.swml-transfer-all-btn.swml-transfer-success {
+    background: rgba(28,217,145,0.5);
+    border-color: #1CD991;
+    color: #fff;
+}
+.swml-transfer-all-btn.swml-transfer-empty {
+    background: rgba(255,107,107,0.3);
+    border-color: rgba(255,107,107,0.5);
+    color: #ff6b6b;
+}
+/* Light theme */
+[data-swml-theme="light"] .swml-transfer-btn {
+    background: rgba(28,180,120,0.1);
+    border-color: rgba(28,180,120,0.2);
+    color: rgba(0,0,0,0.35);
+}
+[data-swml-theme="light"] .swml-transfer-btn:hover {
+    background: rgba(28,180,120,0.25);
+    border-color: rgba(28,180,120,0.5);
+    color: rgba(0,0,0,0.7);
+}
+[data-swml-theme="light"] .swml-transfer-all-btn {
+    background: rgba(28,180,120,0.06);
+    border-color: rgba(28,180,120,0.2);
+    color: rgba(0,0,0,0.4);
+}
+[data-swml-theme="light"] .swml-transfer-all-btn:hover {
+    background: rgba(28,180,120,0.18);
+    border-color: rgba(28,180,120,0.5);
+    color: rgba(0,0,0,0.7);
+}
+
 /* ── CW Resource Buttons (v7.13.47) ── */
 div.swml-cw-resource-btn {
     display: block !important;

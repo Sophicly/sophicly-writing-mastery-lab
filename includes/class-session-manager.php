@@ -280,7 +280,8 @@ class SWML_Session_Manager {
      * Questions are stored per user, keyed by board + text.
      */
     public static function save_question($user_id, $board, $subject, $text, $question_data) {
-        $all = get_user_meta($user_id, 'wml_saved_questions', true) ?: [];
+        $raw = get_user_meta($user_id, 'wml_saved_questions', true);
+        $all = is_string($raw) ? json_decode($raw, true) : ($raw ?: []);
         $key = sanitize_key($board . '_' . $text);
 
         if (!isset($all[$key])) $all[$key] = [];
@@ -302,7 +303,7 @@ class SWML_Session_Manager {
             'saved_at'  => current_time('mysql'),
         ];
 
-        update_user_meta($user_id, 'wml_saved_questions', $all);
+        update_user_meta($user_id, 'wml_saved_questions', wp_slash(wp_json_encode($all)));
         return $all[$key];
     }
 
@@ -310,9 +311,47 @@ class SWML_Session_Manager {
      * Get saved questions for a specific board + text combination.
      */
     public static function get_saved_questions($user_id, $board, $text) {
-        $all = get_user_meta($user_id, 'wml_saved_questions', true) ?: [];
+        $raw = get_user_meta($user_id, 'wml_saved_questions', true);
+        $all = is_string($raw) ? json_decode($raw, true) : ($raw ?: []);
         $key = sanitize_key($board . '_' . $text);
         return $all[$key] ?? [];
+    }
+
+    /**
+     * Get ALL saved questions across all texts, optionally filtered by board.
+     * Returns array of banks: [ { board, text, count, questions[] } ]
+     */
+    public static function get_all_saved_questions($user_id, $board_filter = '') {
+        $raw = get_user_meta($user_id, 'wml_saved_questions', true);
+        $all = is_string($raw) ? json_decode($raw, true) : ($raw ?: []);
+
+        $banks = [];
+        foreach ($all as $key => $questions) {
+            if (!is_array($questions) || empty($questions)) continue;
+
+            // Extract board/text from first question's stored fields (avoids underscore ambiguity in key)
+            $first = $questions[0];
+            $q_board = $first['board'] ?? '';
+            $q_text  = $first['text'] ?? '';
+
+            // Fallback: parse from key if stored fields are empty
+            if (empty($q_board) && strpos($key, '_') !== false) {
+                $parts = explode('_', $key, 2);
+                $q_board = $parts[0];
+                $q_text  = $parts[1] ?? '';
+            }
+
+            if ($board_filter && $q_board !== $board_filter) continue;
+
+            $banks[] = [
+                'board'     => $q_board,
+                'text'      => $q_text,
+                'count'     => count($questions),
+                'questions' => $questions,
+            ];
+        }
+
+        return $banks;
     }
 
     private static function generate_session_id() {

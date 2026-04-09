@@ -2659,7 +2659,8 @@
                         // Re-run topic template injection, then rebuild dropdowns
                         tryTopicTemplate().then(() => {
                             if (dropdownLayer) { dropdownLayer.remove(); dropdownLayer = null; }
-                            setTimeout(() => buildDropdownOverlays(contentWrap), 200);
+                            if (transferLayer) { transferLayer.remove(); transferLayer = null; }
+                            setTimeout(() => { buildDropdownOverlays(contentWrap); buildTransferOverlays(contentWrap); }, 200);
                         });
                     }
                 }, { confirmText: 'Reset', danger: true });
@@ -6945,7 +6946,7 @@
                 // Initial outline + section badges
                 updateOutline();
                 // Inject section controls (for resumed documents that already have sections)
-                setTimeout(() => buildDropdownOverlays(contentWrap), 250);
+                setTimeout(() => { buildDropdownOverlays(contentWrap); buildTransferOverlays(contentWrap); }, 250);
                 // v7.14.34: Colorise section groups after DOM render
                 setTimeout(coloriseSectionGroups, 400);
             },
@@ -7070,8 +7071,8 @@
             // Also re-run after template injection (async topic data may load later)
             setTimeout(coloriseSectionGroups, 1500);
             // v7.13.48: CW resource buttons are now in the sidebar (not in document)
-            // Inject dropdown overlays after template is ready
-            setTimeout(() => buildDropdownOverlays(contentWrap), 200);
+            // Inject dropdown overlays + transfer buttons after template is ready
+            setTimeout(() => { buildDropdownOverlays(contentWrap); buildTransferOverlays(contentWrap); }, 200);
             // Re-position comment gutter after all content (cover, TOC, template) is loaded (v7.12.35)
             setTimeout(() => updateCommentGutter(), 400);
             // v7.13.92: Re-snapshot section count after template injection (sections may have been added)
@@ -7150,8 +7151,8 @@
             if (dirty) {
                 console.log('WML: Cleaned corrupted/stale content');
                 saveCanvasContent();
-                // Rebuild dropdown overlays after DOM cleanup
-                setTimeout(() => buildDropdownOverlays(contentWrap), 300);
+                // Rebuild dropdown overlays + transfer buttons after DOM cleanup
+                setTimeout(() => { buildDropdownOverlays(contentWrap); buildTransferOverlays(contentWrap); }, 300);
             }
         }
 
@@ -7175,6 +7176,250 @@
         let dropdownLayer = null;
         let gradeOverride = null; // When set (1-9), overrides auto-calculated grade
 
+        // ══════════════════════════════════════════════════════════════
+        //  TRANSFER BUTTONS (v7.14.80)
+        //  Overlay-positioned buttons for transferring plan/outline text
+        //  into the response section. Layer sits outside TipTap DOM.
+        // ══════════════════════════════════════════════════════════════
+        let transferLayer = null;
+        const SVG_TRANSFER = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>';
+
+        /** Find a sectionBlock by its label (loop-based, no CSS.escape) */
+        function findSectionByLabel(editorEl, label) {
+            const all = editorEl.querySelectorAll('[data-section-type]');
+            for (const s of all) {
+                if (s.getAttribute('data-section-label') === label) return s;
+            }
+            return null;
+        }
+
+        /** Extract student text from a plan section (InputField textContent) */
+        function extractPlanText(sectionEl) {
+            const field = sectionEl.querySelector('.swml-input-field');
+            return field ? field.textContent.trim() : '';
+        }
+
+        /** Extract student text from an outline section (OutlineRow .swml-outline-input only) */
+        function extractOutlineText(sectionEl) {
+            const inputs = sectionEl.querySelectorAll('.swml-outline-input');
+            const parts = [];
+            inputs.forEach(function(inp) {
+                const t = inp.textContent.trim();
+                if (t) parts.push(t);
+            });
+            return parts.join(' ');
+        }
+
+        /** Resolve which Response section label a plan/outline section should transfer to */
+        function resolveResponseLabel(sectionLabel) {
+            // "Plan: Introduction — Part A" → "Response — Part A"
+            const partMatch = sectionLabel.match(/\u2014\s*(Part\s+[A-Z])$/);
+            if (partMatch) return 'Response \u2014 ' + partMatch[1];
+            // "Plan: Paragraph 1 — Q5a" → "Q5a Response"
+            const qMatch = sectionLabel.match(/\u2014\s*(Q\d+\w*)$/);
+            if (qMatch) return qMatch[1] + ' Response';
+            // Single-part — check if dual-part doc exists
+            const editor = document.getElementById('swml-tiptap-editor');
+            if (editor && findSectionByLabel(editor, 'Response \u2014 Part A')) return 'Response \u2014 Part A';
+            return 'Response';
+        }
+
+        /** Resolve which Response section a divider's sections should transfer to */
+        function dividerToResponseLabel(dividerLabel) {
+            const partMatch = dividerLabel.match(/PART\s+([A-Z])/i);
+            if (partMatch) return 'Response \u2014 Part ' + partMatch[1];
+            const qMatch = dividerLabel.match(/(?:PLAN|OUTLINE)\s*\u2014\s*(Q\d+\w*)/i);
+            if (qMatch) return qMatch[1] + ' Response';
+            const editor = document.getElementById('swml-tiptap-editor');
+            if (editor && findSectionByLabel(editor, 'Response \u2014 Part A')) return 'Response \u2014 Part A';
+            return 'Response';
+        }
+
+        /** Insert paragraphs at the end of a response sectionBlock via TipTap */
+        function insertIntoResponse(responseLabel, paragraphs) {
+            if (!canvasEditor || !paragraphs.length) return false;
+            var insertPos = null;
+            canvasEditor.state.doc.descendants(function(node, pos) {
+                if (insertPos !== null) return false;
+                if (node.type.name === 'sectionBlock' &&
+                    node.attrs.sectionType === 'response' &&
+                    node.attrs.label === responseLabel) {
+                    insertPos = pos + node.nodeSize - 1;
+                    return false;
+                }
+            });
+            if (insertPos === null) return false;
+            var content = paragraphs.filter(function(t) { return t.trim(); }).map(function(t) {
+                return { type: 'paragraph', content: [{ type: 'text', text: t }] };
+            });
+            if (!content.length) return false;
+            canvasEditor.chain().insertContentAt(insertPos, content).run();
+            saveCanvasContent();
+            return true;
+        }
+
+        /** Flash a transfer button with success/empty state */
+        function flashTransferBtn(btn, success) {
+            var cls = success ? 'swml-transfer-success' : 'swml-transfer-empty';
+            var originalHTML = btn.innerHTML; // preserve full content (includes "Transfer All" text)
+            btn.classList.add(cls);
+            if (success) btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+            setTimeout(function() {
+                btn.classList.remove(cls);
+                if (success) btn.innerHTML = originalHTML;
+            }, 1200);
+        }
+
+        /** Collect all plan or outline sections following a divider until the next divider */
+        function collectSectionsAfterDivider(dividerEl, targetType) {
+            var sections = [];
+            var el = dividerEl.nextElementSibling;
+            while (el) {
+                var type = el.getAttribute('data-section-type');
+                if (type === 'divider') break;
+                if (type === targetType) sections.push(el);
+                el = el.nextElementSibling;
+            }
+            return sections;
+        }
+
+        /** Build the transfer button overlay layer */
+        function buildTransferOverlays(container) {
+            if (!canvasEditor) return;
+            var editor = document.getElementById('swml-tiptap-editor');
+            if (!editor) return;
+            if (transferLayer) transferLayer.remove();
+            transferLayer = document.createElement('div');
+            transferLayer.className = 'swml-transfer-layer';
+            transferLayer.style.cssText = 'position:absolute;top:0;left:0;right:0;pointer-events:none;z-index:4;visibility:hidden;';
+            var dw = editor.closest('.swml-canvas-doc');
+            if (!dw) return;
+            dw.appendChild(transferLayer);
+
+            // ── Per-section transfer buttons ──
+            var planSections = editor.querySelectorAll('[data-section-type="plan"]');
+            planSections.forEach(function(section) {
+                var label = section.getAttribute('data-section-label') || '';
+                var btn = document.createElement('button');
+                btn.className = 'swml-transfer-btn swml-transfer-visible';
+                btn.innerHTML = SVG_TRANSFER;
+                btn.title = 'Transfer to Response';
+                btn.dataset.sectionLabel = label;
+                btn.dataset.sectionType = 'plan';
+                btn.addEventListener('mousedown', function(e) { e.preventDefault(); e.stopPropagation(); });
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var sec = findSectionByLabel(editor, label);
+                    if (!sec) return;
+                    var text = extractPlanText(sec);
+                    if (!text) { flashTransferBtn(btn, false); return; }
+                    var target = resolveResponseLabel(label);
+                    var ok = insertIntoResponse(target, [text]);
+                    flashTransferBtn(btn, ok);
+                });
+                transferLayer.appendChild(btn);
+            });
+
+            var outlineSections = editor.querySelectorAll('[data-section-type="outline"]');
+            outlineSections.forEach(function(section) {
+                var label = section.getAttribute('data-section-label') || '';
+                var btn = document.createElement('button');
+                btn.className = 'swml-transfer-btn swml-transfer-visible';
+                btn.innerHTML = SVG_TRANSFER;
+                btn.title = 'Transfer to Response';
+                btn.dataset.sectionLabel = label;
+                btn.dataset.sectionType = 'outline';
+                btn.addEventListener('mousedown', function(e) { e.preventDefault(); e.stopPropagation(); });
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var sec = findSectionByLabel(editor, label);
+                    if (!sec) return;
+                    var text = extractOutlineText(sec);
+                    if (!text) { flashTransferBtn(btn, false); return; }
+                    var target = resolveResponseLabel(label);
+                    var ok = insertIntoResponse(target, [text]);
+                    flashTransferBtn(btn, ok);
+                });
+                transferLayer.appendChild(btn);
+            });
+
+            // ── "Transfer All" buttons on dividers ──
+            var dividers = editor.querySelectorAll('[data-section-type="divider"]');
+            dividers.forEach(function(div) {
+                var label = (div.getAttribute('data-section-label') || '').trim();
+                var targetType = null;
+                if (/^ESSAY\s*PLAN/i.test(label) || /^PLAN\s*\u2014/i.test(label) || /^YOUR\s*(?:ESSAY\s*)?PLAN/i.test(label)) targetType = 'plan';
+                else if (/^OUTLINE/i.test(label)) targetType = 'outline';
+                if (!targetType) return;
+                var btn = document.createElement('button');
+                btn.className = 'swml-transfer-all-btn';
+                btn.innerHTML = 'Transfer All ' + SVG_TRANSFER;
+                btn.dataset.dividerLabel = label;
+                btn.dataset.targetType = targetType;
+                btn.addEventListener('mousedown', function(e) { e.preventDefault(); e.stopPropagation(); });
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var divEl = findSectionByLabel(editor, label);
+                    if (!divEl) return;
+                    var sections = collectSectionsAfterDivider(divEl, targetType);
+                    var paragraphs = [];
+                    sections.forEach(function(sec) {
+                        var text = targetType === 'plan' ? extractPlanText(sec) : extractOutlineText(sec);
+                        if (text) paragraphs.push(text);
+                    });
+                    if (!paragraphs.length) { flashTransferBtn(btn, false); return; }
+                    var target = dividerToResponseLabel(label);
+                    var ok = insertIntoResponse(target, paragraphs);
+                    flashTransferBtn(btn, ok);
+                });
+                transferLayer.appendChild(btn);
+            });
+
+            positionTransferOverlays();
+            container.addEventListener('scroll', positionTransferOverlays, { passive: true });
+        }
+
+        /** Position transfer buttons relative to their target sections */
+        function positionTransferOverlays() {
+            if (!transferLayer) return;
+            var editor = document.getElementById('swml-tiptap-editor');
+            if (!editor) return;
+            var dw = editor.closest('.swml-canvas-doc');
+            if (!dw) return;
+            var dwRect = dw.getBoundingClientRect();
+            var z = canvasZoom || 1;
+
+            // Per-section buttons — top-right of each section
+            transferLayer.querySelectorAll('.swml-transfer-btn').forEach(function(btn) {
+                var label = btn.dataset.sectionLabel;
+                var section = findSectionByLabel(editor, label);
+                if (!section) { btn.style.display = 'none'; return; }
+                btn.style.display = '';
+                var sRect = section.getBoundingClientRect();
+                var top = (sRect.top - dwRect.top) / z + 4;
+                var left = (sRect.right - dwRect.left) / z - 30;
+                btn.style.cssText = 'position:absolute;top:' + top + 'px;left:' + left + 'px;pointer-events:auto;';
+            });
+
+            // Transfer All buttons — right side of divider
+            transferLayer.querySelectorAll('.swml-transfer-all-btn').forEach(function(btn) {
+                var label = btn.dataset.dividerLabel;
+                var divider = findSectionByLabel(editor, label);
+                if (!divider) { btn.style.display = 'none'; return; }
+                btn.style.display = '';
+                var dRect = divider.getBoundingClientRect();
+                var top = (dRect.top - dwRect.top) / z + (dRect.height / z / 2) - 10;
+                var left = (dRect.right - dwRect.left) / z - 90;
+                btn.style.cssText = 'position:absolute;top:' + top + 'px;left:' + left + 'px;pointer-events:auto;';
+            });
+
+            // Show layer after first positioning pass (prevents flash at wrong position)
+            if (transferLayer.style.visibility === 'hidden') transferLayer.style.visibility = 'visible';
+        }
+
         function buildDropdownOverlays(container) {
             if (!canvasEditor) return;
             const editor = document.getElementById('swml-tiptap-editor');
@@ -7183,7 +7428,7 @@
             // Remove existing overlay layer
             if (dropdownLayer) dropdownLayer.remove();
             dropdownLayer = el('div', { className: 'swml-dropdown-layer' });
-            dropdownLayer.style.cssText = 'position:absolute;top:0;left:0;right:0;pointer-events:none;z-index:5;';
+            dropdownLayer.style.cssText = 'position:absolute;top:0;left:0;right:0;pointer-events:none;z-index:5;visibility:hidden;';
             // Insert into docWrap (sibling position to editor, outside ProseMirror)
             const dw = editor.closest('.swml-canvas-doc');
             if (!dw) return;
@@ -7650,6 +7895,9 @@
                     }
                 }
             }
+
+            // Show layer after first positioning pass (prevents flash at wrong position on load)
+            if (dropdownLayer.style.visibility === 'hidden') dropdownLayer.style.visibility = 'visible';
         }
 
         function updateSectionNodeLabel(domEl, newLabel) {
@@ -7887,8 +8135,8 @@
                 zoomInput.value = `${pct}%`;
                 zoomWrap.style.display = 'flex';
             }
-            // Reposition dropdown overlays after zoom
-            requestAnimationFrame(positionDropdownOverlays);
+            // Reposition dropdown overlays + transfer buttons after zoom
+            requestAnimationFrame(function() { positionDropdownOverlays(); positionTransferOverlays(); });
         }
 
         // ── Pan + Zoom Transform (v7.12.41, v7.12.50 centering fix) ──
@@ -8010,7 +8258,7 @@
                 panTargetX = panOffsetX;
                 panVelocity = -e.deltaX * 0.4; // track velocity for momentum
                 updateDocTransform();
-                requestAnimationFrame(positionDropdownOverlays);
+                requestAnimationFrame(function() { positionDropdownOverlays(); positionTransferOverlays(); });
 
                 // Reset gesture state after 120ms of no horizontal input
                 clearTimeout(panGestureTimer);
@@ -8052,7 +8300,7 @@
             if (isPanning) {
                 isPanning = false;
                 contentWrap.classList.remove('swml-panning-active');
-                requestAnimationFrame(positionDropdownOverlays);
+                requestAnimationFrame(function() { positionDropdownOverlays(); positionTransferOverlays(); });
             }
         });
 
@@ -8065,7 +8313,7 @@
             panVelocity = 0;
             if (panAnimFrame) { cancelAnimationFrame(panAnimFrame); panAnimFrame = 0; }
             updateDocTransform(true); // animate = true
-            requestAnimationFrame(positionDropdownOverlays);
+            requestAnimationFrame(function() { positionDropdownOverlays(); positionTransferOverlays(); });
         });
     }
 
@@ -10245,11 +10493,7 @@
             for (let i = 1; i <= 10; i++) {
                 html += dividerHTML('QUESTION ' + i);
                 html += sectionHTML('plan', 'Question ' + i, true, null,
-                    '<h3>Question ' + i + '</h3>' +
-                    '<p><strong>Question:</strong></p><p></p>' +
-                    '<p><strong>Theme / Character:</strong></p><p></p>' +
-                    '<p><strong>Key quotes to consider:</strong></p><p></p>' +
-                    '<p><strong>Your notes:</strong></p><p></p>');
+                    inputHTML('Write or paste your exam question here.', 'eq-q-' + i));
             }
         } else if (exerciseType === 'essay_plan') {
             // ── ESSAY PLAN ──
@@ -10334,27 +10578,52 @@
             }
         } else if (exerciseType === 'conceptual_notes') {
             // ── CONCEPTUAL NOTES ──
-            // v7.14.13: 8 concept areas with structured editable spaces.
+            // v7.14.85: Subject-aware sections (literature / poetry / nonfiction) with InputFields.
+            var isNF = WML.isNonfictionSubject();
+            var isPo = WML.isPoetrySubject();
+            var cnTitle = isNF ? 'Nonfiction Conceptual Notes' : (isPo ? 'Poetry Conceptual Notes' : 'Grade 9 Conceptual Notes');
+            var cnDesc = isNF
+                ? 'Build deep understanding of the writer\u2019s voice, purpose, and techniques. These notes explore how the writer communicates their perspective and why it matters.'
+                : isPo
+                    ? 'Build deep conceptual understanding of this poem. These notes explore the speaker, form, language, and the poet\u2019s intent.'
+                    : 'Build deep conceptual understanding of your text. These notes go beyond surface-level plot to explore themes, context, and authorial intent.';
             html += sectionHTML('question', 'About This Exercise', false, null,
-                '<h2>Grade 9 Conceptual Notes</h2>' +
+                '<h2>' + cnTitle + '</h2>' +
                 (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
-                '<p>Build deep conceptual understanding of your text. These notes go beyond surface-level plot to explore themes, context, and authorial intent.</p>'
+                '<p>' + cnDesc + '</p>'
             );
-            var concepts = [
-                { label: 'Characters', prompt: 'Key characters, their roles, relationships, and development. What does each character represent?' },
+            var concepts = isNF ? [
+                { label: 'Writer\u2019s Voice', prompt: 'What is distinctive about this writer\u2019s voice? How do their perspective, experience, and style shape the text?' },
+                { label: 'Context', prompt: 'When and why was this written? What social, political, or personal context shapes the writer\u2019s perspective?' },
+                { label: 'Structure', prompt: 'How is the text organised? What structural choices does the writer make and why?' },
+                { label: 'Text Type & Form', prompt: 'What type of text is this (article, speech, memoir, etc.)? How does the form shape the reader\u2019s experience?' },
+                { label: 'Techniques', prompt: 'What language techniques does the writer use? How do they create meaning and influence the reader?' },
+                { label: 'Themes & Ideas', prompt: 'What are the key themes and ideas? What is the writer arguing or exploring?' },
+                { label: 'Writer\u2019s Purpose', prompt: 'What is the writer trying to achieve? How do they want the reader to think, feel, or act?' },
+                { label: 'The Big Message', prompt: 'What is the overarching message? What does this text reveal about the human experience?' },
+            ] : isPo ? [
+                { label: 'Speaker', prompt: 'Who is the speaker? What is their perspective, tone, and emotional state?' },
+                { label: 'Historical Context', prompt: 'When was this written? What historical, social, or biographical context shapes the poem\u2019s meaning?' },
+                { label: 'Form', prompt: 'What poetic form is used (sonnet, dramatic monologue, free verse, etc.)? Why does this form suit the content?' },
+                { label: 'Structure & Language', prompt: 'How is the poem structured? What techniques, imagery, and language choices create meaning?' },
+                { label: 'Themes', prompt: 'What are the key themes? How are they developed across the poem?' },
+                { label: 'Poet\u2019s Purpose', prompt: 'What is the poet trying to achieve? How do they want the reader to think or feel?' },
+                { label: 'The Big Message', prompt: 'What is the overarching message? What does this poem reveal about the human experience?' },
+            ] : [
+                { label: 'Protagonist', prompt: 'Key characters, their roles, relationships, and development. What does each character represent?' },
+                { label: 'Historical Context', prompt: 'Historical, social, cultural, and biographical context. How does context shape the text\u2019s meaning?' },
+                { label: 'Plot Structure', prompt: 'Narrative structure, chronology, turning points. How does the author organise the text for effect?' },
+                { label: 'Genre & Emotion', prompt: 'What genre conventions are used? How does the author create emotional responses in the reader?' },
                 { label: 'Themes', prompt: 'Major themes explored in the text. How are they developed? What is the author saying about each?' },
-                { label: 'Context', prompt: 'Historical, social, cultural, and biographical context. How does context shape the text\u2019s meaning?' },
-                { label: 'Structure', prompt: 'Narrative structure, chronology, turning points. How does the author organise the text for effect?' },
-                { label: 'Language', prompt: 'Key techniques, imagery, motifs, symbolism. How does the author use language to create meaning?' },
-                { label: 'Writer\u2019s Intent', prompt: 'What is the author trying to achieve? What message are they communicating to the reader?' },
-                { label: 'Critical Perspectives', prompt: 'Alternative readings: feminist, Marxist, postcolonial, psychoanalytic. How might different readers interpret the text?' },
-                { label: 'Exam Technique', prompt: 'Key quotes to memorise, argument structures, common exam angles for this text.' },
+                { label: 'Author\u2019s Purpose', prompt: 'What is the author trying to achieve? What message are they communicating to the reader?' },
+                { label: 'The Big Message', prompt: 'What is the overarching message? What does this text reveal about the human experience?' },
             ];
-            concepts.forEach(function(c) {
+            concepts.forEach(function(c, idx) {
+                var fieldId = isNF ? ('nfcn_section_' + (idx + 1)) : ('cn_section_' + (idx + 1));
                 html += dividerHTML(c.label.toUpperCase());
                 html += sectionHTML('plan', c.label, true, null,
                     '<h3>' + c.label + '</h3>' +
-                    '<p><em>' + c.prompt + '</em></p><p></p><p></p><p></p>');
+                    inputHTML(c.prompt, fieldId));
             });
         } else if (exerciseType === 'memory_practice') {
             // ── MEMORY PRACTICE ──
@@ -11069,6 +11338,8 @@
         if (state.task === 'mark_scheme') { console.log('WML Migration: Skipping — mark scheme document'); return; }
         // v7.13.43: CW exercises have their own section structure — skip assessment migration
         if (state.task && state.task.startsWith('cw_')) { console.log('WML Migration: Skipping — CW exercise document'); return; }
+        // v7.14.85: Conceptual notes, memory practice, and exam question creator don't have assessment sections
+        if (['conceptual_notes', 'memory_practice', 'exam_question'].includes(state.task)) { console.log('WML Migration: Skipping — non-assessment exercise'); return; }
         const currentHTML = canvasEditor.getHTML();
         // Only run on documents that have section blocks (i.e. structured templates)
         if (!currentHTML.includes('data-section-type')) return;

@@ -20,6 +20,7 @@ class SWML_REST_API {
 
     private function __construct() {
         add_action('rest_api_init', [$this, 'register_routes']);
+        add_action('sophicly_canvas_saved', [$this, 'maybe_extract_exam_questions'], 10, 7);
     }
 
     public function register_routes() {
@@ -99,6 +100,16 @@ class SWML_REST_API {
         ]);
         register_rest_route($namespace, '/saved-questions', [
             'methods' => 'POST', 'callback' => [$this, 'save_question'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+
+        // Question bank — dashboard aggregation endpoints (v7.14.84)
+        register_rest_route($namespace, '/question-bank/all', [
+            'methods' => 'GET', 'callback' => [$this, 'get_all_question_banks'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/question-bank', [
+            'methods' => 'GET', 'callback' => [$this, 'get_question_bank'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
@@ -882,6 +893,68 @@ class SWML_REST_API {
     }
 
     // ═══════════════════════════════════════════
+    //  QUESTION BANK — DASHBOARD AGGREGATION (v7.14.84)
+    // ═══════════════════════════════════════════
+
+    /**
+     * GET /question-bank/all[?board=X]
+     * Returns all saved questions grouped by board+text.
+     * Dashboard ExamPrepPanel calls this.
+     */
+    public function get_all_question_banks($request) {
+        $user_id = get_current_user_id();
+        $board_filter = sanitize_text_field($request->get_param('board') ?? '');
+
+        $banks = SWML_Session_Manager::get_all_saved_questions($user_id, $board_filter);
+
+        // Map fields to dashboard-expected names
+        foreach ($banks as &$bank) {
+            $bank['questions'] = array_map([$this, 'map_question_for_dashboard'], $bank['questions']);
+        }
+        unset($bank);
+
+        return rest_ensure_response(['success' => true, 'banks' => $banks]);
+    }
+
+    /**
+     * GET /question-bank?board=X&text=Y
+     * Returns saved questions for a specific board+text.
+     */
+    public function get_question_bank($request) {
+        $user_id = get_current_user_id();
+        $board = sanitize_text_field($request->get_param('board') ?? '');
+        $text  = sanitize_text_field($request->get_param('text') ?? '');
+
+        if (empty($board) || empty($text)) {
+            return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
+        }
+
+        $questions = SWML_Session_Manager::get_saved_questions($user_id, $board, $text);
+        $mapped = array_map([$this, 'map_question_for_dashboard'], $questions);
+
+        return rest_ensure_response(['success' => true, 'questions' => $mapped]);
+    }
+
+    /**
+     * Map stored question fields to dashboard-expected field names.
+     * Storage: full_text, saved_at  →  Dashboard: questionText, createdAt
+     */
+    private function map_question_for_dashboard($q) {
+        return [
+            'theme'        => $q['theme'] ?? '',
+            'questionText' => $q['full_text'] ?? $q['summary'] ?? '',
+            'summary'      => $q['summary'] ?? '',
+            'location'     => $q['location'] ?? '',
+            'marks'        => $q['marks'] ?? '',
+            'aos'          => $q['aos'] ?? '',
+            'board'        => $q['board'] ?? '',
+            'subject'      => $q['subject'] ?? '',
+            'text'         => $q['text'] ?? '',
+            'createdAt'    => $q['saved_at'] ?? '',
+        ];
+    }
+
+    // ═══════════════════════════════════════════
     //  PROTOCOL MANIFEST STEP LABELS (v7.14.66)
     // ═══════════════════════════════════════════
 
@@ -964,6 +1037,36 @@ class SWML_REST_API {
             'key'     => $meta_key,
             'savedAt' => $doc['savedAt'],
         ]);
+    }
+
+    /**
+     * Auto-extract exam questions from canvas InputFields into wml_saved_questions.
+     * Fires on sophicly_canvas_saved hook — only processes exam_question documents.
+     * Deduplication handled by SWML_Session_Manager::save_question() (80-char summary match).
+     *
+     * @since 7.14.85
+     */
+    public function maybe_extract_exam_questions($user_id, $board, $text, $html, $word_count, $topic_number, $suffix) {
+        if ($suffix !== 'exam_question' || empty($html)) return;
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML('<meta charset="utf-8">' . $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODERRRECOVERY);
+
+        $xpath = new \DOMXPath($doc);
+        $fields = $xpath->query('//div[@data-input-field]');
+
+        if (!$fields || $fields->length === 0) return;
+
+        foreach ($fields as $field) {
+            $content = trim($field->textContent);
+            if (empty($content) || strlen($content) < 10) continue;
+
+            SWML_Session_Manager::save_question($user_id, $board, '', $text, [
+                'summary'   => mb_substr(strip_tags($content), 0, 100),
+                'full_text' => wp_kses_post($content),
+                'theme'     => '',
+            ]);
+        }
     }
 
     /**
