@@ -921,7 +921,14 @@ class SWML_Topic_Questions {
             foreach ($subjects as $subject => $texts) {
                 foreach ($texts as $slug => $label) {
                     $total_texts++;
-                    $option_key = sanitize_key($board) . '_' . sanitize_key($slug);
+                    // Language papers: catalogue slug is language_p1 but option key uses language1
+                    $lang_reverse = [
+                        'language_p1' => 'language1', 'language_p2' => 'language2',
+                        'language_c1' => 'language1', 'language_c2' => 'language2',
+                        'language_u1' => 'language1', 'language_u4' => 'language2',
+                    ];
+                    $lookup_slug = $lang_reverse[$slug] ?? $slug;
+                    $option_key = sanitize_key($board) . '_' . sanitize_key($lookup_slug);
                     $count = $counts[$option_key] ?? 0;
                     $total_topics += $count;
                     if ($count > 0) $populated++;
