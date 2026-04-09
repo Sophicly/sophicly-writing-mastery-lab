@@ -488,6 +488,12 @@ class SWML_Protocol_Router {
         $protocol_group = $this->resolve_protocol_group($board, $subject);
         $manifest_path = $plugin_dir . "protocols/{$board}/{$protocol_group}/manifest.json";
 
+        // Edexcel IGCSE Language Paper 1 = nonfiction anthology — use nonfiction CN protocol (v7.14.89)
+        if ($task === 'conceptual_notes' && $subject === 'language1' && $board === 'edexcel_igcse') {
+            $protocol_group = 'nonfiction';
+            $manifest_path = $plugin_dir . "protocols/shared/nonfiction/manifest.json";
+        }
+
         // Fallback logic: board-specific tasks need their own protocol; shared tasks use shared/literature
         $protocol_board = $board;
         $shared_tasks = ['essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice'];
@@ -2063,7 +2069,8 @@ TEMPLATE;
         } else if ($task === 'conceptual_notes') {
             // Conceptual Notes — Grade 9 understanding session (Topic 2)
             $is_poetry = in_array($subject, ['poetry_anthology', 'unseen_poetry']);
-            $is_nonfiction = ($subject === 'nonfiction_anthology');
+            $is_nonfiction = ($subject === 'nonfiction_anthology')
+                || ($subject === 'language1' && $board === 'edexcel_igcse');
             $preamble .= "\n### CRITICAL RULES FOR CONCEPTUAL NOTES SESSION\n";
             $preamble .= "1. **NEVER reveal vector store queries.** Query the vector store silently — never say 'querying', never show the query string, never mention the vector store exists. Use retrieved knowledge to inform your Socratic questions.\n";
             $preamble .= "2. **One question at a time.** Ask one question, wait for the student's response, give brief feedback, then ask the next question. Never combine multiple questions.\n";

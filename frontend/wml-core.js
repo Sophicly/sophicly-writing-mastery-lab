@@ -1022,7 +1022,12 @@ window.WML = (function() {
     // prose_anthology uses Literature CN, not Poetry CN
     const isPoetrySubject = () => ['poetry_anthology', 'unseen_poetry'].includes(state.subject);
     const isLanguageSubject = () => ['language1', 'language2'].includes(state.subject);
-    const isNonfictionSubject = () => state.subject === 'nonfiction_anthology';
+    const isNonfictionSubject = () => {
+        if (state.subject === 'nonfiction_anthology') return true;
+        // Edexcel IGCSE Language Paper 1 = nonfiction anthology texts
+        if (state.subject === 'language1' && state.board === 'edexcel-igcse') return true;
+        return false;
+    };
     const isAnthologySubject = () => ['poetry_anthology', 'prose_anthology', 'nonfiction_anthology'].includes(state.subject);
     function getSteps() {
         if (state.task === 'assessment') return ASSESSMENT_STEPS;
