@@ -10635,14 +10635,14 @@
                 '<p>Test your recall of key quotes, analysis, and essay plans. Submit a piece of your work, then try to recreate it from memory under timed conditions.</p>'
             );
             html += dividerHTML('YOUR ORIGINAL WRITING');
-            html += sectionHTML('question', 'Submitted Writing', false, null,
-                '<p><em>The writing you submit for testing will appear here.</em></p>');
+            html += sectionHTML('response', 'Submitted Writing', true, null,
+                inputHTML('Paste or type your writing here for memory practice.', 'mp_submitted'));
             html += sectionHTML('feedback', 'Quality Gate', false, null,
                 '<p><em>The AI will assess whether your writing meets the standard for memory practice. If not, it will suggest improvements first.</em></p>');
             html += dividerHTML('RETRIEVAL EXERCISES');
             for (let i = 1; i <= 5; i++) {
                 html += sectionHTML('response', 'Retrieval Round ' + i, true, null,
-                    '<p><em>Round ' + i + ': Recreate as much as you can from memory.</em></p><p></p>');
+                    inputHTML('Round ' + i + ': Recreate as much as you can from memory.', 'mp_round_' + i));
                 html += sectionHTML('feedback', 'Round ' + i + ' Results', false, null,
                     '<p><em>Accuracy score and missed elements will appear here.</em></p>');
             }
