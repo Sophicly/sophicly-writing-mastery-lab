@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.14.91
+ * Version: 7.14.92
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.14.91');
+define('SWML_VERSION', '7.14.92');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -345,7 +345,7 @@ class Sophicly_Writing_Mastery_Lab {
         $task    = $atts['task'];
         $topic   = $atts['topic'] ?: get_post_meta($unit_id, '_sophicly_topic_number', true);
 
-        $course_id = function_exists('learndash_get_course_id') ? learndash_get_course_id($unit_id) : 0;
+        $course_id = $this->resolve_current_course_id($unit_id);
         if ($course_id) {
             $ctx = $this->get_embed_course_context($course_id);
             if (empty($board) && !empty($ctx['board']))     $board   = $ctx['board'];
@@ -439,7 +439,12 @@ class Sophicly_Writing_Mastery_Lab {
         $board = $atts['board'];
         $subject = $atts['subject'];
         $text = $atts['text'];
-        $course_id = function_exists('learndash_get_course_id') ? learndash_get_course_id($post_id) : 0;
+
+        // LearnDash: resolve course ID for shared lessons (v7.14.91)
+        // Shared lessons have ONE post ID but appear in multiple courses.
+        // learndash_get_course_id() returns the PRIMARY course (first assigned), not the current one.
+        // We need the CURRENT course — resolve from URL structure or LD query var.
+        $course_id = $this->resolve_current_course_id($post_id);
         if ($course_id) {
             $ctx = $this->get_embed_course_context($course_id);
             if (!empty($ctx['board']))    $board   = $board ?: $ctx['board'];
@@ -592,6 +597,49 @@ class Sophicly_Writing_Mastery_Lab {
             $specs_json = file_get_contents($specs_file);
             wp_add_inline_script('swml-core', 'window.swmlLangSpecs=' . $specs_json . ';', 'before');
         }
+    }
+
+    /**
+     * Resolve the CURRENT course ID for a LearnDash topic/lesson post.
+     * For shared lessons, learndash_get_course_id() returns the PRIMARY course,
+     * not the one the student is currently browsing. This method tries multiple
+     * strategies to get the correct current course. (v7.14.91)
+     */
+    private function resolve_current_course_id($post_id) {
+        // 1. Explicit URL param (some LD links include course_id)
+        if (!empty($_GET['course_id'])) {
+            return absint($_GET['course_id']);
+        }
+
+        // 2. LD query var — Focus Mode sets this from the URL path
+        $ld_course = get_query_var('course_id', 0);
+        if ($ld_course) return absint($ld_course);
+
+        // 3. LD's own global — set during template rendering in Focus Mode
+        if (!empty($GLOBALS['course_id'])) {
+            return absint($GLOBALS['course_id']);
+        }
+
+        // 4. Parse from URL: /courses/{course-slug}/lessons/... → resolve course post by slug
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+        if (preg_match('#/courses/([^/]+)/#', $uri, $m)) {
+            $course_posts = get_posts([
+                'name'        => $m[1],
+                'post_type'   => 'sfwd-courses',
+                'numberposts' => 1,
+                'fields'      => 'ids',
+            ]);
+            if (!empty($course_posts)) {
+                return (int) $course_posts[0];
+            }
+        }
+
+        // 5. Fallback: LD's standard function (returns primary course for shared lessons)
+        if (function_exists('learndash_get_course_id')) {
+            return (int) learndash_get_course_id($post_id);
+        }
+
+        return 0;
     }
 
     /**
