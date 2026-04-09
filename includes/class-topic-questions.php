@@ -351,10 +351,32 @@ class SWML_Topic_Questions {
     }
 
     /**
-     * Save all topics for a board/text
+     * Save all topics for a board/text.
+     * Returns true on success, false on failure.
      */
     private static function save_topics($board, $text, $topics) {
-        update_option(self::option_key($board, $text), $topics, false);
+        $key = self::option_key($board, $text);
+
+        // Try update first
+        $result = update_option($key, $topics, false);
+
+        // update_option returns false if value unchanged OR if write failed.
+        // If it returns false, try delete + add to handle large-value update failures.
+        if (!$result) {
+            delete_option($key);
+            $result = add_option($key, $topics, '', 'no');
+        }
+
+        // Flush object cache for this key (Redis/Memcached)
+        wp_cache_delete($key, 'options');
+        wp_cache_delete('alloptions', 'options');
+
+        if (!$result) {
+            $size = strlen(maybe_serialize($topics));
+            error_log("WML save_topics FAILED: key={$key}, topics=" . count($topics) . ", serialized_size={$size} bytes");
+        }
+
+        return (bool) $result;
     }
 
     /**
@@ -931,6 +953,11 @@ class SWML_Topic_Questions {
         check_ajax_referer('swml_topics_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
 
+        // Raise limits for large topic files (IGCSE anthology files can be 170KB+ serialized)
+        @ini_set('memory_limit', '512M');
+        @ini_set('max_execution_time', '300');
+        @ini_set('pcre.backtrack_limit', '10000000');
+
         $dir = plugin_dir_path(dirname(__FILE__)) . 'protocols/shared/templates/topics/';
         if (!is_dir($dir)) {
             wp_send_json_error('Topics directory not found: ' . $dir);
@@ -1014,13 +1041,18 @@ class SWML_Topic_Questions {
             }
 
             // Save (replace mode — fresh import)
-            self::save_topics($board, $slug, $parsed);
-            $results['imported'][] = [
-                'file'  => $filename . '.md',
-                'board' => $board,
-                'text'  => $slug,
-                'count' => count($parsed),
-            ];
+            $saved = self::save_topics($board, $slug, $parsed);
+            if ($saved) {
+                $results['imported'][] = [
+                    'file'  => $filename . '.md',
+                    'board' => $board,
+                    'text'  => $slug,
+                    'count' => count($parsed),
+                ];
+            } else {
+                $size = strlen(maybe_serialize($parsed));
+                $results['failed'][] = $filename . '.md — save failed (' . count($parsed) . ' topics, ' . round($size/1024) . 'KB serialized)';
+            }
         }
 
         wp_send_json_success([

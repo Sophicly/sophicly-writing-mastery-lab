@@ -527,6 +527,12 @@ class SWML_Topic_Parser {
                     if (preg_match('/\*\*Source:\*\*\s*(.+)/i', $source['text'], $sm)) $source['source'] = trim($sm[1]);
                     if (preg_match('/\*\*Poet:\*\*\s*(.+)/i', $source['text'], $pm)) $source['poet'] = trim($pm[1]);
                     if (preg_match('/\*\*Date:\*\*\s*(.+)/i', $source['text'], $dm)) $source['date'] = trim($dm[1]);
+                    if (preg_match('/\*\*Context:\*\*\s*(.+)/i', $source['text'], $cm)) $source['context'] = trim($cm[1]);
+                    // Truncate source text in metadata to reduce serialized size.
+                    // Full text is preserved in extract_text (flat field) and original markdown.
+                    if (strlen($source['text']) > 600) {
+                        $source['text'] = substr($source['text'], 0, 500) . "\n\n[TRUNCATED — full text in document]";
+                    }
                     $meta['sources'][] = $source;
                 }
             }
