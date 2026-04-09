@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.14.90
+ * Version: 7.14.91
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.14.90');
+define('SWML_VERSION', '7.14.91');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -338,12 +338,24 @@ class Sophicly_Writing_Mastery_Lab {
 
         $unit_id = get_the_ID();
 
-        // Read from sophicly-student-data plugin meta (note _sophicly_ prefix)
-        $board   = $atts['board'] ?: get_post_meta($unit_id, '_sophicly_exam_board', true);
-        $subject = $atts['subject'] ?: get_post_meta($unit_id, '_sophicly_literature_type', true);
+        // Course map takes priority over lesson meta for shared lessons (v7.14.90)
+        $board   = $atts['board'];
+        $subject = $atts['subject'];
         $text    = $atts['text'];
         $task    = $atts['task'];
         $topic   = $atts['topic'] ?: get_post_meta($unit_id, '_sophicly_topic_number', true);
+
+        $course_id = function_exists('learndash_get_course_id') ? learndash_get_course_id($unit_id) : 0;
+        if ($course_id) {
+            $ctx = $this->get_embed_course_context($course_id);
+            if (empty($board) && !empty($ctx['board']))     $board   = $ctx['board'];
+            if (empty($text) && !empty($ctx['text_slug']))  $text    = $ctx['text_slug'];
+            if (empty($subject)) $subject = $ctx['category'] ?? $ctx['type'] ?? '';
+        }
+
+        // Fall back to lesson post meta
+        if (empty($board))   $board   = get_post_meta($unit_id, '_sophicly_exam_board', true);
+        if (empty($subject)) $subject = get_post_meta($unit_id, '_sophicly_literature_type', true);
 
         // If no task specified, try to infer from course_type + lit_type
         if (empty($task)) {
@@ -417,23 +429,29 @@ class Sophicly_Writing_Mastery_Lab {
 
         $post_id = get_the_ID();
 
-        // Resolve board/subject/text from LearnDash course context if not in shortcode
-        $board   = $atts['board'] ?: get_post_meta($post_id, '_sophicly_exam_board', true);
-        $subject = $atts['subject'] ?: get_post_meta($post_id, '_sophicly_literature_type', true);
-        $text    = $atts['text'];
+        // Resolve board/subject/text — course context takes priority over lesson meta
+        // for shared lessons (same lesson ID reused across multiple courses). (v7.14.90)
         $task    = sanitize_key($atts['task']);
         $phase   = sanitize_key($atts['phase']);
         $topic   = absint($atts['topic']);
 
-        // Try to resolve from bridge mapping if board/text/subject not available (v7.13.14)
+        // 1. Try course map first — authoritative for shared lessons
+        $board = $atts['board'];
+        $subject = $atts['subject'];
+        $text = $atts['text'];
         $course_id = function_exists('learndash_get_course_id') ? learndash_get_course_id($post_id) : 0;
         if ($course_id) {
             $ctx = $this->get_embed_course_context($course_id);
-            if (empty($board))   $board   = $ctx['board'] ?? '';
-            if (empty($text))    $text    = $ctx['text_slug'] ?? '';
-            // Subject = category from course map (shakespeare, modern_text, 19th_century, etc.)
-            if (empty($subject)) $subject = $ctx['category'] ?? $ctx['type'] ?? '';
+            if (!empty($ctx['board']))    $board   = $board ?: $ctx['board'];
+            if (!empty($ctx['text_slug'])) $text   = $text ?: $ctx['text_slug'];
+            if (!empty($ctx['category'] ?? $ctx['type'] ?? '')) {
+                $subject = $subject ?: ($ctx['category'] ?? $ctx['type'] ?? '');
+            }
         }
+
+        // 2. Fall back to lesson post meta if course map didn't resolve
+        if (empty($board))   $board   = get_post_meta($post_id, '_sophicly_exam_board', true);
+        if (empty($subject)) $subject = get_post_meta($post_id, '_sophicly_literature_type', true);
 
         // Detect LearnDash Focus Mode (template = focus, or body has ld-in-focus-mode)
         $in_focus_mode = false;
