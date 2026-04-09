@@ -1027,6 +1027,19 @@ class SWML_Topic_Questions {
                 continue;
             }
 
+            // Reverse-map language paper slugs to frontend subject IDs.
+            // Filename slug "language_p1" → frontend key "language1" (which is what get_topics/REST API uses).
+            // text_to_template_slug does the FORWARD map (language1 → language-p1), this is the reverse.
+            $save_key = $slug;
+            $lang_reverse = [
+                'language_p1' => 'language1', 'language_p2' => 'language2',
+                'language_c1' => 'language1', 'language_c2' => 'language2',  // EDUQAS/OCR
+                'language_u1' => 'language1', 'language_u4' => 'language2',  // CCEA
+            ];
+            if (isset($lang_reverse[$slug])) {
+                $save_key = $lang_reverse[$slug];
+            }
+
             // Read and parse file
             $markdown = file_get_contents($filepath);
             if (empty($markdown)) {
@@ -1041,12 +1054,12 @@ class SWML_Topic_Questions {
             }
 
             // Save (replace mode — fresh import)
-            $saved = self::save_topics($board, $slug, $parsed);
+            $saved = self::save_topics($board, $save_key, $parsed);
             if ($saved) {
                 $results['imported'][] = [
                     'file'  => $filename . '.md',
                     'board' => $board,
-                    'text'  => $slug,
+                    'text'  => $save_key,
                     'count' => count($parsed),
                 ];
             } else {
