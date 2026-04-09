@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.14.92
+ * Version: 7.14.93
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.14.92');
+define('SWML_VERSION', '7.14.93');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -606,23 +606,41 @@ class Sophicly_Writing_Mastery_Lab {
      * strategies to get the correct current course. (v7.14.91)
      */
     private function resolve_current_course_id($post_id) {
-        // 1. Explicit URL param (some LD links include course_id)
-        if (!empty($_GET['course_id'])) {
-            return absint($_GET['course_id']);
+        $debug = defined('SWML_DEBUG_COURSE_RESOLVE') && SWML_DEBUG_COURSE_RESOLVE;
+
+        // 1. Explicit request param (URL or AJAX POST)
+        if (!empty($_REQUEST['course_id'])) {
+            $cid = absint($_REQUEST['course_id']);
+            if ($debug) error_log("[SWML] resolve_course: strategy=request_param post_id={$post_id} course_id={$cid}");
+            return $cid;
         }
 
-        // 2. LD query var — Focus Mode sets this from the URL path
+        // 2. LD Focus Mode post args — set by ld30 template before the_content() (v7.14.93)
+        if (!empty($GLOBALS['learndash_post_args']['course_id'])) {
+            $cid = absint($GLOBALS['learndash_post_args']['course_id']);
+            if ($cid > 0) {
+                if ($debug) error_log("[SWML] resolve_course: strategy=ld_post_args post_id={$post_id} course_id={$cid}");
+                return $cid;
+            }
+        }
+
+        // 3. LD query var — Focus Mode sets this from the URL path
         $ld_course = get_query_var('course_id', 0);
-        if ($ld_course) return absint($ld_course);
-
-        // 3. LD's own global — set during template rendering in Focus Mode
-        if (!empty($GLOBALS['course_id'])) {
-            return absint($GLOBALS['course_id']);
+        if ($ld_course) {
+            if ($debug) error_log("[SWML] resolve_course: strategy=query_var post_id={$post_id} course_id={$ld_course}");
+            return absint($ld_course);
         }
 
-        // 4. Parse from URL: /courses/{course-slug}/lessons/... → resolve course post by slug
+        // 4. LD's own global — set during template rendering in Focus Mode
+        if (!empty($GLOBALS['course_id'])) {
+            $cid = absint($GLOBALS['course_id']);
+            if ($debug) error_log("[SWML] resolve_course: strategy=global post_id={$post_id} course_id={$cid}");
+            return $cid;
+        }
+
+        // 5. Parse from URL — handle multiple LD permalink structures (v7.14.93)
         $uri = $_SERVER['REQUEST_URI'] ?? '';
-        if (preg_match('#/courses/([^/]+)/#', $uri, $m)) {
+        if (preg_match('#/(?:courses|sfwd-courses)/([^/]+)/#', $uri, $m)) {
             $course_posts = get_posts([
                 'name'        => $m[1],
                 'post_type'   => 'sfwd-courses',
@@ -630,15 +648,30 @@ class Sophicly_Writing_Mastery_Lab {
                 'fields'      => 'ids',
             ]);
             if (!empty($course_posts)) {
-                return (int) $course_posts[0];
+                $cid = (int) $course_posts[0];
+                if ($debug) error_log("[SWML] resolve_course: strategy=url_parse post_id={$post_id} course_id={$cid} slug={$m[1]}");
+                return $cid;
             }
         }
 
-        // 5. Fallback: LD's standard function (returns primary course for shared lessons)
-        if (function_exists('learndash_get_course_id')) {
-            return (int) learndash_get_course_id($post_id);
+        // 6. Reverse lookup: if lesson is in only one course, use it (v7.14.93)
+        if (function_exists('learndash_get_courses_for_step')) {
+            $course_ids = learndash_get_courses_for_step($post_id);
+            if (is_array($course_ids) && count($course_ids) === 1) {
+                $cid = (int) reset($course_ids);
+                if ($debug) error_log("[SWML] resolve_course: strategy=reverse_lookup post_id={$post_id} course_id={$cid}");
+                return $cid;
+            }
         }
 
+        // 7. Fallback: LD's standard function (returns primary course for shared lessons)
+        if (function_exists('learndash_get_course_id')) {
+            $cid = (int) learndash_get_course_id($post_id);
+            if ($debug) error_log("[SWML] resolve_course: strategy=ld_fallback post_id={$post_id} course_id={$cid}");
+            return $cid;
+        }
+
+        if ($debug) error_log("[SWML] resolve_course: strategy=NONE post_id={$post_id} uri=" . ($_SERVER['REQUEST_URI'] ?? ''));
         return 0;
     }
 
