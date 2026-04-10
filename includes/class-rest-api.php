@@ -967,9 +967,14 @@ class SWML_REST_API {
         $task    = sanitize_text_field($request->get_param('task') ?? 'planning');
 
         $router = SWML_Protocol_Router::instance();
-        $steps  = $router->get_manifest_steps($board, $subject, $task);
+        $result = $router->get_manifest_steps($board, $subject, $task);
 
-        return rest_ensure_response(['success' => true, 'steps' => $steps]);
+        // v7.15.1: Return groups alongside steps for accordion sidebar
+        return rest_ensure_response([
+            'success' => true,
+            'steps'   => $result['steps'] ?? [],
+            'groups'  => $result['groups'] ?? null,
+        ]);
     }
 
     // ═══════════════════════════════════════════

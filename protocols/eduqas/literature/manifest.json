@@ -26,7 +26,7 @@
     ],
     "steps": {
       "1": {
-        "label": "B.1 Setup + B.2 Goals + B.2A Keywords + B.3 Diagnostic",
+        "label": "Setup, Goals & Diagnostic",
         "files": [
           "planning/b1-setup.md",
           "planning/b2-goals.md",
@@ -35,13 +35,13 @@
         ]
       },
       "2": {
-        "label": "B.2 Goal Setting",
+        "label": "Keyword Identification",
         "files": [
           "planning/b2-goals.md"
         ]
       },
       "3": {
-        "label": "B.4 Anchor Quote Selection",
+        "label": "Anchor Quote Selection",
         "files": [
           "planning/b2a-keywords.md",
           "planning/b4-anchors.md",
@@ -49,7 +49,7 @@
         ]
       },
       "4": {
-        "label": "B.5 Body Paragraph 1",
+        "label": "Body Paragraph 1",
         "files": [
           "planning/b5-bodies.md",
           "modules/macros-scanner.md",
@@ -60,7 +60,7 @@
         ]
       },
       "5": {
-        "label": "B.5 Body Paragraph 2",
+        "label": "Body Paragraph 2",
         "files": [
           "planning/b5-bodies.md",
           "modules/macros-scanner.md",
@@ -71,7 +71,7 @@
         ]
       },
       "6": {
-        "label": "B.5 Body Paragraph 3",
+        "label": "Body Paragraph 3",
         "files": [
           "planning/b5-bodies.md",
           "modules/macros-scanner.md",
@@ -82,7 +82,7 @@
         ]
       },
       "7": {
-        "label": "B.6 Working Thesis + B.7 Introduction",
+        "label": "Thesis & Introduction",
         "files": [
           "planning/b6-thesis.md",
           "planning/b7-introduction.md",
@@ -91,7 +91,7 @@
         ]
       },
       "8": {
-        "label": "B.8 Conclusion + B.9 Review + B.10 Wrap-up",
+        "label": "Conclusion & Review",
         "files": [
           "planning/b8-conclusion.md",
           "planning/b9-review.md",

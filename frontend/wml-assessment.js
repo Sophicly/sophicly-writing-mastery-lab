@@ -2775,86 +2775,100 @@
         const canvasChatHeaderLabel = exerciseConfig.chatHeaderLabel || 'Essay Assessment';
         let canvasSidebarSteps = exerciseConfig.sidebarSteps || null;
 
-        // v7.14.68: Fetch manifest step labels for planning/polishing sidebar (accordion grouped by question)
+        // v7.15.1: Fetch manifest step labels + groups for sidebar accordion display.
+        // Uses manifest-defined groups if available, falls back to Q-prefix regex parsing.
         if (!canvasSidebarSteps && (state.task === 'planning' || state.task === 'polishing') && state.board) {
             const stepsUrl = `${config.restUrl}protocol-steps?board=${encodeURIComponent(state.board)}&subject=${encodeURIComponent(state.subject || '')}&task=${encodeURIComponent(state.task)}`;
             fetch(stepsUrl, { headers }).then(r => r.json()).then(data => {
                 if (data.success && data.steps && data.steps.length > 0) {
                     const container = document.getElementById('swml-progress-steps');
-                    if (container) {
-                        container.innerHTML = '';
-                        // Group steps by question prefix (e.g. "Q2:", "Q3:", "Q4:", "Q5:")
-                        // Steps without a "Qn:" prefix render as standalone items
-                        const groups = [];
+                    if (!container) return;
+                    container.innerHTML = '';
+
+                    // Build step lookup: step number → step data
+                    const stepMap = {};
+                    data.steps.forEach((s, i) => { stepMap[s.step] = { ...s, index: i }; });
+
+                    // v7.15.1: Use manifest-defined groups if available
+                    let groups;
+                    if (data.groups && Array.isArray(data.groups) && data.groups.length > 0) {
+                        groups = data.groups.map(g => ({
+                            id: g.id || g.label,
+                            label: g.label,
+                            steps: (g.steps || []).map(num => stepMap[num]).filter(Boolean),
+                        }));
+                    } else {
+                        // Fallback: group by Q-prefix regex (e.g. "Q2:", "Q3:")
+                        groups = [];
                         let currentGroup = null;
                         data.steps.forEach((s, i) => {
                             const prefixMatch = s.label.match(/^(Q\d+):/);
                             const prefix = prefixMatch ? prefixMatch[1] : null;
                             if (prefix) {
-                                if (!currentGroup || currentGroup.prefix !== prefix) {
-                                    currentGroup = { prefix, label: prefix, steps: [] };
+                                if (!currentGroup || currentGroup.id !== prefix) {
+                                    currentGroup = { id: prefix, label: prefix, steps: [] };
                                     groups.push(currentGroup);
                                 }
                                 currentGroup.steps.push({ ...s, index: i });
                             } else {
-                                groups.push({ prefix: null, label: null, steps: [{ ...s, index: i }] });
+                                groups.push({ id: null, label: null, steps: [{ ...s, index: i }] });
                                 currentGroup = null;
                             }
                         });
+                    }
 
-                        groups.forEach(group => {
-                            if (!group.prefix) {
-                                // Standalone step (e.g. "Setup & Goals")
-                                const s = group.steps[0];
-                                const cls = s.index === 0 ? 'active' : '';
+                    // Render groups — single-step groups render as standalone items, multi-step as accordions
+                    groups.forEach(group => {
+                        if (!group.label || group.steps.length <= 1) {
+                            // Standalone step(s) — no accordion wrapper
+                            group.steps.forEach(s => {
+                                const cls = s.step === 1 ? 'active' : '';
                                 container.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
                                     el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
                                     el('span', { className: 'swml-step-label', textContent: s.label }),
                                 ]));
-                            } else {
-                                // Accordion group
-                                const groupEl = el('div', { className: 'swml-step-group', 'data-group': group.prefix });
-                                const isFirstGroup = container.children.length <= 1;
-                                const headerEl = el('div', {
-                                    className: `swml-step-group-header${isFirstGroup ? ' open' : ''}`,
-                                    onClick: (e) => {
-                                        const parent = e.currentTarget.parentElement;
-                                        const wasOpen = e.currentTarget.classList.contains('open');
-                                        // Close all groups
-                                        container.querySelectorAll('.swml-step-group-header').forEach(h => h.classList.remove('open'));
-                                        container.querySelectorAll('.swml-step-group-body').forEach(b => { b.style.maxHeight = '0'; });
-                                        // Toggle this one
-                                        if (!wasOpen) {
-                                            e.currentTarget.classList.add('open');
-                                            const body = parent.querySelector('.swml-step-group-body');
-                                            if (body) body.style.maxHeight = body.scrollHeight + 'px';
-                                        }
+                            });
+                        } else {
+                            // Accordion group
+                            const groupEl = el('div', { className: 'swml-step-group', 'data-group': group.id });
+                            const isFirstGroup = container.querySelectorAll('.swml-step-group').length === 0;
+                            const headerEl = el('div', {
+                                className: `swml-step-group-header${isFirstGroup ? ' open' : ''}`,
+                                onClick: (e) => {
+                                    const parent = e.currentTarget.parentElement;
+                                    const wasOpen = e.currentTarget.classList.contains('open');
+                                    container.querySelectorAll('.swml-step-group-header').forEach(h => h.classList.remove('open'));
+                                    container.querySelectorAll('.swml-step-group-body').forEach(b => { b.style.maxHeight = '0'; });
+                                    if (!wasOpen) {
+                                        e.currentTarget.classList.add('open');
+                                        const body = parent.querySelector('.swml-step-group-body');
+                                        if (body) body.style.maxHeight = body.scrollHeight + 'px';
                                     }
-                                }, [
-                                    el('span', { className: 'swml-step-group-title', textContent: group.prefix }),
-                                    el('span', { className: 'swml-step-group-count', textContent: `${group.steps.length} steps` }),
-                                    el('span', { className: 'swml-step-group-icon', textContent: '+' }),
-                                ]);
-                                groupEl.appendChild(headerEl);
+                                }
+                            }, [
+                                el('span', { className: 'swml-step-group-title', textContent: group.label }),
+                                el('span', { className: 'swml-step-group-count', textContent: `${group.steps.length} steps` }),
+                                el('span', { className: 'swml-step-group-icon', textContent: '+' }),
+                            ]);
+                            groupEl.appendChild(headerEl);
 
-                                const bodyEl = el('div', {
-                                    className: 'swml-step-group-body',
-                                    style: { maxHeight: isFirstGroup ? '500px' : '0', overflow: 'hidden', transition: 'max-height 0.3s ease' }
-                                });
-                                group.steps.forEach(s => {
-                                    // Strip the "Q2: " prefix from sub-step labels
-                                    const subLabel = s.label.replace(/^Q\d+:\s*/, '');
-                                    bodyEl.appendChild(el('div', { className: 'swml-step', 'data-step': s.step }, [
-                                        el('div', { className: 'swml-step-circle', textContent: s.step }),
-                                        el('span', { className: 'swml-step-label', textContent: subLabel }),
-                                    ]));
-                                });
-                                groupEl.appendChild(bodyEl);
-                                container.appendChild(groupEl);
-                            }
-                        });
-                        console.log('WML: Loaded manifest sidebar steps:', data.steps.length, 'in', groups.length, 'groups');
-                    }
+                            const bodyEl = el('div', {
+                                className: 'swml-step-group-body',
+                                style: { maxHeight: isFirstGroup ? '500px' : '0', overflow: 'hidden', transition: 'max-height 0.3s ease' }
+                            });
+                            group.steps.forEach(s => {
+                                // Strip Q-prefix or redundant group label from sub-step labels
+                                const subLabel = s.label.replace(/^Q\d+:\s*/, '');
+                                bodyEl.appendChild(el('div', { className: 'swml-step', 'data-step': s.step }, [
+                                    el('div', { className: 'swml-step-circle', textContent: s.step }),
+                                    el('span', { className: 'swml-step-label', textContent: subLabel }),
+                                ]));
+                            });
+                            groupEl.appendChild(bodyEl);
+                            container.appendChild(groupEl);
+                        }
+                    });
+                    console.log('WML: Loaded manifest sidebar steps:', data.steps.length, 'in', groups.length, 'groups');
                 }
             }).catch(e => console.warn('WML: Could not load protocol steps:', e));
         }

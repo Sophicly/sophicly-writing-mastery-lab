@@ -16,6 +16,12 @@
             "language/modules/state-management.md",
             "language/modules/ttecea-rationale-lang.md"
         ],
+        "groups": [
+            { "id": "setup", "label": "Setup", "steps": [1] },
+            { "id": "q4", "label": "Q4", "steps": [2, 3, 4, 5] },
+            { "id": "q5", "label": "Q5", "steps": [6, 7, 8, 9, 10] },
+            { "id": "section_b", "label": "Section B", "steps": [11, 12, 13, 14, 15] }
+        ],
         "steps": {
             "1": {
                 "label": "Setup & Goals",

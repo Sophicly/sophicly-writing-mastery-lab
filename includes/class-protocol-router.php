@@ -1081,13 +1081,17 @@ TEMPLATE;
             }
         }
 
-        if (!$manifest || empty($manifest[$task]['steps'])) return [];
+        if (!$manifest || empty($manifest[$task]['steps'])) return ['steps' => [], 'groups' => null];
 
         $steps = [];
         foreach ($manifest[$task]['steps'] as $num => $step_data) {
             $steps[] = ['step' => (int) $num, 'label' => $step_data['label'] ?? "Step {$num}"];
         }
-        return $steps;
+
+        // v7.15.1: Return manifest-defined groups for accordion sidebar display
+        $groups = $manifest[$task]['groups'] ?? null;
+
+        return ['steps' => $steps, 'groups' => $groups];
     }
 
     /**

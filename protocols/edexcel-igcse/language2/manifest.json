@@ -18,6 +18,11 @@
       "modules/macros-analysis.md",
       "modules/quote-validation.md"
     ],
+    "groups": [
+        { "id": "setup", "label": "Setup", "steps": [1] },
+        { "id": "q1", "label": "Q1", "steps": [2, 3, 4, 5, 6, 7] },
+        { "id": "section_b", "label": "Section B", "steps": [8] }
+    ],
     "steps": {
       "1": {
         "label": "Setup & Goals",

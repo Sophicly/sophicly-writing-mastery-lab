@@ -14,7 +14,7 @@
         ],
         "steps": {
             "1": {
-                "label": "B.1-B.2 Setup & Goals",
+                "label": "Setup & Goals",
                 "files": [
                     "planning/b-intro.md",
                     "planning/b1-setup.md",
@@ -22,46 +22,46 @@
                 ]
             },
             "2": {
-                "label": "B.3 Diagnostic + B.4 Anchors",
+                "label": "Diagnostic & Anchors",
                 "files": [
                     "planning/b3-diagnostic.md",
                     "planning/b4-anchors.md"
                 ]
             },
             "3": {
-                "label": "B.5 Body Paragraph 1",
+                "label": "Body Paragraph 1",
                 "files": [
                     "planning/b5-bodies.md"
                 ]
             },
             "4": {
-                "label": "B.5 Body Paragraph 2",
+                "label": "Body Paragraph 2",
                 "files": [
                     "planning/b5-bodies.md"
                 ]
             },
             "5": {
-                "label": "B.5 Body Paragraph 3",
+                "label": "Body Paragraph 3",
                 "files": [
                     "planning/b5-bodies.md"
                 ]
             },
             "6": {
-                "label": "B.6-B.7 Thesis & Introduction",
+                "label": "Thesis & Introduction",
                 "files": [
                     "planning/b6-thesis.md",
                     "planning/b7-introduction.md"
                 ]
             },
             "7": {
-                "label": "B.8-B.9 Conclusion & Review",
+                "label": "Conclusion & Review",
                 "files": [
                     "planning/b8-conclusion.md",
                     "planning/b9-review.md"
                 ]
             },
             "8": {
-                "label": "B.10 Wrap-up",
+                "label": "Wrap-up",
                 "files": [
                     "planning/b10-wrapup.md"
                 ]

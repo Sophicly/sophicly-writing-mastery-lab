@@ -14,51 +14,51 @@
         ],
         "steps": {
             "1": {
-                "label": "B.1-B.2: Setup, Goals & Keywords",
+                "label": "Setup, Goals & Keywords",
                 "files": [
                     "planning/b-intro.md",
                     "planning/b1-setup.md"
                 ]
             },
             "2": {
-                "label": "B.3: Diagnostic Import",
+                "label": "Diagnostic Import",
                 "files": [
                     "planning/b3-diagnostic.md"
                 ]
             },
             "3": {
-                "label": "B.4: Anchor Quotes",
+                "label": "Anchor Quotes",
                 "files": [
                     "planning/b4-anchors.md"
                 ]
             },
             "4": {
-                "label": "B.5: Body Paragraph 1",
+                "label": "Body Paragraph 1",
                 "files": [
                     "planning/b5-bodies.md"
                 ]
             },
             "5": {
-                "label": "B.5: Body Paragraph 2",
+                "label": "Body Paragraph 2",
                 "files": [
                     "planning/b5-bodies.md"
                 ]
             },
             "6": {
-                "label": "B.5: Body Paragraph 3",
+                "label": "Body Paragraph 3",
                 "files": [
                     "planning/b5-bodies.md"
                 ]
             },
             "7": {
-                "label": "B.6-B.7: Thesis & Introduction",
+                "label": "Thesis & Introduction",
                 "files": [
                     "planning/b6-thesis.md",
                     "planning/b7-intro.md"
                 ]
             },
             "8": {
-                "label": "B.8-B.10: Conclusion & Review",
+                "label": "Conclusion & Review",
                 "files": [
                     "planning/b8-conclusion.md"
                 ]
