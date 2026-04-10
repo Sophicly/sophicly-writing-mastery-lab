@@ -385,6 +385,13 @@ class SWML_Protocol_Router {
         $task    = $context['task'] ?? 'planning';
         $step    = (int) ($context['step'] ?? 1);
 
+        // Security: restrict board to known values — prevent path traversal (v7.15.2)
+        $allowed_boards = ['aqa','ocr','eduqas','edexcel','edexcel-igcse','edexcel_igcse','sqa','ccea','cambridge-igcse','cambridge_igcse','shared'];
+        if (!in_array($board, $allowed_boards, true)) {
+            error_log("WML Router: Invalid board '{$board}', defaulting to aqa");
+            $board = 'aqa';
+        }
+
         $plugin_dir = plugin_dir_path(dirname(__FILE__));
 
         // Mark Scheme Assessment: subject-specific quiz protocols (v7.14.46)

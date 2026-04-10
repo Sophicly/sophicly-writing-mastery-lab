@@ -1840,6 +1840,10 @@ window.WML = (function() {
     }
 
     function formatAI(text) {
+        // Security: escape raw HTML entities before markdown conversion (v7.15.2)
+        // All HTML tags are generated programmatically AFTER this step by the markdown converter
+        text = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
         // ── Pre-process: render ASCII progress bars as CSS bars (v7.14.51) ──
         // Matches patterns like "[Progress: ████████░░░░ 50%]" or "Progress: ███░░░ 30%"
         text = text.replace(/\[?Progress(?:\s*bar)?:\s*[█▓▒░■□●○\u2588-\u259F\s]+(\d+)%\]?/gi,
@@ -1925,8 +1929,9 @@ window.WML = (function() {
         html = html.replace(/(?:<br>)- (.+?)(?=<br>|$)/g, '<br><span class="swml-bullet">•</span> $1');
 
         // Strip markdown blockquote prefix "> " (e.g. "> **[30 marks]**" → "**[30 marks]**")
-        html = html.replace(/<br>>\s+/g, '<br>');
-        html = html.replace(/^>\s+/, '');
+        // Note: > is escaped to &gt; at formatAI() entry (v7.15.2)
+        html = html.replace(/<br>&gt;\s+/g, '<br>');
+        html = html.replace(/^&gt;\s+/, '');
 
         // Render markdown heading prefixes: ## → h4, ### → h5 styled sub-headings
         html = html.replace(/(?:<br>)###\s+(.+?)(?=<br>|$)/g, '<br><strong class="swml-chat-h5">$1</strong>');

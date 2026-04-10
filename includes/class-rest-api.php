@@ -139,10 +139,10 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
-        // Diagnostic endpoint — lists all canvas meta keys for current user
+        // Diagnostic endpoint — lists all canvas meta keys for current user (admin only, v7.15.2)
         register_rest_route($namespace, '/canvas/debug', [
             'methods' => 'GET', 'callback' => [$this, 'debug_canvas_keys'],
-            'permission_callback' => [$this, 'check_auth'],
+            'permission_callback' => [$this, 'check_admin_auth'],
         ]);
 
         // Tutor sign-off — role-restricted
@@ -506,6 +506,16 @@ class SWML_REST_API {
 
     public function handle_chat($request) {
         ob_start();
+
+        // Rate limiting: 60 requests per minute per user (v7.15.2)
+        $rate_user_id = get_current_user_id();
+        $rate_key = 'swml_rate_' . $rate_user_id;
+        $rate_count = (int) get_transient($rate_key);
+        if ($rate_count >= 60) {
+            ob_end_clean();
+            return new WP_Error('rate_limited', 'Too many requests. Please wait a moment.', ['status' => 429]);
+        }
+        set_transient($rate_key, $rate_count + 1, MINUTE_IN_SECONDS);
 
         register_shutdown_function(function() {
             $error = error_get_last();
@@ -993,6 +1003,22 @@ class SWML_REST_API {
         $board = sanitize_text_field($params['board'] ?? '');
         $text  = sanitize_text_field($params['text'] ?? '');
         $html  = $params['html'] ?? '';
+
+        // Security: sanitize canvas HTML — allow TipTap structural attrs, strip scripts/handlers (v7.15.2)
+        $allowed_canvas_tags = wp_kses_allowed_html('post');
+        $tiptap_tags = ['p','h1','h2','h3','h4','h5','h6','span','div','li','ul','ol',
+                        'blockquote','table','tr','td','th','thead','tbody','section','mark','br','hr'];
+        foreach ($tiptap_tags as $tag) {
+            if (!isset($allowed_canvas_tags[$tag])) $allowed_canvas_tags[$tag] = [];
+            $allowed_canvas_tags[$tag]['class'] = true;
+            $allowed_canvas_tags[$tag]['data-type'] = true;
+            $allowed_canvas_tags[$tag]['data-id'] = true;
+            $allowed_canvas_tags[$tag]['data-indent'] = true;
+            $allowed_canvas_tags[$tag]['data-text-align'] = true;
+            $allowed_canvas_tags[$tag]['style'] = true;
+        }
+        $html = wp_kses($html, $allowed_canvas_tags);
+
         $word_count = absint($params['wordCount'] ?? 0);
         $comments = $params['comments'] ?? null;
         $topic_number = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
@@ -1208,6 +1234,11 @@ class SWML_REST_API {
         $topic_number = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
         $suffix       = sanitize_text_field($params['suffix'] ?? '');
         $student_id   = absint($params['studentId'] ?? get_current_user_id());
+
+        // Security: prevent tutor from signing off their own work (v7.15.2)
+        if ($student_id === $tutor_id) {
+            return new WP_Error('self_signoff', 'Cannot sign off your own work.', ['status' => 403]);
+        }
 
         // Security: verify tutor is authorized for this student (v7.12.37)
         if ($student_id !== $tutor_id && !current_user_can('manage_options')) {
@@ -1488,6 +1519,14 @@ class SWML_REST_API {
         $suffix  = sanitize_text_field($params['suffix'] ?? '');
         $history = $params['history'] ?? [];
         $chat_id = sanitize_text_field($params['chatId'] ?? '');
+
+        // Security: sanitize chat message content to prevent stored XSS (v7.15.2)
+        $history = array_map(function($msg) {
+            if (is_array($msg) && isset($msg['content'])) {
+                $msg['content'] = wp_kses_post($msg['content']);
+            }
+            return $msg;
+        }, $history);
 
         if (!$board || !$text) {
             return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
