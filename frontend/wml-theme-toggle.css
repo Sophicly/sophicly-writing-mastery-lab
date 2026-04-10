@@ -60,9 +60,13 @@
 .theme-toggle[aria-pressed='true'] .theme-toggle__face-shadow::after { filter:blur(0.5em); scale:1; }
 .theme-toggle[aria-pressed='true'] .theme-toggle__socket-shadow,.theme-toggle[aria-pressed='true'] .theme-toggle__face-glows,.theme-toggle[aria-pressed='true'] .theme-toggle__face-shine { opacity:1; }
 .theme-toggle[aria-pressed='true'] .theme-toggle__trail { transition:stroke-dashoffset 0s; opacity:1; stroke-dashoffset:-70; }
-/* Dark socket override (when WML is in dark mode) */
-[data-swml-theme="dark"] .theme-toggle__socket { background:hsl(0 0% 0%); }
-[data-swml-theme="dark"] .theme-toggle__face-plate { background:conic-gradient(from 45deg,#0000,hsl(0 0% 100%/0.05)),var(--theme-toggle-button-dark); }
+/* Dark socket override — covers WML container, LearnDash Focus Mode, and html-level dark mode */
+[data-swml-theme="dark"] .theme-toggle__socket,
+html[data-theme="dark"] .theme-toggle__socket,
+html.dark .theme-toggle__socket { background:hsl(0 0% 0%); }
+[data-swml-theme="dark"] .theme-toggle__face-plate,
+html[data-theme="dark"] .theme-toggle__face-plate,
+html.dark .theme-toggle__face-plate { background:conic-gradient(from 45deg,#0000,hsl(0 0% 100%/0.05)),var(--theme-toggle-button-dark); }
 /* SR only */
 .theme-toggle__sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border-width:0; }
 .theme-toggle:focus { outline:none; }
