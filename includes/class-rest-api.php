@@ -1214,24 +1214,16 @@ class SWML_REST_API {
     }
 
     /**
-     * Verify tutor has access to a student via LearnDash group overlap (v7.15.2).
+     * Verify tutor/specialist/admin has access to review student work (v7.15.3).
+     * Any tutor or specialist can view any student — they're all qualified teachers.
      */
     private function verify_tutor_student_access($student_id) {
         $tutor_id = get_current_user_id();
-        if ($student_id === $tutor_id) {
-            return true; // viewing own work is fine
-        }
-        if (current_user_can('manage_options')) {
-            return true; // admins can view all
-        }
-        if (function_exists('learndash_get_users_group_ids')) {
-            $tutor_groups   = learndash_get_users_group_ids($tutor_id);
-            $student_groups = learndash_get_users_group_ids($student_id);
-            if (!empty(array_intersect($tutor_groups, $student_groups))) {
-                return true;
-            }
-        }
-        return new WP_Error('unauthorized_student', 'You are not authorized to view this student\'s work.', ['status' => 403]);
+        if ($student_id === $tutor_id) return true;
+        if (current_user_can('manage_options')) return true;
+        $att_role = get_user_meta($tutor_id, 'sophicly_att_role', true);
+        if (in_array($att_role, ['tutor', 'specialist'], true)) return true;
+        return new WP_Error('unauthorized', 'You are not authorized to view this student\'s work.', ['status' => 403]);
     }
 
     /**
