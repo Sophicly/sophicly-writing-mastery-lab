@@ -4541,6 +4541,39 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     .swml-outline-criteria { position: static; width: 100%; margin-bottom: 6px; }
 }
 
+/* ── v7.15.0: Completion Indicators ── */
+/* Dropdown turns green when an option is selected */
+.swml-outline-select.swml-select-filled {
+    border-color: rgba(28, 217, 145, 0.5);
+    background: rgba(28, 217, 145, 0.08);
+}
+[data-swml-theme="light"] .swml-outline-select.swml-select-filled {
+    border-color: rgba(28, 217, 145, 0.45);
+    background: rgba(28, 217, 145, 0.06);
+}
+/* Input area has text */
+.swml-outline-input.swml-input-filled {
+    border-color: rgba(28, 217, 145, 0.3);
+}
+[data-swml-theme="light"] .swml-outline-input.swml-input-filled {
+    border-color: rgba(28, 217, 145, 0.35);
+}
+/* Row complete: both criteria AND input filled — unified green border around entire row */
+.swml-outline-row.swml-row-complete {
+    box-shadow: 0 0 0 1px rgba(28, 217, 145, 0.35);
+    border-radius: 6px;
+}
+[data-swml-theme="light"] .swml-outline-row.swml-row-complete {
+    box-shadow: 0 0 0 1px rgba(28, 217, 145, 0.3);
+}
+/* Plan/response InputField has text */
+.swml-input-field.swml-input-filled {
+    border-color: rgba(28, 217, 145, 0.3);
+}
+[data-swml-theme="light"] .swml-input-field.swml-input-filled {
+    border-color: rgba(28, 217, 145, 0.35);
+}
+
 /* ══════════════════════════════════════════
  *  CHECKLIST ITEMS (v7.14.60)
  * ══════════════════════════════════════════ */

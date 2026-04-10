@@ -142,6 +142,16 @@
     // v7.14.74: Checkbox/dropdown state stored OUTSIDE TipTap to avoid transactions on click.
     // Keyed by fieldId. Flushed into TipTap attributes only before save.
     const _outlineCheckState = new Map();
+
+    // v7.15.0: Check if all outline rows in a section are complete, update section header.
+    function checkSectionComplete(sectionEl) {
+        if (!sectionEl) return;
+        const rows = sectionEl.querySelectorAll('.swml-outline-row');
+        if (rows.length === 0) return; // Not an outline section
+        const allComplete = Array.from(rows).every(r => r.classList.contains('swml-row-complete'));
+        sectionEl.setAttribute('data-section-complete', allComplete ? 'true' : '');
+    }
+
     let canvasSignoffData = null;
     let canvasTimerInterval = null; // Module-scope declaration (was inside renderCanvasWorkspace — bug fix v7.12.62)
     // v7.13.35: Use exerciseConfig.storageSuffix for ALL exercise types — prevents key collisions
@@ -5896,10 +5906,10 @@
                             cb.addEventListener('mousedown', e => e.stopPropagation());
                             cb.addEventListener('click', e => {
                                 e.stopPropagation();
-                                // Collect current checked indices and persist
                                 const indices = [];
                                 checkboxes.forEach((c, i) => { if (c.checked) indices.push(i); });
                                 persistState({ checked: indices });
+                                checkRowComplete(); // v7.15.0
                             });
                             checkboxes.push(cb);
                             lbl.appendChild(cb);
@@ -5930,7 +5940,10 @@
                         sel.addEventListener('change', e => {
                             e.stopPropagation();
                             persistState({ selected: sel.value });
+                            sel.classList.toggle('swml-select-filled', !!sel.value); // v7.15.0
+                            checkRowComplete();
                         });
+                        if (savedState.selected) sel.classList.add('swml-select-filled'); // v7.15.0: restore on load
                         criteriaEl.appendChild(sel);
                     } else if (crit.type === 'checkbox') {
                         const lbl = document.createElement('label');
@@ -5942,6 +5955,7 @@
                         cb.addEventListener('click', e => {
                             e.stopPropagation();
                             persistState({ checked: cb.checked ? [0] : [] });
+                            checkRowComplete(); // v7.15.0
                         });
                         checkboxes.push(cb);
                         lbl.appendChild(cb);
@@ -5955,6 +5969,39 @@
                     contentDOM.classList.add('swml-outline-input');
                     if (node.attrs.prompt) contentDOM.setAttribute('data-prompt', node.attrs.prompt);
                     dom.appendChild(contentDOM);
+
+                    // ── v7.15.0: Row completion indicator ──
+                    // A row is "complete" when criteria are filled AND input has text.
+                    function checkRowComplete() {
+                        const hasText = (contentDOM.textContent || '').trim().length > 0;
+                        let criteriaOk = false;
+                        if (crit.type === 'dropdown') {
+                            const sel = criteriaEl.querySelector('.swml-outline-select');
+                            criteriaOk = sel && !!sel.value;
+                        } else if (crit.type === 'checklist' && crit.items) {
+                            const required = crit.items.filter((_, i) => !crit.items[i]?.optional);
+                            const checkedCount = checkboxes.filter(c => c.checked).length;
+                            // At least all non-optional items checked (or all if none marked optional)
+                            criteriaOk = checkedCount >= Math.max(1, required.length);
+                        } else if (crit.type === 'checkbox') {
+                            criteriaOk = checkboxes.some(c => c.checked);
+                        } else {
+                            criteriaOk = true; // no criteria to check
+                        }
+                        const complete = hasText && criteriaOk;
+                        dom.classList.toggle('swml-row-complete', complete);
+                        contentDOM.classList.toggle('swml-input-filled', hasText);
+                        // Bubble up: check if parent section is fully complete
+                        requestAnimationFrame(() => {
+                            const section = dom.closest('.swml-section-block');
+                            if (section) checkSectionComplete(section);
+                        });
+                    }
+                    // Observe text changes in the input area
+                    const inputObserver = new MutationObserver(() => checkRowComplete());
+                    inputObserver.observe(contentDOM, { childList: true, subtree: true, characterData: true });
+                    // Initial check (for saved content on load)
+                    requestAnimationFrame(() => checkRowComplete());
 
                     // Calculate min-height synchronously from criteria data.
                     let critH = 18;
@@ -6899,6 +6946,18 @@
                 // Floating widget
                 if (wcWidgetLabel) wcWidgetLabel.textContent = `${wc} / ${canvasWordTarget}`;
 
+                // v7.15.0: Mark Plan/Response InputFields as filled/empty
+                requestAnimationFrame(() => {
+                    const editorEl = editor.options.element;
+                    if (!editorEl) return;
+                    editorEl.querySelectorAll('.swml-input-field').forEach(field => {
+                        // Skip InputFields inside outline rows — those are handled by OutlineRow's own observer
+                        if (field.closest('.swml-outline-row')) return;
+                        const text = (field.textContent || '').trim();
+                        field.classList.toggle('swml-input-filled', text.length > 0);
+                    });
+                });
+
                 // Page count (content may have grown/shrunk)
                 requestAnimationFrame(updatePageCount);
                 saveStatus.textContent = 'Editing...';
@@ -7073,7 +7132,16 @@
             }
         };
 
-        tryServerLoad().then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => {
+        tryServerLoad().then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).catch(err => {
+            // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
+            // Log the error for debugging but continue with migrations + cleanup below.
+            console.error('WML: Error in document init chain — recovering:', err);
+            // If the document is still blank (no sections), inject a basic fallback template
+            if (canvasEditor && !canvasEditor.getHTML().includes('data-section-type')) {
+                try { canvasEditor.commands.setContent(getDefaultEssayTemplate(), false); } catch(e2) {}
+                console.log('WML: Fallback template injected after init error');
+            }
+        }).then(() => {
             // Clean corrupted content from v7.11.8 (serialized selects as text)
             cleanCorruptedContent();
             // Migrate old documents — inject missing sections + dividers + plans + outlines + InputFields
@@ -9430,27 +9498,19 @@
     // Snapshot the template word count once when editor content is first loaded.
     // Called from TipTap onCreate — captures instruction text before student types.
     // v7.14.99: Clear ProseMirror undo history. Prevents Cmd+Z from undoing template injection.
+    // v7.15.0: Clear undo history by replacing editor content with itself.
+    // setContent() with emitUpdate:false resets internal state without changing visible content.
+    // Safer than mutating ProseMirror's internal Branch objects directly.
     function clearEditorHistory(editor) {
-        if (!editor?.state) return;
+        if (!editor) return;
         try {
-            // Access the history plugin's state and reset it
-            const plugins = editor.state.plugins;
-            for (const plugin of plugins) {
-                // ProseMirror history plugin has a key containing 'history'
-                if (plugin.spec?.historyPreserveItems !== undefined || plugin.key?.includes('history')) {
-                    const histState = plugin.getState(editor.state);
-                    if (histState) {
-                        histState.done = { items: { length: 0, head: null, tail: null }, eventCount: 0 };
-                        histState.undone = { items: { length: 0, head: null, tail: null }, eventCount: 0 };
-                    }
-                }
-            }
+            const html = editor.getHTML();
+            editor.commands.setContent(html, false);
         } catch(e) { /* Silently fail — undo still works, just doesn't clear */ }
     }
 
     function snapshotTemplateBaseline(editor) {
         if (!editor) return;
-        clearEditorHistory(editor);
         const editorEl = editor.options.element;
         if (!editorEl) return;
         const editableSections = editorEl.querySelectorAll('[data-editable="true"]');
@@ -10821,7 +10881,14 @@
      */
     function getDocumentTemplate(mode, topicData) {
         if (!topicData) return getDefaultEssayTemplate();
-
+        // v7.15.0: Wrap entire template generation in try/catch — never return blank on error
+        try { return _buildDocumentTemplate(mode, topicData); }
+        catch (err) {
+            console.error('WML: Template generation failed — using fallback:', err);
+            return getDefaultEssayTemplate();
+        }
+    }
+    function _buildDocumentTemplate(mode, topicData) {
         const format = topicData.question_format || 'single';
         const isDual = format === 'dual' || format === 'dual_extract';
         // Word targets are set by setWordTargetsFromTopic() before this function is called
@@ -11307,11 +11374,9 @@
                 if (!localContent || localContent.length < 20) {
                     // No meaningful local content — use server version
                     canvasEditor.commands.setContent(res.doc.html, false);
-                    clearEditorHistory(canvasEditor); // v7.14.99: Cmd+Z starts from loaded content
                     console.log('WML: Canvas loaded from server (no local content found)');
                 } else {
                     // Both exist — keep local (more recent), but log server availability
-                    clearEditorHistory(canvasEditor); // v7.14.99: Cmd+Z starts from loaded content
                     console.log('WML: Local canvas content exists, server backup available');
                 }
             }
