@@ -5972,7 +5972,10 @@
 
                     // ── v7.15.0: Row completion indicator ──
                     // A row is "complete" when criteria are filled AND input has text.
+                    let _checkingRow = false; // Guard against MutationObserver re-entry loop
                     function checkRowComplete() {
+                        if (_checkingRow) return;
+                        _checkingRow = true;
                         const hasText = (contentDOM.textContent || '').trim().length > 0;
                         let criteriaOk = false;
                         if (crit.type === 'dropdown') {
@@ -5991,6 +5994,7 @@
                         const complete = hasText && criteriaOk;
                         dom.classList.toggle('swml-row-complete', complete);
                         contentDOM.classList.toggle('swml-input-filled', hasText);
+                        _checkingRow = false;
                         // Bubble up: check if parent section is fully complete
                         requestAnimationFrame(() => {
                             const section = dom.closest('.swml-section-block');
