@@ -2036,13 +2036,27 @@
             outlineFloating ? dockOutline() : floatOutline();
         }
 
+        // v7.14.96: Detect containing-block offset for position:fixed panels.
+        // If any ancestor has transform/filter/will-change, fixed positioning is relative
+        // to that ancestor, not the viewport. This causes drag offset in LD embedded mode.
+        function getFixedOriginOffset(panel) {
+            const saved = { left: panel.style.left, top: panel.style.top };
+            panel.style.left = '0px';
+            panel.style.top = '0px';
+            const origin = panel.getBoundingClientRect();
+            panel.style.left = saved.left;
+            panel.style.top = saved.top;
+            return { x: origin.left, y: origin.top };
+        }
+
         function floatOutline() {
             const rect = outlinePanel.getBoundingClientRect();
             outlineFloating = true;
             outlinePanel.classList.add('swml-outline-detached');
             outlinePanel.style.position = 'fixed';
-            outlinePanel.style.left = rect.left + 'px';
-            outlinePanel.style.top = (rect.top - 24) + 'px'; // -24 to compensate for grip bar appearing at top
+            const origin = getFixedOriginOffset(outlinePanel);
+            outlinePanel.style.left = (rect.left - origin.x) + 'px';
+            outlinePanel.style.top = (rect.top - 24 - origin.y) + 'px'; // -24 to compensate for grip bar appearing at top
             outlinePanel.style.width = rect.width + 'px';
             outlinePanel.style.height = (rect.height + 24) + 'px'; // +24 for grip bar
             detachBtn.innerHTML = SVG_DOCK;
@@ -2057,27 +2071,28 @@
             detachBtn.title = 'Detach panel';
         }
 
-        // Drag via grip bar
-        let olDragging = false, olDragOX = 0, olDragOY = 0;
+        // Drag via grip bar — v7.14.96: delta-based movement (immune to containing-block offsets)
+        let olDragging = false, olLastX = 0, olLastY = 0;
         dragGrip.addEventListener('mousedown', (e) => {
             if (!outlineFloating || e.button !== 0) return;
             e.preventDefault(); e.stopPropagation();
             olDragging = true;
-            const r = outlinePanel.getBoundingClientRect();
-            olDragOX = e.clientX - r.left;
-            olDragOY = e.clientY - r.top;
+            olLastX = e.clientX;
+            olLastY = e.clientY;
             dragGrip.style.cursor = 'grabbing';
         });
         document.addEventListener('mousemove', (e) => {
             if (!olDragging) return;
-            outlinePanel.style.left = (e.clientX - olDragOX) + 'px';
-            outlinePanel.style.top = (e.clientY - olDragOY) + 'px';
+            outlinePanel.style.left = (parseFloat(outlinePanel.style.left) + e.clientX - olLastX) + 'px';
+            outlinePanel.style.top = (parseFloat(outlinePanel.style.top) + e.clientY - olLastY) + 'px';
+            olLastX = e.clientX;
+            olLastY = e.clientY;
         });
         document.addEventListener('mouseup', () => {
             if (olDragging) { olDragging = false; dragGrip.style.cursor = ''; }
         });
 
-        // 8-direction resize
+        // 8-direction resize — v7.14.96: use CSS values, not getBoundingClientRect (containing-block safe)
         let olResizing = false, olResDir = '', olRSX = 0, olRSY = 0, olRSW = 0, olRSH = 0, olRSL = 0, olRST = 0;
         const OL_MIN_W = 180, OL_MIN_H = 200;
         outlinePanel.querySelectorAll('.swml-outline-rh').forEach(h => {
@@ -2086,9 +2101,11 @@
                 e.preventDefault(); e.stopPropagation();
                 olResizing = true;
                 olResDir = h.dataset.dir;
-                const r = outlinePanel.getBoundingClientRect();
                 olRSX = e.clientX; olRSY = e.clientY;
-                olRSW = r.width; olRSH = r.height; olRSL = r.left; olRST = r.top;
+                olRSW = parseFloat(outlinePanel.style.width);
+                olRSH = parseFloat(outlinePanel.style.height);
+                olRSL = parseFloat(outlinePanel.style.left);
+                olRST = parseFloat(outlinePanel.style.top);
             });
         });
         document.addEventListener('mousemove', (e) => {
@@ -2114,8 +2131,9 @@
             resFloating = true;
             resPanel.classList.add('swml-outline-detached');
             resPanel.style.position = 'fixed';
-            resPanel.style.left = rect.left + 'px';
-            resPanel.style.top = (rect.top - 24) + 'px'; // -24 to compensate for grip bar appearing at top
+            const origin = getFixedOriginOffset(resPanel);
+            resPanel.style.left = (rect.left - origin.x) + 'px';
+            resPanel.style.top = (rect.top - 24 - origin.y) + 'px'; // -24 to compensate for grip bar appearing at top
             resPanel.style.width = rect.width + 'px';
             resPanel.style.height = (rect.height + 24) + 'px'; // +24 for grip bar
             if (resDetachBtn) { resDetachBtn.innerHTML = SVG_DOCK; resDetachBtn.title = 'Dock panel'; }
@@ -2131,27 +2149,28 @@
         // Drag resources panel via grip
         if (resPanel) {
             const resGrip = resPanel.querySelector('.swml-outline-grip');
-            let resDragging = false, resDragOX = 0, resDragOY = 0;
+            let resDragging = false, resLastX = 0, resLastY = 0;
             if (resGrip) {
                 resGrip.addEventListener('mousedown', (e) => {
                     if (!resFloating || e.button !== 0) return;
                     e.preventDefault(); e.stopPropagation();
                     resDragging = true;
-                    const r = resPanel.getBoundingClientRect();
-                    resDragOX = e.clientX - r.left;
-                    resDragOY = e.clientY - r.top;
+                    resLastX = e.clientX;
+                    resLastY = e.clientY;
                     resGrip.style.cursor = 'grabbing';
                 });
                 document.addEventListener('mousemove', (e) => {
                     if (!resDragging) return;
-                    resPanel.style.left = (e.clientX - resDragOX) + 'px';
-                    resPanel.style.top = (e.clientY - resDragOY) + 'px';
+                    resPanel.style.left = (parseFloat(resPanel.style.left) + e.clientX - resLastX) + 'px';
+                    resPanel.style.top = (parseFloat(resPanel.style.top) + e.clientY - resLastY) + 'px';
+                    resLastX = e.clientX;
+                    resLastY = e.clientY;
                 });
                 document.addEventListener('mouseup', () => {
                     if (resDragging) { resDragging = false; resGrip.style.cursor = ''; }
                 });
             }
-            // Resize handles for resources panel
+            // Resize handles for resources panel — v7.14.96: CSS values, not getBoundingClientRect
             let rsResizing = false, rsDir = '', rsSX = 0, rsSY = 0, rsSW = 0, rsSH = 0, rsSL = 0, rsST = 0;
             resPanel.querySelectorAll('.swml-outline-rh').forEach(h => {
                 h.addEventListener('mousedown', (e) => {
@@ -2159,9 +2178,11 @@
                     e.preventDefault(); e.stopPropagation();
                     rsResizing = true;
                     rsDir = h.dataset.dir;
-                    const r = resPanel.getBoundingClientRect();
                     rsSX = e.clientX; rsSY = e.clientY;
-                    rsSW = r.width; rsSH = r.height; rsSL = r.left; rsST = r.top;
+                    rsSW = parseFloat(resPanel.style.width);
+                    rsSH = parseFloat(resPanel.style.height);
+                    rsSL = parseFloat(resPanel.style.left);
+                    rsST = parseFloat(resPanel.style.top);
                 });
             });
             document.addEventListener('mousemove', (e) => {
@@ -9155,7 +9176,7 @@
         },
         // EDUQAS GCSE Literature (C720QS) + Language (C700U)
         eduqas: {
-            shakespeare:      { format: 'dual', partA: { marks: 15, aos: 'AO1,AO2' }, partB: { marks: 25, aos: 'AO1,AO2,AO3' }, hasExtract: true },
+            shakespeare:      { format: 'dual', partA: { marks: 15, aos: 'AO1,AO2' }, partB: { marks: 25, aos: 'AO1,AO2' }, hasExtract: true },
             modern_text:      { format: 'single', marks: 40, aos: 'AO1,AO2,AO3' },
             '19th_century':   { format: 'single', marks: 40, aos: 'AO1,AO2' },
             poetry_anthology: { format: 'dual', partA: { marks: 15, aos: 'AO1,AO2' }, partB: { marks: 25, aos: 'AO1,AO2,AO3' } },
@@ -9408,8 +9429,28 @@
     }
     // Snapshot the template word count once when editor content is first loaded.
     // Called from TipTap onCreate — captures instruction text before student types.
+    // v7.14.99: Clear ProseMirror undo history. Prevents Cmd+Z from undoing template injection.
+    function clearEditorHistory(editor) {
+        if (!editor?.state) return;
+        try {
+            // Access the history plugin's state and reset it
+            const plugins = editor.state.plugins;
+            for (const plugin of plugins) {
+                // ProseMirror history plugin has a key containing 'history'
+                if (plugin.spec?.historyPreserveItems !== undefined || plugin.key?.includes('history')) {
+                    const histState = plugin.getState(editor.state);
+                    if (histState) {
+                        histState.done = { items: { length: 0, head: null, tail: null }, eventCount: 0 };
+                        histState.undone = { items: { length: 0, head: null, tail: null }, eventCount: 0 };
+                    }
+                }
+            }
+        } catch(e) { /* Silently fail — undo still works, just doesn't clear */ }
+    }
+
     function snapshotTemplateBaseline(editor) {
         if (!editor) return;
+        clearEditorHistory(editor);
         const editorEl = editor.options.element;
         if (!editorEl) return;
         const editableSections = editorEl.querySelectorAll('[data-editable="true"]');
@@ -9645,7 +9686,7 @@
                 { id: 'evidence', label: 'Evidence + Technique', ao: 'AO1/AO2', type: 'checklist', items: ['Technique named', 'Quote integrated', 'Inference made'], prompt: 'Quote + name the technique. Integrate, don\'t bolt on' },
                 { id: 'analysis', label: 'Close Analysis', ao: 'AO2', type: 'checkbox', prompt: 'Examine specific words, sounds, or structural choices' },
                 { id: 'effects', label: 'Effects on Reader', ao: 'AO2', type: 'checklist', items: ['Manipulates focus', 'Manipulates emotions', 'Manipulates thoughts', 'Manipulates actions'], prompt: 'How does the author manipulate the reader? Be specific to the ideas and themes.' },
-                { id: 'purpose', label: "Author's Purpose + Context", ao: 'AO1/AO3', type: 'checkbox', prompt: 'Why these choices? Link to context', aoRequired: 'AO3' },
+                { id: 'purpose', label: "Author's Purpose + Context", ao: 'AO1/AO3', type: 'checkbox', prompt: 'Why these choices? Link to context' },
             ],
             conclusion: [
                 { id: 'thesis', label: 'Restated Thesis', ao: 'AO1', type: 'checkbox', prompt: 'Restate your argument \u2014 evolved, not repeated' },
@@ -9720,6 +9761,109 @@
         },
     };
 
+    // ── Per-board outline specs (v7.14.99) ──
+    // Defines intro/conclusion structure per board+subject+part.
+    // introType: 'thesis_only' | 'compact' | 'standard' | 'full' | 'extended'
+    // concType:  'thesis_only' | 'standard' | 'full' | 'extended'
+    // buildAO: AO label for Building Sentences (when intro has them)
+    // purposeAO: AO label for Author's Purpose conclusion element (default derived from AOs)
+    const OUTLINE_SPECS = {
+        // ── AQA ──
+        'aqa_shakespeare':        { introType: 'standard', concType: 'standard', buildAO: 'AO3', purposeAO: 'AO1/AO3' },
+        'aqa_modern_text':        { introType: 'standard', concType: 'standard', buildAO: 'AO3', purposeAO: 'AO1/AO3' },
+        'aqa_19th_century':       { introType: 'standard', concType: 'standard', buildAO: 'AO1', purposeAO: 'AO1' },
+        'aqa_poetry_anthology':   { introType: 'standard', concType: 'standard', buildAO: 'AO3', purposeAO: 'AO1/AO3' },
+        'aqa_unseen_poetry':      { introType: 'standard', concType: 'standard', buildAO: 'AO1', purposeAO: 'AO1' },
+        // ── EDUQAS ──
+        'eduqas_shakespeare_partA': { introType: 'thesis_only', concType: 'thesis_only' },
+        'eduqas_shakespeare_partB': { introType: 'full', concType: 'full', buildAO: 'AO1/AO2', purposeAO: 'AO1' },
+        'eduqas_modern_text':       { introType: 'standard', concType: 'standard', buildAO: 'AO3', purposeAO: 'AO1/AO3' },
+        'eduqas_19th_century':      { introType: 'standard', concType: 'standard', buildAO: 'AO1', purposeAO: 'AO1' },
+        'eduqas_poetry_anthology_partA': { introType: 'thesis_only', concType: 'thesis_only' },
+        'eduqas_poetry_anthology_partB': { introType: 'full', concType: 'full', buildAO: 'AO3', purposeAO: 'AO1/AO3' },
+        'eduqas_unseen_poetry_partA':    { introType: 'thesis_only', concType: 'thesis_only' },
+        'eduqas_unseen_poetry_partB':    { introType: 'full', concType: 'full', buildAO: 'AO3', purposeAO: 'AO1/AO3' },
+        // ── Edexcel ──
+        'edexcel_shakespeare_partA':  { introType: 'standard', concType: 'standard', buildAO: 'AO2', purposeAO: 'AO2' },
+        'edexcel_shakespeare_partB':  { introType: 'standard', concType: 'standard', buildAO: 'AO3', purposeAO: 'AO1/AO3' },
+        'edexcel_19th_century_partA': { introType: 'standard', concType: 'standard', buildAO: 'AO1/AO2', purposeAO: 'AO1' },
+        'edexcel_19th_century_partB': { introType: 'standard', concType: 'standard', buildAO: 'AO3', purposeAO: 'AO1/AO3' },
+        'edexcel_modern_text':        { introType: 'standard', concType: 'standard', buildAO: 'AO3', purposeAO: 'AO1/AO3' },
+        'edexcel_poetry_anthology':   { introType: 'standard', concType: 'standard', buildAO: 'AO3', purposeAO: 'AO1/AO3' },
+        'edexcel_unseen_poetry':      { introType: 'standard', concType: 'standard', buildAO: 'AO1', purposeAO: 'AO1' },
+        // ── Edexcel IGCSE ──
+        'edexcel-igcse_shakespeare':          { introType: 'standard', concType: 'standard', buildAO: 'AO1', purposeAO: 'AO1' },
+        'edexcel-igcse_19th_century':         { introType: 'standard', concType: 'standard', buildAO: 'AO1', purposeAO: 'AO1' },
+        'edexcel-igcse_modern_text':          { introType: 'standard', concType: 'standard', buildAO: 'AO1', purposeAO: 'AO1' },
+        'edexcel-igcse_modern_prose':         { introType: 'extended', concType: 'standard', buildAO: 'AO1', purposeAO: 'AO1' },
+        'edexcel-igcse_unseen_poetry':        { introType: 'standard', concType: 'standard', buildAO: 'AO1', purposeAO: 'AO1' },
+        'edexcel-igcse_poetry_anthology':     { introType: 'standard', concType: 'standard', buildAO: 'AO3', purposeAO: 'AO1/AO3' },
+        'edexcel-igcse_prose_anthology':      { introType: 'standard', concType: 'standard', buildAO: 'AO1', purposeAO: 'AO1' },
+        'edexcel-igcse_nonfiction_anthology': { introType: 'standard', concType: 'standard', buildAO: 'AO1', purposeAO: 'AO1' },
+        // ── OCR ──
+        'ocr_shakespeare':      { introType: 'standard', concType: 'standard', buildAO: 'AO3', purposeAO: 'AO1/AO3' },
+        'ocr_19th_century':     { introType: 'standard', concType: 'standard', buildAO: 'AO1', purposeAO: 'AO1' },
+        'ocr_modern_prose_partA':     { introType: 'compact', concType: 'standard', purposeAO: 'AO1' },
+        'ocr_modern_prose_partB':     { introType: 'compact', concType: 'standard', purposeAO: 'AO1' },
+        'ocr_poetry_anthology_partA': { introType: 'compact', concType: 'standard', purposeAO: 'AO1' },
+        'ocr_poetry_anthology_partB': { introType: 'compact', concType: 'standard', purposeAO: 'AO1' },
+        // ── CCEA ──
+        'ccea_prose':            { introType: 'full', concType: 'extended', buildAO: 'AO1/AO2', purposeAO: 'AO1' },
+        'ccea_unseen_prose':     { introType: 'standard', concType: 'standard', buildAO: 'AO1', purposeAO: 'AO1' },
+        'ccea_drama':            { introType: 'full', concType: 'extended', buildAO: 'AO1/AO2', purposeAO: 'AO1' },
+        'ccea_poetry_anthology': { introType: 'full', concType: 'extended', buildAO: 'AO3', purposeAO: 'AO1/AO3' },
+        // ── SQA ──
+        'sqa_critical_reading':  { introType: 'compact', concType: 'standard' },
+    };
+
+    /**
+     * Get outline spec key from board + subject + part label.
+     * Falls back to board_subject if no part-specific key exists.
+     */
+    function getOutlineSpecKey(partLabel) {
+        const b = state.board || '';
+        const s = state.subject || '';
+        const base = `${b}_${s}`;
+        if (partLabel) {
+            const partSuffix = '_part' + (partLabel.replace(/\s/g, '').charAt(partLabel.replace(/\s/g, '').length - 1));
+            if (OUTLINE_SPECS[base + partSuffix]) return base + partSuffix;
+        }
+        return base;
+    }
+
+    // ── Intro/Conclusion criteria builders (v7.14.99) ──
+
+    function buildIntroCriteria(type, buildAO) {
+        const hook = { id: 'hook', label: 'Hook', ao: 'AO1', type: 'dropdown', items: ['Historical fact', 'Question', 'Quote', 'Metaphor/image'], prompt: 'An intriguing concept or contextual observation' };
+        const buildCtx = { id: 'building', label: 'Building Sentences', ao: buildAO || 'AO3', type: 'dropdown', items: buildAO === 'AO3' ? ['Historical context', 'Social context', 'Cultural context', 'Counter-argument'] : ['Concept statement', 'Technique preview', 'Argument development', 'Counter-position'], prompt: buildAO === 'AO3' ? 'Contextual backdrop \u2014 historical, social, or cultural' : 'Set up your thesis \u2014 preview your key ideas and approach' };
+        const thesis = { id: 'thesis', label: 'Thesis', ao: 'AO1', type: 'checklist', items: ['Key idea 1', 'Key idea 2', 'Key idea 3', 'Argument setup'], prompt: 'Your 3-point argument \u2014 three key ideas that answer the question' };
+        switch (type) {
+            case 'thesis_only': return [thesis];
+            case 'compact':    return [hook, thesis];
+            case 'standard':   return [hook, buildCtx, thesis];
+            case 'full':       return [hook, { ...buildCtx, id: 'building1', label: 'Building Sentence 1' }, { ...buildCtx, id: 'building2', label: 'Building Sentence 2' }, thesis];
+            case 'extended':   return [hook, { ...buildCtx, id: 'building1', label: 'Building Sentence 1' }, { ...buildCtx, id: 'building2', label: 'Building Sentence 2' }, { ...buildCtx, id: 'building3', label: 'Building Sentence 3' }, thesis];
+            default:           return [hook, buildCtx, thesis];
+        }
+    }
+
+    function buildConclusionCriteria(type, purposeAO) {
+        const rThesis = { id: 'thesis', label: 'Restated Thesis', ao: 'AO1', type: 'checkbox', prompt: 'Restate your argument \u2014 evolved, not repeated' };
+        const concept = { id: 'concept', label: 'Controlling Concept', ao: 'AO1', type: 'checkbox', prompt: 'The single most important idea connecting your paragraphs' };
+        const purpose = { id: 'purpose', label: "Author's Central Purpose", ao: purposeAO || 'AO1', type: 'checkbox', prompt: purposeAO === 'AO1/AO3' ? 'What the text ultimately argues or reveals \u2014 linked to context' : 'What the text ultimately argues or reveals' };
+        const message = { id: 'message', label: 'Universal Message', ao: 'AO1', type: 'checkbox', prompt: 'The broader moral or idea that transcends the text' };
+        const techLinks = { id: 'techlinks', label: 'Key Technique Links', ao: 'AO1/AO2', type: 'checkbox', prompt: '2\u20133 key techniques that connect to your controlling concept' };
+        const context = { id: 'context', label: 'Context Shaping', ao: 'AO1', type: 'checkbox', prompt: 'How historical/social context shaped the author\u2019s choices' };
+        const moral = { id: 'moral', label: 'Moral / Message', ao: 'AO1', type: 'checkbox', prompt: 'The universal lesson or truth the text conveys' };
+        switch (type) {
+            case 'thesis_only': return [rThesis];
+            case 'standard':    return [rThesis, concept, purpose, message];
+            case 'full':        return [rThesis, concept, techLinks, purpose, message];
+            case 'extended':    return [rThesis, concept, techLinks, purpose, context, moral, message];
+            default:            return [rThesis, concept, purpose, message];
+        }
+    }
+
     /**
      * Render a single outline row: LEFT = criteria (read-only), RIGHT = InputField (editable).
      * @param {object} criterion - { id, label, ao, type, items?, prompt }
@@ -9737,41 +9881,55 @@
 
     /**
      * Build outline section with two-column criteria layout.
-     * Uses OUTLINE_CRITERIA config per type (literature, iumvcc, cwPlot).
+     * v7.14.99: Uses per-board OUTLINE_SPECS for intro/conclusion structure.
+     * Body paragraphs remain shared (TTEECA with AO filtering).
      */
-    function buildOutlineSection(aos, partLabel, marks) {
+    function buildOutlineSection(aos, partLabel, marks, specKey) {
         const aoList = (aos || 'AO1,AO2,AO3').split(',').map(a => a.trim());
-        const hasAO3 = aoList.includes('AO3');
-        const fullEssay = needsFullEssayStructure(marks);
         const prefix = partLabel ? ` \u2014 ${partLabel}` : '';
         let html = '';
 
-        if (fullEssay) {
-            const criteria = OUTLINE_CRITERIA.literature;
+        // Resolve spec: explicit key > auto-detect from state > mark-based defaults
+        const key = specKey || getOutlineSpecKey(partLabel);
+        const spec = OUTLINE_SPECS[key] || {};
+        // v7.14.99: When a spec exists, always use full essay structure (intro/body/conclusion)
+        // even for low-mark parts like EDUQAS Q1 (15m) — the spec controls element count.
+        const fullEssay = spec.introType ? true : needsFullEssayStructure(marks);
+        const introType = spec.introType || (marks < 20 ? 'thesis_only' : 'standard');
+        const concType = spec.concType || (marks < 20 ? 'thesis_only' : 'standard');
+        const buildAO = spec.buildAO || (aoList.includes('AO3') ? 'AO3' : 'AO1');
+        const purposeAO = spec.purposeAO || (aoList.includes('AO3') ? 'AO1/AO3' : 'AO1');
 
-            // Introduction
+        if (fullEssay) {
+            // Introduction — from per-board spec
+            const introCriteria = buildIntroCriteria(introType, buildAO);
             let introRows = '';
-            criteria.intro.forEach(c => {
-                if (c.aoRequired && !aoList.includes(c.aoRequired)) return;
+            introCriteria.forEach(c => {
                 introRows += outlineRowHTML(c, `outline-intro-${c.id}${prefix ? '-' + partLabel?.replace(/\s/g,'').toLowerCase() : ''}`);
             });
             html += sectionHTML('outline', `Outline: Introduction${prefix}`, true, null, introRows);
 
-            // Body paragraphs
+            // Body paragraphs — shared TTEECA with AO filtering
             const bodyCount = marks >= 40 ? 4 : 3;
+            const bodyCriteria = OUTLINE_CRITERIA.literature.body;
             for (let i = 1; i <= bodyCount; i++) {
                 let bodyRows = '';
-                criteria.body.forEach(c => {
+                bodyCriteria.forEach(c => {
                     if (c.aoRequired && !aoList.includes(c.aoRequired)) return;
-                    bodyRows += outlineRowHTML(c, `outline-body-${i}-${c.id}`);
+                    // Adapt Author's Purpose when AO3 not assessed: drop "+ Context", relabel AO
+                    let adapted = c;
+                    if (!aoList.includes('AO3') && c.id === 'purpose') {
+                        adapted = { ...c, label: "Author's Purpose", ao: 'AO1', prompt: 'Why did the author make these choices?' };
+                    }
+                    bodyRows += outlineRowHTML(adapted, `outline-body-${i}-${c.id}`);
                 });
                 html += sectionHTML('outline', `Outline: Body Paragraph ${i}${prefix}`, true, null, bodyRows);
             }
 
-            // Conclusion
+            // Conclusion — from per-board spec
+            const concCriteria = buildConclusionCriteria(concType, purposeAO);
             let concRows = '';
-            criteria.conclusion.forEach(c => {
-                if (c.aoRequired && !aoList.includes(c.aoRequired)) return;
+            concCriteria.forEach(c => {
                 concRows += outlineRowHTML(c, `outline-conclusion-${c.id}`);
             });
             html += sectionHTML('outline', `Outline: Conclusion${prefix}`, true, null, concRows);
@@ -11149,9 +11307,11 @@
                 if (!localContent || localContent.length < 20) {
                     // No meaningful local content — use server version
                     canvasEditor.commands.setContent(res.doc.html, false);
+                    clearEditorHistory(canvasEditor); // v7.14.99: Cmd+Z starts from loaded content
                     console.log('WML: Canvas loaded from server (no local content found)');
                 } else {
                     // Both exist — keep local (more recent), but log server availability
+                    clearEditorHistory(canvasEditor); // v7.14.99: Cmd+Z starts from loaded content
                     console.log('WML: Local canvas content exists, server backup available');
                 }
             }

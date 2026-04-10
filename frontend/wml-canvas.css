@@ -24,6 +24,11 @@ body.swml-embedded-active .spl-footer {
     display: none !important;
     visibility: hidden !important;
 }
+/* v7.14.97: LD's will-change:transform on .spl-entry creates a containing block that breaks
+   position:fixed on detached panels (outline, resources). Reset it when WML is active. */
+body.swml-embedded-active .spl-entry {
+    will-change: auto !important;
+}
 /* Embedded mode: canvas renders within LD content area, not as fullscreen overlay (v7.13.15) */
 #swml-canvas-overlay.swml-canvas-embedded {
     position: sticky;
@@ -1151,6 +1156,10 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     min-width: 0;
     overflow: hidden;
     z-index: 1; /* Above absolute toolbar */
+    pointer-events: none; /* v7.14.97: let toolbar hover through the container's empty area */
+}
+.swml-canvas-ctx > * {
+    pointer-events: auto; /* badges themselves remain clickable */
 }
 .swml-canvas-ctx-badge {
     font-size: 10px;
