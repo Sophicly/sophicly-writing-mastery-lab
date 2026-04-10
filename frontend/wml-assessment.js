@@ -8213,7 +8213,7 @@
             textContent: '→ 100%',
             onClick: () => { userZoom = 1; applyZoom(Math.min(1, autoFitScale)); }
         });
-        zoomResetBtn.style.cssText = 'background:none;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:2px 4px;font-family:inherit;';
+        // Styles handled by .swml-zoom-reset in wml-canvas.css (no inline overrides)
         zoomWrap.appendChild(zoomResetBtn);
         statusBar.insertBefore(zoomWrap, saveStatus);
 

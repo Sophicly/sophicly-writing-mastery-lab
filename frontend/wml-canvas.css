@@ -1239,7 +1239,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-tb-items {
     display: flex;
     list-style: none;
-    padding: 0;
+    padding: 10px;
     margin: 0;
     position: relative;
     will-change: transform;
@@ -3216,12 +3216,14 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     color: #7DF9E9;
 }
 .swml-canvas-light .swml-zoom-reset {
-    border-color: rgba(77,118,253,0.25);
-    color: #4D76FD;
+    border-color: rgba(60,60,80,0.25);
+    color: #4a4a5a;
+    background: rgba(60,60,80,0.06);
 }
 .swml-canvas-light .swml-zoom-reset:hover {
-    background: rgba(77,118,253,0.08);
+    background: rgba(77,118,253,0.1);
     border-color: rgba(77,118,253,0.5);
+    color: #4D76FD;
 }
 /* Page count + countdown in status bar */
 .swml-page-count {
