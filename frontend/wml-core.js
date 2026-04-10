@@ -1280,7 +1280,8 @@ window.WML = (function() {
     // Listen for system preference changes (only applies if no manual override)
     window.matchMedia?.('(prefers-color-scheme: light)').addEventListener('change', () => {
         try {
-            if (!sessionStorage.getItem('swml-theme-manual')) {
+            // v7.15.1: Check localStorage (not sessionStorage) — manual override migrated in v7.14.21
+            if (!localStorage.getItem('swml-theme-manual')) {
                 applyTheme(getSystemTheme());
             }
         } catch(e) {
