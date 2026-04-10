@@ -5970,42 +5970,28 @@
                     if (node.attrs.prompt) contentDOM.setAttribute('data-prompt', node.attrs.prompt);
                     dom.appendChild(contentDOM);
 
-                    // ── v7.15.0: Row completion indicator ──
-                    // A row is "complete" when criteria are filled AND input has text.
-                    let _checkingRow = false; // Guard against MutationObserver re-entry loop
+                    // ── v7.15.0: Row completion — criteria check only (text check via global onUpdate) ──
                     function checkRowComplete() {
-                        if (_checkingRow) return;
-                        _checkingRow = true;
                         const hasText = (contentDOM.textContent || '').trim().length > 0;
                         let criteriaOk = false;
                         if (crit.type === 'dropdown') {
                             const sel = criteriaEl.querySelector('.swml-outline-select');
                             criteriaOk = sel && !!sel.value;
                         } else if (crit.type === 'checklist' && crit.items) {
-                            const required = crit.items.filter((_, i) => !crit.items[i]?.optional);
                             const checkedCount = checkboxes.filter(c => c.checked).length;
-                            // At least all non-optional items checked (or all if none marked optional)
-                            criteriaOk = checkedCount >= Math.max(1, required.length);
+                            criteriaOk = checkedCount >= Math.max(1, crit.items.length);
                         } else if (crit.type === 'checkbox') {
                             criteriaOk = checkboxes.some(c => c.checked);
                         } else {
-                            criteriaOk = true; // no criteria to check
+                            criteriaOk = true;
                         }
                         const complete = hasText && criteriaOk;
                         dom.classList.toggle('swml-row-complete', complete);
                         contentDOM.classList.toggle('swml-input-filled', hasText);
-                        _checkingRow = false;
-                        // Bubble up: check if parent section is fully complete
-                        requestAnimationFrame(() => {
-                            const section = dom.closest('.swml-section-block');
-                            if (section) checkSectionComplete(section);
-                        });
                     }
-                    // Observe text changes in the input area
-                    const inputObserver = new MutationObserver(() => checkRowComplete());
-                    inputObserver.observe(contentDOM, { childList: true, subtree: true, characterData: true });
-                    // Initial check (for saved content on load)
-                    requestAnimationFrame(() => checkRowComplete());
+                    // NO MutationObserver — text changes detected by global updateRowIndicators() in onUpdate
+                    // Initial check deferred to after all rows are built
+                    dom._checkRowComplete = checkRowComplete;
 
                     // Calculate min-height synchronously from criteria data.
                     let critH = 18;
@@ -6951,14 +6937,23 @@
                 if (wcWidgetLabel) wcWidgetLabel.textContent = `${wc} / ${canvasWordTarget}`;
 
                 // v7.15.0: Mark Plan/Response InputFields as filled/empty
+                // v7.15.0: Single debounced pass for ALL completion indicators (no per-row observers)
                 requestAnimationFrame(() => {
                     const editorEl = editor.options.element;
                     if (!editorEl) return;
+                    // Plan/Response InputFields (outside outline rows)
                     editorEl.querySelectorAll('.swml-input-field').forEach(field => {
-                        // Skip InputFields inside outline rows — those are handled by OutlineRow's own observer
                         if (field.closest('.swml-outline-row')) return;
                         const text = (field.textContent || '').trim();
                         field.classList.toggle('swml-input-filled', text.length > 0);
+                    });
+                    // Outline rows — call each row's checkRowComplete (criteria + text)
+                    editorEl.querySelectorAll('.swml-outline-row').forEach(row => {
+                        if (row._checkRowComplete) row._checkRowComplete();
+                    });
+                    // Section completion (batch after all rows checked)
+                    editorEl.querySelectorAll('.swml-section-block[data-section-type="outline"]').forEach(sec => {
+                        checkSectionComplete(sec);
                     });
                 });
 
