@@ -6641,10 +6641,10 @@ Before marking the introduction, ask the student to confirm their essay structur
         setInterval(() => {
             const embedRoot = document.getElementById('swml-embedded-root');
             if (!embedRoot) {
-                // Navigated away — clean up
+                // Navigated away — clean up all WML state from persistent DOM
                 const overlay = document.getElementById('swml-canvas-overlay');
                 if (overlay) { overlay.remove(); document.body.style.overflow = ''; }
-                document.body.classList.remove('swml-has-embed');
+                document.body.classList.remove('swml-has-embed', 'swml-embedded-active');
                 _lastEmbedPost = 0;
                 return;
             }

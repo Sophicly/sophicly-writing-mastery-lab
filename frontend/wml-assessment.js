@@ -3825,12 +3825,14 @@
                     }, 400);
                 }
 
-                // Scroll document to top
-                setTimeout(() => {
-                    const editor = document.getElementById('swml-tiptap-editor');
-                    const scrollContainer = editor?.closest('.swml-canvas-content');
-                    if (scrollContainer) scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
-                }, 600);
+                // v7.15.1: Only scroll to top on fresh entry, not when resuming saved chat
+                if (!hasSavedChat) {
+                    setTimeout(() => {
+                        const editor = document.getElementById('swml-tiptap-editor');
+                        const scrollContainer = editor?.closest('.swml-canvas-content');
+                        if (scrollContainer) scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 600);
+                }
             };
 
             // Defer chat init until after template loads (editor needs content for word count etc.)
@@ -5247,12 +5249,15 @@
                                             }, 200); // 200ms lets CharacterCount sync + DOM render
                                         }
 
-                                        // Scroll document to absolute top on assessment entry
-                                        setTimeout(() => {
-                                            const editor = document.getElementById('swml-tiptap-editor');
-                                            const scrollContainer = editor?.closest('.swml-canvas-content');
-                                            if (scrollContainer) scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }, 600);
+                                        // v7.15.1: Only scroll document to top on FRESH assessment entry, not when resuming saved chat.
+                                        // Resuming a saved chat means the user had the document at a specific scroll position — preserve it.
+                                        if (!hasSavedChat) {
+                                            setTimeout(() => {
+                                                const editor = document.getElementById('swml-tiptap-editor');
+                                                const scrollContainer = editor?.closest('.swml-canvas-content');
+                                                if (scrollContainer) scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }, 600);
+                                        }
                                         })(); // end chat persistence IIFE
                                     }, 400);
                                 });
