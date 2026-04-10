@@ -38,6 +38,9 @@ window.WML = (function() {
         cwTrial:         config.restUrl + 'cw-project/trial',
         cwStep:          config.restUrl + 'cw-project/step',
         cwPlotTemplate:  config.restUrl + 'cw-project/plot-template',
+        // Tutor review endpoints (v7.15.2)
+        reviewCanvas:    config.restUrl + 'canvas/review',
+        reviewChat:      config.restUrl + 'canvas/review-chat',
     };
     const headers = { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce };
 
@@ -370,6 +373,10 @@ window.WML = (function() {
         _phaseMarkedComplete: false,  // Prevents double-fire of Mark Complete
         // v7.14.3: Exercise unique ID — UUID per attempt for deep linking + dashboard + tutor access
         exerciseId: config.urlParams?.eid || '',
+        // Tutor review mode (v7.15.2)
+        reviewMode: !!config.reviewMode,
+        reviewStudentId: config.reviewStudentId || 0,
+        reviewStudentName: config.reviewStudentName || '',
     };
 
     const PLAN_STEPS = [
@@ -974,7 +981,7 @@ window.WML = (function() {
             protocolTask: null,
             completionType: 'manual',
             storageSuffix: '_cw',
-            chatHeaderLabel: 'Sophic Intelligence',
+            chatHeaderLabel: 'Sophia',
             sidebarSteps: null,
         },
         // ── Creative Writing: Workbook Steps (v7.13.34) ──
@@ -1321,7 +1328,7 @@ window.WML = (function() {
     // Small inline (16px)
     const SVG_COPY = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667-2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1-2.667 2.667h-8.666a2.667 2.667 0 0 1-2.667-2.667z"/><path d="M4.012 16.737a2.005 2.005 0 0 1-1.012-1.737v-10c0-1.1.9-2 2-2h10c.75 0 1.158.385 1.5 1"/></svg>';
     const SVG_COPY_ASSESS = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18.333 6a3.667 3.667 0 0 1 3.667 3.667v8.666a3.667 3.667 0 0 1 -3.667 3.667h-8.666a3.667 3.667 0 0 1 -3.667 -3.667v-8.666a3.667 3.667 0 0 1 3.667 -3.667zm-3.333 -4c1.094 0 1.828 .533 2.374 1.514a1 1 0 1 1 -1.748 .972c-.221 -.398 -.342 -.486 -.626 -.486h-10c-.548 0 -1 .452 -1 1v9.998c0 .32 .154 .618 .407 .805l.1 .065a1 1 0 1 1 -.99 1.738a3 3 0 0 1 -1.517 -2.606v-10c0 -1.652 1.348 -3 3 -3zm2 11h-6a1 1 0 0 0 0 2h6a1 1 0 0 0 0 -2"/></svg>';
-    const SENDER_HTML = '<img src="https://sophicly.b-cdn.net/Images/Writing%20Mastery%20Lab%20Phoenix%20Logo.svg" alt="" style="width:16px;height:16px;margin-right:5px">Sophic Intelligence';
+    const SENDER_HTML = '<img src="https://sophicly.b-cdn.net/Images/Writing%20Mastery%20Lab%20Phoenix%20Logo.svg" alt="" style="width:16px;height:16px;margin-right:5px">Sophia';
     // Selection toolbar icons (14px)
     const SVG_SEL_REPLY = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11 20L1 12L11 4V9C16.5228 9 21 13.4772 21 19C21 19.2729 20.9891 19.5433 20.9676 19.8107C19.4605 16.9502 16.458 15 13 15H11V20Z"/></svg>';
     const SVG_SEL_INSERT = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18.333 6a3.667 3.667 0 0 1 3.667 3.667v8.666a3.667 3.667 0 0 1 -3.667 3.667h-8.666a3.667 3.667 0 0 1 -3.667 -3.667v-8.666a3.667 3.667 0 0 1 3.667 -3.667zm-4.333 4a1 1 0 0 0 -1 1v2h-2a1 1 0 0 0 -.993 .883l-.007 .117a1 1 0 0 0 1 1h2v2a1 1 0 0 0 .883 .993l.117 .007a1 1 0 0 0 1 -1v-2h2a1 1 0 0 0 .993 -.883l.007 -.117a1 1 0 0 0 -1 -1h-2v-2a1 1 0 0 0 -.883 -.993zm1 -8c1.094 0 1.828 .533 2.374 1.514a1 1 0 1 1 -1.748 .972c-.221 -.398 -.342 -.486 -.626 -.486h-10c-.548 0 -1 .452 -1 1v9.998c0 .32 .154 .618 .407 .805l.1 .065a1 1 0 1 1 -.99 1.738a3 3 0 0 1 -1.517 -2.606v-10c0 -1.652 1.348 -3 3 -3z"/></svg>';

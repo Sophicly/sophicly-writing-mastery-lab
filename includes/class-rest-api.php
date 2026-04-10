@@ -151,6 +151,16 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_tutor_auth'],
         ]);
 
+        // Tutor review — load student canvas/chat (v7.15.2)
+        register_rest_route($namespace, '/canvas/review', [
+            'methods' => 'GET', 'callback' => [$this, 'tutor_load_canvas'],
+            'permission_callback' => [$this, 'check_tutor_auth'],
+        ]);
+        register_rest_route($namespace, '/canvas/review-chat', [
+            'methods' => 'GET', 'callback' => [$this, 'tutor_load_canvas_chat'],
+            'permission_callback' => [$this, 'check_tutor_auth'],
+        ]);
+
         // Load sign-off data for a canvas document
         register_rest_route($namespace, '/canvas/load-signoff', [
             'methods' => 'GET', 'callback' => [$this, 'load_signoff'],
@@ -1133,6 +1143,95 @@ class SWML_REST_API {
             'success' => true,
             'doc'     => $doc,
         ]);
+    }
+
+    /**
+     * Tutor review: load a student's canvas document (v7.15.2).
+     * Requires tutor auth + LearnDash group overlap (or admin).
+     */
+    public function tutor_load_canvas($request) {
+        $student_id = absint($request->get_param('student_id') ?? 0);
+        if (!$student_id) {
+            return new WP_Error('missing_student', 'student_id is required', ['status' => 400]);
+        }
+
+        $auth = $this->verify_tutor_student_access($student_id);
+        if (is_wp_error($auth)) return $auth;
+
+        $board = sanitize_text_field($request->get_param('board') ?? '');
+        $text  = sanitize_text_field($request->get_param('text') ?? '');
+        $topic_number = $request->get_param('topicNumber');
+        $topic_number = ($topic_number !== null && $topic_number !== '') ? absint($topic_number) : null;
+        $suffix = sanitize_text_field($request->get_param('suffix') ?? '');
+
+        if (empty($board) || empty($text)) {
+            return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
+        }
+
+        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix);
+        $raw = get_user_meta($student_id, $meta_key, true);
+        if (empty($raw)) {
+            return rest_ensure_response(['success' => true, 'doc' => null]);
+        }
+        if (is_array($raw)) {
+            return rest_ensure_response(['success' => true, 'doc' => $raw]);
+        }
+        $doc = self::decode_canvas_json($raw);
+        return rest_ensure_response(['success' => true, 'doc' => $doc]);
+    }
+
+    /**
+     * Tutor review: load a student's canvas chat history (v7.15.2).
+     */
+    public function tutor_load_canvas_chat($request) {
+        $student_id = absint($request->get_param('student_id') ?? 0);
+        if (!$student_id) {
+            return new WP_Error('missing_student', 'student_id is required', ['status' => 400]);
+        }
+
+        $auth = $this->verify_tutor_student_access($student_id);
+        if (is_wp_error($auth)) return $auth;
+
+        $board  = sanitize_text_field($request->get_param('board') ?? '');
+        $text   = sanitize_text_field($request->get_param('text') ?? '');
+        $topic  = absint($request->get_param('topicNumber') ?? 0);
+        $suffix = sanitize_text_field($request->get_param('suffix') ?? '');
+
+        if (!$board || !$text) {
+            return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
+        }
+
+        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix);
+        $raw = get_user_meta($student_id, $meta_key, true);
+        $data = $raw ? json_decode($raw, true) : null;
+
+        $student = get_userdata($student_id);
+        return rest_ensure_response([
+            'success' => !empty($data),
+            'chat'    => $data,
+            'studentName' => $student ? ($student->first_name ?: $student->display_name) : 'Student',
+        ]);
+    }
+
+    /**
+     * Verify tutor has access to a student via LearnDash group overlap (v7.15.2).
+     */
+    private function verify_tutor_student_access($student_id) {
+        $tutor_id = get_current_user_id();
+        if ($student_id === $tutor_id) {
+            return true; // viewing own work is fine
+        }
+        if (current_user_can('manage_options')) {
+            return true; // admins can view all
+        }
+        if (function_exists('learndash_get_users_group_ids')) {
+            $tutor_groups   = learndash_get_users_group_ids($tutor_id);
+            $student_groups = learndash_get_users_group_ids($student_id);
+            if (!empty(array_intersect($tutor_groups, $student_groups))) {
+                return true;
+            }
+        }
+        return new WP_Error('unauthorized_student', 'You are not authorized to view this student\'s work.', ['status' => 403]);
     }
 
     /**

@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.15.2
+ * Version: 7.15.3
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.15.2');
+define('SWML_VERSION', '7.15.3');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -265,6 +265,23 @@ class Sophicly_Writing_Mastery_Lab {
             }
         }
 
+        // Tutor review mode: resolve student info if ?student_id= is set (v7.15.3)
+        $review_student_id = absint($_GET['student_id'] ?? 0);
+        $review_student_name = '';
+        $review_mode = false;
+        if ($review_student_id) {
+            $can_review = current_user_can('manage_options')
+                || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'tutor'
+                || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'specialist';
+            if ($can_review) {
+                $student = get_userdata($review_student_id);
+                if ($student) {
+                    $review_student_name = $student->first_name ?: $student->display_name;
+                    $review_mode = true;
+                }
+            }
+        }
+
         wp_localize_script('swml-core', 'swmlConfig', [
             'restUrl'          => rest_url('sophicly-wml/v1/'),
             'wpRestUrl'        => rest_url(),  // Generic WP REST base for cross-plugin calls
@@ -277,6 +294,9 @@ class Sophicly_Writing_Mastery_Lab {
             'canSignOff'       => current_user_can('manage_options')
                                   || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'tutor'
                                   || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'specialist',
+            'reviewMode'       => $review_mode,
+            'reviewStudentId'  => $review_student_id,
+            'reviewStudentName' => $review_student_name,
             'dashboardUrl'     => home_url('/my-dashboard/'),
             'libraryUrl'       => home_url('/library/'),
             'courseResumeUrl'   => $course_resume_url,
@@ -295,6 +315,7 @@ class Sophicly_Writing_Mastery_Lab {
                 'unit_id' => absint($_GET['unit_id'] ?? 0),
                 'planning_mode' => sanitize_text_field($_GET['planning_mode'] ?? ''),
                 'eid'     => sanitize_text_field($_GET['eid'] ?? ''),
+                'student_id' => $review_student_id,
             ],
         ]);
 

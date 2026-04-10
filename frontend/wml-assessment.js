@@ -1175,6 +1175,16 @@
         const overlay = el('div', { id: 'swml-canvas-overlay' });
         const canvas = el('div', { className: 'swml-canvas' });
 
+        // Tutor review mode: add class + banner (v7.15.2)
+        if (state.reviewMode) {
+            overlay.classList.add('swml-review-mode');
+            const banner = el('div', { className: 'swml-review-banner' });
+            banner.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+                + 'Reviewing <strong>' + (state.reviewStudentName || 'Student') + '</strong>\'s work'
+                + '<span style="margin-left:auto;opacity:0.7;font-size:12px">Read-only</span>';
+            canvas.prepend(banner);
+        }
+
         // Editor pane
         const editorPane = el('div', { className: 'swml-canvas-editor' });
 
@@ -3377,7 +3387,7 @@
                     saved.history.forEach(m => { epChatHistory.push(m); epAddMessage(m.role, m.content); });
                     if (saved.chatId) epChatId = saved.chatId;
                     console.log('WML Exam Prep: Resumed chat with', saved.history.length, 'messages');
-                } else {
+                } else if (!state.reviewMode) {
                     // Auto-send greeting to start the exercise
                     setTimeout(() => {
                         epChatTextarea.value = "Let's begin!";
@@ -3497,16 +3507,19 @@
             // ── Chat persistence: resume or fresh start ──
             // Deferred until TipTap editor initialises + template loads
             const _initTrainingChat = async () => {
-                let savedChat = loadCanvasChat();
+                let savedChat = state.reviewMode ? null : loadCanvasChat();
                 const skipServerChat = state.task && state.task.startsWith('cw_');
                 if (!skipServerChat && (!savedChat || !savedChat.history || savedChat.history.length === 0)) {
                     try {
                         const _chatSuffix = WML.getExerciseConfig(state.task).storageSuffix || '';
-                        const chatUrl = `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}`;
+                        // Tutor review: load student's chat via review endpoint (v7.15.2)
+                        const chatUrl = state.reviewMode && state.reviewStudentId
+                            ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}`
+                            : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}`;
                         const serverChat = await fetch(chatUrl, { headers }).then(r => r.json());
                         if (serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
                             savedChat = serverChat.chat;
-                            console.log('WML Training: Chat loaded from server (localStorage empty)');
+                            console.log(state.reviewMode ? 'WML Review: Student chat loaded from server' : 'WML Training: Chat loaded from server (localStorage empty)');
                         }
                     } catch (e) { console.log('WML Training: Server chat load unavailable'); }
                 }
@@ -3817,7 +3830,7 @@
                             bc.appendChild(startBar);
                         }
                     }, 50);
-                } else {
+                } else if (!state.reviewMode) {
                     // All other training-env exercises: silent auto-send (protocol drives greeting)
                     setTimeout(() => {
                         console.log('WML Training: Silent auto-send for', state.task);
@@ -4914,18 +4927,21 @@
 
                                         // ── Chat persistence: resume or fresh start (v7.12.3) ──
                                         (async () => {
-                                        let savedChat = loadCanvasChat();
+                                        let savedChat = state.reviewMode ? null : loadCanvasChat();
                                         // Server fallback if localStorage is empty (v7.14.4: suffix now isolates each exercise type)
                                         // CW exercises use project artifact storage, not canvas chat
                                         const skipServerChat = state.task && state.task.startsWith('cw_');
                                         if (!skipServerChat && (!savedChat || !savedChat.history || savedChat.history.length === 0)) {
                                             try {
                                                 const _chatSuffix = WML.getExerciseConfig(state.task).storageSuffix || '';
-                                                const chatUrl = `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}`;
+                                                // Tutor review: load student's chat via review endpoint (v7.15.2)
+                                                const chatUrl = state.reviewMode && state.reviewStudentId
+                                                    ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}`
+                                                    : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}`;
                                                 const serverChat = await fetch(chatUrl, { headers }).then(r => r.json());
                                                 if (serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
                                                     savedChat = serverChat.chat;
-                                                    console.log('WML Canvas: Chat loaded from server (localStorage empty)');
+                                                    console.log(state.reviewMode ? 'WML Review: Student chat loaded from server' : 'WML Canvas: Chat loaded from server (localStorage empty)');
                                                 }
                                             } catch (e) { console.log('WML Canvas: Server chat load unavailable'); }
                                         }
@@ -6790,7 +6806,7 @@
         });
 
         // ── Initialise TipTap Editor ──
-        let savedContent = loadCanvasContent();
+        let savedContent = state.reviewMode ? null : loadCanvasContent(); // Review mode: skip localStorage, server will inject
         // v7.13.42: CW tasks — always clear stale localStorage so fresh template loads
         // CW documents are saved as project artifacts on the server, not localStorage
         if (isCwTask) {
@@ -6817,6 +6833,7 @@
 
         canvasEditor = new Editor({
             element: editorEl,
+            editable: !state.reviewMode, // Tutor review: read-only (v7.15.2)
             extensions: [
                 StarterKit.configure({
                     heading: { levels: [2, 3] },
@@ -11340,6 +11357,8 @@
 
     function saveCanvasContent() {
         if (!canvasEditor) return;
+        // Tutor review mode: never save — read-only view of student's work (v7.15.2)
+        if (state.reviewMode) return;
         let html = canvasEditor.getHTML();
         html = patchCheckStateIntoHTML(html);
         const wc = getResponseWordCount(canvasEditor);
@@ -11385,17 +11404,27 @@
         }
         try {
             const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
-            const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}`;
+            // Tutor review mode: load student's canvas via review endpoint (v7.15.2)
+            let url;
+            if (state.reviewMode && state.reviewStudentId) {
+                url = `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}`;
+            } else {
+                url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}`;
+            }
             const res = await fetch(url, { headers }).then(r => r.json());
             if (res.success && res.doc && res.doc.html) {
-                const localContent = loadCanvasContent();
-                if (!localContent || localContent.length < 20) {
-                    // No meaningful local content — use server version
+                if (state.reviewMode) {
+                    // Review mode: always load server content (student's document)
                     canvasEditor.commands.setContent(res.doc.html, false);
-                    console.log('WML: Canvas loaded from server (no local content found)');
+                    console.log('WML Review: Loaded student canvas from server');
                 } else {
-                    // Both exist — keep local (more recent), but log server availability
-                    console.log('WML: Local canvas content exists, server backup available');
+                    const localContent = loadCanvasContent();
+                    if (!localContent || localContent.length < 20) {
+                        canvasEditor.commands.setContent(res.doc.html, false);
+                        console.log('WML: Canvas loaded from server (no local content found)');
+                    } else {
+                        console.log('WML: Local canvas content exists, server backup available');
+                    }
                 }
             }
         } catch (e) {
@@ -12745,7 +12774,15 @@ ${html}
 
         // ── Overlay + Canvas container ──
         const overlay = el('div', { id: 'swml-canvas-overlay' });
+        if (state.reviewMode) overlay.classList.add('swml-review-mode');
         const canvas = el('div', { className: 'swml-canvas swml-feedback-canvas' });
+        if (state.reviewMode) {
+            const banner = el('div', { className: 'swml-review-banner' });
+            banner.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+                + 'Reviewing <strong>' + (state.reviewStudentName || 'Student') + '</strong>\'s work'
+                + '<span style="margin-left:auto;opacity:0.7;font-size:12px">Read-only</span>';
+            canvas.prepend(banner);
+        }
 
         // ── Header: badges + theme toggle (no toolbar) ──
         const textLabel = state.textName || state.text || '';
@@ -13185,7 +13222,15 @@ ${html}
 
         // ── Overlay + Canvas Shell ──
         const overlay = el('div', { id: 'swml-canvas-overlay' });
+        if (state.reviewMode) overlay.classList.add('swml-review-mode');
         const canvas = el('div', { className: 'swml-canvas' });
+        if (state.reviewMode) {
+            const banner = el('div', { className: 'swml-review-banner' });
+            banner.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+                + 'Reviewing <strong>' + (state.reviewStudentName || 'Student') + '</strong>\'s work'
+                + '<span style="margin-left:auto;opacity:0.7;font-size:12px">Read-only</span>';
+            canvas.prepend(banner);
+        }
 
         // ── Header Row ──
         const headerRow = el('div', { className: 'swml-canvas-header' });
@@ -13283,7 +13328,7 @@ ${html}
 
         const chatHeader = el('div', { className: 'swml-canvas-chat-header' });
         chatHeader.appendChild(el('span', {
-            innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px;opacity:0.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>' + (exerciseConfig.chatHeaderLabel || 'Sophic Intelligence')
+            innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px;opacity:0.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>' + (exerciseConfig.chatHeaderLabel || 'Sophia')
         }));
         chatPanel.appendChild(chatHeader);
 
@@ -13440,10 +13485,13 @@ ${html}
         // Load saved content or template
         const savedKey = CANVAS_SAVE_KEY();
         let savedContent = null;
-        try { savedContent = localStorage.getItem(savedKey); } catch (e) {}
+        if (!state.reviewMode) { // Review mode: skip localStorage, server will inject
+            try { savedContent = localStorage.getItem(savedKey); } catch (e) {}
+        }
 
         canvasEditor = new Editor({
             element: editorEl,
+            editable: !state.reviewMode, // Tutor review: read-only (v7.15.2)
             extensions: [
                 StarterKit.configure({ heading: { levels: [2, 3] } }),
                 Placeholder.configure({ placeholder: 'Start working here...' }),
@@ -13486,7 +13534,7 @@ ${html}
         }
 
         // ── Load saved chat or show question selector or auto-greet ──
-        const savedChat = loadCanvasChat();
+        let savedChat = state.reviewMode ? null : loadCanvasChat();
         if (savedChat?.history?.length) {
             // v7.14.61: Suppress per-message scroll during restore
             chatMessages._suppressScroll = true;
@@ -13509,7 +13557,7 @@ ${html}
         } else if (_needsQuestionSelection(state.task) && !state.question) {
             // Show question selector overlay inside the canvas
             _showCanvasQuestionSelector(chatPanel, chatMessages, chatTextarea, sendMsg);
-        } else {
+        } else if (!state.reviewMode) {
             // Auto-send greeting to start the exercise
             setTimeout(() => {
                 chatTextarea.value = "Let's begin!";

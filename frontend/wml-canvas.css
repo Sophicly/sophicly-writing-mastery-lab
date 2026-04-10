@@ -6364,3 +6364,51 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-canvas-no-document .swml-canvas-chat-resize {
     display: none;
 }
+
+/* ═══════════════════════════════════════════
+   Tutor Review Mode (v7.15.2)
+   ═══════════════════════════════════════════ */
+
+/* Review banner */
+.swml-review-banner {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #5333ed22, #42A1EC22);
+    border-bottom: 1px solid #5333ed33;
+    color: #e0e0e8;
+    font-size: 13px;
+    font-family: 'Proxima Soft Complete', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    gap: 4px;
+    z-index: 10;
+}
+.swml-review-banner strong {
+    color: #51dacf;
+}
+
+/* Hide chat input area in review mode */
+.swml-review-mode .swml-canvas-chat-input {
+    display: none !important;
+}
+
+/* Dim toolbar in review mode */
+.swml-review-mode .swml-tb-items {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+/* Make editor cursor invisible in review mode */
+.swml-review-mode .ProseMirror {
+    caret-color: transparent;
+}
+.swml-review-mode .ProseMirror:focus {
+    outline: none;
+}
+
+/* Hide save/export buttons in review mode */
+.swml-review-mode .swml-btn-assess,
+.swml-review-mode .swml-canvas-save-status {
+    display: none !important;
+}
