@@ -566,17 +566,17 @@
                 }
 
                 // v7.15.8: Timer briefing detection — show Start Timer button for Recall/Advanced modes
-                // v7.15.9: Only match the EXACT timer briefing line, not general mentions of timers
-                if (isExamPrep && detectText && /press the microphone button when you're ready/i.test(detectText)) {
+                // v7.15.11: Timer controls — Exam mode starts timer on mic click, Practice mode hides timer
+                if (isExamPrep && detectText && /press the microphone button when you.re ready/i.test(detectText)) {
                     const timerBar = el('div', { className: 'swml-timer-controls' });
-                    let timerMode = 'practice'; // default to practice
-                    const examBtn = el('button', { className: 'swml-timer-mode-btn', textContent: 'Exam Mode', title: 'Non-stop timer, auto-submits on expiry',
-                        onClick: () => { timerMode = 'exam'; examBtn.classList.add('active'); practiceBtn.classList.remove('active'); } });
-                    const practiceBtn = el('button', { className: 'swml-timer-mode-btn active', textContent: 'Practice Mode', title: 'Pausable timer, no auto-submit',
-                        onClick: () => { timerMode = 'practice'; practiceBtn.classList.add('active'); examBtn.classList.remove('active'); } });
+                    let timerMode = 'exam'; // default to exam (the real challenge)
+                    const examBtn = el('button', { className: 'swml-timer-mode-btn active', textContent: 'Exam Mode', title: 'Timer starts when you click the microphone. Auto-submits on expiry.',
+                        onClick: () => { timerMode = 'exam'; examBtn.classList.add('active'); practiceBtn.classList.remove('active'); startBtn.style.display = ''; } });
+                    const practiceBtn = el('button', { className: 'swml-timer-mode-btn', textContent: 'Practice Mode', title: 'No timer. Take your time.',
+                        onClick: () => { timerMode = 'practice'; practiceBtn.classList.add('active'); examBtn.classList.remove('active'); startBtn.style.display = 'none'; canvasTimerDisplay.style.display = 'none'; } });
                     const startBtn = el('button', { className: 'swml-quick-btn swml-timer-start-btn', innerHTML: '\u23F1 Start 4-Minute Timer',
                         onClick: () => {
-                            startCanvasTimer(240, timerMode === 'exam');
+                            startCanvasTimer(240, true);
                             startBtn.disabled = true;
                             startBtn.textContent = '\u23F1 Timer Running...';
                             startBtn.classList.add('swml-timer-running');
@@ -2985,15 +2985,17 @@
             return `${m}:${sec < 10 ? '0' : ''}${sec}`;
         }
 
-        // v7.15.8: Reusable timer — called by both init path and dynamic Start Timer button
+        // v7.15.11: Reusable timer — progressive colour pressure (green→yellow→orange→red)
         function startCanvasTimer(seconds, autoSubmit) {
             if (canvasTimerInterval) { clearInterval(canvasTimerInterval); canvasTimerInterval = null; }
             canvasTimerRemaining = seconds;
             canvasTimerDisplay.textContent = `\u23F1 ${fmtTimer(canvasTimerRemaining)}`;
-            canvasTimerDisplay.style.color = '#51dacf';
-            canvasTimerDisplay.style.fontWeight = '';
+            canvasTimerDisplay.style.color = '#1CD991'; // green at start
+            canvasTimerDisplay.style.fontWeight = '600';
+            canvasTimerDisplay.style.fontSize = '14px';
             canvasTimerDisplay.style.display = '';
             if (!canvasTimerDisplay.parentElement) statusBar.appendChild(canvasTimerDisplay);
+            const total = seconds;
             canvasTimerInterval = setInterval(() => {
                 canvasTimerRemaining--;
                 if (canvasTimerRemaining <= 0) {
@@ -3008,8 +3010,12 @@
                     return;
                 }
                 canvasTimerDisplay.textContent = `\u23F1 ${fmtTimer(canvasTimerRemaining)}`;
-                if (canvasTimerRemaining <= 60) canvasTimerDisplay.style.color = '#ff6b6b';
-                else if (canvasTimerRemaining <= 300) canvasTimerDisplay.style.color = '#ffb432';
+                // Progressive pressure: green → yellow → orange → red
+                const pct = canvasTimerRemaining / total;
+                if (pct > 0.75) canvasTimerDisplay.style.color = '#1CD991';       // green (>75%)
+                else if (pct > 0.5) canvasTimerDisplay.style.color = '#F1C40F';   // yellow (50-75%)
+                else if (pct > 0.25) canvasTimerDisplay.style.color = '#E67E22';  // orange (25-50%)
+                else canvasTimerDisplay.style.color = '#ff6b6b';                  // red (<25%)
             }, 1000);
         }
 
@@ -3127,8 +3133,11 @@
                 if (e.button !== 0) return;
                 if (e.target.closest('.swml-extract-rh') || e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea') || e.target.closest('[data-comment-id]') || e.target.closest('.swml-comment-popover')) return;
                 isDragging = true;
-                dragX = e.clientX - panel.offsetLeft;
-                dragY = e.clientY - panel.offsetTop;
+                // v7.15.11: Use getFixedOriginOffset for embedded mode (transform offset fix)
+                const origin = typeof getFixedOriginOffset === 'function' ? getFixedOriginOffset(panel) : { x: 0, y: 0 };
+                const rect = panel.getBoundingClientRect();
+                dragX = e.clientX - (rect.left - origin.x);
+                dragY = e.clientY - (rect.top - origin.y);
                 panel.style.cursor = 'grabbing';
                 e.preventDefault();
             });
@@ -11998,6 +12007,10 @@
                 (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
                 '<p>Build a structured essay plan with your AI tutor. Choose a question, then plan each paragraph with quotes and analysis.</p>'
             );
+            // v7.15.11: Extract before question (matches exam paper order); extract uses 'source' type for Extract panel
+            html += dividerHTML('EXTRACT');
+            html += sectionHTML('source', 'Extract', false, null,
+                '<p><em>The extract will appear here once a question is selected.</em></p>');
             html += dividerHTML('ESSAY QUESTION');
             html += sectionHTML('question', 'Essay Question', false, null,
                 '<p><em>Your question will appear here once selected.</em></p>');
@@ -14408,21 +14421,27 @@ ${html}
                 t.topic_number !== 2 && !/conceptual\s*notes/i.test(t.label || '')
             );
 
-            // v7.15.10: Inject question + extract into document and chat
+            // v7.15.11: Inject extract into 'source' section, question into 'question' section (separate)
             function selectQuestion(qText, extractText, extractLoc) {
                 if (canvasEditor) {
-                    let injected = false;
+                    let questionInjected = false, extractInjected = false;
                     canvasEditor.state.doc.descendants((node, pos) => {
-                        if (!injected && node.type.name === 'sectionBlock' && (node.attrs.label || '').includes('Essay Question')) {
+                        if (!extractInjected && node.type.name === 'sectionBlock' && node.attrs.sectionType === 'source' && (node.attrs.label || '').includes('Extract')) {
                             const sectionStart = pos + 1;
                             const sectionEnd = pos + node.nodeSize - 1;
-                            let html = `<h3>Essay Question</h3><p>${qText.replace(/</g, '&lt;')}</p>`;
-                            if (extractText) {
-                                html += `<h3>Extract${extractLoc ? ' \u2014 ' + extractLoc.replace(/</g, '&lt;') : ''}</h3><p>${extractText.replace(/</g, '&lt;')}</p>`;
-                            }
+                            const extractHtml = extractText
+                                ? `<h3>Extract${extractLoc ? ' \u2014 ' + extractLoc.replace(/</g, '&lt;') : ''}</h3><p>${extractText.replace(/</g, '&lt;')}</p>`
+                                : '<p><em>No extract for this question.</em></p>';
                             canvasEditor.chain().focus().setTextSelection({ from: sectionStart, to: sectionEnd })
-                                .insertContent(html).run();
-                            injected = true;
+                                .insertContent(extractHtml).run();
+                            extractInjected = true;
+                        }
+                        if (!questionInjected && node.type.name === 'sectionBlock' && (node.attrs.label || '').includes('Essay Question')) {
+                            const sectionStart = pos + 1;
+                            const sectionEnd = pos + node.nodeSize - 1;
+                            canvasEditor.chain().focus().setTextSelection({ from: sectionStart, to: sectionEnd })
+                                .insertContent(`<h3>Essay Question</h3><p>${qText.replace(/</g, '&lt;')}</p>`).run();
+                            questionInjected = true;
                         }
                     });
                 }
