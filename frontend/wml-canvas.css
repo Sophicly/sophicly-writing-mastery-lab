@@ -2117,6 +2117,14 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 [data-swml-theme="light"] .swml-qo-header { color: rgba(0,0,0,0.85); }
 [data-swml-theme="light"] .swml-qo-card { border-color: rgba(0,0,0,0.08); color: rgba(0,0,0,0.85); }
 [data-swml-theme="light"] .swml-qo-card:hover { border-color: rgba(83,51,237,0.4); background: rgba(83,51,237,0.05); }
+/* v7.15.10: Filter tabs for question overlay */
+.swml-qo-tabs { display: flex; gap: 0; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 0 16px; }
+.swml-qo-tab { background: none; border: none; border-bottom: 2px solid transparent; color: rgba(255,255,255,0.4); font-size: 12px; padding: 10px 14px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.swml-qo-tab.active { color: #51dacf; border-bottom-color: #51dacf; }
+.swml-qo-tab:hover:not(.active) { color: rgba(255,255,255,0.7); }
+[data-swml-theme="light"] .swml-qo-tabs { border-bottom-color: rgba(0,0,0,0.06); }
+[data-swml-theme="light"] .swml-qo-tab { color: rgba(0,0,0,0.4); }
+[data-swml-theme="light"] .swml-qo-tab.active { color: #5333ed; border-bottom-color: #5333ed; }
 
 /* ── In-Canvas Question Selector ── */
 .swml-cqs-title {

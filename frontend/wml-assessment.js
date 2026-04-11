@@ -5187,7 +5187,21 @@
                                                             onClick: () => {
                                                                 bar.remove();
                                                                 state.planningMode = mode.key;
-                                                                console.log('WML Mode Select:', state.task, '→', mode.key, mode.label);
+                                                                console.log('WML Mode Select:', state.task, '\u2192', mode.key, mode.label);
+                                                                // v7.15.10: Rebuild sidebar steps to match the selected mode
+                                                                const stepsDiv = document.getElementById('swml-progress-steps');
+                                                                if (stepsDiv) {
+                                                                    stepsDiv.innerHTML = '';
+                                                                    const newSteps = (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label }));
+                                                                    state.step = 1;
+                                                                    newSteps.forEach((s, i) => {
+                                                                        const cls = i === 0 ? 'active' : '';
+                                                                        stepsDiv.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
+                                                                            el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
+                                                                            el('span', { className: 'swml-step-label', textContent: s.label }),
+                                                                        ]));
+                                                                    });
+                                                                }
                                                                 canvasSilentSend = true;
                                                                 chatTextarea.value = "Let's begin!";
                                                                 sendCanvasMessage();
@@ -14348,6 +14362,7 @@ ${html}
     // ── Saved Question Overlay (v7.13.99) ──
     // Shows an overlay on the document area with saved questions + mastery topics.
     // When student selects one, it's injected into the Essay Question section and sent to chat.
+    // v7.15.10: Rebuilt overlay — extract injection, T2 filter, filter tabs
     function _showSavedQuestionOverlay(chatTextarea, sendFn) {
         const contentWrap = document.querySelector('.swml-canvas-content');
         if (!contentWrap) return;
@@ -14359,12 +14374,28 @@ ${html}
         header.appendChild(el('button', { className: 'swml-qo-close', innerHTML: '&times;', title: 'Close', onClick: () => overlay.remove() }));
         overlay.appendChild(header);
 
+        // Filter tabs
+        const tabs = el('div', { className: 'swml-qo-tabs' });
+        const tabMastery = el('button', { className: 'swml-qo-tab active', textContent: 'Mastery Topics', onClick: () => showTab('mastery') });
+        const tabSaved = el('button', { className: 'swml-qo-tab', textContent: 'My Questions', onClick: () => showTab('saved') });
+        tabs.appendChild(tabMastery);
+        tabs.appendChild(tabSaved);
+        overlay.appendChild(tabs);
+
         const body = el('div', { className: 'swml-qo-body' });
         body.appendChild(el('p', { textContent: 'Loading...', style: { color: 'rgba(255,255,255,0.4)', fontSize: '12px' } }));
         overlay.appendChild(body);
 
         contentWrap.style.position = 'relative';
         contentWrap.appendChild(overlay);
+
+        let savedList = null, masteryList = null;
+        function showTab(tab) {
+            tabMastery.classList.toggle('active', tab === 'mastery');
+            tabSaved.classList.toggle('active', tab === 'saved');
+            if (savedList) savedList.style.display = tab === 'saved' ? '' : 'none';
+            if (masteryList) masteryList.style.display = tab === 'mastery' ? '' : 'none';
+        }
 
         // Fetch saved questions + mastery topics in parallel
         Promise.all([
@@ -14373,57 +14404,74 @@ ${html}
         ]).then(([savedRes, topicRes]) => {
             body.innerHTML = '';
             const saved = savedRes.questions || [];
-            const topics = topicRes.topics || [];
+            const topics = (topicRes.topics || []).filter(t =>
+                t.topic_number !== 2 && !/conceptual\s*notes/i.test(t.label || '')
+            );
 
-            function selectQuestion(qText) {
-                // Inject into document's Essay Question section
+            // v7.15.10: Inject question + extract into document and chat
+            function selectQuestion(qText, extractText, extractLoc) {
                 if (canvasEditor) {
                     let injected = false;
                     canvasEditor.state.doc.descendants((node, pos) => {
                         if (!injected && node.type.name === 'sectionBlock' && (node.attrs.label || '').includes('Essay Question')) {
                             const sectionStart = pos + 1;
                             const sectionEnd = pos + node.nodeSize - 1;
+                            let html = `<h3>Essay Question</h3><p>${qText.replace(/</g, '&lt;')}</p>`;
+                            if (extractText) {
+                                html += `<h3>Extract${extractLoc ? ' \u2014 ' + extractLoc.replace(/</g, '&lt;') : ''}</h3><p>${extractText.replace(/</g, '&lt;')}</p>`;
+                            }
                             canvasEditor.chain().focus().setTextSelection({ from: sectionStart, to: sectionEnd })
-                                .insertContent(`<h3>Essay Question</h3><p>${qText.replace(/</g, '&lt;')}</p>`).run();
+                                .insertContent(html).run();
                             injected = true;
                         }
                     });
                 }
-                // Send to chat
                 overlay.remove();
-                if (chatTextarea) chatTextarea.value = qText;
+                // Send both question and extract to chat so AI has full context
+                let chatMsg = qText;
+                if (extractText) chatMsg += '\n\n[EXTRACT' + (extractLoc ? ' \u2014 ' + extractLoc : '') + ']\n' + extractText;
+                if (chatTextarea) chatTextarea.value = chatMsg;
                 if (sendFn) sendFn();
             }
 
-            // Saved questions
+            // Saved questions section
+            savedList = el('div', { style: { display: 'none' } });
             if (saved.length > 0) {
-                body.appendChild(el('div', { className: 'swml-qo-title', textContent: `YOUR QUESTIONS (${saved.length})` }));
+                tabSaved.textContent = `My Questions (${saved.length})`;
                 saved.forEach((q, i) => {
-                    body.appendChild(el('button', { className: 'swml-qo-card', onClick: () => selectQuestion(q.full_text || q.summary || '') }, [
+                    savedList.appendChild(el('button', { className: 'swml-qo-card', onClick: () => selectQuestion(q.full_text || q.summary || '', q.extract || '', q.location || '') }, [
                         q.theme ? el('span', { className: 'swml-qo-badge', textContent: q.theme.slice(0, 20) }) : el('span', { className: 'swml-qo-badge', textContent: `Q${i + 1}` }),
                         el('span', { className: 'swml-qo-label', textContent: q.summary || `Question ${i + 1}` }),
                         q.location ? el('span', { className: 'swml-qo-meta', textContent: q.location }) : null,
                     ].filter(Boolean)));
                 });
+            } else {
+                savedList.appendChild(el('p', { textContent: 'No saved questions yet. Use the Exam Question Creator to generate questions, then they\u2019ll appear here.', style: { color: 'rgba(255,255,255,0.5)', fontSize: '12px', padding: '16px 0' } }));
             }
+            body.appendChild(savedList);
 
-            // Mastery topics
+            // Mastery topics section
+            masteryList = el('div');
             if (topics.length > 0) {
-                body.appendChild(el('div', { className: 'swml-qo-title', textContent: `MASTERY TOPICS (${topics.length})` }));
+                masteryList.appendChild(el('div', { className: 'swml-qo-title', textContent: `MASTERY TOPICS (${topics.length})` }));
                 topics.forEach(t => {
                     const qText = t.question_text || t.part_a_question || '';
                     if (!qText) return;
-                    body.appendChild(el('button', { className: 'swml-qo-card', onClick: () => selectQuestion(qText) }, [
+                    const extract = t.extract_text || t.part_a_extract || '';
+                    const extractLoc = t.extract_location || t.part_a_extract_location || '';
+                    masteryList.appendChild(el('button', { className: 'swml-qo-card', onClick: () => selectQuestion(qText, extract, extractLoc) }, [
                         el('span', { className: 'swml-qo-badge', textContent: `T${t.topic_number}` }),
                         el('span', { className: 'swml-qo-label', textContent: t.label || `Topic ${t.topic_number}` }),
                         el('span', { className: 'swml-qo-meta', textContent: qText.length > 80 ? qText.slice(0, 80) + '\u2026' : qText }),
                     ]));
                 });
+            } else {
+                masteryList.appendChild(el('p', { textContent: 'No mastery topics found for this text.', style: { color: 'rgba(255,255,255,0.5)', fontSize: '12px', padding: '16px 0' } }));
             }
+            body.appendChild(masteryList);
 
-            if (saved.length === 0 && topics.length === 0) {
-                body.appendChild(el('p', { textContent: 'No saved questions found. Use the Exam Question Creator to generate questions first, or type your own in the chat.', style: { color: 'rgba(255,255,255,0.5)', fontSize: '12px', padding: '16px 0' } }));
-            }
+            // Default: show mastery topics
+            showTab('mastery');
         });
     }
 
