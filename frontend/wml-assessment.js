@@ -283,6 +283,12 @@
         const protoBadges = el('div', { className: 'swml-sidebar-badges' });
         if (isCwTask) {
             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Creative Writing Masterclass' }));
+            // v7.15.5: Step/Trial number badge
+            if (cwStepDef?.step) {
+                protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Step ${cwStepDef.step}` }));
+            } else if (cwStepDef?.trial) {
+                protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Trial ${cwStepDef.trial}` }));
+            }
             if (state.cwProjectName) {
                 const nameEl = el('span', { className: 'swml-sidebar-badge', textContent: '\u201c' + state.cwProjectName + '\u201d', style: { fontStyle: 'italic', opacity: '0.7' } });
                 protoBadges.appendChild(nameEl);
@@ -1673,6 +1679,13 @@
         const _isCwBadge = (state.task && state.task.startsWith('cw_')) || state.mode === 'creative' || state.subject === 'creative_writing';
         if (_isCwBadge) {
             ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: 'Creative Writing Masterclass' }));
+            // v7.15.5: Step/Trial number badge in canvas header
+            const _cwDef = WML.getCwStepDef ? WML.getCwStepDef(state.task) : null;
+            if (_cwDef?.step) {
+                ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: `Step ${_cwDef.step}` }));
+            } else if (_cwDef?.trial) {
+                ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-topic', textContent: `Trial ${_cwDef.trial}` }));
+            }
         } else {
             ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: boardLabel }));
             ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: subjectLabel }));
@@ -3612,6 +3625,11 @@
                     console.log('WML Training: Resuming chat with', savedChat.count, 'messages');
                     if (tp.chatMessages) tp.chatMessages._suppressScroll = true;
                     savedChat.history.forEach(msg => {
+                        // v7.15.5: Skip rendering hidden context messages
+                        if (msg.hidden) {
+                            tp.canvasChatHistory.push(msg);
+                            return;
+                        }
                         if (msg.role === 'assistant') {
                             const clean = stripAIInternals(msg.content);
                             tp.addChatMessage(formatAI(clean), 'ai', clean);
@@ -3706,7 +3724,8 @@
                                 const depArtifact = await WML.cwProject.loadArtifact(projectId, depKey);
                                 if (depArtifact?.success && depArtifact.value) {
                                     const depLabel = depKey.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-                                    tp.canvasChatHistory.push({ role: 'user', content: `[CONTEXT FROM PREVIOUS STEP] ${depLabel}:\n\n${depArtifact.value}` });
+                                    // v7.15.5: hidden flag keeps message in AI context but hides from student chat UI
+                                    tp.canvasChatHistory.push({ role: 'user', content: `[CONTEXT FROM PREVIOUS STEP] ${depLabel}:\n\n${depArtifact.value}`, hidden: true });
                                 } else if (!missingPrereq) {
                                     missingPrereq = depKey;
                                 }
@@ -5030,6 +5049,11 @@
                                             // Resume: replay all saved messages silently
                                             console.log('WML Canvas: Resuming chat with', savedChat.count, 'messages');
                                             savedChat.history.forEach(msg => {
+                                                // v7.15.5: Skip rendering hidden context messages (still kept in history for AI)
+                                                if (msg.hidden) {
+                                                    canvasChatHistory.push(msg);
+                                                    return;
+                                                }
                                                 if (msg.role === 'assistant') {
                                                     const clean = stripAIInternals(msg.content);
                                                     addChatMessage(formatAI(clean), 'ai', clean);
@@ -5147,7 +5171,8 @@
                                                         if (depArtifact?.success && depArtifact.value) {
                                                             const depLabel = depKey.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                                                             const contextMsg = `[CONTEXT FROM PREVIOUS STEP] ${depLabel}:\n\n${depArtifact.value}`;
-                                                            canvasChatHistory.push({ role: 'user', content: contextMsg });
+                                                            // v7.15.5: hidden flag keeps message in AI context but hides from student chat UI
+                                                            canvasChatHistory.push({ role: 'user', content: contextMsg, hidden: true });
                                                             console.log('WML CW: Loaded dependency artifact:', depKey);
                                                         } else if (!missingPrereq) {
                                                             // v7.13.45: Track first missing prerequisite
@@ -5620,10 +5645,11 @@
             renderHTML({ HTMLAttributes, node }) {
                 const type = node.attrs.sectionType || 'response';
                 const label = node.attrs.label || type.charAt(0).toUpperCase() + type.slice(1);
-                const readOnly = node.attrs.editable === false;
+                // v7.15.6: Check both boolean false and string "false" for readonly
+                const readOnly = node.attrs.editable === false || node.attrs.editable === 'false' || node.attrs.readonly === 'true' || node.attrs.readonly === true;
                 return ['div', {
                     ...HTMLAttributes,
-                    ...(readOnly ? { 'data-readonly': 'true' } : {}),
+                    ...(readOnly ? { 'data-readonly': 'true', contenteditable: 'false' } : {}),
                     class: `swml-section-block swml-section-${type}${readOnly ? ' swml-section-readonly' : ''}`,
                 }, 0];
             },
@@ -8524,42 +8550,42 @@
             html += dividerHTML('MEMORY WELL \u2014 INNER WORLD');
             html += sectionHTML('plan', 'Inner World', true, null,
                 '<h3>Your Inner World (Passions &amp; Fears)</h3>' +
-                '<p><strong>1. What excites you or makes you feel truly alive?</strong></p><p></p>' +
-                '<p><strong>2. What are you most passionate about in life?</strong></p><p></p>' +
-                '<p><strong>3. What do you fear the most?</strong></p><p></p>' +
-                '<p><strong>4. What makes you genuinely happy?</strong></p><p></p>' +
-                '<p><strong>5. Is there something you regret, or a failure that stayed with you?</strong></p><p></p>'
+                outlineRowHTML({ id: 'q1', label: '1. Excitement', prompt: 'What excites you or makes you feel truly alive?' }, 'cw-step-1-q1') +
+                outlineRowHTML({ id: 'q2', label: '2. Passion', prompt: 'What are you most passionate about in life?' }, 'cw-step-1-q2') +
+                outlineRowHTML({ id: 'q3', label: '3. Fear', prompt: 'What do you fear the most?' }, 'cw-step-1-q3') +
+                outlineRowHTML({ id: 'q4', label: '4. Happiness', prompt: 'What makes you genuinely happy?' }, 'cw-step-1-q4') +
+                outlineRowHTML({ id: 'q5', label: '5. Regret', prompt: 'Is there something you regret, or a failure that stayed with you?' }, 'cw-step-1-q5')
             );
             // Memory Well — Moral Compass (5 questions)
             html += dividerHTML('MEMORY WELL \u2014 MORAL COMPASS');
             html += sectionHTML('plan', 'Moral Compass', true, null,
                 '<h3>Your Moral Compass (Values &amp; Beliefs)</h3>' +
-                '<p><strong>6. What do you value most in people?</strong></p><p></p>' +
-                '<p><strong>7. What outrages you or makes you feel a sense of injustice?</strong></p><p></p>' +
-                '<p><strong>8. What is one social problem \u2014 past, present, or future \u2014 that you think about often?</strong></p><p></p>' +
-                '<p><strong>9. What event or discovery has made a huge difference in your life?</strong></p><p></p>' +
-                '<p><strong>10. Who or what inspires you?</strong></p><p></p>'
+                outlineRowHTML({ id: 'q6', label: '6. Values', prompt: 'What do you value most in people?' }, 'cw-step-1-q6') +
+                outlineRowHTML({ id: 'q7', label: '7. Injustice', prompt: 'What outrages you or makes you feel a sense of injustice?' }, 'cw-step-1-q7') +
+                outlineRowHTML({ id: 'q8', label: '8. Social Problem', prompt: 'What is one social problem \u2014 past, present, or future \u2014 that you think about often?' }, 'cw-step-1-q8') +
+                outlineRowHTML({ id: 'q9', label: '9. Life Event', prompt: 'What event or discovery has made a huge difference in your life?' }, 'cw-step-1-q9') +
+                outlineRowHTML({ id: 'q10', label: '10. Inspiration', prompt: 'Who or what inspires you?' }, 'cw-step-1-q10')
             );
             // Big Questions + Imagination Well (3 questions)
             html += dividerHTML('IMAGINATION WELL');
             html += sectionHTML('plan', 'Imagination Well', true, null,
                 '<h3>Your Imagination Well (Core Scenarios)</h3>' +
-                '<p><strong>11. What questions do you have about the world, life, or the future?</strong></p><p></p>' +
-                '<p><strong>12. What if you had to save the thing you\u2019re most passionate about from a powerful threat?</strong></p><p></p>' +
-                '<p><strong>13. What if a character had to face your greatest fear to achieve something they desperately wanted?</strong></p><p></p>'
+                outlineRowHTML({ id: 'q11', label: '11. Big Questions', prompt: 'What questions do you have about the world, life, or the future?' }, 'cw-step-1-q11') +
+                outlineRowHTML({ id: 'q12', label: '12. Save Your Passion', prompt: 'What if you had to save the thing you\u2019re most passionate about from a powerful threat?' }, 'cw-step-1-q12') +
+                outlineRowHTML({ id: 'q13', label: '13. Face Your Fear', prompt: 'What if a character had to face your greatest fear to achieve something they desperately wanted?' }, 'cw-step-1-q13')
             );
             // External Sources Well (2 questions)
             html += dividerHTML('EXTERNAL SOURCES WELL');
             html += sectionHTML('plan', 'External Sources', true, null,
                 '<h3>Your External Sources Well (Preferred Narrative Space)</h3>' +
-                '<p><strong>14. What are your favourite stories of all time? (books, films, TV, games)</strong></p><p></p>' +
-                '<p><strong>15. What are your favourite genres?</strong></p><p></p>'
+                outlineRowHTML({ id: 'q14', label: '14. Favourite Stories', prompt: 'What are your favourite stories of all time? (books, films, TV, games)' }, 'cw-step-1-q14') +
+                outlineRowHTML({ id: 'q15', label: '15. Favourite Genres', prompt: 'What are your favourite genres?' }, 'cw-step-1-q15')
             );
             // Writer's Profile (synthesised by AI — green response section for distinct colour)
             html += dividerHTML('YOUR WRITER\u2019S PROFILE');
             html += sectionHTML('response', 'Writer\u2019s Profile', true, null,
                 '<h3>Your Writer\u2019s Profile</h3>' +
-                '<p><em>Once you\u2019ve answered all the questions above, SI will compile your responses into a synthesised Writer\u2019s Profile here \u2014 a summary of your key themes, passions, and conflicts from all three wells.</em></p><p></p>'
+                '<p><em>Once you\u2019ve answered all the questions above, Sophia will compile your responses into a synthesised Writer\u2019s Profile here \u2014 a summary of your key themes, passions, and conflicts from all three wells.</em></p><p></p>'
             );
             // Seed Loglines
             html += dividerHTML('SEED LOGLINES');
@@ -8602,23 +8628,76 @@
             html += sectionHTML('plan', 'Story Ideas', true, null,
                 '<h3>Your Story Ideas</h3>' +
                 '<p>Now, make a note of 3 story ideas that you might want to explore. Don\u2019t worry, you are not tied to these ideas. You will have more chances to settle on an idea before we start adding layers of depth to it.</p>' +
-                '<p><strong>Idea 1:</strong></p><p></p>' +
-                '<p><strong>Idea 2:</strong></p><p></p>' +
-                '<p><strong>Idea 3:</strong></p><p></p>'
+                outlineRowHTML({ id: 'idea1', label: 'Idea 1', prompt: 'Your first story idea' }, 'cw-step-2-idea1') +
+                outlineRowHTML({ id: 'idea2', label: 'Idea 2', prompt: 'Your second story idea' }, 'cw-step-2-idea2') +
+                outlineRowHTML({ id: 'idea3', label: 'Idea 3', prompt: 'Your third story idea' }, 'cw-step-2-idea3')
             );
             return html;
         }
 
-        // ── Step 3: Create Logline ──
+        // ── Step 3: Create Logline (v7.15.5: full workbook preamble) ──
         if (step === 3) {
             html += sectionHTML('question', 'About This Step', false, null,
                 '<h2>Step 3: Create Your Logline</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Call to Adventure \u2014 you commit to one story idea and distil it to its DNA.</p>' +
-                '<p>A logline is a single, powerful sentence that captures the DNA of your story: a flawed <strong>protagonist</strong>, a clear <strong>goal</strong>, a formidable <strong>obstacle</strong>, and meaningful <strong>stakes</strong>. Professional screenwriters use loglines to pitch ideas in seconds \u2014 and it\u2019s an incredibly useful way to make sure your story concept is clear and strong before you start building it.</p>' +
-                '<p>John Truby writes in <em>The Anatomy of Story</em> that a great story premise captures the character\u2019s flaw, their moral argument, and the forces that will test them \u2014 all in a single line.</p>'
+                '<p>A logline is a single, powerful sentence that captures the DNA of your story. It is common in the film industry, where writers need to quickly pitch a story idea. The goal is to write a logline so compelling that it hooks the listener into wanting to hear the full story. It\u2019s also an incredibly useful way of making sure your story concept is clear and strong before you start building it.</p>' +
+                '<p>A logline forces clarity \u2014 it distils a story to its essential components: a flawed <strong>protagonist</strong>, a clear <strong>goal</strong>, a formidable <strong>obstacle</strong>, and meaningful <strong>stakes</strong>. John Truby writes in <em>The Anatomy of Story</em> that a great story premise captures the character\u2019s flaw, their moral argument, and the forces that will test them \u2014 all in a single line.</p>'
             );
-            html += dividerHTML('YOUR LOGLINE');
-            html += sectionHTML('plan', 'Your Logline', true, null, '<h3>Your Logline</h3><p></p>');
+            // The 8 Logline Components
+            html += dividerHTML('THE 8 LOGLINE COMPONENTS');
+            html += sectionHTML('question', 'Logline Components', false, null,
+                '<h3>The 8 Logline Components</h3>' +
+                '<p>The best loglines contain up to eight building blocks. Not all eight need to appear in a single logline, but you should understand all eight as the story\u2019s core ingredients:</p>' +
+                '<p><strong>1. Protagonist</strong> \u2014 Your main character. They must be flawed, complex, and capable of change. The protagonist isn\u2019t simply the main character \u2014 they are the character who undergoes the greatest transformation, and whose journey of change reveals the story\u2019s controlling concept.</p>' +
+                '<p><strong>2. Inciting Incident</strong> \u2014 The \u201cstunning surprise\u201d \u2014 the external event that shatters the protagonist\u2019s normal life and forces them into the story. It\u2019s the moment when their emotional shield stops working. In <em>A Christmas Carol</em>, the inciting incident is the visit from Marley\u2019s ghost. In <em>Stranger Things</em>, it\u2019s the disappearance of Will Byers.</p>' +
+                '<p><strong>3. Flaw</strong> \u2014 The protagonist\u2019s <strong>emotional shield</strong> \u2014 a visible behaviour they\u2019ve developed to protect themselves from a deeper wound or trauma. Matt Bird calls this the \u201cemotional shield\u201d concept. In <em>A Christmas Carol</em>, Scrooge\u2019s flaw is greed, but the deeper wound is his fear of human connection \u2014 he uses money as a shield against people who could hurt him. In <em>Macbeth</em>, the flaw is ambition, but the wound is insecurity.</p>' +
+                '<p><strong>4. Life-Changing Event</strong> \u2014 The moment that transforms the protagonist\u2019s trajectory. This is the event that gives the protagonist a new goal and forces them to confront their flaw head-on.</p>' +
+                '<p><strong>5. Opponent / Antagonist</strong> \u2014 The formidable, seemingly unbeatable force standing in the protagonist\u2019s way. The most powerful opponents act as a \u201cdark mirror\u201d to the protagonist \u2014 someone who represents what the protagonist could become, or who embodies the opposite of what they need to learn.</p>' +
+                '<p><strong>6. Ally</strong> \u2014 A character who supports the protagonist on their journey. The ally often represents the values or qualities the protagonist needs to develop.</p>' +
+                '<p><strong>7. Battle</strong> \u2014 The central conflict \u2014 the protagonist\u2019s struggle against the opposing forces. The best battles are both external (a physical confrontation) and internal (a psychological struggle with the protagonist\u2019s own flaw).</p>' +
+                '<p><strong>8. Stakes</strong> \u2014 What the protagonist stands to lose if they fail. The strongest stakes are personal. Compare: \u201cIf he fails, the world ends\u201d (vague) vs. \u201cIf he fails, his little sister will be sent into the arena alone\u201d (specific \u2014 we feel it immediately). Stakes can be: survival, love, identity, freedom, justice, or achievement.</p>'
+            );
+            // The 3 Logline Formulas
+            html += dividerHTML('THE 3 LOGLINE FORMULAS');
+            html += sectionHTML('question', 'Logline Formulas', false, null,
+                '<h3>The 3 Logline Formulas</h3>' +
+                '<p>Use these formulas to craft your logline. Each emphasises a different aspect of your story:</p>' +
+                '<p><strong>Formula 1 \u2014 Action-Oriented:</strong> INCITING INCIDENT + PROTAGONIST + ACTION + ANTAGONIST</p>' +
+                '<p><em>Example: \u201cAfter being rescued by a German bounty hunter, a freed slave sets out to rescue his wife from a brutal Mississippi plantation owner.\u201d \u2014 Django Unchained</em></p>' +
+                '<p><em>Example: \u201cWhen a young boy disappears, his mother, a police chief, and his three friends must confront terrifying forces to get him back.\u201d \u2014 Stranger Things</em></p>' +
+                '<p><strong>Formula 2 \u2014 Goal-Oriented:</strong> PROTAGONIST + ACTION + ANTAGONIST + GOAL + STAKE</p>' +
+                '<p><em>Example: \u201cLuke Skywalker, a spirited farm boy, joins rebel forces to fight the evil Darth Vader and rescue Princess Leia from certain death at the hands of the Empire.\u201d \u2014 Star Wars</em></p>' +
+                '<p><strong>Formula 3 \u2014 Character-Arc Oriented:</strong> PROTAGONIST has an opportunity to DO SOMETHING LIFE CHANGING but must learn to CHANGE THEIR PERSONAL FLAW so they can find a solution TO THE PROBLEM</p>' +
+                '<p><em>Example: \u201cAn old, greedy capitalist called Scrooge has an opportunity to improve the lives of those around him but he must learn to let go of his fear of human relationships so he can become more generous and find a solution to his and others\u2019 unhappiness.\u201d \u2014 A Christmas Carol</em></p>' +
+                '<p><em>Example: \u201cA young daughter of a capitalist family called Sheila has an opportunity to improve the lives of those around her but she must learn to recognise the injustices that she and her family commit so she can become more selfless and help find a solution to her society\u2019s inequalities.\u201d \u2014 An Inspector Calls</em></p>'
+            );
+            // Story Components (student fills in via chat)
+            html += dividerHTML('YOUR STORY COMPONENTS');
+            html += sectionHTML('plan', 'Story Components', true, null,
+                '<h3>Your Story Components</h3>' +
+                '<p><em>These components will be filled in as you work through the exercise in the chat. Sophia will guide you through each one step by step.</em></p>' +
+                outlineRowHTML({ id: 'protagonist', label: 'Protagonist', prompt: 'Who is your main character?' }, 'cw-step-3-protagonist') +
+                outlineRowHTML({ id: 'flaw', label: 'Flaw (Emotional Shield)', prompt: 'What visible behaviour protects a deeper vulnerability?' }, 'cw-step-3-flaw') +
+                outlineRowHTML({ id: 'incident', label: 'Inciting Incident', prompt: 'The event that shatters their normal life' }, 'cw-step-3-incident') +
+                outlineRowHTML({ id: 'goal', label: 'Goal (External / Internal)', prompt: 'What they\u2019re fighting for \u2014 and what they really need underneath' }, 'cw-step-3-goal') +
+                outlineRowHTML({ id: 'obstacle', label: 'Obstacle', prompt: 'The formidable force standing in their way' }, 'cw-step-3-obstacle') +
+                outlineRowHTML({ id: 'stakes', label: 'Stakes', prompt: 'What they stand to lose if they fail' }, 'cw-step-3-stakes')
+            );
+            // Logline drafts
+            html += dividerHTML('YOUR LOGLINES');
+            html += sectionHTML('plan', 'Logline Drafts', true, null,
+                '<h3>Your Logline Drafts</h3>' +
+                '<p><em>Three loglines will be generated here using the formulas above, based on your story components.</em></p>' +
+                outlineRowHTML({ id: 'logline-1', label: 'Logline 1 (Action-Oriented)', prompt: 'Inciting Incident + Protagonist + Action + Antagonist' }, 'cw-step-3-logline-1') +
+                outlineRowHTML({ id: 'logline-2', label: 'Logline 2 (Goal-Oriented)', prompt: 'Protagonist + Action + Antagonist + Goal + Stake' }, 'cw-step-3-logline-2') +
+                outlineRowHTML({ id: 'logline-3', label: 'Logline 3 (Character-Arc)', prompt: 'Protagonist + Opportunity + Flaw + Solution' }, 'cw-step-3-logline-3')
+            );
+            // Chosen logline
+            html += dividerHTML('YOUR CHOSEN LOGLINE');
+            html += sectionHTML('response', 'Chosen Logline', true, null,
+                '<h3>Your Chosen Logline</h3>' +
+                outlineRowHTML({ id: 'chosen', label: 'Your Chosen Logline', prompt: 'Your final, refined logline' }, 'cw-step-3-chosen')
+            );
             return html;
         }
 
@@ -8630,30 +8709,16 @@
                 '<p>You\u2019ve got a strong logline \u2014 now it\u2019s time to give your story a skeleton. We\u2019re going to use a simple but powerful tool called the <strong>Story Spine</strong>, famously used by the storytellers at Pixar to make sure their plots are strong.</p>' +
                 '<p>The idea is straightforward: every great story is a chain of cause and effect. Each event <em>causes</em> the next. By answering six simple prompts, you\u2019ll map out your entire story from beginning to end.</p>'
             );
-            html += dividerHTML('BEAT 1: AT FIRST...');
-            html += sectionHTML('plan', 'Beat 1: At First', true, null,
-                '<h3>Beat 1: At First\u2026</h3>' +
-                '<p><em>Your protagonist\u2019s ordinary world. What is their unmet need, their flaw, and their hidden strength?</em></p><p></p>');
-            html += dividerHTML('BEAT 2: AND THEN...');
-            html += sectionHTML('plan', 'Beat 2: And Then', true, null,
-                '<h3>Beat 2: And Then\u2026</h3>' +
-                '<p><em>Their repeated daily routine that proves their flawed state.</em></p><p></p>');
-            html += dividerHTML('BEAT 3: UNTIL...');
-            html += sectionHTML('plan', 'Beat 3: Until', true, null,
-                '<h3>Beat 3: Until\u2026</h3>' +
-                '<p><em>The inciting incident that disrupts everything. How is this event secretly an opportunity?</em></p><p></p>');
-            html += dividerHTML('BEAT 4: AND BECAUSE OF THIS...');
-            html += sectionHTML('plan', 'Beat 4: Because of This', true, null,
-                '<h3>Beat 4: And Because of This\u2026</h3>' +
-                '<p><em>The protagonist\u2019s goal is born \u2014 a physical quest representing their deeper need.</em></p><p></p>');
-            html += dividerHTML('BEAT 5: AND BECAUSE OF THIS...');
-            html += sectionHTML('plan', 'Beat 5: Because of This', true, null,
-                '<h3>Beat 5: And Because of This\u2026</h3>' +
-                '<p><em>The main obstacle and the Road of Trials.</em></p><p></p>');
-            html += dividerHTML('BEAT 6: UNTIL FINALLY...');
-            html += sectionHTML('plan', 'Beat 6: Until Finally', true, null,
-                '<h3>Beat 6: Until Finally\u2026</h3>' +
-                '<p><em>The climax, resolution, and self-revelation. How does what they get contrast with what they thought they wanted?</em></p><p></p>');
+            html += dividerHTML('STORY SPINE');
+            html += sectionHTML('plan', 'Story Spine', true, null,
+                '<h3>Your Story Spine</h3>' +
+                outlineRowHTML({ id: 'beat1', label: 'Beat 1: At First\u2026', prompt: 'Your protagonist\u2019s ordinary world. What is their unmet need, their flaw, and their hidden strength?' }, 'cw-step-4-beat1') +
+                outlineRowHTML({ id: 'beat2', label: 'Beat 2: And Then\u2026', prompt: 'Their repeated daily routine that proves their flawed state.' }, 'cw-step-4-beat2') +
+                outlineRowHTML({ id: 'beat3', label: 'Beat 3: Until\u2026', prompt: 'The inciting incident that disrupts everything. How is this event secretly an opportunity?' }, 'cw-step-4-beat3') +
+                outlineRowHTML({ id: 'beat4', label: 'Beat 4: Because of This\u2026', prompt: 'The protagonist\u2019s goal is born \u2014 a physical quest representing their deeper need.' }, 'cw-step-4-beat4') +
+                outlineRowHTML({ id: 'beat5', label: 'Beat 5: Because of This\u2026', prompt: 'The main obstacle and the Road of Trials.' }, 'cw-step-4-beat5') +
+                outlineRowHTML({ id: 'beat6', label: 'Beat 6: Until Finally\u2026', prompt: 'The climax, resolution, and self-revelation. How does what they get contrast with what they thought they wanted?' }, 'cw-step-4-beat6')
+            );
             return html;
         }
 
@@ -8734,24 +8799,29 @@
             html += dividerHTML('PRE-WORK REFLECTION');
             html += sectionHTML('plan', 'Pre-Work Reflection', true, null,
                 '<h3>Pre-Work Reflection</h3>' +
-                '<p><strong>Context:</strong> <em>What inspired your story? (personal experience, observation, question)</em></p><p></p>' +
-                '<p><strong>Concept:</strong> <em>What is your story ABOUT beneath the plot? What idea or truth about life?</em></p><p></p>' +
-                '<p><strong>Technique Thinking:</strong> <em>Which 1\u20132 archetypes might best convey your concept? Why?</em></p><p></p>');
+                outlineRowHTML({ id: 'context', label: 'Context', prompt: 'What inspired your story? (personal experience, observation, question)' }, 'cw-step-5-context') +
+                outlineRowHTML({ id: 'concept', label: 'Concept', prompt: 'What is your story ABOUT beneath the plot? What idea or truth about life?' }, 'cw-step-5-concept') +
+                outlineRowHTML({ id: 'technique', label: 'Technique Thinking', prompt: 'Which 1\u20132 archetypes might best convey your concept? Why?' }, 'cw-step-5-technique')
+            );
             html += dividerHTML('YOUR PRIMARY CHOICE');
+            // v7.15.5: Dropdown for archetype selection + outline row layout
             html += sectionHTML('plan', 'Primary Choice', true, null,
                 '<h3>Your Primary Archetype</h3>' +
-                '<p><em>Which plot structure best fits your story?</em></p><p></p>' +
-                '<p><strong>Why this structure fits:</strong></p><p></p>');
+                outlineRowHTML({ id: 'archetype', label: 'Your Primary Archetype', type: 'dropdown', items: ['Hero\u2019s Journey (Original)', 'Tragedy + Hero\u2019s Journey', 'Rags to Riches + Hero\u2019s Journey', 'Rebirth / Redemption + Hero\u2019s Journey', 'The Quest + Hero\u2019s Journey', 'Overcoming the Monster + Hero\u2019s Journey', 'Voyage and Return + Hero\u2019s Journey', 'Coming of Age + Hero\u2019s Journey'], prompt: 'Which plot structure best fits your story?' }, 'cw-step-5-primary-archetype') +
+                outlineRowHTML({ id: 'why-fits', label: 'Why This Structure Fits', prompt: 'Explain why this archetype best suits your story concept' }, 'cw-step-5-why-fits')
+            );
             html += dividerHTML('SECONDARY ELEMENTS');
             html += sectionHTML('plan', 'Secondary Elements', true, null,
                 '<h3>Secondary Elements</h3>' +
-                '<p><em>Are there elements from other archetypes that could enrich your story? (optional)</em></p><p></p>');
+                outlineRowHTML({ id: 'secondary', label: 'Secondary Archetypes', prompt: 'Are there elements from other archetypes that could enrich your story? (optional)' }, 'cw-step-5-secondary')
+            );
             html += dividerHTML('AUTHORIAL INTENT');
             html += sectionHTML('plan', 'Authorial Intent', true, null,
                 '<h3>Authorial Intent</h3>' +
-                '<p><strong>Desired reader emotion:</strong></p><p></p>' +
-                '<p><strong>Thematic message / moral:</strong></p><p></p>' +
-                '<p><strong>Connection to protagonist:</strong> <em>How will this structure test your protagonist\u2019s flaw and drive their transformation?</em></p><p></p>');
+                outlineRowHTML({ id: 'emotion', label: 'Desired Reader Emotion', prompt: 'What emotion do you want your reader to feel?' }, 'cw-step-5-emotion') +
+                outlineRowHTML({ id: 'theme', label: 'Thematic Message / Moral', prompt: 'What is the thematic message or moral of your story?' }, 'cw-step-5-theme') +
+                outlineRowHTML({ id: 'connection', label: 'Connection to Protagonist', prompt: 'How will this structure test your protagonist\u2019s flaw and drive their transformation?' }, 'cw-step-5-connection')
+            );
             return html;
         }
 
@@ -8771,18 +8841,67 @@
             return html;
         }
 
-        // ── Step 7: Universal Human Values ──
+        // ── Step 7: Universal Human Values (v7.15.5: full workbook content) ──
         if (step === 7) {
             html += sectionHTML('question', 'About This Step', false, null,
                 '<h2>Step 7: Universal Human Values</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Mentor reveals the Universal Constants \u2014 the deep values that drive all human stories.</p>' +
-                '<p>Psychologists Christopher Peterson and Martin Seligman spent three years studying what makes us fundamentally human. Their research spanned 40 cultures, involved 55 scientists, and drew on 2,500 years of thought. What they discovered was striking: across every culture, era, and belief system, <strong>six core moral values remain constant</strong>: Wisdom, Courage, Humanity, Justice, Temperance, and Transcendence.</p>' +
-                '<p>Every heroic character is on a journey to embody these values. Too much or too little of any virtue creates conflict \u2014 in the real world and in stories. <strong>Balance is the goal.</strong> Stories show characters finding \u2014 or failing to find \u2014 that equilibrium.</p>'
+                '<p>Psychologists Christopher Peterson and Martin Seligman spent three years studying what makes us fundamentally human. Their research spanned 40 cultures, involved 55 scientists, and drew on 2,500 years of religious and philosophical thought. What they discovered was striking: across every culture, era, and belief system, <strong>six core moral values remain constant</strong>.</p>' +
+                '<p>Every heroic character is on a journey to embody these values. Before their journey begins, they might possess some of these traits but lack others. The story shows them developing what they lack \u2014 or, in a negative transformation, losing what they once had.</p>'
             );
-            html += dividerHTML('VALUES AT THE BEGINNING');
-            html += sectionHTML('plan', 'Values at Beginning', true, null, '<h3>Your Protagonist\u2019s Values (Beginning)</h3><p></p>');
-            html += dividerHTML('VALUES AT THE END');
-            html += sectionHTML('plan', 'Values at End', true, null, '<h3>Your Protagonist\u2019s Values (End)</h3><p></p>');
+            // The Six Values table
+            html += dividerHTML('THE SIX UNIVERSAL HUMAN VALUES');
+            html += sectionHTML('question', 'Values Reference', false, null,
+                '<h3>The Six Universal Human Values</h3>' +
+                '<p><strong>1. Wisdom and Knowledge</strong> \u2014 Creativity, curiosity, open-mindedness, love of learning</p>' +
+                '<p><strong>2. Courage</strong> \u2014 Bravery, persistence, integrity, vitality</p>' +
+                '<p><strong>3. Humanity</strong> \u2014 Love, kindness, social intelligence</p>' +
+                '<p><strong>4. Justice</strong> \u2014 Citizenship, fairness, leadership</p>' +
+                '<p><strong>5. Temperance</strong> \u2014 Forgiveness/mercy, humility/modesty, prudence, self-regulation</p>' +
+                '<p><strong>6. Transcendence</strong> \u2014 Appreciation of beauty, gratitude, hope, humour, spirituality</p>'
+            );
+            // Balance insight
+            html += sectionHTML('question', 'Balance Insight', false, null,
+                '<h3>The Key Insight: Balance</h3>' +
+                '<p>Too much or too little of any virtue creates conflict \u2014 both in the real world and in stories.</p>' +
+                '<p><strong>Wisdom without restraint:</strong> In <em>Frankenstein</em>, Victor\u2019s unchecked curiosity creates a monster. Brilliance without temperance.</p>' +
+                '<p><strong>Courage without morality:</strong> In <em>Macbeth</em>, fearlessness untethered from conscience spirals into tyranny.</p>' +
+                '<p><strong>Humanity without boundaries:</strong> A character who loves too much without self-regulation might sacrifice everything, losing themselves.</p>' +
+                '<p><strong>Balance is the goal.</strong> Stories show characters finding \u2014 or failing to find \u2014 that equilibrium.</p>'
+            );
+            // Values at Beginning — 6 value rows
+            html += dividerHTML('YOUR PROTAGONIST\u2019S VALUES AT THE BEGINNING');
+            html += sectionHTML('plan', 'Values at Beginning', true, null,
+                '<h3>Your Protagonist\u2019s Values at the Beginning</h3>' +
+                '<p><em>For each value, identify whether it is <strong>in balance</strong>, <strong>in excess</strong>, or <strong>in deficit</strong> for your protagonist at the start of the story.</em></p>' +
+                '<p><strong>Wisdom and Knowledge</strong> (creativity, curiosity, open-mindedness, love of learning)</p><p></p>' +
+                '<p><strong>Courage</strong> (bravery, persistence, integrity, vitality)</p><p></p>' +
+                '<p><strong>Humanity</strong> (love, kindness, social intelligence)</p><p></p>' +
+                '<p><strong>Justice</strong> (citizenship, fairness, leadership)</p><p></p>' +
+                '<p><strong>Temperance</strong> (forgiveness, humility, prudence, self-regulation)</p><p></p>' +
+                '<p><strong>Transcendence</strong> (appreciation of beauty, gratitude, hope, humour, spirituality)</p><p></p>'
+            );
+            // Values at End — same 6 value rows
+            html += dividerHTML('YOUR PROTAGONIST\u2019S VALUES AT THE END');
+            html += sectionHTML('plan', 'Values at End', true, null,
+                '<h3>Your Protagonist\u2019s Values at the End</h3>' +
+                '<p><em>For each value, identify whether it is <strong>in balance</strong>, <strong>in excess</strong>, or <strong>in deficit</strong> for your protagonist at the end of the story.</em></p>' +
+                '<p><strong>Wisdom and Knowledge</strong> (creativity, curiosity, open-mindedness, love of learning)</p><p></p>' +
+                '<p><strong>Courage</strong> (bravery, persistence, integrity, vitality)</p><p></p>' +
+                '<p><strong>Humanity</strong> (love, kindness, social intelligence)</p><p></p>' +
+                '<p><strong>Justice</strong> (citizenship, fairness, leadership)</p><p></p>' +
+                '<p><strong>Temperance</strong> (forgiveness, humility, prudence, self-regulation)</p><p></p>' +
+                '<p><strong>Transcendence</strong> (appreciation of beauty, gratitude, hope, humour, spirituality)</p><p></p>'
+            );
+            // Reflection
+            html += dividerHTML('REFLECTION');
+            html += sectionHTML('plan', 'Reflection', true, null,
+                '<h3>Reflection</h3>' +
+                '<p><em>Look at the difference between your beginning and end tables. The values that shift from deficit to balance (or from balance to excess) are the heart of your protagonist\u2019s transformation.</em></p>' +
+                '<p><strong>Which value changes the most dramatically?</strong></p><p></p>' +
+                '<p><strong>Does this change align with your character arc and your theme?</strong></p><p></p>' +
+                '<p><strong>Does your plot outline create enough pressure on this specific value?</strong></p><p></p>'
+            );
             return html;
         }
 
@@ -8799,34 +8918,24 @@
                 '<p><strong>4. Understand what scenes are made of.</strong> Scenes are built from multiple beats \u2014 individual moments of action, reaction, or change.</p>' +
                 '<p><strong>5. Stages are arcs, not scenes.</strong> Not every beat or stage translates directly into a separate scene. Skilled writers use stages as a foundation but avoid rigidity and transcend clich\u00e9.</p>'
             );
+            // v7.15.5: Dropdown for plot position + outline rows for scene elements
             html += dividerHTML('SCENE OVERVIEW');
             html += sectionHTML('plan', 'Scene Overview', true, null,
                 '<h3>Scene Overview</h3>' +
-                '<p><strong>This extract from my story is from the following part of the plot:</strong></p><p></p>' +
+                outlineRowHTML({ id: 'plot-position', label: 'Part of the Plot', type: 'dropdown', items: ['Beginning (Stages I\u2013II)', 'Middle (Stages III\u2013IV)', 'End (Stages V\u2013VI)'], prompt: 'This extract is from the following part of the plot:' }, 'cw-step-8-plot-position') +
                 '<p><strong>Describe the extract from your story in more detail, including dramatic situations:</strong></p><p></p>'
             );
             html += dividerHTML('SCENE STRUCTURE');
-            html += sectionHTML('plan', 'Hook', true, null,
-                '<h3>Hook</h3>' +
-                '<p><em>Grab your reader\u2019s attention.</em></p><p></p>');
-            html += sectionHTML('plan', 'Setup', true, null,
-                '<h3>Setup</h3>' +
-                '<p><em>Introduce the problem and the characters around it.</em></p><p></p>');
-            html += sectionHTML('plan', 'Reaction', true, null,
-                '<h3>Reaction</h3>' +
-                '<p><em>The protagonist deals with the problems the best they can: coping and not coping.</em></p><p></p>');
-            html += sectionHTML('plan', 'Epiphany', true, null,
-                '<h3>Epiphany</h3>' +
-                '<p><em>The protagonist begins to understand what\u2019s really going on and what to do.</em></p><p></p>');
-            html += sectionHTML('plan', 'Proaction', true, null,
-                '<h3>Proaction</h3>' +
-                '<p><em>The protagonist implements a plan. It fails.</em></p><p></p>');
-            html += sectionHTML('plan', 'Climax', true, null,
-                '<h3>Climax</h3>' +
-                '<p><em>The forces of good and evil collide.</em></p><p></p>');
-            html += sectionHTML('plan', 'Denouement', true, null,
-                '<h3>Denouement</h3>' +
-                '<p><em>You write an unforgettable ending.</em></p><p></p>');
+            html += sectionHTML('plan', 'Scene Structure', true, null,
+                '<h3>The 7 Elements of Scene Structure</h3>' +
+                outlineRowHTML({ id: 'hook', label: 'Hook', prompt: 'Grab your reader\u2019s attention.' }, 'cw-step-8-hook') +
+                outlineRowHTML({ id: 'setup', label: 'Setup', prompt: 'Introduce the problem and the characters around it.' }, 'cw-step-8-setup') +
+                outlineRowHTML({ id: 'reaction', label: 'Reaction', prompt: 'The protagonist deals with the problems the best they can: coping and not coping.' }, 'cw-step-8-reaction') +
+                outlineRowHTML({ id: 'epiphany', label: 'Epiphany', prompt: 'The protagonist begins to understand what\u2019s really going on and what to do.' }, 'cw-step-8-epiphany') +
+                outlineRowHTML({ id: 'proaction', label: 'Proaction', prompt: 'The protagonist implements a plan. It fails.' }, 'cw-step-8-proaction') +
+                outlineRowHTML({ id: 'climax', label: 'Climax', prompt: 'The forces of good and evil collide.' }, 'cw-step-8-climax') +
+                outlineRowHTML({ id: 'denouement', label: 'Denouement', prompt: 'You write an unforgettable ending.' }, 'cw-step-8-denouement')
+            );
             return html;
         }
 
@@ -8863,45 +8972,31 @@
             );
             // Part 1: Goals and Need at the Beginning
             html += dividerHTML('PART 1: GOALS AND NEED AT THE BEGINNING');
-            html += sectionHTML('plan', 'External Goals (Beginning)', true, null,
-                '<h3>External Goal(s) at the Beginning</h3>' +
-                '<p><em>What tangible thing does your protagonist consciously pursue? (e.g. win, stop, retrieve, escape, revenge, deliver, maintain)</em></p><p></p>');
-            html += sectionHTML('plan', 'Internal Goals (Beginning)', true, null,
-                '<h3>Internal Goal(s) at the Beginning</h3>' +
-                '<p><em>What deeper fulfilment do they believe the external goal will bring? (e.g. positive relationships, self-acceptance, personal growth, environmental mastery, autonomy)</em></p><p></p>');
-            html += sectionHTML('plan', 'Need (Beginning)', true, null,
-                '<h3>Need</h3>' +
-                '<p><em>Usually the complete opposite of their goals \u2014 what does your character truly need that they might not be aware of or are in denial about?</em></p><p></p>');
-            html += sectionHTML('plan', 'Stakes and Fears (Beginning)', true, null,
-                '<h3>Stakes / Fears at the Beginning</h3>' +
-                '<p><em>What is at risk or what is your protagonist most afraid of losing? (Survival, Love, Identity, Freedom, Justice/Revenge, Power, Knowledge/Truth, World-saving, Redemption, Achievement)</em></p><p></p>');
+            html += sectionHTML('plan', 'Goals at Beginning', true, null,
+                '<h3>Goals and Need at the Beginning</h3>' +
+                outlineRowHTML({ id: 'ext-goal-begin', label: 'External Goal(s)', prompt: 'What tangible thing does your protagonist consciously pursue? (e.g. win, stop, retrieve, escape, revenge, deliver, maintain)' }, 'cw-step-10-ext-goal-begin') +
+                outlineRowHTML({ id: 'int-goal-begin', label: 'Internal Goal(s)', prompt: 'What deeper fulfilment do they believe the external goal will bring? (e.g. positive relationships, self-acceptance, personal growth, autonomy)' }, 'cw-step-10-int-goal-begin') +
+                outlineRowHTML({ id: 'need-begin', label: 'Need', prompt: 'Usually the opposite of their goals \u2014 what does your character truly need that they might not be aware of?' }, 'cw-step-10-need-begin') +
+                outlineRowHTML({ id: 'stakes-begin', label: 'Stakes / Fears', prompt: 'What is at risk? (Survival, Love, Identity, Freedom, Justice, Power, Knowledge, World-saving, Redemption, Achievement)' }, 'cw-step-10-stakes-begin')
+            );
             // Part 2: Goals and Need at the End
             html += dividerHTML('PART 2: GOALS AND NEED AT THE END');
-            html += sectionHTML('plan', 'External Goals (End)', true, null,
-                '<h3>End-State of External Goal(s)</h3>' +
-                '<p><em>Does the character succeed, get defeated, abandon their goal, or is it unclear?</em></p><p></p>');
-            html += sectionHTML('plan', 'Internal Goals (End)', true, null,
-                '<h3>Internal Goals Achieved at the End</h3>' +
-                '<p><em>Which internal goals does your protagonist achieve? (positive relationships, self-acceptance, personal growth, environmental mastery, autonomy, none)</em></p><p></p>');
-            html += sectionHTML('plan', 'Need Recognised (End)', true, null,
-                '<h3>Does Your Protagonist Recognise Their Need?</h3><p></p>');
-            html += sectionHTML('plan', 'Dilemma', true, null,
-                '<h3>The Difficult Choice (Dilemma)</h3>' +
-                '<p><em>What difficult choice does your protagonist need to make? What do they choose and why?</em></p><p></p>');
-            html += sectionHTML('plan', 'Realisation', true, null,
-                '<h3>Realisation</h3>' +
-                '<p><em>What realisation does your character come to at the end? What do they learn about themselves and the world?</em></p><p></p>');
-            html += sectionHTML('plan', 'Ending Tone', true, null,
-                '<h3>Ending Tone</h3>' +
-                '<p><em>What tone does the end of your story have? (positive, negative, bitter-sweet, ambiguous)</em></p><p></p>');
-            html += sectionHTML('plan', 'Universal Meaning', true, null,
-                '<h3>Universal Meaning (Moral)</h3>' +
-                '<p><em>What is the universal meaning of your story?</em></p><p></p>');
+            html += sectionHTML('plan', 'Goals at End', true, null,
+                '<h3>Goals and Need at the End</h3>' +
+                outlineRowHTML({ id: 'ext-goal-end', label: 'End-State of External Goal', type: 'dropdown', items: ['The character succeeds', 'The character is defeated', 'The character abandons the goal', 'The end-state is unclear'], prompt: 'What happens to the goal?' }, 'cw-step-10-ext-goal-end') +
+                outlineRowHTML({ id: 'int-goal-end', label: 'Internal Goals Achieved', prompt: 'Which internal goals does your protagonist achieve at the end?' }, 'cw-step-10-int-goal-end') +
+                outlineRowHTML({ id: 'need-recognised', label: 'Need Recognised?', prompt: 'Does your protagonist recognise their need by the end?' }, 'cw-step-10-need-recognised') +
+                outlineRowHTML({ id: 'dilemma', label: 'Dilemma', prompt: 'What is the most difficult choice your protagonist must make? What do they choose and why?' }, 'cw-step-10-dilemma') +
+                outlineRowHTML({ id: 'realisation', label: 'Realisation', prompt: 'What does your character finally understand about themselves and the world?' }, 'cw-step-10-realisation') +
+                outlineRowHTML({ id: 'ending-tone', label: 'Ending Tone', type: 'dropdown', items: ['Positive', 'Negative', 'Bittersweet', 'Ambiguous'], prompt: 'What tone does the end of your story have?' }, 'cw-step-10-ending-tone') +
+                outlineRowHTML({ id: 'meaning', label: 'Universal Meaning (Moral)', prompt: 'What is the universal meaning of your story?' }, 'cw-step-10-meaning')
+            );
             // Part 3: Character Arc Type
             html += dividerHTML('PART 3: CHARACTER ARC TYPE');
             html += sectionHTML('plan', 'Character Arc', true, null,
                 '<h3>Which Type of Character Arc?</h3>' +
-                '<p><em>Choose one: <strong>Positive</strong> (e.g. weakling to hero, ignorance to knowledge, immature to mature, rags to riches), <strong>Negative</strong> (e.g. good to bad, strong to weak, hero to villain), <strong>Ambiguous Positive</strong>, or <strong>Ambiguous Negative</strong>.</em></p><p></p>');
+                outlineRowHTML({ id: 'arc-type', label: 'Arc Type', type: 'dropdown', items: ['Positive (weakling to hero, ignorance to knowledge, etc.)', 'Negative (good to bad, strong to weak, etc.)', 'Ambiguous Positive', 'Ambiguous Negative'], prompt: 'Choose the type of character arc' }, 'cw-step-10-arc-type')
+            );
             return html;
         }
 
@@ -8928,27 +9023,24 @@
             // Part 4: Beginning
             html += dividerHTML('PART 4: ARCHETYPES AT THE BEGINNING');
             html += sectionHTML('plan', 'Archetypes (Beginning)', true, null,
-                '<h3>Which Archetype(s) at the Beginning?</h3>' +
-                '<p><em>Which archetypes does your character embody at the start? You can mix and match. For each, explain the effect on the reader and give quotes if possible.</em></p><p></p>');
-            html += sectionHTML('plan', 'Physical Traits (Beginning)', true, null,
-                '<h3>Physical Appearance (Beginning)</h3>' +
-                '<p><em>Age, height, build, clothes, prop, bonds (relationships), hair, eyes, name \u2014 and the effect of each choice.</em></p><p></p>');
+                '<h3>Archetypes at the Beginning</h3>' +
+                outlineRowHTML({ id: 'arch-begin', label: 'Archetype(s)', prompt: 'Which archetypes does your character embody at the start? For each, explain the effect on the reader.' }, 'cw-step-13-arch-begin') +
+                outlineRowHTML({ id: 'phys-begin', label: 'Physical Appearance', prompt: 'Age, height, build, clothes, prop, bonds, hair, eyes, name \u2014 and the effect of each choice.' }, 'cw-step-13-phys-begin')
+            );
             // Part 5: Middle
             html += dividerHTML('PART 5: ARCHETYPES IN THE MIDDLE');
             html += sectionHTML('plan', 'Archetypes (Middle)', true, null,
-                '<h3>Which Archetype(s) in the Middle?</h3>' +
-                '<p><em>How has the archetype shifted? What does this reveal about the transformation?</em></p><p></p>');
-            html += sectionHTML('plan', 'Physical Traits (Middle)', true, null,
-                '<h3>Physical Appearance (Middle)</h3>' +
-                '<p><em>Has anything changed since the beginning? Explain the effect of each change.</em></p><p></p>');
+                '<h3>Archetypes in the Middle</h3>' +
+                outlineRowHTML({ id: 'arch-mid', label: 'Archetype(s)', prompt: 'How has the archetype shifted? What does this reveal about the transformation?' }, 'cw-step-13-arch-mid') +
+                outlineRowHTML({ id: 'phys-mid', label: 'Physical Appearance', prompt: 'Has anything changed since the beginning? Explain the effect of each change.' }, 'cw-step-13-phys-mid')
+            );
             // Part 6: End
             html += dividerHTML('PART 6: ARCHETYPES AT THE END');
             html += sectionHTML('plan', 'Archetypes (End)', true, null,
-                '<h3>Which Archetype(s) at the End?</h3>' +
-                '<p><em>What is the final archetypal identity? How does the shift from beginning to end reveal the full transformation?</em></p><p></p>');
-            html += sectionHTML('plan', 'Physical Traits (End)', true, null,
-                '<h3>Physical Appearance (End)</h3>' +
-                '<p><em>Has anything changed since the beginning and middle? Explain the effect of each change.</em></p><p></p>');
+                '<h3>Archetypes at the End</h3>' +
+                outlineRowHTML({ id: 'arch-end', label: 'Archetype(s)', prompt: 'What is the final archetypal identity? How does the shift reveal the full transformation?' }, 'cw-step-13-arch-end') +
+                outlineRowHTML({ id: 'phys-end', label: 'Physical Appearance', prompt: 'Has anything changed since the beginning and middle? Explain the effect of each change.' }, 'cw-step-13-phys-end')
+            );
             return html;
         }
 
@@ -8963,45 +9055,33 @@
             );
             // Criteria 1: Making Protagonist a Victim
             html += dividerHTML('CRITERIA 1: MAKE YOUR PROTAGONIST A VICTIM');
-            html += sectionHTML('plan', 'Unfair Injury', true, null,
-                '<h3>Unfair Injury, Mistreatment, Injustice</h3>' +
-                '<p><em>Is your protagonist teased, laughed at, embarrassed, humiliated, passed over, suffering prejudice, falsely accused, abused, exploited, or made to suffer?</em></p><p></p>');
-            html += sectionHTML('plan', 'Not Believed / Misunderstood', true, null,
-                '<h3>Not Believed When Telling the Truth / Misunderstood (Dramatic Irony)</h3>' +
-                '<p><em>Is your protagonist not believed, misunderstood, or unfairly judged?</em></p><p></p>');
-            html += sectionHTML('plan', 'Jeopardy', true, null,
-                '<h3>Jeopardy</h3>' +
-                '<p><em>Is your character put in a threatened position?</em></p><p></p>');
-            html += sectionHTML('plan', 'Universal Wishes', true, null,
-                '<h3>Wish for Something Universally Understood</h3>' +
-                '<p><em>Does your character wish for love, acceptance, a family, self-acceptance, personal growth, environmental mastery, or autonomy?</em></p><p></p>');
-            html += sectionHTML('plan', 'Mistakes and Regrets', true, null,
-                '<h3>Making Mistakes and Regretting Them</h3><p></p>');
+            html += sectionHTML('plan', 'Victim Techniques', true, null,
+                '<h3>Make Your Protagonist a Victim</h3>' +
+                outlineRowHTML({ id: 'unfair-injury', label: 'Unfair Injury / Mistreatment', prompt: 'Is your protagonist teased, humiliated, prejudiced against, falsely accused, or made to suffer?' }, 'cw-step-16-unfair-injury') +
+                outlineRowHTML({ id: 'not-believed', label: 'Not Believed / Misunderstood', prompt: 'Is your protagonist not believed, misunderstood, or unfairly judged? (Dramatic irony)' }, 'cw-step-16-not-believed') +
+                outlineRowHTML({ id: 'jeopardy', label: 'Jeopardy', prompt: 'Is your character put in a threatened position?' }, 'cw-step-16-jeopardy') +
+                outlineRowHTML({ id: 'universal-wishes', label: 'Universal Wishes', prompt: 'Does your character wish for love, acceptance, family, self-acceptance, growth, or autonomy?' }, 'cw-step-16-wishes') +
+                outlineRowHTML({ id: 'mistakes', label: 'Mistakes and Regrets', prompt: 'Does your character make mistakes and regret them?' }, 'cw-step-16-mistakes')
+            );
             // Criteria 2: Humanistic Virtues
             html += dividerHTML('CRITERIA 2: GIVE YOUR PROTAGONIST HUMANISTIC VIRTUES');
-            html += sectionHTML('plan', 'Universal Virtues', true, null,
-                '<h3>Possessing Universal Human Virtues</h3>' +
-                '<p><em>Wisdom and knowledge, courage, humanity, justice, temperance, transcendence.</em></p><p></p>');
-            html += sectionHTML('plan', 'Caring for Others', true, null,
-                '<h3>Show Caring for Others, Especially at a Cost to Oneself</h3><p></p>');
-            html += sectionHTML('plan', 'Risking for Others', true, null,
-                '<h3>Risking Dying for the Sake of Others or for a Just Cause</h3><p></p>');
-            html += sectionHTML('plan', 'Important to Others', true, null,
-                '<h3>Being Important to Others</h3>' +
-                '<p><em>Loved at work, home, school, or in their community.</em></p><p></p>');
-            html += sectionHTML('plan', 'Ethical and Moral', true, null,
-                '<h3>Being Ethical, Moral, Dependable</h3><p></p>');
+            html += sectionHTML('plan', 'Virtue Techniques', true, null,
+                '<h3>Give Your Protagonist Humanistic Virtues</h3>' +
+                outlineRowHTML({ id: 'virtues', label: 'Universal Human Virtues', prompt: 'Wisdom, courage, humanity, justice, temperance, transcendence \u2014 which does your protagonist possess?' }, 'cw-step-16-virtues') +
+                outlineRowHTML({ id: 'caring', label: 'Caring for Others at Cost', prompt: 'Does your protagonist care for others, especially at a cost to themselves?' }, 'cw-step-16-caring') +
+                outlineRowHTML({ id: 'risking', label: 'Risking for Others', prompt: 'Does your protagonist risk dying for others or for a just cause?' }, 'cw-step-16-risking') +
+                outlineRowHTML({ id: 'important', label: 'Important to Others', prompt: 'Is your protagonist loved and valued by people around them?' }, 'cw-step-16-important') +
+                outlineRowHTML({ id: 'ethical', label: 'Ethical and Dependable', prompt: 'Is your protagonist moral, selfless, and reliable?' }, 'cw-step-16-ethical')
+            );
             // Criteria 3: Desirable Qualities
             html += dividerHTML('CRITERIA 3: GIVE YOUR PROTAGONIST DESIRABLE QUALITIES');
-            html += sectionHTML('plan', 'Courage', true, null,
-                '<h3>Possessing Courage (Compulsory)</h3><p></p>');
-            html += sectionHTML('plan', 'Wisdom and Wit', true, null,
-                '<h3>Wisdom, Wit, and Cleverness</h3><p></p>');
-            html += sectionHTML('plan', 'Childlike Innocence', true, null,
-                '<h3>Childlike Innocence or Enthusiasm</h3><p></p>');
-            html += sectionHTML('plan', 'Misfit or Rebel', true, null,
-                '<h3>Misfit, Rebel, or Eccentric</h3>' +
-                '<p><em>Does not follow anyone, flouts authority, does not care about what others think, an outsider.</em></p><p></p>');
+            html += sectionHTML('plan', 'Desirable Qualities', true, null,
+                '<h3>Give Your Protagonist Desirable Qualities</h3>' +
+                outlineRowHTML({ id: 'courage', label: 'Courage (Compulsory)', prompt: 'How does your protagonist show bravery in the face of fear?' }, 'cw-step-16-courage') +
+                outlineRowHTML({ id: 'wit', label: 'Wisdom, Wit, Cleverness', prompt: 'Does your protagonist show intelligence that earns admiration?' }, 'cw-step-16-wit') +
+                outlineRowHTML({ id: 'innocence', label: 'Childlike Innocence', prompt: 'Does your protagonist show openness, wonder, or genuine enthusiasm?' }, 'cw-step-16-innocence') +
+                outlineRowHTML({ id: 'rebel', label: 'Misfit, Rebel, Eccentric', prompt: 'Does your protagonist flout authority, refuse to conform, or think differently?' }, 'cw-step-16-rebel')
+            );
             return html;
         }
 
@@ -9016,23 +9096,19 @@
                 '<p><strong>Tone Categories:</strong> <strong>Positive</strong> (affectionate, calm, cheerful, ecstatic, nostalgic, optimistic, hopeful) | <strong>Neutral</strong> (impartial, indirect, matter-of-fact, questioning, speculative) | <strong>Negative</strong> (ambiguous, bitter, cold, despairing, fearful, foreboding, tense, ominous)</p>'
             );
             html += dividerHTML('THEME');
-            html += sectionHTML('plan', 'Universal Human Values', true, null,
-                '<h3>Universal Human Value(s)</h3>' +
-                '<p><em>What Universal Human Value(s) does your story explore? (from Step 7)</em></p><p></p>');
-            html += sectionHTML('plan', 'Theme Statement', true, null,
-                '<h3>Theme Statement</h3>' +
-                '<p><em>What is your story ultimately SAYING about this value? (This is your theme.)</em></p><p></p>');
+            html += sectionHTML('plan', 'Theme', true, null,
+                '<h3>Theme</h3>' +
+                outlineRowHTML({ id: 'values', label: 'Universal Human Value(s)', prompt: 'What Universal Human Value(s) does your story explore? (from Step 7)' }, 'cw-step-19-values') +
+                outlineRowHTML({ id: 'theme-statement', label: 'Theme Statement', prompt: 'What is your story ultimately SAYING about this value? (This is your theme.)' }, 'cw-step-19-theme')
+            );
             html += dividerHTML('TONE');
-            html += sectionHTML('plan', 'Tone: Beginning', true, null,
-                '<h3>Tone at the Beginning</h3>' +
-                '<p><em>Which theme(s) does this part explore? Which tone(s) does it exude? (positive, neutral, negative) How does the tone tell us more about the theme?</em></p><p></p>');
-            html += sectionHTML('plan', 'Tone: Middle', true, null,
-                '<h3>Tone in the Middle</h3><p></p>');
-            html += sectionHTML('plan', 'Tone: End', true, null,
-                '<h3>Tone at the End</h3><p></p>');
-            html += sectionHTML('plan', 'Tone Shift Check', true, null,
-                '<h3>Tone Shift Check</h3>' +
-                '<p><em>Does your tone shift mirror your protagonist\u2019s emotional journey?</em></p><p></p>');
+            html += sectionHTML('plan', 'Tone', true, null,
+                '<h3>Tone</h3>' +
+                outlineRowHTML({ id: 'tone-begin', label: 'Tone at the Beginning', prompt: 'Which tone(s) does this part exude? (positive, neutral, negative) How does it connect to the theme?' }, 'cw-step-19-tone-begin') +
+                outlineRowHTML({ id: 'tone-mid', label: 'Tone in the Middle', prompt: 'How does the tone shift in the middle of your story?' }, 'cw-step-19-tone-mid') +
+                outlineRowHTML({ id: 'tone-end', label: 'Tone at the End', prompt: 'What is the final emotional atmosphere?' }, 'cw-step-19-tone-end') +
+                outlineRowHTML({ id: 'tone-check', label: 'Tone Shift Check', prompt: 'Does your tone shift mirror your protagonist\u2019s emotional journey?' }, 'cw-step-19-tone-check')
+            );
             return html;
         }
 
@@ -9043,37 +9119,16 @@
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Final Trial approaches \u2014 the emotional contract with your reader.</p>' +
                 '<p><strong>Genre = a promise to the reader about what emotional experience they will have.</strong> Genres are types of stories. When we understand how genres work, we can apply their styles to give our stories more depth and meaning. Most sophisticated stories <em>blend</em> genres. Your story can shift genres from beginning to middle to end.</p>'
             );
-            // 5 Genre Categories
-            html += dividerHTML('1. COURAGE GENRES');
-            html += sectionHTML('plan', 'Courage Genres', true, null,
-                '<h3>Courage Genres (Excitement, Tension)</h3>' +
-                '<p><em>Action, Adventure, War, Western, Heroic Sci-Fi, Dystopian</em></p>' +
-                '<p><em>Conventions: enslavement or deprivation of free will, intensified settings, victory over death</em></p>' +
-                '<p><strong>Does your story suit any Courage genres?</strong></p><p></p>');
-            html += dividerHTML('2. FEAR AND LOATHING GENRES');
-            html += sectionHTML('plan', 'Fear and Loathing Genres', true, null,
-                '<h3>Fear and Loathing Genres (Dread, Unease)</h3>' +
-                '<p><em>Gothic, Horror, Supernatural, Dark Sci-Fi</em></p>' +
-                '<p><em>Conventions: mystery, terror, good vs evil, decay, dreams/nightmares, mental landscape, monsters, fearful atmosphere</em></p>' +
-                '<p><strong>Does your story suit any Fear and Loathing genres?</strong></p><p></p>');
-            html += dividerHTML('3. WONDER AND AWE GENRES');
-            html += sectionHTML('plan', 'Wonder and Awe Genres', true, null,
-                '<h3>Wonder and Awe Genres (Amazement, Possibility)</h3>' +
-                '<p><em>Fantasy, Science Fiction, Magical Realism</em></p>' +
-                '<p><em>Conventions: otherworldly settings, mythical creatures, epic quests, mystical lore, futuristic elements</em></p>' +
-                '<p><strong>Does your story suit any Wonder and Awe genres?</strong></p><p></p>');
-            html += dividerHTML('4. NEED TO KNOW GENRES');
-            html += sectionHTML('plan', 'Need to Know Genres', true, null,
-                '<h3>Need to Know (Mystery) Genres (Curiosity, Suspense)</h3>' +
-                '<p><em>Detective, Mystery, Spy, Suspense, Thriller</em></p>' +
-                '<p><em>Conventions: mystery, suspense, surprise, \u201cthe innocent man\u201d thrust into danger</em></p>' +
-                '<p><strong>Does your story suit any Need to Know genres?</strong></p><p></p>');
-            html += dividerHTML('5. HEART GENRES');
-            html += sectionHTML('plan', 'Heart Genres', true, null,
-                '<h3>Heart Genres (Connection, Growth)</h3>' +
-                '<p><em>Romance, Drama, Coming-of-Age</em></p>' +
-                '<p><em>Conventions: relationships, emotional intimacy, personal growth, emotional conflict</em></p>' +
-                '<p><strong>Does your story suit any Heart genres?</strong></p><p></p>');
+            // 5 Genre Categories — outline rows
+            html += dividerHTML('YOUR GENRE CHOICES');
+            html += sectionHTML('plan', 'Genre Choices', true, null,
+                '<h3>Your Genre Choices</h3>' +
+                outlineRowHTML({ id: 'courage', label: 'Courage Genres', prompt: 'Action, Adventure, War, Dystopian \u2014 conventions: enslavement, intensified settings, victory over death' }, 'cw-step-22-courage') +
+                outlineRowHTML({ id: 'fear', label: 'Fear and Loathing Genres', prompt: 'Gothic, Horror, Supernatural, Dark Sci-Fi \u2014 conventions: mystery, terror, decay, nightmares, monsters' }, 'cw-step-22-fear') +
+                outlineRowHTML({ id: 'wonder', label: 'Wonder and Awe Genres', prompt: 'Fantasy, Science Fiction, Magical Realism \u2014 conventions: otherworldly settings, epic quests, futuristic elements' }, 'cw-step-22-wonder') +
+                outlineRowHTML({ id: 'mystery', label: 'Need to Know Genres', prompt: 'Detective, Mystery, Spy, Thriller \u2014 conventions: suspense, surprise, the innocent man thrust into danger' }, 'cw-step-22-mystery') +
+                outlineRowHTML({ id: 'heart', label: 'Heart Genres', prompt: 'Romance, Drama, Coming-of-Age \u2014 conventions: relationships, emotional intimacy, personal growth' }, 'cw-step-22-heart')
+            );
             return html;
         }
 
@@ -9084,81 +9139,115 @@
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Final Trial begins \u2014 these advanced structural techniques will elevate your writing to professional level.</p>' +
                 '<p>Study these 11 sophisticated techniques, then plan where and how you will use each one in your scene.</p>'
             );
-            html += dividerHTML('1. HOOKS');
-            html += sectionHTML('plan', 'Hooks', true, null,
-                '<h3>Hooks</h3>' +
-                '<p><em>Which hook type best suits your story? action (in medias res), dialogue, internal monologue, mystery, premonition, profound statement, setting. You may combine more than one.</em></p><p></p>');
-            html += dividerHTML('2. IRONY (COMPULSORY)');
-            html += sectionHTML('plan', 'Irony', true, null,
-                '<h3>Irony (Compulsory)</h3>' +
-                '<p><em>Dramatic irony (reader knows more than character), Situational irony (opposite of expectation), Verbal irony (saying opposite of what\u2019s meant).</em></p><p></p>');
-            html += dividerHTML('3. DIALOGUE');
-            html += sectionHTML('plan', 'Dialogue', true, null,
-                '<h3>Dialogue (Optional)</h3>' +
-                '<p><em>Subtext (meaning beneath words), Character voice (each character sounds distinct), Conflict in dialogue (characters want different things).</em></p><p></p>');
-            html += dividerHTML('4. DUALITY (RECOMMENDED)');
-            html += sectionHTML('plan', 'Duality', true, null,
-                '<h3>Duality (Recommended)</h3>' +
-                '<p><em>Contrasting elements: light/dark, hope/despair, strength/weakness. Creates depth and complexity.</em></p><p></p>');
-            html += dividerHTML('5. POINT OF VIEW');
-            html += sectionHTML('plan', 'Point of View', true, null,
-                '<h3>Point of View</h3>' +
-                '<p><em>First person, second person (direct address), or third person? Limited vs omniscient? Reliable vs unreliable narrator?</em></p><p></p>');
-            html += dividerHTML('6. SETTINGS');
-            html += sectionHTML('plan', 'Settings', true, null,
-                '<h3>Settings</h3>' +
-                '<p><em>Does your setting reflect the protagonist\u2019s internal state (mental landscape)? Does it challenge the protagonist? What does it reveal about historical background, cultural attitudes, genre, plot, themes, and emotional tone?</em></p><p></p>');
-            html += dividerHTML('7. SYMBOLS');
-            html += sectionHTML('plan', 'Symbols', true, null,
-                '<h3>Symbols</h3>' +
-                '<p><em>Objects or images with deeper meaning. How do they recur or develop? How do they add meaning?</em></p><p></p>');
-            html += dividerHTML('8. DENOUEMENT TECHNIQUES');
-            html += sectionHTML('plan', 'Denouement Techniques', true, null,
-                '<h3>Denouement Techniques</h3>' +
-                '<p><em>Cyclical structure, cliff hanger, twist, ambiguity, framed narrative, epilogue, or resolved ending?</em></p><p></p>');
-            html += dividerHTML('9. FIVE SENSES');
-            html += sectionHTML('plan', 'Five Senses', true, null,
-                '<h3>Five Senses (Include All 5)</h3>' +
-                '<p><em>See, hear, smell, taste, touch. Which senses dominate in your story?</em></p><p></p>');
-            html += dividerHTML('10. SUSPENSE');
-            html += sectionHTML('plan', 'Suspense', true, null,
-                '<h3>Suspense</h3>' +
-                '<p><em>Foreshadowing, time pressure, dilemmas, cliffhangers, unpredictability, danger/threats, dramatic irony, rising stakes, internal conflict, pacing.</em></p><p></p>');
-            html += dividerHTML('11. PACING');
-            html += sectionHTML('plan', 'Pacing', true, null,
-                '<h3>Pacing</h3>' +
-                '<p><em>Varying sentence length. Scene tempo: fast action vs slow reflection.</em></p><p></p>');
+            html += dividerHTML('YOUR STRUCTURAL ELEMENTS');
+            html += sectionHTML('plan', 'Structural Elements', true, null,
+                '<h3>Your Structural Elements</h3>' +
+                outlineRowHTML({ id: 'hooks', label: '1. Hooks', prompt: 'Action (in medias res), dialogue, internal monologue, mystery, premonition, profound statement, or setting?' }, 'cw-step-25-hooks') +
+                outlineRowHTML({ id: 'irony', label: '2. Irony (Compulsory)', prompt: 'Dramatic irony, situational irony, or verbal irony? How will you use it?' }, 'cw-step-25-irony') +
+                outlineRowHTML({ id: 'dialogue', label: '3. Dialogue (Optional)', prompt: 'Subtext, character voice, conflict in dialogue \u2014 how will characters speak?' }, 'cw-step-25-dialogue') +
+                outlineRowHTML({ id: 'duality', label: '4. Duality (Recommended)', prompt: 'Contrasting elements: light/dark, hope/despair, strength/weakness' }, 'cw-step-25-duality') +
+                outlineRowHTML({ id: 'pov', label: '5. Point of View', prompt: 'First/second/third person? Limited vs omniscient? Reliable vs unreliable narrator?' }, 'cw-step-25-pov') +
+                outlineRowHTML({ id: 'settings', label: '6. Settings', prompt: 'Does your setting reflect the protagonist\u2019s internal state? What does it reveal?' }, 'cw-step-25-settings') +
+                outlineRowHTML({ id: 'symbols', label: '7. Symbols', prompt: 'Objects or images with deeper meaning. How do they recur or develop?' }, 'cw-step-25-symbols') +
+                outlineRowHTML({ id: 'denouement', label: '8. Denouement Techniques', prompt: 'Cyclical structure, cliff hanger, twist, ambiguity, framed narrative, epilogue, or resolved?' }, 'cw-step-25-denouement') +
+                outlineRowHTML({ id: 'senses', label: '9. Five Senses', prompt: 'See, hear, smell, taste, touch \u2014 which senses dominate in your story?' }, 'cw-step-25-senses') +
+                outlineRowHTML({ id: 'suspense', label: '10. Suspense', prompt: 'Foreshadowing, time pressure, dilemmas, cliffhangers, rising stakes, internal conflict?' }, 'cw-step-25-suspense') +
+                outlineRowHTML({ id: 'pacing', label: '11. Pacing', prompt: 'Varying sentence length. Scene tempo: fast action vs slow reflection.' }, 'cw-step-25-pacing')
+            );
             return html;
         }
 
-        // ── Plot update steps (11, 14, 17, 20, 23, 26) ──
+        // ── Plot update steps (11, 14, 17, 20, 23, 26) — v7.15.5: full workbook content ──
         if ([11, 14, 17, 20, 23, 26].includes(step)) {
             const plotInfo = {
-                11: { layer: 'character goals and needs', desc: 'Map your protagonist\u2019s internal dynamics across your complete story. For each stage, identify what goal drives the protagonist and where their unconscious need surfaces.' },
-                14: { layer: 'archetypes', desc: 'Before layering archetypes into your scene, map them across your entire story. Identify which archetype your protagonist embodies at each stage and how the shifts reveal transformation.' },
-                17: { layer: 'empathy', desc: 'Map empathy-building techniques across your plot. For each stage, identify which techniques appear (victim, virtue, desirable quality) and what the reader feels for the protagonist.' },
-                20: { layer: 'theme and tone', desc: 'Map meaning and atmosphere across your complete story. For each stage, identify the dominant tone and explain how it connects to the theme. Words and images should reinforce both.' },
-                23: { layer: 'genre', desc: 'Map genre across your plot outline. For each stage, identify which genre(s) dominate, what conventions appear, and what emotion readers should feel.' },
-                26: { layer: 'structural elements', desc: 'This is the <strong>final update</strong>. Map advanced structural techniques across your complete story. You now have a <strong>complete story architecture</strong> \u2014 a professional-level blueprint.' },
+                11: { layer: 'Goals and Needs', update: '1 of 6', desc: 'Map your protagonist\u2019s goals, needs, and stakes across your complete story. For each stage, identify what goal drives the protagonist and where their unconscious need surfaces.' },
+                14: { layer: 'Archetypes', update: '2 of 6', desc: 'Before layering archetypes into your scene, map them across your entire story. Identify which archetype your protagonist embodies at each stage and how the shifts reveal transformation.' },
+                17: { layer: 'Empathy', update: '3 of 6', desc: 'Map empathy-building techniques across your plot. For each stage, identify which techniques appear (victim, virtue, desirable quality) and what the reader feels for the protagonist.' },
+                20: { layer: 'Theme and Tone', update: '4 of 6', desc: 'Map meaning and atmosphere across your complete story. For each stage, identify the dominant tone and how the theme emerges through action and image \u2014 never through explicit statement.' },
+                23: { layer: 'Genre', update: '5 of 6', desc: 'Map genre across your plot outline. For each stage, identify which genre(s) dominate, what conventions appear, and what emotion readers should feel.' },
+                26: { layer: 'Structural Elements', update: '6 of 6 (FINAL)', desc: 'This is the <strong>final update</strong>. Map advanced structural techniques (irony, symbols, senses, pacing, suspense) across your complete story. You now have a <strong>complete 7-layer story architecture</strong> \u2014 a professional-level blueprint.' },
             };
-            const info = plotInfo[step] || { layer: '', desc: '' };
+            const info = plotInfo[step] || { layer: '', update: '', desc: '' };
             html += sectionHTML('question', 'Update Focus', false, null,
-                `<h2>Plot Outline \u2014 Update for ${info.layer.charAt(0).toUpperCase() + info.layer.slice(1)}</h2>` +
-                `<p><strong>Your plot outline is a living document.</strong> You created it in Step 6, and it has been updated after each new layer of learning. You are NOT starting fresh \u2014 you are adding to what already exists.</p>` +
+                `<h2>Plot Outline \u2014 Update for ${info.layer} (${info.update})</h2>` +
+                '<p><strong>Your plot outline is a living document.</strong> You created it in Step 6, and it has been updated after each new layer of learning. You are NOT starting fresh \u2014 you are adding to what already exists.</p>' +
                 `<p>${info.desc}</p>`
             );
-            html += dividerHTML('STAGE I');
-            html += sectionHTML('plan', '1. Setup', true, null, '<h3>1. Setup</h3><p></p>');
-            html += dividerHTML('STAGE II');
-            html += sectionHTML('plan', '2. Dream Stage', true, null, '<h3>2. Dream Stage</h3><p></p>');
-            html += dividerHTML('STAGE III');
-            html += sectionHTML('plan', '3. Initial Fascination', true, null, '<h3>3. Initial Fascination</h3><p></p>');
-            html += dividerHTML('STAGE IV');
-            html += sectionHTML('plan', '4. Nightmare Stage', true, null, '<h3>4. Nightmare Stage</h3><p></p>');
-            html += dividerHTML('STAGE V');
-            html += sectionHTML('plan', '5. Final Push', true, null, '<h3>5. Final Push</h3><p></p>');
-            html += dividerHTML('STAGE VI');
-            html += sectionHTML('plan', '6. Goal &amp; Aftermath', true, null, '<h3>6. Goal &amp; Aftermath</h3><p></p>');
+            // Per-step stage questions
+            const stagePrompts = {
+                11: {
+                    I: '<p><strong>Which goals (external and internal) are visible in this stage?</strong></p><p></p><p><strong>How is the protagonist\u2019s need (the thing they can\u2019t yet see) hinted at here?</strong></p><p></p><p><strong>What are the stakes in this stage? What could the protagonist lose?</strong></p><p></p>',
+                    II: '<p><strong>Which goals are visible in this stage?</strong></p><p></p><p><strong>How is the need hinted at here?</strong></p><p></p><p><strong>What are the stakes?</strong></p><p></p>',
+                    III: '<p><strong>Which goals are visible in this stage?</strong></p><p></p><p><strong>How is the need hinted at here?</strong></p><p></p><p><strong>What are the stakes?</strong></p><p></p>',
+                    IV: '<p><strong>Which goals are visible in this stage?</strong></p><p></p><p><strong>How does the need start to surface here (even if the protagonist resists it)?</strong></p><p></p><p><strong>What are the stakes? (They should be at their highest)</strong></p><p></p>',
+                    V: '<p><strong>How does the protagonist\u2019s goal clash with their need in this stage?</strong></p><p></p><p><strong>What is the dilemma \u2014 the moment where goal and need collide?</strong></p><p></p><p><strong>What must the protagonist sacrifice?</strong></p><p></p>',
+                    VI: '<p><strong>Does the protagonist achieve their external goal, fail, or abandon it?</strong></p><p></p><p><strong>Do they recognise their need?</strong></p><p></p><p><strong>How have the stakes resolved?</strong></p><p></p>',
+                },
+                14: {
+                    I: '<p><strong>Which archetype(s) dominate in this stage?</strong></p><p></p><p><strong>Which specific traits are visible? (Physical description, behaviour, dialogue, reactions)</strong></p><p></p><p><strong>How does appearance/behaviour reflect the archetype?</strong></p><p></p><p><strong>What moments show the archetype in action?</strong></p><p></p>',
+                    II: '<p><strong>Which archetype(s) dominate?</strong></p><p></p><p><strong>Which traits are visible?</strong></p><p></p><p><strong>How does appearance/behaviour reflect the archetype?</strong></p><p></p><p><strong>What moments show the archetype in action?</strong></p><p></p>',
+                    III: '<p><strong>Which archetype(s) dominate?</strong></p><p></p><p><strong>Where does the protagonist start showing traits of a DIFFERENT archetype?</strong></p><p></p><p><strong>Which traits are visible?</strong></p><p></p><p><strong>What moments show the shift?</strong></p><p></p>',
+                    IV: '<p><strong>Which archetype(s) dominate?</strong></p><p></p><p><strong>Where does the protagonist start showing traits of a DIFFERENT archetype?</strong></p><p></p><p><strong>Which traits are visible?</strong></p><p></p><p><strong>What moments show the shift?</strong></p><p></p>',
+                    V: '<p><strong>Which archetype(s) emerge?</strong></p><p></p><p><strong>How does the new archetype manifest in the climactic moment?</strong></p><p></p><p><strong>Which traits prove the transformation?</strong></p><p></p>',
+                    VI: '<p><strong>Which archetype(s) does the protagonist embody at the end?</strong></p><p></p><p><strong>How is this different from Stage I?</strong></p><p></p><p><strong>What final detail proves the archetypal shift is complete?</strong></p><p></p>',
+                },
+                17: {
+                    I: '<p><strong>Which empathy-building techniques appear in this stage? (victim, virtue, desirable quality)</strong></p><p></p><p><strong>Where are the key empathy moments?</strong></p><p></p><p><strong>What does the reader feel for the protagonist here?</strong></p><p></p>',
+                    II: '<p><strong>Which empathy techniques appear?</strong></p><p></p><p><strong>Key empathy moments?</strong></p><p></p><p><strong>What does the reader feel?</strong></p><p></p>',
+                    III: '<p><strong>Which empathy techniques appear?</strong></p><p></p><p><strong>Key empathy moments?</strong></p><p></p><p><strong>Does empathy intensify here? How?</strong></p><p></p>',
+                    IV: '<p><strong>Which empathy techniques appear? (This should be the most emotionally intense stage)</strong></p><p></p><p><strong>Key empathy moments? (Lowest point should generate maximum empathy)</strong></p><p></p><p><strong>How does the reader\u2019s investment peak here?</strong></p><p></p>',
+                    V: '<p><strong>Which empathy techniques appear?</strong></p><p></p><p><strong>How does the protagonist\u2019s courage (compulsory) manifest at the climax?</strong></p><p></p><p><strong>How does the reader feel about the protagonist\u2019s sacrifice?</strong></p><p></p>',
+                    VI: '<p><strong>Which empathy techniques appear at the resolution?</strong></p><p></p><p><strong>How does the reader feel about the protagonist at the end?</strong></p><p></p><p><strong>Has the reader\u2019s relationship with the protagonist changed from Stage I?</strong></p><p></p>',
+                },
+                20: {
+                    I: '<p><strong>What is the tone (mood/atmosphere) in this stage?</strong></p><p></p><p><strong>How does the theme begin to emerge? (Remember: show, never state)</strong></p><p></p><p><strong>What words/images reinforce both theme and tone?</strong></p><p></p>',
+                    II: '<p><strong>What is the tone?</strong></p><p></p><p><strong>How does the theme develop?</strong></p><p></p><p><strong>Words/images?</strong></p><p></p>',
+                    III: '<p><strong>Tone? (Does it shift from Stages I\u2013II?)</strong></p><p></p><p><strong>How is the theme tested or complicated here?</strong></p><p></p><p><strong>Words/images?</strong></p><p></p>',
+                    IV: '<p><strong>Tone? (This should be the darkest or most intense)</strong></p><p></p><p><strong>How does the theme feel most threatened here?</strong></p><p></p><p><strong>Words/images?</strong></p><p></p>',
+                    V: '<p><strong>Tone? (Does it shift at the climax?)</strong></p><p></p><p><strong>How is the theme proven through the protagonist\u2019s climactic choice?</strong></p><p></p><p><strong>Words/images?</strong></p><p></p>',
+                    VI: '<p><strong>Tone? (Final emotional atmosphere)</strong></p><p></p><p><strong>How does the theme crystallise in the resolution \u2014 through action/image, not statement?</strong></p><p></p><p><strong>What final image carries the thematic weight?</strong></p><p></p>',
+                },
+                23: {
+                    I: '<p><strong>Which genre(s) dominate in this stage?</strong></p><p></p><p><strong>What genre conventions/tropes appear?</strong></p><p></p><p><strong>What is the dominant emotion readers should feel?</strong></p><p></p><p><strong>How do genre elements reinforce character transformation?</strong></p><p></p>',
+                    II: '<p><strong>Genre(s)?</strong></p><p></p><p><strong>Conventions?</strong></p><p></p><p><strong>Dominant emotion?</strong></p><p></p><p><strong>How do they reinforce transformation?</strong></p><p></p>',
+                    III: '<p><strong>Genre(s)? (Does the genre shift or blend here?)</strong></p><p></p><p><strong>Conventions?</strong></p><p></p><p><strong>Dominant emotion?</strong></p><p></p><p><strong>How do they reinforce transformation?</strong></p><p></p>',
+                    IV: '<p><strong>Genre(s)? (Nightmares, horrors, and genre-specific darkest moments)</strong></p><p></p><p><strong>Conventions?</strong></p><p></p><p><strong>Dominant emotion? (Should be the most intense)</strong></p><p></p><p><strong>How do they reinforce transformation?</strong></p><p></p>',
+                    V: '<p><strong>Genre(s)?</strong></p><p></p><p><strong>Conventions? (The final battle, the revelation, the escape)</strong></p><p></p><p><strong>Dominant emotion?</strong></p><p></p><p><strong>How do they reinforce transformation?</strong></p><p></p>',
+                    VI: '<p><strong>Genre(s)? (Does the genre shift in the resolution?)</strong></p><p></p><p><strong>Conventions?</strong></p><p></p><p><strong>Final emotional note?</strong></p><p></p><p><strong>How do they reinforce the completed transformation?</strong></p><p></p>',
+                },
+                26: {
+                    I: '<p><strong>Where do irony and duality appear?</strong></p><p></p><p><strong>What symbols are introduced (or should be)?</strong></p><p></p><p><strong>Which senses are emphasised?</strong></p><p></p><p><strong>How does pacing work in this stage? (Fast/slow/varied)</strong></p><p></p><p><strong>Where are the key suspense points?</strong></p><p></p>',
+                    II: '<p><strong>Irony and duality?</strong></p><p></p><p><strong>Symbols?</strong></p><p></p><p><strong>Senses?</strong></p><p></p><p><strong>Pacing?</strong></p><p></p><p><strong>Suspense?</strong></p><p></p>',
+                    III: '<p><strong>Irony and duality?</strong></p><p></p><p><strong>Symbols? (Do they develop from Stage I?)</strong></p><p></p><p><strong>Senses?</strong></p><p></p><p><strong>Pacing? (Should be building)</strong></p><p></p><p><strong>Suspense? (Mounting tension)</strong></p><p></p>',
+                    IV: '<p><strong>Irony and duality? (Dramatic irony should peak here)</strong></p><p></p><p><strong>Symbols? (Corrupted, broken, or inverted?)</strong></p><p></p><p><strong>Senses? (Which dominate at the darkest point?)</strong></p><p></p><p><strong>Pacing? (Fastest and most intense)</strong></p><p></p><p><strong>Suspense? (Maximum stakes)</strong></p><p></p>',
+                    V: '<p><strong>Irony and duality? (Resolved or subverted?)</strong></p><p></p><p><strong>Symbols? (Transformed, restored, or destroyed?)</strong></p><p></p><p><strong>Senses?</strong></p><p></p><p><strong>Pacing? (Climactic rhythm)</strong></p><p></p><p><strong>Suspense? (Resolved at the peak)</strong></p><p></p>',
+                    VI: '<p><strong>Irony and duality? (Final ironic echo?)</strong></p><p></p><p><strong>Symbols? (Final state \u2014 does it mirror or contrast with Stage I?)</strong></p><p></p><p><strong>Senses? (Calm after storm? New awareness?)</strong></p><p></p><p><strong>Pacing? (Slowing, reflective)</strong></p><p></p><p><strong>Denouement technique? (Cyclical, twist, ambiguous, resolved?)</strong></p><p></p>',
+                },
+            };
+            const stages = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+            const stageLabels = { I: '1. Setup', II: '2. Dream Stage', III: '3. Initial Fascination', IV: '4. Nightmare Stage', V: '5. Final Push', VI: '6. Goal &amp; Aftermath' };
+            const prompts = stagePrompts[step] || {};
+            stages.forEach(s => {
+                html += dividerHTML(`STAGE ${s}`);
+                html += sectionHTML('plan', stageLabels[s], true, null,
+                    `<h3>${stageLabels[s]}</h3>` + (prompts[s] || '<p></p>')
+                );
+            });
+            // Coherence check (all except Step 26 which has celebration)
+            if (step === 26) {
+                html += dividerHTML('CONGRATULATIONS');
+                html += sectionHTML('question', 'Completion', false, null,
+                    '<h3>Your Story Architecture is Complete</h3>' +
+                    '<p>Your plot outline now has <strong>seven layers of depth</strong>: beats, goals/needs, archetypes, empathy, theme/tone, genre, and structural elements.</p>' +
+                    '<p>This is a professional-level story blueprint. Every remaining draft will build on this architecture.</p>'
+                );
+            } else {
+                html += dividerHTML('COHERENCE CHECK');
+                html += sectionHTML('plan', 'Coherence Check', true, null,
+                    '<h3>Coherence Check</h3>' +
+                    '<p><em>Look at your notes across all six stages and verify the progression is logical and consistent.</em></p><p></p>'
+                );
+            }
             return html;
         }
 
@@ -9184,7 +9273,12 @@
                 '<p>Which concept grew most? Which skill improved most dramatically? How will understanding story <em>creation</em> help you <em>analyse</em> literature? Congratulations \u2014 you\u2019ve completed the journey and returned transformed.</p>'
             );
             html += dividerHTML('YOUR REFLECTION');
-            html += sectionHTML('plan', 'Reflection', true, null, '<h3>Reflection</h3><p></p>');
+            html += sectionHTML('plan', 'Reflection', true, null,
+                '<h3>Reflection</h3>' +
+                outlineRowHTML({ id: 'concept-growth', label: 'Concept Growth', prompt: 'Which concept grew most during this course?' }, 'cw-step-29-concept') +
+                outlineRowHTML({ id: 'skill-growth', label: 'Skill Growth', prompt: 'Which skill improved most dramatically?' }, 'cw-step-29-skill') +
+                outlineRowHTML({ id: 'analysis-link', label: 'Creation to Analysis', prompt: 'How will understanding story creation help you analyse literature?' }, 'cw-step-29-analysis')
+            );
             return html;
         }
 
@@ -14518,7 +14612,8 @@ ${html}
             name: 'sectionBlock', group: 'block', content: 'block+', defining: true,
             addAttributes() { return { sectionType: { default: 'response' }, label: { default: '' }, editable: { default: 'true' }, readonly: { default: null }, part: { default: null } }; },
             parseHTML() { return [{ tag: 'div[data-section-type]', getAttrs: d => ({ sectionType: d.getAttribute('data-section-type'), label: d.getAttribute('data-section-label') || '', editable: d.getAttribute('data-editable') || 'true', readonly: d.getAttribute('data-readonly') || null, part: d.getAttribute('data-part') || null }) }]; },
-            renderHTML({ HTMLAttributes: a }) { return ['div', { 'data-section-type': a.sectionType, 'data-section-label': a.label, 'data-editable': a.editable, ...(a.readonly ? { 'data-readonly': a.readonly } : {}), ...(a.part ? { 'data-part': a.part } : {}), class: `swml-section-block swml-section-${a.sectionType}${a.readonly ? ' swml-section-readonly' : ''}` }, 0]; },
+            // v7.15.6: contenteditable="false" on readonly sections prevents TipTap editing
+            renderHTML({ HTMLAttributes: a }) { const isRO = a.readonly === 'true' || a.readonly === true; return ['div', { 'data-section-type': a.sectionType, 'data-section-label': a.label, 'data-editable': a.editable, ...(isRO ? { 'data-readonly': 'true', contenteditable: 'false' } : {}), ...(a.part ? { 'data-part': a.part } : {}), class: `swml-section-block swml-section-${a.sectionType}${isRO ? ' swml-section-readonly' : ''}` }, 0]; },
         });
 
         // Load saved content or template

@@ -3128,11 +3128,13 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 }
 
 /* ── Status Bar ── */
+/* v7.15.5: min-height ensures consistent footer across all environments (CW, literature, etc.) */
 .swml-canvas-status {
     display: flex;
     align-items: center;
     gap: 16px;
     padding: 6px 16px;
+    min-height: 36px;
     border-top: 1px solid rgba(255,255,255,0.08);
     font-size: 11px;
     color: rgba(255,255,255,0.35);
