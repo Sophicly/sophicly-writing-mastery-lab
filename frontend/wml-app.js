@@ -280,6 +280,24 @@
             return;
         }
 
+        // ── Tutor review mode: skip all setup, go straight to canvas (v7.15.3) ──
+        if (state.reviewMode && state.board && state.text) {
+            state.mode = 'exam_prep';
+            state.task = state.task || 'assessment';
+            state.topicNumber = state.topicNumber || 0;
+            state.topicLabel = state.topicNumber ? `Topic ${state.topicNumber}` : '';
+            if (!state.textName) state.textName = getTextLabel(state.text, state.subject) || state.text;
+            if (!state.draftType) {
+                if (state.topicNumber === 1) state.draftType = 'diagnostic';
+                else if (state.topicNumber >= 3) state.draftType = 'development';
+            }
+            state.canvasTimer = 0;
+            state.step = 0;
+            console.log('WML Review: Auto-entering canvas for', state.board, state.text, state.task);
+            WML.renderCanvasWorkspace();
+            return;
+        }
+
         // ── Embedded mode: skip setup, go straight to exercise (v7.13.12) ──
         // PHP outputs #swml-root inside #swml-embedded-root — JS boot finds it normally.
         // v7.14.16: Fallback for missing embed config — show error instead of blank page
