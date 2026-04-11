@@ -6666,6 +6666,9 @@ Before marking the introduction, ask the student to confirm their essay structur
                 _lastEmbedPost = 0;
                 return;
             }
+            // v7.15.7: Re-add embedded class on every tick — handles SPA return navigation
+            // classList.add is idempotent (no-op if already present)
+            document.body.classList.add('swml-embedded-active');
             // Check if the embed root has a different post ID (SPA navigated to new WML lesson)
             try {
                 const cfg = JSON.parse(embedRoot.dataset.swmlEmbed || '{}');
