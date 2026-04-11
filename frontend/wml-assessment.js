@@ -566,7 +566,8 @@
                 }
 
                 // v7.15.8: Timer briefing detection — show Start Timer button for Recall/Advanced modes
-                if (isExamPrep && detectText && (/press the microphone/i.test(detectText) || /\uD83C\uDFA4/.test(detectText) || /timer will start/i.test(detectText))) {
+                // v7.15.9: Only match the EXACT timer briefing line, not general mentions of timers
+                if (isExamPrep && detectText && /press the microphone button when you're ready/i.test(detectText)) {
                     const timerBar = el('div', { className: 'swml-timer-controls' });
                     let timerMode = 'practice'; // default to practice
                     const examBtn = el('button', { className: 'swml-timer-mode-btn', textContent: 'Exam Mode', title: 'Non-stop timer, auto-submits on expiry',
@@ -657,6 +658,15 @@
                                 canvasSilentSend = true; chatTextarea.value = "Let's begin!"; sendCanvasMessage();
                             } else {
                                 console.warn('WML: Editor destroyed after clear — cannot auto-send. Reloading canvas.');
+                                renderCanvasWorkspace();
+                            }
+                        }, 200);
+                        } else if (isExamPrep) {
+                        // v7.15.9: Exam prep exercises get a fresh protocol-driven start, not the generic assessment greeting
+                        setTimeout(() => {
+                            if (canvasEditor && canvasEditor.options?.element) {
+                                canvasSilentSend = true; chatTextarea.value = "Let's begin!"; sendCanvasMessage();
+                            } else {
                                 renderCanvasWorkspace();
                             }
                         }, 200);
@@ -997,6 +1007,7 @@
                         draftType: state.draftType || 'diagnostic',
                         topicNumber: state.topicNumber || 1,
                         phase: state.phase || 'initial',
+                        planning_mode: state.planningMode || '',
                     })
                 });
                 const res = await response.json();
@@ -4797,6 +4808,7 @@
                                         draftType: state.draftType || 'diagnostic',
                                         topicNumber: state.topicNumber || 1,
                                         phase: state.phase || 'initial',
+                                        planning_mode: state.planningMode || '',
                                     })
                                 });
                                 const res = await response.json();
@@ -14617,6 +14629,7 @@ ${html}
                         draftType: state.draftType || '',
                         topicNumber: state.topicNumber || 0,
                         phase: state.phase || '',
+                        planning_mode: state.planningMode || '',
                         documentContent: docContent.length < 15000 ? docContent : '',
                     }),
                 });
