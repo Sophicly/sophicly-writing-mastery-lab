@@ -565,6 +565,28 @@
                     content.appendChild(bar);
                 }
 
+                // v7.15.8: Timer briefing detection — show Start Timer button for Recall/Advanced modes
+                if (isExamPrep && detectText && (/press the microphone/i.test(detectText) || /\uD83C\uDFA4/.test(detectText) || /timer will start/i.test(detectText))) {
+                    const timerBar = el('div', { className: 'swml-timer-controls' });
+                    let timerMode = 'practice'; // default to practice
+                    const examBtn = el('button', { className: 'swml-timer-mode-btn', textContent: 'Exam Mode', title: 'Non-stop timer, auto-submits on expiry',
+                        onClick: () => { timerMode = 'exam'; examBtn.classList.add('active'); practiceBtn.classList.remove('active'); } });
+                    const practiceBtn = el('button', { className: 'swml-timer-mode-btn active', textContent: 'Practice Mode', title: 'Pausable timer, no auto-submit',
+                        onClick: () => { timerMode = 'practice'; practiceBtn.classList.add('active'); examBtn.classList.remove('active'); } });
+                    const startBtn = el('button', { className: 'swml-quick-btn swml-timer-start-btn', innerHTML: '\u23F1 Start 4-Minute Timer',
+                        onClick: () => {
+                            startCanvasTimer(240, timerMode === 'exam');
+                            startBtn.disabled = true;
+                            startBtn.textContent = '\u23F1 Timer Running...';
+                            startBtn.classList.add('swml-timer-running');
+                        }
+                    });
+                    timerBar.appendChild(examBtn);
+                    timerBar.appendChild(practiceBtn);
+                    timerBar.appendChild(startBtn);
+                    content.appendChild(timerBar);
+                }
+
                 // Back-to-top button on long messages
                 setTimeout(() => {
                     if (body.offsetHeight > 500) {
@@ -2941,35 +2963,51 @@
 
         // (Canvas State Flags moved above countdown timer — v7.13.97)
 
-        // ── Canvas Exam Timer (v7.11.0) ──
+        // ── Canvas Exam Timer (v7.11.0, refactored v7.15.8) ──
         let canvasTimerInterval = null;
         let canvasTimerRemaining = state.canvasTimer || 0;
         const canvasTimerDisplay = el('span', { className: 'swml-canvas-timer', id: 'swml-canvas-timer' });
+
+        function fmtTimer(s) {
+            const m = Math.floor(s / 60);
+            const sec = s % 60;
+            return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        // v7.15.8: Reusable timer — called by both init path and dynamic Start Timer button
+        function startCanvasTimer(seconds, autoSubmit) {
+            if (canvasTimerInterval) { clearInterval(canvasTimerInterval); canvasTimerInterval = null; }
+            canvasTimerRemaining = seconds;
+            canvasTimerDisplay.textContent = `\u23F1 ${fmtTimer(canvasTimerRemaining)}`;
+            canvasTimerDisplay.style.color = '#51dacf';
+            canvasTimerDisplay.style.fontWeight = '';
+            canvasTimerDisplay.style.display = '';
+            if (!canvasTimerDisplay.parentElement) statusBar.appendChild(canvasTimerDisplay);
+            canvasTimerInterval = setInterval(() => {
+                canvasTimerRemaining--;
+                if (canvasTimerRemaining <= 0) {
+                    clearInterval(canvasTimerInterval);
+                    canvasTimerInterval = null;
+                    canvasTimerDisplay.textContent = '\u23F1 Time\u2019s up!';
+                    canvasTimerDisplay.style.color = '#ff6b6b';
+                    canvasTimerDisplay.style.fontWeight = '700';
+                    if (autoSubmit && chatTextarea && chatTextarea.value.trim()) {
+                        sendCanvasMessage();
+                    }
+                    return;
+                }
+                canvasTimerDisplay.textContent = `\u23F1 ${fmtTimer(canvasTimerRemaining)}`;
+                if (canvasTimerRemaining <= 60) canvasTimerDisplay.style.color = '#ff6b6b';
+                else if (canvasTimerRemaining <= 300) canvasTimerDisplay.style.color = '#ffb432';
+            }, 1000);
+        }
+
+        // Legacy init path — auto-start on canvas load if state.canvasTimer is set
         if (canvasTimerRemaining > 0) {
-            function fmtTimer(s) {
-                const m = Math.floor(s / 60);
-                const sec = s % 60;
-                return `${m}:${sec < 10 ? '0' : ''}${sec}`;
-            }
-            canvasTimerDisplay.textContent = `⏱ ${fmtTimer(canvasTimerRemaining)}`;
+            canvasTimerDisplay.textContent = `\u23F1 ${fmtTimer(canvasTimerRemaining)}`;
             canvasTimerDisplay.style.color = '#51dacf';
             statusBar.appendChild(canvasTimerDisplay);
-            // Auto-start timer after a brief delay (let student read the question)
-            setTimeout(() => {
-                canvasTimerInterval = setInterval(() => {
-                    canvasTimerRemaining--;
-                    if (canvasTimerRemaining <= 0) {
-                        clearInterval(canvasTimerInterval);
-                        canvasTimerDisplay.textContent = '⏱ Time\'s up!';
-                        canvasTimerDisplay.style.color = '#ff6b6b';
-                        canvasTimerDisplay.style.fontWeight = '700';
-                        return;
-                    }
-                    canvasTimerDisplay.textContent = `⏱ ${fmtTimer(canvasTimerRemaining)}`;
-                    if (canvasTimerRemaining <= 300) canvasTimerDisplay.style.color = '#ffb432'; // 5 min warning
-                    if (canvasTimerRemaining <= 60) canvasTimerDisplay.style.color = '#ff6b6b'; // 1 min warning
-                }, 1000);
-            }, 3000); // 3 second grace period
+            setTimeout(() => { startCanvasTimer(canvasTimerRemaining, false); }, 3000);
         }
         commentCountEl.addEventListener('click', () => {
             // Scroll to first unresolved comment
@@ -5106,11 +5144,55 @@
                                             // Scroll to bottom after replay
                                             setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 150);
                                         } else if (isExamPrep) {
-                                            // v7.14.3: Exam prep — silent auto-send (no user bubble)
-                                            setTimeout(() => {
-                                                console.log('WML Exam Prep: Sending initial greeting for', state.task);
-                                                if (chatTextarea) { canvasSilentSend = true; chatTextarea.value = "Let's begin!"; sendCanvasMessage(); }
-                                            }, 400);
+                                            // v7.15.8: Mode selection for essay_plan / model_answer when no mode pre-set
+                                            const needsModeSelect = !state.planningMode && (state.task === 'essay_plan' || state.task === 'model_answer');
+                                            if (needsModeSelect) {
+                                                const modeConfigs = {
+                                                    essay_plan: [
+                                                        { key: 'A', label: 'Recall', icon: '\uD83D\uDD25', desc: 'Test yourself under timed exam conditions with verbal recall' },
+                                                        { key: 'B', label: 'Guided', icon: '\u26A1', desc: 'You choose quotes, Sophia builds the plan' },
+                                                        { key: 'C', label: 'Instant', icon: '\uD83D\uDE80', desc: 'Give the question, get a complete plan immediately' },
+                                                    ],
+                                                    model_answer: [
+                                                        { key: 'A', label: 'Coached', icon: '\uD83D\uDCDD', desc: 'Sophia guides you through each section with Socratic questioning' },
+                                                        { key: 'B', label: 'Instant', icon: '\u26A1', desc: 'Get a complete Grade 9 model answer generated for you' },
+                                                        { key: 'C', label: 'Advanced', icon: '\uD83D\uDD25', desc: 'Full recall: plan from memory, then write under timed conditions' },
+                                                    ],
+                                                };
+                                                const modes = modeConfigs[state.task];
+                                                const taskLabel = state.task === 'essay_plan' ? 'Essay Plan' : 'Model Answer';
+                                                // Show greeting with mode cards
+                                                setTimeout(() => {
+                                                    const greetHTML = `<p><strong>Choose your ${taskLabel} mode:</strong></p>`;
+                                                    addChatMessage(formatAI(greetHTML), 'ai', greetHTML);
+                                                    canvasChatHistory.push({ role: 'assistant', content: greetHTML });
+                                                    // Render mode cards as quick actions
+                                                    const bar = el('div', { className: 'swml-quick-actions swml-mode-select' });
+                                                    modes.forEach(mode => {
+                                                        const btn = el('button', {
+                                                            className: 'swml-quick-btn swml-mode-btn',
+                                                            innerHTML: `<span class="swml-mode-icon">${mode.icon}</span><strong>${mode.label}</strong><span class="swml-mode-desc">${mode.desc}</span>`,
+                                                            onClick: () => {
+                                                                bar.remove();
+                                                                state.planningMode = mode.key;
+                                                                console.log('WML Mode Select:', state.task, '→', mode.key, mode.label);
+                                                                canvasSilentSend = true;
+                                                                chatTextarea.value = "Let's begin!";
+                                                                sendCanvasMessage();
+                                                            }
+                                                        });
+                                                        bar.appendChild(btn);
+                                                    });
+                                                    chatMessages.appendChild(bar);
+                                                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                                                }, 400);
+                                            } else {
+                                                // v7.14.3: Mode already set or non-mode exercise — silent auto-send
+                                                setTimeout(() => {
+                                                    console.log('WML Exam Prep: Sending initial greeting for', state.task);
+                                                    if (chatTextarea) { canvasSilentSend = true; chatTextarea.value = "Let's begin!"; sendCanvasMessage(); }
+                                                }, 400);
+                                            }
                                         } else if (state.task === 'mark_scheme') {
                                             // v7.14.39: Mark Scheme Assessment — silent auto-send to let protocol drive the greeting
                                             setTimeout(() => {
