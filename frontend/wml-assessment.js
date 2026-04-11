@@ -7111,15 +7111,61 @@
             }
 
             // Build structured outline with archetype-specific beats (v7.15.4)
-            const outlineHtml = buildCWPlotOutlineSection(structureSlug);
-            const currentHtml = canvasEditor.getHTML();
-            const newHtml = currentHtml.replace(/<p><em>Loading your plot structure[\u2026.]*<\/em><\/p>/, outlineHtml);
-            canvasEditor.commands.setContent(newHtml, false);
-            snapshotTemplateBaseline(canvasEditor);
-            const wcAfter = getResponseWordCount(canvasEditor);
-            if (wcDisplay) wcDisplay.textContent = `${wcAfter} word${wcAfter !== 1 ? 's' : ''}`;
-            if (wcWidgetLabel) wcWidgetLabel.textContent = `${wcAfter} / ${canvasWordTarget}`;
-            console.log('WML CW: Built structured plot outline for:', structureSlug, '- wc:', wcAfter);
+            const _injectPlotOutline = (slug) => {
+                const outlineHtml = buildCWPlotOutlineSection(slug);
+                const currentHtml = canvasEditor.getHTML();
+                // Replace placeholder or existing outline sections
+                let newHtml = currentHtml.replace(/<p><em>Loading your plot structure[\u2026.]*<\/em><\/p>/, outlineHtml);
+                canvasEditor.commands.setContent(newHtml, false);
+                snapshotTemplateBaseline(canvasEditor);
+                const wcAfter = getResponseWordCount(canvasEditor);
+                if (wcDisplay) wcDisplay.textContent = `${wcAfter} word${wcAfter !== 1 ? 's' : ''}`;
+                if (wcWidgetLabel) wcWidgetLabel.textContent = `${wcAfter} / ${canvasWordTarget}`;
+                console.log('WML CW: Built structured plot outline for:', slug, '- wc:', wcAfter);
+            };
+            _injectPlotOutline(structureSlug);
+
+            // Add "Change Structure" button below the editor (v7.15.4)
+            const editorPane = canvasEditor.options.element?.closest('.swml-canvas-editor');
+            if (editorPane && !editorPane.querySelector('.swml-change-structure-btn')) {
+                const changeBtn = el('button', {
+                    className: 'swml-change-structure-btn',
+                    textContent: 'Change Plot Structure',
+                    onClick: () => {
+                        const archetypes = Object.entries(OUTLINE_CRITERIA.cwPlotArchetypes).map(([k, v]) => ({ key: k, label: v.label }));
+                        // Build selector overlay
+                        const overlay = el('div', { className: 'swml-plot-selector-overlay' });
+                        const panel = el('div', { className: 'swml-plot-selector-panel' });
+                        panel.appendChild(el('h3', { textContent: 'Choose Plot Structure' }));
+                        panel.appendChild(el('p', { textContent: 'This will regenerate your outline. Any notes you\'ve written will be cleared.', style: { fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '16px' } }));
+                        archetypes.forEach(a => {
+                            const btn = el('button', {
+                                className: 'swml-plot-selector-option' + (a.key === structureSlug ? ' swml-plot-selector-active' : ''),
+                                textContent: a.label,
+                                onClick: () => {
+                                    structureSlug = a.key;
+                                    // Rebuild entire document with new archetype
+                                    const preamble = getCwDocTemplate(cwStepDef).replace(/<p><em>Loading your plot structure[\u2026.]*<\/em><\/p>/, buildCWPlotOutlineSection(a.key));
+                                    canvasEditor.commands.setContent(preamble, false);
+                                    snapshotTemplateBaseline(canvasEditor);
+                                    // Save choice to project
+                                    if (state.cwProjectId) {
+                                        WML.cwProject.saveArtifact(state.cwProjectId, 'plot_structure_choice', a.key).catch(() => {});
+                                    }
+                                    overlay.remove();
+                                    console.log('WML CW: Switched plot structure to:', a.key);
+                                },
+                            });
+                            panel.appendChild(btn);
+                        });
+                        const cancelBtn = el('button', { textContent: 'Cancel', className: 'swml-plot-selector-cancel', onClick: () => overlay.remove() });
+                        panel.appendChild(cancelBtn);
+                        overlay.appendChild(panel);
+                        document.body.appendChild(overlay);
+                    },
+                });
+                editorPane.appendChild(changeBtn);
+            }
         };
 
         // v7.14.3: Exam prep template injection — version-stamped cache busting
@@ -11064,7 +11110,13 @@
         archetype.sections.forEach(sec => {
             let rows = '';
             sec.criteria.forEach(c => {
-                rows += outlineRowHTML(c, `outline-cw-${key}-${sec.id}-${c.id}`);
+                // Turning points + markers → full-width divider headings, not input rows (v7.15.4)
+                if (c.beatType === 'turning-point' || c.beatType === 'marker') {
+                    const cls = c.beatType === 'turning-point' ? 'swml-plot-turning-point' : 'swml-plot-marker';
+                    rows += `<div class="${cls}"><strong>${escapeHTML(c.prompt || c.label)}</strong></div>`;
+                } else {
+                    rows += outlineRowHTML(c, `outline-cw-${key}-${sec.id}-${c.id}`);
+                }
             });
             html += sectionHTML('outline', `Outline: ${sec.label}`, true, null, rows);
         });

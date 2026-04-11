@@ -6412,3 +6412,145 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-review-mode .swml-canvas-save-status {
     display: none !important;
 }
+
+/* ═══════════════════════════════════════════
+   CW Plot Outline — Turning Points, Markers, Stunning Surprises (v7.15.4)
+   ═══════════════════════════════════════════ */
+
+/* Turning points — full-width teal/green gradient heading */
+.swml-plot-turning-point {
+    padding: 12px 20px;
+    margin: 8px 0;
+    background: linear-gradient(135deg, #41aaa8, #51dacf);
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.82rem;
+    letter-spacing: 0.5px;
+    color: #1a1a2e;
+}
+.swml-plot-turning-point strong {
+    text-transform: uppercase;
+}
+
+/* Markers — full-width purple/blue gradient heading */
+.swml-plot-marker {
+    padding: 10px 20px;
+    margin: 6px 0;
+    background: linear-gradient(135deg, #5333ed, #4D76FD);
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+    color: #fff;
+}
+.swml-plot-marker strong {
+    text-transform: uppercase;
+}
+
+/* Stunning Surprise — red criteria panel styling */
+.swml-outline-row[data-criteria*='"beatType":"shocking"'] .swml-outline-criteria,
+.swml-outline-row[data-criteria*="shocking"] .swml-outline-criteria {
+    background: rgba(220, 38, 38, 0.15) !important;
+    border-color: rgba(220, 38, 38, 0.4) !important;
+}
+.swml-outline-row[data-criteria*='"beatType":"shocking"'] .swml-outline-criterion-label,
+.swml-outline-row[data-criteria*="shocking"] .swml-outline-criterion-label {
+    color: #ef4444 !important;
+    font-weight: 700;
+}
+
+/* Light theme adjustments */
+[data-theme="light"] .swml-plot-turning-point {
+    color: #fff;
+    background: linear-gradient(135deg, #2c8a88, #41aaa8);
+}
+[data-theme="light"] .swml-outline-row[data-criteria*="shocking"] .swml-outline-criteria {
+    background: rgba(220, 38, 38, 0.08) !important;
+}
+
+/* Change Structure button */
+.swml-change-structure-btn {
+    display: block;
+    margin: 16px auto;
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border, rgba(255,255,255,0.1));
+    background: rgba(255,255,255,0.04);
+    color: var(--text-muted, #9ca3af);
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Proxima Soft Complete', sans-serif;
+}
+.swml-change-structure-btn:hover {
+    background: rgba(83,51,237,0.15);
+    color: #a78bfa;
+    border-color: rgba(83,51,237,0.3);
+}
+
+/* Plot structure selector overlay */
+.swml-plot-selector-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.swml-plot-selector-panel {
+    background: var(--bg-card, #1e1f23);
+    border: 1px solid var(--border, rgba(255,255,255,0.1));
+    border-radius: 16px;
+    padding: 28px 32px;
+    max-width: 400px;
+    width: 90%;
+    font-family: 'Proxima Soft Complete', sans-serif;
+}
+.swml-plot-selector-panel h3 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    color: var(--text-primary, #e0e0e8);
+}
+.swml-plot-selector-option {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 6px;
+    border-radius: 8px;
+    border: 1px solid var(--border, rgba(255,255,255,0.1));
+    background: rgba(255,255,255,0.03);
+    color: var(--text-primary, #e0e0e8);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Proxima Soft Complete', sans-serif;
+}
+.swml-plot-selector-option:hover {
+    background: rgba(83,51,237,0.15);
+    border-color: rgba(83,51,237,0.3);
+}
+.swml-plot-selector-active {
+    background: rgba(83,51,237,0.2);
+    border-color: #5333ed;
+    color: #a78bfa;
+}
+.swml-plot-selector-cancel {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    color: var(--text-muted, #9ca3af);
+    font-size: 0.72rem;
+    cursor: pointer;
+    font-family: 'Proxima Soft Complete', sans-serif;
+}
+.swml-plot-selector-cancel:hover {
+    color: var(--text-primary, #e0e0e8);
+}
