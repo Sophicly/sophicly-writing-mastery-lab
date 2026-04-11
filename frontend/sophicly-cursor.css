@@ -1,0 +1,150 @@
+/* ══════════════════════════════════════════════
+   SOPHICLY DESIGNER CURSOR — v1.0
+   Reusable named cursor component for students,
+   tutors, and AI tutor presence.
+   ══════════════════════════════════════════════ */
+
+/* ── Container ── */
+.sophicly-cursor {
+    position: fixed;
+    z-index: 99999;
+    pointer-events: none;
+    opacity: 0;
+    will-change: transform, opacity;
+}
+
+/* Hidden until first mouse move — no animation, just instant appear */
+.sophicly-cursor--visible {
+    opacity: 1;
+}
+
+/* Arrow hides when over interactive elements */
+.sophicly-cursor--interactive .sophicly-cursor__arrow {
+    opacity: 0;
+    transition: opacity 0.12s ease;
+}
+.sophicly-cursor__arrow {
+    transition: opacity 0.12s ease;
+}
+
+/* ── SVG Pointer Arrow ── */
+.sophicly-cursor__arrow {
+    width: 20px;
+    height: 20px;
+    transform: rotate(-70deg);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.sophicly-cursor__arrow path {
+    fill: var(--cursor-colour, #5333ed);
+    stroke: var(--cursor-stroke, rgba(0, 0, 0, 0.15));
+    stroke-width: 0.5px;
+}
+
+/* ── Name Pill ── */
+.sophicly-cursor__pill {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 4px;
+    background: var(--cursor-colour, #5333ed);
+    border-radius: 100px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* No avatar — tighten left padding */
+.sophicly-cursor__pill--no-avatar {
+    padding-left: 10px;
+}
+
+.sophicly-cursor__name {
+    font-family: 'Proxima Soft Complete', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    color: #fff;
+    letter-spacing: 0.01em;
+}
+
+/* ── Avatar ── */
+.sophicly-cursor__avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+/* ── AI Tutor Pulse Ring ── */
+.sophicly-cursor--ai .sophicly-cursor__pill::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 100px;
+    border: 2px solid var(--cursor-colour, #5333ed);
+    opacity: 0;
+    animation: sophicly-cursor-pulse 2s ease-out infinite;
+}
+
+@keyframes sophicly-cursor-pulse {
+    0%   { opacity: 0.6; transform: scale(1); }
+    100% { opacity: 0;   transform: scale(1.15); }
+}
+
+/* ── Floating Animation (for positioned/non-tracking cursors) ── */
+.sophicly-cursor--float {
+    animation: sophicly-cursor-float 3s ease-in-out infinite;
+}
+
+@keyframes sophicly-cursor-float {
+    0%   { transform: scale(1) translateY(0); }
+    50%  { transform: scale(1) translateY(-8px); }
+    100% { transform: scale(1) translateY(0); }
+}
+
+/* ── Smooth Movement (applied via JS for lerp tracking) ── */
+.sophicly-cursor--smooth {
+    transition: left 0.08s linear, top 0.08s linear, opacity 0.25s ease, transform 0.25s ease;
+}
+
+/* ── Role Colour Presets (Sophicly Brand) ── */
+.sophicly-cursor--student {
+    --cursor-colour: #5333ed;       /* Brand purple */
+    --cursor-stroke: #2c003e;
+}
+
+.sophicly-cursor--tutor {
+    --cursor-colour: #1CD991;       /* Sophicly success green */
+    --cursor-stroke: rgba(0, 0, 0, 0.15);
+}
+
+.sophicly-cursor--ai {
+    --cursor-colour: #51dacf;       /* Sophicly teal */
+    --cursor-stroke: #41aaa8;
+}
+
+/* ── Hide system cursor when this stylesheet is loaded ── */
+html, html body,
+html *, html *::before, html *::after {
+    cursor: none !important;
+}
+
+/* Restore native cursor on interactive elements (pointer/grab) */
+a, a *,
+button, button *,
+[role="button"], [role="button"] *,
+input, select, textarea,
+label, summary,
+[draggable="true"],
+[onclick],
+.sophicly-cursor-interactive {
+    cursor: pointer !important;
+}
+
+/* Restore cursor inside iframes */
+iframe { cursor: auto !important; }
