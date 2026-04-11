@@ -4162,9 +4162,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     margin: 4px 0;
 }
 
-/* Focus ring on editable sections */
+/* Focus ring on editable sections — subtle purple tint, not red (v7.15.4) */
 .swml-section-block:not(.swml-section-readonly):focus-within {
-    background: rgba(255,255,255,0.04);
+    background: rgba(83, 51, 237, 0.06);
     border-left-width: 4px;
 }
 
@@ -6468,20 +6468,19 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     background: rgba(220, 38, 38, 0.08) !important;
 }
 
-/* Change Structure button */
+/* Change Structure button — positioned inside the toolbar area, not below the editor */
 .swml-change-structure-btn {
-    display: block;
-    margin: 16px auto;
-    padding: 8px 20px;
-    border-radius: 8px;
+    padding: 5px 12px;
+    border-radius: 6px;
     border: 1px solid var(--border, rgba(255,255,255,0.1));
     background: rgba(255,255,255,0.04);
     color: var(--text-muted, #9ca3af);
-    font-size: 0.72rem;
+    font-size: 0.62rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
     font-family: 'Proxima Soft Complete', sans-serif;
+    white-space: nowrap;
 }
 .swml-change-structure-btn:hover {
     background: rgba(83,51,237,0.15);

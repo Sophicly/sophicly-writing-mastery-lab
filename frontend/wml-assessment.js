@@ -7125,9 +7125,9 @@
             };
             _injectPlotOutline(structureSlug);
 
-            // Add "Change Structure" button below the editor (v7.15.4)
-            const editorPane = canvasEditor.options.element?.closest('.swml-canvas-editor');
-            if (editorPane && !editorPane.querySelector('.swml-change-structure-btn')) {
+            // Add "Change Structure" button in the header area (v7.15.4)
+            const headerRight = canvasEditor.options.element?.closest('.swml-canvas')?.querySelector('.swml-canvas-header-right');
+            if (headerRight && !headerRight.querySelector('.swml-change-structure-btn')) {
                 const changeBtn = el('button', {
                     className: 'swml-change-structure-btn',
                     textContent: 'Change Plot Structure',
@@ -7164,7 +7164,7 @@
                         document.body.appendChild(overlay);
                     },
                 });
-                editorPane.appendChild(changeBtn);
+                headerRight.insertBefore(changeBtn, headerRight.firstChild);
             }
         };
 
@@ -9939,9 +9939,9 @@
                 { id: 'beat_24', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
             { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
-                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'Greater crises' },
+                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
-                { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'Everything suddenly goes wrong' },
+                { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'A catastrophic reversal \u2014 plans collapse, allies fall, and the protagonist faces their darkest moment. What specific event triggers the collapse?' },
                 { id: 'beat_4', label: 'Shadow begins to dominate; powerful forces unleashed', beatType: 'negative', type: 'checkbox', prompt: 'The shadow begins to dominate; armies or other powerful forces have been unleashed' },
                 { id: 'beat_5', label: 'Hero may fall into the shadow\'s clutches', beatType: 'negative', type: 'checkbox', prompt: 'The hero may fall into the shadow\'s clutches' },
                 { id: 'beat_6', label: 'Serious threat to hero\'s survival; seems only one outcome', beatType: 'negative', type: 'checkbox', prompt: 'It poses a serious threat to the hero\'s survival and there seems only one outcome' },
@@ -10066,9 +10066,9 @@
                 { id: 'beat_24', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
             { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
-                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'Greater crises' },
+                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
-                { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'Everything suddenly goes wrong' },
+                { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'A catastrophic reversal \u2014 plans collapse, allies fall, and the protagonist faces their darkest moment. What specific event triggers the collapse?' },
                 { id: 'beat_4', label: 'Shadow begins to dominate; powerful forces unleashed', beatType: 'negative', type: 'checkbox', prompt: 'The shadow begins to dominate; armies or other powerful forces have been unleashed' },
                 { id: 'beat_5', label: 'Hero may fall into the shadow\'s clutches', beatType: 'negative', type: 'checkbox', prompt: 'The hero may fall into the shadow\'s clutches' },
                 { id: 'beat_6', label: 'Serious threat to hero\'s survival; seems only one outcome', beatType: 'negative', type: 'checkbox', prompt: 'It poses a serious threat to the hero\'s survival and there seems only one outcome' },
@@ -10193,7 +10193,7 @@
                 { id: 'beat_24', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
             { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
-                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'Greater crises' },
+                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
                 { id: 'beat_3', label: 'Face to face with the Monster and its awesome power', beatType: 'negative', type: 'checkbox', prompt: 'We come face to face with the Monster and its awesome power' },
                 { id: 'beat_4', label: 'The hero seems tiny and alone', beatType: 'negative', type: 'checkbox', prompt: 'The hero seems tiny and alone' },
@@ -10327,9 +10327,9 @@
                 { id: 'beat_25', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
             { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
-                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'Greater crises' },
+                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
-                { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'Everything suddenly goes wrong' },
+                { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'A catastrophic reversal \u2014 plans collapse, allies fall, and the protagonist faces their darkest moment. What specific event triggers the collapse?' },
                 { id: 'beat_4', label: 'Shadow begins to dominate; powerful forces unleashed', beatType: 'negative', type: 'checkbox', prompt: 'The shadow begins to dominate; armies or other powerful forces have been unleashed' },
                 { id: 'beat_5', label: 'Hero becomes separated from what\'s important', beatType: 'negative', type: 'checkbox', prompt: 'The hero becomes separated from what has become important to them' },
                 { id: 'beat_6', label: 'Hero may fall into the shadow\'s clutches', beatType: 'negative', type: 'checkbox', prompt: 'The hero may fall into the shadow\'s clutches' },
@@ -10456,7 +10456,7 @@
                 { id: 'beat_22', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
             { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
-                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'Greater crises' },
+                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
                 { id: 'beat_3', label: 'Suddenly realises things will never be the same', beatType: 'negative', type: 'checkbox', prompt: 'He suddenly realises that things will never be the same for him again' },
                 { id: 'beat_4', label: 'Dark power begins to dominate', beatType: 'negative', type: 'checkbox', prompt: 'The dark power begins to dominate' },
@@ -10584,9 +10584,9 @@
                 { id: 'beat_24', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
             { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
-                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'Greater crises' },
+                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
-                { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'Everything suddenly goes wrong' },
+                { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'A catastrophic reversal \u2014 plans collapse, allies fall, and the protagonist faces their darkest moment. What specific event triggers the collapse?' },
                 { id: 'beat_4', label: 'Hero becomes separated from what\'s important', beatType: 'negative', type: 'checkbox', prompt: 'The hero becomes separated from what has become important to them' },
                 { id: 'beat_5', label: 'Shadow begins to dominate; powerful forces unleashed', beatType: 'negative', type: 'checkbox', prompt: 'The shadow begins to dominate; armies or other powerful forces have been unleashed' },
                 { id: 'beat_6', label: 'Hero may fall into the shadow\'s clutches', beatType: 'negative', type: 'checkbox', prompt: 'The hero may fall into the shadow\'s clutches' },
@@ -10710,9 +10710,9 @@
                 { id: 'beat_22', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
             { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
-                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'Greater crises' },
+                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
-                { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'Everything suddenly goes wrong' },
+                { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'A catastrophic reversal \u2014 plans collapse, allies fall, and the protagonist faces their darkest moment. What specific event triggers the collapse?' },
                 { id: 'beat_4', label: 'Shadow begins to dominate; powerful forces unleashed', beatType: 'negative', type: 'checkbox', prompt: 'The shadow begins to dominate; armies or other powerful forces have been unleashed' },
                 { id: 'beat_5', label: 'Hero may fall into the shadow\'s clutches', beatType: 'negative', type: 'checkbox', prompt: 'The hero may fall into the shadow\'s clutches' },
                 { id: 'beat_6', label: 'Compelled to commit dark acts', beatType: 'negative', type: 'checkbox', prompt: 'He likely feels compelled to commit \'dark acts\'' },
@@ -10838,9 +10838,9 @@
                 { id: 'beat_24', label: 'Approach to the inmost cave', beatType: 'negative', type: 'checkbox', prompt: 'approach to the inmost cave; preparing to face dark truths and destroy internal falsehoods' },
             ]},
             { id: 'nightmare', label: 'Stage IV: Nightmare Stage - Complications', criteria: [
-                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'Greater crises' },
+                { id: 'beat_1', label: 'Greater crises', beatType: 'negative', type: 'checkbox', prompt: 'The stakes are raised even further \u2014 new obstacles, deeper dangers, or intensified conflicts that push the protagonist to their limits' },
                 { id: 'beat_2', label: 'HIGHER STAKES', beatType: 'marker', type: 'checkbox', prompt: 'HIGHER STAKES' },
-                { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'Everything suddenly goes wrong' },
+                { id: 'beat_3', label: 'Everything suddenly goes wrong', beatType: 'negative', type: 'checkbox', prompt: 'A catastrophic reversal \u2014 plans collapse, allies fall, and the protagonist faces their darkest moment. What specific event triggers the collapse?' },
                 { id: 'beat_4', label: 'Shadow begins to dominate; powerful forces unleashed', beatType: 'negative', type: 'checkbox', prompt: 'The shadow begins to dominate; armies or other powerful forces have been unleashed' },
                 { id: 'beat_5', label: 'Hero may fall into the shadow\'s clutches', beatType: 'negative', type: 'checkbox', prompt: 'The hero may fall into the shadow\'s clutches' },
                 { id: 'beat_6', label: 'Serious threat to hero\'s survival; seems only one outcome', beatType: 'negative', type: 'checkbox', prompt: 'It poses a serious threat to the hero\'s survival and there seems only one outcome' },
