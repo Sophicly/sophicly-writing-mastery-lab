@@ -155,6 +155,7 @@
     let canvasSignoffData = null;
     let canvasTimerInterval = null; // Module-scope declaration (was inside renderCanvasWorkspace — bug fix v7.12.62)
     let _examTimerMode = null; // v7.15.14: Module-scope timer mode — 'exam' or 'practice', set by timer controls, read by mic handler
+    let _examTimerDuration = 240; // v7.15.23: Configurable timer duration in seconds (default 4 min)
     // v7.13.35: Use exerciseConfig.storageSuffix for ALL exercise types — prevents key collisions
     // between assessment, mark_scheme, CW steps, etc. on the same board/text/topic.
     // v7.15.12: Attempt-aware — attempt 1 has no suffix (backward compatible), attempt 2+ appends __a{N}
@@ -597,18 +598,44 @@
 
                 // v7.15.8: Timer briefing detection — show Start Timer button for Recall/Advanced modes
                 // v7.15.11: Timer controls — Exam mode starts timer on mic click, Practice mode hides timer
-                if (isExamPrep && detectText && /press the microphone button when you.re ready/i.test(detectText)) {
+                // v7.15.23: Broadened detection — AI paraphrases; match any "microphone" + "ready" or "timer will start" combo
+                if (isExamPrep && detectText && (/press the microphone.{0,20}when you.re ready/i.test(detectText) || /microphone.{0,40}timer.{0,20}start/i.test(detectText) || /when you.re ready.{0,30}microphone/i.test(detectText) || /click the mic.{0,20}when you.re ready/i.test(detectText))) {
                     const timerBar = el('div', { className: 'swml-timer-controls' });
                     let timerMode = 'exam'; // default to exam (the real challenge)
                     _examTimerMode = 'exam'; // v7.15.14: Expose to module scope for mic handler
+                    _examTimerDuration = 240; // v7.15.23: Reset to default
+
+                    // v7.15.23: Duration selector — button group
+                    const fmtDur = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+                    const durations = [120, 180, 240, 300, 360]; // 2-6 minutes
+                    const durBar = el('div', { className: 'swml-timer-dur-bar' });
+                    durBar.style.cssText = 'display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;';
+                    const durBtns = [];
+                    durations.forEach(secs => {
+                        const mins = secs / 60;
+                        const db = el('button', { className: 'swml-timer-dur-btn' + (secs === 240 ? ' active' : ''), textContent: `${mins} min` });
+                        db.style.cssText = `padding:4px 10px;border-radius:8px;border:1px solid ${secs === 240 ? '#5333ed' : 'rgba(255,255,255,0.15)'};background:${secs === 240 ? 'rgba(83,51,237,0.2)' : 'rgba(255,255,255,0.05)'};color:${secs === 240 ? '#a78bfa' : 'rgba(255,255,255,0.6)'};cursor:pointer;font-size:12px;font-weight:500;transition:all 0.15s;`;
+                        db.addEventListener('click', () => {
+                            _examTimerDuration = secs;
+                            durBtns.forEach(b => { b.style.border = '1px solid rgba(255,255,255,0.15)'; b.style.background = 'rgba(255,255,255,0.05)'; b.style.color = 'rgba(255,255,255,0.6)'; b.classList.remove('active'); });
+                            db.style.border = '1px solid #5333ed'; db.style.background = 'rgba(83,51,237,0.2)'; db.style.color = '#a78bfa'; db.classList.add('active');
+                            startBtn.innerHTML = `\u23F1 Start ${mins}-Minute Timer`;
+                            const _td = document.getElementById('swml-canvas-timer');
+                            if (_td && _examTimerMode === 'exam') { _td.textContent = `\u23F1 ${fmtDur(secs)}`; _td.style.color = '#1CD991'; }
+                            console.log('WML: Timer duration set to', secs, 'seconds');
+                        });
+                        durBtns.push(db);
+                        durBar.appendChild(db);
+                    });
+
                     const examBtn = el('button', { className: 'swml-timer-mode-btn active', textContent: 'Exam Mode', title: 'Timer starts when you click the microphone. Auto-submits on expiry.',
                         onClick: () => {
                             timerMode = 'exam'; _examTimerMode = 'exam';
                             examBtn.classList.add('active'); practiceBtn.classList.remove('active');
                             startBtn.style.display = '';
-                            // v7.15.22: Restore timer display when switching back to exam
+                            durBar.style.display = 'flex';
                             const _td = document.getElementById('swml-canvas-timer');
-                            if (_td) { _td.textContent = '\u23F1 4:00'; _td.style.color = '#1CD991'; _td.style.display = ''; }
+                            if (_td) { _td.textContent = `\u23F1 ${fmtDur(_examTimerDuration)}`; _td.style.color = '#1CD991'; _td.style.display = ''; }
                             console.log('WML: Switched to Exam Mode');
                         } });
                     const practiceBtn = el('button', { className: 'swml-timer-mode-btn', textContent: 'Practice Mode', title: 'No timer. Take your time.',
@@ -616,7 +643,7 @@
                             timerMode = 'practice'; _examTimerMode = 'practice';
                             practiceBtn.classList.add('active'); examBtn.classList.remove('active');
                             startBtn.style.display = 'none';
-                            // v7.15.22: Show "Practice Mode" where timer was, clear any running timer
+                            durBar.style.display = 'none';
                             if (canvasTimerInterval) { clearInterval(canvasTimerInterval); canvasTimerInterval = null; }
                             const _td = document.getElementById('swml-canvas-timer');
                             if (_td) { _td.textContent = 'Practice Mode \u2014 No Timer'; _td.style.color = '#51dacf'; _td.style.animation = ''; _td.style.display = ''; }
@@ -624,7 +651,7 @@
                         } });
                     const startBtn = el('button', { className: 'swml-quick-btn swml-timer-start-btn', innerHTML: '\u23F1 Start 4-Minute Timer',
                         onClick: () => {
-                            if (window.WML._startCanvasTimer) window.WML._startCanvasTimer(240, true);
+                            if (window.WML._startCanvasTimer) window.WML._startCanvasTimer(_examTimerDuration, true);
                             startBtn.disabled = true;
                             startBtn.textContent = '\u23F1 Timer Running...';
                             startBtn.classList.add('swml-timer-running');
@@ -632,6 +659,7 @@
                     });
                     timerBar.appendChild(examBtn);
                     timerBar.appendChild(practiceBtn);
+                    timerBar.appendChild(durBar);
                     timerBar.appendChild(startBtn);
                     content.appendChild(timerBar);
                 }
@@ -829,7 +857,7 @@
                         chatMicBtn.classList.add('swml-mic-active');
                         // v7.15.14: Auto-start timer when mic starts in Exam mode
                         if (_examTimerMode === 'exam' && window.WML._startCanvasTimer) {
-                            window.WML._startCanvasTimer(240, true);
+                            window.WML._startCanvasTimer(_examTimerDuration, true);
                             const manualBtn = document.querySelector('.swml-timer-start-btn');
                             if (manualBtn) { manualBtn.disabled = true; manualBtn.textContent = '\u23F1 Timer Running...'; manualBtn.classList.add('swml-timer-running'); }
                             console.log('WML: Timer auto-started on mic click (Exam mode)');
@@ -3101,7 +3129,13 @@
                     canvasTimerDisplay.style.animation = ''; // v7.15.22: Stop throb at 0
                     if (autoSubmit) {
                         const _ta = document.querySelector('.swml-canvas-chat-input textarea');
-                        if (_ta && _ta.value.trim()) sendCanvasMessage();
+                        if (_ta && _ta.value.trim()) {
+                            sendCanvasMessage();
+                        } else if (_ta) {
+                            // v7.15.23: Send expiry marker so AI can respond (protocol handles this case)
+                            _ta.value = '[Timer expired — no response submitted]';
+                            sendCanvasMessage();
+                        }
                     }
                     return;
                 }
@@ -3799,6 +3833,85 @@
                 });
             }
 
+            // ── v7.15.23: Mode Selection Overlay ──
+            // Shows before the attempt selector for essay_plan / model_answer when no mode pre-set
+            function _showModeSelector() {
+                return new Promise(resolve => {
+                    if (state.planningMode || (state.task !== 'essay_plan' && state.task !== 'model_answer')) {
+                        resolve(false); return;
+                    }
+                    const modeConfigs = {
+                        essay_plan: [
+                            { key: 'A', label: 'Recall', icon: '\uD83D\uDD25', desc: 'Test yourself under timed exam conditions with verbal recall' },
+                            { key: 'B', label: 'Guided', icon: '\u26A1', desc: 'You choose quotes, Sophia builds the plan' },
+                            { key: 'C', label: 'Instant', icon: '\uD83D\uDE80', desc: 'Give the question, get a complete plan immediately' },
+                        ],
+                        model_answer: [
+                            { key: 'A', label: 'Coached', icon: '\uD83D\uDCDD', desc: 'Sophia guides you through each section with Socratic questioning' },
+                            { key: 'B', label: 'Instant', icon: '\u26A1', desc: 'Get a complete Grade 9 model answer generated for you' },
+                            { key: 'C', label: 'Advanced', icon: '\uD83D\uDD25', desc: 'Full recall: plan from memory, then write under timed conditions' },
+                        ],
+                    };
+                    const modes = modeConfigs[state.task];
+                    if (!modes) { resolve(false); return; }
+                    const taskLabel = state.task === 'essay_plan' ? 'Essay Plan' : 'Model Answer';
+
+                    const overlay = el('div', { className: 'swml-mode-overlay' });
+                    overlay.style.cssText = 'position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+
+                    const card = el('div', { className: 'swml-mode-card' });
+                    card.style.cssText = 'background:#1C1D1F;border-radius:16px;padding:32px;max-width:440px;width:90%;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+
+                    const title = el('h3', { textContent: `Choose your ${taskLabel} mode` });
+                    title.style.cssText = 'margin:0 0 8px;font-size:18px;font-weight:600;';
+                    const subtitle = el('p', { textContent: 'Select how you want to work on this exercise.' });
+                    subtitle.style.cssText = 'margin:0 0 24px;color:rgba(255,255,255,0.6);font-size:13px;';
+                    card.appendChild(title);
+                    card.appendChild(subtitle);
+
+                    const list = el('div');
+                    list.style.cssText = 'display:flex;flex-direction:column;gap:10px;';
+                    modes.forEach(mode => {
+                        const btn = el('button', { className: 'swml-mode-overlay-btn' });
+                        btn.style.cssText = 'display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#fff;cursor:pointer;width:100%;text-align:left;transition:all 0.15s ease;';
+                        btn.innerHTML = `<span style="font-size:22px;flex-shrink:0;">${mode.icon}</span><div><strong style="font-size:14px;display:block;margin-bottom:2px;">${mode.label}</strong><span style="color:rgba(255,255,255,0.5);font-size:12px;">${mode.desc}</span></div>`;
+                        btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(83,51,237,0.15)'; btn.style.borderColor = '#5333ed'; });
+                        btn.addEventListener('mouseleave', () => { btn.style.background = 'rgba(255,255,255,0.04)'; btn.style.borderColor = 'rgba(255,255,255,0.1)'; });
+                        btn.addEventListener('click', () => {
+                            state.planningMode = mode.key;
+                            console.log('WML Mode Overlay:', state.task, '\u2192', mode.key, mode.label);
+                            // Rebuild sidebar steps to match the selected mode
+                            const stepsDiv = document.getElementById('swml-progress-steps');
+                            if (stepsDiv) {
+                                stepsDiv.innerHTML = '';
+                                const newSteps = (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label }));
+                                state.step = 1;
+                                newSteps.forEach((s, i) => {
+                                    const cls = i === 0 ? 'active' : '';
+                                    stepsDiv.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
+                                        el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
+                                        el('span', { className: 'swml-step-label', textContent: s.label }),
+                                    ]));
+                                });
+                            }
+                            overlay.remove();
+                            resolve(true);
+                        });
+                        list.appendChild(btn);
+                    });
+                    card.appendChild(list);
+                    overlay.appendChild(card);
+
+                    const canvasEl = document.getElementById('swml-canvas') || document.querySelector('.swml-canvas-content') || document.querySelector('.swml-app');
+                    if (canvasEl) {
+                        canvasEl.style.position = 'relative';
+                        canvasEl.appendChild(overlay);
+                    } else {
+                        resolve(false);
+                    }
+                });
+            }
+
             // ── Chat persistence: resume or fresh start ──
             // Deferred until TipTap editor initialises + template loads
             const _initTrainingChat = async () => {
@@ -4188,7 +4301,15 @@
 
             // Defer chat init until after template loads (editor needs content for word count etc.)
             // v7.15.12: Resolve attempt number from server before starting chat
+            // v7.15.23: Flow: Mode Overlay → Attempt Overlay → Exercise Init
             setTimeout(async () => {
+                // v7.15.23: Show mode selector overlay FIRST for essay_plan / model_answer
+                if (!state.planningMode && (state.task === 'essay_plan' || state.task === 'model_answer')) {
+                    console.log('WML Mode: showing mode selector for', state.task);
+                    await _showModeSelector();
+                    console.log('WML Mode: resolved →', state.planningMode);
+                }
+
                 // v7.15.21: sessionStorage already consumed before init chain — skip if attempt already set
                 if (_pendingAttempt) {
                     console.log('WML Attempt: already resolved from sessionStorage →', state.attempt);
@@ -4214,6 +4335,9 @@
                             if (completedAttempts.length > 0 && !state.reviewMode && !attemptFromUrl) {
                                 const shown = await _showAttemptSelector(idx, suffix);
                                 if (shown) return; // selector handles chat init
+                            } else {
+                                // v7.15.23: Diagnostic — log why overlay was skipped
+                                console.log('WML Attempt: overlay skipped — completed:', completedAttempts.length, 'reviewMode:', state.reviewMode, 'fromUrl:', attemptFromUrl, 'URL:', window.location.search);
                             }
                             console.log('WML: Attempt resolved →', state.attempt, 'of', idx.count);
                         }
@@ -5910,6 +6034,10 @@
         wcWidget.appendChild(wcWidgetLabel);
         wcWidget.appendChild(wcWidgetClose);
         canvas.appendChild(wcWidget);
+        // v7.15.23: Hide word count for planning-only exercises (no essay writing)
+        if (state.task === 'essay_plan' || state.task === 'mark_scheme') {
+            wcWidget.style.display = 'none';
+        }
 
         // Restore link for status bar
         wcRestore = el('button', {
