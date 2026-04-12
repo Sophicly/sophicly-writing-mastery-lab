@@ -189,6 +189,24 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
+        // v7.15.12: Attempt management endpoints
+        register_rest_route($namespace, '/attempts', [
+            'methods' => 'GET', 'callback' => [$this, 'get_attempts'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/attempts/new', [
+            'methods' => 'POST', 'callback' => [$this, 'create_attempt'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/attempts/switch', [
+            'methods' => 'POST', 'callback' => [$this, 'switch_attempt'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/attempts/complete', [
+            'methods' => 'POST', 'callback' => [$this, 'complete_attempt'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+
         // Canvas chat persistence — save/load/clear assessment chat
         register_rest_route($namespace, '/canvas/chat-save', [
             'methods' => 'POST', 'callback' => [$this, 'save_canvas_chat'],
@@ -1033,13 +1051,20 @@ class SWML_REST_API {
         $comments = $params['comments'] ?? null;
         $topic_number = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
         $suffix = sanitize_text_field($params['suffix'] ?? '');
+        $attempt = absint($params['attempt'] ?? 0);
 
         if (empty($board) || empty($text)) {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
         }
 
-        // Build meta key — includes topic number + exercise suffix for document isolation
-        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix);
+        // v7.15.12: Resolve attempt number — use provided, or fall back to current from index
+        if ($attempt < 1) {
+            $idx = $this->get_attempt_index($user_id, $board, $text, $topic_number, $suffix);
+            $attempt = $idx['current'] ?? 1;
+        }
+
+        // Build meta key — includes topic number + exercise suffix + attempt for document isolation
+        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
 
         $doc = [
             'html'       => $html,
@@ -1064,6 +1089,18 @@ class SWML_REST_API {
         // Also fire a hook so the student data plugin can pick this up
         do_action('sophicly_canvas_saved', $user_id, $board, $text, $html, $word_count, $topic_number, $suffix);
 
+        // v7.15.12: Update attempt index with latest word count + status
+        $idx = $this->get_attempt_index($user_id, $board, $text, $topic_number, $suffix);
+        foreach ($idx['attempts'] as &$a) {
+            if ($a['num'] === $attempt) {
+                $a['wordCount'] = $word_count;
+                if ($a['status'] === 'not_started') $a['status'] = 'in_progress';
+                break;
+            }
+        }
+        unset($a);
+        $this->save_attempt_index($user_id, $board, $text, $topic_number, $suffix, $idx);
+
         // Check if write actually succeeded
         if ($result === false) {
             return rest_ensure_response([
@@ -1077,6 +1114,7 @@ class SWML_REST_API {
             'success' => true,
             'key'     => $meta_key,
             'savedAt' => $doc['savedAt'],
+            'attempt' => $attempt,
         ]);
     }
 
@@ -1121,27 +1159,35 @@ class SWML_REST_API {
         $topic_number = $request->get_param('topicNumber');
         $topic_number = ($topic_number !== null && $topic_number !== '') ? absint($topic_number) : null;
         $suffix = sanitize_text_field($request->get_param('suffix') ?? '');
+        $attempt = absint($request->get_param('attempt') ?? 0);
 
         if (empty($board) || empty($text)) {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
         }
 
-        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix);
+        // v7.15.12: Resolve attempt — use provided, or current from index
+        if ($attempt < 1) {
+            $idx = $this->get_attempt_index($user_id, $board, $text, $topic_number, $suffix);
+            $attempt = $idx['current'] ?? 1;
+        }
+
+        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
 
         $raw = get_user_meta($user_id, $meta_key, true);
         if (empty($raw)) {
-            return rest_ensure_response(['success' => true, 'doc' => null]);
+            return rest_ensure_response(['success' => true, 'doc' => null, 'attempt' => $attempt]);
         }
 
         // WordPress may return an array (if it serialized/unserialized internally)
         if (is_array($raw)) {
-            return rest_ensure_response(['success' => true, 'doc' => $raw]);
+            return rest_ensure_response(['success' => true, 'doc' => $raw, 'attempt' => $attempt]);
         }
 
         $doc = self::decode_canvas_json($raw);
         return rest_ensure_response([
             'success' => true,
             'doc'     => $doc,
+            'attempt' => $attempt,
         ]);
     }
 
@@ -1163,21 +1209,28 @@ class SWML_REST_API {
         $topic_number = $request->get_param('topicNumber');
         $topic_number = ($topic_number !== null && $topic_number !== '') ? absint($topic_number) : null;
         $suffix = sanitize_text_field($request->get_param('suffix') ?? '');
+        $attempt = absint($request->get_param('attempt') ?? 0);
 
         if (empty($board) || empty($text)) {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
         }
 
-        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix);
+        // v7.15.12: Resolve attempt for tutor review
+        if ($attempt < 1) {
+            $idx = $this->get_attempt_index($student_id, $board, $text, $topic_number, $suffix);
+            $attempt = $idx['current'] ?? 1;
+        }
+
+        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
         $raw = get_user_meta($student_id, $meta_key, true);
         if (empty($raw)) {
-            return rest_ensure_response(['success' => true, 'doc' => null]);
+            return rest_ensure_response(['success' => true, 'doc' => null, 'attempt' => $attempt]);
         }
         if (is_array($raw)) {
-            return rest_ensure_response(['success' => true, 'doc' => $raw]);
+            return rest_ensure_response(['success' => true, 'doc' => $raw, 'attempt' => $attempt]);
         }
         $doc = self::decode_canvas_json($raw);
-        return rest_ensure_response(['success' => true, 'doc' => $doc]);
+        return rest_ensure_response(['success' => true, 'doc' => $doc, 'attempt' => $attempt]);
     }
 
     /**
@@ -1582,7 +1635,8 @@ class SWML_REST_API {
     //  CANVAS CHAT PERSISTENCE
     // ═══════════════════════════════════════════
 
-    private function canvas_meta_key($board, $text, $topic, $suffix = '') {
+    // v7.15.12: Attempt-aware meta keys — attempt 1 has no suffix (backward compatible), attempt 2+ appends __a{N}
+    private function canvas_meta_key($board, $text, $topic, $suffix = '', $attempt = 1) {
         $key = 'swml_canvas_' . $board . '_' . $text;
         if ($topic !== null && $topic > 0) {
             $key .= '_t' . $topic;
@@ -1590,14 +1644,77 @@ class SWML_REST_API {
         if (!empty($suffix)) {
             $key .= $suffix;
         }
+        if ($attempt > 1) {
+            $key .= '__a' . $attempt;
+        }
         return $key;
     }
 
-    private function chat_meta_key($board, $text, $topic, $suffix = '') {
+    private function chat_meta_key($board, $text, $topic, $suffix = '', $attempt = 1) {
         $key = 'swml_chat_' . $board . '_' . $text;
         if ($topic > 0) $key .= '_t' . $topic;
         if (!empty($suffix)) $key .= $suffix;
+        if ($attempt > 1) $key .= '__a' . $attempt;
         return $key;
+    }
+
+    // v7.15.12: Attempt index — base key without attempt suffix, stores attempt metadata
+    private function attempt_index_key($board, $text, $topic, $suffix = '') {
+        $key = 'swml_attempts_' . $board . '_' . $text;
+        if ($topic !== null && $topic > 0) $key .= '_t' . $topic;
+        if (!empty($suffix)) $key .= $suffix;
+        return $key;
+    }
+
+    /**
+     * Get or create the attempt index for an exercise.
+     * Returns array: { count, current, attempts: [ { num, started, status, grade, score, wordCount } ] }
+     */
+    private function get_attempt_index($user_id, $board, $text, $topic, $suffix) {
+        $idx_key = $this->attempt_index_key($board, $text, $topic, $suffix);
+        $raw = get_user_meta($user_id, $idx_key, true);
+        if (!empty($raw)) {
+            $idx = is_array($raw) ? $raw : json_decode($raw, true);
+            if (is_array($idx) && isset($idx['count'])) return $idx;
+        }
+        // Auto-create index — check if a legacy (attempt 1) document exists
+        $legacy_key = $this->canvas_meta_key($board, $text, $topic, $suffix, 1);
+        $legacy = get_user_meta($user_id, $legacy_key, true);
+        if (!empty($legacy)) {
+            $doc = is_array($legacy) ? $legacy : json_decode($legacy, true);
+            $idx = [
+                'count'   => 1,
+                'current' => 1,
+                'attempts' => [[
+                    'num'       => 1,
+                    'started'   => $doc['savedAt'] ?? current_time('c'),
+                    'status'    => 'in_progress',
+                    'grade'     => null,
+                    'score'     => null,
+                    'wordCount' => $doc['wordCount'] ?? 0,
+                ]],
+            ];
+        } else {
+            $idx = [
+                'count'    => 1,
+                'current'  => 1,
+                'attempts' => [[
+                    'num'       => 1,
+                    'started'   => current_time('c'),
+                    'status'    => 'not_started',
+                    'grade'     => null,
+                    'score'     => null,
+                    'wordCount' => 0,
+                ]],
+            ];
+        }
+        update_user_meta($user_id, $idx_key, wp_slash(wp_json_encode($idx)));
+        return $idx;
+    }
+
+    private function save_attempt_index($user_id, $board, $text, $topic, $suffix, $idx) {
+        $idx_key = $this->attempt_index_key($board, $text, $topic, $suffix);
+        update_user_meta($user_id, $idx_key, wp_slash(wp_json_encode($idx)));
     }
 
     public function save_canvas_chat($request) {
@@ -1608,6 +1725,7 @@ class SWML_REST_API {
         $text    = sanitize_text_field($params['text'] ?? '');
         $topic   = absint($params['topicNumber'] ?? 0);
         $suffix  = sanitize_text_field($params['suffix'] ?? '');
+        $attempt = absint($params['attempt'] ?? 0);
         $history = $params['history'] ?? [];
         $chat_id = sanitize_text_field($params['chatId'] ?? '');
 
@@ -1623,7 +1741,13 @@ class SWML_REST_API {
             return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
         }
 
-        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix);
+        // v7.15.12: Resolve attempt
+        if ($attempt < 1) {
+            $idx = $this->get_attempt_index($user_id, $board, $text, $topic, $suffix);
+            $attempt = $idx['current'] ?? 1;
+        }
+
+        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix, $attempt);
         $data = [
             'history'  => $history,
             'chatId'   => $chat_id,
@@ -1646,12 +1770,19 @@ class SWML_REST_API {
         $text    = sanitize_text_field($request->get_param('text') ?? '');
         $topic   = absint($request->get_param('topicNumber') ?? 0);
         $suffix  = sanitize_text_field($request->get_param('suffix') ?? '');
+        $attempt = absint($request->get_param('attempt') ?? 0);
 
         if (!$board || !$text) {
             return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
         }
 
-        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix);
+        // v7.15.12: Resolve attempt
+        if ($attempt < 1) {
+            $idx = $this->get_attempt_index($user_id, $board, $text, $topic, $suffix);
+            $attempt = $idx['current'] ?? 1;
+        }
+
+        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix, $attempt);
         $raw = get_user_meta($user_id, $meta_key, true);
         $data = $raw ? json_decode($raw, true) : null;
 
@@ -1669,12 +1800,18 @@ class SWML_REST_API {
         $text   = sanitize_text_field($params['text'] ?? '');
         $topic  = absint($params['topicNumber'] ?? 0);
         $suffix = sanitize_text_field($params['suffix'] ?? '');
+        $attempt = absint($params['attempt'] ?? 0);
 
         if (!$board || !$text) {
             return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
         }
 
-        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix);
+        if ($attempt < 1) {
+            $idx = $this->get_attempt_index($user_id, $board, $text, $topic, $suffix);
+            $attempt = $idx['current'] ?? 1;
+        }
+
+        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix, $attempt);
         delete_user_meta($user_id, $meta_key);
 
         return rest_ensure_response(['success' => true, 'key' => $meta_key]);
@@ -2160,6 +2297,135 @@ class SWML_REST_API {
         $flush();
 
         return $html;
+    }
+
+    // ═══════════════════════════════════════════
+    //  ATTEMPT MANAGEMENT (v7.15.12)
+    // ═══════════════════════════════════════════
+
+    /**
+     * GET /attempts — returns attempt index for a given exercise.
+     * Query params: board, text, topicNumber, suffix
+     */
+    public function get_attempts($request) {
+        $user_id = get_current_user_id();
+        $board  = sanitize_text_field($request->get_param('board') ?? '');
+        $text   = sanitize_text_field($request->get_param('text') ?? '');
+        $topic  = $request->get_param('topicNumber');
+        $topic  = ($topic !== null && $topic !== '') ? absint($topic) : null;
+        $suffix = sanitize_text_field($request->get_param('suffix') ?? '');
+
+        if (!$board || !$text) {
+            return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
+        }
+
+        $idx = $this->get_attempt_index($user_id, $board, $text, $topic, $suffix);
+        return rest_ensure_response(['success' => true, 'attempts' => $idx]);
+    }
+
+    /**
+     * POST /attempts/new — creates a new attempt, returns the new attempt number.
+     * Body: board, text, topicNumber, suffix
+     */
+    public function create_attempt($request) {
+        $user_id = get_current_user_id();
+        $params  = $request->get_json_params();
+
+        $board  = sanitize_text_field($params['board'] ?? '');
+        $text   = sanitize_text_field($params['text'] ?? '');
+        $topic  = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
+        $suffix = sanitize_text_field($params['suffix'] ?? '');
+
+        if (!$board || !$text) {
+            return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
+        }
+
+        $idx = $this->get_attempt_index($user_id, $board, $text, $topic, $suffix);
+        $new_num = $idx['count'] + 1;
+        $idx['count'] = $new_num;
+        $idx['current'] = $new_num;
+        $idx['attempts'][] = [
+            'num'       => $new_num,
+            'started'   => current_time('c'),
+            'status'    => 'not_started',
+            'grade'     => null,
+            'score'     => null,
+            'wordCount' => 0,
+        ];
+        $this->save_attempt_index($user_id, $board, $text, $topic, $suffix, $idx);
+
+        return rest_ensure_response([
+            'success' => true,
+            'attempt' => $new_num,
+            'attempts' => $idx,
+        ]);
+    }
+
+    /**
+     * POST /attempts/switch — switches the current pointer to a different attempt.
+     * Body: board, text, topicNumber, suffix, attempt
+     */
+    public function switch_attempt($request) {
+        $user_id = get_current_user_id();
+        $params  = $request->get_json_params();
+
+        $board   = sanitize_text_field($params['board'] ?? '');
+        $text    = sanitize_text_field($params['text'] ?? '');
+        $topic   = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
+        $suffix  = sanitize_text_field($params['suffix'] ?? '');
+        $attempt = absint($params['attempt'] ?? 0);
+
+        if (!$board || !$text || $attempt < 1) {
+            return new WP_Error('missing_params', 'board, text, and attempt are required', ['status' => 400]);
+        }
+
+        $idx = $this->get_attempt_index($user_id, $board, $text, $topic, $suffix);
+        if ($attempt > $idx['count']) {
+            return new WP_Error('invalid_attempt', 'Attempt number does not exist', ['status' => 400]);
+        }
+
+        $idx['current'] = $attempt;
+        $this->save_attempt_index($user_id, $board, $text, $topic, $suffix, $idx);
+
+        return rest_ensure_response(['success' => true, 'current' => $attempt, 'attempts' => $idx]);
+    }
+
+    /**
+     * POST /attempts/complete — marks an attempt as complete with grade/score.
+     * Body: board, text, topicNumber, suffix, attempt, grade, score
+     */
+    public function complete_attempt($request) {
+        $user_id = get_current_user_id();
+        $params  = $request->get_json_params();
+
+        $board   = sanitize_text_field($params['board'] ?? '');
+        $text    = sanitize_text_field($params['text'] ?? '');
+        $topic   = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
+        $suffix  = sanitize_text_field($params['suffix'] ?? '');
+        $attempt = absint($params['attempt'] ?? 0);
+        $grade   = sanitize_text_field($params['grade'] ?? '');
+        $score   = sanitize_text_field($params['score'] ?? '');
+
+        if (!$board || !$text) {
+            return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
+        }
+
+        $idx = $this->get_attempt_index($user_id, $board, $text, $topic, $suffix);
+        if ($attempt < 1) $attempt = $idx['current'] ?? 1;
+
+        foreach ($idx['attempts'] as &$a) {
+            if ($a['num'] === $attempt) {
+                $a['status'] = 'complete';
+                $a['completedAt'] = current_time('c');
+                if (!empty($grade)) $a['grade'] = $grade;
+                if (!empty($score)) $a['score'] = $score;
+                break;
+            }
+        }
+        unset($a);
+        $this->save_attempt_index($user_id, $board, $text, $topic, $suffix, $idx);
+
+        return rest_ensure_response(['success' => true, 'attempts' => $idx]);
     }
 }
 

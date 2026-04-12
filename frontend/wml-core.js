@@ -31,6 +31,11 @@ window.WML = (function() {
         chatSave:      config.restUrl + 'canvas/chat-save',
         chatLoad:      config.restUrl + 'canvas/chat-load',
         chatClear:     config.restUrl + 'canvas/chat-clear',
+        // v7.15.12: Attempt management
+        attempts:        config.restUrl + 'attempts',
+        attemptsNew:     config.restUrl + 'attempts/new',
+        attemptsSwitch:  config.restUrl + 'attempts/switch',
+        attemptsComplete: config.restUrl + 'attempts/complete',
         learningProfile: config.restUrl + 'learning-profile',
         // Creative writing project storage (v7.13.30)
         cwProject:       config.restUrl + 'cw-project',
@@ -373,6 +378,8 @@ window.WML = (function() {
         _phaseMarkedComplete: false,  // Prevents double-fire of Mark Complete
         // v7.14.3: Exercise unique ID — UUID per attempt for deep linking + dashboard + tutor access
         exerciseId: config.urlParams?.eid || '',
+        // v7.15.12: Attempt number — 1-based, resolved from server attempt index
+        attempt: parseInt(config.urlParams?.attempt || '0') || 0,
         // Tutor review mode (v7.15.2)
         reviewMode: !!config.reviewMode,
         reviewStudentId: config.reviewStudentId || 0,

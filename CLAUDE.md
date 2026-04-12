@@ -53,6 +53,24 @@ sophicly-writing-mastery-lab/
 
 ---
 
+## BUG FIX STANDARD OPERATING PROCEDURE
+
+For any bug that isn't a trivial one-liner:
+
+1. **INVESTIGATE** — Trace the full code path. Read the actual code, don't guess. Find the ROOT CAUSE, not the symptom. Log the findings.
+2. **PLAN** — Write a clear fix plan: what file, what line, why this is the actual cause, what the fix is. Get user confirmation before coding.
+3. **EXECUTE** — Make the surgical fix. One targeted change, not a cascade of patches.
+4. **VALIDATE** — `node --check`, brace count, syntax validation.
+5. **TEST** — Deploy to staging. Verify the fix works. Check console for errors.
+6. **COMMIT** — Git commit with clear message describing root cause + fix.
+7. **DEPLOY** — Deploy to production when confirmed.
+
+**NEVER patch symptoms.** If a fix doesn't work, go back to step 1 and investigate deeper. Do not add another layer of patches on top — that creates fragile, hard-to-debug code. Every fix attempt that fails means the root cause hasn't been found yet.
+
+**INVESTIGATE BEFORE FIXING.** For every bug report, always read the actual code and trace the full execution path BEFORE proposing any fix. Don't make assumptions about what the code does — read it. Multiple bugs in a session often share a single root cause (e.g. a scoping issue, a timing race, a missing condition). Find the root and fix it once, rather than patching each symptom individually.
+
+---
+
 ## WORDPRESS META STORAGE — KNOWN GOTCHAS
 
 ### The wp_unslash problem

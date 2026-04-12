@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sophicly Designer Cursor
  * Description: Branded designer cursors with name pills and avatars for students, tutors, and AI.
- * Version: 1.3.1
+ * Version: 1.3.2
  * Author: Sophicly
  *
  * Enqueues CSS + JS and passes current user data so any page can
@@ -14,7 +14,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'SOPHICLY_CURSOR_VERSION', '1.3.1' );
+define( 'SOPHICLY_CURSOR_VERSION', '1.3.2' );
 
 add_action( 'wp_enqueue_scripts', 'sophicly_cursor_enqueue' );
 

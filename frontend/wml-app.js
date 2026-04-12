@@ -5357,11 +5357,17 @@
             }
 
             // Question text: ONLY from student message, ONLY if it looks like an actual exam question
-            if (!state.plan.question_text && studentMsg.length > 30) {
-                const looksLikeQuestion = /(?:starting with this (?:extract|speech)|how (?:does|far|is)|to what extent|read the following extract)/i.test(studentMsg);
-                const hasMarks = /\[\s*\d+\s*marks?\s*\]/i.test(studentMsg);
+            // v7.15.19: Strip protocol breadcrumbs/progress bars before saving
+            const cleanStudentMsg = studentMsg
+                .replace(/📌[^\n]*(?:Planning|Setting|Assessment|Polishing|Goal Setting)[^\n]*/gi, '')
+                .replace(/\[Progress bar:[^\]]*\]/gi, '')
+                .replace(/\[PROGRESS:\s*\d+\]/gi, '')
+                .trim();
+            if (!state.plan.question_text && cleanStudentMsg.length > 30) {
+                const looksLikeQuestion = /(?:starting with this (?:extract|speech)|how (?:does|far|is)|to what extent|read the following extract)/i.test(cleanStudentMsg);
+                const hasMarks = /\[\s*\d+\s*marks?\s*\]/i.test(cleanStudentMsg);
                 if (looksLikeQuestion || hasMarks) {
-                    saves.push({ type: 'question_text', content: studentMsg.trim(), step: 1 });
+                    saves.push({ type: 'question_text', content: cleanStudentMsg, step: 1 });
                 }
             }
 
@@ -5994,8 +6000,21 @@ Before marking the introduction, ask the student to confirm their essay structur
         }
 
         // Reject progress-bar / step indicator text (AI function call sometimes saves these)
-        if (/^(?:.*?(?:Planning|Setting|Assessment|Polishing|Goal Setting)\s*>.*(?:Step \d|of \d))/i.test(c) && c.length < 80) {
-            console.warn(`WML: Rejected bad plan content for ${type}: "${c}" (progress indicator)`);
+        // v7.15.19: Removed length cap — protocol markers can appear in long messages too
+        if (/(?:Planning|Setting|Assessment|Polishing|Goal Setting)\s*>.*(?:Step \d|of \d)/i.test(c)) {
+            console.warn(`WML: Rejected bad plan content for ${type}: "${c.substring(0, 60)}" (progress indicator)`);
+            return false;
+        }
+
+        // v7.15.19: Reject protocol breadcrumb navigation (📌 emoji marker)
+        if (/📌/.test(c)) {
+            console.warn(`WML: Rejected bad plan content for ${type}: "${c.substring(0, 60)}" (protocol breadcrumb)`);
+            return false;
+        }
+
+        // Reject progress bar text
+        if (/\[Progress bar:/i.test(c)) {
+            console.warn(`WML: Rejected bad plan content for ${type}: "${c.substring(0, 60)}" (progress bar)`);
             return false;
         }
 

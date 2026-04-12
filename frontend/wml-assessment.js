@@ -154,19 +154,24 @@
 
     let canvasSignoffData = null;
     let canvasTimerInterval = null; // Module-scope declaration (was inside renderCanvasWorkspace — bug fix v7.12.62)
+    let _examTimerMode = null; // v7.15.14: Module-scope timer mode — 'exam' or 'practice', set by timer controls, read by mic handler
     // v7.13.35: Use exerciseConfig.storageSuffix for ALL exercise types — prevents key collisions
     // between assessment, mark_scheme, CW steps, etc. on the same board/text/topic.
+    // v7.15.12: Attempt-aware — attempt 1 has no suffix (backward compatible), attempt 2+ appends __a{N}
     const CANVAS_SAVE_KEY = () => {
         const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
-        return `swml_canvas_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}`;
+        const att = (state.attempt || 1) > 1 ? `__a${state.attempt}` : '';
+        return `swml_canvas_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}${att}`;
     };
     const CHAT_SAVE_KEY = () => {
         const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
-        return `swml_chat_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}`;
+        const att = (state.attempt || 1) > 1 ? `__a${state.attempt}` : '';
+        return `swml_chat_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}${att}`;
     };
     let chatSaveTimer = null;
     let canvasSilentSend = false; // v7.14.3: When true, sendCanvasMessage skips user bubble display
     let _currentAddComment = null; // v7.14.48: Module-level ref for context toolbar (survives re-renders)
+    let _migrationActive = false; // v7.15.21: allows migrations to remove sections (module-scope for guard access)
 
     function saveCanvasChat(history, chatId) {
         // 1. Instant localStorage write (include step + task for resume and stale detection)
@@ -178,7 +183,7 @@
         chatSaveTimer = setTimeout(() => {
             fetch(API.chatSave, {
                 method: 'POST', headers,
-                body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.getExerciseConfig(state.task).storageSuffix || '', history, chatId })
+                body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.getExerciseConfig(state.task).storageSuffix || '', attempt: state.attempt || 1, history, chatId })
             }).then(r => r.json()).then(res => {
                 if (res.success) console.log('WML: Chat saved to server', { count: res.count });
                 else console.warn('WML: Chat save failed', res);
@@ -198,7 +203,7 @@
         try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch (e) {}
         fetch(API.chatClear, {
             method: 'POST', headers,
-            body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.getExerciseConfig(state.task).storageSuffix || '' })
+            body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.getExerciseConfig(state.task).storageSuffix || '', attempt: state.attempt || 1 })
         }).catch(() => {});
     }
 
@@ -319,6 +324,25 @@
         if (sidebarPhaseLabel) {
             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: sidebarPhaseLabel }));
         }
+        // v7.15.20: Attempt badge — injected/updated dynamically after attempt resolution
+        // (state.attempt is 0 at build time; resolved later via server or sessionStorage)
+        function _updateAttemptBadge() {
+            if (state.attempt < 1) return;
+            let badge = protoBadges.querySelector('.swml-attempt-badge');
+            if (badge) {
+                badge.textContent = `Attempt ${state.attempt}`;
+                return;
+            }
+            badge = el('span', {
+                className: 'swml-sidebar-badge swml-attempt-badge',
+                textContent: `Attempt ${state.attempt}`,
+                title: 'Click to switch attempt',
+                style: { cursor: 'pointer' },
+                onClick: () => { window.location.reload(); }
+            });
+            protoBadges.appendChild(badge);
+        }
+        if (state.attempt > 0) _updateAttemptBadge();
         protoBody.appendChild(protoBadges);
 
         // Protocol Progress label
@@ -447,6 +471,10 @@
                         onClick: (e) => { e.stopPropagation(); clipRich(assessBlock, e.currentTarget); } }));
                 }
                 content.appendChild(header);
+                // v7.15.14: Strip protocol navigation/breadcrumbs from AI output
+                text = text.replace(/<p>[^<]*(?:Planning|📌)[^<]*(?:Part\s+[A-Z]\.\d|Step\s+\d+\s+of\s+\d+)[^<]*<\/p>/gi, '');
+                text = text.replace(/<p>\[Progress bar:.*?\]<\/p>/gi, '');
+                text = text.replace(/\[PROGRESS:\s*\d+\]/g, '');
                 const body = el('div', { className: 'swml-bubble-body' });
                 body.innerHTML = text;
                 content.appendChild(body);
@@ -549,8 +577,10 @@
                                 className: 'swml-quick-btn',
                                 textContent: action.label,
                                 onClick: () => {
+                                    console.log('WML Quick Action click:', { label: action.label, value: action.value, isExamPrep, matchesSaved: /saved\s*question/i.test(action.label || action.value) });
                                     if (isExamPrep && /saved\s*question/i.test(action.label || action.value)) {
                                         bar.remove();
+                                        console.log('WML: Intercepted "Saved question" → calling _showSavedQuestionOverlay');
                                         _showSavedQuestionOverlay(chatTextarea, sendCanvasMessage);
                                         return;
                                     }
@@ -570,13 +600,31 @@
                 if (isExamPrep && detectText && /press the microphone button when you.re ready/i.test(detectText)) {
                     const timerBar = el('div', { className: 'swml-timer-controls' });
                     let timerMode = 'exam'; // default to exam (the real challenge)
+                    _examTimerMode = 'exam'; // v7.15.14: Expose to module scope for mic handler
                     const examBtn = el('button', { className: 'swml-timer-mode-btn active', textContent: 'Exam Mode', title: 'Timer starts when you click the microphone. Auto-submits on expiry.',
-                        onClick: () => { timerMode = 'exam'; examBtn.classList.add('active'); practiceBtn.classList.remove('active'); startBtn.style.display = ''; } });
+                        onClick: () => {
+                            timerMode = 'exam'; _examTimerMode = 'exam';
+                            examBtn.classList.add('active'); practiceBtn.classList.remove('active');
+                            startBtn.style.display = '';
+                            // v7.15.22: Restore timer display when switching back to exam
+                            const _td = document.getElementById('swml-canvas-timer');
+                            if (_td) { _td.textContent = '\u23F1 4:00'; _td.style.color = '#1CD991'; _td.style.display = ''; }
+                            console.log('WML: Switched to Exam Mode');
+                        } });
                     const practiceBtn = el('button', { className: 'swml-timer-mode-btn', textContent: 'Practice Mode', title: 'No timer. Take your time.',
-                        onClick: () => { timerMode = 'practice'; practiceBtn.classList.add('active'); examBtn.classList.remove('active'); startBtn.style.display = 'none'; canvasTimerDisplay.style.display = 'none'; } });
+                        onClick: () => {
+                            timerMode = 'practice'; _examTimerMode = 'practice';
+                            practiceBtn.classList.add('active'); examBtn.classList.remove('active');
+                            startBtn.style.display = 'none';
+                            // v7.15.22: Show "Practice Mode" where timer was, clear any running timer
+                            if (canvasTimerInterval) { clearInterval(canvasTimerInterval); canvasTimerInterval = null; }
+                            const _td = document.getElementById('swml-canvas-timer');
+                            if (_td) { _td.textContent = 'Practice Mode \u2014 No Timer'; _td.style.color = '#51dacf'; _td.style.animation = ''; _td.style.display = ''; }
+                            console.log('WML: Switched to Practice Mode');
+                        } });
                     const startBtn = el('button', { className: 'swml-quick-btn swml-timer-start-btn', innerHTML: '\u23F1 Start 4-Minute Timer',
                         onClick: () => {
-                            startCanvasTimer(240, true);
+                            if (window.WML._startCanvasTimer) window.WML._startCanvasTimer(240, true);
                             startBtn.disabled = true;
                             startBtn.textContent = '\u23F1 Timer Running...';
                             startBtn.classList.add('swml-timer-running');
@@ -749,11 +797,14 @@
 
         // Mic button
         let canvasRecognition = null, canvasListening = false;
+        let _micNoSpeechRetries = 0;
+        const MIC_MAX_RETRIES = 3;
         const chatMicBtn = el('button', { className: 'swml-mic-btn', innerHTML: SVG_MIC, title: 'Voice input',
             onClick: () => {
                 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
                 if (!SR) { alert('Voice input is not supported in this browser.'); return; }
                 if (canvasListening && canvasRecognition) { canvasRecognition.stop(); return; }
+                _micNoSpeechRetries = 0;
                 if (!canvasRecognition) {
                     canvasRecognition = new SR();
                     canvasRecognition.continuous = true;
@@ -761,7 +812,8 @@
                     canvasRecognition.lang = 'en-GB';
                     let finalTranscript = '';
                     canvasRecognition.onresult = (e) => {
-                        if (canvasChatLoading) return;
+                        if (canvasChatLoading) { console.warn('WML Mic: onresult BLOCKED — canvasChatLoading is true'); return; }
+                        _micNoSpeechRetries = 0; // speech detected, reset retry counter
                         let interim = '';
                         for (let i = e.resultIndex; i < e.results.length; i++) {
                             if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript + ' ';
@@ -772,20 +824,52 @@
                     };
                     canvasRecognition.onstart = () => {
                         canvasListening = true; finalTranscript = chatTextarea.value || '';
+                        console.log('WML Mic: onstart — canvasChatLoading:', canvasChatLoading, 'retries:', _micNoSpeechRetries);
                         chatMicBtn.innerHTML = SVG_MIC_STOP;
                         chatMicBtn.classList.add('swml-mic-active');
+                        // v7.15.14: Auto-start timer when mic starts in Exam mode
+                        if (_examTimerMode === 'exam' && window.WML._startCanvasTimer) {
+                            window.WML._startCanvasTimer(240, true);
+                            const manualBtn = document.querySelector('.swml-timer-start-btn');
+                            if (manualBtn) { manualBtn.disabled = true; manualBtn.textContent = '\u23F1 Timer Running...'; manualBtn.classList.add('swml-timer-running'); }
+                            console.log('WML: Timer auto-started on mic click (Exam mode)');
+                        }
                     };
                     canvasRecognition.onend = () => {
+                        console.log('WML Mic: onend — finalTranscript length:', finalTranscript.length);
                         canvasListening = false;
                         chatMicBtn.innerHTML = SVG_MIC;
                         chatMicBtn.classList.remove('swml-mic-active');
                         chatTextarea.focus();
                     };
                     canvasRecognition.onerror = (e) => {
-                        console.warn('Canvas voice error:', e.error);
+                        console.warn('WML Mic: onerror —', e.error, '| retries:', _micNoSpeechRetries);
+                        // v7.15.21: Auto-retry on no-speech (Chrome timeout, not a real error)
+                        if (e.error === 'no-speech' && _micNoSpeechRetries < MIC_MAX_RETRIES) {
+                            _micNoSpeechRetries++;
+                            console.log('WML Mic: auto-retrying (' + _micNoSpeechRetries + '/' + MIC_MAX_RETRIES + ')');
+                            setTimeout(() => {
+                                try { canvasRecognition.start(); } catch(ex) {
+                                    canvasListening = false;
+                                    chatMicBtn.innerHTML = SVG_MIC;
+                                    chatMicBtn.classList.remove('swml-mic-active');
+                                }
+                            }, 200);
+                            return;
+                        }
                         canvasListening = false;
                         chatMicBtn.innerHTML = SVG_MIC;
                         chatMicBtn.classList.remove('swml-mic-active');
+                        // v7.15.22: User-facing feedback for different error types
+                        if (e.error === 'network' || e.error === 'not-allowed') {
+                            const isHTTP = window.location.protocol === 'http:';
+                            const msg = isHTTP
+                                ? 'Voice input requires a secure (HTTPS) connection. Please use the production site or type your response instead.'
+                                : 'Voice input failed — please check your microphone permissions in Chrome settings.';
+                            addChatMessage(`<p style="font-size:12px;color:rgba(255,200,100,0.8);">${msg}</p>`, 'system');
+                        } else if (e.error === 'no-speech') {
+                            console.warn('WML Mic: no speech detected after', MIC_MAX_RETRIES, 'retries');
+                        }
                     };
                 }
                 try { canvasRecognition.start(); } catch(e) { console.warn('Canvas voice start error:', e); }
@@ -1043,6 +1127,15 @@
                             applyCwSubstepProgress(detectCwSubstep(res.reply));
                         }
 
+                        // v7.15.12: Exam prep step detection via [PROGRESS: N] markers
+                        if (state.task === 'essay_plan' || state.task === 'model_answer' || state.task === 'verbal_rehearsal' || state.task === 'memory_practice') {
+                            const planStep = detectPlanningStep(res.reply, state.step);
+                            if (planStep > state.step) {
+                                console.log('WML Canvas: Exam prep step advanced', state.step, '→', planStep);
+                                updateProgress(planStep);
+                            }
+                        }
+
                         if (state.task === 'assessment') {
                             const detected = detectAssessmentStep(res.reply);
                             console.log('WML Canvas: detectAssessmentStep \u2192', { step: detected.step, isComplete: detected.isComplete, totalScore: detected.totalScore, grade: detected.grade, currentStep: state.step });
@@ -1158,6 +1251,7 @@
             get canvasChatId() { return canvasChatId; },
             set canvasChatId(v) { canvasChatId = v; },
             autoGrowChatTextarea,
+            _updateAttemptBadge,
         };
     }
     // ══════════════════════════════════════════════════════════════════
@@ -3004,8 +3098,10 @@
                     canvasTimerDisplay.textContent = '\u23F1 Time\u2019s up!';
                     canvasTimerDisplay.style.color = '#ff6b6b';
                     canvasTimerDisplay.style.fontWeight = '700';
-                    if (autoSubmit && chatTextarea && chatTextarea.value.trim()) {
-                        sendCanvasMessage();
+                    canvasTimerDisplay.style.animation = ''; // v7.15.22: Stop throb at 0
+                    if (autoSubmit) {
+                        const _ta = document.querySelector('.swml-canvas-chat-input textarea');
+                        if (_ta && _ta.value.trim()) sendCanvasMessage();
                     }
                     return;
                 }
@@ -3016,8 +3112,18 @@
                 else if (pct > 0.5) canvasTimerDisplay.style.color = '#F1C40F';   // yellow (50-75%)
                 else if (pct > 0.25) canvasTimerDisplay.style.color = '#E67E22';  // orange (25-50%)
                 else canvasTimerDisplay.style.color = '#ff6b6b';                  // red (<25%)
+                // v7.15.14: Throbbing pulse in last 30 seconds, faster in last 10
+                if (canvasTimerRemaining <= 30) {
+                    const speed = canvasTimerRemaining <= 10 ? '0.4s' : '0.8s';
+                    canvasTimerDisplay.style.animation = `swml-timer-throb ${speed} ease-in-out infinite`;
+                } else {
+                    canvasTimerDisplay.style.animation = '';
+                }
             }, 1000);
         }
+
+        // v7.15.12: Expose timer to buildTrainingPanels scope (startCanvasTimer lives here but timer button lives in addChatMessage)
+        window.WML._startCanvasTimer = startCanvasTimer;
 
         // Legacy init path — auto-start on canvas load if state.canvasTimer is set
         if (canvasTimerRemaining > 0) {
@@ -3085,8 +3191,16 @@
             } else if (sourceEls.length > 0) {
                 sourceEls.forEach(src => body.appendChild(src.cloneNode(true)));
             } else {
-                const questionEl = editorEl.querySelector('[data-section-type="question"]');
-                if (questionEl) body.innerHTML = questionEl.innerHTML;
+                // v7.15.21: Prefer the Essay Question section, not the first question section (which is "About This Exercise")
+                const essayQEl = editorEl.querySelector('[data-section-type="question"][data-section-label="Essay Question"]')
+                    || editorEl.querySelector('[data-section-type="question"][data-section-label="Extract"]');
+                if (essayQEl) body.innerHTML = essayQEl.innerHTML;
+                else {
+                    // Fallback: second question section, or first if only one exists
+                    const allQ = editorEl.querySelectorAll('[data-section-type="question"]');
+                    const qEl = allQ.length > 1 ? allQ[1] : allQ[0];
+                    if (qEl) body.innerHTML = qEl.innerHTML;
+                }
             }
             panel.appendChild(body);
             // Comment popover inside extract
@@ -3575,6 +3689,116 @@
             state.step = 0;
             if (state.task !== 'mark_scheme' && state.task !== 'planning' && state.task !== 'polishing' && !(state.task && state.task.startsWith('cw_')) && !isExamPrep) state.task = 'assessment';
 
+            // ── v7.15.12: Attempt Selector Overlay ──
+            // Shows when a student returns to an exercise with completed attempts
+            function _showAttemptSelector(idx, suffix) {
+                return new Promise(resolve => {
+                    const attempts = idx.attempts || [];
+                    if (attempts.length < 1) { resolve(false); return; }
+
+                    const overlay = el('div', { className: 'swml-attempt-overlay' });
+                    overlay.style.cssText = 'position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+
+                    const card = el('div', { className: 'swml-attempt-card' });
+                    card.style.cssText = 'background:#1C1D1F;border-radius:16px;padding:32px;max-width:420px;width:90%;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+
+                    const title = el('h3', { textContent: 'Previous Attempts Found' });
+                    title.style.cssText = 'margin:0 0 8px;font-size:18px;font-weight:600;';
+                    const subtitle = el('p', { textContent: `You have ${attempts.length} attempt${attempts.length > 1 ? 's' : ''} for this exercise.` });
+                    subtitle.style.cssText = 'margin:0 0 20px;color:rgba(255,255,255,0.6);font-size:13px;';
+
+                    card.appendChild(title);
+                    card.appendChild(subtitle);
+
+                    // List existing attempts
+                    const list = el('div');
+                    list.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin-bottom:20px;max-height:50vh;overflow-y:auto;padding-right:4px;';
+                    attempts.forEach(a => {
+                        const isCurrent = a.num === idx.current;
+                        const btn = el('button', { className: 'swml-attempt-item' });
+                        btn.style.cssText = `display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:10px;border:1px solid ${isCurrent ? '#5333ed' : 'rgba(255,255,255,0.1)'};background:${isCurrent ? 'rgba(83,51,237,0.15)' : 'rgba(255,255,255,0.04)'};color:#fff;cursor:pointer;width:100%;text-align:left;font-size:13px;`;
+
+                        const left = el('div');
+                        left.innerHTML = `<strong>Attempt ${a.num}</strong>` +
+                            (a.status === 'complete' && a.grade ? ` <span style="color:#1CD991;font-weight:600;">Grade ${a.grade}</span>` : '') +
+                            (a.status === 'in_progress' ? ' <span style="color:#F1C40F;">In Progress</span>' : '') +
+                            (a.status === 'not_started' ? ' <span style="color:#9ca3af;">Not Started</span>' : '');
+
+                        const right = el('span');
+                        right.style.cssText = 'color:rgba(255,255,255,0.4);font-size:11px;';
+                        if (a.started) {
+                            const d = new Date(a.started);
+                            right.textContent = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                        }
+                        if (a.wordCount) right.textContent += ` · ${a.wordCount} words`;
+                        if (a.score) right.textContent += ` · ${a.score}`;
+
+                        btn.appendChild(left);
+                        btn.appendChild(right);
+                        btn.addEventListener('click', async () => {
+                            state.attempt = a.num;
+                            // Switch on server
+                            await fetch(API.attemptsSwitch, { method: 'POST', headers,
+                                body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix, attempt: a.num })
+                            }).catch(() => {});
+                            overlay.remove();
+                            // Clear local cache so tryServerLoad picks up the right attempt
+                            try { localStorage.removeItem(CANVAS_SAVE_KEY()); localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+                            console.log('WML: Switched to attempt', a.num);
+                            tp._updateAttemptBadge();
+                            _reloadDocumentForAttempt();
+                            resolve(true);
+                        });
+                        list.appendChild(btn);
+                    });
+                    card.appendChild(list);
+
+                    // "Start New Attempt" button
+                    // v7.15.16: Button3D replica — matches dashboard "Continue Learning" exactly
+                    const newBtn = el('button', { className: 'swml-btn3d' });
+                    const bg = el('div', { className: 'swml-btn3d-bg' });
+                    const wrap = el('div', { className: 'swml-btn3d-wrap' });
+                    const outline = el('div', { className: 'swml-btn3d-outline' });
+                    const nextNum = (idx.count || attempts.length) + 1;
+                    const content = el('div', { className: 'swml-btn3d-content', textContent: `Start Attempt ${nextNum}` });
+                    wrap.appendChild(outline);
+                    wrap.appendChild(content);
+                    newBtn.appendChild(bg);
+                    newBtn.appendChild(wrap);
+                    newBtn.addEventListener('click', async () => {
+                        try {
+                            const res = await fetch(API.attemptsNew, { method: 'POST', headers,
+                                body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix })
+                            }).then(r => r.json());
+                            if (res.success) {
+                                state.attempt = res.attempt;
+                                console.log('WML: Created new attempt', res.attempt);
+                            }
+                        } catch (e) {
+                            console.warn('WML: Failed to create new attempt', e.message);
+                        }
+                        overlay.remove();
+                        // v7.15.19: Use sessionStorage instead of URL param — WP/LearnDash strips unknown query params
+                        console.log('WML: New attempt', state.attempt, '— reloading with sessionStorage');
+                        sessionStorage.setItem('swml_new_attempt', String(state.attempt));
+                        window.location.reload();
+                        resolve(true);
+                    });
+                    card.appendChild(newBtn);
+
+                    overlay.appendChild(card);
+                    // Attach to the canvas container
+                    const canvasEl = document.getElementById('swml-canvas') || document.querySelector('.swml-canvas-content') || document.querySelector('.swml-app');
+                    console.log('WML Attempt: overlay container =', canvasEl?.className || canvasEl?.id || 'NOT FOUND');
+                    if (canvasEl) {
+                        canvasEl.style.position = 'relative';
+                        canvasEl.appendChild(overlay);
+                    } else {
+                        resolve(false); return;
+                    }
+                });
+            }
+
             // ── Chat persistence: resume or fresh start ──
             // Deferred until TipTap editor initialises + template loads
             const _initTrainingChat = async () => {
@@ -3584,9 +3808,10 @@
                     try {
                         const _chatSuffix = WML.getExerciseConfig(state.task).storageSuffix || '';
                         // Tutor review: load student's chat via review endpoint (v7.15.2)
+                        const _chatAtt = state.attempt || 1;
                         const chatUrl = state.reviewMode && state.reviewStudentId
-                            ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}`
-                            : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}`;
+                            ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt}`
+                            : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt}`;
                         const serverChat = await fetch(chatUrl, { headers }).then(r => r.json());
                         if (serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
                             savedChat = serverChat.chat;
@@ -3925,9 +4150,84 @@
                 }
             };
 
+            // v7.15.20: Reload document + chat for the current attempt
+            // Called when switching attempts or starting a new one (document init chain already ran once)
+            const _reloadDocumentForAttempt = async () => {
+                if (!canvasEditor) { _initTrainingChat(); return; }
+                // Clear localStorage version stamp so template can re-inject if needed
+                try {
+                    const docVerKey = CANVAS_SAVE_KEY() + '_ver';
+                    localStorage.removeItem(docVerKey);
+                    localStorage.removeItem(CANVAS_SAVE_KEY());
+                    localStorage.removeItem(CHAT_SAVE_KEY());
+                } catch(e) {}
+                // Try loading the document from server for this attempt
+                try {
+                    const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+                    const att = state.attempt || 1;
+                    const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
+                    const res = await fetch(url, { headers }).then(r => r.json());
+                    if (res.success && res.doc && res.doc.html) {
+                        canvasEditor.commands.setContent(res.doc.html, false);
+                        console.log('WML: Document reloaded from server for attempt', att);
+                    } else {
+                        // No server doc — inject fresh template
+                        const template = getExamPrepDocTemplate ? getExamPrepDocTemplate(state.task) : null;
+                        if (template) {
+                            canvasEditor.commands.setContent(template, false);
+                            console.log('WML: Fresh template injected for new attempt', att);
+                        }
+                    }
+                } catch (e) {
+                    console.log('WML: Document reload failed, injecting fresh template', e.message);
+                    const template = getExamPrepDocTemplate ? getExamPrepDocTemplate(state.task) : null;
+                    if (template) canvasEditor.commands.setContent(template, false);
+                }
+                _initTrainingChat();
+            };
+
             // Defer chat init until after template loads (editor needs content for word count etc.)
-            // Using the same timing as the transition handler — templates load by ~800ms
-            setTimeout(_initTrainingChat, 800);
+            // v7.15.12: Resolve attempt number from server before starting chat
+            setTimeout(async () => {
+                // v7.15.21: sessionStorage already consumed before init chain — skip if attempt already set
+                if (_pendingAttempt) {
+                    console.log('WML Attempt: already resolved from sessionStorage →', state.attempt);
+                    tp._updateAttemptBadge();
+                    _initTrainingChat();
+                    return;
+                }
+                console.log('WML Attempt: resolving...', { board: state.board, text: state.text, task: state.task, reviewMode: state.reviewMode });
+                if (!state.reviewMode && state.board && state.text) {
+                    try {
+                        const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+                        const attUrl = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(suffix)}`;
+                        console.log('WML Attempt: fetching', attUrl);
+                        const attRes = await fetch(attUrl, { headers }).then(r => r.json());
+                        console.log('WML Attempt: server response', attRes);
+                        if (attRes.success && attRes.attempts) {
+                            const idx = attRes.attempts;
+                            if (!state.attempt || state.attempt < 1) state.attempt = idx.current || 1;
+                            // Check if we should show the attempt selector
+                            const completedAttempts = (idx.attempts || []).filter(a => a.status === 'complete');
+                            const attemptFromUrl = !!(new URLSearchParams(window.location.search).get('attempt'));
+                            console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl);
+                            if (completedAttempts.length > 0 && !state.reviewMode && !attemptFromUrl) {
+                                const shown = await _showAttemptSelector(idx, suffix);
+                                if (shown) return; // selector handles chat init
+                            }
+                            console.log('WML: Attempt resolved →', state.attempt, 'of', idx.count);
+                        }
+                    } catch (e) {
+                        console.log('WML: Attempt resolution failed, using default', e.message);
+                        if (!state.attempt) state.attempt = 1;
+                    }
+                } else {
+                    console.log('WML Attempt: skipped — board/text empty or reviewMode');
+                }
+                if (!state.attempt) state.attempt = 1;
+                tp._updateAttemptBadge();
+                _initTrainingChat();
+            }, 800);
 
             console.log('WML: Training-env direct render for', state.task, '(no diagnostic flash)');
         } else {
@@ -5012,10 +5312,11 @@
                                         if (!skipServerChat && (!savedChat || !savedChat.history || savedChat.history.length === 0)) {
                                             try {
                                                 const _chatSuffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+                                                const _chatAtt2 = state.attempt || 1;
                                                 // Tutor review: load student's chat via review endpoint (v7.15.2)
                                                 const chatUrl = state.reviewMode && state.reviewStudentId
-                                                    ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}`
-                                                    : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}`;
+                                                    ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt2}`
+                                                    : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt2}`;
                                                 const serverChat = await fetch(chatUrl, { headers }).then(r => r.json());
                                                 if (serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
                                                     savedChat = serverChat.chat;
@@ -6948,6 +7249,17 @@
             });
         });
 
+        // v7.15.21: Resolve attempt from sessionStorage BEFORE loading ANY content
+        // Must run before loadCanvasContent() so CANVAS_SAVE_KEY() uses the correct attempt suffix
+        const _pendingAttempt = sessionStorage.getItem('swml_new_attempt');
+        if (_pendingAttempt) {
+            sessionStorage.removeItem('swml_new_attempt');
+            state.attempt = parseInt(_pendingAttempt) || 1;
+            // Clear localStorage for the new attempt key (shouldn't have content, but be safe)
+            try { localStorage.removeItem(CANVAS_SAVE_KEY()); localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+            console.log('WML: Attempt pre-resolved from sessionStorage →', state.attempt);
+        }
+
         // ── Initialise TipTap Editor ──
         let savedContent = state.reviewMode ? null : loadCanvasContent(); // Review mode: skip localStorage, server will inject
         // v7.13.42: CW tasks — always clear stale localStorage so fresh template loads
@@ -7156,7 +7468,8 @@
                 // v7.13.92: Section Guard — revert if sections were deleted
                 // v7.14.68: Guard flag prevents undo cascade (guard triggers undo → undo triggers guard → loop)
                 if (transaction.docChanged && _sectionCount > 0) {
-                    if (_undoGuardActive) {
+                    // v7.15.21: Allow migrations to remove sections (e.g. obsolete dividers)
+                    if (_migrationActive || _undoGuardActive) {
                         _sectionCount = countSections(editor.state.doc);
                         return;
                     }
@@ -7361,6 +7674,7 @@
             // Migrate old documents — inject missing sections + dividers + plans + outlines + InputFields
             migrateDocument();
             migrateDividers();
+            migrateExtractQuestionDivider();
             migrateMissingPlans();
             migrateMissingOutlines();
             migrateOutlineCriteria();
@@ -12007,11 +12321,11 @@
                 (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
                 '<p>Build a structured essay plan with your AI tutor. Choose a question, then plan each paragraph with quotes and analysis.</p>'
             );
-            // v7.15.11: Extract before question (matches exam paper order); extract uses 'source' type for Extract panel
-            html += dividerHTML('EXTRACT');
+            // v7.15.17: Extract + Question as one continuous block (no divider between them)
+            // Source section kept separate for Extract panel feature (sectionType="source")
+            html += dividerHTML('EXTRACT & QUESTION');
             html += sectionHTML('source', 'Extract', false, null,
                 '<p><em>The extract will appear here once a question is selected.</em></p>');
-            html += dividerHTML('ESSAY QUESTION');
             html += sectionHTML('question', 'Essay Question', false, null,
                 '<p><em>Your question will appear here once selected.</em></p>');
             html += dividerHTML('ESSAY PLAN');
@@ -12618,6 +12932,8 @@
         const wc = getResponseWordCount(canvasEditor);
         // 1. Immediate localStorage write (instant, no latency)
         try { localStorage.setItem(CANVAS_SAVE_KEY(), html); } catch (e) { /* storage full */ }
+        // v7.15.14: Skip server save if board/text not set (admin preview, free mode)
+        if (!state.board || !state.text) return;
         // 2. Extract structured section data (v7.11.9)
         const sectionData = typeof _extractDocumentData === 'function' ? _extractDocumentData() : null;
         // 3. Debounced server save (every 5s, not every 2s like localStorage)
@@ -12633,6 +12949,7 @@
                     topicNumber: state.topicNumber || null,
                     sectionData: sectionData,
                     suffix: WML.getExerciseConfig(state.task).storageSuffix || '',
+                    attempt: state.attempt || 1,
                 })
             }).then(r => r.json()).then(res => {
                 if (res.success) console.log('WML: Canvas saved to server', { key: res.key, savedAt: res.savedAt, board: state.board, text: state.text, topic: state.topicNumber, wc: wc });
@@ -12660,10 +12977,11 @@
             const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
             // Tutor review mode: load student's canvas via review endpoint (v7.15.2)
             let url;
+            const att = state.attempt || 1;
             if (state.reviewMode && state.reviewStudentId) {
-                url = `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}`;
+                url = `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
             } else {
-                url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}`;
+                url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
             }
             const res = await fetch(url, { headers }).then(r => r.json());
             if (res.success && res.doc && res.doc.html) {
@@ -12978,6 +13296,29 @@
         if (changed) {
             canvasEditor.commands.setContent(html, false);
             console.log('WML Migration: Dividers injected into legacy document');
+        }
+    }
+
+    /**
+     * v7.15.19: Remove obsolete "ESSAY QUESTION" divider from old essay_plan documents.
+     * Before v7.15.17, essay_plan templates had separate dividers for Extract and Essay Question.
+     * Now they use a single "EXTRACT & QUESTION" divider. Remove the old one if present.
+     */
+    function migrateExtractQuestionDivider() {
+        if (!canvasEditor) return;
+        let html = canvasEditor.getHTML();
+        // Only needed for documents with the old "ESSAY QUESTION" divider
+        if (!html.includes('ESSAY QUESTION')) return;
+        // Don't touch model_answer docs which legitimately have "ESSAY QUESTION" dividers
+        if (state.task === 'model_answer') return;
+        // Remove the "ESSAY QUESTION" divider node — match the full sectionBlock divider
+        const oldDividerRe = /<div[^>]*data-section-type="divider"[^>]*data-section-label="ESSAY QUESTION"[^>]*>[\s\S]*?<\/div>/i;
+        if (oldDividerRe.test(html)) {
+            html = html.replace(oldDividerRe, '');
+            _migrationActive = true;
+            canvasEditor.commands.setContent(html, false);
+            _migrationActive = false;
+            console.log('WML Migration: Removed obsolete "ESSAY QUESTION" divider');
         }
     }
 
@@ -14378,7 +14719,12 @@ ${html}
     // v7.15.10: Rebuilt overlay — extract injection, T2 filter, filter tabs
     function _showSavedQuestionOverlay(chatTextarea, sendFn) {
         const contentWrap = document.querySelector('.swml-canvas-content');
+        console.log('WML: _showSavedQuestionOverlay entry — container:', !!contentWrap, contentWrap?.offsetWidth + 'x' + contentWrap?.offsetHeight, 'scrollTop:', contentWrap?.scrollTop);
         if (!contentWrap) return;
+
+        // v7.15.19: Remove any existing overlay first
+        const existingOverlay = document.getElementById('swml-question-overlay');
+        if (existingOverlay) existingOverlay.remove();
 
         const overlay = el('div', { className: 'swml-question-overlay', id: 'swml-question-overlay' });
 
@@ -14400,7 +14746,10 @@ ${html}
         overlay.appendChild(body);
 
         contentWrap.style.position = 'relative';
+        // v7.15.19: Scroll to top so the absolute-positioned overlay is visible
+        contentWrap.scrollTop = 0;
         contentWrap.appendChild(overlay);
+        console.log('WML: Question overlay appended — inDOM:', !!document.getElementById('swml-question-overlay'), 'overlay size:', overlay.offsetWidth + 'x' + overlay.offsetHeight);
 
         let savedList = null, masteryList = null;
         function showTab(tab) {
@@ -14415,18 +14764,29 @@ ${html}
             apiGet(API.savedQuestions + `?board=${state.board}&text=${state.text}`).catch(() => ({ questions: [] })),
             apiGet(API.topicQuestions + `?board=${state.board}&text=${state.text}`).catch(() => ({ topics: [] })),
         ]).then(([savedRes, topicRes]) => {
+            console.log('WML: Question overlay data — saved:', (savedRes.questions || []).length, 'topics:', (topicRes.topics || []).length);
             body.innerHTML = '';
             const saved = savedRes.questions || [];
             const topics = (topicRes.topics || []).filter(t =>
                 t.topic_number !== 2 && !/conceptual\s*notes/i.test(t.label || '')
             );
 
-            // v7.15.11: Inject extract into 'source' section, question into 'question' section (separate)
+            // v7.15.12: Inject extract + question into separate descendants() passes to avoid stale positions
             function selectQuestion(qText, extractText, extractLoc) {
                 if (canvasEditor) {
-                    let questionInjected = false, extractInjected = false;
+                    // Debug: log all sectionBlock types in the document
+                    const sections = [];
+                    canvasEditor.state.doc.descendants((n) => { if (n.type.name === 'sectionBlock') sections.push(n.attrs.sectionType + ':' + n.attrs.label); });
+                    console.log('WML selectQuestion: sections =', sections, '| extract:', !!extractText);
+
+                    // Pass 1: inject extract into source section (or fallback to question section labelled "Extract")
+                    let extractInjected = false;
                     canvasEditor.state.doc.descendants((node, pos) => {
-                        if (!extractInjected && node.type.name === 'sectionBlock' && node.attrs.sectionType === 'source' && (node.attrs.label || '').includes('Extract')) {
+                        if (extractInjected) return false;
+                        const isSource = node.type.name === 'sectionBlock' && node.attrs.sectionType === 'source' && (node.attrs.label || '').includes('Extract');
+                        // v7.15.21: Fallback for old templates — look for question section labelled "Extract"
+                        const isExtractFallback = !isSource && node.type.name === 'sectionBlock' && node.attrs.sectionType === 'question' && (node.attrs.label || '') === 'Extract';
+                        if (isSource || isExtractFallback) {
                             const sectionStart = pos + 1;
                             const sectionEnd = pos + node.nodeSize - 1;
                             const extractHtml = extractText
@@ -14435,15 +14795,26 @@ ${html}
                             canvasEditor.chain().focus().setTextSelection({ from: sectionStart, to: sectionEnd })
                                 .insertContent(extractHtml).run();
                             extractInjected = true;
+                            console.log('WML selectQuestion: extract injected into', isSource ? 'source' : 'question(Extract)', 'section');
+                            return false;
                         }
-                        if (!questionInjected && node.type.name === 'sectionBlock' && (node.attrs.label || '').includes('Essay Question')) {
+                    });
+                    if (!extractInjected) console.warn('WML selectQuestion: source/extract section NOT found — extract not injected');
+
+                    // Pass 2: re-query fresh doc for question section (positions shifted after extract inject)
+                    let questionInjected = false;
+                    canvasEditor.state.doc.descendants((node, pos) => {
+                        if (questionInjected) return false;
+                        if (node.type.name === 'sectionBlock' && (node.attrs.label || '').includes('Essay Question')) {
                             const sectionStart = pos + 1;
                             const sectionEnd = pos + node.nodeSize - 1;
                             canvasEditor.chain().focus().setTextSelection({ from: sectionStart, to: sectionEnd })
                                 .insertContent(`<h3>Essay Question</h3><p>${qText.replace(/</g, '&lt;')}</p>`).run();
                             questionInjected = true;
+                            return false;
                         }
                     });
+                    if (!questionInjected) console.warn('WML selectQuestion: Essay Question section NOT found');
                 }
                 overlay.remove();
                 // Send both question and extract to chat so AI has full context
