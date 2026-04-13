@@ -281,7 +281,8 @@ class SWML_Session_Manager {
      */
     public static function save_question($user_id, $board, $subject, $text, $question_data) {
         $raw = get_user_meta($user_id, 'wml_saved_questions', true);
-        $all = is_string($raw) ? json_decode($raw, true) : ($raw ?: []);
+        $decoded = is_string($raw) ? json_decode($raw, true) : $raw;
+        $all = is_array($decoded) ? $decoded : [];
         $key = sanitize_key($board . '_' . $text);
 
         if (!isset($all[$key])) $all[$key] = [];
@@ -312,7 +313,8 @@ class SWML_Session_Manager {
      */
     public static function get_saved_questions($user_id, $board, $text) {
         $raw = get_user_meta($user_id, 'wml_saved_questions', true);
-        $all = is_string($raw) ? json_decode($raw, true) : ($raw ?: []);
+        $decoded = is_string($raw) ? json_decode($raw, true) : $raw;
+        $all = is_array($decoded) ? $decoded : [];
         $key = sanitize_key($board . '_' . $text);
         return $all[$key] ?? [];
     }
@@ -323,7 +325,8 @@ class SWML_Session_Manager {
      */
     public static function get_all_saved_questions($user_id, $board_filter = '') {
         $raw = get_user_meta($user_id, 'wml_saved_questions', true);
-        $all = is_string($raw) ? json_decode($raw, true) : ($raw ?: []);
+        $decoded = is_string($raw) ? json_decode($raw, true) : $raw;
+        $all = is_array($decoded) ? $decoded : [];
 
         $banks = [];
         foreach ($all as $key => $questions) {
