@@ -13227,7 +13227,10 @@
                     console.log('WML: Stale document detected — regenerating.', 'questionInDoc:', questionInDoc, 'marksMismatch:', marksMismatch, 'docMarks:', docMarksMatch?.[1], 'topicMarks:', topicTotalMarks);
                     try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
                     // Clear stale content from editor so the section-type guard below allows injection
+                    // Temporarily disable section deletion guard (it would block and revert the clear)
+                    _migrationActive = true;
                     canvasEditor.commands.setContent('<p></p>', false);
+                    _migrationActive = false;
                     // Fall through to template generation below
                 } else {
                     console.log('WML: Document has correct topic data, skipping template');
