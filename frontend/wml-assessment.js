@@ -12621,7 +12621,7 @@
     }
     function _buildDocumentTemplate(mode, topicData) {
         const format = topicData.question_format || 'single';
-        const isDual = format === 'dual' || format === 'dual_extract';
+        const isDual = format === 'dual' || format === 'dual_extract' || format === 'either_or';
         // Word targets are set by setWordTargetsFromTopic() before this function is called
 
         let html = '';
@@ -13001,7 +13001,7 @@
     function setWordTargetsFromTopic(topicData) {
         if (!topicData) return;
         const format = topicData.question_format || 'single';
-        const isDual = format === 'dual' || format === 'dual_extract';
+        const isDual = format === 'dual' || format === 'dual_extract' || format === 'either_or';
         const boardDefault = getDefaultMarks(state.board, state.subject);
         const totalMarks = isDual
             ? (parseInt(topicData.part_a_marks) || 0) + (parseInt(topicData.part_b_marks) || 0)
@@ -13210,10 +13210,33 @@
 
 
         // Already has section blocks? Don't overwrite (user resumed a saved document)
+        // v7.15.25: Exception — if topic data is available but the document was generated
+        // before the topic was assigned (stale), regenerate. Detect staleness by:
+        // 1. Topic question text not present in document, OR
+        // 2. Document marks don't match topic marks (e.g. default 30 vs actual 60)
         const currentHTML = canvasEditor.getHTML();
         if (currentHTML.includes('data-section-type')) {
-            console.log('WML: Document already has sections, skipping topic template');
-            return;
+            if (topicData) {
+                const actualQ = topicData?.question_text || topicData?.part_a_question || '';
+                const questionInDoc = actualQ && currentHTML.includes(actualQ.substring(0, 50));
+                const docMarksMatch = currentHTML.match(/\[(\d+)\s*marks?\]/i);
+                const topicTotalMarks = (parseInt(topicData?.part_a_marks) || 0) + (parseInt(topicData?.part_b_marks) || 0) || parseInt(topicData?.marks) || 0;
+                const marksMismatch = docMarksMatch && topicTotalMarks > 0 && parseInt(docMarksMatch[1]) !== topicTotalMarks;
+                const isStale = !questionInDoc || marksMismatch;
+                if (isStale) {
+                    console.log('WML: Stale document detected — regenerating.', 'questionInDoc:', questionInDoc, 'marksMismatch:', marksMismatch, 'docMarks:', docMarksMatch?.[1], 'topicMarks:', topicTotalMarks);
+                    try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
+                    // Clear stale content from editor so the section-type guard below allows injection
+                    canvasEditor.commands.setContent('<p></p>', false);
+                    // Fall through to template generation below
+                } else {
+                    console.log('WML: Document has correct topic data, skipping template');
+                    return;
+                }
+            } else {
+                console.log('WML: Document already has sections, no topic data, skipping');
+                return;
+            }
         }
 
         // Determine mode from state (must be before fallback paths that reference it)

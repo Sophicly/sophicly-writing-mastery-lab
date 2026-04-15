@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.15.24
+ * Version: 7.15.27
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.15.24');
+define('SWML_VERSION', '7.15.27');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -479,7 +479,24 @@ class Sophicly_Writing_Mastery_Lab {
             }
         }
 
-        // 2. Fall back to lesson post meta if course map didn't resolve
+        // 2. If topic/task/phase still empty, fall back to bridge mapping (v7.15.25)
+        // The bridge stores wml_topic per-lesson in wp_options. This handles stale shortcodes
+        // that were generated before topic numbers were configured in the admin UI.
+        if ($course_id && (!$topic || empty($task))) {
+            $bridge_map = get_option('sophicly_ld_bridge_' . $course_id, []);
+            $bridge_entry = $bridge_map[(string)$post_id] ?? [];
+            if (!$topic && !empty($bridge_entry['wml_topic'])) {
+                $topic = absint($bridge_entry['wml_topic']);
+            }
+            if (empty($task) && !empty($bridge_entry['wml_task'])) {
+                $task = sanitize_key($bridge_entry['wml_task']);
+            }
+            if (empty($phase) && !empty($bridge_entry['wml_phase'])) {
+                $phase = sanitize_key($bridge_entry['wml_phase']);
+            }
+        }
+
+        // 3. Fall back to lesson post meta if course map didn't resolve
         if (empty($board))   $board   = get_post_meta($post_id, '_sophicly_exam_board', true);
         if (empty($subject)) $subject = get_post_meta($post_id, '_sophicly_literature_type', true);
 

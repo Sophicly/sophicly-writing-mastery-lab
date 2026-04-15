@@ -415,6 +415,21 @@ class SWML_Topic_Questions {
             'sqa_morgan'             => 'morgan',
             'sqa_n5_collection'      => 'n5-collection',
             'curious_incident_play'  => 'curious-incident',
+            // v7.15.25: Literature texts — filenames drop connecting words
+            'romeo_and_juliet'            => 'romeo-juliet',
+            'jekyll_and_hyde'              => 'jekyll-hyde',
+            'pride_and_prejudice'          => 'pride-prejudice',
+            'sign_of_the_four'             => 'sign-of-four',
+            // v7.15.25: Poetry texts — filenames drop "_poetry" suffix
+            'power_conflict_poetry'        => 'power-conflict',
+            'love_relationships_poetry'    => 'love-relationships',
+            'worlds_lives_poetry'          => 'worlds-lives',
+            'conflict_poetry_ocr'          => 'conflict',
+            'eduqas_poetry_anthology'      => 'poetry',
+            'edexcel_conflict_poetry'      => 'conflict',
+            'edexcel_belonging_poetry'     => 'belonging',
+            'edexcel_relationships_poetry' => 'relationships',
+            'edexcel_time_place_poetry'    => 'time-place',
         ];
         if (isset($map[$text])) return $map[$text];
         return str_replace('_', '-', $text);
