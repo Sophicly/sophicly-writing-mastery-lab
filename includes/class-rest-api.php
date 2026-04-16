@@ -1492,6 +1492,7 @@ class SWML_REST_API {
         $text         = sanitize_text_field($params['text'] ?? '');
         $topic_number = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
         $suffix       = sanitize_text_field($params['suffix'] ?? '');
+        $attempt      = absint($params['attempt'] ?? 0);
         $student_id   = absint($params['studentId'] ?? get_current_user_id());
 
         // Security: prevent tutor from signing off their own work (v7.15.2)
@@ -1516,7 +1517,13 @@ class SWML_REST_API {
             return new WP_Error('missing_data', 'Missing board or text', ['status' => 400]);
         }
 
-        $meta_key    = $this->canvas_meta_key($board, $text, $topic_number, $suffix);
+        // v7.15.44: Resolve the student's current attempt if not supplied so signoff lands on the right document
+        if ($attempt < 1) {
+            $idx = $this->get_attempt_index($student_id, $board, $text, $topic_number, $suffix);
+            $attempt = $idx['current'] ?? 1;
+        }
+
+        $meta_key    = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
         $signoff_key = $meta_key . '_signoff';
 
         $signoff_data = [
@@ -1525,6 +1532,7 @@ class SWML_REST_API {
             'avatar_url'   => get_avatar_url($tutor_id, ['size' => 64]),
             'timestamp'    => current_time('c'),
             'revoked'      => false,
+            'attempt'      => $attempt,
         ];
 
         update_user_meta($student_id, $signoff_key, wp_slash(wp_json_encode($signoff_data)));
@@ -1545,12 +1553,19 @@ class SWML_REST_API {
         $topic_number = $request->get_param('topicNumber');
         $topic_number = ($topic_number !== null && $topic_number !== '') ? absint($topic_number) : null;
         $suffix       = sanitize_text_field($request->get_param('suffix') ?? '');
+        $attempt      = absint($request->get_param('attempt') ?? 0);
 
         if (empty($board) || empty($text)) {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
         }
 
-        $meta_key    = $this->canvas_meta_key($board, $text, $topic_number, $suffix);
+        // v7.15.44: Resolve current attempt if not supplied
+        if ($attempt < 1) {
+            $idx = $this->get_attempt_index($user_id, $board, $text, $topic_number, $suffix);
+            $attempt = $idx['current'] ?? 1;
+        }
+
+        $meta_key    = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
         $signoff_key = $meta_key . '_signoff';
 
         $raw = get_user_meta($user_id, $signoff_key, true);
@@ -1670,12 +1685,19 @@ class SWML_REST_API {
         $text    = sanitize_text_field($params['text'] ?? '');
         $topic   = absint($params['topic_number'] ?? 0);
         $phase   = sanitize_text_field($params['phase'] ?? 'initial');
+        $attempt = absint($params['attempt'] ?? 0);
 
         if (!$board || !$text || !$topic) {
             return new WP_Error('missing_params', 'board, text, and topic_number are required', ['status' => 400]);
         }
         if (!in_array($phase, ['initial', 'redraft', 'preliminary', 'free_practice', 'exam_practice'], true)) {
             return new WP_Error('invalid_phase', 'phase must be initial, redraft, preliminary, free_practice, or exam_practice', ['status' => 400]);
+        }
+
+        // v7.15.44: Resolve current attempt if not supplied
+        if ($attempt < 1) {
+            $idx = $this->get_attempt_index($user_id, $board, $text, $topic, '');
+            $attempt = $idx['current'] ?? 1;
         }
 
         $data = [
@@ -1689,10 +1711,11 @@ class SWML_REST_API {
             'strength_1'   => sanitize_text_field($params['strength_1'] ?? ''),
             'target_1'     => sanitize_text_field($params['target_1'] ?? ''),
             'target_2'     => sanitize_text_field($params['target_2'] ?? ''),
+            'attempt'      => $attempt,
             'completed_at' => current_time('mysql'),
         ];
 
-        $meta_key = sprintf('swml_phase_%s_%s_t%d_%s', $board, $text, $topic, $phase);
+        $meta_key = $this->phase_meta_key($board, $text, $topic, $phase, $attempt);
         $json     = wp_json_encode($data);
         $result   = update_user_meta($user_id, $meta_key, wp_slash($json));
 
@@ -1703,7 +1726,24 @@ class SWML_REST_API {
             return new WP_Error('storage_error', 'Phase completion saved but round-trip verification failed', ['status' => 500]);
         }
 
+        // v7.15.44: When Phase 2 (redraft) finishes, auto-mark the attempt complete in the index
+        if ($phase === 'redraft') {
+            $idx = $this->get_attempt_index($user_id, $board, $text, $topic, '');
+            foreach ($idx['attempts'] as &$a) {
+                if ($a['num'] === $attempt) {
+                    $a['status']      = 'complete';
+                    $a['completedAt'] = current_time('c');
+                    if (!empty($data['grade']))       $a['grade'] = $data['grade'];
+                    if (!empty($data['total_score'])) $a['score'] = $data['total_score'];
+                    break;
+                }
+            }
+            unset($a);
+            $this->save_attempt_index($user_id, $board, $text, $topic, '', $idx);
+        }
+
         // Fire action for external integrations (student-data plugin, LearnDash bridge)
+        // v7.15.44: Attempt number now lives inside $data; listeners that care can read $data['attempt']
         do_action('swml_phase_complete', $user_id, $board, $text, $topic, $phase, $data);
 
         // Rebuild learning profile after each completion
@@ -1712,6 +1752,7 @@ class SWML_REST_API {
         return rest_ensure_response([
             'success'  => true,
             'meta_key' => $meta_key,
+            'attempt'  => $attempt,
             'data'     => $decoded,
             'profile'  => $profile ? true : false,
         ]);
@@ -1726,13 +1767,21 @@ class SWML_REST_API {
         $board   = sanitize_text_field($request->get_param('board') ?? '');
         $text    = sanitize_text_field($request->get_param('text') ?? '');
         $topic   = absint($request->get_param('topic') ?? 0);
+        $attempt = absint($request->get_param('attempt') ?? 0);
 
         if (!$board || !$text || !$topic) {
             return new WP_Error('missing_params', 'board, text, and topic are required', ['status' => 400]);
         }
 
-        $initial_key = sprintf('swml_phase_%s_%s_t%d_initial', $board, $text, $topic);
-        $redraft_key = sprintf('swml_phase_%s_%s_t%d_redraft', $board, $text, $topic);
+        // v7.15.44: Resolve current attempt if not supplied
+        if ($attempt < 1) {
+            $idx = $this->get_attempt_index($user_id, $board, $text, $topic, '');
+            $attempt = $idx['current'] ?? 1;
+        }
+
+        // v7.15.44: Attempt 1 uses the legacy un-suffixed key, attempt 2+ uses __aN
+        $initial_key = $this->phase_meta_key($board, $text, $topic, 'initial', $attempt);
+        $redraft_key = $this->phase_meta_key($board, $text, $topic, 'redraft', $attempt);
 
         $initial_raw = get_user_meta($user_id, $initial_key, true);
         $redraft_raw = get_user_meta($user_id, $redraft_key, true);
@@ -1743,6 +1792,7 @@ class SWML_REST_API {
         return rest_ensure_response([
             'initial' => $initial,
             'redraft' => $redraft,
+            'attempt' => $attempt,
         ]);
     }
 
@@ -1778,6 +1828,13 @@ class SWML_REST_API {
         $key = 'swml_attempts_' . $board . '_' . $text;
         if ($topic !== null && $topic > 0) $key .= '_t' . $topic;
         if (!empty($suffix)) $key .= $suffix;
+        return $key;
+    }
+
+    // v7.15.44: Phase completion meta key — attempt-aware. Attempt 1 keeps legacy un-suffixed format for backward compat.
+    private function phase_meta_key($board, $text, $topic, $phase, $attempt = 1) {
+        $key = sprintf('swml_phase_%s_%s_t%d_%s', $board, $text, $topic, $phase);
+        if ($attempt > 1) $key .= '__a' . $attempt;
         return $key;
     }
 
