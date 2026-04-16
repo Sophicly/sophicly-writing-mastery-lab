@@ -1,11 +1,10 @@
 # Topic 1: Jane Eyre (protagonist)
 **Type:** protagonist
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Jane is Bronte's radical reimagining of the Victorian heroine -- plain, poor, and dependent, yet fiercely assertive about her right to equality and emotional fulfilment. Bronte uses first-person retrospective narration to give Jane intellectual authority over her own story, and the EDUQAS either/or format allows students to choose between close language analysis of a key speech and a broader argument about her significance across the whole novel.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 23
 
 ### Extract
@@ -41,30 +40,22 @@
 ### Question
 How does Bronte present Jane Eyre's sense of self-worth in this extract? You should consider the techniques used by Bronte and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Jane Eyre is a novel about a woman who refuses to accept the place society has assigned her.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 2: Conceptual Notes
 **Type:** notes
-**Format:** either_or
+**Format:** single
 **Teaching Point:** This topic covers the key concepts, themes, and contextual knowledge students need for Jane Eyre, including the Bildungsroman structure, Gothic conventions, the position of women in Victorian England, the governess figure, Bronte's proto-feminist vision, religious hypocrisy, colonialism, and the Romantic and Byronic literary traditions that shape the novel.
 
 ---
 
 # Topic 3: Rochester
 **Type:** character
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Rochester is Bronte's Byronic hero -- passionate, worldly, morally compromised, and magnetically attractive despite his flaws. His secret marriage to Bertha and his attempted bigamy with Jane raise profound questions about whether love can justify deception. Students should analyse how Bronte generates sympathy for Rochester while simultaneously condemning his actions, and how his blinding and maiming at the end can be read as penance, equalisation, or even emasculation.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 14
 
 ### Extract
@@ -102,23 +93,15 @@ How does Bronte present Jane Eyre's sense of self-worth in this extract? You sho
 ### Question
 How does Bronte present the character of Rochester in this extract? You should consider the techniques used by Bronte and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Rochester is presented as a man who believes his wealth and status entitle him to break moral rules.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 4: Love and Passion
 **Type:** theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Love in Jane Eyre is never simple or unconditional -- Bronte insists that genuine love must coexist with equality, honesty, and self-respect. The novel tests this idea by placing Jane between two inadequate models of love: Rochester's consuming passion (which demands she surrender her principles) and St. John's cold, dutiful proposal (which denies her emotional needs entirely). Only when both parties are transformed can a balanced union emerge.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 37
 
 ### Extract
@@ -154,23 +137,15 @@ How does Bronte present the character of Rochester in this extract? You should c
 ### Question
 How does Bronte present love and passion in this extract? You should consider the techniques used by Bronte and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'In Jane Eyre, Bronte suggests that true love is only possible between equals.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 5: Independence and Self-Respect
 **Type:** theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Jane's insistence on independence is what distinguishes her from the passive, submissive ideal of Victorian womanhood. Bronte presents self-respect not as selfishness but as a moral imperative -- Jane would rather starve on the moor than live in comfort as Rochester's mistress. Students should trace how Jane's independence develops from childhood rebellion (the Red Room) through economic self-sufficiency (Lowood, Thornfield, her inheritance) to the final marriage conducted entirely on her own terms.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 27
 
 ### Extract
@@ -206,23 +181,15 @@ How does Bronte present love and passion in this extract? You should consider th
 ### Question
 How does Bronte present the theme of independence and self-respect in this extract? You should consider the techniques used by Bronte and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Bronte presents independence as the most important quality a woman can possess.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 6: Social Class and Inequality
 **Type:** theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Jane occupies an uneasy position in the Victorian class system -- too educated to be a servant, too poor to be a gentleman's equal. Bronte uses this liminal status to expose the cruelty and hypocrisy of a society that judges people by birth and wealth rather than character. The novel's treatment of class intersects with gender: as a penniless, unconnected woman, Jane experiences the double disadvantage of being both female and poor, making her eventual self-assertion all the more radical.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 17
 
 ### Extract
@@ -258,23 +225,15 @@ How does Bronte present the theme of independence and self-respect in this extra
 ### Question
 How does Bronte present the theme of social class and inequality in this extract? You should consider the techniques used by Bronte and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Bronte uses Jane Eyre to argue that social class is an artificial barrier that has no connection to a person's true worth.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 7: Religion and Morality
 **Type:** theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Bronte presents three distinct models of Christianity through Brocklehurst (hypocritical punishment), Helen Burns (passive endurance and heavenly reward), and St. John Rivers (cold, self-denying duty) -- and rejects all three. Jane forges her own moral code that balances spiritual conviction with personal feeling. Students should analyse how Bronte critiques institutional religion while affirming a deeply personal faith, and how Jane's moral decisions (leaving Rochester, rejecting St. John) are framed as spiritual acts rather than merely practical ones.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 7
 
 ### Extract
@@ -310,23 +269,15 @@ How does Bronte present the theme of social class and inequality in this extract
 ### Question
 How does Bronte present ideas about religion and morality in this extract? You should consider the techniques used by Bronte and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Bronte uses Jane Eyre to criticise organised religion as hypocritical and cruel.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 8: The Red Room / Childhood Suffering
 **Type:** theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** The Red Room is one of the most symbolically rich episodes in the novel -- a Gothic space of confinement, injustice, and psychological terror that shapes Jane's character for the rest of the narrative. Bronte uses the child Jane's suffering at Gateshead and Lowood to establish the novel's central argument: that cruelty breeds not submission but defiance, and that the impulse to resist injustice is the foundation of moral strength. The Red Room also introduces the novel's supernatural atmosphere and foreshadows Jane's later imprisonments (Thornfield's secret, the moors).
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 2
 
 ### Extract
@@ -363,23 +314,15 @@ How does Bronte present ideas about religion and morality in this extract? You s
 ### Question
 How does Bronte present the Red Room as a place of suffering in this extract? You should consider the techniques used by Bronte and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Bronte presents childhood suffering as the force that shapes Jane's strength of character.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 9: Bertha Mason
 **Type:** character
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Bertha Mason is one of the most debated figures in English literature. On one level she is a Gothic device -- the madwoman in the attic whose existence creates the novel's central crisis. But she is also a woman imprisoned, silenced, and dehumanised by a husband who married her for money and then locked her away when she became inconvenient. Post-colonial and feminist critics have read Bertha as a symbol of everything the Victorian marriage plot suppresses: female rage, colonial exploitation, and the violence done to women who do not conform. Students should consider whose perspective we see Bertha through, and what Bronte gains (and loses) by never giving her a voice.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 26
 
 ### Extract
@@ -414,23 +357,15 @@ How does Bronte present the Red Room as a place of suffering in this extract? Yo
 ### Question
 How does Bronte present the character of Bertha Mason in this extract? You should consider the techniques used by Bronte and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Bertha Mason is not a character but a symbol of everything Rochester and Victorian society wish to hide.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 10: Gender and Patriarchy
 **Type:** theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Jane Eyre is a sustained challenge to Victorian patriarchy. Bronte places her heroine in a series of relationships with powerful men -- John Reed, Brocklehurst, Rochester, St. John Rivers -- each of whom attempts to control, define, or diminish her. Jane resists them all, not through physical power but through moral and intellectual assertion. Students should analyse how Bronte exposes the mechanisms of patriarchal control (economic dependence, religious authority, emotional manipulation) and how Jane's refusal to be silenced anticipates feminist arguments that would not be fully articulated for decades.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 12
 
 ### Extract
@@ -465,12 +400,5 @@ How does Bronte present the character of Bertha Mason in this extract? You shoul
 
 ### Question
 How does Bronte present ideas about gender and patriarchy in this extract? You should consider the techniques used by Bronte and the effects on the reader. You must refer to the context of the novel in your answer. [40]
-
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Bronte presents Jane Eyre as a woman ahead of her time, whose views on gender equality would have shocked Victorian readers.' To what extent do you agree with this view? [40]
 
 ---

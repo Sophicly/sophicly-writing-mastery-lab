@@ -1,11 +1,11 @@
 # Topic 1: Pip
 **Type:** protagonist
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Pip is both narrator and protagonist, allowing Dickens to critique social ambition from the inside. His retrospective first-person narration creates dramatic irony — the older Pip judges his younger self's snobbery and shame. Students must analyse how Dickens uses Pip's dual perspective to explore class aspiration and moral growth, and how his journey from the marshes to London and back constitutes Dickens' argument about true gentility.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 1
 
 ### Extract
@@ -40,28 +40,28 @@
 ### Question
 Explore how Dickens presents Pip's childhood and identity in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Dickens present the development of Pip's character throughout *Great Expectations*? You must refer to the context of the novel in your answer. [40]
+In what way does Dickens present the development of Pip's character throughout *Great Expectations*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 2: Conceptual Notes
 **Type:** conceptual-notes
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** This topic covers the key concepts, themes, and contextual knowledge needed for Great Expectations.
 
-## Either
+## Part A
 **Marks:** 0
 **AOs:** none
 
 ### Question
 N/A — Conceptual Notes topic.
 
-## Or
+## Part B
 
 ### Question
 N/A
@@ -70,12 +70,12 @@ N/A
 
 # Topic 3: Miss Havisham
 **Type:** key_character
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Miss Havisham is Dickens' most Gothic creation in the novel — a woman frozen in time by heartbreak, who weaponises Estella as an instrument of revenge against all men. Her decaying wedding dress and stopped clocks symbolise how bitterness corrupts and consumes. Students should analyse how Dickens uses her to explore the destructive power of resentment, the manipulation of the young, and ultimately the possibility of remorse when she begs Pip's forgiveness.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 8
 
 ### Extract
@@ -110,23 +110,23 @@ N/A
 ### Question
 Explore how Dickens presents Miss Havisham in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Dickens present the character of Miss Havisham in *Great Expectations*? You must refer to the context of the novel in your answer. [40]
+In what way does Dickens present the character of Miss Havisham in *Great Expectations*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 4: Social Class and Ambition
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Social class is the engine of the novel's plot: Pip's desire to rise above his origins drives every major decision he makes. Dickens critiques the Victorian class system by showing that wealth and status do not equate to moral worth — the convict Magwitch proves more generous than the gentlemen Pip admires. Students should analyse how Dickens uses Pip's shame about Joe and the forge to expose the cruelty of class aspiration, and consider the novel's argument that true gentility is a matter of character, not birth or money.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 17
 
 ### Extract
@@ -161,23 +161,23 @@ In what way does Dickens present the character of Miss Havisham in *Great Expect
 ### Question
 Explore how Dickens presents Pip's desire to change his social class in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Dickens present the theme of social class and ambition in *Great Expectations*? You must refer to the context of the novel in your answer. [40]
+In what way does Dickens present the theme of social class and ambition in *Great Expectations*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 5: Guilt and Conscience
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Guilt pervades the novel from its opening scene: the child Pip steals food for a convict and carries the moral weight of that act for years. As he rises socially, a new kind of guilt emerges — shame at his origins and his treatment of Joe. Dickens uses guilt as a moral compass, showing that Pip's conscience, however painful, is what ultimately redeems him. Students should analyse how Dickens connects criminality, secrecy, and moral discomfort throughout the novel, and consider how guilt functions differently from shame.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 2
 
 ### Extract
@@ -212,23 +212,23 @@ In what way does Dickens present the theme of social class and ambition in *Grea
 ### Question
 Explore how Dickens presents the household in which Pip grows up in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Dickens present the theme of guilt and conscience in *Great Expectations*? You must refer to the context of the novel in your answer. [40]
+In what way does Dickens present the theme of guilt and conscience in *Great Expectations*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 6: Estella
 **Type:** key_character
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Estella is both victim and instrument of Miss Havisham's revenge — raised to break hearts and incapable of love. Her cold treatment of Pip fuels his desire to become a gentleman, making her the catalyst for his transformation and his suffering. Dickens uses Estella to explore how emotional abuse is perpetuated across generations, and whether someone raised without love can learn to feel it. Students should analyse the imagery of stars and coldness associated with her, and consider how her own suffering mirrors Pip's.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 29
 
 ### Extract
@@ -263,23 +263,23 @@ In what way does Dickens present the theme of guilt and conscience in *Great Exp
 ### Question
 Explore how Dickens presents the effect Estella has on Pip in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Dickens present the character of Estella in *Great Expectations*? You must refer to the context of the novel in your answer. [40]
+In what way does Dickens present the character of Estella in *Great Expectations*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 7: Magwitch
 **Type:** key_character
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Magwitch is the novel's great moral surprise — the terrifying convict of Chapter 1 is revealed as Pip's true benefactor, not Miss Havisham. Dickens uses him to dismantle class prejudice: a transported criminal proves more loyal and generous than the respectable society Pip aspires to join. Students should analyse how Dickens presents Magwitch's return as both a shock and a moral reckoning, and consider what his character reveals about Victorian attitudes to crime, punishment, and redemption.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 1
 
 ### Extract
@@ -314,23 +314,23 @@ In what way does Dickens present the character of Estella in *Great Expectations
 ### Question
 Explore how Dickens presents the convict as a frightening figure in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Dickens present the character of Magwitch in *Great Expectations*? You must refer to the context of the novel in your answer. [40]
+In what way does Dickens present the character of Magwitch in *Great Expectations*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 8: Joe Gargery
 **Type:** key_character
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Joe is the moral heart of the novel — gentle, loyal, and utterly without pretension. Dickens uses him as a benchmark against which Pip's growing snobbery is measured: the more Pip rises socially, the more he distances himself from Joe, and the more the reader sees Pip's moral decline. Joe's visit to London (Chapter 27) is one of the novel's most painful scenes, exposing the gulf class ambition has opened. Students should analyse how Dickens presents Joe as the embodiment of true gentility — not through education or wealth, but through kindness and integrity.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 27
 
 ### Extract
@@ -366,23 +366,23 @@ In what way does Dickens present the character of Magwitch in *Great Expectation
 ### Question
 Explore how Dickens presents the tension between Pip and Joe in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Dickens present the character of Joe Gargery in *Great Expectations*? You must refer to the context of the novel in your answer. [40]
+In what way does Dickens present the character of Joe Gargery in *Great Expectations*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 9: Justice and the Law
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Dickens presents the Victorian legal system as brutal, arbitrary, and deeply entangled with class. Magwitch is transported for life while his accomplice Compeyson — a gentleman by appearance — receives a lighter sentence. Jaggers, the lawyer, washes his hands obsessively as if trying to cleanse himself of the moral contamination of his profession. Students should analyse how Dickens uses the criminal justice system to expose social hypocrisy, and consider how the novel questions whether true justice exists in a society divided by wealth and status.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 56
 
 ### Extract
@@ -417,23 +417,23 @@ In what way does Dickens present the character of Joe Gargery in *Great Expectat
 ### Question
 Explore how Dickens presents the justice system in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Dickens present attitudes towards justice and the law in *Great Expectations*? You must refer to the context of the novel in your answer. [40]
+In what way does Dickens present attitudes towards justice and the law in *Great Expectations*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 10: Education and Self-Improvement
 **Type:** supporting_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Education in the novel operates on two levels: formal learning and moral growth. Pip's education at Matthew Pocket's is part of his transformation into a gentleman, but Dickens shows that book learning without moral development is hollow. Biddy's quiet intelligence contrasts with Pip's showy aspirations, while Joe's illiteracy conceals deep wisdom. Students should analyse how Dickens uses education to explore the difference between superficial self-improvement and genuine personal growth, and consider the novel's Victorian context in which education was increasingly seen as a route out of poverty.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 7
 
 ### Extract
@@ -469,11 +469,11 @@ In what way does Dickens present attitudes towards justice and the law in *Great
 ### Question
 Explore how Dickens presents attitudes towards education in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Dickens present the theme of education and self-improvement in *Great Expectations*? You must refer to the context of the novel in your answer. [40]
+In what way does Dickens present the theme of education and self-improvement in *Great Expectations*? You must refer to the context of the novel in your answer. [20]
 
 ---

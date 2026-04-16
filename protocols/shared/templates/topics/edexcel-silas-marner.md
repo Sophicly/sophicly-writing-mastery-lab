@@ -1,11 +1,11 @@
 # Topic 1: Silas Marner (Isolation and Redemption)
 **Type:** protagonist
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Silas is introduced as a man whose humanity has been eroded by isolation. Expelled from Lantern Yard on a false charge, he retreats into mechanical labour and obsessive hoarding. Eliot presents his physical deterioration as a mirror of his psychological damage — he literally shrinks to fit the dimensions of his loom. Students must analyse how Eliot uses physical description, simile, and narrative commentary to convey the dehumanising effects of isolation, and to foreshadow the redemption that community and love will eventually bring.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 2
 
 ### Extract
@@ -38,18 +38,18 @@
 ### Question
 Explore how Eliot presents Silas Marner as an isolated and diminished figure in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Eliot present ideas about isolation and redemption through the character of Silas Marner in *Silas Marner*? You must refer to the context of the novel in your answer. [40]
+In what way does Eliot present ideas about isolation and redemption through the character of Silas Marner in *Silas Marner*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 2: Conceptual Notes
 **Type:** conceptual-notes
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** This topic covers key concepts, context, and terminology for Silas Marner. No essay question is assigned. Students consolidate their understanding of early 19th-century rural England, the Industrial Revolution and displacement of handloom weavers, Dissenting religious communities (Lantern Yard), the class system and paternalism, Eliot's moral realism, and the parable-like structure of the novel.
 **Marks:** 0
 **AOs:** —
@@ -61,12 +61,12 @@ N/A — Conceptual Notes topic.
 
 # Topic 3: Eppie (Innocence and Redemption)
 **Type:** central_character
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Eppie's arrival at Silas's hearth is the novel's turning point. Where Silas expected to find his stolen gold, he finds instead a living child — soft curls replacing hard coins, warmth replacing cold metal. Eliot uses this substitution to argue that human love is the only true wealth. Students must analyse how Eliot employs sensory contrast, symbolism, and Silas's stream of consciousness to present this moment as both psychologically realistic and morally significant.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 12
 
 ### Extract
@@ -97,23 +97,23 @@ N/A — Conceptual Notes topic.
 ### Question
 Explore how Eliot presents the significance of Eppie's arrival in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Eliot present Eppie as a force of redemption and innocence in *Silas Marner*? You must refer to the context of the novel in your answer. [40]
+In what way does Eliot present Eppie as a force of redemption and innocence in *Silas Marner*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 4: Community and Belonging
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** The Rainbow Inn is Raveloe's social heart — a place where hierarchy, gossip, and shared beliefs bind the community together. Eliot presents this world with affectionate irony: the villagers are limited and superstitious, yet their social bonds provide the warmth and belonging that Silas has been denied. Students must analyse how Eliot balances gentle satire with genuine respect for communal life, and consider how the community's initial suspicion of Silas reflects broader anxieties about outsiders and difference.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 6
 
 ### Extract
@@ -149,23 +149,23 @@ In what way does Eliot present Eppie as a force of redemption and innocence in *
 ### Question
 Explore how Eliot presents ideas about community and belonging in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Eliot present the importance of community and belonging in *Silas Marner*? You must refer to the context of the novel in your answer. [40]
+In what way does Eliot present the importance of community and belonging in *Silas Marner*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 5: Class and Social Hierarchy
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** The contrast between the Red House and the cottages is central to Eliot's social vision. Squire Cass's household, with its faded grandeur and moral carelessness, represents a gentry class that fails in its responsibilities. Eliot uses physical setting to encode moral argument: the lavish but disordered Red House reflects a class whose privilege has produced complacency rather than virtue. Students must analyse how Eliot uses description, contrast, and authorial commentary to critique the assumptions of social hierarchy.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 3
 
 ### Extract
@@ -198,23 +198,23 @@ In what way does Eliot present the importance of community and belonging in *Sil
 ### Question
 Explore how Eliot presents ideas about class and social position in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Eliot present ideas about class and social hierarchy in *Silas Marner*? You must refer to the context of the novel in your answer. [40]
+In what way does Eliot present ideas about class and social hierarchy in *Silas Marner*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 6: Godfrey Cass (Moral Cowardice and Duty)
 **Type:** major_character
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Godfrey is defined by moral cowardice — his inability to acknowledge his secret marriage or claim his child. Eliot presents him sympathetically but critically: his passivity causes suffering he never intended. His internal conflict between self-interest and conscience is conveyed through free indirect discourse, and students must analyse how Eliot uses this technique to expose the self-deception that enables Godfrey's inaction, while also considering the social pressures that make honesty so costly.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 3
 
 ### Extract
@@ -246,23 +246,23 @@ In what way does Eliot present ideas about class and social hierarchy in *Silas 
 ### Question
 Explore how Eliot presents Godfrey Cass as a morally conflicted character in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Eliot present the consequences of moral cowardice through the character of Godfrey Cass in *Silas Marner*? You must refer to the context of the novel in your answer. [40]
+In what way does Eliot present the consequences of moral cowardice through the character of Godfrey Cass in *Silas Marner*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 7: Gold and Greed
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Silas's gold becomes a substitute for all the human relationships he has lost. Eliot describes his nightly counting ritual with disturbing intimacy — the coins are his companions, their familiar weight a comfort. This passage reveals how isolation can distort a person's capacity for love, redirecting it toward objects. Students must explore how Eliot uses the gold as both a realistic detail of Silas's life and a moral symbol, and how the language of desire and appetite conveys the unhealthy nature of this attachment.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 2
 
 ### Extract
@@ -295,23 +295,23 @@ In what way does Eliot present the consequences of moral cowardice through the c
 ### Question
 Explore how Eliot presents Silas's obsessive relationship with his gold in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Eliot present the theme of gold and greed in *Silas Marner*? You must refer to the context of the novel in your answer. [40]
+In what way does Eliot present the theme of gold and greed in *Silas Marner*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 8: Fate and Providence
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** The drawing of lots at Lantern Yard is the event that destroys Silas's faith in both God and humanity. Eliot presents the lots as a cruel inversion of divine justice — the mechanism that should reveal truth instead confirms a lie. This moment is critical for understanding Silas's subsequent retreat from the world, and students must analyse how Eliot uses dialogue, biblical register, and dramatic irony to explore the relationship between faith, community, and individual suffering.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 1
 
 ### Extract
@@ -343,23 +343,23 @@ In what way does Eliot present the theme of gold and greed in *Silas Marner*? Yo
 ### Question
 Explore how Eliot presents the impact of betrayal and lost faith in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Eliot explore ideas about fate and providence in *Silas Marner*? You must refer to the context of the novel in your answer. [40]
+In what way does Eliot explore ideas about fate and providence in *Silas Marner*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 9: Dunsey (Selfishness and Moral Decay)
 **Type:** supporting_character
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Dunstan Cass is Eliot's portrait of selfishness without conscience. His theft of Silas's gold is presented not as a dramatic crime but as the casual act of a man who has never considered anyone else's feelings. Eliot's narration emphasises Dunsey's thoughtlessness rather than malice, suggesting that moral indifference — not active evil — is the more common and more dangerous vice. Students must analyse how Eliot uses physical detail, free indirect discourse, and the contrast between Dunsey's excitement and Silas's devastation to expose the emptiness of a life governed entirely by self-interest.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 4
 
 ### Extract
@@ -391,23 +391,23 @@ In what way does Eliot explore ideas about fate and providence in *Silas Marner*
 ### Question
 Explore how Eliot presents Dunsey as a selfish and morally careless character in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Eliot use the character of Dunstan Cass to explore ideas about selfishness and moral responsibility in *Silas Marner*? You must refer to the context of the novel in your answer. [40]
+In what way does Eliot use the character of Dunstan Cass to explore ideas about selfishness and moral responsibility in *Silas Marner*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 10: Family and Parenthood
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Eppie's rejection of Godfrey in the novel's climax is Eliot's most powerful statement about the nature of parenthood. Eliot argues that fatherhood is earned through daily care, not claimed through biological right. Eppie's loyalty to Silas — the man who raised her — over Godfrey — the man who fathered her — reverses the expected class hierarchy and affirms the moral authority of love over rank. Students must analyse how Eliot uses dialect, simple diction, and the contrast between Eppie's certainty and Godfrey's discomfort to dramatise this moral argument.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 19
 
 ### Extract
@@ -440,11 +440,11 @@ In what way does Eliot use the character of Dunstan Cass to explore ideas about 
 ### Question
 Explore how Eliot presents ideas about family and parenthood in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Eliot present the theme of family and parenthood in *Silas Marner*? You must refer to the context of the novel in your answer. [40]
+In what way does Eliot present the theme of family and parenthood in *Silas Marner*? You must refer to the context of the novel in your answer. [20]
 
 ---

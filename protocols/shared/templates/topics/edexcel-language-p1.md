@@ -89,7 +89,7 @@ Support your views with detailed reference to the text.
 
 ## Q5
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
 
@@ -207,7 +207,7 @@ Support your views with detailed reference to the text.
 
 ## Q5
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
 
@@ -314,7 +314,7 @@ Support your views with detailed reference to the text.
 
 ## Q5
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
 
@@ -414,7 +414,7 @@ Support your views with detailed reference to the text.
 
 ## Q5
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
 
@@ -514,7 +514,7 @@ Support your views with detailed reference to the text.
 
 ## Q5
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
 
@@ -623,7 +623,7 @@ Support your views with detailed reference to the text.
 
 ## Q5
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
 
@@ -732,7 +732,7 @@ Support your views with detailed reference to the text.
 
 ## Q5
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
 
@@ -836,7 +836,7 @@ Support your views with detailed reference to the text.
 
 ## Q5
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
 
@@ -940,7 +940,7 @@ Support your views with detailed reference to the text.
 
 ## Q5
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 You are going to enter a creative writing competition. Your entry will be judged by a panel of your teachers.
 

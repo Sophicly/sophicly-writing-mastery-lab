@@ -1,11 +1,10 @@
 # Topic 1: Jekyll and Hyde / Duality
 **Type:** theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** The duality of human nature is the central concern of the novella. Stevenson uses the physical separation of Jekyll and Hyde to dramatise the Victorian idea that every person contains both good and evil impulses, and that attempts to deny or suppress one half lead to catastrophe rather than moral purity.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 10: Henry Jekyll's Full Statement of the Case
 
 ### Extract
@@ -42,30 +41,22 @@
 ### Question
 How does Stevenson present the theme of duality in this extract? You should consider the techniques used by Stevenson and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Stevenson suggests that the division between good and evil in human nature is not as clear as Victorian society pretended.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 2: Conceptual Notes
 **Type:** notes
-**Format:** either_or
+**Format:** single
 **Teaching Point:** This topic covers the key concepts, themes, and contextual knowledge students need for The Strange Case of Dr Jekyll and Mr Hyde, including Victorian morality, the Gothic tradition, Darwinian theory, the doppelganger motif, the 1886 publication context, and Stevenson's exploration of the unconscious mind before Freud.
 
 ---
 
 # Topic 3: Hyde (Evil and Violence)
 **Type:** character
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Hyde embodies pure, unrestrained evil — yet Stevenson makes him difficult to describe, suggesting that evil defies rational categorisation. His increasing violence across the novella (from trampling the child to murdering Carew) shows that evil, once released, does not remain contained but escalates beyond control.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 4: The Carew Murder Case
 
 ### Extract
@@ -99,23 +90,15 @@ How does Stevenson present the theme of duality in this extract? You should cons
 ### Question
 How does Stevenson present Hyde as violent and evil in this extract? You should consider the techniques used by Stevenson and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Hyde is not simply a villain but a representation of everything Victorian society feared about human nature.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 4: Jekyll (Repression and Respectability)
 **Type:** character
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Jekyll is not an innocent victim but a willing participant in his own destruction. His desire to appear respectable while indulging his darker impulses reflects the hypocrisy Stevenson identified at the heart of Victorian middle-class life. Students should analyse how Jekyll's language reveals both guilt and self-justification.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 10: Henry Jekyll's Full Statement of the Case
 
 ### Extract
@@ -147,23 +130,15 @@ How does Stevenson present Hyde as violent and evil in this extract? You should 
 ### Question
 How does Stevenson present Jekyll's desire for respectability in this extract? You should consider the techniques used by Stevenson and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Jekyll is not a good man corrupted by science but a hypocrite who uses science to avoid the consequences of his desires.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 5: Utterson (Rationality and the Victorian Gentleman)
 **Type:** character
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Utterson is the reader's surrogate — rational, loyal, and respectable. However, his commitment to propriety means he repeatedly fails to act on his suspicions, prioritising reputation over truth. Stevenson uses Utterson to show how Victorian codes of gentlemanly conduct could enable evil by discouraging honest inquiry.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 1: Story of the Door
 
 ### Extract
@@ -195,23 +170,15 @@ How does Stevenson present Jekyll's desire for respectability in this extract? Y
 ### Question
 How does Stevenson present Utterson as a typical Victorian gentleman in this extract? You should consider the techniques used by Stevenson and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Utterson's loyalty and discretion make him an admirable character, but they also make him partly responsible for the tragedy.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 6: Secrecy and Reputation
 **Type:** theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Secrecy pervades every relationship in the novella. Jekyll hides his experiments, Utterson suppresses his suspicions, and Enfield proposes never to discuss the door again. Stevenson shows that Victorian society's obsession with outward respectability creates a culture of concealment in which evil can flourish unchecked behind closed doors.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 1: Story of the Door
 
 ### Extract
@@ -249,23 +216,15 @@ How does Stevenson present Utterson as a typical Victorian gentleman in this ext
 ### Question
 How does Stevenson present the importance of secrecy and reputation in this extract? You should consider the techniques used by Stevenson and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'In Jekyll and Hyde, keeping up appearances matters more to the characters than knowing the truth.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 7: Science and Religion
 **Type:** theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Stevenson wrote during a period of intense conflict between scientific progress and religious faith. Jekyll's experiment transgresses both natural law and divine order, echoing contemporary anxieties about Darwin, vivisection, and the limits of human knowledge. The novella asks whether science without moral restraint is inherently dangerous.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 9: Dr Lanyon's Narrative
 
 ### Extract
@@ -301,23 +260,15 @@ How does Stevenson present the importance of secrecy and reputation in this extr
 ### Question
 How does Stevenson present the conflict between science and religion in this extract? You should consider the techniques used by Stevenson and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Stevenson presents Jekyll's experiment not as a triumph of science but as a warning against playing God.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 8: Setting (London, Fog, and Doors)
 **Type:** theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Stevenson's London is a Gothic landscape of fog, gaslight, and hidden spaces. The contrasting facades of Jekyll's house — the handsome front on the square versus the sinister back door in the by-street — mirror the duality at the heart of the novella. Students should analyse how setting creates atmosphere and reinforces theme.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 4: The Carew Murder Case
 
 ### Extract
@@ -348,23 +299,15 @@ How does Stevenson present the conflict between science and religion in this ext
 ### Question
 How does Stevenson use setting to create atmosphere in this extract? You should consider the techniques used by Stevenson and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Stevenson uses London itself as a character in the novella, reflecting the hidden darkness beneath a respectable surface.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 9: Lanyon (Horror of Knowledge)
 **Type:** character
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Lanyon represents orthodox, respectable Victorian science. His death from the shock of witnessing Jekyll's transformation shows that some knowledge is too terrible to bear. Stevenson uses Lanyon to explore the idea that there are truths about human nature that the rational mind cannot process without being destroyed.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 6: Remarkable Incident of Doctor Lanyon
 
 ### Extract
@@ -399,23 +342,15 @@ How does Stevenson use setting to create atmosphere in this extract? You should 
 ### Question
 How does Stevenson present Lanyon's reaction to forbidden knowledge in this extract? You should consider the techniques used by Stevenson and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Lanyon dies not from illness but from the unbearable truth that the world is not as rational or moral as he believed.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 10: Victorian Society and Hypocrisy
 **Type:** theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** The novella is set in a world of wealthy, professional men who guard their reputations above all else. Stevenson critiques a society where the appearance of virtue matters more than actual morality, where gentlemen silently tolerate each other's transgressions, and where the pressure to conform creates the very conditions for hidden depravity to thrive.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 10: Henry Jekyll's Full Statement of the Case
 
 ### Extract
@@ -449,12 +384,5 @@ How does Stevenson present Lanyon's reaction to forbidden knowledge in this extr
 
 ### Question
 How does Stevenson present ideas about Victorian hypocrisy in this extract? You should consider the techniques used by Stevenson and the effects on the reader. You must refer to the context of the novel in your answer. [40]
-
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Jekyll and Hyde is not really about one man's experiment but about an entire society built on lies and self-deception.' To what extent do you agree with this view? [40]
 
 ---

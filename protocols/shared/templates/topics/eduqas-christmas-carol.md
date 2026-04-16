@@ -1,11 +1,10 @@
 # Topic 1: Scrooge
 **Type:** protagonist
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Dickens constructs Scrooge through an extraordinary accumulation of cold imagery and negative diction in the opening pages, making him an emblem of everything the novella sets out to critique. Students must analyse how language choices build character and how Scrooge functions as Dickens' vehicle for social commentary about Victorian selfishness.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Stave 1
 
 ### Extract
@@ -40,42 +39,28 @@
 ### Question
 How does Dickens present Scrooge as a cold and isolated character in this extract? You should consider the techniques used by Dickens and the effects on the reader. You must refer to the context of the novella in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Scrooge is not truly a villain — he is a victim of the values Victorian society rewarded.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 2: Conceptual Notes
 **Type:** conceptual-notes
-**Format:** either_or
+**Format:** single
 **Teaching Point:** This topic covers the key concepts, themes, and contextual knowledge needed for A Christmas Carol, including Victorian poverty, the Poor Law Amendment Act (1834), Malthusian economics, Dickens' social purpose, the allegorical structure, and the emerging Christmas tradition.
 
-## Either
 **Marks:** 0
 **AOs:** none
 
 ### Question
 N/A — Conceptual Notes topic.
 
-## Or
-
-### Question
-N/A
-
 ---
 
 # Topic 3: Redemption
 **Type:** central_theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Scrooge's transformation on Christmas morning is the structural and moral climax of the novella. Dickens presents redemption as physically overwhelming — Scrooge laughs, cries, and fumbles with his clothes simultaneously — to argue that genuine moral change transforms a person entirely. The rapid-fire similes signal a man reborn.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Stave 5
 
 ### Extract
@@ -111,23 +96,15 @@ N/A
 ### Question
 How does Dickens present Scrooge's redemption in this extract? You should consider the techniques used by Dickens and the effects on the reader. You must refer to the context of the novella in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Scrooge's transformation happens too quickly to be believable — it is a fantasy, not a realistic portrayal of change.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 4: The Cratchits and Family
 **Type:** theme_and_character
-**Format:** either_or
+**Format:** single
 **Teaching Point:** The Cratchit family functions as a moral counterpoint to Scrooge, demonstrating that love, warmth, and generosity can flourish despite poverty. Dickens uses their Christmas dinner to argue that true wealth is measured in human connection, while Tiny Tim's vulnerability reminds the reader of the real consequences of social neglect.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Stave 3
 
 ### Extract
@@ -162,23 +139,15 @@ How does Dickens present Scrooge's redemption in this extract? You should consid
 ### Question
 How does Dickens present the importance of family in this extract? You should consider the techniques used by Dickens and the effects on the reader. You must refer to the context of the novella in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'The Cratchits are too good to be true — Dickens idealises poverty rather than honestly depicting it.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 5: Poverty
 **Type:** central_theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Dickens uses the allegorical figures of Ignorance and Want to deliver his most direct social argument. These are not individuals but the consequences of an entire society's neglect — children made monstrous by deprivation. The passage is a deliberate challenge to the Malthusian economic thinking that Scrooge voiced earlier in Stave 1.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Stave 3
 
 ### Extract
@@ -214,23 +183,15 @@ How does Dickens present the importance of family in this extract? You should co
 ### Question
 How does Dickens present the effects of poverty in this extract? You should consider the techniques used by Dickens and the effects on the reader. You must refer to the context of the novella in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'In A Christmas Carol, Dickens shows that poverty destroys not just bodies but souls.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 6: The Ghosts and the Supernatural
 **Type:** central_theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** The Ghost of Christmas Yet to Come is the most menacing of the three spirits, described entirely through absence — no face, no voice, no visible form beyond a single outstretched hand. Dickens uses this figure to create dread through withholding, and its silence forces Scrooge (and the reader) to confront mortality without comfort or reassurance.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Stave 4
 
 ### Extract
@@ -265,23 +226,15 @@ How does Dickens present the effects of poverty in this extract? You should cons
 ### Question
 How does Dickens present the supernatural in this extract? You should consider the techniques used by Dickens and the effects on the reader. You must refer to the context of the novella in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'The ghosts in A Christmas Carol are not frightening figures but compassionate teachers.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 7: Generosity (Fezziwig)
 **Type:** supporting_character
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Fezziwig's Christmas party costs little in financial terms, yet it creates enormous happiness. Dickens uses this scene to argue that generosity of spirit matters more than generosity of purse — a direct rebuke to the utilitarian view that money is the only measure of value. The young Scrooge's delight makes his later miserliness all the more tragic.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Stave 2
 
 ### Extract
@@ -315,23 +268,15 @@ How does Dickens present the supernatural in this extract? You should consider t
 ### Question
 How does Dickens present ideas about generosity in this extract? You should consider the techniques used by Dickens and the effects on the reader. You must refer to the context of the novella in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Dickens suggests that true generosity is about spirit, not money.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 8: Isolation
 **Type:** supporting_theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** The Ghost of Christmas Past shows Scrooge his younger self as a lonely boy left at school while others went home for the holidays. This scene establishes that Scrooge's coldness has roots in childhood abandonment, complicating the reader's judgement of him. Dickens presents isolation not as a choice but as something that was first done to Scrooge before he did it to himself.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Stave 2
 
 ### Extract
@@ -363,23 +308,15 @@ How does Dickens present ideas about generosity in this extract? You should cons
 ### Question
 How does Dickens present the theme of isolation in this extract? You should consider the techniques used by Dickens and the effects on the reader. You must refer to the context of the novella in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Dickens presents isolation as the worst punishment a person can suffer.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 9: Guilt (Marley's Ghost)
 **Type:** theme_and_character
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Marley's ghost serves as both a warning and a mirror for Scrooge. The chain he forged in life — made of cash-boxes, keys, padlocks, ledgers, and deeds — is a physical manifestation of moral guilt. Dickens uses Marley to argue that selfishness in life carries consequences beyond death, and that Scrooge still has the chance to change that Marley was denied.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Stave 1
 
 ### Extract
@@ -415,23 +352,15 @@ How does Dickens present the theme of isolation in this extract? You should cons
 ### Question
 How does Dickens present guilt through the character of Marley's ghost in this extract? You should consider the techniques used by Dickens and the effects on the reader. You must refer to the context of the novella in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Marley's ghost is the most important supernatural figure in the novella because without him, Scrooge would never have changed.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 10: Christmas Spirit
 **Type:** supporting_theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** The Ghost of Christmas Present embodies Dickens' vision of the Christmas spirit as abundance, generosity, and communal joy. The spirit's torch — which blesses the food of the poor — and the overflowing cornucopia of his setting make a visual argument that Christmas should be a time of sharing, not hoarding. The spirit's ageing during the stave reminds the reader that this goodwill is fleeting unless actively sustained.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Stave 3
 
 ### Extract
@@ -466,12 +395,5 @@ How does Dickens present guilt through the character of Marley's ghost in this e
 
 ### Question
 How does Dickens present the spirit of Christmas in this extract? You should consider the techniques used by Dickens and the effects on the reader. You must refer to the context of the novella in your answer. [40]
-
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'A Christmas Carol is not really about Christmas — it is about how society treats the poor.' To what extent do you agree with this view? [40]
 
 ---

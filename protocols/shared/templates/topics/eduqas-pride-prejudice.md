@@ -1,11 +1,10 @@
 # Topic 1: Elizabeth Bennet (protagonist)
 **Type:** protagonist
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Elizabeth is Austen's most intellectually vibrant heroine -- witty, perceptive, and morally independent in a world that rewards female compliance. Austen uses free indirect discourse to align the reader with Elizabeth's judgments, which makes her eventual self-correction all the more powerful. The EDUQAS either/or format lets students choose between close analysis of Elizabeth's voice in a specific moment and a broader argument about her significance as a character who must learn to distinguish genuine insight from prejudice.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 36
 
 ### Extract
@@ -40,30 +39,22 @@
 ### Question
 How does Austen present Elizabeth Bennet's capacity for self-knowledge in this extract? You should consider the techniques used by Austen and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Elizabeth Bennet is a character who must learn that intelligence alone is not enough to understand the world.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 2: Conceptual Notes
 **Type:** notes
-**Format:** either_or
+**Format:** single
 **Teaching Point:** This topic covers the key concepts, themes, and contextual knowledge students need for Pride and Prejudice, including Austen's use of irony and free indirect discourse, the marriage market in Regency England, the entail and its consequences for women, social class and the landed gentry, the distinction between earned and inherited status, and the novel's moral argument that character matters more than rank or fortune.
 
 ---
 
 # Topic 3: Mr Darcy
 **Type:** character
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Darcy embodies the novel's central paradox: his pride is both his greatest flaw and the product of genuine merit. Austen structures his character arc so that the reader's understanding of him is revised at exactly the same moment as Elizabeth's -- through the letter in Chapter 35 -- creating a shared experience of recalibration. His transformation is not a change of character but a change of manner, achieved through the painful recognition that his behaviour has been 'ungentlemanlike.' Students should analyse how Austen uses Darcy to interrogate whether pride is a vice or a natural consequence of superior understanding.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 58
 
 ### Extract
@@ -99,23 +90,15 @@ How does Austen present Elizabeth Bennet's capacity for self-knowledge in this e
 ### Question
 How does Austen present Mr Darcy's transformation in this extract? You should consider the techniques used by Austen and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Darcy does not truly change in the novel; he simply learns to conceal his pride.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 4: Pride and Prejudice
 **Type:** theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** The novel's title names its two central flaws, but Austen refuses to assign them neatly -- Darcy is proud but also prejudiced against the Bennets' connections, while Elizabeth prides herself on her judgment even as her prejudice against Darcy blinds her. Austen structures the narrative so that both characters must confront their mirrored failings simultaneously, and the letter in Chapter 35 functions as the hinge on which the entire moral argument turns. Students should analyse how Austen uses dramatic irony to expose these flaws before the characters themselves recognise them.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 11
 
 ### Extract
@@ -146,23 +129,15 @@ How does Austen present Mr Darcy's transformation in this extract? You should co
 ### Question
 How does Austen present ideas about pride and prejudice in this extract? You should consider the techniques used by Austen and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Austen suggests that pride and prejudice are equally destructive, and that neither Elizabeth nor Darcy is more at fault than the other.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 5: Love and Marriage
 **Type:** theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Austen presents a spectrum of marriages in the novel -- from the mercenary pragmatism of Charlotte and Collins to the reckless passion of Lydia and Wickham -- to test what constitutes a truly successful union. The central argument is that a good marriage requires both rational respect and genuine affection, and that marrying for money alone or passion alone leads to misery. The novel's opening sentence establishes marriage as the organising principle of its society, and every subsequent relationship either confirms or complicates that ironic premise.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 22
 
 ### Extract
@@ -200,23 +175,15 @@ How does Austen present ideas about pride and prejudice in this extract? You sho
 ### Question
 How does Austen present attitudes towards love and marriage in this extract? You should consider the techniques used by Austen and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Austen presents marriage in Pride and Prejudice as an economic necessity for women rather than a matter of love.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 6: Social Class and Status
 **Type:** theme
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Austen navigates the rigid social hierarchy of Regency England with surgical precision. The novel's conflicts are driven by the collision between inherited rank and personal merit -- Lady Catherine assumes authority from birth, Caroline Bingley clings to status her family has only recently acquired through trade, and Elizabeth asserts her worth through character alone. Austen does not reject the class system outright; rather, she argues that the true markers of gentility are conduct and principle, not pedigree or fortune.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 56
 
 ### Extract
@@ -255,23 +222,15 @@ How does Austen present attitudes towards love and marriage in this extract? You
 ### Question
 How does Austen present ideas about social class and status in this extract? You should consider the techniques used by Austen and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Austen uses Pride and Prejudice to argue that true gentility is a matter of conduct, not birth.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 7: Mr Bennet and Mrs Bennet
 **Type:** character
-**Format:** either_or
+**Format:** single
 **Teaching Point:** The Bennet parents represent a failed marriage built on superficial attraction -- Mr Bennet married Mrs Bennet for her beauty, and when that faded, retreated into ironic detachment. Austen uses them as a cautionary example of what happens when a marriage lacks mutual respect and intellectual companionship. Mrs Bennet's vulgar obsession with marrying off her daughters is both comic and sympathetic -- she understands the economic precariousness of their situation better than her husband, who refuses to confront it. Mr Bennet's sardonic wit entertains the reader but masks a genuine dereliction of parental duty.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 42
 
 ### Extract
@@ -306,23 +265,15 @@ How does Austen present ideas about social class and status in this extract? You
 ### Question
 How does Austen present the Bennet parents' marriage and its consequences in this extract? You should consider the techniques used by Austen and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Austen presents Mr Bennet as a more damaging parent than Mrs Bennet, because he has the intelligence to act but chooses not to.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 8: Jane and Bingley
 **Type:** character
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Jane and Bingley function as a foil to Elizabeth and Darcy -- their relationship is characterised by openness and good nature rather than the intellectual sparring that defines the central couple. Austen uses Jane's excessive willingness to think well of everyone to explore the dangers of too little judgment, just as Elizabeth's excessive readiness to judge represents the opposite extreme. Bingley's pliability -- his willingness to be guided by Darcy -- raises questions about whether agreeableness is a virtue or a weakness. Their reunion is satisfying but also quietly unsettling: they succeed not because they have grown, but because external obstacles have been removed.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 4
 
 ### Extract
@@ -360,23 +311,15 @@ How does Austen present the Bennet parents' marriage and its consequences in thi
 ### Question
 How does Austen present the relationship between Jane and Bingley in this extract? You should consider the techniques used by Austen and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Jane and Bingley are presented as the ideal couple in the novel, while Elizabeth and Darcy are the more realistic one.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 9: Lady Catherine de Bourgh
 **Type:** character
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Lady Catherine is Austen's most concentrated satire of aristocratic entitlement. She assumes that rank confers authority over every aspect of other people's lives -- their marriages, their occupations, their drawing-room furniture. Austen uses her as a comic foil to Elizabeth, but also as a serious embodiment of the social forces that the novel's central romance must overcome. Ironically, Lady Catherine's attempt to prevent the marriage actually precipitates it, giving Darcy the confidence to propose again. Students should consider how Austen uses Lady Catherine to expose the gap between social authority and moral authority.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 29
 
 ### Extract
@@ -423,23 +366,15 @@ How does Austen present the relationship between Jane and Bingley in this extrac
 ### Question
 How does Austen present the character of Lady Catherine de Bourgh in this extract? You should consider the techniques used by Austen and the effects on the reader. You must refer to the context of the novel in your answer. [40]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Lady Catherine de Bourgh represents everything that is wrong with the class system in Pride and Prejudice.' To what extent do you agree with this view? [40]
-
 ---
 
 # Topic 10: Wickham
 **Type:** character
-**Format:** either_or
+**Format:** single
 **Teaching Point:** Wickham is Austen's most accomplished deceiver -- a man whose charm, good looks, and social ease allow him to construct a completely false narrative about his past. He functions as a moral test for both Elizabeth and the reader: those who judge by surface manner are taken in, while those who look deeper see through him. Austen uses Wickham to explore how a society that values appearance and agreeableness above substance is dangerously vulnerable to manipulation. His elopement with Lydia is the novel's crisis point, exposing the real-world consequences of the Bennets' failures in judgment and parental responsibility.
 
-## Either
 **Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+**AOs:** AO1,AO2,AO3
 **Extract Location:** Chapter 16
 
 ### Extract
@@ -475,12 +410,5 @@ How does Austen present the character of Lady Catherine de Bourgh in this extrac
 
 ### Question
 How does Austen present Wickham as a deceiver in this extract? You should consider the techniques used by Austen and the effects on the reader. You must refer to the context of the novel in your answer. [40]
-
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
-
-### Question
-'Wickham is the most dangerous character in Pride and Prejudice because his deception is so easy to believe.' To what extent do you agree with this view? [40]
 
 ---

@@ -1,11 +1,11 @@
 # Topic 1: Jekyll and Hyde / Duality
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** The duality of human nature is the central theme of the novella. Stevenson explores the idea that every person contains both good and evil, and that Victorian society's insistence on respectability forces individuals to suppress rather than manage their darker impulses. Students must analyse how Stevenson uses the Jekyll-Hyde relationship as an extended metaphor for this internal conflict.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 10: Henry Jekyll's Full Statement of the Case
 
 ### Extract
@@ -40,18 +40,18 @@
 ### Question
 Explore how Stevenson presents the idea of duality in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Stevenson present the theme of duality in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [40]
+In what way does Stevenson present the theme of duality in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 2: Conceptual Notes
 **Type:** conceptual-notes
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** This topic covers key concepts, context, and terminology for The Strange Case of Dr Jekyll and Mr Hyde. No essay question is assigned. Students consolidate their understanding of Victorian society, the scientific context of the 1880s, Stevenson's biographical influences, and the novella's Gothic and detective fiction conventions.
 **Marks:** 0
 **AOs:** —
@@ -63,12 +63,12 @@ N/A — Conceptual Notes topic.
 
 # Topic 3: Hyde (Evil and Violence)
 **Type:** supporting_character
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Hyde embodies pure, undiluted evil — described in animalistic and demonic terms by every character who encounters him. Stevenson presents Hyde as physically smaller than Jekyll because the evil side has been repressed and underdeveloped, yet Hyde grows stronger with each indulgence. Students should analyse how Stevenson uses Hyde to explore the Victorian fear that evil is both innate and contagious.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 4: The Carew Murder Case
 
 ### Extract
@@ -102,23 +102,23 @@ N/A — Conceptual Notes topic.
 ### Question
 Explore how Stevenson presents Hyde as violent and evil in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Stevenson present Mr Hyde as a figure of evil in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [40]
+In what way does Stevenson present Mr Hyde as a figure of evil in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 4: Jekyll (Repression and Respectability)
 **Type:** protagonist
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Jekyll is not simply a good man corrupted by science — he is a man who has always felt the strain of maintaining a respectable public identity while harbouring secret desires. Stevenson uses Jekyll to critique a Victorian culture that demanded moral perfection from its professional class, arguing that suppression breeds the very monsters it seeks to contain. Students should analyse how Jekyll's language reveals both guilt and self-justification.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 10: Henry Jekyll's Full Statement of the Case
 
 ### Extract
@@ -150,23 +150,23 @@ In what way does Stevenson present Mr Hyde as a figure of evil in *The Strange C
 ### Question
 Explore how Stevenson presents Jekyll's struggle with respectability in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Stevenson present Dr Jekyll as a man trapped by the pressures of respectability in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [40]
+In what way does Stevenson present Dr Jekyll as a man trapped by the pressures of respectability in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 5: Utterson (Rationality and the Victorian Gentleman)
 **Type:** supporting_character
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Utterson is the lens through which the reader experiences the mystery. As a lawyer, he represents reason, duty, and discretion — the ideal Victorian professional. Yet Stevenson also uses Utterson to expose the limitations of rational inquiry when confronted with the irrational, and to show how the gentleman's code of silence enables evil to flourish unchecked. Students should analyse how Utterson's measured language contrasts with the Gothic horror he uncovers.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 1: Story of the Door
 
 ### Extract
@@ -198,23 +198,23 @@ In what way does Stevenson present Dr Jekyll as a man trapped by the pressures o
 ### Question
 Explore how Stevenson presents Utterson as a typical Victorian gentleman in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Stevenson use the character of Utterson to explore ideas about rationality and duty in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [40]
+In what way does Stevenson use the character of Utterson to explore ideas about rationality and duty in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 6: Secrecy and Reputation
 **Type:** supporting_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Secrecy pervades every layer of the novella — Jekyll hides his experiments, Utterson suppresses his suspicions, Enfield refuses to gossip. Stevenson presents Victorian respectability as a system built on concealment, where protecting one's reputation matters more than confronting the truth. Students should analyse how the narrative structure itself — letters, wills, second-hand accounts — mirrors this culture of secrecy, and consider how silence enables Hyde's crimes.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 1: Story of the Door
 
 ### Extract
@@ -247,23 +247,23 @@ In what way does Stevenson use the character of Utterson to explore ideas about 
 ### Question
 Explore how Stevenson presents the theme of secrecy in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Stevenson present secrecy and reputation as important themes in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [40]
+In what way does Stevenson present secrecy and reputation as important themes in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 7: Science and Religion
 **Type:** supporting_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Stevenson wrote Jekyll and Hyde during a period of intense anxiety about the power and limits of science. Darwin's theory of evolution had shaken religious certainty, and new fields like psychology were probing the human mind. Jekyll's experiment represents the dangerous ambition of science unchecked by moral restraint. Students should analyse how Stevenson uses the conflict between scientific inquiry and religious morality to explore Victorian fears about progress and transgression.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 9: Dr Lanyon's Narrative
 
 ### Extract
@@ -298,23 +298,23 @@ In what way does Stevenson present secrecy and reputation as important themes in
 ### Question
 Explore how Stevenson presents science as dangerous and transgressive in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Stevenson explore the conflict between science and religion in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [40]
+In what way does Stevenson explore the conflict between science and religion in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 8: Setting (London, Fog, and Doors)
 **Type:** supporting_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Stevenson's London is a city of contrasts — respectable facades and sinister back streets, gaslit gentility and fog-choked alleyways. The famous door with no knocker or bell, which connects Jekyll's house to Hyde's entrance, physically embodies the novella's central theme: that respectability and depravity exist side by side, connected by hidden passages. Students should analyse how Stevenson uses pathetic fallacy, Gothic setting, and architectural symbolism to reinforce the theme of duality.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 4: The Carew Murder Case
 
 ### Extract
@@ -345,23 +345,23 @@ In what way does Stevenson explore the conflict between science and religion in 
 ### Question
 Explore how Stevenson uses setting to create atmosphere in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Stevenson use the setting of London to explore ideas about duality and concealment in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [40]
+In what way does Stevenson use the setting of London to explore ideas about duality and concealment in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 9: Lanyon (The Horror of Knowledge)
 **Type:** supporting_character
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Dr Lanyon represents orthodox, conventional science — the opposite of Jekyll's reckless experimentation. His death from the shock of witnessing Hyde's transformation dramatises the idea that some knowledge is too terrible for the rational mind to bear. Stevenson uses Lanyon to argue that the truth about human nature, once seen, cannot be unseen or endured. Students should analyse how Lanyon's narrative voice shifts from confidence to horror, and what his fate suggests about the limits of Victorian rationalism.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 9: Dr Lanyon's Narrative
 
 ### Extract
@@ -397,23 +397,23 @@ In what way does Stevenson use the setting of London to explore ideas about dual
 ### Question
 Explore how Stevenson presents the horror of forbidden knowledge in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Stevenson use the character of Dr Lanyon to explore the theme of forbidden knowledge in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [40]
+In what way does Stevenson use the character of Dr Lanyon to explore the theme of forbidden knowledge in *The Strange Case of Dr Jekyll and Mr Hyde*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 10: Victorian Society and Hypocrisy
 **Type:** theme_and_character
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** The novella is an indictment of Victorian hypocrisy — a society that prized outward respectability while tolerating hidden vice. Every gentleman in the story keeps secrets; every respectable facade conceals something darker. Stevenson suggests that it is society itself, with its impossible standards of propriety, that creates monsters like Hyde. Students should analyse how the all-male, professional world of the novella reflects and critiques the values of late-Victorian Britain, and consider why Stevenson chose to exclude women almost entirely from the narrative.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 10: Henry Jekyll's Full Statement of the Case
 
 ### Extract
@@ -447,11 +447,11 @@ In what way does Stevenson use the character of Dr Lanyon to explore the theme o
 ### Question
 Explore how Stevenson presents the theme of hypocrisy in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Stevenson use *The Strange Case of Dr Jekyll and Mr Hyde* to criticise Victorian society and its hypocrisy? You must refer to the context of the novel in your answer. [40]
+In what way does Stevenson use *The Strange Case of Dr Jekyll and Mr Hyde* to criticise Victorian society and its hypocrisy? You must refer to the context of the novel in your answer. [20]
 
 ---

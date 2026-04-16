@@ -82,17 +82,18 @@ How does the writer use language and structure to create effects in lines 16 to 
 
 ## Q4
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO2
 
-'The extract presents Alex as an angry and resentful boy who cannot accept what is happening to his family.' How far do you agree with this view?
+What are Alex's thoughts and feelings in this extract? How does the writer show these thoughts and feelings?
 
-You should write about:
-- your own impressions of Alex
-- how the writer has created these impressions.
+You must refer to the language used in the text to support your answer, commenting on:
+- word choice
+- language features and techniques
+- sentence forms.
 
 ## Q5
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO4
 
 To what extent do you agree that the writer successfully creates a sense of loss and absence in the final part of the extract (lines 35 to 44)?
 
@@ -103,17 +104,17 @@ You should write about:
 
 ## Q6
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 Choose one of the following titles for your writing:
 
-**Either:**
+**(a)** Write a description of a stormy morning as seen from inside a house.
 
-Write a description of a stormy morning as seen from inside a house.
+**(b)** Write a story that begins: "This was going to be a terrible day, one of those days when it's best to stay in bed because everything is going to turn out bad."
 
-**Or:**
+**(c)** Write about a moment when everything changed.
 
-Write a story that begins: "This was going to be a terrible day, one of those days when it's best to stay in bed because everything is going to turn out bad."
+**(d)** Write a story that ends: "Nothing would ever be the same again."
 
 (24 marks for content and organisation)
 (16 marks for sentence structure, punctuation and spelling)
@@ -216,17 +217,18 @@ How does the writer use language and structure to create effects in lines 24 to 
 
 ## Q4
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO2
 
-'The writer presents Katniss as a tough, resourceful survivor who has learned to fend for herself.' How far do you agree with this view?
+What are Katniss's thoughts and feelings in this extract? How does the writer show these thoughts and feelings?
 
-You should write about:
-- your own impressions of Katniss
-- how the writer has created these impressions.
+You must refer to the language used in the text to support your answer, commenting on:
+- word choice
+- language features and techniques
+- sentence forms.
 
 ## Q5
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO4
 
 To what extent do you agree that the writer successfully creates a sense of danger and oppression in the extract as a whole?
 
@@ -237,17 +239,17 @@ You should write about:
 
 ## Q6
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 Choose one of the following titles for your writing:
 
-**Either:**
+**(a)** Write a description of a place where nature feels both beautiful and threatening.
 
-Write a description of a place where nature feels both beautiful and threatening.
+**(b)** Write a story about a character who must make a dangerous journey.
 
-**Or:**
+**(c)** Write about a moment when everything changed.
 
-Write a story about a character who must make a dangerous journey.
+**(d)** Write a story that ends: "Nothing would ever be the same again."
 
 (24 marks for content and organisation)
 (16 marks for sentence structure, punctuation and spelling)
@@ -339,17 +341,18 @@ How does the writer use language and structure to create effects in lines 24 to 
 
 ## Q4
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO2
 
-'The writer presents Katniss as a tough, resourceful survivor who has learned to fend for herself.' How far do you agree with this view?
+What are Katniss's thoughts and feelings in this extract? How does the writer show these thoughts and feelings?
 
-You should write about:
-- your own impressions of Katniss
-- how the writer has created these impressions.
+You must refer to the language used in the text to support your answer, commenting on:
+- word choice
+- language features and techniques
+- sentence forms.
 
 ## Q5
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO4
 
 To what extent do you agree that the writer successfully creates a sense of danger and oppression in the extract as a whole?
 
@@ -360,17 +363,17 @@ You should write about:
 
 ## Q6
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 Choose one of the following titles for your writing:
 
-**Either:**
+**(a)** Write a description of a place where nature feels both beautiful and threatening.
 
-Write a description of a place where nature feels both beautiful and threatening.
+**(b)** Write a story about a character who must make a dangerous journey.
 
-**Or:**
+**(c)** Write about a moment when everything changed.
 
-Write a story about a character who must make a dangerous journey.
+**(d)** Write a story that ends: "Nothing would ever be the same again."
 
 (24 marks for content and organisation)
 (16 marks for sentence structure, punctuation and spelling)
@@ -455,17 +458,18 @@ How does the writer use language and structure to create effects in lines 26 to 
 
 ## Q4
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO2
 
-'The writer makes us share Pi's trust in the crew, which makes the ending so shocking.' How far do you agree with this view?
+What are Pi's thoughts and feelings towards the crew in this extract? How does the writer show these thoughts and feelings?
 
-You should write about:
-- your own impressions of Pi's feelings towards the crew
-- how the writer has created these impressions.
+You must refer to the language used in the text to support your answer, commenting on:
+- word choice
+- language features and techniques
+- sentence forms.
 
 ## Q5
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO4
 
 To what extent do you agree that the writer successfully builds a sense of escalating panic throughout the extract?
 
@@ -476,17 +480,17 @@ You should write about:
 
 ## Q6
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 Choose one of the following titles for your writing:
 
-**Either:**
+**(a)** Write a description of a time when you felt completely out of your depth.
 
-Write a description of a time when you felt completely out of your depth.
+**(b)** Write a story about a character who discovers they have been betrayed by someone they trusted.
 
-**Or:**
+**(c)** Write about a moment when everything changed.
 
-Write a story about a character who discovers they have been betrayed by someone they trusted.
+**(d)** Write a story that ends: "Nothing would ever be the same again."
 
 (24 marks for content and organisation)
 (16 marks for sentence structure, punctuation and spelling)
@@ -571,17 +575,18 @@ How does the writer use language and structure to create effects in lines 26 to 
 
 ## Q4
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO2
 
-'The writer makes us share Pi's trust in the crew, which makes the ending so shocking.' How far do you agree with this view?
+What are Pi's thoughts and feelings towards the crew in this extract? How does the writer show these thoughts and feelings?
 
-You should write about:
-- your own impressions of Pi's feelings towards the crew
-- how the writer has created these impressions.
+You must refer to the language used in the text to support your answer, commenting on:
+- word choice
+- language features and techniques
+- sentence forms.
 
 ## Q5
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO4
 
 To what extent do you agree that the writer successfully builds a sense of escalating panic throughout the extract?
 
@@ -592,17 +597,17 @@ You should write about:
 
 ## Q6
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 Choose one of the following titles for your writing:
 
-**Either:**
+**(a)** Write a description of a time when you felt completely out of your depth.
 
-Write a description of a time when you felt completely out of your depth.
+**(b)** Write a story about a character who discovers they have been betrayed by someone they trusted.
 
-**Or:**
+**(c)** Write about a moment when everything changed.
 
-Write a story about a character who discovers they have been betrayed by someone they trusted.
+**(d)** Write a story that ends: "Nothing would ever be the same again."
 
 (24 marks for content and organisation)
 (16 marks for sentence structure, punctuation and spelling)
@@ -696,17 +701,18 @@ How does the writer use language and structure to create effects in lines 16 to 
 
 ## Q4
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO2
 
-'The writer presents Mr Fisher as a man whose passion for literature has been completely destroyed by years of disappointment.' How far do you agree with this view?
+What are Mr Fisher's thoughts and feelings in this extract? How does the writer show these thoughts and feelings?
 
-You should write about:
-- your own impressions of Mr Fisher
-- how the writer has created these impressions.
+You must refer to the language used in the text to support your answer, commenting on:
+- word choice
+- language features and techniques
+- sentence forms.
 
 ## Q5
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO4
 
 To what extent do you agree that the writer successfully conveys Mr Fisher's rediscovery of wonder and excitement in lines 33 to 48?
 
@@ -717,17 +723,17 @@ You should write about:
 
 ## Q6
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 Choose one of the following titles for your writing:
 
-**Either:**
+**(a)** Write a description of a classroom at the end of a long day.
 
-Write a description of a classroom at the end of a long day.
+**(b)** Write a story about a moment that changed someone's life.
 
-**Or:**
+**(c)** Write about a moment when everything changed.
 
-Write a story about a moment that changed someone's life.
+**(d)** Write a story that ends: "Nothing would ever be the same again."
 
 (24 marks for content and organisation)
 (16 marks for sentence structure, punctuation and spelling)
@@ -821,17 +827,18 @@ How does the writer use language and structure to create effects in lines 16 to 
 
 ## Q4
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO2
 
-'The writer presents Mr Fisher as a man whose passion for literature has been completely destroyed by years of disappointment.' How far do you agree with this view?
+What are Mr Fisher's thoughts and feelings in this extract? How does the writer show these thoughts and feelings?
 
-You should write about:
-- your own impressions of Mr Fisher
-- how the writer has created these impressions.
+You must refer to the language used in the text to support your answer, commenting on:
+- word choice
+- language features and techniques
+- sentence forms.
 
 ## Q5
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO4
 
 To what extent do you agree that the writer successfully conveys Mr Fisher's rediscovery of wonder and excitement in lines 33 to 48?
 
@@ -842,17 +849,17 @@ You should write about:
 
 ## Q6
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 Choose one of the following titles for your writing:
 
-**Either:**
+**(a)** Write a description of a classroom at the end of a long day.
 
-Write a description of a classroom at the end of a long day.
+**(b)** Write a story about a moment that changed someone's life.
 
-**Or:**
+**(c)** Write about a moment when everything changed.
 
-Write a story about a moment that changed someone's life.
+**(d)** Write a story that ends: "Nothing would ever be the same again."
 
 (24 marks for content and organisation)
 (16 marks for sentence structure, punctuation and spelling)
@@ -941,17 +948,18 @@ How does the writer use language and structure to create effects in lines 19 to 
 
 ## Q4
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO2
 
-'The writer brings the passengers vividly to life through their contrasting reactions to the difficult journey.' How far do you agree with this view?
+What are the passengers's thoughts and feelings in this extract? How does the writer show these thoughts and feelings?
 
-You should write about:
-- your own impressions of the passengers
-- how the writer has created these impressions.
+You must refer to the language used in the text to support your answer, commenting on:
+- word choice
+- language features and techniques
+- sentence forms.
 
 ## Q5
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO4
 
 To what extent do you agree that the writer successfully creates a mood of bleakness and discomfort throughout the extract?
 
@@ -962,17 +970,17 @@ You should write about:
 
 ## Q6
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 Choose one of the following titles for your writing:
 
-**Either:**
+**(a)** Write a description of a journey through wild and dramatic scenery.
 
-Write a description of a journey through wild and dramatic scenery.
+**(b)** Write a story set on a long journey where something unexpected happens.
 
-**Or:**
+**(c)** Write about a moment when everything changed.
 
-Write a story set on a long journey where something unexpected happens.
+**(d)** Write a story that ends: "Nothing would ever be the same again."
 
 (24 marks for content and organisation)
 (16 marks for sentence structure, punctuation and spelling)
@@ -1061,17 +1069,18 @@ How does the writer use language and structure to create effects in lines 19 to 
 
 ## Q4
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO2
 
-'The writer brings the passengers vividly to life through their contrasting reactions to the difficult journey.' How far do you agree with this view?
+What are the passengers's thoughts and feelings in this extract? How does the writer show these thoughts and feelings?
 
-You should write about:
-- your own impressions of the passengers
-- how the writer has created these impressions.
+You must refer to the language used in the text to support your answer, commenting on:
+- word choice
+- language features and techniques
+- sentence forms.
 
 ## Q5
 **Marks:** 10
-**AOs:** AO3
+**AOs:** AO4
 
 To what extent do you agree that the writer successfully creates a mood of bleakness and discomfort throughout the extract?
 
@@ -1082,17 +1091,17 @@ You should write about:
 
 ## Q6
 **Marks:** 40
-**AOs:** AO4, AO5
+**AOs:** AO5, AO6
 
 Choose one of the following titles for your writing:
 
-**Either:**
+**(a)** Write a description of a journey through wild and dramatic scenery.
 
-Write a description of a journey through wild and dramatic scenery.
+**(b)** Write a story set on a long journey where something unexpected happens.
 
-**Or:**
+**(c)** Write about a moment when everything changed.
 
-Write a story set on a long journey where something unexpected happens.
+**(d)** Write a story that ends: "Nothing would ever be the same again."
 
 (24 marks for content and organisation)
 (16 marks for sentence structure, punctuation and spelling)

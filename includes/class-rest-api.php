@@ -161,6 +161,12 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_tutor_auth'],
         ]);
 
+        // Tutor comment — save comments on student's canvas (v7.15.30)
+        register_rest_route($namespace, '/canvas/tutor-comment', [
+            'methods' => 'POST', 'callback' => [$this, 'tutor_save_comments'],
+            'permission_callback' => [$this, 'check_tutor_auth'],
+        ]);
+
         // Load sign-off data for a canvas document
         register_rest_route($namespace, '/canvas/load-signoff', [
             'methods' => 'GET', 'callback' => [$this, 'load_signoff'],
@@ -1052,6 +1058,7 @@ class SWML_REST_API {
         $topic_number = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
         $suffix = sanitize_text_field($params['suffix'] ?? '');
         $attempt = absint($params['attempt'] ?? 0);
+        $lesson_url = esc_url_raw($params['lessonUrl'] ?? '');
 
         if (empty($board) || empty($text)) {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
@@ -1081,6 +1088,10 @@ class SWML_REST_API {
         }
         if (!empty($suffix)) {
             $doc['suffix'] = $suffix;
+        }
+        // v7.15.30: Store LD lesson URL for dashboard deep links
+        if (!empty($lesson_url)) {
+            $doc['lessonUrl'] = $lesson_url;
         }
 
         // wp_slash prevents WordPress's internal wp_unslash from stripping backslashes in JSON
@@ -1263,6 +1274,75 @@ class SWML_REST_API {
             'success' => !empty($data),
             'chat'    => $data,
             'studentName' => $student ? ($student->first_name ?: $student->display_name) : 'Student',
+        ]);
+    }
+
+    /**
+     * Tutor review: save comments + updated HTML on student's canvas (v7.15.30).
+     * Merges tutor comments into the student's existing canvas document.
+     */
+    public function tutor_save_comments($request) {
+        $params = $request->get_json_params();
+        $student_id = absint($params['student_id'] ?? 0);
+        if (!$student_id) {
+            return new \WP_Error('missing_student', 'student_id is required', ['status' => 400]);
+        }
+
+        $auth = $this->verify_tutor_student_access($student_id);
+        if (is_wp_error($auth)) return $auth;
+
+        $board = sanitize_text_field($params['board'] ?? '');
+        $text  = sanitize_text_field($params['text'] ?? '');
+        $topic_number = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
+        $suffix = sanitize_text_field($params['suffix'] ?? '');
+        $attempt = absint($params['attempt'] ?? 1);
+        $new_comments = $params['comments'] ?? null;
+        $html = $params['html'] ?? '';
+
+        if (empty($board) || empty($text)) {
+            return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
+        }
+
+        if ($attempt < 1) {
+            $idx = $this->get_attempt_index($student_id, $board, $text, $topic_number, $suffix);
+            $attempt = $idx['current'] ?? 1;
+        }
+
+        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
+        $raw = get_user_meta($student_id, $meta_key, true);
+        $doc = [];
+        if (!empty($raw)) {
+            $doc = is_array($raw) ? $raw : (self::decode_canvas_json($raw) ?: []);
+        }
+
+        // Merge tutor comments into student's canvas doc
+        if ($new_comments !== null) {
+            $doc['comments'] = $new_comments;
+        }
+        // Update HTML with comment marks
+        if (!empty($html)) {
+            // Sanitize tutor HTML the same way as student canvas
+            $allowed = wp_kses_allowed_html('post');
+            $tags = ['p','h1','h2','h3','h4','h5','h6','span','div','li','ul','ol',
+                     'blockquote','table','tr','td','th','thead','tbody','section','mark','br','hr'];
+            foreach ($tags as $tag) {
+                if (!isset($allowed[$tag])) $allowed[$tag] = [];
+                $allowed[$tag]['class'] = true;
+                $allowed[$tag]['data-type'] = true;
+                $allowed[$tag]['data-id'] = true;
+                $allowed[$tag]['data-comment-id'] = true;
+                $allowed[$tag]['style'] = true;
+            }
+            $doc['html'] = wp_kses($html, $allowed);
+        }
+        $doc['savedAt'] = current_time('c');
+
+        $result = update_user_meta($student_id, $meta_key, wp_slash(wp_json_encode($doc)));
+
+        return rest_ensure_response([
+            'success' => $result !== false,
+            'key'     => $meta_key,
+            'savedAt' => $doc['savedAt'],
         ]);
     }
 

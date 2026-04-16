@@ -1,11 +1,11 @@
 # Topic 1: Jane Eyre (Protagonist)
 **Type:** protagonist
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Jane is Bronte's radical creation: a plain, poor, orphaned woman who insists on her right to feel, speak, and choose. She narrates her own story with fierce self-awareness, challenging every authority figure who tries to silence or diminish her. Students must analyse how Bronte uses Jane's first-person voice to assert female autonomy in a rigidly patriarchal society.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 23
 
 ### Extract
@@ -41,18 +41,18 @@
 ### Question
 Explore how Bronte presents Jane as an independent and passionate character in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Bronte present Jane Eyre as an unconventional heroine in *Jane Eyre*? You must refer to the context of the novel in your answer. [40]
+In what way does Bronte present Jane Eyre as an unconventional heroine in *Jane Eyre*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 2: Conceptual Notes
 **Type:** conceptual-notes
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** This topic covers key concepts, context, and terminology for Jane Eyre. No essay question is assigned. Students consolidate their understanding of Victorian gender roles, the Bildungsroman tradition, the Gothic and Romantic influences on Bronte's writing, and the social conditions of 19th-century England including the governess class, marriage law, and the treatment of women and the mentally ill.
 **Marks:** 0
 **AOs:** —
@@ -64,12 +64,12 @@ N/A — Conceptual Notes topic.
 
 # Topic 3: Rochester
 **Type:** central_character
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Rochester is a complex, morally ambiguous figure — passionate and magnetic, but also deceitful and domineering. He conceals his marriage to Bertha, manipulates Jane with the Blanche Ingram ruse, and attempts bigamy. Yet Bronte also presents him as a man trapped by his family's greed and society's rigid laws. Students should analyse how Bronte complicates the Byronic hero archetype and what Rochester's eventual humbling reveals about the novel's moral framework.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 14
 
 ### Extract
@@ -105,23 +105,23 @@ N/A — Conceptual Notes topic.
 ### Question
 Explore how Bronte presents the relationship between Rochester and Jane in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Bronte present Rochester as a complex character in *Jane Eyre*? You must refer to the context of the novel in your answer. [40]
+In what way does Bronte present Rochester as a complex character in *Jane Eyre*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 4: Love and Passion
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Love in Jane Eyre is never simple or safe. Bronte presents it as a force that can liberate but also enslave, and Jane must learn to distinguish genuine mutual love from dependency, manipulation, and self-sacrifice. The novel insists that true love requires equality and honesty — Jane will not accept Rochester on any other terms. Students should analyse how Bronte uses imagery of fire, nature, and the supernatural to convey the intensity of passion alongside its dangers.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 37
 
 ### Extract
@@ -157,23 +157,23 @@ In what way does Bronte present Rochester as a complex character in *Jane Eyre*?
 ### Question
 Explore how Bronte presents the theme of love in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Bronte present the theme of love and passion in *Jane Eyre*? You must refer to the context of the novel in your answer. [40]
+In what way does Bronte present the theme of love and passion in *Jane Eyre*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 5: Independence and Self-Respect
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Jane's insistence on independence is the moral backbone of the novel. She refuses to become Rochester's mistress because it would destroy her self-respect; she refuses St. John Rivers because it would destroy her identity. Bronte presents independence not as selfishness but as a spiritual and moral necessity, particularly radical for a female character in 1847. Students should analyse how Bronte structures the novel so that Jane can only return to Rochester once she has secured her own financial and emotional autonomy.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 27
 
 ### Extract
@@ -208,23 +208,23 @@ In what way does Bronte present the theme of love and passion in *Jane Eyre*? Yo
 ### Question
 Explore how Bronte presents the theme of independence and self-respect in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Bronte present the importance of independence in *Jane Eyre*? You must refer to the context of the novel in your answer. [40]
+In what way does Bronte present the importance of independence in *Jane Eyre*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 6: Social Class and Inequality
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Jane occupies an uncomfortable middle ground in the Victorian class system: educated enough for genteel company but too poor to belong. As a governess she is neither servant nor family, and characters like Blanche Ingram and the Reed family constantly remind her of her low status. Bronte uses Jane's class position to expose the cruelty and hypocrisy of a society that equates wealth with worth. Students should analyse how Bronte presents class barriers as artificial and morally indefensible.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 17
 
 ### Extract
@@ -258,23 +258,23 @@ In what way does Bronte present the importance of independence in *Jane Eyre*? Y
 ### Question
 Explore how Bronte presents attitudes towards social class in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Bronte present the theme of social class and inequality in *Jane Eyre*? You must refer to the context of the novel in your answer. [40]
+In what way does Bronte present the theme of social class and inequality in *Jane Eyre*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 7: Religion and Morality
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Bronte presents three contrasting models of Christianity through Brocklehurst (hypocrisy), Helen Burns (passive acceptance), and St. John Rivers (cold duty) — and rejects all three. Jane forges her own moral code that balances spiritual conviction with human feeling. Bronte's position was radical for 1847: she argues that blind obedience to religious authority can be as damaging as outright sin. Students should analyse how Bronte uses these characters to critique institutional religion while affirming personal faith.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 7
 
 ### Extract
@@ -310,23 +310,23 @@ In what way does Bronte present the theme of social class and inequality in *Jan
 ### Question
 Explore how Bronte presents religion and its effect on Jane in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Bronte present ideas about religion and morality in *Jane Eyre*? You must refer to the context of the novel in your answer. [40]
+In what way does Bronte present ideas about religion and morality in *Jane Eyre*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 8: The Red Room / Childhood Suffering
 **Type:** key_moment
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** The Red Room is the novel's foundational trauma and its most Gothic moment. Locked in the room where her uncle died, the ten-year-old Jane experiences terror, injustice, and powerlessness — the three forces she will spend the rest of the novel overcoming. Bronte uses the scene to establish Jane's emotional intensity and her refusal to accept punishment she has not deserved. The Red Room also foreshadows other imprisonments in the novel, including Bertha's attic confinement. Students should analyse Bronte's use of colour symbolism, Gothic atmosphere, and child perspective.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 2
 
 ### Extract
@@ -360,23 +360,23 @@ In what way does Bronte present ideas about religion and morality in *Jane Eyre*
 ### Question
 Explore how Bronte creates a sense of fear and confinement in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Bronte present childhood suffering in *Jane Eyre*? You must refer to the context of the novel in your answer. [40]
+In what way does Bronte present childhood suffering in *Jane Eyre*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 9: Bertha Mason
 **Type:** supporting_character
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Bertha Mason is the novel's most controversial figure. Locked in the attic by Rochester, she functions as Jane's dark double — the woman whose passion has no outlet and no voice. Bronte's portrayal draws on 19th-century anxieties about race, empire, madness, and female sexuality, and modern readers must grapple with the colonial implications of her characterisation. Students should analyse how Bronte uses Bertha as both a Gothic device and a symbol of what happens when women are denied agency, while also considering the problematic racial and imperial context.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 26
 
 ### Extract
@@ -411,23 +411,23 @@ In what way does Bronte present childhood suffering in *Jane Eyre*? You must ref
 ### Question
 Explore how Bronte presents Bertha Mason in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Bronte present the character of Bertha Mason in *Jane Eyre*? You must refer to the context of the novel in your answer. [40]
+In what way does Bronte present the character of Bertha Mason in *Jane Eyre*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 10: Gender and Patriarchy
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Jane Eyre is one of the first English novels to directly challenge patriarchal authority from a female perspective. Jane resists male control at every stage: John Reed's bullying, Brocklehurst's humiliation, Rochester's attempted bigamy, and St. John's cold proposal. Bronte's famous passage on women's need for action and intellectual stimulation was a direct challenge to the Victorian doctrine of separate spheres. Students should analyse how Bronte uses Jane's inner voice to articulate a proto-feminist position, and how the novel's structure ensures Jane enters marriage only when genuine equality is possible.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Chapter 12
 
 ### Extract
@@ -460,11 +460,11 @@ In what way does Bronte present the character of Bertha Mason in *Jane Eyre*? Yo
 ### Question
 Explore how Bronte presents ideas about gender in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Bronte present the theme of gender and patriarchy in *Jane Eyre*? You must refer to the context of the novel in your answer. [40]
+In what way does Bronte present the theme of gender and patriarchy in *Jane Eyre*? You must refer to the context of the novel in your answer. [20]
 
 ---

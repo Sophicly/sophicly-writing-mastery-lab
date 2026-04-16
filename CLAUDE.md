@@ -13,7 +13,7 @@
 1. **Surgical precision only.** Never rewrite entire files. Always use targeted edits with exact string matching. The JS file is ~12,000 lines — wholesale changes break things.
 2. **Always read a file before editing it.** Content changes between sessions. Never assume line numbers or code blocks from memory.
 3. **Bump the version for EACH piece of work.** Update BOTH `Version:` in the PHP header AND the `SWML_VERSION` constant. Every distinct fix/feature gets its own version bump (e.g. v7.12.31 → v7.12.32).
-4. **Always validate after editing:** `node --check frontend/wml-app.js` for JS. Brace-count PHP files (`grep -o '{' file.php | wc -l` must equal `grep -o '}' file.php | wc -l`).
+4. **Always validate after editing:** `node --check frontend/wml-app.js` for JS. For PHP: run `php -l file.php` on every modified PHP file (catches syntax errors AND missing class references). Also brace-count (`grep -o '{' file.php | wc -l` must equal `grep -o '}' file.php | wc -l`). When calling a class statically (e.g. `ClassName::method()`), always `grep '^class '` in the target file to verify the exact class name — the project uses mixed naming conventions (`SWML_*` vs `Sophicly_*`).
 5. **Protocol markdown files are content, not code.** Edit them for pedagogy, not for bug fixes.
 6. **Never modify shared modules** (`protocols/shared/`) without understanding that ALL exam boards use them.
 7. **The sidebar always stays dark** — brand gradient background, never inverts with light/dark theme toggle.
@@ -243,7 +243,7 @@ Before shipping any change:
 3. **Verify screen transitions.** Old screen cleared before new one renders.
 4. **Test the async path.** Both outcomes: data before click AND click before data.
 5. **Check both chat pipelines.** Planning AND assessment.
-6. **Run validation.** `node --check wml-app.js`. Brace count PHP. Always.
+6. **Run validation.** `node --check` on all modified JS. `php -l` on all modified PHP. Brace count PHP. Verify any `ClassName::method()` calls use the correct class name (`grep '^class '` in the file). Always.
 7. **Version bump.** Both places in PHP.
 
 ---

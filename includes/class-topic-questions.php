@@ -386,17 +386,25 @@ class SWML_Topic_Questions {
      * v7.14.14: $board param added for Language papers where each board uses
      * different naming (AQA: -p1, EDUQAS: -c1, CCEA: -u1, etc.)
      */
-    private static function text_to_template_slug($text, $board = '') {
+    public static function text_to_template_slug($text, $board = '') {
         // Board-specific language paper mappings (v7.14.14)
         $lang_map = [
             'aqa'             => ['language1' => 'language-p1', 'language2' => 'language-p2'],
             'edexcel'         => ['language1' => 'language-p1', 'language2' => 'language-p2'],
             'eduqas'          => ['language1' => 'language-c1', 'language2' => 'language-c2'],
+            'wjec'            => ['language1' => 'language-c1', 'language2' => 'language-c2'],
             'ocr'             => ['language1' => 'language-c1', 'language2' => 'language-c2'],
             'ccea'            => ['language1' => 'language-u1', 'language2' => 'language-u4'],
             'edexcel-igcse'   => ['language1' => 'language-p1', 'language2' => 'language-p2'],
             'cambridge-igcse' => ['language1' => 'language-p1', 'language2' => 'language-p2'],
         ];
+        // v7.15.29: Normalize course-map language slugs to $lang_map keys
+        // e.g. aqa_lang_paper_1 → language1, edexcel_igcse_lang_a → language1
+        if (preg_match('/^(?:[a-z_]+)_lang_paper_(\d+)$/', $text, $m)) {
+            $text = 'language' . $m[1];
+        } elseif (preg_match('/^edexcel_igcse_lang_([ab])$/', $text, $m)) {
+            $text = 'language' . ($m[1] === 'a' ? '1' : '2');
+        }
         if ($board && isset($lang_map[$board][$text])) {
             return $lang_map[$board][$text];
         }
@@ -453,9 +461,27 @@ class SWML_Topic_Questions {
         $parsed = SWML_Topic_Parser::parse($markdown);
         if (empty($parsed)) return [];
 
+        // v7.15.36: Track template file mtime so we can auto re-import when markdown changes
+        update_option(self::option_key($board, $text) . '_mtime', filemtime($file), false);
+
         // Save to DB so subsequent requests are fast
         self::save_topics($board, $text, $parsed);
         return $parsed;
+    }
+
+    /**
+     * v7.15.36: Check if the markdown template file has been updated since last import.
+     * Returns true if file is newer than stored mtime — caller should re-import.
+     */
+    private static function template_file_is_newer($board, $text) {
+        $slug = self::text_to_template_slug($text, $board);
+        $board_slug = str_replace('_', '-', $board);
+        $template_dir = plugin_dir_path(dirname(__FILE__)) . 'protocols/shared/templates/topics/';
+        $file = $template_dir . $board_slug . '-' . $slug . '.md';
+        if (!file_exists($file)) return false;
+        $stored_mtime = (int) get_option(self::option_key($board, $text) . '_mtime', 0);
+        $file_mtime = filemtime($file);
+        return $file_mtime > $stored_mtime;
     }
 
     // ═══════════════════════════════════════════
@@ -493,6 +519,11 @@ class SWML_Topic_Questions {
             return new \WP_Error('missing_params', 'board, text, and topic are required', ['status' => 400]);
         }
 
+        // v7.15.36: Force re-import if markdown file has been updated since last import
+        if (self::template_file_is_newer($board, $text)) {
+            self::auto_import_from_template($board, $text);
+        }
+
         $data = self::get_topic($board, $text, $topic);
 
         // Auto-import from template file if DB is empty
@@ -521,6 +552,11 @@ class SWML_Topic_Questions {
 
         if (!$board || !$text) {
             return new \WP_Error('missing_params', 'board and text are required', ['status' => 400]);
+        }
+
+        // v7.15.36: Force re-import if markdown file has been updated since last import
+        if (self::template_file_is_newer($board, $text)) {
+            self::auto_import_from_template($board, $text);
         }
 
         $topics = self::get_topics($board, $text);

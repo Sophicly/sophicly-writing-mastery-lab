@@ -23,7 +23,7 @@
           "label": "Section A: Reading",
           "marks": 40,
           "questions": [
-            { "id": "Q1", "marks": 4, "aos": ["AO1"], "type": "multiple_choice", "description": "List 4 things from lines X-Y" },
+            { "id": "Q1", "marks": 4, "aos": ["AO1"], "type": "retrieval", "description": "List 4 things from lines X-Y" },
             { "id": "Q2", "marks": 8, "aos": ["AO2"], "type": "analysis", "description": "How does the writer use language to..." },
             { "id": "Q3", "marks": 8, "aos": ["AO2"], "type": "analysis", "description": "How has the writer structured the text to..." },
             { "id": "Q4", "marks": 20, "aos": ["AO4"], "type": "evaluation", "description": "To what extent do you agree..." }
@@ -81,7 +81,7 @@
             { "id": "Q2", "marks": 5, "aos": ["AO2"], "type": "short_analysis", "description": "What impressions does the writer create of X? Refer to language." },
             { "id": "Q3", "marks": 10, "aos": ["AO2"], "type": "analysis", "description": "In what ways does X change? How does the writer show these changes?" },
             { "id": "Q4", "marks": 10, "aos": ["AO2"], "type": "analysis", "description": "What are the narrator's thoughts and feelings? How does the writer show them?" },
-            { "id": "Q5", "marks": 10, "aos": ["AO3"], "type": "evaluation", "description": "To what extent do you agree with this statement?" }
+            { "id": "Q5", "marks": 10, "aos": ["AO4"], "type": "evaluation", "description": "To what extent do you agree with this statement?" }
           ]
         },
         {
@@ -334,7 +334,7 @@
           "label": "Section B: Transactional Writing",
           "marks": 45,
           "questions": [
-            { "id": "Q6", "marks": 45, "aos": ["AO5", "AO6"], "type": "choice", "description": "Choice of 2 transactional writing tasks (review, article, speech, letter)" }
+            { "id": "Q6", "marks": 45, "aos": ["AO4", "AO5"], "type": "choice", "content_marks": 27, "spag_marks": 18, "description": "Choice of 2 transactional writing tasks (review, article, speech, letter). Edexcel IGCSE 4EA1 uses AO4 (content/style) + AO5 (technical accuracy)." }
           ]
         }
       ]
@@ -356,7 +356,7 @@
           "label": "Section B: Imaginative Writing",
           "marks": 30,
           "questions": [
-            { "id": "Q2", "marks": 30, "aos": ["AO5", "AO6"], "type": "choice", "description": "Choice of 3 imaginative writing tasks (personal, title-based, image-prompted)" }
+            { "id": "Q2", "marks": 30, "aos": ["AO4", "AO5"], "type": "choice", "content_marks": 18, "spag_marks": 12, "description": "Choice of 3 imaginative writing tasks (personal, title-based, image-prompted). Edexcel IGCSE 4EA1 uses AO4 (content/style) + AO5 (technical accuracy)." }
           ]
         }
       ]

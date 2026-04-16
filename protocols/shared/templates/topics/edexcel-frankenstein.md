@@ -1,11 +1,11 @@
 # Topic 1: Victor Frankenstein
 **Type:** protagonist
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Victor is both the novel's hero and its cautionary figure. Shelley constructs him as a Romantic overreacher whose brilliance is inseparable from his moral blindness. Students must analyse how Shelley uses Victor's own narration to expose the gap between his self-image as a victim and his actual culpability, and how this reflects Romantic-era anxieties about unchecked scientific ambition.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Volume 1, Chapter 4
 
 ### Extract
@@ -38,28 +38,28 @@
 ### Question
 Explore how Shelley presents Victor's ambition and obsession in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Shelley present the character of Victor Frankenstein as both admirable and deeply flawed in *Frankenstein*? You must refer to the context of the novel in your answer. [40]
+In what way does Shelley present the character of Victor Frankenstein as both admirable and deeply flawed in *Frankenstein*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 2: Conceptual Notes
 **Type:** conceptual-notes
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** This topic covers the key concepts, themes, and contextual knowledge needed for Frankenstein.
 
-## Either
+## Part A
 **Marks:** 0
 **AOs:** none
 
 ### Question
 N/A — Conceptual Notes topic.
 
-## Or
+## Part B
 
 ### Question
 N/A
@@ -68,12 +68,12 @@ N/A
 
 # Topic 3: The Creature
 **Type:** central_character
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** The Creature is Shelley's most complex creation — simultaneously terrifying and sympathetic. His eloquent narration forces the reader to recognise his humanity even as other characters deny it. Students must analyse how Shelley uses the Creature's voice to interrogate Enlightenment ideas about nature, nurture, and what it means to be human, and how society's rejection transforms an innocent being into a murderer.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Volume 2, Chapter 7
 
 ### Extract
@@ -108,23 +108,23 @@ N/A
 ### Question
 Explore how Shelley presents the Creature's feelings of rejection and anger in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Shelley present the Creature as both monstrous and sympathetic in *Frankenstein*? You must refer to the context of the novel in your answer. [40]
+In what way does Shelley present the Creature as both monstrous and sympathetic in *Frankenstein*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 4: Ambition and Hubris
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Ambition in Frankenstein is presented as a Promethean force — noble in its aspirations but catastrophic in its consequences. Shelley draws on the Romantic fascination with transgression to argue that the desire to exceed natural limits, whether in science, exploration, or personal glory, leads inevitably to destruction. Students should analyse how Shelley uses the parallel ambitions of Walton and Victor to structure the novel's moral warning.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Volume 1, Chapter 4
 
 ### Extract
@@ -159,23 +159,23 @@ In what way does Shelley present the Creature as both monstrous and sympathetic 
 ### Question
 Explore how Shelley presents the consequences of Victor's ambition in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Shelley present ambition as a dangerous force in *Frankenstein*? You must refer to the context of the novel in your answer. [40]
+In what way does Shelley present ambition as a dangerous force in *Frankenstein*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 5: Isolation and Loneliness
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Isolation pervades every layer of Frankenstein — Victor isolates himself through obsession, the Creature is isolated by his appearance, and Walton is isolated by geography and ambition. Shelley presents isolation not merely as physical separation but as a severing of human bonds that leads to moral and psychological collapse. Students should analyse how Shelley uses setting, narrative structure, and the parallel experiences of Victor and the Creature to explore isolation as both chosen and imposed.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Volume 2, Chapter 4
 
 ### Extract
@@ -209,23 +209,23 @@ In what way does Shelley present ambition as a dangerous force in *Frankenstein*
 ### Question
 Explore how Shelley presents the Creature's isolation and longing for connection in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Shelley present isolation as a destructive force in *Frankenstein*? You must refer to the context of the novel in your answer. [40]
+In what way does Shelley present isolation as a destructive force in *Frankenstein*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 6: Creation and Responsibility
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** The question of a creator's responsibility to their creation is the moral engine of the novel. Shelley interrogates both scientific and parental duty through Victor's immediate abandonment of the Creature. Students should analyse how Shelley uses the creator-creation relationship to explore Romantic-era debates about God, parenting, and the ethics of science, and how Victor's failure of responsibility triggers every subsequent tragedy.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Volume 2, Chapter 7
 
 ### Extract
@@ -260,23 +260,23 @@ In what way does Shelley present isolation as a destructive force in *Frankenste
 ### Question
 Explore how Shelley presents the theme of creation and responsibility in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Shelley present the idea that creators have a responsibility towards their creations in *Frankenstein*? You must refer to the context of the novel in your answer. [40]
+In what way does Shelley present the idea that creators have a responsibility towards their creations in *Frankenstein*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 7: Nature vs Nurture
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Shelley uses the Creature's development to stage a philosophical experiment about whether character is innate or shaped by experience. Born innocent, the Creature becomes violent only after sustained rejection. Students should analyse how Shelley draws on Rousseau and Locke to argue that monstrosity is made, not born, and how this challenges the reader's assumptions about appearance, prejudice, and moral responsibility.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Volume 2, Chapter 3
 
 ### Extract
@@ -310,23 +310,23 @@ In what way does Shelley present the idea that creators have a responsibility to
 ### Question
 Explore how Shelley presents the effect of rejection and experience on the Creature's character in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Shelley present the idea that people are shaped by how they are treated in *Frankenstein*? You must refer to the context of the novel in your answer. [40]
+In what way does Shelley present the idea that people are shaped by how they are treated in *Frankenstein*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 8: The Sublime and Nature
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Shelley draws on the Romantic sublime to use landscapes as emotional and moral barometers throughout the novel. The Alps, the Arctic, and Mont Blanc are not mere backdrops but active forces that dwarf human ambition and expose Victor's insignificance. Students should analyse how Shelley uses natural settings to reflect characters' psychological states and to reinforce the novel's warning about humanity's place within nature.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Volume 2, Chapter 2
 
 ### Extract
@@ -358,23 +358,23 @@ In what way does Shelley present the idea that people are shaped by how they are
 ### Question
 Explore how Shelley uses the natural landscape to reflect Victor's emotions in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Shelley use nature and the sublime to explore ideas about human ambition in *Frankenstein*? You must refer to the context of the novel in your answer. [40]
+In what way does Shelley use nature and the sublime to explore ideas about human ambition in *Frankenstein*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 9: Family and Relationships
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Family in Frankenstein functions as both a haven and a casualty of ambition. The Frankenstein household is presented as an ideal of Enlightenment domesticity, which Victor systematically destroys through his obsessive pursuit of knowledge. Shelley uses the progressive loss of family members to dramatise the cost of abandoning human bonds, while the Creature's yearning for familial love exposes the cruelty of a society that judges by appearance.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Volume 3, Chapter 6
 
 ### Extract
@@ -407,23 +407,23 @@ In what way does Shelley use nature and the sublime to explore ideas about human
 ### Question
 Explore how Shelley presents the destruction of Victor's family relationships in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Shelley present family and relationships as important in *Frankenstein*? You must refer to the context of the novel in your answer. [40]
+In what way does Shelley present family and relationships as important in *Frankenstein*? You must refer to the context of the novel in your answer. [20]
 
 ---
 
 # Topic 10: Knowledge and Discovery
 **Type:** central_theme
-**Format:** either_or
+**Format:** dual
 **Teaching Point:** Shelley presents knowledge as a double-edged sword throughout the novel. For Victor, knowledge leads to catastrophe; for the Creature, it brings self-awareness and suffering; for Walton, it threatens destruction until he turns back. The novel's three narrators each represent a different stage in the cycle of ambition, discovery, and regret. Students should analyse how Shelley uses the motif of dangerous knowledge to connect the novel to the Prometheus myth and to wider Romantic debates about the limits of human understanding.
 
-## Either
+## Part A
 **Marks:** 20
-**AOs:** AO1,AO2,AO4
+**AOs:** AO2
 **Extract Location:** Volume 1, Chapter 3
 
 ### Extract
@@ -457,9 +457,9 @@ In what way does Shelley present family and relationships as important in *Frank
 ### Question
 Explore how Shelley presents Victor's pursuit of knowledge in this extract. Give examples from the extract to support your ideas. [20]
 
-## Or
-**Marks:** 40
-**AOs:** AO1,AO2,AO3,AO4
+## Part B
+**Marks:** 20
+**AOs:** AO1
 
 ### Question
-In what way does Shelley present knowledge and discovery as dangerous in *Frankenstein*? You must refer to the context of the novel in your answer. [40]
+In what way does Shelley present knowledge and discovery as dangerous in *Frankenstein*? You must refer to the context of the novel in your answer. [20]

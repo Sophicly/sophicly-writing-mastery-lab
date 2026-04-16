@@ -172,6 +172,9 @@
     let chatSaveTimer = null;
     let canvasSilentSend = false; // v7.14.3: When true, sendCanvasMessage skips user bubble display
     let _currentAddComment = null; // v7.14.48: Module-level ref for context toolbar (survives re-renders)
+    let _currentComments = null; // v7.15.30: Module-level ref to comments object (for tryServerLoad)
+    let _currentUpdateCommentCount = null; // v7.15.30: Module-level ref
+    let _currentUpdateCommentGutter = null; // v7.15.30: Module-level ref
     let _migrationActive = false; // v7.15.21: allows migrations to remove sections (module-scope for guard access)
 
     function saveCanvasChat(history, chatId) {
@@ -3196,6 +3199,7 @@
         }
 
         statusBar.appendChild(saveStatus);
+        _currentUpdateCommentCount = updateCommentCount; // v7.15.30: Expose to module scope
 
         // ── Detachable Extract Panel (v7.11.6, v7.14.61: dual independent panels) ──
         const extractPanels = {}; // keyed by source index (0, 1) or 'single' for non-multi
@@ -4362,7 +4366,37 @@
             }));
             const guidanceContent = el('div', { className: 'swml-canvas-guidance' });
 
+            // v7.15.33: Language papers need different guidance — multi-question format
+            // v7.15.34: Dynamic — check if the paper has any 20+ mark reading question
+            // Section A (reading): TTECEA paragraphs per ~4 marks
+            // Section B (writing): aim for ~650 words
+            const isLangPaper = /^language/i.test(state.subject || '');
+
+            // Check the paper's Section A for any 20+ mark reading questions
+            function paperHasLongReadingQ() {
+                if (!isLangPaper || !window.swmlLangSpecs) return false;
+                const boardSpecs = window.swmlLangSpecs[state.board];
+                const paperSpec = boardSpecs?.[state.subject] || boardSpecs?.[state.subject?.replace(/-/g, '_')];
+                if (!paperSpec?.sections) return false;
+                // Reading sections come before Writing sections in all specs
+                for (const section of paperSpec.sections) {
+                    // Skip writing sections — only check reading
+                    if (/writing|transactional|imaginative|composition|directed/i.test(section.label || '')) continue;
+                    for (const q of (section.questions || [])) {
+                        if ((q.marks || 0) >= 20) return true;
+                    }
+                }
+                return false;
+            }
+
             function getWordGuidanceText() {
+                if (isLangPaper) {
+                    const longQ = paperHasLongReadingQ();
+                    const readingPart = longQ
+                        ? 'Section A (reading): no word count — write one TTECEA paragraph per roughly 4 marks (except 20+ mark questions, where a proper essay structure is best).'
+                        : 'Section A (reading): no word count — write one TTECEA paragraph per roughly 4 marks.';
+                    return `${readingPart} Section B (writing): aim for ~650 words.`;
+                }
                 if (canvasDualTargets) {
                     const { partA, partB } = canvasDualTargets;
                     return `This is a two-part question. Part A: aim for ${partA.target} words (${partA.marks} marks). Part B: aim for ${partB.target} words (${partB.marks} marks). A "Mark Complete" button will appear once you reach the combined minimum.`;
@@ -4370,13 +4404,17 @@
                 return `Aim for ${canvasWordTarget} words. Once you reach ${canvasWordMinimum} words, a "Mark Complete" button will appear — but push for ${canvasWordTarget} if you can.`;
             }
 
+            const structureGuidance = isLangPaper
+                ? 'Write the very best you know at this moment. For each reading question, use TTECEA paragraphs. For the writing task, use a proper essay structure.'
+                : 'Write the very best you know at this moment. Structure: Introduction → 3 Body Paragraphs → Conclusion.';
+
             const tips = [
                 { icon: SVG_GUIDE_LOCK, colour: '#5333ed', text: 'This is your independent assessment. No help is available — no AI, no notes, no resources. Rely entirely on what you\'ve learned.' },
                 { icon: SVG_GUIDE_BRAIN, colour: '#51dacf', text: 'Try to recall everything you were taught. Extract your best knowledge and put it on the page.' },
                 { icon: SVG_GUIDE_TARGET, colour: '#4D76FD', text: getWordGuidanceText(), id: 'swml-guide-word-target' },
                 { icon: SVG_GUIDE_STOPWATCH, colour: '#51dacf', text: 'Work efficiently. Get your ideas down as quickly as possible to the best of your ability.' },
                 { icon: SVG_GUIDE_ARM, colour: '#1CD991', text: 'Don\'t worry about grades. The purpose is to diagnose your strengths and areas for development, so we can build on them and eliminate weaknesses.' },
-                { icon: SVG_GUIDE_WRITING, colour: '#5333ed', text: 'Write the very best you know at this moment. Structure: Introduction → 3 Body Paragraphs → Conclusion.' },
+                { icon: SVG_GUIDE_WRITING, colour: '#5333ed', text: structureGuidance },
             ];
 
             tips.forEach(t => {
@@ -6113,9 +6151,34 @@
         try { comments = JSON.parse(localStorage.getItem(commentKey)) || {}; } catch(e) {}
 
         function saveComments() {
-            try { localStorage.setItem(commentKey, JSON.stringify(comments)); } catch(e) {}
+            if (!state.reviewMode) {
+                try { localStorage.setItem(commentKey, JSON.stringify(comments)); } catch(e) {}
+            }
             if (typeof updateCommentGutter === 'function') requestAnimationFrame(updateCommentGutter);
             if (typeof updateCommentCount === 'function') updateCommentCount();
+            // v7.15.30: In review mode, persist tutor comments to server
+            if (state.reviewMode && state.reviewStudentId) {
+                clearTimeout(window._swmlTutorCommentTimer);
+                window._swmlTutorCommentTimer = setTimeout(() => {
+                    const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+                    fetch(API.base + 'canvas/tutor-comment', {
+                        method: 'POST', headers,
+                        body: JSON.stringify({
+                            student_id: state.reviewStudentId,
+                            board: state.board,
+                            text: state.text,
+                            topicNumber: state.topicNumber || null,
+                            suffix: suffix,
+                            attempt: state.attempt || 1,
+                            comments: comments,
+                            html: canvasEditor ? canvasEditor.getHTML() : '',
+                        })
+                    }).then(r => r.json()).then(res => {
+                        if (res.success) console.log('WML Review: Tutor comments saved');
+                        else console.warn('WML Review: Tutor comment save failed', res);
+                    }).catch(e => console.warn('WML Review: Tutor comment save error', e.message));
+                }, 2000);
+            }
         }
 
         // Custom Comment Mark — wraps selected text with a comment ID
@@ -7135,12 +7198,16 @@
                     const msg = textarea.value.trim();
                     if (!msg) { textarea.focus(); return; }
                     const id = 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+                    // v7.15.30: Use actual user name and role (tutor vs student)
+                    const commentAuthor = config.userName || 'Tutor';
+                    const commentRole = state.reviewMode ? 'tutor' : 'student';
                     comments[id] = {
                         id,
                         text: selectedText,
-                        author: 'Tutor',
+                        author: commentAuthor,
+                        role: commentRole,
                         avatar: config.userAvatar || '',
-                        thread: [{ author: 'Tutor', avatar: config.userAvatar || '', message: msg, timestamp: Date.now() }],
+                        thread: [{ author: commentAuthor, role: commentRole, avatar: config.userAvatar || '', message: msg, timestamp: Date.now() }],
                         resolved: false,
                         createdAt: Date.now(),
                     };
@@ -7163,6 +7230,8 @@
         // v7.14.48: Expose addComment to module scope so the once-registered
         // context toolbar event listener always calls the current render's function.
         _currentAddComment = addComment;
+        _currentComments = comments; // v7.15.30: Expose to module scope for tryServerLoad
+        _currentUpdateCommentGutter = updateCommentGutter;
 
         // ── Canvas Selection Toolbar ──
         // Uses fresh DOM lookups (not closure refs) to survive re-renders.
@@ -7416,7 +7485,15 @@
 
         canvasEditor = new Editor({
             element: editorEl,
-            editable: !state.reviewMode, // Tutor review: read-only (v7.15.2)
+            editable: true, // v7.15.30: Always editable so tutor can add comment marks in review mode
+            editorProps: state.reviewMode ? {
+                // v7.15.30: Block all text editing in review mode — only comment marks allowed
+                handleKeyDown: () => true,
+                handleKeyPress: () => true,
+                handlePaste: () => true,
+                handleDrop: () => true,
+                handleTextInput: () => true,
+            } : {},
             extensions: [
                 StarterKit.configure({
                     heading: { levels: [2, 3] },
@@ -9970,7 +10047,7 @@
         eduqas: {
             shakespeare:      { format: 'dual', partA: { marks: 15, aos: 'AO1,AO2' }, partB: { marks: 25, aos: 'AO1,AO2' }, hasExtract: true },
             modern_text:      { format: 'single', marks: 40, aos: 'AO1,AO2,AO3' },
-            '19th_century':   { format: 'single', marks: 40, aos: 'AO1,AO2' },
+            '19th_century':   { format: 'single', marks: 40, aos: 'AO1,AO2,AO3' },
             poetry_anthology: { format: 'dual', partA: { marks: 15, aos: 'AO1,AO2' }, partB: { marks: 25, aos: 'AO1,AO2,AO3' } },
             unseen_poetry:    { format: 'dual', partA: { marks: 15, aos: 'AO1,AO2' }, partB: { marks: 25, aos: 'AO1,AO2,AO3' } },
             language1:        { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO3,AO5,AO6' },
@@ -9981,7 +10058,7 @@
         // Edexcel GCSE Literature (1ET0) + Language (1EN0)
         edexcel: {
             shakespeare:      { format: 'dual', partA: { marks: 20, aos: 'AO2' }, partB: { marks: 20, aos: 'AO1,AO3' }, hasExtract: true },
-            '19th_century':   { format: 'dual', partA: { marks: 20, aos: 'AO1,AO2' }, partB: { marks: 20, aos: 'AO1,AO3' }, hasExtract: true },
+            '19th_century':   { format: 'dual', partA: { marks: 20, aos: 'AO2' }, partB: { marks: 20, aos: 'AO1' }, hasExtract: true },
             modern_text:      { format: 'single', marks: 40, aos: 'AO1,AO2,AO3' },
             poetry_anthology: { format: 'single', marks: 20, aos: 'AO1,AO2,AO3' },
             unseen_poetry:    { format: 'single', marks: 20, aos: 'AO1,AO2' },
@@ -10000,10 +10077,11 @@
             poetry_anthology:     { format: 'single', marks: 30, aos: 'AO1,AO2,AO3' },
             prose_anthology:      { format: 'single', marks: 30, aos: 'AO1,AO2' },
             nonfiction_anthology: { format: 'single', marks: 30, aos: 'AO1,AO2' },
-            language1:            { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO4,AO5,AO6' },
-            language2:            { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO3,AO5,AO6' },
-            language_p1:          { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO4,AO5,AO6' },
-            language_p2:          { format: 'multi_question', marks: 80, aos: 'AO1,AO2,AO3,AO5,AO6' },
+            // Edexcel IGCSE 4EA1 uses AO1-AO5 (no AO6). Writing = AO4 (content/style) + AO5 (technical accuracy).
+            language1:            { format: 'multi_question', marks: 90, aos: 'AO1,AO2,AO3,AO4,AO5' },
+            language2:            { format: 'multi_question', marks: 60, aos: 'AO1,AO2,AO4,AO5' },
+            language_p1:          { format: 'multi_question', marks: 90, aos: 'AO1,AO2,AO3,AO4,AO5' },
+            language_p2:          { format: 'multi_question', marks: 60, aos: 'AO1,AO2,AO4,AO5' },
         },
         // OCR GCSE Literature (J352) + Language
         ocr: {
@@ -10039,6 +10117,17 @@
      */
     function buildSyntheticTopicData(board, subject) {
         if (!board) return null;
+        // v7.15.29: Resolve generic 'language' to paper-specific key from state.text
+        if (subject === 'language' && state.text) {
+            const langPaperMatch = state.text.match(/lang_paper_(\d+)$/);
+            const igcseLangMatch = state.text.match(/igcse_lang_([ab])$/);
+            if (langPaperMatch || igcseLangMatch) {
+                const paperNum = langPaperMatch ? langPaperMatch[1] : (igcseLangMatch[1] === 'a' ? '1' : '2');
+                const boardLetterMap = { aqa:'p', edexcel:'p', 'edexcel-igcse':'p', 'cambridge-igcse':'p', eduqas:'c', wjec:'c', ocr:'c', ccea:'u' };
+                const letter = boardLetterMap[board] || 'p';
+                subject = `language_${letter}${paperNum}`;
+            }
+        }
         const boardDefaults = BOARD_FORMAT_DEFAULTS[board];
         const def = boardDefaults?.[subject];
         // If no specific config, generate a sensible default from board marks
@@ -10446,6 +10535,25 @@
             sectionHTML('plan', `Plan: Vision${prefix}`, true, null, inputHTML('What does the future look like if we act? Use imagery.', 'iumvcc-vision')) +
             sectionHTML('plan', `Plan: Counter-Argument${prefix}`, true, null, inputHTML('Acknowledge the opposition, then dismantle it.', 'iumvcc-counter')) +
             sectionHTML('plan', `Plan: Conclusion${prefix}`, true, null, inputHTML('Call to action. Leave a lasting image.', 'iumvcc-conclusion'));
+    }
+
+    /**
+     * v7.15.35: 7-Element Scene Structure plan for fiction/creative writing.
+     * Reuses the exact scene elements from Creative Writing Step 8 (Hook→Denouement).
+     * Used for language paper fiction Section B questions across all boards.
+     */
+    function buildCreativeScenePlan(partLabel) {
+        const prefix = partLabel ? `-${partLabel}` : '';
+        return sectionHTML('plan', `Plan: Scene Structure${partLabel ? ' — ' + partLabel : ''}`, true, null,
+            '<h3>The 7 Elements of Scene Structure</h3>' +
+            outlineRowHTML({ id: 'hook', label: 'Hook', prompt: 'Grab your reader\u2019s attention.' }, `plan-scene${prefix}-hook`) +
+            outlineRowHTML({ id: 'setup', label: 'Setup', prompt: 'Introduce the problem and the characters around it.' }, `plan-scene${prefix}-setup`) +
+            outlineRowHTML({ id: 'reaction', label: 'Reaction', prompt: 'The protagonist deals with the problems the best they can: coping and not coping.' }, `plan-scene${prefix}-reaction`) +
+            outlineRowHTML({ id: 'epiphany', label: 'Epiphany', prompt: 'The protagonist begins to understand what\u2019s really going on and what to do.' }, `plan-scene${prefix}-epiphany`) +
+            outlineRowHTML({ id: 'proaction', label: 'Proaction', prompt: 'The protagonist implements a plan. It fails.' }, `plan-scene${prefix}-proaction`) +
+            outlineRowHTML({ id: 'climax', label: 'Climax', prompt: 'The forces of good and evil collide.' }, `plan-scene${prefix}-climax`) +
+            outlineRowHTML({ id: 'denouement', label: 'Denouement', prompt: 'You write an unforgettable ending.' }, `plan-scene${prefix}-denouement`)
+        );
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -11923,7 +12031,9 @@
             const isWritingQ = qType === 'extended_writing' || qType === 'choice'
                 || qMarks >= 24 || /section\s*b|writing|creative|persuasive|narrative|descriptive/i.test(q.label || '');
             const isPersuasive = /persuasive|speech|letter|article|argue|convince|advise/i.test(q.text || q.label || '');
-            const isCreative = qType === 'creative_writing' || /^(?:creative writing|narrative writing|descriptive writing|write a story|write a description)/i.test(q.text || q.label || '');
+            // v7.15.35: Broadened fiction detection — unanchored, checks description + text + label
+            const creativeText = (q.text || '') + ' ' + (q.label || '') + ' ' + (specQ?.description || '');
+            const isCreative = qType === 'creative_writing' || qType === 'extended_writing' && /creative|imaginative|narrative|descriptive|write a story|write a description/i.test(creativeText) || /creative writing|creative prose|imaginative writing|narrative writing|descriptive writing|write a story|write a description/i.test(creativeText);
 
             // Section dividers from specs (multi-section support for Edexcel P2 etc.)
             if (sectionMap && sectionMap[qId] && sectionMap[qId] !== lastSection) {
@@ -11961,15 +12071,19 @@
             if (wordTarget) qInner += `<p><em>Aim for ${wordTarget.label}.</em></p>`;
             html += sectionHTML('question', `${qId}`, false, null, qInner);
 
-            // v7.14.66: Plan for ALL questions >= 6 marks in ALL modes (diagnostic + redraft)
-            if (qType !== 'multiple_choice' && qMarks >= 6) {
+            // v7.15.35: Plan for all AO2/AO3+ questions (>=5 marks), excluding retrieval & multiple_choice
+            // Retrieval questions (AO1 fact recall) never need planning regardless of marks
+            if (qType !== 'multiple_choice' && qType !== 'retrieval' && qMarks >= 5) {
                 html += dividerHTML(`PLAN \u2014 ${qId}`);
-                if (isPersuasive) {
+                if (isCreative && isWritingQ) {
+                    // Fiction Section B: 7-element scene structure (reused from CW Step 8)
+                    html += buildCreativeScenePlan(qId);
+                } else if (isPersuasive) {
                     html += buildIUMVCCPlanSection(qId);
                 } else if (isWritingQ || qMarks >= 20) {
                     html += buildPlanSection(qId, qMarks);
                 } else {
-                    // Analysis/evaluation/comparison: paragraph-based planning
+                    // Analysis/evaluation/comparison: paragraph-based planning (1 para per ~4-5 marks)
                     const planParas = Math.max(1, Math.ceil(qMarks / 5));
                     for (let i = 1; i <= planParas; i++) {
                         html += sectionHTML('plan', `Plan: Paragraph ${i} \u2014 ${qId}`, true, null,
@@ -13078,6 +13192,8 @@
                     sectionData: sectionData,
                     suffix: WML.getExerciseConfig(state.task).storageSuffix || '',
                     attempt: state.attempt || 1,
+                    // v7.15.30: Store LD lesson URL for dashboard deep links
+                    lessonUrl: state.embedded ? window.location.href : '',
                 })
             }).then(r => r.json()).then(res => {
                 if (res.success) console.log('WML: Canvas saved to server', { key: res.key, savedAt: res.savedAt, board: state.board, text: state.text, topic: state.topicNumber, wc: wc });
@@ -13116,6 +13232,12 @@
                 if (state.reviewMode) {
                     // Review mode: always load server content (student's document)
                     canvasEditor.commands.setContent(res.doc.html, false);
+                    // v7.15.30: Load comments from server doc for review mode
+                    if (res.doc.comments && typeof res.doc.comments === 'object' && _currentComments) {
+                        Object.assign(_currentComments, res.doc.comments);
+                        if (_currentUpdateCommentCount) _currentUpdateCommentCount();
+                        if (_currentUpdateCommentGutter) requestAnimationFrame(_currentUpdateCommentGutter);
+                    }
                     console.log('WML Review: Loaded student canvas from server');
                 } else {
                     const localContent = loadCanvasContent();
@@ -13222,9 +13344,47 @@
                 const docMarksMatch = currentHTML.match(/\[(\d+)\s*marks?\]/i);
                 const topicTotalMarks = (parseInt(topicData?.part_a_marks) || 0) + (parseInt(topicData?.part_b_marks) || 0) || parseInt(topicData?.marks) || 0;
                 const marksMismatch = docMarksMatch && topicTotalMarks > 0 && parseInt(docMarksMatch[1]) !== topicTotalMarks;
-                const isStale = !questionInDoc || marksMismatch;
+                // v7.15.32: Spec drift — doc was built with old question.type (e.g. multiple_choice checkboxes)
+                // but spec has since changed (e.g. to retrieval). Force regeneration.
+                let specDriftMismatch = false;
+                if (topicData.question_format === 'multi_question' && window.swmlLangSpecs) {
+                    const boardSpecs = window.swmlLangSpecs[state.board];
+                    const paperSpec = boardSpecs?.[state.subject] || boardSpecs?.[state.subject?.replace(/-/g, '_')];
+                    if (paperSpec?.sections) {
+                        outer: for (const section of paperSpec.sections) {
+                            for (const q of (section.questions || [])) {
+                                const hasCheckboxesInDoc = currentHTML.includes(`${q.id}-stmt-`);
+                                const specIsMultipleChoice = q.type === 'multiple_choice';
+                                if (hasCheckboxesInDoc && !specIsMultipleChoice) {
+                                    console.log(`WML: Spec drift — ${q.id} has checkboxes in doc but spec says ${q.type}`);
+                                    specDriftMismatch = true;
+                                    break outer;
+                                }
+                            }
+                        }
+                    }
+                }
+                // v7.15.36: For multi_question docs, check that EVERY question's text appears in doc.
+                // Q1 alone (questionInDoc above) doesn't catch changes to Q2-Q6.
+                let multiQuestionDrift = false;
+                if (topicData.question_format === 'multi_question') {
+                    let meta = topicData.metadata;
+                    if (typeof meta === 'string') { try { meta = JSON.parse(meta || '{}'); } catch(e) { meta = {}; } }
+                    const questions = meta?.questions || [];
+                    for (const q of questions) {
+                        if (!q.text || q.text.length < 10) continue;
+                        // Take first 40 chars of question text — substantial enough to be unique
+                        const snippet = q.text.substring(0, 40).trim();
+                        if (snippet && !currentHTML.includes(snippet)) {
+                            console.log(`WML: Multi-question drift — ${q.id || 'Q'}: "${snippet}" not in doc`);
+                            multiQuestionDrift = true;
+                            break;
+                        }
+                    }
+                }
+                const isStale = !questionInDoc || marksMismatch || specDriftMismatch || multiQuestionDrift;
                 if (isStale) {
-                    console.log('WML: Stale document detected — regenerating.', 'questionInDoc:', questionInDoc, 'marksMismatch:', marksMismatch, 'docMarks:', docMarksMatch?.[1], 'topicMarks:', topicTotalMarks);
+                    console.log('WML: Stale document detected — regenerating.', 'questionInDoc:', questionInDoc, 'marksMismatch:', marksMismatch, 'specDriftMismatch:', specDriftMismatch, 'multiQuestionDrift:', multiQuestionDrift, 'docMarks:', docMarksMatch?.[1], 'topicMarks:', topicTotalMarks);
                     try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
                     // Clear stale content from editor so the section-type guard below allows injection
                     // Temporarily disable section deletion guard (it would block and revert the clear)
@@ -13315,7 +13475,29 @@
         if (guideTip) {
             const icon = guideTip.querySelector('.swml-guide-icon');
             const iconHTML = icon ? icon.outerHTML : '';
-            if (canvasDualTargets) {
+            // v7.15.33: Language papers need split guidance (Section A/B)
+            // v7.15.34: Dynamic — check if paper has any 20+ mark reading question
+            const isLangPaper = /^language/i.test(state.subject || '');
+            if (isLangPaper) {
+                let hasLongReadingQ = false;
+                if (window.swmlLangSpecs) {
+                    const boardSpecs = window.swmlLangSpecs[state.board];
+                    const paperSpec = boardSpecs?.[state.subject] || boardSpecs?.[state.subject?.replace(/-/g, '_')];
+                    if (paperSpec?.sections) {
+                        for (const section of paperSpec.sections) {
+                            if (/writing|transactional|imaginative|composition|directed/i.test(section.label || '')) continue;
+                            for (const q of (section.questions || [])) {
+                                if ((q.marks || 0) >= 20) { hasLongReadingQ = true; break; }
+                            }
+                            if (hasLongReadingQ) break;
+                        }
+                    }
+                }
+                const readingPart = hasLongReadingQ
+                    ? 'Section A (reading): no word count — write one TTECEA paragraph per roughly 4 marks (except 20+ mark questions, where a proper essay structure is best).'
+                    : 'Section A (reading): no word count — write one TTECEA paragraph per roughly 4 marks.';
+                guideTip.innerHTML = `${iconHTML} ${readingPart} Section B (writing): aim for ~650 words.`;
+            } else if (canvasDualTargets) {
                 const { partA, partB } = canvasDualTargets;
                 guideTip.innerHTML = `${iconHTML} This is a two-part question. Part A: aim for ${partA.target} words (${partA.marks} marks). Part B: aim for ${partB.target} words (${partB.marks} marks). A "Mark Complete" button will appear once you reach the combined minimum.`;
             } else {
