@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.15.37
+ * Version: 7.15.38
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.15.37');
+define('SWML_VERSION', '7.15.38');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -477,6 +477,15 @@ class Sophicly_Writing_Mastery_Lab {
             if (!empty($ctx['category'] ?? $ctx['type'] ?? '')) {
                 $subject = $ctx['category'] ?? $ctx['type'] ?? '';
             }
+        }
+
+        // v7.15.38: Normalize board slug — course map uses underscore form
+        // (edexcel_igcse, cambridge_igcse) but WML frontend + REST API expect
+        // hyphenated form (edexcel-igcse, cambridge-igcse). Without this,
+        // BOARD_FORMAT_DEFAULTS lookup, REST auto-import filename, and frontend
+        // igcse_lang regex all silently fail for IGCSE courses.
+        if (!empty($board)) {
+            $board = str_replace('_', '-', $board);
         }
 
         // v7.15.29: For language papers, derive paper-specific subject from text_slug

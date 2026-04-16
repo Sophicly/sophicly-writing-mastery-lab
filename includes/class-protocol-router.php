@@ -35,6 +35,18 @@ class SWML_Protocol_Router {
         return self::$instance;
     }
 
+    /**
+     * v7.15.38: Normalize board slug to hyphenated form. Course map uses
+     * 'edexcel_igcse', 'cambridge_igcse' (underscore) but protocol directory
+     * structure + template filenames use hyphenated form. Without this, all
+     * board-specific routing (protocols, vector stores, preamble logic) can
+     * silently misfire when the caller passes the underscored form.
+     */
+    private static function normalize_board($board) {
+        if (!is_string($board) || $board === '') return $board;
+        return str_replace('_', '-', $board);
+    }
+
     private function __construct() {
         // Note: mwai_ai_query passes 1 arg in some AI Engine versions, 2 in others
         add_filter('mwai_ai_query', [$this, 'inject_session_context'], 10, 2);
@@ -380,12 +392,14 @@ class SWML_Protocol_Router {
      * board's own directory.
      */
     private function load_modular_protocol($context) {
-        $board   = $context['board'] ?? 'aqa';
+        $board   = self::normalize_board($context['board'] ?? 'aqa');
         $subject = $context['subject'] ?? '';
         $task    = $context['task'] ?? 'planning';
         $step    = (int) ($context['step'] ?? 1);
 
         // Security: restrict board to known values — prevent path traversal (v7.15.2)
+        // Accept both hyphenated and underscored forms for backward compatibility,
+        // though normalize_board() above means $board is always hyphenated here.
         $allowed_boards = ['aqa','ocr','eduqas','edexcel','edexcel-igcse','edexcel_igcse','sqa','ccea','cambridge-igcse','cambridge_igcse','shared'];
         if (!in_array($board, $allowed_boards, true)) {
             error_log("WML Router: Invalid board '{$board}', defaulting to aqa");
@@ -496,7 +510,8 @@ class SWML_Protocol_Router {
         $manifest_path = $plugin_dir . "protocols/{$board}/{$protocol_group}/manifest.json";
 
         // Edexcel IGCSE Language Paper 1 = nonfiction anthology — use nonfiction CN protocol (v7.14.89)
-        if ($task === 'conceptual_notes' && $subject === 'language1' && $board === 'edexcel_igcse') {
+        // v7.15.38: $board is normalized to hyphenated form at function entry.
+        if ($task === 'conceptual_notes' && $subject === 'language1' && $board === 'edexcel-igcse') {
             $protocol_group = 'nonfiction';
             $manifest_path = $plugin_dir . "protocols/shared/nonfiction/manifest.json";
         }
@@ -514,7 +529,7 @@ class SWML_Protocol_Router {
                 // Board-specific task (assessment, exam_question, planning, polishing)
                 // These need either the board's own protocol or AQA fallback for planning/polishing
                 $universal_essay_tasks = ['planning', 'polishing'];
-                $fallback_boards = ['ocr', 'eduqas', 'edexcel', 'edexcel-igcse'];
+                $fallback_boards = ['ocr', 'eduqas', 'edexcel', 'edexcel-igcse', 'cambridge-igcse'];
                 if (in_array($board, $fallback_boards)) {
                     if (in_array($task, $universal_essay_tasks)) {
                         // Planning and polishing CAN fall back to AQA (same TTECEA+C structure)
@@ -995,7 +1010,7 @@ TEMPLATE;
                 ];
                 break;
 
-            case 'edexcel_igcse':
+            case 'edexcel-igcse':
                 $level_term = 'Level';
                 $levels = [
                     ['label' => 'Level 3', 'desc' => 'explained, structured response'],
@@ -1071,6 +1086,8 @@ TEMPLATE;
      * Called by the REST endpoint /protocol-steps.
      */
     public function get_manifest_steps($board, $subject, $task = 'planning') {
+        // v7.15.38: normalize so callers can pass either 'edexcel_igcse' or 'edexcel-igcse'
+        $board = self::normalize_board($board);
         $plugin_dir = plugin_dir_path(dirname(__FILE__));
         $protocol_group = $this->resolve_protocol_group($board, $subject);
 
@@ -1214,7 +1231,7 @@ TEMPLATE;
                 'language1'             => 'language1',
                 'language2'             => 'language2',
             ],
-            'edexcel_igcse' => [
+            'edexcel-igcse' => [
                 'shakespeare'           => 'heritage',
                 'modern_text'           => 'modern',
                 'modern_prose'          => 'modern-prose',
@@ -1226,7 +1243,7 @@ TEMPLATE;
                 'language1'             => 'language1',
                 'language2'             => 'language2',
             ],
-            'cambridge_igcse' => [
+            'cambridge-igcse' => [
                 'shakespeare'           => 'shakespeare',
                 'modern_text'           => 'modern',
                 '19th_century'          => '19th_century',
@@ -1272,6 +1289,11 @@ TEMPLATE;
      * Build the session-specific preamble (public for fallback use by REST API)
      */
     public function build_preamble($context, $user_id) {
+        // v7.15.38: normalize board slug upstream so all downstream $board references
+        // work with the hyphenated canonical form (edexcel-igcse, cambridge-igcse).
+        if (isset($context['board'])) {
+            $context['board'] = self::normalize_board($context['board']);
+        }
         $user = get_userdata($user_id);
         $student_name = $user ? $user->display_name : 'Student';
         $first_name = $user ? ($user->first_name ?: $user->display_name) : 'Student';
@@ -2085,8 +2107,9 @@ TEMPLATE;
         } else if ($task === 'conceptual_notes') {
             // Conceptual Notes — Grade 9 understanding session (Topic 2)
             $is_poetry = in_array($subject, ['poetry_anthology', 'unseen_poetry']);
+            // v7.15.38: $board arrives normalized to hyphenated form.
             $is_nonfiction = ($subject === 'nonfiction_anthology')
-                || ($subject === 'language1' && $board === 'edexcel_igcse');
+                || ($subject === 'language1' && $board === 'edexcel-igcse');
             $preamble .= "\n### CRITICAL RULES FOR CONCEPTUAL NOTES SESSION\n";
             $preamble .= "1. **NEVER reveal vector store queries.** Query the vector store silently — never say 'querying', never show the query string, never mention the vector store exists. Use retrieved knowledge to inform your Socratic questions.\n";
             $preamble .= "2. **One question at a time.** Ask one question, wait for the student's response, give brief feedback, then ask the next question. Never combine multiple questions.\n";

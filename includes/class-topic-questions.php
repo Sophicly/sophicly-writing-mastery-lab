@@ -322,9 +322,13 @@ class SWML_Topic_Questions {
     // ═══════════════════════════════════════════
 
     /**
-     * Option key for a board/text combination
+     * Option key for a board/text combination.
+     * v7.15.38: Normalize board to hyphenated form so 'edexcel_igcse' and
+     * 'edexcel-igcse' (and same for cambridge) don't produce different keys
+     * and cause DB read/write mismatches.
      */
     private static function option_key($board, $text) {
+        $board = str_replace('_', '-', $board);
         return 'swml_topics_' . sanitize_key($board) . '_' . sanitize_key($text);
     }
 
@@ -387,6 +391,11 @@ class SWML_Topic_Questions {
      * different naming (AQA: -p1, EDUQAS: -c1, CCEA: -u1, etc.)
      */
     public static function text_to_template_slug($text, $board = '') {
+        // v7.15.38: Normalize board to hyphenated form — course map uses edexcel_igcse,
+        // cambridge_igcse (underscore) but WML lang_map + template filenames use
+        // hyphenated form. Without this, language paper subject resolution silently
+        // fails for IGCSE courses and students see the generic essay plan.
+        $board = str_replace('_', '-', $board);
         // Board-specific language paper mappings (v7.14.14)
         $lang_map = [
             'aqa'             => ['language1' => 'language-p1', 'language2' => 'language-p2'],
