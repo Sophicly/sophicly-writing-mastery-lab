@@ -1,63 +1,50 @@
-# Topic 1: Love
+# Topic 1: Romeo and Juliet — Love, Names, and Identity
 **Type:** shakespeare
 **Format:** either_or
-**Teaching Point:** Love in Romeo and Juliet is presented as a force that is both transcendent and destructive. Shakespeare uses the sonnet form, religious imagery, and oxymorons to explore how love operates in tension with the social world of Verona.
+**Teaching Point:** The balcony scene is the pivotal moment where Romeo and Juliet's private, transformative love is established in opposition to the public, family-defined identities their names impose on them. Juliet's meditation on names ("What's in a name?") rejects inherited enmity in favour of essence and chosen love; Romeo's willingness to be "new baptis'd" mirrors her defiance. Students should analyse how Shakespeare uses this exchange to dramatise the central tension of the play — love against the social structures that would destroy it — and track how that tension develops across the whole play.
 
 ## Either
 **Marks:** 40
 **AOs:** AO1,AO2,AO3,AO4*
-**Extract Location:** Act 1 Scene 5
-**Extract Context:** In this extract, Romeo and Juliet meet for the first time at the Capulet feast. Romeo has just noticed Juliet and approached her.
+**Extract Location:** Act 2 Scene 2
+**Extract Context:** At this point in the play, Romeo has secretly entered the Capulet orchard after the feast where he and Juliet first met. Juliet appears on the balcony above, unaware that Romeo is listening.
 
 ### Extract
-ROMEO
-If I profane with my unworthiest hand
-This holy shrine, the gentle sin is this:
-My lips, two blushing pilgrims, ready stand
-To smooth that rough touch with a tender kiss.
+JULIET
+O Romeo, Romeo, wherefore art thou Romeo?
+Deny thy father and refuse thy name;
+Or, if thou wilt not, be but sworn my love,
+And I'll no longer be a Capulet.
+
+ROMEO (aside)
+Shall I hear more, or shall I speak at this?
 
 JULIET
-Good pilgrim, you do wrong your hand too much,
-Which mannerly devotion shows in this.
-For saints have hands that pilgrims' hands do touch,
-And palm to palm is holy palmers' kiss.
+'Tis but thy name that is my enemy:
+Thou art thyself, though not a Montague.
+What's Montague? It is nor hand, nor foot,
+Nor arm, nor face, nor any other part
+Belonging to a man. O, be some other name!
+What's in a name? That which we call a rose
+By any other word would smell as sweet;
+So Romeo would, were he not Romeo call'd,
+Retain that dear perfection which he owes
+Without that title. Romeo, doff thy name,
+And for that name, which is no part of thee,
+Take all myself.
 
 ROMEO
-Have not saints lips, and holy palmers too?
-
-JULIET
-Ay, pilgrim, lips that they must use in prayer.
-
-ROMEO
-O then, dear saint, let lips do what hands do:
-They pray; grant thou, lest faith turn to despair.
-
-JULIET
-Saints do not move, though grant for prayers' sake.
-
-ROMEO
-Then move not while my prayer's effect I take.
-[He kisses her]
-Thus from my lips, by thine, my sin is purged.
-
-JULIET
-Then have my lips the sin that they have took.
-
-ROMEO
-Sin from my lips? O trespass sweetly urged!
-Give me my sin again.
-[He kisses her]
-
-JULIET
-You kiss by th' book.
+I take thee at thy word.
+Call me but love, and I'll be new baptis'd:
+Henceforth I never will be Romeo.
 
 ### Question
-Explore how Shakespeare presents love in the play. Refer to this extract from Act 1 Scene 5 and elsewhere in the play.
+Explore how Shakespeare presents Romeo and Juliet. Refer to this extract from Act 2 Scene 2 and elsewhere in the play.
 
 ## Or
 
 ### Question
-'In Romeo and Juliet, love is presented as a force that isolates the lovers from the world around them.' How far do you agree with this view?
+'In Romeo and Juliet, the lovers must reject the identities their families have given them in order to love each other.' How far do you agree with this view?
 
 ---
 
@@ -479,5 +466,68 @@ Explore how Shakespeare presents patriarchal authority in the play. Refer to thi
 
 ### Question
 'In Romeo and Juliet, the older generation fails the younger generation completely.' How far do you agree with this view?
+
+---
+
+# Topic 11: Love — Sonnet and Sacred Imagery
+**Type:** shakespeare
+**Format:** either_or
+**Teaching Point:** Love in Romeo and Juliet is presented as a force that is both transcendent and destructive. Shakespeare uses the sonnet form, religious imagery, and oxymorons to explore how love operates in tension with the social world of Verona.
+
+## Either
+**Marks:** 40
+**AOs:** AO1,AO2,AO3,AO4*
+**Extract Location:** Act 1 Scene 5
+**Extract Context:** In this extract, Romeo and Juliet meet for the first time at the Capulet feast. Romeo has just noticed Juliet and approached her.
+
+### Extract
+ROMEO
+If I profane with my unworthiest hand
+This holy shrine, the gentle sin is this:
+My lips, two blushing pilgrims, ready stand
+To smooth that rough touch with a tender kiss.
+
+JULIET
+Good pilgrim, you do wrong your hand too much,
+Which mannerly devotion shows in this.
+For saints have hands that pilgrims' hands do touch,
+And palm to palm is holy palmers' kiss.
+
+ROMEO
+Have not saints lips, and holy palmers too?
+
+JULIET
+Ay, pilgrim, lips that they must use in prayer.
+
+ROMEO
+O then, dear saint, let lips do what hands do:
+They pray; grant thou, lest faith turn to despair.
+
+JULIET
+Saints do not move, though grant for prayers' sake.
+
+ROMEO
+Then move not while my prayer's effect I take.
+[He kisses her]
+Thus from my lips, by thine, my sin is purged.
+
+JULIET
+Then have my lips the sin that they have took.
+
+ROMEO
+Sin from my lips? O trespass sweetly urged!
+Give me my sin again.
+[He kisses her]
+
+JULIET
+You kiss by th' book.
+
+### Question
+Explore how Shakespeare presents love in the play. Refer to this extract from Act 1 Scene 5 and elsewhere in the play.
+
+## Or
+
+### Question
+'In Romeo and Juliet, love is presented as a force that isolates the lovers from the world around them.' How far do you agree with this view?
 
 ---

@@ -1,7 +1,7 @@
-# Topic 1: Love
-**Type:** theme
+# Topic 1: Romeo and Juliet — Love, Names, and Identity
+**Type:** central_pair
 **Format:** dual
-**Teaching Point:** Romeo and Juliet presents love as a powerful, transformative force that exists in tension with the social world. Students should explore how Shakespeare uses language, imagery, and dramatic structure to present different facets of love — romantic idealism, physical desire, and love as a force that transcends death.
+**Teaching Point:** The balcony scene is the pivotal moment where Romeo and Juliet's private, transformative love is established in opposition to the public, family-defined identities their names impose on them. Juliet's meditation on names ("What's in a name?") rejects inherited enmity in favour of essence and chosen love; Romeo's willingness to be "new baptis'd" mirrors her defiance. Students should analyse how Shakespeare uses this exchange to dramatise the central tension of the play — love against the social structures that would destroy it — and track how that tension develops across the whole play.
 
 ## Part A — Extract
 **Marks:** 15
@@ -9,54 +9,43 @@
 **Extract Location:** Act 2 Scene 2
 
 ### Extract
-ROMEO
-But soft, what light through yonder window breaks?
-It is the east, and Juliet is the sun.
-Arise, fair sun, and kill the envious moon,
-Who is already sick and pale with grief
-That thou, her maid, art far more fair than she.
-Be not her maid, since she is envious;
-Her vestal livery is but sick and green,
-And none but fools do wear it; cast it off.
-It is my lady, O, it is my love!
-O, that she knew she were!
-She speaks, yet she says nothing. What of that?
-Her eye discourses; I will answer it.
-I am too bold; 'tis not to me she speaks.
-Two of the fairest stars in all the heaven,
-Having some business, do entreat her eyes
-To twinkle in their spheres till they return.
-What if her eyes were there, they in her head?
-The brightness of her cheek would shame those stars
-As daylight doth a lamp; her eyes in heaven
-Would through the airy region stream so bright
-That birds would sing and think it were not night.
-See how she leans her cheek upon her hand!
-O, that I were a glove upon that hand,
-That I might touch that cheek!
+JULIET
+O Romeo, Romeo, wherefore art thou Romeo?
+Deny thy father and refuse thy name;
+Or, if thou wilt not, be but sworn my love,
+And I'll no longer be a Capulet.
+
+ROMEO (aside)
+Shall I hear more, or shall I speak at this?
 
 JULIET
-                                    Ay me!
+'Tis but thy name that is my enemy:
+Thou art thyself, though not a Montague.
+What's Montague? It is nor hand, nor foot,
+Nor arm, nor face, nor any other part
+Belonging to a man. O, be some other name!
+What's in a name? That which we call a rose
+By any other word would smell as sweet;
+So Romeo would, were he not Romeo call'd,
+Retain that dear perfection which he owes
+Without that title. Romeo, doff thy name,
+And for that name, which is no part of thee,
+Take all myself.
 
 ROMEO
-                                           She speaks!
-O, speak again, bright angel, for thou art
-As glorious to this night, being o'er my head,
-As is a winged messenger of heaven
-Unto the white-upturned wondering eyes
-Of mortals that fall back to gaze on him
-When he bestrides the lazy-puffing clouds
-And sails upon the bosom of the air.
+I take thee at thy word.
+Call me but love, and I'll be new baptis'd:
+Henceforth I never will be Romeo.
 
 ### Question
-Look at how the characters speak and behave here. How do you think an audience might respond to this part of the play? Refer closely to details from the extract to support your answer.
+Look at how Romeo and Juliet speak and behave here. How do you think an audience might respond to this part of the play? Refer closely to details from the extract to support your answer.
 
 ## Part B — Whole Text
 **Marks:** 25
 **AOs:** AO1,AO2,AO3,AO4
 
 ### Question
-How does Shakespeare present the power of love throughout the play? Refer to characters and events from the play in your answer.
+How does Shakespeare present love and identity throughout the play? Refer to characters and events from the play in your answer.
 
 ---
 
@@ -610,5 +599,67 @@ Look at how the characters speak and behave here. How do you think an audience m
 
 ### Question
 How does Shakespeare present haste and impulsiveness as dangerous throughout the play? Refer to characters and events from the play in your answer.
+
+---
+
+# Topic 11: Love — Romeo's Perspective
+**Type:** theme
+**Format:** dual
+**Teaching Point:** Romeo and Juliet presents love as a powerful, transformative force that exists in tension with the social world. Students should explore how Shakespeare uses language, imagery, and dramatic structure to present different facets of love — romantic idealism, physical desire, and love as a force that transcends death.
+
+## Part A — Extract
+**Marks:** 15
+**AOs:** AO1,AO2
+**Extract Location:** Act 2 Scene 2
+
+### Extract
+ROMEO
+But soft, what light through yonder window breaks?
+It is the east, and Juliet is the sun.
+Arise, fair sun, and kill the envious moon,
+Who is already sick and pale with grief
+That thou, her maid, art far more fair than she.
+Be not her maid, since she is envious;
+Her vestal livery is but sick and green,
+And none but fools do wear it; cast it off.
+It is my lady, O, it is my love!
+O, that she knew she were!
+She speaks, yet she says nothing. What of that?
+Her eye discourses; I will answer it.
+I am too bold; 'tis not to me she speaks.
+Two of the fairest stars in all the heaven,
+Having some business, do entreat her eyes
+To twinkle in their spheres till they return.
+What if her eyes were there, they in her head?
+The brightness of her cheek would shame those stars
+As daylight doth a lamp; her eyes in heaven
+Would through the airy region stream so bright
+That birds would sing and think it were not night.
+See how she leans her cheek upon her hand!
+O, that I were a glove upon that hand,
+That I might touch that cheek!
+
+JULIET
+                                    Ay me!
+
+ROMEO
+                                           She speaks!
+O, speak again, bright angel, for thou art
+As glorious to this night, being o'er my head,
+As is a winged messenger of heaven
+Unto the white-upturned wondering eyes
+Of mortals that fall back to gaze on him
+When he bestrides the lazy-puffing clouds
+And sails upon the bosom of the air.
+
+### Question
+Look at how the characters speak and behave here. How do you think an audience might respond to this part of the play? Refer closely to details from the extract to support your answer.
+
+## Part B — Whole Text
+**Marks:** 25
+**AOs:** AO1,AO2,AO3,AO4
+
+### Question
+How does Shakespeare present the power of love throughout the play? Refer to characters and events from the play in your answer.
 
 ---

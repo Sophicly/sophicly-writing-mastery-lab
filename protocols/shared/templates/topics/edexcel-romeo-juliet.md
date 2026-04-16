@@ -1,60 +1,45 @@
-# Topic 1: Romeo — The Tragic Protagonist
-**Type:** protagonist
+# Topic 1: Romeo and Juliet — Love, Names, and Identity
+**Type:** central_pair
 **Format:** dual
-**Teaching Point:** We start with the protagonist because Romeo IS the story. His transformation from a lovesick boy infatuated with Rosaline to a man willing to die for Juliet drives every major event. Understanding how Shakespeare presents Romeo's impulsive passion reveals the play's core tragedy: that intense love and intense destruction are inseparable.
+**Teaching Point:** The balcony scene is the pivotal moment where Romeo and Juliet's private, transformative love is established in opposition to the public, family-defined identities their names impose on them. Juliet's meditation on names ("What's in a name?") rejects inherited enmity in favour of essence and chosen love; Romeo's willingness to be "new baptis'd" mirrors her defiance. Students should analyse how Shakespeare uses this exchange to dramatise the central tension of the play — love against the social structures that would destroy it — and track how that tension develops across the whole play.
 
 ## Part A — Extract
 **Marks:** 20
 **AOs:** AO1,AO2
-**Extract Location:** Act 2 Scene 2, lines 1 to 32
-**Extract Context:** In this extract, Romeo has climbed into the Capulet orchard after the feast and sees Juliet at her window.
+**Extract Location:** Act 2 Scene 2
+**Extract Context:** At this point in the play, Romeo has secretly entered the Capulet orchard after the feast where he and Juliet first met. Juliet appears on the balcony above, unaware that Romeo is listening.
 
 ### Extract
-ROMEO
-He jests at scars that never felt a wound.
+JULIET
+O Romeo, Romeo, wherefore art thou Romeo?
+Deny thy father and refuse thy name;
+Or, if thou wilt not, be but sworn my love,
+And I'll no longer be a Capulet.
 
-Enter JULIET above
-
-But soft, what light through yonder window breaks?
-It is the east, and Juliet is the sun.
-5    Arise, fair sun, and kill the envious moon,
-Who is already sick and pale with grief
-That thou, her maid, art far more fair than she.
-Be not her maid since she is envious;
-Her vestal livery is but sick and green,
-10   And none but fools do wear it. Cast it off.
-It is my lady. O, it is my love!
-O, that she knew she were!
-She speaks, yet she says nothing. What of that?
-Her eye discourses; I will answer it.
-15   I am too bold. 'Tis not to me she speaks.
-Two of the fairest stars in all the heaven,
-Having some business, do entreat her eyes
-To twinkle in their spheres till they return.
-What if her eyes were there, they in her head?
-20   The brightness of her cheek would shame those stars
-As daylight doth a lamp; her eyes in heaven
-Would through the airy region stream so bright
-That birds would sing and think it were not night.
-See how she leans her cheek upon her hand.
-25   O, that I were a glove upon that hand,
-That I might touch that cheek!
+ROMEO (aside)
+Shall I hear more, or shall I speak at this?
 
 JULIET
-                                  Ay me!
+'Tis but thy name that is my enemy:
+Thou art thyself, though not a Montague.
+What's Montague? It is nor hand, nor foot,
+Nor arm, nor face, nor any other part
+Belonging to a man. O, be some other name!
+What's in a name? That which we call a rose
+By any other word would smell as sweet;
+So Romeo would, were he not Romeo call'd,
+Retain that dear perfection which he owes
+Without that title. Romeo, doff thy name,
+And for that name, which is no part of thee,
+Take all myself.
 
 ROMEO
-                                         She speaks!
-O, speak again, bright angel, for thou art
-As glorious to this night, being o'er my head,
-30   As is a winged messenger of heaven
-Unto the white-upturned wondering eyes
-Of mortals that fall back to gaze on him
-When he bestrides the lazy-puffing clouds
-And sails upon the bosom of the air.
+I take thee at thy word.
+Call me but love, and I'll be new baptis'd:
+Henceforth I never will be Romeo.
 
 ### Question
-Explore how Shakespeare presents Romeo's feelings for Juliet in this extract.
+Explore how Shakespeare presents Romeo and Juliet in this extract.
 Refer closely to the extract in your answer.
 
 ## Part B — Elsewhere
@@ -62,10 +47,10 @@ Refer closely to the extract in your answer.
 **AOs:** AO1,AO2,AO3
 
 ### Question
-In this extract, Romeo expresses his overwhelming love for Juliet. Explain the importance of love elsewhere in the play.
+In this extract, Romeo and Juliet reject the names imposed on them by their feuding families in favour of chosen love. Explain the importance of identity and love elsewhere in the play.
 In your answer, you must consider:
-- how Romeo's love changes from the beginning to the end of the play
-- how Shakespeare uses Romeo to explore ideas about love and fate.
+- how Shakespeare presents the tension between public identity and private love across the play
+- how Shakespeare uses Romeo and Juliet to explore ideas about family, honour, and individual choice in Elizabethan society.
 You must refer to the context of the play in your answer.
 
 ---
@@ -748,6 +733,78 @@ In this extract, Juliet's family discuss her potential marriage to Paris. Explai
 In your answer, you must consider:
 - how Juliet's relationship with her parents changes during the play
 - how Shakespeare uses family conflict to reflect ideas about authority in Elizabethan society.
+You must refer to the context of the play in your answer.
+
+---
+
+# Topic 11: Romeo — The Tragic Protagonist
+**Type:** protagonist
+**Format:** dual
+**Teaching Point:** Romeo is the play's tragic centre. His transformation from a lovesick boy infatuated with Rosaline to a man willing to die for Juliet drives every major event. Understanding how Shakespeare presents Romeo's impulsive passion reveals the play's core tragedy: that intense love and intense destruction are inseparable.
+
+## Part A — Extract
+**Marks:** 20
+**AOs:** AO1,AO2
+**Extract Location:** Act 2 Scene 2, lines 1 to 32
+**Extract Context:** In this extract, Romeo has climbed into the Capulet orchard after the feast and sees Juliet at her window.
+
+### Extract
+ROMEO
+He jests at scars that never felt a wound.
+
+Enter JULIET above
+
+But soft, what light through yonder window breaks?
+It is the east, and Juliet is the sun.
+5    Arise, fair sun, and kill the envious moon,
+Who is already sick and pale with grief
+That thou, her maid, art far more fair than she.
+Be not her maid since she is envious;
+Her vestal livery is but sick and green,
+10   And none but fools do wear it. Cast it off.
+It is my lady. O, it is my love!
+O, that she knew she were!
+She speaks, yet she says nothing. What of that?
+Her eye discourses; I will answer it.
+15   I am too bold. 'Tis not to me she speaks.
+Two of the fairest stars in all the heaven,
+Having some business, do entreat her eyes
+To twinkle in their spheres till they return.
+What if her eyes were there, they in her head?
+20   The brightness of her cheek would shame those stars
+As daylight doth a lamp; her eyes in heaven
+Would through the airy region stream so bright
+That birds would sing and think it were not night.
+See how she leans her cheek upon her hand.
+25   O, that I were a glove upon that hand,
+That I might touch that cheek!
+
+JULIET
+                                  Ay me!
+
+ROMEO
+                                         She speaks!
+O, speak again, bright angel, for thou art
+As glorious to this night, being o'er my head,
+30   As is a winged messenger of heaven
+Unto the white-upturned wondering eyes
+Of mortals that fall back to gaze on him
+When he bestrides the lazy-puffing clouds
+And sails upon the bosom of the air.
+
+### Question
+Explore how Shakespeare presents Romeo's feelings for Juliet in this extract.
+Refer closely to the extract in your answer.
+
+## Part B — Elsewhere
+**Marks:** 20
+**AOs:** AO1,AO2,AO3
+
+### Question
+In this extract, Romeo expresses his overwhelming love for Juliet. Explain the importance of love elsewhere in the play.
+In your answer, you must consider:
+- how Romeo's love changes from the beginning to the end of the play
+- how Shakespeare uses Romeo to explore ideas about love and fate.
 You must refer to the context of the play in your answer.
 
 ---
