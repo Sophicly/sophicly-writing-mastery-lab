@@ -6754,3 +6754,169 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     border-color: rgba(83,51,237,0.3) !important;
     color: #5333ed !important;
 }
+
+/* ── v7.15.43: Diagnostic Timer Picker ── */
+.swml-timer-picker-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: swmlFadeIn 0.2s ease;
+}
+.swml-timer-picker-modal {
+    background: linear-gradient(135deg, #1C1D1F 0%, #25272B 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 32px 36px;
+    width: 480px;
+    max-width: 92%;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(81, 218, 207, 0.1);
+    color: #fff;
+    font-family: 'Proxima Soft Complete', system-ui, sans-serif;
+}
+.swml-timer-picker-title {
+    margin: 0 0 8px 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.01em;
+}
+.swml-timer-picker-subtitle {
+    margin: 0 0 22px 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.7);
+}
+.swml-timer-picker-presets {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+.swml-timer-picker-preset-btn {
+    background: rgba(81, 218, 207, 0.08);
+    border: 1px solid rgba(81, 218, 207, 0.2);
+    border-radius: 12px;
+    color: #51dacf;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    font-family: inherit;
+    text-align: left;
+}
+.swml-timer-picker-preset-btn:hover {
+    background: rgba(81, 218, 207, 0.16);
+    border-color: rgba(81, 218, 207, 0.4);
+    transform: translateY(-1px);
+}
+.swml-timer-picker-custom-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.swml-timer-picker-custom-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.65);
+    flex-shrink: 0;
+}
+.swml-timer-picker-custom-input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    padding: 8px 12px;
+    font-family: inherit;
+    width: 80px;
+    min-width: 0;
+}
+.swml-timer-picker-custom-input:focus {
+    outline: none;
+    border-color: #51dacf;
+}
+.swml-timer-picker-custom-btn {
+    background: #51dacf;
+    border: none;
+    border-radius: 8px;
+    color: #1C1D1F;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+}
+.swml-timer-picker-custom-btn:hover {
+    background: #7DF9E9;
+}
+.swml-timer-picker-none-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+}
+.swml-timer-picker-none-btn:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.85);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+/* Light theme */
+.swml-canvas-light ~ .swml-timer-picker-overlay .swml-timer-picker-modal,
+body[data-swml-theme="light"] .swml-timer-picker-modal {
+    background: #fff;
+    color: #1C1D1F;
+    border-color: rgba(0, 0, 0, 0.06);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(83, 51, 237, 0.08);
+}
+body[data-swml-theme="light"] .swml-timer-picker-title { color: #1C1D1F; }
+body[data-swml-theme="light"] .swml-timer-picker-subtitle { color: rgba(0, 0, 0, 0.6); }
+body[data-swml-theme="light"] .swml-timer-picker-preset-btn {
+    background: rgba(83, 51, 237, 0.06);
+    border-color: rgba(83, 51, 237, 0.18);
+    color: #5333ed;
+}
+body[data-swml-theme="light"] .swml-timer-picker-preset-btn:hover {
+    background: rgba(83, 51, 237, 0.12);
+    border-color: rgba(83, 51, 237, 0.35);
+}
+body[data-swml-theme="light"] .swml-timer-picker-custom-row {
+    background: rgba(0, 0, 0, 0.025);
+    border-color: rgba(0, 0, 0, 0.06);
+}
+body[data-swml-theme="light"] .swml-timer-picker-custom-label { color: rgba(0, 0, 0, 0.6); }
+body[data-swml-theme="light"] .swml-timer-picker-custom-input {
+    background: #fff;
+    border-color: rgba(0, 0, 0, 0.12);
+    color: #1C1D1F;
+}
+body[data-swml-theme="light"] .swml-timer-picker-custom-btn {
+    background: #5333ed;
+    color: #fff;
+}
+body[data-swml-theme="light"] .swml-timer-picker-custom-btn:hover { background: #4321d0; }
+body[data-swml-theme="light"] .swml-timer-picker-none-btn {
+    border-color: rgba(0, 0, 0, 0.12);
+    color: rgba(0, 0, 0, 0.55);
+}
+body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
+    background: rgba(0, 0, 0, 0.03);
+    color: rgba(0, 0, 0, 0.8);
+}

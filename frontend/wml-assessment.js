@@ -13257,6 +13257,77 @@
     }
 
     /**
+     * v7.15.43: Diagnostic timer picker overlay.
+     * Shows once per canvas (keyed by CANVAS_SAVE_KEY) when the student first
+     * opens a Phase 1 diagnostic writing exercise. Student picks a preset
+     * (45 min / 1 hour / 1h 30m), enters a custom duration, or chooses no timer.
+     * Choice is persisted in localStorage so re-entry doesn't re-prompt.
+     * Skipped for tutor/parent review, for redraft (Phase 2), and for non-
+     * assessment tasks.
+     */
+    function maybeShowDiagnosticTimerPicker() {
+        if (state.reviewMode) return;
+        if (state.task !== 'assessment') return;
+        if (state.phase === 'redraft') return;
+        // Skip if a timer is already running for some other reason
+        if (canvasTimerInterval) return;
+        const choiceKey = 'swml_timer_choice_' + CANVAS_SAVE_KEY();
+        try {
+            if (localStorage.getItem(choiceKey)) return;
+        } catch (e) { /* storage disabled — show anyway */ }
+
+        // Guard against double-render (overlay already open)
+        if (document.querySelector('.swml-timer-picker-overlay')) return;
+
+        const overlay = el('div', { className: 'swml-timer-picker-overlay' });
+        const modal = el('div', { className: 'swml-timer-picker-modal' });
+
+        modal.appendChild(el('h2', { className: 'swml-timer-picker-title', textContent: 'Set your timer' }));
+        modal.appendChild(el('p', { className: 'swml-timer-picker-subtitle',
+            textContent: 'Choose how long you want to spend on this diagnostic. You can keep writing after the timer ends — it just gives you exam-style pressure while you work.' }));
+
+        const chooseTimer = function (pickMode, seconds) {
+            try { localStorage.setItem(choiceKey, JSON.stringify({ mode: pickMode, seconds: seconds, choseAt: Date.now() })); } catch (e) {}
+            overlay.remove();
+            if (pickMode !== 'none' && seconds > 0 && window.WML && window.WML._startCanvasTimer) {
+                window.WML._startCanvasTimer(seconds, false);
+            }
+        };
+
+        const presets = [
+            { label: '45 minutes', seconds: 45 * 60 },
+            { label: '1 hour',     seconds: 60 * 60 },
+            { label: '1 hour 30 minutes', seconds: 90 * 60 },
+        ];
+        const presetRow = el('div', { className: 'swml-timer-picker-presets' });
+        presets.forEach(function (p) {
+            const btn = el('button', { className: 'swml-timer-picker-preset-btn', textContent: p.label,
+                onClick: function () { chooseTimer('preset', p.seconds); } });
+            presetRow.appendChild(btn);
+        });
+        modal.appendChild(presetRow);
+
+        const customRow = el('div', { className: 'swml-timer-picker-custom-row' });
+        customRow.appendChild(el('label', { className: 'swml-timer-picker-custom-label', textContent: 'Or pick your own:' }));
+        const customInput = el('input', { className: 'swml-timer-picker-custom-input', type: 'number', min: '1', max: '240', placeholder: 'minutes' });
+        customRow.appendChild(customInput);
+        customRow.appendChild(el('button', { className: 'swml-timer-picker-custom-btn', textContent: 'Start',
+            onClick: function () {
+                const mins = parseInt(customInput.value, 10);
+                if (!mins || mins < 1 || mins > 240) { customInput.focus(); return; }
+                chooseTimer('custom', mins * 60);
+            } }));
+        modal.appendChild(customRow);
+
+        modal.appendChild(el('button', { className: 'swml-timer-picker-none-btn',
+            textContent: 'No timer — work at my own pace',
+            onClick: function () { chooseTimer('none', 0); } }));
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+    }
+
+    /**
      * If in programme mode with a topic number, and the editor has no section blocks
      * (i.e. fresh document, not resumed), fetch the topic and inject the structured template.
      */
@@ -13424,11 +13495,15 @@
                     canvasEditor.commands.setContent(template, false);
                     snapshotTemplateBaseline(canvasEditor);
                     refreshWordCountUI();
+                    // v7.15.43: synthetic-fallback diagnostic still deserves the timer picker
+                    maybeShowDiagnosticTimerPicker();
                 }
             } else {
                 console.log('WML: No topic data, no board defaults — generic template');
                 if (canvasEditor && !canvasEditor.getHTML().includes('data-section-type')) {
                     canvasEditor.commands.setContent(getDefaultEssayTemplate(), false);
+                    // v7.15.43: offer picker even with the generic template — still a diagnostic
+                    maybeShowDiagnosticTimerPicker();
                 }
             }
             return;
@@ -13443,6 +13518,8 @@
             snapshotTemplateBaseline(canvasEditor);
             refreshWordCountUI();
             console.log('WML: Topic template injected');
+            // v7.15.43: Offer the student a timer when they first open a diagnostic
+            maybeShowDiagnosticTimerPicker();
         }
     }
 
