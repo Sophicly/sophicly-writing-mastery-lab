@@ -7109,6 +7109,8 @@
         ];
 
         function addComment(selFrom, selTo) {
+            // v7.15.40: parents view read-only — cannot create comments.
+            if (state.reviewMode && state.reviewRole === 'parent') return;
             const from = selFrom ?? canvasEditor.state.selection.from;
             const to = selTo ?? canvasEditor.state.selection.to;
             if (from === to) return; // v7.14.48: silent return instead of alert

@@ -407,6 +407,8 @@ window.WML = (function() {
         attempt: parseInt(config.urlParams?.attempt || '0') || 0,
         // Tutor review mode (v7.15.2)
         reviewMode: !!config.reviewMode,
+        // v7.15.40: 'tutor' | 'specialist' | 'admin' | 'parent' | '' — parent is read-only
+        reviewRole: config.reviewRole || '',
         reviewStudentId: config.reviewStudentId || 0,
         reviewStudentName: config.reviewStudentName || '',
     };

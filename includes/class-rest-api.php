@@ -1212,7 +1212,8 @@ class SWML_REST_API {
             return new WP_Error('missing_student', 'student_id is required', ['status' => 400]);
         }
 
-        $auth = $this->verify_tutor_student_access($student_id);
+        // v7.15.40: read-only viewers (parents with active connection) also allowed
+        $auth = $this->verify_viewer_access($student_id);
         if (is_wp_error($auth)) return $auth;
 
         $board = sanitize_text_field($request->get_param('board') ?? '');
@@ -1253,7 +1254,8 @@ class SWML_REST_API {
             return new WP_Error('missing_student', 'student_id is required', ['status' => 400]);
         }
 
-        $auth = $this->verify_tutor_student_access($student_id);
+        // v7.15.40: read-only viewers (parents with active connection) also allowed
+        $auth = $this->verify_viewer_access($student_id);
         if (is_wp_error($auth)) return $auth;
 
         $board  = sanitize_text_field($request->get_param('board') ?? '');
@@ -1357,6 +1359,39 @@ class SWML_REST_API {
         $att_role = get_user_meta($tutor_id, 'sophicly_att_role', true);
         if (in_array($att_role, ['tutor', 'specialist'], true)) return true;
         return new WP_Error('unauthorized', 'You are not authorized to view this student\'s work.', ['status' => 403]);
+    }
+
+    /**
+     * v7.15.40: Read-only viewer access. Accepts everyone that
+     * verify_tutor_student_access does, PLUS parents who have an ACTIVE
+     * connection linking them to the student in wp_sophicly_connections.
+     * Used by canvas/review + canvas/review-chat (read). Comment saves
+     * continue to use the stricter verify_tutor_student_access.
+     */
+    private function verify_viewer_access($student_id) {
+        // First try the write-access path — tutors, specialists, admins, the student themselves.
+        $tutor_result = $this->verify_tutor_student_access($student_id);
+        if ($tutor_result === true) return true;
+        // Fall through to parent check.
+        $viewer_id = get_current_user_id();
+        if (!$viewer_id) {
+            return new WP_Error('unauthorized', 'Login required.', ['status' => 401]);
+        }
+        // Parent role (by sophicly_role OR sophicly_att_role) with an active connection.
+        $sophicly_role = get_user_meta($viewer_id, 'sophicly_role', true);
+        $att_role      = get_user_meta($viewer_id, 'sophicly_att_role', true);
+        $is_parent_role = ($sophicly_role === 'parent') || ($att_role === 'parent');
+        if (!$is_parent_role) return $tutor_result;
+        global $wpdb;
+        $table = $wpdb->prefix . 'sophicly_connections';
+        $row = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM {$table}
+             WHERE parent_id = %d AND student_id = %d AND status = 'active'
+             LIMIT 1",
+            $viewer_id, $student_id
+        ));
+        if ($row) return true;
+        return new WP_Error('unauthorized', 'You are not linked to this student.', ['status' => 403]);
     }
 
     /**

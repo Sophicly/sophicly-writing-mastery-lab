@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.15.39
+ * Version: 7.15.40
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.15.39');
+define('SWML_VERSION', '7.15.40');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -265,22 +265,13 @@ class Sophicly_Writing_Mastery_Lab {
             }
         }
 
-        // Tutor review mode: resolve student info if ?student_id= is set (v7.15.4)
-        $review_student_id = absint($_GET['student_id'] ?? 0);
-        $review_student_name = '';
-        $review_mode = false;
-        if ($review_student_id) {
-            $can_review = current_user_can('manage_options')
-                || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'tutor'
-                || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'specialist';
-            if ($can_review) {
-                $student = get_userdata($review_student_id);
-                if ($student) {
-                    $review_student_name = $student->first_name ?: $student->display_name;
-                    $review_mode = true;
-                }
-            }
-        }
+        // Tutor/parent review mode: resolve student info if ?student_id= is set
+        // (v7.15.4 tutor; v7.15.40 parent + embed-path support).
+        $embed_review = $this->resolve_review_context();
+        $review_mode         = $embed_review['review_mode'];
+        $review_role         = $embed_review['review_role'];
+        $review_student_id   = $embed_review['student_id'];
+        $review_student_name = $embed_review['student_name'];
 
         wp_localize_script('swml-core', 'swmlConfig', [
             'restUrl'          => rest_url('sophicly-wml/v1/'),
@@ -295,6 +286,7 @@ class Sophicly_Writing_Mastery_Lab {
                                   || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'tutor'
                                   || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'specialist',
             'reviewMode'       => $review_mode,
+            'reviewRole'       => $review_role,  // v7.15.40: 'tutor' | 'specialist' | 'admin' | 'parent' | ''
             'reviewStudentId'  => $review_student_id,
             'reviewStudentName' => $review_student_name,
             'dashboardUrl'     => home_url('/my-dashboard/'),
@@ -626,6 +618,11 @@ class Sophicly_Writing_Mastery_Lab {
 
         // Localize swmlConfig (if not already done by standalone page)
         if (!wp_script_is('swml-core', 'done')) {
+            // v7.15.40: review mode must work in embedded (LearnDash lesson) context
+            // too, not just on the standalone /writing-mastery-lab/ page. Parent
+            // read-only access + tutor review both gate off $_GET['student_id'].
+            $embed_review = $this->resolve_review_context();
+
             wp_localize_script('swml-core', 'swmlConfig', [
                 'restUrl'        => rest_url('sophicly-wml/v1/'),
                 'wpRestUrl'      => rest_url(),
@@ -638,6 +635,10 @@ class Sophicly_Writing_Mastery_Lab {
                 'canSignOff'     => current_user_can('manage_options')
                                     || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'tutor'
                                     || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'specialist',
+                'reviewMode'        => $embed_review['review_mode'],
+                'reviewRole'        => $embed_review['review_role'],
+                'reviewStudentId'   => $embed_review['student_id'],
+                'reviewStudentName' => $embed_review['student_name'],
                 'dashboardUrl'   => home_url('/my-dashboard/'),
                 'libraryUrl'     => home_url('/library/'),
                 'courseResumeUrl' => '',
@@ -646,6 +647,7 @@ class Sophicly_Writing_Mastery_Lab {
                     'mode' => 'guided', 'board' => '', 'subject' => '', 'text' => '',
                     'task' => '', 'topic' => 0, 'poem' => '', 'type' => '',
                     'draft' => '', 'redraft' => '', 'unit_id' => 0,
+                    'student_id' => $embed_review['student_id'],
                 ],
             ]);
         } else {
@@ -659,6 +661,63 @@ class Sophicly_Writing_Mastery_Lab {
             $specs_json = file_get_contents($specs_file);
             wp_add_inline_script('swml-core', 'window.swmlLangSpecs=' . $specs_json . ';', 'before');
         }
+    }
+
+    /**
+     * v7.15.40: Resolve review-mode context from $_GET['student_id'].
+     * Used by both the standalone page handler AND the embedded shortcode
+     * handler so review mode works in either context (direct /writing-mastery-lab/
+     * URL OR inside a LearnDash lesson that embeds WML via shortcode).
+     *
+     * Returns:
+     *   review_mode   bool     — true when a valid viewer is viewing another student
+     *   review_role   string   — 'tutor' | 'specialist' | 'admin' | 'parent' | ''
+     *   student_id    int      — student being viewed (0 if not review mode)
+     *   student_name  string   — student's first or display name
+     *
+     * Parent check: user has sophicly_role='parent' (or att_role='parent')
+     * AND an active row in wp_sophicly_connections linking them to the student.
+     * Parents can READ but cannot comment (enforced at REST + frontend layers).
+     */
+    private function resolve_review_context() {
+        $out = ['review_mode' => false, 'review_role' => '', 'student_id' => 0, 'student_name' => ''];
+        $student_id = absint($_GET['student_id'] ?? 0);
+        if (!$student_id) return $out;
+
+        $current_uid = get_current_user_id();
+        if (!$current_uid) return $out;
+
+        $att_role      = get_user_meta($current_uid, 'sophicly_att_role', true);
+        $sophicly_role = get_user_meta($current_uid, 'sophicly_role', true);
+        $role = '';
+
+        if (current_user_can('manage_options')) {
+            $role = 'admin';
+        } elseif (in_array($att_role, ['tutor', 'specialist'], true)) {
+            $role = $att_role;
+        } elseif ($sophicly_role === 'parent' || $att_role === 'parent') {
+            global $wpdb;
+            $conn_table = $wpdb->prefix . 'sophicly_connections';
+            $has_link = $wpdb->get_var($wpdb->prepare(
+                "SELECT id FROM {$conn_table}
+                 WHERE parent_id = %d AND student_id = %d AND status = 'active'
+                 LIMIT 1",
+                $current_uid, $student_id
+            ));
+            if ($has_link) $role = 'parent';
+        }
+
+        if (!$role) return $out;
+
+        $student = get_userdata($student_id);
+        if (!$student) return $out;
+
+        return [
+            'review_mode' => true,
+            'review_role' => $role,
+            'student_id'  => $student_id,
+            'student_name' => $student->first_name ?: $student->display_name,
+        ];
     }
 
     /**
