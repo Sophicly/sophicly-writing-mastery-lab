@@ -14811,7 +14811,9 @@ ${html}
         ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-diag', innerHTML: SVG_BADGE_ICON + cfg.badgeLabel }));
         headerRow.appendChild(ctxBadges);
 
-        // Theme toggle (right)
+        // Theme toggle (right) — v7.15.45: hidden in embedded mode + LD → WML sync
+        // (matches renderCanvasWorkspace pattern; previously missing, causing a
+        // duplicate WML switcher and broken LearnDash → WML sync in discuss-feedback.)
         const headerRight = el('div', { className: 'swml-canvas-header-right' });
         const fbThemeToggle = createThemeToggleBtn('swml-canvas-theme-toggle', () => {
             toggleTheme();
@@ -14819,12 +14821,38 @@ ${html}
             canvas.classList.toggle('swml-canvas-light', t === 'light');
             overlay.dataset.swmlTheme = t;
         });
-        const initTheme = getTheme();
-        if (initTheme === 'light') canvas.classList.add('swml-canvas-light');
-        overlay.dataset.swmlTheme = initTheme;
+        if (WML.isEmbedded) fbThemeToggle.style.display = 'none';
         headerRight.appendChild(fbThemeToggle);
         headerRow.appendChild(headerRight);
         canvas.appendChild(headerRow);
+
+        // v7.15.45: One-directional LD → WML theme sync for the lightweight canvas.
+        // Reads <html data-theme> (LD controls this) and mirrors into the canvas.
+        {
+            const syncCanvasTheme = (theme) => {
+                canvas.classList.toggle('swml-canvas-light', theme === 'light');
+                overlay.dataset.swmlTheme = theme;
+                document.body.setAttribute('data-swml-theme', theme);
+                const root = document.getElementById('swml-root');
+                if (root) root.setAttribute('data-swml-theme', theme);
+                try { localStorage.setItem('swml-theme-manual', theme); } catch(e) {}
+                const toggle = document.getElementById('swml-theme-toggle');
+                if (toggle) toggle.setAttribute('aria-pressed', theme === 'dark' ? 'false' : 'true');
+            };
+            const htmlTheme = document.documentElement.getAttribute('data-theme');
+            const initialTheme = htmlTheme || getTheme();
+            syncCanvasTheme(initialTheme);
+
+            if (WML.isEmbedded) {
+                const ldObserver = new MutationObserver(() => {
+                    const ldTheme = document.documentElement.getAttribute('data-theme');
+                    if (ldTheme && ldTheme !== overlay.dataset.swmlTheme) {
+                        syncCanvasTheme(ldTheme);
+                    }
+                });
+                ldObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+            }
+        }
 
         // ── Main content area: video player + guidance panel ──
         const contentArea = el('div', { className: 'swml-feedback-content' });
