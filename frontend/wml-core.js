@@ -6,6 +6,31 @@
  * Other modules (wml-app.js, future wml-assessment.js, wml-planning.js)
  * consume from this namespace.
  */
+
+// v7.15.39: Mark a shared document as viewed when a tutor opens the review URL.
+// The Sophicly Toasts plugin shows a "Document Shared" toast to tutors that
+// links here with ?review=1&share_id=N. Firing this flips the row's status
+// from 'pending' to 'viewed' so the toast stops reappearing on every page load.
+// Fire-and-forget — tutors don't need a confirmation UI.
+(function () {
+    try {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('review') !== '1') return;
+        var shareId = parseInt(params.get('share_id'), 10);
+        if (!shareId) return;
+        var cfg = window.swmlConfig || {};
+        if (!cfg.restUrl || !cfg.nonce) return;
+        // cfg.restUrl is '/wp-json/writing-mastery-lab/v1/'; the sibling
+        // document-shares endpoint lives under '/wp-json/sophicly/v1/'.
+        var shareEndpoint = cfg.restUrl.replace('/writing-mastery-lab/v1/', '/sophicly/v1/')
+            + 'document-shares/' + shareId + '/view';
+        fetch(shareEndpoint, {
+            method: 'POST',
+            headers: { 'X-WP-Nonce': cfg.nonce },
+        }).catch(function () { /* silent */ });
+    } catch (e) { /* silent */ }
+})();
+
 window.WML = (function() {
     'use strict';
 
