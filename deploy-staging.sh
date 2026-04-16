@@ -17,6 +17,9 @@ echo ""
 
 rsync -avz --delete \
   --exclude="deploy-staging.sh" \
+  --exclude="deploy-production.sh" \
+  --exclude=".git" \
+  --exclude=".gitignore" \
   --exclude=".DS_Store" \
   --exclude="*.log" \
   -e "ssh -i $SSH_KEY" \
