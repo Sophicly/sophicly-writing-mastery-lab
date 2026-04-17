@@ -13779,29 +13779,45 @@
         if (!state.board || !state.text) return;
         // 2. Extract structured section data (v7.11.9)
         const sectionData = typeof _extractDocumentData === 'function' ? _extractDocumentData() : null;
+        // v7.15.59: Snapshot all task-derived values at enqueue time. html is
+        // captured above; suffix/attempt/topicNumber/task used to live inside
+        // the setTimeout closure and re-read state 5s later. Under soft nav
+        // (state.task flipping between exercises before the timer fires), the
+        // save would POST task-A's html under task-B's suffix — observed:
+        // Memory Practice HTML written to the exam_question (_eq) key.
+        // Snapshotting keeps suffix + content consistent regardless of nav.
+        const snap = {
+            board: state.board,
+            text: state.text,
+            topicNumber: state.topicNumber || null,
+            task: state.task,
+            suffix: WML.getExerciseConfig(state.task).storageSuffix || '',
+            attempt: state.attempt || 1,
+            embedded: state.embedded,
+        };
         // 3. Debounced server save (every 5s, not every 2s like localStorage)
         clearTimeout(canvasSaveToServerTimer);
         canvasSaveToServerTimer = setTimeout(() => {
             fetch(API.canvasSave, {
                 method: 'POST', headers,
                 body: JSON.stringify({
-                    board: state.board,
-                    text: state.text,
+                    board: snap.board,
+                    text: snap.text,
                     html: html,
                     wordCount: wc,
-                    topicNumber: state.topicNumber || null,
+                    topicNumber: snap.topicNumber,
                     sectionData: sectionData,
-                    suffix: WML.getExerciseConfig(state.task).storageSuffix || '',
-                    attempt: state.attempt || 1,
+                    suffix: snap.suffix,
+                    attempt: snap.attempt,
                     // v7.15.30: Store LD lesson URL for dashboard deep links.
                     // v7.15.50: Fallback to WML deep-link when not embedded so the
                     // dashboard Resume button always has a target.
-                    lessonUrl: state.embedded
+                    lessonUrl: snap.embedded
                         ? window.location.href
-                        : _buildWmlDeepLink({ board: state.board, text: state.text, topic: state.topicNumber, task: state.task }),
+                        : _buildWmlDeepLink({ board: snap.board, text: snap.text, topic: snap.topicNumber, task: snap.task }),
                 })
             }).then(r => r.json()).then(res => {
-                if (res.success) console.log('WML: Canvas saved to server', { key: res.key, savedAt: res.savedAt, board: state.board, text: state.text, topic: state.topicNumber, wc: wc });
+                if (res.success) console.log('WML: Canvas saved to server', { key: res.key, savedAt: res.savedAt, board: snap.board, text: snap.text, topic: snap.topicNumber, wc: wc });
                 else console.warn('WML: Canvas save FAILED', res);
             }).catch(e => console.warn('WML: Server save failed, localStorage retained', e.message));
         }, 5000);
