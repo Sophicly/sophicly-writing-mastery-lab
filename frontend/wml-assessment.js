@@ -126,6 +126,52 @@
         console.log('WML CW: Sub-step complete →', detected.name, `(step_${detected.stepNum}, substep_${detected.substepNum})`);
     }
 
+    // v7.15.46: Attempt badge for canvas ctx-badge rows.
+    // Training env uses the sidebar protoBadges attempt badge (see _updateAttemptBadge
+    // inside buildTrainingPanels). Diagnostic and lightweight-video canvases (discuss
+    // feedback, mark-scheme study, model-answer video) use the ctx-badge row at the
+    // top of the canvas — this helper keeps that in sync with state.attempt.
+    function _updateCtxAttemptBadge() {
+        const ctx = document.querySelector('#swml-canvas-overlay .swml-canvas-ctx');
+        if (!ctx) return;
+        const existing = ctx.querySelector('.swml-ctx-attempt-badge');
+        const shouldShow = state.mode === 'guided' && (state.attempt || 0) >= 1;
+        if (!shouldShow) {
+            if (existing) existing.remove();
+            return;
+        }
+        if (existing) {
+            existing.textContent = `Attempt ${state.attempt}`;
+            return;
+        }
+        ctx.appendChild(el('span', {
+            className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
+            textContent: `Attempt ${state.attempt}`,
+        }));
+    }
+
+    // v7.15.46: Resolves state.attempt from the server if not already set. Used by
+    // diagnostic + lightweight-video canvases. Training env has its own resolution
+    // flow in _initTrainingChat that handles mode overlays and attempt selectors.
+    async function _resolveCtxAttempt() {
+        if ((state.attempt || 0) >= 1) return;
+        if (state.reviewMode || !state.board || !state.text) return;
+        try {
+            const cfg = (WML.getExerciseConfig && WML.getExerciseConfig(state.task)) || {};
+            const suffix = cfg.storageSuffix || '';
+            const url = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(suffix)}`;
+            const res = await fetch(url, { headers }).then(r => r.json());
+            if (res && res.success && res.attempts && res.attempts.current) {
+                state.attempt = res.attempts.current;
+            } else if (!state.attempt) {
+                state.attempt = 1;
+            }
+        } catch (e) {
+            console.warn('WML Attempt: ctx resolution failed, defaulting to 1', e.message);
+            if (!state.attempt) state.attempt = 1;
+        }
+    }
+
     // Pre-assessment functions (defined in wml-app.js entry flow section)
     const destroyShader = () => window.WML.destroyShader();
     const syncUrl = () => window.WML.syncUrl?.();
@@ -4360,6 +4406,9 @@
             console.log('WML: Training-env direct render for', state.task, '(no diagnostic flash)');
         } else {
             // Diagnostic mode — guidance tips
+            // v7.15.46: Resolve + render attempt badge in the ctx row (training env uses
+            // its own sidebar badge via tp._updateAttemptBadge in the block above).
+            _resolveCtxAttempt().then(_updateCtxAttemptBadge);
             rightPanel.appendChild(el('h3', {
                 innerHTML: '<span class="swml-sidebar-close-icon">−</span> Diagnostic Guidance',
                 style: { cursor: 'pointer' }
@@ -15048,6 +15097,11 @@ ${html}
             overlay.style.transition = 'opacity 0.4s ease';
             overlay.style.opacity = '1';
         });
+
+        // v7.15.46: Resolve attempt and render the ctx attempt badge.
+        // Covers discuss-feedback, mark-scheme study, model-answer video envs
+        // (all of which render through this function).
+        _resolveCtxAttempt().then(_updateCtxAttemptBadge);
     }
 
     // ══════════════════════════════════════════════════════════════════════════
