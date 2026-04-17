@@ -182,6 +182,126 @@
         }
     }
 
+    // v7.15.48: Resilience wrapper. Neil observed the ctx badge didn't appear on soft
+    // nav between exercises — DOM query returned null for the placeholder. Root cause
+    // is unclear (state timing / SPA re-render timing), but retrying a few times over
+    // ~1.5s reliably catches whatever window the render stabilises in. Harmless when
+    // the first call succeeds because _updateCtxAttemptBadge is idempotent.
+    function _refreshCtxAttemptBadgeWithRetry() {
+        _resolveCtxAttempt().then(_updateCtxAttemptBadge);
+        setTimeout(_updateCtxAttemptBadge, 300);
+        setTimeout(_updateCtxAttemptBadge, 1000);
+        setTimeout(_updateCtxAttemptBadge, 2500);
+    }
+
+    // v7.15.48: Diagnostic-entry attempt overlay. Shown when a student enters the
+    // diagnostic (first exercise of the topic) in guided mode. For attempt 1 it's an
+    // info card ("this is your first attempt, give it your best shot"). For later
+    // attempts it offers a Continue button plus a Start New Attempt button. Kept
+    // separate from the training-env _showAttemptSelector so we don't break that
+    // flow while iterating on this one. Resolves when the student dismisses it.
+    function _showDiagnosticAttemptOverlay(idx, opts = {}) {
+        return new Promise(resolve => {
+            const attempts = (idx && idx.attempts) || [];
+            const current = (idx && idx.current) || state.attempt || 1;
+            const count = (idx && idx.count) || attempts.length || 1;
+            const isFirstAttempt = count === 1;
+
+            const overlay = el('div', { className: 'swml-attempt-overlay' });
+            overlay.style.cssText = 'position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+
+            const card = el('div', { className: 'swml-attempt-card' });
+            card.style.cssText = 'background:#1C1D1F;border-radius:16px;padding:32px;max-width:460px;width:90%;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+
+            const title = el('h3', { textContent: `Attempt ${current}` });
+            title.style.cssText = 'margin:0 0 12px;font-size:20px;font-weight:600;';
+            card.appendChild(title);
+
+            const info = el('p', {
+                textContent: isFirstAttempt
+                    ? "This is your first attempt at this topic. You can redo it any time — but we recommend giving it your best shot now, since you'll have many other topics to practise on."
+                    : `You've made ${count} attempts so far. Continue this one, or start fresh.`
+            });
+            info.style.cssText = 'margin:0 0 20px;color:rgba(255,255,255,0.75);font-size:13px;line-height:1.5;';
+            card.appendChild(info);
+
+            const btnRow = el('div');
+            btnRow.style.cssText = 'display:flex;flex-direction:column;gap:10px;';
+
+            // Primary: Continue
+            const continueBtn = el('button');
+            continueBtn.style.cssText = 'padding:12px 16px;border-radius:10px;border:0;background:linear-gradient(135deg,#5333ed,#4D76FD);color:#fff;font-size:14px;font-weight:600;cursor:pointer;';
+            continueBtn.textContent = isFirstAttempt ? 'Start Writing' : `Continue Attempt ${current}`;
+            continueBtn.addEventListener('click', () => {
+                overlay.remove();
+                resolve(true);
+            });
+            btnRow.appendChild(continueBtn);
+
+            // Secondary: Start New Attempt (only if we already have a completed attempt)
+            const hasCompleted = attempts.some(a => a.status === 'complete');
+            if (hasCompleted) {
+                const newBtn = el('button');
+                newBtn.style.cssText = 'padding:10px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.8);font-size:13px;cursor:pointer;';
+                newBtn.textContent = `Start Attempt ${count + 1}`;
+                newBtn.addEventListener('click', async () => {
+                    try {
+                        const res = await fetch(API.attemptsNew, {
+                            method: 'POST', headers,
+                            body: JSON.stringify({
+                                board: state.board, text: state.text,
+                                topicNumber: state.topicNumber || null,
+                                suffix: _attemptSuffixFor(opts.suffix || '')
+                            })
+                        }).then(r => r.json());
+                        if (res.success) {
+                            state.attempt = res.attempt;
+                            sessionStorage.setItem('swml_new_attempt', String(state.attempt));
+                        }
+                    } catch (e) {
+                        console.warn('WML Attempt: new attempt failed', e.message);
+                    }
+                    overlay.remove();
+                    window.location.reload();
+                    resolve(true);
+                });
+                btnRow.appendChild(newBtn);
+            }
+
+            card.appendChild(btnRow);
+            overlay.appendChild(card);
+
+            // Attach to the canvas overlay if present, otherwise body.
+            const host = document.getElementById('swml-canvas-overlay') || document.body;
+            host.appendChild(overlay);
+        });
+    }
+
+    // v7.15.48: Trigger the diagnostic overlay in guided mode. Gated to avoid firing
+    // in review mode, when the URL already specifies an attempt, or in exam_prep.
+    // Double-trigger guard protects against LD SPA nav firing render twice.
+    async function _maybeShowDiagnosticAttemptOverlay() {
+        const previewOverlay = !!(new URLSearchParams(window.location.search).get('show_attempt_overlay'));
+        if (state.reviewMode) return;
+        if (!state.board || !state.text) return;
+        if (state.mode !== 'guided' && !previewOverlay) return;
+        const attemptFromUrl = !!(new URLSearchParams(window.location.search).get('attempt'));
+        if (attemptFromUrl && !previewOverlay) return;
+        // Double-trigger guard: if overlay already visible, skip.
+        if (document.querySelector('.swml-attempt-overlay')) return;
+        try {
+            const url = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=`;
+            const res = await fetch(url, { headers }).then(r => r.json());
+            if (res && res.success && res.attempts) {
+                if (!state.attempt || state.attempt < 1) state.attempt = res.attempts.current || 1;
+                _updateCtxAttemptBadge();
+                await _showDiagnosticAttemptOverlay(res.attempts, { suffix: '' });
+            }
+        } catch (e) {
+            console.warn('WML Attempt: diagnostic overlay skipped —', e.message);
+        }
+    }
+
     // Pre-assessment functions (defined in wml-app.js entry flow section)
     const destroyShader = () => window.WML.destroyShader();
     const syncUrl = () => window.WML.syncUrl?.();
@@ -1935,17 +2055,17 @@
         const diagBadge = el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-diag', innerHTML: SVG_DIAGNOSTIC + diagBadgeLabel });
         if (!_isCwBadge) ctxBadges.appendChild(diagBadge);
 
-        // v7.15.47: Attempt badge placeholder (guided mode only). Inserted here so it
-        // lives alongside the other ctx badges and participates in the overflow-dropdown
-        // logic below. _updateCtxAttemptBadge() populates its text when state.attempt resolves.
-        if (state.mode === 'guided') {
-            const attemptPlaceholder = el('span', {
-                className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
-                textContent: (state.attempt || 0) >= 1 ? `Attempt ${state.attempt}` : '',
-                style: { display: (state.attempt || 0) >= 1 ? '' : 'none' },
-            });
-            ctxBadges.appendChild(attemptPlaceholder);
-        }
+        // v7.15.48: Attempt badge placeholder — always inserted, visibility controlled
+        // by _updateCtxAttemptBadge. Previously gated on state.mode === 'guided', but on
+        // soft nav state.mode could still be empty/stale when ctx-build runs, so the
+        // placeholder was missing from the DOM and later updates couldn't find it.
+        // Inserting unconditionally lets the async update path decide what to show.
+        const attemptPlaceholder = el('span', {
+            className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
+            textContent: (state.attempt || 0) >= 1 ? `Attempt ${state.attempt}` : '',
+            style: { display: (state.mode === 'guided' && (state.attempt || 0) >= 1) ? '' : 'none' },
+        });
+        ctxBadges.appendChild(attemptPlaceholder);
 
         // Overflow ... button — shows hidden badges on small screens
         const ctxOverflowBtn = el('button', { className: 'swml-canvas-ctx-overflow', textContent: '···', title: 'Show all' });
@@ -6202,7 +6322,16 @@
         // v7.15.47: Resolve + render the ctx attempt badge now that the overlay is
         // attached. Training env also updates its own sidebar badge via tp._updateAttemptBadge
         // (unrelated). This call populates the placeholder inserted during ctx build.
-        _resolveCtxAttempt().then(_updateCtxAttemptBadge);
+        // v7.15.48: Retry wrapper for soft-nav resilience.
+        _refreshCtxAttemptBadgeWithRetry();
+
+        // v7.15.48: Show the diagnostic attempt overlay on first exercise of the topic
+        // (guided mode only). Trigger in the diagnostic else-branch of this function —
+        // not training or feedback-discussion. Training env has its own _showAttemptSelector
+        // flow; feedback-discussion doesn't need an overlay.
+        if (!useTrainingEnv) {
+            setTimeout(() => _maybeShowDiagnosticAttemptOverlay(), 400);
+        }
 
         // Inject progress bar keyframes (failsafe — CSS file may not load in time)
         if (!document.getElementById('swml-progress-keyframes')) {
@@ -14893,15 +15022,13 @@ ${html}
         }
         const SVG_BADGE_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
         ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-diag', innerHTML: SVG_BADGE_ICON + cfg.badgeLabel }));
-        // v7.15.47: Attempt badge placeholder (guided mode only). _updateCtxAttemptBadge
-        // populates its text when state.attempt resolves post-attachment.
-        if (state.mode === 'guided') {
-            ctxBadges.appendChild(el('span', {
-                className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
-                textContent: (state.attempt || 0) >= 1 ? `Attempt ${state.attempt}` : '',
-                style: { display: (state.attempt || 0) >= 1 ? '' : 'none' },
-            }));
-        }
+        // v7.15.48: Attempt badge placeholder — always inserted, visibility controlled
+        // by _updateCtxAttemptBadge (see equivalent change in renderCanvasWorkspace).
+        ctxBadges.appendChild(el('span', {
+            className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
+            textContent: (state.attempt || 0) >= 1 ? `Attempt ${state.attempt}` : '',
+            style: { display: (state.mode === 'guided' && (state.attempt || 0) >= 1) ? '' : 'none' },
+        }));
         headerRow.appendChild(ctxBadges);
 
         // Theme toggle (right) — v7.15.45: hidden in embedded mode + LD → WML sync
@@ -15145,7 +15272,8 @@ ${html}
         // v7.15.46: Resolve attempt and render the ctx attempt badge.
         // Covers discuss-feedback, mark-scheme study, model-answer video envs
         // (all of which render through this function).
-        _resolveCtxAttempt().then(_updateCtxAttemptBadge);
+        // v7.15.48: Retry wrapper for soft-nav resilience.
+        _refreshCtxAttemptBadgeWithRetry();
     }
 
     // ══════════════════════════════════════════════════════════════════════════
