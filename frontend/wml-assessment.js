@@ -126,39 +126,49 @@
         console.log('WML CW: Sub-step complete →', detected.name, `(step_${detected.stepNum}, substep_${detected.substepNum})`);
     }
 
-    // v7.15.46: Attempt badge for canvas ctx-badge rows.
+    // v7.15.47: In guided mode the attempt counter spans a whole topic (all
+    // exercises share one index). In standalone mode (exam_prep / free_practice)
+    // the per-exercise suffix is preserved. Centralised here so any future attempt
+    // API call can just call _attemptSuffixFor(cfg.storageSuffix) and do the right
+    // thing regardless of mode.
+    function _attemptSuffixFor(rawSuffix) {
+        return state.mode === 'guided' ? '' : (rawSuffix || '');
+    }
+
+    // v7.15.46 (placeholder model added in v7.15.47): Attempt badge for canvas
+    // ctx-badge rows. Placeholder is inserted at render time so it participates
+    // in the overflow-dropdown logic; this helper just flips text/visibility.
     // Training env uses the sidebar protoBadges attempt badge (see _updateAttemptBadge
-    // inside buildTrainingPanels). Diagnostic and lightweight-video canvases (discuss
-    // feedback, mark-scheme study, model-answer video) use the ctx-badge row at the
-    // top of the canvas — this helper keeps that in sync with state.attempt.
+    // inside buildTrainingPanels).
     function _updateCtxAttemptBadge() {
         const ctx = document.querySelector('#swml-canvas-overlay .swml-canvas-ctx');
         if (!ctx) return;
-        const existing = ctx.querySelector('.swml-ctx-attempt-badge');
+        let badge = ctx.querySelector('.swml-ctx-attempt-badge');
         const shouldShow = state.mode === 'guided' && (state.attempt || 0) >= 1;
-        if (!shouldShow) {
-            if (existing) existing.remove();
-            return;
+        if (!badge) {
+            if (!shouldShow) return;
+            // Fallback — placeholder wasn't inserted (shouldn't happen in guided mode).
+            badge = el('span', { className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge', textContent: '' });
+            ctx.appendChild(badge);
         }
-        if (existing) {
-            existing.textContent = `Attempt ${state.attempt}`;
-            return;
+        if (shouldShow) {
+            badge.textContent = `Attempt ${state.attempt}`;
+            badge.style.display = '';
+        } else {
+            badge.style.display = 'none';
         }
-        ctx.appendChild(el('span', {
-            className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
-            textContent: `Attempt ${state.attempt}`,
-        }));
     }
 
     // v7.15.46: Resolves state.attempt from the server if not already set. Used by
     // diagnostic + lightweight-video canvases. Training env has its own resolution
     // flow in _initTrainingChat that handles mode overlays and attempt selectors.
+    // v7.15.47: Suffix is now mode-aware via _attemptSuffixFor.
     async function _resolveCtxAttempt() {
         if ((state.attempt || 0) >= 1) return;
         if (state.reviewMode || !state.board || !state.text) return;
         try {
             const cfg = (WML.getExerciseConfig && WML.getExerciseConfig(state.task)) || {};
-            const suffix = cfg.storageSuffix || '';
+            const suffix = _attemptSuffixFor(cfg.storageSuffix);
             const url = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(suffix)}`;
             const res = await fetch(url, { headers }).then(r => r.json());
             if (res && res.success && res.attempts && res.attempts.current) {
@@ -1924,6 +1934,18 @@
             : 'Diagnostic';
         const diagBadge = el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-diag', innerHTML: SVG_DIAGNOSTIC + diagBadgeLabel });
         if (!_isCwBadge) ctxBadges.appendChild(diagBadge);
+
+        // v7.15.47: Attempt badge placeholder (guided mode only). Inserted here so it
+        // lives alongside the other ctx badges and participates in the overflow-dropdown
+        // logic below. _updateCtxAttemptBadge() populates its text when state.attempt resolves.
+        if (state.mode === 'guided') {
+            const attemptPlaceholder = el('span', {
+                className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
+                textContent: (state.attempt || 0) >= 1 ? `Attempt ${state.attempt}` : '',
+                style: { display: (state.attempt || 0) >= 1 ? '' : 'none' },
+            });
+            ctxBadges.appendChild(attemptPlaceholder);
+        }
 
         // Overflow ... button — shows hidden badges on small screens
         const ctxOverflowBtn = el('button', { className: 'swml-canvas-ctx-overflow', textContent: '···', title: 'Show all' });
@@ -3822,8 +3844,9 @@
                         btn.addEventListener('click', async () => {
                             state.attempt = a.num;
                             // Switch on server
+                            // v7.15.47: Mode-aware suffix so guided stays on the topic-level index.
                             await fetch(API.attemptsSwitch, { method: 'POST', headers,
-                                body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix, attempt: a.num })
+                                body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: _attemptSuffixFor(suffix), attempt: a.num })
                             }).catch(() => {});
                             overlay.remove();
                             // Clear local cache so tryServerLoad picks up the right attempt
@@ -3851,8 +3874,9 @@
                     newBtn.appendChild(wrap);
                     newBtn.addEventListener('click', async () => {
                         try {
+                            // v7.15.47: Mode-aware suffix so guided increments the topic-level counter.
                             const res = await fetch(API.attemptsNew, { method: 'POST', headers,
-                                body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix })
+                                body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: _attemptSuffixFor(suffix) })
                             }).then(r => r.json());
                             if (res.success) {
                                 state.attempt = res.attempt;
@@ -4370,7 +4394,10 @@
                 console.log('WML Attempt: resolving...', { board: state.board, text: state.text, task: state.task, reviewMode: state.reviewMode });
                 if (!state.reviewMode && state.board && state.text) {
                     try {
-                        const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+                        // v7.15.47: In guided mode, attempts index is shared across
+                        // all exercises in the topic (per-topic counter). Standalone
+                        // mode keeps per-exercise counters via the exercise's suffix.
+                        const suffix = _attemptSuffixFor(WML.getExerciseConfig(state.task).storageSuffix);
                         const attUrl = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(suffix)}`;
                         console.log('WML Attempt: fetching', attUrl);
                         const attRes = await fetch(attUrl, { headers }).then(r => r.json());
@@ -4381,8 +4408,11 @@
                             // Check if we should show the attempt selector
                             const completedAttempts = (idx.attempts || []).filter(a => a.status === 'complete');
                             const attemptFromUrl = !!(new URLSearchParams(window.location.search).get('attempt'));
-                            console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl);
-                            if (completedAttempts.length > 0 && !state.reviewMode && !attemptFromUrl) {
+                            // v7.15.47: ?show_attempt_overlay=1 forces the overlay
+                            // open even without a completed attempt — for preview/testing.
+                            const previewOverlay = !!(new URLSearchParams(window.location.search).get('show_attempt_overlay'));
+                            console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl, 'preview=', previewOverlay);
+                            if ((completedAttempts.length > 0 || previewOverlay) && !state.reviewMode && !attemptFromUrl) {
                                 const shown = await _showAttemptSelector(idx, suffix);
                                 if (shown) return; // selector handles chat init
                             } else {
@@ -4406,9 +4436,9 @@
             console.log('WML: Training-env direct render for', state.task, '(no diagnostic flash)');
         } else {
             // Diagnostic mode — guidance tips
-            // v7.15.46: Resolve + render attempt badge in the ctx row (training env uses
-            // its own sidebar badge via tp._updateAttemptBadge in the block above).
-            _resolveCtxAttempt().then(_updateCtxAttemptBadge);
+            // v7.15.47: Attempt badge resolution moved to after overlay attachment (below).
+            // v7.15.46's early call here fired before ctxBadges was populated, so the badge
+            // landed outside the overflow-dropdown logic on soft nav.
             rightPanel.appendChild(el('h3', {
                 innerHTML: '<span class="swml-sidebar-close-icon">−</span> Diagnostic Guidance',
                 style: { cursor: 'pointer' }
@@ -6168,6 +6198,11 @@
             document.body.appendChild(overlay);
             document.body.style.overflow = 'hidden';
         }
+
+        // v7.15.47: Resolve + render the ctx attempt badge now that the overlay is
+        // attached. Training env also updates its own sidebar badge via tp._updateAttemptBadge
+        // (unrelated). This call populates the placeholder inserted during ctx build.
+        _resolveCtxAttempt().then(_updateCtxAttemptBadge);
 
         // Inject progress bar keyframes (failsafe — CSS file may not load in time)
         if (!document.getElementById('swml-progress-keyframes')) {
@@ -14858,6 +14893,15 @@ ${html}
         }
         const SVG_BADGE_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
         ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-diag', innerHTML: SVG_BADGE_ICON + cfg.badgeLabel }));
+        // v7.15.47: Attempt badge placeholder (guided mode only). _updateCtxAttemptBadge
+        // populates its text when state.attempt resolves post-attachment.
+        if (state.mode === 'guided') {
+            ctxBadges.appendChild(el('span', {
+                className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
+                textContent: (state.attempt || 0) >= 1 ? `Attempt ${state.attempt}` : '',
+                style: { display: (state.attempt || 0) >= 1 ? '' : 'none' },
+            }));
+        }
         headerRow.appendChild(ctxBadges);
 
         // Theme toggle (right) — v7.15.45: hidden in embedded mode + LD → WML sync
