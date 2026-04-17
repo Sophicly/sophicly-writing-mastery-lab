@@ -4331,7 +4331,6 @@
                     newBtn.appendChild(wrap);
                     newBtn.addEventListener('click', async () => {
                         try {
-                            // v7.15.47: Mode-aware suffix so guided increments the topic-level counter.
                             const res = await fetch(API.attemptsNew, { method: 'POST', headers,
                                 body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: _attemptSuffixFor(suffix) })
                             }).then(r => r.json());
@@ -4343,10 +4342,15 @@
                             console.warn('WML: Failed to create new attempt', e.message);
                         }
                         overlay.remove();
-                        // v7.15.19: Use sessionStorage instead of URL param — WP/LearnDash strips unknown query params
-                        console.log('WML: New attempt', state.attempt, '— reloading with sessionStorage');
-                        sessionStorage.setItem('swml_new_attempt', String(state.attempt));
-                        window.location.reload();
+                        // v7.15.61: Soft reload matching the existing-attempt switch branch
+                        // above. The prior hard reload wiped state.planningMode for essay_plan
+                        // / model_answer, causing the mode picker to re-fire and loop through
+                        // this selector again. _reloadDocumentForAttempt clears localStorage
+                        // for the current suffix, fetches the (empty) server doc for the new
+                        // attempt, injects a fresh template, and reinitialises the chat.
+                        try { localStorage.removeItem(CANVAS_SAVE_KEY()); localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+                        tp._updateAttemptBadge();
+                        _reloadDocumentForAttempt();
                         resolve(true);
                     });
                     card.appendChild(newBtn);
