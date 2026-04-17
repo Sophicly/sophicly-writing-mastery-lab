@@ -6098,6 +6098,7 @@ Before marking the introduction, ask the student to confirm their essay structur
                 step: state.step,
                 ai_chat_id: state.chatId,
                 is_manual: isManual,
+                attempt: state.attempt || null,
                 context: {
                     board: state.board, subject: state.subject, text: state.text,
                     text_name: state.textName, task: state.task, question: state.question,
@@ -6106,6 +6107,10 @@ Before marking the introduction, ask the student to confirm their essay structur
                     question_part: state.questionPart || '',
                     comparison_poem: state.comparisonPoem || '',
                     comparison_poem_title: state.comparisonPoemTitle || '',
+                    topic_number: state.topicNumber || null,
+                    phase: state.phase || null,
+                    topic_label: state.topicLabel || null,
+                    draft_type: state.draftType || null,
                 },
             });
             if (isManual) console.log('WML: Manual save completed');
