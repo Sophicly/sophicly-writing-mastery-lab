@@ -4899,8 +4899,17 @@
                             // v7.15.47: ?show_attempt_overlay=1 forces the overlay
                             // open even without a completed attempt — for preview/testing.
                             const previewOverlay = !!(new URLSearchParams(window.location.search).get('show_attempt_overlay'));
-                            console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl, 'preview=', previewOverlay);
-                            if ((completedAttempts.length > 0 || previewOverlay) && !state.reviewMode && !attemptFromUrl) {
+                            // v7.15.60: Exam-prep exercises (exam_question, essay_plan,
+                            // model_answer, verbal_rehearsal, conceptual_notes, memory_practice)
+                            // show the selector on every entry — even on attempt 1 in_progress.
+                            // Gives students current-attempt visibility + "Start new attempt"
+                            // option without waiting for a completion. Mirrors the diagnostic
+                            // overlay UX for standalone exercises.
+                            const EXAM_PREP_TASKS = ['exam_question','essay_plan','model_answer','verbal_rehearsal','conceptual_notes','memory_practice'];
+                            const isExamPrepTask = EXAM_PREP_TASKS.includes(state.task);
+                            const hasAnyAttempt = (idx.attempts || []).length > 0;
+                            console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl, 'preview=', previewOverlay, 'examPrep=', isExamPrepTask);
+                            if ((completedAttempts.length > 0 || previewOverlay || (isExamPrepTask && hasAnyAttempt)) && !state.reviewMode && !attemptFromUrl) {
                                 const shown = await _showAttemptSelector(idx, suffix);
                                 if (shown) return; // selector handles chat init
                             } else {
