@@ -126,13 +126,21 @@
         console.log('WML CW: Sub-step complete →', detected.name, `(step_${detected.stepNum}, substep_${detected.substepNum})`);
     }
 
+    // v7.15.49: state.mode is set once at boot from embedConfig and never updates on
+    // LD soft nav — so after navigating between embedded lessons it goes stale. Use
+    // the structural fields (topicNumber + phase) that the bridge re-populates on
+    // every embed instead. Matches the "guided" criteria the bridge already uses.
+    function _isGuidedContext() {
+        return !!state.topicNumber && ['initial', 'redraft', 'preliminary'].includes(state.phase);
+    }
+
     // v7.15.47: In guided mode the attempt counter spans a whole topic (all
     // exercises share one index). In standalone mode (exam_prep / free_practice)
     // the per-exercise suffix is preserved. Centralised here so any future attempt
     // API call can just call _attemptSuffixFor(cfg.storageSuffix) and do the right
-    // thing regardless of mode.
+    // thing regardless of mode. v7.15.49: uses _isGuidedContext() for accuracy on soft nav.
     function _attemptSuffixFor(rawSuffix) {
-        return state.mode === 'guided' ? '' : (rawSuffix || '');
+        return _isGuidedContext() ? '' : (rawSuffix || '');
     }
 
     // v7.15.46 (placeholder model added in v7.15.47): Attempt badge for canvas
@@ -144,7 +152,8 @@
         const ctx = document.querySelector('#swml-canvas-overlay .swml-canvas-ctx');
         if (!ctx) return;
         let badge = ctx.querySelector('.swml-ctx-attempt-badge');
-        const shouldShow = state.mode === 'guided' && (state.attempt || 0) >= 1;
+        // v7.15.49: structural check — see _isGuidedContext().
+        const shouldShow = _isGuidedContext() && (state.attempt || 0) >= 1;
         if (!badge) {
             if (!shouldShow) return;
             // Fallback — placeholder wasn't inserted (shouldn't happen in guided mode).
@@ -194,12 +203,30 @@
         setTimeout(_updateCtxAttemptBadge, 2500);
     }
 
+    // v7.15.49: Push-button (swml-btn3d) helper — matches the dashboard "Continue
+    // Learning" and existing _showAttemptSelector "Start Attempt N+1" button.
+    // CSS lives in wml-canvas.css:3265+.
+    function _makeBtn3d(text, handler) {
+        const btn = el('button', { className: 'swml-btn3d', type: 'button' });
+        const bg = el('div', { className: 'swml-btn3d-bg' });
+        const wrap = el('div', { className: 'swml-btn3d-wrap' });
+        const outline = el('div', { className: 'swml-btn3d-outline' });
+        const content = el('div', { className: 'swml-btn3d-content', textContent: text });
+        wrap.appendChild(outline);
+        wrap.appendChild(content);
+        btn.appendChild(bg);
+        btn.appendChild(wrap);
+        btn.addEventListener('click', handler);
+        return btn;
+    }
+
     // v7.15.48: Diagnostic-entry attempt overlay. Shown when a student enters the
     // diagnostic (first exercise of the topic) in guided mode. For attempt 1 it's an
     // info card ("this is your first attempt, give it your best shot"). For later
     // attempts it offers a Continue button plus a Start New Attempt button. Kept
     // separate from the training-env _showAttemptSelector so we don't break that
     // flow while iterating on this one. Resolves when the student dismisses it.
+    // v7.15.49: adds topic subtitle (board/subject/topic) + swml-btn3d styled buttons.
     function _showDiagnosticAttemptOverlay(idx, opts = {}) {
         return new Promise(resolve => {
             const attempts = (idx && idx.attempts) || [];
@@ -214,8 +241,18 @@
             card.style.cssText = 'background:#1C1D1F;border-radius:16px;padding:32px;max-width:460px;width:90%;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
 
             const title = el('h3', { textContent: `Attempt ${current}` });
-            title.style.cssText = 'margin:0 0 12px;font-size:20px;font-weight:600;';
+            title.style.cssText = 'margin:0 0 6px;font-size:20px;font-weight:600;';
             card.appendChild(title);
+
+            // v7.15.49: Topic subtitle — gives the student context about where they are.
+            const boardLabel = (state.board || '').toUpperCase().replace(/-/g, ' ');
+            const subjectLabel = (state.subject || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            const subtitleParts = [boardLabel, subjectLabel].filter(Boolean).join(' ');
+            if (subtitleParts && state.topicNumber) {
+                const subtitle = el('p', { textContent: `${subtitleParts} — Topic ${state.topicNumber}` });
+                subtitle.style.cssText = 'margin:0 0 14px;color:rgba(255,255,255,0.55);font-size:12px;letter-spacing:0.5px;text-transform:uppercase;';
+                card.appendChild(subtitle);
+            }
 
             const info = el('p', {
                 textContent: isFirstAttempt
@@ -226,13 +263,11 @@
             card.appendChild(info);
 
             const btnRow = el('div');
-            btnRow.style.cssText = 'display:flex;flex-direction:column;gap:10px;';
+            btnRow.style.cssText = 'display:flex;flex-direction:column;gap:10px;align-items:stretch;';
 
-            // Primary: Continue
-            const continueBtn = el('button');
-            continueBtn.style.cssText = 'padding:12px 16px;border-radius:10px;border:0;background:linear-gradient(135deg,#5333ed,#4D76FD);color:#fff;font-size:14px;font-weight:600;cursor:pointer;';
-            continueBtn.textContent = isFirstAttempt ? 'Start Writing' : `Continue Attempt ${current}`;
-            continueBtn.addEventListener('click', () => {
+            // Primary: Continue (push-button style)
+            const continueText = isFirstAttempt ? 'Start Writing' : `Continue Attempt ${current}`;
+            const continueBtn = _makeBtn3d(continueText, () => {
                 overlay.remove();
                 resolve(true);
             });
@@ -280,11 +315,12 @@
     // v7.15.48: Trigger the diagnostic overlay in guided mode. Gated to avoid firing
     // in review mode, when the URL already specifies an attempt, or in exam_prep.
     // Double-trigger guard protects against LD SPA nav firing render twice.
+    // v7.15.49: uses _isGuidedContext() instead of state.mode to handle LD soft nav.
     async function _maybeShowDiagnosticAttemptOverlay() {
         const previewOverlay = !!(new URLSearchParams(window.location.search).get('show_attempt_overlay'));
         if (state.reviewMode) return;
         if (!state.board || !state.text) return;
-        if (state.mode !== 'guided' && !previewOverlay) return;
+        if (!_isGuidedContext() && !previewOverlay) return;
         const attemptFromUrl = !!(new URLSearchParams(window.location.search).get('attempt'));
         if (attemptFromUrl && !previewOverlay) return;
         // Double-trigger guard: if overlay already visible, skip.
@@ -2060,10 +2096,11 @@
         // soft nav state.mode could still be empty/stale when ctx-build runs, so the
         // placeholder was missing from the DOM and later updates couldn't find it.
         // Inserting unconditionally lets the async update path decide what to show.
+        // v7.15.49: visibility uses _isGuidedContext() — reads topic+phase each render.
         const attemptPlaceholder = el('span', {
             className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
             textContent: (state.attempt || 0) >= 1 ? `Attempt ${state.attempt}` : '',
-            style: { display: (state.mode === 'guided' && (state.attempt || 0) >= 1) ? '' : 'none' },
+            style: { display: (_isGuidedContext() && (state.attempt || 0) >= 1) ? '' : 'none' },
         });
         ctxBadges.appendChild(attemptPlaceholder);
 
@@ -15024,10 +15061,11 @@ ${html}
         ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-diag', innerHTML: SVG_BADGE_ICON + cfg.badgeLabel }));
         // v7.15.48: Attempt badge placeholder — always inserted, visibility controlled
         // by _updateCtxAttemptBadge (see equivalent change in renderCanvasWorkspace).
+        // v7.15.49: visibility uses _isGuidedContext().
         ctxBadges.appendChild(el('span', {
             className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
             textContent: (state.attempt || 0) >= 1 ? `Attempt ${state.attempt}` : '',
-            style: { display: (state.mode === 'guided' && (state.attempt || 0) >= 1) ? '' : 'none' },
+            style: { display: (_isGuidedContext() && (state.attempt || 0) >= 1) ? '' : 'none' },
         }));
         headerRow.appendChild(ctxBadges);
 
