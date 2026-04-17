@@ -3328,28 +3328,36 @@ body.swml-fullscreen-active { overflow: hidden !important; }
         inset -2px 12px 11px -5px var(--ns-teal),
         inset 1px -3px 11px 0px rgb(0 0 0 / 35%);
 }
+/* v7.15.51: Animated teal sweep that traces the rounded perimeter. Uses an
+   inline SVG (injected by _makeBtn3d in JS at mount time, sized to actual button
+   dimensions) with a stroke-dashoffset animation. Strokes follow path-pixels,
+   not angles, so the highlight dash moves at constant visual speed on every
+   side — no racing past the corners as conic-gradient did on wide rectangles. */
 .swml-btn3d-outline {
     position: absolute;
-    overflow: hidden;
     inset: 0;
     opacity: 0;
     border-radius: inherit;
-    transition: all 0.4s ease;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 0;
+    overflow: visible;
 }
-.swml-btn3d-outline::before {
-    content: "";
+.swml-btn3d-outline .swml-btn3d-trace {
     position: absolute;
-    inset: 2px;
-    width: 100px;
-    height: 250px;
-    margin: auto;
-    background: linear-gradient(to right, transparent 0%, var(--ns-teal) 50%, transparent 100%);
-    animation: swml-btn3d-spin 3s linear infinite;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 0 6px rgba(81, 218, 207, 0.5));
+}
+.swml-btn3d-outline .swml-btn3d-trace rect {
+    animation: swml-btn3d-trace 3s linear infinite;
     animation-play-state: paused;
 }
 .swml-btn3d:hover .swml-btn3d-wrap { transform: translate(7px, -7px); }
 .swml-btn3d:hover .swml-btn3d-outline { opacity: 1; }
-.swml-btn3d:hover .swml-btn3d-outline::before { animation-play-state: running; }
+.swml-btn3d:hover .swml-btn3d-outline .swml-btn3d-trace rect { animation-play-state: running; }
 .swml-btn3d:active .swml-btn3d-wrap { transform: translate(3px, -3px); }
 .swml-btn3d:active .swml-btn3d-bg::before {
     opacity: 0.7;
@@ -3362,7 +3370,10 @@ body.swml-fullscreen-active { overflow: hidden !important; }
                 inset 0px -3px 8px 0px var(--ns-teal);
 }
 .swml-btn3d:active .swml-btn3d-outline { opacity: 0; }
-@keyframes swml-btn3d-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes swml-btn3d-trace {
+    from { stroke-dashoffset: 0; }
+    to   { stroke-dashoffset: -100; }
+}
 
 /* ── Extract Pop-out Button ── */
 .swml-extract-btn {
@@ -6919,4 +6930,173 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn {
 body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     background: rgba(0, 0, 0, 0.03);
     color: rgba(0, 0, 0, 0.8);
+}
+
+/* ─────────────────────────────────────────────
+ * Viewer-mode (tutor / parent review) — v7.15.54
+ * Chat is view-only (transcript visible, input replaced with a slim note).
+ * Tutor-view pill lives inside the canvas header. Write-action buttons
+ * (Save Progress, Mark Complete, LD Mark Complete proxy) hidden.
+ * ───────────────────────────────────────────── */
+
+/* Chat read-only replacement for the input area. */
+.swml-chat-readonly-note {
+    padding: 14px 16px;
+    text-align: center;
+    font-size: 12px;
+    font-style: italic;
+    color: var(--swml-text-muted, rgba(255, 255, 255, 0.55));
+    border-top: 1px solid var(--swml-border);
+    background: rgba(83, 51, 237, 0.06);
+    letter-spacing: 0.01em;
+}
+
+/* Tutor-view badge — compact icon + short label. Click opens modal. */
+.swml-tutor-view-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(125, 249, 233, 0.18), rgba(83, 51, 237, 0.25));
+    border: 1px solid rgba(125, 249, 233, 0.4);
+    color: #7DF9E9;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+    cursor: pointer;
+    white-space: nowrap;
+    width: max-content;
+    align-self: flex-start;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.swml-tutor-view-pill:hover {
+    background: linear-gradient(135deg, rgba(125, 249, 233, 0.30), rgba(83, 51, 237, 0.35));
+    border-color: rgba(125, 249, 233, 0.6);
+}
+.swml-tutor-view-pill svg {
+    flex-shrink: 0;
+}
+
+/* Tutor-view modal. */
+.swml-review-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+.swml-review-modal {
+    max-width: 440px;
+    width: 100%;
+    background: linear-gradient(135deg, #2c003e, #1a1030);
+    border: 1px solid rgba(125, 249, 233, 0.25);
+    border-radius: 16px;
+    padding: 24px;
+    color: #fff;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+.swml-review-modal-head {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+.swml-review-modal-icon {
+    color: #7DF9E9;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.swml-review-modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    margin-bottom: 4px;
+}
+.swml-review-modal-sub {
+    font-size: 13px;
+    opacity: 0.8;
+}
+.swml-review-modal-sub strong {
+    color: #7DF9E9;
+    font-weight: 700;
+}
+.swml-review-modal-section {
+    margin-bottom: 16px;
+}
+.swml-review-modal-section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 8px;
+}
+.swml-review-modal-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.swml-review-modal-list li {
+    font-size: 13px;
+    line-height: 1.4;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+.swml-review-modal-mark {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(125, 249, 233, 0.15);
+    color: #7DF9E9;
+}
+.swml-review-modal-list li:nth-of-type(n) .swml-review-modal-mark {
+    /* fallthrough; 'You cannot' section recolours via adjacency below */
+}
+.swml-review-modal-section + .swml-review-modal-section .swml-review-modal-mark {
+    background: rgba(255, 110, 120, 0.15);
+    color: #FF9CA3;
+}
+.swml-review-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+.swml-review-modal-btn {
+    padding: 8px 20px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #5333ed, #42A1EC);
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+}
+.swml-review-modal-btn:hover {
+    filter: brightness(1.1);
+}
+
+/* Hide write-action buttons on any canvas rendered in review mode. */
+.swml-review-mode .swml-save-btn,
+.swml-review-mode .swml-assess-complete-btn,
+.swml-review-mode .swml-canvas-complete-btn,
+.swml-review-mode .swml-ld-complete {
+    display: none !important;
 }

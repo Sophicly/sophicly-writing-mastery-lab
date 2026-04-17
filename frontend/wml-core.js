@@ -61,6 +61,8 @@ window.WML = (function() {
         attemptsNew:     config.restUrl + 'attempts/new',
         attemptsSwitch:  config.restUrl + 'attempts/switch',
         attemptsComplete: config.restUrl + 'attempts/complete',
+        // v7.15.51: Topic-scoped resume lookup (first not-complete lesson)
+        topicResume:     config.restUrl + 'topic-resume',
         learningProfile: config.restUrl + 'learning-profile',
         // Creative writing project storage (v7.13.30)
         cwProject:       config.restUrl + 'cw-project',
@@ -411,6 +413,11 @@ window.WML = (function() {
         reviewRole: config.reviewRole || '',
         reviewStudentId: config.reviewStudentId || 0,
         reviewStudentName: config.reviewStudentName || '',
+        // v7.15.52: three-state viewer permission resolved server-side.
+        // 'edit' for student on own canvas, 'comment' for tutor/specialist/admin,
+        // 'readonly' for parent with active connection to the student.
+        viewerMode: config.viewerMode || 'edit',
+        targetUserId: config.targetUserId || 0,
     };
 
     const PLAN_STEPS = [

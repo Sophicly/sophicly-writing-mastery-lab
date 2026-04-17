@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.15.49
+ * Version: 7.15.57
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.15.49');
+define('SWML_VERSION', '7.15.57');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -80,6 +80,35 @@ class Sophicly_Writing_Mastery_Lab {
         // Flush rewrite rules on activation
         register_activation_hook(__FILE__, [$this, 'activate']);
         register_deactivation_hook(__FILE__, [$this, 'deactivate']);
+
+        // v7.15.57: Block Mark Complete POSTs while a reviewer has ?student_id= in
+        // the request context. The focus-mode template hides the button in review
+        // mode, but a malicious viewer could still POST directly — catch it here
+        // early in the request (priority 5, before LearnDash processes the form).
+        add_action('init', [$this, 'block_review_mark_complete'], 5);
+    }
+
+    /**
+     * v7.15.57: Refuse LearnDash Mark Complete POSTs made while the request
+     * context includes ?student_id=X where X is not the authenticated user.
+     * LD's form fires on the current URL, so $_GET['student_id'] is set when
+     * a reviewer POSTs from the focus-mode page.
+     */
+    public function block_review_mark_complete() {
+        // LD Mark Complete form always posts the `sfwd_mark_complete` hidden input.
+        if (empty($_POST) || empty($_POST['sfwd_mark_complete'])) return;
+
+        $target = absint($_GET['student_id'] ?? ($_POST['student_id'] ?? 0));
+        if (!$target) return;
+
+        $viewer = get_current_user_id();
+        if ($target === $viewer) return;
+
+        wp_die(
+            esc_html__('Cannot mark lessons complete while reviewing another user.', 'sophicly-wml'),
+            esc_html__('Review mode', 'sophicly-wml'),
+            ['response' => 403, 'back_link' => true]
+        );
     }
 
     /**
@@ -289,8 +318,11 @@ class Sophicly_Writing_Mastery_Lab {
             'reviewRole'       => $review_role,  // v7.15.40: 'tutor' | 'specialist' | 'admin' | 'parent' | ''
             'reviewStudentId'  => $review_student_id,
             'reviewStudentName' => $review_student_name,
+            'viewerMode'       => $embed_review['viewer_mode'],    // v7.15.53: 'edit' | 'comment' | 'readonly'
+            'targetUserId'     => $embed_review['target_user_id'], // v7.15.53: student whose canvas is being viewed
             'dashboardUrl'     => home_url('/my-dashboard/'),
             'libraryUrl'       => home_url('/library/'),
+            'pageUrl'          => home_url('/writing-mastery-lab/'),
             'courseResumeUrl'   => $course_resume_url,
             'covers'           => get_option('swml_cover_images', []),
             'urlParams'  => [
@@ -641,6 +673,7 @@ class Sophicly_Writing_Mastery_Lab {
                 'reviewStudentName' => $embed_review['student_name'],
                 'dashboardUrl'   => home_url('/my-dashboard/'),
                 'libraryUrl'     => home_url('/library/'),
+                'pageUrl'        => home_url('/writing-mastery-lab/'),
                 'courseResumeUrl' => '',
                 'covers'         => get_option('swml_cover_images', []),
                 'urlParams'      => [
@@ -680,44 +713,95 @@ class Sophicly_Writing_Mastery_Lab {
      * Parents can READ but cannot comment (enforced at REST + frontend layers).
      */
     private function resolve_review_context() {
-        $out = ['review_mode' => false, 'review_role' => '', 'student_id' => 0, 'student_name' => ''];
+        $out = [
+            'review_mode'    => false,
+            'review_role'    => '',
+            'student_id'     => 0,
+            'student_name'   => '',
+            'viewer_mode'    => 'edit',
+            'target_user_id' => 0,
+        ];
         $student_id = absint($_GET['student_id'] ?? 0);
         if (!$student_id) return $out;
 
         $current_uid = get_current_user_id();
         if (!$current_uid) return $out;
 
+        $viewer_mode = self::resolve_viewer_mode($current_uid, $student_id);
+        if ($viewer_mode === false || $viewer_mode === 'edit') return $out;
+
         $att_role      = get_user_meta($current_uid, 'sophicly_att_role', true);
         $sophicly_role = get_user_meta($current_uid, 'sophicly_role', true);
-        $role = '';
 
         if (current_user_can('manage_options')) {
             $role = 'admin';
-        } elseif (in_array($att_role, ['tutor', 'specialist'], true)) {
-            $role = $att_role;
-        } elseif ($sophicly_role === 'parent' || $att_role === 'parent') {
-            global $wpdb;
-            $conn_table = $wpdb->prefix . 'sophicly_connections';
-            $has_link = $wpdb->get_var($wpdb->prepare(
-                "SELECT id FROM {$conn_table}
-                 WHERE parent_id = %d AND student_id = %d AND status = 'active'
-                 LIMIT 1",
-                $current_uid, $student_id
-            ));
-            if ($has_link) $role = 'parent';
+        } elseif ($att_role === 'tutor') {
+            $role = 'tutor';
+        } elseif ($att_role === 'specialist' || $sophicly_role === 'sss') {
+            $role = 'specialist';
+        } else {
+            $role = 'parent';
         }
-
-        if (!$role) return $out;
 
         $student = get_userdata($student_id);
         if (!$student) return $out;
 
         return [
-            'review_mode' => true,
-            'review_role' => $role,
-            'student_id'  => $student_id,
-            'student_name' => $student->first_name ?: $student->display_name,
+            'review_mode'    => true,
+            'review_role'    => $role,
+            'student_id'     => $student_id,
+            'student_name'   => $student->first_name ?: $student->display_name,
+            'viewer_mode'    => $viewer_mode,
+            'target_user_id' => $student_id,
         ];
+    }
+
+    /**
+     * Resolve the viewer's permission tier for a target student's canvas.
+     * Single source of truth for viewer-mode gating (v7.15.53).
+     *
+     * Returns 'edit' | 'comment' | 'readonly' | false.
+     *   edit     — viewer is the student themselves.
+     *   comment  — admin/tutor/specialist; can view any student and add comments.
+     *              Tutor scoping is deliberately NOT enforced: Sophicly runs
+     *              catch-up lessons where any tutor may need access to any
+     *              student's work, regardless of group assignment.
+     *   readonly — parent with an ACTIVE sophicly_connections row to the target.
+     *              The connections table uses both 'active' and 'connected' as
+     *              linked states (legacy drift), so both are accepted.
+     *   false    — no permission.
+     *
+     * See CLAUDE.md "Sophicly role + permission conventions" for the role model.
+     */
+    public static function resolve_viewer_mode($viewer_id, $target_user_id) {
+        $viewer_id      = absint($viewer_id);
+        $target_user_id = absint($target_user_id);
+        if (!$viewer_id || !$target_user_id) return false;
+        if ($viewer_id === $target_user_id) return 'edit';
+
+        if (user_can($viewer_id, 'manage_options')) return 'comment';
+
+        $att_role      = get_user_meta($viewer_id, 'sophicly_att_role', true);
+        $sophicly_role = get_user_meta($viewer_id, 'sophicly_role', true);
+
+        if ($att_role === 'tutor' || $att_role === 'specialist' || $sophicly_role === 'sss') {
+            return 'comment';
+        }
+
+        if ($sophicly_role === 'parent' || $att_role === 'parent') {
+            global $wpdb;
+            $table = $wpdb->prefix . 'sophicly_connections';
+            $linked = (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT id FROM {$table}
+                 WHERE parent_id = %d AND student_id = %d
+                 AND status IN ('active', 'connected')
+                 LIMIT 1",
+                $viewer_id, $target_user_id
+            ));
+            if ($linked) return 'readonly';
+        }
+
+        return false;
     }
 
     /**

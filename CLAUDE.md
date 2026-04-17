@@ -1,10 +1,58 @@
 # CLAUDE.md — Writing Mastery Lab (WML) Project Guide
 
 **Plugin slug:** `sophicly-writing-mastery-lab`
-**Current version:** 7.14.68
+**Current version:** 7.15.52
 **Purpose:** AI-powered GCSE/IGCSE English tutoring interface — essay writing, assessment, planning, and polishing.
 **AI Provider:** Claude Sonnet 4.6 via MeowApps AI Engine (with GPT-5 fallback).
 **Owner:** Neil (Sophicly)
+
+---
+
+## UNIVERSAL BEHAVIORAL PRINCIPLES
+
+These are mindset defaults. The sections below (`CRITICAL RULES`, `BUG FIX SOP`, etc.) are WML-specific overrides — when they conflict with these, WML-specific wins. For trivial one-liner fixes, use judgment; don't let process block a typo fix.
+
+### 1. Think Before Coding
+Don't assume. Don't hide confusion. Surface tradeoffs.
+- State assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them — don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+### 2. Simplicity First
+Minimum code that solves the problem. Nothing speculative.
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+For debugging specifically, see `Debugging Methodology — Simplest Fix First` below.
+
+### 3. Surgical Changes
+See CRITICAL RULE #1 for the WML-specific enforcement. Additional universal rules:
+- Don't "improve" adjacent code, comments, or formatting.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it — don't delete it.
+- Remove imports/variables/functions that YOUR changes made unused. Don't remove pre-existing dead code unless asked.
+- Test: every changed line should trace directly to the user's request.
+
+### 4. Goal-Driven Execution
+Define success criteria. Loop until verified.
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+```
+
+For WML bug fixes specifically, the `BUG FIX STANDARD OPERATING PROCEDURE` below is the project-tuned instance of this principle.
 
 ---
 
@@ -95,6 +143,49 @@ Check the storage layer FIRST. Use the `/canvas/debug` endpoint before chasing J
 // Browser console diagnostic:
 fetch(swmlConfig.restUrl + 'canvas/debug', {headers: {'X-WP-Nonce': swmlConfig.nonce}}).then(r=>r.json()).then(d=>console.log('DEBUG:', JSON.stringify(d, null, 2)))
 ```
+
+---
+
+## SOPHICLY ROLE + PERMISSION CONVENTIONS
+
+### Roles are user_meta, NOT WordPress roles
+Sophicly never calls `add_role()`. Role identity lives in two `user_meta` keys:
+- `sophicly_role`: `'student'` | `'parent'` | `'sss'`
+- `sophicly_att_role`: `'tutor'` | `'specialist'`
+- Admin is the stock WordPress check: `current_user_can('manage_options')`.
+
+**SSS is dual-checked:** a user is a Student Success Specialist if `sophicly_role === 'sss'` OR `sophicly_att_role === 'specialist'`. Both forms exist in the DB and permission code must accept either.
+
+Canonical role-check block:
+```php
+$is_admin      = current_user_can('manage_options');
+$att_role      = get_user_meta($uid, 'sophicly_att_role', true);
+$sophicly_role = get_user_meta($uid, 'sophicly_role', true);
+$is_tutor      = $att_role === 'tutor';
+$is_specialist = $att_role === 'specialist' || $sophicly_role === 'sss';
+$is_parent     = $sophicly_role === 'parent' || $att_role === 'parent';
+```
+
+### Parent → child mapping
+Custom DB table `{prefix}sophicly_connections`. Schema at `sophicly-plugins/sophicly-student-data/includes/class-database.php:224-239`.
+- Columns: `parent_id`, `student_id`, `status`, `invited_email`, `created_at`, `connected_at`.
+- **Status values drift between `'active'` (legacy) and `'connected'` (current).** Queries must accept both: `status IN ('active', 'connected')`. Don't assume one or the other.
+- Reverse direction (parent → children) has NO helper function — query the table directly.
+- Forward direction (student → parents): `Sophicly_Deadline_Engine::get_parent_ids($student_id)` at `sophicly-student-data/includes/class-deadline-engine.php:786`.
+
+### Tutor access policy — global, NOT group-scoped
+Any tutor can view and comment on ANY student's work, regardless of group assignment. **Reason:** Sophicly runs catch-up lessons where a student may attend any tutor's session, so their tutor-of-the-day needs access. Attendance-tracker `group_tutors` exists but is NOT used for WML review gating. Do not add group-scoping back in.
+
+Admins and specialists likewise bypass any scoping. Only parents are gated per-student (via the connections table).
+
+### WML viewer-mode enum
+`Sophicly_Writing_Mastery_Lab::resolve_viewer_mode($viewer_id, $target_user_id)` returns:
+- `'edit'` — viewer is the student themselves.
+- `'comment'` — admin / tutor / specialist viewing anyone.
+- `'readonly'` — parent viewing a connected child.
+- `false` — no permission.
+
+Threaded to frontend via `swmlConfig.viewerMode` and `state.viewerMode`. Use this enum for any new permission gating rather than inventing parallel checks.
 
 ---
 

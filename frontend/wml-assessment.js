@@ -60,6 +60,95 @@
     const extractAndSavePlan = (...args) => window.WML.extractAndSavePlan(...args);
     const refreshPlan = (...args) => window.WML.refreshPlan(...args);
 
+    // v7.15.54: replaces the chat input area with a slim "Chat read-only" note in
+    // review mode. Tutors still see the student's transcript above but cannot send.
+    function appendChatReadonlyNote(panel) {
+        const isParent = state.viewerMode === 'readonly' || state.reviewRole === 'parent';
+        const note = el('div', { className: 'swml-chat-readonly-note' });
+        note.textContent = 'Chat read-only in ' + (isParent ? 'parent' : 'tutor') + ' view';
+        panel.appendChild(note);
+    }
+
+    // v7.15.56: compact eye-icon badge rendered in sidebar badges when a non-student
+    // is viewing a student's work. Click opens a modal with full review context.
+    // Previous versions used a wide text pill (v7.15.54) and a chat-pane overlay
+    // (v7.15.53) — both too intrusive.
+    function buildTutorViewPill() {
+        const isParent = state.viewerMode === 'readonly' || state.reviewRole === 'parent';
+        const viewLabel = isParent ? 'Parent view' : 'Tutor view';
+        const icon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+        const pill = el('button', {
+            className: 'swml-tutor-view-pill',
+            title: 'Click for review context',
+            onClick: (ev) => { ev.stopPropagation(); showTutorViewModal(); }
+        });
+        pill.innerHTML = icon + '<span>' + viewLabel + '</span>';
+        return pill;
+    }
+
+    // v7.15.56: modal describing the viewer-mode context and capabilities.
+    // Opens on pill click AND once per lesson on first load (entry-modal flow).
+    function showTutorViewModal() {
+        // Deduplicate
+        const existing = document.querySelector('.swml-review-modal-overlay');
+        if (existing) { existing.remove(); return; }
+
+        const name = state.reviewStudentName || 'Student';
+        const isParent = state.viewerMode === 'readonly' || state.reviewRole === 'parent';
+        const viewLabel = isParent ? 'Parent view' : 'Tutor view';
+        const tierLabel = isParent ? 'Read-only' : 'Comment-only';
+        const verb = isParent ? 'viewing' : 'reviewing';
+        const can = isParent
+            ? ['View ' + name + '\u2019s written response', 'Read the AI chat transcript']
+            : ['View ' + name + '\u2019s written response', 'Read the AI chat transcript', 'Add comments on highlighted text', 'Sign off the attempt'];
+        const cannot = ['Edit the document', 'Send chat messages as ' + name, 'Trigger Mark Complete on the student\u2019s lesson'];
+
+        const overlay = el('div', { className: 'swml-review-modal-overlay' });
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+
+        const modal = el('div', { className: 'swml-review-modal' });
+        const eyeIcon = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+        const listHTML = (arr, symbol) => '<ul class="swml-review-modal-list">'
+            + arr.map(x => '<li><span class="swml-review-modal-mark">' + symbol + '</span>' + x + '</li>').join('')
+            + '</ul>';
+
+        modal.innerHTML =
+            '<div class="swml-review-modal-head">'
+          +   '<div class="swml-review-modal-icon">' + eyeIcon + '</div>'
+          +   '<div>'
+          +     '<div class="swml-review-modal-title">' + viewLabel + '</div>'
+          +     '<div class="swml-review-modal-sub">' + tierLabel + ' &middot; ' + verb + ' <strong>' + name + '</strong>\u2019s work</div>'
+          +   '</div>'
+          + '</div>'
+          + '<div class="swml-review-modal-section">'
+          +   '<div class="swml-review-modal-section-label">You can</div>'
+          +   listHTML(can, '\u2713')
+          + '</div>'
+          + '<div class="swml-review-modal-section">'
+          +   '<div class="swml-review-modal-section-label">You cannot</div>'
+          +   listHTML(cannot, '\u2715')
+          + '</div>'
+          + '<div class="swml-review-modal-actions">'
+          +   '<button class="swml-review-modal-btn" type="button">Got it</button>'
+          + '</div>';
+
+        modal.querySelector('.swml-review-modal-btn').addEventListener('click', () => overlay.remove());
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+    }
+
+    // v7.15.56: entry modal shown once per (user, student, post) combo so tutors
+    // landing on a lesson in review mode see the context before they start reviewing.
+    function maybeShowReviewEntryModal() {
+        if (!state.reviewMode) return;
+        try {
+            const key = 'swml_review_entry_seen_' + (state.reviewStudentId || 0) + '_' + (WML.config?.userId || 0) + '_' + (window.location.pathname || '');
+            if (sessionStorage.getItem(key)) return;
+            sessionStorage.setItem(key, '1');
+        } catch(e) {}
+        showTutorViewModal();
+    }
+
     // v7.14.68: Planning step detection — uses AI's [PROGRESS: N] markers (primary)
     // with keyword fallback. Returns the detected step number.
     function detectPlanningStep(aiText, currentStep) {
@@ -203,9 +292,47 @@
         setTimeout(_updateCtxAttemptBadge, 2500);
     }
 
+    // v7.15.50: Resolve a target URL for the student's Writing exercise. Used by
+    // the empty-response redirect button in the assessment canvas. Priority:
+    //  1. diagnostic canvas's stored lessonUrl (if any — populated when the student
+    //     last saved the diagnostic from an embedded LD lesson),
+    //  2. LD previous-lesson nav link when embedded,
+    //  3. null → caller falls back to history.back().
+    async function _resolveWritingExerciseUrl() {
+        if (state.board && state.text && state.topicNumber) {
+            try {
+                const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber}&suffix=&attempt=${state.attempt || 1}`;
+                const res = await fetch(url, { headers }).then(r => r.json());
+                if (res && res.success && res.doc && res.doc.lessonUrl) return res.doc.lessonUrl;
+            } catch (e) {
+                console.warn('WML: writing-exercise URL lookup failed —', e.message);
+            }
+        }
+        const prevLink = document.querySelector('.ld-lesson-nav-previous a, .ld-topic-nav-previous a');
+        return (prevLink && prevLink.href) || null;
+    }
+
+    // v7.15.50: Build a WML deep-link URL from context. Used as the canvas-save
+    // `lessonUrl` fallback when not embedded, so the dashboard Resume button has
+    // a real target instead of href="#".
+    function _buildWmlDeepLink({ board, text, topic, task } = {}) {
+        const base = (window.swmlConfig && window.swmlConfig.pageUrl) || '/writing-mastery-lab/';
+        const qs = new URLSearchParams();
+        if (board) qs.set('board', board);
+        if (text) qs.set('text', text);
+        if (topic) qs.set('topic', String(topic));
+        if (task) qs.set('task', task);
+        const query = qs.toString();
+        return query ? `${base}?${query}` : base;
+    }
+
     // v7.15.49: Push-button (swml-btn3d) helper — matches the dashboard "Continue
     // Learning" and existing _showAttemptSelector "Start Attempt N+1" button.
     // CSS lives in wml-canvas.css:3265+.
+    // v7.15.51: Inject a measured SVG tracer into the outline so the animated
+    // teal border walks the rounded perimeter at uniform pixel-speed — conic
+    // gradients distribute angles non-uniformly on wide rectangles and race
+    // through the short sides. Double-rAF so we measure after layout settles.
     function _makeBtn3d(text, handler) {
         const btn = el('button', { className: 'swml-btn3d', type: 'button' });
         const bg = el('div', { className: 'swml-btn3d-bg' });
@@ -217,98 +344,258 @@
         btn.appendChild(bg);
         btn.appendChild(wrap);
         btn.addEventListener('click', handler);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            const r = btn.getBoundingClientRect();
+            const w = Math.max(1, Math.round(r.width));
+            const h = Math.max(1, Math.round(r.height));
+            if (!w || !h) return;
+            const ns = 'http://www.w3.org/2000/svg';
+            const svg = document.createElementNS(ns, 'svg');
+            svg.setAttribute('class', 'swml-btn3d-trace');
+            svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+            svg.setAttribute('preserveAspectRatio', 'none');
+            svg.setAttribute('fill', 'none');
+            const rectEl = document.createElementNS(ns, 'rect');
+            rectEl.setAttribute('x', '1');
+            rectEl.setAttribute('y', '1');
+            rectEl.setAttribute('width', String(w - 2));
+            rectEl.setAttribute('height', String(h - 2));
+            rectEl.setAttribute('rx', '15');
+            rectEl.setAttribute('ry', '15');
+            rectEl.setAttribute('stroke', '#51dacf');
+            rectEl.setAttribute('stroke-width', '2');
+            rectEl.setAttribute('stroke-linecap', 'round');
+            rectEl.setAttribute('pathLength', '100');
+            rectEl.setAttribute('stroke-dasharray', '25 75');
+            svg.appendChild(rectEl);
+            outline.appendChild(svg);
+        }));
         return btn;
     }
 
-    // v7.15.48: Diagnostic-entry attempt overlay. Shown when a student enters the
-    // diagnostic (first exercise of the topic) in guided mode. For attempt 1 it's an
-    // info card ("this is your first attempt, give it your best shot"). For later
-    // attempts it offers a Continue button plus a Start New Attempt button. Kept
-    // separate from the training-env _showAttemptSelector so we don't break that
-    // flow while iterating on this one. Resolves when the student dismisses it.
-    // v7.15.49: adds topic subtitle (board/subject/topic) + swml-btn3d styled buttons.
-    function _showDiagnosticAttemptOverlay(idx, opts = {}) {
-        return new Promise(resolve => {
-            const attempts = (idx && idx.attempts) || [];
-            const current = (idx && idx.current) || state.attempt || 1;
-            const count = (idx && idx.count) || attempts.length || 1;
-            const isFirstAttempt = count === 1;
+    // v7.15.50: Load the diagnostic canvas doc for the current topic. Used by the
+    // overlay state classifier to tell "fresh" from "in-progress" — the attempt-index
+    // `wordCount` field is frozen at 0 until completion, so we read live wordCount
+    // from the canvas doc instead.
+    async function _loadDiagnosticCanvasDoc() {
+        if (!state.board || !state.text || !state.topicNumber) return null;
+        try {
+            const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber}&suffix=&attempt=${state.attempt || 1}`;
+            const res = await fetch(url, { headers }).then(r => r.json());
+            return (res && res.success && res.doc) ? res.doc : null;
+        } catch (e) {
+            console.warn('WML Attempt: canvas-doc lookup failed —', e.message);
+            return null;
+        }
+    }
 
-            const overlay = el('div', { className: 'swml-attempt-overlay' });
-            overlay.style.cssText = 'position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+    // v7.15.50: Classify the overlay state for the current attempt.
+    //  'complete'    → status === 'complete' (auto-set after Phase 2 redraft finishes)
+    //  'in_progress' → student has already engaged with this attempt (dismissed overlay
+    //                  once OR has canvas content)
+    //  'fresh'       → nothing written yet AND overlay never dismissed
+    // 'in_progress' status is never written on the server side (verified in
+    // class-rest-api.php:2519 / 2569 — only not_started → complete transitions),
+    // so we derive it from a localStorage "started" flag + live canvas content.
+    function _attemptStartedKey(attemptNum) {
+        return `swml_attempt_started_${state.board}_${state.text}_t${state.topicNumber}_a${attemptNum}`;
+    }
+    function _markAttemptStarted(attemptNum) {
+        try { localStorage.setItem(_attemptStartedKey(attemptNum), '1'); } catch (e) {}
+    }
+    function _hasAttemptStarted(attemptNum) {
+        try { return localStorage.getItem(_attemptStartedKey(attemptNum)) === '1'; } catch (e) { return false; }
+    }
+    async function _classifyOverlayState(currentAttempt) {
+        if (currentAttempt && currentAttempt.status === 'complete') return 'complete';
+        const num = (currentAttempt && currentAttempt.num) || state.attempt || 1;
+        if (_hasAttemptStarted(num)) return 'in_progress';
+        const doc = await _loadDiagnosticCanvasDoc();
+        const liveWc = (doc && doc.wordCount) || 0;
+        const plain = doc && doc.html ? doc.html.replace(/<[^>]+>/g, '').trim() : '';
+        if (liveWc > 0 || plain.length > 0) return 'in_progress';
+        return 'fresh';
+    }
 
-            const card = el('div', { className: 'swml-attempt-card' });
-            card.style.cssText = 'background:#1C1D1F;border-radius:16px;padding:32px;max-width:460px;width:90%;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+    // v7.15.50: Single renderer for all three overlay states. Each state builds a
+    // config object describing what should appear; _renderAttemptOverlay paints it.
+    function _renderAttemptOverlay({ title, subtitle, info, primary, secondary, footerLink, resolve }) {
+        const overlay = el('div', { className: 'swml-attempt-overlay' });
+        overlay.style.cssText = 'position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
 
-            const title = el('h3', { textContent: `Attempt ${current}` });
-            title.style.cssText = 'margin:0 0 6px;font-size:20px;font-weight:600;';
-            card.appendChild(title);
+        const card = el('div', { className: 'swml-attempt-card' });
+        card.style.cssText = 'background:#1C1D1F;border-radius:16px;padding:32px;max-width:460px;width:90%;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
 
-            // v7.15.49: Topic subtitle — gives the student context about where they are.
-            const boardLabel = (state.board || '').toUpperCase().replace(/-/g, ' ');
-            const subjectLabel = (state.subject || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-            const subtitleParts = [boardLabel, subjectLabel].filter(Boolean).join(' ');
-            if (subtitleParts && state.topicNumber) {
-                const subtitle = el('p', { textContent: `${subtitleParts} — Topic ${state.topicNumber}` });
-                subtitle.style.cssText = 'margin:0 0 14px;color:rgba(255,255,255,0.55);font-size:12px;letter-spacing:0.5px;text-transform:uppercase;';
-                card.appendChild(subtitle);
-            }
+        const titleEl = el('h3', { textContent: title });
+        titleEl.style.cssText = 'margin:0 0 6px;font-size:20px;font-weight:600;';
+        card.appendChild(titleEl);
 
-            const info = el('p', {
-                textContent: isFirstAttempt
-                    ? "This is your first attempt at this topic. You can redo it any time — but we recommend giving it your best shot now, since you'll have many other topics to practise on."
-                    : `You've made ${count} attempts so far. Continue this one, or start fresh.`
-            });
-            info.style.cssText = 'margin:0 0 20px;color:rgba(255,255,255,0.75);font-size:13px;line-height:1.5;';
-            card.appendChild(info);
+        if (subtitle) {
+            const sub = el('p', { textContent: subtitle });
+            sub.style.cssText = 'margin:0 0 14px;color:rgba(255,255,255,0.55);font-size:12px;letter-spacing:0.5px;text-transform:uppercase;';
+            card.appendChild(sub);
+        }
 
-            const btnRow = el('div');
-            btnRow.style.cssText = 'display:flex;flex-direction:column;gap:10px;align-items:stretch;';
+        if (info) {
+            const infoEl = el('p');
+            infoEl.innerHTML = info;
+            infoEl.style.cssText = 'margin:0 0 20px;color:rgba(255,255,255,0.75);font-size:13px;line-height:1.5;';
+            card.appendChild(infoEl);
+        }
 
-            // Primary: Continue (push-button style)
-            const continueText = isFirstAttempt ? 'Start Writing' : `Continue Attempt ${current}`;
-            const continueBtn = _makeBtn3d(continueText, () => {
+        const btnRow = el('div');
+        btnRow.style.cssText = 'display:flex;flex-direction:column;gap:10px;align-items:stretch;';
+
+        if (primary) {
+            const primaryBtn = _makeBtn3d(primary.label, async () => {
                 overlay.remove();
+                if (primary.onClick) await primary.onClick();
                 resolve(true);
             });
-            btnRow.appendChild(continueBtn);
+            btnRow.appendChild(primaryBtn);
+        }
 
-            // Secondary: Start New Attempt (only if we already have a completed attempt)
-            const hasCompleted = attempts.some(a => a.status === 'complete');
-            if (hasCompleted) {
-                const newBtn = el('button');
-                newBtn.style.cssText = 'padding:10px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.8);font-size:13px;cursor:pointer;';
-                newBtn.textContent = `Start Attempt ${count + 1}`;
-                newBtn.addEventListener('click', async () => {
-                    try {
-                        const res = await fetch(API.attemptsNew, {
-                            method: 'POST', headers,
-                            body: JSON.stringify({
-                                board: state.board, text: state.text,
-                                topicNumber: state.topicNumber || null,
-                                suffix: _attemptSuffixFor(opts.suffix || '')
-                            })
-                        }).then(r => r.json());
-                        if (res.success) {
-                            state.attempt = res.attempt;
-                            sessionStorage.setItem('swml_new_attempt', String(state.attempt));
-                        }
-                    } catch (e) {
-                        console.warn('WML Attempt: new attempt failed', e.message);
-                    }
-                    overlay.remove();
-                    window.location.reload();
-                    resolve(true);
+        if (secondary) {
+            const secBtn = el('button');
+            secBtn.style.cssText = 'padding:10px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.8);font-size:13px;cursor:pointer;';
+            secBtn.textContent = secondary.label;
+            secBtn.addEventListener('click', async () => {
+                overlay.remove();
+                if (secondary.onClick) await secondary.onClick();
+                resolve(true);
+            });
+            btnRow.appendChild(secBtn);
+        }
+
+        card.appendChild(btnRow);
+
+        if (footerLink) {
+            const footer = el('a', { textContent: footerLink.label, href: footerLink.href });
+            footer.style.cssText = 'display:block;margin-top:16px;color:rgba(81,218,207,0.7);font-size:12px;text-align:center;text-decoration:none;';
+            footer.addEventListener('mouseenter', () => { footer.style.color = 'rgba(81,218,207,1)'; });
+            footer.addEventListener('mouseleave', () => { footer.style.color = 'rgba(81,218,207,0.7)'; });
+            card.appendChild(footer);
+        }
+
+        overlay.appendChild(card);
+        const host = document.getElementById('swml-canvas-overlay') || document.body;
+        host.appendChild(overlay);
+    }
+
+    // v7.15.48: Diagnostic-entry attempt overlay. Shown when a student enters the
+    // diagnostic (first exercise of the topic) in guided mode. Kept separate from the
+    // training-env _showAttemptSelector so we don't break that flow while iterating
+    // on this one. Resolves when the student dismisses it.
+    // v7.15.49: adds topic subtitle (board/subject/topic) + swml-btn3d styled buttons.
+    // v7.15.50: three states — fresh / in_progress / complete — dispatched by
+    // _classifyOverlayState. 'in_progress' preferred when the student has existing
+    // work; 'complete' shows grade + dashboard link + encouragement to move on.
+    async function _showDiagnosticAttemptOverlay(idx, opts = {}) {
+        const attempts = (idx && idx.attempts) || [];
+        const current = (idx && idx.current) || state.attempt || 1;
+        const count = (idx && idx.count) || attempts.length || 1;
+        const currentAttempt = attempts[current - 1] || { status: 'not_started', wordCount: 0 };
+        const hasAnyComplete = attempts.some(a => a.status === 'complete');
+        const overlayState = await _classifyOverlayState(currentAttempt);
+
+        const boardLabel = (state.board || '').toUpperCase().replace(/-/g, ' ');
+        const subjectLabel = (state.subject || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const subtitleParts = [boardLabel, subjectLabel].filter(Boolean).join(' ');
+        const subtitle = (subtitleParts && state.topicNumber) ? `${subtitleParts} — Topic ${state.topicNumber}` : '';
+
+        const startNewAttempt = async () => {
+            try {
+                const res = await fetch(API.attemptsNew, {
+                    method: 'POST', headers,
+                    body: JSON.stringify({
+                        board: state.board, text: state.text,
+                        topicNumber: state.topicNumber || null,
+                        suffix: _attemptSuffixFor(opts.suffix || '')
+                    })
+                }).then(r => r.json());
+                if (res.success) {
+                    state.attempt = res.attempt;
+                    sessionStorage.setItem('swml_new_attempt', String(state.attempt));
+                }
+            } catch (e) {
+                console.warn('WML Attempt: new attempt failed', e.message);
+            }
+            window.location.reload();
+        };
+
+        const nextTopicLink = document.querySelector('.ld-lesson-nav-next a, .ld-topic-nav-next a');
+        const nextTopicHref = nextTopicLink && nextTopicLink.href;
+        const dashboardUrl = (window.swmlConfig && window.swmlConfig.dashboardUrl) || '/my-dashboard/';
+
+        return new Promise(resolve => {
+            if (overlayState === 'complete') {
+                const gradeBit = currentAttempt.grade ? ` <strong style="color:#fff">Grade: ${currentAttempt.grade}</strong>.` : '';
+                const info = `Attempt ${current} complete.${gradeBit} Most students get more out of moving on to the next topic than re-attempting — come back fresh later if you want another go.`;
+                _renderAttemptOverlay({
+                    title: `Attempt ${current} — Complete`,
+                    subtitle,
+                    info,
+                    primary: nextTopicHref
+                        ? { label: 'Continue to next topic →', onClick: () => { window.location.href = nextTopicHref; } }
+                        : { label: 'Close', onClick: null },
+                    secondary: {
+                        label: `Try Attempt ${count + 1}`,
+                        onClick: startNewAttempt
+                    },
+                    footerLink: { label: 'View in Dashboard', href: dashboardUrl },
+                    resolve
                 });
-                btnRow.appendChild(newBtn);
+                return;
             }
 
-            card.appendChild(btnRow);
-            overlay.appendChild(card);
+            if (overlayState === 'in_progress') {
+                _renderAttemptOverlay({
+                    title: `Attempt ${current}`,
+                    subtitle,
+                    info: `You've started Topic ${state.topicNumber}. Continue where you left off, or start a fresh attempt.`,
+                    primary: {
+                        label: `Continue Attempt ${current}`,
+                        onClick: async () => {
+                            _markAttemptStarted(current);
+                            try {
+                                const u = `${API.topicResume}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topic=${state.topicNumber}`;
+                                const r = await fetch(u, { headers }).then(rs => rs.json());
+                                if (r && r.success && r.url && r.url !== window.location.href) {
+                                    window.location.href = r.url;
+                                }
+                            } catch (e) {
+                                console.warn('WML: topic-resume lookup failed —', e.message);
+                            }
+                        }
+                    },
+                    secondary: {
+                        label: `Start Attempt ${count + 1}`,
+                        onClick: startNewAttempt
+                    },
+                    resolve
+                });
+                return;
+            }
 
-            // Attach to the canvas overlay if present, otherwise body.
-            const host = document.getElementById('swml-canvas-overlay') || document.body;
-            host.appendChild(overlay);
+            // fresh
+            const isFirstAttempt = count === 1 && !hasAnyComplete;
+            const info = isFirstAttempt
+                ? "This is your first attempt at this topic. You can redo it any time — but we recommend giving it your best shot now, since you'll have many other topics to practise on."
+                : `Ready to begin Attempt ${current}. Give it your best shot.`;
+            _renderAttemptOverlay({
+                title: `Attempt ${current}`,
+                subtitle,
+                info,
+                primary: {
+                    label: 'Start Writing',
+                    onClick: () => { _markAttemptStarted(current); }
+                },
+                secondary: hasAnyComplete ? {
+                    label: `Start Attempt ${count + 1}`,
+                    onClick: startNewAttempt
+                } : null,
+                resolve
+            });
         });
     }
 
@@ -502,6 +789,7 @@
 
         // Badges
         const protoBadges = el('div', { className: 'swml-sidebar-badges' });
+        if (state.reviewMode) protoBadges.appendChild(buildTutorViewPill()); // v7.15.55
         if (isCwTask) {
             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Creative Writing Masterclass' }));
             // v7.15.5: Step/Trial number badge
@@ -627,6 +915,7 @@
             saveBtn.querySelector('.swml-btn-text').textContent = '\u2713 Saved';
             setTimeout(() => { saveBtn.querySelector('.swml-btn-text').innerHTML = SVG_SAVE + ' Save Progress'; }, 2000);
         });
+        saveBtn.classList.add('swml-save-btn');
         protoSpacer.appendChild(saveBtn);
 
         // Past Work — v7.14.50: hidden in embedded mode (LD handles navigation)
@@ -1126,7 +1415,11 @@
 
         chatInputWrap.appendChild(chatInputInner);
         chatInputArea.appendChild(chatInputWrap);
-        chatPanel.appendChild(chatInputArea);
+        if (state.reviewMode) {
+            appendChatReadonlyNote(chatPanel);
+        } else {
+            chatPanel.appendChild(chatInputArea);
+        }
 
         // Selection toolbar
         let canvasChatSelToolbar = null;
@@ -1149,37 +1442,40 @@
                 const tb = el('div', { className: 'swml-selection-toolbar swml-sel-neumorphic' });
                 canvasChatSelToolbar = tb;
 
-                tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_REPLY + ' <span>Reply</span>',
-                    onClick: (ev) => {
-                        ev.stopPropagation();
-                        chatTextarea.value = `Regarding "${quote}" \u2014 `;
-                        chatTextarea.dispatchEvent(new Event('input'));
-                        autoGrowChatTextarea();
-                        chatTextarea.focus();
-                        removeChatSelToolbar(); sel.removeAllRanges();
-                    }
-                }));
-
-                tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_INSERT + ' <span>Insert into Doc</span>',
-                    onClick: (ev) => {
-                        ev.stopPropagation();
-                        if (canvasEditor) {
-                            canvasEditor.chain().focus().insertContent(selectedText + '\n').run();
+                // v7.15.54: Reply + Insert hidden in review mode — no chat input, doc is read-only.
+                if (!state.reviewMode) {
+                    tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_REPLY + ' <span>Reply</span>',
+                        onClick: (ev) => {
+                            ev.stopPropagation();
+                            chatTextarea.value = `Regarding "${quote}" \u2014 `;
+                            chatTextarea.dispatchEvent(new Event('input'));
+                            autoGrowChatTextarea();
+                            chatTextarea.focus();
+                            removeChatSelToolbar(); sel.removeAllRanges();
                         }
-                        removeChatSelToolbar(); sel.removeAllRanges();
-                    }
-                }));
+                    }));
 
-                tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_INSERT + ' <span>Insert</span>',
-                    onClick: (ev) => {
-                        ev.stopPropagation();
-                        chatTextarea.value += (chatTextarea.value && !chatTextarea.value.endsWith(' ') ? ' ' : '') + selectedText;
-                        chatTextarea.dispatchEvent(new Event('input'));
-                        autoGrowChatTextarea();
-                        chatTextarea.focus();
-                        removeChatSelToolbar(); sel.removeAllRanges();
-                    }
-                }));
+                    tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_INSERT + ' <span>Insert into Doc</span>',
+                        onClick: (ev) => {
+                            ev.stopPropagation();
+                            if (canvasEditor) {
+                                canvasEditor.chain().focus().insertContent(selectedText + '\n').run();
+                            }
+                            removeChatSelToolbar(); sel.removeAllRanges();
+                        }
+                    }));
+
+                    tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_INSERT + ' <span>Insert</span>',
+                        onClick: (ev) => {
+                            ev.stopPropagation();
+                            chatTextarea.value += (chatTextarea.value && !chatTextarea.value.endsWith(' ') ? ' ' : '') + selectedText;
+                            chatTextarea.dispatchEvent(new Event('input'));
+                            autoGrowChatTextarea();
+                            chatTextarea.focus();
+                            removeChatSelToolbar(); sel.removeAllRanges();
+                        }
+                    }));
+                }
 
                 tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_COPY + ' <span>Copy</span>',
                     onClick: (ev) => {
@@ -1505,6 +1801,9 @@
         _canvasGuard = true;
         setTimeout(() => { _canvasGuard = false; }, 500);
 
+        // v7.15.56: first-load review entry modal
+        setTimeout(maybeShowReviewEntryModal, 400);
+
         const { Editor, StarterKit, Placeholder, TextAlign, Highlight, CharacterCount, TextStyle, Color, Node, Mark, Extension, PaginationPlus, PAGE_SIZES } = window.TipTap || {};
         if (!Editor) {
             _canvasGuard = false;
@@ -1551,14 +1850,10 @@
         const overlay = el('div', { id: 'swml-canvas-overlay' });
         const canvas = el('div', { className: 'swml-canvas' });
 
-        // Tutor review mode: add class + banner (v7.15.2)
+        // Tutor / parent review mode: mark overlay so CSS can hide save/mark buttons.
+        // v7.15.53: banner removed — chat pane is overlaid instead (see chatPanel below).
         if (state.reviewMode) {
             overlay.classList.add('swml-review-mode');
-            const banner = el('div', { className: 'swml-review-banner' });
-            banner.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
-                + 'Reviewing <strong>' + (state.reviewStudentName || 'Student') + '</strong>\'s work'
-                + '<span style="margin-left:auto;opacity:0.7;font-size:12px">Read-only</span>';
-            canvas.prepend(banner);
         }
 
         // Editor pane
@@ -2046,6 +2341,7 @@
         // Context badges (left)
         // v7.13.42: CW exercises — check BOTH state.task and state.mode for robust detection
         const ctxBadges = el('div', { className: 'swml-canvas-ctx' });
+        if (state.reviewMode) ctxBadges.appendChild(buildTutorViewPill()); // v7.15.54
         const _isCwBadge = (state.task && state.task.startsWith('cw_')) || state.mode === 'creative' || state.subject === 'creative_writing';
         if (_isCwBadge) {
             ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: 'Creative Writing Masterclass' }));
@@ -3755,7 +4051,11 @@
             const epSendBtn = el('button', { className: 'swml-send-btn', innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>', onClick: () => epSendMessage() });
             epInputWrap.appendChild(epChatTextarea);
             epInputWrap.appendChild(epSendBtn);
-            epChatPanel.appendChild(epInputWrap);
+            if (state.reviewMode) {
+                appendChatReadonlyNote(epChatPanel);
+            } else {
+                epChatPanel.appendChild(epInputWrap);
+            }
 
             // Replace rightPanel content with chat
             rightPanel.innerHTML = '';
@@ -4429,9 +4729,40 @@
                     const assessWc = getResponseWordCount(canvasEditor);
                     const questionText = extractEssayQuestion(canvasEditor);
                     if (questionText) state.question = questionText;
+                    const firstName = (config.userName || '').split(' ')[0] || 'there';
+
+                    // v7.15.50: Empty response → redirect to the writing exercise instead
+                    // of offering to mark a blank document. Greeting is a hardcoded JS
+                    // template (no AI call), so detection + redirect is a pure UI change.
+                    if (assessWc === 0) {
+                        const redirectPlain = `Hi ${firstName} — I can see you haven't written your response yet. Before I can give you feedback, head back to the Writing exercise and draft your response. Once you've written something, come back here and I'll walk you through it.`;
+                        const redirectHTML = `<div style="margin-bottom:14px;padding:10px 14px;background:rgba(241,196,15,0.08);border-left:3px solid rgba(241,196,15,0.4);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.7)"><strong style="color:rgba(255,255,255,0.9)">Nothing to assess yet</strong> — your response is currently blank.</div><div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong> — I can see you haven't written your response yet.</p></div><div style="margin-bottom:12px"><p>Before I can give you feedback, head back to the <strong>Writing</strong> exercise and draft your response. Once you've written something, come back here and I'll walk you through it.</p></div>`;
+                        tp.addChatMessage(redirectHTML, 'ai', redirectPlain);
+                        tp.canvasChatHistory.push({ role: 'assistant', content: redirectPlain });
+                        saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
+
+                        setTimeout(() => {
+                            const actions = el('div', { className: 'swml-quick-actions' });
+                            const goBtn = el('button', { className: 'swml-quick-btn', textContent: 'Go to Writing Exercise →' });
+                            goBtn.addEventListener('click', async () => {
+                                goBtn.disabled = true;
+                                const target = await _resolveWritingExerciseUrl();
+                                if (target) window.location.href = target;
+                                else window.history.back();
+                            });
+                            actions.appendChild(goBtn);
+                            const greetBubble = tp.chatMessages.lastElementChild;
+                            if (greetBubble) {
+                                const bc = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
+                                bc.appendChild(actions);
+                            }
+                        }, 50);
+                        initAssessmentState();
+                        return;
+                    }
+
                     const questionSnippet = questionText ? `\n\nYour essay question: **${questionText}**` : '';
                     const questionHTML = questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your essay question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
-                    const firstName = (config.userName || '').split(' ')[0] || 'there';
                     const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} essay` : (state.phase === 'redraft') ? `${assessTextName} redraft essay` : `${assessTextName} diagnostic essay`;
                     const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
                     const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all 8 steps to receive your full score, grade, and personalised feedback.</div>';
@@ -4828,6 +5159,7 @@
 
                         // Badges — v7.13.52: CW exercises show single "Creative Writing" badge instead of board/subject/text
                         const protoBadges = el('div', { className: 'swml-sidebar-badges' });
+                        if (state.reviewMode) protoBadges.appendChild(buildTutorViewPill()); // v7.15.55
                         if (isCwTask) {
                             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Creative Writing Masterclass' }));
                             // v7.13.58: Show project name in sidebar (synchronous from state)
@@ -4927,6 +5259,7 @@
                             saveBtn.querySelector('.swml-btn-text').textContent = '✓ Saved';
                             setTimeout(() => { saveBtn.querySelector('.swml-btn-text').innerHTML = SVG_SAVE + ' Save Progress'; }, 2000);
                         });
+                        saveBtn.classList.add('swml-save-btn');
                         protoSpacer.appendChild(saveBtn);
 
                         // Past Work
@@ -5145,7 +5478,11 @@
 
                         chatInputWrap.appendChild(chatInputInner);
                         chatInputArea.appendChild(chatInputWrap);
-                        chatPanel.appendChild(chatInputArea);
+                        if (state.reviewMode) {
+                            appendChatReadonlyNote(chatPanel);
+                        } else {
+                            chatPanel.appendChild(chatInputArea);
+                        }
 
                         // Chat message helper — uses same structure as original chat
                         function addChatMessage(text, role, rawText) {
@@ -5339,40 +5676,43 @@
                                 const tb = el('div', { className: 'swml-selection-toolbar swml-sel-neumorphic' });
                                 canvasChatSelToolbar = tb;
 
-                                // Reply — prepends "Regarding ..." to chat input
-                                tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_REPLY + ' <span>Reply</span>',
-                                    onClick: (ev) => {
-                                        ev.stopPropagation();
-                                        chatTextarea.value = `Regarding "${quote}" — `;
-                                        chatTextarea.dispatchEvent(new Event('input'));
-                                        autoGrowChatTextarea();
-                                        chatTextarea.focus();
-                                        removeChatSelToolbar(); sel.removeAllRanges();
-                                    }
-                                }));
-
-                                // Insert into Document
-                                tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_INSERT + ' <span>Insert into Doc</span>',
-                                    onClick: (ev) => {
-                                        ev.stopPropagation();
-                                        if (canvasEditor) {
-                                            canvasEditor.chain().focus().insertContent(selectedText + '\n').run();
+                                // v7.15.54: Reply + Insert hidden in review mode — no chat input, doc is read-only.
+                                if (!state.reviewMode) {
+                                    // Reply — prepends "Regarding ..." to chat input
+                                    tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_REPLY + ' <span>Reply</span>',
+                                        onClick: (ev) => {
+                                            ev.stopPropagation();
+                                            chatTextarea.value = `Regarding "${quote}" — `;
+                                            chatTextarea.dispatchEvent(new Event('input'));
+                                            autoGrowChatTextarea();
+                                            chatTextarea.focus();
+                                            removeChatSelToolbar(); sel.removeAllRanges();
                                         }
-                                        removeChatSelToolbar(); sel.removeAllRanges();
-                                    }
-                                }));
+                                    }));
 
-                                // Insert into Chat
-                                tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_INSERT + ' <span>Insert</span>',
-                                    onClick: (ev) => {
-                                        ev.stopPropagation();
-                                        chatTextarea.value += (chatTextarea.value && !chatTextarea.value.endsWith(' ') ? ' ' : '') + selectedText;
-                                        chatTextarea.dispatchEvent(new Event('input'));
-                                        autoGrowChatTextarea();
-                                        chatTextarea.focus();
-                                        removeChatSelToolbar(); sel.removeAllRanges();
-                                    }
-                                }));
+                                    // Insert into Document
+                                    tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_INSERT + ' <span>Insert into Doc</span>',
+                                        onClick: (ev) => {
+                                            ev.stopPropagation();
+                                            if (canvasEditor) {
+                                                canvasEditor.chain().focus().insertContent(selectedText + '\n').run();
+                                            }
+                                            removeChatSelToolbar(); sel.removeAllRanges();
+                                        }
+                                    }));
+
+                                    // Insert into Chat
+                                    tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_INSERT + ' <span>Insert</span>',
+                                        onClick: (ev) => {
+                                            ev.stopPropagation();
+                                            chatTextarea.value += (chatTextarea.value && !chatTextarea.value.endsWith(' ') ? ' ' : '') + selectedText;
+                                            chatTextarea.dispatchEvent(new Event('input'));
+                                            autoGrowChatTextarea();
+                                            chatTextarea.focus();
+                                            removeChatSelToolbar(); sel.removeAllRanges();
+                                        }
+                                    }));
+                                }
 
                                 // Copy
                                 tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_COPY + ' <span>Copy</span>',
@@ -7541,7 +7881,9 @@
                         }
                     }));
 
-                    if (hasChat) {
+                    // v7.15.54: gate Reply + Insert by reviewMode explicitly — hasChat alone is
+                    // insufficient because the chat-input DOM node may still exist in review mode.
+                    if (hasChat && !state.reviewMode) {
                         tb.appendChild(el('button', { className: 'swml-sel-btn', innerHTML: SVG_SEL_REPLY + ' <span>Reply</span>',
                             onClick: (ev) => {
                                 ev.stopPropagation();
@@ -7737,15 +8079,11 @@
 
         canvasEditor = new Editor({
             element: editorEl,
-            editable: true, // v7.15.30: Always editable so tutor can add comment marks in review mode
-            editorProps: state.reviewMode ? {
-                // v7.15.30: Block all text editing in review mode — only comment marks allowed
-                handleKeyDown: () => true,
-                handleKeyPress: () => true,
-                handlePaste: () => true,
-                handleDrop: () => true,
-                handleTextInput: () => true,
-            } : {},
+            // v7.15.30: editor stays editable so programmatic comment marks work,
+            // but in review mode we block all user input handlers below. Previously
+            // this set of blockers lived in its own editorProps object that was
+            // overwritten by the second declaration — merged as of v7.15.53.
+            editable: true,
             extensions: [
                 StarterKit.configure({
                     heading: { levels: [2, 3] },
@@ -7867,6 +8205,17 @@
                     }
                     return true; // prevent default paste
                 },
+                // v7.15.53: in review mode, swallow every user-input path so the
+                // tutor can only add comment marks (applied programmatically) but
+                // cannot type, paste, drop, or otherwise mutate the student's prose.
+                // Must be declared LAST so it overrides the handlePaste above.
+                ...(state.reviewMode ? {
+                    handleKeyDown: () => true,
+                    handleKeyPress: () => true,
+                    handlePaste: () => true,
+                    handleDrop: () => true,
+                    handleTextInput: () => true,
+                } : {}),
             },
             onUpdate: ({ editor }) => {
                 // Word count — response sections only (v7.11.0)
@@ -13444,8 +13793,12 @@
                     sectionData: sectionData,
                     suffix: WML.getExerciseConfig(state.task).storageSuffix || '',
                     attempt: state.attempt || 1,
-                    // v7.15.30: Store LD lesson URL for dashboard deep links
-                    lessonUrl: state.embedded ? window.location.href : '',
+                    // v7.15.30: Store LD lesson URL for dashboard deep links.
+                    // v7.15.50: Fallback to WML deep-link when not embedded so the
+                    // dashboard Resume button always has a target.
+                    lessonUrl: state.embedded
+                        ? window.location.href
+                        : _buildWmlDeepLink({ board: state.board, text: state.text, topic: state.topicNumber, task: state.task }),
                 })
             }).then(r => r.json()).then(res => {
                 if (res.success) console.log('WML: Canvas saved to server', { key: res.key, savedAt: res.savedAt, board: state.board, text: state.text, topic: state.topicNumber, wc: wc });
@@ -15036,13 +15389,7 @@ ${html}
         const overlay = el('div', { id: 'swml-canvas-overlay' });
         if (state.reviewMode) overlay.classList.add('swml-review-mode');
         const canvas = el('div', { className: 'swml-canvas swml-feedback-canvas' });
-        if (state.reviewMode) {
-            const banner = el('div', { className: 'swml-review-banner' });
-            banner.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
-                + 'Reviewing <strong>' + (state.reviewStudentName || 'Student') + '</strong>\'s work'
-                + '<span style="margin-left:auto;opacity:0.7;font-size:12px">Read-only</span>';
-            canvas.prepend(banner);
-        }
+        // v7.15.53: banner removed — chat pane is overlaid instead (see chatPanel below).
 
         // ── Header: badges + theme toggle (no toolbar) ──
         const textLabel = state.textName || state.text || '';
@@ -15051,6 +15398,7 @@ ${html}
         const headerRow = el('div', { className: 'swml-canvas-header swml-feedback-header' });
 
         const ctxBadges = el('div', { className: 'swml-canvas-ctx' });
+        if (state.reviewMode) ctxBadges.appendChild(buildTutorViewPill()); // v7.15.54
         ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: boardLabel }));
         ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: subjectLabel }));
         ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: textLabel }));
@@ -15596,17 +15944,12 @@ ${html}
         const overlay = el('div', { id: 'swml-canvas-overlay' });
         if (state.reviewMode) overlay.classList.add('swml-review-mode');
         const canvas = el('div', { className: 'swml-canvas' });
-        if (state.reviewMode) {
-            const banner = el('div', { className: 'swml-review-banner' });
-            banner.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
-                + 'Reviewing <strong>' + (state.reviewStudentName || 'Student') + '</strong>\'s work'
-                + '<span style="margin-left:auto;opacity:0.7;font-size:12px">Read-only</span>';
-            canvas.prepend(banner);
-        }
+        // v7.15.53: banner removed — chat pane is overlaid instead (see chatPanel below).
 
         // ── Header Row ──
         const headerRow = el('div', { className: 'swml-canvas-header' });
         const ctxBadges = el('div', { className: 'swml-canvas-ctx' });
+        if (state.reviewMode) ctxBadges.appendChild(buildTutorViewPill()); // v7.15.54
         [state.board?.toUpperCase(), ucfirst(state.subject || ''), state.textName || ucfirst(state.text || '')].filter(Boolean).forEach(b => {
             ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: b }));
         });
@@ -15721,7 +16064,11 @@ ${html}
         chatInputWrap.style.cssText = 'display:flex;gap:8px;padding:10px 12px;align-items:flex-end;';
         chatInputWrap.appendChild(chatTextarea);
         chatInputWrap.appendChild(sendBtn);
-        chatPanel.appendChild(chatInputWrap);
+        if (state.reviewMode) {
+            appendChatReadonlyNote(chatPanel);
+        } else {
+            chatPanel.appendChild(chatInputWrap);
+        }
 
         // ── Chat State + Messaging ──
         const chatHistory = [];

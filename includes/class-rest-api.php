@@ -213,6 +213,16 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
+        // v7.15.51: Topic-scoped "resume" resolver — given (board, text, topic),
+        // returns the URL of the first not-complete LD lesson in that topic's
+        // WML-task sequence. Used by the diagnostic attempt overlay's Continue
+        // button to deep-link the student back to where they left off WITHIN the
+        // topic. Topics are self-contained in WML, so this search is topic-scoped.
+        register_rest_route($namespace, '/topic-resume', [
+            'methods' => 'GET', 'callback' => [$this, 'get_topic_resume'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+
         // Canvas chat persistence — save/load/clear assessment chat
         register_rest_route($namespace, '/canvas/chat-save', [
             'methods' => 'POST', 'callback' => [$this, 'save_canvas_chat'],
@@ -821,6 +831,7 @@ class SWML_REST_API {
             'step'         => absint($params['step'] ?? 1),
             'ai_chat_id'   => sanitize_text_field($params['ai_chat_id'] ?? ''),
             'context'      => $params['context'] ?? [],
+            'attempt'      => isset($params['attempt']) ? absint($params['attempt']) : null,
         ];
 
         update_user_meta($user_id, 'wml_session_' . $session_id, $data);
@@ -842,6 +853,7 @@ class SWML_REST_API {
             'step' => $data['step'], 'is_redraft' => !empty($ctx['is_redraft']),
             'is_manual' => !empty($params['is_manual']),
             'exchanges' => is_array($data['chat_history']) ? count(array_filter($data['chat_history'], function($m) { return ($m['role'] ?? '') === 'user'; })) : 0,
+            'attempt' => $data['attempt'],
         ];
         update_user_meta($user_id, 'wml_sessions_index', $index);
 
@@ -1384,9 +1396,12 @@ class SWML_REST_API {
         if (!$is_parent_role) return $tutor_result;
         global $wpdb;
         $table = $wpdb->prefix . 'sophicly_connections';
+        // v7.15.52: accept both 'active' (legacy) and 'connected' (current) — source
+        //           plugin wrote 'active' historically and 'connected' on accept today.
         $row = $wpdb->get_var($wpdb->prepare(
             "SELECT id FROM {$table}
-             WHERE parent_id = %d AND student_id = %d AND status = 'active'
+             WHERE parent_id = %d AND student_id = %d
+             AND status IN ('active', 'connected')
              LIMIT 1",
             $viewer_id, $student_id
         ));
@@ -1500,18 +1515,11 @@ class SWML_REST_API {
             return new WP_Error('self_signoff', 'Cannot sign off your own work.', ['status' => 403]);
         }
 
-        // Security: verify tutor is authorized for this student (v7.12.37)
-        if ($student_id !== $tutor_id && !current_user_can('manage_options')) {
-            $authorized = false;
-            if (function_exists('learndash_get_users_group_ids')) {
-                $tutor_groups   = learndash_get_users_group_ids($tutor_id);
-                $student_groups = learndash_get_users_group_ids($student_id);
-                $authorized     = !empty(array_intersect($tutor_groups, $student_groups));
-            }
-            if (!$authorized) {
-                return new WP_Error('unauthorized_student', 'You are not authorized to sign off for this student.', ['status' => 403]);
-            }
-        }
+        // v7.15.52: any tutor/specialist/admin may sign off for any student — group
+        //           scoping was removed because catch-up lessons routinely mix tutors
+        //           across groups. Route permission is already gated by check_tutor_auth.
+        $auth = $this->verify_tutor_student_access($student_id);
+        if (is_wp_error($auth)) return $auth;
 
         if (empty($board) || empty($text)) {
             return new WP_Error('missing_data', 'Missing board or text', ['status' => 400]);
@@ -2598,6 +2606,88 @@ class SWML_REST_API {
         $this->save_attempt_index($user_id, $board, $text, $topic, $suffix, $idx);
 
         return rest_ensure_response(['success' => true, 'attempts' => $idx]);
+    }
+
+    /**
+     * v7.15.51: Resolve the first not-complete LD lesson within a topic's
+     * WML-task sequence. Used by the diagnostic overlay's Continue button to
+     * deep-link the student back to where they left off.
+     *
+     * GET /sophicly-wml/v1/topic-resume?board=X&text=Y&topic=N
+     *
+     * Response:
+     *   { success: true, url: "...", task: "assessment", reason: "not_started" }
+     *   { success: true, url: "...", task: "diagnostic", reason: "all_complete" }
+     *   { success: false, error: "..." }
+     *
+     * Uses Sophicly_LearnDash_Bridge (from sophicly-student-data plugin) to map
+     * (board, text, topic, task) -> LD lesson post ID, then learndash_is_lesson_complete
+     * to find the first incomplete step. Topic sequence hard-coded here from
+     * wml-core.js::getPhaseSubSteps.
+     */
+    public function get_topic_resume($request) {
+        $user_id = get_current_user_id();
+        $board   = sanitize_text_field($request->get_param('board'));
+        $text    = sanitize_text_field($request->get_param('text'));
+        $topic   = absint($request->get_param('topic'));
+
+        if (!$board || !$text || !$topic) {
+            return new WP_Error('missing_params', 'board, text, topic required', ['status' => 400]);
+        }
+
+        if (!class_exists('Sophicly_LearnDash_Bridge') || !function_exists('learndash_is_lesson_complete')) {
+            return new WP_Error('bridge_unavailable', 'LearnDash bridge not available', ['status' => 503]);
+        }
+
+        $bridge = Sophicly_LearnDash_Bridge::init();
+
+        $sequence = [
+            'diagnostic',
+            'assessment',
+            'feedback_discussion',
+            'mark_scheme',
+            'model_answer_video',
+            'planning',
+            'outlining',
+            'polishing',
+            'redraft_assessment',
+        ];
+
+        $first_lesson_id = null;
+        $first_lesson_task = null;
+
+        foreach ($sequence as $task) {
+            $lesson_id = $bridge->find_ld_topic($board, $text, $topic, $task);
+            if (!$lesson_id) continue;
+
+            if ($first_lesson_id === null) {
+                $first_lesson_id = $lesson_id;
+                $first_lesson_task = $task;
+            }
+
+            $course_id = function_exists('learndash_get_course_id') ? learndash_get_course_id($lesson_id) : 0;
+            $complete = learndash_is_lesson_complete($user_id, $lesson_id, $course_id);
+
+            if (!$complete) {
+                return rest_ensure_response([
+                    'success' => true,
+                    'url' => get_permalink($lesson_id) ?: '',
+                    'task' => $task,
+                    'reason' => 'not_started',
+                ]);
+            }
+        }
+
+        if ($first_lesson_id) {
+            return rest_ensure_response([
+                'success' => true,
+                'url' => get_permalink($first_lesson_id) ?: '',
+                'task' => $first_lesson_task,
+                'reason' => 'all_complete',
+            ]);
+        }
+
+        return new WP_Error('no_lessons', 'No lessons mapped for this topic', ['status' => 404]);
     }
 }
 
