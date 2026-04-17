@@ -4,6 +4,10 @@
 
 set -e
 
+# Shared git-hygiene guard (refuses dirty-tree prod, auto-commits on success)
+source "$(dirname "$0")/.deploy/deploy-helpers.sh"
+sophicly_predeploy_guard
+
 REMOTE_USER="runcloud"
 REMOTE_HOST="18.133.5.229"
 SSH_KEY="$HOME/.ssh/sophicly_staging"
@@ -28,3 +32,6 @@ rsync -avz --delete \
 
 echo ""
 echo "Deploy complete!"
+
+# Capture the deployed state in git (no-op on clean trees)
+sophicly_postdeploy_commit
