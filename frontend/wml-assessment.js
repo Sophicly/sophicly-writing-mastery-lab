@@ -4149,6 +4149,42 @@
             fbPlaylistBtn.style.marginTop = '16px';
             rightPanel.appendChild(fbPlaylistBtn);
 
+            // v7.15.80: Share-with-Tutor button. Builds current-URL + ?student_id=<uid>
+            // so a tutor clicking it lands in viewerMode=comment review mode (read-only
+            // + comments). Copies to clipboard. Hidden in review mode (tutor already
+            // viewing the student). Uses build3DButton to match the library-resources
+            // styling family (3D press/lift effect matches copy-link buttons elsewhere).
+            if (!state.reviewMode) {
+                const fbShareBtn = build3DButton('🔗 Share link with tutor', 'Copied — paste in chat', async () => {
+                    const uid = (window.swmlConfig && window.swmlConfig.userId) || 0;
+                    if (!uid) return false;
+                    let urlStr;
+                    try {
+                        const u = new URL(window.location.href);
+                        u.searchParams.set('student_id', String(uid));
+                        urlStr = u.toString();
+                    } catch (_) {
+                        urlStr = window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'student_id=' + uid;
+                    }
+                    try {
+                        await navigator.clipboard.writeText(urlStr);
+                        if (typeof showToast === 'function') showToast('Tutor-view link copied to clipboard', 3000, true);
+                        return true;
+                    } catch (_) {
+                        prompt('Copy this link and share with your tutor:', urlStr);
+                        return false;
+                    }
+                });
+                fbShareBtn.style.marginTop = '12px';
+                rightPanel.appendChild(fbShareBtn);
+
+                const shareHint = el('p', {
+                    textContent: 'Paste this in your tutor chat to start a live session. Tutor sees a read-only view with comments.',
+                });
+                shareHint.style.cssText = 'margin:8px 0 0;font-size:11px;opacity:0.55;text-align:center;line-height:1.4;';
+                rightPanel.appendChild(shareHint);
+            }
+
             // Listen for video player close to show the re-trigger button
             const _fbVideoObserver = setInterval(() => {
                 const playerEl = document.querySelector('.swml-video-player, .swml-video-overlay');
@@ -15934,42 +15970,26 @@ ${html}
             canvas.appendChild(standaloneWrap);
         }
 
-        // ── Main content area: embedded document (centre) + guidance panel (right) ──
+        // ── Main content area: centre pane + guidance panel (right) ──
+        // v7.15.80: feedback_discussion Phase 1/2 now route to renderCanvasWorkspace
+        // (editable canvas with canvasInFeedback branch handling the right panel).
+        // This lightweight path only handles:
+        //   - model_answer_video — video + guidance panel
+        //   - feedback_discussion with phase='standalone' — paste area already
+        //     prepended above; centre pane shows a light hint below
         const contentArea = el('div', { className: 'swml-feedback-content' });
 
-        // v7.15.79: Centre pane embeds the student's assessment-marked document
-        // (Phase 1) or redraft document (Phase 2) as read-only HTML. Floating
-        // video player still launches in parallel via wmlVideo.open(). Standalone
-        // phase skips the embed — the paste area above canvas handles that UX.
-        const docPane = el('div', { className: 'swml-feedback-video-pane swml-feedback-doc-pane' });
-        const docInner = el('div', { className: 'swml-feedback-doc-readonly' });
-        docInner.style.cssText = 'padding:24px;overflow-y:auto;height:100%;color:rgba(255,255,255,0.9);font-size:14px;line-height:1.6;';
-
+        const centrePane = el('div', { className: 'swml-feedback-video-pane' });
+        const centreInner = el('div', { className: 'swml-feedback-video-placeholder' });
+        centreInner.style.cssText = 'padding:40px 20px;text-align:center;color:rgba(255,255,255,0.5);font-size:13px;';
         if (state.phase === 'standalone') {
-            docInner.innerHTML = '<p style="opacity:0.55;font-size:13px;text-align:center;margin-top:40px;">Paste your work above to begin discussing.</p>';
+            centreInner.innerHTML = '<p style="opacity:0.7;">Paste your work above to begin discussing with Sophia.</p>';
         } else {
-            docInner.innerHTML = '<p style="opacity:0.45;font-size:13px;text-align:center;margin-top:40px;">Loading your assessed document…</p>';
-            // Pull the phase-appropriate doc: Phase 1 → empty suffix (assessment/
-            // diagnostic shared key); Phase 2 → '_redraft' (redraft writing +
-            // reassessment shared key).
-            const docSuffix = (state.phase === 'redraft') ? '_redraft' : '';
-            const docUrl = `${config.restUrl}canvas/load?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(docSuffix)}${state.attempt ? '&attempt=' + state.attempt : ''}`;
-            fetch(docUrl, { headers })
-                .then(r => r.json())
-                .then(data => {
-                    if (data && data.success && data.doc) {
-                        docInner.innerHTML = _tiptapJsonToHtml(data.doc) ||
-                            '<p style="opacity:0.55;font-size:13px;text-align:center;margin-top:40px;">Your assessed document is empty.</p>';
-                    } else {
-                        docInner.innerHTML = '<p style="opacity:0.55;font-size:13px;text-align:center;margin-top:40px;">No assessed document found for this attempt yet.</p>';
-                    }
-                })
-                .catch(e => {
-                    console.warn('WML feedback: doc fetch failed —', e.message);
-                    docInner.innerHTML = '<p style="opacity:0.55;font-size:13px;text-align:center;margin-top:40px;color:#F1C40F;">Could not load the document. Please refresh.</p>';
-                });
+            // model_answer_video path — keep the original placeholder shape (minus
+            // the "N videos available" line which Neil asked to remove).
+            centreInner.innerHTML = '<div style="font-size:48px;opacity:0.15;margin-bottom:16px">▶</div><p style="opacity:0.5">Your video will open in a floating player.</p>';
         }
-        docPane.appendChild(docInner);
+        centrePane.appendChild(centreInner);
 
         // Floating video player still launches via admin-managed videos.
         fetch(`${config.restUrl}resources?task=${encodeURIComponent(taskKey)}&step=0&board=${encodeURIComponent(state.board)}&subject=${encodeURIComponent(state.subject)}`, { headers })
@@ -15982,7 +16002,7 @@ ${html}
             })
             .catch(e => { console.warn('WML: Failed to fetch feedback videos:', e); });
 
-        contentArea.appendChild(docPane);
+        contentArea.appendChild(centrePane);
 
         // ── Guidance Panel (right) — driven by config ──
         const guidePanel = el('div', { className: 'swml-canvas-plan swml-feedback-guide' });
@@ -16089,46 +16109,9 @@ ${html}
 
         // v7.14.45: Sequence navigation suppressed — LearnDash handles exercise transitions.
         // Was: Previous/Next buttons for Phase 1 and Phase 2 step sequences.
-
-        // v7.15.79: Share-with-Tutor button. Generates a tutor-view URL for the
-        // current lesson (same URL + ?student_id=<user>) and copies it to the
-        // clipboard. Student pastes into the tutor chat for a live session. Not
-        // shown in review mode (tutor is already viewing) or for standalone.
-        if (!state.reviewMode && state.phase !== 'standalone') {
-            const shareWrap = el('div', { className: 'swml-feedback-share-wrap' });
-            shareWrap.style.cssText = 'margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);';
-            const shareBtn = el('button', { className: 'swml-feedback-share-btn' });
-            shareBtn.style.cssText = 'width:100%;padding:12px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,#5333ed,#4D76FD);color:#fff;font-size:13px;font-weight:600;cursor:pointer;';
-            shareBtn.innerHTML = '🔗 Share link with tutor';
-            shareBtn.addEventListener('click', async () => {
-                const uid = (window.swmlConfig && window.swmlConfig.userId) || 0;
-                if (!uid) return;
-                let shareUrl;
-                try {
-                    shareUrl = new URL(window.location.href);
-                    shareUrl.searchParams.set('student_id', String(uid));
-                } catch (_) {
-                    shareUrl = window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'student_id=' + uid;
-                }
-                const urlStr = String(shareUrl);
-                try {
-                    await navigator.clipboard.writeText(urlStr);
-                    shareBtn.innerHTML = '✓ Link copied — paste in chat';
-                    showToast('Tutor-view link copied to clipboard', 3000, true);
-                    setTimeout(() => { shareBtn.innerHTML = '🔗 Share link with tutor'; }, 4000);
-                } catch (e) {
-                    // Fallback: prompt so student can copy manually
-                    prompt('Copy this link and share with your tutor:', urlStr);
-                }
-            });
-            shareWrap.appendChild(shareBtn);
-            const shareHint = el('p', {
-                textContent: 'Copies a read-only tutor-view link. Paste it in your tutor chat to start a live session.',
-            });
-            shareHint.style.cssText = 'margin:8px 0 0;font-size:11px;opacity:0.55;text-align:center;';
-            shareWrap.appendChild(shareHint);
-            guidePanel.appendChild(shareWrap);
-        }
+        // v7.15.80: Share-with-Tutor button moved to renderCanvasWorkspace's
+        // canvasInFeedback branch (where Phase 1/2 now live). Standalone doesn't
+        // need share — student is working on their own pasted content.
 
         contentArea.appendChild(guidePanel);
         canvas.appendChild(contentArea);

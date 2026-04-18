@@ -324,8 +324,13 @@
             // Route to the right exercise based on manifest config
             const exerciseConfig = WML.getExerciseConfig(state.task);
 
-            if (state.task === 'feedback_discussion' || state.task === 'model_answer_video') {
-                // Lightweight canvas: feedback discussion + model answer video (v7.13.16)
+            // v7.15.80: Discuss Feedback Phase 1/2 now goes through renderCanvasWorkspace
+            // so students see their editable assessed/redraft doc (same as diagnostic env)
+            // with the feedback guidance panel on the right. Lightweight canvas still
+            // handles: model_answer_video AND the standalone paste-in flow.
+            if (state.task === 'model_answer_video') {
+                WML.renderFeedbackDiscussionCanvas();
+            } else if (state.task === 'feedback_discussion' && state.phase === 'standalone') {
                 WML.renderFeedbackDiscussionCanvas();
             } else if (['training', 'free', 'flexible'].includes(exerciseConfig.environment)) {
                 // v7.14.36: All canvas environments — training (protocol), free (independent), flexible (inline-AI)
