@@ -11328,6 +11328,67 @@
         return labelled.join('\n\n');
     }
 
+    // v7.15.79: Minimal TipTap JSON → HTML walker for read-only document embed
+    // (used by feedback_discussion to show the assessment-marked doc). Handles
+    // the WML canvas node set: paragraph, heading, lists, blockquote, section
+    // blocks, input fields, outline rows, hard breaks, horizontal rules, and
+    // text marks (bold, italic, code, underline, highlight). Custom / unknown
+    // nodes render their children. No TipTap editor instantiation — pure walker.
+    function _tiptapJsonToHtml(node) {
+        if (!node) return '';
+        if (Array.isArray(node)) return node.map(_tiptapJsonToHtml).join('');
+        if (node.type === 'text') {
+            let txt = escapeHTML(node.text || '');
+            (node.marks || []).forEach(m => {
+                const t = m.type || m;
+                if (t === 'bold' || t === 'strong') txt = `<strong>${txt}</strong>`;
+                else if (t === 'italic' || t === 'em') txt = `<em>${txt}</em>`;
+                else if (t === 'code') txt = `<code>${txt}</code>`;
+                else if (t === 'underline') txt = `<u>${txt}</u>`;
+                else if (t === 'strike') txt = `<s>${txt}</s>`;
+            });
+            return txt;
+        }
+        const children = _tiptapJsonToHtml(node.content || []);
+        switch (node.type) {
+            case 'doc':           return children;
+            case 'paragraph':     return `<p>${children}</p>`;
+            case 'heading': {
+                const lvl = (node.attrs && node.attrs.level) || 2;
+                return `<h${lvl}>${children}</h${lvl}>`;
+            }
+            case 'bulletList':    return `<ul>${children}</ul>`;
+            case 'orderedList':   return `<ol>${children}</ol>`;
+            case 'listItem':      return `<li>${children}</li>`;
+            case 'blockquote':    return `<blockquote>${children}</blockquote>`;
+            case 'hardBreak':     return '<br>';
+            case 'horizontalRule': return '<hr>';
+            case 'sectionBlock': {
+                const a = node.attrs || {};
+                const label = a.label || a.sectionLabel || '';
+                const type = a.sectionType || a.type || 'block';
+                return `<div class="swml-section-block swml-section-${escapeHTML(type)}" data-section-label="${escapeHTML(label)}">${label ? `<h4 class="swml-section-label">${escapeHTML(label)}</h4>` : ''}${children}</div>`;
+            }
+            case 'inputField':    return `<div class="swml-input-field">${children}</div>`;
+            case 'outlineRow':    return `<div class="swml-outline-row">${children}</div>`;
+            case 'checklistItem': return `<div class="swml-checklist-item">${children}</div>`;
+            default:              return children;
+        }
+    }
+
+    // v7.15.79: Plain-text extractor for the same node shape. Used by the
+    // standalone picker when pulling a prior attempt into the paste area.
+    function _tiptapJsonToText(node) {
+        if (!node) return '';
+        if (Array.isArray(node)) return node.map(_tiptapJsonToText).join('');
+        if (node.type === 'text') return node.text || '';
+        const children = _tiptapJsonToText(node.content || []);
+        if (node.type === 'paragraph' || node.type === 'heading') return children + '\n\n';
+        if (node.type === 'listItem') return '- ' + children + '\n';
+        if (node.type === 'hardBreak') return '\n';
+        return children;
+    }
+
     // v7.15.76: Feedback rows become editable when a tutor/SSS/admin has flipped
     // the unlock flag for this student (global) OR for the current topic triple.
     // Always gated by viewerMode==='edit' so tutor/parent review stays read-only
@@ -15857,18 +15918,11 @@ ${html}
                 const opt = picker.options[picker.selectedIndex];
                 if (!opt || !opt.dataset.board) return;
                 try {
-                    const url = `${config.restUrl}canvas?board=${encodeURIComponent(opt.dataset.board)}&text=${encodeURIComponent(opt.dataset.text)}&topicNumber=${opt.dataset.topic || ''}&suffix=${encodeURIComponent(opt.dataset.suffix || '')}&attempt=${opt.dataset.attempt}`;
+                    const url = `${config.restUrl}canvas/load?board=${encodeURIComponent(opt.dataset.board)}&text=${encodeURIComponent(opt.dataset.text)}&topicNumber=${opt.dataset.topic || ''}&suffix=${encodeURIComponent(opt.dataset.suffix || '')}&attempt=${opt.dataset.attempt}`;
                     const res = await fetch(url, { headers }).then(r => r.json());
-                    if (res && res.success && res.canvas) {
-                        // Strip TipTap JSON / HTML — grab plain text
-                        let text = '';
-                        if (typeof res.canvas === 'string') {
-                            const tmp = document.createElement('div');
-                            tmp.innerHTML = res.canvas;
-                            text = tmp.textContent || '';
-                        } else if (res.canvas && typeof res.canvas === 'object') {
-                            text = JSON.stringify(res.canvas);
-                        }
+                    if (res && res.success && res.doc) {
+                        // v7.15.79: strip TipTap JSON to plain text via the helper.
+                        const text = _tiptapJsonToText(res.doc);
                         if (text) {
                             pasteArea.value = (pasteArea.value ? pasteArea.value + '\n\n---\n\n' : '') + text.trim();
                             pasteArea.dispatchEvent(new Event('input'));
@@ -15880,52 +15934,55 @@ ${html}
             canvas.appendChild(standaloneWrap);
         }
 
-        // ── Main content area: video player + guidance panel ──
+        // ── Main content area: embedded document (centre) + guidance panel (right) ──
         const contentArea = el('div', { className: 'swml-feedback-content' });
 
-        // ── Video Player (centre) — uses wml-video-player.js for drag, PiP, resize ──
-        const videoPane = el('div', { className: 'swml-feedback-video-pane' });
+        // v7.15.79: Centre pane embeds the student's assessment-marked document
+        // (Phase 1) or redraft document (Phase 2) as read-only HTML. Floating
+        // video player still launches in parallel via wmlVideo.open(). Standalone
+        // phase skips the embed — the paste area above canvas handles that UX.
+        const docPane = el('div', { className: 'swml-feedback-video-pane swml-feedback-doc-pane' });
+        const docInner = el('div', { className: 'swml-feedback-doc-readonly' });
+        docInner.style.cssText = 'padding:24px;overflow-y:auto;height:100%;color:rgba(255,255,255,0.9);font-size:14px;line-height:1.6;';
 
-        // Placeholder shown while loading / if no videos
-        const videoPlaceholder = el('div', { className: 'swml-feedback-video-placeholder' });
-        videoPlaceholder.innerHTML = `
-            <div style="text-align:center;padding:40px 20px;">
-                <div style="font-size:48px;opacity:0.2;margin-bottom:16px">▶</div>
-                <p style="font-size:14px;opacity:0.5">Loading videos...</p>
-            </div>
-        `;
-        videoPane.appendChild(videoPlaceholder);
+        if (state.phase === 'standalone') {
+            docInner.innerHTML = '<p style="opacity:0.55;font-size:13px;text-align:center;margin-top:40px;">Paste your work above to begin discussing.</p>';
+        } else {
+            docInner.innerHTML = '<p style="opacity:0.45;font-size:13px;text-align:center;margin-top:40px;">Loading your assessed document…</p>';
+            // Pull the phase-appropriate doc: Phase 1 → empty suffix (assessment/
+            // diagnostic shared key); Phase 2 → '_redraft' (redraft writing +
+            // reassessment shared key).
+            const docSuffix = (state.phase === 'redraft') ? '_redraft' : '';
+            const docUrl = `${config.restUrl}canvas/load?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(docSuffix)}${state.attempt ? '&attempt=' + state.attempt : ''}`;
+            fetch(docUrl, { headers })
+                .then(r => r.json())
+                .then(data => {
+                    if (data && data.success && data.doc) {
+                        docInner.innerHTML = _tiptapJsonToHtml(data.doc) ||
+                            '<p style="opacity:0.55;font-size:13px;text-align:center;margin-top:40px;">Your assessed document is empty.</p>';
+                    } else {
+                        docInner.innerHTML = '<p style="opacity:0.55;font-size:13px;text-align:center;margin-top:40px;">No assessed document found for this attempt yet.</p>';
+                    }
+                })
+                .catch(e => {
+                    console.warn('WML feedback: doc fetch failed —', e.message);
+                    docInner.innerHTML = '<p style="opacity:0.55;font-size:13px;text-align:center;margin-top:40px;color:#F1C40F;">Could not load the document. Please refresh.</p>';
+                });
+        }
+        docPane.appendChild(docInner);
 
-        // Fetch videos from admin-managed REST endpoint, then launch floating player
+        // Floating video player still launches via admin-managed videos.
         fetch(`${config.restUrl}resources?task=${encodeURIComponent(taskKey)}&step=0&board=${encodeURIComponent(state.board)}&subject=${encodeURIComponent(state.subject)}`, { headers })
             .then(r => r.json())
             .then(data => {
                 const videos = data?.videos || [];
                 if (videos.length > 0 && window.wmlVideo) {
-                    videoPlaceholder.innerHTML = `
-                        <div style="text-align:center;padding:40px 20px;">
-                            <p style="font-size:14px;opacity:0.7;margin-bottom:12px">${videos.length} video${videos.length > 1 ? 's' : ''} available</p>
-                            <p style="font-size:12px;opacity:0.4">The video player is floating — you can drag it around the screen, resize it, and minimise it.</p>
-                        </div>
-                    `;
-                    // Open the existing draggable player
                     wmlVideo.open(videos, { size: 'medium' });
-                } else if (videos.length === 0) {
-                    videoPlaceholder.innerHTML = `
-                        <div style="text-align:center;padding:40px 20px;">
-                            <div style="font-size:48px;opacity:0.15;margin-bottom:16px">▶</div>
-                            <p style="font-size:14px;opacity:0.4">No videos assigned yet</p>
-                            <p style="font-size:12px;opacity:0.3;margin-top:4px">Your teacher will add feedback videos here. Check back soon!</p>
-                        </div>
-                    `;
                 }
             })
-            .catch(e => {
-                console.warn('WML: Failed to fetch feedback videos:', e);
-                videoPlaceholder.innerHTML = '<div style="text-align:center;padding:40px"><p style="opacity:0.4">Could not load videos</p></div>';
-            });
+            .catch(e => { console.warn('WML: Failed to fetch feedback videos:', e); });
 
-        contentArea.appendChild(videoPane);
+        contentArea.appendChild(docPane);
 
         // ── Guidance Panel (right) — driven by config ──
         const guidePanel = el('div', { className: 'swml-canvas-plan swml-feedback-guide' });
@@ -16032,6 +16089,46 @@ ${html}
 
         // v7.14.45: Sequence navigation suppressed — LearnDash handles exercise transitions.
         // Was: Previous/Next buttons for Phase 1 and Phase 2 step sequences.
+
+        // v7.15.79: Share-with-Tutor button. Generates a tutor-view URL for the
+        // current lesson (same URL + ?student_id=<user>) and copies it to the
+        // clipboard. Student pastes into the tutor chat for a live session. Not
+        // shown in review mode (tutor is already viewing) or for standalone.
+        if (!state.reviewMode && state.phase !== 'standalone') {
+            const shareWrap = el('div', { className: 'swml-feedback-share-wrap' });
+            shareWrap.style.cssText = 'margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);';
+            const shareBtn = el('button', { className: 'swml-feedback-share-btn' });
+            shareBtn.style.cssText = 'width:100%;padding:12px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,#5333ed,#4D76FD);color:#fff;font-size:13px;font-weight:600;cursor:pointer;';
+            shareBtn.innerHTML = '🔗 Share link with tutor';
+            shareBtn.addEventListener('click', async () => {
+                const uid = (window.swmlConfig && window.swmlConfig.userId) || 0;
+                if (!uid) return;
+                let shareUrl;
+                try {
+                    shareUrl = new URL(window.location.href);
+                    shareUrl.searchParams.set('student_id', String(uid));
+                } catch (_) {
+                    shareUrl = window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'student_id=' + uid;
+                }
+                const urlStr = String(shareUrl);
+                try {
+                    await navigator.clipboard.writeText(urlStr);
+                    shareBtn.innerHTML = '✓ Link copied — paste in chat';
+                    showToast('Tutor-view link copied to clipboard', 3000, true);
+                    setTimeout(() => { shareBtn.innerHTML = '🔗 Share link with tutor'; }, 4000);
+                } catch (e) {
+                    // Fallback: prompt so student can copy manually
+                    prompt('Copy this link and share with your tutor:', urlStr);
+                }
+            });
+            shareWrap.appendChild(shareBtn);
+            const shareHint = el('p', {
+                textContent: 'Copies a read-only tutor-view link. Paste it in your tutor chat to start a live session.',
+            });
+            shareHint.style.cssText = 'margin:8px 0 0;font-size:11px;opacity:0.55;text-align:center;';
+            shareWrap.appendChild(shareHint);
+            guidePanel.appendChild(shareWrap);
+        }
 
         contentArea.appendChild(guidePanel);
         canvas.appendChild(contentArea);
