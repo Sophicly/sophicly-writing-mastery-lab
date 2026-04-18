@@ -420,8 +420,15 @@ class SWML_REST_API {
     public function check_tutor_auth() {
         if (!is_user_logged_in()) return false;
         if (current_user_can('manage_options')) return true;
-        $att_role = get_user_meta(get_current_user_id(), 'sophicly_att_role', true);
-        return in_array($att_role, ['tutor', 'specialist'], true);
+        $uid       = get_current_user_id();
+        $att_role  = get_user_meta($uid, 'sophicly_att_role', true);
+        $soph_role = get_user_meta($uid, 'sophicly_role', true);
+        // v7.15.82: SSS is dual-checked — att_role='specialist' OR sophicly_role='sss'
+        // per CLAUDE.md role convention. Tutor stays att_role-only.
+        if ($att_role === 'tutor') return true;
+        if ($att_role === 'specialist') return true;
+        if ($soph_role === 'sss') return true;
+        return false;
     }
 
     public function check_admin_auth() {
@@ -1382,8 +1389,11 @@ class SWML_REST_API {
         $tutor_id = get_current_user_id();
         if ($student_id === $tutor_id) return true;
         if (current_user_can('manage_options')) return true;
-        $att_role = get_user_meta($tutor_id, 'sophicly_att_role', true);
-        if (in_array($att_role, ['tutor', 'specialist'], true)) return true;
+        $att_role  = get_user_meta($tutor_id, 'sophicly_att_role', true);
+        $soph_role = get_user_meta($tutor_id, 'sophicly_role', true);
+        // v7.15.82: SSS dual-check — CLAUDE.md role convention says SSS is either
+        // att_role='specialist' OR sophicly_role='sss'. Both forms exist in the DB.
+        if ($att_role === 'tutor' || $att_role === 'specialist' || $soph_role === 'sss') return true;
         return new WP_Error('unauthorized', 'You are not authorized to view this student\'s work.', ['status' => 403]);
     }
 

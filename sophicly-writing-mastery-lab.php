@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.15.81
+ * Version: 7.15.82
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.15.81');
+define('SWML_VERSION', '7.15.82');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -312,9 +312,11 @@ class Sophicly_Writing_Mastery_Lab {
             'userAvatar'       => get_avatar_url(get_current_user_id(), ['size' => 64]),
             'userTier'         => $user_tier,  // 'platinum', 'gold', 'silver', 'free', 'guest'
             'isAdmin'          => current_user_can('manage_options'),
+            // v7.15.82: SSS dual-check added (att_role='specialist' OR sophicly_role='sss')
             'canSignOff'       => current_user_can('manage_options')
                                   || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'tutor'
-                                  || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'specialist',
+                                  || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'specialist'
+                                  || get_user_meta(get_current_user_id(), 'sophicly_role', true) === 'sss',
             'reviewMode'       => $review_mode,
             'reviewRole'       => $review_role,  // v7.15.40: 'tutor' | 'specialist' | 'admin' | 'parent' | ''
             'reviewStudentId'  => $review_student_id,
@@ -678,9 +680,11 @@ class Sophicly_Writing_Mastery_Lab {
                 'userAvatar'     => get_avatar_url(get_current_user_id(), ['size' => 64]),
                 'userTier'       => $user_tier,
                 'isAdmin'        => current_user_can('manage_options'),
+                // v7.15.82: SSS dual-check added
                 'canSignOff'     => current_user_can('manage_options')
                                     || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'tutor'
-                                    || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'specialist',
+                                    || get_user_meta(get_current_user_id(), 'sophicly_att_role', true) === 'specialist'
+                                    || get_user_meta(get_current_user_id(), 'sophicly_role', true) === 'sss',
                 'reviewMode'        => $embed_review['review_mode'],
                 'reviewRole'        => $embed_review['review_role'],
                 'reviewStudentId'   => $embed_review['student_id'],
