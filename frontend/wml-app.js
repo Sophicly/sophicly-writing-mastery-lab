@@ -5981,7 +5981,7 @@ Before marking the introduction, ask the student to confirm their essay structur
             } else if (res.code) {
                 console.error('WML Initial Chat Error:', res.code, res.message);
                 if (res.debug) console.error('WML Initial Debug:', JSON.stringify(res.debug, null, 2));
-                addMessage('ai', `Welcome! There was an issue connecting to the AI tutor: **${res.message || res.code}**\n\nPlease try refreshing the page, or let your teacher know.`);
+                addMessage('ai', `Welcome! There was an issue connecting to Sophia: **${res.message || res.code}**\n\nPlease try refreshing the page, or let your teacher know.`);
             } else if (typeof res.data === 'string') {
                 addMessage('ai', res.data);
             } else {

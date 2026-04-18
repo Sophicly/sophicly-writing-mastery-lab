@@ -13264,7 +13264,7 @@
             html += sectionHTML('question', 'About This Exercise', false, null,
                 '<h2>Exam Question Creator</h2>' +
                 (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
-                '<p>Your AI tutor will generate exam-style questions tailored to your text and exam board. Work through them to build familiarity with exam question patterns.</p>'
+                '<p>Sophia will generate exam-style questions tailored to your text and exam board. Work through them to build familiarity with exam question patterns.</p>'
             );
             for (let i = 1; i <= 10; i++) {
                 html += dividerHTML('QUESTION ' + i);
@@ -13278,7 +13278,7 @@
             html += sectionHTML('question', 'About This Exercise', false, null,
                 '<h2>Essay Plan</h2>' +
                 (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
-                '<p>Build a structured essay plan with your AI tutor. Choose a question, then plan each paragraph with quotes and analysis.</p>'
+                '<p>Build a structured essay plan with Sophia. Choose a question, then plan each paragraph with quotes and analysis.</p>'
             );
             // v7.15.17: Extract + Question as one continuous block (no divider between them)
             // Source section kept separate for Extract panel feature (sectionType="source")
@@ -13306,7 +13306,7 @@
             html += sectionHTML('question', 'About This Exercise', false, null,
                 '<h2>Model Answer</h2>' +
                 (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
-                '<p>Write a model answer from one of your essay plans. Your AI tutor will guide you through each section and provide a Grade 9 comparison.</p>'
+                '<p>Write a model answer from one of your essay plans. Sophia will guide you through each section and provide a Grade 9 comparison.</p>'
             );
             html += dividerHTML('ESSAY QUESTION');
             html += sectionHTML('question', 'Essay Question', false, null,
@@ -16425,25 +16425,53 @@ ${html}
 
     function _pickBestExtractBlock(blocks) {
         if (!blocks.length) return '';
-        if (blocks.length === 1) return blocks[0];
-        let best = { score: -Infinity, text: blocks[0] };
-        for (const block of blocks) {
+        // v7.15.72: tighten scoring — the AI sometimes wraps the QUESTION stem
+        // itself in a `---...---` callout (not just the extract). Question blocks
+        // must be filtered out aggressively, else the parser picks them as "extract".
+        const scored = blocks.map((block, i) => {
             const contentLines = block.split('\n').filter(l => l.trim().length > 0);
             const n = contentLines.length;
             let score = n;
-            // Penalty: block opens with a preamble/instruction marker
+            const reasons = [];
+            // -200: block IS the question stem (hard reject)
+            if (/Starting with this (?:extract|speech|moment)/i.test(block)
+                || /^\s*(?:Explore|Discuss|Analyse|Compare) how /im.test(block)
+                || /To what extent do you agree/i.test(block)) {
+                score -= 200; reasons.push('question-stem');
+            }
+            // -100: contains "Write about:" (always part of the question, never extract)
+            if (/^\s*Write about\s*:/im.test(block)) {
+                score -= 100; reasons.push('write-about');
+            }
+            // -100: contains marks allocation
+            if (/\[\s*\d+\s*marks?[^\]]*\]|\(\s*\d+\s*marks?\s*\)/i.test(block)) {
+                score -= 100; reasons.push('marks');
+            }
+            // -100: opens with "Read the following..." / preamble marker
             if (/^\s*(?:Read the following|Here is|Here's|Below is|The following|Your extract|This is)\b.*?extract/i.test(block)) {
-                score -= 100;
+                score -= 100; reasons.push('preamble');
             }
-            // Penalty: block is entirely italicised intro text (every non-blank line wrapped in *...*)
+            // -50: entirely italicised (intro line only)
             if (n > 0 && contentLines.every(l => /^\s*_?\*[^*]+\*_?\s*$/.test(l))) {
-                score -= 50;
+                score -= 50; reasons.push('all-italic');
             }
-            // Penalty: very short block (< 5 content lines) — usually meta, not extract
-            if (n < 5) score -= 30;
-            if (score > best.score) best = { score, text: block };
+            // -30: very short (< 5 content lines) — probably meta
+            if (n < 5) { score -= 30; reasons.push('short'); }
+            return { i, lines: n, score, reasons, preview: block.slice(0, 80).replace(/\n/g, ' ') };
+        });
+        scored.sort((a, b) => b.score - a.score);
+        try {
+            console.log('WML parser: ' + scored.length + ' dash-block(s) scored',
+                scored.map(s => ({ i: s.i, lines: s.lines, score: s.score, reasons: s.reasons, preview: s.preview })));
+        } catch (_) { /* ignore log failures */ }
+        const winner = scored[0];
+        // Safety: if the best block is still negative, it's likely preamble or
+        // question-stem. Return empty and let the caller fall back / retry.
+        if (winner.score < 0) {
+            console.warn('WML parser: no positive-scored dash block — extract likely not in any `---...---` block. Returning empty.');
+            return '';
         }
-        return best.text;
+        return blocks[winner.i];
     }
 
     function _parseQuestionAndExtract(content) {
