@@ -13785,6 +13785,25 @@
         if (state.reviewMode) return;
         let html = canvasEditor.getHTML();
         html = patchCheckStateIntoHTML(html);
+        // v7.15.62: Diagnostic — trace any non-placeholder/chat-like write to the
+        // Essay Question section for essay_plan. Tracks a persistent DB-pollution
+        // bug where the section appears pre-filled with AI chat-formatted text
+        // (progress-bar breadcrumb, extract, question) before the student selects
+        // a question source. Stack trace reveals the mutation caller.
+        if (state.task === 'essay_plan') {
+            try {
+                const __diag = document.createElement('div');
+                __diag.innerHTML = html;
+                const qSec = __diag.querySelector('[data-section-label="Essay Question"]');
+                const qHtml = (qSec && qSec.innerHTML) ? qSec.innerHTML : '';
+                const isPlaceholder = /Your question will appear here once selected\./i.test(qHtml);
+                const hasBreadcrumb = /📌|Planning\s*>|\[Progress bar:|Step\s+\d+\s+of\s+\d+/i.test(qHtml);
+                if (qHtml && !isPlaceholder && hasBreadcrumb) {
+                    console.warn('[WML v7.15.62 DIAG] Essay Question polluted at save:', qHtml.substring(0, 400));
+                    console.trace('[WML v7.15.62 DIAG] saveCanvasContent stack');
+                }
+            } catch (__e) { /* diagnostic only — never break save */ }
+        }
         const wc = getResponseWordCount(canvasEditor);
         // 1. Immediate localStorage write (instant, no latency)
         try { localStorage.setItem(CANVAS_SAVE_KEY(), html); } catch (e) { /* storage full */ }
