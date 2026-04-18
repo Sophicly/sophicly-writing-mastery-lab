@@ -4301,7 +4301,18 @@
                     if (attempts.length < 1) { resolve(false); return; }
 
                     const overlay = el('div', { className: 'swml-attempt-overlay' });
-                    overlay.style.cssText = 'position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+                    // v7.15.73: overscroll-behavior + overflow:hidden stop the overlay
+                    // from scroll-chaining to the underlying canvas doc. Parent canvas
+                    // overflow is locked on attach and restored on remove (below).
+                    overlay.style.cssText = 'position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);overflow:hidden;overscroll-behavior:contain;';
+                    // Block wheel/touch that starts on the backdrop (outside the card)
+                    // from propagating to the doc underneath. Scroll inside the card
+                    // still works because those events originate on .swml-attempt-item list.
+                    const _blockBackdropScroll = (e) => {
+                        if (e.target === overlay) e.preventDefault();
+                    };
+                    overlay.addEventListener('wheel', _blockBackdropScroll, { passive: false });
+                    overlay.addEventListener('touchmove', _blockBackdropScroll, { passive: false });
 
                     const card = el('div', { className: 'swml-attempt-card' });
                     card.style.cssText = 'background:#1C1D1F;border-radius:16px;padding:32px;max-width:420px;width:90%;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
@@ -4424,6 +4435,16 @@
                     console.log('WML Attempt: overlay container =', canvasEl?.className || canvasEl?.id || 'NOT FOUND');
                     if (canvasEl) {
                         canvasEl.style.position = 'relative';
+                        // v7.15.73: lock the canvas scroll while the overlay is mounted so
+                        // the underlying doc can't be scrolled behind the backdrop. Restore
+                        // on remove via the wrapped remove() below.
+                        const _prevOverflow = canvasEl.style.overflow;
+                        canvasEl.style.overflow = 'hidden';
+                        const _origRemove = overlay.remove.bind(overlay);
+                        overlay.remove = function() {
+                            try { canvasEl.style.overflow = _prevOverflow; } catch (_) {}
+                            _origRemove();
+                        };
                         canvasEl.appendChild(overlay);
                     } else {
                         resolve(false); return;
