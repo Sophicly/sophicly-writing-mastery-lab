@@ -474,8 +474,18 @@
         card.appendChild(btnRow);
 
         if (footerLink) {
-            const footer = el('a', { textContent: footerLink.label, href: footerLink.href });
-            footer.style.cssText = 'display:block;margin-top:16px;color:rgba(81,218,207,0.7);font-size:12px;text-align:center;text-decoration:none;';
+            const footer = el('a', { textContent: footerLink.label, href: footerLink.href || '#' });
+            footer.style.cssText = 'display:block;margin-top:16px;color:rgba(81,218,207,0.7);font-size:12px;text-align:center;text-decoration:none;cursor:pointer;';
+            // v7.15.77: footerLink.onClick support so the diagnostic overlay
+            // can open _showAttemptSelector when earlier attempts exist.
+            if (typeof footerLink.onClick === 'function') {
+                footer.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    overlay.remove();
+                    footerLink.onClick();
+                    resolve(true);
+                });
+            }
             footer.addEventListener('mouseenter', () => { footer.style.color = 'rgba(81,218,207,1)'; });
             footer.addEventListener('mouseleave', () => { footer.style.color = 'rgba(81,218,207,0.7)'; });
             card.appendChild(footer);
@@ -498,6 +508,18 @@
         const attempts = (idx && idx.attempts) || [];
         const current = (idx && idx.current) || state.attempt || 1;
         const count = (idx && idx.count) || attempts.length || 1;
+
+        // v7.15.77: Root fix for the "Attempt 1 unreachable" bug. When more than
+        // one attempt exists, the 3-state Continue/Start-new card below hides
+        // every attempt except `current`, stranding students whose `idx.current`
+        // was bumped past Attempt 1. Delegate to _showAttemptSwitchModal — it
+        // lists every attempt with status + grade + word count and includes a
+        // Start-New CTA, so the student can reach any attempt in one click.
+        // Simple card is preserved for the common case (count === 1).
+        if (attempts.length > 1) {
+            return _showAttemptSwitchModal(idx, opts.suffix || '', opts);
+        }
+
         const currentAttempt = attempts[current - 1] || { status: 'not_started', wordCount: 0 };
         const hasAnyComplete = attempts.some(a => a.status === 'complete');
         const overlayState = await _classifyOverlayState(currentAttempt);
@@ -600,6 +622,125 @@
                 } : null,
                 resolve
             });
+        });
+    }
+
+    // v7.15.77: Unified multi-attempt picker for the diagnostic-entry flow. The
+    // richer _showAttemptSelector in the training boot is nested out of scope,
+    // so this sibling mirrors its behaviour at module level: list every attempt
+    // (so Attempt 1 is always reachable when idx.current has been bumped past
+    // it), offer a start-new CTA, switch the server pointer on pick, clear
+    // local caches, reload. _showDiagnosticAttemptOverlay delegates to this
+    // when attempts.length > 1 instead of showing a single-attempt Continue card.
+    function _showAttemptSwitchModal(idx, suffix, opts = {}) {
+        return new Promise(resolve => {
+            const attempts = (idx && idx.attempts) || [];
+            if (attempts.length < 1) { resolve(false); return; }
+
+            const overlay = el('div', { className: 'swml-attempt-switch-overlay' });
+            // 3-layer scroll isolation per CLAUDE.md OVERLAY pattern
+            overlay.style.cssText = 'position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);overflow:hidden;overscroll-behavior:contain;';
+            const _blockBackdrop = (e) => { if (e.target === overlay) e.preventDefault(); };
+            overlay.addEventListener('wheel', _blockBackdrop, { passive: false });
+            overlay.addEventListener('touchmove', _blockBackdrop, { passive: false });
+
+            const card = el('div');
+            card.style.cssText = 'background:#1C1D1F;border-radius:16px;padding:32px;max-width:420px;width:90%;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+
+            const title = el('h3', { textContent: 'Choose an Attempt' });
+            title.style.cssText = 'margin:0 0 8px;font-size:18px;font-weight:600;';
+            card.appendChild(title);
+
+            const sub = el('p', { textContent: `You have ${attempts.length} attempt${attempts.length > 1 ? 's' : ''}. Pick one to continue.` });
+            sub.style.cssText = 'margin:0 0 20px;color:rgba(255,255,255,0.6);font-size:13px;';
+            card.appendChild(sub);
+
+            const list = el('div');
+            list.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:50vh;overflow-y:auto;padding-right:4px;';
+            attempts.forEach(a => {
+                const isCurrent = a.num === idx.current;
+                const btn = el('button');
+                btn.style.cssText = `display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:10px;border:1px solid ${isCurrent ? '#5333ed' : 'rgba(255,255,255,0.1)'};background:${isCurrent ? 'rgba(83,51,237,0.15)' : 'rgba(255,255,255,0.04)'};color:#fff;cursor:pointer;width:100%;text-align:left;font-size:13px;`;
+                const left = el('div');
+                left.innerHTML = `<strong>Attempt ${a.num}</strong>` +
+                    (a.status === 'complete' && a.grade ? ` <span style="color:#1CD991;font-weight:600;">Grade ${a.grade}</span>` : '') +
+                    (a.status === 'in_progress' ? ' <span style="color:#F1C40F;">In Progress</span>' : '') +
+                    (a.status === 'not_started' ? ' <span style="color:#9ca3af;">Not Started</span>' : '');
+                const right = el('span');
+                right.style.cssText = 'color:rgba(255,255,255,0.4);font-size:11px;';
+                if (a.started) {
+                    const d = new Date(a.started);
+                    right.textContent = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                }
+                if (a.wordCount) right.textContent += (right.textContent ? ' · ' : '') + `${a.wordCount} words`;
+                btn.appendChild(left);
+                btn.appendChild(right);
+                btn.addEventListener('click', async () => {
+                    try {
+                        await fetch(API.attemptsSwitch, {
+                            method: 'POST', headers,
+                            body: JSON.stringify({
+                                board: state.board,
+                                text: state.text,
+                                topicNumber: state.topicNumber || null,
+                                suffix: _attemptSuffixFor(suffix || ''),
+                                attempt: a.num
+                            })
+                        });
+                    } catch (e) { console.warn('WML: attempt switch failed —', e.message); }
+                    try { localStorage.removeItem(CANVAS_SAVE_KEY()); localStorage.removeItem(CHAT_SAVE_KEY()); } catch(_) {}
+                    overlay.remove();
+                    window.location.reload();
+                    resolve(true);
+                });
+                list.appendChild(btn);
+            });
+            card.appendChild(list);
+
+            // Start-new CTA — lets student kick off Attempt N+1 from the same modal
+            // rather than needing a separate overlay.
+            const count = (idx && idx.count) || attempts.length;
+            const newBtn = el('button', { textContent: `Start Attempt ${count + 1}` });
+            newBtn.style.cssText = 'width:100%;padding:12px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,#5333ed,#4D76FD);color:#fff;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:8px;';
+            newBtn.addEventListener('click', async () => {
+                try {
+                    const res = await fetch(API.attemptsNew, {
+                        method: 'POST', headers,
+                        body: JSON.stringify({
+                            board: state.board,
+                            text: state.text,
+                            topicNumber: state.topicNumber || null,
+                            suffix: _attemptSuffixFor(suffix || '')
+                        })
+                    }).then(r => r.json());
+                    if (res && res.success) {
+                        state.attempt = res.attempt;
+                        sessionStorage.setItem('swml_new_attempt', String(state.attempt));
+                    }
+                } catch (e) { console.warn('WML: new-attempt failed —', e.message); }
+                try { localStorage.removeItem(CANVAS_SAVE_KEY()); localStorage.removeItem(CHAT_SAVE_KEY()); } catch(_) {}
+                overlay.remove();
+                window.location.reload();
+                resolve(true);
+            });
+            card.appendChild(newBtn);
+
+            const cancelBtn = el('button', { textContent: 'Cancel' });
+            cancelBtn.style.cssText = 'width:100%;padding:10px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.8);font-size:13px;cursor:pointer;';
+            cancelBtn.addEventListener('click', () => { overlay.remove(); resolve(false); });
+            card.appendChild(cancelBtn);
+
+            overlay.appendChild(card);
+            const canvasEl = document.getElementById('swml-canvas') || document.querySelector('.swml-canvas-content') || document.body;
+            canvasEl.style.position = 'relative';
+            const _prevOverflow = canvasEl.style.overflow;
+            canvasEl.style.overflow = 'hidden';
+            const _origRemove = overlay.remove.bind(overlay);
+            overlay.remove = function() {
+                try { canvasEl.style.overflow = _prevOverflow; } catch(_) {}
+                _origRemove();
+            };
+            canvasEl.appendChild(overlay);
         });
     }
 
