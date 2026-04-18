@@ -1071,6 +1071,8 @@ class SWML_REST_API {
         $suffix = sanitize_text_field($params['suffix'] ?? '');
         $attempt = absint($params['attempt'] ?? 0);
         $lesson_url = esc_url_raw($params['lessonUrl'] ?? '');
+        // v7.15.64: autosaves carry the planning mode so legacy attempts gain the field on next save
+        $planning_mode = sanitize_text_field($params['planningMode'] ?? '');
 
         if (empty($board) || empty($text)) {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
@@ -1113,11 +1115,15 @@ class SWML_REST_API {
         do_action('sophicly_canvas_saved', $user_id, $board, $text, $html, $word_count, $topic_number, $suffix);
 
         // v7.15.12: Update attempt index with latest word count + status
+        // v7.15.64: also backfill planningMode from save payload so continue restores it
         $idx = $this->get_attempt_index($user_id, $board, $text, $topic_number, $suffix);
         foreach ($idx['attempts'] as &$a) {
             if ($a['num'] === $attempt) {
                 $a['wordCount'] = $word_count;
                 if ($a['status'] === 'not_started') $a['status'] = 'in_progress';
+                if (!empty($planning_mode) && empty($a['planningMode'])) {
+                    $a['planningMode'] = $planning_mode;
+                }
                 break;
             }
         }
@@ -2515,6 +2521,8 @@ class SWML_REST_API {
         $text   = sanitize_text_field($params['text'] ?? '');
         $topic  = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
         $suffix = sanitize_text_field($params['suffix'] ?? '');
+        // v7.15.64: capture planning mode at creation so Continue restores it without re-prompting
+        $planning_mode = sanitize_text_field($params['planningMode'] ?? '');
 
         if (!$board || !$text) {
             return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
@@ -2524,7 +2532,7 @@ class SWML_REST_API {
         $new_num = $idx['count'] + 1;
         $idx['count'] = $new_num;
         $idx['current'] = $new_num;
-        $idx['attempts'][] = [
+        $new_entry = [
             'num'       => $new_num,
             'started'   => current_time('c'),
             'status'    => 'not_started',
@@ -2532,6 +2540,10 @@ class SWML_REST_API {
             'score'     => null,
             'wordCount' => 0,
         ];
+        if (!empty($planning_mode)) {
+            $new_entry['planningMode'] = $planning_mode;
+        }
+        $idx['attempts'][] = $new_entry;
         $this->save_attempt_index($user_id, $board, $text, $topic, $suffix, $idx);
 
         return rest_ensure_response([

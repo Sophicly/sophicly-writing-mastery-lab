@@ -4308,6 +4308,15 @@
                             overlay.remove();
                             // Clear local cache so tryServerLoad picks up the right attempt
                             try { localStorage.removeItem(CANVAS_SAVE_KEY()); localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+                            // v7.15.64: Continue restores this attempt's stored planning mode.
+                            // Fallback (legacy attempts with no saved mode) prompts once.
+                            if (a.planningMode) {
+                                _applyPlanningMode(a.planningMode, false);
+                                console.log('WML: Restored planningMode for attempt', a.num, '→', a.planningMode);
+                            } else if (!state.planningMode && (state.task === 'essay_plan' || state.task === 'model_answer')) {
+                                console.log('WML: Legacy attempt', a.num, '— no stored mode, prompting');
+                                await _showModeSelector();
+                            }
                             console.log('WML: Switched to attempt', a.num);
                             tp._updateAttemptBadge();
                             _reloadDocumentForAttempt();
@@ -4330,18 +4339,31 @@
                     newBtn.appendChild(bg);
                     newBtn.appendChild(wrap);
                     newBtn.addEventListener('click', async () => {
+                        overlay.remove();
+                        // v7.15.64: Start-new always clears the prior attempt's mode and
+                        // prompts afresh (for essay_plan / model_answer), then posts the
+                        // chosen mode so create_attempt stores it on the new entry.
+                        state.planningMode = '';
+                        if (state.task === 'essay_plan' || state.task === 'model_answer') {
+                            await _showModeSelector();
+                        }
                         try {
                             const res = await fetch(API.attemptsNew, { method: 'POST', headers,
-                                body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: _attemptSuffixFor(suffix) })
+                                body: JSON.stringify({
+                                    board: state.board,
+                                    text: state.text,
+                                    topicNumber: state.topicNumber || null,
+                                    suffix: _attemptSuffixFor(suffix),
+                                    planningMode: state.planningMode || '',
+                                })
                             }).then(r => r.json());
                             if (res.success) {
                                 state.attempt = res.attempt;
-                                console.log('WML: Created new attempt', res.attempt);
+                                console.log('WML: Created new attempt', res.attempt, 'mode:', state.planningMode || '(none)');
                             }
                         } catch (e) {
                             console.warn('WML: Failed to create new attempt', e.message);
                         }
-                        overlay.remove();
                         // v7.15.61: Soft reload matching the existing-attempt switch branch
                         // above. The prior hard reload wiped state.planningMode for essay_plan
                         // / model_answer, causing the mode picker to re-fire and loop through
@@ -4368,8 +4390,30 @@
                 });
             }
 
+            // v7.15.64: Apply a planning mode (set state + rebuild sidebar steps) without
+            // showing the overlay. Used when restoring a continued attempt's saved mode
+            // and when the mode overlay resolves. Sidebar rebuild only if the container exists.
+            // Step reset (state.step = 1) is optional so Continue paths preserve resumed step.
+            function _applyPlanningMode(mode, resetStep) {
+                if (!mode) return;
+                state.planningMode = mode;
+                const stepsDiv = document.getElementById('swml-progress-steps');
+                if (!stepsDiv) return;
+                stepsDiv.innerHTML = '';
+                const newSteps = (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label }));
+                if (resetStep) state.step = 1;
+                newSteps.forEach((s, i) => {
+                    const cls = (resetStep ? i === 0 : s.step === state.step) ? 'active' : '';
+                    stepsDiv.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
+                        el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
+                        el('span', { className: 'swml-step-label', textContent: s.label }),
+                    ]));
+                });
+            }
+
             // ── v7.15.23: Mode Selection Overlay ──
-            // Shows before the attempt selector for essay_plan / model_answer when no mode pre-set
+            // v7.15.64: Now shown AFTER the attempt selector — mode is captured per attempt.
+            // A continued attempt restores its stored planningMode and skips this overlay.
             function _showModeSelector() {
                 return new Promise(resolve => {
                     if (state.planningMode || (state.task !== 'essay_plan' && state.task !== 'model_answer')) {
@@ -4413,22 +4457,8 @@
                         btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(83,51,237,0.15)'; btn.style.borderColor = '#5333ed'; });
                         btn.addEventListener('mouseleave', () => { btn.style.background = 'rgba(255,255,255,0.04)'; btn.style.borderColor = 'rgba(255,255,255,0.1)'; });
                         btn.addEventListener('click', () => {
-                            state.planningMode = mode.key;
                             console.log('WML Mode Overlay:', state.task, '\u2192', mode.key, mode.label);
-                            // Rebuild sidebar steps to match the selected mode
-                            const stepsDiv = document.getElementById('swml-progress-steps');
-                            if (stepsDiv) {
-                                stepsDiv.innerHTML = '';
-                                const newSteps = (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label }));
-                                state.step = 1;
-                                newSteps.forEach((s, i) => {
-                                    const cls = i === 0 ? 'active' : '';
-                                    stepsDiv.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
-                                        el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
-                                        el('span', { className: 'swml-step-label', textContent: s.label }),
-                                    ]));
-                                });
-                            }
+                            _applyPlanningMode(mode.key, true);
                             overlay.remove();
                             resolve(true);
                         });
@@ -4883,15 +4913,10 @@
 
             // Defer chat init until after template loads (editor needs content for word count etc.)
             // v7.15.12: Resolve attempt number from server before starting chat
-            // v7.15.23: Flow: Mode Overlay → Attempt Overlay → Exercise Init
+            // v7.15.64: Flow reordered — Attempt Overlay FIRST, Mode Overlay only on Start-new
+            //   or as a legacy fallback (existing attempts without a stored planningMode).
+            //   Continuing an attempt restores its saved planningMode silently.
             setTimeout(async () => {
-                // v7.15.23: Show mode selector overlay FIRST for essay_plan / model_answer
-                if (!state.planningMode && (state.task === 'essay_plan' || state.task === 'model_answer')) {
-                    console.log('WML Mode: showing mode selector for', state.task);
-                    await _showModeSelector();
-                    console.log('WML Mode: resolved →', state.planningMode);
-                }
-
                 // v7.15.21: sessionStorage already consumed before init chain — skip if attempt already set
                 if (_pendingAttempt) {
                     console.log('WML Attempt: already resolved from sessionStorage →', state.attempt);
@@ -4900,6 +4925,7 @@
                     return;
                 }
                 console.log('WML Attempt: resolving...', { board: state.board, text: state.text, task: state.task, reviewMode: state.reviewMode });
+                let attemptSelectorShown = false;
                 if (!state.reviewMode && state.board && state.text) {
                     try {
                         // v7.15.47: In guided mode, attempts index is shared across
@@ -4913,6 +4939,16 @@
                         if (attRes.success && attRes.attempts) {
                             const idx = attRes.attempts;
                             if (!state.attempt || state.attempt < 1) state.attempt = idx.current || 1;
+                            // v7.15.64: Restore planningMode from the CURRENT attempt entry
+                            // so resume paths (direct URL / sessionStorage) see the right mode
+                            // even when the selector is skipped. URL param still wins.
+                            if (!state.planningMode) {
+                                const currentEntry = (idx.attempts || []).find(a => a.num === state.attempt);
+                                if (currentEntry && currentEntry.planningMode) {
+                                    _applyPlanningMode(currentEntry.planningMode, false);
+                                    console.log('WML Mode: restored from current attempt', state.attempt, '→', currentEntry.planningMode);
+                                }
+                            }
                             // Check if we should show the attempt selector
                             const completedAttempts = (idx.attempts || []).filter(a => a.status === 'complete');
                             const attemptFromUrl = !!(new URLSearchParams(window.location.search).get('attempt'));
@@ -4931,7 +4967,8 @@
                             console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl, 'preview=', previewOverlay, 'examPrep=', isExamPrepTask);
                             if ((completedAttempts.length > 0 || previewOverlay || (isExamPrepTask && hasAnyAttempt)) && !state.reviewMode && !attemptFromUrl) {
                                 const shown = await _showAttemptSelector(idx, suffix);
-                                if (shown) return; // selector handles chat init
+                                if (shown) return; // selector handles mode + chat init
+                                attemptSelectorShown = false;
                             } else {
                                 // v7.15.23: Diagnostic — log why overlay was skipped
                                 console.log('WML Attempt: overlay skipped — completed:', completedAttempts.length, 'reviewMode:', state.reviewMode, 'fromUrl:', attemptFromUrl, 'URL:', window.location.search);
@@ -4946,6 +4983,15 @@
                     console.log('WML Attempt: skipped — board/text empty or reviewMode');
                 }
                 if (!state.attempt) state.attempt = 1;
+                // v7.15.64: Mode selector AFTER attempt resolution. Covers two cases:
+                //   1. First-ever entry (no prior attempts, selector not shown) → pick mode for attempt 1.
+                //   2. Resume path where the current attempt has no stored planningMode (legacy).
+                if (!attemptSelectorShown && !state.planningMode &&
+                    (state.task === 'essay_plan' || state.task === 'model_answer')) {
+                    console.log('WML Mode: showing mode selector for', state.task, '(no stored mode)');
+                    await _showModeSelector();
+                    console.log('WML Mode: resolved →', state.planningMode);
+                }
                 tp._updateAttemptBadge();
                 _initTrainingChat();
             }, 800);
@@ -13842,6 +13888,7 @@
             suffix: WML.getExerciseConfig(state.task).storageSuffix || '',
             attempt: state.attempt || 1,
             embedded: state.embedded,
+            planningMode: state.planningMode || '',
         };
         // 3. Debounced server save (every 5s, not every 2s like localStorage)
         clearTimeout(canvasSaveToServerTimer);
@@ -13857,6 +13904,9 @@
                     sectionData: sectionData,
                     suffix: snap.suffix,
                     attempt: snap.attempt,
+                    // v7.15.64: carry planning mode so the server backfills it onto the
+                    // attempt entry — lets Continue restore the correct mode later.
+                    planningMode: snap.planningMode,
                     // v7.15.30: Store LD lesson URL for dashboard deep links.
                     // v7.15.50: Fallback to WML deep-link when not embedded so the
                     // dashboard Resume button always has a target.
