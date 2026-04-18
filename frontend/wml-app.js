@@ -4318,15 +4318,26 @@
         }
 
         // ══════════════════════════════════════════
-        //  NUMBERED OPTIONS: 1. option / 1) option
+        //  NUMBERED OPTIONS: 1. option / 1) option / 1 — option
         //  Triggers if the message asks to choose OR ends with a question
+        // v7.15.65: accept em/en-dash/hyphen as the separator so protocol menus
+        //  like "**1** — **Choose a theme** — ..." render as quick-action buttons.
+        //  Also split labels on the SECOND dash so we keep the short action verb
+        //  ("Choose a theme") for the button and the explanation falls off —
+        //  this lets the avgLen ≤ 55 summary-rejection guard still work.
         // ══════════════════════════════════════════
         const numberedOptions = [];
-        const numRegex = /^[\*_]*(\d+)[.)]\s*[\*_]*\s*(.+)/;
+        const numRegex = /^[\*_]*(\d+)(?:[.)]|\s*[—\-–])\s*[\*_]*\s*(.+)/;
         for (const line of lines) {
             const m = line.match(numRegex);
             if (m && parseInt(m[1]) <= 6) {
                 let rawLabel = m[2].replace(/[\*_]/g, '').trim();
+                // v7.15.65: split on the first em/en dash — keep the action verb only
+                const dashSplit = rawLabel.split(/\s+[—–]\s+/);
+                if (dashSplit.length >= 2) {
+                    const head = dashSplit[0].trim();
+                    if (head.length >= 2 && head.length <= 50) rawLabel = head;
+                }
                 let label = rawLabel.length > 50 ? rawLabel.substring(0, 47) + '...' : rawLabel;
                 numberedOptions.push({ label: `${m[1]}. ${label}`, value: m[1], rawLen: rawLabel.length });
             }
@@ -5473,6 +5484,34 @@
                 console.log('WML: Saved plan element:', item.type, '→', item.content.substring(0, 60));
             } catch (e) {
                 console.warn('WML: Failed to save plan element:', item.type, e);
+            }
+        }
+
+        // v7.15.65: Inject a confirmed question (and any accompanying extract) into
+        // the canvas — mirrors what the Saved-Question overlay does via selectQuestion,
+        // so the Generate + Paste paths also populate the Essay Question / Extract
+        // sections. Guarded by a placeholder check inside the helper (idempotent).
+        const qSave = saves.find(s => s.type === 'question_text' && s.content && s.content.length > 20);
+        if (qSave
+            && typeof WML !== 'undefined'
+            && typeof WML.injectQuestionIntoCanvas === 'function'
+            && (state.task === 'essay_plan' || state.task === 'model_answer')) {
+            // Pull any accompanying extract from the AI message: block-quote lines are
+            // the extract text; "from Act X Scene Y" / "Chapter N" / "pages N" is the location.
+            const aiLines = (aiReply || '').split('\n');
+            const quoteLines = aiLines
+                .filter(l => /^\s*>\s*/.test(l))
+                .map(l => l.replace(/^\s*>\s*/, '').trim())
+                .filter(Boolean);
+            const extractText = quoteLines.join('\n');
+            const locMatch = (aiReply || '').match(
+                /from\s+(Act\s+\d+[^\n.,]{0,40}|Chapter\s+\d+[^\n.,]{0,40}|Scene\s+\d+[^\n.,]{0,40}|pages?\s+\d+[^\n.,]{0,40})/i
+            );
+            const extractLoc = locMatch ? locMatch[1].trim() : '';
+            try {
+                WML.injectQuestionIntoCanvas(qSave.content, extractText, extractLoc);
+            } catch (e) {
+                console.warn('WML: injectQuestionIntoCanvas failed', e);
             }
         }
 

@@ -13847,25 +13847,6 @@
         if (state.reviewMode) return;
         let html = canvasEditor.getHTML();
         html = patchCheckStateIntoHTML(html);
-        // v7.15.62: Diagnostic — trace any non-placeholder/chat-like write to the
-        // Essay Question section for essay_plan. Tracks a persistent DB-pollution
-        // bug where the section appears pre-filled with AI chat-formatted text
-        // (progress-bar breadcrumb, extract, question) before the student selects
-        // a question source. Stack trace reveals the mutation caller.
-        if (state.task === 'essay_plan') {
-            try {
-                const __diag = document.createElement('div');
-                __diag.innerHTML = html;
-                const qSec = __diag.querySelector('[data-section-label="Essay Question"]');
-                const qHtml = (qSec && qSec.innerHTML) ? qSec.innerHTML : '';
-                const isPlaceholder = /Your question will appear here once selected\./i.test(qHtml);
-                const hasBreadcrumb = /📌|Planning\s*>|\[Progress bar:|Step\s+\d+\s+of\s+\d+/i.test(qHtml);
-                if (qHtml && !isPlaceholder && hasBreadcrumb) {
-                    console.warn('[WML v7.15.62 DIAG] Essay Question polluted at save:', qHtml.substring(0, 400));
-                    console.trace('[WML v7.15.62 DIAG] saveCanvasContent stack');
-                }
-            } catch (__e) { /* diagnostic only — never break save */ }
-        }
         const wc = getResponseWordCount(canvasEditor);
         // 1. Immediate localStorage write (instant, no latency)
         try { localStorage.setItem(CANVAS_SAVE_KEY(), html); } catch (e) { /* storage full */ }
@@ -15941,49 +15922,12 @@ ${html}
             );
 
             // v7.15.12: Inject extract + question into separate descendants() passes to avoid stale positions
+            // v7.15.65: Pure injection logic lifted into WML.injectQuestionIntoCanvas so the
+            // Generate/Paste confirm-interceptor paths can reuse it. selectQuestion now wraps
+            // it and still handles overlay dismiss + chat send.
             function selectQuestion(qText, extractText, extractLoc) {
-                if (canvasEditor) {
-                    // Debug: log all sectionBlock types in the document
-                    const sections = [];
-                    canvasEditor.state.doc.descendants((n) => { if (n.type.name === 'sectionBlock') sections.push(n.attrs.sectionType + ':' + n.attrs.label); });
-                    console.log('WML selectQuestion: sections =', sections, '| extract:', !!extractText);
-
-                    // Pass 1: inject extract into source section (or fallback to question section labelled "Extract")
-                    let extractInjected = false;
-                    canvasEditor.state.doc.descendants((node, pos) => {
-                        if (extractInjected) return false;
-                        const isSource = node.type.name === 'sectionBlock' && node.attrs.sectionType === 'source' && (node.attrs.label || '').includes('Extract');
-                        // v7.15.21: Fallback for old templates — look for question section labelled "Extract"
-                        const isExtractFallback = !isSource && node.type.name === 'sectionBlock' && node.attrs.sectionType === 'question' && (node.attrs.label || '') === 'Extract';
-                        if (isSource || isExtractFallback) {
-                            const sectionStart = pos + 1;
-                            const sectionEnd = pos + node.nodeSize - 1;
-                            const extractHtml = extractText
-                                ? `<h3>Extract${extractLoc ? ' \u2014 ' + extractLoc.replace(/</g, '&lt;') : ''}</h3><p>${extractText.replace(/</g, '&lt;')}</p>`
-                                : '<p><em>No extract for this question.</em></p>';
-                            canvasEditor.chain().focus().setTextSelection({ from: sectionStart, to: sectionEnd })
-                                .insertContent(extractHtml).run();
-                            extractInjected = true;
-                            console.log('WML selectQuestion: extract injected into', isSource ? 'source' : 'question(Extract)', 'section');
-                            return false;
-                        }
-                    });
-                    if (!extractInjected) console.warn('WML selectQuestion: source/extract section NOT found — extract not injected');
-
-                    // Pass 2: re-query fresh doc for question section (positions shifted after extract inject)
-                    let questionInjected = false;
-                    canvasEditor.state.doc.descendants((node, pos) => {
-                        if (questionInjected) return false;
-                        if (node.type.name === 'sectionBlock' && (node.attrs.label || '').includes('Essay Question')) {
-                            const sectionStart = pos + 1;
-                            const sectionEnd = pos + node.nodeSize - 1;
-                            canvasEditor.chain().focus().setTextSelection({ from: sectionStart, to: sectionEnd })
-                                .insertContent(`<h3>Essay Question</h3><p>${qText.replace(/</g, '&lt;')}</p>`).run();
-                            questionInjected = true;
-                            return false;
-                        }
-                    });
-                    if (!questionInjected) console.warn('WML selectQuestion: Essay Question section NOT found');
+                if (typeof WML.injectQuestionIntoCanvas === 'function') {
+                    WML.injectQuestionIntoCanvas(qText, extractText, extractLoc);
                 }
                 overlay.remove();
                 // Send both question and extract to chat so AI has full context
@@ -16403,6 +16347,73 @@ ${html}
         console.log('WML Exam Prep: Canvas rendered for', state.task, '— board:', state.board, 'text:', state.text);
     }
 
+    // v7.15.65: Shared question/extract injection. Used by:
+    //   1. The saved-question overlay (selectQuestion wrapper).
+    //   2. The Generate + Paste paths — confirm-interceptor in wml-app.js calls
+    //      this once the student confirms the generated/pasted question so the
+    //      Essay Question (and, when present, the Extract) section get populated
+    //      the same way the Saved path does.
+    // Pure doc mutation; no chat/overlay side-effects. Safe to call any time
+    // canvasEditor is live. Pass an empty extractText for extract-less boards.
+    function _injectQuestionIntoCanvas(qText, extractText, extractLoc) {
+        if (!canvasEditor || !qText) return false;
+        // v7.15.65: Idempotency guard — skip if Essay Question section already holds
+        // real content (e.g. saved-question overlay already injected on card click;
+        // the later chat-confirm save would otherwise overwrite redundantly).
+        let hasQuestion = false;
+        canvasEditor.state.doc.descendants((node) => {
+            if (node.type.name === 'sectionBlock' && (node.attrs.label || '').includes('Essay Question')) {
+                const txt = (node.textContent || '').replace('Essay Question', '').trim();
+                if (txt && !/Your question will appear here once selected\./i.test(txt)) hasQuestion = true;
+                return false;
+            }
+        });
+        if (hasQuestion) {
+            console.log('WML injectQuestionIntoCanvas: Essay Question already populated — skipping');
+            return false;
+        }
+        const sections = [];
+        canvasEditor.state.doc.descendants((n) => { if (n.type.name === 'sectionBlock') sections.push(n.attrs.sectionType + ':' + n.attrs.label); });
+        console.log('WML injectQuestionIntoCanvas: sections =', sections, '| extract:', !!extractText);
+
+        // Pass 1: inject extract into source section (or fallback to question section labelled "Extract")
+        let extractInjected = false;
+        canvasEditor.state.doc.descendants((node, pos) => {
+            if (extractInjected) return false;
+            const isSource = node.type.name === 'sectionBlock' && node.attrs.sectionType === 'source' && (node.attrs.label || '').includes('Extract');
+            const isExtractFallback = !isSource && node.type.name === 'sectionBlock' && node.attrs.sectionType === 'question' && (node.attrs.label || '') === 'Extract';
+            if (isSource || isExtractFallback) {
+                const sectionStart = pos + 1;
+                const sectionEnd = pos + node.nodeSize - 1;
+                const extractHtml = extractText
+                    ? `<h3>Extract${extractLoc ? ' \u2014 ' + extractLoc.replace(/</g, '&lt;') : ''}</h3><p>${extractText.replace(/</g, '&lt;')}</p>`
+                    : '<p><em>No extract for this question.</em></p>';
+                canvasEditor.chain().focus().setTextSelection({ from: sectionStart, to: sectionEnd })
+                    .insertContent(extractHtml).run();
+                extractInjected = true;
+                console.log('WML injectQuestionIntoCanvas: extract injected into', isSource ? 'source' : 'question(Extract)', 'section');
+                return false;
+            }
+        });
+        if (!extractInjected) console.warn('WML injectQuestionIntoCanvas: source/extract section NOT found');
+
+        // Pass 2: re-query fresh doc for question section (positions shifted after extract inject)
+        let questionInjected = false;
+        canvasEditor.state.doc.descendants((node, pos) => {
+            if (questionInjected) return false;
+            if (node.type.name === 'sectionBlock' && (node.attrs.label || '').includes('Essay Question')) {
+                const sectionStart = pos + 1;
+                const sectionEnd = pos + node.nodeSize - 1;
+                canvasEditor.chain().focus().setTextSelection({ from: sectionStart, to: sectionEnd })
+                    .insertContent(`<h3>Essay Question</h3><p>${qText.replace(/</g, '&lt;')}</p>`).run();
+                questionInjected = true;
+                return false;
+            }
+        });
+        if (!questionInjected) console.warn('WML injectQuestionIntoCanvas: Essay Question section NOT found');
+        return questionInjected;
+    }
+
     // ── Register assessment functions on WML namespace ──
     WML.renderCanvasWorkspace = renderCanvasWorkspace;
     WML.closeCanvasOverlay = closeCanvasOverlay;
@@ -16416,6 +16427,7 @@ ${html}
     WML.exportToDocx = exportToDocx;
     WML.getDocumentTemplate = getDocumentTemplate;
     WML.buildTableOfContents = buildTableOfContents;
+    WML.injectQuestionIntoCanvas = _injectQuestionIntoCanvas;
 
     // v7.14.71: Console utility to reset documents for testing.
     // Usage: WML.resetDocuments()        — clears ALL saved docs + chats
