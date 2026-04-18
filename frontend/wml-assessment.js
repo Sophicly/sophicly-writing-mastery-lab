@@ -1644,6 +1644,55 @@
                     if (res.chatId) canvasChatId = res.chatId;
                     if (res.method) console.log('WML Canvas:', res.method, 'model:', res.model);
                     saveCanvasChat(canvasChatHistory, canvasChatId);
+                    // v7.15.67: Essay-plan / model-answer "Save it?" trigger — when the
+                    // student confirms the final-save prompt (clicks "A — Yes, save it"
+                    // or types "yes"), find the most recent AI message that proposed a
+                    // question (has a [N marks] allocation) and inject it + any
+                    // block-quote extract into the doc via WML.injectQuestionIntoCanvas.
+                    //
+                    // This used to live in extractAndSavePlan (wml-app.js), but that
+                    // function reads state.chatHistory — canvas chat stores messages in
+                    // canvasChatHistory (local to this IIFE) so the old path saw an
+                    // empty history and never matched. Handling it here keeps the
+                    // history context correct.
+                    if ((state.task === 'essay_plan' || state.task === 'model_answer')
+                        && typeof WML.injectQuestionIntoCanvas === 'function') {
+                        try {
+                            const priorAI = canvasChatHistory.slice(0, -1).reverse().find(m => m.role === 'assistant');
+                            const priorAIText = priorAI ? priorAI.content : '';
+                            const askedForSave = /(?:final\s+version|save\s+it\??|save\s+this|save\s+that|lock\s+it|confirm\s+and\s+save)/i.test(priorAIText);
+                            const trimmed = (msg || '').trim();
+                            const studentConfirms =
+                                /^[AaYy1]$/.test(trimmed)
+                                || /(?:\b|^)(?:yes|yep|yeah|save\s+it|save\s+that|looks?\s+good|happy|correct|perfect|lock\s+it|confirm)(?:\b|$|[,.!?])/i.test(trimmed);
+                            console.log('WML Save-it: check — askedForSave=', askedForSave, 'studentConfirms=', studentConfirms, 'trimmed=', trimmed.substring(0, 40));
+                            if (askedForSave && studentConfirms) {
+                                for (let i = canvasChatHistory.length - 2; i >= Math.max(0, canvasChatHistory.length - 10); i--) {
+                                    const am = canvasChatHistory[i];
+                                    if (!am || am.role !== 'assistant') continue;
+                                    if (!/\[\s*\d+\s*marks?\s*\]|\(\s*\d+\s*marks?\s*\)/i.test(am.content)) continue;
+                                    // Pull the question stem
+                                    const qMatch = am.content.match(
+                                        /(?:Starting with this (?:extract|speech|moment)[\s\S]*?(?:\[\d+\s*marks?\]|\(\d+\s*marks?\)))|(?:How (?:does|far|is)[\s\S]*?(?:\[\d+\s*marks?\]|\(\d+\s*marks?\)))|(?:(?:Explore|Discuss|Analyse|To what extent)[\s\S]*?(?:\[\d+\s*marks?\]|\(\d+\s*marks?\)))/i
+                                    );
+                                    if (!qMatch) continue;
+                                    const qText = qMatch[0].replace(/\*{1,2}/g, '').trim();
+                                    // Pull block-quote extract lines
+                                    const extractLines = am.content.split('\n')
+                                        .filter(l => /^\s*>\s*/.test(l))
+                                        .map(l => l.replace(/^\s*>\s*/, '').replace(/\*{1,2}/g, '').trim())
+                                        .filter(Boolean);
+                                    const extractText = extractLines.join('\n');
+                                    const locMatch = am.content.match(/from\s+(Act\s+\d+[^\n.,]{0,50}|Chapter\s+\d+[^\n.,]{0,50}|Scene\s+\d+[^\n.,]{0,50}|pages?\s+\d+[^\n.,]{0,50})/i);
+                                    const extractLoc = locMatch ? locMatch[1].trim() : '';
+                                    console.log('WML Save-it: injecting — srcMsg', i, 'qLen=', qText.length, 'extractLen=', extractText.length, 'loc=', extractLoc);
+                                    try { WML.injectQuestionIntoCanvas(qText, extractText, extractLoc); }
+                                    catch (e) { console.warn('WML Save-it: inject failed', e); }
+                                    break;
+                                }
+                            }
+                        } catch (e) { console.warn('WML Save-it: handler error', e); }
+                    }
                     if (/(?:question in (?:your|the) document|question at the top|look at the.*question|essay question section)/i.test(cleanReply)) {
                         setTimeout(() => scrollToQuestionSection(), 400);
                     }
