@@ -421,7 +421,11 @@
     // config object describing what should appear; _renderAttemptOverlay paints it.
     function _renderAttemptOverlay({ title, subtitle, info, primary, secondary, footerLink, resolve }) {
         const overlay = el('div', { className: 'swml-attempt-overlay' });
-        overlay.style.cssText = 'position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+        // v7.15.74: scroll-isolation — three layers per CLAUDE.md OVERLAY pattern
+        overlay.style.cssText = 'position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);overflow:hidden;overscroll-behavior:contain;';
+        const _blockBackdrop = (e) => { if (e.target === overlay) e.preventDefault(); };
+        overlay.addEventListener('wheel', _blockBackdrop, { passive: false });
+        overlay.addEventListener('touchmove', _blockBackdrop, { passive: false });
 
         const card = el('div', { className: 'swml-attempt-card' });
         card.style.cssText = 'background:#1C1D1F;border-radius:16px;padding:32px;max-width:460px;width:90%;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
@@ -1655,31 +1659,35 @@
                     // canvasChatHistory (local to this IIFE) so the old path saw an
                     // empty history and never matched. Handling it here keeps the
                     // history context correct.
-                    if ((state.task === 'essay_plan' || state.task === 'model_answer')
-                        && typeof WML.injectQuestionIntoCanvas === 'function') {
+                    // v7.15.74: Generic auto-append dispatch. Task in the handler
+                    // registry (_autoAppendHandlers: essay_plan, model_answer,
+                    // exam_question) gets its artefact routed to the correct doc
+                    // section automatically on student save-confirm.
+                    if (typeof WML.autoAppendArtefact === 'function'
+                        && _autoAppendHandlers[state.task]) {
                         try {
                             const priorAI = canvasChatHistory.slice(0, -1).reverse().find(m => m.role === 'assistant');
                             const priorAIText = priorAI ? priorAI.content : '';
-                            const askedForSave = /(?:final\s+version|save\s+it\??|save\s+this|save\s+that|lock\s+it|confirm\s+and\s+save)/i.test(priorAIText);
+                            // v7.15.74: broadened save-prompt detection — exam_question flow's
+                            // confirm option reads "I'm done — just remind me to save it" which
+                            // contains "save it" (caught by the existing regex). Also accept
+                            // "done — remind me to save" and "remind.*save" for future variants.
+                            const askedForSave = /(?:final\s+version|save\s+it\??|save\s+this|save\s+that|lock\s+it|confirm\s+and\s+save|remind\s+me\s+to\s+save)/i.test(priorAIText);
                             const trimmed = (msg || '').trim();
                             const studentConfirms =
-                                /^[AaYy1]$/.test(trimmed)
-                                || /(?:\b|^)(?:yes|yep|yeah|save\s+it|save\s+that|looks?\s+good|happy|correct|perfect|lock\s+it|confirm)(?:\b|$|[,.!?])/i.test(trimmed);
-                            console.log('WML Save-it: check — askedForSave=', askedForSave, 'studentConfirms=', studentConfirms, 'trimmed=', trimmed.substring(0, 40));
+                                /^[AaBbYy12]$/.test(trimmed)
+                                || /(?:\b|^)(?:yes|yep|yeah|save\s+it|save\s+that|looks?\s+good|happy|correct|perfect|lock\s+it|confirm|done|i'?m\s+done)(?:\b|$|[,.!?])/i.test(trimmed);
+                            console.log('WML Save-it: check — task=', state.task, 'askedForSave=', askedForSave, 'studentConfirms=', studentConfirms, 'trimmed=', trimmed.substring(0, 40));
                             if (askedForSave && studentConfirms) {
                                 for (let i = canvasChatHistory.length - 2; i >= Math.max(0, canvasChatHistory.length - 10); i--) {
                                     const am = canvasChatHistory[i];
                                     if (!am || am.role !== 'assistant') continue;
                                     if (!/\[\s*\d+\s*marks?[^\]]*\]|\(\s*\d+\s*marks?\s*\)/i.test(am.content)) continue;
-                                    // v7.15.68: split the AI message into a clean question stem
-                                    // (stem + "Write about…" + marks) and a separate extract block
-                                    // (text between `---` delimiters, or block-quote lines). Matches
-                                    // the Saved-Question overlay's Extract / Essay Question layout.
                                     const parsed = _parseQuestionAndExtract(am.content);
                                     if (!parsed.qText) continue;
-                                    console.log('WML Save-it: injecting — srcMsg', i, 'qLen=', parsed.qText.length, 'extractLen=', parsed.extractText.length, 'loc=', parsed.extractLoc);
-                                    try { WML.injectQuestionIntoCanvas(parsed.qText, parsed.extractText, parsed.extractLoc); }
-                                    catch (e) { console.warn('WML Save-it: inject failed', e); }
+                                    console.log('WML Save-it: dispatch — task=', state.task, 'srcMsg', i, 'qLen=', parsed.qText.length, 'extractLen=', parsed.extractText.length, 'loc=', parsed.extractLoc);
+                                    try { WML.autoAppendArtefact(state.task, parsed); }
+                                    catch (e) { console.warn('WML Save-it: autoAppend failed', e); }
                                     break;
                                 }
                             }
@@ -4498,7 +4506,11 @@
                     const taskLabel = state.task === 'essay_plan' ? 'Essay Plan' : 'Model Answer';
 
                     const overlay = el('div', { className: 'swml-mode-overlay' });
-                    overlay.style.cssText = 'position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+                    // v7.15.74: scroll-isolation (three layers per CLAUDE.md OVERLAY pattern)
+                    overlay.style.cssText = 'position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);overflow:hidden;overscroll-behavior:contain;';
+                    const _blockBackdropMode = (e) => { if (e.target === overlay) e.preventDefault(); };
+                    overlay.addEventListener('wheel', _blockBackdropMode, { passive: false });
+                    overlay.addEventListener('touchmove', _blockBackdropMode, { passive: false });
 
                     const card = el('div', { className: 'swml-mode-card' });
                     card.style.cssText = 'background:#1C1D1F;border-radius:16px;padding:32px;max-width:440px;width:90%;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
@@ -4532,6 +4544,14 @@
                     const canvasEl = document.getElementById('swml-canvas') || document.querySelector('.swml-canvas-content') || document.querySelector('.swml-app');
                     if (canvasEl) {
                         canvasEl.style.position = 'relative';
+                        // v7.15.74: lock canvas scroll while mode overlay mounted, restore on remove
+                        const _prevOverflowMode = canvasEl.style.overflow;
+                        canvasEl.style.overflow = 'hidden';
+                        const _origRemoveMode = overlay.remove.bind(overlay);
+                        overlay.remove = function() {
+                            try { canvasEl.style.overflow = _prevOverflowMode; } catch (_) {}
+                            _origRemoveMode();
+                        };
                         canvasEl.appendChild(overlay);
                     } else {
                         resolve(false);
@@ -16613,6 +16633,83 @@ ${html}
         return questionInjected;
     }
 
+    // v7.15.74: Exam-question creator auto-append.
+    // The exam_question doc template has 10 numbered Question slots. When the
+    // student finishes a generate-cycle and the AI says "Brilliant work — save
+    // it", this finds the first empty slot and injects the confirmed question
+    // (plus extract preamble + extract text) into it, then saves. Subsequent
+    // cycles fill slot 2, slot 3, etc.
+    function _injectExamQuestionSlot(qText, extractText, extractLoc) {
+        if (!canvasEditor || !qText) return false;
+
+        // Find first Question N slot whose student-facing content is empty
+        // (no real text beyond the "Write or paste…" placeholder).
+        let targetPos = -1;
+        let targetLabel = '';
+        let targetSize = 0;
+        canvasEditor.state.doc.descendants((node, pos) => {
+            if (targetPos !== -1) return false;
+            if (node.type.name !== 'sectionBlock') return;
+            const label = node.attrs.label || '';
+            if (!/^Question \d+$/.test(label)) return;
+            const bodyText = (node.textContent || '').replace(label, '').trim();
+            const placeholder = /Write or paste your exam question here\./i;
+            const isEmpty = !bodyText || placeholder.test(bodyText);
+            if (isEmpty) {
+                targetPos = pos;
+                targetLabel = label;
+                targetSize = node.nodeSize;
+            }
+            return false; // stop descending into this sectionBlock
+        });
+
+        if (targetPos === -1) {
+            console.warn('WML injectExamQuestionSlot: no empty Question slot — all 10 already filled');
+            return false;
+        }
+
+        const esc = (s) => String(s).replace(/</g, '&lt;').replace(/\n/g, '<br>');
+        let contentHtml = `<h3>${targetLabel}</h3>`;
+        if (extractText) {
+            const loc = extractLoc ? ' from ' + extractLoc : '';
+            contentHtml += `<p><strong>Read the following extract${esc(loc)} and then answer the question.</strong></p>`;
+            contentHtml += `<p>${esc(extractText)}</p>`;
+        }
+        contentHtml += `<p>${esc(qText)}</p>`;
+
+        const sectionStart = targetPos + 1;
+        const sectionEnd = targetPos + targetSize - 1;
+        canvasEditor.chain().focus().setTextSelection({ from: sectionStart, to: sectionEnd })
+            .insertContent(contentHtml).run();
+        console.log('WML injectExamQuestionSlot: injected into', targetLabel, '| extractLen=', (extractText || '').length, '| qLen=', qText.length);
+        return true;
+    }
+
+    // v7.15.74: Generic auto-append dispatcher. Per-task routing table keyed on
+    // state.task — each handler receives the parsed artefact and knows how to
+    // find its own target section(s) in the doc. Release-by-release rollout:
+    //   v7.15.74 — exam_question (this release)
+    //   v7.15.75 — essay_plan per-element (plan rows)
+    //   v7.15.76 — conceptual_notes (after two-column restructure)
+    //   v7.15.77+ — model_answer / feedback / mark_scheme / CW steps
+    const _autoAppendHandlers = {
+        essay_plan:    (parsed) => _injectQuestionIntoCanvas(parsed.qText, parsed.extractText, parsed.extractLoc),
+        model_answer:  (parsed) => _injectQuestionIntoCanvas(parsed.qText, parsed.extractText, parsed.extractLoc),
+        exam_question: (parsed) => _injectExamQuestionSlot(parsed.qText, parsed.extractText, parsed.extractLoc),
+    };
+    function _autoAppendArtefact(task, parsed) {
+        const handler = _autoAppendHandlers[task];
+        if (!handler) {
+            console.warn('WML autoAppendArtefact: no handler registered for task', task);
+            return false;
+        }
+        try { return handler(parsed); }
+        catch (e) {
+            console.warn('WML autoAppendArtefact: handler failed for task', task, e);
+            return false;
+        }
+    }
+
     // ── Register assessment functions on WML namespace ──
     WML.renderCanvasWorkspace = renderCanvasWorkspace;
     WML.closeCanvasOverlay = closeCanvasOverlay;
@@ -16627,6 +16724,8 @@ ${html}
     WML.getDocumentTemplate = getDocumentTemplate;
     WML.buildTableOfContents = buildTableOfContents;
     WML.injectQuestionIntoCanvas = _injectQuestionIntoCanvas;
+    WML.injectExamQuestionSlot = _injectExamQuestionSlot;
+    WML.autoAppendArtefact = _autoAppendArtefact;
 
     // v7.14.71: Console utility to reset documents for testing.
     // Usage: WML.resetDocuments()        — clears ALL saved docs + chats

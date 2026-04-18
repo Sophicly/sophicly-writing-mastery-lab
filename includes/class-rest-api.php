@@ -2653,6 +2653,27 @@ class SWML_REST_API {
 
         $bridge = Sophicly_LearnDash_Bridge::init();
 
+        // v7.15.74: Root-fix the shared-topic board-switch bug. Sophicly shares
+        // sfwd-topic post IDs across multiple courses (e.g. one Language P1
+        // topic appears in BOTH the AQA course AND the EDUQAS course). Two LD
+        // behaviours combine to redirect students out of their current course:
+        //
+        //   1. get_permalink($topic_id) returns the canonical course-scoped URL
+        //      for the topic — whichever course LD registered it under first.
+        //      For a shared AQA/EDUQAS topic originally created in the EDUQAS
+        //      course, this returns the EDUQAS permalink regardless of which
+        //      course the student actually clicked from.
+        //
+        //   2. learndash_get_course_id($topic_id) similarly returns the
+        //      canonical course, not the student's current one, so completion
+        //      lookups are scoped to the wrong course and trigger redirects.
+        //
+        // Fix: resolve the target course from (board, text) via the Sophicly
+        // course_map, then use learndash_get_step_permalink($topic_id, $course_id)
+        // to build a URL that respects the student's actual course context.
+        $course_map = function_exists('sophicly_get_course_map') ? sophicly_get_course_map() : [];
+        $target_course_id = isset($course_map[$text][$board]) ? (int) $course_map[$text][$board] : 0;
+
         $sequence = [
             'diagnostic',
             'assessment',
@@ -2677,29 +2698,52 @@ class SWML_REST_API {
                 $first_lesson_task = $task;
             }
 
-            $course_id = function_exists('learndash_get_course_id') ? learndash_get_course_id($lesson_id) : 0;
+            // Use resolved target_course_id (from course_map) if we have it —
+            // the canonical learndash_get_course_id may point at a sibling course.
+            $course_id = $target_course_id
+                ?: (function_exists('learndash_get_course_id') ? learndash_get_course_id($lesson_id) : 0);
             $complete = learndash_is_lesson_complete($user_id, $lesson_id, $course_id);
 
             if (!$complete) {
                 return rest_ensure_response([
-                    'success' => true,
-                    'url' => get_permalink($lesson_id) ?: '',
-                    'task' => $task,
-                    'reason' => 'not_started',
+                    'success'   => true,
+                    'url'       => $this->swml_step_permalink($lesson_id, $course_id),
+                    'task'      => $task,
+                    'reason'    => 'not_started',
+                    'course_id' => $course_id,
                 ]);
             }
         }
 
         if ($first_lesson_id) {
+            $course_id = $target_course_id
+                ?: (function_exists('learndash_get_course_id') ? learndash_get_course_id($first_lesson_id) : 0);
             return rest_ensure_response([
-                'success' => true,
-                'url' => get_permalink($first_lesson_id) ?: '',
-                'task' => $first_lesson_task,
-                'reason' => 'all_complete',
+                'success'   => true,
+                'url'       => $this->swml_step_permalink($first_lesson_id, $course_id),
+                'task'      => $first_lesson_task,
+                'reason'    => 'all_complete',
+                'course_id' => $course_id,
             ]);
         }
 
         return new WP_Error('no_lessons', 'No lessons mapped for this topic', ['status' => 404]);
+    }
+
+    /**
+     * v7.15.74: Build a course-scoped permalink for a shared LD topic.
+     * Prefer LearnDash's native helper; fall back to canonical permalink with
+     * ?course_id= query arg so LD can still resolve context client-side.
+     */
+    private function swml_step_permalink($step_id, $course_id) {
+        if (!$step_id) return '';
+        if ($course_id && function_exists('learndash_get_step_permalink')) {
+            $url = learndash_get_step_permalink($step_id, $course_id);
+            if ($url) return $url;
+        }
+        $base = get_permalink($step_id) ?: '';
+        if (!$base) return '';
+        return $course_id ? add_query_arg('course_id', $course_id, $base) : $base;
     }
 }
 

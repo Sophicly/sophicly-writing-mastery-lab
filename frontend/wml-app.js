@@ -4201,6 +4201,32 @@
             ];
         }
 
+        // v7.15.74: Free-text "Which X: A or B?" pattern — when the AI poses a
+        // choice without letter/number labels, e.g. "Which extract would you like
+        // to use: Act 1 Scene 4 (fate and dreams) or Act 3 Scene 1 (fortune) for…?"
+        // Previous build fell through to generic yes/no which was out of context.
+        // Extract both option phrases; strip trailing parenthetical hints + "for X"
+        // tail; expose as buttons so student doesn't have to type the phrase.
+        if (!hasLetterChoices && isQuestion) {
+            const whichMatch = text.match(
+                /(?:Which|What)\s+\w+[^:?]{0,80}:\s*([^?]+?)\s+or\s+([^?]+?)(?:\s+for\s+[^?]+)?\s*\?/i
+            );
+            if (whichMatch) {
+                const stripParens = (s) => s.replace(/\s*\([^)]*\)\s*$/, '').replace(/[\s,.;:]+$/, '').trim();
+                const labelA = stripParens(whichMatch[1]);
+                const labelB = stripParens(whichMatch[2]);
+                // Guard: both sides must be meaningful (2–60 chars) and neither can be a single letter
+                if (labelA.length >= 2 && labelA.length <= 60
+                    && labelB.length >= 2 && labelB.length <= 60
+                    && !/^[A-F]$/i.test(labelA) && !/^[A-F]$/i.test(labelB)) {
+                    return [
+                        { label: labelA, value: labelA },
+                        { label: labelB, value: labelB }
+                    ];
+                }
+            }
+        }
+
         const impliedYesNo = /(?:would you like|do you want|shall (?:we|I)|are you (?:happy|ready|satisfied)|does (?:that|this) (?:work|look|sound)|sound good|ready to (?:proceed|continue|move|begin|start|select)|want (?:me )?to (?:proceed|continue))/i;
         // Guard: don't show yes/no when the AI is asking for specific text input
         const isContentRequest = /(?:(?:tell|give) me|please (?:tell|provide|share|paste|type)|what (?:is|are) (?:the|your)|which (?:poem|text|quote|character|theme)|paste (?:the|your|a)|submit (?:the|your|a))/i;
