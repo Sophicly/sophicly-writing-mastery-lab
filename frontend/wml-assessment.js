@@ -16406,14 +16406,25 @@ ${html}
         const result = { qText: '', extractText: '', extractLoc: '' };
         if (!content) return result;
 
-        // Extract location (Act/Scene/Chapter/pages)
-        const locMatch = content.match(/from\s+(Act\s+\d+[^\n.,]{0,60}|Chapter\s+\d+[^\n.,]{0,60}|Scene\s+\d+[^\n.,]{0,60}|pages?\s+\d+[^\n.,]{0,60})/i);
-        result.extractLoc = locMatch ? locMatch[1].replace(/\s+/g, ' ').replace(/,$/, '').trim() : '';
+        // v7.15.69: tight location capture — previous [^\n.,]{0,60} swallowed
+        // whole sentences like "Act 1 Scene 3 of Macbeth and then answer the
+        // question that foll" because no comma/period appeared for ~60 chars.
+        // Restrict to the recognised location shapes only.
+        const locMatch = content.match(
+            /from\s+(Act\s+\d+(?:[,\s]+Scene\s+\d+)?|Chapter\s+\d+(?:\s*[-–]\s*\d+)?|Scene\s+\d+|pages?\s+\d+(?:\s*[-–]\s*\d+)?)/i
+        );
+        result.extractLoc = locMatch ? locMatch[1].replace(/\s+/g, ' ').replace(/[,\s]+$/, '').trim() : '';
 
-        // Extract text — prefer dash-delimited block, fall back to block-quote lines
+        // Extract text — prefer dash-delimited block, fall back to block-quote lines.
+        // v7.15.69: also strip leading `>` prefixes inside a dash-delimited block
+        // (some protocol variants use `---` delimiters AND quote each line).
         const dashMatch = content.match(/\n\s*---\s*\n([\s\S]*?)\n\s*---\s*\n/);
         if (dashMatch) {
-            result.extractText = dashMatch[1].replace(/\*{1,2}/g, '').trim();
+            result.extractText = dashMatch[1]
+                .split('\n')
+                .map(l => l.replace(/^\s*>\s?/, '').replace(/\*{1,2}/g, '').trimEnd())
+                .join('\n')
+                .trim();
         } else {
             const qLines = content.split('\n')
                 .filter(l => /^\s*>\s*/.test(l))
@@ -16422,19 +16433,26 @@ ${html}
             result.extractText = qLines.join('\n');
         }
 
-        // Question stem — first sentence matching the stem patterns
+        // v7.15.69: index-based writeAbout extraction to guarantee it stops
+        // before the marks allocation. The earlier lookahead regex could
+        // double-capture marks when the AI message ran to end-of-text without
+        // a trailing newline, producing two "[30 marks]" lines in the doc.
         const stemMatch = content.match(/(Starting with this (?:extract|speech|moment)[^\n?]*\??|How (?:does|far|is)\s+\w+[^\n?]*\??|(?:Explore|Discuss|Analyse|To what extent)[^\n?]*\??)/i);
         const stem = stemMatch ? stemMatch[1].replace(/\*{1,2}/g, '').trim() : '';
 
-        // "Write about:" bullet block up to but not including the marks
-        const writeAboutMatch = content.match(/(Write about:[\s\S]*?)(?=\n\s*\[\s*\d+\s*marks?|\n\s*\(\s*\d+\s*marks?|\n\s*---|\n\s*\n\s*\n|$)/i);
-        const writeAbout = writeAboutMatch ? writeAboutMatch[1].replace(/\*{1,2}/g, '').trim() : '';
+        const marksRegex = /(\[\s*\d+\s*marks?[^\]]*\]|\(\s*\d+\s*marks?\s*\))/i;
+        const marksMatch = content.match(marksRegex);
+        const marksText = marksMatch ? marksMatch[1].trim() : '';
+        const marksPos = marksMatch ? content.indexOf(marksMatch[1]) : -1;
 
-        // Marks allocation (keeps trailing AO hints like "[30 marks + 4 AO4]")
-        const marksMatch = content.match(/(\[\s*\d+\s*marks?[^\]]*\]|\(\s*\d+\s*marks?\s*\))/i);
-        const marks = marksMatch ? marksMatch[1].trim() : '';
+        const writeAboutStart = content.search(/Write about:/i);
+        let writeAbout = '';
+        if (writeAboutStart >= 0) {
+            const endPos = marksPos > writeAboutStart ? marksPos : content.length;
+            writeAbout = content.substring(writeAboutStart, endPos).replace(/\*{1,2}/g, '').trim();
+        }
 
-        const qParts = [stem, writeAbout, marks].filter(Boolean);
+        const qParts = [stem, writeAbout, marksText].filter(Boolean);
         if (qParts.length > 0) {
             result.qText = qParts.join('\n\n').trim();
         } else {
