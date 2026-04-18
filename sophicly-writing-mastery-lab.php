@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.15.75
+ * Version: 7.15.76
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.15.75');
+define('SWML_VERSION', '7.15.76');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -38,6 +38,7 @@ class Sophicly_Writing_Mastery_Lab {
         require_once SWML_PATH . 'includes/class-protocol-router.php';
         require_once SWML_PATH . 'includes/class-function-handlers.php';
         require_once SWML_PATH . 'includes/class-rest-api.php';
+        require_once SWML_PATH . 'includes/class-feedback-unlock.php';
         require_once SWML_PATH . 'includes/class-video-admin.php';
         require_once SWML_PATH . 'includes/class-topic-parser.php';
         require_once SWML_PATH . 'includes/class-topic-questions.php';
@@ -320,6 +321,12 @@ class Sophicly_Writing_Mastery_Lab {
             'reviewStudentName' => $review_student_name,
             'viewerMode'       => $embed_review['viewer_mode'],    // v7.15.53: 'edit' | 'comment' | 'readonly'
             'targetUserId'     => $embed_review['target_user_id'], // v7.15.53: student whose canvas is being viewed
+            // v7.15.76: Feedback-unlock flags for the target student. Falls back
+            // to the current user when not in review mode (student self-view).
+            // JS gates on viewerMode==='edit' before applying, so tutor/parent
+            // review never gains edit access regardless of these values.
+            'feedbackUnlocked'       => SWML_Feedback_Unlock::is_global_unlocked($embed_review['target_user_id'] ?: get_current_user_id()),
+            'feedbackUnlockedTopics' => SWML_Feedback_Unlock::get_unlocked_topics($embed_review['target_user_id'] ?: get_current_user_id()),
             'dashboardUrl'     => home_url('/my-dashboard/'),
             'libraryUrl'       => home_url('/library/'),
             'pageUrl'          => home_url('/writing-mastery-lab/'),
@@ -678,6 +685,11 @@ class Sophicly_Writing_Mastery_Lab {
                 'reviewRole'        => $embed_review['review_role'],
                 'reviewStudentId'   => $embed_review['student_id'],
                 'reviewStudentName' => $embed_review['student_name'],
+                'viewerMode'        => $embed_review['viewer_mode'],
+                'targetUserId'      => $embed_review['target_user_id'],
+                // v7.15.76: Feedback-unlock flags for target student (self if not review).
+                'feedbackUnlocked'       => SWML_Feedback_Unlock::is_global_unlocked($embed_review['target_user_id'] ?: get_current_user_id()),
+                'feedbackUnlockedTopics' => SWML_Feedback_Unlock::get_unlocked_topics($embed_review['target_user_id'] ?: get_current_user_id()),
                 'dashboardUrl'   => home_url('/my-dashboard/'),
                 'libraryUrl'     => home_url('/library/'),
                 'pageUrl'        => home_url('/writing-mastery-lab/'),

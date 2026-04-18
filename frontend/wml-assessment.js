@@ -11187,6 +11187,21 @@
         return labelled.join('\n\n');
     }
 
+    // v7.15.76: Feedback rows become editable when a tutor/SSS/admin has flipped
+    // the unlock flag for this student (global) OR for the current topic triple.
+    // Always gated by viewerMode==='edit' so tutor/parent review stays read-only
+    // regardless. Returns true/false for use as the sectionHTML `editable` arg.
+    function _feedbackEditable() {
+        const cfg = window.swmlConfig || {};
+        if (cfg.viewerMode !== 'edit') return false;
+        if (cfg.feedbackUnlocked) return true;
+        const list = cfg.feedbackUnlockedTopics || [];
+        const t = parseInt(state.topicNumber, 10) || 0;
+        const b = state.board || '';
+        const tx = state.text || '';
+        return list.some(x => x && x.board === b && x.text === tx && (parseInt(x.topic, 10) || 0) === t);
+    }
+
     function sectionHTML(type, label, editable, partNumber, innerHTML) {
         const ro = editable === false ? ' data-readonly="true"' : '';
         const part = partNumber ? ` data-part="${partNumber}"` : '';
@@ -12900,14 +12915,15 @@
     function buildFeedbackSection(markSplit, partLabel) {
         const s = markSplit || { intro: 3, body: 7, conclusion: 6 };
         const prefix = partLabel ? `${partLabel} ` : '';
+        const editable = _feedbackEditable(); // v7.15.76
         let html = '';
-        html += sectionHTML('feedback', `${prefix}Feedback: Introduction (— / ${s.intro})`, false, null,
+        html += sectionHTML('feedback', `${prefix}Feedback: Introduction (— / ${s.intro})`, editable, null,
             `<p><em>Feedback and revised paragraph example will appear after assessment.</em></p>`);
         for (let i = 1; i <= 3; i++) {
-            html += sectionHTML('feedback', `${prefix}Feedback: Body ${i} (— / ${s.body})`, false, null,
+            html += sectionHTML('feedback', `${prefix}Feedback: Body ${i} (— / ${s.body})`, editable, null,
                 `<p><em>Feedback and revised paragraph example will appear after assessment.</em></p>`);
         }
-        html += sectionHTML('feedback', `${prefix}Feedback: Conclusion (— / ${s.conclusion})`, false, null,
+        html += sectionHTML('feedback', `${prefix}Feedback: Conclusion (— / ${s.conclusion})`, editable, null,
             `<p><em>Feedback and revised paragraph example will appear after assessment.</em></p>`);
         return html;
     }
@@ -13394,7 +13410,7 @@
                     '<p><strong>A</strong> \u2014 <em>Author\u2019s purpose + context:</em></p><p></p>');
                 html += sectionHTML('response', 'Response: Quote ' + i, true, null,
                     '<p><em>Write your full paragraph here.</em></p><p></p>');
-                html += sectionHTML('feedback', 'Feedback: Quote ' + i, false, null,
+                html += sectionHTML('feedback', 'Feedback: Quote ' + i, _feedbackEditable(), null,
                     '<p><em>AI feedback and Grade 9 model will appear here.</em></p>');
             }
         } else if (exerciseType === 'conceptual_notes') {
@@ -13603,7 +13619,7 @@
             questions.forEach(function(q) {
                 const qMarks = parseInt(q.marks) || 0;
                 totalMarks += qMarks;
-                html += sectionHTML('feedback', `Feedback: ${q.id || q.label} (— / ${qMarks})`, false, null,
+                html += sectionHTML('feedback', `Feedback: ${q.id || q.label} (— / ${qMarks})`, _feedbackEditable(), null,
                     `<p><em>Feedback and revised answer will appear after assessment.</em></p>`);
             });
             html += dividerHTML('RESULTS');
