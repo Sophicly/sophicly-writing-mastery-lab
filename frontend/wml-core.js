@@ -811,14 +811,16 @@ window.WML = (function() {
             protocolSource: null,
             protocolTask: null,
             completionType: 'manual',
-            storageSuffix: '_fb',
-            // v7.15.78: Modular-by-label. Bridge passes state.phase; each phase
-            // routes to its own canvas meta-key so Phase-1 / Phase-2 / Standalone
-            // don't collide. Legacy callers missing state.phase land on '_fb'.
+            // v7.15.81: Discuss Feedback is part of the phase sequence, not a
+            // separate document. Phase 1 sequence shares the diagnostic doc
+            // (empty suffix); Phase 2 sequence shares the redraft doc
+            // (_redraft). Only standalone keeps its own record since that path
+            // is bring-your-own-work, unrelated to any topic attempt.
+            storageSuffix: '',
             storageSuffixForPhase: function (phase) {
-                if (phase === 'redraft')    return '_fb_p2';
+                if (phase === 'redraft')    return '_redraft';
                 if (phase === 'standalone') return '_fb_standalone';
-                return '_fb';
+                return '';
             },
             chatHeaderLabel: 'Discuss Feedback',
             sidebarSteps: null,

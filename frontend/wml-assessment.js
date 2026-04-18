@@ -752,6 +752,14 @@
         const previewOverlay = !!(new URLSearchParams(window.location.search).get('show_attempt_overlay'));
         if (state.reviewMode) return;
         if (!state.board || !state.text) return;
+        // v7.15.81: Overlay only fires on the actual diagnostic WRITE lesson
+        // (first in the topic sequence). Every other lesson — assessment,
+        // discuss feedback, mark scheme, planning, outlining, polishing,
+        // reassessment, phase-2 discuss feedback — inherits the attempt number
+        // set at the diagnostic. Re-prompting on those would (a) be wrong
+        // conceptually and (b) bounce the student via API.topicResume back to
+        // the first-incomplete lesson (the diagnostic itself). Skip.
+        if (state.task && state.task !== 'diagnostic') return;
         if (!_isGuidedContext() && !previewOverlay) return;
         const attemptFromUrl = !!(new URLSearchParams(window.location.search).get('attempt'));
         if (attemptFromUrl && !previewOverlay) return;
