@@ -1,0 +1,298 @@
+{
+  "_version": "0.1.0-RELEASE_A",
+  "_description": "Verified Literature paper shapes per board. Release A (v7.15.70) foundation file. Unused by code until Release B+ — shipping dormant so schema can be audited first. Extract ranges flagged 'verified:false' pending past-paper research (background agent in progress 2026-04-18). NEVER estimate — all confirmed rows reference real past papers.",
+
+  "_shape_enum": {
+    "lit-extract-single": "1 extract + 1 question (AQA Shakespeare, 19th C; Edexcel; EDUQAS)",
+    "lit-extract-paired": "2 extracts + 1 question (OCR Literature paired-extract format)",
+    "lit-no-extract":     "0 extracts + 1 whole-text question (AQA Modern Text, possibly Edexcel IGCSE Modern Drama / Shakespeare)",
+    "poetry-single-named": "1 named anthology poem printed in full + 1 question",
+    "poetry-comparison":  "Named poem A + student-chosen poem B + 1 comparison question",
+    "poetry-unseen":      "1 unseen poem (Q1) or 2 unseen poems (Q2 comparison), printed in full"
+  },
+
+  "_schema": {
+    "shape": "one of _shape_enum",
+    "marks": "integer — total marks for the question (content + SPaG where applicable)",
+    "spag_marks": "integer | null — SPaG portion of total marks (AQA Lit papers include AO4 SPaG)",
+    "aos": "array of AO codes (e.g. AO1, AO2, AO3, AO4)",
+    "extract": {
+      "count": "integer — number of extracts/poems printed (1 or 2)",
+      "lines_min": "integer | null — per-extract minimum content lines",
+      "lines_max": "integer | null — per-extract maximum content lines",
+      "verified": "boolean — true only when measured from real past papers",
+      "source": "string — citation for the range"
+    },
+    "question_prefix": "string | null — canonical opening phrase (for preamble guidance + parser hint)"
+  },
+
+  "aqa": {
+    "shakespeare": {
+      "shape": "lit-extract-single",
+      "marks": 34,
+      "spag_marks": 4,
+      "aos": ["AO1", "AO2", "AO3", "AO4"],
+      "extract": { "count": 1, "lines_min": 25, "lines_max": 40, "typical": 30, "verified": false, "source": "AQA 87021 Jun23/Jun22/Specimen QPs — estimate, needs spot-check against 3 papers" },
+      "question_prefix": "Starting with this extract, how does..."
+    },
+    "19th_century": {
+      "shape": "lit-extract-single",
+      "marks": 34,
+      "spag_marks": 4,
+      "aos": ["AO1", "AO2", "AO3", "AO4"],
+      "extract": { "count": 1, "lines_min": 20, "lines_max": 35, "typical": 28, "verified": false, "source": "AQA 87021 Jun23/Specimen QPs" },
+      "question_prefix": "Starting with this extract, how does..."
+    },
+    "modern_text": {
+      "shape": "lit-no-extract",
+      "marks": 34,
+      "spag_marks": 4,
+      "aos": ["AO1", "AO2", "AO3", "AO4"],
+      "extract": null,
+      "question_prefix": "How does [author] use the character of X to explore...",
+      "_note": "Confirmed closed-book essay — choice of 2 per set text. AQA 87022 Jun23 MS."
+    },
+    "poetry_anthology": {
+      "shape": "poetry-single-named",
+      "marks": 30,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2", "AO3"],
+      "extract": { "count": 1, "lines_min": 8, "lines_max": 40, "typical": 20, "verified": true, "source": "AQA 87022 — named poem printed in full; student compares with second anthology poem from memory (second poem NOT printed)" },
+      "question_prefix": "Compare how poets present..."
+    },
+    "unseen_poetry_q1": {
+      "shape": "poetry-unseen",
+      "marks": 24,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2"],
+      "extract": { "count": 1, "lines_min": 10, "lines_max": 40, "typical": 20, "verified": true, "source": "AQA 87022 Section C Q27.1 — single unseen poem printed" },
+      "question_prefix": "In [poem title], how does the poet present..."
+    },
+    "unseen_poetry_q2": {
+      "shape": "poetry-unseen",
+      "marks": 8,
+      "spag_marks": null,
+      "aos": ["AO2"],
+      "extract": { "count": 2, "lines_min_each": 10, "lines_max_each": 40, "typical_each": 20, "verified": true, "source": "AQA 87022 Section C Q27.2 — both unseen poems printed" },
+      "question_prefix": "In both [poem A] and [poem B], the poets present... Compare the methods..."
+    }
+  },
+
+  "ocr": {
+    "shakespeare": {
+      "shape": "lit-extract-paired",
+      "marks": 40,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2", "AO3", "AO4"],
+      "extract": { "count": 2, "lines_min_each": 25, "lines_max_each": 45, "typical_each": 30, "verified": false, "source": "OCR J352/02 Section B — set-text extract (25-40) + unseen comparison extract (20-40); needs PDF count" },
+      "question_prefix": "Explore how [author] presents... Refer to both extracts in your answer."
+    },
+    "19th_century": {
+      "shape": "lit-extract-paired",
+      "marks": 40,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2", "AO3", "AO4"],
+      "extract": { "count": 2, "lines_min_each": 25, "lines_max_each": 45, "typical_each": 30, "verified": false, "source": "OCR J352/01 — paired-extract format (set text + unseen)" },
+      "question_prefix": "Explore how [author] presents..."
+    },
+    "modern_text": {
+      "shape": "lit-extract-paired",
+      "marks": 40,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2", "AO3", "AO4"],
+      "extract": { "count": 2, "lines_min_each": 25, "lines_max_each": 45, "typical_each": 30, "verified": false, "source": "OCR J352/01 — paired-extract format" },
+      "question_prefix": "Explore how [author] presents..."
+    },
+    "poetry_anthology": {
+      "shape": "poetry-comparison",
+      "marks": null,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2", "AO3"],
+      "extract": { "count": 2, "lines_min_each": 8, "lines_max_each": 40, "verified": false, "source": "OCR J352/02 Section A — named anthology poem + unseen poem for comparison" },
+      "question_prefix": null
+    }
+  },
+
+  "edexcel": {
+    "shakespeare": {
+      "shape": "lit-extract-single",
+      "marks": 40,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2", "AO4"],
+      "extract": { "count": 1, "lines_min": 25, "lines_max": 40, "typical": 30, "verified": false, "source": "Edexcel 1ET0/01 — two-part question (a) extract close analysis (b) whole-play; May 2023 QP" },
+      "question_prefix": "Explore how...",
+      "_note": "Section A Shakespeare uses two-part format: (a) extract-based (b) whole-play. Doc template may need dual-part handling via existing question_format='dual_extract'."
+    },
+    "19th_century": {
+      "shape": "lit-extract-single",
+      "marks": 40,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2", "AO4"],
+      "extract": { "count": 1, "lines_min": 22, "lines_max": 32, "typical": 27, "verified": true, "source": "Edexcel 1ET0/02 Section A — Pearson spec explicitly states 'approximately 400 words' for extract" },
+      "question_prefix": "Explore how..."
+    },
+    "modern_text": {
+      "shape": "lit-extract-single",
+      "marks": 40,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2", "AO4"],
+      "extract": { "count": 1, "lines_min": 20, "lines_max": 40, "verified": false, "source": "Edexcel 1ET0/01 post-1914 — varies by set text/year; some papers use whole-text question without extract — verify per paper" },
+      "question_prefix": "Explore how..."
+    },
+    "poetry_anthology": {
+      "shape": "poetry-single-named",
+      "marks": 20,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2", "AO3"],
+      "extract": { "count": 1, "lines_min": 8, "lines_max": 40, "typical": 20, "verified": true, "source": "Edexcel 1ET0/02 Section B Part 1 — one anthology poem printed; student compares with second anthology poem" },
+      "question_prefix": "Compare the ways..."
+    },
+    "unseen": {
+      "shape": "poetry-unseen",
+      "marks": 20,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2"],
+      "extract": { "count": 2, "lines_min_each": 10, "lines_max_each": 40, "typical_each": 18, "verified": true, "source": "Edexcel 1ET0/02 Section B Part 2 — two unseen poems printed for comparison" },
+      "question_prefix": null
+    }
+  },
+
+  "eduqas": {
+    "shakespeare": {
+      "shape": "lit-extract-single",
+      "marks": 40,
+      "spag_marks": 5,
+      "aos": ["AO1", "AO2", "AO4"],
+      "extract": { "count": 1, "lines_min": 25, "lines_max": 40, "typical": 30, "verified": false, "source": "EDUQAS C720U10 Section A — two-part question (a) extract (b) whole-play; verify from PDFs" },
+      "question_prefix": null
+    },
+    "19th_century": {
+      "shape": "lit-extract-single",
+      "marks": 40,
+      "spag_marks": 5,
+      "aos": ["AO1", "AO2", "AO4"],
+      "extract": { "count": 1, "lines_min": 20, "lines_max": 40, "typical": 30, "verified": false, "source": "EDUQAS C720U20 Section B — single 19th-c prose extract" },
+      "question_prefix": null
+    },
+    "modern_text": {
+      "shape": "lit-no-extract",
+      "marks": 40,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2", "AO4"],
+      "extract": null,
+      "question_prefix": null,
+      "_note": "Confirmed: EDUQAS C720U20 Section A post-1914 prose/drama — essay question only, no extract printed"
+    },
+    "poetry_anthology": {
+      "shape": "poetry-single-named",
+      "marks": 25,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2", "AO3"],
+      "extract": { "count": 1, "lines_min": 8, "lines_max": 40, "typical": 20, "verified": false, "source": "EDUQAS C720U10 Section B — one anthology poem printed + comparison" },
+      "question_prefix": null
+    },
+    "unseen": {
+      "shape": "poetry-unseen",
+      "marks": 20,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2"],
+      "extract": { "count": 2, "lines_min_each": 10, "lines_max_each": 40, "verified": false, "source": "EDUQAS C720U20 Section C — two unseen poems: single + comparison questions" },
+      "question_prefix": null
+    }
+  },
+
+  "ccea": {
+    "prose": {
+      "shape": "lit-no-extract",
+      "marks": null,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2"],
+      "extract": null,
+      "question_prefix": null,
+      "_note": "Confirmed: CCEA GEL11 Section A modern prose — whole-text essay, no extract"
+    },
+    "unseen_prose": {
+      "shape": "lit-extract-single",
+      "marks": null,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2"],
+      "extract": { "count": 1, "lines_min": 30, "lines_max": 55, "typical": 40, "verified": false, "source": "CCEA GEL11 Section B — single unseen 19th-c prose extract (often longest of any board); verify from PDFs" },
+      "question_prefix": null
+    }
+  },
+
+  "sqa": {
+    "critical_reading_section_1": {
+      "shape": "lit-extract-single",
+      "marks": null,
+      "spag_marks": null,
+      "aos": null,
+      "extract": { "count": 1, "lines_min": 20, "lines_max": 45, "typical": 30, "verified": false, "source": "SQA N5 Critical Reading Section 1 — single printed extract from Scottish set text (prose/drama/poetry); questions reference extract + wider text" },
+      "question_prefix": null
+    },
+    "critical_reading_section_2": {
+      "shape": "lit-no-extract",
+      "marks": null,
+      "spag_marks": null,
+      "aos": null,
+      "extract": null,
+      "question_prefix": null,
+      "_note": "Confirmed: SQA N5 Critical Reading Section 2 — critical essay on previously-studied text; choice of questions; no extract"
+    }
+  },
+
+  "edexcel-igcse": {
+    "heritage": {
+      "shape": "lit-no-extract",
+      "marks": null,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2"],
+      "extract": null,
+      "question_prefix": null,
+      "_note": "Edexcel IGCSE 4ET1/02 Q1 literary-heritage essay — whole-text, OPEN BOOK (student uses own clean copy). No printed extract."
+    },
+    "modern": {
+      "shape": "lit-no-extract",
+      "marks": null,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2"],
+      "extract": null,
+      "question_prefix": null,
+      "_note": "Edexcel IGCSE 4ET1/02 modern drama — whole-text open-book essay. No printed extract."
+    },
+    "modern-prose": {
+      "shape": "lit-no-extract",
+      "marks": null,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2"],
+      "extract": null,
+      "question_prefix": null,
+      "_note": "Edexcel IGCSE 4ET1/01 Section C modern prose — whole-text essay, closed book. No printed extract."
+    },
+    "literature": {
+      "shape": "lit-no-extract",
+      "marks": null,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2", "AO3", "AO4"],
+      "extract": null,
+      "question_prefix": null,
+      "_note": "Catch-all for Edexcel IGCSE Spec A Literature 4ET1 — all papers confirmed no printed extract."
+    },
+    "anthology_poetry": {
+      "shape": "poetry-comparison",
+      "marks": null,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2", "AO3"],
+      "extract": { "count": 2, "lines_min_each": 8, "lines_max_each": 40, "verified": true, "source": "Edexcel IGCSE 4ET1/01 Section B — two anthology poems printed (closed book, anthology reprinted)" },
+      "question_prefix": null
+    },
+    "unseen_poetry": {
+      "shape": "poetry-unseen",
+      "marks": null,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2"],
+      "extract": { "count": 1, "lines_min": 10, "lines_max": 40, "typical": 20, "verified": false, "source": "Edexcel IGCSE 4ET1/01 Section A — one unseen poem printed" },
+      "question_prefix": null
+    }
+  }
+}

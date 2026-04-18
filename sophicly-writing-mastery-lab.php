@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.15.69
+ * Version: 7.15.70
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.15.69');
+define('SWML_VERSION', '7.15.70');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -349,6 +349,13 @@ class Sophicly_Writing_Mastery_Lab {
         if (file_exists($specs_file)) {
             $specs_json = file_get_contents($specs_file);
             wp_add_inline_script('swml-core', 'window.swmlLangSpecs=' . $specs_json . ';', 'before');
+        }
+
+        // v7.15.70: Embed literature paper specs (dormant — WML.resolvePaperShape reads this)
+        $lit_specs_file = SWML_PATH . 'protocols/shared/literature-paper-specs.json';
+        if (file_exists($lit_specs_file)) {
+            $lit_specs_json = file_get_contents($lit_specs_file);
+            wp_add_inline_script('swml-core', 'window.swmlLitSpecs=' . $lit_specs_json . ';', 'before');
         }
     }
 
@@ -693,6 +700,13 @@ class Sophicly_Writing_Mastery_Lab {
         if (file_exists($specs_file)) {
             $specs_json = file_get_contents($specs_file);
             wp_add_inline_script('swml-core', 'window.swmlLangSpecs=' . $specs_json . ';', 'before');
+        }
+
+        // v7.15.70: Embed literature paper specs (dormant — WML.resolvePaperShape reads this)
+        $lit_specs_file = SWML_PATH . 'protocols/shared/literature-paper-specs.json';
+        if (file_exists($lit_specs_file)) {
+            $lit_specs_json = file_get_contents($lit_specs_file);
+            wp_add_inline_script('swml-core', 'window.swmlLitSpecs=' . $lit_specs_json . ';', 'before');
         }
     }
 

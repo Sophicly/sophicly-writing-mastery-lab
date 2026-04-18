@@ -1041,6 +1041,89 @@ window.WML = (function() {
         },
     };
 
+    // v7.15.70: Paper-shape resolver — DORMANT helper for the board-agnostic
+    // question-generation engine. Reads window.swmlLitSpecs + window.swmlLangSpecs
+    // (both embedded server-side) and returns a normalised paper-shape descriptor
+    // that downstream consumers (parser, template dispatcher, injector, quality
+    // gates) will switch on starting Release B+.
+    //
+    // Not called anywhere in v7.15.70 — shipping the plumbing alone so the spec
+    // schema can be audited against real lessons before behavioural changes land.
+    //
+    // ctx = { board, subject, task, paper?, questionNumber?, lessonMeta? }
+    // Returns: { shape, marks?, spagMarks?, aos?, extract?, questionPrefix?, source }
+    //   source ∈ 'lesson-meta' | 'literature-specs' | 'language-specs' | 'default'
+    function resolvePaperShape(ctx) {
+        const { board = '', subject = '', questionNumber = null, lessonMeta = null } =
+            ctx || {};
+        const litSpecs = (typeof window !== 'undefined' && window.swmlLitSpecs) || {};
+        const langSpecs = (typeof window !== 'undefined' && window.swmlLangSpecs) || {};
+
+        // 1. Explicit lesson-meta override (manual pin set in LD admin)
+        if (lessonMeta && lessonMeta.shape_override) {
+            return { shape: lessonMeta.shape_override, source: 'lesson-meta' };
+        }
+
+        const normBoard = String(board).replace(/_/g, '-').toLowerCase();
+
+        // 2. Literature specs (shape already declared per board × subject)
+        const litBoard = litSpecs[normBoard];
+        if (litBoard && subject && litBoard[subject]) {
+            const row = litBoard[subject];
+            return {
+                shape: row.shape,
+                marks: row.marks,
+                spagMarks: row.spag_marks,
+                aos: row.aos,
+                extract: row.extract,
+                questionPrefix: row.question_prefix,
+                source: 'literature-specs',
+            };
+        }
+
+        // 3. Language specs — derive shape from question `type`
+        const langBoard = langSpecs[normBoard];
+        if (langBoard && subject && langBoard[subject]) {
+            const paperSpec = langBoard[subject];
+            const derived = _deriveLangPaperShape(paperSpec, questionNumber);
+            if (derived) return { ...derived, source: 'language-specs' };
+        }
+
+        // 4. Default fallback — single-extract (covers today's AQA behaviour)
+        return { shape: 'lit-extract-single', source: 'default', _fallback: true };
+    }
+
+    function _deriveLangPaperShape(paperSpec, questionNumber) {
+        const sections = paperSpec && paperSpec.sections;
+        if (!Array.isArray(sections)) return null;
+        const targetId = questionNumber != null ? 'Q' + questionNumber : null;
+        for (const sec of sections) {
+            for (const q of (sec.questions || [])) {
+                if (targetId && q.id !== targetId) continue;
+                if (q.type === 'extended_writing' || q.type === 'choice') {
+                    return {
+                        shape: 'lang-prompt',
+                        marks: q.marks,
+                        contentMarks: q.content_marks || null,
+                        spagMarks: q.spag_marks || null,
+                        aos: q.aos || [],
+                        extract: null,
+                        questionPrefix: null,
+                    };
+                }
+                // Reading sub-question — source-based analysis
+                return {
+                    shape: 'lang-source-essay',
+                    marks: q.marks,
+                    aos: q.aos || [],
+                    extract: { count: sec.source_count || 1 },
+                    questionPrefix: null,
+                };
+            }
+        }
+        return null;
+    }
+
     // Helper: get manifest entry for current task (falls back to planning)
     // v7.13.34: CW dynamic lookup — resolves cw_step_X / cw_trial_X to the correct base config
     function getExerciseConfig(task) {
@@ -2121,5 +2204,7 @@ window.WML = (function() {
         renderLogo, renderBadges,
         // Creative writing project API (v7.13.30)
         cwProject,
+        // v7.15.70: Paper-shape resolver (dormant — consumed starting Release B)
+        resolvePaperShape,
     };
 })();

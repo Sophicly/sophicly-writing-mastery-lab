@@ -47,6 +47,106 @@ class SWML_Protocol_Router {
         return str_replace('_', '-', $board);
     }
 
+    /**
+     * v7.15.70: Paper-shape resolver (DORMANT — ships as foundation for the
+     * board-agnostic question-generation engine but not yet called from
+     * build_preamble). Reads the two paper-specs JSON files and returns a
+     * normalised paper-shape descriptor, mirroring the JS helper
+     * WML.resolvePaperShape() in frontend/wml-core.js so both sides agree.
+     *
+     * Caches specs on the instance; each JSON file is read at most once per
+     * request.
+     *
+     * @param string   $board            Board slug (raw or normalised).
+     * @param string   $subject          Subject / paper key within board (e.g. 'shakespeare', 'language_p1').
+     * @param int|null $question_number  Question number for Language papers (null = first matching).
+     * @param array    $lesson_meta      Optional lesson-meta overrides (e.g. ['shape_override' => 'lit-no-extract']).
+     * @return array { shape, marks?, spag_marks?, aos?, extract?, question_prefix?, source }
+     */
+    private $_paper_specs_cache = null;
+
+    private function load_paper_specs() {
+        if ($this->_paper_specs_cache !== null) return $this->_paper_specs_cache;
+        $out = ['lit' => [], 'lang' => []];
+        $lit_file  = SWML_PROTOCOLS_PATH . 'shared/literature-paper-specs.json';
+        $lang_file = SWML_PROTOCOLS_PATH . 'shared/language-paper-specs.json';
+        if (file_exists($lit_file)) {
+            $decoded = json_decode(file_get_contents($lit_file), true);
+            if (is_array($decoded)) $out['lit'] = $decoded;
+        }
+        if (file_exists($lang_file)) {
+            $decoded = json_decode(file_get_contents($lang_file), true);
+            if (is_array($decoded)) $out['lang'] = $decoded;
+        }
+        $this->_paper_specs_cache = $out;
+        return $out;
+    }
+
+    public function resolve_paper_shape($board, $subject, $question_number = null, $lesson_meta = []) {
+        // 1. Explicit override
+        if (!empty($lesson_meta['shape_override'])) {
+            return ['shape' => $lesson_meta['shape_override'], 'source' => 'lesson-meta'];
+        }
+
+        $specs = $this->load_paper_specs();
+        $norm_board = strtolower(str_replace('_', '-', (string) $board));
+
+        // 2. Literature specs
+        if (isset($specs['lit'][$norm_board][$subject]) && is_array($specs['lit'][$norm_board][$subject])) {
+            $row = $specs['lit'][$norm_board][$subject];
+            return [
+                'shape'           => $row['shape'] ?? 'lit-extract-single',
+                'marks'           => $row['marks'] ?? null,
+                'spag_marks'      => $row['spag_marks'] ?? null,
+                'aos'             => $row['aos'] ?? null,
+                'extract'         => $row['extract'] ?? null,
+                'question_prefix' => $row['question_prefix'] ?? null,
+                'source'          => 'literature-specs',
+            ];
+        }
+
+        // 3. Language specs — derive shape from question type
+        if (isset($specs['lang'][$norm_board][$subject]['sections'])) {
+            $paper_spec = $specs['lang'][$norm_board][$subject];
+            $derived = $this->derive_lang_paper_shape($paper_spec, $question_number);
+            if ($derived) return array_merge($derived, ['source' => 'language-specs']);
+        }
+
+        // 4. Fallback — single-extract Literature shape
+        return ['shape' => 'lit-extract-single', 'source' => 'default', '_fallback' => true];
+    }
+
+    private function derive_lang_paper_shape($paper_spec, $question_number) {
+        $sections = $paper_spec['sections'] ?? [];
+        if (!is_array($sections)) return null;
+        $target_id = $question_number !== null ? 'Q' . $question_number : null;
+        foreach ($sections as $sec) {
+            foreach (($sec['questions'] ?? []) as $q) {
+                if ($target_id !== null && ($q['id'] ?? '') !== $target_id) continue;
+                $type = $q['type'] ?? '';
+                if ($type === 'extended_writing' || $type === 'choice') {
+                    return [
+                        'shape'           => 'lang-prompt',
+                        'marks'           => $q['marks'] ?? null,
+                        'content_marks'   => $q['content_marks'] ?? null,
+                        'spag_marks'      => $q['spag_marks'] ?? null,
+                        'aos'             => $q['aos'] ?? [],
+                        'extract'         => null,
+                        'question_prefix' => null,
+                    ];
+                }
+                return [
+                    'shape'           => 'lang-source-essay',
+                    'marks'           => $q['marks'] ?? null,
+                    'aos'             => $q['aos'] ?? [],
+                    'extract'         => ['count' => $sec['source_count'] ?? 1],
+                    'question_prefix' => null,
+                ];
+            }
+        }
+        return null;
+    }
+
     private function __construct() {
         // Note: mwai_ai_query passes 1 arg in some AI Engine versions, 2 in others
         add_filter('mwai_ai_query', [$this, 'inject_session_context'], 10, 2);
