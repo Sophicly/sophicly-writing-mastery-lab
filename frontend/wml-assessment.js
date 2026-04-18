@@ -4831,6 +4831,14 @@
 
             // v7.15.20: Reload document + chat for the current attempt
             // Called when switching attempts or starting a new one (document init chain already ran once)
+            // v7.15.63: ROOT-CAUSE FIX — Every setContent() below runs under
+            // _migrationActive so the onTransaction section guard (line ~8286)
+            // does NOT undo the swap. Without this, the guard sees section-count
+            // shrink (old attempt's polluted 28-section doc → fresh 24-section
+            // template) and reverts via editor.commands.undo() — leaving the
+            // old polluted content in place. The new attempt's first autosave
+            // then persists that polluted HTML to the new attempt's meta key,
+            // producing the Essay-Question-pre-populated-with-AI-chat bug.
             const _reloadDocumentForAttempt = async () => {
                 if (!canvasEditor) { _initTrainingChat(); return; }
                 // Clear localStorage version stamp so template can re-inject if needed
@@ -4847,20 +4855,28 @@
                     const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
                     const res = await fetch(url, { headers }).then(r => r.json());
                     if (res.success && res.doc && res.doc.html) {
-                        canvasEditor.commands.setContent(res.doc.html, false);
+                        _migrationActive = true;
+                        try { canvasEditor.commands.setContent(res.doc.html, false); }
+                        finally { _migrationActive = false; }
                         console.log('WML: Document reloaded from server for attempt', att);
                     } else {
                         // No server doc — inject fresh template
                         const template = getExamPrepDocTemplate ? getExamPrepDocTemplate(state.task) : null;
                         if (template) {
-                            canvasEditor.commands.setContent(template, false);
+                            _migrationActive = true;
+                            try { canvasEditor.commands.setContent(template, false); }
+                            finally { _migrationActive = false; }
                             console.log('WML: Fresh template injected for new attempt', att);
                         }
                     }
                 } catch (e) {
                     console.log('WML: Document reload failed, injecting fresh template', e.message);
                     const template = getExamPrepDocTemplate ? getExamPrepDocTemplate(state.task) : null;
-                    if (template) canvasEditor.commands.setContent(template, false);
+                    if (template) {
+                        _migrationActive = true;
+                        try { canvasEditor.commands.setContent(template, false); }
+                        finally { _migrationActive = false; }
+                    }
                 }
                 _initTrainingChat();
             };
