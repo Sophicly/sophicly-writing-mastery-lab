@@ -1408,6 +1408,14 @@ TEMPLATE;
         $task = $context['task'] ?? 'planning';
         $protocol_label = $protocol_map[$task] ?? 'Protocol B (Essay Planning)';
 
+        // v7.15.78: Standalone feedback-discussion note. Student has pasted
+        // bring-your-own-work into the canvas; no prior-attempt context exists
+        // in the system. Sophia should treat the pasted text as the draft.
+        $standalone_feedback_note = '';
+        if ($task === 'feedback_discussion' && ($context['phase'] ?? '') === 'standalone') {
+            $standalone_feedback_note = "\n**Standalone Session:** {$first_name} is using Discuss Feedback outside the Mastery Programme. They have pasted their own essay and any existing feedback into the canvas for discussion. Treat the pasted text as the draft under discussion — do not attempt to retrieve prior-attempt context from the system.\n\n";
+        }
+
         // v7.13.34: Creative Writing preamble — entirely different context
         if (strpos($task, 'cw_step_') === 0 || strpos($task, 'cw_trial_') === 0) {
             $cw_step_labels = [
@@ -2611,6 +2619,11 @@ TEMPLATE;
             } else {
                 $preamble .= "**Profile usage:** Tailor examples and difficulty to the student's demonstrated level. Reference their strengths to build confidence and their targets to focus improvement. Do NOT skip protocol steps based on this profile.\n\n";
             }
+        }
+
+        // v7.15.78: Append standalone feedback-discussion note if applicable.
+        if (!empty($standalone_feedback_note)) {
+            $preamble .= $standalone_feedback_note;
         }
 
         return $preamble;

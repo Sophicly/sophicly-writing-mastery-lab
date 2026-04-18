@@ -213,6 +213,14 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
+        // v7.15.78: Flat list of ALL the student's attempts across every
+        // (board, text, topic, suffix) combo. Powers the standalone feedback-
+        // discussion picker so students can pull in a prior attempt to discuss.
+        register_rest_route($namespace, '/student/attempts-all', [
+            'methods' => 'GET', 'callback' => [$this, 'get_all_attempts'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+
         // v7.15.51: Topic-scoped "resume" resolver — given (board, text, topic),
         // returns the URL of the first not-complete LD lesson in that topic's
         // WML-task sequence. Used by the diagnostic attempt overlay's Continue
@@ -2507,6 +2515,101 @@ class SWML_REST_API {
 
         $idx = $this->get_attempt_index($user_id, $board, $text, $topic, $suffix);
         return rest_ensure_response(['success' => true, 'attempts' => $idx]);
+    }
+
+    /**
+     * v7.15.78: GET /student/attempts-all — flat list of every attempt across
+     * every (board, text, topic, suffix) combo for the current user. Powers
+     * the standalone feedback-discussion picker. Admin/tutor/SSS may pass
+     * ?student_id= to query a specific student.
+     */
+    public function get_all_attempts($request) {
+        $viewer_id = get_current_user_id();
+        $student_id = absint($request->get_param('student_id') ?? 0);
+
+        if ($student_id && $student_id !== $viewer_id) {
+            $att_role  = get_user_meta($viewer_id, 'sophicly_att_role', true);
+            $soph_role = get_user_meta($viewer_id, 'sophicly_role', true);
+            $allowed = current_user_can('manage_options')
+                || $att_role === 'tutor'
+                || $att_role === 'specialist'
+                || $soph_role === 'sss';
+            if (!$allowed) {
+                return new WP_Error('forbidden', 'Not authorised to view this student', ['status' => 403]);
+            }
+            $user_id = $student_id;
+        } else {
+            $user_id = $viewer_id;
+        }
+
+        global $wpdb;
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT meta_key, meta_value FROM {$wpdb->usermeta}
+             WHERE user_id = %d AND meta_key LIKE %s
+             ORDER BY meta_key",
+            $user_id,
+            'swml_attempts_%'
+        ));
+
+        $out = [];
+        foreach ((array) $rows as $row) {
+            $key = $row->meta_key;
+            $val = $row->meta_value;
+            // key shape: swml_attempts_{board}_{text}[_t{topic}][_suffix]
+            $rest = substr($key, strlen('swml_attempts_'));
+            $parts = explode('_', $rest);
+            if (count($parts) < 2) continue;
+            $board = $parts[0];
+            $text_parts = [];
+            $topic = 0;
+            $suffix = '';
+            $i = 1;
+            while ($i < count($parts)) {
+                $p = $parts[$i];
+                if (preg_match('/^t(\d+)$/', $p, $m)) {
+                    $topic = (int) $m[1];
+                    $i++;
+                    // remaining parts form the suffix
+                    if ($i < count($parts)) {
+                        $suffix = '_' . implode('_', array_slice($parts, $i));
+                    }
+                    break;
+                }
+                $text_parts[] = $p;
+                $i++;
+            }
+            $text = implode('_', $text_parts ?: [$parts[1] ?? '']);
+            $idx = is_array($val) ? $val : json_decode($val, true);
+            if (!is_array($idx) || empty($idx['attempts'])) continue;
+            foreach ($idx['attempts'] as $a) {
+                if (!is_array($a)) continue;
+                $out[] = [
+                    'board'      => $board,
+                    'text'       => $text,
+                    'topic'      => $topic,
+                    'suffix'     => $suffix,
+                    'attempt'    => isset($a['num']) ? (int) $a['num'] : 1,
+                    'status'     => $a['status'] ?? 'not_started',
+                    'grade'      => $a['grade'] ?? null,
+                    'score'      => $a['score'] ?? null,
+                    'wordCount'  => $a['wordCount'] ?? 0,
+                    'started'    => $a['started'] ?? '',
+                    'label'      => sprintf(
+                        '%s %s%s — Attempt %d',
+                        strtoupper($board),
+                        $text,
+                        $topic ? ' / Topic ' . $topic : '',
+                        isset($a['num']) ? (int) $a['num'] : 1
+                    ),
+                ];
+            }
+        }
+
+        return rest_ensure_response([
+            'success'  => true,
+            'user_id'  => $user_id,
+            'attempts' => $out,
+        ]);
     }
 
     /**

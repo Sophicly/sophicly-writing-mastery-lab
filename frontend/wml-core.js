@@ -812,6 +812,14 @@ window.WML = (function() {
             protocolTask: null,
             completionType: 'manual',
             storageSuffix: '_fb',
+            // v7.15.78: Modular-by-label. Bridge passes state.phase; each phase
+            // routes to its own canvas meta-key so Phase-1 / Phase-2 / Standalone
+            // don't collide. Legacy callers missing state.phase land on '_fb'.
+            storageSuffixForPhase: function (phase) {
+                if (phase === 'redraft')    return '_fb_p2';
+                if (phase === 'standalone') return '_fb_standalone';
+                return '_fb';
+            },
             chatHeaderLabel: 'Discuss Feedback',
             sidebarSteps: null,
         },
@@ -1147,6 +1155,18 @@ window.WML = (function() {
             }
         }
         return EXERCISE_MANIFEST.planning;
+    }
+
+    // v7.15.78: Modular-by-label suffix resolver. Opt-in per exercise by defining
+    // `storageSuffixForPhase(phase)`. Falls back to the static `storageSuffix` for
+    // exercises that don't care about phase. First consumer: feedback_discussion.
+    // Future exercises (essay_plan, model_answer, …) extend the same pattern.
+    function resolveStorageSuffix(task, phase) {
+        const cfg = getExerciseConfig(task);
+        if (cfg && typeof cfg.storageSuffixForPhase === 'function') {
+            return cfg.storageSuffixForPhase(phase);
+        }
+        return (cfg && cfg.storageSuffix) || '';
     }
 
     // Active config based on current task
@@ -2158,7 +2178,7 @@ window.WML = (function() {
         QUOTE_ANALYSIS_ELEMENTS, MODEL_ANSWER_ELEMENTS, PLAN_ELEMENTS,
         // Helpers
         isPoetrySubject, isLanguageSubject, isNonfictionSubject, isAnthologySubject,
-        getSteps, getElements, getExerciseConfig, getCwStepDef,
+        getSteps, getElements, getExerciseConfig, getCwStepDef, resolveStorageSuffix,
         // Exercise manifest
         EXERCISE_MANIFEST,
         // Creative Writing

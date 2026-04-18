@@ -265,8 +265,8 @@
         if ((state.attempt || 0) >= 1) return;
         if (state.reviewMode || !state.board || !state.text) return;
         try {
-            const cfg = (WML.getExerciseConfig && WML.getExerciseConfig(state.task)) || {};
-            const suffix = _attemptSuffixFor(cfg.storageSuffix);
+            // v7.15.78: phase-aware suffix resolution
+            const suffix = _attemptSuffixFor(WML.resolveStorageSuffix(state.task, state.phase));
             const url = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(suffix)}`;
             const res = await fetch(url, { headers }).then(r => r.json());
             if (res && res.success && res.attempts && res.attempts.current) {
@@ -804,12 +804,12 @@
     // between assessment, mark_scheme, CW steps, etc. on the same board/text/topic.
     // v7.15.12: Attempt-aware — attempt 1 has no suffix (backward compatible), attempt 2+ appends __a{N}
     const CANVAS_SAVE_KEY = () => {
-        const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+        const suffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
         const att = (state.attempt || 1) > 1 ? `__a${state.attempt}` : '';
         return `swml_canvas_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}${att}`;
     };
     const CHAT_SAVE_KEY = () => {
-        const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+        const suffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
         const att = (state.attempt || 1) > 1 ? `__a${state.attempt}` : '';
         return `swml_chat_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}${att}`;
     };
@@ -831,7 +831,7 @@
         chatSaveTimer = setTimeout(() => {
             fetch(API.chatSave, {
                 method: 'POST', headers,
-                body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.getExerciseConfig(state.task).storageSuffix || '', attempt: state.attempt || 1, history, chatId })
+                body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.resolveStorageSuffix(state.task, state.phase) || '', attempt: state.attempt || 1, history, chatId })
             }).then(r => r.json()).then(res => {
                 if (res.success) console.log('WML: Chat saved to server', { count: res.count });
                 else console.warn('WML: Chat save failed', res);
@@ -851,7 +851,7 @@
         try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch (e) {}
         fetch(API.chatClear, {
             method: 'POST', headers,
-            body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.getExerciseConfig(state.task).storageSuffix || '', attempt: state.attempt || 1 })
+            body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.resolveStorageSuffix(state.task, state.phase) || '', attempt: state.attempt || 1 })
         }).catch(() => {});
     }
 
@@ -3568,7 +3568,7 @@
                     // Clear localStorage
                     try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
                     // v7.14.78: Include suffix so the correct server key is cleared
-                    const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+                    const suffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
                     fetch(API.canvasSave, {
                         method: 'POST', headers,
                         body: JSON.stringify({ board: state.board, text: state.text, html: '', wordCount: 0, topicNumber: state.topicNumber || null, suffix: suffix })
@@ -4707,7 +4707,7 @@
                 const skipServerChat = state.task && state.task.startsWith('cw_');
                 if (!skipServerChat && (!savedChat || !savedChat.history || savedChat.history.length === 0)) {
                     try {
-                        const _chatSuffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+                        const _chatSuffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
                         // Tutor review: load student's chat via review endpoint (v7.15.2)
                         const _chatAtt = state.attempt || 1;
                         const chatUrl = state.reviewMode && state.reviewStudentId
@@ -5103,7 +5103,7 @@
                 } catch(e) {}
                 // Try loading the document from server for this attempt
                 try {
-                    const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+                    const suffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
                     const att = state.attempt || 1;
                     const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
                     const res = await fetch(url, { headers }).then(r => r.json());
@@ -5154,7 +5154,7 @@
                         // v7.15.47: In guided mode, attempts index is shared across
                         // all exercises in the topic (per-topic counter). Standalone
                         // mode keeps per-exercise counters via the exercise's suffix.
-                        const suffix = _attemptSuffixFor(WML.getExerciseConfig(state.task).storageSuffix);
+                        const suffix = _attemptSuffixFor(WML.resolveStorageSuffix(state.task, state.phase));
                         const attUrl = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(suffix)}`;
                         console.log('WML Attempt: fetching', attUrl);
                         const attRes = await fetch(attUrl, { headers }).then(r => r.json());
@@ -6347,7 +6347,7 @@
                                         const skipServerChat = state.task && state.task.startsWith('cw_');
                                         if (!skipServerChat && (!savedChat || !savedChat.history || savedChat.history.length === 0)) {
                                             try {
-                                                const _chatSuffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+                                                const _chatSuffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
                                                 const _chatAtt2 = state.attempt || 1;
                                                 // Tutor review: load student's chat via review endpoint (v7.15.2)
                                                 const chatUrl = state.reviewMode && state.reviewStudentId
@@ -7048,7 +7048,7 @@
             if (state.reviewMode && state.reviewStudentId) {
                 clearTimeout(window._swmlTutorCommentTimer);
                 window._swmlTutorCommentTimer = setTimeout(() => {
-                    const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+                    const suffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
                     fetch(API.base + 'canvas/tutor-comment', {
                         method: 'POST', headers,
                         body: JSON.stringify({
@@ -9427,7 +9427,7 @@
                                 body: JSON.stringify({
                                     board: state.board, text: state.text,
                                     topicNumber: state.topicNumber || null,
-                                    suffix: WML.getExerciseConfig(state.task).storageSuffix || '',
+                                    suffix: WML.resolveStorageSuffix(state.task, state.phase) || '',
                                     studentId: config.userId,
                                 })
                             }).then(r => r.json()).then(res => {
@@ -9477,7 +9477,7 @@
                 dropdownLayer.appendChild(wrapper);
 
                 // Load existing sign-off data
-                fetch(config.restUrl + `canvas/load-signoff?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(WML.getExerciseConfig(state.task).storageSuffix || '')}`, { headers })
+                fetch(config.restUrl + `canvas/load-signoff?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(WML.resolveStorageSuffix(state.task, state.phase) || '')}`, { headers })
                     .then(r => r.ok ? r.json() : null)
                     .then(res => {
                         if (res && res.success && res.signoff && !res.signoff.revoked) {
@@ -14105,7 +14105,7 @@
             text: state.text,
             topicNumber: state.topicNumber || null,
             task: state.task,
-            suffix: WML.getExerciseConfig(state.task).storageSuffix || '',
+            suffix: WML.resolveStorageSuffix(state.task, state.phase) || '',
             attempt: state.attempt || 1,
             embedded: state.embedded,
             planningMode: state.planningMode || '',
@@ -14157,7 +14157,7 @@
             return;
         }
         try {
-            const suffix = WML.getExerciseConfig(state.task).storageSuffix || '';
+            const suffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
             // Tutor review mode: load student's canvas via review endpoint (v7.15.2)
             let url;
             const att = state.attempt || 1;
@@ -15792,6 +15792,92 @@ ${html}
                 });
                 ldObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
             }
+        }
+
+        // v7.15.78: Standalone mode — bring-your-own-work paste area + prior-attempt picker.
+        // Appears above the regular video/guidance layout when state.phase === 'standalone'.
+        // Persists paste content to localStorage so reload doesn't lose the student's draft.
+        if (state.phase === 'standalone') {
+            const standaloneWrap = el('div', { className: 'swml-feedback-standalone' });
+            standaloneWrap.style.cssText = 'padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:12px;';
+
+            const banner = el('p', { textContent: 'Paste your essay and any existing feedback below. Sophia will use it as the basis for your discussion.' });
+            banner.style.cssText = 'margin:0;color:rgba(255,255,255,0.75);font-size:13px;';
+            standaloneWrap.appendChild(banner);
+
+            // Picker row: dropdown of prior attempts
+            const pickerRow = el('div');
+            pickerRow.style.cssText = 'display:flex;gap:8px;align-items:center;';
+            const pickerLabel = el('span', { textContent: 'Or pull in a prior attempt:' });
+            pickerLabel.style.cssText = 'font-size:12px;color:rgba(255,255,255,0.55);';
+            const picker = el('select', { className: 'swml-fb-standalone-picker' });
+            picker.style.cssText = 'flex:1;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;font-size:12px;';
+            picker.appendChild(el('option', { value: '', textContent: 'Loading…' }));
+            pickerRow.appendChild(pickerLabel);
+            pickerRow.appendChild(picker);
+            standaloneWrap.appendChild(pickerRow);
+
+            // Paste textarea
+            const pasteArea = el('textarea', { className: 'swml-fb-standalone-paste', placeholder: 'Paste your essay + existing feedback here...' });
+            pasteArea.style.cssText = 'width:100%;min-height:200px;padding:14px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#fff;font-size:13px;font-family:inherit;line-height:1.5;resize:vertical;';
+            standaloneWrap.appendChild(pasteArea);
+
+            // Load persisted content
+            const pasteKey = `swml_fb_standalone_paste_${window.swmlConfig?.userId || 0}`;
+            try {
+                const saved = localStorage.getItem(pasteKey);
+                if (saved) pasteArea.value = saved;
+            } catch (_) {}
+            pasteArea.addEventListener('input', () => {
+                try { localStorage.setItem(pasteKey, pasteArea.value); } catch (_) {}
+            });
+
+            // Populate picker with prior attempts
+            fetch(`${config.restUrl}student/attempts-all`, { headers })
+                .then(r => r.json())
+                .then(data => {
+                    picker.innerHTML = '';
+                    picker.appendChild(el('option', { value: '', textContent: '— Pick an attempt —' }));
+                    (data.attempts || []).forEach((a, i) => {
+                        const opt = el('option', { value: i, textContent: a.label });
+                        opt.dataset.board = a.board;
+                        opt.dataset.text = a.text;
+                        opt.dataset.topic = a.topic;
+                        opt.dataset.suffix = a.suffix;
+                        opt.dataset.attempt = a.attempt;
+                        picker.appendChild(opt);
+                    });
+                    if (!(data.attempts || []).length) {
+                        picker.appendChild(el('option', { value: '', textContent: '(no prior attempts found)' }));
+                    }
+                })
+                .catch(() => { picker.innerHTML = '<option value="">(failed to load attempts)</option>'; });
+
+            picker.addEventListener('change', async () => {
+                const opt = picker.options[picker.selectedIndex];
+                if (!opt || !opt.dataset.board) return;
+                try {
+                    const url = `${config.restUrl}canvas?board=${encodeURIComponent(opt.dataset.board)}&text=${encodeURIComponent(opt.dataset.text)}&topicNumber=${opt.dataset.topic || ''}&suffix=${encodeURIComponent(opt.dataset.suffix || '')}&attempt=${opt.dataset.attempt}`;
+                    const res = await fetch(url, { headers }).then(r => r.json());
+                    if (res && res.success && res.canvas) {
+                        // Strip TipTap JSON / HTML — grab plain text
+                        let text = '';
+                        if (typeof res.canvas === 'string') {
+                            const tmp = document.createElement('div');
+                            tmp.innerHTML = res.canvas;
+                            text = tmp.textContent || '';
+                        } else if (res.canvas && typeof res.canvas === 'object') {
+                            text = JSON.stringify(res.canvas);
+                        }
+                        if (text) {
+                            pasteArea.value = (pasteArea.value ? pasteArea.value + '\n\n---\n\n' : '') + text.trim();
+                            pasteArea.dispatchEvent(new Event('input'));
+                        }
+                    }
+                } catch (e) { console.warn('WML standalone picker: fetch failed —', e.message); }
+            });
+
+            canvas.appendChild(standaloneWrap);
         }
 
         // ── Main content area: video player + guidance panel ──
