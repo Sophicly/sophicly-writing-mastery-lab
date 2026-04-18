@@ -5336,7 +5336,13 @@
             // The AI often skips the formal confirm prompt for questions, going straight to goals.
             // When the student says "happy", "looks good", etc. and the previous AI message
             // contained a generated question, save it directly.
-            if (!state.plan.question_text && state.task === 'planning') {
+            // v7.15.66: Widened from planning-only to also cover essay_plan + model_answer.
+            // The Generate / Paste protocol paths confirm questions with plain-text
+            // "happy / save it?" prompts rather than @CONFIRM_ELEMENT markers — this
+            // interceptor is exactly what pushes question_text into `saves` for those
+            // paths, which then feeds the WML.injectQuestionIntoCanvas hook below
+            // so the Essay Question / Extract sections actually get written.
+            if (!state.plan.question_text && (state.task === 'planning' || state.task === 'essay_plan' || state.task === 'model_answer')) {
                 const studentConfirmsQuestion = /(?:happy|satisfied|looks? good|that'?s? (?:good|great|fine|perfect)|no change|don'?t change|i'?m good|yes|yep|yeah)/i.test(trimmedStudent) && trimmedStudent.length < 80;
                 // Also catch when AI says "Saved!" for a question (it thinks it saved but didn't)
                 const aiClaimsSaved = /(?:saved|pinned|recorded|noted).*(?:question|essay question)/i.test(aiReply);
@@ -5492,6 +5498,8 @@
         // so the Generate + Paste paths also populate the Essay Question / Extract
         // sections. Guarded by a placeholder check inside the helper (idempotent).
         const qSave = saves.find(s => s.type === 'question_text' && s.content && s.content.length > 20);
+        // v7.15.66: diagnostic — one-line check of why injection did/did not fire
+        console.log('WML inject-check: task=', state.task, 'qSave=', !!qSave, 'saves.len=', saves.length, 'hasHelper=', typeof WML !== 'undefined' && typeof WML.injectQuestionIntoCanvas === 'function');
         if (qSave
             && typeof WML !== 'undefined'
             && typeof WML.injectQuestionIntoCanvas === 'function'
