@@ -210,6 +210,53 @@ action = () => doB(); // clean override
 
 ---
 
+## OVERLAY / MODAL PATTERN — SCROLL ISOLATION REQUIRED
+
+**Every overlay MUST isolate scroll from the underlying canvas.** This has regressed multiple times (attempt selector, mode selector, saved-question overlay). Symptom: student scrolls on the dark backdrop → the doc behind scrolls, breaking the modal illusion and sometimes revealing state that shouldn't be visible pre-selection.
+
+When creating a new overlay, apply all three layers:
+
+```js
+// 1. Overlay CSS: stop the overlay from chaining scroll up to the doc
+overlay.style.cssText = 'position:absolute;inset:0;z-index:100;' +
+    'background:rgba(0,0,0,0.7);display:flex;align-items:center;' +
+    'justify-content:center;backdrop-filter:blur(4px);' +
+    'overflow:hidden;overscroll-behavior:contain;';
+
+// 2. Block wheel/touchmove that ORIGINATE on the backdrop (not inside card).
+//    Card scroll still works because those events originate on card elements.
+const _blockBackdropScroll = (e) => {
+    if (e.target === overlay) e.preventDefault();
+};
+overlay.addEventListener('wheel', _blockBackdropScroll, { passive: false });
+overlay.addEventListener('touchmove', _blockBackdropScroll, { passive: false });
+
+// 3. Lock canvas parent overflow while mounted; restore on remove.
+//    Wrap overlay.remove() so BOTH dismiss paths (card click + external close)
+//    trigger cleanup without duplicating logic.
+const canvasEl = document.getElementById('swml-canvas') || document.querySelector('.swml-canvas-content');
+if (canvasEl) {
+    canvasEl.style.position = 'relative';
+    const _prevOverflow = canvasEl.style.overflow;
+    canvasEl.style.overflow = 'hidden';
+    const _origRemove = overlay.remove.bind(overlay);
+    overlay.remove = function() {
+        try { canvasEl.style.overflow = _prevOverflow; } catch (_) {}
+        _origRemove();
+    };
+    canvasEl.appendChild(overlay);
+}
+```
+
+All three layers are load-bearing:
+- `overscroll-behavior:contain` handles the native scroll-chaining browsers do.
+- `wheel`/`touchmove` listeners handle the specific case where the backdrop has no scrollable content but receives scroll events.
+- `overflow:hidden` on the canvas parent stops the page behind from scrolling even if the first two layers miss anything (belt + braces).
+
+Reference implementation: `_showAttemptSelector` in `frontend/wml-assessment.js` (v7.15.73+). Copy this shape when adding any new modal.
+
+---
+
 ## DUAL CHAT PIPELINE
 
 WML has two separate chat systems:
