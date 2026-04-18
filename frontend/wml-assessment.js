@@ -1670,23 +1670,15 @@
                                 for (let i = canvasChatHistory.length - 2; i >= Math.max(0, canvasChatHistory.length - 10); i--) {
                                     const am = canvasChatHistory[i];
                                     if (!am || am.role !== 'assistant') continue;
-                                    if (!/\[\s*\d+\s*marks?\s*\]|\(\s*\d+\s*marks?\s*\)/i.test(am.content)) continue;
-                                    // Pull the question stem
-                                    const qMatch = am.content.match(
-                                        /(?:Starting with this (?:extract|speech|moment)[\s\S]*?(?:\[\d+\s*marks?\]|\(\d+\s*marks?\)))|(?:How (?:does|far|is)[\s\S]*?(?:\[\d+\s*marks?\]|\(\d+\s*marks?\)))|(?:(?:Explore|Discuss|Analyse|To what extent)[\s\S]*?(?:\[\d+\s*marks?\]|\(\d+\s*marks?\)))/i
-                                    );
-                                    if (!qMatch) continue;
-                                    const qText = qMatch[0].replace(/\*{1,2}/g, '').trim();
-                                    // Pull block-quote extract lines
-                                    const extractLines = am.content.split('\n')
-                                        .filter(l => /^\s*>\s*/.test(l))
-                                        .map(l => l.replace(/^\s*>\s*/, '').replace(/\*{1,2}/g, '').trim())
-                                        .filter(Boolean);
-                                    const extractText = extractLines.join('\n');
-                                    const locMatch = am.content.match(/from\s+(Act\s+\d+[^\n.,]{0,50}|Chapter\s+\d+[^\n.,]{0,50}|Scene\s+\d+[^\n.,]{0,50}|pages?\s+\d+[^\n.,]{0,50})/i);
-                                    const extractLoc = locMatch ? locMatch[1].trim() : '';
-                                    console.log('WML Save-it: injecting — srcMsg', i, 'qLen=', qText.length, 'extractLen=', extractText.length, 'loc=', extractLoc);
-                                    try { WML.injectQuestionIntoCanvas(qText, extractText, extractLoc); }
+                                    if (!/\[\s*\d+\s*marks?[^\]]*\]|\(\s*\d+\s*marks?\s*\)/i.test(am.content)) continue;
+                                    // v7.15.68: split the AI message into a clean question stem
+                                    // (stem + "Write about…" + marks) and a separate extract block
+                                    // (text between `---` delimiters, or block-quote lines). Matches
+                                    // the Saved-Question overlay's Extract / Essay Question layout.
+                                    const parsed = _parseQuestionAndExtract(am.content);
+                                    if (!parsed.qText) continue;
+                                    console.log('WML Save-it: injecting — srcMsg', i, 'qLen=', parsed.qText.length, 'extractLen=', parsed.extractText.length, 'loc=', parsed.extractLoc);
+                                    try { WML.injectQuestionIntoCanvas(parsed.qText, parsed.extractText, parsed.extractLoc); }
                                     catch (e) { console.warn('WML Save-it: inject failed', e); }
                                     break;
                                 }
@@ -16404,6 +16396,57 @@ ${html}
     //      the same way the Saved path does.
     // Pure doc mutation; no chat/overlay side-effects. Safe to call any time
     // canvasEditor is live. Pass an empty extractText for extract-less boards.
+    // v7.15.68: Pull extract + clean question stem out of an AI message so the
+    // Generate / Paste paths end up in the same shape as the Saved-Question
+    // overlay output — extract goes to the Extract section; the question stem
+    // (with "Write about…" and marks) goes to the Essay Question section.
+    // Handles both `---` delimited extracts (essay-plan.md Generate format)
+    // and `>` block-quote extracts (older / alternate protocol formats).
+    function _parseQuestionAndExtract(content) {
+        const result = { qText: '', extractText: '', extractLoc: '' };
+        if (!content) return result;
+
+        // Extract location (Act/Scene/Chapter/pages)
+        const locMatch = content.match(/from\s+(Act\s+\d+[^\n.,]{0,60}|Chapter\s+\d+[^\n.,]{0,60}|Scene\s+\d+[^\n.,]{0,60}|pages?\s+\d+[^\n.,]{0,60})/i);
+        result.extractLoc = locMatch ? locMatch[1].replace(/\s+/g, ' ').replace(/,$/, '').trim() : '';
+
+        // Extract text — prefer dash-delimited block, fall back to block-quote lines
+        const dashMatch = content.match(/\n\s*---\s*\n([\s\S]*?)\n\s*---\s*\n/);
+        if (dashMatch) {
+            result.extractText = dashMatch[1].replace(/\*{1,2}/g, '').trim();
+        } else {
+            const qLines = content.split('\n')
+                .filter(l => /^\s*>\s*/.test(l))
+                .map(l => l.replace(/^\s*>\s*/, '').replace(/\*{1,2}/g, '').trim())
+                .filter(Boolean);
+            result.extractText = qLines.join('\n');
+        }
+
+        // Question stem — first sentence matching the stem patterns
+        const stemMatch = content.match(/(Starting with this (?:extract|speech|moment)[^\n?]*\??|How (?:does|far|is)\s+\w+[^\n?]*\??|(?:Explore|Discuss|Analyse|To what extent)[^\n?]*\??)/i);
+        const stem = stemMatch ? stemMatch[1].replace(/\*{1,2}/g, '').trim() : '';
+
+        // "Write about:" bullet block up to but not including the marks
+        const writeAboutMatch = content.match(/(Write about:[\s\S]*?)(?=\n\s*\[\s*\d+\s*marks?|\n\s*\(\s*\d+\s*marks?|\n\s*---|\n\s*\n\s*\n|$)/i);
+        const writeAbout = writeAboutMatch ? writeAboutMatch[1].replace(/\*{1,2}/g, '').trim() : '';
+
+        // Marks allocation (keeps trailing AO hints like "[30 marks + 4 AO4]")
+        const marksMatch = content.match(/(\[\s*\d+\s*marks?[^\]]*\]|\(\s*\d+\s*marks?\s*\))/i);
+        const marks = marksMatch ? marksMatch[1].trim() : '';
+
+        const qParts = [stem, writeAbout, marks].filter(Boolean);
+        if (qParts.length > 0) {
+            result.qText = qParts.join('\n\n').trim();
+        } else {
+            // Fallback: whole content up to marks (old behaviour, no split)
+            const fullMatch = content.match(
+                /(?:Starting with this (?:extract|speech|moment)[\s\S]*?(?:\[\d+\s*marks?[^\]]*\]|\(\d+\s*marks?\)))|(?:How (?:does|far|is)[\s\S]*?(?:\[\d+\s*marks?[^\]]*\]|\(\d+\s*marks?\)))|(?:(?:Explore|Discuss|Analyse|To what extent)[\s\S]*?(?:\[\d+\s*marks?[^\]]*\]|\(\d+\s*marks?\)))/i
+            );
+            result.qText = fullMatch ? fullMatch[0].replace(/\*{1,2}/g, '').trim() : '';
+        }
+        return result;
+    }
+
     function _injectQuestionIntoCanvas(qText, extractText, extractLoc) {
         if (!canvasEditor || !qText) return false;
         // v7.15.65: Idempotency guard — skip if Essay Question section already holds
