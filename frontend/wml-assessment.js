@@ -16402,6 +16402,50 @@ ${html}
     // (with "Write about…" and marks) goes to the Essay Question section.
     // Handles both `---` delimited extracts (essay-plan.md Generate format)
     // and `>` block-quote extracts (older / alternate protocol formats).
+    // v7.15.71: collect ALL `\n---\n ... \n---\n` blocks in the message and
+    // score them so the parser can pick the real extract instead of the first
+    // match. The AI has started emitting a preamble + italicised intro in its
+    // OWN `---...---` block before the actual extract block — the previous
+    // non-greedy single-match regex grabbed the preamble and ignored the real
+    // extract. Board-agnostic: scoring works regardless of subject/shape.
+    function _extractDashBlocks(content) {
+        const blocks = [];
+        const regex = /\n\s*---\s*\n([\s\S]*?)\n\s*---\s*\n/g;
+        let match;
+        while ((match = regex.exec(content)) !== null) {
+            const body = match[1]
+                .split('\n')
+                .map(l => l.replace(/^\s*>\s?/, '').replace(/\*{1,2}/g, '').trimEnd())
+                .join('\n')
+                .trim();
+            if (body) blocks.push(body);
+        }
+        return blocks;
+    }
+
+    function _pickBestExtractBlock(blocks) {
+        if (!blocks.length) return '';
+        if (blocks.length === 1) return blocks[0];
+        let best = { score: -Infinity, text: blocks[0] };
+        for (const block of blocks) {
+            const contentLines = block.split('\n').filter(l => l.trim().length > 0);
+            const n = contentLines.length;
+            let score = n;
+            // Penalty: block opens with a preamble/instruction marker
+            if (/^\s*(?:Read the following|Here is|Here's|Below is|The following|Your extract|This is)\b.*?extract/i.test(block)) {
+                score -= 100;
+            }
+            // Penalty: block is entirely italicised intro text (every non-blank line wrapped in *...*)
+            if (n > 0 && contentLines.every(l => /^\s*_?\*[^*]+\*_?\s*$/.test(l))) {
+                score -= 50;
+            }
+            // Penalty: very short block (< 5 content lines) — usually meta, not extract
+            if (n < 5) score -= 30;
+            if (score > best.score) best = { score, text: block };
+        }
+        return best.text;
+    }
+
     function _parseQuestionAndExtract(content) {
         const result = { qText: '', extractText: '', extractLoc: '' };
         if (!content) return result;
@@ -16415,16 +16459,12 @@ ${html}
         );
         result.extractLoc = locMatch ? locMatch[1].replace(/\s+/g, ' ').replace(/[,\s]+$/, '').trim() : '';
 
-        // Extract text — prefer dash-delimited block, fall back to block-quote lines.
-        // v7.15.69: also strip leading `>` prefixes inside a dash-delimited block
-        // (some protocol variants use `---` delimiters AND quote each line).
-        const dashMatch = content.match(/\n\s*---\s*\n([\s\S]*?)\n\s*---\s*\n/);
-        if (dashMatch) {
-            result.extractText = dashMatch[1]
-                .split('\n')
-                .map(l => l.replace(/^\s*>\s?/, '').replace(/\*{1,2}/g, '').trimEnd())
-                .join('\n')
-                .trim();
+        // v7.15.71: pick best dash-delimited block via scoring. Falls back to
+        // block-quote lines when no dash blocks present.
+        const dashBlocks = _extractDashBlocks(content);
+        const bestBlock = _pickBestExtractBlock(dashBlocks);
+        if (bestBlock) {
+            result.extractText = bestBlock;
         } else {
             const qLines = content.split('\n')
                 .filter(l => /^\s*>\s*/.test(l))
