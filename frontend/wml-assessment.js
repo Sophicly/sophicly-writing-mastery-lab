@@ -15981,6 +15981,17 @@ ${html}
         // v7.15.19: Scroll to top so the absolute-positioned overlay is visible
         contentWrap.scrollTop = 0;
         contentWrap.appendChild(overlay);
+        // v7.15.75: Scroll-isolation — lock contentWrap overflow while overlay mounted,
+        // restore on any dismiss path by wrapping overlay.remove(). Card-only overlay
+        // (no dark backdrop), so only Layer 3 of the reference pattern applies —
+        // Layers 1+2 would kill the intentional .swml-qo-body internal scroll.
+        const _prevOverflow = contentWrap.style.overflow;
+        contentWrap.style.overflow = 'hidden';
+        const _origRemove = overlay.remove.bind(overlay);
+        overlay.remove = function() {
+            try { contentWrap.style.overflow = _prevOverflow; } catch (_) {}
+            _origRemove();
+        };
         console.log('WML: Question overlay appended — inDOM:', !!document.getElementById('swml-question-overlay'), 'overlay size:', overlay.offsetWidth + 'x' + overlay.offsetHeight);
 
         let savedList = null, masteryList = null;
