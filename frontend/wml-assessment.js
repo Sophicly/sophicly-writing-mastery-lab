@@ -963,8 +963,9 @@
         // Topic / mode badge
         if (state.topicNumber && (state.mode === 'guided' || canvasInMarkScheme)) {
             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Topic ${state.topicNumber}` }));
-        } else if (state.mode === 'exam_prep' && !canvasInMarkScheme) {
+        } else if (state.mode === 'exam_prep' && !canvasInMarkScheme && state.task !== 'foundational_quiz') {
             // v7.14.61: Only show "Exam Practice" if no phase is set — phase label takes priority
+            // v7.15.96: Foundational quiz is standalone formative — never "Exam Practice"
             const PHASE_LABELS = { initial: 'Phase 1', redraft: 'Phase 2', preliminary: 'Preliminary', free_practice: 'Free Practice', exam_practice: 'Exam Practice' };
             const phaseLabel = PHASE_LABELS[state.phase] || '';
             if (!phaseLabel) {
@@ -5554,7 +5555,7 @@
                         // v7.14.47: Mark scheme always shows topic if available, never "Exam Practice"
                         if (state.topicNumber && (state.mode === 'guided' || canvasInMarkScheme)) {
                             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Topic ${state.topicNumber}` }));
-                        } else if (state.mode === 'exam_prep' && !canvasInMarkScheme) {
+                        } else if (state.mode === 'exam_prep' && !canvasInMarkScheme && state.task !== 'foundational_quiz') {
                             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Exam Practice' }));
                         }
                         // v7.14.41: Context-aware task label — mastery uses redraft names, free practice uses manifest label

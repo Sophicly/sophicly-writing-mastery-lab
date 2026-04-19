@@ -2812,7 +2812,7 @@
         // Topic / mode badge
         if (state.topicNumber && state.mode === 'guided') {
             badges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Topic ${state.topicNumber}` }));
-        } else if (state.mode === 'exam_prep') {
+        } else if (state.mode === 'exam_prep' && state.task !== 'foundational_quiz') {
             badges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Exam Practice' }));
         } else if (!state.topicNumber && state.mode !== 'guided') {
             badges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Free Practice' }));
