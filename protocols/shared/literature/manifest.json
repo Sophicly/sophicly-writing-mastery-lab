@@ -36,5 +36,11 @@
             "modules/conceptual-notes/cn-section-7-message.md"
         ],
         "steps": {}
+    },
+    "foundational_quiz": {
+        "always": [
+            "modules/foundational-quiz/fq-foundation.md"
+        ],
+        "steps": {}
     }
 }

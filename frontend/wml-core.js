@@ -1042,6 +1042,20 @@ window.WML = (function() {
             chatHeaderLabel: 'Conceptual Notes',
             sidebarSteps: null,
         },
+        foundational_quiz: {
+            label: 'Foundational Quiz',
+            environment: 'training',
+            panels: { sidebar: true, chat: true, guidance: false, document: true },
+            steps: 'CONCEPTUAL_NOTES_STEPS',        // reuses conceptual-notes document shell
+            elements: 'CONCEPTUAL_NOTES_ELEMENTS',
+            protocolSource: 'shared',
+            protocolTask: 'foundational_quiz',
+            completionType: 'code_word',            // [QUIZ_COMPLETE] marks done
+            storageSuffix: '_fq',
+            documentTemplate: 'conceptual_notes',   // same doc — concept sections become read-only in render
+            chatHeaderLabel: 'Foundational Quiz',
+            sidebarSteps: null,
+        },
         memory_practice: {
             label: 'Memory Practice',
             environment: 'training',        // v7.14.36: renamed from 'canvas'
@@ -1953,6 +1967,8 @@ window.WML = (function() {
         text = text.replace(/\[SAVE:\s*\w+\]\s*/g, '').trim();
         // Strip [ASSESSMENT_COMPLETE] code word (v7.12.23)
         text = text.replace(/\[ASSESSMENT_COMPLETE\]\s*/gi, '').trim();
+        // Strip [QUIZ_COMPLETE] code word + machine-readable payload (v7.15.93)
+        text = text.replace(/\[QUIZ_COMPLETE\][^\n]*/gi, '').trim();
         // Strip instruction markers
         text = text.replace(/\[END[^\]]*\]/g, '').trim();
         text = text.replace(/\[do NOT[^\]]*\]/gi, '').trim();

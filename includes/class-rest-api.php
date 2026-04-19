@@ -281,6 +281,16 @@ class SWML_REST_API {
             'methods' => 'GET', 'callback' => [$this, 'get_plot_template'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
+
+        // v7.15.93: Foundational quiz result capture
+        register_rest_route($namespace, '/foundational-quiz/result', [
+            'methods' => 'POST', 'callback' => [$this, 'save_foundational_quiz_result'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/foundational-quiz/result', [
+            'methods' => 'GET', 'callback' => [$this, 'load_foundational_quiz_result'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
     }
 
     // ═══════════════════════════════════════════
@@ -2932,6 +2942,86 @@ class SWML_REST_API {
         $base = get_permalink($step_id) ?: '';
         if (!$base) return '';
         return $course_id ? add_query_arg('course_id', $course_id, $base) : $base;
+    }
+
+    // ═══════════════════════════════════════════
+    //  FOUNDATIONAL QUIZ (v7.15.93)
+    // ═══════════════════════════════════════════
+
+    /**
+     * POST /foundational-quiz/result
+     * Saves a completed foundational quiz result to user_meta.
+     * Keyed by {board}_{text_slug}. Stores best + last + attempts.
+     */
+    public function save_foundational_quiz_result($request) {
+        $uid = get_current_user_id();
+        if (!$uid) return new WP_Error('unauthorised', 'Not logged in', ['status' => 401]);
+
+        $params = $request->get_json_params();
+        $board  = sanitize_key($params['board'] ?? '');
+        $text   = sanitize_key($params['text']  ?? '');
+        $score  = (int) ($params['score'] ?? 0);
+        $max    = (int) ($params['max']   ?? 5);
+        $grade  = sanitize_text_field($params['grade'] ?? '');
+        $cats   = sanitize_text_field($params['categories'] ?? '');
+
+        if (!$board || !$text || $max <= 0) {
+            return new WP_Error('bad_request', 'board, text, and max are required', ['status' => 400]);
+        }
+
+        $percentage = (int) round(($score / $max) * 100);
+        $now = current_time('mysql');
+        $key = $board . '_' . $text;
+
+        $raw  = get_user_meta($uid, 'swml_foundational_quiz_results', true);
+        $all  = is_string($raw) ? (json_decode($raw, true) ?: []) : (is_array($raw) ? $raw : []);
+        $prev = $all[$key] ?? [];
+
+        $attempts     = (int) ($prev['attempts'] ?? 0) + 1;
+        $prev_best    = (int) ($prev['best_score'] ?? 0);
+        $is_new_best  = $score > $prev_best;
+
+        $all[$key] = [
+            'best_score'       => $is_new_best ? $score : $prev_best,
+            'best_score_max'   => $max,
+            'best_percentage'  => $is_new_best ? $percentage : (int) ($prev['best_percentage'] ?? 0),
+            'best_grade'       => $is_new_best ? $grade : ($prev['best_grade'] ?? ''),
+            'attempts'         => $attempts,
+            'last_attempt_at'  => $now,
+            'last_score'       => $score,
+            'last_percentage'  => $percentage,
+            'last_grade'       => $grade,
+            'last_categories'  => $cats,
+        ];
+
+        update_user_meta($uid, 'swml_foundational_quiz_results', wp_slash(wp_json_encode($all)));
+
+        do_action('sophicly_foundational_quiz_complete', $uid, $board, $text, $all[$key]);
+
+        return rest_ensure_response(['success' => true, 'result' => $all[$key]]);
+    }
+
+    /**
+     * GET /foundational-quiz/result?board=aqa&text=macbeth
+     * Returns the saved result for a given board+text for the current user.
+     * No params → returns all results keyed by {board}_{text}.
+     */
+    public function load_foundational_quiz_result($request) {
+        $uid = get_current_user_id();
+        if (!$uid) return new WP_Error('unauthorised', 'Not logged in', ['status' => 401]);
+
+        $raw = get_user_meta($uid, 'swml_foundational_quiz_results', true);
+        $all = is_string($raw) ? (json_decode($raw, true) ?: []) : (is_array($raw) ? $raw : []);
+
+        $board = sanitize_key($request->get_param('board') ?? '');
+        $text  = sanitize_key($request->get_param('text')  ?? '');
+
+        if ($board && $text) {
+            $key = $board . '_' . $text;
+            return rest_ensure_response(['result' => $all[$key] ?? null]);
+        }
+
+        return rest_ensure_response(['results' => $all]);
     }
 }
 

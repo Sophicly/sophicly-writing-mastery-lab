@@ -618,7 +618,7 @@ class SWML_Protocol_Router {
 
         // Fallback logic: board-specific tasks need their own protocol; shared tasks use shared/literature
         $protocol_board = $board;
-        $shared_tasks = ['essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice'];
+        $shared_tasks = ['essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz'];
         
         if (!file_exists($manifest_path)) {
             if (in_array($task, $shared_tasks)) {

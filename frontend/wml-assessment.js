@@ -1912,6 +1912,42 @@
                                 }
                             }
                         }
+
+                        // v7.15.93: Foundational quiz completion — parse [QUIZ_COMPLETE] payload
+                        // and POST to /foundational-quiz/result so the dashboard can surface it.
+                        if (state.task === 'foundational_quiz' && !state._quizResultSaved) {
+                            const quizMatch = (res.reply || '').match(/\[QUIZ_COMPLETE\][^\n]*?score\s*=\s*(\d+)[^\n]*?max\s*=\s*(\d+)[^\n]*?grade\s*=\s*([^\s\]]+)(?:[^\n]*?categories\s*=\s*([^\n]*))?/i);
+                            if (quizMatch) {
+                                const score = parseInt(quizMatch[1], 10) || 0;
+                                const max   = parseInt(quizMatch[2], 10) || 5;
+                                const grade = (quizMatch[3] || '').trim();
+                                const cats  = (quizMatch[4] || '').trim();
+                                state._quizResultSaved = true;
+                                console.log('WML: [QUIZ_COMPLETE] detected', { score, max, grade, cats });
+                                const cfg = window.swmlConfig || {};
+                                try {
+                                    fetch(cfg.restUrl + 'foundational-quiz/result', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': cfg.nonce },
+                                        body: JSON.stringify({
+                                            board: cfg.board || state.board || '',
+                                            text:  cfg.text  || state.text  || '',
+                                            score: score, max: max, grade: grade, categories: cats,
+                                        }),
+                                    }).then(r => r.json()).then(data => {
+                                        console.log('WML: Quiz result saved', data);
+                                    }).catch(err => {
+                                        console.warn('WML: Quiz result save failed', err);
+                                    });
+                                } catch (postErr) {
+                                    console.warn('WML: Quiz result POST threw', postErr);
+                                }
+                                if (assessCompleteBtnRef.value && assessCompleteBtnRef.value.style.display === 'none') {
+                                    assessCompleteBtnRef.value.style.display = '';
+                                    assessCompleteBtnRef.value.classList.add('swml-assess-ready');
+                                }
+                            }
+                        }
                     } catch (exErr) {
                         console.warn('WML Canvas: extraction/completion check failed:', exErr);
                     }
@@ -13683,14 +13719,20 @@
         } else if (exerciseType === 'conceptual_notes') {
             // ── CONCEPTUAL NOTES ──
             // v7.14.85: Subject-aware sections (literature / poetry / nonfiction) with InputFields.
+            // v7.15.93: Foundational quiz variant — reuses this doc, locks concept sections read-only.
             var isNF = WML.isNonfictionSubject();
             var isPo = WML.isPoetrySubject();
-            var cnTitle = isNF ? 'Nonfiction Conceptual Notes' : (isPo ? 'Poetry Conceptual Notes' : 'Grade 9 Conceptual Notes');
-            var cnDesc = isNF
-                ? 'Build deep understanding of the writer\u2019s voice, purpose, and techniques. These notes explore how the writer communicates their perspective and why it matters.'
-                : isPo
-                    ? 'Build deep conceptual understanding of this poem. These notes explore the speaker, form, language, and the poet\u2019s intent.'
-                    : 'Build deep conceptual understanding of your text. These notes go beyond surface-level plot to explore themes, context, and authorial intent.';
+            var isFQ = WML.state && WML.state.task === 'foundational_quiz';
+            var cnTitle = isFQ
+                ? 'Foundational Quiz'
+                : (isNF ? 'Nonfiction Conceptual Notes' : (isPo ? 'Poetry Conceptual Notes' : 'Grade 9 Conceptual Notes'));
+            var cnDesc = isFQ
+                ? 'This is your foundational recall quiz — a light warm-up before Topic 1. Sophia will ask 5 short questions about the text and give you instant feedback. The concept sections below are <strong>locked</strong> at this stage — you\u2019ll fill them in during Topic 2 (Conceptual Notes). Use <strong>General Notes</strong> for any reflections you want to keep.'
+                : isNF
+                    ? 'Build deep understanding of the writer\u2019s voice, purpose, and techniques. These notes explore how the writer communicates their perspective and why it matters.'
+                    : isPo
+                        ? 'Build deep conceptual understanding of this poem. These notes explore the speaker, form, language, and the poet\u2019s intent.'
+                        : 'Build deep conceptual understanding of your text. These notes go beyond surface-level plot to explore themes, context, and authorial intent.';
             html += sectionHTML('question', 'About This Exercise', false, null,
                 '<h2>' + cnTitle + '</h2>' +
                 (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
@@ -13739,7 +13781,8 @@
                 // of the section block. TipTap strips arbitrary wrapper <div>s,
                 // so layout is driven by CSS — the section uses :has() to flex
                 // its children side-by-side when it contains a *_quotes input.
-                html += sectionHTML('plan', c.label, true, null,
+                // v7.15.93: concept sections are read-only during foundational quiz.
+                html += sectionHTML('plan', c.label, !isFQ, null,
                     '<h3>' + c.label + '</h3>' +
                     inputHTML(c.prompt, fieldId) +
                     inputHTML('Key quotes', quotesFieldId));
