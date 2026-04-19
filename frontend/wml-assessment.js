@@ -13720,10 +13720,21 @@
             ];
             concepts.forEach(function(c, idx) {
                 var fieldId = isNF ? ('nfcn_section_' + (idx + 1)) : ('cn_section_' + (idx + 1));
+                var quotesFieldId = fieldId + '_quotes';
                 html += dividerHTML(c.label.toUpperCase());
+                // v7.15.87: each row now two columns — 80% notes + 20% key quotes.
+                // Existing students' data loads into the notes column; quotes column
+                // starts empty and saves via _extractDocumentData's generic field loop.
                 html += sectionHTML('plan', c.label, true, null,
                     '<h3>' + c.label + '</h3>' +
-                    inputHTML(c.prompt, fieldId));
+                    '<div class="swml-notes-row-grid">' +
+                        '<div class="swml-notes-col-notes">' +
+                            inputHTML(c.prompt, fieldId) +
+                        '</div>' +
+                        '<div class="swml-notes-col-quotes">' +
+                            inputHTML('Key quotes', quotesFieldId) +
+                        '</div>' +
+                    '</div>');
             });
         } else if (exerciseType === 'memory_practice') {
             // ── MEMORY PRACTICE ──

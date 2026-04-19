@@ -3,6 +3,35 @@
    Phase 1 Foundation · v1.0.0
    ═══════════════════════════════════════════ */
 
+/* v7.15.87 — Conceptual Notes two-column rows.
+   Each section splits into 80% notes + 20% key quotes.
+   Stacks on narrow viewports. */
+.swml-notes-row-grid {
+    display: grid;
+    grid-template-columns: 4fr 1fr;
+    gap: 16px;
+    align-items: start;
+}
+.swml-notes-col-quotes .swml-input-field {
+    font-size: 0.9em;
+    border-left: 2px dashed #51dacf;
+    padding-left: 12px;
+    min-height: 100%;
+}
+.swml-notes-col-quotes .swml-input-field::before {
+    opacity: 0.75;
+}
+@media (max-width: 720px) {
+    .swml-notes-row-grid { grid-template-columns: 1fr; }
+    .swml-notes-col-quotes .swml-input-field {
+        border-left: none;
+        border-top: 2px dashed #51dacf;
+        padding-left: 0;
+        padding-top: 8px;
+    }
+}
+
+
 /* ── Canvas Layout ── */
 #swml-canvas-overlay {
     position: fixed;
