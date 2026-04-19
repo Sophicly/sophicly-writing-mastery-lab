@@ -778,6 +778,27 @@
         }
     }
 
+    // v7.15.102: Sidebar-triggered Attempts menu. Fetches the current exercise's
+    // attempts index and delegates to _showAttemptSwitchModal (line 635) — that
+    // modal already handles list + switch + start-new with 3-layer scroll
+    // isolation. Gated by the caller to 'edit' viewer mode + training env.
+    async function _showAttemptsMenu() {
+        if (!state.board || !state.text) return;
+        const rawSuffix = WML.resolveStorageSuffix ? (WML.resolveStorageSuffix(state.task, state.phase) || '') : '';
+        const wireSuffix = _attemptSuffixFor(rawSuffix);
+        try {
+            const url = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(wireSuffix)}`;
+            const res = await fetch(url, { headers }).then(r => r.json());
+            if (!res || !res.success || !res.attempts) {
+                console.warn('WML: attempts fetch failed for sidebar menu');
+                return;
+            }
+            await _showAttemptSwitchModal(res.attempts, rawSuffix, {});
+        } catch (e) {
+            console.warn('WML: _showAttemptsMenu failed —', e.message);
+        }
+    }
+
     // Pre-assessment functions (defined in wml-app.js entry flow section)
     const destroyShader = () => window.WML.destroyShader();
     const syncUrl = () => window.WML.syncUrl?.();
@@ -1078,6 +1099,16 @@
         // Past Work — v7.14.50: hidden in embedded mode (LD handles navigation)
         if (!WML.isEmbedded) {
             protoSpacer.appendChild(iconBtn(SVG_FOLDER, 'Past Work', () => { closeCanvasOverlay(); if (window.WML.showPortfolio) window.WML.showPortfolio(); }));
+        }
+
+        // v7.15.102: Attempts menu — training-env, student-only. Delegates to
+        // _showAttemptsMenu (module-level) which reuses _showAttemptSwitchModal.
+        if (isExamPrep && state.viewerMode === 'edit') {
+            const SVG_STACK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>';
+            protoSpacer.appendChild(iconBtn(SVG_STACK, 'Attempts', async () => {
+                try { if (canvasEditor) saveCanvasContent(); } catch (_) {}
+                await _showAttemptsMenu();
+            }));
         }
 
         // Dashboard
@@ -5687,6 +5718,15 @@
 
                         // Past Work
                         protoSpacer.appendChild(iconBtn(SVG_FOLDER, 'Past Work', () => { closeCanvasOverlay(); showPortfolio(); }));
+
+                        // v7.15.102: Attempts menu — training-env, student-only
+                        if (isExamPrep && state.viewerMode === 'edit') {
+                            const SVG_STACK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>';
+                            protoSpacer.appendChild(iconBtn(SVG_STACK, 'Attempts', async () => {
+                                try { if (canvasEditor) saveCanvasContent(); } catch (_) {}
+                                await _showAttemptsMenu();
+                            }));
+                        }
 
                         // Dashboard
                         protoSpacer.appendChild(iconBtn(SVG_DASHBOARD, 'My Dashboard', () => window.open('/dashboard/', '_blank')));
