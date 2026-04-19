@@ -148,12 +148,19 @@ Wait for the student to click the button or type `A`, `next`, or `results` befor
 
 ### PHASE 3: FINAL RESULTS (HATTIE DASHBOARD)
 
-1. **Calculate grade:**
-   - 5/5 (100%) = Grade 9
-   - 4/5 (80%)  = Grade 7-8
-   - 3/5 (60%)  = Grade 5-6
-   - 2/5 (40%)  = Grade 3-4
-   - <2/5 (<40%) = Grade 1-2
+1. **Calculate grade** (supports half-marks for partial credit). Use the percentage, not the raw score, and map per this table:
+   - 100%           = Grade 9
+   - 90%  (4.5/5)   = Grade 8
+   - 80%  (4/5)     = Grade 7-8
+   - 70%  (3.5/5)   = Grade 7
+   - 60%  (3/5)     = Grade 6
+   - 50%  (2.5/5)   = Grade 5
+   - 40%  (2/5)     = Grade 4
+   - 30%  (1.5/5)   = Grade 3
+   - 20%  (1/5)     = Grade 2
+   - <20%           = Grade 1
+
+   If the percentage falls between bands, round to the nearer band. Never snap a student's 70% down to "Grade 5-6" — the protocol must reflect where they actually are.
 
 2. **Analyse:** identify which categories (Themes, Context, Techniques, Characters & Plot) had errors.
 
