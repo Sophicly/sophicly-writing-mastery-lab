@@ -1141,6 +1141,35 @@
                 body.innerHTML = text;
                 content.appendChild(body);
 
+                // v7.15.101: Fill-in-the-blank submit wiring for canvas chat.
+                // Mirrors the wml-app.js handler (main chat). Without this the
+                // "Submit Answer" button on [BLANK] messages renders but does
+                // nothing in the foundational-quiz canvas chat.
+                {
+                    const blankInputs = body.querySelectorAll('.swml-blank-input');
+                    const blankSubmit = body.querySelector('.swml-blank-submit');
+                    if (blankInputs.length > 0 && blankSubmit) {
+                        const submitBlanks = () => {
+                            const answers = [];
+                            blankInputs.forEach((inp, i) => {
+                                const val = (inp.value || '').trim();
+                                if (val) answers.push(blankInputs.length > 1 ? `${i + 1}: ${val}` : val);
+                            });
+                            if (answers.length === 0) return;
+                            blankSubmit.disabled = true;
+                            blankInputs.forEach(inp => { inp.disabled = true; });
+                            if (chatTextarea) { chatTextarea.value = answers.join(', '); }
+                            sendCanvasMessage();
+                        };
+                        blankSubmit.addEventListener('click', submitBlanks);
+                        blankInputs.forEach(inp => {
+                            inp.addEventListener('keydown', (e) => {
+                                if (e.key === 'Enter') { e.preventDefault(); submitBlanks(); }
+                            });
+                        });
+                    }
+                }
+
                 // Quick action buttons
                 const detectText = rawText || text.replace(/<[^>]+>/g, '');
                 const canvasAssessDone = state.task === 'assessment' && state.plan.total_score && state.plan.grade;

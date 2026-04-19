@@ -125,18 +125,26 @@ Keep feedback **short and accessible**. This is foundations, not essay-level ana
 
 #### E. Ready check ⏸️
 
+End every feedback message with a single lettered option so the WML frontend renders it as a clickable button. Students can also type the letter or the word.
+
 - **IF `current_question_number < 5`:**
   ```
   ---
-  Type 'Y' or 'next' when you've understood this and want to move on to Question [N+1].
+  Ready to move on?
+
+  A) Next question
   ```
 - **IF `current_question_number == 5`:**
   ```
   ---
-  Type 'Y' or 'next' when you've understood this and want to generate your Final Results.
+  Ready for your results?
+
+  A) Show my final results
   ```
 
-Wait for `Y`, `yes`, or `next` before continuing.
+Wait for the student to click the button or type `A`, `next`, or `results` before continuing.
+
+**CRITICAL:** Do NOT use phrases like "Type Y or next" — that renders as plain text with no button. Always use the `A)` lettered-option format shown above. A single-option list is fine; WML will render it as a single button.
 
 ### PHASE 3: FINAL RESULTS (HATTIE DASHBOARD)
 
