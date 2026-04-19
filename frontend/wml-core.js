@@ -1062,7 +1062,11 @@ window.WML = (function() {
             protocolSource: 'shared',
             protocolTask: 'foundational_quiz',
             completionType: 'code_word',            // [QUIZ_COMPLETE] marks done
-            storageSuffix: '_fq',
+            // v7.15.97: Share storage with conceptual_notes. Foundational quiz and
+            // conceptual-notes topic 2 are the SAME physical notes document across
+            // two lessons in the mastery sequence — General Notes and (eventually)
+            // concept sections must persist between them. Same suffix ⇒ same canvas key.
+            storageSuffix: '_cn',
             documentTemplate: 'conceptual_notes',   // same doc — concept sections become read-only in render
             chatHeaderLabel: 'Foundational Quiz',
             sidebarSteps: null,

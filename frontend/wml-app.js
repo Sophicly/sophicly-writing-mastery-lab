@@ -2812,7 +2812,8 @@
         // Topic / mode badge
         if (state.topicNumber && state.mode === 'guided') {
             badges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Topic ${state.topicNumber}` }));
-        } else if (state.mode === 'exam_prep' && state.task !== 'foundational_quiz') {
+        } else if (state.mode === 'exam_prep' && !['foundational_quiz', 'conceptual_notes'].includes(state.task)) {
+            // v7.15.97: Notes/study tasks are mastery-standalone — not exam practice.
             badges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Exam Practice' }));
         } else if (!state.topicNumber && state.mode !== 'guided') {
             badges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Free Practice' }));

@@ -963,9 +963,12 @@
         // Topic / mode badge
         if (state.topicNumber && (state.mode === 'guided' || canvasInMarkScheme)) {
             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Topic ${state.topicNumber}` }));
-        } else if (state.mode === 'exam_prep' && !canvasInMarkScheme && state.task !== 'foundational_quiz') {
+        } else if (state.mode === 'exam_prep' && !canvasInMarkScheme && !['foundational_quiz', 'conceptual_notes'].includes(state.task)) {
             // v7.14.61: Only show "Exam Practice" if no phase is set — phase label takes priority
-            // v7.15.96: Foundational quiz is standalone formative — never "Exam Practice"
+            // v7.15.97: Notes/study tasks (conceptual_notes, foundational_quiz) are mastery-standalone
+            //           — never exam practice, regardless of mode. The label describes task TYPE,
+            //           not entry mode. Bridge will eventually supply wml_phase='mastery_standalone'
+            //           and this exclusion list can reduce to a phase check.
             const PHASE_LABELS = { initial: 'Phase 1', redraft: 'Phase 2', preliminary: 'Preliminary', free_practice: 'Free Practice', exam_practice: 'Exam Practice' };
             const phaseLabel = PHASE_LABELS[state.phase] || '';
             if (!phaseLabel) {
@@ -5555,7 +5558,8 @@
                         // v7.14.47: Mark scheme always shows topic if available, never "Exam Practice"
                         if (state.topicNumber && (state.mode === 'guided' || canvasInMarkScheme)) {
                             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Topic ${state.topicNumber}` }));
-                        } else if (state.mode === 'exam_prep' && !canvasInMarkScheme && state.task !== 'foundational_quiz') {
+                        } else if (state.mode === 'exam_prep' && !canvasInMarkScheme && !['foundational_quiz', 'conceptual_notes'].includes(state.task)) {
+                            // v7.15.97: Notes/study tasks are mastery-standalone — not exam practice.
                             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Exam Practice' }));
                         }
                         // v7.14.41: Context-aware task label — mastery uses redraft names, free practice uses manifest label
