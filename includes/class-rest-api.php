@@ -2684,7 +2684,10 @@ class SWML_REST_API {
         // Parser previously only recognised suffixes after a `t<digit>` token,
         // so keys like swml_attempts_aqa_macbeth_eq were mis-parsed as
         // text='macbeth_eq' with empty suffix, breaking dashboard joins.
-        $TASK_SUFFIXES = ['eq', 'ma', 'vr', 'ep', 'cn', 'mp'];
+        // v7.15.105: 'fq' (foundational_quiz, added in v7.15.99) was missing.
+        // Without it, swml_attempts_aqa_macbeth_fq parsed as text='macbeth_fq'
+        // with empty suffix → dashboard couldn't join FQ rows.
+        $TASK_SUFFIXES = ['eq', 'ma', 'vr', 'ep', 'cn', 'mp', 'fq'];
         $TASK_BY_SUFFIX = [
             '_eq' => 'exam_question',
             '_ma' => 'model_answer',
@@ -2692,6 +2695,7 @@ class SWML_REST_API {
             '_ep' => 'essay_plan',
             '_cn' => 'conceptual_notes',
             '_mp' => 'memory_practice',
+            '_fq' => 'foundational_quiz',
         ];
 
         $out = [];
@@ -2799,6 +2803,14 @@ class SWML_REST_API {
         }
         $idx['attempts'][] = $new_entry;
         $this->save_attempt_index($user_id, $board, $text, $topic, $suffix, $idx);
+
+        // v7.15.105: Fire hook so the student-data listener can preregister
+        // a session_records row immediately for the new attempt — before any
+        // canvas save fires. Without this the dashboard reads `MAX(attempt)`
+        // from session_records and lags the sidebar by 1 (sidebar shows
+        // "Attempt N+1 In Progress" the moment Start is clicked, but
+        // session_records still tops out at the last *saved* attempt).
+        do_action('sophicly_attempt_created', $user_id, $board, $text, $topic, $suffix, $new_num);
 
         return rest_ensure_response([
             'success' => true,

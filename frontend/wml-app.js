@@ -6179,6 +6179,10 @@ Before marking the introduction, ask the student to confirm their essay structur
 
     async function doSave(isManual) {
         try {
+            // v7.15.105: default attempt to 1, not null. Listener writes
+            // attempt_number=NULL when this field is null, which feeds the
+            // off-by-1 dashboard drift (and also makes session_records
+            // unjoinable to a specific attempt).
             await apiPost(API.saveSession, {
                 session_id: state.sessionId,
                 chat_history: state.chatHistory,
@@ -6186,7 +6190,7 @@ Before marking the introduction, ask the student to confirm their essay structur
                 step: state.step,
                 ai_chat_id: state.chatId,
                 is_manual: isManual,
-                attempt: state.attempt || null,
+                attempt: state.attempt || 1,
                 context: {
                     board: state.board, subject: state.subject, text: state.text,
                     text_name: state.textName, task: state.task, question: state.question,
@@ -6199,6 +6203,9 @@ Before marking the introduction, ask the student to confirm their essay structur
                     phase: state.phase || null,
                     topic_label: state.topicLabel || null,
                     draft_type: state.draftType || null,
+                    // v7.15.105: mirror attempt into context so listener has it
+                    // alongside topic/phase metadata in one read.
+                    attempt_number: state.attempt || 1,
                 },
             });
             if (isManual) console.log('WML: Manual save completed');
