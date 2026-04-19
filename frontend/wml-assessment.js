@@ -13692,6 +13692,15 @@
                 (headerInfo ? '<p><em>' + headerInfo + '</em></p>' : '') +
                 '<p>' + cnDesc + '</p>'
             );
+            // v7.15.89: General Notes section at the top of the doc. Carries
+            // across the foundational quiz (only editable section there) and
+            // the conceptual notes lesson (editable alongside the 7 concept
+            // sections). Same 80/20 two-column layout as the rest.
+            html += dividerHTML('GENERAL NOTES');
+            html += sectionHTML('plan', 'General Notes', true, null,
+                '<h3>General Notes</h3>' +
+                inputHTML('Free notes — anything you want to remember about this text.', 'cn_general_notes') +
+                inputHTML('Key quotes', 'cn_general_notes_quotes'));
             var concepts = isNF ? [
                 { label: 'Writer\u2019s Voice', prompt: 'What is distinctive about this writer\u2019s voice? How do their perspective, experience, and style shape the text?' },
                 { label: 'Context', prompt: 'When and why was this written? What social, political, or personal context shapes the writer\u2019s perspective?' },
