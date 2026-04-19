@@ -4168,6 +4168,15 @@
             if (isRankingContext) letterOptions._ranking = true;
             return letterOptions;
         }
+        // v7.15.103: Single-option "A) Next question" style — accept when the AI
+        // is offering a forward-progression button (FQ ready-check, "next step",
+        // "continue"). Without this, the lone A-option fails the >=2 gate, and
+        // the downstream yes/no fallback is blocked by hasLetterChoices=true,
+        // so no button renders at all.
+        if (letterOptions.length === 1) {
+            const isForwardPrompt = /ready to (?:move|continue|proceed|go)|next\s+question|shall\s+we\s+(?:proceed|continue)|continue\s+to/i.test(text);
+            if (isForwardPrompt) return letterOptions;
+        }
 
         // ══════════════════════════════════════════
         //  YES/NO: explicit or implied confirmation questions

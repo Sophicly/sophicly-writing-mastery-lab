@@ -2072,7 +2072,12 @@ window.WML = (function() {
         ).trim();
 
         // ── Pre-process: render [BLANK] and underscore blanks as inline input fields (v7.14.56) ──
+        // v7.15.103: AI sometimes escapes underscores ("\_\_\_\_\_\_") to avoid markdown italic
+        //            parsing. Those show as literal backslash-underscore in the bubble. Normalise
+        //            escaped sequences of 3+ before the blank replacement so fill-in-blank
+        //            questions render as input fields rather than "\_\_\_\_\_\_".
         let blankIdx = 0;
+        text = text.replace(/(?:\\_){3,}/g, (m) => '_'.repeat(m.length / 2));
         text = text.replace(/\[BLANK\]/gi, () => `[SWML_BLANK_${blankIdx++}]`);
         text = text.replace(/_{3,}/g, () => `[SWML_BLANK_${blankIdx++}]`);
 
