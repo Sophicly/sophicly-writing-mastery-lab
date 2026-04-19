@@ -564,6 +564,10 @@ class SWML_REST_API {
     // ═══════════════════════════════════════════
 
     public function handle_chat($request) {
+        // v7.15.91: reject AI chat writes when viewing another student read-only.
+        $gate = $this->check_viewer_write_allowed($request);
+        if (is_wp_error($gate)) return $gate;
+
         ob_start();
 
         // Rate limiting: 60 requests per minute per user (v7.15.2)
@@ -830,6 +834,10 @@ class SWML_REST_API {
      * Save session data (auto-save + manual save)
      */
     public function save_session_data($request) {
+        // v7.15.91: block session writes when impersonating read-only.
+        $gate = $this->check_viewer_write_allowed($request);
+        if (is_wp_error($gate)) return $gate;
+
         $user_id = get_current_user_id();
         $params = $request->get_json_params();
         $session_id = sanitize_text_field($params['session_id'] ?? '');
@@ -941,6 +949,10 @@ class SWML_REST_API {
     }
 
     public function save_question($request) {
+        // v7.15.91: read-only views can't save questions.
+        $gate = $this->check_viewer_write_allowed($request);
+        if (is_wp_error($gate)) return $gate;
+
         $user_id = get_current_user_id();
         $params = $request->get_json_params();
 
@@ -1058,6 +1070,10 @@ class SWML_REST_API {
      * Value: JSON { html, wordCount, comments, savedAt }
      */
     public function save_canvas($request) {
+        // v7.15.91: read-only views can't write canvas docs.
+        $gate = $this->check_viewer_write_allowed($request);
+        if (is_wp_error($gate)) return $gate;
+
         $user_id = get_current_user_id();
         $params = $request->get_json_params();
 
@@ -1385,6 +1401,48 @@ class SWML_REST_API {
      * Verify tutor/specialist/admin has access to review student work (v7.15.3).
      * Any tutor or specialist can view any student — they're all qualified teachers.
      */
+    /**
+     * v7.15.91: Gate write REST endpoints on viewerMode === 'edit'.
+     *
+     * When a dashboard "view as student" admin POSTs to a write endpoint,
+     * the request either carries a `student_id` / `studentId` param that
+     * differs from the caller or doesn't carry one at all. If the caller
+     * is not in an 'edit' viewer mode for the resolved target, the write
+     * must be blocked — otherwise the admin's activity is silently
+     * attributed to their own user_id (see handoff 2026-04-19).
+     *
+     * Returns WP_Error on denial, true when the write may proceed.
+     */
+    private function check_viewer_write_allowed($request) {
+        $viewer_id = get_current_user_id();
+        if (!$viewer_id) {
+            return new WP_Error('rest_forbidden', 'Login required.', ['status' => 401]);
+        }
+        // Accept snake_case and camelCase aliases for the target id.
+        $target = $request->get_param('student_id');
+        if ($target === null || $target === '') $target = $request->get_param('studentId');
+        if ($target === null || $target === '') {
+            // Also inspect JSON body for writes that send it in the payload.
+            $body = $request->get_json_params();
+            if (is_array($body)) {
+                $target = $body['student_id'] ?? $body['studentId'] ?? null;
+            }
+        }
+        $target_id = absint($target ?? 0);
+        // No target specified — caller writing to themselves is allowed.
+        if (!$target_id || $target_id === $viewer_id) return true;
+        // Different target — only allow when the caller has 'edit' rights.
+        if (class_exists('Sophicly_Writing_Mastery_Lab')) {
+            $mode = Sophicly_Writing_Mastery_Lab::resolve_viewer_mode($viewer_id, $target_id);
+            if ($mode === 'edit') return true;
+        }
+        return new WP_Error(
+            'forbidden_viewer',
+            'This view is read-only — switch out of review mode to make changes.',
+            ['status' => 403]
+        );
+    }
+
     private function verify_tutor_student_access($student_id) {
         $tutor_id = get_current_user_id();
         if ($student_id === $tutor_id) return true;
@@ -1935,6 +1993,10 @@ class SWML_REST_API {
     }
 
     public function save_canvas_chat($request) {
+        // v7.15.91: read-only views can't append to the canvas chat log.
+        $gate = $this->check_viewer_write_allowed($request);
+        if (is_wp_error($gate)) return $gate;
+
         $user_id = get_current_user_id();
         $params  = $request->get_json_params();
 

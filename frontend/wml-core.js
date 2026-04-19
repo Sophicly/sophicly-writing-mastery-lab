@@ -76,6 +76,42 @@ window.WML = (function() {
     };
     const headers = { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce };
 
+    // v7.15.91: when an admin / tutor / specialist is viewing another
+    // student's page, every write to the WML REST API must carry the
+    // target student's id so the server-side viewer-mode gate can
+    // resolve it and reject writes from read-only reviewers.
+    // A scoped fetch wrapper appends `?student_id=<target>` to any
+    // swml-wml POST/PUT/PATCH/DELETE request while in review mode.
+    (function installReviewGuardedFetch() {
+        try {
+            if (!config.restUrl) return;
+            const reviewTargetId = parseInt(config.targetUserId || config.reviewStudentId || 0, 10);
+            if (!reviewTargetId) return;
+            const currentUserId = parseInt(config.userId || 0, 10);
+            if (!reviewTargetId || reviewTargetId === currentUserId) return;
+            const swmlBase = config.restUrl;
+            const _origFetch = window.fetch.bind(window);
+            window.fetch = function(input, init) {
+                try {
+                    const url = typeof input === 'string' ? input : (input && input.url) || '';
+                    const method = ((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+                    if (url && url.indexOf(swmlBase) === 0 && method !== 'GET' && method !== 'HEAD') {
+                        const sep = url.indexOf('?') === -1 ? '?' : '&';
+                        if (!/[?&]student_id=/.test(url)) {
+                            const newUrl = url + sep + 'student_id=' + reviewTargetId;
+                            if (typeof input === 'string') {
+                                input = newUrl;
+                            } else {
+                                input = new Request(newUrl, input);
+                            }
+                        }
+                    }
+                } catch (_) { /* fall through to original fetch */ }
+                return _origFetch(input, init);
+            };
+        } catch (e) { /* silent */ }
+    })();
+
     // Section type colour map (used for outline, TOC, export)
     const SECTION_COLOURS = {
         cover: '#5333ed',

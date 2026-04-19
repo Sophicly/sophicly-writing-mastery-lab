@@ -78,8 +78,23 @@ class SWML_Session_Manager {
             $context['course_type'] = $params['type'] ?? 'literature';
         }
 
-        // Text comes from the student's selection in the WML (not from the lesson)
-        if (!empty($params['text'])) {
+        // v7.15.91: In guided mode, the LearnDash lesson's own text metadata
+        // wins. Previously the wizard param ($params['text']) clobbered it
+        // unconditionally, producing session_records rows with the student's
+        // last wizard selection (e.g. 'romeo-and-juliet') even when they
+        // launched an exam-question from inside a Macbeth lesson.
+        if ($mode === 'guided' && $unit_id && class_exists('Sophicly_Admin_Lesson_Meta')) {
+            $lesson_ctx = Sophicly_Admin_Lesson_Meta::get_lesson_context($unit_id);
+            if (!empty($lesson_ctx['text_id'])) {
+                $text_post = get_post((int) $lesson_ctx['text_id']);
+                if ($text_post && $text_post->post_type === 'sophicly_text' && !empty($text_post->post_name)) {
+                    $context['text'] = sanitize_key($text_post->post_name);
+                }
+            }
+        }
+        // Fallback: standalone / exam-prep mode, or guided lessons with no
+        // text_id meta — accept the wizard's selection.
+        if (empty($context['text']) && !empty($params['text'])) {
             $context['text'] = sanitize_text_field($params['text']);
         }
 
