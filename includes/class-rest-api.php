@@ -2646,6 +2646,20 @@ class SWML_REST_API {
             'swml_attempts_%'
         ));
 
+        // v7.15.98: known task suffixes stored WITHOUT a topic segment.
+        // Parser previously only recognised suffixes after a `t<digit>` token,
+        // so keys like swml_attempts_aqa_macbeth_eq were mis-parsed as
+        // text='macbeth_eq' with empty suffix, breaking dashboard joins.
+        $TASK_SUFFIXES = ['eq', 'ma', 'vr', 'ep', 'cn', 'mp'];
+        $TASK_BY_SUFFIX = [
+            '_eq' => 'exam_question',
+            '_ma' => 'model_answer',
+            '_vr' => 'verbal_rehearsal',
+            '_ep' => 'essay_plan',
+            '_cn' => 'conceptual_notes',
+            '_mp' => 'memory_practice',
+        ];
+
         $out = [];
         foreach ((array) $rows as $row) {
             $key = $row->meta_key;
@@ -2670,10 +2684,17 @@ class SWML_REST_API {
                     }
                     break;
                 }
+                // v7.15.98: last segment that matches a known task suffix
+                // is the suffix itself, not part of the text slug.
+                if ($i === count($parts) - 1 && in_array($p, $TASK_SUFFIXES, true)) {
+                    $suffix = '_' . $p;
+                    break;
+                }
                 $text_parts[] = $p;
                 $i++;
             }
             $text = implode('_', $text_parts ?: [$parts[1] ?? '']);
+            $task = $TASK_BY_SUFFIX[$suffix] ?? null;
             $idx = is_array($val) ? $val : json_decode($val, true);
             if (!is_array($idx) || empty($idx['attempts'])) continue;
             foreach ($idx['attempts'] as $a) {
@@ -2683,6 +2704,7 @@ class SWML_REST_API {
                     'text'       => $text,
                     'topic'      => $topic,
                     'suffix'     => $suffix,
+                    'task'       => $task,
                     'attempt'    => isset($a['num']) ? (int) $a['num'] : 1,
                     'status'     => $a['status'] ?? 'not_started',
                     'grade'      => $a['grade'] ?? null,

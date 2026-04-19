@@ -89,7 +89,7 @@ Loop from `current_question_number = 1` to `5`.
 - **IF Select All That Apply:** Display options and include this exact prompt:
   **(TYPE ALL CORRECT LETTERS separated by commas and press Enter.)**
   Do NOT include an example like "e.g. A,B" — that would spoil the answer.
-- **IF Fill-in-the-Blank:** Display the sentence with `[BLANK]` clearly marked. Student replies with the single word or short phrase that fits.
+- **IF Fill-in-the-Blank:** Display the sentence with `[BLANK]` clearly marked. Student replies with the single word or short phrase that fits. **DO NOT render a "Submit Answer" button or any other button** — the student just types the missing word and presses Enter. Any button you render will not function. Close the prompt with `(Type the missing word and press Enter.)` and nothing else.
 - **IF True/False:** Student replies `true` or `false` (or `t`/`f`).
 
 #### B. Wait for answer
@@ -232,23 +232,30 @@ Wait for `Y`, `yes`, or `next` before continuing.
 
 ### CATEGORY: CONTEXT & PURPOSE
 
+**⚠️ CRITICAL: Context is the weakest area for most GCSE students. Most of them have not read up on context and don't know the facts. Never use fill-in-the-blank for context questions — students who don't already know the answer have no way to recover. Use MCQ or True/False ONLY for this category.**
+
 **4. Type: True/False**
 - **Question:** True or False: Shakespeare wrote *Macbeth* primarily to criticise King James I and warn him that he would lose his throne.
 - **Answer:** False
 - **Feedback:** ✓ Correct. While the play explores themes relevant to James I (Witches, Banquo's lineage), it's not simply propaganda. It's primarily a tragedy about the psychological cost of tyranny, not a direct political warning.
 
-**5. Type: Fill-in-the-Blank**
-- **Question:** The play was written shortly after the failed [BLANK] Plot of 1605, a terrorist attempt to kill the King.
-- **Answer:** Gunpowder
-- **Feedback:** ✓ Correct! The play reflects the anxiety of the time about treason and regicide.
+**5. Type: MCQ**
+- **Question:** The play was written shortly after a failed plot of 1605 — a terrorist attempt to kill the King. What was this plot called?
+- **Options:**
+  - A) The Babington Plot
+  - B) The Ridolfi Plot
+  - C) The Gunpowder Plot
+  - D) The Throckmorton Plot
+- **Correct:** C
+- **Feedback:** ✓ Correct! The Gunpowder Plot (1605) was a failed attempt by Catholic conspirators to blow up Parliament and King James I. The play reflects the anxiety of the time about treason and regicide.
 
 **6. Type: MCQ**
-- **Question:** Shakespeare's main source for the play's plot was Holinshed's [BLANK].
+- **Question:** What was Shakespeare's main source for the plot of *Macbeth*?
 - **Options:**
-  - A) *Daemonologie*
-  - B) *The Prince*
-  - C) *Chronicles*
-  - D) *Leviathan*
+  - A) *Daemonologie* (King James I's book on witchcraft)
+  - B) *The Prince* (Machiavelli's political treatise)
+  - C) Holinshed's *Chronicles* (a history of Britain)
+  - D) *Leviathan* (Hobbes' political philosophy)
 - **Correct:** C
 - **Feedback:** ✓ Correct. Shakespeare used Holinshed's *Chronicles* but altered historical facts (making Banquo noble rather than an accomplice) to flatter King James I.
 
@@ -256,6 +263,16 @@ Wait for `Y`, `yes`, or `next` before continuing.
 - **Question:** True or False: King James I believed in witchcraft and even wrote a book on it, which influenced Shakespeare's portrayal of the Witches.
 - **Answer:** True
 - **Feedback:** ✓ Correct! James I wrote *Daemonologie* (1597). Shakespeare leaned into witch imagery partly to appeal to the king's known interest.
+
+**7a. Type: MCQ**
+- **Question:** Which historical belief system framed the murder of a king as a crime against nature itself?
+- **Options:**
+  - A) The Divine Right of Kings
+  - B) The Great Chain of Being
+  - C) Both A and B
+  - D) Neither A nor B
+- **Correct:** C
+- **Feedback:** ✓ Correct! The Divine Right said kings were chosen by God; the Great Chain of Being ordered all creation with the king just below God. Together, these framed regicide as cosmic treason — which is why the play shows unnatural events after Duncan's death.
 
 ### CATEGORY: TECHNIQUES
 
