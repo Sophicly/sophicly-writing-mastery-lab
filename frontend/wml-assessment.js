@@ -3700,7 +3700,7 @@
         const cwStepDef = isCwTask ? WML.getCwStepDef(state.task) : null;
         const isCwSi = isCwTask && cwStepDef?.tier === 'si';
         const isCwWorkbook = isCwTask && cwStepDef?.tier === 'workbook';
-        const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice'];
+        const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz'];
         const isExamPrep = EXAM_PREP_TASKS.includes(state.task);
         // v7.14.37: Environment detection from manifest (free/training/flexible)
         const envType = exerciseConfig?.environment || 'free';
@@ -14459,7 +14459,7 @@
         if (!canvasEditor) return;
         if (state.task && state.task.startsWith('cw_')) return; // v7.13.36: CW exercises don't use topic templates
         // v7.13.93: Exam prep tasks use their own templates (via tryExamPrepTemplate), skip topic template
-        const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice'];
+        const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz'];
         if (EXAM_PREP_TASKS.includes(state.task)) return;
         if (!state.topicNumber || state.topicNumber < 1) {
             // v7.14.8: Board-aware fallback for free practice (no topic number)
