@@ -8827,6 +8827,10 @@
             migrateMissingOutlines();
             migrateOutlineCriteria();
             migrateInputFields();
+            // v7.15.90: prepend General Notes into conceptual-notes docs that
+            // pre-date v7.15.89. Non-destructive — existing 7 concept sections
+            // and any saved content are left untouched.
+            migrateGeneralNotesSection();
             // Inject cover image if missing from loaded document
             tryInjectCover();
             // Build table of contents (after cover + migration)
@@ -14668,6 +14672,36 @@
      * Injects missing sections (Analytics, Action Plan, SA, Sign-off, etc.)
      * without touching existing student content.
      */
+    // v7.15.90: conceptual-notes docs created before v7.15.89 have no General
+    // Notes section. Insert one directly after the "About This Exercise"
+    // intro, preserving all existing student content and concept sections.
+    function migrateGeneralNotesSection() {
+        if (!canvasEditor) return;
+        if (state.task !== 'conceptual_notes') return;
+        const html = canvasEditor.getHTML();
+        if (!html.includes('data-section-type="question"')) return;
+        if (html.includes('data-field-id="cn_general_notes"')) return;
+
+        const block =
+            dividerHTML('GENERAL NOTES') +
+            sectionHTML('plan', 'General Notes', true, null,
+                '<h3>General Notes</h3>' +
+                inputHTML('Free notes — anything you want to remember about this text.', 'cn_general_notes') +
+                inputHTML('Key quotes', 'cn_general_notes_quotes'));
+
+        // Insert right after the "About This Exercise" section's closing </div>
+        const intro = html.match(/<div[^>]*data-section-label="About This Exercise"[^>]*>[\s\S]*?<\/div>/);
+        let newHtml;
+        if (intro) {
+            newHtml = html.replace(intro[0], intro[0] + block);
+        } else {
+            // Fallback: prepend to document
+            newHtml = block + html;
+        }
+        canvasEditor.commands.setContent(newHtml, false);
+        console.log('WML Migration: injected General Notes section into conceptual notes doc');
+    }
+
     function migrateDocument() {
         if (!canvasEditor) return;
         // Mark scheme has its own sections — skip essay migration (v7.12.96)
