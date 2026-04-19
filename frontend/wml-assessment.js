@@ -5268,7 +5268,7 @@
                             // Gives students current-attempt visibility + "Start new attempt"
                             // option without waiting for a completion. Mirrors the diagnostic
                             // overlay UX for standalone exercises.
-                            const EXAM_PREP_TASKS = ['exam_question','essay_plan','model_answer','verbal_rehearsal','conceptual_notes','memory_practice'];
+                            const EXAM_PREP_TASKS = ['exam_question','essay_plan','model_answer','verbal_rehearsal','conceptual_notes','memory_practice','foundational_quiz'];
                             const isExamPrepTask = EXAM_PREP_TASKS.includes(state.task);
                             const hasAnyAttempt = (idx.attempts || []).length > 0;
                             console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl, 'preview=', previewOverlay, 'examPrep=', isExamPrepTask);
@@ -8848,7 +8848,7 @@
             }
         };
 
-        tryServerLoad().then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).catch(err => {
+        tryServerLoad().then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => spliceGeneralNotesIntoEditor()).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -14343,6 +14343,12 @@
      * After editor init, try loading from server — if server has content
      * and localStorage is empty (new device / cleared cache), inject it.
      */
+    // v7.15.99: Captured from /canvas/load response so General Notes from the
+    // persistent per-{board,text} store can be spliced into the editor AFTER
+    // templates / migrations run, so fresh-attempt templates keep persisted
+    // content instead of their empty field placeholders.
+    let _pendingGeneralNotes = null;
+
     async function tryServerLoad() {
         // v7.13.36: CW exercises use project artifact storage, not essay canvas storage
         if (state.task && state.task.startsWith('cw_')) {
@@ -14360,6 +14366,11 @@
                 url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
             }
             const res = await fetch(url, { headers }).then(r => r.json());
+            // v7.15.99: Capture General Notes mirror for later splice into
+            // whatever document ends up in the editor (server doc or fresh template).
+            if (res && res.generalNotes) {
+                _pendingGeneralNotes = res.generalNotes;
+            }
             if (res.success && res.doc && res.doc.html) {
                 if (state.reviewMode) {
                     // Review mode: always load server content (student's document)
@@ -14384,6 +14395,36 @@
         } catch (e) {
             console.log('WML: Server load unavailable, using localStorage');
         }
+    }
+
+    // v7.15.99: Splice persisted General Notes (captured by tryServerLoad) into
+    // the current editor document. Runs after template / migration steps so a
+    // fresh-attempt template picks up the shared content, and stored docs get
+    // the authoritative value rather than a stale per-attempt copy.
+    function spliceGeneralNotesIntoEditor() {
+        if (!_pendingGeneralNotes || !canvasEditor) { _pendingGeneralNotes = null; return; }
+        const html = canvasEditor.getHTML();
+        if (!html || !html.includes('data-field-id="cn_general_notes"')) {
+            _pendingGeneralNotes = null;
+            return;
+        }
+        let updated = html;
+        const map = { cn_general_notes: 'notes', cn_general_notes_quotes: 'quotes' };
+        Object.entries(map).forEach(([fid, key]) => {
+            const inner = _pendingGeneralNotes[key];
+            if (typeof inner !== 'string') return;
+            const pattern = new RegExp('(<div\\b[^>]*data-field-id="' + fid + '"[^>]*>)([\\s\\S]*?)(</div>)', 'i');
+            updated = updated.replace(pattern, '$1' + inner + '$3');
+        });
+        if (updated !== html) {
+            try {
+                canvasEditor.commands.setContent(updated, false);
+                console.log('WML: General Notes spliced from persistent store');
+            } catch (e) {
+                console.warn('WML: General Notes splice failed', e);
+            }
+        }
+        _pendingGeneralNotes = null;
     }
 
     /**

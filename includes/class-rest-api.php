@@ -1152,6 +1152,17 @@ class SWML_REST_API {
         // wp_slash prevents WordPress's internal wp_unslash from stripping backslashes in JSON
         $result = update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($doc)));
 
+        // v7.15.99: Mirror General Notes into a separate per-{board,text} blob so
+        // content persists across FQ <-> CN attempts. Only relevant for the
+        // conceptual-notes document family. Always mirrors (including empty) so
+        // explicit student deletions propagate. Fresh-template first-saves are
+        // protected by the client splicing persisted content into the template
+        // before the first save fires.
+        if ($this->suffix_uses_general_notes($suffix)) {
+            $gen = $this->extract_general_notes_from_html($html);
+            $this->update_general_notes_meta($user_id, $board, $text, $gen['notes'], $gen['quotes']);
+        }
+
         // Also fire a hook so the student data plugin can pick this up
         do_action('sophicly_canvas_saved', $user_id, $board, $text, $html, $word_count, $topic_number, $suffix);
 
@@ -1243,21 +1254,44 @@ class SWML_REST_API {
 
         $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
 
+        // v7.15.99: Read shared General Notes mirror for conceptual-notes doc family.
+        // Returned in the response regardless of canvas doc presence so the client
+        // can splice content into a freshly-rendered template on new-attempt or
+        // first-ever entry.
+        $general_notes = null;
+        if ($this->suffix_uses_general_notes($suffix)) {
+            $general_notes = $this->get_general_notes_meta($user_id, $board, $text);
+        }
+
         $raw = get_user_meta($user_id, $meta_key, true);
         if (empty($raw)) {
-            return rest_ensure_response(['success' => true, 'doc' => null, 'attempt' => $attempt]);
+            return rest_ensure_response([
+                'success'      => true,
+                'doc'          => null,
+                'attempt'      => $attempt,
+                'generalNotes' => $general_notes,
+            ]);
         }
 
         // WordPress may return an array (if it serialized/unserialized internally)
         if (is_array($raw)) {
-            return rest_ensure_response(['success' => true, 'doc' => $raw, 'attempt' => $attempt]);
+            $doc = $raw;
+        } else {
+            $doc = self::decode_canvas_json($raw);
         }
 
-        $doc = self::decode_canvas_json($raw);
+        // v7.15.99: Splice persisted General Notes into the returned HTML so
+        // every load reflects the authoritative shared value (not a stale copy
+        // baked into an older attempt's canvas).
+        if ($this->suffix_uses_general_notes($suffix) && is_array($doc) && !empty($doc['html']) && $general_notes) {
+            $doc['html'] = $this->splice_general_notes_into_html($doc['html'], $general_notes);
+        }
+
         return rest_ensure_response([
-            'success' => true,
-            'doc'     => $doc,
-            'attempt' => $attempt,
+            'success'      => true,
+            'doc'          => $doc,
+            'attempt'      => $attempt,
+            'generalNotes' => $general_notes,
         ]);
     }
 
@@ -2964,6 +2998,89 @@ class SWML_REST_API {
         $base = get_permalink($step_id) ?: '';
         if (!$base) return '';
         return $course_id ? add_query_arg('course_id', $course_id, $base) : $base;
+    }
+
+    // ═══════════════════════════════════════════
+    //  GENERAL NOTES — cross-attempt cross-lesson persistence (v7.15.99)
+    // ═══════════════════════════════════════════
+    //
+    // General Notes (cn_general_notes + cn_general_notes_quotes input fields in
+    // the conceptual-notes doc) persist per {board, text_slug} — shared across
+    // all Foundational Quiz and Conceptual Notes attempts. Implemented as a
+    // separate user_meta blob that mirrors on save + splices on load. Cleared
+    // only by explicit student deletion (propagated via the save mirror).
+
+    private function general_notes_meta_key($board, $text) {
+        return 'swml_general_notes_' . sanitize_key($board) . '_' . sanitize_key($text);
+    }
+
+    private function get_general_notes_meta($user_id, $board, $text) {
+        $raw = get_user_meta($user_id, $this->general_notes_meta_key($board, $text), true);
+        if (empty($raw)) return null;
+        if (is_array($raw)) return $raw;
+        $decoded = json_decode($raw, true);
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    private function update_general_notes_meta($user_id, $board, $text, $notes, $quotes) {
+        $data = [
+            'notes'      => (string) $notes,
+            'quotes'     => (string) $quotes,
+            'updated_at' => current_time('mysql'),
+        ];
+        update_user_meta($user_id, $this->general_notes_meta_key($board, $text), wp_slash(wp_json_encode($data)));
+    }
+
+    /**
+     * Extract the innerHTML of cn_general_notes + cn_general_notes_quotes
+     * input-field divs from canvas HTML. Assumes input-field content contains
+     * no nested <div> (TipTap default: <p>/<ul>/<ol>/<li> only), so regex is
+     * safe. If that assumption ever changes, upgrade to DOMDocument parsing.
+     */
+    private function extract_general_notes_from_html($html) {
+        $out = ['notes' => '', 'quotes' => ''];
+        if (empty($html)) return $out;
+        $map = [
+            'notes'  => 'cn_general_notes',
+            'quotes' => 'cn_general_notes_quotes',
+        ];
+        foreach ($map as $key => $fid) {
+            $pattern = '/<div\b[^>]*data-field-id="' . preg_quote($fid, '/') . '"[^>]*>(.*?)<\/div>/is';
+            if (preg_match($pattern, $html, $m)) {
+                $out[$key] = trim($m[1]);
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Given canvas HTML and a general-notes data blob, replace the innerHTML
+     * of the two input-field divs with the stored values. Returns the updated
+     * HTML. If a field div doesn't exist in the HTML (edge case), leaves it.
+     */
+    private function splice_general_notes_into_html($html, $data) {
+        if (empty($html) || !is_array($data)) return $html;
+        $map = [
+            'notes'  => 'cn_general_notes',
+            'quotes' => 'cn_general_notes_quotes',
+        ];
+        foreach ($map as $key => $fid) {
+            if (!isset($data[$key])) continue;
+            $replacement_inner = (string) $data[$key];
+            // Escape $ and \ so preg_replace doesn't interpret as backrefs.
+            $safe_inner = str_replace(['\\', '$'], ['\\\\', '\\$'], $replacement_inner);
+            $pattern = '/(<div\b[^>]*data-field-id="' . preg_quote($fid, '/') . '"[^>]*>)(.*?)(<\/div>)/is';
+            $html = preg_replace($pattern, '${1}' . $safe_inner . '${3}', $html, 1);
+        }
+        return $html;
+    }
+
+    /**
+     * True when a given canvas storage suffix belongs to the shared
+     * conceptual-notes document family (foundational_quiz + conceptual_notes).
+     */
+    private function suffix_uses_general_notes($suffix) {
+        return in_array((string) $suffix, ['_fq', '_cn'], true);
     }
 
     // ═══════════════════════════════════════════
