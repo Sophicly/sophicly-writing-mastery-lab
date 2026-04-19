@@ -9466,13 +9466,16 @@
                         if (signBtn.dataset.confirming === 'true') {
                             signBtn.textContent = '⏳ Signing…';
                             signBtn.disabled = true;
+                            // v7.15.84: when tutor reviews a student, send targetUserId (the student),
+                            // not the tutor's own userId — REST rejects self-signoff otherwise.
+                            const targetStudentId = config.targetUserId || config.reviewStudentId || config.userId;
                             fetch(config.restUrl + 'canvas/signoff', {
                                 method: 'POST', headers,
                                 body: JSON.stringify({
                                     board: state.board, text: state.text,
                                     topicNumber: state.topicNumber || null,
                                     suffix: WML.resolveStorageSuffix(state.task, state.phase) || '',
-                                    studentId: config.userId,
+                                    studentId: targetStudentId,
                                 })
                             }).then(r => r.json()).then(res => {
                                 console.log('WML: Sign-off response:', res);
@@ -9521,7 +9524,9 @@
                 dropdownLayer.appendChild(wrapper);
 
                 // Load existing sign-off data
-                fetch(config.restUrl + `canvas/load-signoff?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(WML.resolveStorageSuffix(state.task, state.phase) || '')}`, { headers })
+                // v7.15.84: pass studentId so tutor review sees the student's signoff
+                const loadTargetId = config.targetUserId || config.reviewStudentId || config.userId;
+                fetch(config.restUrl + `canvas/load-signoff?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(WML.resolveStorageSuffix(state.task, state.phase) || '')}&studentId=${encodeURIComponent(loadTargetId)}`, { headers })
                     .then(r => r.ok ? r.json() : null)
                     .then(res => {
                         if (res && res.success && res.signoff && !res.signoff.revoked) {

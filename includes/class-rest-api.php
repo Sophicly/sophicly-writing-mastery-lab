@@ -1579,7 +1579,12 @@ class SWML_REST_API {
      * Load sign-off data for a canvas document.
      */
     public function load_signoff($request) {
-        $user_id      = get_current_user_id();
+        $viewer_id    = get_current_user_id();
+        // v7.15.84: accept studentId query param so tutor review loads the
+        // student's signoff rather than the tutor's own meta. Falls back to
+        // the current user for self-view. Permission still enforced below.
+        $student_id_param = $request->get_param('studentId');
+        $student_id   = ($student_id_param !== null && $student_id_param !== '') ? absint($student_id_param) : $viewer_id;
         $board        = sanitize_text_field($request->get_param('board') ?? '');
         $text         = sanitize_text_field($request->get_param('text') ?? '');
         $topic_number = $request->get_param('topicNumber');
@@ -1591,16 +1596,24 @@ class SWML_REST_API {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
         }
 
+        // If viewing someone else's signoff, verify the viewer is allowed to see it.
+        // Read-only path uses verify_viewer_access so parents with active
+        // connections to the student are also permitted.
+        if ($student_id !== $viewer_id) {
+            $auth = $this->verify_viewer_access($student_id);
+            if (is_wp_error($auth)) return $auth;
+        }
+
         // v7.15.44: Resolve current attempt if not supplied
         if ($attempt < 1) {
-            $idx = $this->get_attempt_index($user_id, $board, $text, $topic_number, $suffix);
+            $idx = $this->get_attempt_index($student_id, $board, $text, $topic_number, $suffix);
             $attempt = $idx['current'] ?? 1;
         }
 
         $meta_key    = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
         $signoff_key = $meta_key . '_signoff';
 
-        $raw = get_user_meta($user_id, $signoff_key, true);
+        $raw = get_user_meta($student_id, $signoff_key, true);
         if (empty($raw)) {
             return rest_ensure_response(['success' => true, 'signoff' => null]);
         }
