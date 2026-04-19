@@ -10110,7 +10110,13 @@
 
     // ── CW Document Templates (v7.13.43) ──
     // Uses sectionHTML() + dividerHTML() for proper section blocks (coloured borders, document outline, labels)
+    // v7.15.83: wrapper appends tutor sign-off to every CW step doc (optional affordance).
     function getCwDocTemplate(stepDef) {
+        const inner = _cwDocTemplateInner(stepDef);
+        if (!inner || inner === '<p></p>') return inner;
+        return inner + buildSignoffSection();
+    }
+    function _cwDocTemplateInner(stepDef) {
         if (!stepDef) return '<p></p>';
         const step = stepDef.step;
         let html = '';
@@ -13333,6 +13339,7 @@
         html += dividerHTML('Your Notes');
         html += sectionHTML('response', 'Question Notes', true, null,
             `<p><em>Use this space to note down anything about this question — themes, key quotes, initial ideas.</em></p><p></p>`);
+        html += buildSignoffSection();
         return html;
     }
 
@@ -13362,6 +13369,7 @@
             `<p><em>Controlling concept:</em></p><p></p>` +
             `<p><em>Central purpose:</em></p><p></p>` +
             `<p><em>Universal message:</em></p><p></p>`);
+        html += buildSignoffSection();
         return html;
     }
 
@@ -13392,6 +13400,7 @@
         }
         html += sectionHTML('feedback', 'Model: Conclusion', false, null,
             `<p><em>The Grade 9 model conclusion will appear here.</em></p>`);
+        html += buildSignoffSection();
         return html;
     }
 
@@ -13417,6 +13426,7 @@
             `<p><em>The Grade 9 model plan will appear here for comparison.</em></p>`);
         html += sectionHTML('feedback', 'AI Model Paragraph', false, null,
             `<p><em>The Grade 9 model paragraph will appear here for comparison.</em></p>`);
+        html += buildSignoffSection();
         return html;
     }
 
@@ -13435,6 +13445,7 @@
             `<p><em>Your retrieval exercise will begin here once you pass the quality gate.</em></p><p></p>`);
         html += sectionHTML('feedback', 'Results', false, null,
             `<p><em>Your accuracy score and areas to revise will appear here after completion.</em></p>`);
+        html += buildSignoffSection();
         return html;
     }
 
@@ -13468,6 +13479,7 @@
             inner += `</tbody></table>`;
             html += sectionHTML('response', s.label, true, null, inner);
         });
+        html += buildSignoffSection();
         return html;
     }
 
@@ -13510,6 +13522,7 @@
             inner += `</tbody></table>`;
             html += sectionHTML('response', cat.label, true, null, inner);
         });
+        html += buildSignoffSection();
         return html;
     }
 
@@ -13531,6 +13544,7 @@
         const marks = parseInt(topicData?.marks) || 34;
         const aos = topicData?.aos || 'AO1,AO2,AO3';
         html += buildOutlineSection(aos, null, marks);
+        html += buildSignoffSection();
         return html;
     }
 
@@ -13601,7 +13615,6 @@
             html += buildSelfAssessmentSection(false);
             html += buildAnalyticsSection();
             html += buildActionPlanSection('diagnostic');
-            html += buildSignoffSection();
         } else if (exerciseType === 'model_answer') {
             // ── MODEL ANSWER ──
             // v7.14.13: Diagnostic-style — student selects an essay plan first, then writes
@@ -13634,7 +13647,6 @@
             html += buildScoresSection(marks);
             html += buildSelfAssessmentSection(false);
             html += buildActionPlanSection('diagnostic');
-            html += buildSignoffSection();
         } else if (exerciseType === 'verbal_rehearsal' || exerciseType === 'quote_analysis') {
             // ── RANDOM QUOTE ANALYSIS ──
             // v7.14.13: 10 quote analysis slots with structured TTECEA response spaces.
@@ -13735,6 +13747,8 @@
             html += sectionHTML('action', 'Next Steps', false, null,
                 '<p><em>Personalised recommendations for what to revise next.</em></p>');
         }
+        // v7.15.83: tutor sign-off available on every exam-prep doc (optional affordance)
+        if (html) html += buildSignoffSection();
         return html || '<p></p>';
     }
 
@@ -14109,6 +14123,7 @@
             + inputHTML('How will you use available support to help you reach your goals?', 'ms-action-3')
         );
 
+        html += buildSignoffSection();
         return html;
     }
 
