@@ -13722,19 +13722,14 @@
                 var fieldId = isNF ? ('nfcn_section_' + (idx + 1)) : ('cn_section_' + (idx + 1));
                 var quotesFieldId = fieldId + '_quotes';
                 html += dividerHTML(c.label.toUpperCase());
-                // v7.15.87: each row now two columns — 80% notes + 20% key quotes.
-                // Existing students' data loads into the notes column; quotes column
-                // starts empty and saves via _extractDocumentData's generic field loop.
+                // v7.15.88: emit notes + quotes input fields as direct siblings
+                // of the section block. TipTap strips arbitrary wrapper <div>s,
+                // so layout is driven by CSS — the section uses :has() to flex
+                // its children side-by-side when it contains a *_quotes input.
                 html += sectionHTML('plan', c.label, true, null,
                     '<h3>' + c.label + '</h3>' +
-                    '<div class="swml-notes-row-grid">' +
-                        '<div class="swml-notes-col-notes">' +
-                            inputHTML(c.prompt, fieldId) +
-                        '</div>' +
-                        '<div class="swml-notes-col-quotes">' +
-                            inputHTML('Key quotes', quotesFieldId) +
-                        '</div>' +
-                    '</div>');
+                    inputHTML(c.prompt, fieldId) +
+                    inputHTML('Key quotes', quotesFieldId));
             });
         } else if (exerciseType === 'memory_practice') {
             // ── MEMORY PRACTICE ──

@@ -3,27 +3,42 @@
    Phase 1 Foundation · v1.0.0
    ═══════════════════════════════════════════ */
 
-/* v7.15.87 — Conceptual Notes two-column rows.
-   Each section splits into 80% notes + 20% key quotes.
-   Stacks on narrow viewports. */
-.swml-notes-row-grid {
-    display: grid;
-    grid-template-columns: 4fr 1fr;
-    gap: 16px;
-    align-items: start;
+/* v7.15.88 — Conceptual Notes two-column rows.
+   TipTap strips wrapper divs, so layout is driven by the section
+   block itself via :has(). When a swml-section-plan contains a
+   *_quotes input field, the section becomes a flex row: notes 80%,
+   quotes 20%. Stacks below 720px. */
+.swml-section-plan:has(> .swml-input-field[data-field-id$="_quotes"]) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 12px;
 }
-.swml-notes-col-quotes .swml-input-field {
-    font-size: 0.9em;
+.swml-section-plan:has(> .swml-input-field[data-field-id$="_quotes"]) > h3 {
+    flex: 0 0 100%;
+    margin-bottom: 4px;
+}
+.swml-section-plan:has(> .swml-input-field[data-field-id$="_quotes"]) > .swml-input-field:not([data-field-id$="_quotes"]) {
+    flex: 1 1 0;
+    min-width: 0;
+}
+.swml-section-plan:has(> .swml-input-field[data-field-id$="_quotes"]) > .swml-input-field[data-field-id$="_quotes"] {
+    flex: 0 0 22%;
+    min-width: 140px;
     border-left: 2px dashed #51dacf;
-    padding-left: 12px;
-    min-height: 100%;
-}
-.swml-notes-col-quotes .swml-input-field::before {
-    opacity: 0.75;
+    padding-left: 10px;
+    font-size: 0.9em;
 }
 @media (max-width: 720px) {
-    .swml-notes-row-grid { grid-template-columns: 1fr; }
-    .swml-notes-col-quotes .swml-input-field {
+    .swml-section-plan:has(> .swml-input-field[data-field-id$="_quotes"]) {
+        flex-direction: column;
+    }
+    .swml-section-plan:has(> .swml-input-field[data-field-id$="_quotes"]) > .swml-input-field,
+    .swml-section-plan:has(> .swml-input-field[data-field-id$="_quotes"]) > .swml-input-field[data-field-id$="_quotes"] {
+        flex: 1 1 auto;
+        width: 100%;
+    }
+    .swml-section-plan:has(> .swml-input-field[data-field-id$="_quotes"]) > .swml-input-field[data-field-id$="_quotes"] {
         border-left: none;
         border-top: 2px dashed #51dacf;
         padding-left: 0;
