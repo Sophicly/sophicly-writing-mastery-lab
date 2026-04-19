@@ -48,27 +48,48 @@ class SWML_Session_Manager {
         ];
 
         if ($mode === 'guided' && $unit_id) {
-            // Use student-data plugin's accessor if available (resolves IDs to names)
+            // v7.15.92: Bridge is the authoritative source for course-derived
+            // context (board / text_slug / type / category) because it computes
+            // from course_map — no per-lesson admin action required. Covers all
+            // bridge-mapped lessons including shared steps (via course_id hint).
+            if (class_exists('Sophicly_LearnDash_Bridge')) {
+                $course_hint = absint($params['course_id'] ?? 0);
+                $bridge_ctx  = Sophicly_LearnDash_Bridge::init()->get_topic_context((int) $unit_id, $course_hint);
+                if (!empty($bridge_ctx['text_slug'])) {
+                    $context['board']       = $bridge_ctx['board'];
+                    $context['text']        = $bridge_ctx['text_slug'];
+                    $context['course_type'] = $bridge_ctx['type'];
+                    $context['subject']     = $bridge_ctx['category'];
+                    if (empty($context['task']) && !empty($bridge_ctx['wml_task'])) {
+                        $context['task'] = $bridge_ctx['wml_task'];
+                    }
+                }
+            }
+
+            // Lesson-meta fallback: fills any field bridge didn't resolve.
+            // Also supplies draft typing + human-readable names bridge omits.
             if (class_exists('Sophicly_Admin_Lesson_Meta')) {
                 $lesson_ctx = Sophicly_Admin_Lesson_Meta::get_lesson_context($unit_id);
-                $context['board']       = $lesson_ctx['exam_board'] ?? $params['board'] ?? '';
-                $context['subject']     = $lesson_ctx['literature_type'] ?? $params['subject'] ?? '';
-                $context['course_type'] = $lesson_ctx['course_type'] ?? $params['type'] ?? '';
+                if (empty($context['board']))       $context['board']       = $lesson_ctx['exam_board'] ?? $params['board'] ?? '';
+                if (empty($context['subject']))     $context['subject']     = $lesson_ctx['literature_type'] ?? $params['subject'] ?? '';
+                if (empty($context['course_type'])) $context['course_type'] = $lesson_ctx['course_type'] ?? $params['type'] ?? '';
                 $context['is_redraft']  = ($lesson_ctx['is_redraft'] ?? '0') === '1';
 
-                // Resolved text name from Library Plugin CPT
-                if (!empty($lesson_ctx['text_name'])) {
-                    $context['text_name'] = $lesson_ctx['text_name'];
-                }
-                // Resolved topic name
-                if (!empty($lesson_ctx['topic_name'])) {
-                    $context['topic_name'] = $lesson_ctx['topic_name'];
+                if (!empty($lesson_ctx['text_name']))  $context['text_name']  = $lesson_ctx['text_name'];
+                if (!empty($lesson_ctx['topic_name'])) $context['topic_name'] = $lesson_ctx['topic_name'];
+
+                // Text fallback via _sophicly_text_id (only when bridge empty)
+                if (empty($context['text']) && !empty($lesson_ctx['text_id'])) {
+                    $text_post = get_post((int) $lesson_ctx['text_id']);
+                    if ($text_post && $text_post->post_type === 'sophicly_text' && !empty($text_post->post_name)) {
+                        $context['text'] = sanitize_key($text_post->post_name);
+                    }
                 }
             } else {
-                // Fallback: read _sophicly_ meta directly
-                $context['board']       = get_post_meta($unit_id, '_sophicly_exam_board', true) ?: $params['board'] ?? '';
-                $context['subject']     = get_post_meta($unit_id, '_sophicly_literature_type', true) ?: $params['subject'] ?? '';
-                $context['course_type'] = get_post_meta($unit_id, '_sophicly_course_type', true) ?: $params['type'] ?? '';
+                // No Lesson_Meta class — direct post-meta fallback
+                if (empty($context['board']))       $context['board']       = get_post_meta($unit_id, '_sophicly_exam_board', true) ?: $params['board'] ?? '';
+                if (empty($context['subject']))     $context['subject']     = get_post_meta($unit_id, '_sophicly_literature_type', true) ?: $params['subject'] ?? '';
+                if (empty($context['course_type'])) $context['course_type'] = get_post_meta($unit_id, '_sophicly_course_type', true) ?: $params['type'] ?? '';
                 $context['is_redraft']  = get_post_meta($unit_id, '_sophicly_is_redraft', true) === '1';
             }
         } else {
@@ -78,22 +99,8 @@ class SWML_Session_Manager {
             $context['course_type'] = $params['type'] ?? 'literature';
         }
 
-        // v7.15.91: In guided mode, the LearnDash lesson's own text metadata
-        // wins. Previously the wizard param ($params['text']) clobbered it
-        // unconditionally, producing session_records rows with the student's
-        // last wizard selection (e.g. 'romeo-and-juliet') even when they
-        // launched an exam-question from inside a Macbeth lesson.
-        if ($mode === 'guided' && $unit_id && class_exists('Sophicly_Admin_Lesson_Meta')) {
-            $lesson_ctx = Sophicly_Admin_Lesson_Meta::get_lesson_context($unit_id);
-            if (!empty($lesson_ctx['text_id'])) {
-                $text_post = get_post((int) $lesson_ctx['text_id']);
-                if ($text_post && $text_post->post_type === 'sophicly_text' && !empty($text_post->post_name)) {
-                    $context['text'] = sanitize_key($text_post->post_name);
-                }
-            }
-        }
-        // Fallback: standalone / exam-prep mode, or guided lessons with no
-        // text_id meta — accept the wizard's selection.
+        // Wizard fallback for text: standalone / exam-prep, or when neither
+        // bridge nor lesson-meta resolved a text_slug.
         if (empty($context['text']) && !empty($params['text'])) {
             $context['text'] = sanitize_text_field($params['text']);
         }
