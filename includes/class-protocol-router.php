@@ -755,7 +755,7 @@ class SWML_Protocol_Router {
         // AQA uses modular protocols (many small files), shared is semi-modular (conceptual_notes = 9 files)
         // All current boards now modular. Only future boards not yet listed would be monolithic.
         $is_monolithic = (!in_array($protocol_board, ['aqa', 'shared', 'ocr', 'eduqas', 'edexcel', 'edexcel-igcse', 'ccea', 'sqa', 'cambridge-igcse']));
-        $single_file_tasks = ['exam_question', 'exam_question_modern', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'memory_practice'];
+        $single_file_tasks = ['exam_question', 'exam_question_modern', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'memory_practice', 'foundational_quiz'];
         $min_modules = ($is_monolithic || in_array($task, $single_file_tasks)) ? 1 : 2;
         if ($loaded_count < $min_modules) {
             error_log("WML Router: Too few modules loaded ({$loaded_count}/{$min_modules}), falling back to full protocol");

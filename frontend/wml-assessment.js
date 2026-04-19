@@ -13716,10 +13716,11 @@
                 html += sectionHTML('feedback', 'Feedback: Quote ' + i, _feedbackEditable(), null,
                     '<p><em>AI feedback and Grade 9 model will appear here.</em></p>');
             }
-        } else if (exerciseType === 'conceptual_notes') {
-            // ── CONCEPTUAL NOTES ──
+        } else if (exerciseType === 'conceptual_notes' || exerciseType === 'foundational_quiz') {
+            // ── CONCEPTUAL NOTES / FOUNDATIONAL QUIZ ──
             // v7.14.85: Subject-aware sections (literature / poetry / nonfiction) with InputFields.
             // v7.15.93: Foundational quiz variant — reuses this doc, locks concept sections read-only.
+            // v7.15.95: Accept both exerciseType values so the same render path covers FQ.
             var isNF = WML.isNonfictionSubject();
             var isPo = WML.isPoetrySubject();
             var isFQ = WML.state && WML.state.task === 'foundational_quiz';

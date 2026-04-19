@@ -508,6 +508,17 @@ window.WML = (function() {
         { step: 7, label: 'S7 Message' },
     ];
 
+    // v7.15.95: Foundational quiz sidebar — light-touch 5-question recall.
+    const FOUNDATIONAL_QUIZ_STEPS = [
+        { step: 1, label: 'Welcome' },
+        { step: 2, label: 'Q1' },
+        { step: 3, label: 'Q2' },
+        { step: 4, label: 'Q3' },
+        { step: 5, label: 'Q4' },
+        { step: 6, label: 'Q5' },
+        { step: 7, label: 'Results' },
+    ];
+
     const POETRY_CN_STEPS = [
         { step: 1, label: 'S1 Speaker' },
         { step: 2, label: 'S2 Context' },
@@ -1238,6 +1249,7 @@ window.WML = (function() {
         if (state.task === 'exam_question') return EXAM_QUESTION_STEPS;
         if (state.task === 'memory_practice') return MEMORY_PRACTICE_STEPS;
         if (state.task === 'verbal_rehearsal') return QUOTE_ANALYSIS_STEPS;
+        if (state.task === 'foundational_quiz') return FOUNDATIONAL_QUIZ_STEPS;
         if (state.task === 'conceptual_notes') {
             if (isNonfictionSubject()) return NONFICTION_CN_STEPS;
             return isPoetrySubject() ? POETRY_CN_STEPS : CONCEPTUAL_NOTES_STEPS;
@@ -2226,6 +2238,7 @@ window.WML = (function() {
         CONCEPTUAL_NOTES_STEPS, POETRY_CN_STEPS, NONFICTION_CN_STEPS,
         ESSAY_PLAN_STEPS, MODEL_ANSWER_STEPS, ESSAY_PLAN_RECALL_STEPS,
         MODEL_ANSWER_ADVANCED_STEPS, EXAM_QUESTION_STEPS, MEMORY_PRACTICE_STEPS,
+        FOUNDATIONAL_QUIZ_STEPS,
         // Element arrays
         ASSESSMENT_ELEMENTS, POLISHING_ELEMENTS, EXAM_QUESTION_ELEMENTS,
         CONCEPTUAL_NOTES_ELEMENTS, POETRY_CN_ELEMENTS, NONFICTION_CN_ELEMENTS,
