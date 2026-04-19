@@ -6497,33 +6497,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
    Tutor Review Mode (v7.15.2)
    ═══════════════════════════════════════════ */
 
-/* Review banner — v7.15.84 pill refactor
-   Was a flow-level strip between header and canvas, pushing content
-   down and creating scroll overflow. Now a floating compact pill,
-   fixed below the top chrome, out of layout flow. */
+/* Review banner — v7.15.86 hidden.
+   Redundant with existing affordances: sidebar Tutor View pill +
+   on-entry modal + chat-input footer that already declares
+   "chat is read-only in Tutor View". The extra banner caused
+   layout overflow without adding signal. */
 .swml-review-banner {
-    position: fixed;
-    top: 70px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 60;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    background: linear-gradient(135deg, rgba(83, 51, 237, 0.9), rgba(66, 161, 236, 0.9));
-    border: 1px solid rgba(125, 249, 233, 0.5);
-    border-radius: 999px;
-    color: #fff;
-    font-size: 11px;
-    font-family: 'Proxima Soft Complete', sans-serif;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    line-height: 1.2;
-    white-space: nowrap;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
-    pointer-events: auto;
-    max-width: calc(100vw - 28px);
+    display: none !important;
 }
 .swml-review-banner strong {
     color: #51dacf;
