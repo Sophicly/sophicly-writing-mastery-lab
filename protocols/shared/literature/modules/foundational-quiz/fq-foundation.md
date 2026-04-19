@@ -48,14 +48,11 @@ Initialise and maintain internally:
 
    Ready to test your **foundational knowledge** of **{TEXT_LABEL}**? I have **5** quick questions to check your understanding.
 
-   Here's how it works:
-
-   1. I'll ask a question.
-   2. You give your best answer.
-   3. I'll give you **immediate feedback** (so you learn while it's fresh! 🧠)
-   4. At the end, I'll show you how to use this knowledge for your **essay writing**.
+   Here's how it works — I'll ask a question, you give your best answer, I'll give you **immediate feedback** (so you learn while it's fresh! 🧠), and at the end I'll show you how to use this knowledge for your **essay writing**.
 
    > 💡 This is a light recall quiz to build your **foundations**. You can jot optional reflections into the **General Notes** section at any time. The **concept sections** (Protagonist, Context, Plot, Genre, Themes, Purpose, Message) are **locked** at this stage — you'll complete those in Topic 2 (Conceptual Notes).
+
+   **CRITICAL:** Do NOT render your "how it works" steps as a numbered list, and do NOT render any options like "Start Quiz" or "Ready". The WML frontend auto-converts any numbered/lettered list in an AI message into interactive buttons — an explanatory list would be mis-rendered as clickable actions. Keep the welcome as flowing prose and ask the student to type **yes** or **ready** at the end.
 
    Ready to start? Just type **yes** or **ready**.
 

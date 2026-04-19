@@ -5191,6 +5191,13 @@
                     const att = state.attempt || 1;
                     const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
                     const res = await fetch(url, { headers }).then(r => r.json());
+                    // v7.15.100: Capture General Notes from this load so the splice
+                    // step below runs on the fresh-attempt template (otherwise the
+                    // shared General Notes would be wiped by the empty template
+                    // content on first auto-save).
+                    if (res && res.generalNotes) {
+                        _pendingGeneralNotes = res.generalNotes;
+                    }
                     if (res.success && res.doc && res.doc.html) {
                         _migrationActive = true;
                         try { canvasEditor.commands.setContent(res.doc.html, false); }
@@ -5206,6 +5213,10 @@
                             console.log('WML: Fresh template injected for new attempt', att);
                         }
                     }
+                    // v7.15.100: Splice persisted General Notes into whichever
+                    // document (server doc or fresh template) just landed in the
+                    // editor. Runs AFTER setContent so the shared content survives.
+                    if (_pendingGeneralNotes) spliceGeneralNotesIntoEditor();
                 } catch (e) {
                     console.log('WML: Document reload failed, injecting fresh template', e.message);
                     const template = getExamPrepDocTemplate ? getExamPrepDocTemplate(state.task) : null;
@@ -7032,7 +7043,9 @@
         wcWidget.appendChild(wcWidgetClose);
         canvas.appendChild(wcWidget);
         // v7.15.23: Hide word count for planning-only exercises (no essay writing)
-        if (state.task === 'essay_plan' || state.task === 'mark_scheme') {
+        // v7.15.100: also hide for foundational_quiz, conceptual_notes,
+        // mark_scheme_assessment — none of these produce written essays.
+        if (['essay_plan', 'mark_scheme', 'mark_scheme_assessment', 'foundational_quiz', 'conceptual_notes'].includes(state.task)) {
             wcWidget.style.display = 'none';
         }
 

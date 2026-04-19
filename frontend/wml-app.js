@@ -6784,15 +6784,28 @@ Before marking the introduction, ask the student to confirm their essay structur
                     if (oldOverlay) oldOverlay.remove();
                     document.body.style.overflow = '';
 
-                    // Update config and state
+                    // Update config and state.
+                    // v7.15.100: unconditional assignment — falsy cfg values must
+                    // CLEAR the previous lesson's state (otherwise topicNumber /
+                    // phase / attempt leak across SPA navigation and canvas saves
+                    // land on the wrong meta key, e.g. FQ inheriting topicNumber=2
+                    // from Conceptual Notes and saving as swml_canvas..._t2_fq__a8).
                     window.swmlEmbedConfig = cfg;
-                    if (cfg.board)   state.board   = cfg.board;
-                    if (cfg.subject) state.subject = cfg.subject;
-                    if (cfg.text)    state.text    = cfg.text;
-                    if (cfg.task)    state.task    = cfg.task;
-                    if (cfg.topic)   state.topicNumber = cfg.topic;
+                    state.board       = cfg.board   || '';
+                    state.subject     = cfg.subject || '';
+                    state.text        = cfg.text    || '';
+                    state.task        = cfg.task    || '';
+                    state.topicNumber = cfg.topic   || 0;
                     if (cfg.phase === 'redraft') { state.phase = 'redraft'; state.isRedraft = true; }
                     else if (cfg.phase === 'initial') { state.phase = 'initial'; state.isRedraft = false; }
+                    else { state.phase = null; state.isRedraft = false; }
+                    // v7.15.100: force attempt + session re-resolve on SPA nav
+                    state.attempt    = 0;
+                    state.sessionId  = '';
+                    state.chatId     = '';
+                    state.question   = '';
+                    state.draftType  = null;
+                    state.planningMode = null;
                     state.mode = 'exam_prep';
                     state.textName = cfg.text ? getTextLabel(cfg.text, cfg.subject) : '';
 
