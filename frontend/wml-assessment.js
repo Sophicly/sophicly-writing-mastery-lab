@@ -530,6 +530,7 @@
         const subtitle = (subtitleParts && state.topicNumber) ? `${subtitleParts} — Topic ${state.topicNumber}` : '';
 
         const startNewAttempt = async () => {
+            let _newNum = 0;
             try {
                 const res = await fetch(API.attemptsNew, {
                     method: 'POST', headers,
@@ -541,12 +542,22 @@
                 }).then(r => r.json());
                 if (res.success) {
                     state.attempt = res.attempt;
+                    _newNum = res.attempt;
                     sessionStorage.setItem('swml_new_attempt', String(state.attempt));
                 }
             } catch (e) {
                 console.warn('WML Attempt: new attempt failed', e.message);
             }
-            window.location.reload();
+            // v7.15.107: Navigate with ?attempt=N so diagnostic overlay guard
+            // (attemptFromUrl) skips re-firing after reload. Bare reload
+            // caused infinite overlay loop on shared diagnostic lessons.
+            if (_newNum > 0) {
+                const _navUrl = new URL(window.location.href);
+                _navUrl.searchParams.set('attempt', String(_newNum));
+                window.location.href = _navUrl.toString();
+            } else {
+                window.location.reload();
+            }
         };
 
         const nextTopicLink = document.querySelector('.ld-lesson-nav-next a, .ld-topic-nav-next a');
@@ -690,7 +701,14 @@
                     } catch (e) { console.warn('WML: attempt switch failed —', e.message); }
                     try { localStorage.removeItem(CANVAS_SAVE_KEY()); localStorage.removeItem(CHAT_SAVE_KEY()); } catch(_) {}
                     overlay.remove();
-                    window.location.reload();
+                    // v7.15.107: Navigate with ?attempt=N so v7.15.106 URL-param
+                    // handler pre-resolves state.attempt AND the diagnostic-
+                    // overlay guard (attemptFromUrl) skips re-firing this same
+                    // modal after reload. Bare reload without ?attempt= caused
+                    // the infinite overlay loop on shared diagnostic lessons.
+                    const _navUrl = new URL(window.location.href);
+                    _navUrl.searchParams.set('attempt', String(a.num));
+                    window.location.href = _navUrl.toString();
                     resolve(true);
                 });
                 list.appendChild(btn);
@@ -703,6 +721,7 @@
             const newBtn = el('button', { textContent: `Start Attempt ${count + 1}` });
             newBtn.style.cssText = 'width:100%;padding:12px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,#5333ed,#4D76FD);color:#fff;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:8px;';
             newBtn.addEventListener('click', async () => {
+                let _newAttemptNum = 0;
                 try {
                     const res = await fetch(API.attemptsNew, {
                         method: 'POST', headers,
@@ -715,12 +734,22 @@
                     }).then(r => r.json());
                     if (res && res.success) {
                         state.attempt = res.attempt;
+                        _newAttemptNum = res.attempt;
                         sessionStorage.setItem('swml_new_attempt', String(state.attempt));
                     }
                 } catch (e) { console.warn('WML: new-attempt failed —', e.message); }
                 try { localStorage.removeItem(CANVAS_SAVE_KEY()); localStorage.removeItem(CHAT_SAVE_KEY()); } catch(_) {}
                 overlay.remove();
-                window.location.reload();
+                // v7.15.107: Navigate with ?attempt=N so the diagnostic overlay
+                // is skipped after reload. sessionStorage still set for any
+                // other code paths that read it during init.
+                if (_newAttemptNum > 0) {
+                    const _navUrl = new URL(window.location.href);
+                    _navUrl.searchParams.set('attempt', String(_newAttemptNum));
+                    window.location.href = _navUrl.toString();
+                } else {
+                    window.location.reload();
+                }
                 resolve(true);
             });
             card.appendChild(newBtn);
