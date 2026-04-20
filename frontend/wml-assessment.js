@@ -8516,6 +8516,21 @@
             console.log('WML: Attempt pre-resolved from sessionStorage →', state.attempt);
         }
 
+        // v7.15.106: Attempt-scoped deep link. Dashboard MyWork row hrefs may
+        // carry ?attempt=N so tutors/parents/students land on the exact attempt
+        // they clicked (not the student's current pointer). URL param takes
+        // precedence over sessionStorage (which handles start-new reloads).
+        // Must run BEFORE loadCanvasContent() so CANVAS_SAVE_KEY() uses the
+        // correct suffix on first read. Load-only — does NOT call
+        // /attempts/switch (tutor clicks must not rewrite the student's
+        // server pointer).
+        const _attemptFromUrl = parseInt(new URLSearchParams(window.location.search).get('attempt'), 10);
+        if (_attemptFromUrl && _attemptFromUrl > 0) {
+            state.attempt = _attemptFromUrl;
+            try { localStorage.removeItem(CANVAS_SAVE_KEY()); localStorage.removeItem(CHAT_SAVE_KEY()); } catch (e) {}
+            console.log('WML: Attempt pre-resolved from URL →', state.attempt);
+        }
+
         // ── Initialise TipTap Editor ──
         let savedContent = state.reviewMode ? null : loadCanvasContent(); // Review mode: skip localStorage, server will inject
         // v7.13.42: CW tasks — always clear stale localStorage so fresh template loads
