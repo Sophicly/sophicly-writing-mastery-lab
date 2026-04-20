@@ -1555,8 +1555,10 @@
                         const tn = state.textName || state.text || 'your text';
                         const wc = getResponseWordCount(canvasEditor);
                         const qText = extractEssayQuestion(canvasEditor);
-                        const questionInfo = qText ? `\n\nYour essay question: **${qText}**` : '';
-                        const essayLabel = (state.mode === 'exam_prep') ? `${tn} essay` : (state.phase === 'redraft') ? `${tn} redraft essay` : `${tn} diagnostic essay`;
+                        const _isLang = isLanguageSubject();
+                        const workNoun = _isLang ? 'response' : 'essay';
+                        const questionInfo = qText ? `\n\nYour ${workNoun} question: **${qText}**` : '';
+                        const essayLabel = (state.mode === 'exam_prep') ? `${tn} ${workNoun}` : (state.phase === 'redraft') ? `${tn} redraft ${workNoun}` : `${tn} diagnostic ${workNoun}`;
                         const gt = `Hi ${fn}! Welcome to the assessment phase. I've received your ${essayLabel} (${wc} words). Let's review your writing together.${questionInfo}\n\nBefore I begin marking, I need to know: **what grade are you aiming for?** This helps me tailor my feedback to where you want to be.`;
                         addChatMessage(formatAI(gt), 'ai', gt);
                         canvasChatHistory.push({ role: 'assistant', content: gt });
@@ -2975,7 +2977,7 @@
         outlinePanel.appendChild(outlinePanelHeader);
         const outlineList = el('div', { className: 'swml-outline-list' });
         outlinePanel.appendChild(outlineList);
-        const outlineEmpty = el('div', { className: 'swml-outline-empty', textContent: 'No headings yet. Use H2 and H3 to structure your essay.' });
+        const outlineEmpty = el('div', { className: 'swml-outline-empty', textContent: `No headings yet. Use H2 and H3 to structure your ${isLanguageSubject() ? 'response' : 'essay'}.` });
         outlinePanel.appendChild(outlineEmpty);
         // 8 resize handles — visible only when detached (v7.12.40)
         ['n','s','e','w','nw','ne','sw','se'].forEach(dir => {

@@ -232,6 +232,7 @@ class SWML_Protocol_Router {
 
         $out .= "| Q | Marks | AO(s) | Type | Notes |\n";
         $out .= "|---|-------|-------|------|-------|\n";
+        $aos_used = [];
         foreach ($questions as $q) {
             $id    = $q['id']    ?? '?';
             $marks = $q['marks'] ?? '?';
@@ -243,6 +244,25 @@ class SWML_Protocol_Router {
             if (!empty($q['spag_marks']))    $bits[] = "SPaG={$q['spag_marks']}";
             if ($bits) $notes = trim($notes . ' (' . implode(', ', $bits) . ')');
             $out .= "| {$id} | {$marks} | {$aos} | {$type} | {$notes} |\n";
+            foreach ((array) ($q['aos'] ?? []) as $ao) $aos_used[$ao] = true;
+        }
+
+        // v7.16.0: AO KEY — render descriptions for only the AOs that appear in this paper.
+        // Prevents AI from importing cross-board AO definitions (e.g. AQA Literature AO4 = SPaG vs
+        // AQA Language P1 AO4 = Evaluation). Silently skipped if paper spec lacks aos_descriptions.
+        if (!empty($paper['aos_descriptions']) && is_array($paper['aos_descriptions']) && $aos_used) {
+            $key_lines = [];
+            ksort($aos_used);
+            foreach (array_keys($aos_used) as $ao) {
+                if (!empty($paper['aos_descriptions'][$ao])) {
+                    $key_lines[] = "- **{$ao}** — " . $paper['aos_descriptions'][$ao];
+                }
+            }
+            if ($key_lines) {
+                $out .= "\n### AO KEY (this paper — definitive)\n\n";
+                $out .= implode("\n", $key_lines) . "\n";
+                $out .= "\n⛔ These AO definitions are THE ONLY correct interpretations for this paper. Do NOT import AO definitions from other boards or other papers (e.g. AQA Literature AO4 means something different — ignore it here).\n";
+            }
         }
 
         if (!empty($paper['grade_boundaries']) && is_array($paper['grade_boundaries'])) {
@@ -271,20 +291,30 @@ class SWML_Protocol_Router {
         $out .= "\n### AGGREGATION\n\n";
         $out .= "Total = sum of all per-question marks from the schema above (out of {$total}). Output the final result on its own line as `Total: X/{$total}`. Output grade on its own line as `Grade: N`. The frontend regex-extracts these — unlabelled numbers will NOT be captured. Map the total to a grade using the boundaries above (RANGE_CHECK + TOTALS_RECALC + MAP_GRADE).\n";
 
-        // v7.15.116: Override reinforcement — stops the AI from falling back to
+        // v7.16.0: Override reinforcement — stops the AI from falling back to
         // its training-distribution default of English-Literature-single-essay
         // AO1-AO4 rubrics (e.g. "AO1=4, AO2=16, total=20") for what are actually
-        // short-answer language questions with a single AO each.
-        $out .= "\n### ⛔ AO RUBRIC — SCHEMA IS THE ONLY SOURCE OF TRUTH\n\n";
-        $out .= "Use ONLY the AOs listed in the PAPER SCHEMA table above. Do NOT apply any other AO rubric you may have seen for literature papers or other boards. Specifically:\n";
+        // short-answer language questions with a single AO each. Also blocks
+        // cross-board AO semantic confusion (AQA Lit AO4=SPaG vs AQA Lang P1 AO4=Evaluation).
+        $out .= "\n### ⛔ AO RUBRIC — SCHEMA + AO KEY ARE THE ONLY SOURCES OF TRUTH\n\n";
+        $out .= "Use ONLY the AOs listed in the PAPER SCHEMA table above, interpreted STRICTLY by the AO KEY. Do NOT apply any other AO rubric you may have seen for literature papers or other boards. Specifically:\n";
+        $out .= "- **Cross-board AO meaning is DIFFERENT.** Example: AQA Literature AO4 = technical accuracy (SPaG). AQA Language Paper 1 AO4 = Critical Evaluation. These are NOT the same AO — the code is shared but the meaning is paper-specific. Use the AO KEY above for THIS paper's meanings.\n";
         $out .= "- Do NOT split analysis questions into AO1 (minor) + AO2 (major) unless the schema explicitly lists both AOs for that question.\n";
         $out .= "- Do NOT invent sub-splits (e.g. \"AO1=4, AO2=16, total=20\") when the schema gives a single AO and a single total for that question.\n";
         $out .= "- If the schema says Q2 is 8 marks AO2-only, the score table MUST be `| AO2 | 8 | X |` — not an AO1+AO2 split.\n";
-        $out .= "- AO1 does NOT \"play a minor role\" in any question unless the schema lists AO1 for it. Do not mention AO1 contribution in feedback for AO2-only questions.\n";
+        $out .= "- If the schema says Q4 is 20 marks AO4-only, the score table MUST be `| AO4 | 20 | X |`. Never split AO4-only into AO1+AO2. Never treat AO4 here as SPaG — it is Critical Evaluation (see AO KEY).\n";
+        $out .= "- AO1 does NOT \"play a minor role\" in any question unless the schema lists AO1 for it. Do not mention AO1 contribution in feedback for AO2-only or AO4-only questions.\n";
         $out .= "- For `extended_writing` questions, use the `content_marks` (AO5) + `spag_marks` (AO6) split exactly as given — never collapse into AO1+AO2.\n";
 
-        $out .= "\n### ⛔ STRUCTURE CONFIRMATION — SKIP FOR MULTI-Q LANGUAGE PAPERS\n\n";
-        $out .= "Do NOT ask the student \"I can see [N] paragraphs / responses across N questions — is this correct? A/B\". The student is 13-16 years old and should not be asked to confirm exam-paper structure. The schema above is the source of truth for what questions exist and how many. Skip any structure-confirmation step and proceed directly to assessing the first question.\n";
+        // v7.16.0: Terminology lock — language papers use "response", not "essay".
+        // Literature papers retain "essay". Multi-Q language papers: student's work is a
+        // set of responses across questions, not a single essay.
+        $is_language = isset($paper['total']) && isset($paper['time_minutes'])
+            && !empty($paper['sections']) && count($questions) > 1;
+        if ($is_language) {
+            $out .= "\n### TERMINOLOGY — 'RESPONSE', NOT 'ESSAY'\n\n";
+            $out .= "This is a multi-question language paper. The student's work across Q1-Q" . count($questions) . " is a *response*, NOT an *essay*. Use the word **response** (or 'your work', or 'your answers') in feedback prose. Do NOT write 'your essay' or 'before I assess your essay'. Literature single-essay papers are handled separately.\n";
+        }
 
         return $out;
     }
@@ -2644,6 +2674,18 @@ TEMPLATE;
             // literature-paper-specs.json. Falls back to legacy essay preamble when no spec.
             $schema_block = $this->build_assessment_schema_block($board, $subject);
             if ($schema_block) {
+                // v7.16.0: Top-of-preamble HARD GATE. Placed BEFORE the schema block so the
+                // AI encounters it first in the assessment-specific context. Prior attempt
+                // (v7.15.116) buried a similar note inside the schema block — AI complied
+                // partially but still fired "I can see N responses across N questions... A/B".
+                $preamble .= "\n### ⛔ HARD GATE — NEVER GATE ASSESSMENT ON STRUCTURE CONFIRMATION\n\n";
+                $preamble .= "Before you assess Q1 (the first question), you MUST NOT emit ANY of:\n";
+                $preamble .= "- \"Before I assess your [essay/response/paragraphs], I need to confirm the structure...\"\n";
+                $preamble .= "- \"I can see [N] paragraphs / responses / questions... Is this correct? A / B\"\n";
+                $preamble .= "- Any A/B prompt asking the student to verify paper-level structure, question count, or paper type.\n\n";
+                $preamble .= "The PAPER SCHEMA below is the ONLY source of truth for question count, marks, and AOs. The student (13-16yo) is NOT qualified to confirm exam-paper structure — you are. Proceed directly from the grade-target question to assessing Q1.\n\n";
+                $preamble .= "EXCEPTION: per-question TTECEA-paragraph checks within a single question (e.g. \"Q2 requires two TTECEA paragraphs — please submit both\") are PERMITTED and come from the protocol module. This gate applies ONLY to paper-level structure confirmation.\n";
+
                 $preamble .= $schema_block;
                 $preamble .= $this->build_assessment_workflow_reminder();
             } else {
