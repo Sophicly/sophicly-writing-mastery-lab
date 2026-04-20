@@ -47,7 +47,7 @@ class SWML_Function_Handlers {
                 'properties' => [
                     'element_type' => [
                         'type'        => 'string',
-                        'description' => 'The type of element being saved. Use the task-specific prefix: planning = question_text/goal/keywords/anchor_quote_start/mid/end/body_para_1/2/3/introduction/conclusion. Assessment = ao1_score/ao2_score/ao3_score/ao4_score/total_score/grade/strength_1/target_1/target_2. Polishing = current_level/target_level/polish_focus/revision_1/2/3. Conceptual Notes = cn_section_1 through cn_section_7. Quote Analysis = qa_quote/qa_student_plan/qa_student_paragraph/qa_ai_plan/qa_ai_paragraph. Model Answer = ma_question/ma_plan/ma_body_1/2/3/ma_introduction/ma_conclusion. Exam Question = eq_theme/eq_output.',
+                        'description' => 'The type of element being saved. Use the task-specific prefix: planning = question_text/goal/keywords/anchor_quote_start/mid/end/body_para_1/2/3/introduction/conclusion. Assessment = question_text/total_score/grade/strength_1/target_1/target_2 (per-AO slots ao1_score/ao2_score/ao3_score/ao4_score are DEPRECATED as of v7.15.113 — do not use them). Polishing = current_level/target_level/polish_focus/revision_1/2/3. Conceptual Notes = cn_section_1 through cn_section_7. Quote Analysis = qa_quote/qa_student_plan/qa_student_paragraph/qa_ai_plan/qa_ai_paragraph. Model Answer = ma_question/ma_plan/ma_body_1/2/3/ma_introduction/ma_conclusion. Exam Question = eq_theme/eq_output.',
                     ],
                     'content' => [
                         'type'        => 'string',

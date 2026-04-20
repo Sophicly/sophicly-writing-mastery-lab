@@ -36,7 +36,21 @@
             { "id": "Q5", "marks": 40, "aos": ["AO5", "AO6"], "type": "extended_writing", "content_marks": 24, "spag_marks": 16, "description": "Descriptive or narrative writing (choice of 2 tasks)" }
           ]
         }
-      ]
+      ],
+      "grade_boundaries": {
+        "source": "AQA 8700/1 June 2023",
+        "verified": false,
+        "_note": "Reference year fixed at June 2023 per product decision. Values pending Neil's fact-check against official AQA boundary document.",
+        "9": 65,
+        "8": 58,
+        "7": 51,
+        "6": 44,
+        "5": 37,
+        "4": 30,
+        "3": 23,
+        "2": 16,
+        "1": 9
+      }
     },
     "language_p2": {
       "verified": true,

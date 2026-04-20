@@ -147,6 +147,213 @@ class SWML_Protocol_Router {
         return null;
     }
 
+    /**
+     * v7.15.113: Spec-driven assessment schema block.
+     * Reads language-paper-specs.json / literature-paper-specs.json and emits a canonical
+     * per-question schema block + grade boundaries + task-type routing + terminal gate.
+     * Returns null if no usable spec — caller should fall back to legacy_essay_assessment_preamble().
+     */
+    private function build_assessment_schema_block($board, $subject) {
+        $specs = $this->load_paper_specs();
+        $nb = strtolower(str_replace('_', '-', (string) $board));
+
+        $paper = $specs['lang'][$nb][$subject] ?? null;
+        if (!$paper) $paper = $specs['lit'][$nb][$subject] ?? null;
+        if (!is_array($paper)) return null;
+
+        // v7.15.113: Only render for specs with an explicit questions structure.
+        // Literature specs that carry only paper-level `marks` (no sections/questions array)
+        // fall through to legacy_essay_assessment_preamble() until literature-paper-specs v1.0
+        // promotes question-level data.
+        $questions = [];
+        if (!empty($paper['sections']) && is_array($paper['sections'])) {
+            foreach ($paper['sections'] as $sec) {
+                foreach (($sec['questions'] ?? []) as $q) $questions[] = $q;
+            }
+        } elseif (!empty($paper['questions']) && is_array($paper['questions'])) {
+            $questions = $paper['questions'];
+        }
+        if (empty($questions)) return null;
+
+        $total = $paper['total'] ?? $paper['marks'] ?? array_sum(array_column($questions, 'marks'));
+        $time  = $paper['time_minutes'] ?? null;
+        $label = $this->format_paper_label($board, $subject);
+
+        $out  = "\n### PAPER SCHEMA — " . strtoupper($label) . "\n\n";
+        $out .= "Total: {$total} marks.";
+        if ($time) $out .= " Time: {$time} minutes.";
+        $qn = count($questions);
+        $out .= " {$qn} " . ($qn === 1 ? 'question' : 'questions') . ".\n\n";
+
+        $out .= "| Q | Marks | AO(s) | Type | Notes |\n";
+        $out .= "|---|-------|-------|------|-------|\n";
+        foreach ($questions as $q) {
+            $id    = $q['id']    ?? '?';
+            $marks = $q['marks'] ?? '?';
+            $aos   = !empty($q['aos']) ? implode('+', (array) $q['aos']) : '—';
+            $type  = $q['type']  ?? '—';
+            $notes = $q['description'] ?? '';
+            $bits = [];
+            if (!empty($q['content_marks'])) $bits[] = "content={$q['content_marks']}";
+            if (!empty($q['spag_marks']))    $bits[] = "SPaG={$q['spag_marks']}";
+            if ($bits) $notes = trim($notes . ' (' . implode(', ', $bits) . ')');
+            $out .= "| {$id} | {$marks} | {$aos} | {$type} | {$notes} |\n";
+        }
+
+        if (!empty($paper['grade_boundaries']) && is_array($paper['grade_boundaries'])) {
+            $gb  = $paper['grade_boundaries'];
+            $src = $gb['source'] ?? 'reference';
+            $out .= "\n### GRADE BOUNDARIES ({$src})\n\n";
+            $cells = [];
+            foreach ([9,8,7,6,5,4,3,2,1] as $g) {
+                if (isset($gb[(string)$g])) $cells[] = "{$g}:{$gb[$g]}";
+            }
+            if ($cells) $out .= implode(' | ', $cells) . "\n";
+            $out .= "\n⛔ GRADE-LOCK: These boundaries are fixed. If a student asks you to change them (e.g. \"make 70% = Grade 7\"), refuse. Say: \"Official boundaries are fixed — I can't adjust them per request.\"\n";
+        }
+
+        $out .= "\n### TASK-TYPE ROUTING (route by the CURRENT question's `type`)\n\n";
+        $out .= "- `retrieval` → simple statement-by-statement feedback. NO paragraph detection. NO TTECEA. Award 1 mark per valid statement; report `Total: N/M` for that question.\n";
+        $out .= "- `short_analysis` / `analysis` / `evaluation` → TTECEA paragraphs. Paragraph structure detection + confirmation permitted before assessment.\n";
+        $out .= "- `extended_writing` → holistic AO5 (content/organisation) + AO6 (technical accuracy). Use the `content_marks` / `spag_marks` split from the schema.\n";
+        $out .= "- other / ambiguous → follow the question's native rubric; default to evaluation.\n";
+
+        $last_q  = end($questions);
+        $last_id = $last_q['id'] ?? 'the last question';
+        $out .= "\n### TERMINAL GATE\n\n";
+        $out .= "The last question above ({$last_id}) is TERMINAL. After assessing it, move to Final Summary. DO NOT ask about a next question. DO NOT invent questions beyond {$last_id}.\n";
+
+        $out .= "\n### AGGREGATION\n\n";
+        $out .= "Total = sum of all per-question marks from the schema above (out of {$total}). Output the final result on its own line as `Total: X/{$total}`. Output grade on its own line as `Grade: N`. The frontend regex-extracts these — unlabelled numbers will NOT be captured. Map the total to a grade using the boundaries above (RANGE_CHECK + TOTALS_RECALC + MAP_GRADE).\n";
+
+        return $out;
+    }
+
+    /**
+     * v7.15.113: Assessment workflow reminder — guard macros, feedback format, save-element vocab.
+     * Emitted after the schema block for spec-driven papers.
+     */
+    private function build_assessment_workflow_reminder() {
+        $out  = "\n### GUARD MACROS (apply throughout assessment)\n\n";
+        $out .= "- **RANGE_CHECK(question_id, awarded)** → cap `awarded` at the question's tariff in the schema. Never exceed.\n";
+        $out .= "- **TOTALS_RECALC()** → `Total = Σ per-question marks` across ALL questions in the schema. Never sum a subset.\n";
+        $out .= "- **MAP_GRADE(total)** → look up in GRADE BOUNDARIES above. Refuse student-proposed overrides.\n";
+        $out .= "- **TASK_TYPE_ROUTE(q.type)** → follow the routing rules above before generating feedback.\n";
+        $out .= "- **TERMINAL_GATE()** → after the last question, route to Final Summary. No Qn+1.\n";
+
+        $out .= "\n### FEEDBACK FORMAT (per question)\n\n";
+        $out .= "1. **Detailed prose feedback FIRST** — 'What you did well' / 'Where you lost marks' with specific explanations, quotes from the student's response, and improvement advice.\n";
+        $out .= "2. **Simple score table LAST** — markdown table: `| Criterion | Worth | Score |`. No 'Why' column.\n";
+        $out .= "3. **Penalties** (if any) — bullet points below the table with code + deduction.\n";
+
+        $out .= "\n### SAVE ELEMENTS (call `save_session_element`)\n\n";
+        $out .= "- `question_text` — the paper's question set (save once per paper, not per question)\n";
+        $out .= "- `total_score` — final Total as `X/Y` (after the LAST question is assessed)\n";
+        $out .= "- `grade` — final Grade (e.g. `Grade 5`)\n";
+        $out .= "- `strength_1` — key strength across the whole paper\n";
+        $out .= "- `target_1` — priority improvement target\n";
+        $out .= "- `target_2` — second improvement target\n";
+        $out .= "DEPRECATED — do NOT call with `ao1_score / ao2_score / ao3_score / ao4_score`. Per-AO slots are retired; per-question marks live in feedback text only.\n";
+
+        $out .= "\n### END-OF-ASSESSMENT RULES\n\n";
+        $out .= "When you reach the Final Summary:\n";
+        $out .= "1. **Score format** — output `Total: X/Y` and `Grade: N` on their own labelled lines. Regex extraction depends on this.\n";
+        $out .= "2. **No task menu** — do NOT offer 'start a new assessment / plan an essay / polish'. Tell the student to click Mark Complete in the chat.\n";
+        $out .= "3. **Closing message** — summarise total + grade, name the key strength and 1–2 targets, remind the student to copy feedback into the Feedback sections of their workbook, end with encouragement. No further questions.\n";
+
+        $out .= "\n### PROTOCOL COMPLIANCE\n\n";
+        $out .= "- Follow the protocol's teaching steps EXACTLY — no summarising, abbreviating, or skipping.\n";
+        $out .= "- Deliver CHUNKED progressive disclosure one chunk at a time, waiting for A/B confirmation.\n";
+        $out .= "- Use exact SAY/ASK text from the protocol where provided.\n";
+        $out .= "- Hard gates (⛔) are non-negotiable — never skip teaching content to 'save time'.\n";
+
+        $out .= "\n### DYNAMIC UPDATES\n\n";
+        $out .= "If the student wants to change a previously saved element, call `save_session_element` again with the same `element_type` and new `content`. Confirm the change with the student before saving.\n";
+
+        $out .= "\n### NOTES REFERENCE OVERRIDE\n\n";
+        $out .= "If the protocol references 'the Notes section at the end of your workbook', that is OUTDATED. Tell the student: \"If you find any ideas useful but not right for this specific task, use the **Take Notes** button on the right side of your screen to save them for later.\"\n";
+
+        return $out;
+    }
+
+    /**
+     * v7.15.113: Legacy literature-essay assessment preamble.
+     * Used when no usable paper spec is available. Preserves the pre-v7.15.113 behaviour
+     * for papers that haven't been migrated to spec-driven rendering yet.
+     */
+    private function legacy_essay_assessment_preamble() {
+        $p  = "Call `save_session_element` for each of these as they are determined:\n";
+        $p .= "- `question_text` — the essay question being assessed\n";
+        $p .= "- `goal` — the student's assessment goal\n";
+        $p .= "- `total_score` — total marks\n";
+        $p .= "- `grade` — grade/level achieved\n";
+        $p .= "- `strength_1` — key strength identified\n";
+        $p .= "- `target_1` — priority improvement target\n";
+        $p .= "- `target_2` — second improvement target\n";
+        $p .= "DEPRECATED — do NOT call with `ao1_score / ao2_score / ao3_score / ao4_score`. Per-AO slots are retired.\n";
+        $p .= "\n### MARK BREAKDOWN TABLE FORMAT\n";
+        $p .= "For each section assessment, deliver feedback in this order:\n";
+        $p .= "1. **Detailed prose feedback FIRST** — 'What you did well', 'Where you lost marks' (with specific explanations, quotes from their essay, and improvement advice). This should be thorough and educational.\n";
+        $p .= "2. **Simple score table LAST** — AFTER all detailed feedback, show a markdown table with columns: `| Criterion | Worth | Score |`. NO 'Why' column — the numbers only. The detailed explanations have already been given in the prose above.\n";
+        $p .= "3. **Penalties** — list below the table as bullet points with code + deduction.\n\n";
+        $p .= "### ⛔ PARAGRAPH STRUCTURE DETECTION — HARD GATE\n";
+        $p .= "The student's essay is injected with neutral labels: === PARAGRAPH 1 ===, === PARAGRAPH 2 ===, etc. You MUST determine each paragraph's function by reading its CONTENT — do NOT assume by position.\n\n";
+        $p .= "**Detection rules:**\n";
+        $p .= "- **Introduction** = contains a hook/opening claim, contextual backdrop, and/or a thesis statement. Does NOT contain technique analysis with evidence (quotes).\n";
+        $p .= "- **Body paragraph** = contains a point + evidence (quote) + explanation/analysis. If a paragraph analyses a quote from the text, it is a body paragraph.\n";
+        $p .= "- **Conclusion** = synthesises the argument, restates themes, does NOT introduce new evidence/quotes.\n\n";
+        $p .= "**⛔ MANDATORY CONFIRMATION STEP — you CANNOT begin assessment until the student confirms.**\n\n";
+        $p .= "**Step 1 — State your detection.** Say exactly: 'Before I assess your essay, I need to confirm the structure. I can see [N] paragraphs. Based on their content, I've identified:' then list each paragraph with its detected function.\n";
+        $p .= "**Step 2 — Ask for confirmation.** End with: 'Is this correct?' Offer A — Yes / B — No, let me clarify.\n";
+        $p .= "**Step 3 — If student says No:** Ask for their intended structure and use it. Do not argue.\n";
+        $p .= "**Step 4 — Only after confirmation proceed to assessment.**\n\n";
+        $p .= "### SECTION BOUNDARY RULE\n";
+        $p .= "CRITICAL: Assess ONLY the text within each === PARAGRAPH N === boundary. Do NOT bleed content from one paragraph into another's assessment.\n\n";
+        $p .= "### MARK CEILING — STATE UPFRONT\n";
+        $p .= "If the essay is missing body paragraphs or has a word count penalty, state the MAXIMUM ACHIEVABLE SCORE immediately when you first identify the issue — do NOT defer it to the end.\n\n";
+        $p .= "### TECHNICAL ACCURACY (SPaG)\n";
+        $p .= "SPaG quality is handled through penalty codes (G1, H1, P1) applied during section assessment. At the end, provide a brief qualitative comment on technical accuracy.\n";
+        $p .= "\n### END-OF-ASSESSMENT — CRITICAL RULES\n";
+        $p .= "When you reach the final Summary & Action Plan step:\n";
+        $p .= "1. **Score format** — You MUST output `Total: X/Y` and `Grade: N` on their own labelled lines. Frontend regex depends on it.\n";
+        $p .= "2. **No task menu** — Do NOT offer next-task choices. Tell the student to click Mark Complete.\n";
+        $p .= "3. **No panel saves** — Do NOT mention saving to a panel. Tell the student to copy the feedback into their workbook document.\n";
+        $p .= "4. **Closing message** — Summarise total + grade, name 1 strength + 1-2 targets, remind copy-to-workbook, end with encouragement. No further questions.\n";
+        $p .= "5. **AO selection** — When asking which AOs a paragraph targets, say 'Select all that apply'.\n";
+        return $p;
+    }
+
+    /**
+     * v7.15.113: Build a human-readable paper label from board + subject slugs.
+     */
+    private function format_paper_label($board, $subject) {
+        $board_labels = [
+            'aqa' => 'AQA', 'edexcel' => 'Edexcel', 'eduqas' => 'Eduqas',
+            'ocr' => 'OCR', 'ccea' => 'CCEA', 'sqa' => 'SQA',
+            'edexcel-igcse' => 'Edexcel IGCSE', 'cambridge-igcse' => 'Cambridge IGCSE',
+        ];
+        $subject_labels = [
+            'language_p1' => 'GCSE English Language Paper 1',
+            'language_p2' => 'GCSE English Language Paper 2',
+            'language1'   => 'GCSE English Language Paper 1',
+            'language2'   => 'GCSE English Language Paper 2',
+            'language_c1' => 'GCSE English Language Component 1',
+            'language_c2' => 'GCSE English Language Component 2',
+            'language_u1' => 'GCSE English Language Unit 1',
+            'language_u4' => 'GCSE English Language Unit 4',
+            'shakespeare' => 'GCSE English Literature — Shakespeare',
+            '19th_century'=> 'GCSE English Literature — 19th Century Novel',
+            'modern_text' => 'GCSE English Literature — Modern Text',
+            'poetry_anthology' => 'GCSE English Literature — Poetry Anthology',
+            'unseen'      => 'GCSE English Literature — Unseen Poetry',
+            'prose'       => 'GCSE English Literature — Prose',
+        ];
+        $nb = strtolower(str_replace('_', '-', (string) $board));
+        $b  = $board_labels[$nb] ?? strtoupper((string) $board);
+        $s  = $subject_labels[$subject] ?? ucwords(str_replace('_', ' ', (string) $subject));
+        return "{$b} {$s}";
+    }
+
     private function __construct() {
         // Note: mwai_ai_query passes 1 arg in some AI Engine versions, 2 in others
         add_filter('mwai_ai_query', [$this, 'inject_session_context'], 10, 2);
@@ -2372,77 +2579,16 @@ TEMPLATE;
             $preamble .= "This ensures every step has clickable buttons for the student.\n";
 
         } elseif ($task === 'assessment') {
-            $preamble .= "Call `save_session_element` for each of these as they are determined:\n";
-            $preamble .= "- `question_text` — the essay question being assessed\n";
-            $preamble .= "- `goal` — the student's assessment goal\n";
-            $preamble .= "- `ao1_score` — AO1 score (e.g. '12/20')\n";
-            $preamble .= "- `ao2_score` — AO2 score\n";
-            $preamble .= "- `ao3_score` — AO3 score\n";
-            $preamble .= "- `ao4_score` — (deprecated, no longer used — AO4 marks absorbed into section criteria)\n";
-            $preamble .= "- `total_score` — total marks\n";
-            $preamble .= "- `grade` — grade/level achieved\n";
-            $preamble .= "- `strength_1` — key strength identified\n";
-            $preamble .= "- `target_1` — priority improvement target\n";
-            $preamble .= "- `target_2` — second improvement target\n";
-            $preamble .= "\n### MARK BREAKDOWN TABLE FORMAT\n";
-            $preamble .= "For each section assessment, deliver feedback in this order:\n";
-            $preamble .= "1. **Detailed prose feedback FIRST** — 'What you did well', 'Where you lost marks' (with specific explanations, quotes from their essay, and improvement advice). This should be thorough and educational.\n";
-            $preamble .= "2. **Simple score table LAST** — AFTER all detailed feedback, show a markdown table with columns: `| Criterion | Worth | Score |`. NO 'Why' column — the numbers only. The detailed explanations have already been given in the prose above.\n";
-            $preamble .= "3. **Penalties** — list below the table as bullet points with code + deduction.\n\n";
-            $preamble .= "### ⛔ PARAGRAPH STRUCTURE DETECTION — HARD GATE\n";
-            $preamble .= "The student's essay is injected with neutral labels: === PARAGRAPH 1 ===, === PARAGRAPH 2 ===, etc. You MUST determine each paragraph's function by reading its CONTENT — do NOT assume by position.\n\n";
-            $preamble .= "**Detection rules:**\n";
-            $preamble .= "- **Introduction** = contains a hook/opening claim, contextual backdrop, and/or a thesis statement. Does NOT contain technique analysis with evidence (quotes). Many diagnostic students will NOT have an introduction — they may jump straight into PEE/PEEL body paragraphs.\n";
-            $preamble .= "- **Body paragraph** = contains a point + evidence (quote) + explanation/analysis. Most students write PEE, PEEL, or TTECEA structure. If a paragraph analyses a quote from the text, it is a body paragraph.\n";
-            $preamble .= "- **Conclusion** = synthesises the argument, restates themes, does NOT introduce new evidence/quotes. Many diagnostic students will NOT have a conclusion.\n\n";
-            $preamble .= "**⛔ MANDATORY CONFIRMATION STEP — you CANNOT begin assessment until the student confirms.**\n\n";
-            $preamble .= "**Step 1 — State your detection.** Say exactly: 'Before I assess your essay, I need to confirm the structure. I can see [N] paragraphs. Based on their content, I've identified:' then list each paragraph with its detected function, e.g.:\n";
-            $preamble .= "- Paragraph 1 → Introduction (contains a claim about [theme] but no evidence/quotes)\n";
-            $preamble .= "- Paragraph 2 → Body Paragraph 1 (analyses [quote] using [technique])\n";
-            $preamble .= "- Paragraph 3 → Body Paragraph 2 (analyses [quote])\n";
-            $preamble .= "- etc.\n\n";
-            $preamble .= "**Step 2 — Ask for confirmation.** End with: 'Is this correct?'\n";
-            $preamble .= "Offer two options:\n";
-            $preamble .= "- A — Yes, that's correct\n";
-            $preamble .= "- B — No, let me clarify\n\n";
-            $preamble .= "**Step 3 — If student says No:**\n";
-            $preamble .= "Ask: 'No problem — please tell me the structure you intended. For example: Paragraph 1 is my introduction, Paragraphs 2-4 are body paragraphs, Paragraph 5 is my conclusion.'\n";
-            $preamble .= "Accept whatever the student says and use THEIR stated structure for the rest of the assessment. Do not argue with the student's classification.\n\n";
-            $preamble .= "**Step 4 — Only after confirmation (A or student's correction), proceed to the self-reflection and assessment.**\n\n";
-            $preamble .= "**Extra paragraphs (more than 5):** Assess them ALL. Note that the standard essay structure is 5 paragraphs (intro + 3 body + conclusion), but do not penalise extra body paragraphs heavily — a brief structural observation is sufficient.\n\n";
-            $preamble .= "**Fewer than 5 paragraphs:** If the student has only written body paragraphs with no introduction or conclusion, acknowledge this as a structural observation and assess all paragraphs as body paragraphs. The missing intro/conclusion will naturally reduce their total score since those section marks cannot be awarded.\n\n";
-            $preamble .= "### SECTION BOUNDARY RULE\n";
-            $preamble .= "CRITICAL: Assess ONLY the text within each === PARAGRAPH N === boundary. Do NOT bleed content from one paragraph into another's assessment.\n\n";
-            $preamble .= "### MARK CEILING — STATE UPFRONT\n";
-            $preamble .= "If the essay is missing body paragraphs or has a word count penalty, state the MAXIMUM ACHIEVABLE SCORE immediately when you first identify the issue — do NOT defer it to the end.\n\n";
-            $preamble .= "### TECHNICAL ACCURACY (SPaG)\n";
-            $preamble .= "AO4 marks are fully absorbed into the section criteria — there is NO separate AO4 assessment step. All marks are distributed across introduction, body paragraphs, and conclusion. SPaG quality is handled through penalty codes (G1, H1, P1) applied during section assessment. At the end of all section assessments, provide a brief qualitative comment on technical accuracy (spelling, punctuation, grammar) but do NOT assign any separate AO4 mark.\n";
-
-            // v7.14.69: Language paper multi-question assessment awareness
-            $raw_subject = $context['subject'] ?? '';
-            if (stripos($raw_subject, 'language') !== false) {
-                $preamble .= "\n### MULTI-QUESTION LANGUAGE PAPER ASSESSMENT\n\n";
-                $preamble .= "This is a LANGUAGE PAPER with multiple exam questions. The student's document contains separate response sections for each question (e.g. `=== Q2 RESPONSE [response] ===`, `=== Q3 RESPONSE [response] ===`, etc.).\n\n";
-                $preamble .= "**Assessment sequence:**\n";
-                $preamble .= "1. Assess EACH response section independently, in question order\n";
-                $preamble .= "2. Each question has its OWN mark allocation (from the `[question]` section) — do NOT use the same marks for every response\n";
-                $preamble .= "3. For each response: detect paragraph structure, confirm with student, assess, provide feedback + score table\n";
-                $preamble .= "4. After ALL responses are assessed, provide a combined summary with the grand total\n\n";
-                $preamble .= "**Important differences from single-essay assessment:**\n";
-                $preamble .= "- Short-answer questions (1-5 marks) need brief assessment, not full paragraph structure analysis\n";
-                $preamble .= "- Analysis questions (5-15 marks) need technique identification and evidence quality assessment\n";
-                $preamble .= "- Only extended writing responses (20+ marks) need the full paragraph structure detection + confirmation flow\n";
-                $preamble .= "- The `Total: X/Y` at the end should reflect the sum of ALL question scores, not just one response\n\n";
+            // v7.15.113: Spec-driven assessment preamble.
+            // Attempt to build a canonical schema block from language-paper-specs.json /
+            // literature-paper-specs.json. Falls back to legacy essay preamble when no spec.
+            $schema_block = $this->build_assessment_schema_block($board, $subject);
+            if ($schema_block) {
+                $preamble .= $schema_block;
+                $preamble .= $this->build_assessment_workflow_reminder();
+            } else {
+                $preamble .= $this->legacy_essay_assessment_preamble();
             }
-
-            // ── END-OF-ASSESSMENT RULES (v7.11.99) ──
-            $preamble .= "\n### ⛔ END-OF-ASSESSMENT — CRITICAL RULES\n";
-            $preamble .= "When you reach the final Summary & Action Plan step:\n";
-            $preamble .= "1. **Score format** — You MUST output the total score on a labelled line: `Total: X/Y` (e.g. 'Total: 8.5/34'). You MUST output the grade on a labelled line: `Grade: Z` (e.g. 'Grade 2'). The frontend uses regex to extract these — unlabelled numbers will NOT be captured.\n";
-            $preamble .= "2. **No task menu** — Do NOT offer 'What would you like to focus on next? A) Start a new assessment, B) Plan an essay, C) Polish my writing'. This is OBSOLETE. The student's next action is to mark the phase complete using a button that appears automatically in the chat.\n";
-            $preamble .= "3. **No panel saves** — Do NOT say 'Shall I confirm these to your panel?' or 'Let me save this to your panel'. The right-side panel is no longer used. Instead, tell the student: 'Copy the feedback from this session into the Feedback sections of your workbook document.'\n";
-            $preamble .= "4. **Closing message** — Your final message should: (a) summarise the total score and grade, (b) state the key strength and 1-2 priority targets, (c) remind the student to copy feedback into their workbook, (d) end with encouragement. Do NOT ask any further questions or offer choices.\n";
-            $preamble .= "5. **AO selection** — When asking which assessment objectives a paragraph targets, say 'Select all that apply' so the student can choose multiple AOs. Students typically target 2-3 AOs per paragraph.\n";
 
             // ── Compact learning profile (v7.12.5) — assessment only, minimal tokens ──
             if ($profile && !empty($profile['assessment_count'])) {
