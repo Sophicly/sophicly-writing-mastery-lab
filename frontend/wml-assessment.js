@@ -5247,12 +5247,18 @@
                         return;
                     }
 
-                    const questionSnippet = questionText ? `\n\nYour essay question: **${questionText}**` : '';
-                    const questionHTML = questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your essay question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
-                    const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} essay` : (state.phase === 'redraft') ? `${assessTextName} redraft essay` : `${assessTextName} diagnostic essay`;
+                    // v7.15.116: Language papers use "response" not "essay" — the
+                    // paper's answers across Q1-Q5 are not essays. Literature papers
+                    // remain "essay" because that's what the student writes for a
+                    // literature paper (single extended essay).
+                    const _isLangPaper = ['language1','language2','language_p1','language_p2','language_c1','language_c2','language_u1','language_u4'].includes(state.subject);
+                    const _workLabel = _isLangPaper ? 'response' : 'essay';
+                    const questionSnippet = questionText ? `\n\nYour ${_workLabel} question: **${questionText}**` : '';
+                    const questionHTML = questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${_workLabel} question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
+                    const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} ${_workLabel}` : (state.phase === 'redraft') ? `${assessTextName} redraft ${_workLabel}` : `${assessTextName} diagnostic ${_workLabel}`;
                     const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
                     const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all 8 steps to receive your full score, grade, and personalised feedback.</div>';
-                    tp.addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? 'essay' : (state.phase === 'redraft') ? 'redraft essay' : 'diagnostic essay'} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
+                    tp.addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? _workLabel : (state.phase === 'redraft') ? `redraft ${_workLabel}` : `diagnostic ${_workLabel}`} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
                     tp.canvasChatHistory.push({ role: 'assistant', content: greetingText });
                     saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
 

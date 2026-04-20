@@ -82,6 +82,42 @@ class SWML_Protocol_Router {
         return $out;
     }
 
+    /**
+     * v7.15.116: Normalise frontend short-form subject slugs to the long-form
+     * keys used in language-paper-specs.json / literature-paper-specs.json.
+     *
+     * Frontend carries state.subject as 'language1' (short). JSON spec keys are
+     * 'language_p1' (paper), 'language_c1' (component), etc. Every lookup that
+     * reads from the specs JSON must normalise first or it falls through to
+     * legacy / default shapes.
+     *
+     * Returns the candidate spec-JSON key. Callers should still try the raw
+     * subject as a fallback (see build_assessment_schema_block) because some
+     * subjects (shakespeare, 19th_century, language_c1, etc.) already match
+     * the JSON shape and don't need remapping.
+     */
+    private function normalise_subject_key($subject, $board = '') {
+        $s = (string) $subject;
+        $nb = strtolower(str_replace('_', '-', (string) $board));
+        // Board-aware short→long mappings. JSON spec keys differ per awarding body:
+        //   AQA / Edexcel / Edexcel-IGCSE / Cambridge-IGCSE → language_p1 / language_p2 (paper-style)
+        //   Eduqas / OCR                                    → language_c1 / language_c2 (component-style)
+        //   CCEA                                            → language_u1 / language_u4 (unit-style)
+        // Unmapped subjects pass through unchanged (shakespeare, 19th_century, modern_text, etc.).
+        if ($s === 'language1' || $s === 'language2') {
+            $n = $s === 'language1' ? 1 : 2;
+            if (in_array($nb, ['eduqas', 'ocr'], true)) {
+                return $n === 1 ? 'language_c1' : 'language_c2';
+            }
+            if ($nb === 'ccea') {
+                return $n === 1 ? 'language_u1' : 'language_u4';
+            }
+            // Default — aqa / edexcel / edexcel-igcse / cambridge-igcse and anything else
+            return $n === 1 ? 'language_p1' : 'language_p2';
+        }
+        return $s;
+    }
+
     public function resolve_paper_shape($board, $subject, $question_number = null, $lesson_meta = []) {
         // 1. Explicit override
         if (!empty($lesson_meta['shape_override'])) {
@@ -90,26 +126,31 @@ class SWML_Protocol_Router {
 
         $specs = $this->load_paper_specs();
         $norm_board = strtolower(str_replace('_', '-', (string) $board));
+        $sk = $this->normalise_subject_key($subject, $board);
 
         // 2. Literature specs
-        if (isset($specs['lit'][$norm_board][$subject]) && is_array($specs['lit'][$norm_board][$subject])) {
-            $row = $specs['lit'][$norm_board][$subject];
-            return [
-                'shape'           => $row['shape'] ?? 'lit-extract-single',
-                'marks'           => $row['marks'] ?? null,
-                'spag_marks'      => $row['spag_marks'] ?? null,
-                'aos'             => $row['aos'] ?? null,
-                'extract'         => $row['extract'] ?? null,
-                'question_prefix' => $row['question_prefix'] ?? null,
-                'source'          => 'literature-specs',
-            ];
+        foreach ([$sk, $subject] as $_k) {
+            if (isset($specs['lit'][$norm_board][$_k]) && is_array($specs['lit'][$norm_board][$_k])) {
+                $row = $specs['lit'][$norm_board][$_k];
+                return [
+                    'shape'           => $row['shape'] ?? 'lit-extract-single',
+                    'marks'           => $row['marks'] ?? null,
+                    'spag_marks'      => $row['spag_marks'] ?? null,
+                    'aos'             => $row['aos'] ?? null,
+                    'extract'         => $row['extract'] ?? null,
+                    'question_prefix' => $row['question_prefix'] ?? null,
+                    'source'          => 'literature-specs',
+                ];
+            }
         }
 
         // 3. Language specs — derive shape from question type
-        if (isset($specs['lang'][$norm_board][$subject]['sections'])) {
-            $paper_spec = $specs['lang'][$norm_board][$subject];
-            $derived = $this->derive_lang_paper_shape($paper_spec, $question_number);
-            if ($derived) return array_merge($derived, ['source' => 'language-specs']);
+        foreach ([$sk, $subject] as $_k) {
+            if (isset($specs['lang'][$norm_board][$_k]['sections'])) {
+                $paper_spec = $specs['lang'][$norm_board][$_k];
+                $derived = $this->derive_lang_paper_shape($paper_spec, $question_number);
+                if ($derived) return array_merge($derived, ['source' => 'language-specs']);
+            }
         }
 
         // 4. Fallback — single-extract Literature shape
@@ -156,8 +197,12 @@ class SWML_Protocol_Router {
     private function build_assessment_schema_block($board, $subject) {
         $specs = $this->load_paper_specs();
         $nb = strtolower(str_replace('_', '-', (string) $board));
+        $sk = $this->normalise_subject_key($subject, $board);
 
-        $paper = $specs['lang'][$nb][$subject] ?? null;
+        $paper = $specs['lang'][$nb][$sk] ?? null;
+        if (!$paper) $paper = $specs['lit'][$nb][$sk] ?? null;
+        // Backward compat — try the raw subject too in case a board uses the short form in JSON.
+        if (!$paper) $paper = $specs['lang'][$nb][$subject] ?? null;
         if (!$paper) $paper = $specs['lit'][$nb][$subject] ?? null;
         if (!is_array($paper)) return null;
 
@@ -225,6 +270,21 @@ class SWML_Protocol_Router {
 
         $out .= "\n### AGGREGATION\n\n";
         $out .= "Total = sum of all per-question marks from the schema above (out of {$total}). Output the final result on its own line as `Total: X/{$total}`. Output grade on its own line as `Grade: N`. The frontend regex-extracts these — unlabelled numbers will NOT be captured. Map the total to a grade using the boundaries above (RANGE_CHECK + TOTALS_RECALC + MAP_GRADE).\n";
+
+        // v7.15.116: Override reinforcement — stops the AI from falling back to
+        // its training-distribution default of English-Literature-single-essay
+        // AO1-AO4 rubrics (e.g. "AO1=4, AO2=16, total=20") for what are actually
+        // short-answer language questions with a single AO each.
+        $out .= "\n### ⛔ AO RUBRIC — SCHEMA IS THE ONLY SOURCE OF TRUTH\n\n";
+        $out .= "Use ONLY the AOs listed in the PAPER SCHEMA table above. Do NOT apply any other AO rubric you may have seen for literature papers or other boards. Specifically:\n";
+        $out .= "- Do NOT split analysis questions into AO1 (minor) + AO2 (major) unless the schema explicitly lists both AOs for that question.\n";
+        $out .= "- Do NOT invent sub-splits (e.g. \"AO1=4, AO2=16, total=20\") when the schema gives a single AO and a single total for that question.\n";
+        $out .= "- If the schema says Q2 is 8 marks AO2-only, the score table MUST be `| AO2 | 8 | X |` — not an AO1+AO2 split.\n";
+        $out .= "- AO1 does NOT \"play a minor role\" in any question unless the schema lists AO1 for it. Do not mention AO1 contribution in feedback for AO2-only questions.\n";
+        $out .= "- For `extended_writing` questions, use the `content_marks` (AO5) + `spag_marks` (AO6) split exactly as given — never collapse into AO1+AO2.\n";
+
+        $out .= "\n### ⛔ STRUCTURE CONFIRMATION — SKIP FOR MULTI-Q LANGUAGE PAPERS\n\n";
+        $out .= "Do NOT ask the student \"I can see [N] paragraphs / responses across N questions — is this correct? A/B\". The student is 13-16 years old and should not be asked to confirm exam-paper structure. The schema above is the source of truth for what questions exist and how many. Skip any structure-confirmation step and proceed directly to assessing the first question.\n";
 
         return $out;
     }
