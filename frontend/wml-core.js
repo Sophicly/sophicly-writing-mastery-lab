@@ -916,7 +916,9 @@ window.WML = (function() {
             protocolSource: null,
             protocolTask: null,
             completionType: 'manual',
-            storageSuffix: '_outline',
+            // v7.15.112: Phase 2 canvas tasks share the redraft doc. Outlining
+            // has no chat, so the unified _redraft suffix is safe on both sides.
+            storageSuffix: '_redraft',
             chatHeaderLabel: null,
             sidebarSteps: null,
         },
@@ -967,6 +969,10 @@ window.WML = (function() {
             protocolTask: 'planning',
             completionType: 'step_complete',
             storageSuffix: '_planning',
+            // v7.15.112: Phase 2 canvas tasks share the redraft doc so planning
+            // work is visible in outlining + response. Chat stays on _planning
+            // to keep Sophia's planning session isolated from reassessment.
+            canvasStorageSuffix: '_redraft',
             chatHeaderLabel: 'Essay Planning',
             sidebarSteps: null, // v7.14.66: populated dynamically from manifest via /protocol-steps endpoint
         },
@@ -1234,6 +1240,23 @@ window.WML = (function() {
             return cfg.storageSuffixForPhase(phase);
         }
         return (cfg && cfg.storageSuffix) || '';
+    }
+
+    // v7.15.112: Canvas-context suffix resolver. Phase 2 canvas tasks (planning,
+    // outlining, response, redraft_assessment, feedback_discussion) all edit the
+    // SAME redraft document. Chat history, however, stays per-task so
+    // planning's Sophia conversation doesn't bleed into reassessment. Tasks that
+    // want this split set `canvasStorageSuffix` (doc-side) alongside
+    // `storageSuffix` (chat-side).
+    function resolveCanvasSuffix(task, phase) {
+        const cfg = getExerciseConfig(task);
+        if (cfg && typeof cfg.canvasStorageSuffix === 'string') {
+            return cfg.canvasStorageSuffix;
+        }
+        if (cfg && typeof cfg.canvasStorageSuffixForPhase === 'function') {
+            return cfg.canvasStorageSuffixForPhase(phase);
+        }
+        return resolveStorageSuffix(task, phase);
     }
 
     // Active config based on current task
@@ -2254,7 +2277,7 @@ window.WML = (function() {
         QUOTE_ANALYSIS_ELEMENTS, MODEL_ANSWER_ELEMENTS, PLAN_ELEMENTS,
         // Helpers
         isPoetrySubject, isLanguageSubject, isNonfictionSubject, isAnthologySubject,
-        getSteps, getElements, getExerciseConfig, getCwStepDef, resolveStorageSuffix,
+        getSteps, getElements, getExerciseConfig, getCwStepDef, resolveStorageSuffix, resolveCanvasSuffix,
         // Exercise manifest
         EXERCISE_MANIFEST,
         // Creative Writing

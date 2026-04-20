@@ -266,7 +266,8 @@
         if (state.reviewMode || !state.board || !state.text) return;
         try {
             // v7.15.78: phase-aware suffix resolution
-            const suffix = _attemptSuffixFor(WML.resolveStorageSuffix(state.task, state.phase));
+            // v7.15.112: Attempts endpoint tracks doc attempts → canvas suffix
+            const suffix = _attemptSuffixFor(WML.resolveCanvasSuffix(state.task, state.phase));
             const url = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(suffix)}`;
             const res = await fetch(url, { headers }).then(r => r.json());
             if (res && res.success && res.attempts && res.attempts.current) {
@@ -832,7 +833,8 @@
     // isolation. Gated by the caller to 'edit' viewer mode + training env.
     async function _showAttemptsMenu() {
         if (!state.board || !state.text) return;
-        const rawSuffix = WML.resolveStorageSuffix ? (WML.resolveStorageSuffix(state.task, state.phase) || '') : '';
+        // v7.15.112: Attempts menu tracks canvas doc attempts.
+        const rawSuffix = WML.resolveCanvasSuffix ? (WML.resolveCanvasSuffix(state.task, state.phase) || '') : '';
         const wireSuffix = _attemptSuffixFor(rawSuffix);
         try {
             const url = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(wireSuffix)}`;
@@ -881,7 +883,9 @@
     // between assessment, mark_scheme, CW steps, etc. on the same board/text/topic.
     // v7.15.12: Attempt-aware — attempt 1 has no suffix (backward compatible), attempt 2+ appends __a{N}
     const CANVAS_SAVE_KEY = () => {
-        const suffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
+        // v7.15.112: Canvas doc uses canvasStorageSuffix when task defines it
+        // (Phase 2 tasks share `_redraft` doc even though chat may be isolated).
+        const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
         const att = (state.attempt || 1) > 1 ? `__a${state.attempt}` : '';
         return `swml_canvas_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}${att}`;
     };
@@ -3724,7 +3728,8 @@
                     // Clear localStorage
                     try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
                     // v7.14.78: Include suffix so the correct server key is cleared
-                    const suffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
+                    // v7.15.112: canvas suffix (shared Phase 2 doc)
+                    const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
                     fetch(API.canvasSave, {
                         method: 'POST', headers,
                         body: JSON.stringify({ board: state.board, text: state.text, html: '', wordCount: 0, topicNumber: state.topicNumber || null, suffix: suffix })
@@ -5295,7 +5300,8 @@
                 } catch(e) {}
                 // Try loading the document from server for this attempt
                 try {
-                    const suffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
+                    // v7.15.112: canvas load uses canvas-context suffix
+                    const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
                     const att = state.attempt || 1;
                     const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
                     const res = await fetch(url, { headers }).then(r => r.json());
@@ -5357,7 +5363,8 @@
                         // v7.15.47: In guided mode, attempts index is shared across
                         // all exercises in the topic (per-topic counter). Standalone
                         // mode keeps per-exercise counters via the exercise's suffix.
-                        const suffix = _attemptSuffixFor(WML.resolveStorageSuffix(state.task, state.phase));
+                        // v7.15.112: canvas-context suffix (shared Phase 2 doc)
+                        const suffix = _attemptSuffixFor(WML.resolveCanvasSuffix(state.task, state.phase));
                         const attUrl = `${API.attempts}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(suffix)}`;
                         console.log('WML Attempt: fetching', attUrl);
                         const attRes = await fetch(attUrl, { headers }).then(r => r.json());
@@ -7293,7 +7300,8 @@
             if (state.reviewMode && state.reviewStudentId) {
                 clearTimeout(window._swmlTutorCommentTimer);
                 window._swmlTutorCommentTimer = setTimeout(() => {
-                    const suffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
+                    // v7.15.112: tutor comments attach to the canvas doc (shared redraft)
+                    const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
                     fetch(API.base + 'canvas/tutor-comment', {
                         method: 'POST', headers,
                         body: JSON.stringify({
@@ -9694,7 +9702,8 @@
                                 body: JSON.stringify({
                                     board: state.board, text: state.text,
                                     topicNumber: state.topicNumber || null,
-                                    suffix: WML.resolveStorageSuffix(state.task, state.phase) || '',
+                                    // v7.15.112: sign-off stamps the canvas doc
+                                    suffix: WML.resolveCanvasSuffix(state.task, state.phase) || '',
                                     studentId: targetStudentId,
                                 })
                             }).then(r => r.json()).then(res => {
@@ -9746,7 +9755,7 @@
                 // Load existing sign-off data
                 // v7.15.84: pass studentId so tutor review sees the student's signoff
                 const loadTargetId = config.targetUserId || config.reviewStudentId || config.userId;
-                fetch(config.restUrl + `canvas/load-signoff?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(WML.resolveStorageSuffix(state.task, state.phase) || '')}&studentId=${encodeURIComponent(loadTargetId)}`, { headers })
+                fetch(config.restUrl + `canvas/load-signoff?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(WML.resolveCanvasSuffix(state.task, state.phase) || '')}&studentId=${encodeURIComponent(loadTargetId)}`, { headers })
                     .then(r => r.ok ? r.json() : null)
                     .then(res => {
                         if (res && res.success && res.signoff && !res.signoff.revoked) {
@@ -14484,7 +14493,8 @@
             text: state.text,
             topicNumber: state.topicNumber || null,
             task: state.task,
-            suffix: WML.resolveStorageSuffix(state.task, state.phase) || '',
+            // v7.15.112: server canvas save keyed by canvas-context suffix
+            suffix: WML.resolveCanvasSuffix(state.task, state.phase) || '',
             attempt: state.attempt || 1,
             embedded: state.embedded,
             planningMode: state.planningMode || '',
@@ -14542,7 +14552,8 @@
             return;
         }
         try {
-            const suffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
+            // v7.15.112: tryServerLoad pulls canvas doc → canvas-context suffix
+            const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
             // Tutor review mode: load student's canvas via review endpoint (v7.15.2)
             let url;
             const att = state.attempt || 1;
