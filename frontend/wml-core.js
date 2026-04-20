@@ -908,7 +908,7 @@ window.WML = (function() {
             sidebarSteps: null,
         },
         outlining: {
-            label: 'Outline Essay',
+            label: 'Outline Response',
             environment: 'free',
             panels: { sidebar: false, chat: false, guidance: true, document: true },
             steps: null,

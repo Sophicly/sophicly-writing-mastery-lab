@@ -5428,8 +5428,10 @@
             // v7.15.47: Attempt badge resolution moved to after overlay attachment (below).
             // v7.15.46's early call here fired before ctxBadges was populated, so the badge
             // landed outside the overflow-dropdown logic on soft nav.
+            // v7.15.111: Outlining task uses its own panel title — everything else is diagnostic-style.
+            const _guidanceTitle = (state.task === 'outlining') ? 'Outline Response' : 'Diagnostic Guidance';
             rightPanel.appendChild(el('h3', {
-                innerHTML: '<span class="swml-sidebar-close-icon">−</span> Diagnostic Guidance',
+                innerHTML: `<span class="swml-sidebar-close-icon">−</span> ${_guidanceTitle}`,
                 style: { cursor: 'pointer' }
             }));
             const guidanceContent = el('div', { className: 'swml-canvas-guidance' });
@@ -5476,14 +5478,31 @@
                 ? 'Write the very best you know at this moment. For each reading question, use TTECEA paragraphs. For the writing task, use a proper essay structure.'
                 : 'Write the very best you know at this moment. Structure: Introduction → 3 Body Paragraphs → Conclusion.';
 
-            const tips = [
-                { icon: SVG_GUIDE_LOCK, colour: '#5333ed', text: 'This is your independent assessment. No help is available — no AI, no notes, no resources. Rely entirely on what you\'ve learned.' },
-                { icon: SVG_GUIDE_BRAIN, colour: '#51dacf', text: 'Try to recall everything you were taught. Extract your best knowledge and put it on the page.' },
-                { icon: SVG_GUIDE_TARGET, colour: '#4D76FD', text: getWordGuidanceText(), id: 'swml-guide-word-target' },
-                { icon: SVG_GUIDE_STOPWATCH, colour: '#51dacf', text: 'Work efficiently. Get your ideas down as quickly as possible to the best of your ability.' },
-                { icon: SVG_GUIDE_ARM, colour: '#1CD991', text: 'Don\'t worry about grades. The purpose is to diagnose your strengths and areas for development, so we can build on them and eliminate weaknesses.' },
-                { icon: SVG_GUIDE_WRITING, colour: '#5333ed', text: structureGuidance },
-            ];
+            // v7.15.111: Outlining-env tips differ from diagnostic — student has a plan,
+            // no AI is offered, and the brief is to convert plan → full response. Lit +
+            // Lang P2 docs have an embedded outline section; Lang P1 fiction + CW don't.
+            let tips;
+            if (state.task === 'outlining') {
+                const _subj = (state.subject || '').toLowerCase();
+                const _hasOutlineSection = !(_subj === 'creative_writing' || _subj === 'language1');
+                const _bodyText = _hasOutlineSection
+                    ? 'You\'ve completed your planning. Now convert your plan into a full response. Your document has an outline section — use it to give your response a solid structure.'
+                    : 'You\'ve completed your planning. Now follow your plan and convert it into a full response. Produce the best writing you can.';
+                tips = [
+                    { icon: SVG_GUIDE_WRITING, colour: '#5333ed', text: _bodyText },
+                    { icon: SVG_GUIDE_BRAIN, colour: '#51dacf', text: 'Refer back to your plan from the previous step. Keep its core ideas and structure — elevate the prose.' },
+                    { icon: SVG_GUIDE_TARGET, colour: '#4D76FD', text: getWordGuidanceText(), id: 'swml-guide-word-target' },
+                ];
+            } else {
+                tips = [
+                    { icon: SVG_GUIDE_LOCK, colour: '#5333ed', text: 'This is your independent assessment. No help is available — no AI, no notes, no resources. Rely entirely on what you\'ve learned.' },
+                    { icon: SVG_GUIDE_BRAIN, colour: '#51dacf', text: 'Try to recall everything you were taught. Extract your best knowledge and put it on the page.' },
+                    { icon: SVG_GUIDE_TARGET, colour: '#4D76FD', text: getWordGuidanceText(), id: 'swml-guide-word-target' },
+                    { icon: SVG_GUIDE_STOPWATCH, colour: '#51dacf', text: 'Work efficiently. Get your ideas down as quickly as possible to the best of your ability.' },
+                    { icon: SVG_GUIDE_ARM, colour: '#1CD991', text: 'Don\'t worry about grades. The purpose is to diagnose your strengths and areas for development, so we can build on them and eliminate weaknesses.' },
+                    { icon: SVG_GUIDE_WRITING, colour: '#5333ed', text: structureGuidance },
+                ];
+            }
 
             tips.forEach(t => {
                 const tip = el('div', { className: 'swml-canvas-plan-section' });
@@ -5492,17 +5511,28 @@
                 tip.appendChild(p);
                 guidanceContent.appendChild(tip);
             });
+            // v7.15.111: Video slot for outlining env — Neil supplies URL later.
+            if (state.task === 'outlining') {
+                guidanceContent.appendChild(el('div', { className: 'swml-outline-video-slot' }));
+            }
             rightPanel.appendChild(guidanceContent);
 
             // Session timestamp + countdown
-            const startKey = `swml_diag_start_${state.board}_${(state.text || '').replace(/\s/g, '_')}`;
+            // v7.15.111: Outlining lives mid-Phase-2 and must scope by task + topic + attempt
+            // so each attempt gets its own session timer (not shared with the diagnostic pass).
+            const _sessionKeyTask = state.task === 'outlining' ? 'outline' : 'diag';
+            const _sessionAttSuffix = (state.task === 'outlining' && (state.attempt || 1) > 1) ? `__a${state.attempt}` : '';
+            const _sessionTopicPart = state.task === 'outlining' ? `_t${state.topicNumber || 0}` : '';
+            const startKey = `swml_${_sessionKeyTask}_start_${state.board}_${(state.text || '').replace(/\s/g, '_')}${_sessionTopicPart}${_sessionAttSuffix}`;
             let startTime = localStorage.getItem(startKey);
             if (!startTime) {
                 startTime = new Date().toISOString();
                 localStorage.setItem(startKey, startTime);
             }
             const startDate = new Date(startTime);
-            const deadlineDate = new Date(startDate.getTime() + 10 * 24 * 60 * 60 * 1000);
+            // v7.15.111: Outlining is Phase 2 → 14-day cycle; diagnostic stays on 10-day.
+            const _deadlineDays = state.task === 'outlining' ? 14 : 10;
+            const deadlineDate = new Date(startDate.getTime() + _deadlineDays * 24 * 60 * 60 * 1000);
 
             function formatRelativeTime(date) {
                 const diff = Date.now() - date.getTime();
@@ -5521,7 +5551,7 @@
                 const remaining = deadlineDate.getTime() - Date.now();
                 if (remaining <= 0) return { text: 'Overdue', pct: 100, colour: '#dc2626', animated: false };
                 const daysLeft = Math.ceil(remaining / (24 * 60 * 60 * 1000));
-                const pct = Math.min(100, Math.round(((10 - daysLeft) / 10) * 100));
+                const pct = Math.min(100, Math.round(((_deadlineDays - daysLeft) / _deadlineDays) * 100));
                 // 6+ days: animated teal/blue, 3-5: yellow, 1-2: orange, overdue: red
                 if (daysLeft <= 2) return { text: `${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining`, pct, colour: '#E67E22', animated: false };
                 if (daysLeft <= 5) return { text: `${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining`, pct, colour: '#F1C40F', animated: false };
@@ -7059,7 +7089,7 @@
                 { id: 'mark_scheme', task: 'mark_scheme', label: 'Mark Scheme' },
                 { id: 'model_answer', task: 'model_answer_video', label: 'Model Answer' },
                 { id: 'planning', task: 'planning', label: 'Plan Redraft' },
-                { id: 'outlining', task: 'outlining', label: 'Outline Essay' },
+                { id: 'outlining', task: 'outlining', label: 'Outline Response' },
                 { id: 'polishing', task: 'polishing', label: 'Polish Essay' },
                 { id: 'reassessment', task: 'redraft_assessment', label: 'Get Reassessed' },
             ];
