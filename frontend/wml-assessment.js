@@ -232,6 +232,33 @@
         return _isGuidedContext() ? '' : (rawSuffix || '');
     }
 
+    // v7.15.114: Persistent per-topic attempt hint in sessionStorage. Closes the
+    // race where a sibling lesson mount runs loadCanvasContent() synchronously
+    // before the async /attempts fetch resolves state.attempt. Written on
+    // startNewAttempt success and whenever server fetch resolves idx.current;
+    // read synchronously on lesson mount so CANVAS_SAVE_KEY() gets the right
+    // __aN suffix on first call. Scope matches the server's attempt_index_key
+    // (board + text + topic + normalised suffix) so all lessons in one guided
+    // topic share the same hint.
+    function _currentAttemptStorageKey(board, text, topic, rawSuffix) {
+        const suffix = _attemptSuffixFor(rawSuffix || '');
+        const t = (topic && topic > 0) ? `_t${topic}` : '';
+        return `swml_current_attempt_${board || ''}_${text || ''}${t}${suffix}`;
+    }
+    function _readCurrentAttemptHint(board, text, topic, rawSuffix) {
+        try {
+            const raw = sessionStorage.getItem(_currentAttemptStorageKey(board, text, topic, rawSuffix));
+            const n = parseInt(raw, 10);
+            return (n && n > 0) ? n : 0;
+        } catch (e) { return 0; }
+    }
+    function _writeCurrentAttemptHint(board, text, topic, rawSuffix, attempt) {
+        if (!board || !text || !attempt || attempt < 1) return;
+        try {
+            sessionStorage.setItem(_currentAttemptStorageKey(board, text, topic, rawSuffix), String(attempt));
+        } catch (e) { /* storage may be disabled */ }
+    }
+
     // v7.15.46 (placeholder model added in v7.15.47): Attempt badge for canvas
     // ctx-badge rows. Placeholder is inserted at render time so it participates
     // in the overflow-dropdown logic; this helper just flips text/visibility.
@@ -272,6 +299,8 @@
             const res = await fetch(url, { headers }).then(r => r.json());
             if (res && res.success && res.attempts && res.attempts.current) {
                 state.attempt = res.attempts.current;
+                // v7.15.114: persist hint for sibling lesson mounts
+                _writeCurrentAttemptHint(state.board, state.text, state.topicNumber, WML.resolveCanvasSuffix(state.task, state.phase), state.attempt);
             } else if (!state.attempt) {
                 state.attempt = 1;
             }
@@ -561,6 +590,9 @@
                     state.attempt = res.attempt;
                     _newNum = res.attempt;
                     sessionStorage.setItem('swml_new_attempt', String(state.attempt));
+                    // v7.15.114: persist cross-lesson hint so sibling lessons
+                    // in the same topic pick up the new attempt on next mount
+                    _writeCurrentAttemptHint(state.board, state.text, state.topicNumber, opts.suffix || '', state.attempt);
                 }
             } catch (e) {
                 console.warn('WML Attempt: new attempt failed', e.message);
@@ -5371,7 +5403,29 @@
                         console.log('WML Attempt: server response', attRes);
                         if (attRes.success && attRes.attempts) {
                             const idx = attRes.attempts;
-                            if (!state.attempt || state.attempt < 1) state.attempt = idx.current || 1;
+                            // v7.15.114: detect divergence — if we seeded from the
+                            // sessionStorage hint but the server's idx.current is
+                            // different (cross-tab divergence, tutor-click attempt
+                            // switch, server pointer reset), re-render the canvas
+                            // with the correct attempt after the editor has already
+                            // mounted. Belt-and-braces alongside the pre-mount hint.
+                            const _seededAttempt = state.attempt || 0;
+                            const _serverAttempt = idx.current || 1;
+                            const _needsReload = (_seededAttempt > 0 && _seededAttempt !== _serverAttempt);
+                            if (!state.attempt || state.attempt < 1) state.attempt = _serverAttempt;
+                            _writeCurrentAttemptHint(state.board, state.text, state.topicNumber, WML.resolveCanvasSuffix(state.task, state.phase), state.attempt);
+                            if (_needsReload) {
+                                state.attempt = _serverAttempt;
+                                console.log('WML: Attempt hint diverged from server — reloading canvas at attempt', _serverAttempt);
+                                try {
+                                    const fresh = loadCanvasContent();
+                                    if (canvasEditor && typeof canvasEditor.commands?.setContent === 'function') {
+                                        canvasEditor.commands.setContent(fresh || '', false);
+                                    }
+                                } catch (e) {
+                                    console.warn('WML: canvas reload after divergence failed', e.message);
+                                }
+                            }
                             // v7.15.64: Restore planningMode from the CURRENT attempt entry
                             // so resume paths (direct URL / sessionStorage) see the right mode
                             // even when the selector is skipped. URL param still wins.
@@ -8615,6 +8669,29 @@
             state.attempt = _attemptFromUrl;
             try { localStorage.removeItem(CANVAS_SAVE_KEY()); localStorage.removeItem(CHAT_SAVE_KEY()); } catch (e) {}
             console.log('WML: Attempt pre-resolved from URL →', state.attempt);
+        }
+
+        // v7.15.114: Persistent per-topic attempt hint. Closes the cross-lesson
+        // race — a sibling lesson (e.g. Assessment) navigated to from the
+        // diagnostic's "New Attempt" click has no ?attempt URL param and no
+        // swml_new_attempt sessionStorage (that was consumed by the diagnostic's
+        // own reload). Without this hint, loadCanvasContent() runs with
+        // state.attempt = 0, falls back to the attempt-1 base key, and renders
+        // the stale attempt-1 doc. The async /attempts fetch later resolves
+        // idx.current = 2 but the editor was already mounted with wrong content.
+        // Hint scope matches the server's attempt_index_key (board + text +
+        // topic + normalised suffix) so all lessons in one guided topic share
+        // the same value. URL param and swml_new_attempt still win — this is
+        // the fallback for cross-lesson navigation.
+        if (!state.attempt && state.board && state.text) {
+            const _rawSuffix = (WML && typeof WML.resolveCanvasSuffix === 'function')
+                ? WML.resolveCanvasSuffix(state.task, state.phase)
+                : '';
+            const _hint = _readCurrentAttemptHint(state.board, state.text, state.topicNumber, _rawSuffix);
+            if (_hint > 0) {
+                state.attempt = _hint;
+                console.log('WML: Attempt pre-resolved from sessionStorage hint →', state.attempt);
+            }
         }
 
         // ── Initialise TipTap Editor ──
