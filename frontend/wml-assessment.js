@@ -406,6 +406,22 @@
     function _hasAttemptStarted(attemptNum) {
         try { return localStorage.getItem(_attemptStartedKey(attemptNum)) === '1'; } catch (e) { return false; }
     }
+    // v7.15.110: Fade-to-dark veneer before any ?attempt=N hard-nav. The module-level
+    // diagnostic overlay MUST hard-nav because TipTap isn't mounted yet — soft-swap
+    // isn't possible from this path — so a brief fade hides the page flash and gives
+    // "Loading attempt N…" feedback instead of a jarring refresh.
+    function _fadeAndNavigate(url, label) {
+        const fade = document.createElement('div');
+        fade.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#2c003e;'
+            + 'display:flex;align-items:center;justify-content:center;color:#fff;'
+            + 'font-family:"Proxima Soft Complete",sans-serif;font-size:1.1rem;letter-spacing:.02em;'
+            + 'opacity:0;transition:opacity 180ms ease-in;pointer-events:auto;';
+        fade.textContent = label || 'Loading…';
+        document.body.appendChild(fade);
+        requestAnimationFrame(() => { fade.style.opacity = '1'; });
+        setTimeout(() => { window.location.href = url; }, 200);
+    }
+
     async function _classifyOverlayState(currentAttempt) {
         if (currentAttempt && currentAttempt.status === 'complete') return 'complete';
         const num = (currentAttempt && currentAttempt.num) || state.attempt || 1;
@@ -551,10 +567,11 @@
             // v7.15.107: Navigate with ?attempt=N so diagnostic overlay guard
             // (attemptFromUrl) skips re-firing after reload. Bare reload
             // caused infinite overlay loop on shared diagnostic lessons.
+            // v7.15.110: fade veneer to soften the hard-nav refresh.
             if (_newNum > 0) {
                 const _navUrl = new URL(window.location.href);
                 _navUrl.searchParams.set('attempt', String(_newNum));
-                window.location.href = _navUrl.toString();
+                _fadeAndNavigate(_navUrl.toString(), `Starting attempt ${_newNum}\u2026`);
             } else {
                 window.location.reload();
             }
@@ -706,10 +723,11 @@
                     // overlay guard (attemptFromUrl) skips re-firing this same
                     // modal after reload. Bare reload without ?attempt= caused
                     // the infinite overlay loop on shared diagnostic lessons.
+                    // v7.15.110: fade veneer to soften the hard-nav refresh.
                     const _navUrl = new URL(window.location.href);
                     _navUrl.searchParams.set('attempt', String(a.num));
-                    window.location.href = _navUrl.toString();
                     resolve(true);
+                    _fadeAndNavigate(_navUrl.toString(), `Loading attempt ${a.num}\u2026`);
                 });
                 list.appendChild(btn);
             });
@@ -743,14 +761,15 @@
                 // v7.15.107: Navigate with ?attempt=N so the diagnostic overlay
                 // is skipped after reload. sessionStorage still set for any
                 // other code paths that read it during init.
+                // v7.15.110: fade veneer to soften the hard-nav refresh.
+                resolve(true);
                 if (_newAttemptNum > 0) {
                     const _navUrl = new URL(window.location.href);
                     _navUrl.searchParams.set('attempt', String(_newAttemptNum));
-                    window.location.href = _navUrl.toString();
+                    _fadeAndNavigate(_navUrl.toString(), `Starting attempt ${_newAttemptNum}\u2026`);
                 } else {
                     window.location.reload();
                 }
-                resolve(true);
             });
             card.appendChild(newBtn);
 
@@ -5566,7 +5585,7 @@
                     modal.innerHTML = `
                         <div class="swml-confirm-icon">${SVG_ICON_SAVE.replace('width="14"', 'width="32"').replace('height="14"', 'height="32"')}</div>
                         <h3>Ready to submit?</h3>
-                        <p>Your essay will be saved${WML.isEmbedded ? ' and marked as complete.' : ' and you\'ll move on to the <strong>assessment phase</strong>, where the AI will walk you through detailed feedback on your writing.'}</p>
+                        <p>Your essay will be saved${WML.isEmbedded ? ' and marked as complete.' : ' and you\'ll move on to the <strong>assessment phase</strong>, where Sophia will walk you through detailed feedback on your writing.'}</p>
                         <p style="font-size:12px;opacity:0.6;">You won't be able to edit your essay after this point.</p>
                         <div class="swml-confirm-actions">
                             <button class="swml-confirm-cancel">← Keep writing</button>
@@ -11049,7 +11068,7 @@
             const focus = trialFocus[stepDef.trial] || '';
             html += sectionHTML('question', 'Assessment Focus', false, null,
                 `<h2>Trial ${stepDef.trial} Assessment</h2>` +
-                `<p>This trial assesses your draft for <strong>${focus}</strong>. The AI will analyse your writing and provide structured feedback.</p>`
+                `<p>This trial assesses your draft for <strong>${focus}</strong>. Sophia will analyse your writing and provide structured feedback.</p>`
             );
             html += dividerHTML('ASSESSMENT');
             html += sectionHTML('feedback', 'Assessment', true, null, '<p><em>Your draft will be assessed here.</em></p>');
@@ -13234,7 +13253,12 @@
             const isPersuasive = /persuasive|speech|letter|article|argue|convince|advise/i.test(q.text || q.label || '');
             // v7.15.35: Broadened fiction detection — unanchored, checks description + text + label
             const creativeText = (q.text || '') + ' ' + (q.label || '') + ' ' + (specQ?.description || '');
-            const isCreative = qType === 'creative_writing' || qType === 'extended_writing' && /creative|imaginative|narrative|descriptive|write a story|write a description/i.test(creativeText) || /creative writing|creative prose|imaginative writing|narrative writing|descriptive writing|write a story|write a description/i.test(creativeText);
+            // v7.15.108: split — standalone CW course gets multi-stage archetype outline; Language fiction gets Scene Structure only
+            const isCWCourse = state.subject === 'creative_writing';
+            const isCreativeWritingQ = isCWCourse
+                || qType === 'creative_writing'
+                || (qType === 'extended_writing' && /creative|imaginative|narrative|descriptive|write a story|write a description/i.test(creativeText))
+                || /creative writing|creative prose|imaginative writing|narrative writing|descriptive writing|write a story|write a description/i.test(creativeText);
 
             // Section dividers from specs (multi-section support for Edexcel P2 etc.)
             if (sectionMap && sectionMap[qId] && sectionMap[qId] !== lastSection) {
@@ -13276,7 +13300,7 @@
             // Retrieval questions (AO1 fact recall) never need planning regardless of marks
             if (qType !== 'multiple_choice' && qType !== 'retrieval' && qMarks >= 5) {
                 html += dividerHTML(`PLAN \u2014 ${qId}`);
-                if (isCreative && isWritingQ) {
+                if (isCreativeWritingQ && isWritingQ) {
                     // Fiction Section B: 7-element scene structure (reused from CW Step 8)
                     html += buildCreativeScenePlan(qId);
                 } else if (isPersuasive) {
@@ -13294,13 +13318,19 @@
             }
 
             // v7.14.78: Outline with criteria columns — redraft only (diagnostic = write cold)
+            // v7.15.108: CW multi-stage archetype outline is standalone-course-only; Language fiction's
+            // Scene Structure plan above IS the outline — skip the outline block entirely for it.
             if (mode === 'redraft' && qType !== 'multiple_choice' && qMarks >= 20) {
-                html += dividerHTML(`OUTLINE \u2014 ${qId}`);
-                if (isCreative) {
+                if (isCWCourse) {
+                    html += dividerHTML(`OUTLINE \u2014 ${qId}`);
                     html += buildCWPlotOutlineSection();
+                } else if (isCreativeWritingQ && isWritingQ) {
+                    // Language fiction: Plan Scene Structure above is the outline. No second scaffold.
                 } else if (isPersuasive) {
+                    html += dividerHTML(`OUTLINE \u2014 ${qId}`);
                     html += buildIUMVCCOutlineSection(qId);
                 } else {
+                    html += dividerHTML(`OUTLINE \u2014 ${qId}`);
                     html += buildOutlineSection(q.aos || topicData.aos, qId, qMarks);
                 }
             }
@@ -13313,7 +13343,7 @@
                 const stmtCount = specQ?.description?.match(/(\d+)\s+true/i)?.[1] || 4;
                 const totalCount = specQ?.description?.match(/(\d+)\s+(?:about|from|statement)/i)?.[1] || 8;
                 html += dividerHTML(`STATEMENTS \u2014 ${qId}`);
-                let checkboxes = `<p><em>Tick the ${stmtCount} correct statements (the AI will generate these from the source material):</em></p>`;
+                let checkboxes = `<p><em>Tick the ${stmtCount} correct statements (Sophia will generate these from the source material):</em></p>`;
                 for (let s = 1; s <= parseInt(totalCount); s++) {
                     checkboxes += `<div data-checklist-item="true" data-checked="false" data-item-id="${qId}-stmt-${s}" class="swml-checklist-item swml-checklist-placeholder"><em>Waiting for statement ${s}...</em></div>`;
                 }
@@ -13615,7 +13645,7 @@
         html += sectionHTML('question', 'Original Writing', false, null,
             `<p><em>Your submitted writing will appear here for reference during the quality gate.</em></p>`);
         html += sectionHTML('feedback', 'Quality Gate Feedback', false, null,
-            `<p><em>The AI will assess your writing against grade-level criteria before proceeding.</em></p>`);
+            `<p><em>Sophia will assess your writing against grade-level criteria before proceeding.</em></p>`);
         html += dividerHTML('Retrieval Exercise');
         html += sectionHTML('response', 'Memory Exercise', true, null,
             `<p><em>Your retrieval exercise will begin here once you pass the quality gate.</em></p><p></p>`);
@@ -13681,7 +13711,7 @@
         html += dividerHTML('Grade 9 Poetry Conceptual Notes');
         // Poem text section (read-only — AI will populate with the current poem)
         html += sectionHTML('question', 'Poem Text', false, null,
-            `<p><em>The poem text will appear here. The AI will guide you through each poem in your anthology.</em></p>`);
+            `<p><em>The poem text will appear here. Sophia will guide you through each poem in your anthology.</em></p>`);
         html += dividerHTML('Your Analysis');
         // Build analysis tables for current poem
         categories.forEach(cat => {
@@ -13932,7 +13962,7 @@
             html += sectionHTML('response', 'Submitted Writing', true, null,
                 inputHTML('Paste or type your writing here for memory practice.', 'mp_submitted'));
             html += sectionHTML('feedback', 'Quality Gate', false, null,
-                '<p><em>The AI will assess whether your writing meets the standard for memory practice. If not, it will suggest improvements first.</em></p>');
+                '<p><em>Sophia will assess whether your writing meets the standard for memory practice. If not, she will suggest improvements first.</em></p>');
             html += dividerHTML('RETRIEVAL EXERCISES');
             for (let i = 1; i <= 5; i++) {
                 html += sectionHTML('response', 'Retrieval Round ' + i, true, null,
@@ -14136,8 +14166,8 @@
         // v7.14.50: Instruction banner — directs students to the chat panel first
         html += sectionHTML('notice', 'How to Use This Document', false, null,
             `<p><strong>Complete the Mark Scheme quiz using the chat panel on the right.</strong></p>`
-            + `<p>The AI will test your understanding of the assessment criteria through 10 questions. `
-            + `Once you\u2019ve finished the quiz, use your results and the AI\u2019s feedback to fill in this document \u2014 `
+            + `<p>Sophia will test your understanding of the assessment criteria through 10 questions. `
+            + `Once you\u2019ve finished the quiz, use your results and Sophia\u2019s feedback to fill in this document \u2014 `
             + `it\u2019s your personal record of where you are and what to focus on next.</p>`
         );
 
