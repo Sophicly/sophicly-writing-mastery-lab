@@ -11591,7 +11591,13 @@
         let total = 0;
         editableSections.forEach(section => {
             const clone = section.cloneNode(true);
-            clone.querySelectorAll('h3').forEach(el => el.remove());
+            // v7.15.115: Strip InputField content — student text lives inside
+            // [data-input-field] and is never template. Without this, resumed
+            // editors captured student content as baseline, making the word
+            // count total−baseline = 0 forever (which in turn short-circuited
+            // the assessment greeting to the "you haven't written your response"
+            // redirect at line ~5223 and prevented the AI /chat call from firing).
+            clone.querySelectorAll('h3, [data-input-field]').forEach(el => el.remove());
             const text = clone.textContent || '';
             const words = text.trim().split(/\s+/).filter(w => w.length > 0);
             total += words.length;
@@ -11603,7 +11609,8 @@
             let respTotal = 0;
             responseSections.forEach(section => {
                 const clone = section.cloneNode(true);
-                clone.querySelectorAll('h3').forEach(el => el.remove());
+                // v7.15.115: same InputField strip — see note above.
+                clone.querySelectorAll('h3, [data-input-field]').forEach(el => el.remove());
                 const text = clone.textContent || '';
                 const words = text.trim().split(/\s+/).filter(w => w.length > 0);
                 respTotal += words.length;
