@@ -1,4 +1,59 @@
-# Topic 1: Scrooge
+# Topic 1: Redemption
+**Type:** central_theme
+**Teaching Point:** The opening characterisation of Scrooge is the spiritual and moral baseline from which his redemption will be measured. Students should analyse how Dickens uses cold imagery, listing, and metaphor to construct Scrooge as frozen, isolated, and spiritually dead — then trace how each Stave gradually thaws him, making the Stave 5 transformation the structural climax of the novella's redemptive arc. Dickens argues that even the most hardened miser can be morally renewed.
+**Marks:** 30
+**AOs:** AO1,AO2,AO3
+
+## Extract
+**Extract Location:** Stave 1
+
+```
+ 1    Oh! But he was a tight-fisted hand at the grindstone, Scrooge!
+ 2    a squeezing, wrenching, grasping, scraping, clutching,
+ 3    covetous, old sinner! Hard and sharp as flint, from which
+ 4    no steel had ever struck out generous fire; secret, and
+ 5    self-contained, and solitary as an oyster. The cold within
+ 6    him froze his old features, nipped his pointed nose, shrivelled
+ 7    his cheek, stiffened his gait; made his eyes red, his thin
+ 8    lips blue; and spoke out shrewdly in his grating voice. A
+ 9    frosty rime was on his head, and on his eyebrows, and his
+10    wiry chin. He carried his own low temperature always about
+11    with him; he iced his office in the dog-days; and didn't
+12    thaw it one degree at Christmas.
+13
+14    External heat and cold had little influence on Scrooge.
+15    No warmth could warm, no wintry weather chill him. No wind
+16    that blew was bitterer than he, no falling snow was more
+17    intent upon its purpose, no pelting rain less open to
+18    entreaty. Foul weather didn't know where to have him. The
+19    heaviest rain, and snow, and hail, and sleet, could boast
+20    of the advantage over him in only one respect. They often
+21    "came down" handsomely, and Scrooge never did.
+22
+23    Nobody ever stopped him in the street to say, with gladsome
+24    looks, "My dear Scrooge, how are you? When will you come
+25    to see me?" No beggars implored him to bestow a trifle,
+26    no children asked him what it was o'clock, no man or woman
+27    ever once in all his life inquired the way to such and such
+28    a place, of Scrooge. Even the blind men's dogs appeared to
+29    know him; and when they saw him coming on, would tug their
+30    owners into doorways and up courts; and then would wag their
+31    tails as though they said, "No eye at all is better than
+32    an evil eye, dark master!"
+```
+
+## Question
+Starting with this extract, explore how Charles Dickens presents the theme of redemption in *A Christmas Carol*.
+
+Write about:
+- how Dickens presents the theme of redemption in this extract
+- how Dickens presents the theme of redemption in the novel as a whole.
+
+[30 marks]
+
+---
+
+# Topic 3: Scrooge
 **Type:** protagonist
 **Teaching Point:** Scrooge is the moral centre of the novella, introduced through a barrage of cold imagery and negative description. Students should analyse how Dickens uses pathetic fallacy, listing, and metaphor to construct Scrooge as emotionally frozen, and how this opening characterisation sets up the arc of transformation that structures the entire text.
 **Marks:** 30
@@ -64,7 +119,7 @@ N/A -- Conceptual Notes topic.
 
 ---
 
-# Topic 3: Redemption
+# Topic 4: Redemption
 **Type:** central_theme
 **Teaching Point:** Redemption is the structural backbone of the novella. Dickens presents Scrooge's moral transformation as a cumulative process driven by confrontation with his past, present, and future. Students should analyse how Dickens uses Scrooge's physical and emotional language in Stave 5 to show genuine, joyful change, and consider what Dickens is arguing about human capacity for moral renewal.
 **Marks:** 30
@@ -119,7 +174,7 @@ Write about:
 
 ---
 
-# Topic 4: The Cratchits and Family
+# Topic 5: The Cratchits and Family
 **Type:** supporting_character
 **Teaching Point:** The Cratchit family serves as a moral counterpoint to Scrooge, demonstrating that love, warmth, and gratitude can thrive despite poverty. Dickens uses the Christmas dinner scene to contrast genuine richness of spirit with Scrooge's material wealth and emotional poverty. Students should consider how Dickens sentimentalises the Cratchits strategically to build sympathy and advance his social argument.
 **Marks:** 30
@@ -170,7 +225,7 @@ Write about:
 
 ---
 
-# Topic 5: Poverty
+# Topic 6: Poverty
 **Type:** central_theme
 **Teaching Point:** Dickens wrote A Christmas Carol partly in response to the 1843 parliamentary report on child labour. He uses the novella to attack Victorian attitudes that blamed the poor for their own suffering. Students should analyse how the allegorical figures of Ignorance and Want embody Dickens' warning that society's neglect of poverty will destroy it, and how Scrooge's early dismissal of the poor mirrors real Malthusian arguments of the period.
 **Marks:** 30
@@ -224,7 +279,7 @@ Write about:
 
 ---
 
-# Topic 6: Ghosts and the Supernatural
+# Topic 7: Ghosts and the Supernatural
 **Type:** theme_and_character
 **Teaching Point:** The three spirits serve distinct narrative and moral functions: the Ghost of Christmas Past provokes regret, the Ghost of Christmas Present inspires empathy, and the Ghost of Christmas Yet to Come creates fear. Students should analyse how Dickens uses the increasing menace of each ghost to escalate the emotional pressure on Scrooge, and consider why the supernatural was an effective vehicle for social criticism in the Victorian period.
 **Marks:** 30
@@ -280,7 +335,7 @@ Write about:
 
 ---
 
-# Topic 7: Generosity (Fezziwig)
+# Topic 8: Generosity (Fezziwig)
 **Type:** supporting_character
 **Teaching Point:** Fezziwig represents the generous, socially responsible employer that Dickens wished the Victorian capitalist class would emulate. His Christmas party costs him relatively little financially but creates enormous happiness. Students should analyse how Dickens uses Fezziwig as a mirror to Scrooge's treatment of Bob Cratchit, and how the Ghost of Christmas Past uses this memory to begin cracking Scrooge's emotional defences.
 **Marks:** 30
@@ -328,7 +383,7 @@ Write about:
 
 ---
 
-# Topic 8: Isolation
+# Topic 9: Isolation
 **Type:** supporting_theme
 **Teaching Point:** Dickens presents isolation as both a symptom and a cause of Scrooge's moral decay. The Ghost of Christmas Past reveals the young Scrooge as a lonely, abandoned schoolboy -- a scene that complicates the reader's response by showing that Scrooge's coldness has roots in childhood suffering. Students should analyse how Dickens uses this vulnerability to humanise Scrooge and set up the possibility of change.
 **Marks:** 30
@@ -378,7 +433,7 @@ Write about:
 
 ---
 
-# Topic 9: Guilt (Marley)
+# Topic 10: Guilt (Marley)
 **Type:** theme_and_character
 **Teaching Point:** Marley's ghost is the catalyst for the entire narrative and embodies Dickens' central moral argument: that selfishness in life leads to suffering after death. His chains, forged link by link through years of greed, are a powerful visual metaphor for the consequences of moral failure. Students should analyse how Dickens uses Marley as both a warning to Scrooge and a direct address to the reader about social responsibility.
 **Marks:** 30
@@ -428,7 +483,7 @@ Write about:
 
 ---
 
-# Topic 10: Christmas Spirit
+# Topic 11: Christmas Spirit
 **Type:** supporting_theme
 **Teaching Point:** Dickens uses Christmas not merely as a setting but as a moral argument -- a time when generosity, compassion, and human fellowship should overcome selfishness and social division. Fred's defence of Christmas directly articulates this philosophy. Students should analyse how Dickens uses Fred's rhetoric to challenge Scrooge's utilitarian worldview, and how the concept of "Christmas spirit" functions throughout the novella as shorthand for the social responsibility Dickens champions.
 **Marks:** 30

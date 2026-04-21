@@ -1,4 +1,54 @@
-# Topic 1: Scrooge
+# Topic 1: Redemption
+**Type:** central_theme
+**Format:** single
+**Teaching Point:** The opening characterisation of Scrooge is the spiritual and moral baseline from which his redemption will be measured. Students should analyse how Dickens uses cold imagery, listing, and metaphor to establish Scrooge as frozen, isolated, and morally dead — then trace the cumulative process of redemption across the five staves, arguing that even the hardest heart can be renewed through confrontation with past, present, and future.
+
+**Marks:** 40
+**AOs:** AO1,AO2,AO3
+**Extract Location:** Stave 1
+
+### Extract
+```
+ 1    Oh! But he was a tight-fisted hand at the grindstone, Scrooge!
+ 2    a squeezing, wrenching, grasping, scraping, clutching,
+ 3    covetous, old sinner! Hard and sharp as flint, from which
+ 4    no steel had ever struck out generous fire; secret, and
+ 5    self-contained, and solitary as an oyster. The cold within
+ 6    him froze his old features, nipped his pointed nose, shrivelled
+ 7    his cheek, stiffened his gait; made his eyes red, his thin
+ 8    lips blue; and spoke out shrewdly in his grating voice. A
+ 9    frosty rime was on his head, and on his eyebrows, and his
+10    wiry chin. He carried his own low temperature always about
+11    with him; he iced his office in the dog-days; and didn't
+12    thaw it one degree at Christmas.
+13
+14    External heat and cold had little influence on Scrooge.
+15    No warmth could warm, no wintry weather chill him. No wind
+16    that blew was bitterer than he, no falling snow was more
+17    intent upon its purpose, no pelting rain less open to
+18    entreaty. Foul weather didn't know where to have him. The
+19    heaviest rain, and snow, and hail, and sleet, could boast
+20    of the advantage over him in only one respect. They often
+21    "came down" handsomely, and Scrooge never did.
+22
+23    Nobody ever stopped him in the street to say, with gladsome
+24    looks, "My dear Scrooge, how are you? When will you come
+25    to see me?" No beggars implored him to bestow a trifle,
+26    no children asked him what it was o'clock, no man or woman
+27    ever once in all his life inquired the way to such and such
+28    a place, of Scrooge. Even the blind men's dogs appeared to
+29    know him; and when they saw him coming on, would tug their
+30    owners into doorways and up courts; and then would wag their
+31    tails as though they said, "No eye at all is better than
+32    an evil eye, dark master!"
+```
+
+### Question
+How does Dickens present Scrooge as a man in need of redemption in this extract? You should consider the techniques used by Dickens and the effects on the reader. You must refer to the context of the novella in your answer. [40]
+
+---
+
+# Topic 3: Scrooge
 **Type:** protagonist
 **Format:** single
 **Teaching Point:** Dickens constructs Scrooge through an extraordinary accumulation of cold imagery and negative diction in the opening pages, making him an emblem of everything the novella sets out to critique. Students must analyse how language choices build character and how Scrooge functions as Dickens' vehicle for social commentary about Victorian selfishness.
@@ -54,7 +104,7 @@ N/A — Conceptual Notes topic.
 
 ---
 
-# Topic 3: Redemption
+# Topic 4: Redemption
 **Type:** central_theme
 **Format:** single
 **Teaching Point:** Scrooge's transformation on Christmas morning is the structural and moral climax of the novella. Dickens presents redemption as physically overwhelming — Scrooge laughs, cries, and fumbles with his clothes simultaneously — to argue that genuine moral change transforms a person entirely. The rapid-fire similes signal a man reborn.
@@ -98,7 +148,7 @@ How does Dickens present Scrooge's redemption in this extract? You should consid
 
 ---
 
-# Topic 4: The Cratchits and Family
+# Topic 5: The Cratchits and Family
 **Type:** theme_and_character
 **Format:** single
 **Teaching Point:** The Cratchit family functions as a moral counterpoint to Scrooge, demonstrating that love, warmth, and generosity can flourish despite poverty. Dickens uses their Christmas dinner to argue that true wealth is measured in human connection, while Tiny Tim's vulnerability reminds the reader of the real consequences of social neglect.
@@ -141,7 +191,7 @@ How does Dickens present the importance of family in this extract? You should co
 
 ---
 
-# Topic 5: Poverty
+# Topic 6: Poverty
 **Type:** central_theme
 **Format:** single
 **Teaching Point:** Dickens uses the allegorical figures of Ignorance and Want to deliver his most direct social argument. These are not individuals but the consequences of an entire society's neglect — children made monstrous by deprivation. The passage is a deliberate challenge to the Malthusian economic thinking that Scrooge voiced earlier in Stave 1.
@@ -185,7 +235,7 @@ How does Dickens present the effects of poverty in this extract? You should cons
 
 ---
 
-# Topic 6: The Ghosts and the Supernatural
+# Topic 7: The Ghosts and the Supernatural
 **Type:** central_theme
 **Format:** single
 **Teaching Point:** The Ghost of Christmas Yet to Come is the most menacing of the three spirits, described entirely through absence — no face, no voice, no visible form beyond a single outstretched hand. Dickens uses this figure to create dread through withholding, and its silence forces Scrooge (and the reader) to confront mortality without comfort or reassurance.
@@ -228,7 +278,7 @@ How does Dickens present the supernatural in this extract? You should consider t
 
 ---
 
-# Topic 7: Generosity (Fezziwig)
+# Topic 8: Generosity (Fezziwig)
 **Type:** supporting_character
 **Format:** single
 **Teaching Point:** Fezziwig's Christmas party costs little in financial terms, yet it creates enormous happiness. Dickens uses this scene to argue that generosity of spirit matters more than generosity of purse — a direct rebuke to the utilitarian view that money is the only measure of value. The young Scrooge's delight makes his later miserliness all the more tragic.
@@ -270,7 +320,7 @@ How does Dickens present ideas about generosity in this extract? You should cons
 
 ---
 
-# Topic 8: Isolation
+# Topic 9: Isolation
 **Type:** supporting_theme
 **Format:** single
 **Teaching Point:** The Ghost of Christmas Past shows Scrooge his younger self as a lonely boy left at school while others went home for the holidays. This scene establishes that Scrooge's coldness has roots in childhood abandonment, complicating the reader's judgement of him. Dickens presents isolation not as a choice but as something that was first done to Scrooge before he did it to himself.
@@ -310,7 +360,7 @@ How does Dickens present the theme of isolation in this extract? You should cons
 
 ---
 
-# Topic 9: Guilt (Marley's Ghost)
+# Topic 10: Guilt (Marley's Ghost)
 **Type:** theme_and_character
 **Format:** single
 **Teaching Point:** Marley's ghost serves as both a warning and a mirror for Scrooge. The chain he forged in life — made of cash-boxes, keys, padlocks, ledgers, and deeds — is a physical manifestation of moral guilt. Dickens uses Marley to argue that selfishness in life carries consequences beyond death, and that Scrooge still has the chance to change that Marley was denied.
@@ -354,7 +404,7 @@ How does Dickens present guilt through the character of Marley's ghost in this e
 
 ---
 
-# Topic 10: Christmas Spirit
+# Topic 11: Christmas Spirit
 **Type:** supporting_theme
 **Format:** single
 **Teaching Point:** The Ghost of Christmas Present embodies Dickens' vision of the Christmas spirit as abundance, generosity, and communal joy. The spirit's torch — which blesses the food of the poor — and the overflowing cornucopia of his setting make a visual argument that Christmas should be a time of sharing, not hoarding. The spirit's ageing during the stave reminds the reader that this goodwill is fleeting unless actively sustained.

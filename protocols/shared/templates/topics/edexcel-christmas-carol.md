@@ -1,4 +1,62 @@
-# Topic 1: Scrooge
+# Topic 1: Redemption
+**Type:** central_theme
+**Format:** dual
+**Teaching Point:** The opening characterisation of Scrooge is the spiritual and moral baseline from which his redemption will be measured. Students should analyse how Dickens uses cold imagery, listing, and metaphor to establish Scrooge as frozen, isolated, and morally dead — then trace the cumulative process of redemption that unfolds across the five staves, arguing that even the hardest heart can be renewed.
+
+## Part A
+**Marks:** 20
+**AOs:** AO2
+**Extract Location:** Stave 1
+
+### Extract
+```
+ 1    Oh! But he was a tight-fisted hand at the grindstone, Scrooge!
+ 2    a squeezing, wrenching, grasping, scraping, clutching,
+ 3    covetous, old sinner! Hard and sharp as flint, from which
+ 4    no steel had ever struck out generous fire; secret, and
+ 5    self-contained, and solitary as an oyster. The cold within
+ 6    him froze his old features, nipped his pointed nose, shrivelled
+ 7    his cheek, stiffened his gait; made his eyes red, his thin
+ 8    lips blue; and spoke out shrewdly in his grating voice. A
+ 9    frosty rime was on his head, and on his eyebrows, and his
+10    wiry chin. He carried his own low temperature always about
+11    with him; he iced his office in the dog-days; and didn't
+12    thaw it one degree at Christmas.
+13
+14    External heat and cold had little influence on Scrooge.
+15    No warmth could warm, no wintry weather chill him. No wind
+16    that blew was bitterer than he, no falling snow was more
+17    intent upon its purpose, no pelting rain less open to
+18    entreaty. Foul weather didn't know where to have him. The
+19    heaviest rain, and snow, and hail, and sleet, could boast
+20    of the advantage over him in only one respect. They often
+21    "came down" handsomely, and Scrooge never did.
+22
+23    Nobody ever stopped him in the street to say, with gladsome
+24    looks, "My dear Scrooge, how are you? When will you come
+25    to see me?" No beggars implored him to bestow a trifle,
+26    no children asked him what it was o'clock, no man or woman
+27    ever once in all his life inquired the way to such and such
+28    a place, of Scrooge. Even the blind men's dogs appeared to
+29    know him; and when they saw him coming on, would tug their
+30    owners into doorways and up courts; and then would wag their
+31    tails as though they said, "No eye at all is better than
+32    an evil eye, dark master!"
+```
+
+### Question
+Explore how Dickens presents Scrooge as a man in need of redemption in this extract. Give examples from the extract to support your ideas. [20]
+
+## Part B
+**Marks:** 20
+**AOs:** AO1
+
+### Question
+In what way does Dickens present the theme of redemption in *A Christmas Carol*? You must refer to the context of the novella in your answer. [20]
+
+---
+
+# Topic 3: Scrooge
 **Type:** protagonist
 **Format:** dual
 **Teaching Point:** Scrooge is the moral centre of the novella, introduced through a catalogue of cold imagery that establishes him as emotionally dead. Students must analyse how Dickens uses language to construct Scrooge as both a product and a symbol of Victorian greed, and how his transformation drives the novella's argument about social responsibility.
@@ -68,7 +126,7 @@ N/A
 
 ---
 
-# Topic 3: Redemption
+# Topic 4: Redemption
 **Type:** central_theme
 **Format:** dual
 **Teaching Point:** Scrooge's redemption is the structural and moral heart of the novella. Dickens presents transformation not as a single moment but as a cumulative process across the five staves, arguing that even the most hardened miser can change. Students should analyse how Dickens makes the transformation convincing and consider what it reveals about Victorian ideas of moral responsibility and Christian salvation.
@@ -119,7 +177,7 @@ In what way does Dickens present the theme of redemption in *A Christmas Carol*?
 
 ---
 
-# Topic 4: The Cratchits and Family
+# Topic 5: The Cratchits and Family
 **Type:** supporting_character
 **Format:** dual
 **Teaching Point:** The Cratchit family serves as a moral counterpoint to Scrooge, demonstrating that love, warmth, and gratitude can flourish despite poverty. Dickens uses their domestic scenes to argue that true wealth is measured in human connection, while Tiny Tim's vulnerability makes the cost of social neglect personal and urgent.
@@ -171,7 +229,7 @@ In what way does Dickens present the importance of family in *A Christmas Carol*
 
 ---
 
-# Topic 5: Poverty
+# Topic 6: Poverty
 **Type:** central_theme
 **Format:** dual
 **Teaching Point:** Dickens presents poverty as a systemic injustice, not a personal failing. Through Scrooge's dismissal of the poor, the Cratchits' struggle, and the allegorical figures of Ignorance and Want, Dickens argues that the wealthy have a moral obligation to those in need. Students should connect the novella to Victorian attitudes including the 1834 Poor Law and Malthusian economics.
@@ -223,7 +281,7 @@ In what way does Dickens present the theme of poverty in *A Christmas Carol*? Yo
 
 ---
 
-# Topic 6: Ghosts and the Supernatural
+# Topic 7: Ghosts and the Supernatural
 **Type:** theme_and_character
 **Format:** dual
 **Teaching Point:** Dickens uses the supernatural as both narrative engine and moral mechanism. Each ghost serves a distinct structural purpose — past regret, present awareness, future consequence — and their escalating menace mirrors Scrooge's growing self-knowledge. Students should consider why Dickens chose the ghost story genre to deliver a social argument, and how Victorian audiences steeped in Gothic tradition would have received these figures.
@@ -274,7 +332,7 @@ In what way does Dickens use the supernatural to convey his message in *A Christ
 
 ---
 
-# Topic 7: Generosity (Fezziwig)
+# Topic 8: Generosity (Fezziwig)
 **Type:** supporting_character
 **Format:** dual
 **Teaching Point:** Fezziwig embodies the kind of employer Dickens wished all wealthy men would be — generous not just with money but with spirit. The Fezziwig party scene is strategically placed to remind Scrooge of an alternative way of living, and his realisation about the power a master has over the happiness of his workers is a turning point. Students should analyse how Dickens contrasts Fezziwig with Scrooge to advance his social argument.
@@ -324,7 +382,7 @@ In what way does Dickens present the theme of generosity in *A Christmas Carol*?
 
 ---
 
-# Topic 8: Isolation
+# Topic 9: Isolation
 **Type:** supporting_theme
 **Format:** dual
 **Teaching Point:** Dickens presents isolation as both cause and consequence of Scrooge's miserliness. His physical solitude in dark chambers mirrors his emotional disconnection from humanity. The Ghost of Christmas Past reveals that isolation began in childhood, making Scrooge a more sympathetic figure and suggesting that selfishness is learned rather than innate. Students should trace the imagery of coldness, darkness, and enclosure that Dickens associates with isolation throughout the novella.
@@ -375,7 +433,7 @@ In what way does Dickens present the effects of isolation in *A Christmas Carol*
 
 ---
 
-# Topic 9: Guilt (Marley)
+# Topic 10: Guilt (Marley)
 **Type:** theme_and_character
 **Format:** dual
 **Teaching Point:** Marley's Ghost functions as both a warning and a mirror for Scrooge. His chains — forged link by link through a lifetime of greed — are Dickens' most powerful visual metaphor for the consequences of moral neglect. Marley exists in an afterlife of perpetual regret, unable to help others despite finally seeing the need. Students should analyse how Dickens uses Marley to establish the novella's moral stakes and consider how guilt operates as a catalyst for change.
@@ -426,7 +484,7 @@ In what way does Dickens use the character of Marley to explore the theme of gui
 
 ---
 
-# Topic 10: Christmas Spirit
+# Topic 11: Christmas Spirit
 **Type:** central_theme
 **Format:** dual
 **Teaching Point:** For Dickens, the Christmas spirit is not simply festivity but a moral philosophy — compassion, generosity, and communal responsibility. Fred's defence of Christmas in Stave 1 is the novella's manifesto: a time when people open their shut-up hearts freely. Students should analyse how Dickens uses Christmas as both setting and symbol, and consider the novella's role in shaping modern Christmas traditions and values.

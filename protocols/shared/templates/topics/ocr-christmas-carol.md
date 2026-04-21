@@ -1,4 +1,61 @@
-# Topic 1: Scrooge (protagonist)
+# Topic 1: Redemption
+**Type:** extract_and_essay
+**Format:** either_or
+**Teaching Point:** The opening characterisation of Scrooge is the spiritual and moral baseline from which his redemption will be measured. Students should analyse how Dickens uses cold imagery, listing, and metaphor to establish Scrooge as frozen, isolated, and morally dead — then trace the cumulative process of redemption across the five staves, arguing that even the hardest heart can be renewed through confrontation with past, present, and future.
+
+## Either
+**Marks:** 40
+**AOs:** AO1,AO2,AO3,AO4*
+**Extract Location:** Stave 1
+**Extract Context:** In this extract, the narrator describes Scrooge's character at the opening of the novella, shortly after establishing the death of his business partner, Jacob Marley.
+
+### Extract
+```
+ 1    Oh! But he was a tight-fisted hand at the grindstone, Scrooge!
+ 2    a squeezing, wrenching, grasping, scraping, clutching,
+ 3    covetous, old sinner! Hard and sharp as flint, from which
+ 4    no steel had ever struck out generous fire; secret, and
+ 5    self-contained, and solitary as an oyster. The cold within
+ 6    him froze his old features, nipped his pointed nose, shrivelled
+ 7    his cheek, stiffened his gait; made his eyes red, his thin
+ 8    lips blue; and spoke out shrewdly in his grating voice. A
+ 9    frosty rime was on his head, and on his eyebrows, and his
+10    wiry chin. He carried his own low temperature always about
+11    with him; he iced his office in the dog-days; and didn't
+12    thaw it one degree at Christmas.
+13
+14    External heat and cold had little influence on Scrooge.
+15    No warmth could warm, no wintry weather chill him. No wind
+16    that blew was bitterer than he, no falling snow was more
+17    intent upon its purpose, no pelting rain less open to
+18    entreaty. Foul weather didn't know where to have him. The
+19    heaviest rain, and snow, and hail, and sleet, could boast
+20    of the advantage over him in only one respect. They often
+21    "came down" handsomely, and Scrooge never did.
+22
+23    Nobody ever stopped him in the street to say, with gladsome
+24    looks, "My dear Scrooge, how are you? When will you come
+25    to see me?" No beggars implored him to bestow a trifle,
+26    no children asked him what it was o'clock, no man or woman
+27    ever once in all his life inquired the way to such and such
+28    a place, of Scrooge. Even the blind men's dogs appeared to
+29    know him; and when they saw him coming on, would tug their
+30    owners into doorways and up courts; and then would wag their
+31    tails as though they said, "No eye at all is better than
+32    an evil eye, dark master!"
+```
+
+### Question
+How does Dickens present the theme of redemption, starting with this extract and then elsewhere in the novella? [40]
+
+## Or
+
+### Question
+'Dickens argues that even the most hardened heart can be redeemed.' How far do you agree with this view of *A Christmas Carol*? Explore at least two moments from the novella to support your ideas. [40]
+
+---
+
+# Topic 3: Scrooge (protagonist)
 **Type:** extract_and_essay
 **Format:** either_or
 **Teaching Point:** Dickens introduces Scrooge through a catalogue of negative imagery and metaphor, establishing him as emotionally and socially disconnected. Students should analyse how language choices construct character and how Scrooge functions as a vehicle for Dickens' social critique.
@@ -98,7 +155,7 @@ How does Dickens use this exchange to present attitudes towards poverty, in this
 
 ---
 
-# Topic 3: Poverty
+# Topic 4: Poverty
 **Type:** extract_and_essay
 **Format:** either_or
 **Teaching Point:** Dickens presents poverty not as a moral failing but as a systemic injustice. The figures of Ignorance and Want are among the novella's most direct and allegorical images, forcing the reader to confront the consequences of neglecting the poor. Students should consider how Dickens uses the supernatural framework to make a social realist argument.
@@ -149,7 +206,7 @@ How does Dickens present the effects of poverty, in this extract and elsewhere i
 
 ---
 
-# Topic 4: Family / The Cratchits
+# Topic 5: Family / The Cratchits
 **Type:** extract_and_essay
 **Format:** either_or
 **Teaching Point:** The Cratchit family functions as a moral counterpoint to Scrooge, demonstrating that warmth, love, and generosity can flourish despite material deprivation. Dickens uses their domestic scene to argue that wealth is measured in human connection, not money, while simultaneously ensuring the reader understands the real threat poverty poses to this family through Tiny Tim.
@@ -199,7 +256,7 @@ How does Dickens present the importance of family, in this extract and elsewhere
 
 ---
 
-# Topic 5: Ghosts / The Supernatural
+# Topic 6: Ghosts / The Supernatural
 **Type:** extract_and_essay
 **Format:** either_or
 **Teaching Point:** Dickens uses the supernatural as both a narrative device and a moral mechanism. Each ghost serves a distinct structural purpose — past, present, future — and their increasing menace mirrors Scrooge's growing awareness of his failings. Students should consider why Dickens chose the ghost story genre to deliver a social message, and how Victorian audiences would have received these figures.
@@ -249,7 +306,7 @@ How does Dickens use the supernatural to create fear and convey his message, in 
 
 ---
 
-# Topic 6: Redemption
+# Topic 7: Redemption
 **Type:** extract_and_essay
 **Format:** either_or
 **Teaching Point:** Scrooge's transformation is the structural and moral centre of the novella. Dickens presents redemption not as a single moment but as a cumulative process — each stave strips away another layer of Scrooge's selfishness until he chooses to change. Students should analyse how Dickens makes the transformation convincing and consider what it suggests about human nature and moral responsibility.
@@ -299,7 +356,7 @@ How does Dickens present Scrooge's redemption, in this extract and elsewhere in 
 
 ---
 
-# Topic 7: Generosity
+# Topic 8: Generosity
 **Type:** extract_and_essay
 **Format:** either_or
 **Teaching Point:** Dickens contrasts different forms of generosity throughout the novella — material, emotional, and spiritual. Fezziwig's generous spirit at little financial cost is set against Scrooge's hoarding, while the reformed Scrooge's generosity in Stave 5 demonstrates Dickens' argument that wealth carries social obligation. Students should consider how generosity functions as both a personal virtue and a political argument.
@@ -348,7 +405,7 @@ How does Dickens present ideas about generosity, in this extract and elsewhere i
 
 ---
 
-# Topic 8: Isolation
+# Topic 9: Isolation
 **Type:** extract_and_essay
 **Format:** either_or
 **Teaching Point:** Isolation in the novella operates on multiple levels — physical, emotional, and social. Dickens presents Scrooge's solitude not as peaceful independence but as a form of self-imposed punishment. The contrast between Scrooge's dark, empty chambers and the warmth of the scenes he is shown by the spirits reinforces Dickens' argument that human connection is essential to moral life.
@@ -398,7 +455,7 @@ How does Dickens present Scrooge's isolation, in this extract and elsewhere in t
 
 ---
 
-# Topic 9: Fred
+# Topic 10: Fred
 **Type:** extract_and_essay
 **Format:** either_or
 **Teaching Point:** Fred serves as a foil to Scrooge, embodying the warmth, optimism, and social generosity that his uncle lacks. His persistent kindness despite repeated rejection makes him a model of the Christmas spirit Dickens champions. Students should analyse how Fred's language and behaviour contrast with Scrooge's, and consider Fred's structural role in the novella's argument about moral choice.
@@ -448,7 +505,7 @@ How does Dickens present Fred as a contrast to Scrooge, in this extract and else
 
 ---
 
-# Topic 10: Fear / Mortality
+# Topic 11: Fear / Mortality
 **Type:** extract_and_essay
 **Format:** either_or
 **Teaching Point:** Dickens uses fear of death as the final catalyst for Scrooge's transformation. The Stave 4 scenes — the unnamed dead man, the stolen belongings, the neglected grave — strip away all comfort and force Scrooge to confront the ultimate consequence of a selfish life. Students should analyse how Dickens builds dread through withholding information and consider why fear succeeds where compassion and nostalgia did not.
