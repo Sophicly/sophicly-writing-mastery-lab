@@ -1663,7 +1663,8 @@ class SWML_REST_API {
             'messages'     => [],
         ];
 
-        $router = new SWML_Protocol_Router();
+        // v7.17.2: SWML_Protocol_Router uses a private constructor (singleton) — use ::instance()
+        $router = SWML_Protocol_Router::instance();
         $result = $router->inject_session_context($fake_query, null);
         $instructions = $result->instructions ?? '';
         $len = strlen($instructions);
