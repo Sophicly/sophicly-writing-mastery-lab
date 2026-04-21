@@ -734,6 +734,33 @@ class SWML_Protocol_Router {
 
         error_log("WML Router: Final instructions = " . strlen($query->instructions) . " chars for botId={$bot_id}");
 
+        // v7.17.1: diagnostic presence checks — verify expected content made it into final prompt.
+        $final_instructions = $query->instructions ?? '';
+        $final_len = strlen($final_instructions);
+        $checks = [
+            'q4_ao4_header'       => strpos($final_instructions, 'Question 4 (AO4') !== false,
+            'q4_ao4_granular'     => strpos($final_instructions, 'Topic sentence that perceptively') !== false,
+            'q2_ao2_header'       => strpos($final_instructions, 'Question 2 (AO2') !== false,
+            'part_a_gate'         => strpos($final_instructions, 'Part A: Initial Setup') !== false,
+            'metacognitive'       => strpos($final_instructions, 'Metacognitive Reflection') !== false,
+            'marking_rules_aqa'   => strpos($final_instructions, 'Marking Rules — AQA Granular') !== false,
+            'paper_schema'        => strpos($final_instructions, 'PAPER SCHEMA') !== false,
+            'ao_key'              => strpos($final_instructions, 'AO KEY') !== false,
+            'hard_gate_structure' => strpos($final_instructions, 'NEVER GATE ASSESSMENT ON STRUCTURE') !== false,
+        ];
+        $pass = [];
+        $fail = [];
+        foreach ($checks as $k => $v) {
+            $v ? ($pass[] = $k) : ($fail[] = $k);
+        }
+        error_log("WML Router FINAL: chars={$final_len} bot={$bot_id} PASS=[" . implode(',', $pass) . "] FAIL=[" . implode(',', $fail) . "]");
+
+        // Dump first + last 800 chars to confirm prompt ordering (preamble head / protocol tail).
+        $head = mb_substr($final_instructions, 0, 800);
+        $tail = mb_substr($final_instructions, max(0, $final_len - 800));
+        error_log("WML Router HEAD: " . str_replace("\n", ' | ', $head));
+        error_log("WML Router TAIL: " . str_replace("\n", ' | ', $tail));
+
         return $query;
     }
 
@@ -1007,12 +1034,16 @@ class SWML_Protocol_Router {
         $parts = [];
         $loaded_count = 0;
         $missing = [];
+        // v7.17.1: diagnostic trace — log each module's final resolved path + size
+        $loaded_trace = [];
 
         foreach ($files as $file) {
             // Resolve path: check board-specific first, then shared
             $full_path = $base_path . '/' . $file;
+            $resolved_from = 'board';
             if (!file_exists($full_path)) {
                 $full_path = $shared_path . '/' . $file;
+                $resolved_from = 'shared';
             }
 
             if (file_exists($full_path)) {
@@ -1020,6 +1051,7 @@ class SWML_Protocol_Router {
                 if (!empty(trim($content))) {
                     $parts[] = $content;
                     $loaded_count++;
+                    $loaded_trace[] = sprintf('%s[%s=%db]', $file, $resolved_from, strlen($content));
                 }
             } else {
                 $missing[] = $file;
@@ -1029,6 +1061,12 @@ class SWML_Protocol_Router {
         // If any files are missing, log warning but don't fail
         if (!empty($missing)) {
             error_log("WML Router: Missing module files: " . implode(', ', $missing));
+        }
+
+        // v7.17.1: log full module load trace for diagnostics
+        if (!empty($loaded_trace)) {
+            error_log('WML Router LOAD: task=' . $task . ' board=' . $protocol_board
+                . ' modules_loaded=' . $loaded_count . ' :: ' . implode(' | ', $loaded_trace));
         }
 
         // Require minimum loaded files to consider this valid

@@ -1,7 +1,7 @@
 # CLAUDE.md — Writing Mastery Lab (WML) Project Guide
 
 **Plugin slug:** `sophicly-writing-mastery-lab`
-**Current version:** 7.17.0
+**Current version:** 7.17.1
 **Purpose:** AI-powered GCSE/IGCSE English tutoring interface — essay writing, assessment, planning, and polishing.
 **AI Provider:** Claude Sonnet 4.6 via MeowApps AI Engine (with GPT-5 fallback).
 **Owner:** Neil (Sophicly)
@@ -320,8 +320,8 @@ The preamble is the #1 source of AI behaviour regressions. Rules:
 3. **Token budget awareness** — assessment preamble is ~80 lines. Compress aggressively.
 4. **Guard phrasing** — always tell the AI what NOT to change when injecting reference data
 5. **Anti-duplication: say what to skip AND what to still do** — omitting either half causes failures
-6. **Never duplicate the protocol** — AI Engine loads it automatically, preamble is APPENDED
-7. **The preamble is NOT the protocol** — it's session context and behaviour overrides only
+6. **Preamble is PREPENDED, protocol LAST** — correcting an older note: `inject_session_context()` assembles `preamble → skip_block → modular_protocol` as `$query->instructions`. Order: preamble FIRST, protocol LAST. LLMs typically weight late content more heavily, so protocol module content is closest to the user turn and should dominate. If both preamble and protocol give conflicting rules, expect the protocol to win (but bias is model-dependent, not guaranteed).
+7. **The preamble is NOT the protocol** — it's session context + hard gates + cross-cutting invariants. Behaviour rules belong in protocol modules (single source of truth per board/paper/Q).
 
 When the AI misbehaves in WML but works in the raw AI Engine chatbot, the preamble is almost always the cause.
 

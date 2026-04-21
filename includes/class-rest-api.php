@@ -145,6 +145,14 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_admin_auth'],
         ]);
 
+        // v7.17.1: Protocol debug — returns the full assembled instructions for a given context
+        // (admin only). Use to confirm modules are loading + inspect final system prompt.
+        // GET /sophicly-wml/v1/protocol-debug?board=aqa&subject=language_p1&task=assessment&topicNumber=1
+        register_rest_route($namespace, '/protocol-debug', [
+            'methods' => 'GET', 'callback' => [$this, 'debug_protocol_instructions'],
+            'permission_callback' => [$this, 'check_admin_auth'],
+        ]);
+
         // Tutor sign-off — role-restricted
         register_rest_route($namespace, '/canvas/signoff', [
             'methods' => 'POST', 'callback' => [$this, 'tutor_signoff'],
@@ -1617,6 +1625,72 @@ class SWML_REST_API {
                 'write' => $write_result !== false,
                 'read'  => $read_ok,
             ],
+        ]);
+    }
+
+    /**
+     * v7.17.1: Protocol debug endpoint.
+     * Returns the full assembled instructions (preamble + protocol) that the AI would receive
+     * for the given request context. Admin-only. Lets us verify whether modules (e.g.
+     * marking-rules-aqa-granular.md) are actually loading into the system prompt.
+     *
+     * GET /sophicly-wml/v1/protocol-debug?board=aqa&subject=language_p1&task=assessment&topicNumber=1
+     */
+    public function debug_protocol_instructions($request) {
+        $params = [
+            'board'        => sanitize_text_field($request->get_param('board') ?? 'aqa'),
+            'subject'      => sanitize_text_field($request->get_param('subject') ?? 'language_p1'),
+            'task'         => sanitize_text_field($request->get_param('task') ?? 'assessment'),
+            'text'         => sanitize_text_field($request->get_param('text') ?? ''),
+            'step'         => absint($request->get_param('step') ?? 1),
+            'topic_number' => absint($request->get_param('topicNumber') ?? 1),
+            'phase'        => sanitize_text_field($request->get_param('phase') ?? ''),
+            'marks'        => absint($request->get_param('marks') ?? 0),
+        ];
+
+        // Set globals exactly like the chat endpoint does so inject_session_context picks them up.
+        global $swml_request_context, $swml_active_bot_id, $swml_current_subject, $swml_current_step, $swml_chat_history;
+        $swml_request_context = $params;
+        $swml_active_bot_id   = 'wml-claude';
+        $swml_current_subject = $params['subject'];
+        $swml_current_step    = $params['step'];
+        $swml_chat_history    = [];
+
+        // Fake query object resembling what AI Engine passes.
+        $fake_query = (object) [
+            'botId'        => 'wml-claude',
+            'instructions' => '',
+            'messages'     => [],
+        ];
+
+        $router = new SWML_Protocol_Router();
+        $result = $router->inject_session_context($fake_query, null);
+        $instructions = $result->instructions ?? '';
+        $len = strlen($instructions);
+
+        $checks = [
+            'q4_ao4_header'       => strpos($instructions, 'Question 4 (AO4') !== false,
+            'q4_ao4_granular'     => strpos($instructions, 'Topic sentence that perceptively') !== false,
+            'q2_ao2_header'       => strpos($instructions, 'Question 2 (AO2') !== false,
+            'part_a_gate'         => strpos($instructions, 'Part A: Initial Setup') !== false,
+            'metacognitive'       => strpos($instructions, 'Metacognitive Reflection') !== false,
+            'marking_rules_aqa'   => strpos($instructions, 'Marking Rules — AQA Granular') !== false,
+            'paper_schema'        => strpos($instructions, 'PAPER SCHEMA') !== false,
+            'ao_key'              => strpos($instructions, 'AO KEY') !== false,
+            'hard_gate_structure' => strpos($instructions, 'NEVER GATE ASSESSMENT ON STRUCTURE') !== false,
+            'protocol_a'          => strpos($instructions, 'Protocol A: Assessment Workflow') !== false,
+            'ttecea_framework'    => strpos($instructions, 'TTECEA') !== false,
+            'penalty_list'        => strpos($instructions, 'H1: Hanging quotes') !== false,
+        ];
+
+        return rest_ensure_response([
+            'success'      => true,
+            'context'      => $params,
+            'length'       => $len,
+            'presence'     => $checks,
+            'head_2000'    => mb_substr($instructions, 0, 2000),
+            'tail_2000'    => mb_substr($instructions, max(0, $len - 2000)),
+            'full_length'  => $len,
         ]);
     }
 
