@@ -1670,18 +1670,19 @@ class SWML_REST_API {
         $len = strlen($instructions);
 
         $checks = [
-            'q4_ao4_header'       => strpos($instructions, 'Question 4 (AO4') !== false,
-            'q4_ao4_granular'     => strpos($instructions, 'Topic sentence that perceptively') !== false,
-            'q2_ao2_header'       => strpos($instructions, 'Question 2 (AO2') !== false,
-            'part_a_gate'         => strpos($instructions, 'Part A: Initial Setup') !== false,
-            'metacognitive'       => strpos($instructions, 'Metacognitive Reflection') !== false,
-            'marking_rules_aqa'   => strpos($instructions, 'Marking Rules — AQA Granular') !== false,
-            'paper_schema'        => strpos($instructions, 'PAPER SCHEMA') !== false,
-            'ao_key'              => strpos($instructions, 'AO KEY') !== false,
-            'hard_gate_structure' => strpos($instructions, 'NEVER GATE ASSESSMENT ON STRUCTURE') !== false,
-            'protocol_a'          => strpos($instructions, 'Protocol A: Assessment Workflow') !== false,
-            'ttecea_framework'    => strpos($instructions, 'TTECEA') !== false,
-            'penalty_list'        => strpos($instructions, 'H1: Hanging quotes') !== false,
+            'q4_ao4_header'            => strpos($instructions, 'Question 4 (AO4') !== false,
+            'q4_ao4_granular'          => strpos($instructions, 'Topic sentence that perceptively') !== false,
+            'q2_ao2_header'            => strpos($instructions, 'Question 2 (AO2') !== false,
+            'part_a_gate'              => strpos($instructions, 'Part A: Initial Setup') !== false,
+            'metacognitive'            => strpos($instructions, 'Metacognitive Reflection') !== false,
+            'marking_rules_aqa'        => strpos($instructions, 'Marking Rules — AQA Granular') !== false,
+            'paper_schema'             => strpos($instructions, 'PAPER SCHEMA') !== false,
+            'protocol_execution'       => strpos($instructions, 'PROTOCOL EXECUTION — NON-NEGOTIABLE') !== false,
+            'never_confirm_structure'  => strpos($instructions, 'NEVER CONFIRM STRUCTURE WITH STUDENT') !== false,
+            'gold_standard_mandatory'  => strpos($instructions, 'GOLD-STANDARD REWRITE DELIVERY IS MANDATORY') !== false,
+            'protocol_a'               => strpos($instructions, 'Protocol A: Assessment Workflow') !== false,
+            'ttecea_framework'         => strpos($instructions, 'TTECEA') !== false,
+            'penalty_list'             => strpos($instructions, 'H1: Hanging quotes') !== false,
         ];
 
         return rest_ensure_response([

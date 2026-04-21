@@ -738,15 +738,16 @@ class SWML_Protocol_Router {
         $final_instructions = $query->instructions ?? '';
         $final_len = strlen($final_instructions);
         $checks = [
-            'q4_ao4_header'       => strpos($final_instructions, 'Question 4 (AO4') !== false,
-            'q4_ao4_granular'     => strpos($final_instructions, 'Topic sentence that perceptively') !== false,
-            'q2_ao2_header'       => strpos($final_instructions, 'Question 2 (AO2') !== false,
-            'part_a_gate'         => strpos($final_instructions, 'Part A: Initial Setup') !== false,
-            'metacognitive'       => strpos($final_instructions, 'Metacognitive Reflection') !== false,
-            'marking_rules_aqa'   => strpos($final_instructions, 'Marking Rules — AQA Granular') !== false,
-            'paper_schema'        => strpos($final_instructions, 'PAPER SCHEMA') !== false,
-            'ao_key'              => strpos($final_instructions, 'AO KEY') !== false,
-            'hard_gate_structure' => strpos($final_instructions, 'NEVER GATE ASSESSMENT ON STRUCTURE') !== false,
+            'q4_ao4_header'            => strpos($final_instructions, 'Question 4 (AO4') !== false,
+            'q4_ao4_granular'          => strpos($final_instructions, 'Topic sentence that perceptively') !== false,
+            'q2_ao2_header'            => strpos($final_instructions, 'Question 2 (AO2') !== false,
+            'part_a_gate'              => strpos($final_instructions, 'Part A: Initial Setup') !== false,
+            'metacognitive'            => strpos($final_instructions, 'Metacognitive Reflection') !== false,
+            'marking_rules_aqa'        => strpos($final_instructions, 'Marking Rules — AQA Granular') !== false,
+            'paper_schema'             => strpos($final_instructions, 'PAPER SCHEMA') !== false,
+            'protocol_execution'       => strpos($final_instructions, 'PROTOCOL EXECUTION — NON-NEGOTIABLE') !== false,
+            'never_confirm_structure'  => strpos($final_instructions, 'NEVER CONFIRM STRUCTURE WITH STUDENT') !== false,
+            'gold_standard_mandatory'  => strpos($final_instructions, 'GOLD-STANDARD REWRITE DELIVERY IS MANDATORY') !== false,
         ];
         $pass = [];
         $fail = [];
@@ -2700,13 +2701,17 @@ TEMPLATE;
             // literature-paper-specs.json. Falls back to legacy essay preamble when no spec.
             $schema_block = $this->build_assessment_schema_block($board, $subject);
             if ($schema_block) {
-                // v7.17.3: PROTOCOL EXECUTION directive + narrow A/B-gate ban.
-                // Previous version (v7.16.0-v7.17.2) included "Proceed directly from the
-                // grade-target question to assessing Q1" — which AI interpreted as a
-                // workflow-ordering command and used to skip Part A (assessment type),
-                // Part B (goal setting / Effect Ladder), and the per-paragraph metacognitive
-                // reflection gates the protocol mandates. Rewritten to ban ONLY the specific
-                // A/B paper-level confirmation patterns, not workflow ordering.
+                // v7.17.5: Pattern-based structure ban + universal gold-standard DELIVERY mandate.
+                // v7.17.3 introduced an exact-match FORBIDDEN A/B GATES list; AI paraphrased
+                // around it ("Before I dive into..." instead of "Before I assess..."). Replaced
+                // with a pattern-based "NEVER CONFIRM STRUCTURE" rule that covers ALL paraphrases.
+                // Gold-standard rule mandates DELIVERY (universal) while delegating CONTENT
+                // (AOs, TTECEA variant, banned constructions) to each paper's schema + protocol
+                // module — AO sets differ per board/paper (e.g. Edexcel Shakespeare = AO1+AO2,
+                // AQA Shakespeare = AO1+AO2+AO3+AO4), so content must not be prescribed here.
+                // Historical context: v7.17.3 rewrote the HARD GATE after v7.16.0-v7.17.2's
+                // "Proceed directly from grade-target to Q1" line was misread as workflow-
+                // ordering and caused Part A / Part B / metacognitive reflection skips.
                 $preamble .= "\n### ⛔ PROTOCOL EXECUTION — NON-NEGOTIABLE\n\n";
                 $preamble .= "Follow the ASSESSMENT PROTOCOL module below step-by-step. It is NOT reference material — it is an executable workflow.\n\n";
                 $preamble .= "- Emit every `Say:` / `Ask:` text verbatim (or as near as possible) where the protocol specifies.\n";
@@ -2715,13 +2720,28 @@ TEMPLATE;
                 $preamble .= "- Emit EVERY scaffolding element the protocol specifies: TTECEA checklists, metacognitive reflection (self-rating 1-5 + AO targeting), per-element granular mark breakdowns, penalty codes with deductions, gold-standard paragraph rewrites (yours + optimal, TTECEA-labelled), clarification-mode responses when student types C.\n";
                 $preamble .= "- If the canvas/document already contains the student's answers (canvas workflow), treat that as the submission — do NOT ask the student to re-paste. Still emit all downstream scaffolding (reflection, checklist, assessment, rewrites, Y gates).\n\n";
 
-                $preamble .= "### ⛔ FORBIDDEN A/B GATES\n\n";
-                $preamble .= "Never emit any of these verbatim or paraphrased A/B confirmation prompts:\n";
-                $preamble .= "- \"Before I assess your [essay/response/paragraphs], I need to confirm the structure...\"\n";
-                $preamble .= "- \"I can see [N] paragraphs / responses / questions... Is this correct? A / B\"\n";
-                $preamble .= "- \"Which exam paper is this from? Is this the standard [board] [paper] format? A / B\"\n";
-                $preamble .= "- Any A/B prompt asking the student to verify paper-level structure, question count, mark allocation, or paper type.\n\n";
-                $preamble .= "The PAPER SCHEMA below is the ONLY source of truth for question count, marks, and AOs. The student is NOT qualified to confirm exam-paper structure — you are. For workflow order inside the assessment (Part A → Part B → Part C question-by-question → Part D summary), follow the protocol module below EXACTLY.\n";
+                $preamble .= "### ⛔ NEVER CONFIRM STRUCTURE WITH STUDENT\n\n";
+                $preamble .= "The PAPER SCHEMA below is the ONLY source of truth for paper structure. Do NOT ask the student to confirm, verify, validate, check, or 'make sure about' ANY of:\n";
+                $preamble .= "- Question count / which questions exist\n";
+                $preamble .= "- Paragraph count per question\n";
+                $preamble .= "- Mark allocation per question\n";
+                $preamble .= "- Essay/paper structure, format, or type\n";
+                $preamble .= "- Which exam board or paper this is\n\n";
+                $preamble .= "This rule covers EVERY paraphrase. Forbidden openers include (non-exhaustive): \"Before I assess...\", \"Before I dive into...\", \"Before we begin...\", \"Just to confirm the structure...\", \"Let me verify...\", \"I can see [N] paragraphs... is this correct?\", \"Is this the standard [board] [paper] format?\". If your next turn would ask the student to validate ANY aspect of the paper, STOP — you are the authority on structure, they are not.\n\n";
+                $preamble .= "You MAY ask the student to confirm THEIR OWN WORK (\"did you paste the full paragraph?\", \"is this your final answer?\"). That is different — it is about their submission, not paper structure.\n\n";
+                $preamble .= "For workflow order inside the assessment (Part A → Part B → Part C question-by-question → Part D summary), follow the protocol module below EXACTLY.\n\n";
+
+                $preamble .= "### ⛔ GOLD-STANDARD REWRITE DELIVERY IS MANDATORY\n\n";
+                $preamble .= "For ANY analytical question (language reading / literature essay, every board), after you emit a per-paragraph granular mark table, you MUST deliver BOTH of these BEFORE any A/B or Y/C gate:\n";
+                $preamble .= "1. **Your Paragraph Rewritten to Gold Standard** — the student's own paragraph, lifted to the top band.\n";
+                $preamble .= "2. **Optimal Gold Standard Model** — an independent optimal model on the same focus. Must be of equal quality and length to the rewrite — NOT shorter, NOT less developed.\n\n";
+                $preamble .= "This rule governs DELIVERY ONLY — that both models are emitted, in this order, every time, before any gate. NEVER gate gold-standard delivery behind an A/B student choice. NEVER offer \"A) clarify / B) next paragraph\" before rewrites. Skipping to \"save tokens\" or \"keep momentum\" is forbidden — the rewrites ARE the teaching.\n\n";
+                $preamble .= "The CONTENT of each gold-standard model MUST follow:\n";
+                $preamble .= "- The specific AOs assessed by THIS question on THIS paper (from the PAPER SCHEMA below — e.g. AQA Lit Shakespeare = AO1+AO2+AO3+AO4, Edexcel Lit Shakespeare = AO1+AO2 only, Eduqas Lit Modern = AO1+AO2, Edexcel Lit Modern = AO1+AO3).\n";
+                $preamble .= "- The paragraph structure specified in the paper's protocol module (TTECEA / TTECEA+C / 3-aspect parallel for AQA Lang P2 Q4 / Story-spine or IUMVCC for Q5-creative, etc.).\n";
+                $preamble .= "- Any board-specific quality criteria or banned constructions listed in the protocol module for THIS paper.\n\n";
+                $preamble .= "Do NOT import AOs, paragraph shapes, or quality rules from a different paper or board. When a paper does not assess AO3, do not include contextual analysis in that paper's gold standard. When a paper labels Context as AO4 (Edexcel IGCSE Lit), do not confuse it with SPaG-AO4 (AQA). The schema + protocol module are the ONLY source of truth for content; this preamble rule only mandates that delivery happens.\n\n";
+                $preamble .= "Applies to every analytical question across AQA, Edexcel, Eduqas, OCR, Edexcel-IGCSE, SQA, CCEA — language reading and literature essays. Creative / extended writing (Q5-type) delivers holistic-structural feedback per the creative-writing protocol instead; this mandate does not cover those questions.\n";
 
                 $preamble .= $schema_block;
                 $preamble .= $this->build_assessment_workflow_reminder();
