@@ -2696,17 +2696,28 @@ TEMPLATE;
             // literature-paper-specs.json. Falls back to legacy essay preamble when no spec.
             $schema_block = $this->build_assessment_schema_block($board, $subject);
             if ($schema_block) {
-                // v7.16.0: Top-of-preamble HARD GATE. Placed BEFORE the schema block so the
-                // AI encounters it first in the assessment-specific context. Prior attempt
-                // (v7.15.116) buried a similar note inside the schema block — AI complied
-                // partially but still fired "I can see N responses across N questions... A/B".
-                $preamble .= "\n### ⛔ HARD GATE — NEVER GATE ASSESSMENT ON STRUCTURE CONFIRMATION\n\n";
-                $preamble .= "Before you assess Q1 (the first question), you MUST NOT emit ANY of:\n";
+                // v7.17.3: PROTOCOL EXECUTION directive + narrow A/B-gate ban.
+                // Previous version (v7.16.0-v7.17.2) included "Proceed directly from the
+                // grade-target question to assessing Q1" — which AI interpreted as a
+                // workflow-ordering command and used to skip Part A (assessment type),
+                // Part B (goal setting / Effect Ladder), and the per-paragraph metacognitive
+                // reflection gates the protocol mandates. Rewritten to ban ONLY the specific
+                // A/B paper-level confirmation patterns, not workflow ordering.
+                $preamble .= "\n### ⛔ PROTOCOL EXECUTION — NON-NEGOTIABLE\n\n";
+                $preamble .= "Follow the ASSESSMENT PROTOCOL module below step-by-step. It is NOT reference material — it is an executable workflow.\n\n";
+                $preamble .= "- Emit every `Say:` / `Ask:` text verbatim (or as near as possible) where the protocol specifies.\n";
+                $preamble .= "- Wait for the student's response at every `Wait for Y confirmation`, `HALT`, `Type Y`, `Type C`, or numerical rating gate. Do NOT generate subsequent steps in the same message.\n";
+                $preamble .= "- Do NOT summarise, consolidate, compress, or batch steps. Do NOT collapse Q1-Q5 assessments into one message. Each question is its own multi-turn exchange.\n";
+                $preamble .= "- Emit EVERY scaffolding element the protocol specifies: TTECEA checklists, metacognitive reflection (self-rating 1-5 + AO targeting), per-element granular mark breakdowns, penalty codes with deductions, gold-standard paragraph rewrites (yours + optimal, TTECEA-labelled), clarification-mode responses when student types C.\n";
+                $preamble .= "- If the canvas/document already contains the student's answers (canvas workflow), treat that as the submission — do NOT ask the student to re-paste. Still emit all downstream scaffolding (reflection, checklist, assessment, rewrites, Y gates).\n\n";
+
+                $preamble .= "### ⛔ FORBIDDEN A/B GATES\n\n";
+                $preamble .= "Never emit any of these verbatim or paraphrased A/B confirmation prompts:\n";
                 $preamble .= "- \"Before I assess your [essay/response/paragraphs], I need to confirm the structure...\"\n";
                 $preamble .= "- \"I can see [N] paragraphs / responses / questions... Is this correct? A / B\"\n";
-                $preamble .= "- Any A/B prompt asking the student to verify paper-level structure, question count, or paper type.\n\n";
-                $preamble .= "The PAPER SCHEMA below is the ONLY source of truth for question count, marks, and AOs. The student (13-16yo) is NOT qualified to confirm exam-paper structure — you are. Proceed directly from the grade-target question to assessing Q1.\n\n";
-                $preamble .= "EXCEPTION: per-question TTECEA-paragraph checks within a single question (e.g. \"Q2 requires two TTECEA paragraphs — please submit both\") are PERMITTED and come from the protocol module. This gate applies ONLY to paper-level structure confirmation.\n";
+                $preamble .= "- \"Which exam paper is this from? Is this the standard [board] [paper] format? A / B\"\n";
+                $preamble .= "- Any A/B prompt asking the student to verify paper-level structure, question count, mark allocation, or paper type.\n\n";
+                $preamble .= "The PAPER SCHEMA below is the ONLY source of truth for question count, marks, and AOs. The student is NOT qualified to confirm exam-paper structure — you are. For workflow order inside the assessment (Part A → Part B → Part C question-by-question → Part D summary), follow the protocol module below EXACTLY.\n";
 
                 $preamble .= $schema_block;
                 $preamble .= $this->build_assessment_workflow_reminder();
