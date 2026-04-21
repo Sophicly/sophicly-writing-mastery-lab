@@ -1,7 +1,7 @@
 # CLAUDE.md — Writing Mastery Lab (WML) Project Guide
 
 **Plugin slug:** `sophicly-writing-mastery-lab`
-**Current version:** 7.15.52
+**Current version:** 7.17.0
 **Purpose:** AI-powered GCSE/IGCSE English tutoring interface — essay writing, assessment, planning, and polishing.
 **AI Provider:** Claude Sonnet 4.6 via MeowApps AI Engine (with GPT-5 fallback).
 **Owner:** Neil (Sophicly)
@@ -324,6 +324,28 @@ The preamble is the #1 source of AI behaviour regressions. Rules:
 7. **The preamble is NOT the protocol** — it's session context and behaviour overrides only
 
 When the AI misbehaves in WML but works in the raw AI Engine chatbot, the preamble is almost always the cause.
+
+---
+
+## PROTOCOL REFACTORS — STUDY EACH PROTOCOL (v7.17.0+)
+
+Every protocol (board + paper + question) has its own AO structure, paragraph scaffold, and marking granularity. Do NOT assume uniformity.
+
+- **Language Section A reading Qs** (AQA / Edexcel / Eduqas): single AO per Q from schema. TTECEA ×N paragraphs. Q1 typically retrieval / mark-per-statement; Q2-Q4 analysis / evaluation.
+- **Language Section B (Q5)**: AO5 + AO6 holistic-with-structure. Story-spine (narrative) or IUMVCC (transactional). NOT TTECEA. Edexcel IGCSE Spec A uses AO4+AO5 labels (same criteria, different names).
+- **Literature essays**: multi-AO per Q. TTECEA+Context. AO allocation differs per paper: AQA lit = AO1+AO2+AO3 (+AO4 SPaG on Shakespeare + modern texts); Eduqas Shakespeare / modern = AO1+AO2; Edexcel varies per Q (some AO1-only, some AO1+AO2, some AO1+AO3); Edexcel IGCSE lit = AO1+AO2+AO4 (AO4 = Context, NOT SPaG).
+- **Marking is granular per element across ALL boards.** Every board assigns specific mark values to each TTECEA (+C) element, each intro element (hook / thesis / building sentence), each conclusion element (restated thesis / controlling concept / author's central purpose / universal message). Values live in the paper's `protocol-a-assessment.md`. Pedagogy: granular feedback enables deliberate practice (Hattie / Ericsson).
+- **Creative writing** is relatively more holistic but still element-targeted per protocol beats.
+- **Preamble is session-context + hard gates only** (v7.17.0+). Mark-scheme shape lives in protocol modules (e.g. `protocols/shared/mark-scheme/marking-rules-aqa-granular.md`).
+
+### Anomalies that bite
+- AQA Lang P2 Q4 = fixed 3-aspect parallel TTECEA (Beginning / Language / Ending).
+- Edexcel IGCSE Lang P1/P2 are multi-Q response sets, NOT essays.
+- Edexcel IGCSE AO4 = Context (opposite meaning from GCSE where AO4 = SPaG).
+- OCR Poetry Part (a) penalises sequential treatment (-3); Part (b) penalises reusing Part (a) poem (-3).
+- TTECEA element-AO annotations in shared modules are TEACHING guides, NOT mark-allocation keys. Mark AO comes from schema.
+
+**Before refactoring any assessment code**, read the paper's `protocol-a-assessment.md`, `foundation*.md`, and `knowledge-ttecea*.md` for that board+paper. Full pedagogy map at `~/.claude/plans/you-are-wml-chat-humble-turing.md`.
 
 ---
 

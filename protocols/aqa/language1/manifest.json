@@ -112,7 +112,8 @@
             "language/modules/graceful-degradation.md",
             "language/modules/anti-hallucination.md",
             "language/modules/state-management.md",
-            "language/modules/ttecea-rationale-lang.md"
+            "language/modules/ttecea-rationale-lang.md",
+            "mark-scheme/marking-rules-aqa-granular.md"
         ],
         "steps": {}
     },

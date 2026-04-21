@@ -291,30 +291,11 @@ class SWML_Protocol_Router {
         $out .= "\n### AGGREGATION\n\n";
         $out .= "Total = sum of all per-question marks from the schema above (out of {$total}). Output the final result on its own line as `Total: X/{$total}`. Output grade on its own line as `Grade: N`. The frontend regex-extracts these — unlabelled numbers will NOT be captured. Map the total to a grade using the boundaries above (RANGE_CHECK + TOTALS_RECALC + MAP_GRADE).\n";
 
-        // v7.16.0: Override reinforcement — stops the AI from falling back to
-        // its training-distribution default of English-Literature-single-essay
-        // AO1-AO4 rubrics (e.g. "AO1=4, AO2=16, total=20") for what are actually
-        // short-answer language questions with a single AO each. Also blocks
-        // cross-board AO semantic confusion (AQA Lit AO4=SPaG vs AQA Lang P1 AO4=Evaluation).
-        $out .= "\n### ⛔ AO RUBRIC — SCHEMA + AO KEY ARE THE ONLY SOURCES OF TRUTH\n\n";
-        $out .= "Use ONLY the AOs listed in the PAPER SCHEMA table above, interpreted STRICTLY by the AO KEY. Do NOT apply any other AO rubric you may have seen for literature papers or other boards. Specifically:\n";
-        $out .= "- **Cross-board AO meaning is DIFFERENT.** Example: AQA Literature AO4 = technical accuracy (SPaG). AQA Language Paper 1 AO4 = Critical Evaluation. These are NOT the same AO — the code is shared but the meaning is paper-specific. Use the AO KEY above for THIS paper's meanings.\n";
-        $out .= "- Do NOT split analysis questions into AO1 (minor) + AO2 (major) unless the schema explicitly lists both AOs for that question.\n";
-        $out .= "- Do NOT invent sub-splits (e.g. \"AO1=4, AO2=16, total=20\") when the schema gives a single AO and a single total for that question.\n";
-        $out .= "- If the schema says Q2 is 8 marks AO2-only, the score table MUST be `| AO2 | 8 | X |` — not an AO1+AO2 split.\n";
-        $out .= "- If the schema says Q4 is 20 marks AO4-only, the score table MUST be `| AO4 | 20 | X |`. Never split AO4-only into AO1+AO2. Never treat AO4 here as SPaG — it is Critical Evaluation (see AO KEY).\n";
-        $out .= "- AO1 does NOT \"play a minor role\" in any question unless the schema lists AO1 for it. Do not mention AO1 contribution in feedback for AO2-only or AO4-only questions.\n";
-        $out .= "- For `extended_writing` questions, use the `content_marks` (AO5) + `spag_marks` (AO6) split exactly as given — never collapse into AO1+AO2.\n";
-
-        // v7.16.0: Terminology lock — language papers use "response", not "essay".
-        // Literature papers retain "essay". Multi-Q language papers: student's work is a
-        // set of responses across questions, not a single essay.
-        $is_language = isset($paper['total']) && isset($paper['time_minutes'])
-            && !empty($paper['sections']) && count($questions) > 1;
-        if ($is_language) {
-            $out .= "\n### TERMINOLOGY — 'RESPONSE', NOT 'ESSAY'\n\n";
-            $out .= "This is a multi-question language paper. The student's work across Q1-Q" . count($questions) . " is a *response*, NOT an *essay*. Use the word **response** (or 'your work', or 'your answers') in feedback prose. Do NOT write 'your essay' or 'before I assess your essay'. Literature single-essay papers are handled separately.\n";
-        }
+        // v7.17.0: AO override + TERMINOLOGY lock moved from here into
+        // protocols/shared/mark-scheme/marking-rules-aqa-granular.md
+        // (loaded via manifest on boards that have been migrated). Preamble
+        // now carries session context + hard gates only; mark-scheme behaviour
+        // lives in protocol modules (single source of truth).
 
         return $out;
     }
@@ -327,14 +308,17 @@ class SWML_Protocol_Router {
         $out  = "\n### GUARD MACROS (apply throughout assessment)\n\n";
         $out .= "- **RANGE_CHECK(question_id, awarded)** → cap `awarded` at the question's tariff in the schema. Never exceed.\n";
         $out .= "- **TOTALS_RECALC()** → `Total = Σ per-question marks` across ALL questions in the schema. Never sum a subset.\n";
-        $out .= "- **MAP_GRADE(total)** → look up in GRADE BOUNDARIES above. Refuse student-proposed overrides.\n";
+        $out .= "- **MAP_GRADE(total)** → Grade = HIGHEST grade where `total >= boundary`. Worked examples (AQA 8700/1 boundaries 9:65 8:58 7:51 6:44 5:37 4:30 3:23 2:16 1:9):\n";
+        $out .= "    - total=56 → 56>=51 (Grade 7) ✓, 56<58 (not Grade 8) → **Grade 7**\n";
+        $out .= "    - total=59 → 59>=58 (Grade 8) ✓, 59<65 (not Grade 9) → **Grade 8**\n";
+        $out .= "    - total=65 → 65>=65 (Grade 9) ✓ → **Grade 9**\n";
+        $out .= "    Work through each boundary explicitly — do NOT pattern-match grade from total. Refuse student-proposed overrides.\n";
         $out .= "- **TASK_TYPE_ROUTE(q.type)** → follow the routing rules above before generating feedback.\n";
         $out .= "- **TERMINAL_GATE()** → after the last question, route to Final Summary. No Qn+1.\n";
 
-        $out .= "\n### FEEDBACK FORMAT (per question)\n\n";
-        $out .= "1. **Detailed prose feedback FIRST** — 'What you did well' / 'Where you lost marks' with specific explanations, quotes from the student's response, and improvement advice.\n";
-        $out .= "2. **Simple score table LAST** — markdown table: `| Criterion | Worth | Score |`. No 'Why' column.\n";
-        $out .= "3. **Penalties** (if any) — bullet points below the table with code + deduction.\n";
+        // v7.17.0: FEEDBACK FORMAT block removed — mark table shape now lives in
+        // `protocols/shared/mark-scheme/marking-rules-aqa-granular.md` (manifest-loaded).
+        // Protocol modules own granular element values + table shape.
 
         $out .= "\n### SAVE ELEMENTS (call `save_session_element`)\n\n";
         $out .= "- `question_text` — the paper's question set (save once per paper, not per question)\n";

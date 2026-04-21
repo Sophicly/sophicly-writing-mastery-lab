@@ -21,18 +21,20 @@ Many students learn frameworks like PEE (Point, Evidence, Explain), PETAL (Point
 
 ## TTECEA: Mark Scheme-Complete Analytical Structure
 
-TTECEA (Topic, Technique, Evidence, Close Analysis, Effects, Author's Purpose) is specifically designed to ensure **comprehensive AO coverage**:
+TTECEA (Topic, Technique, Evidence, Close Analysis, Effects, Author's Purpose) is a **transferable structural framework** for strong analytical paragraphs:
 
-| TTECEA Element | Assessment Objective | Why It's Essential |
+| TTECEA Element | Role in the paragraph | Why It's Essential |
 |:---|:---|:---|
-| **T — Topic (Conceptual)** | AO1/AO2 | Identifies the key concept being conveyed. Prevents premature technique identification — concept comes first. |
-| **T — Technique** | AO2 | Names the writer's method explicitly (required for AO2 marks). PEE often skips this. |
-| **E — Evidence** | AO1/AO2 | Provides textual proof. Must be integrated with technique and inference (not just quoted). |
-| **C — Close Analysis** | AO2 | Examines specific words, sounds, or punctuation in detail (perceptive analysis requirement). |
-| **E — Effects (×2)** | AO2/AO4 | Explains impact on reader systematically: focus → emotion → thought. Two distinct effects show detailed evaluation. |
-| **A — Author's Purpose** | AO2/AO4 | Evaluates why the author creates these effects — the bigger picture. |
+| **T — Topic (Conceptual)** | Names the key concept / idea being explored | Prevents technique-spotting without understanding — concept comes first |
+| **T — Technique** | Names the writer's method explicitly | Required anchor for technical analysis |
+| **E — Evidence** | Provides textual proof (integrated quote) | Grounds the analysis in the text |
+| **C — Close Analysis** | Examines specific words / sounds / punctuation in detail | Perceptive analysis requirement |
+| **E — Effects (×2)** | Explains impact on reader: focus → emotion → thought | Two distinct effects show detailed evaluation |
+| **A — Author's Purpose** | Evaluates why the author creates these effects — the bigger picture | Connects micro detail to macro intent |
 
-**For Language Papers:** TTECEA uses **6 elements** (no Context) because we analyse unseen extracts without anthology requirements. For Literature, a 7th element (Context/AO3) would be added.
+**Marking note (critical):** TTECEA is a structural framework, not a mark-allocation key. For **language papers**, every reading question in Section A assesses **exactly ONE Assessment Objective** (see PAPER SCHEMA in the assessment preamble — it's the authoritative source). All marks for that question go under that single AO — do NOT split element marks across multiple AOs. For **literature papers**, questions typically assess multiple AOs (e.g. AO1 + AO2 + AO3 on AQA lit; varies per board) — the AO column in the mark table is assigned per the paper's mark-scheme module.
+
+**For Language Papers:** TTECEA uses **6 elements** (no Context) because we analyse unseen extracts without anthology requirements. For Literature, a 7th element (Context) is added.
 
 ## Why Order Matters
 
