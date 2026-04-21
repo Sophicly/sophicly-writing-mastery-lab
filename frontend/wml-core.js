@@ -2083,6 +2083,19 @@ window.WML = (function() {
         return { step, isComplete, totalScore, grade };
     }
 
+    // v7.17.6: Canonical word-counter. Diagnostic + assessment + polishing
+    // environments previously drifted by ~3 words because TipTap's default
+    // `n.split(" ")` counter disagreed with ad-hoc `split(/\s+/)` callers on
+    // tabs, non-breaking spaces, and consecutive whitespace. Route every
+    // consumer through this helper, and pass it into CharacterCount.configure
+    // so the editor's built-in counter agrees with our section counters.
+    function countWords(text) {
+        if (text == null) return 0;
+        const s = String(text).trim();
+        if (!s) return 0;
+        return s.split(/\s+/).filter(Boolean).length;
+    }
+
     function formatAI(text) {
         // Security: escape raw HTML entities before markdown conversion (v7.15.2)
         // All HTML tags are generated programmatically AFTER this step by the markdown converter
@@ -2318,7 +2331,7 @@ window.WML = (function() {
         SVG_GUIDE_LOCK, SVG_GUIDE_TARGET, SVG_GUIDE_STOPWATCH,
         SVG_GUIDE_ARM, SVG_GUIDE_WRITING, SVG_GUIDE_GRAPH, SVG_GUIDE_BRAIN,
         // Text processing
-        stripAIInternals, detectAssessmentStep, formatAI,
+        stripAIInternals, detectAssessmentStep, formatAI, countWords,
         // Rendering
         renderLogo, renderBadges,
         // Creative writing project API (v7.13.30)

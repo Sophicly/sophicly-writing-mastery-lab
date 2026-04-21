@@ -3958,7 +3958,7 @@
                         const icon = getQuickActionIcon(action.label);
                         const btn = el('button', {
                             className: 'swml-quick-btn',
-                            innerHTML: (icon || '') + ' ' + action.label.replace(/^[A-F]\)\s*/, '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2700}-\u{27BF}✅✏️✓✗🎲📋🔥⚡🚀📂💡🎙️📝📊✨📄📚🎯]\s*/gu, '').trim(),
+                            innerHTML: (icon || '') + ' ' + action.label.replace(/^[A-Z]\)\s*/, '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2700}-\u{27BF}✅✏️✓✗🎲📋🔥⚡🚀📂💡🎙️📝📊✨📄📚🎯]\s*/gu, '').trim(),
                             onClick: () => {
                                 if (selected.has(action.value)) {
                                     selected.delete(action.value);
@@ -4022,7 +4022,7 @@
                         rankSubmitBtn.textContent = ranked.length > 0 ? `Submit Ranking (${ranked.length}) →` : 'Submit Ranking →';
                     };
                     actions.forEach(action => {
-                        const cleanLabel = action.label.replace(/^[A-F]\)\s*/, '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2700}-\u{27BF}✅✏️🎲📋🔥⚡🚀📂💡🎙️📝📊✨📄📚🎯]\s*/gu, '');
+                        const cleanLabel = action.label.replace(/^[A-Z]\)\s*/, '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2700}-\u{27BF}✅✏️🎲📋🔥⚡🚀📂💡🎙️📝📊✨📄📚🎯]\s*/gu, '');
                         const btn = el('button', {
                             className: 'swml-quick-btn swml-rank-btn',
                             innerHTML: cleanLabel,
@@ -4049,7 +4049,7 @@
                         const icon = getQuickActionIcon(action.label);
                         const btn = el('button', {
                             className: 'swml-quick-btn',
-                            innerHTML: (icon || '') + ' ' + action.label.replace(/^[A-F]\)\s*/, '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2700}-\u{27BF}✅✏️✓✗🎲📋🔥⚡🚀📂💡🎙️📝📊✨📄📚🎯]\s*/gu, '').trim(),
+                            innerHTML: (icon || '') + ' ' + action.label.replace(/^[A-Z]\)\s*/, '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2700}-\u{27BF}✅✏️✓✗🎲📋🔥⚡🚀📂💡🎙️📝📊✨📄📚🎯]\s*/gu, '').trim(),
                             onClick: () => {
                                 bar.remove();
                                 const input = $('#swml-input');
@@ -4149,8 +4149,12 @@
         //  v7.14.55: Also handles emoji prefix (🧠 A — ...) for BBB classification
         // ══════════════════════════════════════════
         const letterOptions = [];
-        const letterRegex = /^[-•🔹]*\s*(?:[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}]\s*)?(?:[\uFE00-\uFE0F]\s*)?\*{0,2}([A-F])[).:—\-]\*{0,2}\s*[—\-]?\s*(.+)/iu;
-        const letterBoldRegex = /^[-•]*\s*(?:[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}]\s*)?(?:[\uFE00-\uFE0F]\s*)?\*{0,2}([A-F])\*{0,2}\s*[).:—\-]+\s*(.+)/iu;
+        // v7.17.6: Expanded letter range from [A-Z] to [A-Z]. Previously C/Y gate
+        // after gold-standard delivery rendered only the C button; Y was silently
+        // dropped by the regex. Line-anchored + terminator requirement keeps false-
+        // positive risk low (ordinary prose doesn't start lines with "Y)" / "Y —").
+        const letterRegex = /^[-•🔹]*\s*(?:[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}]\s*)?(?:[\uFE00-\uFE0F]\s*)?\*{0,2}([A-Z])[).:—\-]\*{0,2}\s*[—\-]?\s*(.+)/iu;
+        const letterBoldRegex = /^[-•]*\s*(?:[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}]\s*)?(?:[\uFE00-\uFE0F]\s*)?\*{0,2}([A-Z])\*{0,2}\s*[).:—\-]+\s*(.+)/iu;
         for (const line of lines) {
             const m = line.match(letterRegex) || line.match(letterBoldRegex);
             if (m) {
@@ -4191,7 +4195,7 @@
 
         // Implied yes/no at end of message (would you like / are you happy / ready to)
         const lastChunk = lines.slice(-3).join(' ');
-        const hasLetterChoices = /^\s*[-•🔹]*\s*\*{0,2}[A-F][).:—\-]\*{0,2}\s/m.test(text);
+        const hasLetterChoices = /^\s*[-•🔹]*\s*\*{0,2}[A-Z][).:—\-]\*{0,2}\s/m.test(text);
         const isQuestion = lastChunk.includes('?');
 
         // Confirmation prompt: "is that correct?" / "would you like a different" → context-aware labels
@@ -4233,7 +4237,7 @@
                 // Guard: both sides must be meaningful (2–60 chars) and neither can be a single letter
                 if (labelA.length >= 2 && labelA.length <= 60
                     && labelB.length >= 2 && labelB.length <= 60
-                    && !/^[A-F]$/i.test(labelA) && !/^[A-F]$/i.test(labelB)) {
+                    && !/^[A-Z]$/i.test(labelA) && !/^[A-Z]$/i.test(labelB)) {
                     return [
                         { label: labelA, value: labelA },
                         { label: labelB, value: labelB }
@@ -4289,8 +4293,8 @@
             ];
         }
 
-        const respondAB = /(?:respond|reply|answer|type|choose|like|prefer|pick|just)\s*[,:]?\s*(?:with\s+)?(?:option\s+)?['\"]?\*{0,2}([A-F])\*{0,2}['\"]?\s+or\s+['\"]?\*{0,2}([A-F])\*{0,2}['\"]?/i;
-        const endAB = text.match(/\*{0,2}([A-F])\*{0,2}\s+or\s+\*{0,2}([A-F])\*{0,2}\s*[?!.]?\s*$/im);
+        const respondAB = /(?:respond|reply|answer|type|choose|like|prefer|pick|just)\s*[,:]?\s*(?:with\s+)?(?:option\s+)?['\"]?\*{0,2}([A-Z])\*{0,2}['\"]?\s+or\s+['\"]?\*{0,2}([A-Z])\*{0,2}['\"]?/i;
+        const endAB = text.match(/\*{0,2}([A-Z])\*{0,2}\s+or\s+\*{0,2}([A-Z])\*{0,2}\s*[?!.]?\s*$/im);
         const abMatch = text.match(respondAB) || endAB;
         if (abMatch) {
             const optA = abMatch[1].toUpperCase();
@@ -4399,7 +4403,7 @@
         //  INLINE PARENTHETICAL: "feedback (A), or proceed (B)"
         // ══════════════════════════════════════════
         const inlineChoices = [];
-        const inlineRegex = /([^.?!(]{5,60}?)\s*\(([A-F])\)/gi;
+        const inlineRegex = /([^.?!(]{5,60}?)\s*\(([A-Z])\)/gi;
         let inlineMatch;
         while ((inlineMatch = inlineRegex.exec(text)) !== null) {
             const label = inlineMatch[1].replace(/^.*?(?:,\s*(?:or\s+)?|;\s*(?:or\s+)?)/, '').trim();
@@ -6076,7 +6080,7 @@ Before marking the introduction, ask the student to confirm their essay structur
         const c = content.trim();
 
         // Reject option labels: "A — ...", "B — ...", "A) ...", "B. ..."
-        if (/^[A-F]\s*[—\-).:\s]+\s*.+/i.test(c) && c.length < 100) {
+        if (/^[A-Z]\s*[—\-).:\s]+\s*.+/i.test(c) && c.length < 100) {
             console.warn(`WML: Rejected bad plan content for ${type}: "${c}" (looks like an option label)`);
             return false;
         }
@@ -6617,7 +6621,7 @@ Before marking the introduction, ask the student to confirm their essay structur
                             const icon = getQuickActionIcon(action.label);
                             bar.appendChild(el('button', {
                                 className: 'swml-quick-btn',
-                                innerHTML: (icon || '') + ' ' + action.label.replace(/^[A-F]\)\s*/, '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2700}-\u{27BF}✅✏️✓✗🎲📋🔥⚡🚀📂💡🎙️📝📊✨📄📚🎯]\s*/gu, '').trim(),
+                                innerHTML: (icon || '') + ' ' + action.label.replace(/^[A-Z]\)\s*/, '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2700}-\u{27BF}✅✏️✓✗🎲📋🔥⚡🚀📂💡🎙️📝📊✨📄📚🎯]\s*/gu, '').trim(),
                                 onClick: () => {
                                     const input = $('#swml-input');
                                     if (input) { input.value = action.value; sendMessage(); }

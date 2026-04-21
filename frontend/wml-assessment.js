@@ -1244,7 +1244,7 @@
                     onClick: (e) => { e.stopPropagation(); clip(rawForCopy, e.currentTarget); } }));
                 const assessBlock = extractAssessmentContent(rawForCopy);
                 if (assessBlock) {
-                    header.appendChild(el('button', { className: 'swml-bubble-copy swml-copy-assess', innerHTML: SVG_COPY_ASSESS,
+                    header.appendChild(el('button', { className: 'swml-bubble-copy swml-copy-assess', innerHTML: SVG_COPY_ASSESS, title: 'Copy feedback',
                         onClick: (e) => { e.stopPropagation(); clipRich(assessBlock, e.currentTarget); } }));
                 }
                 content.appendChild(header);
@@ -1362,7 +1362,7 @@
                             rankSubmitBtn.textContent = ranked.length > 0 ? `Submit Ranking (${ranked.length}) →` : 'Submit Ranking →';
                         };
                         actions.forEach(action => {
-                            const cleanLabel = action.label.replace(/^[A-F]\)\s*/, '');
+                            const cleanLabel = action.label.replace(/^[A-Z]\)\s*/, '');
                             const btn = el('button', {
                                 className: 'swml-quick-btn swml-rank-btn',
                                 textContent: cleanLabel,
@@ -1378,6 +1378,18 @@
                         });
                         bar.appendChild(rankSubmitBtn);
                     } else {
+                        // v7.17.6: Y/C copy-feedback gate — prepend hint pointing students
+                        // to the Copy Feedback button at the top of the message. Without
+                        // this, students don't know the button exists and ask AI to repeat.
+                        const hasY = actions.some(a => a.value === 'Y');
+                        const hasC = actions.some(a => a.value === 'C');
+                        const isCopyFeedbackGate = hasY && hasC && /copied|clarify/i.test(detectText);
+                        if (isCopyFeedbackGate) {
+                            const hint = el('div', { className: 'swml-quick-hint' });
+                            hint.style.cssText = 'font-size:11px;opacity:0.7;margin-bottom:6px;display:flex;align-items:center;gap:4px;';
+                            hint.innerHTML = '↑ Click <strong>Copy Feedback</strong> at the top of this message to save it to your workbook.';
+                            bar.appendChild(hint);
+                        }
                         actions.forEach(action => {
                             const btn = el('button', {
                                 className: 'swml-quick-btn',
@@ -6202,7 +6214,7 @@
                                             rankSubmitBtn.textContent = ranked.length > 0 ? `Submit Ranking (${ranked.length}) →` : 'Submit Ranking →';
                                         };
                                         actions.forEach(action => {
-                                            const cleanLabel = action.label.replace(/^[A-F]\)\s*/, '');
+                                            const cleanLabel = action.label.replace(/^[A-Z]\)\s*/, '');
                                             const btn = el('button', {
                                                 className: 'swml-quick-btn swml-rank-btn',
                                                 textContent: cleanLabel,
@@ -7649,6 +7661,33 @@
                         }
                         return false;
                     },
+                    // v7.17.6: Prevent structural deletion of ChecklistItem nodes. Students
+                    // were accidentally Backspace-ing AQA L1P1 Q1's 4 point inputs out of
+                    // existence and unable to recover. Mirror InputField guards above.
+                    Backspace: ({ editor }) => {
+                        const { $from, empty } = editor.state.selection;
+                        if (!empty) return false;
+                        for (let d = $from.depth; d >= 0; d--) {
+                            if ($from.node(d).type.name === 'checklistItem') {
+                                const startOfItem = $from.before(d) + 1;
+                                if ($from.pos === startOfItem) return true; // block node-level deletion
+                                return false;
+                            }
+                        }
+                        return false;
+                    },
+                    Delete: ({ editor }) => {
+                        const { $from, empty } = editor.state.selection;
+                        if (!empty) return false;
+                        for (let d = $from.depth; d >= 0; d--) {
+                            if ($from.node(d).type.name === 'checklistItem') {
+                                const endOfItem = $from.after(d) - 1;
+                                if ($from.pos === endOfItem) return true; // block node-level deletion
+                                return false;
+                            }
+                        }
+                        return false;
+                    },
                 };
             },
         });
@@ -8746,7 +8785,10 @@
                     types: ['heading', 'paragraph'],
                 }),
                 Highlight.configure({ multicolor: true }),
-                CharacterCount,
+                // v7.17.6: Override TipTap's default wordCounter with the canonical
+                // WML.countWords helper so diagnostic/assessment/polishing environments
+                // agree on word count (no more ~3-word drift between envs).
+                CharacterCount.configure({ wordCounter: (WML && WML.countWords) ? WML.countWords : undefined }),
                 TextStyle,
                 Color,
                 CommentMark,
@@ -17148,7 +17190,9 @@ ${html}
                 Placeholder.configure({ placeholder: 'Start working here...' }),
                 TextAlign.configure({ types: ['heading', 'paragraph'] }),
                 Highlight.configure({ multicolor: true }),
-                CharacterCount, TextStyle, Color,
+                // v7.17.6: Canonical word-counter (see note above).
+                CharacterCount.configure({ wordCounter: (WML && WML.countWords) ? WML.countWords : undefined }),
+                TextStyle, Color,
                 SectionBlock, InputField, ChecklistItem,
             ],
             content: savedContent || getExamPrepDocTemplate(state.task),

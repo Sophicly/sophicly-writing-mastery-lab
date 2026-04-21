@@ -5338,11 +5338,15 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     position: relative;
 }
 .swml-copy-assess::after {
-    content: 'Copy assessment only';
+    /* v7.17.6: Positioned BELOW the button (previously above via bottom:100%).
+       The scroll container .swml-canvas-chat-messages has overflow-y:auto and
+       was clipping the tooltip when it rendered above the first message. Also
+       reworded to "Copy feedback" so students know this is the feedback copier. */
+    content: 'Copy feedback';
     position: absolute;
-    bottom: 100%;
+    top: 100%;
     right: 0;
-    margin-bottom: 4px;
+    margin-top: 4px;
     padding: 5px 10px;
     border-radius: 6px;
     font-size: 10px;
