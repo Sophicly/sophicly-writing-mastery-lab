@@ -5478,16 +5478,18 @@
                             // overlay UX for standalone exercises.
                             const EXAM_PREP_TASKS = ['exam_question','essay_plan','model_answer','verbal_rehearsal','conceptual_notes','memory_practice','foundational_quiz'];
                             const isExamPrepTask = EXAM_PREP_TASKS.includes(state.task);
-                            // v7.17.7: Diagnostic + assessment tasks now open the selector
-                            // whenever any attempts exist (mirrors exam-prep UX). Previously
-                            // the gate required completedAttempts.length > 0, so a student
-                            // whose only attempts were In Progress could never access the
-                            // "Start new attempt" button after a hard refresh.
-                            const DIAGNOSTIC_ATTEMPT_TASKS = ['diagnostic','assessment'];
-                            const isDiagnosticAttemptTask = DIAGNOSTIC_ATTEMPT_TASKS.includes(state.task);
+                            // v7.17.10: narrowed from v7.17.7. Only the diagnostic *entry* task
+                            // opens the overlay on in-progress-only — this covers the student
+                            // who hard-refreshes mid-diagnostic and needs the "Start new attempt"
+                            // button. Assessment is a Phase-1 continuation of the diagnostic's
+                            // attempt (shared suffix, single attempt index) so it must auto-resume
+                            // and only surface the selector once a completed attempt exists.
+                            // '' covers the embed-config path at wml-app.js:83-84 that clears
+                            // state.task on diagnostic/development lessons.
+                            const isDiagnosticEntryTask = (state.task === 'diagnostic' || state.task === '');
                             const hasAnyAttempt = (idx.attempts || []).length > 0;
-                            console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl, 'preview=', previewOverlay, 'examPrep=', isExamPrepTask, 'diagnostic=', isDiagnosticAttemptTask);
-                            if ((completedAttempts.length > 0 || previewOverlay || (isExamPrepTask && hasAnyAttempt) || (isDiagnosticAttemptTask && hasAnyAttempt)) && !state.reviewMode && !attemptFromUrl) {
+                            console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl, 'preview=', previewOverlay, 'examPrep=', isExamPrepTask, 'diagnosticEntry=', isDiagnosticEntryTask);
+                            if ((completedAttempts.length > 0 || previewOverlay || (isExamPrepTask && hasAnyAttempt) || (isDiagnosticEntryTask && hasAnyAttempt)) && !state.reviewMode && !attemptFromUrl) {
                                 const shown = await _showAttemptSelector(idx, suffix);
                                 if (shown) return; // selector handles mode + chat init
                                 attemptSelectorShown = false;
