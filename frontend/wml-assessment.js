@@ -4696,7 +4696,12 @@
                     // v7.15.73: overscroll-behavior + overflow:hidden stop the overlay
                     // from scroll-chaining to the underlying canvas doc. Parent canvas
                     // overflow is locked on attach and restored on remove (below).
-                    overlay.style.cssText = 'position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);overflow:hidden;overscroll-behavior:contain;';
+                    // v7.17.7: cursor:default + draggable=false on the overlay + card
+                    // suppress the grab-hand cursor students saw on trackpads, which
+                    // was ProseMirror's native drag bleeding through from the canvas
+                    // parent the overlay is appended into.
+                    overlay.style.cssText = 'position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);overflow:hidden;overscroll-behavior:contain;cursor:default;';
+                    overlay.setAttribute('draggable', 'false');
                     // Block wheel/touch that starts on the backdrop (outside the card)
                     // from propagating to the doc underneath. Scroll inside the card
                     // still works because those events originate on .swml-attempt-item list.
@@ -4707,7 +4712,10 @@
                     overlay.addEventListener('touchmove', _blockBackdropScroll, { passive: false });
 
                     const card = el('div', { className: 'swml-attempt-card' });
-                    card.style.cssText = 'background:#1C1D1F;border-radius:16px;padding:32px;max-width:420px;width:90%;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+                    card.style.cssText = 'background:#1C1D1F;border-radius:16px;padding:32px;max-width:420px;width:90%;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.5);cursor:default;user-select:none;-webkit-user-select:none;';
+                    card.setAttribute('draggable', 'false');
+                    // Prevent the editor below from initiating a drag on this card.
+                    card.addEventListener('dragstart', (e) => { e.preventDefault(); e.stopPropagation(); });
 
                     const title = el('h3', { textContent: 'Previous Attempts Found' });
                     title.style.cssText = 'margin:0 0 8px;font-size:18px;font-weight:600;';
@@ -5470,9 +5478,16 @@
                             // overlay UX for standalone exercises.
                             const EXAM_PREP_TASKS = ['exam_question','essay_plan','model_answer','verbal_rehearsal','conceptual_notes','memory_practice','foundational_quiz'];
                             const isExamPrepTask = EXAM_PREP_TASKS.includes(state.task);
+                            // v7.17.7: Diagnostic + assessment tasks now open the selector
+                            // whenever any attempts exist (mirrors exam-prep UX). Previously
+                            // the gate required completedAttempts.length > 0, so a student
+                            // whose only attempts were In Progress could never access the
+                            // "Start new attempt" button after a hard refresh.
+                            const DIAGNOSTIC_ATTEMPT_TASKS = ['diagnostic','assessment'];
+                            const isDiagnosticAttemptTask = DIAGNOSTIC_ATTEMPT_TASKS.includes(state.task);
                             const hasAnyAttempt = (idx.attempts || []).length > 0;
-                            console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl, 'preview=', previewOverlay, 'examPrep=', isExamPrepTask);
-                            if ((completedAttempts.length > 0 || previewOverlay || (isExamPrepTask && hasAnyAttempt)) && !state.reviewMode && !attemptFromUrl) {
+                            console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl, 'preview=', previewOverlay, 'examPrep=', isExamPrepTask, 'diagnostic=', isDiagnosticAttemptTask);
+                            if ((completedAttempts.length > 0 || previewOverlay || (isExamPrepTask && hasAnyAttempt) || (isDiagnosticAttemptTask && hasAnyAttempt)) && !state.reviewMode && !attemptFromUrl) {
                                 const shown = await _showAttemptSelector(idx, suffix);
                                 if (shown) return; // selector handles mode + chat init
                                 attemptSelectorShown = false;
@@ -7541,10 +7556,23 @@
                         return false;
                     },
                     // v7.14.65: Prevent deleting InputField nodes — students must not remove them
+                    // v7.17.7: Extended to block cross-boundary range selections that would
+                    // otherwise let ProseMirror remove the node structure. Same pattern as
+                    // ChecklistItem guard below.
                     Backspace: ({ editor }) => {
-                        const { $from, empty } = editor.state.selection;
-                        if (!empty) return false; // let selection delete work normally
-                        // At position 0 inside an inputField? Block backspace to prevent node deletion
+                        const { $from, $to, empty } = editor.state.selection;
+                        const findField = ($pos) => {
+                            for (let d = $pos.depth; d >= 0; d--) {
+                                if ($pos.node(d).type.name === 'inputField') return $pos.before(d);
+                            }
+                            return null;
+                        };
+                        if (!empty) {
+                            const fromField = findField($from);
+                            const toField = findField($to);
+                            if (fromField !== toField) return true; // cross-boundary range: block
+                            return false; // same-field range: default clears inline content
+                        }
                         for (let d = $from.depth; d >= 0; d--) {
                             if ($from.node(d).type.name === 'inputField') {
                                 const startOfField = $from.before(d) + 1;
@@ -7555,8 +7583,19 @@
                         return false;
                     },
                     Delete: ({ editor }) => {
-                        const { $from, empty } = editor.state.selection;
-                        if (!empty) return false;
+                        const { $from, $to, empty } = editor.state.selection;
+                        const findField = ($pos) => {
+                            for (let d = $pos.depth; d >= 0; d--) {
+                                if ($pos.node(d).type.name === 'inputField') return $pos.before(d);
+                            }
+                            return null;
+                        };
+                        if (!empty) {
+                            const fromField = findField($from);
+                            const toField = findField($to);
+                            if (fromField !== toField) return true;
+                            return false;
+                        }
                         for (let d = $from.depth; d >= 0; d--) {
                             if ($from.node(d).type.name === 'inputField') {
                                 const endOfField = $from.after(d) - 1;
@@ -7663,10 +7702,25 @@
                     },
                     // v7.17.6: Prevent structural deletion of ChecklistItem nodes. Students
                     // were accidentally Backspace-ing AQA L1P1 Q1's 4 point inputs out of
-                    // existence and unable to recover. Mirror InputField guards above.
+                    // existence and unable to recover.
+                    // v7.17.7: Extended to block range selections that cross node boundaries
+                    // (highlight text across Point 3 + Point 4 → Backspace was deleting the
+                    // bottom container). Returns true to block whenever the two selection
+                    // endpoints sit in different ChecklistItem instances.
                     Backspace: ({ editor }) => {
-                        const { $from, empty } = editor.state.selection;
-                        if (!empty) return false;
+                        const { $from, $to, empty } = editor.state.selection;
+                        const findItem = ($pos) => {
+                            for (let d = $pos.depth; d >= 0; d--) {
+                                if ($pos.node(d).type.name === 'checklistItem') return $pos.before(d);
+                            }
+                            return null;
+                        };
+                        if (!empty) {
+                            const fromItem = findItem($from);
+                            const toItem = findItem($to);
+                            if (fromItem !== toItem) return true; // cross-boundary range: block
+                            return false; // same-item range: let default clear inline content
+                        }
                         for (let d = $from.depth; d >= 0; d--) {
                             if ($from.node(d).type.name === 'checklistItem') {
                                 const startOfItem = $from.before(d) + 1;
@@ -7677,12 +7731,23 @@
                         return false;
                     },
                     Delete: ({ editor }) => {
-                        const { $from, empty } = editor.state.selection;
-                        if (!empty) return false;
+                        const { $from, $to, empty } = editor.state.selection;
+                        const findItem = ($pos) => {
+                            for (let d = $pos.depth; d >= 0; d--) {
+                                if ($pos.node(d).type.name === 'checklistItem') return $pos.before(d);
+                            }
+                            return null;
+                        };
+                        if (!empty) {
+                            const fromItem = findItem($from);
+                            const toItem = findItem($to);
+                            if (fromItem !== toItem) return true;
+                            return false;
+                        }
                         for (let d = $from.depth; d >= 0; d--) {
                             if ($from.node(d).type.name === 'checklistItem') {
                                 const endOfItem = $from.after(d) - 1;
-                                if ($from.pos === endOfItem) return true; // block node-level deletion
+                                if ($from.pos === endOfItem) return true;
                                 return false;
                             }
                         }
