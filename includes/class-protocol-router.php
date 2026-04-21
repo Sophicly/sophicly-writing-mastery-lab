@@ -1610,6 +1610,10 @@ TEMPLATE;
      * Returns directory name (e.g., "literature", "poetry", "modern", "language1")
      */
     private function resolve_protocol_group($board, $subject) {
+        // v7.17.4: normalise language_p1/language_p2 → language1/language2 for map lookup.
+        // Frontend + schema use language_p1; protocol dir + map use language1. Converge here.
+        $subject = preg_replace('/^language_p(\d)$/', 'language$1', $subject);
+
         // Normalise board key (frontend uses hyphens, map uses underscores)
         $board_key = str_replace('-', '_', $board);
 
