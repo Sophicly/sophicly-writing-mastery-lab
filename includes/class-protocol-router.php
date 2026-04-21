@@ -850,6 +850,37 @@ class SWML_Protocol_Router {
             return null;
         }
 
+        // Mark Scheme Unit: step-aware routing for Quiz (step=1) + Forging Your Weapon (step=2) (v7.17.8)
+        // Quiz + FYW share one canvas doc per attempt because the task suffix is identical.
+        // Mark Scheme Assessment stays on the separate `mark_scheme` task above with its own doc.
+        if ($task === 'mark_scheme_unit') {
+            $msu_subject_map = [
+                'shakespeare'        => 'shakespeare.md',
+                'modern_text'        => 'modern_text.md',
+                '19th_century'       => '19th_century.md',
+                'poetry_anthology'   => 'poetry_anthology.md',
+                'unseen_poetry'      => 'poetry_anthology.md',
+                'language_paper_1'   => 'language1.md',
+                'language_paper_2'   => 'language2.md',
+                'language1'          => 'language1.md',
+                'language2'          => 'language2.md',
+            ];
+            $msu_file = $msu_subject_map[$subject] ?? null;
+            if (!$msu_file) {
+                error_log("WML Router: mark_scheme_unit subject '{$subject}' not mapped");
+                return null;
+            }
+            $msu_dir = ($step === 2) ? 'forging-your-weapon' : 'mark-scheme-quiz';
+            $msu_path = $plugin_dir . 'protocols/shared/' . $msu_dir . '/' . $msu_file;
+            if (file_exists($msu_path)) {
+                $content = file_get_contents($msu_path);
+                error_log("WML Router: Loaded mark_scheme_unit protocol: {$msu_dir}/{$msu_file} (" . strlen($content) . " chars) for subject={$subject}, step={$step}");
+                return !empty(trim($content)) ? $content : null;
+            }
+            error_log("WML Router: mark_scheme_unit file not found at {$msu_path}");
+            return null;
+        }
+
         // Memory Practice: universal single-file protocol — load directly, skip manifest
         if ($task === 'memory_practice') {
             $mp_path = $plugin_dir . 'protocols/shared/modules/memory-practice.md';
