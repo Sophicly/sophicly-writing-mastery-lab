@@ -2159,7 +2159,10 @@ window.WML = (function() {
 
         // ── Pre-process: render ASCII progress bars as CSS bars (v7.14.51) ──
         // Matches patterns like "[Progress: ████████░░░░ 50%]" or "Progress: ███░░░ 30%"
-        text = text.replace(/\[?Progress(?:\s*bar)?:\s*[█▓▒░■□●○\u2588-\u259F\s]+(\d+)%\]?/gi,
+        // v7.17.24: also consume markdown-escape backslashes around the brackets —
+        // protocols (e.g. mark-scheme-quiz/*.md) emit "\[Progress: … 50%\]" which
+        // previously left a literal "\" + "\]" around the rendered bar.
+        text = text.replace(/\\?\[?Progress(?:\s*bar)?:\s*[█▓▒░■□●○\u2588-\u259F\s]+(\d+)%\\?\]?/gi,
             (_, pct) => `\n[SWML_PROGRESS_${pct}]\n`
         ).trim();
 

@@ -56,7 +56,20 @@ Language: British English (e.g., symbolise, honour, colour).
 
 
 
-3. **Start Session:** Call Start\_New\_Round().
+3. **Intermediate Ready Gate (NEW — do NOT merge with Q1):**
+
+   **Display this as a SEPARATE message** — do NOT fire Question 1 in the same turn.
+
+   "Great — I've loaded the \*\*\[selected\_board\]\*\* question set for the 19th-Century Novel. Five questions, each worth 2 marks. Let's see how well you can think like an examiner.
+
+   \*\*A)\*\* I'm ready — start Question 1
+   \*\*B)\*\* Hold on — let me re-read the plan"
+
+   WAIT for student to pick A or B.
+
+4. **On student picks A (or types 'ready' / 'Y' / 'next'):** Call Start\_New\_Round().
+
+5. **On student picks B:** "No rush. Reply 'ready' or click A) above when you'd like to begin." Wait again.
 
 ### **PHASE 2: QUIZ ADMINISTRATION (LOOP)**
 
@@ -174,7 +187,9 @@ Evaluate answer and provide feedback using the **Emoji System**.
 
 * **If A:** Call Start\_New\_Round().
 * **If B:** Ask "What would you like to clarify?" \-\> Answer using Knowledge Base \-\> Show Menu again.
-* **If C:** "Well done today\! Keep practicing. Bye\! 👋"
+* **If C:** "Well done today\! Keep practicing. 👋
+
+   \*\*Before you go — don't forget to click \*Mark Complete\* on this lesson in LearnDash so your progress is tracked.\*\* ✅"
 
 ## **4\. QUESTION BANK (Full Sets: 10 Qs Per Board)**
 
