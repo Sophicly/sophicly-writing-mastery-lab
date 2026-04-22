@@ -14965,13 +14965,53 @@
         // v7.13.93: Exam prep tasks use their own templates (via tryExamPrepTemplate), skip topic template
         const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz'];
         if (EXAM_PREP_TASKS.includes(state.task)) return;
-        // v7.17.17: mark_scheme_unit uses a simple 2-section notes template — same doc across
-        // Quiz (step 1) + FYW (step 2), shared suffix means notes persist between steps.
+        // v7.17.18: mark_scheme_unit uses a 2-section notes template — same doc across
+        // Quiz (step 1) + FYW (step 2), shared suffix so notes persist between steps.
+        // Sanitize any essay-specific sections that leaked in from pre-v7.17.17 test saves
+        // (when MSU fell back to getDefaultEssayTemplate via the v7.15.0 safety net).
         if (state.task === 'mark_scheme_unit') {
             const existing = canvasEditor.getHTML() || '';
-            if (!existing.includes('data-section-type')) {
-                const tpl = getMarkSchemeUnitTemplate();
-                canvasEditor.commands.setContent(tpl, false);
+            const hasNotes = /data-field-id="(msu-quiz-notes|msu-fyw-notes)"/.test(existing);
+            const hasEssayArtifacts = /data-section-type="(score|self-assessment|analytics|action-plan|feedback|question|plan|outline)"/.test(existing);
+            if (hasEssayArtifacts && !hasNotes) {
+                // Stale essay-template doc — wipe + inject clean MSU template.
+                canvasEditor.commands.setContent(getMarkSchemeUnitTemplate(), false);
+                snapshotTemplateBaseline(canvasEditor);
+                refreshWordCountUI();
+                console.log('WML: MSU stale essay doc detected — reset to 2-section notes template');
+            } else if (hasEssayArtifacts && hasNotes) {
+                // Mixed doc — strip essay sections, keep msu-* response sections + signoff.
+                const tmp = document.createElement('div');
+                tmp.innerHTML = existing;
+                const stripSelectors = [
+                    '[data-section-type="score"]',
+                    '[data-section-type="self-assessment"]',
+                    '[data-section-type="analytics"]',
+                    '[data-section-type="action-plan"]',
+                    '[data-section-type="feedback"]',
+                    '[data-section-type="question"]',
+                    '[data-section-type="plan"]',
+                    '[data-section-type="outline"]',
+                ];
+                // Also strip any response sections that aren't msu-quiz-notes / msu-fyw-notes.
+                tmp.querySelectorAll('[data-section-type="response"]').forEach(node => {
+                    const field = node.querySelector('[data-field-id^="msu-"]');
+                    if (!field) node.__swmlStrip = true;
+                });
+                tmp.querySelectorAll(stripSelectors.join(',')).forEach(node => { node.__swmlStrip = true; });
+                tmp.querySelectorAll('*').forEach(node => {
+                    if (!node.__swmlStrip) return;
+                    const prev = node.previousElementSibling;
+                    if (prev && (prev.classList?.contains('swml-divider') || prev.tagName === 'HR' || /divider/i.test(prev.className || ''))) prev.remove();
+                    node.remove();
+                });
+                canvasEditor.commands.setContent(tmp.innerHTML, false);
+                snapshotTemplateBaseline(canvasEditor);
+                refreshWordCountUI();
+                console.log('WML: MSU mixed doc — stripped essay sections, kept notes');
+            } else if (!existing.includes('data-section-type')) {
+                // Fresh doc — inject 2-section template.
+                canvasEditor.commands.setContent(getMarkSchemeUnitTemplate(), false);
                 snapshotTemplateBaseline(canvasEditor);
                 refreshWordCountUI();
                 console.log('WML: Mark Scheme Unit template injected (2 sections)');

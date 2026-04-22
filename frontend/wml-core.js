@@ -2138,6 +2138,10 @@ window.WML = (function() {
         const t = window.WML?.state?.task ?? '';
         const p = window.WML?.state?.phase ?? '';
         if (!TOPIC_FLOW_TASKS.includes(t)) return false;
+        // v7.17.18: mark_scheme_unit unconditionally suppresses attempts UX —
+        // single completion, tutor re-assigns for redo. phase may not be
+        // 'preliminary' if bridge wml_phase isn't populated, so don't depend on it.
+        if (t === 'mark_scheme_unit') return true;
         // v7.17.12: belt-and-braces — treat a guided phase as the fallback signal
         // for topic-flow identity when the bridge failed to populate topicNumber
         // (e.g. missing wml_topic mapping). Keeps attempt-UX suppression correct
