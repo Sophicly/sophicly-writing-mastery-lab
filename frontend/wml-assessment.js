@@ -2812,14 +2812,18 @@
         // placeholder was missing from the DOM and later updates couldn't find it.
         // Inserting unconditionally lets the async update path decide what to show.
         // v7.15.49: visibility uses _isGuidedContext() — reads topic+phase each render.
-        // v7.17.11: topic-flow suppresses the canvas-header attempt badge (topic number identifies the piece of work).
+        // v7.17.13 fix: topic-flow completely skips the canvas-header attempt badge.
+        // Previously used display:none but the CSS `swml-canvas-ctx-badge` class
+        // has min-width/padding that keeps an empty chip visible.
         const _tfHideAttempt = !!(WML.isTopicFlow && WML.isTopicFlow());
-        const attemptPlaceholder = el('span', {
-            className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
-            textContent: (!_tfHideAttempt && (state.attempt || 0) >= 1) ? `Attempt ${state.attempt}` : '',
-            style: { display: (!_tfHideAttempt && _isGuidedContext() && (state.attempt || 0) >= 1) ? '' : 'none' },
-        });
-        ctxBadges.appendChild(attemptPlaceholder);
+        if (!_tfHideAttempt) {
+            const attemptPlaceholder = el('span', {
+                className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
+                textContent: ((state.attempt || 0) >= 1) ? `Attempt ${state.attempt}` : '',
+                style: { display: (_isGuidedContext() && (state.attempt || 0) >= 1) ? '' : 'none' },
+            });
+            ctxBadges.appendChild(attemptPlaceholder);
+        }
 
         // Overflow ... button — shows hidden badges on small screens
         const ctxOverflowBtn = el('button', { className: 'swml-canvas-ctx-overflow', textContent: '···', title: 'Show all' });
@@ -16442,13 +16446,16 @@ ${html}
         // v7.15.48: Attempt badge placeholder — always inserted, visibility controlled
         // by _updateCtxAttemptBadge (see equivalent change in renderCanvasWorkspace).
         // v7.15.49: visibility uses _isGuidedContext().
-        // v7.17.11: topic-flow suppresses the canvas-header attempt badge (mirrors renderCanvasWorkspace).
+        // v7.17.13 fix: topic-flow skips the diagnostic-canvas attempt badge entirely
+        // (the display:none approach left an empty chip visible — CSS min-width/padding).
         const _tfHideAttempt2 = !!(WML.isTopicFlow && WML.isTopicFlow());
-        ctxBadges.appendChild(el('span', {
-            className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
-            textContent: (!_tfHideAttempt2 && (state.attempt || 0) >= 1) ? `Attempt ${state.attempt}` : '',
-            style: { display: (!_tfHideAttempt2 && _isGuidedContext() && (state.attempt || 0) >= 1) ? '' : 'none' },
-        }));
+        if (!_tfHideAttempt2) {
+            ctxBadges.appendChild(el('span', {
+                className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
+                textContent: ((state.attempt || 0) >= 1) ? `Attempt ${state.attempt}` : '',
+                style: { display: (_isGuidedContext() && (state.attempt || 0) >= 1) ? '' : 'none' },
+            }));
+        }
         headerRow.appendChild(ctxBadges);
 
         // Theme toggle (right) — v7.15.45: hidden in embedded mode + LD → WML sync
