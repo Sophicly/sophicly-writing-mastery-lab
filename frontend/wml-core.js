@@ -958,6 +958,24 @@ window.WML = (function() {
             ],
         },
 
+        // v7.17.15: Mark Scheme Unit — Quiz (step=1) + Forging Your Weapon (step=2).
+        // Both steps share this task slug so they write to the same canvas doc per
+        // attempt (student's quiz notes remain visible during FYW). Protocol router
+        // dispatches on bridge-provided step to mark-scheme-quiz/ or forging-your-weapon/.
+        mark_scheme_unit: {
+            label: 'Mark Scheme Unit',
+            environment: 'training',
+            panels: { sidebar: true, chat: true, guidance: false, document: true },
+            steps: null,
+            elements: null,
+            protocolSource: 'shared',
+            protocolTask: 'mark_scheme_unit',
+            completionType: 'step_complete',
+            storageSuffix: '_msu',
+            chatHeaderLabel: 'Mark Scheme Unit',
+            sidebarSteps: null,
+        },
+
         // ── Canvas exercises (v7.14.29: migrated from chat to canvas) ──
         planning: {
             label: 'Response Planning',

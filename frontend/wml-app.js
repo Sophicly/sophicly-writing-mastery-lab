@@ -69,6 +69,8 @@
         if (embedConfig.text)    state.text    = embedConfig.text;
         if (embedConfig.task)    state.task    = embedConfig.task;
         if (embedConfig.topic)   state.topicNumber = embedConfig.topic;
+        // v7.17.15: bridge-provided step (mark_scheme_unit Quiz=1, FYW=2)
+        if (embedConfig.step)    state.step    = embedConfig.step;
         if (embedConfig.phase) {
             state.phase = embedConfig.phase;
             state.isRedraft = embedConfig.phase === 'redraft';

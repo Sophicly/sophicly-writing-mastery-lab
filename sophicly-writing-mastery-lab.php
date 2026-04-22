@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.17.14
+ * Version: 7.17.15
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.17.14');
+define('SWML_VERSION', '7.17.15');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -538,20 +538,27 @@ class Sophicly_Writing_Mastery_Lab {
             }
         }
 
-        // 2. If topic/task/phase still empty, fall back to bridge mapping (v7.15.25)
-        // The bridge stores wml_topic per-lesson in wp_options. This handles stale shortcodes
-        // that were generated before topic numbers were configured in the admin UI.
-        if ($course_id && (!$topic || empty($task))) {
+        // 2. Bridge mapping is AUTHORITATIVE (v7.17.15)
+        // Admin UI mappings override hardcoded shortcode attributes. Previously the
+        // bridge only filled task/topic/phase when shortcode left them empty, so
+        // shared lessons with baked-in [writing_mastery_lab task="planning"] ignored
+        // newer admin UI mappings (e.g. mark_scheme_unit). Bridge also supplies
+        // wml_step for multi-step tasks like mark_scheme_unit (step=1 Quiz, step=2 FYW).
+        $step = 0;
+        if ($course_id) {
             $bridge_map = get_option('sophicly_ld_bridge_' . $course_id, []);
             $bridge_entry = $bridge_map[(string)$post_id] ?? [];
-            if (!$topic && !empty($bridge_entry['wml_topic'])) {
+            if (!empty($bridge_entry['wml_topic'])) {
                 $topic = absint($bridge_entry['wml_topic']);
             }
-            if (empty($task) && !empty($bridge_entry['wml_task'])) {
+            if (!empty($bridge_entry['wml_task'])) {
                 $task = sanitize_key($bridge_entry['wml_task']);
             }
-            if (empty($phase) && !empty($bridge_entry['wml_phase'])) {
+            if (!empty($bridge_entry['wml_phase'])) {
                 $phase = sanitize_key($bridge_entry['wml_phase']);
+            }
+            if (!empty($bridge_entry['wml_step'])) {
+                $step = absint($bridge_entry['wml_step']);
             }
         }
 
@@ -582,6 +589,7 @@ class Sophicly_Writing_Mastery_Lab {
             'task'        => $task,
             'phase'       => $phase,
             'topic'       => $topic,
+            'step'        => $step,
             'board'       => $board,
             'subject'     => $subject,
             'text'        => $text,
