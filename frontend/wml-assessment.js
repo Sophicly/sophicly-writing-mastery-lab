@@ -268,6 +268,14 @@
         const ctx = document.querySelector('#swml-canvas-overlay .swml-canvas-ctx');
         if (!ctx) return;
         let badge = ctx.querySelector('.swml-ctx-attempt-badge');
+        // v7.17.13: topic-flow hides the attempt badge. The v7.17.11 render-time
+        // gates set the textContent to '' at mount, but this flipper overwrote
+        // it on every state.attempt change — that was the residual "Attempt N"
+        // chip Neil saw on the diagnostic canvas.
+        if (WML.isTopicFlow && WML.isTopicFlow()) {
+            if (badge) { badge.textContent = ''; badge.style.display = 'none'; }
+            return;
+        }
         // v7.15.49: structural check — see _isGuidedContext().
         const shouldShow = _isGuidedContext() && (state.attempt || 0) >= 1;
         if (!badge) {
@@ -833,6 +841,14 @@
         const previewOverlay = !!(new URLSearchParams(window.location.search).get('show_attempt_overlay'));
         if (state.reviewMode) return;
         if (!state.board || !state.text) return;
+        // v7.17.13: topic-flow auto-resumes attempt 1 — never show the diagnostic
+        // overlay. Admin/reviewer still reaches historical attempts via ?attempt=N.
+        // This is the overlay Neil kept seeing on Macbeth Topic 1 diagnostic after
+        // v7.17.12; the v7.17.11/12 suppression only covered the training-env gate.
+        if (WML.isTopicFlow && WML.isTopicFlow() && !previewOverlay) {
+            if (!state.attempt || state.attempt < 1) state.attempt = 1;
+            return;
+        }
         // v7.15.81: Overlay only fires on the actual diagnostic WRITE lesson
         // (first in the topic sequence). Every other lesson — assessment,
         // discuss feedback, mark scheme, planning, outlining, polishing,
