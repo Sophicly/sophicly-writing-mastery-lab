@@ -54,6 +54,13 @@ For multi-step tasks, state a brief plan:
 
 For WML bug fixes specifically, the `BUG FIX STANDARD OPERATING PROCEDURE` below is the project-tuned instance of this principle.
 
+### 5. Surface best-practice risks BEFORE building
+Neil is a teacher, not a dev. His feature ideas are pedagogically sharp but UX-rudimentary by design. When a request has a known-pitfall shape — toasts without dismiss, modals without scroll isolation, infinite lists without empty state, destructive actions without confirm, async without loading state, feature flags without rollback — name the pitfall + propose the fix as a one-line suggestion before coding. Wait for acknowledgement; don't silently implement.
+
+Example: toasts shipped without dismiss → needed rework. Flag that shape ("no dismiss, no mute, no per-type preference") in the first exchange.
+
+Saves iteration cycles. Applies across WML, dashboard, bridge, every Sophicly repo.
+
 ---
 
 ## CRITICAL RULES — READ BEFORE ANY EDIT
