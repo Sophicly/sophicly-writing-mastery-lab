@@ -83,6 +83,12 @@
         if (state.task === 'diagnostic' || state.task === 'development') {
             state.task = '';
         }
+        // v7.17.11: inside a numbered topic, Phase 1 + Phase 2 are one attempt.
+        // Lock attempt=1 so nothing client-side can spawn attempt 2 on topic tasks.
+        // Admin/reviewer can still force ?attempt=N via URL for historical access.
+        if (WML.isTopicFlow && WML.isTopicFlow()) {
+            state.attempt = 1;
+        }
         // Resolve textName from catalogue
         if (state.text && !state.textName) {
             state.textName = getTextLabel(state.text, state.subject);

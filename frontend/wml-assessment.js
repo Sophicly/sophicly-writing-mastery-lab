@@ -1094,6 +1094,8 @@
         // (state.attempt is 0 at build time; resolved later via server or sessionStorage)
         function _updateAttemptBadge() {
             if (state.attempt < 1) return;
+            // v7.17.11: hide attempt badge inside numbered topic flow — topic number carries the identity there.
+            if (WML.isTopicFlow && WML.isTopicFlow()) return;
             let badge = protoBadges.querySelector('.swml-attempt-badge');
             if (badge) {
                 badge.textContent = `Attempt ${state.attempt}`;
@@ -2789,10 +2791,12 @@
         // placeholder was missing from the DOM and later updates couldn't find it.
         // Inserting unconditionally lets the async update path decide what to show.
         // v7.15.49: visibility uses _isGuidedContext() — reads topic+phase each render.
+        // v7.17.11: topic-flow suppresses the canvas-header attempt badge (topic number identifies the piece of work).
+        const _tfHideAttempt = !!(WML.isTopicFlow && WML.isTopicFlow());
         const attemptPlaceholder = el('span', {
             className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
-            textContent: (state.attempt || 0) >= 1 ? `Attempt ${state.attempt}` : '',
-            style: { display: (_isGuidedContext() && (state.attempt || 0) >= 1) ? '' : 'none' },
+            textContent: (!_tfHideAttempt && (state.attempt || 0) >= 1) ? `Attempt ${state.attempt}` : '',
+            style: { display: (!_tfHideAttempt && _isGuidedContext() && (state.attempt || 0) >= 1) ? '' : 'none' },
         });
         ctxBadges.appendChild(attemptPlaceholder);
 
@@ -5488,8 +5492,12 @@
                             // state.task on diagnostic/development lessons.
                             const isDiagnosticEntryTask = (state.task === 'diagnostic' || state.task === '');
                             const hasAnyAttempt = (idx.attempts || []).length > 0;
-                            console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl, 'preview=', previewOverlay, 'examPrep=', isExamPrepTask, 'diagnosticEntry=', isDiagnosticEntryTask);
-                            if ((completedAttempts.length > 0 || previewOverlay || (isExamPrepTask && hasAnyAttempt) || (isDiagnosticEntryTask && hasAnyAttempt)) && !state.reviewMode && !attemptFromUrl) {
+                            // v7.17.11: never show the attempt-selector overlay inside numbered topic flow.
+                            // Phase 1 + Phase 2 are a single attempt per CLAUDE.md; students reach "new attempt"
+                            // via the dashboard deep-link (?attempt=N), not from inside the lesson.
+                            const topicFlowSuppress = !!(WML.isTopicFlow && WML.isTopicFlow());
+                            console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl, 'preview=', previewOverlay, 'examPrep=', isExamPrepTask, 'diagnosticEntry=', isDiagnosticEntryTask, 'topicFlowSuppress=', topicFlowSuppress);
+                            if ((completedAttempts.length > 0 || previewOverlay || (isExamPrepTask && hasAnyAttempt) || (isDiagnosticEntryTask && hasAnyAttempt)) && !state.reviewMode && !attemptFromUrl && !topicFlowSuppress) {
                                 const shown = await _showAttemptSelector(idx, suffix);
                                 if (shown) return; // selector handles mode + chat init
                                 attemptSelectorShown = false;
@@ -16406,10 +16414,12 @@ ${html}
         // v7.15.48: Attempt badge placeholder — always inserted, visibility controlled
         // by _updateCtxAttemptBadge (see equivalent change in renderCanvasWorkspace).
         // v7.15.49: visibility uses _isGuidedContext().
+        // v7.17.11: topic-flow suppresses the canvas-header attempt badge (mirrors renderCanvasWorkspace).
+        const _tfHideAttempt2 = !!(WML.isTopicFlow && WML.isTopicFlow());
         ctxBadges.appendChild(el('span', {
             className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
-            textContent: (state.attempt || 0) >= 1 ? `Attempt ${state.attempt}` : '',
-            style: { display: (_isGuidedContext() && (state.attempt || 0) >= 1) ? '' : 'none' },
+            textContent: (!_tfHideAttempt2 && (state.attempt || 0) >= 1) ? `Attempt ${state.attempt}` : '',
+            style: { display: (!_tfHideAttempt2 && _isGuidedContext() && (state.attempt || 0) >= 1) ? '' : 'none' },
         }));
         headerRow.appendChild(ctxBadges);
 

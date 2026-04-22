@@ -2096,6 +2096,18 @@ window.WML = (function() {
         return s.split(/\s+/).filter(Boolean).length;
     }
 
+    // v7.17.11: Topic-flow detection. Inside a numbered topic (1–10) the
+    // diagnostic / assessment / planning / outlining / polishing sequence is
+    // a single attempt per CLAUDE.md — never expose the attempt UX. Standalone
+    // mounts of the same task slugs (topicNumber falsy / out of range) keep
+    // the attempts UI.
+    const TOPIC_FLOW_TASKS = ['diagnostic', 'assessment', 'planning', 'outlining', 'polishing', ''];
+    function isTopicFlow() {
+        const n = Number(window.WML?.state?.topicNumber ?? 0);
+        const t = window.WML?.state?.task ?? '';
+        return n >= 1 && n <= 10 && TOPIC_FLOW_TASKS.includes(t);
+    }
+
     function formatAI(text) {
         // Security: escape raw HTML entities before markdown conversion (v7.15.2)
         // All HTML tags are generated programmatically AFTER this step by the markdown converter
@@ -2332,6 +2344,8 @@ window.WML = (function() {
         SVG_GUIDE_ARM, SVG_GUIDE_WRITING, SVG_GUIDE_GRAPH, SVG_GUIDE_BRAIN,
         // Text processing
         stripAIInternals, detectAssessmentStep, formatAI, countWords,
+        // v7.17.11: topic-flow detection (suppresses attempts UX inside numbered topics)
+        isTopicFlow,
         // Rendering
         renderLogo, renderBadges,
         // Creative writing project API (v7.13.30)
