@@ -270,7 +270,11 @@ The function of your introduction is to set up the entire argument that will unf
 
 ASK Question 1 \- Self-Rating: "On a scale of 1-5, how well do you think you achieved this objective of setting up your argument?
 
-1 \= Struggled with this 2 \= Not very well 3 \= Adequately 4 \= Pretty well 5 \= Very strongly"
+1 \= Struggled with this
+2 \= Not very well
+3 \= Adequately
+4 \= Pretty well
+5 \= Very strongly"
 
 WAIT for student response
 
@@ -473,15 +477,27 @@ SAY: "Now let's assess Body Paragraph \[1/2/3\]. First, your self-reflection.
 
 ASK Question 1 \- Self-Rating: "\[For Body Paragraph 1\]: On a scale of 1-5, how well do you think this paragraph built that foundation and connected to your introduction?
 
-1 \= Weak foundation 2 \= Shaky connection 3 \= Solid enough 4 \= Strong foundation 5 \= Exceptionally strong
+1 \= Weak foundation
+2 \= Shaky connection
+3 \= Solid enough
+4 \= Strong foundation
+5 \= Exceptionally strong
 
 \[For Body Paragraph 2\]: On a scale of 1-5, how well do you think this paragraph developed your argument beyond Body Paragraph 1?
 
-1 \= Didn't really progress 2 \= Slight development 3 \= Moderate development 4 \= Clear progression 5 \= Significant deepening
+1 \= Didn't really progress
+2 \= Slight development
+3 \= Moderate development
+4 \= Clear progression
+5 \= Significant deepening
 
 \[For Body Paragraph 3\]: On a scale of 1-5, how well do you think this paragraph brought your argument to its most profound point?
 
-1 \= Fell flat 2 \= Somewhat weak 3 \= Did the job 4 \= Strong climax 5 \= Powerful conclusion to development"
+1 \= Fell flat
+2 \= Somewhat weak
+3 \= Did the job
+4 \= Strong climax
+5 \= Powerful conclusion to development"
 
 WAIT for student response
 
@@ -726,7 +742,11 @@ The function of your conclusion is to tie together everything you've built: your
 
 ASK Question 1 \- Self-Rating: "On a scale of 1-5, how well do you think your conclusion tied everything together into a cohesive whole?
 
-1 \= Disconnected pieces 2 \= Loosely connected 3 \= Reasonably tied together 4 \= Well integrated 5 \= Masterfully unified"
+1 \= Disconnected pieces
+2 \= Loosely connected
+3 \= Reasonably tied together
+4 \= Well integrated
+5 \= Masterfully unified"
 
 WAIT for student response
 

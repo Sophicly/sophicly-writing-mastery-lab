@@ -4723,7 +4723,10 @@
             // v7.17.16: preserve state.step on mark_scheme_unit (it's the bridge dispatch value 1=Quiz/2=FYW).
             if (state.task !== 'mark_scheme_unit') state.step = 0;
             // v7.17.16: include mark_scheme_unit in the allow-list — prevents coercion to 'assessment'.
-            if (state.task !== 'mark_scheme' && state.task !== 'mark_scheme_unit' && state.task !== 'planning' && state.task !== 'polishing' && !(state.task && state.task.startsWith('cw_')) && !isExamPrep) state.task = 'assessment';
+            // v7.17.23: 'diagnostic' + 'development' preserved so reviewer deep-links honour URL intent.
+            // Students never reach this branch with those values — wml-app.js:85-87 clears them first
+            // (the clear is gated to !reviewMode); reviewer path preserves the URL hint end-to-end.
+            if (state.task !== 'mark_scheme' && state.task !== 'mark_scheme_unit' && state.task !== 'planning' && state.task !== 'polishing' && state.task !== 'diagnostic' && state.task !== 'development' && !(state.task && state.task.startsWith('cw_')) && !isExamPrep) state.task = 'assessment';
 
             // ── v7.15.12: Attempt Selector Overlay ──
             // Shows when a student returns to an exercise with completed attempts

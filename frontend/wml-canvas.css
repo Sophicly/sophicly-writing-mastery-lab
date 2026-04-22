@@ -7141,3 +7141,19 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
 .swml-review-mode .swml-ld-complete {
     display: none !important;
 }
+
+/* v7.17.23: reviewer's interactive UI must be non-clickable, not reactive-blocked.
+   .swml-review-mode is applied to the canvas overlay when state.reviewMode=true.
+   Covers all ~15 quick-action render sites centrally and any section-block inputs. */
+.swml-review-mode .swml-quick-actions button,
+.swml-review-mode .swml-quick-btn,
+.swml-review-mode .swml-section-block input[type="checkbox"],
+.swml-review-mode .swml-section-block input[type="radio"] {
+    pointer-events: none !important;
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: grayscale(100%);
+}
+.swml-review-mode .swml-quick-actions {
+    user-select: none;
+}

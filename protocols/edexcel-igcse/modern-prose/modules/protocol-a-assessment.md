@@ -252,7 +252,11 @@ Before I assess it, I'd like you to reflect on two things."
 
 ASK Question 1 — Self-Rating: "On a scale of 1–5, how well do you think you achieved the objective of setting up your argument?
 
-1 = Struggled with this | 2 = Not very well | 3 = Adequately | 4 = Pretty well | 5 = Very strongly"
+1 = Struggled with this
+2 = Not very well
+3 = Adequately
+4 = Pretty well
+5 = Very strongly"
 
 Wait. STORE intro_self_rating.
 

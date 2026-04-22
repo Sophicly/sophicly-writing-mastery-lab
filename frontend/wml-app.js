@@ -82,7 +82,10 @@
         // v7.14.17: 'diagnostic' and 'development' are draftTypes, not exercise tasks.
         // They arrive from shortcodes like [writing_mastery_lab task="diagnostic"].
         // Clear them so the topicNumber-based draftType inference handles routing correctly.
-        if (state.task === 'diagnostic' || state.task === 'development') {
+        // v7.17.23: in reviewer mode, preserve the URL hint so a dashboard deep-link to
+        // ?task=diagnostic lands in the diagnostic canvas (not the student's latest env).
+        // Students still fall through to the phase-stepper path.
+        if (!state.reviewMode && (state.task === 'diagnostic' || state.task === 'development')) {
             state.task = '';
         }
         // v7.17.11: inside a numbered topic, Phase 1 + Phase 2 are one attempt.
