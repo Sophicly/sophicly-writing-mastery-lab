@@ -2102,10 +2102,20 @@ window.WML = (function() {
     // mounts of the same task slugs (topicNumber falsy / out of range) keep
     // the attempts UI.
     const TOPIC_FLOW_TASKS = ['diagnostic', 'assessment', 'planning', 'outlining', 'polishing', ''];
+    const GUIDED_PHASES    = ['initial', 'redraft', 'preliminary'];
     function isTopicFlow() {
         const n = Number(window.WML?.state?.topicNumber ?? 0);
         const t = window.WML?.state?.task ?? '';
-        return n >= 1 && n <= 10 && TOPIC_FLOW_TASKS.includes(t);
+        const p = window.WML?.state?.phase ?? '';
+        if (!TOPIC_FLOW_TASKS.includes(t)) return false;
+        // v7.17.12: belt-and-braces — treat a guided phase as the fallback signal
+        // for topic-flow identity when the bridge failed to populate topicNumber
+        // (e.g. missing wml_topic mapping). Keeps attempt-UX suppression correct
+        // even with partial bridge data. Standalone mounts use phase
+        // 'exam_prep' / 'free_practice' so this does not misclassify them.
+        const inNumberedTopic = n >= 1 && n <= 10;
+        const inGuidedPhase   = GUIDED_PHASES.includes(p);
+        return inNumberedTopic || inGuidedPhase;
     }
 
     function formatAI(text) {

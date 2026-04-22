@@ -1066,7 +1066,12 @@
             );
         }
         // Topic / mode badge
-        if (state.topicNumber && (state.mode === 'guided' || canvasInMarkScheme)) {
+        // v7.17.12: topic number is identity, not mode-dependent. Show whenever
+        // the lesson is mounted inside a numbered topic (1–10), regardless of
+        // whether the bridge populated state.mode='guided' or not. Previously
+        // required mode==='guided' — a missing wml_phase from the bridge hid
+        // the Topic chip entirely on perfectly valid topic mounts.
+        if (state.topicNumber && state.topicNumber >= 1 && state.topicNumber <= 10) {
             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Topic ${state.topicNumber}` }));
         } else if (state.mode === 'exam_prep' && !canvasInMarkScheme && !['foundational_quiz', 'conceptual_notes'].includes(state.task)) {
             // v7.14.61: Only show "Exam Practice" if no phase is set — phase label takes priority
@@ -5496,8 +5501,15 @@
                             // Phase 1 + Phase 2 are a single attempt per CLAUDE.md; students reach "new attempt"
                             // via the dashboard deep-link (?attempt=N), not from inside the lesson.
                             const topicFlowSuppress = !!(WML.isTopicFlow && WML.isTopicFlow());
-                            console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl, 'preview=', previewOverlay, 'examPrep=', isExamPrepTask, 'diagnosticEntry=', isDiagnosticEntryTask, 'topicFlowSuppress=', topicFlowSuppress);
-                            if ((completedAttempts.length > 0 || previewOverlay || (isExamPrepTask && hasAnyAttempt) || (isDiagnosticEntryTask && hasAnyAttempt)) && !state.reviewMode && !attemptFromUrl && !topicFlowSuppress) {
+                            // v7.17.12 belt-and-braces: if the bridge didn't populate state.topicNumber
+                            // but DID populate a guided state.phase ('initial' / 'redraft' / 'preliminary'),
+                            // the lesson is still inside a topic flow — suppress the overlay regardless.
+                            // Standalone diagnostic mounts have phase 'exam_prep' / 'free_practice' so this
+                            // does not affect the diagnostic-hard-refresh scenario on standalone exercises.
+                            const isGuidedPhase = ['initial', 'redraft', 'preliminary'].includes(state.phase);
+                            const diagnosticInTopic = isDiagnosticEntryTask && isGuidedPhase;
+                            console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl, 'preview=', previewOverlay, 'examPrep=', isExamPrepTask, 'diagnosticEntry=', isDiagnosticEntryTask, 'topicFlowSuppress=', topicFlowSuppress, 'diagnosticInTopic=', diagnosticInTopic);
+                            if ((completedAttempts.length > 0 || previewOverlay || (isExamPrepTask && hasAnyAttempt) || (isDiagnosticEntryTask && hasAnyAttempt)) && !state.reviewMode && !attemptFromUrl && !topicFlowSuppress && !diagnosticInTopic) {
                                 const shown = await _showAttemptSelector(idx, suffix);
                                 if (shown) return; // selector handles mode + chat init
                                 attemptSelectorShown = false;
