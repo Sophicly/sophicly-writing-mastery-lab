@@ -14,3 +14,7 @@ question-bank-*.md
 
 # Misc
 *.html
+
+# Screenshots (CleanShot auto-saves land here when shared in chat)
+CleanShot*.png
+CleanShot*.jpg
