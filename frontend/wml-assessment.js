@@ -1134,30 +1134,32 @@
         if (state.attempt > 0) _updateAttemptBadge();
         protoBody.appendChild(protoBadges);
 
-        // Protocol Progress label
-        const progressLabel = isCwTask ? `Step ${cwStepDef?.step || ''} Progress` : 'Protocol Progress';
-        protoBody.appendChild(el('div', { className: 'swml-sidebar-section-label', textContent: progressLabel }));
+        // Protocol Progress label — v7.17.16: skip entirely when manifest sets panels.progress=false (mark_scheme_unit).
+        if (exerciseConfig?.panels?.progress !== false) {
+            const progressLabel = isCwTask ? `Step ${cwStepDef?.step || ''} Progress` : 'Protocol Progress';
+            protoBody.appendChild(el('div', { className: 'swml-sidebar-section-label', textContent: progressLabel }));
 
-        // Steps — manifest-driven
-        const protoSteps = el('div', { id: 'swml-progress-steps' });
-        const assessSteps = canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
-            { step: 1, label: 'Setup & Details' },
-            { step: 2, label: 'Goal Setting' },
-            { step: 3, label: 'Self-Reflection' },
-            { step: 4, label: 'Essay Review' },
-            { step: 5, label: 'Introduction' },
-            { step: 6, label: 'Body Paragraphs' },
-            { step: 7, label: 'Conclusion' },
-            { step: 8, label: 'Summary & Action Plan' },
-        ]);
-        assessSteps.forEach((s, i) => {
-            const cls = i === 0 ? 'active' : '';
-            protoSteps.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
-                el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
-                el('span', { className: 'swml-step-label', textContent: s.label }),
-            ]));
-        });
-        protoBody.appendChild(protoSteps);
+            // Steps — manifest-driven
+            const protoSteps = el('div', { id: 'swml-progress-steps' });
+            const assessSteps = canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
+                { step: 1, label: 'Setup & Details' },
+                { step: 2, label: 'Goal Setting' },
+                { step: 3, label: 'Self-Reflection' },
+                { step: 4, label: 'Essay Review' },
+                { step: 5, label: 'Introduction' },
+                { step: 6, label: 'Body Paragraphs' },
+                { step: 7, label: 'Conclusion' },
+                { step: 8, label: 'Summary & Action Plan' },
+            ]);
+            assessSteps.forEach((s, i) => {
+                const cls = i === 0 ? 'active' : '';
+                protoSteps.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
+                    el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
+                    el('span', { className: 'swml-step-label', textContent: s.label }),
+                ]));
+            });
+            protoBody.appendChild(protoSteps);
+        }
 
         // Bottom buttons
         const protoSpacer = el('div', { style: { marginTop: 'auto' } });
@@ -4711,8 +4713,10 @@
             rightPanel.style.display = 'none';
 
             // Set assessment mode state
-            state.step = 0;
-            if (state.task !== 'mark_scheme' && state.task !== 'planning' && state.task !== 'polishing' && !(state.task && state.task.startsWith('cw_')) && !isExamPrep) state.task = 'assessment';
+            // v7.17.16: preserve state.step on mark_scheme_unit (it's the bridge dispatch value 1=Quiz/2=FYW).
+            if (state.task !== 'mark_scheme_unit') state.step = 0;
+            // v7.17.16: include mark_scheme_unit in the allow-list — prevents coercion to 'assessment'.
+            if (state.task !== 'mark_scheme' && state.task !== 'mark_scheme_unit' && state.task !== 'planning' && state.task !== 'polishing' && !(state.task && state.task.startsWith('cw_')) && !isExamPrep) state.task = 'assessment';
 
             // ── v7.15.12: Attempt Selector Overlay ──
             // Shows when a student returns to an exercise with completed attempts
@@ -5861,31 +5865,34 @@
                         }
                         protoBody.appendChild(protoBadges);
 
-                        // Protocol Progress label — v7.13.35: CW shows step name
-                        const progressLabel = isCwTask ? `Step ${cwStepDef?.step || ''} Progress` : 'Protocol Progress';
-                        protoBody.appendChild(el('div', { className: 'swml-sidebar-section-label', textContent: progressLabel }));
+                        // Protocol Progress — v7.17.16: skip entirely when manifest sets panels.progress=false (mark_scheme_unit).
+                        if (exerciseConfig?.panels?.progress !== false) {
+                            // v7.13.35: CW shows step name
+                            const progressLabel = isCwTask ? `Step ${cwStepDef?.step || ''} Progress` : 'Protocol Progress';
+                            protoBody.appendChild(el('div', { className: 'swml-sidebar-section-label', textContent: progressLabel }));
 
-                        // Steps — manifest-driven (v7.13.11, replaces hardcoded if/else)
-                        const protoSteps = el('div', { id: 'swml-progress-steps' });
-                        // v7.13.97: Use task-specific steps for exam prep, manifest sidebarSteps for assessment, fallback to defaults
-                        const assessSteps = canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
-                            { step: 1, label: 'Setup & Details' },
-                            { step: 2, label: 'Goal Setting' },
-                            { step: 3, label: 'Self-Reflection' },
-                            { step: 4, label: 'Essay Review' },
-                            { step: 5, label: 'Introduction' },
-                            { step: 6, label: 'Body Paragraphs' },
-                            { step: 7, label: 'Conclusion' },
-                            { step: 8, label: 'Summary & Action Plan' },
-                        ]);
-                        assessSteps.forEach((s, i) => {
-                            const cls = i === 0 ? 'active' : '';
-                            protoSteps.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
-                                el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
-                                el('span', { className: 'swml-step-label', textContent: s.label }),
-                            ]));
-                        });
-                        protoBody.appendChild(protoSteps);
+                            // Steps — manifest-driven (v7.13.11, replaces hardcoded if/else)
+                            const protoSteps = el('div', { id: 'swml-progress-steps' });
+                            // v7.13.97: Use task-specific steps for exam prep, manifest sidebarSteps for assessment, fallback to defaults
+                            const assessSteps = canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
+                                { step: 1, label: 'Setup & Details' },
+                                { step: 2, label: 'Goal Setting' },
+                                { step: 3, label: 'Self-Reflection' },
+                                { step: 4, label: 'Essay Review' },
+                                { step: 5, label: 'Introduction' },
+                                { step: 6, label: 'Body Paragraphs' },
+                                { step: 7, label: 'Conclusion' },
+                                { step: 8, label: 'Summary & Action Plan' },
+                            ]);
+                            assessSteps.forEach((s, i) => {
+                                const cls = i === 0 ? 'active' : '';
+                                protoSteps.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
+                                    el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
+                                    el('span', { className: 'swml-step-label', textContent: s.label }),
+                                ]));
+                            });
+                            protoBody.appendChild(protoSteps);
+                        }
 
                         // Bottom buttons — matching original sidebar, with icon+text for collapsed mode
                         const protoSpacer = el('div', { style: { marginTop: 'auto' } });
@@ -7151,9 +7158,10 @@
 
                         // Mark assessment mode active (controls Note button visibility)
                         canvasInAssessment = true;
-                        state.step = 0; // Reset so initAssessmentState can restore from chat history (v7.12.32)
-                        // v7.13.37: Preserve CW task + mark_scheme task — only set 'assessment' for diagnostic→assessment transition
-                        if (state.task !== 'mark_scheme' && state.task !== 'planning' && state.task !== 'polishing' && !(state.task && state.task.startsWith('cw_')) && !isExamPrep) state.task = 'assessment';
+                        // v7.17.16: preserve state.step on mark_scheme_unit (bridge dispatch value).
+                        if (state.task !== 'mark_scheme_unit') state.step = 0; // Reset so initAssessmentState can restore from chat history (v7.12.32)
+                        // v7.13.37 / v7.17.16: Preserve CW + mark_scheme + mark_scheme_unit tasks — only set 'assessment' for diagnostic→assessment transition
+                        if (state.task !== 'mark_scheme' && state.task !== 'mark_scheme_unit' && state.task !== 'planning' && state.task !== 'polishing' && !(state.task && state.task.startsWith('cw_')) && !isExamPrep) state.task = 'assessment';
 
                         // Show notepad in assessment mode (it was hidden during diagnostic)
                         if (snFab) snFab.style.display = '';
@@ -14946,6 +14954,11 @@
         // v7.13.93: Exam prep tasks use their own templates (via tryExamPrepTemplate), skip topic template
         const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz'];
         if (EXAM_PREP_TASKS.includes(state.task)) return;
+        // v7.17.16: mark_scheme_unit canvas is a free-form note scratchpad — no essay template.
+        // Without this guard the topicNumber=0 fallback at the next branch injects the default
+        // essay TOC (Introduction / Body / Conclusion) which is irrelevant to Quiz / FYW.
+        const cfg = WML.getExerciseConfig ? WML.getExerciseConfig(state.task) : null;
+        if (cfg && cfg.blankCanvas) return;
         if (!state.topicNumber || state.topicNumber < 1) {
             // v7.14.8: Board-aware fallback for free practice (no topic number)
             if (canvasEditor && canvasEditor.getText().trim().length < 10 && !canvasEditor.getHTML().includes('data-section-type')) {

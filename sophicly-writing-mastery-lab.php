@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.17.15
+ * Version: 7.17.16
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.17.15');
+define('SWML_VERSION', '7.17.16');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -486,6 +486,7 @@ class Sophicly_Writing_Mastery_Lab {
             'task'    => '',
             'phase'   => '',
             'topic'   => '',
+            'step'    => '',
             'board'   => '',
             'subject' => '',
             'text'    => '',
@@ -498,6 +499,10 @@ class Sophicly_Writing_Mastery_Lab {
         $task    = sanitize_key($atts['task']);
         $phase   = sanitize_key($atts['phase']);
         $topic   = absint($atts['topic']);
+        // v7.17.16: shortcode step attribute (bridge emits this alongside task for mark_scheme_unit).
+        // Bridge option at line ~548 still wins (authoritative); shortcode value acts as fallback
+        // when the bridge option lookup misses (e.g. new lesson not yet mapped).
+        $step_from_shortcode = absint($atts['step']);
 
         // 1. Try course map first — authoritative for shared lessons
         $board = $atts['board'];
@@ -544,7 +549,8 @@ class Sophicly_Writing_Mastery_Lab {
         // shared lessons with baked-in [writing_mastery_lab task="planning"] ignored
         // newer admin UI mappings (e.g. mark_scheme_unit). Bridge also supplies
         // wml_step for multi-step tasks like mark_scheme_unit (step=1 Quiz, step=2 FYW).
-        $step = 0;
+        // v7.17.16: seed step from shortcode; bridge option (if present) overrides below.
+        $step = $step_from_shortcode;
         if ($course_id) {
             $bridge_map = get_option('sophicly_ld_bridge_' . $course_id, []);
             $bridge_entry = $bridge_map[(string)$post_id] ?? [];

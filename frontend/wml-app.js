@@ -343,7 +343,9 @@
             } else if (['training', 'free', 'flexible'].includes(exerciseConfig.environment)) {
                 // v7.14.36: All canvas environments — training (protocol), free (independent), flexible (inline-AI)
                 state.canvasTimer = 0;
-                state.step = 0;
+                // v7.17.16: state.step is the bridge dispatch value on mark_scheme_unit (1=Quiz, 2=FYW).
+                // Other training-env tasks reset to 0 so protocol progress starts fresh.
+                if (state.task !== 'mark_scheme_unit') state.step = 0;
                 // v7.14.43: Create session BEFORE rendering canvas so Protocol Router has correct task context.
                 // Without this, training-env exercises (mark_scheme, planning, polishing) in embedded mode
                 // never create a session, so the Protocol Router falls back to generic instructions.

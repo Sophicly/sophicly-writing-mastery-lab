@@ -965,7 +965,8 @@ window.WML = (function() {
         mark_scheme_unit: {
             label: 'Mark Scheme Unit',
             environment: 'training',
-            panels: { sidebar: true, chat: true, guidance: false, document: true },
+            // v7.17.16: progress panel hidden — this task is chat-driven, no protocol step progression.
+            panels: { sidebar: true, chat: true, guidance: false, document: true, progress: false },
             steps: null,
             elements: null,
             protocolSource: 'shared',
@@ -974,6 +975,9 @@ window.WML = (function() {
             storageSuffix: '_msu',
             chatHeaderLabel: 'Mark Scheme Unit',
             sidebarSteps: null,
+            // v7.17.16: blank TipTap doc — canvas is a free-form note scratchpad for this task,
+            // not a structured essay. Suppresses the default essay TOC template.
+            blankCanvas: true,
         },
 
         // ── Canvas exercises (v7.14.29: migrated from chat to canvas) ──
@@ -2119,7 +2123,8 @@ window.WML = (function() {
     // a single attempt per CLAUDE.md — never expose the attempt UX. Standalone
     // mounts of the same task slugs (topicNumber falsy / out of range) keep
     // the attempts UI.
-    const TOPIC_FLOW_TASKS = ['diagnostic', 'assessment', 'planning', 'outlining', 'polishing', ''];
+    // v7.17.16: mark_scheme_unit also suppressed — pre-topic standalone drill, completes once.
+    const TOPIC_FLOW_TASKS = ['diagnostic', 'assessment', 'planning', 'outlining', 'polishing', 'mark_scheme_unit', ''];
     const GUIDED_PHASES    = ['initial', 'redraft', 'preliminary'];
     function isTopicFlow() {
         const n = Number(window.WML?.state?.topicNumber ?? 0);
