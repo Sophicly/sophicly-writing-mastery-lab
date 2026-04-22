@@ -1089,12 +1089,14 @@
         // the Topic chip entirely on perfectly valid topic mounts.
         if (state.topicNumber && state.topicNumber >= 1 && state.topicNumber <= 10) {
             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Topic ${state.topicNumber}` }));
-        } else if (state.mode === 'exam_prep' && !canvasInMarkScheme && !['foundational_quiz', 'conceptual_notes'].includes(state.task)) {
+        } else if (state.mode === 'exam_prep' && !canvasInMarkScheme && !['foundational_quiz', 'conceptual_notes', 'mark_scheme_unit'].includes(state.task)) {
             // v7.14.61: Only show "Exam Practice" if no phase is set — phase label takes priority
             // v7.15.97: Notes/study tasks (conceptual_notes, foundational_quiz) are mastery-standalone
             //           — never exam practice, regardless of mode. The label describes task TYPE,
             //           not entry mode. Bridge will eventually supply wml_phase='mastery_standalone'
             //           and this exclusion list can reduce to a phase check.
+            // v7.17.19: mark_scheme_unit is a pre-topic drill — never "Exam Practice" even
+            //           if bridge wml_phase is missing and mode falls back to exam_prep.
             const PHASE_LABELS = { initial: 'Phase 1', redraft: 'Phase 2', preliminary: 'Preliminary', free_practice: 'Free Practice', exam_practice: 'Exam Practice' };
             const phaseLabel = PHASE_LABELS[state.phase] || '';
             if (!phaseLabel) {
@@ -14965,14 +14967,18 @@
         // v7.13.93: Exam prep tasks use their own templates (via tryExamPrepTemplate), skip topic template
         const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz'];
         if (EXAM_PREP_TASKS.includes(state.task)) return;
-        // v7.17.18: mark_scheme_unit uses a 2-section notes template — same doc across
+        // v7.17.19: mark_scheme_unit uses a 2-section notes template — same doc across
         // Quiz (step 1) + FYW (step 2), shared suffix so notes persist between steps.
         // Sanitize any essay-specific sections that leaked in from pre-v7.17.17 test saves
         // (when MSU fell back to getDefaultEssayTemplate via the v7.15.0 safety net).
+        // Section slugs match sectionHTML(type) output: 'scores', 'action', 'feedback',
+        // 'question', 'plan', 'improvement'. 'signoff' is kept (tutor sign-off).
+        // 'divider' separators are kept but cleaned adjacently when sections are stripped.
         if (state.task === 'mark_scheme_unit') {
             const existing = canvasEditor.getHTML() || '';
             const hasNotes = /data-field-id="(msu-quiz-notes|msu-fyw-notes)"/.test(existing);
-            const hasEssayArtifacts = /data-section-type="(score|self-assessment|analytics|action-plan|feedback|question|plan|outline)"/.test(existing);
+            const ESSAY_TYPE_RE = /data-section-type="(scores|action|feedback|question|plan|improvement)"/;
+            const hasEssayArtifacts = ESSAY_TYPE_RE.test(existing);
             if (hasEssayArtifacts && !hasNotes) {
                 // Stale essay-template doc — wipe + inject clean MSU template.
                 canvasEditor.commands.setContent(getMarkSchemeUnitTemplate(), false);
@@ -14980,18 +14986,16 @@
                 refreshWordCountUI();
                 console.log('WML: MSU stale essay doc detected — reset to 2-section notes template');
             } else if (hasEssayArtifacts && hasNotes) {
-                // Mixed doc — strip essay sections, keep msu-* response sections + signoff.
+                // Mixed doc — strip essay sections, keep msu-* response sections + signoff + MSU dividers.
                 const tmp = document.createElement('div');
                 tmp.innerHTML = existing;
                 const stripSelectors = [
-                    '[data-section-type="score"]',
-                    '[data-section-type="self-assessment"]',
-                    '[data-section-type="analytics"]',
-                    '[data-section-type="action-plan"]',
+                    '[data-section-type="scores"]',
+                    '[data-section-type="action"]',
                     '[data-section-type="feedback"]',
                     '[data-section-type="question"]',
                     '[data-section-type="plan"]',
-                    '[data-section-type="outline"]',
+                    '[data-section-type="improvement"]',
                 ];
                 // Also strip any response sections that aren't msu-quiz-notes / msu-fyw-notes.
                 tmp.querySelectorAll('[data-section-type="response"]').forEach(node => {
@@ -14999,11 +15003,13 @@
                     if (!field) node.__swmlStrip = true;
                 });
                 tmp.querySelectorAll(stripSelectors.join(',')).forEach(node => { node.__swmlStrip = true; });
-                tmp.querySelectorAll('*').forEach(node => {
-                    if (!node.__swmlStrip) return;
-                    const prev = node.previousElementSibling;
-                    if (prev && (prev.classList?.contains('swml-divider') || prev.tagName === 'HR' || /divider/i.test(prev.className || ''))) prev.remove();
-                    node.remove();
+                // Strip non-MSU dividers (keep QUIZ NOTES / FORGING YOUR WEAPON NOTES).
+                tmp.querySelectorAll('[data-section-type="divider"]').forEach(node => {
+                    const label = (node.getAttribute('data-section-label') || node.textContent || '').toUpperCase();
+                    if (!/QUIZ NOTES|FORGING YOUR WEAPON NOTES/.test(label)) node.__swmlStrip = true;
+                });
+                Array.from(tmp.querySelectorAll('*')).forEach(node => {
+                    if (node.__swmlStrip) node.remove();
                 });
                 canvasEditor.commands.setContent(tmp.innerHTML, false);
                 snapshotTemplateBaseline(canvasEditor);
@@ -15306,6 +15312,8 @@
         if (!canvasEditor) return;
         // Mark scheme has its own sections — skip essay migration (v7.12.96)
         if (state.task === 'mark_scheme') { console.log('WML Migration: Skipping — mark scheme document'); return; }
+        // v7.17.19: mark_scheme_unit is a 2-section notes scratchpad — no assessment sections.
+        if (state.task === 'mark_scheme_unit') { console.log('WML Migration: Skipping — mark scheme unit (notes only)'); return; }
         // v7.13.43: CW exercises have their own section structure — skip assessment migration
         if (state.task && state.task.startsWith('cw_')) { console.log('WML Migration: Skipping — CW exercise document'); return; }
         // v7.14.85: Conceptual notes, memory practice, and exam question creator don't have assessment sections
@@ -15378,6 +15386,8 @@
      */
     function migrateDividers() {
         if (!canvasEditor) return;
+        // v7.17.19: mark_scheme_unit uses its own custom dividers (QUIZ NOTES / FYW NOTES) — skip essay-divider migration.
+        if (state.task === 'mark_scheme_unit') return;
         let html = canvasEditor.getHTML();
         // Already has dividers — skip
         if (html.includes('data-section-type="divider"')) return;
