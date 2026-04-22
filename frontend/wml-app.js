@@ -4082,7 +4082,8 @@
         if (!silent) msgs.scrollTop = msgs.scrollHeight;
 
         // Timer detection for Random Quote Analysis
-        if (from === 'ai' && !silent && state.task === 'verbal_rehearsal') {
+        // v7.17.26: gate on !guided — mastery Phase 1/2 must never show exam-style timer.
+        if (from === 'ai' && !silent && state.task === 'verbal_rehearsal' && state.mode !== 'guided') {
             // Check the last portion of the message to determine what the AI is asking RIGHT NOW
             const tail = text.slice(-300).toLowerCase();
             if (tail.includes('90 seconds') && tail.includes('ready')) {
@@ -4096,7 +4097,8 @@
         if (from === 'ai' && !silent) {
             const isRecallTask = (state.task === 'essay_plan' && state.planningMode === 'A') ||
                                  (state.task === 'model_answer' && state.planningMode === 'C');
-            if (isRecallTask) {
+            // v7.17.26: gate on !guided — Recall/Advanced run inside mastery Phase 2 planning; timer must not fire there.
+            if (isRecallTask && state.mode !== 'guided') {
                 const tail = text.slice(-500).toLowerCase();
                 // Only trigger timer on the ACTUAL timer briefing — NOT the opening explanation
                 // The opening says "a 4-minute timer will start" (descriptive)
@@ -4127,7 +4129,8 @@
         }
 
         // Timer detection for Memory Practice exercises
-        if (from === 'ai' && !silent && state.task === 'memory_practice') {
+        // v7.17.26: gate on !guided — memory_practice is training-environment only; defensive guard.
+        if (from === 'ai' && !silent && state.task === 'memory_practice' && state.mode !== 'guided') {
             const fullLower = text.toLowerCase();
             // Detect: "[X] seconds — press the microphone" pattern anywhere in message
             // (trigger phrase appears BEFORE the exercise text, so tail-only won't work)
@@ -6657,7 +6660,8 @@ Before marking the introduction, ask the student to confirm their essay structur
             if (msgs) msgs.scrollTop = msgs.scrollHeight;
 
             // Trigger timer on resume if the last AI message was a timer prompt
-            if (state.task === 'verbal_rehearsal' && state.chatHistory.length > 0) {
+            // v7.17.26: gate on !guided — resume must not re-fire timer inside mastery.
+            if (state.task === 'verbal_rehearsal' && state.chatHistory.length > 0 && state.mode !== 'guided') {
                 const lastAI = [...state.chatHistory].reverse().find(m => m.role === 'assistant');
                 if (lastAI) {
                     const tail = lastAI.content.slice(-300).toLowerCase();
