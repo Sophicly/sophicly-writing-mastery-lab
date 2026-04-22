@@ -3906,6 +3906,9 @@
         let canvasInAssessment = useTrainingEnv; // legacy alias — all training env exercises get chat + sidebar
         const canvasInFeedback = state.task === 'feedback_discussion';
         const canvasInMarkScheme = state.task === 'mark_scheme';
+        // v7.17.22: mark_scheme_unit is a protocol-driven quiz + notes canvas — same
+        // discard-stale-chat + silent-auto-send pattern as mark_scheme / exam-prep.
+        const canvasInMarkSchemeUnit = state.task === 'mark_scheme_unit';
         const canvasChatHeaderLabel = exerciseConfig.chatHeaderLabel || 'Essay Assessment';
         let canvasSidebarSteps = exerciseConfig.sidebarSteps || null;
 
@@ -5024,6 +5027,16 @@
                 }
                 if (canvasInMarkScheme && savedChat && savedChat.history && savedChat.history.length > 0) {
                     console.log('WML Training: Discarding saved mark_scheme chat — protocol must drive from scratch');
+                    savedChat = null;
+                    try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+                }
+                // v7.17.22: mark_scheme_unit — discard any stale chat (from pre-v7.17.8
+                // testing when MSU fell through to the default assessment greeting OR
+                // from earlier quiz attempts). Protocol must drive the greeting.
+                // This also self-heals server-stored chats: next message triggers
+                // silent auto-send which overwrites the server meta.
+                if (canvasInMarkSchemeUnit && savedChat && savedChat.history && savedChat.history.length > 0) {
+                    console.log('WML Training: Discarding saved mark_scheme_unit chat — protocol must drive from scratch');
                     savedChat = null;
                     try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
                 }
