@@ -3831,11 +3831,13 @@
         });
         // v7.14.50: Hide Reset for training-env (document is protocol-driven, resetting breaks flow)
         if ((WML.getExerciseConfig(state.task)?.environment || 'free') !== 'training') statusBar.appendChild(resetBtn);
-        statusBar.appendChild(wcDisplay);
+        // v7.17.21: hide footer word count + restore slot for non-essay tasks (quizzes, mark scheme, notes).
+        const _hideWcForTask = ['mark_scheme_unit', 'mark_scheme', 'mark_scheme_assessment', 'foundational_quiz', 'conceptual_notes', 'essay_plan'].includes(state.task);
+        if (!_hideWcForTask) statusBar.appendChild(wcDisplay);
         // wcRestore added after widget creation below
         let wcRestore; // forward declaration
         const wcRestorePlaceholder = el('span', { id: 'swml-wc-restore-slot' });
-        statusBar.appendChild(wcRestorePlaceholder);
+        if (!_hideWcForTask) statusBar.appendChild(wcRestorePlaceholder);
 
         // v7.14.76: Page count removed (PaginationPlus disabled — continuous scroll mode).
         // Keep updatePageCount as no-op so existing calls don't error.
@@ -7340,7 +7342,8 @@
         // v7.15.23: Hide word count for planning-only exercises (no essay writing)
         // v7.15.100: also hide for foundational_quiz, conceptual_notes,
         // mark_scheme_assessment — none of these produce written essays.
-        if (['essay_plan', 'mark_scheme', 'mark_scheme_assessment', 'foundational_quiz', 'conceptual_notes'].includes(state.task)) {
+        // v7.17.21: also hide for mark_scheme_unit (quiz + forging your weapon notes).
+        if (['essay_plan', 'mark_scheme', 'mark_scheme_assessment', 'mark_scheme_unit', 'foundational_quiz', 'conceptual_notes'].includes(state.task)) {
             wcWidget.style.display = 'none';
         }
 
