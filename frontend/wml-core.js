@@ -1230,6 +1230,13 @@ window.WML = (function() {
     // Helper: get manifest entry for current task (falls back to planning)
     // v7.13.34: CW dynamic lookup — resolves cw_step_X / cw_trial_X to the correct base config
     function getExerciseConfig(task) {
+        // v7.17.17: mark_scheme_unit label depends on bridge step — Quiz (step=1) vs FYW (step=2).
+        if (task === 'mark_scheme_unit' && EXERCISE_MANIFEST.mark_scheme_unit) {
+            const base = EXERCISE_MANIFEST.mark_scheme_unit;
+            const step = Number(window.WML?.state?.step ?? 0);
+            const label = step === 2 ? 'Forging Your Weapon' : 'Mark Scheme Quiz';
+            return { ...base, label, chatHeaderLabel: label };
+        }
         if (EXERCISE_MANIFEST[task]) return EXERCISE_MANIFEST[task];
         // v7.14.44: Empty/null task = diagnostic (write-only canvas). Was incorrectly falling
         // through to planning, causing diagnostics to load training env with chat + sidebar.

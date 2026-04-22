@@ -10584,6 +10584,17 @@
         return `<h2>Introduction</h2><p></p><h2>Body Paragraph 1</h2><p></p><h2>Body Paragraph 2</h2><p></p><h2>Body Paragraph 3</h2><p></p><h2>Conclusion</h2><p></p>`;
     }
 
+    // v7.17.17: Mark Scheme Unit — 2-section notes doc. Shared across Quiz (step 1) + FYW (step 2)
+    // via the `_msu` canvas suffix, so notes students write in step 1 persist into step 2.
+    function getMarkSchemeUnitTemplate() {
+        return dividerHTML('QUIZ NOTES')
+            + sectionHTML('response', 'Notes: Mark Scheme Quiz', true, null,
+                inputHTML('Jot down anything useful from the Mark Scheme Quiz — key rules, definitions, examples, mistakes to avoid.', 'msu-quiz-notes'))
+            + dividerHTML('FORGING YOUR WEAPON NOTES')
+            + sectionHTML('response', 'Notes: Forging Your Weapon', true, null,
+                inputHTML('Capture the techniques, comparisons, and takeaways from the Forging Your Weapon exercise.', 'msu-fyw-notes'));
+    }
+
     // ── CW Document Templates (v7.13.43) ──
     // Uses sectionHTML() + dividerHTML() for proper section blocks (coloured borders, document outline, labels)
     // v7.15.83: wrapper appends tutor sign-off to every CW step doc (optional affordance).
@@ -14954,11 +14965,19 @@
         // v7.13.93: Exam prep tasks use their own templates (via tryExamPrepTemplate), skip topic template
         const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz'];
         if (EXAM_PREP_TASKS.includes(state.task)) return;
-        // v7.17.16: mark_scheme_unit canvas is a free-form note scratchpad — no essay template.
-        // Without this guard the topicNumber=0 fallback at the next branch injects the default
-        // essay TOC (Introduction / Body / Conclusion) which is irrelevant to Quiz / FYW.
-        const cfg = WML.getExerciseConfig ? WML.getExerciseConfig(state.task) : null;
-        if (cfg && cfg.blankCanvas) return;
+        // v7.17.17: mark_scheme_unit uses a simple 2-section notes template — same doc across
+        // Quiz (step 1) + FYW (step 2), shared suffix means notes persist between steps.
+        if (state.task === 'mark_scheme_unit') {
+            const existing = canvasEditor.getHTML() || '';
+            if (!existing.includes('data-section-type')) {
+                const tpl = getMarkSchemeUnitTemplate();
+                canvasEditor.commands.setContent(tpl, false);
+                snapshotTemplateBaseline(canvasEditor);
+                refreshWordCountUI();
+                console.log('WML: Mark Scheme Unit template injected (2 sections)');
+            }
+            return;
+        }
         if (!state.topicNumber || state.topicNumber < 1) {
             // v7.14.8: Board-aware fallback for free practice (no topic number)
             if (canvasEditor && canvasEditor.getText().trim().length < 10 && !canvasEditor.getHTML().includes('data-section-type')) {
