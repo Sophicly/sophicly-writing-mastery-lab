@@ -14967,24 +14967,34 @@
         // v7.13.93: Exam prep tasks use their own templates (via tryExamPrepTemplate), skip topic template
         const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz'];
         if (EXAM_PREP_TASKS.includes(state.task)) return;
-        // v7.17.19: mark_scheme_unit uses a 2-section notes template — same doc across
+        // v7.17.20: mark_scheme_unit uses a 2-section notes template — same doc across
         // Quiz (step 1) + FYW (step 2), shared suffix so notes persist between steps.
         // Sanitize any essay-specific sections that leaked in from pre-v7.17.17 test saves
         // (when MSU fell back to getDefaultEssayTemplate via the v7.15.0 safety net).
         // Section slugs match sectionHTML(type) output: 'scores', 'action', 'feedback',
         // 'question', 'plan', 'improvement'. 'signoff' is kept (tutor sign-off).
         // 'divider' separators are kept but cleaned adjacently when sections are stripped.
+        // setContent calls must set _migrationActive=true so the onTransaction section
+        // guard (~line 9086) doesn't revert our setContent back to 9-section essay state.
         if (state.task === 'mark_scheme_unit') {
             const existing = canvasEditor.getHTML() || '';
             const hasNotes = /data-field-id="(msu-quiz-notes|msu-fyw-notes)"/.test(existing);
             const ESSAY_TYPE_RE = /data-section-type="(scores|action|feedback|question|plan|improvement)"/;
             const hasEssayArtifacts = ESSAY_TYPE_RE.test(existing);
-            if (hasEssayArtifacts && !hasNotes) {
-                // Stale essay-template doc — wipe + inject clean MSU template.
-                canvasEditor.commands.setContent(getMarkSchemeUnitTemplate(), false);
+            const runMSUSetContent = (html, logMsg) => {
+                _migrationActive = true;
+                try {
+                    canvasEditor.commands.setContent(html, false);
+                } finally {
+                    _migrationActive = false;
+                }
                 snapshotTemplateBaseline(canvasEditor);
                 refreshWordCountUI();
-                console.log('WML: MSU stale essay doc detected — reset to 2-section notes template');
+                console.log(logMsg);
+            };
+            if (hasEssayArtifacts && !hasNotes) {
+                // Stale essay-template doc — wipe + inject clean MSU template.
+                runMSUSetContent(getMarkSchemeUnitTemplate(), 'WML: MSU stale essay doc detected — reset to 2-section notes template');
             } else if (hasEssayArtifacts && hasNotes) {
                 // Mixed doc — strip essay sections, keep msu-* response sections + signoff + MSU dividers.
                 const tmp = document.createElement('div');
@@ -15011,16 +15021,10 @@
                 Array.from(tmp.querySelectorAll('*')).forEach(node => {
                     if (node.__swmlStrip) node.remove();
                 });
-                canvasEditor.commands.setContent(tmp.innerHTML, false);
-                snapshotTemplateBaseline(canvasEditor);
-                refreshWordCountUI();
-                console.log('WML: MSU mixed doc — stripped essay sections, kept notes');
+                runMSUSetContent(tmp.innerHTML, 'WML: MSU mixed doc — stripped essay sections, kept notes');
             } else if (!existing.includes('data-section-type')) {
                 // Fresh doc — inject 2-section template.
-                canvasEditor.commands.setContent(getMarkSchemeUnitTemplate(), false);
-                snapshotTemplateBaseline(canvasEditor);
-                refreshWordCountUI();
-                console.log('WML: Mark Scheme Unit template injected (2 sections)');
+                runMSUSetContent(getMarkSchemeUnitTemplate(), 'WML: Mark Scheme Unit template injected (2 sections)');
             }
             return;
         }

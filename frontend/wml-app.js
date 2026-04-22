@@ -6826,9 +6826,15 @@ Before marking the introduction, ask the student to confirm their essay structur
                     state.text        = cfg.text    || '';
                     state.task        = cfg.task    || '';
                     state.topicNumber = cfg.topic   || 0;
-                    if (cfg.phase === 'redraft') { state.phase = 'redraft'; state.isRedraft = true; }
-                    else if (cfg.phase === 'initial') { state.phase = 'initial'; state.isRedraft = false; }
-                    else { state.phase = null; state.isRedraft = false; }
+                    // v7.17.20: SPA re-init must pipe cfg.step (multi-step tasks like
+                    // mark_scheme_unit). Otherwise state.step leaks across lessons.
+                    state.step        = cfg.step    || 0;
+                    // v7.17.20: preserve all bridge-supplied phase values
+                    // ('preliminary', 'exam_practice', etc.) — previous code coerced
+                    // anything non-'redraft'/'initial' to null, clobbering
+                    // mark_scheme_unit 'preliminary' on SPA nav.
+                    state.phase = cfg.phase || null;
+                    state.isRedraft = (state.phase === 'redraft');
                     // v7.15.100: force attempt + session re-resolve on SPA nav
                     state.attempt    = 0;
                     state.sessionId  = '';
