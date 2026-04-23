@@ -4269,13 +4269,18 @@
             }
         }
 
-        // v7.17.37: Launch-prompt detector — Sophia's greeting on CW Step 1 + similar
-        // kick-off turns say "When you're ready, hit the button below and let's get started"
-        // with no options + no question. Previously rendered zero quick-action buttons,
-        // so the student had nothing to click. Emit a single "Let's go" button that
-        // sends an affirming phrase back to Sophia.
+        // v7.17.37: Launch-prompt detector — kick-off turns ("When you're ready,
+        // hit the button below and let's get started"). Emits single "Let's go".
+        // v7.17.38: Tightened — the launch phrase alone isn't enough; if the
+        // message also poses an open question (has `?`, a "Question N of M"
+        // counter, or open-invitation phrasing like "no wrong answers"), the
+        // button is misleading because the student needs to type a free-text
+        // answer. Skip launch-prompt in those cases.
         const launchPrompt = /hit the button below|let'?s get started|let'?s begin|ready to (?:begin|start|get started)/i;
-        if (launchPrompt.test(text) && !hasLetterChoices) {
+        const hasQuestionMark = /\?/.test(text);
+        const hasQuestionCounter = /question\s+\d+\s+of\s+\d+/i.test(text);
+        const hasOpenInvite = /no wrong answer|anything at all|tell me about|what excites|what makes you/i.test(text);
+        if (launchPrompt.test(text) && !hasLetterChoices && !hasQuestionMark && !hasQuestionCounter && !hasOpenInvite) {
             return [{ label: '▶ Let’s go', value: 'Let’s go' }];
         }
 

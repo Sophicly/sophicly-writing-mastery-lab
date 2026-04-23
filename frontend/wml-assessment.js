@@ -1169,12 +1169,20 @@
         // (Phase 2 tasks share `_redraft` doc even though chat may be isolated).
         const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
         const att = (state.attempt || 1) > 1 ? `__a${state.attempt}` : '';
-        return `swml_canvas_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}${att}`;
+        // v7.17.38: project-scope CW canvas the same way as CHAT_SAVE_KEY
+        // so switching projects doesn't leak prior project's saved doc.
+        const cwP = (state.task && state.task.startsWith('cw_') && state.cwProjectId)
+            ? `__p${state.cwProjectId}` : '';
+        return `swml_canvas_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}${att}${cwP}`;
     };
     const CHAT_SAVE_KEY = () => {
         const suffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
         const att = (state.attempt || 1) > 1 ? `__a${state.attempt}` : '';
-        return `swml_chat_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}${att}`;
+        // v7.17.38: CW projects are independent writing works, NOT attempts.
+        // Without project-scoping, switching projects shows prior project's chat.
+        const cwP = (state.task && state.task.startsWith('cw_') && state.cwProjectId)
+            ? `__p${state.cwProjectId}` : '';
+        return `swml_chat_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}${att}${cwP}`;
     };
     let chatSaveTimer = null;
     let canvasSilentSend = false; // v7.14.3: When true, sendCanvasMessage skips user bubble display
@@ -1182,6 +1190,7 @@
     let _currentComments = null; // v7.15.30: Module-level ref to comments object (for tryServerLoad)
     let _currentUpdateCommentCount = null; // v7.15.30: Module-level ref
     let _currentUpdateCommentGutter = null; // v7.15.30: Module-level ref
+    let _currentResetCanvasChat = null; // v7.17.38: CW project switch chat flush
     let _migrationActive = false; // v7.15.21: allows migrations to remove sections (module-scope for guard access)
 
     function saveCanvasChat(history, chatId) {
@@ -6728,6 +6737,27 @@
                         const canvasChatHistory = [];
                         let canvasChatId = '';
                         let canvasChatLoading = false;
+
+                        // v7.17.38: expose a chat-reset helper to module scope so
+                        // _resolveCWProjectOnEntry (outside this closure) can flush
+                        // UI + in-memory history on CW project switch/create. New
+                        // project_id flips CHAT_SAVE_KEY so reload fetches new
+                        // per-project chat; without this reset the prior project's
+                        // bubbles stay on-screen + history leaks into the next save.
+                        _currentResetCanvasChat = () => {
+                            canvasChatHistory.length = 0;
+                            if (chatMessages) chatMessages.innerHTML = '';
+                            canvasChatId = '';
+                            const saved = loadCanvasChat();
+                            if (saved && Array.isArray(saved.history)) {
+                                saved.history.forEach((m) => {
+                                    canvasChatHistory.push(m);
+                                    const role = m.role === 'user' ? 'user' : 'ai';
+                                    addChatMessage(m.content, role, m.content);
+                                });
+                                if (saved.chatId) canvasChatId = saved.chatId;
+                            }
+                        };
 
                         // Typing indicators — delegate to shared functions (v7.12.35)
                         function removeCanvasTyping() { removeTypingBubble(chatMessages); }
@@ -15194,6 +15224,9 @@
         // theme-aware via .swml-canvas-light. Inline styles only set what CSS
         // can't easily express (the wheel/touchmove blocker, canvas overflow lock).
         overlay.className = 'swml-cw-project-overlay';
+        // v7.17.38: block ProseMirror drag-bleed — overlay + card non-draggable + dragstart kill.
+        overlay.setAttribute('draggable', 'false');
+        overlay.addEventListener('dragstart', (e) => { e.preventDefault(); e.stopPropagation(); });
         const _blockBackdropScroll = (e) => { if (e.target === overlay) e.preventDefault(); };
         overlay.addEventListener('wheel', _blockBackdropScroll, { passive: false });
         overlay.addEventListener('touchmove', _blockBackdropScroll, { passive: false });
@@ -15241,6 +15274,8 @@
             // shared __frame class so dark/light themes pick the right tokens.
             const card = document.createElement('div');
             card.className = 'swml-cw-project-overlay__frame';
+            card.setAttribute('draggable', 'false');
+            card.addEventListener('dragstart', (e) => { e.preventDefault(); e.stopPropagation(); });
 
             const title = document.createElement('h2');
             title.id = 'swml-cwp-title';
@@ -15356,6 +15391,8 @@
             // v7.17.29: class-driven (see wml-canvas.css). Theme-aware via .swml-canvas-light.
             const card = document.createElement('div');
             card.className = 'swml-cw-project-overlay__frame';
+            card.setAttribute('draggable', 'false');
+            card.addEventListener('dragstart', (e) => { e.preventDefault(); e.stopPropagation(); });
 
             const title = document.createElement('h2');
             title.id = 'swml-cwp-title';
@@ -15504,6 +15541,13 @@
                 console.warn('WML v7.17.29: post-resolve artifact load failed', err)
             );
             _updateCwProjectNameBadge();
+            // v7.17.38: Fresh project_id flips CHAT_SAVE_KEY. Flush the in-memory
+            // chat + DOM bubbles so prior project's Q&A doesn't bleed through,
+            // then reload from the new per-project key (null for a brand-new
+            // project — AI's first turn will supply the kick-off greeting).
+            if (_currentResetCanvasChat) {
+                try { _currentResetCanvasChat(); } catch (e) { console.warn('WML v7.17.38: chat reset failed', e); }
+            }
         }
     }
 

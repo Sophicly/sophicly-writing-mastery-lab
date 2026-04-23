@@ -2389,7 +2389,12 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     backdrop-filter: blur(6px);
     display: flex; align-items: center; justify-content: center;
     overflow: hidden; overscroll-behavior: contain;
+    /* v7.17.38: suppress grab-hand / drag-bleed from ProseMirror behind. */
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
 }
+.swml-cw-project-overlay__frame { cursor: default; }
 .swml-cw-project-overlay__frame {
     background: linear-gradient(180deg, #2c003e 0%, #5333ed 100%);
     color: #fff;
