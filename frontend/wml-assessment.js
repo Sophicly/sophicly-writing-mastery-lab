@@ -1264,6 +1264,49 @@
         let canvasChatId = '';
         let canvasChatLoading = false;
 
+        // v7.17.31: Populate multiple_choice checklistItem placeholders from
+        // AI-emitted @POPULATE_CHECKLIST marker. Matches by data-item-id
+        // "<qId>-stmt-<n>" (case-insensitive on qId). Replaces inline content
+        // of matched node. Safe no-op if editor missing, qId mismatched, or
+        // statement count fewer than placeholders.
+        function _populateChecklist(editor, qId, statements) {
+            if (!editor || !editor.state || !Array.isArray(statements)) return;
+            const prefixLc = String(qId || '').toLowerCase() + '-stmt-';
+            const matches = [];
+            editor.state.doc.descendants((node, pos) => {
+                if (node.type && node.type.name === 'checklistItem') {
+                    const itemIdRaw = String(node.attrs && node.attrs.itemId || '');
+                    if (itemIdRaw.toLowerCase().indexOf(prefixLc) === 0) {
+                        const n = parseInt(itemIdRaw.slice(prefixLc.length), 10);
+                        if (!isNaN(n)) matches.push({ n: n, pos: pos, node: node, itemId: itemIdRaw });
+                    }
+                }
+            });
+            if (matches.length === 0) return;
+            // Apply in reverse document order so earlier positions stay valid.
+            matches.sort((a, b) => b.pos - a.pos);
+            let tr = editor.state.tr;
+            matches.forEach((m) => {
+                const text = statements[m.n - 1];
+                if (typeof text !== 'string' || !text.trim()) return;
+                const from = m.pos + 1;
+                const to = m.pos + m.node.nodeSize - 1;
+                tr = tr.replaceWith(from, to, editor.schema.text(text));
+            });
+            if (tr.docChanged) {
+                editor.view.dispatch(tr);
+                // Belt+braces: strip placeholder class on matched item-ids (ProseMirror
+                // nodeView re-renders already drop it, but cover the parse-HTML init path).
+                try {
+                    matches.forEach((m) => {
+                        const esc = (window.CSS && CSS.escape) ? CSS.escape(m.itemId) : m.itemId.replace(/"/g, '\\"');
+                        document.querySelectorAll('[data-item-id="' + esc + '"].swml-checklist-placeholder')
+                            .forEach((el) => el.classList.remove('swml-checklist-placeholder'));
+                    });
+                } catch (_) {}
+            }
+        }
+
         // Chat message helper
         function addChatMessage(text, role, rawText) {
             chatMessages.querySelectorAll('.swml-quick-actions').forEach(q => q.remove());
@@ -1285,6 +1328,31 @@
                 text = text.replace(/<p>[^<]*(?:Planning|📌)[^<]*(?:Part\s+[A-Z]\.\d|Step\s+\d+\s+of\s+\d+)[^<]*<\/p>/gi, '');
                 text = text.replace(/<p>\[Progress bar:.*?\]<\/p>/gi, '');
                 text = text.replace(/\[PROGRESS:\s*\d+\]/g, '');
+
+                // v7.17.31: @POPULATE_CHECKLIST — AI-emitted marker populates multiple_choice
+                // placeholders on canvas. Format (one line):
+                //   @POPULATE_CHECKLIST <qId>: {"s":["stmt1","stmt2",...],"k":[true,false,...]}
+                // s = 8 statements, k = answer-key booleans (AI-only, stripped from display).
+                // Marker stripped from visible text; kept in canvasChatHistory raw for AI recall.
+                {
+                    const plain = text.replace(/<[^>]+>/g, ' ');
+                    const markerRe = /@POPULATE_CHECKLIST\s+([A-Za-z0-9_]+)\s*:\s*(\{[\s\S]*?\})/g;
+                    let m;
+                    while ((m = markerRe.exec(plain)) !== null) {
+                        try {
+                            const qId = m[1];
+                            const data = JSON.parse(m[2]);
+                            if (data && Array.isArray(data.s) && canvasEditor) {
+                                _populateChecklist(canvasEditor, qId, data.s);
+                            }
+                        } catch (err) {
+                            console.warn('WML: @POPULATE_CHECKLIST parse failed', err);
+                        }
+                    }
+                    text = text.replace(/<p>\s*@POPULATE_CHECKLIST[\s\S]*?<\/p>/gi, '');
+                    text = text.replace(/@POPULATE_CHECKLIST\s+[A-Za-z0-9_]+\s*:\s*\{[\s\S]*?\}\s*/g, '');
+                }
+
                 const body = el('div', { className: 'swml-bubble-body' });
                 body.innerHTML = text;
                 content.appendChild(body);

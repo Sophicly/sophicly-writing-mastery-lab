@@ -80,17 +80,15 @@ ELSE: Execute REQUIRE\_MATCH("Y or N") HALT: true
 
 ELIF SESSION\_STATE.assessment\_type \== "Exam Practice": \[ASK\] "**Which questions have you completed for this Exam Practice?**
 
-You can select from **Questions 2, 3, 4, or Section B (Question 5\)** for detailed assessment and planning support.
-
-*(Note: Question 1 is a simple retrieval task that you should complete independently)*
+You can select any of **Questions 1, 2, 3, 4, or Section B (Question 5)** for detailed assessment. Q1 is a quick 4-from-8 true/false retrieval task — I'll generate the 8 statements for you and score your ticks.
 
 Please type the question number(s) you want assessed. For example:
 
-* Type **3** if you've only completed Question 3  
+* Type **1** if you've only completed Question 1  
     
 * Type **2, 3, 4** if you've completed Questions 2, 3, and 4  
     
-* Type **2, 3, 4, 5** if you've completed the full paper (excluding Q1)"  
+* Type **1, 2, 3, 4, 5** if you've completed the full paper"  
     
   **\[AI\_INTERNAL\]** Wait for student response. Parse the input to extract question numbers.  
     
@@ -102,25 +100,23 @@ Please type the question number(s) you want assessed. For example:
 
 ---
 
-##### Step 3: Question 1 Validation
+##### Step 3: Question 1 Routing
 
-\*\*\[v6.24 FIX: Question 1 is a simple retrieval task that does not require detailed assessment or planning\]\*\*
+\*\*\[v7.17.31: Question 1 now has a dedicated multiple-select assessment flow in `protocol-q1-msq.md`. Q1 is still excluded from PLANNING (no plan needed for true/false retrieval) but is INCLUDED in assessment — student needs right/wrong feedback with brief reasons.\]\*\*
 
 **\[AI\_INTERNAL\]** Check if Question 1 is in SESSION\_STATE.selected\_questions
 
-**\[CONDITIONAL\]** IF "1" IN SESSION\_STATE.selected\_questions OR 1 IN SESSION\_STATE.selected\_questions: \[SAY\] "I notice you've included Question 1\. Question 1 is a straightforward retrieval task (selecting 4 true statements from Source A) that doesn't require detailed assessment or planning. This protocol is designed for questions that need analytical feedback and planning support.
+**\[CONDITIONAL\]** IF "1" IN SESSION\_STATE.selected\_questions OR 1 IN SESSION\_STATE.selected\_questions:
 
-Please complete Question 1 independently by carefully reading Source A and identifying the 4 true statements. Then return here to work on Questions 2, 3, 4, or Section B, which benefit from detailed assessment and planning.
+TRANSITION: **Protocol Q1-MSQ (`protocol-q1-msq.md`)** — execute Phase 1 (Source A collection + 8-statement generation + @POPULATE_CHECKLIST marker emission) immediately. Then wait for student to tick 4 and request assessment; execute Phase 2 (score /4 + per-statement feedback).
 
-Would you like to select different questions now for assessment? Or would you like to proceed with the other questions you've selected (excluding Question 1)?"
+**\[AI\_INTERNAL\]** After Q1 Phase 2 completes and \[ASSESSMENT\_COMPLETE Q1\] is emitted: remove 1 from SESSION\_STATE.selected\_questions.
 
-\[WAIT\] Student response
+**\[CONDITIONAL\]** IF SESSION\_STATE.selected\_questions is now empty (Q1 was the only selected question): \[SAY\] "That's Q1 done. Want to work on another question? Type the number(s), or type 'menu' to return to the main menu." PROCEED: per student response.
 
-**\[AI\_INTERNAL\]** Remove 1 from SESSION\_STATE.selected\_questions array
+ELSE: \[SAY\] "Q1 complete. Next up: \[list remaining questions from the array\]." PROCEED: to Part B Source Collection.
 
-**\[CONDITIONAL\]** IF SESSION\_STATE.selected\_questions is now empty: \[SAY\] "Please select from Questions 2, 3, 4, or Section B when you're ready. Type the question number(s)." \[AI\_INTERNAL\] RETURN to Step 2 (Question Validation) to get new selection ELSE: \[SAY\] "Perfect. I'll assess: \[list the remaining questions from the array\]." PROCEED: to Part B Source Collection
-
-ELSE: \[SAY\] "Perfect. I'll assess: \[list the questions from the array\]." PROCEED: to Part B Source Collection
+ELSE (Q1 not selected): \[SAY\] "Perfect. I'll assess: \[list the questions from the array\]." PROCEED: to Part B Source Collection
 
 ---
 
