@@ -2237,20 +2237,37 @@
         syncUrl(); // Update URL bar with canvas state (diagnostic/assessment/polishing)
 
         // v7.13.34: CW project auto-load — ensure cwProjectId is set for embedded CW exercises
+        // v7.17.28: For cw_step_1 (Writer's Profile), show the project switcher/naming overlay
+        // instead of silently picking projects[0]. Students prep multiple CW projects per exam
+        // cycle — they need a clear entry path. Other cw_step_* keep silent fallback so mid-
+        // course steps work normally when entered without a prior project.
         if (state.task && state.task.startsWith('cw_') && !state.cwProjectId) {
-            (async () => {
-                try {
-                    const res = await WML.cwProject.list();
-                    const projects = res?.projects || [];
-                    if (projects.length > 0) {
-                        state.cwProjectId = projects[0].id;
-                    } else {
-                        const createRes = await WML.cwProject.create('My Story', 'standalone');
-                        if (createRes?.success) state.cwProjectId = createRes.project.id;
-                    }
-                    console.log('WML CW: Auto-loaded project', state.cwProjectId);
-                } catch (e) { console.warn('WML CW: Failed to auto-load project', e); }
-            })();
+            if (state.task === 'cw_step_1') {
+                _resolveCWProjectOnEntry();
+            } else {
+                (async () => {
+                    try {
+                        const res = await WML.cwProject.list();
+                        const projects = res?.projects || [];
+                        if (projects.length > 0) {
+                            // v7.17.28: Sort by 'updated' descending so mid-course entries
+                            // resume the most-recent project, not whichever came back first.
+                            const sorted = [...projects].sort((a, b) =>
+                                (b.updated || b.created || '').localeCompare(a.updated || a.created || '')
+                            );
+                            state.cwProjectId = sorted[0].id;
+                            state.cwProjectName = sorted[0].name || '';
+                        } else {
+                            const createRes = await WML.cwProject.create('My Story', 'standalone');
+                            if (createRes?.success) {
+                                state.cwProjectId = createRes.project.id;
+                                state.cwProjectName = createRes.project.name || 'My Story';
+                            }
+                        }
+                        console.log('WML CW: Auto-loaded project', state.cwProjectId);
+                    } catch (e) { console.warn('WML CW: Failed to auto-load project', e); }
+                })();
+            }
         }
 
         // Kill WebGL shader when entering canvas — prevents flash-through on transitions (v7.12.53)
@@ -14873,6 +14890,373 @@
         } catch (e) {
             console.log('WML: Server load unavailable, using localStorage');
         }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  v7.17.28: CW project switcher + naming overlay
+    //  Fires on cw_step_1 (Writer's Profile) entry when the student has
+    //  no cwProjectId yet. Switcher lists existing projects (most-recent
+    //  pre-highlighted for 1-tap continue) + "Start new" button; naming
+    //  input handles fresh-project flow. 3-layer scroll-iso reused from
+    //  _showAttemptSelector pattern. Full focus trap + aria + char counter.
+    // ══════════════════════════════════════════════════════════════
+
+    function _cwLocateCanvasEl() {
+        return document.getElementById('swml-canvas')
+            || document.querySelector('.swml-canvas-content')
+            || document.querySelector('.swml-app')
+            || document.body;
+    }
+
+    function _cwMountOverlay() {
+        const canvasEl = _cwLocateCanvasEl();
+        if (canvasEl && canvasEl !== document.body) {
+            canvasEl.style.position = 'relative';
+        }
+        const overlay = document.createElement('div');
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.setAttribute('aria-labelledby', 'swml-cwp-title');
+        overlay.className = 'swml-cw-project-overlay';
+        overlay.style.cssText = 'position:absolute;inset:0;z-index:200;'
+            + 'background:rgba(0,0,0,0.72);display:flex;align-items:center;'
+            + 'justify-content:center;backdrop-filter:blur(6px);'
+            + 'overflow:hidden;overscroll-behavior:contain;';
+        const _blockBackdropScroll = (e) => { if (e.target === overlay) e.preventDefault(); };
+        overlay.addEventListener('wheel', _blockBackdropScroll, { passive: false });
+        overlay.addEventListener('touchmove', _blockBackdropScroll, { passive: false });
+        // Backdrop click does nothing (per Neil's v7.17.28 pitfall decision —
+        // misclicks would lose typed name / selection). Only explicit buttons dismiss.
+        const _prevOverflow = canvasEl && canvasEl !== document.body ? canvasEl.style.overflow : '';
+        if (canvasEl && canvasEl !== document.body) canvasEl.style.overflow = 'hidden';
+        const _origRemove = overlay.remove.bind(overlay);
+        overlay.remove = function () {
+            try {
+                if (canvasEl && canvasEl !== document.body) canvasEl.style.overflow = _prevOverflow;
+            } catch (_) {}
+            _origRemove();
+        };
+        canvasEl.appendChild(overlay);
+        return overlay;
+    }
+
+    // Tab-key focus trap across a set of focusable elements inside the overlay.
+    function _cwInstallFocusTrap(overlay) {
+        overlay.addEventListener('keydown', function (e) {
+            if (e.key !== 'Tab') return;
+            const focusable = overlay.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            const focusableList = Array.prototype.filter.call(focusable, el => !el.disabled && el.offsetParent !== null);
+            if (focusableList.length === 0) return;
+            const first = focusableList[0];
+            const last = focusableList[focusableList.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault(); last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault(); first.focus();
+            }
+        });
+    }
+
+    // Naming-input overlay. onSave(name) receives trimmed name; onCancel = null when
+    // there's no switcher to return to (0-projects path). Returns a promise that
+    // resolves once the overlay is dismissed (project saved OR skipped).
+    function _showCWProjectNameInputOverlay({ mode, onSave, onCancel }) {
+        return new Promise((resolve) => {
+            const overlay = _cwMountOverlay();
+            const card = document.createElement('div');
+            card.className = 'swml-cw-project-card';
+            card.style.cssText = 'background:#ffffff;color:#1a1530;border-radius:16px;'
+                + 'padding:32px 28px;max-width:460px;width:90%;box-shadow:0 24px 64px rgba(0,0,0,0.4);'
+                + 'display:flex;flex-direction:column;gap:18px;';
+
+            const title = document.createElement('h2');
+            title.id = 'swml-cwp-title';
+            title.textContent = mode === 'first' ? 'Name your Creative Writing project' : 'Name your new project';
+            title.style.cssText = 'margin:0;font-size:22px;font-weight:700;color:#2c003e;';
+            card.appendChild(title);
+
+            const hint = document.createElement('p');
+            hint.textContent = mode === 'first'
+                ? 'Give your first CW project a title so you can come back to it later. You can create more projects any time.'
+                : 'Give this project a title. You can rename it later.';
+            hint.style.cssText = 'margin:0;font-size:14px;color:#4a4060;line-height:1.45;';
+            card.appendChild(hint);
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'My Creative Writing Project';
+            input.maxLength = 60;
+            input.style.cssText = 'width:100%;padding:12px 14px;font-size:16px;border:2px solid #d8d0e8;'
+                + 'border-radius:10px;outline:none;font-family:inherit;box-sizing:border-box;';
+            input.addEventListener('focus', () => input.style.borderColor = '#5333ed');
+            input.addEventListener('blur', () => input.style.borderColor = '#d8d0e8');
+            card.appendChild(input);
+
+            const counter = document.createElement('div');
+            counter.textContent = '0 / 60';
+            counter.style.cssText = 'font-size:12px;color:#8a83a3;text-align:right;margin-top:-10px;';
+            card.appendChild(counter);
+
+            const errorEl = document.createElement('div');
+            errorEl.style.cssText = 'font-size:13px;color:#d9364a;min-height:16px;';
+            card.appendChild(errorEl);
+
+            const btnRow = document.createElement('div');
+            btnRow.style.cssText = 'display:flex;flex-direction:column;gap:10px;align-items:stretch;';
+
+            const saveBtn = document.createElement('button');
+            saveBtn.textContent = 'Save';
+            saveBtn.disabled = true;
+            saveBtn.style.cssText = 'padding:12px 20px;font-size:15px;font-weight:600;color:#fff;'
+                + 'background:linear-gradient(135deg,#5333ed,#2c003e);border:none;border-radius:10px;'
+                + 'cursor:pointer;transition:opacity 0.2s;';
+            const _setSaveEnabled = (enabled) => {
+                saveBtn.disabled = !enabled;
+                saveBtn.style.opacity = enabled ? '1' : '0.45';
+                saveBtn.style.cursor = enabled ? 'pointer' : 'not-allowed';
+            };
+            _setSaveEnabled(false);
+            btnRow.appendChild(saveBtn);
+
+            let skipBtn = null;
+            if (onCancel) {
+                skipBtn = document.createElement('button');
+                skipBtn.textContent = 'Skip — use default name';
+                skipBtn.style.cssText = 'padding:8px;font-size:13px;color:#5a5475;background:none;'
+                    + 'border:none;cursor:pointer;text-decoration:underline;';
+                btnRow.appendChild(skipBtn);
+            }
+            card.appendChild(btnRow);
+            overlay.appendChild(card);
+
+            input.addEventListener('input', () => {
+                const len = input.value.length;
+                counter.textContent = len + ' / 60';
+                counter.style.color = len >= 55 ? '#d9364a' : '#8a83a3';
+                _setSaveEnabled(input.value.trim().length > 0);
+                errorEl.textContent = '';
+            });
+
+            const _finalize = (result) => {
+                overlay.remove();
+                resolve(result);
+            };
+
+            const _doSave = async () => {
+                const name = input.value.trim();
+                if (!name) return;
+                _setSaveEnabled(false);
+                saveBtn.textContent = 'Saving…';
+                errorEl.textContent = '';
+                try {
+                    await onSave(name);
+                    _finalize({ saved: true, name });
+                } catch (e) {
+                    errorEl.textContent = 'Could not save. Check your connection and try again.';
+                    saveBtn.textContent = 'Save';
+                    _setSaveEnabled(true);
+                    console.warn('WML v7.17.28: CW project save failed', e);
+                }
+            };
+
+            saveBtn.addEventListener('click', _doSave);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && input.value.trim().length > 0) {
+                    e.preventDefault();
+                    _doSave();
+                } else if (e.key === 'Escape' && onCancel) {
+                    e.preventDefault();
+                    overlay.remove();
+                    onCancel();
+                    resolve({ saved: false, cancelled: true });
+                }
+            });
+            if (skipBtn) {
+                skipBtn.addEventListener('click', () => {
+                    overlay.remove();
+                    onCancel();
+                    resolve({ saved: false, skipped: true });
+                });
+            }
+
+            _cwInstallFocusTrap(overlay);
+            setTimeout(() => input.focus(), 50);
+        });
+    }
+
+    // Switcher overlay. projects = array of index entries; picks most-recent
+    // as default (Enter = 1-tap continue). onLoad(id, name) called when student
+    // picks an existing project. "Start new" opens the naming input in-place.
+    function _showCWProjectSwitcherOverlay({ projects, onLoad, onNew }) {
+        return new Promise((resolve) => {
+            const overlay = _cwMountOverlay();
+            const card = document.createElement('div');
+            card.className = 'swml-cw-project-card';
+            card.style.cssText = 'background:#ffffff;color:#1a1530;border-radius:16px;'
+                + 'padding:28px 24px;max-width:480px;width:92%;box-shadow:0 24px 64px rgba(0,0,0,0.4);'
+                + 'display:flex;flex-direction:column;gap:16px;max-height:80vh;overflow:hidden;';
+
+            const title = document.createElement('h2');
+            title.id = 'swml-cwp-title';
+            title.textContent = 'Your Creative Writing projects';
+            title.style.cssText = 'margin:0;font-size:22px;font-weight:700;color:#2c003e;';
+            card.appendChild(title);
+
+            const hint = document.createElement('p');
+            hint.textContent = 'Pick up where you left off, or start a new project.';
+            hint.style.cssText = 'margin:0;font-size:14px;color:#4a4060;line-height:1.45;';
+            card.appendChild(hint);
+
+            const list = document.createElement('div');
+            list.style.cssText = 'display:flex;flex-direction:column;gap:8px;overflow-y:auto;'
+                + 'max-height:40vh;padding-right:4px;';
+            card.appendChild(list);
+
+            // Sort by 'updated' timestamp descending (MySQL datetime sorts lexically).
+            const sorted = [...projects].sort((a, b) => (b.updated || b.created || '').localeCompare(a.updated || a.created || ''));
+
+            const _finalize = (result) => { overlay.remove(); resolve(result); };
+
+            const _formatDate = (mysqlStr) => {
+                if (!mysqlStr) return '';
+                try {
+                    const d = new Date(mysqlStr.replace(' ', 'T'));
+                    if (isNaN(d)) return '';
+                    const now = new Date();
+                    const diffDays = Math.floor((now - d) / 86400000);
+                    if (diffDays === 0) return 'today';
+                    if (diffDays === 1) return 'yesterday';
+                    if (diffDays < 7) return diffDays + ' days ago';
+                    return d.toLocaleDateString();
+                } catch (e) { return ''; }
+            };
+
+            const cardButtons = [];
+            sorted.forEach((p, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'swml-cw-project-btn';
+                btn.style.cssText = 'display:flex;flex-direction:column;align-items:flex-start;gap:4px;'
+                    + 'padding:14px 16px;font-family:inherit;text-align:left;'
+                    + 'background:#f5f2fb;border:2px solid #e8e0f4;border-radius:10px;cursor:pointer;'
+                    + 'transition:border-color 0.15s,background 0.15s;';
+                btn.addEventListener('mouseenter', () => { btn.style.borderColor = '#5333ed'; btn.style.background = '#ede6fb'; });
+                btn.addEventListener('mouseleave', () => {
+                    if (document.activeElement !== btn) {
+                        btn.style.borderColor = '#e8e0f4';
+                        btn.style.background = '#f5f2fb';
+                    }
+                });
+                btn.addEventListener('focus', () => { btn.style.borderColor = '#5333ed'; btn.style.background = '#ede6fb'; });
+                btn.addEventListener('blur', () => {
+                    btn.style.borderColor = '#e8e0f4';
+                    btn.style.background = '#f5f2fb';
+                });
+
+                const nameEl = document.createElement('div');
+                nameEl.textContent = p.name || 'Untitled project';
+                nameEl.style.cssText = 'font-size:16px;font-weight:600;color:#2c003e;';
+                btn.appendChild(nameEl);
+
+                const metaEl = document.createElement('div');
+                const dateLabel = _formatDate(p.updated || p.created);
+                metaEl.textContent = dateLabel ? ('Last edited ' + dateLabel) : '';
+                metaEl.style.cssText = 'font-size:12px;color:#7a73a3;';
+                if (dateLabel) btn.appendChild(metaEl);
+
+                btn.addEventListener('click', async () => {
+                    try {
+                        await onLoad(p.id, p.name);
+                        _finalize({ loaded: true, projectId: p.id });
+                    } catch (e) {
+                        console.warn('WML v7.17.28: CW project load failed', e);
+                    }
+                });
+                list.appendChild(btn);
+                cardButtons.push(btn);
+            });
+
+            const newBtn = document.createElement('button');
+            newBtn.textContent = '+ Start new project';
+            newBtn.style.cssText = 'padding:12px 16px;font-size:14px;font-weight:600;color:#5333ed;'
+                + 'background:#ffffff;border:2px dashed #5333ed;border-radius:10px;cursor:pointer;'
+                + 'font-family:inherit;';
+            newBtn.addEventListener('mouseenter', () => { newBtn.style.background = '#f5f2fb'; });
+            newBtn.addEventListener('mouseleave', () => { newBtn.style.background = '#ffffff'; });
+            newBtn.addEventListener('click', async () => {
+                overlay.remove();
+                const r = await _showCWProjectNameInputOverlay({
+                    mode: 'additional',
+                    onSave: async (name) => { await onNew(name); },
+                    onCancel: () => {
+                        // Cancel → re-show the switcher
+                        _showCWProjectSwitcherOverlay({ projects, onLoad, onNew }).then(resolve);
+                    },
+                });
+                if (r && r.saved) resolve({ created: true, name: r.name });
+            });
+            card.appendChild(newBtn);
+
+            overlay.appendChild(card);
+
+            _cwInstallFocusTrap(overlay);
+            // B+ refinement: pre-focus most-recent card so Enter = 1-tap continue.
+            setTimeout(() => { if (cardButtons[0]) cardButtons[0].focus(); }, 50);
+        });
+    }
+
+    // Entry point for the CW project flow on cw_step_1.
+    async function _resolveCWProjectOnEntry() {
+        try {
+            const res = await WML.cwProject.list();
+            const projects = res?.projects || [];
+
+            const setStateFromProject = (id, name) => {
+                state.cwProjectId = id;
+                state.cwProjectName = name || '';
+            };
+
+            if (projects.length === 0) {
+                // No prior projects → naming input only, no Skip (nothing to return to)
+                await _showCWProjectNameInputOverlay({
+                    mode: 'first',
+                    onSave: async (name) => {
+                        const c = await WML.cwProject.create(name, 'standalone');
+                        if (c?.success && c.project) {
+                            setStateFromProject(c.project.id, c.project.name || name);
+                        }
+                    },
+                    onCancel: null,
+                });
+            } else {
+                await _showCWProjectSwitcherOverlay({
+                    projects,
+                    onLoad: async (id, name) => {
+                        // List entries already carry name; avoid extra round-trip unless needed.
+                        setStateFromProject(id, name);
+                    },
+                    onNew: async (name) => {
+                        const c = await WML.cwProject.create(name, 'standalone');
+                        if (c?.success && c.project) {
+                            setStateFromProject(c.project.id, c.project.name || name);
+                        }
+                    },
+                });
+            }
+        } catch (e) {
+            console.warn('WML v7.17.28: CW project resolve failed, falling back to silent create', e);
+            const c = await WML.cwProject.create('My Story', 'standalone');
+            if (c?.success && c.project) {
+                state.cwProjectId = c.project.id;
+                state.cwProjectName = c.project.name || 'My Story';
+            }
+        }
+        // Re-enter canvas workspace so artifact loaders pick up the now-set cwProjectId.
+        // Delay past _canvasGuard 500ms debounce.
+        setTimeout(() => {
+            if (state.cwProjectId) WML.renderCanvasWorkspace();
+        }, 600);
     }
 
     // v7.17.27: One-time backfill for legacy diagnostic/redraft docs that were
