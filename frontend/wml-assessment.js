@@ -914,6 +914,145 @@
     // Keyed by fieldId. Flushed into TipTap attributes only before save.
     const _outlineCheckState = new Map();
 
+    // ── v7.17.32: MSQ checklist population (shared across all canvas mounts) ──
+    // Q1-style "pick N from M" tasks render 8 empty checkbox placeholders. Sophia
+    // populates them via @POPULATE_CHECKLIST marker. These helpers live at outer
+    // IIFE scope so every canvas (assessment, diagnostic, training, exam-prep)
+    // can parse markers + mutate nodes using a single code path.
+
+    // Parse @POPULATE_CHECKLIST markers from an AI reply. Returns array of
+    // { qId, statements, answerKey }. Tolerates HTML-wrapped markers.
+    function _parseChecklistMarker(text) {
+        if (!text) return [];
+        const plain = String(text).replace(/<[^>]+>/g, ' ');
+        const re = /@POPULATE_CHECKLIST\s+([A-Za-z0-9_]+)\s*:\s*(\{[\s\S]*?\})/g;
+        const out = [];
+        let m;
+        while ((m = re.exec(plain)) !== null) {
+            try {
+                const data = JSON.parse(m[2]);
+                if (data && Array.isArray(data.s)) {
+                    out.push({ qId: m[1], statements: data.s, answerKey: Array.isArray(data.k) ? data.k : null });
+                }
+            } catch (err) {
+                console.warn('WML: _parseChecklistMarker JSON parse failed', err);
+            }
+        }
+        return out;
+    }
+
+    // Strip marker text from a visible AI bubble before it renders.
+    function _stripChecklistMarker(text) {
+        if (!text) return text;
+        let out = String(text);
+        out = out.replace(/<p>\s*@POPULATE_CHECKLIST[\s\S]*?<\/p>/gi, '');
+        out = out.replace(/@POPULATE_CHECKLIST\s+[A-Za-z0-9_]+\s*:\s*\{[\s\S]*?\}\s*/g, '');
+        return out;
+    }
+
+    // Mutate a Tiptap editor's doc: replace inline content of checklistItem
+    // nodes matching data-item-id prefix "<qId>-stmt-<n>" with the statement
+    // at position n-1 in the statements array. Safe no-op if editor missing,
+    // no matches, or statement shorter than placeholders.
+    function _populateChecklist(editor, qId, statements) {
+        if (!editor || !editor.state || !Array.isArray(statements)) return;
+        const prefixLc = String(qId || '').toLowerCase() + '-stmt-';
+        const matches = [];
+        editor.state.doc.descendants((node, pos) => {
+            if (node.type && node.type.name === 'checklistItem') {
+                const itemIdRaw = String(node.attrs && node.attrs.itemId || '');
+                if (itemIdRaw.toLowerCase().indexOf(prefixLc) === 0) {
+                    const n = parseInt(itemIdRaw.slice(prefixLc.length), 10);
+                    if (!isNaN(n)) matches.push({ n: n, pos: pos, node: node, itemId: itemIdRaw });
+                }
+            }
+        });
+        if (matches.length === 0) return;
+        matches.sort((a, b) => b.pos - a.pos);
+        let tr = editor.state.tr;
+        matches.forEach((m) => {
+            const t = statements[m.n - 1];
+            if (typeof t !== 'string' || !t.trim()) return;
+            const from = m.pos + 1;
+            const to = m.pos + m.node.nodeSize - 1;
+            tr = tr.replaceWith(from, to, editor.schema.text(t));
+        });
+        if (tr.docChanged) {
+            editor.view.dispatch(tr);
+            try {
+                matches.forEach((m) => {
+                    const esc = (window.CSS && CSS.escape) ? CSS.escape(m.itemId) : m.itemId.replace(/"/g, '\\"');
+                    document.querySelectorAll('[data-item-id="' + esc + '"].swml-checklist-placeholder')
+                        .forEach((el) => el.classList.remove('swml-checklist-placeholder'));
+                });
+            } catch (_) {}
+        }
+    }
+
+    // Detect stale/unpopulated MSQ placeholders in the editor doc. Returns
+    // array of unique qIds that need population, or [] if all statements
+    // already look real.
+    function _findStaleChecklistQIds(editor) {
+        if (!editor || !editor.state) return [];
+        const seen = {};
+        editor.state.doc.descendants((node) => {
+            if (node.type && node.type.name === 'checklistItem') {
+                const itemId = String(node.attrs && node.attrs.itemId || '');
+                const m = itemId.match(/^([A-Za-z0-9_]+)-stmt-\d+$/);
+                if (!m) return;
+                const qId = m[1];
+                const t = (node.textContent || '').trim();
+                const isPlaceholder = !t || /^waiting\s+for\s+statement/i.test(t);
+                if (isPlaceholder) seen[qId] = true;
+            }
+        });
+        return Object.keys(seen);
+    }
+
+    // Fire a silent API call to generate statements for any stale qIds on
+    // this editor's canvas. Runs once per onCreate — if statements are
+    // already populated, no-op. Used for diagnostic (no chat UI) + back-fill
+    // of legacy stuck attempts. Does not mutate any visible chat UI.
+    async function _autoFireChecklistIfStale(editor) {
+        try {
+            if (!editor || !window.WML || !WML.API || !WML.apiPost) return;
+            // Delay: setContent often lands AFTER onCreate (async server/localStorage
+            // restore). Wait long enough for saved attempts to repopulate, then recheck.
+            // If statements are no longer stale, exit — do NOT overwrite saved work.
+            await new Promise((r) => setTimeout(r, 1500));
+            const qIds = _findStaleChecklistQIds(editor);
+            if (qIds.length === 0) return;
+            for (const qId of qIds) {
+                try {
+                    const docContent = editor.getHTML();
+                    const prompt = '[CANVAS_AUTO_TRIGGER] Execute protocol-q1-msq.md Phase 1 for ' + qId +
+                        ' now. The student document below contains the question, Source A extract, and line reference. ' +
+                        'Read Source A within the specified line range, generate 4 true + 4 plausible-false statements per the module\'s quality rules, ' +
+                        'and emit the @POPULATE_CHECKLIST ' + qId + ' marker as a single line with exact JSON shape (s array of 8 strings, k array of 8 booleans). ' +
+                        'Do not emit any prose, greeting, or trailing commentary — marker line only.';
+                    const res = await WML.apiPost(WML.API.chat, {
+                        message: prompt,
+                        history: [],
+                        document_content: docContent,
+                        session_id: (window.state && state.sessionId) || '',
+                        board: (window.state && state.board) || '',
+                        subject: (window.state && state.subject) || '',
+                        text: (window.state && state.text) || '',
+                        task: (window.state && state.task) || '',
+                        step: (window.state && state.step) || 0,
+                    });
+                    if (!res || !res.reply) continue;
+                    const hits = _parseChecklistMarker(res.reply);
+                    hits.forEach((h) => _populateChecklist(editor, h.qId, h.statements));
+                } catch (innerErr) {
+                    console.warn('WML v7.17.32: auto-fire failed for', qId, innerErr);
+                }
+            }
+        } catch (err) {
+            console.warn('WML v7.17.32: _autoFireChecklistIfStale error', err);
+        }
+    }
+
     // v7.15.0: Check if all outline rows in a section are complete, update section header.
     function checkSectionComplete(sectionEl) {
         if (!sectionEl) return;
@@ -1264,49 +1403,6 @@
         let canvasChatId = '';
         let canvasChatLoading = false;
 
-        // v7.17.31: Populate multiple_choice checklistItem placeholders from
-        // AI-emitted @POPULATE_CHECKLIST marker. Matches by data-item-id
-        // "<qId>-stmt-<n>" (case-insensitive on qId). Replaces inline content
-        // of matched node. Safe no-op if editor missing, qId mismatched, or
-        // statement count fewer than placeholders.
-        function _populateChecklist(editor, qId, statements) {
-            if (!editor || !editor.state || !Array.isArray(statements)) return;
-            const prefixLc = String(qId || '').toLowerCase() + '-stmt-';
-            const matches = [];
-            editor.state.doc.descendants((node, pos) => {
-                if (node.type && node.type.name === 'checklistItem') {
-                    const itemIdRaw = String(node.attrs && node.attrs.itemId || '');
-                    if (itemIdRaw.toLowerCase().indexOf(prefixLc) === 0) {
-                        const n = parseInt(itemIdRaw.slice(prefixLc.length), 10);
-                        if (!isNaN(n)) matches.push({ n: n, pos: pos, node: node, itemId: itemIdRaw });
-                    }
-                }
-            });
-            if (matches.length === 0) return;
-            // Apply in reverse document order so earlier positions stay valid.
-            matches.sort((a, b) => b.pos - a.pos);
-            let tr = editor.state.tr;
-            matches.forEach((m) => {
-                const text = statements[m.n - 1];
-                if (typeof text !== 'string' || !text.trim()) return;
-                const from = m.pos + 1;
-                const to = m.pos + m.node.nodeSize - 1;
-                tr = tr.replaceWith(from, to, editor.schema.text(text));
-            });
-            if (tr.docChanged) {
-                editor.view.dispatch(tr);
-                // Belt+braces: strip placeholder class on matched item-ids (ProseMirror
-                // nodeView re-renders already drop it, but cover the parse-HTML init path).
-                try {
-                    matches.forEach((m) => {
-                        const esc = (window.CSS && CSS.escape) ? CSS.escape(m.itemId) : m.itemId.replace(/"/g, '\\"');
-                        document.querySelectorAll('[data-item-id="' + esc + '"].swml-checklist-placeholder')
-                            .forEach((el) => el.classList.remove('swml-checklist-placeholder'));
-                    });
-                } catch (_) {}
-            }
-        }
-
         // Chat message helper
         function addChatMessage(text, role, rawText) {
             chatMessages.querySelectorAll('.swml-quick-actions').forEach(q => q.remove());
@@ -1329,29 +1425,10 @@
                 text = text.replace(/<p>\[Progress bar:.*?\]<\/p>/gi, '');
                 text = text.replace(/\[PROGRESS:\s*\d+\]/g, '');
 
-                // v7.17.31: @POPULATE_CHECKLIST — AI-emitted marker populates multiple_choice
-                // placeholders on canvas. Format (one line):
-                //   @POPULATE_CHECKLIST <qId>: {"s":["stmt1","stmt2",...],"k":[true,false,...]}
-                // s = 8 statements, k = answer-key booleans (AI-only, stripped from display).
-                // Marker stripped from visible text; kept in canvasChatHistory raw for AI recall.
-                {
-                    const plain = text.replace(/<[^>]+>/g, ' ');
-                    const markerRe = /@POPULATE_CHECKLIST\s+([A-Za-z0-9_]+)\s*:\s*(\{[\s\S]*?\})/g;
-                    let m;
-                    while ((m = markerRe.exec(plain)) !== null) {
-                        try {
-                            const qId = m[1];
-                            const data = JSON.parse(m[2]);
-                            if (data && Array.isArray(data.s) && canvasEditor) {
-                                _populateChecklist(canvasEditor, qId, data.s);
-                            }
-                        } catch (err) {
-                            console.warn('WML: @POPULATE_CHECKLIST parse failed', err);
-                        }
-                    }
-                    text = text.replace(/<p>\s*@POPULATE_CHECKLIST[\s\S]*?<\/p>/gi, '');
-                    text = text.replace(/@POPULATE_CHECKLIST\s+[A-Za-z0-9_]+\s*:\s*\{[\s\S]*?\}\s*/g, '');
-                }
+                // v7.17.32: @POPULATE_CHECKLIST marker → mutate canvas + strip from display.
+                // Helpers live at outer IIFE scope (see top of file).
+                _parseChecklistMarker(text).forEach((hit) => _populateChecklist(canvasEditor, hit.qId, hit.statements));
+                text = _stripChecklistMarker(text);
 
                 const body = el('div', { className: 'swml-bubble-body' });
                 body.innerHTML = text;
@@ -6302,6 +6379,9 @@
                                         onClick: (e) => { e.stopPropagation(); clipRich(assessBlock, e.currentTarget); } }));
                                 }
                                 content.appendChild(header);
+                                // v7.17.32: @POPULATE_CHECKLIST marker → mutate canvas + strip from display.
+                                _parseChecklistMarker(text).forEach((hit) => _populateChecklist(canvasEditor, hit.qId, hit.statements));
+                                text = _stripChecklistMarker(text);
                                 const body = el('div', { className: 'swml-bubble-body' });
                                 body.innerHTML = text;
                                 content.appendChild(body);
@@ -9240,6 +9320,10 @@
                 if (diagWcLabel) diagWcLabel.textContent = getWordCountLabel(wc);
                 if (diagCompleteBtn) diagCompleteBtn.style.display = wc >= canvasWordMinimum ? 'block' : 'none';
                 if (wcWidgetLabel) wcWidgetLabel.textContent = `${wc} / ${canvasWordTarget}`;
+
+                // v7.17.32: Auto-fire @POPULATE_CHECKLIST for any unpopulated MSQ
+                // placeholders (diagnostic has no chat, also back-fills legacy stuck attempts).
+                _autoFireChecklistIfStale(editor);
 
                 // Update toolbar active states
                 updateToolbarState(toolbar, editor);
@@ -17976,6 +18060,8 @@ ${html}
             onCreate: ({ editor }) => {
                 const wc = getResponseWordCount(editor);
                 wcDisplay.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
+                // v7.17.32: Auto-fire MSQ statement generation on exam-prep canvas too.
+                _autoFireChecklistIfStale(editor);
             },
         });
 
