@@ -2338,6 +2338,13 @@ class SWML_REST_API {
             $course_context = sanitize_key($params['course_context'] ?? 'standalone');
             $entry = SWML_Session_Manager::create_project($user_id, $name, $course_context);
 
+            // v7.17.29: register the new project in session_records immediately
+            // so it shows up in My Work + Currently Working On the moment the
+            // student names it (before any artifact has been saved).
+            if (!empty($entry['id'])) {
+                do_action('sophicly_cw_project_saved', $user_id, $entry['id'], '', null, $entry);
+            }
+
             return rest_ensure_response([
                 'success' => true,
                 'project' => $entry,
@@ -2421,6 +2428,13 @@ class SWML_REST_API {
             return rest_ensure_response(['success' => false, 'message' => 'Project not found']);
         }
 
+        // v7.17.29: surface CW activity to sophicly-student-data so it lands in
+        // session_records → dashboard "My Work" panel + "Currently working on"
+        // banner. Listener: Sophicly_WML_Listener::on_cw_project_saved.
+        $project_index = SWML_Session_Manager::list_projects($user_id);
+        $project_meta  = isset($project_index[$project_id]) ? $project_index[$project_id] : null;
+        do_action('sophicly_cw_project_saved', $user_id, $project_id, $key, $value, $project_meta);
+
         return rest_ensure_response([
             'success' => true,
             'key'     => $key,
@@ -2492,6 +2506,12 @@ class SWML_REST_API {
         if ($result === false) {
             return rest_ensure_response(['success' => false, 'message' => 'Project not found']);
         }
+
+        // v7.17.29: surface step-completion to student-data so dashboard reflects
+        // progress + bumps updated_at on the project's session_records row.
+        $project_index = SWML_Session_Manager::list_projects($user_id);
+        $project_meta  = isset($project_index[$project_id]) ? $project_index[$project_id] : null;
+        do_action('sophicly_cw_project_saved', $user_id, $project_id, 'step_complete:' . $step, (bool) $complete, $project_meta);
 
         return rest_ensure_response(['success' => true, 'step' => $step]);
     }

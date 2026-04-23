@@ -1092,7 +1092,7 @@
         // the Topic chip entirely on perfectly valid topic mounts.
         if (state.topicNumber && state.topicNumber >= 1 && state.topicNumber <= 10) {
             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Topic ${state.topicNumber}` }));
-        } else if (state.mode === 'exam_prep' && !canvasInMarkScheme && !['foundational_quiz', 'conceptual_notes', 'mark_scheme_unit'].includes(state.task)) {
+        } else if (state.mode === 'exam_prep' && !canvasInMarkScheme && !isCwTask && !['foundational_quiz', 'conceptual_notes', 'mark_scheme_unit'].includes(state.task)) {
             // v7.14.61: Only show "Exam Practice" if no phase is set — phase label takes priority
             // v7.15.97: Notes/study tasks (conceptual_notes, foundational_quiz) are mastery-standalone
             //           — never exam practice, regardless of mode. The label describes task TYPE,
