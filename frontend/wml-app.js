@@ -4780,6 +4780,8 @@
                     strength_1: getVal(p.strength_1),
                     target_1: getVal(p.target_1),
                     target_2: getVal(p.target_2),
+                    // v7.17.36: LD topic permalink for student-data lesson_url stamping
+                    lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '',
                 };
                 const res = await apiPost(API.phaseComplete, payload);
                 if (res.success) {
@@ -6211,6 +6213,8 @@ Before marking the introduction, ask the student to confirm their essay structur
                 ai_chat_id: state.chatId,
                 is_manual: isManual,
                 attempt: state.attempt || 1,
+                // v7.17.36: LD topic permalink for student-data lesson_url stamping
+                lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '',
                 context: {
                     board: state.board, subject: state.subject, text: state.text,
                     text_name: state.textName, task: state.task, question: state.question,

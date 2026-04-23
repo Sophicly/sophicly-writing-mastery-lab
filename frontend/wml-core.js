@@ -1703,14 +1703,17 @@ window.WML = (function() {
     }
 
     // ── Creative Writing Project API (v7.13.30) ──
+    // v7.17.36: every POST body carries lesson_url so student-data's derivation
+    // listener can stamp the LD topic permalink on session_records rows.
+    const _lu = () => (config && config.lessonUrl) || '';
     const cwProject = {
         /** Create a new project. Returns { success, project }. */
         create(name, courseContext = 'standalone') {
-            return apiPost(API.cwProject, { action: 'create', name, course_context: courseContext });
+            return apiPost(API.cwProject, { action: 'create', name, course_context: courseContext, lesson_url: _lu() });
         },
         /** Update project metadata (name, status). */
         update(projectId, updates = {}) {
-            return apiPost(API.cwProject, { action: 'update', project_id: projectId, ...updates });
+            return apiPost(API.cwProject, { action: 'update', project_id: projectId, ...updates, lesson_url: _lu() });
         },
         /** List all projects. Returns { success, projects: [] }. */
         list() {
@@ -1722,7 +1725,7 @@ window.WML = (function() {
         },
         /** Save a single artifact (e.g. 'writer_profile', 'logline'). */
         saveArtifact(projectId, key, value) {
-            return apiPost(API.cwArtifact, { project_id: projectId, key, value });
+            return apiPost(API.cwArtifact, { project_id: projectId, key, value, lesson_url: _lu() });
         },
         /** Load a single artifact. Returns { success, key, value }. */
         loadArtifact(projectId, key) {
@@ -1730,11 +1733,11 @@ window.WML = (function() {
         },
         /** Save a trial assessment result. */
         saveTrial(projectId, trialData) {
-            return apiPost(API.cwTrial, { project_id: projectId, trial: trialData });
+            return apiPost(API.cwTrial, { project_id: projectId, trial: trialData, lesson_url: _lu() });
         },
         /** Mark a step as complete. */
         completeStep(projectId, step, complete = true) {
-            return apiPost(API.cwStep, { project_id: projectId, step, complete });
+            return apiPost(API.cwStep, { project_id: projectId, step, complete, lesson_url: _lu() });
         },
         /** v7.13.60: Load plot structure template HTML from server. */
         loadPlotTemplate(structureSlug = 'heros-journey') {

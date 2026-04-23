@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.17.35
+ * Version: 7.17.36
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.17.35');
+define('SWML_VERSION', '7.17.36');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -333,6 +333,10 @@ class Sophicly_Writing_Mastery_Lab {
             'libraryUrl'       => home_url('/library/'),
             'pageUrl'          => home_url('/writing-mastery-lab/'),
             'courseResumeUrl'   => $course_resume_url,
+            // v7.17.36: LD topic permalink the WML shortcode is embedded in. Stamped
+            // onto session_records rows by student-data listeners. Empty on the
+            // standalone /writing-mastery-lab/ page (no host lesson).
+            'lessonUrl'        => get_queried_object_id() ? get_permalink(get_queried_object_id()) : '',
             'covers'           => get_option('swml_cover_images', []),
             'urlParams'  => [
                 'mode'    => sanitize_text_field($_GET['mode'] ?? ''),
@@ -712,6 +716,8 @@ class Sophicly_Writing_Mastery_Lab {
                 'libraryUrl'     => home_url('/library/'),
                 'pageUrl'        => home_url('/writing-mastery-lab/'),
                 'courseResumeUrl' => '',
+                // v7.17.36: LD topic permalink for student-data lesson_url stamping.
+                'lessonUrl'      => get_queried_object_id() ? get_permalink(get_queried_object_id()) : '',
                 'covers'         => get_option('swml_cover_images', []),
                 'urlParams'      => [
                     'mode' => 'guided', 'board' => '', 'subject' => '', 'text' => '',

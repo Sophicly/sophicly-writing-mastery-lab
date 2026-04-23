@@ -898,6 +898,9 @@ class SWML_REST_API {
         ];
         update_user_meta($user_id, 'wml_sessions_index', $index);
 
+        // v7.17.36: stamp lesson_url for student-data derivation listener.
+        $data['lesson_url'] = esc_url_raw($params['lesson_url'] ?? '');
+
         // Fire hook for student data plugin — full session snapshot on every save
         do_action('sophicly_session_saved', $user_id, $session_id, $data, !empty($params['is_manual']));
 
@@ -1965,6 +1968,9 @@ class SWML_REST_API {
             $this->save_attempt_index($user_id, $board, $text, $topic, '', $idx);
         }
 
+        // v7.17.36: stamp lesson_url for student-data derivation listener.
+        $data['lesson_url'] = esc_url_raw($params['lesson_url'] ?? '');
+
         // Fire action for external integrations (student-data plugin, LearnDash bridge)
         // v7.15.44: Attempt number now lives inside $data; listeners that care can read $data['attempt']
         do_action('swml_phase_complete', $user_id, $board, $text, $topic, $phase, $data);
@@ -2342,6 +2348,8 @@ class SWML_REST_API {
             // so it shows up in My Work + Currently Working On the moment the
             // student names it (before any artifact has been saved).
             if (!empty($entry['id'])) {
+                // v7.17.36: stamp lesson_url for student-data derivation listener.
+                $entry['lesson_url'] = esc_url_raw($params['lesson_url'] ?? '');
                 do_action('sophicly_cw_project_saved', $user_id, $entry['id'], '', null, $entry);
             }
 
@@ -2433,6 +2441,10 @@ class SWML_REST_API {
         // banner. Listener: Sophicly_WML_Listener::on_cw_project_saved.
         $project_index = SWML_Session_Manager::list_projects($user_id);
         $project_meta  = isset($project_index[$project_id]) ? $project_index[$project_id] : null;
+        // v7.17.36: stamp lesson_url for student-data derivation listener.
+        if (is_array($project_meta)) {
+            $project_meta['lesson_url'] = esc_url_raw($params['lesson_url'] ?? '');
+        }
         do_action('sophicly_cw_project_saved', $user_id, $project_id, $key, $value, $project_meta);
 
         return rest_ensure_response([
@@ -2511,6 +2523,10 @@ class SWML_REST_API {
         // progress + bumps updated_at on the project's session_records row.
         $project_index = SWML_Session_Manager::list_projects($user_id);
         $project_meta  = isset($project_index[$project_id]) ? $project_index[$project_id] : null;
+        // v7.17.36: stamp lesson_url for student-data derivation listener.
+        if (is_array($project_meta)) {
+            $project_meta['lesson_url'] = esc_url_raw($params['lesson_url'] ?? '');
+        }
         do_action('sophicly_cw_project_saved', $user_id, $project_id, 'step_complete:' . $step, (bool) $complete, $project_meta);
 
         return rest_ensure_response(['success' => true, 'step' => $step]);
@@ -2906,7 +2922,11 @@ class SWML_REST_API {
         // from session_records and lags the sidebar by 1 (sidebar shows
         // "Attempt N+1 In Progress" the moment Start is clicked, but
         // session_records still tops out at the last *saved* attempt).
-        do_action('sophicly_attempt_created', $user_id, $board, $text, $topic, $suffix, $new_num);
+        // v7.17.36: 7th positional arg = lesson_url for student-data derivation.
+        // Added as trailing arg (vs injecting into an array) because this hook
+        // has no array payload. Listeners receive it or ignore it safely.
+        $lesson_url = esc_url_raw($params['lesson_url'] ?? '');
+        do_action('sophicly_attempt_created', $user_id, $board, $text, $topic, $suffix, $new_num, $lesson_url);
 
         return rest_ensure_response([
             'success' => true,
@@ -3242,6 +3262,9 @@ class SWML_REST_API {
         ];
 
         update_user_meta($uid, 'swml_foundational_quiz_results', wp_slash(wp_json_encode($all)));
+
+        // v7.17.36: stamp lesson_url for student-data derivation listener.
+        $all[$key]['lesson_url'] = esc_url_raw($params['lesson_url'] ?? '');
 
         do_action('sophicly_foundational_quiz_complete', $uid, $board, $text, $all[$key]);
 

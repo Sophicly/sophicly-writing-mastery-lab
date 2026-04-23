@@ -591,7 +591,8 @@
                     body: JSON.stringify({
                         board: state.board, text: state.text,
                         topicNumber: state.topicNumber || null,
-                        suffix: _attemptSuffixFor(opts.suffix || '')
+                        suffix: _attemptSuffixFor(opts.suffix || ''),
+                        lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '', // v7.17.36
                     })
                 }).then(r => r.json());
                 if (res.success) {
@@ -788,7 +789,8 @@
                             board: state.board,
                             text: state.text,
                             topicNumber: state.topicNumber || null,
-                            suffix: _attemptSuffixFor(suffix || '')
+                            suffix: _attemptSuffixFor(suffix || ''),
+                            lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '', // v7.17.36
                         })
                     }).then(r => r.json());
                     if (res && res.success) {
@@ -2366,6 +2368,7 @@
                                             board: cfg.board || state.board || '',
                                             text:  cfg.text  || state.text  || '',
                                             score: score, max: max, grade: grade, categories: cats,
+                                            lesson_url: cfg.lessonUrl || '', // v7.17.36
                                         }),
                                     }).then(r => r.json()).then(data => {
                                         console.log('WML: Quiz result saved', data);
@@ -5111,6 +5114,7 @@
                                     topicNumber: state.topicNumber || null,
                                     suffix: _attemptSuffixFor(suffix),
                                     planningMode: state.planningMode || '',
+                                    lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '', // v7.17.36
                                 })
                             }).then(r => r.json());
                             if (res.success) {
