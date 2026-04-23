@@ -222,10 +222,10 @@ Evaluate answer and provide feedback using the **Emoji System**.
    * **Answer:** True
    * **Feedback:** ✓ Correct. AQA rewards context as a "driver", not a "bolt-on". Never write a history paragraph — weave context into the explanation of *why* the author chose a technique.
 6. **Type: MCQ \[Tests AO2 Close Analysis\]**
-   * **Question:** In the TTECEA+C framework, what is the specific function of the 'C' (Close Analysis)?
-   * **Options:** A) Summarise the plot at that moment, B) Zoom in on individual words and connotations to prove the technique's effect, C) Add historical facts, D) Name the technique being used.
+   * **Question:** In the TTECEA+C framework, the 'C' (Close Analysis) delivers which AQA Assessment Objective?
+   * **Options:** A) AO1 — personal response and references, B) AO2 — analysis of the writer's methods (language, form, structure) and the effects they create, C) AO3 — context driving the author's ideas, D) AO4 — accurate spelling, punctuation, and grammar.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. 'C' stands for Close Analysis — zoom in on a single powerful word (e.g., "wolfish") and explode its connotations. Naming the technique is 'T'; historical facts belong in the second 'C' (Context).
+   * **Feedback:** ✓ Correct. 'C' is your AO2 engine — zoom in on specific authorial choices (a single word like "wolfish", a sound pattern, a punctuation mark, a shift in sentence structure) and show *how* the choice creates meaning. AO1 lives in your topic sentence + judicious evidence ('T' + 'E'); AO3 lives in Author's Purpose and the second 'C' (Context); AO4 is SPaG on Shakespeare/Modern only. The examiner rewards 'C' when you explain effect — not when you just name the technique.
 7. **Type: Fill-in-the-Blank \[Tests AO1 References\]**
    * **Question:** AQA's AO1 descriptor requires "\[BLANK\] use of precise references" — meaning short, well-judged quotations embedded in your sentence.
    * **Answer:** Judicious
