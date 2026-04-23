@@ -1015,13 +1015,17 @@
     // of legacy stuck attempts. Does not mutate any visible chat UI.
     async function _autoFireChecklistIfStale(editor) {
         try {
-            if (!editor || !window.WML || !WML.API || !WML.apiPost) return;
-            // Delay: setContent often lands AFTER onCreate (async server/localStorage
-            // restore). Wait long enough for saved attempts to repopulate, then recheck.
-            // If statements are no longer stale, exit — do NOT overwrite saved work.
+            if (!editor || !window.WML || !WML.API || !WML.apiPost) {
+                console.log('[WML MSQ] auto-fire: skipped (editor or WML API missing)');
+                return;
+            }
             await new Promise((r) => setTimeout(r, 1500));
             const qIds = _findStaleChecklistQIds(editor);
-            if (qIds.length === 0) return;
+            if (qIds.length === 0) {
+                console.log('[WML MSQ] auto-fire: no stale placeholders, skipping');
+                return;
+            }
+            console.log('[WML MSQ] auto-fire: stale qIds detected', qIds);
             for (const qId of qIds) {
                 try {
                     const docContent = editor.getHTML();
@@ -1030,7 +1034,11 @@
                         'Read Source A within the specified line range, generate 4 true + 4 plausible-false statements per the module\'s quality rules, ' +
                         'and emit the @POPULATE_CHECKLIST ' + qId + ' marker as a single line with exact JSON shape (s array of 8 strings, k array of 8 booleans). ' +
                         'Do not emit any prose, greeting, or trailing commentary — marker line only.';
-                    const res = await WML.apiPost(WML.API.chat, {
+                    // Force task='assessment' so the assessment manifest (which includes
+                    // protocol-q1-msq.md) loads, regardless of the canvas state.task
+                    // (diagnostic / development / assessment). Without this forcing,
+                    // task=diagnostic would fail to load the Q1 module.
+                    const payload = {
                         message: prompt,
                         history: [],
                         document_content: docContent,
@@ -1038,18 +1046,29 @@
                         board: (window.state && state.board) || '',
                         subject: (window.state && state.subject) || '',
                         text: (window.state && state.text) || '',
-                        task: (window.state && state.task) || '',
-                        step: (window.state && state.step) || 0,
-                    });
-                    if (!res || !res.reply) continue;
+                        task: 'assessment',
+                        step: 0,
+                    };
+                    console.log('[WML MSQ] auto-fire: POST', qId, payload);
+                    const res = await WML.apiPost(WML.API.chat, payload);
+                    console.log('[WML MSQ] auto-fire: reply for', qId, res);
+                    if (!res || !res.reply) {
+                        console.warn('[WML MSQ] auto-fire: empty reply for', qId);
+                        continue;
+                    }
                     const hits = _parseChecklistMarker(res.reply);
+                    if (hits.length === 0) {
+                        console.warn('[WML MSQ] auto-fire: no @POPULATE_CHECKLIST marker in reply for', qId, 'reply head:', String(res.reply).slice(0, 400));
+                        continue;
+                    }
+                    console.log('[WML MSQ] auto-fire: parsed hits', hits);
                     hits.forEach((h) => _populateChecklist(editor, h.qId, h.statements));
                 } catch (innerErr) {
-                    console.warn('WML v7.17.32: auto-fire failed for', qId, innerErr);
+                    console.warn('[WML MSQ] auto-fire: request failed for', qId, innerErr);
                 }
             }
         } catch (err) {
-            console.warn('WML v7.17.32: _autoFireChecklistIfStale error', err);
+            console.warn('[WML MSQ] _autoFireChecklistIfStale error', err);
         }
     }
 
