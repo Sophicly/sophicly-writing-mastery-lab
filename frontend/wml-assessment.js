@@ -989,6 +989,58 @@
         }
     }
 
+    // v7.17.35: Read checklistItem tick state + statement text per qId.
+    // Returns array of {qId, statements: {n: text}, ticked: [n,...]}.
+    // Used to inject a tick summary into assessment prompts so Sophia can
+    // score MSQ without asking the student to re-type numbers.
+    function _readChecklistTicks(editor) {
+        if (!editor || !editor.state) return [];
+        const buckets = {};
+        const ticked = {};
+        editor.state.doc.descendants((node) => {
+            if (node.type && node.type.name === 'checklistItem') {
+                const itemId = String(node.attrs && node.attrs.itemId || '');
+                const m = itemId.match(/^([A-Za-z0-9_]+)-stmt-(\d+)$/);
+                if (!m) return;
+                const qId = m[1];
+                const n = parseInt(m[2], 10);
+                const text = (node.textContent || '').trim();
+                if (!buckets[qId]) buckets[qId] = {};
+                buckets[qId][n] = text;
+                if (node.attrs && node.attrs.checked) {
+                    if (!ticked[qId]) ticked[qId] = new Set();
+                    ticked[qId].add(n);
+                }
+            }
+        });
+        return Object.keys(buckets).map((qId) => ({
+            qId: qId,
+            statements: buckets[qId],
+            ticked: ticked[qId] ? Array.from(ticked[qId]).sort((a, b) => a - b) : [],
+        }));
+    }
+
+    // Format a pre-parsed tick summary block for Sophia's prompt context.
+    // Returns empty string if no checklistItems on canvas.
+    function _formatChecklistSummary(editor) {
+        const items = _readChecklistTicks(editor);
+        if (items.length === 0) return '';
+        const blocks = items.map((it) => {
+            const keys = Object.keys(it.statements).map(Number).sort((a, b) => a - b);
+            const lines = [];
+            lines.push('[STUDENT CHECKLIST TICKS — ' + it.qId + ']');
+            lines.push('Ticked statements: ' + (it.ticked.length ? '[' + it.ticked.join(', ') + ']' : 'NONE'));
+            lines.push('Total statements displayed: ' + keys.length);
+            lines.push('Full list (✓ = ticked by student):');
+            keys.forEach((n) => {
+                const isChecked = it.ticked.indexOf(n) !== -1;
+                lines.push('  ' + n + '. ' + (isChecked ? '[✓]' : '[ ]') + ' ' + it.statements[n]);
+            });
+            return lines.join('\n');
+        });
+        return blocks.join('\n\n');
+    }
+
     // Detect stale/unpopulated MSQ placeholders in the editor doc. Returns
     // array of unique qIds that need population, or [] if all statements
     // already look real.
@@ -6748,6 +6800,15 @@
                                 } else if (userMsgCount === 1) {
                                     promptText = `[CONTEXT: ${boardName} ${subjectName} — ${textName}]\n[NOTE: The student's Response section is empty or very short. Ask them to paste or write their essay in the Response section of the document before continuing with the assessment.]\n\n[STUDENT'S RESPONSE]\n${msg}`;
                                     console.warn('WML Canvas: Essay too short or empty. getResponseText returned:', essay.substring(0, 100));
+                                }
+
+                                // v7.17.35: Append MSQ tick summary so Sophia can score checklist
+                                // questions without asking student to re-type numbers. The canvas
+                                // serializer (getResponseText) strips data-checked attributes.
+                                const mcqSummary = _formatChecklistSummary(canvasEditor);
+                                if (mcqSummary) {
+                                    promptText = mcqSummary + '\n\n---\n\n' + promptText;
+                                    console.log('[WML MSQ] tick summary injected:', mcqSummary.slice(0, 200));
                                 }
 
                                 // Sliding window: last 24 messages (excluding current)

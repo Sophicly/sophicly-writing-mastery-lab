@@ -98,17 +98,34 @@ Then on a new line, emit EXACTLY this marker (one line, valid JSON):
 Activate when the student's next turn matches any of these signals:
 
 - Student types `assess`, `ready`, `go`, `grade me`, `mark this`, `done`, or similar natural-language completion signal.
-- Frontend sends a structured submission payload (future enhancement — not required for v7.17.31).
+- First student message after entering the assessment phase on a Q1 canvas that has populated statements AND at least one tick.
 
 If student asks a clarifying question instead ("can I change my mind", "what does line 3 mean"), answer briefly and remain in Phase 2 entry state.
 
-### Step 2.2 — Read student ticks
+### Step 2.2 — Read student ticks (v7.17.35 — authoritative source)
 
-**[AI_INTERNAL]** Read `[STUDENT'S DOCUMENT]` context injected into the prompt. Scan for `<div data-checklist-item` entries with `data-checked="true"`. The `data-item-id` gives the statement number.
+**[AI_INTERNAL]** The frontend injects a pre-parsed tick summary at the TOP of the prompt in this exact format:
 
-Alternative: if the context contains ticks as text ("Ticked: 1, 3, 5, 7"), parse that format.
+```
+[STUDENT CHECKLIST TICKS — Q1]
+Ticked statements: [3, 5, 6, 7]
+Total statements displayed: 8
+Full list (✓ = ticked by student):
+  1. [ ] <statement 1 text>
+  2. [ ] <statement 2 text>
+  3. [✓] <statement 3 text>
+  4. [ ] <statement 4 text>
+  5. [✓] <statement 5 text>
+  6. [✓] <statement 6 text>
+  7. [✓] <statement 7 text>
+  8. [ ] <statement 8 text>
+```
 
-Store ticked numbers in `SESSION_STATE.q1_ticks` (array of ints).
+**Read this block directly.** Do NOT ask the student to type numbers. Do NOT try to parse `data-checked` from HTML. The frontend has done that work for you — the `Ticked statements` array is authoritative.
+
+Store the ticked numbers in `SESSION_STATE.q1_ticks`.
+
+**Edge case:** If the `[STUDENT CHECKLIST TICKS — Q1]` block is absent (old-client bug), fall back to asking the student to type the numbers. Otherwise, never ask.
 
 ### Step 2.3 — Score
 
