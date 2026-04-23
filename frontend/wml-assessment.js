@@ -1038,18 +1038,40 @@
                     // protocol-q1-msq.md) loads, regardless of the canvas state.task
                     // (diagnostic / development / assessment). Without this forcing,
                     // task=diagnostic would fail to load the Q1 module.
+                    // Fresh session_id every auto-fire — v7.17.33 showed that reusing
+                    // state.sessionId pulled in a cross-context CW chat persona.
+                    // v7.17.34: Force board/subject too — state var can carry stale values
+                    // across SPA navigation (Neil hit CW persona because state.subject was
+                    // still 'creative_writing' from prior workspace). MSQ is currently only
+                    // used for AQA Language Paper 2 Q1; hard-code to guarantee correct
+                    // protocol load. Future multi-board MSQ will need to derive from spec.
+                    const freshSessionId = 'auto_msq_' + qId + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+                    const detectedState = {
+                        board: (window.state && state.board) || '(unset)',
+                        subject: (window.state && state.subject) || '(unset)',
+                        text: (window.state && state.text) || '(unset)',
+                        task: (window.state && state.task) || '(unset)',
+                    };
                     const payload = {
                         message: prompt,
                         history: [],
                         document_content: docContent,
-                        session_id: (window.state && state.sessionId) || '',
-                        board: (window.state && state.board) || '',
-                        subject: (window.state && state.subject) || '',
+                        session_id: freshSessionId,
+                        board: 'aqa',
+                        subject: 'language2',
                         text: (window.state && state.text) || '',
                         task: 'assessment',
                         step: 0,
                     };
-                    console.log('[WML MSQ] auto-fire: POST', qId, payload);
+                    console.log('[WML MSQ] auto-fire: POST', qId, {
+                        session_id: payload.session_id,
+                        board_sent: payload.board,
+                        subject_sent: payload.subject,
+                        text_sent: payload.text,
+                        task_sent: payload.task,
+                        state_at_fire: detectedState,
+                        doc_content_len: docContent.length,
+                    });
                     const res = await WML.apiPost(WML.API.chat, payload);
                     console.log('[WML MSQ] auto-fire: reply for', qId, res);
                     if (!res || !res.reply) {
