@@ -14875,6 +14875,57 @@
         }
     }
 
+    // v7.17.27: One-time backfill for legacy diagnostic/redraft docs that were
+    // saved before the ESSAY PLAN section was part of the template. Splices a
+    // plan divider + plan sections in immediately before the first RESPONSE
+    // divider. Strictly additive — never touches Response, Feedback, or any
+    // existing InputField content. Idempotent (skips once plan exists).
+    //
+    // Scope: single-part only. Dual/multi-question docs with the same gap get
+    // handled in a follow-up pass if they surface — plan structure differs.
+    function _backfillMissingPlanSection(topicData) {
+        if (!canvasEditor) return;
+        if (state.reviewMode) return;
+        if (!topicData) return;
+
+        // Mode resolution mirrors the template-generation logic at line ~15189.
+        let mode = 'diagnostic';
+        if (state.phase === 'redraft' || (state.draftType && state.draftType.includes('redraft'))) {
+            mode = 'redraft';
+        } else if (state.mode === 'exam_prep') {
+            mode = 'exam_practice';
+        }
+        if (mode !== 'diagnostic' && mode !== 'redraft') return; // exam_practice has no plan by design
+
+        const format = topicData.question_format || 'single';
+        if (format !== 'single') return; // single-part only in this pass
+
+        const html = canvasEditor.getHTML();
+        if (!html) return;
+        if (html.includes('data-section-type="plan"')) return;       // already present — idempotent skip
+        if (!html.includes('data-section-type="divider"')) return;    // no dividers at all — fresh template path handles it
+        if (!/data-section-label="RESPONSE"/i.test(html)) return;     // no RESPONSE anchor → nothing to splice before
+
+        const respDividerRegex = /<div\s[^>]*data-section-type="divider"[^>]*data-section-label="RESPONSE"[^>]*>[\s\S]*?<\/div>/i;
+        const respMatch = html.match(respDividerRegex);
+        if (!respMatch) return;
+
+        const marks = parseInt(topicData.marks) || 30;
+        const planBlock = dividerHTML('ESSAY PLAN') + buildPlanSection(null, marks);
+        const splicePoint = respMatch.index;
+        const updated = html.slice(0, splicePoint) + planBlock + html.slice(splicePoint);
+
+        try {
+            _migrationActive = true;
+            canvasEditor.commands.setContent(updated, false);
+            console.log('WML v7.17.27: Backfilled ESSAY PLAN section into legacy', mode, 'doc — marks:', marks);
+        } catch (e) {
+            console.warn('WML v7.17.27: Plan-section backfill failed', e);
+        } finally {
+            _migrationActive = false;
+        }
+    }
+
     // v7.15.99: Splice persisted General Notes (captured by tryServerLoad) into
     // the current editor document. Runs after template / migration steps so a
     // fresh-attempt template picks up the shared content, and stored docs get
@@ -15176,6 +15227,11 @@
                     _migrationActive = false;
                     // Fall through to template generation below
                 } else {
+                    // v7.17.27: legacy diagnostic/redraft docs saved before plan sections
+                    // existed show only Response + Feedback. Additive backfill — splice
+                    // the plan section in before the Response divider so existing content
+                    // is never touched. Idempotent: guard blocks re-run once plan exists.
+                    _backfillMissingPlanSection(topicData);
                     console.log('WML: Document has correct topic data, skipping template');
                     return;
                 }
