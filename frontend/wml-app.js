@@ -453,7 +453,14 @@
         if (state.task && state.task.startsWith('cw_')) {
             state.mode = state.mode || 'creative';
             state.subject = state.subject || 'creative_writing';
-            state.board = state.board || 'universal';
+            // v7.17.37: Only apply the 'universal' fallback for CW subjects.
+            // Previously this was under the cw_* task guard, but bridge-chat
+            // flagged state-leak scenarios (CW → non-CW nav) where state.board
+            // persists as 'universal' into exam-board tasks. See
+            // wml-handoff-board-fallback-universal-non-cw-2026-04-23.md.
+            if (!state.board && state.subject === 'creative_writing') {
+                state.board = 'universal';
+            }
             state.text = state.text || 'creative_writing';
             state.textName = state.textName || 'Creative Writing';
             // Load project context — use most recent project (or go to naming screen)
@@ -4262,6 +4269,16 @@
             }
         }
 
+        // v7.17.37: Launch-prompt detector — Sophia's greeting on CW Step 1 + similar
+        // kick-off turns say "When you're ready, hit the button below and let's get started"
+        // with no options + no question. Previously rendered zero quick-action buttons,
+        // so the student had nothing to click. Emit a single "Let's go" button that
+        // sends an affirming phrase back to Sophia.
+        const launchPrompt = /hit the button below|let'?s get started|let'?s begin|ready to (?:begin|start|get started)/i;
+        if (launchPrompt.test(text) && !hasLetterChoices) {
+            return [{ label: '▶ Let’s go', value: 'Let’s go' }];
+        }
+
         const impliedYesNo = /(?:would you like|do you want|shall (?:we|I)|are you (?:happy|ready|satisfied)|does (?:that|this) (?:work|look|sound)|sound good|ready to (?:proceed|continue|move|begin|start|select)|want (?:me )?to (?:proceed|continue))/i;
         // Guard: don't show yes/no when the AI is asking for specific text input
         const isContentRequest = /(?:(?:tell|give) me|please (?:tell|provide|share|paste|type)|what (?:is|are) (?:the|your)|which (?:poem|text|quote|character|theme)|paste (?:the|your|a)|submit (?:the|your|a))/i;
@@ -6199,7 +6216,23 @@ Before marking the introduction, ask the student to confirm their essay structur
         }
     }
 
+    // v7.17.37: Catch CW → non-CW state leak at save time. If state.board is
+    // 'universal' but we're not in a CW context, the board was poisoned by a
+    // prior CW session in the same SPA nav. Log + clear before save so the row
+    // doesn't poison session_records with an un-bridgeable shape. See
+    // wml-handoff-board-fallback-universal-non-cw-2026-04-23.md.
+    function _assertBoardValid() {
+        const isCw = (state.subject === 'creative_writing') || (state.task && state.task.startsWith('cw_'));
+        if (state.board === 'universal' && !isCw) {
+            console.warn('[WML] Board leak caught — state.board=universal on non-CW task. Clearing before save.', {
+                board: state.board, subject: state.subject, task: state.task, text: state.text, topic: state.topicNumber,
+            });
+            state.board = '';
+        }
+    }
+
     async function doSave(isManual) {
+        _assertBoardValid();
         try {
             // v7.15.105: default attempt to 1, not null. Listener writes
             // attempt_number=NULL when this field is null, which feeds the
