@@ -1073,7 +1073,10 @@
                 protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: `Trial ${cwStepDef.trial}` }));
             }
             if (state.cwProjectName) {
-                const nameEl = el('span', { className: 'swml-sidebar-badge', textContent: '\u201c' + state.cwProjectName + '\u201d', style: { fontStyle: 'italic', opacity: '0.7' } });
+                // v7.17.29: shares swml-cw-project-name-badge class with
+                // _updateCwProjectNameBadge so post-switcher updates find +
+                // overwrite rather than appending a duplicate.
+                const nameEl = el('span', { className: 'swml-sidebar-badge swml-cw-project-name-badge', textContent: '\u201c' + state.cwProjectName + '\u201d', style: { fontStyle: 'italic', opacity: '0.85' } });
                 protoBadges.appendChild(nameEl);
             }
         } else {
@@ -1119,6 +1122,9 @@
             if (state.attempt < 1) return;
             // v7.17.11: hide attempt badge inside numbered topic flow — topic number carries the identity there.
             if (WML.isTopicFlow && WML.isTopicFlow()) return;
+            // v7.17.29: CW tasks never show attempt N — the project name IS the
+            // attempt identity. _updateCwProjectNameBadge handles CW badge.
+            if (state.task && state.task.startsWith('cw_')) return;
             let badge = protoBadges.querySelector('.swml-attempt-badge');
             if (badge) {
                 badge.textContent = `Attempt ${state.attempt}`;
@@ -7376,8 +7382,17 @@
         // v7.15.100: also hide for foundational_quiz, conceptual_notes,
         // mark_scheme_assessment — none of these produce written essays.
         // v7.17.21: also hide for mark_scheme_unit (quiz + forging your weapon notes).
-        if (['essay_plan', 'mark_scheme', 'mark_scheme_assessment', 'mark_scheme_unit', 'foundational_quiz', 'conceptual_notes'].includes(state.task)) {
+        // v7.17.29: also hide for CW pre-draft idea/structure stages (cw_step_1..8 —
+        // writer_profile through scene_selection). Widget reappears on cw_step_9
+        // (draft_1) and later draft beats. Belt-and-braces with the CSS rule
+        // [data-cw-stage="ideas"] in wml-canvas.css set just below.
+        const _hideWcByTask = ['essay_plan', 'mark_scheme', 'mark_scheme_assessment', 'mark_scheme_unit', 'foundational_quiz', 'conceptual_notes'].includes(state.task);
+        const _hideWcByCwStage = isCwTask && cwStepDef?.step && cwStepDef.step <= 8;
+        if (_hideWcByTask || _hideWcByCwStage) {
             wcWidget.style.display = 'none';
+        }
+        if (_hideWcByCwStage) {
+            canvas.setAttribute('data-cw-stage', 'ideas');
         }
 
         // Restore link for status bar
@@ -14917,11 +14932,10 @@
         overlay.setAttribute('role', 'dialog');
         overlay.setAttribute('aria-modal', 'true');
         overlay.setAttribute('aria-labelledby', 'swml-cwp-title');
+        // v7.17.29: chrome moved to wml-canvas.css (.swml-cw-project-overlay) —
+        // theme-aware via .swml-canvas-light. Inline styles only set what CSS
+        // can't easily express (the wheel/touchmove blocker, canvas overflow lock).
         overlay.className = 'swml-cw-project-overlay';
-        overlay.style.cssText = 'position:absolute;inset:0;z-index:200;'
-            + 'background:rgba(0,0,0,0.72);display:flex;align-items:center;'
-            + 'justify-content:center;backdrop-filter:blur(6px);'
-            + 'overflow:hidden;overscroll-behavior:contain;';
         const _blockBackdropScroll = (e) => { if (e.target === overlay) e.preventDefault(); };
         overlay.addEventListener('wheel', _blockBackdropScroll, { passive: false });
         overlay.addEventListener('touchmove', _blockBackdropScroll, { passive: false });
@@ -14965,67 +14979,56 @@
     function _showCWProjectNameInputOverlay({ mode, onSave, onCancel }) {
         return new Promise((resolve) => {
             const overlay = _cwMountOverlay();
+            // v7.17.29: chrome moved to wml-canvas.css. The card uses the
+            // shared __frame class so dark/light themes pick the right tokens.
             const card = document.createElement('div');
-            card.className = 'swml-cw-project-card';
-            card.style.cssText = 'background:#ffffff;color:#1a1530;border-radius:16px;'
-                + 'padding:32px 28px;max-width:460px;width:90%;box-shadow:0 24px 64px rgba(0,0,0,0.4);'
-                + 'display:flex;flex-direction:column;gap:18px;';
+            card.className = 'swml-cw-project-overlay__frame';
 
             const title = document.createElement('h2');
             title.id = 'swml-cwp-title';
+            title.className = 'swml-cw-project-overlay__title';
             title.textContent = mode === 'first' ? 'Name your Creative Writing project' : 'Name your new project';
-            title.style.cssText = 'margin:0;font-size:22px;font-weight:700;color:#2c003e;';
             card.appendChild(title);
 
             const hint = document.createElement('p');
+            hint.className = 'swml-cw-project-overlay__hint';
             hint.textContent = mode === 'first'
                 ? 'Give your first CW project a title so you can come back to it later. You can create more projects any time.'
                 : 'Give this project a title. You can rename it later.';
-            hint.style.cssText = 'margin:0;font-size:14px;color:#4a4060;line-height:1.45;';
             card.appendChild(hint);
 
             const input = document.createElement('input');
             input.type = 'text';
+            input.className = 'swml-cw-project-overlay__input';
             input.placeholder = 'My Creative Writing Project';
             input.maxLength = 60;
-            input.style.cssText = 'width:100%;padding:12px 14px;font-size:16px;border:2px solid #d8d0e8;'
-                + 'border-radius:10px;outline:none;font-family:inherit;box-sizing:border-box;';
-            input.addEventListener('focus', () => input.style.borderColor = '#5333ed');
-            input.addEventListener('blur', () => input.style.borderColor = '#d8d0e8');
             card.appendChild(input);
 
             const counter = document.createElement('div');
+            counter.className = 'swml-cw-project-overlay__counter';
             counter.textContent = '0 / 60';
-            counter.style.cssText = 'font-size:12px;color:#8a83a3;text-align:right;margin-top:-10px;';
             card.appendChild(counter);
 
             const errorEl = document.createElement('div');
-            errorEl.style.cssText = 'font-size:13px;color:#d9364a;min-height:16px;';
+            errorEl.className = 'swml-cw-project-overlay__error';
             card.appendChild(errorEl);
 
             const btnRow = document.createElement('div');
-            btnRow.style.cssText = 'display:flex;flex-direction:column;gap:10px;align-items:stretch;';
+            btnRow.className = 'swml-cw-project-overlay__btn-row';
 
             const saveBtn = document.createElement('button');
+            saveBtn.className = 'swml-cw-project-overlay__save-btn';
             saveBtn.textContent = 'Save';
             saveBtn.disabled = true;
-            saveBtn.style.cssText = 'padding:12px 20px;font-size:15px;font-weight:600;color:#fff;'
-                + 'background:linear-gradient(135deg,#5333ed,#2c003e);border:none;border-radius:10px;'
-                + 'cursor:pointer;transition:opacity 0.2s;';
-            const _setSaveEnabled = (enabled) => {
-                saveBtn.disabled = !enabled;
-                saveBtn.style.opacity = enabled ? '1' : '0.45';
-                saveBtn.style.cursor = enabled ? 'pointer' : 'not-allowed';
-            };
+            const _setSaveEnabled = (enabled) => { saveBtn.disabled = !enabled; };
             _setSaveEnabled(false);
             btnRow.appendChild(saveBtn);
 
             let skipBtn = null;
             if (onCancel) {
                 skipBtn = document.createElement('button');
+                skipBtn.className = 'swml-cw-project-overlay__skip-btn';
                 skipBtn.textContent = 'Skip — use default name';
-                skipBtn.style.cssText = 'padding:8px;font-size:13px;color:#5a5475;background:none;'
-                    + 'border:none;cursor:pointer;text-decoration:underline;';
                 btnRow.appendChild(skipBtn);
             }
             card.appendChild(btnRow);
@@ -15034,7 +15037,7 @@
             input.addEventListener('input', () => {
                 const len = input.value.length;
                 counter.textContent = len + ' / 60';
-                counter.style.color = len >= 55 ? '#d9364a' : '#8a83a3';
+                counter.classList.toggle('swml-cw-project-overlay__counter--warn', len >= 55);
                 _setSaveEnabled(input.value.trim().length > 0);
                 errorEl.textContent = '';
             });
@@ -15092,26 +15095,23 @@
     function _showCWProjectSwitcherOverlay({ projects, onLoad, onNew }) {
         return new Promise((resolve) => {
             const overlay = _cwMountOverlay();
+            // v7.17.29: class-driven (see wml-canvas.css). Theme-aware via .swml-canvas-light.
             const card = document.createElement('div');
-            card.className = 'swml-cw-project-card';
-            card.style.cssText = 'background:#ffffff;color:#1a1530;border-radius:16px;'
-                + 'padding:28px 24px;max-width:480px;width:92%;box-shadow:0 24px 64px rgba(0,0,0,0.4);'
-                + 'display:flex;flex-direction:column;gap:16px;max-height:80vh;overflow:hidden;';
+            card.className = 'swml-cw-project-overlay__frame';
 
             const title = document.createElement('h2');
             title.id = 'swml-cwp-title';
+            title.className = 'swml-cw-project-overlay__title';
             title.textContent = 'Your Creative Writing projects';
-            title.style.cssText = 'margin:0;font-size:22px;font-weight:700;color:#2c003e;';
             card.appendChild(title);
 
             const hint = document.createElement('p');
+            hint.className = 'swml-cw-project-overlay__hint';
             hint.textContent = 'Pick up where you left off, or start a new project.';
-            hint.style.cssText = 'margin:0;font-size:14px;color:#4a4060;line-height:1.45;';
             card.appendChild(hint);
 
             const list = document.createElement('div');
-            list.style.cssText = 'display:flex;flex-direction:column;gap:8px;overflow-y:auto;'
-                + 'max-height:40vh;padding-right:4px;';
+            list.className = 'swml-cw-project-overlay__list';
             card.appendChild(list);
 
             // Sort by 'updated' timestamp descending (MySQL datetime sorts lexically).
@@ -15136,41 +15136,28 @@
             const cardButtons = [];
             sorted.forEach((p, idx) => {
                 const btn = document.createElement('button');
-                btn.className = 'swml-cw-project-btn';
-                btn.style.cssText = 'display:flex;flex-direction:column;align-items:flex-start;gap:4px;'
-                    + 'padding:14px 16px;font-family:inherit;text-align:left;'
-                    + 'background:#f5f2fb;border:2px solid #e8e0f4;border-radius:10px;cursor:pointer;'
-                    + 'transition:border-color 0.15s,background 0.15s;';
-                btn.addEventListener('mouseenter', () => { btn.style.borderColor = '#5333ed'; btn.style.background = '#ede6fb'; });
-                btn.addEventListener('mouseleave', () => {
-                    if (document.activeElement !== btn) {
-                        btn.style.borderColor = '#e8e0f4';
-                        btn.style.background = '#f5f2fb';
-                    }
-                });
-                btn.addEventListener('focus', () => { btn.style.borderColor = '#5333ed'; btn.style.background = '#ede6fb'; });
-                btn.addEventListener('blur', () => {
-                    btn.style.borderColor = '#e8e0f4';
-                    btn.style.background = '#f5f2fb';
-                });
+                btn.className = 'swml-cw-project-overlay__list-btn';
+                btn.type = 'button';
 
                 const nameEl = document.createElement('div');
+                nameEl.className = 'swml-cw-project-overlay__list-name';
                 nameEl.textContent = p.name || 'Untitled project';
-                nameEl.style.cssText = 'font-size:16px;font-weight:600;color:#2c003e;';
                 btn.appendChild(nameEl);
 
-                const metaEl = document.createElement('div');
                 const dateLabel = _formatDate(p.updated || p.created);
-                metaEl.textContent = dateLabel ? ('Last edited ' + dateLabel) : '';
-                metaEl.style.cssText = 'font-size:12px;color:#7a73a3;';
-                if (dateLabel) btn.appendChild(metaEl);
+                if (dateLabel) {
+                    const metaEl = document.createElement('div');
+                    metaEl.className = 'swml-cw-project-overlay__list-meta';
+                    metaEl.textContent = 'Last edited ' + dateLabel;
+                    btn.appendChild(metaEl);
+                }
 
                 btn.addEventListener('click', async () => {
                     try {
                         await onLoad(p.id, p.name);
-                        _finalize({ loaded: true, projectId: p.id });
+                        _finalize({ loaded: true, projectId: p.id, name: p.name });
                     } catch (e) {
-                        console.warn('WML v7.17.28: CW project load failed', e);
+                        console.warn('WML v7.17.29: CW project load failed', e);
                     }
                 });
                 list.appendChild(btn);
@@ -15178,12 +15165,9 @@
             });
 
             const newBtn = document.createElement('button');
+            newBtn.className = 'swml-cw-project-overlay__new-btn';
+            newBtn.type = 'button';
             newBtn.textContent = '+ Start new project';
-            newBtn.style.cssText = 'padding:12px 16px;font-size:14px;font-weight:600;color:#5333ed;'
-                + 'background:#ffffff;border:2px dashed #5333ed;border-radius:10px;cursor:pointer;'
-                + 'font-family:inherit;';
-            newBtn.addEventListener('mouseenter', () => { newBtn.style.background = '#f5f2fb'; });
-            newBtn.addEventListener('mouseleave', () => { newBtn.style.background = '#ffffff'; });
             newBtn.addEventListener('click', async () => {
                 overlay.remove();
                 const r = await _showCWProjectNameInputOverlay({
@@ -15245,18 +15229,73 @@
                 });
             }
         } catch (e) {
-            console.warn('WML v7.17.28: CW project resolve failed, falling back to silent create', e);
+            console.warn('WML v7.17.29: CW project resolve failed, falling back to silent create', e);
             const c = await WML.cwProject.create('My Story', 'standalone');
             if (c?.success && c.project) {
                 state.cwProjectId = c.project.id;
                 state.cwProjectName = c.project.name || 'My Story';
             }
         }
-        // Re-enter canvas workspace so artifact loaders pick up the now-set cwProjectId.
-        // Delay past _canvasGuard 500ms debounce.
-        setTimeout(() => {
-            if (state.cwProjectId) WML.renderCanvasWorkspace();
-        }, 600);
+        // v7.17.29 fix: post-resolution, load the project artifact directly into
+        // the already-mounted editor + refresh sidebar pill. The previous
+        // setTimeout(renderCanvasWorkspace, 600) approach failed because the
+        // re-render did not re-run tryCwPrePopulate on the existing editor —
+        // resulting in clicks appearing to do nothing.
+        if (state.cwProjectId) {
+            _loadCWProjectIntoEditor().catch(err =>
+                console.warn('WML v7.17.29: post-resolve artifact load failed', err)
+            );
+            _updateCwProjectNameBadge();
+        }
+    }
+
+    // v7.17.29: Direct project-artifact loader used after the switcher/naming
+    // overlay resolves. Replaces the v7.17.28 setTimeout-renderCanvasWorkspace
+    // dance. Loads the artifact mapped to the current cwStepDef.step into the
+    // existing canvasEditor without re-mounting.
+    async function _loadCWProjectIntoEditor() {
+        if (!state.cwProjectId || !canvasEditor) return;
+        const stepDef = WML.getCwStepDef ? WML.getCwStepDef(state.task) : null;
+        const stepNum = stepDef?.step;
+        if (!stepNum) return;
+        const plotUpdateSteps = [11, 14, 17, 20, 23, 26];
+        const artifactKey = plotUpdateSteps.includes(stepNum)
+            ? 'plot_outline'
+            : (WML.CW_ARTIFACT_MAP && WML.CW_ARTIFACT_MAP[stepNum]);
+        if (!artifactKey) return;
+        try {
+            const artifact = await WML.cwProject.loadArtifact(state.cwProjectId, artifactKey);
+            if (artifact?.success && artifact.value) {
+                canvasEditor.commands.setContent(artifact.value);
+                console.log('WML v7.17.29: Loaded CW project artifact', artifactKey, 'into editor');
+            } else {
+                console.log('WML v7.17.29: No artifact yet for', artifactKey, '— editor stays on template/placeholder');
+            }
+        } catch (e) {
+            console.warn('WML v7.17.29: cwProject.loadArtifact failed for', artifactKey, e);
+        }
+    }
+
+    // v7.17.29: After the switcher/naming overlay resolves, swap the sidebar
+    // attempt pill for the project-name pill (Neil 2026-04-24: "the project
+    // name is effectively the attempt"). Idempotent — finds existing badge
+    // by class, updates it, otherwise appends.
+    function _updateCwProjectNameBadge() {
+        if (!state.task || !state.task.startsWith('cw_')) return;
+        const protoBadges = document.querySelector('.swml-sidebar-badges');
+        if (!protoBadges) return;
+        const name = state.cwProjectName || 'Untitled project';
+        let badge = protoBadges.querySelector('.swml-cw-project-name-badge');
+        if (badge) {
+            badge.textContent = '“' + name + '”';
+            return;
+        }
+        badge = el('span', {
+            className: 'swml-sidebar-badge swml-cw-project-name-badge',
+            textContent: '“' + name + '”',
+            style: { fontStyle: 'italic', opacity: '0.85' }
+        });
+        protoBadges.appendChild(badge);
     }
 
     // v7.17.27: One-time backfill for legacy diagnostic/redraft docs that were

@@ -2374,6 +2374,192 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 /* v7.14.66: Move word count widget left when chat panel is present */
 .swml-canvas-has-chat .swml-wc-widget { left: 24px; right: auto; }
 
+/* v7.17.29: hide word-count widget on pre-draft CW idea/structure stages.
+   Canvas root gets data-cw-stage="ideas" when state.task is cw_step_1..8
+   (writer_profile through scene_selection). Widget reappears on cw_step_9+. */
+.swml-canvas[data-cw-stage="ideas"] .swml-wc-widget { display: none !important; }
+
+/* ── CW Project Switcher / Naming Overlay (v7.17.29) ──
+   Replaces the v7.17.28 inline-styled overlay. Theme-aware: dark-mode picks
+   purple/teal brand chrome; light-mode keeps white card with brand accents. */
+.swml-cw-project-overlay {
+    position: absolute; inset: 0;
+    z-index: 200;
+    background: rgba(20,20,40,0.78);
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; overscroll-behavior: contain;
+}
+.swml-cw-project-overlay__frame {
+    background: linear-gradient(180deg, #2c003e 0%, #5333ed 100%);
+    color: #fff;
+    border: 1px solid rgba(81,218,207,0.28);
+    border-radius: 18px;
+    padding: 28px 26px;
+    max-width: 480px; width: 92%;
+    max-height: 80vh;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.45);
+    display: flex; flex-direction: column; gap: 16px;
+    overflow: hidden;
+    font-family: 'Proxima Soft Complete', system-ui, sans-serif;
+}
+.swml-canvas-light .swml-cw-project-overlay__frame {
+    background: linear-gradient(180deg, #ffffff 0%, #f5f0fb 100%);
+    color: #2c003e;
+    border-color: rgba(83,51,237,0.25);
+}
+.swml-cw-project-overlay__title {
+    margin: 0;
+    font-size: 22px; font-weight: 700;
+    color: inherit;
+    font-family: 'Playfair Display Complete', Georgia, serif;
+    font-style: italic;
+}
+.swml-cw-project-overlay__hint {
+    margin: 0;
+    font-size: 14px; line-height: 1.45;
+    color: rgba(255,255,255,0.72);
+}
+.swml-canvas-light .swml-cw-project-overlay__hint { color: rgba(44,0,62,0.65); }
+
+.swml-cw-project-overlay__list {
+    display: flex; flex-direction: column; gap: 10px;
+    overflow-y: auto;
+    max-height: 40vh;
+    padding-right: 4px;
+}
+.swml-cw-project-overlay__list-btn {
+    display: flex; flex-direction: column; align-items: flex-start;
+    gap: 4px;
+    padding: 14px 16px;
+    text-align: left;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.14);
+    border-radius: 12px;
+    color: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+.swml-cw-project-overlay__list-btn:hover,
+.swml-cw-project-overlay__list-btn:focus-visible {
+    border-color: #51dacf;
+    background: rgba(81,218,207,0.10);
+    transform: translateY(-1px);
+    outline: none;
+}
+.swml-canvas-light .swml-cw-project-overlay__list-btn {
+    background: rgba(83,51,237,0.04);
+    border-color: rgba(83,51,237,0.18);
+}
+.swml-canvas-light .swml-cw-project-overlay__list-btn:hover,
+.swml-canvas-light .swml-cw-project-overlay__list-btn:focus-visible {
+    border-color: #41aaa8;
+    background: rgba(81,218,207,0.10);
+}
+.swml-cw-project-overlay__list-name {
+    font-size: 16px; font-weight: 600;
+}
+.swml-cw-project-overlay__list-meta {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+}
+.swml-canvas-light .swml-cw-project-overlay__list-meta { color: rgba(44,0,62,0.55); }
+
+.swml-cw-project-overlay__new-btn {
+    padding: 12px 16px;
+    font-size: 14px; font-weight: 600;
+    background: transparent;
+    color: #51dacf;
+    border: 2px dashed rgba(81,218,207,0.5);
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, border-color 0.15s;
+}
+.swml-cw-project-overlay__new-btn:hover {
+    background: rgba(81,218,207,0.10);
+    border-color: #51dacf;
+}
+.swml-canvas-light .swml-cw-project-overlay__new-btn {
+    color: #5333ed;
+    border-color: rgba(83,51,237,0.5);
+}
+.swml-canvas-light .swml-cw-project-overlay__new-btn:hover {
+    background: rgba(83,51,237,0.06);
+    border-color: #5333ed;
+}
+
+.swml-cw-project-overlay__input {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 16px;
+    background: rgba(255,255,255,0.08);
+    color: inherit;
+    border: 2px solid rgba(255,255,255,0.18);
+    border-radius: 10px;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+}
+.swml-cw-project-overlay__input::placeholder { color: rgba(255,255,255,0.4); }
+.swml-cw-project-overlay__input:focus { border-color: #51dacf; }
+.swml-canvas-light .swml-cw-project-overlay__input {
+    background: #fff;
+    border-color: rgba(83,51,237,0.2);
+}
+.swml-canvas-light .swml-cw-project-overlay__input::placeholder { color: rgba(44,0,62,0.4); }
+.swml-canvas-light .swml-cw-project-overlay__input:focus { border-color: #5333ed; }
+
+.swml-cw-project-overlay__counter {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    text-align: right;
+    margin-top: -10px;
+}
+.swml-canvas-light .swml-cw-project-overlay__counter { color: rgba(44,0,62,0.55); }
+.swml-cw-project-overlay__counter--warn { color: #ffb86b; }
+.swml-canvas-light .swml-cw-project-overlay__counter--warn { color: #d9364a; }
+
+.swml-cw-project-overlay__error {
+    font-size: 13px;
+    color: #ff8da3;
+    min-height: 16px;
+}
+.swml-canvas-light .swml-cw-project-overlay__error { color: #d9364a; }
+
+.swml-cw-project-overlay__btn-row {
+    display: flex; flex-direction: column; gap: 10px; align-items: stretch;
+}
+.swml-cw-project-overlay__save-btn {
+    padding: 12px 20px;
+    font-size: 15px; font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #51dacf, #41aaa8);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.2s, transform 0.15s;
+}
+.swml-cw-project-overlay__save-btn:hover:not(:disabled) { transform: translateY(-1px); }
+.swml-cw-project-overlay__save-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.swml-canvas-light .swml-cw-project-overlay__save-btn {
+    background: linear-gradient(135deg, #5333ed, #2c003e);
+}
+.swml-cw-project-overlay__skip-btn {
+    padding: 8px;
+    font-size: 13px;
+    background: none;
+    color: rgba(255,255,255,0.7);
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    font-family: inherit;
+}
+.swml-canvas-light .swml-cw-project-overlay__skip-btn { color: rgba(44,0,62,0.65); }
+
 /* Page breaks removed — canvas grows naturally */
 
 /* ── Assessment Mode: Left Protocol Panel (reuses .swml-sidebar) ── */
