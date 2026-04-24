@@ -349,6 +349,31 @@
                 // v7.17.16: state.step is the bridge dispatch value on mark_scheme_unit (1=Quiz, 2=FYW).
                 // Other training-env tasks reset to 0 so protocol progress starts fresh.
                 if (state.task !== 'mark_scheme_unit') state.step = 0;
+                // v7.17.40: for embedded CW (task starts with cw_), resolve cwProjectId BEFORE
+                // renderCanvasWorkspace. The deep-link CW branch further down (at "Deep link:
+                // Creative Writing") already does this, but embedded training-env tasks return
+                // before reaching it. Without a resolved project, tryServerLoad short-circuits
+                // ("CW task awaiting project resolve"), the server canvas doc never hydrates,
+                // and the default template (~1782 chars) wins — Writer Profile text gone on
+                // every hard-refresh. Fallback: set state.board / state.text to the CW sentinels
+                // if not already populated (v7.17.37 added universal-board fallback for CW).
+                const isCwTask = state.task && state.task.startsWith('cw_');
+                if (isCwTask && !state.board && state.subject === 'creative_writing') state.board = 'universal';
+                if (isCwTask && !state.text) state.text = 'creative_writing';
+                if (isCwTask && !state.textName) state.textName = 'Creative Writing';
+                const resolveCwProject = isCwTask
+                    ? WML.cwProject.list().then(res => {
+                        const projects = (res && res.projects) || [];
+                        if (projects.length > 0) {
+                            projects.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+                            state.cwProjectId = projects[0].id;
+                            state.cwProjectName = projects[0].name || '';
+                            console.log('WML v7.17.40: embedded CW resolved project →', state.cwProjectId, state.cwProjectName);
+                        } else {
+                            console.log('WML v7.17.40: embedded CW — no projects yet; switcher overlay will fire inside renderCanvasWorkspace');
+                        }
+                    }).catch(e => console.warn('WML v7.17.40: CW project resolve failed', e && e.message))
+                    : Promise.resolve();
                 // v7.14.43: Create session BEFORE rendering canvas so Protocol Router has correct task context.
                 // Without this, training-env exercises (mark_scheme, planning, polishing) in embedded mode
                 // never create a session, so the Protocol Router falls back to generic instructions.
@@ -356,7 +381,7 @@
                 if (exerciseConfig.environment === 'training') {
                     state.sessionId = '';
                     state.chatId = '';
-                    apiPost(API.session, {
+                    resolveCwProject.then(() => apiPost(API.session, {
                         mode: state.mode || 'exam_prep', board: state.board, subject: state.subject,
                         text: state.text, unit_id: state.unitId, task: state.task,
                         type: state.courseType, redraft: state.isRedraft ? '1' : '',
@@ -364,7 +389,7 @@
                         topic_number: state.topicNumber || 0, topic_label: state.topicLabel || '',
                         draft_type: state.draftType || '', phase: state.phase || '',
                         poem: state.poem || '', poem_title: state.poemTitle || '',
-                    }).then(res => {
+                    })).then(res => {
                         if (res.session_id) { state.sessionId = res.session_id; state.chatId = res.session_id; }
                         console.log('WML Embedded: Session created for training env, task=' + state.task);
                         WML.renderCanvasWorkspace();
@@ -373,7 +398,7 @@
                         WML.renderCanvasWorkspace();
                     });
                 } else {
-                    WML.renderCanvasWorkspace();
+                    resolveCwProject.then(() => WML.renderCanvasWorkspace());
                 }
             } else if (state.task === 'conceptual_notes') {
                 state.draftType = 'notes';
