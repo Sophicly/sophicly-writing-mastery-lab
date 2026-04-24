@@ -364,25 +364,38 @@
                 // v7.17.43: respect ?cw_project_id=<id> in URL so the "My Projects" sidebar
                 // switcher can deep-link the student into a specific project on reload
                 // (instead of falling back to the most-recently-updated row).
+                // v7.17.44: also check sessionStorage — persists the picked project across
+                // internal CW nav (Back to Steps → dashboard → click Step N) that does NOT
+                // carry the URL param. Order: URL > sessionStorage > most-recent.
                 const _urlProjectId = isCwTask
                     ? new URLSearchParams(window.location.search).get('cw_project_id')
+                    : null;
+                const _sessionProjectId = isCwTask
+                    ? (function () { try { return sessionStorage.getItem('swml_cw_active_project') || ''; } catch (_) { return ''; } })()
                     : null;
                 const resolveCwProject = isCwTask
                     ? WML.cwProject.list().then(res => {
                         const projects = (res && res.projects) || [];
                         if (projects.length > 0) {
                             let picked = null;
+                            let source = '';
                             if (_urlProjectId) {
                                 picked = projects.find(p => p.id === _urlProjectId) || null;
-                                if (picked) console.log('WML v7.17.43: embedded CW resolved from URL param →', picked.id, picked.name);
+                                if (picked) source = 'URL param';
+                            }
+                            if (!picked && _sessionProjectId) {
+                                picked = projects.find(p => p.id === _sessionProjectId) || null;
+                                if (picked) source = 'sessionStorage';
                             }
                             if (!picked) {
                                 const sorted = projects.slice().sort((a, b) => new Date(b.updated) - new Date(a.updated));
                                 picked = sorted[0];
-                                console.log('WML v7.17.40: embedded CW resolved project (most-recent) →', picked.id, picked.name);
+                                source = 'most-recent fallback';
                             }
                             state.cwProjectId = picked.id;
                             state.cwProjectName = picked.name || '';
+                            try { sessionStorage.setItem('swml_cw_active_project', picked.id); } catch (_) {}
+                            console.log('WML v7.17.44: embedded CW resolved project →', picked.id, picked.name, '(' + source + ')');
                         } else {
                             console.log('WML v7.17.40: embedded CW — no projects yet; switcher overlay will fire inside renderCanvasWorkspace');
                         }
@@ -502,23 +515,33 @@
             }
             state.text = state.text || 'creative_writing';
             state.textName = state.textName || 'Creative Writing';
-            // Load project context — use most recent project (or go to naming screen)
+            // Load project context — URL > sessionStorage > most-recent (v7.17.44)
+            const _urlProjectIdDL = new URLSearchParams(window.location.search).get('cw_project_id');
+            const _sessionProjectIdDL = (function () { try { return sessionStorage.getItem('swml_cw_active_project') || ''; } catch (_) { return ''; } })();
             WML.cwProject.list().then(res => {
                 const projects = res?.projects || [];
                 if (projects.length === 0) {
                     // No projects — show naming screen
                     renderCwProjectNaming([], (newProject) => {
                         state.cwProjectId = newProject.id;
+                        try { sessionStorage.setItem('swml_cw_active_project', newProject.id); } catch (_) {}
                         state.canvasTimer = 0;
                         state.step = 0;
                         WML.renderCanvasWorkspace();
                     });
                     return;
                 }
-                // Use most recently updated project
-                projects.sort((a, b) => new Date(b.updated) - new Date(a.updated));
-                state.cwProjectId = projects[0].id;
-                state.cwProjectName = projects[0].name || '';
+                // v7.17.44: URL > sessionStorage > most-recent
+                let picked = null;
+                if (_urlProjectIdDL) picked = projects.find(p => p.id === _urlProjectIdDL) || null;
+                if (!picked && _sessionProjectIdDL) picked = projects.find(p => p.id === _sessionProjectIdDL) || null;
+                if (!picked) {
+                    projects.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+                    picked = projects[0];
+                }
+                state.cwProjectId = picked.id;
+                state.cwProjectName = picked.name || '';
+                try { sessionStorage.setItem('swml_cw_active_project', picked.id); } catch (_) {}
                 const exerciseConfig = WML.getExerciseConfig(state.task);
                 if (['training', 'free', 'flexible'].includes(exerciseConfig.environment)) {
                     state.canvasTimer = 0;

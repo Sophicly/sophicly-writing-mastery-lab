@@ -15305,9 +15305,20 @@
                     console.log('WML Review: Loaded student canvas from server');
                 } else {
                     const localContent = loadCanvasContent();
-                    if (!localContent || localContent.length < 20) {
+                    // v7.17.44: for CW tasks, always prefer server on mount. The local
+                    // localStorage content may have been just-written by the editor-mount
+                    // onUpdate firing with the freshly-injected template (template > 20
+                    // chars → pre-v7.17.44 logic skipped the server doc), so cross-project
+                    // switches intermittently showed the template instead of the switched-
+                    // to project's server-persisted text. For non-CW tasks, keep the
+                    // local-wins gate — localStorage is the authoritative in-progress
+                    // buffer for debounce-window protection on exam writing.
+                    const isCwTaskHydrate = state.task && state.task.startsWith('cw_');
+                    if (isCwTaskHydrate || !localContent || localContent.length < 20) {
                         canvasEditor.commands.setContent(res.doc.html, false);
-                        console.log('WML: Canvas loaded from server (no local content found)');
+                        console.log(isCwTaskHydrate
+                            ? 'WML v7.17.44: CW canvas loaded from server (project-authoritative on mount)'
+                            : 'WML: Canvas loaded from server (no local content found)');
                     } else {
                         console.log('WML: Local canvas content exists, server backup available');
                     }
@@ -15661,6 +15672,10 @@
             const setStateFromProject = (id, name) => {
                 state.cwProjectId = id;
                 state.cwProjectName = name || '';
+                // v7.17.44: mirror to sessionStorage so internal CW nav (Back to Steps →
+                // CW dashboard → click Step N) resolves back to the same project without
+                // needing the URL param on every link.
+                try { sessionStorage.setItem('swml_cw_active_project', id); } catch (_) {}
             };
 
             if (projects.length === 0) {
