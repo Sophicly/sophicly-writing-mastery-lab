@@ -358,9 +358,18 @@
                 // every hard-refresh. Fallback: set state.board / state.text to the CW sentinels
                 // if not already populated (v7.17.37 added universal-board fallback for CW).
                 const isCwTask = state.task && state.task.startsWith('cw_');
-                if (isCwTask && !state.board && state.subject === 'creative_writing') state.board = 'universal';
-                if (isCwTask && !state.text) state.text = 'creative_writing';
-                if (isCwTask && !state.textName) state.textName = 'Creative Writing';
+                // v7.17.45: unconditionally pin CW board/text/subject. Pre-v7.17.45 these
+                // only filled in when empty — but SPA soft-nav from a non-CW lesson can
+                // leave state.board = 'all' (or any other board), which silently shifts
+                // the server meta key between visits to the same CW step (observed:
+                // step 1 fetched with board=all, step 2 with board=universal, same
+                // project — canvas keys differed, data invisible across the drift).
+                if (isCwTask) {
+                    state.board = 'universal';
+                    state.subject = 'creative_writing';
+                    state.text = 'creative_writing';
+                    if (!state.textName) state.textName = 'Creative Writing';
+                }
                 // v7.17.43: respect ?cw_project_id=<id> in URL so the "My Projects" sidebar
                 // switcher can deep-link the student into a specific project on reload
                 // (instead of falling back to the most-recently-updated row).
@@ -504,16 +513,20 @@
         // URL: ?task=cw_step_2 (board/subject may or may not be present)
         if (state.task && state.task.startsWith('cw_')) {
             state.mode = state.mode || 'creative';
-            state.subject = state.subject || 'creative_writing';
-            // v7.17.37: Only apply the 'universal' fallback for CW subjects.
-            // Previously this was under the cw_* task guard, but bridge-chat
-            // flagged state-leak scenarios (CW → non-CW nav) where state.board
-            // persists as 'universal' into exam-board tasks. See
-            // wml-handoff-board-fallback-universal-non-cw-2026-04-23.md.
-            if (!state.board && state.subject === 'creative_writing') {
-                state.board = 'universal';
-            }
-            state.text = state.text || 'creative_writing';
+            // v7.17.45: pin board/subject/text unconditionally for CW. Pre-v7.17.45
+            // this block only filled in when state.board was empty — but SPA soft-
+            // nav from a non-CW lesson could leave state.board = 'all' (or the
+            // previous lesson's board), which silently shifted the server canvas
+            // meta key across revisits to the same step within the same project.
+            // Observed in Neil's v7.17.44 log: /attempts fired with board=all on
+            // step 1 and board=universal on step 2, data invisible across the drift.
+            // wml-handoff-board-fallback-universal-non-cw-2026-04-23.md's concern
+            // about CW board leaking into non-CW tasks is handled by the guard
+            // being scoped to the `state.task.startsWith('cw_')` branch — non-CW
+            // tasks never reach this pin.
+            state.subject = 'creative_writing';
+            state.board = 'universal';
+            state.text = 'creative_writing';
             state.textName = state.textName || 'Creative Writing';
             // Load project context — URL > sessionStorage > most-recent (v7.17.44)
             const _urlProjectIdDL = new URLSearchParams(window.location.search).get('cw_project_id');
