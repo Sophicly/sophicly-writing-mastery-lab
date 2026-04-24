@@ -1103,17 +1103,32 @@ class SWML_REST_API {
         $html  = $params['html'] ?? '';
 
         // Security: sanitize canvas HTML — allow TipTap structural attrs, strip scripts/handlers (v7.15.2)
+        // v7.17.40: pre-v7.17.40 this loop whitelisted only six attrs. WML's custom TipTap
+        // nodes (InputField, OutlineRow, ChecklistItem, CW stage markers, section markers,
+        // comments) render further `data-*` attrs that were being stripped on every save.
+        // Symptoms: Writer Profile text-loss (InputField parseHTML rule `div[data-input-field]`
+        // failed to match stripped HTML → node dropped) and silently-broken exam-question
+        // extraction (maybe_extract_exam_questions xpath expected data-input-field too).
+        // Whitelist the full set below. Enumerated via:
+        //   grep -oEh "'data-[a-z0-9-]+'" frontend/wml-*.js | sort -u
         $allowed_canvas_tags = wp_kses_allowed_html('post');
         $tiptap_tags = ['p','h1','h2','h3','h4','h5','h6','span','div','li','ul','ol',
                         'blockquote','table','tr','td','th','thead','tbody','section','mark','br','hr'];
+        $wml_canvas_data_attrs = [
+            'class', 'style',
+            'data-type', 'data-id', 'data-indent', 'data-text-align',
+            'data-input-field', 'data-prompt', 'data-field-id', 'data-field-type', 'data-editable', 'data-readonly',
+            'data-outline-row', 'data-criteria', 'data-check-state', 'data-checked',
+            'data-checklist-item', 'data-item-id',
+            'data-section-type', 'data-section-label', 'data-section-complete',
+            'data-comment-id',
+            'data-cw-stage', 'data-step', 'data-part', 'data-group', 'data-label',
+        ];
         foreach ($tiptap_tags as $tag) {
             if (!isset($allowed_canvas_tags[$tag])) $allowed_canvas_tags[$tag] = [];
-            $allowed_canvas_tags[$tag]['class'] = true;
-            $allowed_canvas_tags[$tag]['data-type'] = true;
-            $allowed_canvas_tags[$tag]['data-id'] = true;
-            $allowed_canvas_tags[$tag]['data-indent'] = true;
-            $allowed_canvas_tags[$tag]['data-text-align'] = true;
-            $allowed_canvas_tags[$tag]['style'] = true;
+            foreach ($wml_canvas_data_attrs as $attr) {
+                $allowed_canvas_tags[$tag][$attr] = true;
+            }
         }
         $html = wp_kses($html, $allowed_canvas_tags);
 

@@ -1199,6 +1199,14 @@
     // server before the tab unloads. Cleared inside the respective setTimeout bodies.
     let _pendingCanvasSaveBody = null;
     let _pendingChatSaveBody = null;
+    // v7.17.40: CW typing mirror — typing autosave writes to canvas doc (/canvas/save)
+    // but _loadCWProjectIntoEditor reads from the per-project artifact. Without this
+    // mirror the artifact stays empty until explicit "Back to Steps"/"Mark Complete",
+    // and any hard-refresh that hits _loadCWProjectIntoEditor overwrites the recovered
+    // canvas doc with a stale empty artifact. Debounced 3s; no URL (uses WML.cwProject
+    // wrapper).
+    let _cwArtifactSaveTimer = null;
+    let _pendingCwArtifact = null; // { projectId, artifactKey, html } — for beforeunload flush
     let canvasSilentSend = false; // v7.14.3: When true, sendCanvasMessage skips user bubble display
     let _currentAddComment = null; // v7.14.48: Module-level ref for context toolbar (survives re-renders)
     let _currentComments = null; // v7.15.30: Module-level ref to comments object (for tryServerLoad)
@@ -15155,6 +15163,34 @@
                 else console.warn('WML: Canvas save FAILED', res);
             }).catch(e => console.warn('WML: Server save failed, localStorage retained', e.message));
         }, 5000);
+
+        // v7.17.40: mirror CW typing into the per-project artifact. `_loadCWProjectIntoEditor`
+        // reads from artifact on next mount — pre-v7.17.40 artifact stayed empty/stale until
+        // the student hit "Back to Steps"/"Mark Complete", and the stale read would clobber
+        // the server-canvas-doc hydration with empty content. 3s debounce (faster than the
+        // 5s canvas doc debounce so artifact tends to lead on typical keystroke cadences).
+        if (snap.cwProjectId) {
+            const cwStepDef = WML.getCwStepDef ? WML.getCwStepDef(snap.task) : null;
+            const cwStepNum = cwStepDef && cwStepDef.step;
+            const plotUpdateSteps = [11, 14, 17, 20, 23, 26];
+            const artifactKey = cwStepNum
+                ? (plotUpdateSteps.indexOf(cwStepNum) !== -1
+                    ? 'plot_outline'
+                    : (WML.CW_ARTIFACT_MAP && WML.CW_ARTIFACT_MAP[cwStepNum]))
+                : null;
+            if (artifactKey) {
+                _pendingCwArtifact = { projectId: snap.cwProjectId, artifactKey: artifactKey, html: html };
+                clearTimeout(_cwArtifactSaveTimer);
+                _cwArtifactSaveTimer = setTimeout(() => {
+                    const pending = _pendingCwArtifact;
+                    _pendingCwArtifact = null;
+                    if (!pending) return;
+                    WML.cwProject.saveArtifact(pending.projectId, pending.artifactKey, pending.html)
+                        .then(() => console.log('WML v7.17.40: Artifact mirror saved', pending.artifactKey))
+                        .catch(e => console.warn('WML v7.17.40: Artifact mirror failed', e && e.message));
+                }, 3000);
+            }
+        }
     }
 
     // v7.17.39: beforeunload flush — if either canvas or chat has a pending
@@ -15176,6 +15212,23 @@
                     try { fetch(API.chatSave, { method: 'POST', headers, body: JSON.stringify(_pendingChatSaveBody), keepalive: true }); } catch (_) {}
                     _pendingChatSaveBody = null;
                     clearTimeout(chatSaveTimer);
+                }
+                // v7.17.40: CW artifact mirror flush — same keepalive pattern so the
+                // artifact write races alongside the canvas-doc write during unload.
+                if (_pendingCwArtifact) {
+                    try {
+                        fetch(API.cwArtifact, {
+                            method: 'POST', headers,
+                            body: JSON.stringify({
+                                project_id: _pendingCwArtifact.projectId,
+                                key: _pendingCwArtifact.artifactKey,
+                                value: _pendingCwArtifact.html,
+                            }),
+                            keepalive: true,
+                        });
+                    } catch (_) {}
+                    _pendingCwArtifact = null;
+                    clearTimeout(_cwArtifactSaveTimer);
                 }
             } catch (_) { /* best-effort; never block unload */ }
         });
@@ -15612,6 +15665,17 @@
     // existing canvasEditor without re-mounting.
     async function _loadCWProjectIntoEditor() {
         if (!state.cwProjectId || !canvasEditor) return;
+        // v7.17.40: do NOT clobber existing editor content. On hard-refresh the
+        // canvas-doc hydrate path (loadCanvasContent / tryServerLoad) runs first
+        // and may have already restored the student's just-typed text; blindly
+        // overwriting with the artifact value blanks the editor whenever the
+        // artifact trails behind the canvas doc. Mirror the gate used by
+        // tryCwPrePopulate (see wml-assessment.js ~L9510).
+        const currentLen = (canvasEditor.getText() || '').trim().length;
+        if (currentLen > 50) {
+            console.log('WML v7.17.40: _loadCWProjectIntoEditor — editor already populated (', currentLen, 'chars), skipping overwrite');
+            return;
+        }
         const stepDef = WML.getCwStepDef ? WML.getCwStepDef(state.task) : null;
         const stepNum = stepDef?.step;
         if (!stepNum) return;
