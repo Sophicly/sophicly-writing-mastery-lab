@@ -509,7 +509,7 @@ class SWML_Session_Manager {
      * Save a specific artifact key within a project.
      * Also updates the project index timestamp.
      */
-    public static function save_project_artifact($user_id, $project_id, $key, $value) {
+    public static function save_project_artifact($user_id, $project_id, $key, $value, $lesson_url = '') {
         $project_id = sanitize_key($project_id);
         $project = self::get_project($user_id, $project_id);
         if ($project === null) return false;
@@ -525,6 +525,10 @@ class SWML_Session_Manager {
             // Sync plot_template to index for quick display
             if ($key === 'plot_template') {
                 $index[$project_id]['plot_template'] = $value;
+            }
+            // v7.17.46: persist last_lesson_url for switcher step-routing.
+            if ($lesson_url !== '') {
+                $index[$project_id]['last_lesson_url'] = esc_url_raw($lesson_url);
             }
             update_user_meta($user_id, 'swml_cw_projects', wp_slash(wp_json_encode($index)));
         }
@@ -577,7 +581,7 @@ class SWML_Session_Manager {
      * Mark a step as complete (or incomplete) within a project.
      * Also updates current_step in the index if advancing.
      */
-    public static function update_step_completion($user_id, $project_id, $step, $complete = true) {
+    public static function update_step_completion($user_id, $project_id, $step, $complete = true, $lesson_url = '') {
         $project_id = sanitize_key($project_id);
         $step = absint($step);
         $project = self::get_project($user_id, $project_id);
@@ -591,6 +595,11 @@ class SWML_Session_Manager {
         if (isset($index[$project_id])) {
             if ($complete && $step > ($index[$project_id]['current_step'] ?? 0)) {
                 $index[$project_id]['current_step'] = $step;
+            }
+            // v7.17.46: persist last_lesson_url so switcher routes students back
+            // to whichever step they last touched, regardless of completion state.
+            if ($lesson_url !== '') {
+                $index[$project_id]['last_lesson_url'] = esc_url_raw($lesson_url);
             }
             $index[$project_id]['updated'] = current_time('mysql');
             update_user_meta($user_id, 'swml_cw_projects', wp_slash(wp_json_encode($index)));

@@ -2487,7 +2487,7 @@ class SWML_REST_API {
             return rest_ensure_response(['success' => false, 'message' => 'Missing project_id or key']);
         }
 
-        $result = SWML_Session_Manager::save_project_artifact($user_id, $project_id, $key, $value);
+        $result = SWML_Session_Manager::save_project_artifact($user_id, $project_id, $key, $value, $params['lesson_url'] ?? '');
         if ($result === false) {
             return rest_ensure_response(['success' => false, 'message' => 'Project not found']);
         }
@@ -2570,7 +2570,7 @@ class SWML_REST_API {
             return rest_ensure_response(['success' => false, 'message' => 'Missing project_id or step']);
         }
 
-        $result = SWML_Session_Manager::update_step_completion($user_id, $project_id, $step, (bool) $complete);
+        $result = SWML_Session_Manager::update_step_completion($user_id, $project_id, $step, (bool) $complete, $params['lesson_url'] ?? '');
         if ($result === false) {
             return rest_ensure_response(['success' => false, 'message' => 'Project not found']);
         }

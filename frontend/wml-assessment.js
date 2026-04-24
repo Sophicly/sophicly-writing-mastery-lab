@@ -1848,17 +1848,11 @@
                             addChatMessage(formatAI(gt), 'ai', gt);
                             canvasChatHistory.push({ role: 'assistant', content: gt });
                             saveCanvasChat(canvasChatHistory, canvasChatId);
-                            const startBar = el('div', { className: 'swml-quick-actions' });
-                            startBar.appendChild(el('button', {
-                                className: 'swml-quick-btn',
-                                textContent: "Let's begin",
-                                onClick: () => { startBar.remove(); chatTextarea.value = "Let's begin!"; sendCanvasMessage(); }
-                            }));
-                            const greetBubble = chatMessages.lastElementChild;
-                            if (greetBubble) {
-                                const bc = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
-                                bc.appendChild(startBar);
-                            }
+                            // v7.17.46: Removed hardcoded "Let's begin" button.
+                            // The launch-prompt detector (wml-app.js:4354) already
+                            // emits "▶ Let's go" because the greeting contains
+                            // "hit the button below". Dual emission produced two
+                            // duplicate buttons on CW step 2+.
                         } else if (state.task === 'planning' || state.task === 'polishing') {
                         // v7.14.68: Planning/polishing — silent auto-send after clear
                         // Use setTimeout to let DOM settle; verify editor is alive before sending
@@ -6346,18 +6340,8 @@
                                             addChatMessage(formatAI(gt), 'ai', gt);
                                             canvasChatHistory.push({ role: 'assistant', content: gt });
                                             saveCanvasChat(canvasChatHistory, canvasChatId);
-                                            // "Let's begin" quick action
-                                            const startBar = el('div', { className: 'swml-quick-actions' });
-                                            startBar.appendChild(el('button', {
-                                                className: 'swml-quick-btn',
-                                                textContent: "Let's begin",
-                                                onClick: () => { startBar.remove(); chatTextarea.value = "Let's begin!"; sendCanvasMessage(); }
-                                            }));
-                                            const greetBubble = chatMessages.lastElementChild;
-                                            if (greetBubble) {
-                                                const bc = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
-                                                bc.appendChild(startBar);
-                                            }
+                                            // v7.17.46: Removed hardcoded "Let's begin"
+                                            // button — detector emits "▶ Let's go".
                                         } else if (state.task === 'planning' || state.task === 'polishing') {
                                         // v7.14.68: Planning/polishing — silent auto-send after clear
                                         canvasSilentSend = true; tp.chatTextarea.value = "Let's begin!"; tp.sendCanvasMessage();
@@ -15633,7 +15617,32 @@
             try { if (canvasEditor) saveCanvasContent(); } catch (_) {}
             const res = await WML.cwProject.list();
             const projects = (res && res.projects) || [];
-            const _navigateTo = (projectId) => {
+            // v7.17.46: Route picked project to its last-used step when known.
+            // Fresh projects (no last_lesson_url) fall back to cw_step_1 derived
+            // from the current URL (regex-swap /cw-step-N/ → /cw-step-1/). If
+            // the current page isn't a cw_step_N page, fall back to same-page
+            // reload with only cw_project_id swapped (prior behaviour).
+            const _step1UrlFromCurrent = () => {
+                try {
+                    const u = new URL(window.location.href);
+                    const swapped = u.pathname.replace(/\/cw[-_]step[-_]\d+\//i, '/cw-step-1/');
+                    if (swapped === u.pathname) return null;
+                    u.pathname = swapped;
+                    u.search = '';
+                    return u.toString();
+                } catch (_) { return null; }
+            };
+            const _navigateTo = (projectId, targetUrl) => {
+                try {
+                    if (targetUrl) {
+                        const t = new URL(targetUrl, window.location.origin);
+                        t.searchParams.set('cw_project_id', projectId);
+                        window.location.href = t.toString();
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('WML v7.17.46: bad cw target url, falling back', e && e.message);
+                }
                 const url = new URL(window.location.href);
                 url.searchParams.set('cw_project_id', projectId);
                 window.location.href = url.toString();
@@ -15644,7 +15653,7 @@
                     mode: 'first',
                     onSave: async (name) => {
                         const c = await WML.cwProject.create(name, 'standalone');
-                        if (c && c.success && c.project) _navigateTo(c.project.id);
+                        if (c && c.success && c.project) _navigateTo(c.project.id, _step1UrlFromCurrent());
                     },
                     onCancel: null,
                 });
@@ -15652,10 +15661,14 @@
             }
             await _showCWProjectSwitcherOverlay({
                 projects: projects,
-                onLoad: async (id /*, name */) => { _navigateTo(id); },
+                onLoad: async (id /*, name */) => {
+                    const p = projects.find(x => x && x.id === id);
+                    const target = (p && p.last_lesson_url) || _step1UrlFromCurrent();
+                    _navigateTo(id, target);
+                },
                 onNew: async (name) => {
                     const c = await WML.cwProject.create(name, 'standalone');
-                    if (c && c.success && c.project) _navigateTo(c.project.id);
+                    if (c && c.success && c.project) _navigateTo(c.project.id, _step1UrlFromCurrent());
                 },
             });
         } catch (e) {
