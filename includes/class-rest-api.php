@@ -1125,6 +1125,8 @@ class SWML_REST_API {
         $lesson_url = esc_url_raw($params['lessonUrl'] ?? '');
         // v7.15.64: autosaves carry the planning mode so legacy attempts gain the field on next save
         $planning_mode = sanitize_text_field($params['planningMode'] ?? '');
+        // v7.17.39: CW project scope — when present, isolates the canvas doc per project
+        $cw_project_id = sanitize_text_field($params['cw_project_id'] ?? '');
 
         if (empty($board) || empty($text)) {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
@@ -1137,7 +1139,8 @@ class SWML_REST_API {
         }
 
         // Build meta key — includes topic number + exercise suffix + attempt for document isolation
-        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
+        // v7.17.39: + cw_project_id for CW project isolation
+        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
 
         $doc = [
             'html'       => $html,
@@ -1252,6 +1255,9 @@ class SWML_REST_API {
         $topic_number = ($topic_number !== null && $topic_number !== '') ? absint($topic_number) : null;
         $suffix = sanitize_text_field($request->get_param('suffix') ?? '');
         $attempt = absint($request->get_param('attempt') ?? 0);
+        // v7.17.39: CW project scope — when present, reads from per-project meta key.
+        // Falls back to legacy (non-project) key on miss + writes forward (lazy backfill).
+        $cw_project_id = sanitize_text_field($request->get_param('cw_project_id') ?? '');
 
         if (empty($board) || empty($text)) {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
@@ -1263,7 +1269,7 @@ class SWML_REST_API {
             $attempt = $idx['current'] ?? 1;
         }
 
-        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
+        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
 
         // v7.15.99: Read shared General Notes mirror for conceptual-notes doc family.
         // Returned in the response regardless of canvas doc presence so the client
@@ -1275,6 +1281,18 @@ class SWML_REST_API {
         }
 
         $raw = get_user_meta($user_id, $meta_key, true);
+        // v7.17.39: lazy backfill — pre-v7.17.39 CW data landed under the non-project
+        // legacy key. On first project-scoped load with a miss, fall back to the legacy
+        // key, migrate it forward, then return the migrated data.
+        if (empty($raw) && !empty($cw_project_id)) {
+            $legacy_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt, '');
+            $legacy_raw = get_user_meta($user_id, $legacy_key, true);
+            if (!empty($legacy_raw)) {
+                update_user_meta($user_id, $meta_key, is_array($legacy_raw) ? $legacy_raw : wp_slash($legacy_raw));
+                delete_user_meta($user_id, $legacy_key);
+                $raw = $legacy_raw;
+            }
+        }
         if (empty($raw)) {
             return rest_ensure_response([
                 'success'      => true,
@@ -2030,7 +2048,10 @@ class SWML_REST_API {
     // ═══════════════════════════════════════════
 
     // v7.15.12: Attempt-aware meta keys — attempt 1 has no suffix (backward compatible), attempt 2+ appends __a{N}
-    private function canvas_meta_key($board, $text, $topic, $suffix = '', $attempt = 1) {
+    // v7.17.39: CW project scope — when $cw_project_id is non-empty, appends __p<pid> so each CW
+    // project isolates its canvas doc / chat end-to-end (client localStorage keys already carry
+    // the same suffix; server had been lesson-scoped and leaked across projects).
+    private function canvas_meta_key($board, $text, $topic, $suffix = '', $attempt = 1, $cw_project_id = '') {
         $key = 'swml_canvas_' . $board . '_' . $text;
         if ($topic !== null && $topic > 0) {
             $key .= '_t' . $topic;
@@ -2041,14 +2062,18 @@ class SWML_REST_API {
         if ($attempt > 1) {
             $key .= '__a' . $attempt;
         }
+        if (!empty($cw_project_id)) {
+            $key .= '__p' . $cw_project_id;
+        }
         return $key;
     }
 
-    private function chat_meta_key($board, $text, $topic, $suffix = '', $attempt = 1) {
+    private function chat_meta_key($board, $text, $topic, $suffix = '', $attempt = 1, $cw_project_id = '') {
         $key = 'swml_chat_' . $board . '_' . $text;
         if ($topic > 0) $key .= '_t' . $topic;
         if (!empty($suffix)) $key .= $suffix;
         if ($attempt > 1) $key .= '__a' . $attempt;
+        if (!empty($cw_project_id)) $key .= '__p' . $cw_project_id;
         return $key;
     }
 
@@ -2133,6 +2158,8 @@ class SWML_REST_API {
         $attempt = absint($params['attempt'] ?? 0);
         $history = $params['history'] ?? [];
         $chat_id = sanitize_text_field($params['chatId'] ?? '');
+        // v7.17.39: CW project scope — isolates chat per project
+        $cw_project_id = sanitize_text_field($params['cw_project_id'] ?? '');
 
         // Security: sanitize chat message content to prevent stored XSS (v7.15.2)
         $history = array_map(function($msg) {
@@ -2152,7 +2179,7 @@ class SWML_REST_API {
             $attempt = $idx['current'] ?? 1;
         }
 
-        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix, $attempt);
+        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix, $attempt, $cw_project_id);
         $data = [
             'history'  => $history,
             'chatId'   => $chat_id,
@@ -2176,6 +2203,8 @@ class SWML_REST_API {
         $topic   = absint($request->get_param('topicNumber') ?? 0);
         $suffix  = sanitize_text_field($request->get_param('suffix') ?? '');
         $attempt = absint($request->get_param('attempt') ?? 0);
+        // v7.17.39: CW project scope
+        $cw_project_id = sanitize_text_field($request->get_param('cw_project_id') ?? '');
 
         if (!$board || !$text) {
             return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
@@ -2187,8 +2216,18 @@ class SWML_REST_API {
             $attempt = $idx['current'] ?? 1;
         }
 
-        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix, $attempt);
+        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix, $attempt, $cw_project_id);
         $raw = get_user_meta($user_id, $meta_key, true);
+        // v7.17.39: lazy backfill from pre-v7.17.39 legacy (non-project) chat key
+        if (empty($raw) && !empty($cw_project_id)) {
+            $legacy_key = $this->chat_meta_key($board, $text, $topic, $suffix, $attempt, '');
+            $legacy_raw = get_user_meta($user_id, $legacy_key, true);
+            if (!empty($legacy_raw)) {
+                update_user_meta($user_id, $meta_key, is_array($legacy_raw) ? $legacy_raw : wp_slash($legacy_raw));
+                delete_user_meta($user_id, $legacy_key);
+                $raw = $legacy_raw;
+            }
+        }
         $data = $raw ? json_decode($raw, true) : null;
 
         return rest_ensure_response([
@@ -2206,6 +2245,8 @@ class SWML_REST_API {
         $topic  = absint($params['topicNumber'] ?? 0);
         $suffix = sanitize_text_field($params['suffix'] ?? '');
         $attempt = absint($params['attempt'] ?? 0);
+        // v7.17.39: CW project scope
+        $cw_project_id = sanitize_text_field($params['cw_project_id'] ?? '');
 
         if (!$board || !$text) {
             return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
@@ -2216,7 +2257,7 @@ class SWML_REST_API {
             $attempt = $idx['current'] ?? 1;
         }
 
-        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix, $attempt);
+        $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix, $attempt, $cw_project_id);
         delete_user_meta($user_id, $meta_key);
 
         return rest_ensure_response(['success' => true, 'key' => $meta_key]);

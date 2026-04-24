@@ -1184,7 +1184,21 @@
             ? `__p${state.cwProjectId}` : '';
         return `swml_chat_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}${att}${cwP}`;
     };
+    // v7.17.39: spread into every CW save/load POST body or GET query so server
+    // meta keys match the v7.17.38 localStorage suffix (`__p<cwProjectId>`).
+    // Pre-v7.17.39 server was lesson-scoped and leaked canvas doc + chat across
+    // projects; this is the client half of the end-to-end scoping fix.
+    const cwScopeBody = () => (state.task && state.task.startsWith('cw_') && state.cwProjectId)
+        ? { cw_project_id: state.cwProjectId } : {};
+    const cwScopeQuery = () => (state.task && state.task.startsWith('cw_') && state.cwProjectId)
+        ? '&cw_project_id=' + encodeURIComponent(state.cwProjectId) : '';
     let chatSaveTimer = null;
+    // v7.17.39: pending-save trackers — kill the 5s canvas debounce / 8s chat debounce
+    // race on hard-refresh. beforeunload fires sendBeacon with whatever is pending so
+    // Writer Profile text that flashed "Saved" (localStorage-only) also lands on the
+    // server before the tab unloads. Cleared inside the respective setTimeout bodies.
+    let _pendingCanvasSaveBody = null;
+    let _pendingChatSaveBody = null;
     let canvasSilentSend = false; // v7.14.3: When true, sendCanvasMessage skips user bubble display
     let _currentAddComment = null; // v7.14.48: Module-level ref for context toolbar (survives re-renders)
     let _currentComments = null; // v7.15.30: Module-level ref to comments object (for tryServerLoad)
@@ -1200,10 +1214,15 @@
         } catch (e) { /* storage full */ }
         // 2. Debounced server write (every 8s — less frequent than doc save)
         clearTimeout(chatSaveTimer);
+        // v7.17.39: stash the body so beforeunload can sendBeacon if the tab closes
+        // before the 8s timer fires (Writer Profile text-loss parity for chat).
+        _pendingChatSaveBody = Object.assign({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.resolveStorageSuffix(state.task, state.phase) || '', attempt: state.attempt || 1, history, chatId }, cwScopeBody());
         chatSaveTimer = setTimeout(() => {
+            const body = _pendingChatSaveBody;
+            _pendingChatSaveBody = null;
             fetch(API.chatSave, {
                 method: 'POST', headers,
-                body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.resolveStorageSuffix(state.task, state.phase) || '', attempt: state.attempt || 1, history, chatId })
+                body: JSON.stringify(body)
             }).then(r => r.json()).then(res => {
                 if (res.success) console.log('WML: Chat saved to server', { count: res.count });
                 else console.warn('WML: Chat save failed', res);
@@ -1223,7 +1242,8 @@
         try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch (e) {}
         fetch(API.chatClear, {
             method: 'POST', headers,
-            body: JSON.stringify({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.resolveStorageSuffix(state.task, state.phase) || '', attempt: state.attempt || 1 })
+            // v7.17.39: include cw_project_id for project-scoped clear
+            body: JSON.stringify(Object.assign({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.resolveStorageSuffix(state.task, state.phase) || '', attempt: state.attempt || 1 }, cwScopeBody()))
         }).catch(() => {});
     }
 
@@ -4084,7 +4104,8 @@
                     const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
                     fetch(API.canvasSave, {
                         method: 'POST', headers,
-                        body: JSON.stringify({ board: state.board, text: state.text, html: '', wordCount: 0, topicNumber: state.topicNumber || null, suffix: suffix })
+                        // v7.17.39: reset also scoped by cw_project_id so only the current project's server doc clears
+                        body: JSON.stringify(Object.assign({ board: state.board, text: state.text, html: '', wordCount: 0, topicNumber: state.topicNumber || null, suffix: suffix }, cwScopeBody()))
                     }).catch(() => {});
                     // Clear outline checkbox state
                     _outlineCheckState.clear();
@@ -5272,15 +5293,16 @@
             // Deferred until TipTap editor initialises + template loads
             const _initTrainingChat = async () => {
                 let savedChat = state.reviewMode ? null : loadCanvasChat();
-                const skipServerChat = state.task && state.task.startsWith('cw_');
-                if (!skipServerChat && (!savedChat || !savedChat.history || savedChat.history.length === 0)) {
+                // v7.17.39: CW chat is now project-scoped server-side — remove the pre-v7.17.39
+                // skip so CW also rehydrates chat from server on fresh device / cleared localStorage.
+                if (!savedChat || !savedChat.history || savedChat.history.length === 0) {
                     try {
                         const _chatSuffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
                         // Tutor review: load student's chat via review endpoint (v7.15.2)
                         const _chatAtt = state.attempt || 1;
                         const chatUrl = state.reviewMode && state.reviewStudentId
                             ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt}`
-                            : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt}`;
+                            : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt}${cwScopeQuery()}`;
                         const serverChat = await fetch(chatUrl, { headers }).then(r => r.json());
                         if (serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
                             savedChat = serverChat.chat;
@@ -7058,16 +7080,15 @@
                                         (async () => {
                                         let savedChat = state.reviewMode ? null : loadCanvasChat();
                                         // Server fallback if localStorage is empty (v7.14.4: suffix now isolates each exercise type)
-                                        // CW exercises use project artifact storage, not canvas chat
-                                        const skipServerChat = state.task && state.task.startsWith('cw_');
-                                        if (!skipServerChat && (!savedChat || !savedChat.history || savedChat.history.length === 0)) {
+                                        // v7.17.39: CW chat is now project-scoped server-side — drop the pre-v7.17.39 skip
+                                        if (!savedChat || !savedChat.history || savedChat.history.length === 0) {
                                             try {
                                                 const _chatSuffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
                                                 const _chatAtt2 = state.attempt || 1;
                                                 // Tutor review: load student's chat via review endpoint (v7.15.2)
                                                 const chatUrl = state.reviewMode && state.reviewStudentId
                                                     ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt2}`
-                                                    : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt2}`;
+                                                    : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt2}${cwScopeQuery()}`;
                                                 const serverChat = await fetch(chatUrl, { headers }).then(r => r.json());
                                                 if (serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
                                                     savedChat = serverChat.chat;
@@ -15099,36 +15120,65 @@
             attempt: state.attempt || 1,
             embedded: state.embedded,
             planningMode: state.planningMode || '',
+            // v7.17.39: snapshot project_id so server key matches v7.17.38 localStorage suffix
+            cwProjectId: (state.task && state.task.startsWith('cw_') && state.cwProjectId) ? state.cwProjectId : '',
         };
         // 3. Debounced server save (every 5s, not every 2s like localStorage)
         clearTimeout(canvasSaveToServerTimer);
+        // v7.17.39: stash the payload so beforeunload can sendBeacon it if the
+        // tab closes before the 5s timer fires. This is the primary fix for
+        // the "Writer Profile text gone after hard-refresh" repro — previously
+        // the 5s debounce ate fast-refresh keystrokes.
+        _pendingCanvasSaveBody = {
+            board: snap.board,
+            text: snap.text,
+            html: html,
+            wordCount: wc,
+            topicNumber: snap.topicNumber,
+            sectionData: sectionData,
+            suffix: snap.suffix,
+            attempt: snap.attempt,
+            planningMode: snap.planningMode,
+            lessonUrl: snap.embedded
+                ? window.location.href
+                : _buildWmlDeepLink({ board: snap.board, text: snap.text, topic: snap.topicNumber, task: snap.task }),
+            cw_project_id: snap.cwProjectId,
+        };
         canvasSaveToServerTimer = setTimeout(() => {
+            const body = _pendingCanvasSaveBody;
+            _pendingCanvasSaveBody = null;
             fetch(API.canvasSave, {
                 method: 'POST', headers,
-                body: JSON.stringify({
-                    board: snap.board,
-                    text: snap.text,
-                    html: html,
-                    wordCount: wc,
-                    topicNumber: snap.topicNumber,
-                    sectionData: sectionData,
-                    suffix: snap.suffix,
-                    attempt: snap.attempt,
-                    // v7.15.64: carry planning mode so the server backfills it onto the
-                    // attempt entry — lets Continue restore the correct mode later.
-                    planningMode: snap.planningMode,
-                    // v7.15.30: Store LD lesson URL for dashboard deep links.
-                    // v7.15.50: Fallback to WML deep-link when not embedded so the
-                    // dashboard Resume button always has a target.
-                    lessonUrl: snap.embedded
-                        ? window.location.href
-                        : _buildWmlDeepLink({ board: snap.board, text: snap.text, topic: snap.topicNumber, task: snap.task }),
-                })
+                body: JSON.stringify(body)
             }).then(r => r.json()).then(res => {
                 if (res.success) console.log('WML: Canvas saved to server', { key: res.key, savedAt: res.savedAt, board: snap.board, text: snap.text, topic: snap.topicNumber, wc: wc });
                 else console.warn('WML: Canvas save FAILED', res);
             }).catch(e => console.warn('WML: Server save failed, localStorage retained', e.message));
         }, 5000);
+    }
+
+    // v7.17.39: beforeunload flush — if either canvas or chat has a pending
+    // debounced save when the tab unloads, fire it via fetch `keepalive: true`
+    // so the request survives page unload. sendBeacon can't carry the X-WP-Nonce
+    // header (blobs only) and would fail check_auth, so keepalive is the right
+    // primitive here. Kills the "typed, saw 'Saved', refreshed too fast, data
+    // lost" repro Neil hit on CW. Registered once per module load.
+    if (typeof window !== 'undefined' && !window._swmlBeforeUnloadFlushRegistered) {
+        window._swmlBeforeUnloadFlushRegistered = true;
+        window.addEventListener('beforeunload', function () {
+            try {
+                if (_pendingCanvasSaveBody) {
+                    try { fetch(API.canvasSave, { method: 'POST', headers, body: JSON.stringify(_pendingCanvasSaveBody), keepalive: true }); } catch (_) {}
+                    _pendingCanvasSaveBody = null;
+                    clearTimeout(canvasSaveToServerTimer);
+                }
+                if (_pendingChatSaveBody) {
+                    try { fetch(API.chatSave, { method: 'POST', headers, body: JSON.stringify(_pendingChatSaveBody), keepalive: true }); } catch (_) {}
+                    _pendingChatSaveBody = null;
+                    clearTimeout(chatSaveTimer);
+                }
+            } catch (_) { /* best-effort; never block unload */ }
+        });
     }
 
     function loadCanvasContent() {
@@ -15147,9 +15197,14 @@
     let _pendingGeneralNotes = null;
 
     async function tryServerLoad() {
-        // v7.13.36: CW exercises use project artifact storage, not essay canvas storage
-        if (state.task && state.task.startsWith('cw_')) {
-            console.log('WML: Skipping server load — CW exercise uses project storage');
+        // v7.17.39: CW canvas doc is now project-scoped server-side (see v7.17.39
+        // `/canvas/load` + `cw_project_id` scoping). The pre-v7.17.39 early-exit
+        // blocked hard-refresh hydration from the server — student-typed Writer
+        // Profile text lived only in localStorage and was invisible to other
+        // devices / cleared caches. Gate stays only for CW tasks that haven't
+        // resolved a project yet (prevents polluting the legacy non-project key).
+        if (state.task && state.task.startsWith('cw_') && !state.cwProjectId) {
+            console.log('WML: Skipping server load — CW task awaiting project resolve');
             return;
         }
         try {
@@ -15161,7 +15216,7 @@
             if (state.reviewMode && state.reviewStudentId) {
                 url = `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
             } else {
-                url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
+                url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${cwScopeQuery()}`;
             }
             const res = await fetch(url, { headers }).then(r => r.json());
             // v7.15.99: Capture General Notes mirror for later splice into
