@@ -1502,6 +1502,12 @@
         // Dashboard
         protoSpacer.appendChild(iconBtn(SVG_DASHBOARD, 'My Dashboard', () => window.open('/dashboard/', '_blank')));
 
+        // v7.17.43: CW My Projects button — opens switcher overlay from any CW step
+        if (isCwTask) {
+            const SVG_PROJECTS = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>';
+            protoSpacer.appendChild(iconBtn(SVG_PROJECTS, 'My Projects', () => { _openCWProjectSwitcher(); }));
+        }
+
         // CW: Back to Steps
         if (isCwTask) {
             protoSpacer.appendChild(iconBtn(SVG_BACK, 'Back to Steps', () => {
@@ -6277,6 +6283,12 @@
 
                         // Dashboard
                         protoSpacer.appendChild(iconBtn(SVG_DASHBOARD, 'My Dashboard', () => window.open('/dashboard/', '_blank')));
+
+                        // v7.17.43: CW My Projects button — opens switcher overlay from any CW step
+                        if (isCwTask) {
+                            const SVG_PROJECTS = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>';
+                            protoSpacer.appendChild(iconBtn(SVG_PROJECTS, 'My Projects', () => { _openCWProjectSwitcher(); }));
+                        }
 
                         // v7.14.41: CW exercises keep "Back to Steps" for CW dashboard navigation
                         // All other exercises are standalone — no "Back to Diagnostic" transition (LD handles sequencing)
@@ -15594,6 +15606,50 @@
             // B+ refinement: pre-focus most-recent card so Enter = 1-tap continue.
             setTimeout(() => { if (cardButtons[0]) cardButtons[0].focus(); }, 50);
         });
+    }
+
+    // v7.17.43: Sidebar "My Projects" button handler. Opens the switcher overlay
+    // on-demand from any CW step so students can check/switch between projects
+    // without having to reload the lesson. Flushes any pending saves first,
+    // then pushes ?cw_project_id=<id> into the URL and reloads so the embedded
+    // pre-resolve picks the exact project (see wml-app.js CW pre-resolve v7.17.43).
+    // Reload is the simplest correct rehydrate — all downstream state (editor,
+    // chat, sidebar badges, step progress) rebuilds cleanly from the new project.
+    async function _openCWProjectSwitcher() {
+        try {
+            // Flush in-flight saves before reload so the current project's text is
+            // not lost to the beforeunload race window.
+            try { if (canvasEditor) saveCanvasContent(); } catch (_) {}
+            const res = await WML.cwProject.list();
+            const projects = (res && res.projects) || [];
+            const _navigateTo = (projectId) => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('cw_project_id', projectId);
+                window.location.href = url.toString();
+            };
+            if (projects.length === 0) {
+                // No existing projects — open naming overlay directly
+                await _showCWProjectNameInputOverlay({
+                    mode: 'first',
+                    onSave: async (name) => {
+                        const c = await WML.cwProject.create(name, 'standalone');
+                        if (c && c.success && c.project) _navigateTo(c.project.id);
+                    },
+                    onCancel: null,
+                });
+                return;
+            }
+            await _showCWProjectSwitcherOverlay({
+                projects: projects,
+                onLoad: async (id /*, name */) => { _navigateTo(id); },
+                onNew: async (name) => {
+                    const c = await WML.cwProject.create(name, 'standalone');
+                    if (c && c.success && c.project) _navigateTo(c.project.id);
+                },
+            });
+        } catch (e) {
+            console.warn('WML v7.17.43: My Projects switcher failed', e && e.message);
+        }
     }
 
     // Entry point for the CW project flow on cw_step_1.

@@ -361,14 +361,28 @@
                 if (isCwTask && !state.board && state.subject === 'creative_writing') state.board = 'universal';
                 if (isCwTask && !state.text) state.text = 'creative_writing';
                 if (isCwTask && !state.textName) state.textName = 'Creative Writing';
+                // v7.17.43: respect ?cw_project_id=<id> in URL so the "My Projects" sidebar
+                // switcher can deep-link the student into a specific project on reload
+                // (instead of falling back to the most-recently-updated row).
+                const _urlProjectId = isCwTask
+                    ? new URLSearchParams(window.location.search).get('cw_project_id')
+                    : null;
                 const resolveCwProject = isCwTask
                     ? WML.cwProject.list().then(res => {
                         const projects = (res && res.projects) || [];
                         if (projects.length > 0) {
-                            projects.sort((a, b) => new Date(b.updated) - new Date(a.updated));
-                            state.cwProjectId = projects[0].id;
-                            state.cwProjectName = projects[0].name || '';
-                            console.log('WML v7.17.40: embedded CW resolved project →', state.cwProjectId, state.cwProjectName);
+                            let picked = null;
+                            if (_urlProjectId) {
+                                picked = projects.find(p => p.id === _urlProjectId) || null;
+                                if (picked) console.log('WML v7.17.43: embedded CW resolved from URL param →', picked.id, picked.name);
+                            }
+                            if (!picked) {
+                                const sorted = projects.slice().sort((a, b) => new Date(b.updated) - new Date(a.updated));
+                                picked = sorted[0];
+                                console.log('WML v7.17.40: embedded CW resolved project (most-recent) →', picked.id, picked.name);
+                            }
+                            state.cwProjectId = picked.id;
+                            state.cwProjectName = picked.name || '';
                         } else {
                             console.log('WML v7.17.40: embedded CW — no projects yet; switcher overlay will fire inside renderCanvasWorkspace');
                         }
