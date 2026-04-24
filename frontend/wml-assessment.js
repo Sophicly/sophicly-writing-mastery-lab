@@ -2256,6 +2256,11 @@
                         topicNumber: state.topicNumber || 1,
                         phase: state.phase || 'initial',
                         planning_mode: state.planningMode || '',
+                        // v7.17.47: attempt + suffix required for assessment state pointer
+                        attempt: state.attempt || 1,
+                        suffix: (typeof WML !== 'undefined' && WML.resolveStorageSuffix)
+                            ? (WML.resolveStorageSuffix(state.task, state.phase) || '')
+                            : '',
                     })
                 });
                 const res = await response.json();
@@ -2269,6 +2274,55 @@
                     if (res.chatId) canvasChatId = res.chatId;
                     if (res.method) console.log('WML Canvas:', res.method, 'model:', res.model);
                     saveCanvasChat(canvasChatHistory, canvasChatId);
+
+                    // v7.17.47: Assessment state mirror + resume-confirm quick actions.
+                    // Server returns `res.assessmentState` when the AQA Literature state
+                    // machine is enabled for this attempt. Cache it + render hard-coded
+                    // 4-button startBar if the reply contains the resume-confirm labels.
+                    if (res.assessmentState) {
+                        state._assessmentState = res.assessmentState;
+                        console.log('WML Assessment State:', {
+                            current: res.assessmentState.current_paragraph,
+                            emitted: res.assessmentState.tables_emitted_total,
+                            detour: res.assessmentState.detour_depth,
+                            pending: res.assessmentState.pending_resume_confirm,
+                            complete: res.assessmentState.completion_emitted,
+                        });
+                    }
+                    const _hasResumeConfirmMarkers = /\[\s*✓\s*Got it\s*—\s*continue\s*\]/i.test(cleanReply)
+                        && /\[\s*🤔?\s*Still confused\s*\]/i.test(cleanReply)
+                        && /\[\s*💬?\s*Different question\s*\]/i.test(cleanReply)
+                        && /\[\s*⏸?\s*Pause here\s*\]/i.test(cleanReply);
+                    if (_hasResumeConfirmMarkers) {
+                        setTimeout(() => {
+                            const confirmBar = el('div', { className: 'swml-quick-actions' });
+                            const _mkBtn = (label, payload) => el('button', {
+                                className: 'swml-quick-btn',
+                                textContent: label,
+                                onClick: () => {
+                                    confirmBar.remove();
+                                    canvasSilentSend = false;
+                                    chatTextarea.value = payload;
+                                    sendCanvasMessage();
+                                }
+                            });
+                            const currentLabel = (res.assessmentState && res.assessmentState.current_paragraph_label)
+                                || 'the next paragraph';
+                            confirmBar.appendChild(_mkBtn('✓ Got it — continue',
+                                `Yes, let's continue with ${currentLabel}.`));
+                            confirmBar.appendChild(_mkBtn('🤔 Still confused',
+                                `I'm still not clear — could you explain again?`));
+                            confirmBar.appendChild(_mkBtn('💬 Different question',
+                                `Actually, I have a different question first.`));
+                            confirmBar.appendChild(_mkBtn('⏸ Pause here',
+                                `I need to pause — we'll continue later.`));
+                            const greetBubble = chatMessages.lastElementChild;
+                            if (greetBubble) {
+                                const bc = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
+                                bc.appendChild(confirmBar);
+                            }
+                        }, 50);
+                    }
                     // v7.15.67: Essay-plan / model-answer "Save it?" trigger — when the
                     // student confirms the final-save prompt (clicks "A — Yes, save it"
                     // or types "yes"), find the most recent AI message that proposed a
@@ -2355,7 +2409,23 @@
                                 if (!state.plan.grade && detected.grade) { state.plan.grade = detected.grade; console.log('WML: Force-extracted grade:', detected.grade); }
                             }
                             if (!state._phaseMarkedComplete && assessCompleteBtnRef.value && assessCompleteBtnRef.value.style.display === 'none') {
-                                const isAssessmentDone = detected.isComplete || state.step >= 8 || (state.plan.total_score && state.plan.grade);
+                                // v7.17.47: State-machine gate for AQA Literature. Requires
+                                // tables_emitted_total === 5 AND completion_emitted when state
+                                // block is active. Prevents false-positive when AI emits
+                                // [ASSESSMENT_COMPLETE] after partial scoring (Mohammed case).
+                                let isAssessmentDone = detected.isComplete || state.step >= 8 || (state.plan.total_score && state.plan.grade);
+                                if (res.assessmentState) {
+                                    const fullyScored = (res.assessmentState.tables_emitted_total === 5)
+                                        && res.assessmentState.completion_emitted;
+                                    if (!fullyScored) {
+                                        console.log('WML: Mark Complete HELD by state machine - '
+                                            + res.assessmentState.tables_emitted_total + '/5 tables, complete='
+                                            + res.assessmentState.completion_emitted);
+                                        isAssessmentDone = false;
+                                    } else {
+                                        isAssessmentDone = true;
+                                    }
+                                }
                                 if (isAssessmentDone) {
                                     assessCompleteBtnRef.value.style.display = '';
                                     assessCompleteBtnRef.value.classList.add('swml-assess-ready');
@@ -2370,7 +2440,10 @@
                                 }
                             }
                             if (!state._phaseMarkedComplete && assessCompleteBtnRef.value && assessCompleteBtnRef.value.style.display === 'none') {
-                                if (/Closing\s+Summary/i.test(res.reply) || /Session\s+Complete/i.test(res.reply)) {
+                                // v7.17.47: Also gate the Closing Summary safety-net on state machine.
+                                const _stateGateOk = !res.assessmentState
+                                    || ((res.assessmentState.tables_emitted_total === 5) && res.assessmentState.completion_emitted);
+                                if (_stateGateOk && (/Closing\s+Summary/i.test(res.reply) || /Session\s+Complete/i.test(res.reply))) {
                                     assessCompleteBtnRef.value.style.display = '';
                                     assessCompleteBtnRef.value.classList.add('swml-assess-ready');
                                     assessCompleteBtnRef.value.style.opacity = '0';
@@ -5588,8 +5661,32 @@
                     };
                     setTimeout(() => _waitAndSend(0), 500);
                 } else if (state.task === 'assessment') {
-                    // Assessment greeting — grade target question
-                    setTimeout(() => {
+                    // Assessment greeting — grade target question.
+                    // v7.17.47: Editor-ready poll replaces fixed 500ms setTimeout.
+                    // Prior behaviour fired the "haven't written your response yet"
+                    // false positive when TipTap editor mount raced the 500ms timer
+                    // (student Mohammed 2026-04-24, AQA R&J diagnostic). Poll every
+                    // 250ms for up to ~4.5s waiting for editor + response sections +
+                    // baseline snapshot. If still not ready after the budget, fall
+                    // through with whatever `getResponseWordCount` returns — don't
+                    // hang UI indefinitely on a broken mount.
+                    const _waitEditorReady = (tryNum) => {
+                        const editorEl = canvasEditor ? canvasEditor.options?.element : null;
+                        const hasResponseSections = editorEl
+                            ? editorEl.querySelectorAll('[data-section-type="response"]').length > 0
+                            : false;
+                        const baselineCaptured = editorEl
+                            ? typeof editorEl._swmlResponseBaseline === 'number'
+                            : false;
+                        const ready = !!canvasEditor && hasResponseSections && baselineCaptured;
+                        if (ready || tryNum >= 18) {
+                            console.log('WML Assessment: editor-ready poll exit — ready=' + ready + ' tries=' + tryNum);
+                            _runAssessmentGreeting();
+                        } else {
+                            setTimeout(() => _waitEditorReady(tryNum + 1), 250);
+                        }
+                    };
+                    const _runAssessmentGreeting = () => {
                     const assessTextName = state.textName || state.text || 'your text';
                     const assessWc = getResponseWordCount(canvasEditor);
                     const questionText = extractEssayQuestion(canvasEditor);
@@ -5657,7 +5754,8 @@
                         }
                     }, 50);
                     initAssessmentState();
-                    }, 200);
+                    };
+                    _waitEditorReady(0);
                 } else if (canvasInMarkScheme) {
                     // v7.14.50: Mark scheme — welcome message explaining why this matters, then silent auto-send
                     const msFirstName = (config.userName || '').split(' ')[0] || 'there';

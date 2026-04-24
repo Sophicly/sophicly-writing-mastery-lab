@@ -609,4 +609,132 @@ class SWML_Session_Manager {
 
         return true;
     }
+
+    // ═══════════════════════════════════════════
+    //  ASSESSMENT STATE POINTER (v7.17.47)
+    //  Per-attempt pointer tracking for detour-and-return protocol enforcement.
+    //  Stored as single user_meta `swml_assessment_states` JSON dict keyed by
+    //  compound signature: {board}_{text}[_t{topic}][_{suffix}]_a{attempt}.
+    // ═══════════════════════════════════════════
+
+    /**
+     * Build the compound state key for an attempt signature.
+     * Matches swml_attempts_* parsing logic in class-rest-api.php.
+     */
+    public static function build_assessment_state_key($board, $text, $topic = 0, $suffix = '', $attempt = 1) {
+        $parts = [sanitize_key($board), sanitize_key($text)];
+        $topic = absint($topic);
+        if ($topic > 0) $parts[] = 't' . $topic;
+        $suffix = trim((string) $suffix, '_');
+        if ($suffix !== '') $parts[] = sanitize_key($suffix);
+        $parts[] = 'a' . max(1, absint($attempt));
+        return implode('_', $parts);
+    }
+
+    /**
+     * Default assessment state object for a fresh attempt.
+     */
+    private static function default_assessment_state() {
+        return [
+            'current_paragraph'         => 'intro',
+            'paragraphs_scored'         => [],
+            'tables_emitted_total'      => 0,
+            'tables_expected'           => 5,
+            'last_ai_turn_produced_table' => false,
+            'detour_depth'              => 0,
+            'pending_resume_confirm'    => false,
+            'completion_emitted'        => false,
+            'updated_at'                => current_time('c'),
+        ];
+    }
+
+    /**
+     * Load the states dict for a user. Always returns an array.
+     */
+    private static function load_assessment_states_blob($user_id) {
+        $raw = get_user_meta($user_id, 'swml_assessment_states', true);
+        if (empty($raw)) return [];
+        if (is_array($raw)) return $raw;
+        $decoded = json_decode($raw, true);
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * Get the assessment state for a specific attempt.
+     * Returns the default state object when no prior state is found.
+     */
+    public static function get_assessment_state($user_id, $board, $text, $topic = 0, $suffix = '', $attempt = 1) {
+        $key = self::build_assessment_state_key($board, $text, $topic, $suffix, $attempt);
+        $blob = self::load_assessment_states_blob($user_id);
+        if (!empty($blob[$key]) && is_array($blob[$key])) {
+            return array_merge(self::default_assessment_state(), $blob[$key]);
+        }
+        return self::default_assessment_state();
+    }
+
+    /**
+     * Shallow-merge a patch into the assessment state for a specific attempt.
+     * Returns the updated state.
+     */
+    public static function update_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt, $patch) {
+        $key = self::build_assessment_state_key($board, $text, $topic, $suffix, $attempt);
+        $blob = self::load_assessment_states_blob($user_id);
+        $current = !empty($blob[$key]) && is_array($blob[$key])
+            ? array_merge(self::default_assessment_state(), $blob[$key])
+            : self::default_assessment_state();
+
+        if (is_array($patch)) {
+            foreach ($patch as $k => $v) {
+                $current[$k] = $v;
+            }
+        }
+        $current['updated_at'] = current_time('c');
+        $blob[$key] = $current;
+        update_user_meta($user_id, 'swml_assessment_states', wp_slash(wp_json_encode($blob)));
+        return $current;
+    }
+
+    /**
+     * Reset assessment state for an attempt (used by frontend "restart this attempt" action).
+     */
+    public static function reset_assessment_state($user_id, $board, $text, $topic = 0, $suffix = '', $attempt = 1) {
+        $key = self::build_assessment_state_key($board, $text, $topic, $suffix, $attempt);
+        $blob = self::load_assessment_states_blob($user_id);
+        unset($blob[$key]);
+        update_user_meta($user_id, 'swml_assessment_states', wp_slash(wp_json_encode($blob)));
+        return self::default_assessment_state();
+    }
+
+    /**
+     * Ordered list of paragraph keys. Used by progression logic + UI labels.
+     */
+    public static function assessment_paragraph_order() {
+        return ['intro', 'body_1', 'body_2', 'body_3', 'conclusion', 'done'];
+    }
+
+    /**
+     * Human-readable paragraph labels (for chat prompts + UI).
+     */
+    public static function assessment_paragraph_label($key) {
+        $labels = [
+            'intro'      => 'Introduction',
+            'body_1'     => 'Body Paragraph 1',
+            'body_2'     => 'Body Paragraph 2',
+            'body_3'     => 'Body Paragraph 3',
+            'conclusion' => 'Conclusion',
+            'done'       => 'Complete',
+        ];
+        return $labels[$key] ?? $key;
+    }
+
+    /**
+     * Return the paragraph key that comes AFTER the given key in the sequence.
+     * Returns 'done' if already at conclusion or beyond.
+     */
+    public static function assessment_next_paragraph($current) {
+        $order = self::assessment_paragraph_order();
+        $idx = array_search($current, $order, true);
+        if ($idx === false || $idx >= count($order) - 1) return 'done';
+        return $order[$idx + 1];
+    }
 }

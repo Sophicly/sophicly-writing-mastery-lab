@@ -732,6 +732,16 @@ class SWML_Protocol_Router {
             }
         }
 
+        // v7.17.47: Assessment detour-and-return state block.
+        // Appended at the END of instructions so it sits closest to the user turn
+        // (highest LLM weight). Gated to AQA Literature assessment tasks only;
+        // returns empty string for all other contexts (pilot scope).
+        $state_block = $this->build_assessment_state_block($context, $user_id);
+        if ($state_block !== '') {
+            $query->instructions = ($query->instructions ?? '') . $state_block;
+            error_log("WML Router: Assessment state block appended, +" . strlen($state_block) . " chars");
+        }
+
         error_log("WML Router: Final instructions = " . strlen($query->instructions) . " chars for botId={$bot_id}");
 
         // v7.17.1: diagnostic presence checks — verify expected content made it into final prompt.
@@ -3000,5 +3010,302 @@ TEMPLATE;
         }
 
         return $section;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  ASSESSMENT DETOUR-AND-RETURN STATE MACHINE (v7.17.47)
+    //  AQA Literature pilot. Gates: board === 'aqa' && literature subject.
+    //  Reads/writes state via SWML_Session_Manager::*_assessment_state().
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * AQA literature subjects eligible for the v7.17.47 state machine.
+     * Non-matching contexts retain pre-v7.17.47 prose-only flow.
+     */
+    public static function is_assessment_state_machine_enabled($context) {
+        if (empty($context) || !is_array($context)) return false;
+        $board   = self::normalize_board($context['board'] ?? '');
+        $subject = $context['subject'] ?? '';
+        $task    = $context['task'] ?? '';
+        if ($board !== 'aqa') return false;
+        if ($task !== 'assessment' && $task !== 'redraft_assessment') return false;
+        $lit_subjects = ['shakespeare', 'modern_text', '19th_century', 'poetry_anthology', 'unseen_poetry'];
+        return in_array($subject, $lit_subjects, true);
+    }
+
+    /**
+     * Resolve attempt signature fields from the request context globals + active session.
+     * Returns [board, text, topic, suffix, attempt] or null if insufficient data.
+     */
+    private static function resolve_attempt_signature($context) {
+        global $swml_request_context;
+        $board   = $swml_request_context['board']        ?? ($context['board'] ?? '');
+        $text    = $swml_request_context['text']         ?? ($context['text'] ?? '');
+        $topic   = (int) ($swml_request_context['topic_number'] ?? ($context['topic_number'] ?? 0));
+        $suffix  = $swml_request_context['suffix']       ?? ($context['suffix'] ?? '');
+        $attempt = (int) ($swml_request_context['attempt'] ?? ($context['attempt'] ?? 1));
+        if (empty($board) || empty($text)) return null;
+        if ($attempt < 1) $attempt = 1;
+        return [$board, $text, $topic, $suffix, $attempt];
+    }
+
+    /**
+     * Build the dynamic ASSESSMENT STATE block appended to system instructions.
+     * Returns empty string when the state machine is not enabled for this context.
+     */
+    public function build_assessment_state_block($context, $user_id) {
+        if (!self::is_assessment_state_machine_enabled($context)) return '';
+        $sig = self::resolve_attempt_signature($context);
+        if (!$sig) return '';
+        list($board, $text, $topic, $suffix, $attempt) = $sig;
+
+        $state = SWML_Session_Manager::get_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt);
+        if (!empty($state['completion_emitted'])) {
+            return '';
+        }
+
+        $current = $state['current_paragraph'] ?? 'intro';
+        $next    = SWML_Session_Manager::assessment_next_paragraph($current);
+        $current_label = SWML_Session_Manager::assessment_paragraph_label($current);
+        $next_label    = SWML_Session_Manager::assessment_paragraph_label($next);
+        $emitted       = (int) ($state['tables_emitted_total'] ?? 0);
+        $expected      = (int) ($state['tables_expected'] ?? 5);
+        $depth         = (int) ($state['detour_depth'] ?? 0);
+        $pending       = !empty($state['pending_resume_confirm']);
+        $scored_list   = implode(', ', array_map([SWML_Session_Manager::class, 'assessment_paragraph_label'],
+                                                  (array) ($state['paragraphs_scored'] ?? [])));
+        if ($scored_list === '') $scored_list = 'none yet';
+
+        $block  = "\n\n---\n\n";
+        $block .= "## ASSESSMENT STATE — YOU ARE MID-ATTEMPT\n\n";
+        $block .= "**Current paragraph:** {$current_label} (key: `{$current}`)\n";
+        $block .= "**Sequence:** Introduction → Body Paragraph 1 → Body Paragraph 2 → Body Paragraph 3 → Conclusion\n";
+        $block .= "**Paragraphs scored so far:** {$scored_list}\n";
+        $block .= "**Tables produced:** {$emitted} of {$expected}\n";
+        $block .= "**Detour depth:** {$depth}" . ($depth >= 3 ? " (AT CAP — return to assessment now)" : "") . "\n";
+        $block .= "**Pending resume-confirm:** " . ($pending ? 'YES — student has not yet confirmed continue' : 'no') . "\n\n";
+        $block .= "### RULES — NON-NEGOTIABLE\n\n";
+        if ($pending) {
+            $block .= "1. Student has NOT yet confirmed they want to continue. Your turn MUST be a resume-confirm block:\n";
+            $block .= "   \"Does that clear it up? Shall we continue with **{$current_label}**?\"\n";
+            $block .= "   followed by these quick actions (include verbatim so the frontend renders buttons):\n";
+            $block .= "   `[✓ Got it — continue]` `[🤔 Still confused]` `[💬 Different question]` `[⏸ Pause here]`\n";
+            $block .= "2. Do NOT produce a paragraph mark table yet.\n";
+        } else {
+            $block .= "1. Your NEXT output MUST be the granular mark table for **{$current_label}** UNLESS the student asked a clarifying question.\n";
+            $block .= "2. Mark-table format: columns `Element | AO | Worth | Score | Why`. End with `Total Mark for {$current_label}: X / Y` on its own line.\n";
+            $block .= "3. If the student's last turn is a clarifying question (not an answer), engage Socratically. Do NOT produce a mark table during a detour.\n";
+            $block .= "4. After resolving a detour, you MUST emit a resume-confirm block:\n";
+            $block .= "   \"Does that clear it up? Shall we continue with **{$current_label}**?\"\n";
+            $block .= "   followed by: `[✓ Got it — continue]` `[🤔 Still confused]` `[💬 Different question]` `[⏸ Pause here]`\n";
+            $block .= "5. Never infer paragraph selection from an ambiguous one-word reply — always consult this state block.\n";
+        }
+        if ($depth >= 3) {
+            $block .= "6. Detour depth is at cap. Politely nudge: \"Let's pause the detour and come back to your assessment.\"\n";
+        }
+        if ($current === 'conclusion') {
+            $block .= "\nAfter the Conclusion table, emit on a single line:\n";
+            $block .= "`Total: X/34` then `Grade: N` then `[ASSESSMENT_COMPLETE]` (all three in the SAME message).\n";
+        }
+        $block .= "\n_You are in v7.17.47 AQA Literature Diagnostic Assessment pilot mode._\n";
+        return $block;
+    }
+
+    /**
+     * Advance assessment state based on the AI's reply + student's last turn.
+     * Called from class-rest-api.php handle_chat() after a successful reply.
+     *
+     * Progression rules:
+     *  - Detect mark table emission for current_paragraph → advance pointer.
+     *  - Detect [ASSESSMENT_COMPLETE] or Total+Grade → set completion_emitted.
+     *  - Detect student clarifying question → increment detour_depth (capped at 3).
+     *  - Detect resume confirm → clear pending_resume_confirm (actual advance
+     *    happens when the NEXT AI turn produces the expected paragraph table).
+     *
+     * Returns the updated state array, or null if the state machine is not
+     * enabled for this context.
+     */
+    public function progress_assessment_state($user_id, $context, $ai_reply, $student_turn) {
+        if (!self::is_assessment_state_machine_enabled($context)) return null;
+        $sig = self::resolve_attempt_signature($context);
+        if (!$sig) return null;
+        list($board, $text, $topic, $suffix, $attempt) = $sig;
+
+        $state = SWML_Session_Manager::get_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt);
+        if (!empty($state['completion_emitted'])) return $state;
+
+        $reply   = (string) $ai_reply;
+        $student = trim((string) $student_turn);
+        $patch   = [];
+        $current = $state['current_paragraph'] ?? 'intro';
+
+        // ── Student-turn classification ────────────────────────────────────
+        // Student-question detector: trailing `?` or leading interrogative.
+        $is_question = (bool) preg_match(
+            '/\?\s*$|^(what|why|how|when|where|which|who|can you explain|could you explain|i don\'?t understand)\b/i',
+            $student
+        );
+        // Explicit confirm (typed or quick-action payload).
+        $is_confirm = (bool) preg_match(
+            '/^(yes|continue|got it|ready|ok|okay|advance|next|carry on|keep going|✓\s*got it|\[continue\])/i',
+            $student
+        );
+
+        // If student just asked a new question → deepen detour (capped at 3).
+        if ($is_question && !$is_confirm) {
+            $patch['detour_depth'] = min(3, (int) ($state['detour_depth'] ?? 0) + 1);
+        }
+        // If student confirmed → clear detour + pending flag. Pointer advances
+        // when the AI's NEXT table emission is detected below.
+        if ($is_confirm) {
+            $patch['detour_depth'] = 0;
+            $patch['pending_resume_confirm'] = false;
+        }
+
+        // ── AI-turn classification ──────────────────────────────────────────
+        $has_complete_marker = preg_match('/\[ASSESSMENT_COMPLETE\]/i', $reply)
+            || (preg_match('/Total[:\s]+\d+(?:\.\d+)?\s*\/\s*\d+/i', $reply) && preg_match('/\bGrade[:\s]+\d/i', $reply));
+
+        // Per-paragraph table detection (match current_paragraph first; allow
+        // catch-up advance if AI produced a later table than expected).
+        $produced_table_for = null;
+        $table_checks = [
+            'intro'      => '/Total Mark for (?:Introduction|Paragraph\s*1)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*3\b/i',
+            'body_1'     => '/Total Mark for (?:Body\s*Paragraph\s*1|Paragraph\s*2)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*7\b/i',
+            'body_2'     => '/Total Mark for (?:Body\s*Paragraph\s*2|Paragraph\s*3)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*7\b/i',
+            'body_3'     => '/Total Mark for (?:Body\s*Paragraph\s*3|Paragraph\s*4)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*7\b/i',
+            'conclusion' => '/Total Mark for (?:Conclusion|Paragraph\s*5)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*(?:6|11)\b/i',
+        ];
+        foreach ($table_checks as $pkey => $pattern) {
+            if (preg_match($pattern, $reply)) {
+                $produced_table_for = $pkey;
+                break; // First match wins — only one table per turn expected.
+            }
+        }
+
+        // Fallback: loose detection via heading + score when exact phrase absent.
+        if ($produced_table_for === null) {
+            $fallback_checks = [
+                'intro'      => '/\bIntroduction\b[\s\S]{0,1200}?\b\d+(?:\.\d+)?\s*\/\s*3\b/i',
+                'body_1'     => '/\bBody\s*Paragraph\s*1\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*7\b/i',
+                'body_2'     => '/\bBody\s*Paragraph\s*2\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*7\b/i',
+                'body_3'     => '/\bBody\s*Paragraph\s*3\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*7\b/i',
+                'conclusion' => '/\bConclusion\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*(?:6|11)\b/i',
+            ];
+            $current_pattern = $fallback_checks[$current] ?? null;
+            if ($current_pattern && preg_match($current_pattern, $reply)) {
+                $produced_table_for = $current;
+            }
+        }
+
+        if ($produced_table_for !== null) {
+            $scored = (array) ($state['paragraphs_scored'] ?? []);
+            if (!in_array($produced_table_for, $scored, true)) {
+                $scored[] = $produced_table_for;
+            }
+            $patch['paragraphs_scored'] = $scored;
+            $patch['tables_emitted_total'] = min(
+                (int) ($state['tables_expected'] ?? 5),
+                count($scored)
+            );
+            $patch['last_ai_turn_produced_table'] = true;
+            // Advance current_paragraph when AI scored the paragraph the pointer was on.
+            if ($produced_table_for === $current) {
+                $patch['current_paragraph'] = SWML_Session_Manager::assessment_next_paragraph($current);
+                // After a table, AI SHOULD emit a resume-confirm unless final paragraph.
+                if ($patch['current_paragraph'] !== 'done') {
+                    $patch['pending_resume_confirm'] = true;
+                }
+            }
+        } else {
+            $patch['last_ai_turn_produced_table'] = false;
+            // If AI's reply contains the resume-confirm prompt shape (signals
+            // it is waiting for the student), flip pending flag on.
+            if (preg_match('/(shall we continue with|ready to continue with|let(?:\'|&#39;)?s continue with)/i', $reply)
+                && preg_match('/got it.*continue|still confused|different question|pause here/i', $reply)) {
+                $patch['pending_resume_confirm'] = true;
+            }
+        }
+
+        if ($has_complete_marker) {
+            $patch['completion_emitted'] = true;
+            $patch['current_paragraph'] = 'done';
+        }
+
+        // Detour cap: if depth hit 3, surface via log so we can observe.
+        if (($patch['detour_depth'] ?? $state['detour_depth'] ?? 0) >= 3) {
+            error_log('WML Assessment State: detour_depth at cap (3) for user ' . (int) $user_id);
+        }
+
+        if (empty($patch)) return $state;
+
+        return SWML_Session_Manager::update_assessment_state(
+            $user_id, $board, $text, $topic, $suffix, $attempt, $patch
+        );
+    }
+
+    /**
+     * Migration: infer state pointer from existing chat history for attempts
+     * started BEFORE v7.17.47. Counts paragraph tables in the stored blob.
+     * Called lazily on first chat turn after upgrade.
+     */
+    public function migrate_assessment_state_from_history($user_id, $context, $chat_history) {
+        if (!self::is_assessment_state_machine_enabled($context)) return null;
+        $sig = self::resolve_attempt_signature($context);
+        if (!$sig) return null;
+        list($board, $text, $topic, $suffix, $attempt) = $sig;
+
+        $existing = SWML_Session_Manager::get_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt);
+        // Only run migration once per attempt — if state has already been
+        // touched (e.g. scored list non-empty OR a table flag set), skip.
+        if (!empty($existing['paragraphs_scored']) || !empty($existing['tables_emitted_total'])) {
+            return $existing;
+        }
+
+        if (empty($chat_history) || !is_array($chat_history)) return $existing;
+
+        $scored = [];
+        $paragraph_patterns = [
+            'intro'      => '/\bIntroduction\b[\s\S]{0,1200}?\b\d+(?:\.\d+)?\s*\/\s*3\b/i',
+            'body_1'     => '/\bBody\s*Paragraph\s*1\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*7\b/i',
+            'body_2'     => '/\bBody\s*Paragraph\s*2\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*7\b/i',
+            'body_3'     => '/\bBody\s*Paragraph\s*3\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*7\b/i',
+            'conclusion' => '/\bConclusion\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*(?:6|11)\b/i',
+        ];
+        $complete = false;
+        foreach ($chat_history as $msg) {
+            $role = $msg['role'] ?? '';
+            if ($role !== 'assistant') continue;
+            $content = (string) ($msg['content'] ?? '');
+            if ($content === '') continue;
+            foreach ($paragraph_patterns as $pkey => $pattern) {
+                if (!in_array($pkey, $scored, true) && preg_match($pattern, $content)) {
+                    $scored[] = $pkey;
+                }
+            }
+            if (preg_match('/\[ASSESSMENT_COMPLETE\]/i', $content)
+                || (preg_match('/Total[:\s]+\d+(?:\.\d+)?\s*\/\s*\d+/i', $content) && preg_match('/\bGrade[:\s]+\d/i', $content))) {
+                $complete = true;
+            }
+        }
+
+        // Pointer points at first paragraph NOT yet scored.
+        $order = SWML_Session_Manager::assessment_paragraph_order();
+        $pointer = 'intro';
+        foreach ($order as $pkey) {
+            if ($pkey === 'done') { $pointer = 'done'; break; }
+            if (!in_array($pkey, $scored, true)) { $pointer = $pkey; break; }
+            $pointer = SWML_Session_Manager::assessment_next_paragraph($pkey);
+        }
+
+        $patch = [
+            'current_paragraph'    => $complete ? 'done' : $pointer,
+            'paragraphs_scored'    => $scored,
+            'tables_emitted_total' => count($scored),
+            'completion_emitted'   => $complete,
+        ];
+        return SWML_Session_Manager::update_assessment_state(
+            $user_id, $board, $text, $topic, $suffix, $attempt, $patch
+        );
     }
 }

@@ -259,6 +259,18 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
+        // v7.17.47: Assessment detour-and-return state pointer.
+        // GET — read state for an attempt signature (board+text+topic+suffix+attempt).
+        // POST — update state from frontend quick actions (resume confirm, reset).
+        register_rest_route($namespace, '/assessment-state', [
+            'methods' => 'GET', 'callback' => [$this, 'get_assessment_state'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/assessment-state', [
+            'methods' => 'POST', 'callback' => [$this, 'update_assessment_state'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+
         // Creative writing project storage (v7.13.30)
         register_rest_route($namespace, '/cw-project', [
             'methods' => 'POST', 'callback' => [$this, 'save_cw_project'],
@@ -647,7 +659,30 @@ class SWML_REST_API {
             'topic_number' => absint($params['topicNumber'] ?? 0),
             'phase'   => sanitize_text_field($params['phase'] ?? ''),
             'marks'   => absint($params['marks'] ?? 0),
+            // v7.17.47: attempt + suffix needed for assessment state pointer
+            'attempt' => max(1, absint($params['attempt'] ?? 1)),
+            'suffix'  => sanitize_text_field($params['suffix'] ?? ''),
         ];
+
+        // v7.17.47: For AQA Literature assessments, run migration inference
+        // on the chat history BEFORE invoking the AI. Attempts that predate
+        // v7.17.47 have no state pointer; this backfills one from the stored
+        // table history on first post-upgrade turn.
+        if (class_exists('SWML_Protocol_Router')) {
+            $router = SWML_Protocol_Router::instance();
+            $migration_context = [
+                'board'        => $swml_request_context['board'],
+                'subject'      => $swml_request_context['subject'],
+                'task'         => $swml_request_context['task'],
+                'text'         => $swml_request_context['text'],
+                'topic_number' => $swml_request_context['topic_number'],
+                'suffix'       => $swml_request_context['suffix'],
+                'attempt'      => $swml_request_context['attempt'],
+            ];
+            if (SWML_Protocol_Router::is_assessment_state_machine_enabled($migration_context)) {
+                $router->migrate_assessment_state_from_history($user_id, $migration_context, $history);
+            }
+        }
 
         // Session context: prefer params sent with chat request (authoritative),
         // fall back to wml_active_session only if params not provided.
@@ -832,14 +867,44 @@ class SWML_REST_API {
                 $model_label = 'GPT';
             }
 
-            return rest_ensure_response([
+            // v7.17.47: Assessment state progression. Detects mark table
+            // emissions, resume-confirm shape, completion marker, and student
+            // question/confirm turns. Returns null when the state machine is
+            // not enabled (non-AQA-lit or non-assessment task).
+            $assessment_state = null;
+            if (class_exists('SWML_Protocol_Router')) {
+                $router = SWML_Protocol_Router::instance();
+                $prog_context = [
+                    'board'        => $swml_request_context['board']        ?? '',
+                    'subject'      => $swml_request_context['subject']      ?? '',
+                    'task'         => $swml_request_context['task']         ?? '',
+                    'text'         => $swml_request_context['text']         ?? '',
+                    'topic_number' => $swml_request_context['topic_number'] ?? 0,
+                    'suffix'       => $swml_request_context['suffix']       ?? '',
+                    'attempt'      => $swml_request_context['attempt']      ?? 1,
+                ];
+                if (SWML_Protocol_Router::is_assessment_state_machine_enabled($prog_context)) {
+                    $assessment_state = $router->progress_assessment_state(
+                        $user_id,
+                        $prog_context,
+                        $reply,
+                        $prompt
+                    );
+                }
+            }
+
+            $response_payload = [
                 'success' => true,
                 'reply' => $reply,
                 'chatId' => $reply_chat_id,
                 'method' => $method_used,
                 'model' => $model_label,
                 'modelBot' => $model_used,
-            ]);
+            ];
+            if ($assessment_state !== null) {
+                $response_payload['assessmentState'] = $assessment_state;
+            }
+            return rest_ensure_response($response_payload);
         }
 
         return rest_ensure_response([
@@ -3348,6 +3413,130 @@ class SWML_REST_API {
         }
 
         return rest_ensure_response(['results' => $all]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  ASSESSMENT STATE POINTER — REST HANDLERS (v7.17.47)
+    //  Permission: student (self only). Tutors/admins MAY read via the
+    //  ?student_id= escape hatch but not write (mirrors other /student/ paths).
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Resolve the target user_id for an assessment-state request.
+     * Self by default; ?student_id= allowed for admin/tutor/SSS (read only).
+     * Returns [user_id, is_self].
+     */
+    private function resolve_assessment_state_user($request, $for_write = false) {
+        $viewer_id = get_current_user_id();
+        $student_id = absint($request->get_param('student_id') ?? 0);
+        if (!$student_id || $student_id === $viewer_id) {
+            return [$viewer_id, true];
+        }
+        if ($for_write) {
+            return [new WP_Error('forbidden', 'Write only allowed on own state', ['status' => 403]), false];
+        }
+        $att_role  = get_user_meta($viewer_id, 'sophicly_att_role', true);
+        $soph_role = get_user_meta($viewer_id, 'sophicly_role', true);
+        $allowed = current_user_can('manage_options')
+            || $att_role === 'tutor'
+            || $att_role === 'specialist'
+            || $soph_role === 'sss';
+        if (!$allowed) {
+            return [new WP_Error('forbidden', 'Not authorised to view this student', ['status' => 403]), false];
+        }
+        return [$student_id, false];
+    }
+
+    /**
+     * GET /sophicly-wml/v1/assessment-state?board=&text=&topicNumber=&suffix=&attempt=
+     * Returns current state for the attempt signature.
+     */
+    public function get_assessment_state($request) {
+        list($user_id, $is_self) = $this->resolve_assessment_state_user($request, false);
+        if (is_wp_error($user_id)) return $user_id;
+
+        $board  = sanitize_text_field($request->get_param('board') ?? '');
+        $text   = sanitize_text_field($request->get_param('text') ?? '');
+        $topic  = absint($request->get_param('topicNumber') ?? 0);
+        $suffix = sanitize_text_field($request->get_param('suffix') ?? '');
+        $attempt = max(1, absint($request->get_param('attempt') ?? 1));
+
+        if (empty($board) || empty($text)) {
+            return new WP_Error('missing_params', 'board and text required', ['status' => 400]);
+        }
+
+        $state = SWML_Session_Manager::get_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt);
+
+        // Include human-friendly labels + sequence for frontend convenience.
+        $current = $state['current_paragraph'] ?? 'intro';
+        $state['current_paragraph_label'] = SWML_Session_Manager::assessment_paragraph_label($current);
+        $state['next_paragraph']          = SWML_Session_Manager::assessment_next_paragraph($current);
+        $state['next_paragraph_label']    = SWML_Session_Manager::assessment_paragraph_label($state['next_paragraph']);
+
+        return rest_ensure_response([
+            'success' => true,
+            'state'   => $state,
+            'signature' => [
+                'board' => $board, 'text' => $text,
+                'topic' => $topic, 'suffix' => $suffix, 'attempt' => $attempt,
+            ],
+        ]);
+    }
+
+    /**
+     * POST /sophicly-wml/v1/assessment-state
+     * Body: { board, text, topicNumber, suffix, attempt, action, patch? }
+     * Actions:
+     *  - 'resume_confirm'   → clear pending_resume_confirm + reset detour_depth
+     *  - 'mark_pending'     → set pending_resume_confirm = true (frontend detour emitted)
+     *  - 'reset'            → wipe state for this attempt
+     *  - 'patch'            → shallow-merge provided `patch` object
+     */
+    public function update_assessment_state($request) {
+        $gate = $this->check_viewer_write_allowed($request);
+        if (is_wp_error($gate)) return $gate;
+
+        list($user_id, $is_self) = $this->resolve_assessment_state_user($request, true);
+        if (is_wp_error($user_id)) return $user_id;
+
+        $params = $request->get_json_params();
+        $board  = sanitize_text_field($params['board'] ?? '');
+        $text   = sanitize_text_field($params['text'] ?? '');
+        $topic  = absint($params['topicNumber'] ?? 0);
+        $suffix = sanitize_text_field($params['suffix'] ?? '');
+        $attempt = max(1, absint($params['attempt'] ?? 1));
+        $action = sanitize_text_field($params['action'] ?? 'patch');
+
+        if (empty($board) || empty($text)) {
+            return new WP_Error('missing_params', 'board and text required', ['status' => 400]);
+        }
+
+        if ($action === 'reset') {
+            $state = SWML_Session_Manager::reset_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt);
+            return rest_ensure_response(['success' => true, 'state' => $state]);
+        }
+
+        $patch = [];
+        if ($action === 'resume_confirm') {
+            $patch = ['pending_resume_confirm' => false, 'detour_depth' => 0];
+        } elseif ($action === 'mark_pending') {
+            $patch = ['pending_resume_confirm' => true];
+        } elseif ($action === 'patch') {
+            $allowed_keys = [
+                'current_paragraph', 'paragraphs_scored', 'tables_emitted_total',
+                'tables_expected', 'last_ai_turn_produced_table', 'detour_depth',
+                'pending_resume_confirm', 'completion_emitted',
+            ];
+            $raw = is_array($params['patch'] ?? null) ? $params['patch'] : [];
+            foreach ($allowed_keys as $k) {
+                if (array_key_exists($k, $raw)) $patch[$k] = $raw[$k];
+            }
+        } else {
+            return new WP_Error('bad_action', "unknown action '{$action}'", ['status' => 400]);
+        }
+
+        $state = SWML_Session_Manager::update_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt, $patch);
+        return rest_ensure_response(['success' => true, 'state' => $state]);
     }
 }
 
