@@ -9224,11 +9224,14 @@
 
         // ── Initialise TipTap Editor ──
         let savedContent = state.reviewMode ? null : loadCanvasContent(); // Review mode: skip localStorage, server will inject
-        // v7.13.42: CW tasks — always clear stale localStorage so fresh template loads
-        // CW documents are saved as project artifacts on the server, not localStorage
-        if (isCwTask) {
-            savedContent = '';
-        }
+        // v7.13.42 (REMOVED v7.17.41): CW tasks used to discard localStorage unconditionally
+        // on mount because "CW documents are saved as project artifacts on the server, not
+        // localStorage". v7.17.38+ made CANVAS_SAVE_KEY() project-scoped, and v7.17.40+
+        // mirrors typing into the artifact too — so localStorage is now the correct
+        // fast-path for typed text and discarding it was the primary cause of the
+        // Writer Profile text-loss bug. Left CW using the same read path as everything
+        // else; downstream tryCwPrePopulate / _loadCWProjectIntoEditor still enforce an
+        // "editor populated" gate so no CW-specific override is needed here.
         // v7.14.9: Discard stale generic template (pre-v7.14.8 format without section blocks)
         // The old getDefaultEssayTemplate() used bare <h2> headings with no data-section-type.
         // If that's what's in localStorage, discard it so the board-aware template loads cleanly.
