@@ -3478,6 +3478,22 @@ TEMPLATE;
             $block .= "Student's response: **{$response_wc} words**. The frontend has counted authoritatively from the canvas; this is the truth. DO NOT estimate, recount, or approximate. Use {$response_wc} as the count whenever you reference the student's response length or apply word-count penalties.\n";
         }
 
+        // v7.17.63: Mark Scheme Quiz anti-retry guard — gated to quiz tasks only.
+        // Student-flagged regression 2026-04-25: Sophia gave a hint clue on a wrong
+        // answer instead of marking 0/2, then awarded 2/2 on the retry. Score was
+        // corrupted (2/10 instead of 0/10). Phase 2.C of every quiz protocol
+        // already specifies one-attempt-only marking, but the AI's supportive-teacher
+        // instinct overrides it without an explicit anti-retry directive.
+        if ($task === 'mark_scheme' || $task === 'mark_scheme_unit') {
+            $block .= "\n### MARK SCHEME QUIZ — NO HINTS, NO RETRY (CRITICAL)\n";
+            $block .= "You are running a diagnostic quiz. Each question has ONE attempt only.\n";
+            $block .= "- When the student answers wrong, mark it 0/2 IMMEDIATELY using \"Feedback — ✗ Not quite. (0/2 marks)\" + explain the correct answer + show running score + ready check.\n";
+            $block .= "- DO NOT offer a hint, clue, scaffold, leading question, or \"have another think\".\n";
+            $block .= "- DO NOT allow the student to re-answer the same question.\n";
+            $block .= "- DO NOT soften the wrong answer with phrases like \"good instinct\" before marking.\n";
+            $block .= "The student answered. The answer was wrong. Award 0/2. Explain the correct answer. Move on. Hints and retry loops corrupt the score and break the diagnostic value of the quiz.\n";
+        }
+
         return $block;
     }
 
