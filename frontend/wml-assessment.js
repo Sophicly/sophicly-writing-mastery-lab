@@ -1880,21 +1880,28 @@
                         // appearance. Previously emitted plain markdown via formatAI,
                         // creating a third visual variant Neil flagged 2026-04-25.
                         // v7.17.60: editor-ready poll BEFORE computing wc.
-                        // Without it, getResponseWordCount returned 0 immediately
-                        // after clear (response sections not yet re-captured →
-                        // baseline missing → 0 words flicker). Poll mirrors
-                        // _waitEditorReady at L5810 — 250ms × 18 ≈ 4.5s budget.
+                        // Original v7.17.60 only checked canvasEditor closure; if
+                        // closure was null (RunCloudRescue 2026-04-25) the poll
+                        // timed out at 4.5s with ready=false → wc=0 → flicker.
+                        // Refined: poll the LIVE DOM (#swml-tiptap-editor) for
+                        // response sections; closure-null is fine as long as DOM
+                        // has student's content. getResponseWordCount also now
+                        // survives closure-null via DOM fallback.
                         const _waitEditorReadyPostClear = (tries) => {
-                            const editorEl = canvasEditor ? canvasEditor.options?.element : null;
+                            const editorEl = (canvasEditor && canvasEditor.options && canvasEditor.options.element)
+                                || document.getElementById('swml-tiptap-editor');
                             const hasSections = editorEl
                                 ? editorEl.querySelectorAll('[data-section-type="response"]').length > 0
                                 : false;
-                            const baselineCaptured = editorEl
-                                ? typeof editorEl._swmlResponseBaseline === 'number'
-                                : false;
-                            const ready = !!canvasEditor && hasSections && baselineCaptured;
+                            // Word-count > 0 is the strongest signal the student's content
+                            // is present. Avoids waiting on baseline that may never set
+                            // when editor closure is null.
+                            const wc = (typeof getResponseWordCount === 'function' && editorEl)
+                                ? getResponseWordCount(canvasEditor)
+                                : 0;
+                            const ready = !!editorEl && hasSections && wc > 0;
                             if (ready || tries >= 18) {
-                                console.log('WML v7.17.60 clearCanvas: editor-ready poll exit ready=' + ready + ' tries=' + tries);
+                                console.log('WML v7.17.60 clearCanvas: editor-ready poll exit ready=' + ready + ' tries=' + tries + ' wc=' + wc);
                                 _renderPostClearGreeting();
                             } else {
                                 setTimeout(() => _waitEditorReadyPostClear(tries + 1), 250);
@@ -5594,16 +5601,18 @@
                         if (_shouldRegenBeforePaint) {
                             await new Promise((resolve) => {
                                 const _check = (tries) => {
-                                    const editorEl = canvasEditor ? canvasEditor.options?.element : null;
+                                    // v7.17.60: live DOM check, closure-null tolerant.
+                                    const editorEl = (canvasEditor && canvasEditor.options && canvasEditor.options.element)
+                                        || document.getElementById('swml-tiptap-editor');
                                     const hasSections = editorEl
                                         ? editorEl.querySelectorAll('[data-section-type="response"]').length > 0
                                         : false;
-                                    const baselineCaptured = editorEl
-                                        ? typeof editorEl._swmlResponseBaseline === 'number'
-                                        : false;
-                                    const ready = !!canvasEditor && hasSections && baselineCaptured;
+                                    const wc = (typeof getResponseWordCount === 'function' && editorEl)
+                                        ? getResponseWordCount(canvasEditor)
+                                        : 0;
+                                    const ready = !!editorEl && hasSections && wc > 0;
                                     if (ready || tries >= 18) {
-                                        console.log('WML v7.17.57 hoist: editor-ready poll exit ready=' + ready + ' tries=' + tries);
+                                        console.log('WML v7.17.57/60 hoist: editor-ready poll exit ready=' + ready + ' tries=' + tries + ' wc=' + wc);
                                         resolve();
                                     } else {
                                         setTimeout(() => _check(tries + 1), 250);
@@ -12412,16 +12421,29 @@
     }
 
     function getResponseWordCount(editor) {
-        if (!editor) return 0;
-        const editorEl = editor.options.element;
-        if (!editorEl) return editor.storage.characterCount?.words() || 0;
+        // v7.17.60: null-editor survival pattern (mirror v7.17.53 getResponseText).
+        // RunCloudRescue 2026-04-25: clear-chat handler computed wc immediately
+        // after clear; canvasEditor closure was null (editor destroyed/swapped
+        // mid-session) so the original `if (!editor) return 0` guard returned 0
+        // even though the live DOM had 576 words. Now falls back to live DOM
+        // lookup whenever the editor closure is invalid.
+        const liveEditorEl = (editor && editor.options && editor.options.element)
+            || document.getElementById('swml-tiptap-editor')
+            || null;
+        if (!liveEditorEl) {
+            return (editor && editor.storage && editor.storage.characterCount)
+                ? (editor.storage.characterCount.words() || 0)
+                : 0;
+        }
         // v7.14.73: Count only response sections (not outline/plan/question sections).
-        const responseSections = editorEl.querySelectorAll('[data-section-type="response"]');
+        const responseSections = liveEditorEl.querySelectorAll('[data-section-type="response"]');
         if (responseSections.length === 0) {
             // Fallback for legacy templates without section types
-            const editableSections = editorEl.querySelectorAll('[data-editable="true"]');
+            const editableSections = liveEditorEl.querySelectorAll('[data-editable="true"]');
             if (editableSections.length === 0) {
-                return editor.storage.characterCount?.words() || 0;
+                return (editor && editor.storage && editor.storage.characterCount)
+                    ? (editor.storage.characterCount.words() || 0)
+                    : 0;
             }
             let total = 0;
             editableSections.forEach(section => {
@@ -12431,7 +12453,7 @@
                 const words = text.trim().split(/\s+/).filter(w => w.length > 0);
                 total += words.length;
             });
-            const baseline = editorEl._swmlTemplateBaseline || 0;
+            const baseline = liveEditorEl._swmlTemplateBaseline || 0;
             return Math.max(0, total - baseline);
         }
         let total = 0;
@@ -12442,8 +12464,9 @@
             const words = text.trim().split(/\s+/).filter(w => w.length > 0);
             total += words.length;
         });
-        // Subtract response-only baseline
-        const baseline = editorEl._swmlResponseBaseline || 0;
+        // Subtract response-only baseline (may not exist on closure-null path —
+        // returns 0 from `|| 0`, total still reflects student's typed words).
+        const baseline = liveEditorEl._swmlResponseBaseline || 0;
         return Math.max(0, total - baseline);
     }
     // Snapshot the template word count once when editor content is first loaded.
