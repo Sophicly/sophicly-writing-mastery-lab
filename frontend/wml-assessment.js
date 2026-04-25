@@ -12383,9 +12383,16 @@
     function getResponseText(editor) {
         if (!editor) return '';
         const editorEl = editor.options.element;
-        if (!editorEl) return editor.getText() || '';
-        const responseSections = editorEl.querySelectorAll('[data-section-type="response"]');
-        if (responseSections.length === 0) return editor.getText() || '';
+        // v7.17.50: When editor.options.element is missing OR a stale reference
+        // (canvasEditor closure after attempt reload), fall back to live DOM lookup.
+        const liveEditorEl = editorEl || document.getElementById('swml-tiptap-editor');
+        if (!liveEditorEl) return editor.getText() || '';
+        const responseSections = liveEditorEl.querySelectorAll('[data-section-type="response"]');
+        if (responseSections.length === 0) {
+            const fallback = editor.getText() || '';
+            console.warn('WML getResponseText: no response section in DOM — using editor.getText() fallback, len=' + fallback.length);
+            return fallback;
+        }
 
         // Multiple response sections (e.g. EDUQAS Part A/B) — label each
         if (responseSections.length > 1) {
@@ -12400,11 +12407,15 @@
             return parts.join('\n\n');
         }
 
-        // Single response section — split into essay paragraphs for section-level assessment
-        // Query ALL block-level children (students may paste as h3, h2, p, etc.)
+        // Single response section — split into essay paragraphs for section-level assessment.
+        // v7.17.50: Include `div[data-input-field]` in block detection. InputField is a
+        // custom TipTap node (renders as <div data-input-field>) that holds student text
+        // directly as inline content without a <p> wrapper. Previously the p/h selector
+        // missed it entirely, falling through to textContent fallback — which itself
+        // returned empty in some attempt-reload scenarios. Now we treat input-field divs
+        // as block elements alongside p/h*.
         const section = responseSections[0];
-        const blockEls = section.querySelectorAll('p, h1, h2, h3, h4, h5, h6');
-        if (blockEls.length === 0) return section.textContent?.trim() || '';
+        const blockEls = section.querySelectorAll('p, h1, h2, h3, h4, h5, h6, div[data-input-field]');
 
         // Extract substantial text blocks (20+ words = essay paragraph)
         const MIN_WORDS = 20;
@@ -12422,8 +12433,27 @@
             // Skip very short fragments (≤3 words) — likely empty line artefacts
         });
 
+        // Robust fallback chain — empty blocks → section.textContent → editor.getText().
+        // v7.17.50: previously a stale canvasEditor reference after attempt reload could
+        // produce blocks=[] AND section.textContent='' simultaneously (Mohammed/RunCloudRescue
+        // 2026-04-25). Final fallback to editor.getText() catches that race so the AI
+        // always receives some essay text rather than asserting "the response is empty".
+        if (blocks.length === 0) {
+            const sectionText = section.textContent?.trim() || '';
+            if (sectionText.length > 20) {
+                console.log('WML getResponseText: blocks empty but section.textContent has ' + sectionText.length + ' chars — using as fallback');
+                return sectionText;
+            }
+            const editorText = editor.getText()?.trim() || '';
+            if (editorText.length > 20) {
+                console.log('WML getResponseText: section.textContent empty too — falling back to editor.getText() (' + editorText.length + ' chars)');
+                return editorText;
+            }
+            return '';
+        }
+
         // Single block or no blocks — return without labels
-        if (blocks.length <= 1) return blocks[0] || section.textContent?.trim() || '';
+        if (blocks.length <= 1) return blocks[0] || section.textContent?.trim() || editor.getText()?.trim() || '';
 
         // Label neutrally — the AI determines each paragraph's function (intro/body/conclusion)
         const labelled = blocks.map((block, i) => `=== PARAGRAPH ${i + 1} ===\n${block}`);
