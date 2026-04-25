@@ -12382,10 +12382,18 @@
      */
     function getResponseText(editor) {
         if (!editor) return '';
-        const editorEl = editor.options.element;
-        // v7.17.50: When editor.options.element is missing OR a stale reference
-        // (canvasEditor closure after attempt reload), fall back to live DOM lookup.
-        const liveEditorEl = editorEl || document.getElementById('swml-tiptap-editor');
+        // v7.17.51: Prefer LIVE DOM lookup unconditionally over editor.options.element.
+        // Diagnostic on RunCloudRescue 2026-04-25 showed the response section had 8 healthy
+        // <p> blocks (1 placeholder + 7 essay paragraphs, 576 words total) — yet the v7.17.50
+        // function still returned empty when called from sendCanvasMessage. Root cause:
+        // `editor.options.element` was non-null but pointed to a DETACHED DOM root (the
+        // outer canvas wrapper had been re-rendered post attempt-reload, leaving the closure
+        // ref pointing at an orphaned node). querySelectorAll on detached DOM finds nothing.
+        // The fix in v7.17.50 fell back only when editorEl was null — non-null-but-detached
+        // case wasn't covered. Now always start from document.getElementById which always
+        // resolves to the currently-attached editor; fall back to editor.options.element
+        // only if the live id lookup fails.
+        const liveEditorEl = document.getElementById('swml-tiptap-editor') || editor.options.element;
         if (!liveEditorEl) return editor.getText() || '';
         const responseSections = liveEditorEl.querySelectorAll('[data-section-type="response"]');
         if (responseSections.length === 0) {
