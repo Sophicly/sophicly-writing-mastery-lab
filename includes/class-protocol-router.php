@@ -742,6 +742,17 @@ class SWML_Protocol_Router {
             error_log("WML Router: Assessment state block appended, +" . strlen($state_block) . " chars");
         }
 
+        // v7.17.60: Universal voice/style prohibitions — fire for ALL WML tasks
+        // regardless of board/subject/task. Covers structure-confirm ban, banned
+        // vocabulary, authoritative word count (when response_wc available).
+        // The full state machine stays AQA Lit pilot, but these voice/style
+        // rules are house-wide and should constrain Sophia on every protocol.
+        $universal_block = $this->build_universal_prohibitions_block($context);
+        if ($universal_block !== '') {
+            $query->instructions = ($query->instructions ?? '') . $universal_block;
+            error_log("WML Router: Universal prohibitions appended, +" . strlen($universal_block) . " chars");
+        }
+
         error_log("WML Router: Final instructions = " . strlen($query->instructions) . " chars for botId={$bot_id}");
 
         // v7.17.1: diagnostic presence checks — verify expected content made it into final prompt.
@@ -3399,6 +3410,58 @@ TEMPLATE;
         return SWML_Session_Manager::update_assessment_state(
             $user_id, $board, $text, $topic, $suffix, $attempt, $patch
         );
+    }
+
+    /**
+     * v7.17.60: Universal voice/style prohibitions injected for ALL WML tasks
+     * (every board, every subject, every task). Mirrors the per-state-machine
+     * rules in build_assessment_state_block but applies house-wide so Sophia
+     * carries consistent guard-rails on every protocol — not just AQA Lit.
+     *
+     * Returns the prohibitions block as a string (or '' if WML context absent).
+     * Currently covers: structure-confirm ban, banned vocabulary, and the
+     * authoritative-word-count surface when response_wc is provided AND task
+     * is assessment.
+     */
+    public function build_universal_prohibitions_block($context) {
+        if (empty($context) || !is_array($context)) return '';
+        $task = $context['task'] ?? '';
+        if ($task === '') return '';
+
+        $block  = "\n\n---\n\n";
+        $block .= "## SOPHICLY UNIVERSAL VOICE + STYLE RULES\n";
+        $block .= "These rules apply across EVERY Sophicly Mastery Lab protocol — assessment, planning, polishing, mark-scheme quizzes, exam-prep — regardless of board or subject.\n";
+
+        // Structure-confirm absolute prohibition (assessment-relevant but harmless
+        // to inject on all tasks — Sophia rarely emits A/B paragraph confirms outside
+        // assessment, but the universal ban kills the pattern at source).
+        $block .= "\n### NEVER ASK STUDENTS TO CONFIRM ESSAY STRUCTURE\n";
+        $block .= "Banned phrases (and close paraphrases):\n";
+        $block .= "- \"Before I dive into the formal assessment, I need to confirm the structure\"\n";
+        $block .= "- \"I can see N paragraphs. Based on their content, I've identified...\"\n";
+        $block .= "- \"Let me confirm the structure I'm reading\"\n";
+        $block .= "- \"Is this structure correct, or would you like to clarify anything?\"\n";
+        $block .= "- \"Is this correct? A — Yes / B — No, let me clarify\"\n";
+        $block .= "- ANY A/B option pair regarding paragraph identification.\n";
+        $block .= "Identify paragraphs silently from the canvas's `data-section-type=\"response\"` boundaries. If a paragraph appears malformed, raise it as a non-confirmatory open question, not an A/B prompt.\n";
+
+        // Banned vocabulary — house style across every protocol.
+        $block .= "\n### BANNED VOCABULARY (house style)\n";
+        $block .= "NEVER use these words in any prose, mark scheme, model answer, plan bullet, or analytical commentary:\n";
+        $block .= "- \"patriarchy\" / \"patriarchal\"\n";
+        $block .= "Reframe using: \"honour culture\" / \"dynastic marriage\" / \"paternal authority\" / \"Elizabethan social order\" / \"family honour\" / \"social hierarchy\". The critique of arranged marriage, family honour, and dynastic obligation stays — only the loaded vocabulary changes. Hard rule across ALL Sophicly content.\n";
+        $block .= "Also avoid \"shows\" as an analytical verb — substitute precise verbs (illustrates / portrays / demonstrates / emphasises / highlights / reveals / exposes / presents / conveys / enacts / signals / mirrors).\n";
+
+        // Authoritative word count — only when response_wc supplied AND task is assessment.
+        $response_wc = isset($context['response_wc']) && is_numeric($context['response_wc'])
+            ? (int) $context['response_wc']
+            : null;
+        if ($response_wc !== null && $task === 'assessment') {
+            $block .= "\n### AUTHORITATIVE WORD COUNT — DO NOT SECOND-GUESS\n";
+            $block .= "Student's response: **{$response_wc} words**. The frontend has counted authoritatively from the canvas; this is the truth. DO NOT estimate, recount, or approximate. Use {$response_wc} as the count whenever you reference the student's response length or apply word-count penalties.\n";
+        }
+
+        return $block;
     }
 
     /**

@@ -4513,13 +4513,31 @@
             }
         }
         if (numberedOptions.length >= 2 && numberedOptions.length <= 6) {
-            // Skip if average raw label is very long — these are summaries/explanations, not choices
-            const avgLen = numberedOptions.reduce((s, o) => s + o.rawLen, 0) / numberedOptions.length;
-            if (avgLen <= 55) {
-                const lastLines = lines.slice(-3).join(' ');
-                if (/(?:choose|select|pick|type the number|which (?:one|option)|give me|respond with)/i.test(lastLines)
-                    || (isQuestion && numberedOptions.length >= 2)) {
-                    return numberedOptions.map(o => ({ label: o.label, value: o.value }));
+            // v7.17.60: Two new guards to suppress spurious heading-as-option rendering.
+            // RunCloudRescue 2026-04-25: assessment Gold Standard models emitted as
+            //   1. Your Introduction Rewritten to Level 6:
+            //   2. An Alternative Level 6 Model:
+            // tripped the detector (numbers + isQuestion via "Shall we continue?" later
+            // in the reply). Both labels are headings ending with `:`, not options.
+            // Plus the 4-button resume-confirm row was already rendered for the gate —
+            // numbered duplicates pollute the UI.
+            const _allHeadings = numberedOptions.every(o => /[:：]\s*$/.test((o.label || '').trim()));
+            const _has4ButtonRow = /\[\s*✓\s*Got it\s*—\s*continue\s*\]/i.test(text)
+                && /\[\s*🤔.*Still confused\s*\]/i.test(text)
+                && /\[\s*💬.*Different question\s*\]/i.test(text)
+                && /\[\s*⏸.*Pause here\s*\]/i.test(text);
+            if (_allHeadings || _has4ButtonRow) {
+                // Drop through — let downstream detectors handle (e.g. 4-button gate
+                // renders elsewhere via wml-assessment.js:2292+).
+            } else {
+                // Skip if average raw label is very long — these are summaries/explanations, not choices
+                const avgLen = numberedOptions.reduce((s, o) => s + o.rawLen, 0) / numberedOptions.length;
+                if (avgLen <= 55) {
+                    const lastLines = lines.slice(-3).join(' ');
+                    if (/(?:choose|select|pick|type the number|which (?:one|option)|give me|respond with)/i.test(lastLines)
+                        || (isQuestion && numberedOptions.length >= 2)) {
+                        return numberedOptions.map(o => ({ label: o.label, value: o.value }));
+                    }
                 }
             }
         }

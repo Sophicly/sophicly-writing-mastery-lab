@@ -1879,6 +1879,28 @@
                         // question box) so it matches the fresh-greeting + resume
                         // appearance. Previously emitted plain markdown via formatAI,
                         // creating a third visual variant Neil flagged 2026-04-25.
+                        // v7.17.60: editor-ready poll BEFORE computing wc.
+                        // Without it, getResponseWordCount returned 0 immediately
+                        // after clear (response sections not yet re-captured →
+                        // baseline missing → 0 words flicker). Poll mirrors
+                        // _waitEditorReady at L5810 — 250ms × 18 ≈ 4.5s budget.
+                        const _waitEditorReadyPostClear = (tries) => {
+                            const editorEl = canvasEditor ? canvasEditor.options?.element : null;
+                            const hasSections = editorEl
+                                ? editorEl.querySelectorAll('[data-section-type="response"]').length > 0
+                                : false;
+                            const baselineCaptured = editorEl
+                                ? typeof editorEl._swmlResponseBaseline === 'number'
+                                : false;
+                            const ready = !!canvasEditor && hasSections && baselineCaptured;
+                            if (ready || tries >= 18) {
+                                console.log('WML v7.17.60 clearCanvas: editor-ready poll exit ready=' + ready + ' tries=' + tries);
+                                _renderPostClearGreeting();
+                            } else {
+                                setTimeout(() => _waitEditorReadyPostClear(tries + 1), 250);
+                            }
+                        };
+                        const _renderPostClearGreeting = () => {
                         const tn = state.textName || state.text || 'your text';
                         const wc = getResponseWordCount(canvasEditor);
                         const qText = extractEssayQuestion(canvasEditor);
@@ -1906,6 +1928,8 @@
                             const ccContent = ccBubble.querySelector('.swml-bubble-content') || ccBubble;
                             ccContent.appendChild(gradeBarCC);
                         }
+                        }; // end _renderPostClearGreeting
+                        _waitEditorReadyPostClear(0);
                         } // end else (non-CW)
                         console.log('WML Canvas: Chat cleared');
                     },
