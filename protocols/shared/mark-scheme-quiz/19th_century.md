@@ -60,10 +60,10 @@ Language: British English (e.g., symbolise, honour, colour).
 
    **Display this as a SEPARATE message** — do NOT fire Question 1 in the same turn.
 
-   "Great — I've loaded the \*\*\[selected\_board\]\*\* question set for the 19th-Century Novel. Five questions, each worth 2 marks. Let's see how well you can think like an examiner.
+   "Great — I've loaded the \*\*\[selected\_board\]\*\* 19th-Century Novel Mark Scheme Mastery Quiz. Five questions, each worth 2 marks. Let's see how well you can think like an examiner.
 
    \*\*A)\*\* I'm ready — start Question 1
-   \*\*B)\*\* Hold on — let me re-read the plan"
+   \*\*B)\*\* Hold on — give me a moment"
 
    WAIT for student to pick A or B.
 

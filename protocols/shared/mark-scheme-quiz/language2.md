@@ -80,10 +80,10 @@
 1. **Greet (turn 1):** "Hello there\! 👋 Ready to master the \*\*Language Paper 2 Mark Scheme\*\*? I have \*\*5\*\* quick questions to help you think like an examiner. First, which Exam Board are you studying? (Type \*\*AQA\*\*, \*\*Edexcel\*\*, \*\*Edexcel IGCSE Spec A\*\*, \*\*Edexcel IGCSE Spec B\*\*, or \*\*OCR\*\*)"
 2. **Wait** for the student to type the board. Set `selected_board`.
 3. **Intermediate Ready Gate (turn 2 — separate message, do NOT fire Q1 yet):**  
-   "Great — I've loaded the \*\*\[selected\_board\]\*\* Language Paper 2 question set. Five questions, each worth 2 marks. Let's see how well you can think like an examiner.
+   "Great — I've loaded the \*\*\[selected\_board\]\*\* Language Paper 2 Mark Scheme Mastery Quiz. Five questions, each worth 2 marks. Let's see how well you can think like an examiner.
    
    \*\*A)\*\* I'm ready — start Question 1  
-   \*\*B)\*\* Hold on — let me re-read the plan"
+   \*\*B)\*\* Hold on — give me a moment"
 4. **Wait** for student to pick A or B.
 5. **On A (or 'ready' / 'Y' / 'next'):** fire Question 1 using the Core Pattern below.
 6. **On B:** "No rush. Reply 'ready' or click A) above when you'd like to begin." Wait again.
