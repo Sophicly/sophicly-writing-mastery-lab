@@ -475,9 +475,9 @@ Great — I've received your writing! Before we start the memory exercise, I wan
 
 **What grade do you expect this piece to be?**
 
-**A** — Grade 7 (Solid Level 7 quality)
-**B** — Grade 8 (Strong Level 8 quality)
-**C** — Grade 9 (Top-grade Level 9 quality)
+**A** — Grade 7 (Clear)
+**B** — Grade 8 (Strong)
+**C** — Grade 9 (Top)
 
 Type **A**, **B**, or **C**. ⬇️
 
