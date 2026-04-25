@@ -12381,70 +12381,79 @@
      * Used to inject the student's essay into assessment chat context.
      */
     function getResponseText(editor) {
-        if (!editor) return '';
+        // v7.17.53: Removed early `if (!editor) return ''`. RunCloudRescue 2026-04-25
+        // confirmed canvasEditor closure was NULL at click time (none of the v7.17.52
+        // PM-state diagnostic logs ever appeared in console), but DOM was healthy
+        // (diagnostic showed 8 <p> blocks / 576 words). Suspect: _reloadDocumentForAttempt
+        // or attempt-mismatch path nulled canvasEditor between greeting-regen and click.
+        // Function now works from live DOM regardless of closure validity.
+        console.log('WML getResponseText: called — editor=' + (!!editor) + ', editor.getJSON=' + (editor && typeof editor.getJSON === 'function'));
 
-        // v7.17.52: PRIMARY path — extract from ProseMirror state directly.
-        // DOM-independent. v7.17.50 + v7.17.51 attempted DOM-based fixes but kept
-        // returning empty even with healthy live DOM (RunCloudRescue diagnostic
-        // 2026-04-25 showed 8 <p> blocks / 576 words) — likely a stale-closure
-        // editor reference where editor.options.element AND document.getElementById
-        // both resolved to detached/wrong roots in some race window. PM state
-        // is the authoritative source — synced regardless of DOM mounting.
-        try {
-            const json = editor.getJSON ? editor.getJSON() : null;
-            if (json && typeof json === 'object') {
-                const responseTexts = [];
-                const extractText = (node) => {
-                    if (!node) return '';
-                    if (node.type === 'text') return node.text || '';
-                    if (Array.isArray(node.content)) return node.content.map(extractText).join(' ');
-                    return '';
-                };
-                const walk = (node) => {
-                    if (!node) return;
-                    if (node.type === 'sectionBlock') {
-                        const attrs = node.attrs || {};
-                        const type = attrs.sectionType || attrs.type || '';
-                        const label = attrs.sectionLabel || attrs.label || '';
-                        if (type === 'response') {
-                            const text = extractText(node).replace(/\s+/g, ' ').trim();
-                            if (text) {
-                                responseTexts.push({ label, text });
+        // 1. PRIMARY — ProseMirror state extraction (best fidelity, requires valid editor)
+        if (editor && typeof editor.getJSON === 'function') {
+            try {
+                const json = editor.getJSON();
+                if (json && typeof json === 'object') {
+                    const responseTexts = [];
+                    const extractText = (node) => {
+                        if (!node) return '';
+                        if (node.type === 'text') return node.text || '';
+                        if (Array.isArray(node.content)) return node.content.map(extractText).join(' ');
+                        return '';
+                    };
+                    const walk = (node) => {
+                        if (!node) return;
+                        if (node.type === 'sectionBlock') {
+                            const attrs = node.attrs || {};
+                            const type = attrs.sectionType || attrs.type || '';
+                            const label = attrs.sectionLabel || attrs.label || '';
+                            if (type === 'response') {
+                                const text = extractText(node).replace(/\s+/g, ' ').trim();
+                                if (text) responseTexts.push({ label, text });
                             }
                         }
+                        if (Array.isArray(node.content)) node.content.forEach(walk);
+                    };
+                    walk(json);
+                    if (responseTexts.length === 1 && responseTexts[0].text.length > 50) {
+                        console.log('WML getResponseText: PM-state path returned ' + responseTexts[0].text.length + ' chars');
+                        return responseTexts[0].text;
                     }
-                    if (Array.isArray(node.content)) node.content.forEach(walk);
-                };
-                walk(json);
-                if (responseTexts.length === 1) {
-                    const out = responseTexts[0].text;
-                    if (out.length > 50) {
-                        console.log('WML getResponseText: PM-state path returned ' + out.length + ' chars (single response section)');
-                        return out;
+                    if (responseTexts.length > 1) {
+                        const labelled = responseTexts.map(({ label, text }) =>
+                            label ? `=== ${label.toUpperCase()} ===\n${text}` : text
+                        );
+                        const out = labelled.join('\n\n');
+                        if (out.length > 50) {
+                            console.log('WML getResponseText: PM-state path returned ' + out.length + ' chars (' + responseTexts.length + ' response sections)');
+                            return out;
+                        }
                     }
-                } else if (responseTexts.length > 1) {
-                    const labelled = responseTexts.map(({ label, text }) =>
-                        label ? `=== ${label.toUpperCase()} ===\n${text}` : text
-                    );
-                    const out = labelled.join('\n\n');
-                    if (out.length > 50) {
-                        console.log('WML getResponseText: PM-state path returned ' + out.length + ' chars (' + responseTexts.length + ' response sections)');
-                        return out;
-                    }
+                    console.log('WML getResponseText: PM-state extracted ' + responseTexts.length + ' response sections, length too short — falling to DOM');
                 }
-                console.log('WML getResponseText: PM-state path returned ' + responseTexts.length + ' response sections, total length too short — falling back to DOM');
+            } catch (e) {
+                console.warn('WML getResponseText: PM-state extraction threw', (e && e.message) || e);
             }
-        } catch (e) {
-            console.warn('WML getResponseText: PM-state extraction threw', e?.message || e);
+        } else {
+            console.log('WML getResponseText: no valid editor (closure=null) — going straight to DOM extraction');
         }
 
-        // FALLBACK — DOM extraction. v7.17.51 logic preserved as safety net.
-        const liveEditorEl = document.getElementById('swml-tiptap-editor') || editor.options.element;
-        if (!liveEditorEl) return editor.getText() || '';
+        // 2. ALWAYS try live DOM extraction — works even when editor closure is null.
+        // This is the canonical RunCloudRescue scenario: canvasEditor module ref is
+        // null but the editor's DOM root is still mounted with the student's essay.
+        const liveEditorEl = document.getElementById('swml-tiptap-editor')
+            || (editor && editor.options && editor.options.element)
+            || null;
+        if (!liveEditorEl) {
+            console.warn('WML getResponseText: no editor DOM root found in document');
+            if (editor && typeof editor.getText === 'function') return editor.getText() || '';
+            return '';
+        }
         const responseSections = liveEditorEl.querySelectorAll('[data-section-type="response"]');
         if (responseSections.length === 0) {
-            const fallback = editor.getText() || '';
-            console.warn('WML getResponseText: no response section in DOM — using editor.getText() fallback, len=' + fallback.length);
+            // v7.17.53: editor may be null — guard before calling .getText()
+            const fallback = (editor && typeof editor.getText === 'function') ? (editor.getText() || '') : (liveEditorEl.textContent || '').trim();
+            console.warn('WML getResponseText: no response section in DOM — using fallback (editor=' + !!editor + '), len=' + fallback.length);
             return fallback;
         }
 
@@ -12498,7 +12507,8 @@
                 console.log('WML getResponseText: blocks empty but section.textContent has ' + sectionText.length + ' chars — using as fallback');
                 return sectionText;
             }
-            const editorText = editor.getText()?.trim() || '';
+            // v7.17.53: editor may be null — guard
+            const editorText = (editor && typeof editor.getText === 'function') ? (editor.getText() || '').trim() : '';
             if (editorText.length > 20) {
                 console.log('WML getResponseText: section.textContent empty too — falling back to editor.getText() (' + editorText.length + ' chars)');
                 return editorText;
@@ -12507,7 +12517,11 @@
         }
 
         // Single block or no blocks — return without labels
-        if (blocks.length <= 1) return blocks[0] || section.textContent?.trim() || editor.getText()?.trim() || '';
+        if (blocks.length <= 1) {
+            // v7.17.53: editor may be null — guard tail fallback
+            const editorTextSafe = (editor && typeof editor.getText === 'function') ? (editor.getText() || '').trim() : '';
+            return blocks[0] || section.textContent?.trim() || editorTextSafe || '';
+        }
 
         // Label neutrally — the AI determines each paragraph's function (intro/body/conclusion)
         const labelled = blocks.map((block, i) => `=== PARAGRAPH ${i + 1} ===\n${block}`);
