@@ -3198,20 +3198,14 @@ TEMPLATE;
             }
         }
 
-        // Fallback: loose detection via heading + score when exact phrase absent.
-        if ($produced_table_for === null) {
-            $fallback_checks = [
-                'intro'      => '/\bIntroduction\b[\s\S]{0,1200}?\b\d+(?:\.\d+)?\s*\/\s*3\b/i',
-                'body_1'     => '/\bBody\s*Paragraph\s*1\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*7\b/i',
-                'body_2'     => '/\bBody\s*Paragraph\s*2\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*7\b/i',
-                'body_3'     => '/\bBody\s*Paragraph\s*3\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*7\b/i',
-                'conclusion' => '/\bConclusion\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*(?:6|11)\b/i',
-            ];
-            $current_pattern = $fallback_checks[$current] ?? null;
-            if ($current_pattern && preg_match($current_pattern, $reply)) {
-                $produced_table_for = $current;
-            }
-        }
+        // v7.17.56: removed loose fallback regex (formerly matched any
+        // `\bParagraph\b[\s\S]{0,1500}?\d/Y` shape within 1500 chars). It
+        // produced false positives when Sophia mentioned the paragraph name
+        // without producing an actual mark table — RunCloudRescue's session
+        // showed `tables_emitted_total = 1` after a turn that contained zero
+        // mark tables. Strict regex above (L3173) requires the canonical
+        // `Total Mark for {Paragraph}: X/Y` line, which is the only phrase
+        // the protocol mandates. If Sophia doesn't emit it, no advance.
 
         if ($produced_table_for !== null) {
             $scored = (array) ($state['paragraphs_scored'] ?? []);

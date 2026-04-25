@@ -4364,7 +4364,19 @@
         const isContentRequest = /(?:(?:tell|give) me|please (?:tell|provide|share|paste|type)|what (?:is|are) (?:the|your)|which (?:poem|text|quote|character|theme)|paste (?:the|your|a)|submit (?:the|your|a))/i;
         // Also check full text for content requests (paste/submit may not be in last 3 lines)
         const isContentRequestFull = /(?:paste (?:the|your|a)|submit (?:the|your|a)|paste.*(?:below|writing|text|paragraph|essay))/i;
-        if (impliedYesNo.test(lastChunk) && isQuestion && !hasLetterChoices && !isContentRequest.test(lastChunk) && !isContentRequestFull.test(text)) {
+        // v7.17.56: 4-button-coexistence guard. The assessment Progression Gate
+        // emits the v7.17.47 4-button row [✓ Got it — continue][🤔 Still
+        // confused][💬 Different question][⏸ Pause here]. Sophia's gate text
+        // "Shall we continue with **Body Paragraph 1**?" trips impliedYesNo
+        // ("shall we"), so without this guard a Yes / No, explain more pair
+        // renders ABOVE the canonical 4-button row — duplicate UI confusing
+        // the student. Suppress generic Yes/No when the 4-button row is
+        // present in the same reply.
+        const has4ButtonRow = /\[\s*✓\s*Got it\s*—\s*continue\s*\]/i.test(text)
+            && /\[\s*🤔.*Still confused\s*\]/i.test(text)
+            && /\[\s*💬.*Different question\s*\]/i.test(text)
+            && /\[\s*⏸.*Pause here\s*\]/i.test(text);
+        if (!has4ButtonRow && impliedYesNo.test(lastChunk) && isQuestion && !hasLetterChoices && !isContentRequest.test(lastChunk) && !isContentRequestFull.test(text)) {
             return [
                 { label: '✓ Yes', value: 'Yes' },
                 { label: '✗ No, explain more', value: 'No, can you explain a bit more?' }
