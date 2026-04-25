@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.17.56
+ * Version: 7.17.57
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.17.56');
+define('SWML_VERSION', '7.17.57');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -936,6 +936,23 @@ class Sophicly_Writing_Mastery_Lab {
      * Get board/text context from a course ID via the course map
      */
     private function get_embed_course_context($course_id) {
+        // v7.17.57: Delegate to bridge so meta-registered courses (Course
+        // Context Metabox in student-data v2.29.0+) resolve correctly. The
+        // bridge reads post_meta first, falls back to sophicly_get_course_map().
+        // Falls through to map-only iteration if bridge class isn't available.
+        if (class_exists('Sophicly_LearnDash_Bridge')) {
+            $ctx = Sophicly_LearnDash_Bridge::init()->get_course_context((int) $course_id);
+            if (!empty($ctx['text_slug'])) {
+                return [
+                    'board'     => $ctx['board'] ?? '',
+                    'text_slug' => $ctx['text_slug'],
+                    'type'      => $ctx['type'] ?? '',
+                    'category'  => $ctx['category'] ?? '',
+                ];
+            }
+            return [];
+        }
+
         $course_map = function_exists('sophicly_get_course_map') ? sophicly_get_course_map() : [];
         foreach ($course_map as $text_slug => $boards) {
             foreach ($boards as $board => $cid) {
