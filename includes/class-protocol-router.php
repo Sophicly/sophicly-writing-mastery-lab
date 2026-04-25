@@ -1792,14 +1792,29 @@ TEMPLATE;
         $first_name = $user ? ($user->first_name ?: $user->display_name) : 'Student';
 
         // Task → Protocol mapping
+        // v7.17.64: extended with mark_scheme_unit + other live tasks. Previous
+        // fallback to 'Protocol B (Essay Planning)' was actively harmful — when
+        // the modular protocol was Mark Scheme Quiz but preamble said Essay
+        // Planning, Sophia asked the student to disambiguate ("which mode?").
+        // Neutral ucwords fallback now used for unknown tasks so the modular
+        // protocol's own framing wins.
         $protocol_map = [
-            'planning'     => 'Protocol B (Essay Planning)',
-            'assessment'   => 'Protocol A (Essay Assessment)',
-            'polishing'    => 'Protocol C (Prose Polishing)',
-            'mark_scheme'  => 'Mark Scheme Self-Assessment',
+            'planning'             => 'Protocol B (Essay Planning)',
+            'assessment'           => 'Protocol A (Essay Assessment)',
+            'polishing'            => 'Protocol C (Prose Polishing)',
+            'diagnostic'           => 'Diagnostic Assessment',
+            'development'          => 'Development Essay',
+            'mark_scheme'          => 'Mark Scheme Self-Assessment',
+            'mark_scheme_unit'     => 'Mark Scheme Mastery Quiz',
+            'foundational_quiz'    => 'Foundational Quiz',
+            'conceptual_notes'     => 'Conceptual Notes',
+            'memory_practice'      => 'Memory Practice',
+            'exam_prep'            => 'Exam Practice',
+            'feedback_discussion'  => 'Feedback Discussion',
+            'essay_plan'           => 'Essay Plan',
         ];
         $task = $context['task'] ?? 'planning';
-        $protocol_label = $protocol_map[$task] ?? 'Protocol B (Essay Planning)';
+        $protocol_label = $protocol_map[$task] ?? ucwords(str_replace('_', ' ', $task));
 
         // v7.15.78: Standalone feedback-discussion note. Student has pasted
         // bring-your-own-work into the canvas; no prior-attempt context exists
