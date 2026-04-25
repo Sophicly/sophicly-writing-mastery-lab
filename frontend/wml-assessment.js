@@ -5538,6 +5538,46 @@
                             || /head\s+back\s+to\s+the\s+Writing\s+exercise/i.test(_greetText);
                         const _isGradeGreeting = /what\s+grade\s+are\s+you\s+aiming\s+for/i.test(_greetText)
                             || /Welcome\s+to\s+the\s+assessment\s+phase/i.test(_greetText);
+
+                        // v7.17.49: Regenerate the greeting bubble from current state when
+                        // resuming an assessment greeting. Saved bubble interpolates assessWc
+                        // at save time — if wc was wrong then (e.g. v7.17.47-era baseline race)
+                        // it stays wrong forever. Regenerate fixes RunCloudRescue / Mohammed
+                        // stale "(0 words)" greetings without student action. Only runs for
+                        // the GRADE greeting (not redirect — redirect copy is static).
+                        if (_isGradeGreeting && !_isRedirect && canvasEditor) {
+                            try {
+                                const _firstName = (config.userName || '').split(' ')[0] || 'there';
+                                const _assessTextName = state.textName || state.text || 'your text';
+                                const _assessWc = getResponseWordCount(canvasEditor);
+                                const _questionText = extractEssayQuestion(canvasEditor);
+                                if (_questionText) state.question = _questionText;
+                                const _isLangPaper2 = ['language1','language2','language_p1','language_p2','language_c1','language_c2','language_u1','language_u4'].includes(state.subject);
+                                const _workLabel2 = _isLangPaper2 ? 'response' : 'essay';
+                                const _qSnippet2 = _questionText ? `\n\nYour ${_workLabel2} question: **${_questionText}**` : '';
+                                const _qHTML2 = _questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${_workLabel2} question:</p><p style="font-size:13px;font-style:italic">${_questionText}</p></div>` : '';
+                                const _essayLabel2 = (state.mode === 'exam_prep') ? `${_assessTextName} ${_workLabel2}` : (state.phase === 'redraft') ? `${_assessTextName} redraft ${_workLabel2}` : `${_assessTextName} diagnostic ${_workLabel2}`;
+                                const _newPlain = `Hi ${_firstName}! Welcome to the assessment phase. I've received your ${_essayLabel2} (${_assessWc} words). Let's review your writing together.${_qSnippet2}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
+                                const _infoNote2 = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all 8 steps to receive your full score, grade, and personalised feedback.</div>';
+                                const _newHTML = `${_infoNote2}<div style="margin-bottom:12px"><p>Hi <strong>${_firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${_assessTextName}</strong> ${(state.mode === 'exam_prep') ? _workLabel2 : (state.phase === 'redraft') ? `redraft ${_workLabel2}` : `diagnostic ${_workLabel2}`} (<strong>${_assessWc} words</strong>). Let's review your writing together.</p></div>${_qHTML2}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`;
+                                // Replace bubble HTML in DOM
+                                const _firstBubble = tp.chatMessages?.firstElementChild;
+                                if (_firstBubble) {
+                                    const _bc = _firstBubble.querySelector('.swml-bubble-content') || _firstBubble.querySelector('.swml-bubble-body') || _firstBubble;
+                                    if (_bc) _bc.innerHTML = _newHTML;
+                                }
+                                // Update history + persist
+                                const _idx = tp.canvasChatHistory.findIndex(m => m.role === 'assistant');
+                                if (_idx !== -1) {
+                                    tp.canvasChatHistory[_idx].content = _newPlain;
+                                }
+                                saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
+                                console.log('WML: Assessment greeting regenerated on resume — wc=' + _assessWc);
+                            } catch (e) {
+                                console.warn('WML: Greeting regen failed', e);
+                            }
+                        }
+
                         setTimeout(() => {
                             const lastBubble = tp.chatMessages.lastElementChild;
                             if (!lastBubble || lastBubble.querySelector('.swml-quick-actions')) return;
