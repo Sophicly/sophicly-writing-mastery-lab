@@ -3064,6 +3064,46 @@ TEMPLATE;
             return '';
         }
 
+        // v7.17.58: state auto-repair. Re-derive paragraphs_scored from chat
+        // history using STRICT canonical patterns (`Total Mark for X: Y/Z`).
+        // If derived count differs from stored state, the state was corrupted
+        // (RunCloudRescue 2026-04-25 had `tables_emitted_total = 1` from a
+        // pre-v7.17.56 fallback-regex false positive even though no mark
+        // table was ever emitted). Reset state to chat-history-derived truth.
+        global $swml_chat_history;
+        if (!empty($swml_chat_history) && is_array($swml_chat_history)) {
+            $derived = self::derive_paragraphs_scored_from_history($swml_chat_history);
+            $stored_scored = (array) ($state['paragraphs_scored'] ?? []);
+            sort($stored_scored);
+            $derived_sorted = $derived['scored'];
+            sort($derived_sorted);
+            if ($stored_scored !== $derived_sorted
+                || (int) ($state['tables_emitted_total'] ?? 0) !== count($derived['scored'])) {
+                $order   = SWML_Session_Manager::assessment_paragraph_order();
+                $pointer = 'intro';
+                foreach ($order as $pkey) {
+                    if ($pkey === 'done') { $pointer = 'done'; break; }
+                    if (!in_array($pkey, $derived['scored'], true)) { $pointer = $pkey; break; }
+                    $pointer = SWML_Session_Manager::assessment_next_paragraph($pkey);
+                }
+                $repair_patch = [
+                    'paragraphs_scored'    => $derived['scored'],
+                    'tables_emitted_total' => count($derived['scored']),
+                    'current_paragraph'    => $derived['complete'] ? 'done' : $pointer,
+                    'completion_emitted'   => $derived['complete'],
+                ];
+                // If repair shrank the scored list, also clear stale pending.
+                if (count($derived['scored']) < (int) ($state['tables_emitted_total'] ?? 0)) {
+                    $repair_patch['pending_resume_confirm'] = false;
+                }
+                $state = SWML_Session_Manager::update_assessment_state(
+                    $user_id, $board, $text, $topic, $suffix, $attempt, $repair_patch
+                );
+                error_log('WML Assessment State: AUTO-REPAIR — was tables=' . (int) ($state['tables_emitted_total'] ?? 0)
+                    . ', re-derived=' . count($derived['scored']) . '. user=' . (int) $user_id);
+            }
+        }
+
         // v7.17.55: self-heal premature-gate state lock. If pending_resume_confirm
         // is TRUE but no paragraph has been scored AND no detour is active, the
         // flag was set by a hallucinated gate (pre-v7.17.55 bug). Clear it and
@@ -3122,6 +3162,14 @@ TEMPLATE;
             $block .= "\nAfter the Conclusion table, emit on a single line:\n";
             $block .= "`Total: X/34` then `Grade: N` then `[ASSESSMENT_COMPLETE]` (all three in the SAME message).\n";
         }
+        $block .= "\n### VOICE RULES — STATE BLOCK IS INTERNAL ONLY\n";
+        $block .= "This ASSESSMENT STATE block is system-side bookkeeping. The student MUST NOT see any of it.\n";
+        $block .= "DO NOT verbalize state-machine reasoning to the student. Specifically NEVER say:\n";
+        $block .= "- \"I need to check the ASSESSMENT STATE\" / \"Let me re-read the state\" / \"The state shows\"\n";
+        $block .= "- \"Pending resume-confirm: YES/no\" / \"Tables produced: N of 5\" / \"Detour depth\" / \"current_paragraph\"\n";
+        $block .= "- \"The state is clear\" / \"I must emit the resume-confirm block\" / \"the state machine\"\n";
+        $block .= "- ANY meta-commentary on what you're being told to do or why.\n";
+        $block .= "Operate silently. Your visible reply should engage the student's content (their essay, their reflection, their question), not the system's bookkeeping. If the state block tells you to emit a resume-confirm, just emit it — no preamble explaining your decision.\n";
         $block .= "\n_You are in v7.17.47 AQA Literature Diagnostic Assessment pilot mode._\n";
         return $block;
     }
@@ -3285,21 +3333,54 @@ TEMPLATE;
 
         if (empty($chat_history) || !is_array($chat_history)) return $existing;
 
-        $scored = [];
-        $paragraph_patterns = [
-            'intro'      => '/\bIntroduction\b[\s\S]{0,1200}?\b\d+(?:\.\d+)?\s*\/\s*3\b/i',
-            'body_1'     => '/\bBody\s*Paragraph\s*1\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*7\b/i',
-            'body_2'     => '/\bBody\s*Paragraph\s*2\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*7\b/i',
-            'body_3'     => '/\bBody\s*Paragraph\s*3\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*7\b/i',
-            'conclusion' => '/\bConclusion\b[\s\S]{0,1500}?\b\d+(?:\.\d+)?\s*\/\s*(?:6|11)\b/i',
+        // v7.17.58: route through shared strict-pattern derivation helper.
+        $derived = self::derive_paragraphs_scored_from_history($chat_history);
+
+        // Pointer points at first paragraph NOT yet scored.
+        $order = SWML_Session_Manager::assessment_paragraph_order();
+        $pointer = 'intro';
+        foreach ($order as $pkey) {
+            if ($pkey === 'done') { $pointer = 'done'; break; }
+            if (!in_array($pkey, $derived['scored'], true)) { $pointer = $pkey; break; }
+            $pointer = SWML_Session_Manager::assessment_next_paragraph($pkey);
+        }
+
+        $patch = [
+            'current_paragraph'    => $derived['complete'] ? 'done' : $pointer,
+            'paragraphs_scored'    => $derived['scored'],
+            'tables_emitted_total' => count($derived['scored']),
+            'completion_emitted'   => $derived['complete'],
         ];
+        return SWML_Session_Manager::update_assessment_state(
+            $user_id, $board, $text, $topic, $suffix, $attempt, $patch
+        );
+    }
+
+    /**
+     * v7.17.58: shared derivation helper used by migration + auto-repair.
+     * Scans chat history for STRICT canonical mark-table lines only — no
+     * loose fallbacks. The pre-v7.17.56 fallback patterns matched stray
+     * `\d/Y` digits anywhere within ~1500 chars of a paragraph heading,
+     * which created false positives that corrupted state.
+     *
+     * Returns ['scored' => [paragraph_keys...], 'complete' => bool].
+     */
+    private static function derive_paragraphs_scored_from_history($chat_history) {
+        $scored   = [];
         $complete = false;
+        $strict_patterns = [
+            'intro'      => '/Total Mark for (?:Introduction|Paragraph\s*1)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*3\b/i',
+            'body_1'     => '/Total Mark for (?:Body\s*Paragraph\s*1|Paragraph\s*2)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*7\b/i',
+            'body_2'     => '/Total Mark for (?:Body\s*Paragraph\s*2|Paragraph\s*3)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*7\b/i',
+            'body_3'     => '/Total Mark for (?:Body\s*Paragraph\s*3|Paragraph\s*4)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*7\b/i',
+            'conclusion' => '/Total Mark for (?:Conclusion|Paragraph\s*5)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*(?:6|11)\b/i',
+        ];
+        if (!is_array($chat_history)) return ['scored' => [], 'complete' => false];
         foreach ($chat_history as $msg) {
-            $role = $msg['role'] ?? '';
-            if ($role !== 'assistant') continue;
+            if (($msg['role'] ?? '') !== 'assistant') continue;
             $content = (string) ($msg['content'] ?? '');
             if ($content === '') continue;
-            foreach ($paragraph_patterns as $pkey => $pattern) {
+            foreach ($strict_patterns as $pkey => $pattern) {
                 if (!in_array($pkey, $scored, true) && preg_match($pattern, $content)) {
                     $scored[] = $pkey;
                 }
@@ -3309,24 +3390,6 @@ TEMPLATE;
                 $complete = true;
             }
         }
-
-        // Pointer points at first paragraph NOT yet scored.
-        $order = SWML_Session_Manager::assessment_paragraph_order();
-        $pointer = 'intro';
-        foreach ($order as $pkey) {
-            if ($pkey === 'done') { $pointer = 'done'; break; }
-            if (!in_array($pkey, $scored, true)) { $pointer = $pkey; break; }
-            $pointer = SWML_Session_Manager::assessment_next_paragraph($pkey);
-        }
-
-        $patch = [
-            'current_paragraph'    => $complete ? 'done' : $pointer,
-            'paragraphs_scored'    => $scored,
-            'tables_emitted_total' => count($scored),
-            'completion_emitted'   => $complete,
-        ];
-        return SWML_Session_Manager::update_assessment_state(
-            $user_id, $board, $text, $topic, $suffix, $attempt, $patch
-        );
+        return ['scored' => $scored, 'complete' => $complete];
     }
 }
