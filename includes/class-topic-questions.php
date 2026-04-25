@@ -409,7 +409,12 @@ class SWML_Topic_Questions {
         ];
         // v7.15.29: Normalize course-map language slugs to $lang_map keys
         // e.g. aqa_lang_paper_1 → language1, edexcel_igcse_lang_a → language1
-        if (preg_match('/^(?:[a-z_]+)_lang_paper_(\d+)$/', $text, $m)) {
+        // v7.17.55: Edexcel IGCSE Spec A split into per-paper slugs.
+        // edexcel_igcse_lang_a_paper_1 → language1, edexcel_igcse_lang_a_paper_2 → language2
+        // Same shape supported for Spec B (lang_b_paper_X) for future split.
+        if (preg_match('/^edexcel_igcse_lang_[ab]_paper_(\d+)$/', $text, $m)) {
+            $text = 'language' . $m[1];
+        } elseif (preg_match('/^(?:[a-z_]+)_lang_paper_(\d+)$/', $text, $m)) {
             $text = 'language' . $m[1];
         } elseif (preg_match('/^edexcel_igcse_lang_([ab])$/', $text, $m)) {
             $text = 'language' . ($m[1] === 'a' ? '1' : '2');
