@@ -3064,6 +3064,21 @@ TEMPLATE;
             return '';
         }
 
+        // v7.17.55: self-heal premature-gate state lock. If pending_resume_confirm
+        // is TRUE but no paragraph has been scored AND no detour is active, the
+        // flag was set by a hallucinated gate (pre-v7.17.55 bug). Clear it and
+        // persist so the next turn enters the ELSE branch and Sophia produces
+        // the actual mark table for the current paragraph.
+        if (!empty($state['pending_resume_confirm'])
+            && (int) ($state['tables_emitted_total'] ?? 0) === 0
+            && (int) ($state['detour_depth'] ?? 0) === 0) {
+            $state = SWML_Session_Manager::update_assessment_state(
+                $user_id, $board, $text, $topic, $suffix, $attempt,
+                ['pending_resume_confirm' => false]
+            );
+            error_log('WML Assessment State: self-heal cleared premature pending_resume_confirm. user=' . (int) $user_id);
+        }
+
         $current = $state['current_paragraph'] ?? 'intro';
         $next    = SWML_Session_Manager::assessment_next_paragraph($current);
         $current_label = SWML_Session_Manager::assessment_paragraph_label($current);
@@ -3219,11 +3234,23 @@ TEMPLATE;
             }
         } else {
             $patch['last_ai_turn_produced_table'] = false;
-            // If AI's reply contains the resume-confirm prompt shape (signals
-            // it is waiting for the student), flip pending flag on.
-            if (preg_match('/(shall we continue with|ready to continue with|let(?:\'|&#39;)?s continue with)/i', $reply)
+            // v7.17.55: only flip pending=true when there is prior assessment
+            // activity (a paragraph already scored OR the student is mid-detour).
+            // Without this guard, a HALLUCINATED gate emitted before any mark
+            // table (e.g. immediately after greeting → grade-target click) would
+            // lock the state machine into the IF branch — Sophia would keep
+            // emitting resume-confirms forever and never produce the table.
+            $tables_so_far = (int) ($state['tables_emitted_total'] ?? 0);
+            $detour_now    = (int) ($state['detour_depth'] ?? 0);
+            $has_prior_activity = ($tables_so_far > 0) || ($detour_now > 0);
+            if ($has_prior_activity
+                && preg_match('/(shall we continue with|ready to continue with|let(?:\'|&#39;)?s continue with|shall we move to)/i', $reply)
                 && preg_match('/got it.*continue|still confused|different question|pause here/i', $reply)) {
                 $patch['pending_resume_confirm'] = true;
+            } elseif (!$has_prior_activity
+                && preg_match('/(shall we continue with|ready to continue with|let(?:\'|&#39;)?s continue with|shall we move to)/i', $reply)
+                && preg_match('/got it.*continue|still confused|different question|pause here/i', $reply)) {
+                error_log('WML Assessment State: PREMATURE GATE detected (tables=0, detour=0) — refusing to flip pending. user=' . (int) $user_id . ' current=' . $current);
             }
         }
 
