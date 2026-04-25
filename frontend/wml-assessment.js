@@ -5521,14 +5521,45 @@
                         } catch (err) { console.warn('WML Training: extraction chain failed:', err); }
                     }
 
-                    // Restore grade buttons if only greeting exists
+                    // Restore grade buttons if only the assessment greeting exists.
+                    // v7.17.48: Distinguish between assessment greeting and the empty-essay
+                    // redirect greeting. Previously this block rendered Grade 9/8/7 buttons
+                    // beneath ANY single-AI-message saved chat — including the redirect
+                    // ("haven't written your response yet") which has its own action button
+                    // ("Go to Writing Exercise"). RunCloudRescue + Mohammed both landed
+                    // on this mismatch. Detect greeting type via the saved AI text and
+                    // render the matching action.
                     const userMsgs = savedChat.history.filter(m => m.role === 'user');
                     const aiMsgs = savedChat.history.filter(m => m.role === 'assistant');
                     if (state.task === 'assessment' && !canvasInMarkScheme && !canvasInFeedback && !isCwTask
                         && aiMsgs.length === 1 && userMsgs.length === 0) {
+                        const _greetText = (aiMsgs[0]?.content || '').toString();
+                        const _isRedirect = /haven'?t\s+written\s+your\s+response/i.test(_greetText)
+                            || /head\s+back\s+to\s+the\s+Writing\s+exercise/i.test(_greetText);
+                        const _isGradeGreeting = /what\s+grade\s+are\s+you\s+aiming\s+for/i.test(_greetText)
+                            || /Welcome\s+to\s+the\s+assessment\s+phase/i.test(_greetText);
                         setTimeout(() => {
                             const lastBubble = tp.chatMessages.lastElementChild;
-                            if (lastBubble && !lastBubble.querySelector('.swml-quick-actions')) {
+                            if (!lastBubble || lastBubble.querySelector('.swml-quick-actions')) return;
+                            if (_isRedirect && !_isGradeGreeting) {
+                                // Render the redirect action — "Go to Writing Exercise →".
+                                const actions = el('div', { className: 'swml-quick-actions' });
+                                const goBtn = el('button', { className: 'swml-quick-btn', textContent: 'Go to Writing Exercise →' });
+                                goBtn.addEventListener('click', async () => {
+                                    goBtn.disabled = true;
+                                    try {
+                                        const target = await _resolveWritingExerciseUrl();
+                                        if (target) window.location.href = target;
+                                        else window.history.back();
+                                    } catch (e) { window.history.back(); }
+                                });
+                                actions.appendChild(goBtn);
+                                const bc = lastBubble.querySelector('.swml-bubble-content') || lastBubble;
+                                bc.appendChild(actions);
+                                console.log('WML: Restored redirect action on resumed greeting (no essay yet)');
+                            } else if (_isGradeGreeting || (!_isRedirect && !_isGradeGreeting)) {
+                                // Default to grade buttons if greeting text unmatched (legacy fallback)
+                                // OR explicitly grade greeting.
                                 const gradeBar = el('div', { className: 'swml-quick-actions' });
                                 ['Grade 9', 'Grade 8', 'Grade 7'].forEach(g => {
                                     gradeBar.appendChild(el('button', {
@@ -9565,8 +9596,28 @@
             onCreate: ({ editor }) => {
                 // v7.13.92: Snapshot initial section count for guard
                 _sectionCount = countSections(editor.state.doc);
-                // v7.13.53: Snapshot template word count BEFORE first getResponseWordCount
-                snapshotTemplateBaseline(editor);
+                // v7.17.48: BASELINE-CAPTURE RACE FIX. When the editor is constructed
+                // with savedContent from localStorage, the response section already
+                // contains the student's saved essay. snapshotTemplateBaseline would
+                // then absorb that essay text as "template" — making
+                // wc = total − baseline = 0 for resumed students forever (Mohammed +
+                // RunCloudRescue, baseline=576 / responseWords=576 confirmed via
+                // browser-console diagnostic). Detect resume via savedContent having
+                // section markers + force baselines to 0 in that case. Fresh-template
+                // path still snapshots normally so true template/placeholder words
+                // get subtracted from a fresh student's count.
+                const _wasResumedFromSave = !!savedContent && savedContent.indexOf('data-section-type') !== -1;
+                if (_wasResumedFromSave) {
+                    const _editorEl = editor.options.element;
+                    if (_editorEl) {
+                        _editorEl._swmlTemplateBaseline = 0;
+                        _editorEl._swmlResponseBaseline = 0;
+                    }
+                    console.log('WML: Editor resumed from save — baselines forced to 0 (avoids student-text-as-template race)');
+                } else {
+                    // v7.13.53: Snapshot template word count BEFORE first getResponseWordCount
+                    snapshotTemplateBaseline(editor);
+                }
                 const wc = getResponseWordCount(editor);
                 wcDisplay.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
 
