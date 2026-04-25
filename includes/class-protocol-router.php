@@ -827,6 +827,13 @@ class SWML_Protocol_Router {
         $task    = $context['task'] ?? 'planning';
         $step    = (int) ($context['step'] ?? 1);
 
+        // v7.17.62: Defensive subject normalisation. Bridge dispatchers occasionally
+        // emit hyphenated or short-form slugs (e.g. 'language-p1', 'language_p1').
+        // Canonical WML keys use underscores + the 'paper_N' / 'languageN' shapes
+        // already in the maps below. Normalise hyphens → underscores once here so
+        // every downstream lookup sees the same form.
+        $subject = str_replace('-', '_', strtolower((string) $subject));
+
         // Security: restrict board to known values — prevent path traversal (v7.15.2)
         // Accept both hyphenated and underscored forms for backward compatibility,
         // though normalize_board() above means $board is always hyphenated here.
@@ -852,6 +859,11 @@ class SWML_Protocol_Router {
                 'language_paper_2'   => 'language2.md',
                 'language1'          => 'language1.md',
                 'language2'          => 'language2.md',
+                // v7.17.62: bridge dispatcher short-form slug aliases.
+                'language_p1'        => 'language1.md',
+                'language_p2'        => 'language2.md',
+                'lang_p1'            => 'language1.md',
+                'lang_p2'            => 'language2.md',
             ];
             $ms_file = $ms_subject_map[$subject] ?? 'shakespeare.md'; // default to shakespeare
             $ms_path = $plugin_dir . 'protocols/shared/mark-scheme/' . $ms_file;
@@ -885,6 +897,11 @@ class SWML_Protocol_Router {
                 'language_paper_2'   => 'language2.md',
                 'language1'          => 'language1.md',
                 'language2'          => 'language2.md',
+                // v7.17.62: bridge dispatcher short-form slug aliases.
+                'language_p1'        => 'language1.md',
+                'language_p2'        => 'language2.md',
+                'lang_p1'            => 'language1.md',
+                'lang_p2'            => 'language2.md',
             ];
             $msu_file = $msu_subject_map[$subject] ?? null;
             if (!$msu_file) {
