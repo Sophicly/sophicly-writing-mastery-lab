@@ -1874,15 +1874,23 @@
                             }
                         }, 200);
                         } else {
+                        // v7.17.59: post-clear assessment greeting now uses STYLED
+                        // HTML (info-note "20-25 minutes" box + bold word count +
+                        // question box) so it matches the fresh-greeting + resume
+                        // appearance. Previously emitted plain markdown via formatAI,
+                        // creating a third visual variant Neil flagged 2026-04-25.
                         const tn = state.textName || state.text || 'your text';
                         const wc = getResponseWordCount(canvasEditor);
                         const qText = extractEssayQuestion(canvasEditor);
                         const _isLang = isLanguageSubject();
                         const workNoun = _isLang ? 'response' : 'essay';
                         const questionInfo = qText ? `\n\nYour ${workNoun} question: **${qText}**` : '';
+                        const questionHTML = qText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${workNoun} question:</p><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
                         const essayLabel = (state.mode === 'exam_prep') ? `${tn} ${workNoun}` : (state.phase === 'redraft') ? `${tn} redraft ${workNoun}` : `${tn} diagnostic ${workNoun}`;
                         const gt = `Hi ${fn}! Welcome to the assessment phase. I've received your ${essayLabel} (${wc} words). Let's review your writing together.${questionInfo}\n\nBefore I begin marking, I need to know: **what grade are you aiming for?** This helps me tailor my feedback to where you want to be.`;
-                        addChatMessage(formatAI(gt), 'ai', gt);
+                        const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all 8 steps to receive your full score, grade, and personalised feedback.</div>';
+                        const gtHTML = `${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${tn}</strong> ${(state.mode === 'exam_prep') ? workNoun : (state.phase === 'redraft') ? `redraft ${workNoun}` : `diagnostic ${workNoun}`} (<strong>${wc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`;
+                        addChatMessage(gtHTML, 'ai', gt);
                         canvasChatHistory.push({ role: 'assistant', content: gt });
                         saveCanvasChat(canvasChatHistory, canvasChatId);
                         const gradeBarCC = el('div', { className: 'swml-quick-actions' });
@@ -2261,6 +2269,12 @@
                         suffix: (typeof WML !== 'undefined' && WML.resolveStorageSuffix)
                             ? (WML.resolveStorageSuffix(state.task, state.phase) || '')
                             : '',
+                        // v7.17.59: authoritative response word count. Surfaces in
+                        // build_assessment_state_block to stop Sophia from hallucinating
+                        // counts (RunCloudRescue's session: real 576, Sophia invented 380).
+                        responseWc: (canvasEditor && state.task === 'assessment')
+                            ? getResponseWordCount(canvasEditor)
+                            : null,
                     })
                 });
                 const res = await response.json();
@@ -5610,26 +5624,17 @@
                     }
                     if (savedChat.chatId) tp.canvasChatId = savedChat.chatId;
 
-                    await initAssessmentState();
-
-                    const lastAI = savedChat.history.filter(m => m.role === 'assistant').pop();
-                    if (lastAI) {
-                        try {
-                            const lastUser = savedChat.history.filter(m => m.role === 'user').pop();
-                            await refreshPlan();
-                            await extractAndSavePlan(lastUser?.content || '', lastAI.content);
-                            await initAssessmentState();
-                        } catch (err) { console.warn('WML Training: extraction chain failed:', err); }
-                    }
-
-                    // Restore grade buttons if only the assessment greeting exists.
-                    // v7.17.48: Distinguish between assessment greeting and the empty-essay
-                    // redirect greeting. Previously this block rendered Grade 9/8/7 buttons
-                    // beneath ANY single-AI-message saved chat — including the redirect
-                    // ("haven't written your response yet") which has its own action button
-                    // ("Go to Writing Exercise"). RunCloudRescue + Mohammed both landed
-                    // on this mismatch. Detect greeting type via the saved AI text and
-                    // render the matching action.
+                    // v7.17.59: Hoisted greeting regen + grade buttons UP — was
+                    // post-await (3-5s gap during which the un-styled bubble was
+                    // visible — Neil flagged 2026-04-25 as the third-greeting-
+                    // variant problem). Now runs immediately after forEach paint
+                    // synchronously. Visual flash <16ms, imperceptible.
+                    //
+                    // The await initAssessmentState + lastAI extraction block
+                    // moved BELOW this — they don't gate the greeting render.
+                    //
+                    // v7.17.48 distinguishes assessment greeting (grade buttons)
+                    // from empty-essay redirect (Go to Writing Exercise button).
                     const userMsgs = savedChat.history.filter(m => m.role === 'user');
                     const aiMsgs = savedChat.history.filter(m => m.role === 'assistant');
                     if (state.task === 'assessment' && !canvasInMarkScheme && !canvasInFeedback && !isCwTask
@@ -5714,6 +5719,20 @@
                                 console.log('WML: Restored grade buttons on resumed greeting');
                             }
                         }, 100);
+                    }
+
+                    // v7.17.59: awaits moved BELOW the regen block (was above).
+                    // The greeting render no longer waits on these.
+                    await initAssessmentState();
+
+                    const lastAI = savedChat.history.filter(m => m.role === 'assistant').pop();
+                    if (lastAI) {
+                        try {
+                            const lastUser = savedChat.history.filter(m => m.role === 'user').pop();
+                            await refreshPlan();
+                            await extractAndSavePlan(lastUser?.content || '', lastAI.content);
+                            await initAssessmentState();
+                        } catch (err) { console.warn('WML Training: extraction chain failed:', err); }
                     }
 
                     setTimeout(() => { tp.chatMessages.scrollTop = tp.chatMessages.scrollHeight; }, 150);

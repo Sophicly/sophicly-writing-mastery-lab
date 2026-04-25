@@ -662,6 +662,13 @@ class SWML_REST_API {
             // v7.17.47: attempt + suffix needed for assessment state pointer
             'attempt' => max(1, absint($params['attempt'] ?? 1)),
             'suffix'  => sanitize_text_field($params['suffix'] ?? ''),
+            // v7.17.59: authoritative response word count from frontend canvas.
+            // Surfaces in build_assessment_state_block to stop Sophia from
+            // hallucinating word counts (RunCloudRescue's session: real 576,
+            // Sophia invented 380, applied -14 mark bogus penalty).
+            'response_wc' => isset($params['responseWc']) && is_numeric($params['responseWc'])
+                ? max(0, absint($params['responseWc']))
+                : null,
         ];
 
         // v7.17.47: For AQA Literature assessments, run migration inference

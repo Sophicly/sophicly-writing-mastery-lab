@@ -3170,6 +3170,51 @@ TEMPLATE;
         $block .= "- \"The state is clear\" / \"I must emit the resume-confirm block\" / \"the state machine\"\n";
         $block .= "- ANY meta-commentary on what you're being told to do or why.\n";
         $block .= "Operate silently. Your visible reply should engage the student's content (their essay, their reflection, their question), not the system's bookkeeping. If the state block tells you to emit a resume-confirm, just emit it — no preamble explaining your decision.\n";
+
+        // v7.17.59: Hard-block structure-confirm. Despite the v7.17.5 ban + v7.17.55
+        // gate preconditions + v7.17.58 voice rules, RunCloudRescue's session showed
+        // Sophia still emitting "I need to confirm the structure of your essay... A —
+        // Yes, that's correct / B — No, let me clarify". Listing every banned phrase
+        // verbatim makes refusal explicit.
+        $block .= "\n### ABSOLUTE PROHIBITION — STRUCTURE-CONFIRM\n";
+        $block .= "Do NOT ask the student to confirm the essay structure. Do NOT emit any of these or close paraphrases:\n";
+        $block .= "- \"Before I dive into the formal assessment, I need to confirm the structure\"\n";
+        $block .= "- \"I can see N paragraphs. Based on their content, I've identified...\"\n";
+        $block .= "- \"Let me confirm the structure I'm reading\"\n";
+        $block .= "- \"Is this structure correct, or would you like to clarify anything?\"\n";
+        $block .= "- \"Is this correct? A — Yes, that's right / B — No, let me clarify\"\n";
+        $block .= "- ANY A/B option pair regarding paragraph identification.\n";
+        $block .= "The frontend identifies paragraphs from `data-section-type=\"response\"` boundaries. Trust them — paragraphs 1, 2, 3, ..., N map to Introduction, Body 1, Body 2, ..., Conclusion. If a paragraph appears malformed mid-assessment, raise it as a non-confirmatory open question (e.g. \"Your second paragraph reads as a continuation of the first — would you like me to assess them as one section or separately?\"). Open question, not A/B confirm.\n";
+
+        // v7.17.59: Authoritative word count. Sophia hallucinated "approximately 380
+        // words" in RunCloudRescue's 576-word essay → bogus -14 mark WC penalty
+        // capping max score at 20/34. Frontend has the canonical count; surface it
+        // to the AI and forbid second-guessing.
+        $response_wc = isset($context['response_wc']) && is_numeric($context['response_wc'])
+            ? (int) $context['response_wc']
+            : null;
+        if ($response_wc !== null) {
+            $wc_target = 650; // AQA Literature target
+            $block .= "\n### AUTHORITATIVE WORD COUNT — DO NOT SECOND-GUESS\n";
+            $block .= "Student's response: **{$response_wc} words**. Target: {$wc_target} words.\n";
+            if ($response_wc >= $wc_target) {
+                $block .= "Above target — NO word-count penalty.\n";
+            } else {
+                $deficit = $wc_target - $response_wc;
+                $block .= "Below target by {$deficit} words. Apply WC penalty per protocol mark scheme.\n";
+            }
+            $block .= "You MUST use {$response_wc} as the word count. DO NOT estimate, recount, or approximate. The frontend has counted authoritatively from the canvas; this is the truth.\n";
+        }
+
+        // v7.17.59: Banned vocabulary. Neil's house style rejects feminist-critique
+        // framing words that loaded RunCloudRescue's Gold Standard models with
+        // "patriarchal honour" / "patriarchal authority". The dynastic-marriage and
+        // family-honour critique stays — only the loaded vocabulary changes.
+        $block .= "\n### SOPHICLY HOUSE STYLE — BANNED VOCABULARY\n";
+        $block .= "NEVER use these words in any prose, mark scheme, model answer, or analytical commentary:\n";
+        $block .= "- \"patriarchy\" / \"patriarchal\"\n";
+        $block .= "Reframe using: \"honour culture\" / \"dynastic marriage\" / \"paternal authority\" / \"Elizabethan social order\" / \"family honour\" / \"social hierarchy\". The critique of arranged marriage, family honour, and dynastic obligation stays — only the loaded vocabulary changes. This is a hard rule across ALL Sophicly content.\n";
+
         $block .= "\n_You are in v7.17.47 AQA Literature Diagnostic Assessment pilot mode._\n";
         return $block;
     }
