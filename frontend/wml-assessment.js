@@ -12382,17 +12382,63 @@
      */
     function getResponseText(editor) {
         if (!editor) return '';
-        // v7.17.51: Prefer LIVE DOM lookup unconditionally over editor.options.element.
-        // Diagnostic on RunCloudRescue 2026-04-25 showed the response section had 8 healthy
-        // <p> blocks (1 placeholder + 7 essay paragraphs, 576 words total) — yet the v7.17.50
-        // function still returned empty when called from sendCanvasMessage. Root cause:
-        // `editor.options.element` was non-null but pointed to a DETACHED DOM root (the
-        // outer canvas wrapper had been re-rendered post attempt-reload, leaving the closure
-        // ref pointing at an orphaned node). querySelectorAll on detached DOM finds nothing.
-        // The fix in v7.17.50 fell back only when editorEl was null — non-null-but-detached
-        // case wasn't covered. Now always start from document.getElementById which always
-        // resolves to the currently-attached editor; fall back to editor.options.element
-        // only if the live id lookup fails.
+
+        // v7.17.52: PRIMARY path — extract from ProseMirror state directly.
+        // DOM-independent. v7.17.50 + v7.17.51 attempted DOM-based fixes but kept
+        // returning empty even with healthy live DOM (RunCloudRescue diagnostic
+        // 2026-04-25 showed 8 <p> blocks / 576 words) — likely a stale-closure
+        // editor reference where editor.options.element AND document.getElementById
+        // both resolved to detached/wrong roots in some race window. PM state
+        // is the authoritative source — synced regardless of DOM mounting.
+        try {
+            const json = editor.getJSON ? editor.getJSON() : null;
+            if (json && typeof json === 'object') {
+                const responseTexts = [];
+                const extractText = (node) => {
+                    if (!node) return '';
+                    if (node.type === 'text') return node.text || '';
+                    if (Array.isArray(node.content)) return node.content.map(extractText).join(' ');
+                    return '';
+                };
+                const walk = (node) => {
+                    if (!node) return;
+                    if (node.type === 'sectionBlock') {
+                        const attrs = node.attrs || {};
+                        const type = attrs.sectionType || attrs.type || '';
+                        const label = attrs.sectionLabel || attrs.label || '';
+                        if (type === 'response') {
+                            const text = extractText(node).replace(/\s+/g, ' ').trim();
+                            if (text) {
+                                responseTexts.push({ label, text });
+                            }
+                        }
+                    }
+                    if (Array.isArray(node.content)) node.content.forEach(walk);
+                };
+                walk(json);
+                if (responseTexts.length === 1) {
+                    const out = responseTexts[0].text;
+                    if (out.length > 50) {
+                        console.log('WML getResponseText: PM-state path returned ' + out.length + ' chars (single response section)');
+                        return out;
+                    }
+                } else if (responseTexts.length > 1) {
+                    const labelled = responseTexts.map(({ label, text }) =>
+                        label ? `=== ${label.toUpperCase()} ===\n${text}` : text
+                    );
+                    const out = labelled.join('\n\n');
+                    if (out.length > 50) {
+                        console.log('WML getResponseText: PM-state path returned ' + out.length + ' chars (' + responseTexts.length + ' response sections)');
+                        return out;
+                    }
+                }
+                console.log('WML getResponseText: PM-state path returned ' + responseTexts.length + ' response sections, total length too short — falling back to DOM');
+            }
+        } catch (e) {
+            console.warn('WML getResponseText: PM-state extraction threw', e?.message || e);
+        }
+
+        // FALLBACK — DOM extraction. v7.17.51 logic preserved as safety net.
         const liveEditorEl = document.getElementById('swml-tiptap-editor') || editor.options.element;
         if (!liveEditorEl) return editor.getText() || '';
         const responseSections = liveEditorEl.querySelectorAll('[data-section-type="response"]');
