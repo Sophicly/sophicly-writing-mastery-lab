@@ -5519,41 +5519,76 @@
                     // v7.14.61: Suppress per-message scroll during restore to prevent document jumping
                     console.log('WML Training: Resuming chat with', savedChat.count, 'messages');
                     if (tp.chatMessages) tp.chatMessages._suppressScroll = true;
-                    // v7.17.56: Hoisted greeting regen — recompute the FIRST AI
-                    // bubble's plain text BEFORE forEach paints, to prevent the
-                    // "(0 words)" flash that students were clicking through. The
-                    // post-await regen below still runs to upgrade the bubble to
-                    // styled HTML, but the initial paint now shows the correct
-                    // word count instead of stale 0.
+                    // v7.17.57: Stale-wc detection + editor-ready await BEFORE forEach paints.
+                    // Replaces v7.17.56 synchronous hoist that failed when canvasEditor
+                    // existed but response sections / _swmlResponseBaseline weren't yet
+                    // captured (getResponseWordCount returned 0 → if-guard skipped → forEach
+                    // painted stale → post-await regen replaced 3-5s later, the visible flash).
+                    //
+                    // New logic:
+                    //  1. Detect if first AI msg is a grade greeting with literal "(0 words)".
+                    //  2. If yes (stale-suspected), await editor-ready poll (≤4.5s) before
+                    //     painting. Once editor has response sections + baseline, regen the
+                    //     saved content with correct wc, THEN paint forEach.
+                    //  3. If no stale text (or non-stale case), paint forEach immediately.
+                    //
+                    // Trade-off: stale case adds ≤4.5s delay before greeting paints, but no
+                    // 0-words flash and no student misclick. Happy-path zero delay.
                     try {
                         const _firstAi = savedChat.history.find(m => m.role === 'assistant');
                         const _hasUserMsg = savedChat.history.some(m => m.role === 'user');
-                        if (_firstAi && !_hasUserMsg && state.task === 'assessment'
-                            && !canvasInMarkScheme && !canvasInFeedback && !isCwTask
-                            && canvasEditor) {
+                        const _isAssessGreetingResume = !!(_firstAi && !_hasUserMsg
+                            && state.task === 'assessment'
+                            && !canvasInMarkScheme && !canvasInFeedback && !isCwTask);
+                        let _shouldRegenBeforePaint = false;
+                        if (_isAssessGreetingResume) {
                             const _greetText0 = String(_firstAi.content || '');
                             const _isGradeGreeting0 = /what\s+grade\s+are\s+you\s+aiming\s+for/i.test(_greetText0)
                                 || /Welcome\s+to\s+the\s+assessment\s+phase/i.test(_greetText0);
                             const _isRedirect0 = /haven'?t\s+written\s+your\s+response/i.test(_greetText0)
                                 || /head\s+back\s+to\s+the\s+Writing\s+exercise/i.test(_greetText0);
                             if (_isGradeGreeting0 && !_isRedirect0) {
-                                const _wc0 = getResponseWordCount(canvasEditor);
-                                if (_wc0 > 0) {
-                                    const _firstName0 = (config.userName || '').split(' ')[0] || 'there';
-                                    const _textName0 = state.textName || state.text || 'your text';
-                                    const _isLangPaper0 = ['language1','language2','language_p1','language_p2','language_c1','language_c2','language_u1','language_u4'].includes(state.subject);
-                                    const _workLabel0 = _isLangPaper0 ? 'response' : 'essay';
-                                    const _qText0 = extractEssayQuestion(canvasEditor);
-                                    if (_qText0) state.question = _qText0;
-                                    const _qSnippet0 = _qText0 ? `\n\nYour ${_workLabel0} question: **${_qText0}**` : '';
-                                    const _essayLabel0 = (state.mode === 'exam_prep') ? `${_textName0} ${_workLabel0}` : (state.phase === 'redraft') ? `${_textName0} redraft ${_workLabel0}` : `${_textName0} diagnostic ${_workLabel0}`;
-                                    _firstAi.content = `Hi ${_firstName0}! Welcome to the assessment phase. I've received your ${_essayLabel0} (${_wc0} words). Let's review your writing together.${_qSnippet0}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
-                                    console.log('WML: Hoisted greeting regen — wc=' + _wc0);
-                                }
+                                const _wcMatch = _greetText0.match(/\((\d+)\s+words?\)/i);
+                                const _savedWc = _wcMatch ? parseInt(_wcMatch[1], 10) : null;
+                                if (_savedWc === 0) _shouldRegenBeforePaint = true;
+                            }
+                        }
+                        if (_shouldRegenBeforePaint) {
+                            await new Promise((resolve) => {
+                                const _check = (tries) => {
+                                    const editorEl = canvasEditor ? canvasEditor.options?.element : null;
+                                    const hasSections = editorEl
+                                        ? editorEl.querySelectorAll('[data-section-type="response"]').length > 0
+                                        : false;
+                                    const baselineCaptured = editorEl
+                                        ? typeof editorEl._swmlResponseBaseline === 'number'
+                                        : false;
+                                    const ready = !!canvasEditor && hasSections && baselineCaptured;
+                                    if (ready || tries >= 18) {
+                                        console.log('WML v7.17.57 hoist: editor-ready poll exit ready=' + ready + ' tries=' + tries);
+                                        resolve();
+                                    } else {
+                                        setTimeout(() => _check(tries + 1), 250);
+                                    }
+                                };
+                                _check(0);
+                            });
+                            const _wc0 = getResponseWordCount(canvasEditor);
+                            if (_wc0 > 0) {
+                                const _firstName0 = (config.userName || '').split(' ')[0] || 'there';
+                                const _textName0 = state.textName || state.text || 'your text';
+                                const _isLangPaper0 = ['language1','language2','language_p1','language_p2','language_c1','language_c2','language_u1','language_u4'].includes(state.subject);
+                                const _workLabel0 = _isLangPaper0 ? 'response' : 'essay';
+                                const _qText0 = extractEssayQuestion(canvasEditor);
+                                if (_qText0) state.question = _qText0;
+                                const _qSnippet0 = _qText0 ? `\n\nYour ${_workLabel0} question: **${_qText0}**` : '';
+                                const _essayLabel0 = (state.mode === 'exam_prep') ? `${_textName0} ${_workLabel0}` : (state.phase === 'redraft') ? `${_textName0} redraft ${_workLabel0}` : `${_textName0} diagnostic ${_workLabel0}`;
+                                _firstAi.content = `Hi ${_firstName0}! Welcome to the assessment phase. I've received your ${_essayLabel0} (${_wc0} words). Let's review your writing together.${_qSnippet0}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
+                                console.log('WML v7.17.57: stale (0 words) detected, regen pre-paint wc=' + _wc0);
                             }
                         }
                     } catch (e) {
-                        console.warn('WML: Hoisted greeting regen failed', e);
+                        console.warn('WML v7.17.57 hoist failed', e);
                     }
                     savedChat.history.forEach(msg => {
                         // v7.15.5: Skip rendering hidden context messages
