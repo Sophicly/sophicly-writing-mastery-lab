@@ -4015,9 +4015,17 @@
                     sendMessage();
                 };
                 blankSubmit.addEventListener('click', submitBlanks);
-                blankInputs.forEach(inp => {
+                // v7.17.67: in multi-blank mode, Enter on inputs 1..N-1 advances focus.
+                // Only the LAST input's Enter fires submit. Single-blank case unchanged.
+                blankInputs.forEach((inp, i) => {
                     inp.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter') { e.preventDefault(); submitBlanks(); }
+                        if (e.key !== 'Enter') return;
+                        e.preventDefault();
+                        if (blankInputs.length > 1 && i < blankInputs.length - 1) {
+                            blankInputs[i + 1].focus();
+                        } else {
+                            submitBlanks();
+                        }
                     });
                 });
             }
@@ -4635,7 +4643,10 @@
     function extractAssessmentContent(text) {
         if (!text) return null;
         // Find start: ## Something Assessment, **Something Assessment**, or **Something — Formal Assessment**
-        const startMatch = text.match(/^(#{2,3}\s+(?:\w[\w\s]*)?Assessment|\*{2}(?:\w[\w\s]*)?(?:Assessment|Formal Assessment)[\w\s()]*\*{2}|#{2,3}\s+Mark Breakdown)/m);
+        // v7.17.67: also match Mark Scheme Quiz final dashboard markers (🎉 **Quiz Complete!** or **Your Score: N/M**)
+        // so the rich Copy Feedback button fires on the quiz Hattie dashboard, letting students paste
+        // the score + insights into their workbook (parity with essay assessment feedback flow).
+        const startMatch = text.match(/^(#{2,3}\s+(?:\w[\w\s]*)?Assessment|\*{2}(?:\w[\w\s]*)?(?:Assessment|Formal Assessment)[\w\s()]*\*{2}|#{2,3}\s+Mark Breakdown|🎉\s*\*{2}Quiz Complete!?\*{2}|\*{2}Your Score:\s*\d+\/\d+)/m);
         if (!startMatch) return null;
         const startIdx = text.indexOf(startMatch[0]);
         // Find end: "Please copy" or "Have you copied" or "Are you ready" or Hattie questions

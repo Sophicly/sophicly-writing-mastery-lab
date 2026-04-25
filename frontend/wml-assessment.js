@@ -1593,9 +1593,17 @@
                             sendCanvasMessage();
                         };
                         blankSubmit.addEventListener('click', submitBlanks);
-                        blankInputs.forEach(inp => {
+                        // v7.17.67: in multi-blank mode, Enter on inputs 1..N-1 advances focus.
+                        // Only the LAST input's Enter fires submit. Single-blank case unchanged.
+                        blankInputs.forEach((inp, i) => {
                             inp.addEventListener('keydown', (e) => {
-                                if (e.key === 'Enter') { e.preventDefault(); submitBlanks(); }
+                                if (e.key !== 'Enter') return;
+                                e.preventDefault();
+                                if (blankInputs.length > 1 && i < blankInputs.length - 1) {
+                                    blankInputs[i + 1].focus();
+                                } else {
+                                    submitBlanks();
+                                }
                             });
                         });
                     }
