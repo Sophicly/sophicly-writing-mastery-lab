@@ -5488,21 +5488,16 @@
                         try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
                     }
                 }
-                if (canvasInMarkScheme && savedChat && savedChat.history && savedChat.history.length > 0) {
-                    console.log('WML Training: Discarding saved mark_scheme chat — protocol must drive from scratch');
-                    savedChat = null;
-                    try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
-                }
-                // v7.17.22: mark_scheme_unit — discard any stale chat (from pre-v7.17.8
-                // testing when MSU fell through to the default assessment greeting OR
-                // from earlier quiz attempts). Protocol must drive the greeting.
-                // This also self-heals server-stored chats: next message triggers
-                // silent auto-send which overwrites the server meta.
-                if (canvasInMarkSchemeUnit && savedChat && savedChat.history && savedChat.history.length > 0) {
-                    console.log('WML Training: Discarding saved mark_scheme_unit chat — protocol must drive from scratch');
-                    savedChat = null;
-                    try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
-                }
+                // v7.17.70: REMOVED auto-wipe of mark_scheme + mark_scheme_unit chats on
+                // mount. Past behaviour deleted students' previous quiz/self-assessment chat
+                // every page refresh — destroyed review value. Chat now preserved across
+                // refreshes; Clear Chat button still available for manual erase. AI must
+                // detect prior Q&A in history and resume from next unanswered question
+                // rather than re-greeting from Phase 1.1 (handled in protocol resume logic
+                // queued for v7.17.71+).
+                // Original wipe sites: pre-v7.17.70 forced fresh-start so randomised
+                // question order had clean state. Trade-off accepted — students value
+                // history retention over fresh-state guarantee.
                 if (isCwSi && savedChat && savedChat.history && savedChat.history.length > 0) {
                     const firstAI = savedChat.history.find(m => m.role === 'assistant');
                     if (firstAI && firstAI.content.includes('assessment phase')) {
@@ -6010,10 +6005,21 @@
                     }, 50);
                 } else if (!state.reviewMode) {
                     // All other training-env exercises: silent auto-send (protocol drives greeting)
-                    setTimeout(() => {
-                        console.log('WML Training: Silent auto-send for', state.task);
-                        if (tp.chatTextarea) { canvasSilentSend = true; tp.chatTextarea.value = "Let's begin!"; tp.sendCanvasMessage(); }
-                    }, 400);
+                    // v7.17.70: skip auto-send when student is RESUMING a Mark Scheme Quiz or
+                    // Mark Scheme Self-Assessment with prior chat history. Otherwise the
+                    // "Let's begin!" message would re-fire after every refresh and the AI
+                    // would receive a confusing duplicate-start signal in addition to the
+                    // existing chat history. Other tasks (CW, conceptual_notes, etc.) still
+                    // need the silent auto-send because their protocols expect Turn 0 input.
+                    const _isQuizResume = (canvasInMarkScheme || canvasInMarkSchemeUnit) && hasSavedChat;
+                    if (_isQuizResume) {
+                        console.log('WML Training: Skipping silent auto-send — quiz/self-assessment resume detected (v7.17.70)');
+                    } else {
+                        setTimeout(() => {
+                            console.log('WML Training: Silent auto-send for', state.task);
+                            if (tp.chatTextarea) { canvasSilentSend = true; tp.chatTextarea.value = "Let's begin!"; tp.sendCanvasMessage(); }
+                        }, 400);
+                    }
                 }
 
                 // v7.15.1: Only scroll to top on fresh entry, not when resuming saved chat
@@ -7445,15 +7451,9 @@
                                                 try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
                                             }
                                         }
-                                        // v7.14.47: Discard ALL cached mark_scheme chats — the quiz protocol MUST
-                                        // drive from scratch. Any saved chat (stale greetings, old self-assessment
-                                        // form conversations, or generic assessment greetings) would confuse the
-                                        // quiz flow and cause Q1 to be skipped.
-                                        if (canvasInMarkScheme && savedChat && savedChat.history && savedChat.history.length > 0) {
-                                            console.log('WML Canvas: Discarding saved mark_scheme chat — protocol must drive from scratch');
-                                            savedChat = null;
-                                            try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
-                                        }
+                                        // v7.17.70: REMOVED mark_scheme attempt-reload wipe. Chat preserved
+                                        // across attempt navigation. Mirror of the v7.17.70 fix at the canvas
+                                        // mount path. Clear Chat button remains for explicit erase.
                                         // v7.13.36: Discard stale chat for CW exercises — check that saved chat belongs to this exercise type
                                         if (isCwSi && savedChat && savedChat.history && savedChat.history.length > 0) {
                                             const firstAI = savedChat.history.find(m => m.role === 'assistant');
