@@ -2039,7 +2039,11 @@ window.WML = (function() {
         // Strip [ASSESSMENT_COMPLETE] code word (v7.12.23)
         text = text.replace(/\[ASSESSMENT_COMPLETE\]\s*/gi, '').trim();
         // Strip [QUIZ_COMPLETE] code word + machine-readable payload (v7.15.93)
-        text = text.replace(/\[QUIZ_COMPLETE\][^\n]*/gi, '').trim();
+        // v7.17.74: original regex required `]` immediately after QUIZ_COMPLETE, so the
+        // payload form `[QUIZ_COMPLETE:score=...,grade=N]` (colon, not `]`) leaked into
+        // rendered chat. Corrected to allow non-bracket payload chars before the closing
+        // `]`, then gobble trailing whitespace through end of line.
+        text = text.replace(/\[QUIZ_COMPLETE[^\]\n]*\][^\n]*/gi, '').trim();
         // Strip instruction markers
         text = text.replace(/\[END[^\]]*\]/g, '').trim();
         text = text.replace(/\[do NOT[^\]]*\]/gi, '').trim();

@@ -1338,6 +1338,11 @@ body.swml-page {
 }
 .swml-bubble-copy:hover { background: var(--swml-bg-alt); }
 .swml-bubble-content:hover .swml-bubble-copy { opacity: 0.6; }
+/* v7.17.74: force full opacity on the active "Copied!" state so the tooltip
+   child doesn't inherit the 0.6 hover opacity (which made the tooltip
+   background look see-through against the chat bubble). */
+.swml-bubble-copy.swml-copied,
+.swml-bubble-content:hover .swml-bubble-copy.swml-copied { opacity: 1 !important; }
 .swml-bubble-body { line-height: 1.6; overflow-wrap: break-word; word-wrap: break-word; }
 .swml-bubble-body ol, .swml-bubble-body ul { padding-left: 1.2em; }
 .swml-bubble-body table { width: 100%; table-layout: fixed; word-wrap: break-word; }

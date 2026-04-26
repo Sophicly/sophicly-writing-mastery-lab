@@ -1878,6 +1878,38 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-canvas-light .swml-outline-empty {
     color: rgba(0,0,0,0.25);
 }
+/* v7.17.74: light-mode fallbacks keyed off the root [data-swml-theme="light"]
+   attribute. The .swml-canvas-light class is toggled on the canvas element only,
+   so when the outline panel reparents (e.g. detach mode pulls it out of the
+   canvas-light scope) the white-on-white default leaks through. Keying off the
+   root attribute catches both attached and detached panels. */
+[data-swml-theme="light"] .swml-outline-item {
+    color: rgba(0,0,0,0.6);
+}
+[data-swml-theme="light"] .swml-outline-item:hover {
+    background: rgba(77,118,253,0.08);
+    color: #4D76FD;
+}
+[data-swml-theme="light"] .swml-outline-item.swml-outline-group {
+    color: rgba(0,0,0,0.45);
+}
+[data-swml-theme="light"] .swml-outline-item.swml-outline-group:hover {
+    color: #4D76FD;
+}
+[data-swml-theme="light"] .swml-outline-item.swml-outline-child {
+    color: rgba(0,0,0,0.55);
+}
+[data-swml-theme="light"] .swml-outline-item.swml-outline-child:hover {
+    color: rgba(0,0,0,0.85);
+}
+[data-swml-theme="light"] .swml-outline-item.swml-outline-active {
+    background: rgba(77,118,253,0.1);
+    color: #4D76FD;
+    border-left: 2px solid #4D76FD;
+}
+[data-swml-theme="light"] .swml-outline-group-title:hover {
+    color: #4D76FD;
+}
 .swml-canvas-light .swml-outline-btn {
     background: #fff;
     border-color: rgba(0,0,0,0.06);
