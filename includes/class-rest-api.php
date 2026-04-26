@@ -1215,6 +1215,22 @@ class SWML_REST_API {
         // v7.17.39: CW project scope — when present, isolates the canvas doc per project
         $cw_project_id = sanitize_text_field($params['cw_project_id'] ?? '');
 
+        // v7.17.73: Mark Scheme Quiz score piggyback (Option α). Frontend gates the
+        // augmentation to mark_scheme_unit step 1 — backend stays agnostic and only
+        // forwards values when present. Listener (student-data v2.29.6+) reads them
+        // off the 8th do_action argument below.
+        $score_raw        = isset($params['score_raw']) ? absint($params['score_raw']) : null;
+        $score_max        = isset($params['score_max']) ? absint($params['score_max']) : null;
+        $score_percentage = isset($params['score_percentage']) ? absint($params['score_percentage']) : null;
+        $grade_equivalent = isset($params['grade_equivalent']) ? absint($params['grade_equivalent']) : null;
+        $quiz_extra = ($score_raw !== null && $score_max !== null) ? [
+            'score_raw'        => $score_raw,
+            'score_max'        => $score_max,
+            'score_percentage' => $score_percentage,
+            'grade_equivalent' => $grade_equivalent,
+            'task_kind'        => 'mark_scheme_quiz',
+        ] : [];
+
         if (empty($board) || empty($text)) {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
         }
@@ -1264,8 +1280,11 @@ class SWML_REST_API {
             $this->update_general_notes_meta($user_id, $board, $text, $gen['notes'], $gen['quotes']);
         }
 
-        // Also fire a hook so the student data plugin can pick this up
-        do_action('sophicly_canvas_saved', $user_id, $board, $text, $html, $word_count, $topic_number, $suffix);
+        // Also fire a hook so the student data plugin can pick this up.
+        // v7.17.73: 8th arg $quiz_extra carries Mark Scheme Quiz score payload when
+        // present (empty array otherwise). Existing listeners registered with
+        // accepted_args=7 ignore it; new listeners opt in by raising arg count to 8.
+        do_action('sophicly_canvas_saved', $user_id, $board, $text, $html, $word_count, $topic_number, $suffix, $quiz_extra);
 
         // v7.15.12: Update attempt index with latest word count + status
         // v7.15.64: also backfill planningMode from save payload so continue restores it

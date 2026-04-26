@@ -2328,6 +2328,24 @@
                     if (res.method) console.log('WML Canvas:', res.method, 'model:', res.model);
                     saveCanvasChat(canvasChatHistory, canvasChatId);
 
+                    // v7.17.73: Mark Scheme Quiz score capture (Option α).
+                    // Protocol emits [QUIZ_COMPLETE:score=N,total=10,percentage=M,grade=G]
+                    // at end of Phase 3 dashboard. Cache on state then trigger an explicit
+                    // canvas autosave so the score fields ride a /canvas/save POST and
+                    // student-data v2.29.6+ listener can persist to session_records.
+                    // Gated to mark_scheme_unit step 1 (Quiz) — FYW step 2 must NOT carry score.
+                    const _quizMatch = res.reply.match(/\[QUIZ_COMPLETE:score=(\d+),total=(\d+),percentage=(\d+),grade=(\d+)\]/i);
+                    if (_quizMatch && state.task === 'mark_scheme_unit' && state.step === 1) {
+                        state.lastQuizScore = {
+                            score: parseInt(_quizMatch[1], 10),
+                            total: parseInt(_quizMatch[2], 10),
+                            percentage: parseInt(_quizMatch[3], 10),
+                            grade: parseInt(_quizMatch[4], 10),
+                        };
+                        console.log('WML v7.17.73: Quiz score extracted', state.lastQuizScore);
+                        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                    }
+
                     // v7.17.47: Assessment state mirror + resume-confirm quick actions.
                     // Server returns `res.assessmentState` when the AQA Literature state
                     // machine is enabled for this attempt. Cache it + render hard-coded
@@ -15613,6 +15631,15 @@
                 ? window.location.href
                 : _buildWmlDeepLink({ board: snap.board, text: snap.text, topic: snap.topicNumber, task: snap.task }),
             cw_project_id: snap.cwProjectId,
+            // v7.17.73: Mark Scheme Quiz score piggyback (Option α). Spread-only-when-set
+            // keeps every other autosave (planning, FYW step 2, CW typing, essay assessment)
+            // untouched. Gate matches the extraction site in sendCanvasMessage.
+            ...(snap.task === 'mark_scheme_unit' && state.step === 1 && state.lastQuizScore ? {
+                score_raw:        state.lastQuizScore.score,
+                score_max:        state.lastQuizScore.total,
+                score_percentage: state.lastQuizScore.percentage,
+                grade_equivalent: state.lastQuizScore.grade,
+            } : {}),
         };
         canvasSaveToServerTimer = setTimeout(() => {
             const body = _pendingCanvasSaveBody;

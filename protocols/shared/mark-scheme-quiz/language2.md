@@ -180,7 +180,20 @@ CRITICAL: Update the progress bar based on current question number:
 - 5.5-6.5 (55-69%): Moderate \- focus on weak areas  
 - Below 5.5: Significant gaps \- revisit materials
 
-**End-of-Session Reminder (after Q5 + summary):**
+**Final Score Marker (after Q5 + summary, before End-of-Session Reminder):**
+
+After the Q5 summary and immediately before the End-of-Session Reminder, output one hidden machine marker line on its own line. Round score to nearest whole number for the marker. Map the score to a GCSE grade using the Score Guide above:
+
+- 9-10 → grade=9  
+- 7-8.5 → grade=8 (use 7 if score ≤ 7.4)  
+- 5.5-6.5 → grade=6 (use 5 if score ≤ 5.9)  
+- Below 5.5 → grade=4
+
+\[QUIZ\_COMPLETE:score=\[score\_numeric\],total=10,percentage=\[percentage\_numeric\],grade=\[Grade\_numeric\]\]
+
+\*(Hidden machine marker — fill the four numeric placeholders verbatim. Output the line exactly as shown, on its own line. Do not narrate, explain, or wrap it.)*
+
+**End-of-Session Reminder (after the marker):**
 
 "Well done today\! Keep practising. 👋
 

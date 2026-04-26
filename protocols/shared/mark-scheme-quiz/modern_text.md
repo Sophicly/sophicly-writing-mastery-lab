@@ -163,6 +163,10 @@ Evaluate answer and provide feedback using the **Emoji System**.
    \*\*Your Score: \[score\]/10 (\[percentage\]%)\*\*
    \*\*GCSE Grade Equivalent: \[Grade\]\*\*
 
+   \[QUIZ\_COMPLETE:score=\[score\_numeric\],total=10,percentage=\[percentage\_numeric\],grade=\[Grade\_numeric\]\]
+
+   \*(Hidden machine marker — fill the four numeric placeholders verbatim. Output the line exactly as shown, on its own line. Do not narrate, explain, or wrap it.)*
+
    \*\*🧠 Learning Insights (Hattie Model):\*\*
 
    \*\*1. Task Level (The 'What' \- Knowledge Gaps):\*\*
