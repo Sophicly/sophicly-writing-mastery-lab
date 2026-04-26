@@ -16491,6 +16491,39 @@
             }
             return;
         }
+        // v7.17.69: Mark Scheme Self-Assessment task — runs at unit-level lessons that
+        // have NO topicNumber (e.g. "Mark Scheme Final Assessment: Language Paper 1").
+        // Lifted above the topicNumber gate below so the rubric template injects on
+        // unit-level entry. Without this, prior savedContent (often a stale language
+        // paper exam template) keeps the editor populated with the wrong shape.
+        // setContent wrapped in _migrationActive so the onTransaction section-guard
+        // doesn't revert the swap when section-count delta crosses the threshold.
+        if (state.task === 'mark_scheme') {
+            const currentMS = canvasEditor.getHTML();
+            const hasNewTemplate = currentMS.includes('TTECEA ANALYSIS');
+            if (hasNewTemplate) {
+                console.log('WML: Mark scheme document (v7.13.1+) already loaded, skipping template');
+                return;
+            }
+            if (currentMS.includes('mark_scheme_ao') || currentMS.includes('data-section-type')) {
+                console.log('WML: Clearing stale mark scheme document (pre-v7.13.1 template or leaked exam template)');
+                try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
+            }
+            console.log('WML: Generating mark scheme study template (v7.17.69 unit-level entry)');
+            const msTemplate = getMarkSchemeTemplate(null);
+            if (canvasEditor) {
+                _migrationActive = true;
+                try {
+                    canvasEditor.commands.setContent(msTemplate, false);
+                } finally {
+                    _migrationActive = false;
+                }
+                snapshotTemplateBaseline(canvasEditor);
+                refreshWordCountUI();
+                console.log('WML: Mark scheme template injected (v7.17.69)');
+            }
+            return;
+        }
         if (!state.topicNumber || state.topicNumber < 1) {
             // v7.14.8: Board-aware fallback for free practice (no topic number)
             if (canvasEditor && canvasEditor.getText().trim().length < 10 && !canvasEditor.getHTML().includes('data-section-type')) {
