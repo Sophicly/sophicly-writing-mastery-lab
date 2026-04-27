@@ -75,6 +75,25 @@ class SWML_Function_Handlers {
         }
         if (!$is_wml) return $query;
 
+        // v7.18.5: TEST GATE — skip ALL function registration for mark_scheme_unit.
+        // After v7.18.4 removed fetch_student_reminders, debug.log showed the
+        // SAME "Function call loop detected" error firing on update_progress
+        // instead. AI Engine mwai_ai_feedback dispatch discards return values
+        // for ALL handlers (not just one) — any function LLM calls 4+ times
+        // hits AI Engine's loop-detection safety → fallback to GPT. Removing
+        // one function just shifts the loop to the next available one.
+        // For mark_scheme_unit specifically, we need ZERO functions attached
+        // to test if bare-protocol-no-functions runs cleanly Claude-only.
+        // Other tasks (planning, assessment, polishing) keep functions
+        // registered for now — separate investigation needed for whether
+        // the discarded-return-values issue affects them too.
+        global $swml_request_context;
+        $task = $swml_request_context['task'] ?? '';
+        if ($task === 'mark_scheme_unit') {
+            error_log('WML Function Handlers: Skipping function attachment for mark_scheme_unit (v7.18.5 test gate)');
+            return $query;
+        }
+
         foreach ($this->build_functions() as $func) {
             $query->add_function($func);
         }

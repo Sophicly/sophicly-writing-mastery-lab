@@ -774,6 +774,17 @@ class SWML_REST_API {
         $bot_ids_to_try = $fallback_exists
             ? [$bot_id, $fallback_bot_id]  // Claude first, OpenAI fallback
             : [$bot_id];                    // Claude only
+
+        // v7.18.5: TEST GATE — for mark_scheme_unit, FORCE Claude-only.
+        // Belt + braces alongside the function-attachment gate. If the chat
+        // STILL switches to GPT despite no functions registered, the fallback
+        // would surface the bug. Forcing Claude-only ensures the test sees
+        // pure-Claude behaviour with no possibility of model mid-switch.
+        // Other tasks keep the fallback chain unchanged.
+        if (($req_task ?? '') === 'mark_scheme_unit') {
+            $bot_ids_to_try = [$bot_id];
+            error_log("WML: mark_scheme_unit — forcing Claude-only (v7.18.5 test gate, no GPT fallback)");
+        }
         error_log("WML: Fallback chain: " . implode(' → ', $bot_ids_to_try));
 
         // ════════════════════════════════════════════════════════════
