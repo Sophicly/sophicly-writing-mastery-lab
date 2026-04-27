@@ -2258,6 +2258,17 @@
                         promptText = `[CREATIVE WRITING DOCUMENT \u2014 current draft]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
                     }
                     console.log('WML Canvas: CW doc injected for', state.task, 'Length:', docContent.length);
+                } else if (state.task === 'mark_scheme_unit' || state.task === 'foundational_quiz') {
+                    // v7.18.1: Quiz tasks have a notes-only canvas. Sophia doesn't read it.
+                    // DO NOT inject doc content — prevents stale "Quiz Complete" dashboards
+                    // from prior attempts (which the student leaves in the canvas as personal
+                    // notes) from polluting the prompt and short-circuiting the new attempt.
+                    // Quiz state authority comes from the QUIZ STATE block injected by the
+                    // protocol-router, not from canvas content.
+                    if (userMsgCount === 1) {
+                        promptText = `[CONTEXT: ${boardName} ${subjectName} — ${textName} — ${state.task.toUpperCase()}]\n[STUDENT'S RESPONSE]\n${msg}`;
+                    }
+                    console.log('WML Canvas: Quiz task — doc injection skipped for', state.task);
                 } else if (essay.trim().length > 50) {
                     const wc = getResponseWordCount(canvasEditor);
                     // v7.14.67: Detect multi-question papers by counting distinct response sections
