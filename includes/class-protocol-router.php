@@ -609,9 +609,10 @@ class SWML_Protocol_Router {
         $preamble = $this->build_preamble($context, $user_id);
 
         // v7.18.0: Append QUIZ STATE block when active accumulator exists.
-        // This is the anti-hallucination anchor — LLM consumes server-truth
-        // running tally instead of computing its own.
-        if (class_exists('SWML_Quiz_Engine')) {
+        // v7.18.3 SUBTRACTION TEST: gated OFF for mark_scheme_unit while we
+        // test whether the bare protocol works without WML wrapping noise.
+        // Foundational quiz still uses it (separate test surface).
+        if (class_exists('SWML_Quiz_Engine') && ($context['task'] ?? '') !== 'mark_scheme_unit') {
             $quiz_state_block = SWML_Quiz_Engine::instance()->build_state_block($user_id);
             if (!empty($quiz_state_block)) {
                 $preamble .= "\n\n" . $quiz_state_block;
@@ -1801,6 +1802,28 @@ TEMPLATE;
         $user = get_userdata($user_id);
         $student_name = $user ? $user->display_name : 'Student';
         $first_name = $user ? ($user->first_name ?: $user->display_name) : 'Student';
+
+        // v7.18.3 SUBTRACTION TEST — mark_scheme_unit gets MINIMAL preamble.
+        // Hypothesis (per Neil 2026-04-27): the bare modular protocol works fine
+        // (he tested by pasting raw protocol into AI Engine direct chatbot and it
+        // followed every Phase 1-4 step cleanly). The drift / phase-regression /
+        // feedback-skipping issues observed during v7.18.0-v7.18.2 may be caused
+        // by WML's wrapping NOISE (override blocks, QUIZ STATE injections, prior-
+        // attempt score reminders, multiple guard sections at lines 3513/3526/
+        // 3544) competing with the bare protocol for the LLM's attention. This
+        // early-return strips all that wrapping for mark_scheme_unit — only the
+        // bare modular protocol + minimal context survives. If the quiz works
+        // cleanly under this, the wrapping was the problem, not the LLM.
+        if (($context['task'] ?? '') === 'mark_scheme_unit') {
+            $board_label = strtoupper($context['board'] ?? 'AQA');
+            $protocol_label = 'Mark Scheme Mastery Quiz';
+            $minimal = "## WRITING MASTERY LAB SESSION\n";
+            $minimal .= "**Active Exercise:** {$protocol_label}\n";
+            $minimal .= "**Student:** {$student_name} (call them {$first_name})\n";
+            $minimal .= "**Exam Board:** {$board_label}\n\n";
+            $minimal .= "You are Sophia. Follow the modular protocol below precisely. The protocol's Phase 1-4 instructions are the source of truth — do not improvise around them.\n";
+            return $minimal;
+        }
 
         // Task → Protocol mapping
         // v7.17.64: extended with mark_scheme_unit + other live tasks. Previous
