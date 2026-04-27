@@ -3509,6 +3509,36 @@ TEMPLATE;
             $block .= "The student answered. The answer was wrong. Award 0/2. Explain the correct answer. Move on. Hints and retry loops corrupt the score and break the diagnostic value of the quiz.\n";
         }
 
+        // v7.17.77: Quiz answer-handling guard. Audit finding 2026-04-27: Sophia
+        // sometimes received a single-letter answer (A/B/C/D) and re-emitted the
+        // question + options instead of giving feedback. Forces direct feedback.
+        if ($task === 'mark_scheme_unit' && (int)($context['step'] ?? 1) === 1) {
+            $block .= "\n### QUIZ ANSWER HANDLING — NEVER REPEAT THE QUESTION (CRITICAL)\n";
+            $block .= "When the student responds with a single letter (A/B/C/D) — or a comma-separated set for multi-select — they are answering the CURRENT question.\n";
+            $block .= "- Move IMMEDIATELY to Phase 2.C feedback (✓ Correct / ⚠️ Partial / ✗ Not quite + score line + ready check).\n";
+            $block .= "- DO NOT re-display the question text.\n";
+            $block .= "- DO NOT re-display the option list.\n";
+            $block .= "- DO NOT echo the student's letter back.\n";
+            $block .= "- DO NOT show the category banner / progress bar a second time for the same question.\n";
+            $block .= "Repeating the question after the student answers wastes a turn, breaks pedagogical pacing, and confuses students into re-answering. ALWAYS respond with feedback, never with a re-display.\n";
+        }
+
+        // v7.17.77: Greeting score-hallucination guard for any task that shares
+        // the _msu canvas (Quiz step 1 + FYW step 2). Sophia was scraping stale
+        // [QUIZ_COMPLETE:...] markers from prior attempts in chat history /
+        // canvas doc and opening with "perfect 10/10 quiz results came through!"
+        // — sometimes accurate, often stale. Until proper score-persistence v2
+        // ships (function-calling), Sophia must NOT reference any prior score
+        // in greetings.
+        if ($task === 'mark_scheme_unit') {
+            $block .= "\n### NEVER REFERENCE PRIOR ATTEMPT SCORES IN GREETING\n";
+            $block .= "Old chat history and canvas content may contain leftover score markers (e.g. \"Your Score: 10/10\", \"perfect score\", \"[QUIZ_COMPLETE:...]\"). These are NOT current — they are stale data from previous attempts that may not reflect the student's actual performance.\n";
+            $block .= "- DO NOT open with \"It looks like your quiz results came through — a perfect 10/10\" or any variation.\n";
+            $block .= "- DO NOT reference any quiz score the student may or may not have achieved previously.\n";
+            $block .= "- DO NOT congratulate based on prior performance you cannot verify.\n";
+            $block .= "Greet the student fresh as if this were their first attempt. The protocol's specified greeting is the source of truth — use it verbatim.\n";
+        }
+
         // v7.17.76: Forging Your Weapon (mark_scheme_unit step 2) — board is already
         // known from session routing. The protocol files at protocols/shared/
         // forging-your-weapon/*.md L29-37 hardcode a 7-option exam-board menu that

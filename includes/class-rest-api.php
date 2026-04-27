@@ -1422,6 +1422,17 @@ class SWML_REST_API {
             $doc['html'] = $this->splice_general_notes_into_html($doc['html'], $general_notes);
         }
 
+        // v7.17.77: Strip stale [QUIZ_COMPLETE:...] markers from saved canvas
+        // HTML on load. v7.17.73 protocol marker emit was rolled back in
+        // v7.17.75, but markers already saved into canvas docs persist. The
+        // visible bracketed text confuses students AND causes Sophia to scrape
+        // stale "10/10 perfect score" data from canvas content for greeting
+        // hallucinations. One-time strip on each load gradually cleans the
+        // corpus as users re-save.
+        if (is_array($doc) && !empty($doc['html'])) {
+            $doc['html'] = preg_replace('/\[QUIZ_COMPLETE[^\]\n]*\][^\n<]*/i', '', $doc['html']);
+        }
+
         return rest_ensure_response([
             'success'      => true,
             'doc'          => $doc,

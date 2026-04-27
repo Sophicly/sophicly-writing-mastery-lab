@@ -9404,7 +9404,12 @@
                     wrap.appendChild(tb);
                     const tbW = tb.offsetWidth;
                     tb.style.top = (rect.top - wrapRect.top + wrap.scrollTop - 40) + 'px';
-                    tb.style.left = Math.max(0, (rect.left - wrapRect.left + rect.width / 2 - tbW / 2)) + 'px';
+                    // v7.17.77: clamp BOTH edges so toolbar never bleeds off the right
+                    // of the canvas wrap (was only clamping left at 0).
+                    tb.style.left = Math.max(4, Math.min(
+                        rect.left - wrapRect.left + rect.width / 2 - tbW / 2,
+                        wrapRect.width - tbW - 4
+                    )) + 'px';
                 }, 10);
             });
 
