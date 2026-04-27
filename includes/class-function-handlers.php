@@ -128,6 +128,38 @@ class SWML_Function_Handlers {
             'callback' => [$this, 'handle_fetch_reminders'],
         ];
 
+        // ── record_quiz_score (v7.17.79) ──
+        // Mark Scheme Quiz score persistence. Replaces the v7.17.73 text-marker
+        // approach which caused protocol-context pollution. Function call is
+        // opaque to chat output, so no marker syntax leaks into LLM context.
+        $functions[] = [
+            'name'        => 'record_quiz_score',
+            'description' => 'Mark Scheme Quiz ONLY. Call SILENTLY at end of Phase 3 (dashboard) with the final computed score. Triggers immediate write to session_records via the canvas-saved hook. NEVER narrate this call. NEVER mention saving. The student should see only the dashboard.',
+            'parameters'  => [
+                'type'       => 'object',
+                'properties' => [
+                    'score' => [
+                        'type'        => 'integer',
+                        'description' => 'Number of questions answered correctly (0-10).',
+                    ],
+                    'total' => [
+                        'type'        => 'integer',
+                        'description' => 'Total questions in the quiz (typically 10).',
+                    ],
+                    'percentage' => [
+                        'type'        => 'integer',
+                        'description' => 'Score as percentage 0-100. If omitted, computed from score/total.',
+                    ],
+                    'grade' => [
+                        'type'        => 'integer',
+                        'description' => 'GCSE grade equivalent 1-9 derived from the rubric in the protocol.',
+                    ],
+                ],
+                'required' => ['score', 'total', 'grade'],
+            ],
+            'callback' => [$this, 'handle_record_quiz_score'],
+        ];
+
         return $functions;
     }
 
@@ -211,6 +243,64 @@ class SWML_Function_Handlers {
         return json_encode([
             'status' => 'ok',
             'data'   => $data,
+        ]);
+    }
+
+    /**
+     * Handle record_quiz_score function call (v7.17.79)
+     * Fires sophicly_canvas_saved with quiz_extra populated so student-data v2.29.6+
+     * listener writes to session_records.grade / total_score.
+     */
+    public function handle_record_quiz_score($args) {
+        $user_id    = get_current_user_id();
+        $score      = isset($args['score'])      ? absint($args['score'])      : null;
+        $total      = isset($args['total'])      ? absint($args['total'])      : null;
+        $percentage = isset($args['percentage']) ? absint($args['percentage']) : null;
+        $grade      = isset($args['grade'])      ? absint($args['grade'])      : null;
+
+        if (!$user_id || $score === null || $total === null || $grade === null) {
+            return json_encode(['status' => 'error', 'message' => 'Missing required parameters']);
+        }
+
+        $session = SWML_Session_Manager::get_active_session($user_id);
+        if (!$session) {
+            return json_encode(['status' => 'error', 'message' => 'No active session']);
+        }
+        $task = $session['context']['task'] ?? '';
+        if ($task !== 'mark_scheme_unit') {
+            return json_encode(['status' => 'error', 'message' => 'record_quiz_score only valid for mark_scheme_unit']);
+        }
+
+        // Clamp + derive
+        $score = max(0, min($score, $total));
+        if ($percentage === null && $total > 0) {
+            $percentage = (int) round(($score / $total) * 100);
+        }
+        $percentage = max(0, min(100, (int) $percentage));
+        $grade      = max(1, min(9, $grade));
+
+        $board  = $session['context']['board']        ?? '';
+        $text   = $session['context']['text']         ?? '';
+        $topic  = $session['context']['topic_number'] ?? 0;
+        $suffix = '_msu'; // Mark Scheme Quiz canonical suffix
+
+        $quiz_extra = [
+            'score_raw'        => $score,
+            'score_max'        => $total,
+            'score_percentage' => $percentage,
+            'grade_equivalent' => $grade,
+            'task_kind'        => 'mark_scheme_quiz',
+        ];
+
+        do_action('sophicly_canvas_saved', $user_id, $board, $text, '', 0, $topic, $suffix, $quiz_extra);
+
+        error_log("[WML record_quiz_score] uid={$user_id} score={$score}/{$total} pct={$percentage} grade={$grade} board={$board} text={$text}");
+
+        return json_encode([
+            'status'     => 'recorded',
+            'score'      => "{$score}/{$total}",
+            'percentage' => $percentage,
+            'grade'      => $grade,
         ]);
     }
 }

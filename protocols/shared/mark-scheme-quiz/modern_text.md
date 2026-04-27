@@ -154,7 +154,12 @@ Evaluate answer and provide feedback using the **Emoji System**.
 
 
 
-3. **Display Dashboard:**
+3. **Persist Score (silent):**
+   Call `record_quiz_score` with the computed score, total, percentage, and grade. Do not narrate this step.
+
+
+
+4. **Display Dashboard:**
    📌 Modern Text Quiz \> Complete
    \[Progress: ██████████ 100%\]
 

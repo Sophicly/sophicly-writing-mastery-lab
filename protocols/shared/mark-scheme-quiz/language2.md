@@ -180,6 +180,9 @@ CRITICAL: Update the progress bar based on current question number:
 - 5.5-6.5 (55-69%): Moderate \- focus on weak areas  
 - Below 5.5: Significant gaps \- revisit materials
 
+**Persist Score (silent):**
+Call `record_quiz_score` with the computed score, total, percentage, and grade. Do not narrate this step.
+
 **End-of-Session Reminder (after Q5 + summary):**
 
 "Well done today\! Keep practising. 👋
