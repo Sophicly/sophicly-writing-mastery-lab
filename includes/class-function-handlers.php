@@ -28,6 +28,10 @@ class SWML_Function_Handlers {
         'update_progress'         => 'handle_update_progress',
         'fetch_student_reminders' => 'handle_fetch_reminders',
         'record_quiz_score'       => 'handle_record_quiz_score',
+        // v7.18.0 unified quiz engine
+        'quiz_start'              => 'handle_quiz_start',
+        'quiz_record_question'    => 'handle_quiz_record_question',
+        'quiz_finalize'           => 'handle_quiz_finalize',
     ];
 
     public static function instance() {
@@ -131,10 +135,12 @@ class SWML_Function_Handlers {
             'manual', 'wml-fetch-student-reminders', 'server'
         );
 
-        // record_quiz_score (v7.17.79 added; wired in v7.17.80)
+        // record_quiz_score (v7.17.79 added; wired in v7.17.80; DEPRECATED v7.18.0)
+        // Kept as backward-compat shim for one release cycle. Internally routes
+        // to the new quiz engine. Removed in v7.19.0.
         $out[] = new Meow_MWAI_Query_Function(
             'record_quiz_score',
-            'Mark Scheme Quiz ONLY. Call SILENTLY at end of Phase 3 (dashboard) with the final computed score. Triggers immediate write to session_records via the canvas-saved hook. NEVER narrate this call. NEVER mention saving. The student should see only the dashboard.',
+            'DEPRECATED — use quiz_finalize instead. Mark Scheme Quiz ONLY. Call SILENTLY at end of Phase 3 (dashboard). Backward-compat shim only; new protocols MUST use quiz_finalize.',
             [
                 new Meow_MWAI_Query_Parameter('score', 'Number of questions answered correctly (0-10).', 'integer', true),
                 new Meow_MWAI_Query_Parameter('total', 'Total questions in the quiz (typically 10).', 'integer', true),
@@ -142,6 +148,47 @@ class SWML_Function_Handlers {
                 new Meow_MWAI_Query_Parameter('grade', 'GCSE grade equivalent 1-9 derived from the rubric in the protocol.', 'integer', true),
             ],
             'manual', 'wml-record-quiz-score', 'server'
+        );
+
+        // ─── v7.18.0 unified quiz engine functions ───
+
+        // quiz_start
+        $out[] = new Meow_MWAI_Query_Function(
+            'quiz_start',
+            'Call ONCE at the start of every quiz, immediately after the student confirms their exam board (or board is pre-known). Initialises the server-side accumulator that tracks score, per-question record, and category gaps for THIS attempt. Call SILENTLY — never narrate. Subsequent turns will receive a QUIZ STATE block in the system prompt; use those numbers for ALL running-score and final-score displays. NEVER compute score yourself.',
+            [
+                new Meow_MWAI_Query_Parameter('quiz_type', 'One of: mark_scheme | foundational. Marks Scheme protocols pass mark_scheme; Foundational Quiz passes foundational.', 'string', true),
+                new Meow_MWAI_Query_Parameter('total_questions', 'Number of questions in this quiz (typically 5).', 'integer', true),
+                new Meow_MWAI_Query_Parameter('board', 'Exam board slug (aqa, edexcel, eduqas, ocr, sqa, ccea, edexcel-igcse, cambridge, etc).', 'string', true),
+                new Meow_MWAI_Query_Parameter('text', 'Text or paper identifier (e.g. macbeth, aqa_lang_paper_1, duchess_of_malfi).', 'string', true),
+                new Meow_MWAI_Query_Parameter('attempt_number', 'Attempt number for this student+text combo (1 for first attempt; increment for retries within same session).', 'integer', false),
+            ],
+            'manual', 'wml-quiz-start', 'server'
+        );
+
+        // quiz_record_question
+        $out[] = new Meow_MWAI_Query_Function(
+            'quiz_record_question',
+            'Call IMMEDIATELY AFTER you emit feedback for each question (✓/⚠️/✗). Records the student\'s result on the server. The server will return a fresh QUIZ STATE block on your NEXT turn — use those numbers for the running-score line, never your own count. Call SILENTLY — never narrate. Skipping this call breaks the score persistence chain.',
+            [
+                new Meow_MWAI_Query_Parameter('q_num', 'Question number (1-N where N is total_questions).', 'integer', true),
+                new Meow_MWAI_Query_Parameter('marks_awarded', 'Marks the student earned on this question (e.g. 0, 1, 2). Half-marks supported for partial credit.', 'number', true),
+                new Meow_MWAI_Query_Parameter('max_marks', 'Maximum marks for this question (typically 2 for mark_scheme, 1 for foundational).', 'number', true),
+                new Meow_MWAI_Query_Parameter('category', 'Question category for gap analysis. Examples: "AO1 Retrieval", "AO2 Language", "AO3 Context", "Themes", "Plot", "Characters". Free-form short string.', 'string', true),
+                new Meow_MWAI_Query_Parameter('correct', 'Correct answer letters or text (e.g. "B", "A,B,D", "ambition").', 'string', false),
+                new Meow_MWAI_Query_Parameter('student_answer', 'Student\'s submitted answer (e.g. "A", "true", "vaulting").', 'string', false),
+            ],
+            'manual', 'wml-quiz-record-question', 'server'
+        );
+
+        // quiz_finalize
+        $out[] = new Meow_MWAI_Query_Function(
+            'quiz_finalize',
+            'Call ONCE at end of Phase 3 dashboard, AFTER recording every question. Server reads the accumulator, computes deterministic final score, persists per quiz_type (mark_scheme → session_records via sophicly_canvas_saved; foundational → user_meta + sophicly_foundational_quiz_complete hook), then clears the accumulator. Call SILENTLY — never narrate. Do NOT emit any [QUIZ_COMPLETE] text marker (deprecated).',
+            [
+                new Meow_MWAI_Query_Parameter('grade_equivalent', 'GCSE grade 1-9 derived from the percentage rubric in the protocol. Server clamps to [1,9].', 'integer', true),
+            ],
+            'manual', 'wml-quiz-finalize', 'server'
         );
 
         return $out;
@@ -230,20 +277,48 @@ class SWML_Function_Handlers {
     }
 
     /**
-     * Handle record_quiz_score function call (v7.17.79 / wired v7.17.80).
-     * Fires sophicly_canvas_saved with quiz_extra populated so student-data v2.29.6+
-     * listener writes to session_records.grade / total_score.
+     * Handle record_quiz_score function call (v7.17.79+; DEPRECATED v7.18.0).
+     * Backward-compat shim: routes to the unified quiz engine. If an active
+     * accumulator exists, uses it (server truth). Otherwise falls back to the
+     * LLM-supplied args (legacy behaviour, hallucination-prone — logged loud).
      */
     public function handle_record_quiz_score($args) {
-        $user_id    = get_current_user_id();
-        $score      = isset($args['score'])      ? absint($args['score'])      : null;
-        $total      = isset($args['total'])      ? absint($args['total'])      : null;
-        $percentage = isset($args['percentage']) ? absint($args['percentage']) : null;
-        $grade      = isset($args['grade'])      ? absint($args['grade'])      : null;
-
-        if (!$user_id || $score === null || $total === null || $grade === null) {
-            return json_encode(['status' => 'error', 'message' => 'Missing required parameters']);
+        $user_id = get_current_user_id();
+        if (!$user_id) {
+            return json_encode(['status' => 'error', 'message' => 'Not authenticated']);
         }
+
+        $grade = isset($args['grade']) ? absint($args['grade']) : null;
+        if ($grade === null) {
+            return json_encode(['status' => 'error', 'message' => 'Missing grade parameter']);
+        }
+
+        if (class_exists('SWML_Quiz_Engine')) {
+            $engine = SWML_Quiz_Engine::instance();
+            $accumulator = $engine->get_accumulator($user_id);
+            if ($accumulator) {
+                error_log("[WML record_quiz_score deprecated] uid={$user_id} routed to quiz_finalize via shim");
+                $summary = $engine->finalize($user_id, $grade);
+                if ($summary) {
+                    return json_encode([
+                        'status'     => 'recorded',
+                        'score'      => "{$summary['score']}/{$summary['max']}",
+                        'percentage' => $summary['percentage'],
+                        'grade'      => $summary['grade'],
+                    ]);
+                }
+            }
+        }
+
+        // Legacy fallback — LLM-supplied score (hallucination-prone). Loud log.
+        $score = isset($args['score']) ? absint($args['score']) : null;
+        $total = isset($args['total']) ? absint($args['total']) : null;
+        $percentage = isset($args['percentage']) ? absint($args['percentage']) : null;
+        if ($score === null || $total === null) {
+            return json_encode(['status' => 'error', 'message' => 'Missing score/total and no active accumulator']);
+        }
+
+        error_log("[WML record_quiz_score deprecated FALLBACK] uid={$user_id} no accumulator; using LLM args score={$score}/{$total} grade={$grade} — HALLUCINATION RISK");
 
         $session = SWML_Session_Manager::get_active_session($user_id);
         if (!$session) {
@@ -259,12 +334,11 @@ class SWML_Function_Handlers {
             $percentage = (int) round(($score / $total) * 100);
         }
         $percentage = max(0, min(100, (int) $percentage));
-        $grade      = max(1, min(9, $grade));
+        $grade = max(1, min(9, $grade));
 
         $board  = $session['context']['board']        ?? '';
         $text   = $session['context']['text']         ?? '';
         $topic  = $session['context']['topic_number'] ?? 0;
-        $suffix = '_msu';
 
         $quiz_extra = [
             'score_raw'        => $score,
@@ -273,16 +347,92 @@ class SWML_Function_Handlers {
             'grade_equivalent' => $grade,
             'task_kind'        => 'mark_scheme_quiz',
         ];
-
-        do_action('sophicly_canvas_saved', $user_id, $board, $text, '', 0, $topic, $suffix, $quiz_extra);
-
-        error_log("[WML record_quiz_score] uid={$user_id} score={$score}/{$total} pct={$percentage} grade={$grade} board={$board} text={$text}");
+        do_action('sophicly_canvas_saved', $user_id, $board, $text, '', 0, $topic, '_msu', $quiz_extra);
 
         return json_encode([
             'status'     => 'recorded',
             'score'      => "{$score}/{$total}",
             'percentage' => $percentage,
             'grade'      => $grade,
+        ]);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  v7.18.0 UNIFIED QUIZ ENGINE HANDLERS
+    // ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * Handle quiz_start function call.
+     */
+    public function handle_quiz_start($args) {
+        $user_id = get_current_user_id();
+        if (!$user_id) return json_encode(['status' => 'error', 'message' => 'Not authenticated']);
+        if (!class_exists('SWML_Quiz_Engine')) {
+            error_log("[WML quiz_start] SWML_Quiz_Engine not loaded — bootstrap problem");
+            return json_encode(['status' => 'error', 'message' => 'Quiz engine unavailable']);
+        }
+        $engine = SWML_Quiz_Engine::instance();
+        $accumulator = $engine->start(
+            $user_id,
+            sanitize_key($args['quiz_type']  ?? 'mark_scheme'),
+            absint($args['total_questions'] ?? 5),
+            sanitize_key($args['board']     ?? ''),
+            sanitize_text_field($args['text'] ?? ''),
+            absint($args['attempt_number'] ?? 1)
+        );
+        return json_encode([
+            'status'    => 'started',
+            'quiz_type' => $accumulator['quiz_type'],
+            'total'     => $accumulator['total_questions'],
+        ]);
+    }
+
+    /**
+     * Handle quiz_record_question function call.
+     */
+    public function handle_quiz_record_question($args) {
+        $user_id = get_current_user_id();
+        if (!$user_id) return json_encode(['status' => 'error', 'message' => 'Not authenticated']);
+        if (!class_exists('SWML_Quiz_Engine')) {
+            return json_encode(['status' => 'error', 'message' => 'Quiz engine unavailable']);
+        }
+        $engine = SWML_Quiz_Engine::instance();
+        $accumulator = $engine->record_question($user_id, $args);
+        if (!$accumulator) {
+            return json_encode(['status' => 'error', 'message' => 'No active quiz accumulator — call quiz_start first']);
+        }
+        return json_encode([
+            'status'        => 'recorded',
+            'q_num'         => (int) ($args['q_num'] ?? 0),
+            'score_running' => $accumulator['score_running'],
+            'max_running'   => $accumulator['max_running'],
+        ]);
+    }
+
+    /**
+     * Handle quiz_finalize function call.
+     */
+    public function handle_quiz_finalize($args) {
+        $user_id = get_current_user_id();
+        if (!$user_id) return json_encode(['status' => 'error', 'message' => 'Not authenticated']);
+        if (!class_exists('SWML_Quiz_Engine')) {
+            return json_encode(['status' => 'error', 'message' => 'Quiz engine unavailable']);
+        }
+        $grade = absint($args['grade_equivalent'] ?? 0);
+        if (!$grade) {
+            return json_encode(['status' => 'error', 'message' => 'Missing grade_equivalent']);
+        }
+        $engine = SWML_Quiz_Engine::instance();
+        $summary = $engine->finalize($user_id, $grade);
+        if (!$summary) {
+            return json_encode(['status' => 'error', 'message' => 'No active quiz accumulator — call quiz_start first']);
+        }
+        return json_encode([
+            'status'     => 'finalized',
+            'score'      => "{$summary['score']}/{$summary['max']}",
+            'percentage' => $summary['percentage'],
+            'grade'      => $summary['grade'],
+            'quiz_type'  => $summary['quiz_type'],
         ]);
     }
 }

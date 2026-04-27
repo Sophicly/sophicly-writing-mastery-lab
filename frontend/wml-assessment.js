@@ -2559,42 +2559,10 @@
                             }
                         }
 
-                        // v7.15.93: Foundational quiz completion — parse [QUIZ_COMPLETE] payload
-                        // and POST to /foundational-quiz/result so the dashboard can surface it.
-                        if (state.task === 'foundational_quiz' && !state._quizResultSaved) {
-                            const quizMatch = (res.reply || '').match(/\[QUIZ_COMPLETE\][^\n]*?score\s*=\s*(\d+)[^\n]*?max\s*=\s*(\d+)[^\n]*?grade\s*=\s*([^\s\]]+)(?:[^\n]*?categories\s*=\s*([^\n]*))?/i);
-                            if (quizMatch) {
-                                const score = parseInt(quizMatch[1], 10) || 0;
-                                const max   = parseInt(quizMatch[2], 10) || 5;
-                                const grade = (quizMatch[3] || '').trim();
-                                const cats  = (quizMatch[4] || '').trim();
-                                state._quizResultSaved = true;
-                                console.log('WML: [QUIZ_COMPLETE] detected', { score, max, grade, cats });
-                                const cfg = window.swmlConfig || {};
-                                try {
-                                    fetch(cfg.restUrl + 'foundational-quiz/result', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': cfg.nonce },
-                                        body: JSON.stringify({
-                                            board: cfg.board || state.board || '',
-                                            text:  cfg.text  || state.text  || '',
-                                            score: score, max: max, grade: grade, categories: cats,
-                                            lesson_url: cfg.lessonUrl || '', // v7.17.36
-                                        }),
-                                    }).then(r => r.json()).then(data => {
-                                        console.log('WML: Quiz result saved', data);
-                                    }).catch(err => {
-                                        console.warn('WML: Quiz result save failed', err);
-                                    });
-                                } catch (postErr) {
-                                    console.warn('WML: Quiz result POST threw', postErr);
-                                }
-                                if (assessCompleteBtnRef.value && assessCompleteBtnRef.value.style.display === 'none') {
-                                    assessCompleteBtnRef.value.style.display = '';
-                                    assessCompleteBtnRef.value.classList.add('swml-assess-ready');
-                                }
-                            }
-                        }
+                        // v7.18.0: [QUIZ_COMPLETE] parser DEPRECATED for foundational_quiz.
+                        // Server-side quiz_finalize() function call now persists deterministically.
+                        // Mark Complete button reveal still happens here for foundational_quiz when
+                        // the dashboard rendering signals quiz end (handled by other completion-detection paths).
                     } catch (exErr) {
                         console.warn('WML Canvas: extraction/completion check failed:', exErr);
                     }

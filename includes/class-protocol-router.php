@@ -608,6 +608,17 @@ class SWML_Protocol_Router {
         // ── Build session preamble FIRST (before protocol) ──
         $preamble = $this->build_preamble($context, $user_id);
 
+        // v7.18.0: Append QUIZ STATE block when active accumulator exists.
+        // This is the anti-hallucination anchor — LLM consumes server-truth
+        // running tally instead of computing its own.
+        if (class_exists('SWML_Quiz_Engine')) {
+            $quiz_state_block = SWML_Quiz_Engine::instance()->build_state_block($user_id);
+            if (!empty($quiz_state_block)) {
+                $preamble .= "\n\n" . $quiz_state_block;
+                error_log("WML Router: Appended QUIZ STATE block (uid={$user_id})");
+            }
+        }
+
         $modular_protocol = $this->load_modular_protocol($context);
         
         if ($modular_protocol) {
