@@ -327,6 +327,13 @@ class SWML_Quiz_Engine {
         }
 
         $lines[] = '';
+        $lines[] = 'PHASE STATE (the existence of this block means quiz is ACTIVE — Phase 1 Welcome/Ready Gate is OVER):';
+        $lines[] = '  - Phase 1 is COMPLETE. The student already passed the Ready Gate (picked A "I\'m ready"). Do NOT re-emit Phase 1 copy ("Welcome to your quick AQA... five questions, each worth 2 marks", "A) I\'m ready / B) Hold on", "No rush at all", "Reply A when you\'re ready"). If you find yourself about to emit any of that Phase 1 ready-gate copy, ABORT — you have lost state. Re-render the CURRENT question (Q' . $q_now . ') instead.';
+        $lines[] = '  - You are in Phase 2 at Question ' . $q_now . ' of ' . $q_tot . '. Render this question, await answer, give feedback, record via quiz_record_question, then ready-check. Loop.';
+        $lines[] = '  - Single-letter input from student (A / B / C / D, or comma-list like "A,C") = ANSWER to the current question. NEVER interpret a single letter as a Phase 1 ready-gate selection. The Phase 1 A/B options no longer apply.';
+        $lines[] = '  - "Y" / "yes" / "next" / "proceed" = ready-check confirmation to advance from current Q' . $q_now . ' to Q' . min($q_now + 1, $q_tot) . '. NEVER interpret as Phase 1 ready-gate.';
+        $lines[] = '  - "Hold on" / "wait" / "not yet" mid-quiz = student wants to pause. Acknowledge briefly ("Take your time — reply when ready"), then WAIT. Do NOT re-emit Phase 1 ready-gate.';
+        $lines[] = '';
         $lines[] = 'AUTHORITATIVE SCORING RULES:';
         $lines[] = '  1. NEVER use any score number not in this block. NEVER compute your own running total.';
         $lines[] = '  2. The "Current score" line you display in chat MUST equal "Score so far" above, formatted as `💯 Current score: X / Y marks`.';
