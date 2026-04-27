@@ -3509,6 +3509,56 @@ TEMPLATE;
             $block .= "The student answered. The answer was wrong. Award 0/2. Explain the correct answer. Move on. Hints and retry loops corrupt the score and break the diagnostic value of the quiz.\n";
         }
 
+        // v7.17.76: Forging Your Weapon (mark_scheme_unit step 2) — board is already
+        // known from session routing. The protocol files at protocols/shared/
+        // forging-your-weapon/*.md L29-37 hardcode a 7-option exam-board menu that
+        // wastes a student turn on a known-answer question. Universal preamble guard
+        // tells Sophia the board is set and she must skip Phase 1.2 board selection.
+        $step = isset($context['step']) ? (int) $context['step'] : 0;
+        $board_raw = $context['board'] ?? '';
+        if ($task === 'mark_scheme_unit' && $step === 2 && $board_raw !== '') {
+            $board_display_map = [
+                'aqa' => 'AQA', 'edexcel' => 'Edexcel', 'eduqas' => 'Eduqas',
+                'ocr' => 'OCR', 'edexcel-igcse' => 'Edexcel IGCSE',
+                'cambridge-igcse' => 'Cambridge IGCSE', 'sqa' => 'SQA',
+                'ccea' => 'CCEA',
+            ];
+            $board_display = $board_display_map[strtolower($board_raw)] ?? strtoupper($board_raw);
+            $block .= "\n### FORGING YOUR WEAPON — BOARD ALREADY SET (DO NOT ASK)\n";
+            $block .= "Student is training for **{$board_display}**. The board is already known from session context.\n";
+            $block .= "- DO NOT display the Phase 1.2 \"which Exam Board are you training for?\" menu (A-G options).\n";
+            $block .= "- DO NOT ask the student to confirm or re-select their board.\n";
+            $block .= "- In your greeting, naturally reference the board (e.g. \"Welcome to the Forge — let's calibrate to your **{$board_display}** mark scheme\").\n";
+            $block .= "- Proceed directly from the Phase 1.1 greeting to Phase 1.5 Ready Gate using {$board_display}'s AO2 criteria.\n";
+        }
+
+        // v7.17.76: Assessment task — confirm question text before marking.
+        // Audit finding 2026-04-27: Sophia jumped straight into Q1 assessment
+        // without echoing the question being marked. Pedagogically, students need
+        // to know exactly what's being assessed before scoring lands.
+        if ($task === 'assessment') {
+            $block .= "\n### ECHO QUESTION TEXT BEFORE EACH ASSESSMENT\n";
+            $block .= "Before marking each question's response, briefly echo the question text so the student knows what is being assessed:\n";
+            $block .= "Format: \"Now assessing **Question [N]**: [echo full question wording, including marks + AO label].\"\n";
+            $block .= "This goes BEFORE the per-element marking, not after. Keep it to one short paragraph — do not re-explain the question or paraphrase. Just quote the question, then proceed to the marking.\n";
+        }
+
+        // v7.17.76: Mark Scheme Self-Assessment metacognitive guard.
+        // Audit finding 2026-04-27: Sophia silently skipping the Confidence + BBB +
+        // Distractor metacognitive check-in mandated at protocols/shared/
+        // mark-scheme/language1.md:1164-1233 (and parallel files for other subjects).
+        // Likely caused by 2521-line protocol exceeding effective attention. This
+        // late-position preamble guard re-asserts the requirement at high LLM weight.
+        if ($task === 'mark_scheme') {
+            $block .= "\n### MARK SCHEME SELF-ASSESSMENT — METACOGNITIVE CHECK-IN (CRITICAL — DO NOT SKIP)\n";
+            $block .= "After EVERY question response (Q1 through Q10), you MUST run the full metacognitive check-in sequence in this order BEFORE saying \"Recorded. Moving to next.\":\n";
+            $block .= "1. **Distractor analysis** — \"Now, engage with the other options. For each incorrect answer you didn't choose, briefly note: Why might someone incorrectly choose this answer? What makes it tempting but wrong?\" Wait for response.\n";
+            $block .= "2. **Confidence rating (1-5)** — \"Rate your confidence: 1 = Complete guess / 2 = Very uncertain / 3 = Moderately sure / 4 = Quite confident / 5 = Completely certain. Type 1-5.\" Wait for response.\n";
+            $block .= "3. **Brain-Book-Buddy (A/B/C)** — \"If this answer is wrong, what would you need to review? 🧠 A = Retrieved from memory (just needs correcting) / 📖 B = Would need to check mark scheme / 👥 C = Ask a friend/tutor for help. Type A, B, or C.\" Wait for response.\n";
+            $block .= "ONLY after all three are recorded say \"Recorded. Moving to Question [N+1].\"\n";
+            $block .= "Do NOT skip any of the three. Do NOT bundle them into one prompt. Do NOT shortcut to \"Recorded. Moving to next\" without firing all three. The metacognitive sequence is the entire pedagogical purpose of Mark Scheme Self-Assessment — without it this becomes a regular quiz.\n";
+        }
+
         return $block;
     }
 
