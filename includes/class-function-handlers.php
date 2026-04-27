@@ -26,7 +26,18 @@ class SWML_Function_Handlers {
         'save_session_element'    => 'handle_save_session_element',
         'save_plan_element'       => 'handle_save_session_element',
         'update_progress'         => 'handle_update_progress',
-        'fetch_student_reminders' => 'handle_fetch_reminders',
+        // v7.18.4 REMOVED 'fetch_student_reminders' from registration.
+        // Cause: AI Engine discards function-handler return values, so the LLM
+        // never received the reminder data. Claude saw the function declared,
+        // called it, got no readable result, called it again trying to retrieve
+        // the data → loop → after 4 iterations AI Engine declared "function
+        // call loop detected" → falls back to GPT-5. This was the PRIMARY
+        // cause of model-switching mid-conversation (visible in console as
+        // "simpleChatbotQuery model: Claude" alternating with "model: GPT")
+        // and the downstream phase-confusion / count-drift bugs we've been
+        // chasing as symptoms. Function was dead code — kept the handler
+        // method below for any external callers but unregistered from the
+        // LLM-facing function list.
         'record_quiz_score'       => 'handle_record_quiz_score',
         // v7.18.0 unified quiz engine
         'quiz_start'              => 'handle_quiz_start',
@@ -125,15 +136,13 @@ class SWML_Function_Handlers {
             'manual', 'wml-update-progress', 'server'
         );
 
-        // fetch_student_reminders
-        $out[] = new Meow_MWAI_Query_Function(
-            'fetch_student_reminders',
-            'Fetch the student\'s historical data including previous scores, weak areas, streak count, and tutor reminders. Call this at the start of a session to personalise the experience.',
-            [
-                new Meow_MWAI_Query_Parameter('text', 'The text being studied (e.g. "macbeth")', 'string', true),
-            ],
-            'manual', 'wml-fetch-student-reminders', 'server'
-        );
+        // v7.18.4: fetch_student_reminders REMOVED from function registration.
+        // Function was dead — AI Engine discards function-handler return values,
+        // so the LLM never received the reminder data. Claude looped trying to
+        // get it (4 iterations → "function call loop detected" → fallback to
+        // GPT-5 → mid-conversation model switching → phase confusion). Removed
+        // to fix the underlying loop. If reminders are needed in future,
+        // inject them as a STATIC preamble block (not a function call).
 
         // record_quiz_score (v7.17.79 added; wired in v7.17.80; DEPRECATED v7.18.0)
         // Kept as backward-compat shim for one release cycle. Internally routes
