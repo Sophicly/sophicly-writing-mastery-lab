@@ -58,7 +58,10 @@
     // When WML is embedded inside a LearnDash lesson via [writing_mastery_lab] shortcode,
     // swmlEmbedConfig is set by PHP. WML strips its own chrome and reads exercise config from it.
     const embedConfig = window.swmlEmbedConfig || null;
-    const isEmbedded = !!embedConfig;
+    // v7.17.78: was const — now mutable so non-WML→WML SPA navigations can flip
+    // it true at runtime (event-listener path below). Closure callers in
+    // renderSetup() then see the up-to-date value.
+    let isEmbedded = !!embedConfig;
 
     if (isEmbedded) {
         // v7.13.78: Add body class for LearnDash CSS overrides (.spl-content full-width)
@@ -6949,76 +6952,88 @@ Before marking the introduction, ask the student to confirm their essay structur
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderSetup);
     else renderSetup();
 
-    // ── SPA Re-initialization (v7.13.15) ──
-    // LearnDash Focus Mode uses AJAX navigation — content is replaced without page reload.
-    // Poll for embed root changes instead of MutationObserver to avoid infinite loops.
-    if (isEmbedded) {
-        let _lastEmbedPost = embedConfig?.postId || 0;
-        setInterval(() => {
-            const embedRoot = document.getElementById('swml-embedded-root');
-            if (!embedRoot) {
-                // Navigated away — clean up all WML state from persistent DOM
-                const overlay = document.getElementById('swml-canvas-overlay');
-                if (overlay) { overlay.remove(); document.body.style.overflow = ''; }
-                document.body.classList.remove('swml-has-embed', 'swml-embedded-active');
-                _lastEmbedPost = 0;
-                return;
-            }
-            // v7.15.7: Re-add embedded class on every tick — handles SPA return navigation
-            // classList.add is idempotent (no-op if already present)
-            document.body.classList.add('swml-embedded-active');
-            // Check if the embed root has a different post ID (SPA navigated to new WML lesson)
-            try {
-                const cfg = JSON.parse(embedRoot.dataset.swmlEmbed || '{}');
-                if (cfg.postId && cfg.postId !== _lastEmbedPost) {
-                    _lastEmbedPost = cfg.postId;
-                    console.log('WML SPA: New lesson detected (post ' + cfg.postId + ') — re-initializing');
+    // ── SPA Re-initialization (v7.13.15 → v7.17.78) ──
+    // LearnDash Focus Mode swaps lesson body via AJAX — JS hooks die unless we
+    // re-run boot. Two hooks share one reinit fn:
+    //   (1) Focus SPA dispatches `focusSpaNavigated` on every nav → event listener
+    //       (covers non-WML → WML transitions where module-init isEmbedded=false).
+    //   (2) 1s pollster as belt-and-braces for WML lessons that landed directly
+    //       (also covers older Focus SPA versions that don't dispatch).
+    // Shared `_lastEmbedPost` makes both paths idempotent against each other.
+    let _lastEmbedPost = embedConfig?.postId || 0;
+    function _doSpaReinit() {
+        const embedRoot = document.getElementById('swml-embedded-root');
+        if (!embedRoot) {
+            // Navigated away from a WML lesson — clean up persistent state
+            const overlay = document.getElementById('swml-canvas-overlay');
+            if (overlay) { overlay.remove(); document.body.style.overflow = ''; }
+            document.body.classList.remove('swml-has-embed', 'swml-embedded-active');
+            _lastEmbedPost = 0;
+            isEmbedded = false;
+            WML.isEmbedded = false;
+            return;
+        }
+        // v7.15.7: Re-add embedded class on every tick — handles SPA return navigation
+        // classList.add is idempotent (no-op if already present)
+        document.body.classList.add('swml-embedded-active');
+        try {
+            const cfg = JSON.parse(embedRoot.dataset.swmlEmbed || '{}');
+            if (!cfg.postId || cfg.postId === _lastEmbedPost) return;
+            _lastEmbedPost = cfg.postId;
+            console.log('WML SPA: New lesson detected (post ' + cfg.postId + ') — re-initializing');
 
-                    // Clean up old canvas
-                    const oldOverlay = document.getElementById('swml-canvas-overlay');
-                    if (oldOverlay) oldOverlay.remove();
-                    document.body.style.overflow = '';
+            // Clean up old canvas
+            const oldOverlay = document.getElementById('swml-canvas-overlay');
+            if (oldOverlay) oldOverlay.remove();
+            document.body.style.overflow = '';
 
-                    // Update config and state.
-                    // v7.15.100: unconditional assignment — falsy cfg values must
-                    // CLEAR the previous lesson's state (otherwise topicNumber /
-                    // phase / attempt leak across SPA navigation and canvas saves
-                    // land on the wrong meta key, e.g. FQ inheriting topicNumber=2
-                    // from Conceptual Notes and saving as swml_canvas..._t2_fq__a8).
-                    window.swmlEmbedConfig = cfg;
-                    state.board       = cfg.board   || '';
-                    state.subject     = cfg.subject || '';
-                    state.text        = cfg.text    || '';
-                    state.task        = cfg.task    || '';
-                    state.topicNumber = cfg.topic   || 0;
-                    // v7.17.20: SPA re-init must pipe cfg.step (multi-step tasks like
-                    // mark_scheme_unit). Otherwise state.step leaks across lessons.
-                    state.step        = cfg.step    || 0;
-                    // v7.17.20: preserve all bridge-supplied phase values
-                    // ('preliminary', 'exam_practice', etc.) — previous code coerced
-                    // anything non-'redraft'/'initial' to null, clobbering
-                    // mark_scheme_unit 'preliminary' on SPA nav.
-                    state.phase = cfg.phase || null;
-                    state.isRedraft = (state.phase === 'redraft');
-                    // v7.15.100: force attempt + session re-resolve on SPA nav
-                    state.attempt    = 0;
-                    state.sessionId  = '';
-                    state.chatId     = '';
-                    state.question   = '';
-                    state.draftType  = null;
-                    state.planningMode = null;
-                    state.mode = 'exam_prep';
-                    state.textName = cfg.text ? getTextLabel(cfg.text, cfg.subject) : '';
+            // Update config and state.
+            // v7.15.100: unconditional assignment — falsy cfg values must
+            // CLEAR the previous lesson's state (otherwise topicNumber /
+            // phase / attempt leak across SPA navigation and canvas saves
+            // land on the wrong meta key, e.g. FQ inheriting topicNumber=2
+            // from Conceptual Notes and saving as swml_canvas..._t2_fq__a8).
+            window.swmlEmbedConfig = cfg;
+            // v7.17.78: flip isEmbedded true so renderSetup's L315 closure
+            // check passes when the user landed on a non-WML lesson first.
+            isEmbedded = true;
+            WML.isEmbedded = true;
+            state.board       = cfg.board   || '';
+            state.subject     = cfg.subject || '';
+            state.text        = cfg.text    || '';
+            state.task        = cfg.task    || '';
+            state.topicNumber = cfg.topic   || 0;
+            // v7.17.20: SPA re-init must pipe cfg.step (multi-step tasks like
+            // mark_scheme_unit). Otherwise state.step leaks across lessons.
+            state.step        = cfg.step    || 0;
+            // v7.17.20: preserve all bridge-supplied phase values
+            // ('preliminary', 'exam_practice', etc.) — previous code coerced
+            // anything non-'redraft'/'initial' to null, clobbering
+            // mark_scheme_unit 'preliminary' on SPA nav.
+            state.phase = cfg.phase || null;
+            state.isRedraft = (state.phase === 'redraft');
+            // v7.15.100: force attempt + session re-resolve on SPA nav
+            state.attempt    = 0;
+            state.sessionId  = '';
+            state.chatId     = '';
+            state.question   = '';
+            state.draftType  = null;
+            state.planningMode = null;
+            state.mode = 'exam_prep';
+            state.textName = cfg.text ? getTextLabel(cfg.text, cfg.subject) : '';
 
-                    renderSetup();
-                }
-            } catch (e) {}
-            // v7.14.18: REMOVED — this was causing infinite re-render loops.
-            // If canvas overlay doesn't exist (chat exercise, failed boot, or TipTap not loaded),
-            // this fired renderSetup() every 1s, freezing the browser.
-            // The SPA post-ID check above (line 6496) is sufficient for detecting navigation.
-        }, 1000);
+            renderSetup();
+        } catch (e) {}
     }
+
+    // Pollster — only runs if module-init was already on a WML lesson.
+    // The event listener below covers the non-WML → WML case.
+    if (isEmbedded) {
+        setInterval(_doSpaReinit, 1000);
+    }
+    // v7.17.78: event-based bridge — fires on every Focus SPA navigation,
+    // including non-WML → WML transitions that the pollster never starts for.
+    document.addEventListener('focusSpaNavigated', _doSpaReinit);
 
     // ── LD Theme Toggle Sync — REMOVED v7.14.21 ──
     // WML now uses its own independent toggle. Both respect system preferences.
