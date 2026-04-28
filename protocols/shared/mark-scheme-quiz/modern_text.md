@@ -158,7 +158,11 @@ Evaluate answer and provide feedback using the **Emoji System**.
 
 
 3. **Persist Score (silent):**
-   Call `record_quiz_score` with the computed score, total, percentage, and grade. Do not narrate this step.
+   Emit the score-capture marker on its own line at the START of the dashboard message (frontend strips this from display — invisible to student; canvas autosave reads it and persists the score to the database):
+
+   `[QUIZ_COMPLETE:score=<computed score>,total=10,percentage=<computed percentage>,grade=<computed grade>]`
+
+   Replace each `<computed …>` with the actual integer values from Step 1. Do not narrate this step. Do not surround the marker with quotes or code fences. Place it on its own line before the dashboard heading.
 
 
 
