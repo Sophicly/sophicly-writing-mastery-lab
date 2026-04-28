@@ -12776,15 +12776,18 @@
     // the unlock flag for this student (global) OR for the current topic triple.
     // Always gated by viewerMode==='edit' so tutor/parent review stays read-only
     // regardless. Returns true/false for use as the sectionHTML `editable` arg.
+    //
+    // v7.18.8: Universal unlock for student-viewing-own-work. The original
+    // tutor-flip gate blocked legitimate student usage (uploading their own
+    // teacher's hand-written feedback, pasting comments from outside the app
+    // etc.). Tutor/parent review modes (viewerMode 'comment' / 'readonly')
+    // remain read-only because they viewerMode!=='edit'. The feedbackUnlocked
+    // / feedbackUnlockedTopics admin flags remain in swmlConfig but are now
+    // redundant for the edit case — kept untouched on the server side so
+    // a future re-lock policy can be implemented without a config rollback.
     function _feedbackEditable() {
         const cfg = window.swmlConfig || {};
-        if (cfg.viewerMode !== 'edit') return false;
-        if (cfg.feedbackUnlocked) return true;
-        const list = cfg.feedbackUnlockedTopics || [];
-        const t = parseInt(state.topicNumber, 10) || 0;
-        const b = state.board || '';
-        const tx = state.text || '';
-        return list.some(x => x && x.board === b && x.text === tx && (parseInt(x.topic, 10) || 0) === t);
+        return cfg.viewerMode === 'edit';
     }
 
     function sectionHTML(type, label, editable, partNumber, innerHTML) {
