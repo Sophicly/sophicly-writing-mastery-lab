@@ -4000,11 +4000,13 @@
         body.innerHTML = formatAI(text);
         content.appendChild(body);
 
-        // ── Fill-in-the-blank event handling (v7.14.51) ──
+        // ── Fill-in-the-blank event handling (v7.14.51 / v7.18.12) ──
+        // v7.18.12: Submit Answer button removed from formatAI render (wml-core.js).
+        // Enter-key on the (last) blank input is the only submit path. Multi-blank
+        // Enter on inputs 1..N-1 advances focus; last input submits.
         if (from === 'ai' && !silent) {
             const blankInputs = body.querySelectorAll('.swml-blank-input');
-            const blankSubmit = body.querySelector('.swml-blank-submit');
-            if (blankInputs.length > 0 && blankSubmit) {
+            if (blankInputs.length > 0) {
                 const submitBlanks = () => {
                     const answers = [];
                     blankInputs.forEach((inp, i) => {
@@ -4012,15 +4014,11 @@
                         if (val) answers.push(blankInputs.length > 1 ? `${i + 1}: ${val}` : val);
                     });
                     if (answers.length === 0) return;
-                    blankSubmit.disabled = true;
                     blankInputs.forEach(inp => { inp.disabled = true; });
                     const input = $('#swml-input');
                     if (input) { input.value = answers.join(', '); }
                     sendMessage();
                 };
-                blankSubmit.addEventListener('click', submitBlanks);
-                // v7.17.67: in multi-blank mode, Enter on inputs 1..N-1 advances focus.
-                // Only the LAST input's Enter fires submit. Single-blank case unchanged.
                 blankInputs.forEach((inp, i) => {
                     inp.addEventListener('keydown', (e) => {
                         if (e.key !== 'Enter') return;
@@ -4032,6 +4030,11 @@
                         }
                     });
                 });
+                // Auto-focus the first blank when this message renders so the
+                // student can start typing immediately without clicking.
+                if (blankInputs[0]) {
+                    setTimeout(() => { try { blankInputs[0].focus(); } catch (_) {} }, 50);
+                }
             }
         }
 
@@ -4049,9 +4052,15 @@
             const actions = assessmentDone ? [] : detectQuickActions(text);
             if (actions.length > 0) {
                 // Detect if this is a multi-select context (pick 3-5, choose multiple, select several, select all that apply)
+                // v7.18.12: include "TYPE ALL CORRECT LETTERS" (quiz multi-AO/multi-theme prompt)
+                // and read the detector-set actions._multi flag (set by detectQuickActions for any
+                // letter-options block whose surrounding text matches the multi-select lexicon).
                 const isMulti = /(?:pick|choose|select|commit to)\s*(?:(?:up to|between|at least)?\s*)?(\d)\s*[-–to]+\s*(\d)/i.test(text)
                     || /(?:pick|choose|select)\s+(?:multiple|several|a few|some)\b/i.test(text)
-                    || /select\s+all\s+that\s+apply/i.test(text);
+                    || /select\s+all\s+that\s+apply/i.test(text)
+                    || /TYPE\s+ALL\s+CORRECT\s+LETTERS/i.test(text)
+                    || /tick\s+all|check\s+all|choose\s+all(?:\s+that\s+apply)?/i.test(text)
+                    || actions._multi === true;
                 // AO context detection — if AI lists AO1/AO2/AO3 as options, always multi-select (v7.12.5)
                 const isAoContext = /assessment\s*objective|which\s*AO|AO1.*AO2.*AO3|targeting.*AO/i.test(text)
                     && actions.some(a => /^AO\d/i.test(a.label || a.value || ''));
@@ -4276,10 +4285,46 @@
                 }
             }
         }
+        // v7.18.12: Feedback-recap suppression. Quiz feedback messages often
+        // recap the question's A/B/C/D answers in prose ("B — Scrooge's greed
+        // is..." / "D — Redemption is..."), then end with a single forward
+        // option ("Ready to move on?\n\nA) Next question"). The unfiltered
+        // letterOptions array catches ALL of those and the renderer shows the
+        // recap lines as spurious buttons. When we detect a feedback shape +
+        // a forward Ready/Continue prompt, scope letter detection to ONLY the
+        // tail after the prompt — that's the actual button cluster.
+        const isFeedbackMsg = /\bFeedback\s*[—\-:]|✓\s*Correct|✗\s*Not\s*quite|⚠️?\s*Partial\s*credit/i.test(text);
+        const readyTailRegex = /Ready\s+(?:to\s+(?:move\s+on|continue|proceed|go)|for\s+(?:your\s+|the\s+)?(?:results|final|next))/i;
+        if (isFeedbackMsg && readyTailRegex.test(text)) {
+            const readyIdx = text.search(readyTailRegex);
+            if (readyIdx > -1) {
+                const tailLines = text.slice(readyIdx).split('\n').map(l => l.trim()).filter(Boolean);
+                const tailOptions = [];
+                for (const line of tailLines) {
+                    const m = line.match(letterRegex) || line.match(letterBoldRegex);
+                    if (m) {
+                        const letter = m[1].toUpperCase();
+                        let label = m[2].replace(/[\*_]/g, '').replace(/["']/g, '').replace(/[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '').trim();
+                        if (label.length > 55) label = label.substring(0, 52) + '...';
+                        if (!tailOptions.some(o => o.value === letter)) {
+                            tailOptions.push({ label: `${letter}) ${label}`, value: letter });
+                        }
+                    }
+                }
+                if (tailOptions.length >= 1) return tailOptions;
+            }
+        }
+
         if (letterOptions.length >= 2) {
             // v7.14.55: Check for ranking context — if message asks to rank/order, flag for ranking mode
             const isRankingContext = /(?:rank|order|arrange|sort)\s+(?:these|them|the|from)/i.test(text);
             if (isRankingContext) letterOptions._ranking = true;
+            // v7.18.12: Check for multi-select context — quiz protocols use
+            // "TYPE ALL CORRECT LETTERS separated by commas" / "select all that apply"
+            // / "choose all". Flags letterOptions for the multi-select renderer
+            // so each letter becomes a toggle button + a single Submit footer.
+            const isMultiContext = /TYPE\s+ALL\s+CORRECT\s+LETTERS|select\s+all\s+that\s+apply|choose\s+all(?:\s+that\s+apply)?|tick\s+all|check\s+all/i.test(text);
+            if (isMultiContext) letterOptions._multi = true;
             return letterOptions;
         }
         // v7.15.103: Single-option "A) Next question" style — accept when the AI
@@ -4378,6 +4423,20 @@
         // of the changes, not a yes/no. Suppress quick actions for this shape.
         const isSpecificChangeRequest = /what\s+(?:specifically\s+|exactly\s+)?(?:would|do)\s+you\s+(?:like|want)\s+to\s+(?:change|adjust|modify|tweak|fix|alter|edit|amend|revise|update|reword|rephrase)/i;
         if (isSpecificChangeRequest.test(text)) return [];
+
+        // v7.18.12: True/False detector — quiz protocols emit either a
+        // "True or False:" question header (FQ + MSQ) or a "(Type true or false)"
+        // tail prompt. These fall through every existing letter / yes-no / which
+        // pattern, leaving the student forced to type. Emit explicit True / False
+        // buttons whenever we see either form.
+        const trueFalseHeader     = /\b(?:type\s+)?true\s+or\s+false\s*[:?.]/i.test(text);
+        const trueFalseTypePrompt = /\(\s*type\s+(?:\*{0,2})?true(?:\*{0,2})?\s+or\s+(?:\*{0,2})?false(?:\*{0,2})?\s*\)/i.test(text);
+        if ((trueFalseHeader || trueFalseTypePrompt) && !hasLetterChoices) {
+            return [
+                { label: '✓ True', value: 'true' },
+                { label: '✗ False', value: 'false' }
+            ];
+        }
 
         const impliedYesNo = /(?:would you like|do you want|shall (?:we|I)|are you (?:happy|ready|satisfied)|does (?:that|this) (?:work|look|sound)|sound good|ready to (?:proceed|continue|move|begin|start|select)|want (?:me )?to (?:proceed|continue))/i;
         // Guard: don't show yes/no when the AI is asking for specific text input

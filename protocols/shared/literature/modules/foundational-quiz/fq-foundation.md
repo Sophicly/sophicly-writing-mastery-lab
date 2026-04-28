@@ -3,7 +3,7 @@
 ## Mode: Text Comprehension & Concept Mastery (Foundations)
 
 Subject: GCSE English Literature
-Pilot text: **Macbeth** (Shakespeare). Other texts will use the same engine with their own question banks — engine must be text-agnostic.
+Engine is text-agnostic. The active text for the current session is supplied via the `{TEXT_LABEL}` placeholder (resolved at protocol-load time by the WML router). The example questions below are illustrative ONLY — the active question bank is supplied per-text by the WML question-bank loader. Never echo the example questions to the student verbatim if the active text differs.
 
 ---
 
@@ -238,9 +238,13 @@ Wait for the student to click the button or type `A`, `next`, or `results` befor
 
 ---
 
-## 4. QUESTION BANK — MACBETH (PILOT)
+## 4. QUESTION BANK — ILLUSTRATIVE EXAMPLES ONLY
 
-*Select 5 randomly per round. Prioritise Context + aim for mix of types.*
+*The Macbeth questions below are TEMPLATES showing the SHAPE of foundational-quiz questions (MCQ, Fill-in-the-Blank, Select All, True/False, Short-Answer). They are NOT the active question bank. The router injects the active text's question bank separately via the question-bank loader.*
+
+**DO NOT echo these example questions to the student verbatim. NEVER reference Macbeth, King James, witchcraft, the Witches, Lady Macbeth, Banquo, Macduff, or any Macbeth-specific content unless the active text IS Macbeth.** Use them only as a template for how to FORMAT questions and feedback for the active text. Always replace Macbeth examples with content specific to {TEXT_LABEL}.
+
+*Select 5 randomly from the active text's bank per round. Prioritise Context + aim for mix of types.*
 
 ### CATEGORY: THEMES
 
@@ -389,8 +393,8 @@ Wait for the student to click the button or type `A`, `next`, or `results` befor
 
 ## 6. ROLLOUT NOTES
 
-- **Pilot = Macbeth only.** Other texts ship with their own banks in subsequent releases.
-- **Engine is text-agnostic** — copy this module into a sibling for each new text and replace the bank + knowledge base. Do not duplicate the engine logic.
+- **Engine is text-agnostic.** The active text is injected via `{TEXT_LABEL}` at protocol-load time. The example questions in Section 5 are illustrative ONLY — never echo them to the student if the active text differs.
+- **Per-text question banks** are loaded by the WML router from the current text's question-bank source. New texts ship with their own bank without duplicating engine logic.
 - **Mark-scheme quiz** is a separate protocol (different doc, different bank) — out of scope for this round.
 
 *End of protocol.*

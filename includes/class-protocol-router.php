@@ -721,7 +721,51 @@ class SWML_Protocol_Router {
             if ($skip_block) $parts[] = $skip_block;
             $parts[] = $modular_protocol;
             $query->instructions = implode("\n\n---\n\n", $parts);
-            
+
+            // v7.18.12: TEXT-ISOLATION + placeholder substitution.
+            //
+            // Layer 1: prepend an ACTIVE TEXT isolation header so any worked-example
+            // dialogue baked into shared protocols (e.g. fq-foundation.md uses Macbeth
+            // examples) cannot bleed into the student's actual session text. Sits at
+            // the TOP of instructions so it is the first thing the LLM reads.
+            //
+            // Layer 2: str_replace template placeholders ({TEXT_LABEL}, {TEXT_SLUG},
+            // {BOARD}, {AUTHOR}) across the assembled instructions so protocol
+            // welcomes / dashboard headings render with the active text rather than
+            // showing literal "{TEXT_LABEL}" or hard-coded pilot examples.
+            $iso_text     = $context['text_name'] ?? '';
+            $iso_slug     = $context['text'] ?? '';
+            if (!$iso_text && $iso_slug) {
+                $iso_text = ucwords(str_replace('_', ' ', $iso_slug));
+            }
+            if ($iso_text) {
+                $iso_board   = $context['board'] ?? '';
+                $_iso_author_map = [
+                    'macbeth' => 'William Shakespeare', 'romeo_juliet' => 'William Shakespeare',
+                    'the_tempest' => 'William Shakespeare', 'merchant_of_venice' => 'William Shakespeare',
+                    'much_ado' => 'William Shakespeare', 'julius_caesar' => 'William Shakespeare',
+                    'twelfth_night' => 'William Shakespeare',
+                    'aic' => 'J.B. Priestley', 'acc' => 'Charles Dickens', 'christmas_carol' => 'Charles Dickens',
+                    'blood_brothers' => 'Willy Russell',
+                    'lord_of_the_flies' => 'William Golding', 'animal_farm' => 'George Orwell',
+                    'never_let_me_go' => 'Kazuo Ishiguro',
+                    'jekyll_hyde' => 'Robert Louis Stevenson', 'frankenstein' => 'Mary Shelley',
+                    'sign_of_four' => 'Arthur Conan Doyle', 'great_expectations' => 'Charles Dickens',
+                    'jane_eyre' => 'Charlotte Brontë', 'pride_prejudice' => 'Jane Austen',
+                ];
+                $iso_author  = $_iso_author_map[$iso_slug] ?? '';
+                $isolation_header  = "## ACTIVE TEXT — DO NOT CONFUSE WITH PROTOCOL EXAMPLES\n\n";
+                $isolation_header .= "The student's text for THIS session is **{$iso_text}**" . ($iso_author ? " by {$iso_author}" : '') . ".\n\n";
+                $isolation_header .= "The protocol below may contain illustrative examples that reference other set texts (Macbeth, A Christmas Carol, Jane Eyre, An Inspector Calls, Romeo and Juliet, etc.) for pattern-teaching purposes. **NEVER mention any text other than {$iso_text} in your replies to the student.** If you encounter a worked example using a different text, internalise the pattern but substitute {$iso_text} content (characters, themes, quotes, context) when speaking to the student. Do not reference Macbeth, King James, witchcraft, or any other example-text content unless the active text IS that work.\n\n---\n\n";
+                $query->instructions = $isolation_header . $query->instructions;
+                $query->instructions = str_replace(
+                    ['{TEXT_LABEL}', '{TEXT_SLUG}', '{BOARD}', '{AUTHOR}'],
+                    [$iso_text, $iso_slug, $iso_board, $iso_author],
+                    $query->instructions
+                );
+                error_log("WML Router: Text-isolation header + placeholder substitution applied (text={$iso_text})");
+            }
+
             error_log("WML Router: Using MODULAR protocol, " . strlen($query->instructions) . " chars (step {$step})");
         } else {
             // Modular loading failed — fall back to chatbot instructions (full protocol)
