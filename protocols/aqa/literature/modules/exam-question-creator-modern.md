@@ -87,7 +87,7 @@ Let's get started and level up your exam prep! 💪📊
 
 Wait for the student's response. Store the text title.
 
-**[SAVE: question_text]** — Call `save_plan_element` with `element_type: "question_text"` and `content:` the text name the student provided.
+**[SAVE: question_text]** — Emit on its own line in your next reply (the frontend strips this marker before showing the message; it is invisible to the student): `[PANEL: question_text]<the text name the student provided>[/PANEL]`
 
 ---
 
@@ -99,7 +99,7 @@ Who is the author?
 
 Wait for the student's response. Store the author's name.
 
-**[SAVE: goal]** — Call `save_plan_element` with `element_type: "goal"` and `content:` the author name.
+**[SAVE: goal]** — Emit on its own line in your next reply: `[PANEL: goal]<the author name>[/PANEL]`
 
 ---
 
@@ -166,7 +166,7 @@ Wait for the student's response.
 
 Once the student has confirmed a focus (either accepting your recommendation or choosing from the list), **immediately generate the full exam-style question pair**.
 
-**[SAVE: exam_question_theme]** — Call `save_plan_element` with `element_type: "exam_question_theme"` and `content:` the confirmed theme/character (e.g. "Social class and Mrs Birling", "The Inspector and social change").
+**[SAVE: exam_question_theme]** — Emit on its own line in your reply (frontend strips the marker before display): `[PANEL: exam_question_theme]<the confirmed theme or character, e.g. "Social class and Mrs Birling" or "The Inspector and social change">[/PANEL]`
 
 The question output MUST include ALL of the following — do NOT omit any part:
 
@@ -181,7 +181,7 @@ The question output MUST include ALL of the following — do NOT omit any part:
 
 Present the complete question pair to the student.
 
-**[SAVE: exam_question_output]** — Call `save_plan_element` with `element_type: "exam_question_output"` and `content:` a short summary of both questions (e.g. "Q1: Mrs Birling and social class | Q2: The Inspector and social change").
+**[SAVE: exam_question_output]** — Emit on its own line in your reply: `[PANEL: exam_question_output]<short summary of both questions, e.g. "Q1: Mrs Birling and social class | Q2: The Inspector and social change">[/PANEL]`
 
 ---
 
@@ -216,7 +216,7 @@ Which theme or character would you like to prepare an exam-style question for?
 
 Wait for the student's response. Store their preference.
 
-**[SAVE: exam_question_theme]** — Call `save_plan_element` with `element_type: "exam_question_theme"` and `content:` the student's stated theme/character.
+**[SAVE: exam_question_theme]** — Emit on its own line in your reply: `[PANEL: exam_question_theme]<the student's stated theme or character>[/PANEL]`
 
 ---
 
@@ -237,7 +237,7 @@ Wait for the student's response. Store their preference.
 
 Present the question pair to the student.
 
-**[SAVE: exam_question_output]** — Call `save_plan_element` with `element_type: "exam_question_output"` and `content:` a short summary of both questions. Do NOT save the full question text.
+**[SAVE: exam_question_output]** — Emit on its own line in your reply: `[PANEL: exam_question_output]<short summary of both questions, e.g. "Q1: <theme>; Q2: <theme>">[/PANEL]` — do NOT include the full question text in the marker.
 
 **Do NOT add any essay-writing tips, reminders about structure, or advice about how to answer the question.** Just present the questions cleanly and ask if they'd like to change anything.
 

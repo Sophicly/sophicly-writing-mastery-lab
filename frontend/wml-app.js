@@ -3956,16 +3956,17 @@
             if (Object.keys(pendingSaves).length > 0) {
                 state._pendingPanelSaves = { ...state._pendingPanelSaves, ...pendingSaves };
 
-                // ── AUTO-SAVE for Memory Practice ──
-                // Memory practice milestones are auto-detected or confirmed by button clicks.
-                // No separate A/B confirmation needed — save immediately.
-                if (state.task === 'memory_practice') {
+                // ── AUTO-SAVE tasks (v7.18.6) ──
+                // Tasks where saves were previously silent server-side function calls.
+                // PANEL-route preserves silent UX: no A/B confirm, save immediately.
+                const AUTO_SAVE_TASKS = ['memory_practice', 'essay_plan', 'random_quote_analysis', 'model_answer', 'conceptual_notes', 'exam_question'];
+                if (AUTO_SAVE_TASKS.includes(state.task)) {
                     for (const [pType, pContent] of Object.entries(pendingSaves)) {
                         if (pContent && pContent.length > 1) {
                             apiPost(API.planElement, { type: pType, content: pContent, step: state.step }).then(() => {
                                 state.plan[pType] = { content: pContent };
                                 renderPlan();
-                                console.log('WML [PANEL] Auto-save (memory_practice):', pType, '→', pContent.substring(0, 80));
+                                console.log('WML [PANEL] Auto-save (' + state.task + '):', pType, '→', pContent.substring(0, 80));
                             }).catch(e => console.warn('WML auto-save failed:', pType, e));
                         }
                     }
