@@ -4287,7 +4287,9 @@
         // v7.14.50: Hide Reset for training-env (document is protocol-driven, resetting breaks flow)
         if ((WML.getExerciseConfig(state.task)?.environment || 'free') !== 'training') statusBar.appendChild(resetBtn);
         // v7.17.21: hide footer word count + restore slot for non-essay tasks (quizzes, mark scheme, notes).
-        const _hideWcForTask = ['mark_scheme_unit', 'mark_scheme', 'mark_scheme_assessment', 'foundational_quiz', 'conceptual_notes', 'essay_plan'].includes(state.task);
+        // v7.18.7: also hide for exam_question — AI generates the question text, student
+        // doesn't write the words. Counting them would inflate dashboard word count.
+        const _hideWcForTask = ['mark_scheme_unit', 'mark_scheme', 'mark_scheme_assessment', 'foundational_quiz', 'conceptual_notes', 'essay_plan', 'exam_question'].includes(state.task);
         if (!_hideWcForTask) statusBar.appendChild(wcDisplay);
         // wcRestore added after widget creation below
         let wcRestore; // forward declaration
@@ -4752,7 +4754,9 @@
         extractBtn.innerHTML = SVG_EXTRACT + ' Extract';
         // v7.13.39: Hide extract button for CW exercises (no extract to show)
         // v7.14.50: Also hide for mark_scheme (no question extract)
-        if (!(state.task && state.task.startsWith('cw_')) && state.task !== 'mark_scheme') {
+        // v7.18.7: also hide for exam_question — the document IS the question + extract;
+        // there's no separate question to pop out and reference while writing.
+        if (!(state.task && state.task.startsWith('cw_')) && state.task !== 'mark_scheme' && state.task !== 'exam_question') {
             statusBar.appendChild(extractBtn);
         }
 
@@ -8023,7 +8027,8 @@
         // writer_profile through scene_selection). Widget reappears on cw_step_9
         // (draft_1) and later draft beats. Belt-and-braces with the CSS rule
         // [data-cw-stage="ideas"] in wml-canvas.css set just below.
-        const _hideWcByTask = ['essay_plan', 'mark_scheme', 'mark_scheme_assessment', 'mark_scheme_unit', 'foundational_quiz', 'conceptual_notes'].includes(state.task);
+        // v7.18.7: also hide floating widget for exam_question (AI-generated content, not student writing).
+        const _hideWcByTask = ['essay_plan', 'mark_scheme', 'mark_scheme_assessment', 'mark_scheme_unit', 'foundational_quiz', 'conceptual_notes', 'exam_question'].includes(state.task);
         const _hideWcByCwStage = isCwTask && cwStepDef?.step && cwStepDef.step <= 8;
         if (_hideWcByTask || _hideWcByCwStage) {
             wcWidget.style.display = 'none';
@@ -15601,11 +15606,15 @@
         // tab closes before the 5s timer fires. This is the primary fix for
         // the "Writer Profile text gone after hard-refresh" repro — previously
         // the 5s debounce ate fast-refresh keystrokes.
+        // v7.18.7: exam_question task = AI generates question + extract into the document;
+        // student doesn't write the words themselves. Persist wordCount: 0 so the saved
+        // canvas doc never inflates the dashboard's per-student word count.
+        const _persistedWordCount = (snap.task === 'exam_question') ? 0 : wc;
         _pendingCanvasSaveBody = {
             board: snap.board,
             text: snap.text,
             html: html,
-            wordCount: wc,
+            wordCount: _persistedWordCount,
             topicNumber: snap.topicNumber,
             sectionData: sectionData,
             suffix: snap.suffix,

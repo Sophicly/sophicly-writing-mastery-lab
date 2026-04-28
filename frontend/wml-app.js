@@ -4371,6 +4371,14 @@
             return [{ label: '▶ Let’s go', value: 'Let’s go' }];
         }
 
+        // v7.18.7: free-text-change-request guard. Phrases like "What specifically
+        // would you like to change?" / "What would you like to adjust?" trip the
+        // impliedYesNo "would you like" matcher below and render stale Yes / No,
+        // explain more buttons — but the AI is asking for a free-text description
+        // of the changes, not a yes/no. Suppress quick actions for this shape.
+        const isSpecificChangeRequest = /what\s+(?:specifically\s+|exactly\s+)?(?:would|do)\s+you\s+(?:like|want)\s+to\s+(?:change|adjust|modify|tweak|fix|alter|edit|amend|revise|update|reword|rephrase)/i;
+        if (isSpecificChangeRequest.test(text)) return [];
+
         const impliedYesNo = /(?:would you like|do you want|shall (?:we|I)|are you (?:happy|ready|satisfied)|does (?:that|this) (?:work|look|sound)|sound good|ready to (?:proceed|continue|move|begin|start|select)|want (?:me )?to (?:proceed|continue))/i;
         // Guard: don't show yes/no when the AI is asking for specific text input
         const isContentRequest = /(?:(?:tell|give) me|please (?:tell|provide|share|paste|type)|what (?:is|are) (?:the|your)|which (?:poem|text|quote|character|theme)|paste (?:the|your|a)|submit (?:the|your|a))/i;
@@ -4545,9 +4553,12 @@
                 // Skip if average raw label is very long — these are summaries/explanations, not choices
                 const avgLen = numberedOptions.reduce((s, o) => s + o.rawLen, 0) / numberedOptions.length;
                 if (avgLen <= 55) {
-                    const lastLines = lines.slice(-3).join(' ');
-                    if (/(?:choose|select|pick|type the number|which (?:one|option)|give me|respond with)/i.test(lastLines)
-                        || (isQuestion && numberedOptions.length >= 2)) {
+                    // v7.18.7: check the FULL message for trigger phrase + question mark.
+                    // The protocol's question often sits at the TOP ("Which focus from
+                    // the list would you like to use?") with the numbered themes below,
+                    // so last-3-lines was missing the trigger and rendering no buttons.
+                    if (/(?:choose|select|pick|type the number|which (?:one|option|focus|theme|character|preference|approach|aspect)|give me|respond with)/i.test(text)
+                        || (text.includes('?') && numberedOptions.length >= 2)) {
                         return numberedOptions.map(o => ({ label: o.label, value: o.value }));
                     }
                 }
