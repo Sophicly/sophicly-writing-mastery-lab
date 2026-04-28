@@ -3587,6 +3587,34 @@ TEMPLATE;
             $block .= "The student answered. The answer was wrong. Award 0/2. Explain the correct answer. Move on. Hints and retry loops corrupt the score and break the diagnostic value of the quiz.\n";
         }
 
+        // v7.18.16: Sidebar step marker emission for Mark Scheme Self-Assessment
+        // (mark_scheme task only — the standalone Q1-Q10 diagnostic). The frontend
+        // sidebar has 6 steps: Setup & Board / Questions 1-5 / Questions 6-10 /
+        // Results & Grade / Feedback / Action Plan. Emitting [STEP_ADVANCE:N] at
+        // each phase boundary advances the visible stepper. Marker is invisible to
+        // the student (stripped pre-render by wml-core.js stripAIInternals + the
+        // wml-assessment.js display-strip regex). Universal handler at
+        // wml-assessment.js:2545 picks it up. Excludes mark_scheme_unit because
+        // that task has a different sidebar shape (handled in Bite 2).
+        if ($task === 'mark_scheme') {
+            $block .= "\n### SIDEBAR STEP MARKER EMISSION (MANDATORY)\n";
+            $block .= "The Mark Scheme Self-Assessment sidebar has 6 progress steps:\n";
+            $block .= "  1. Setup & Board\n";
+            $block .= "  2. Questions 1-5\n";
+            $block .= "  3. Questions 6-10\n";
+            $block .= "  4. Results & Grade\n";
+            $block .= "  5. Feedback\n";
+            $block .= "  6. Action Plan\n";
+            $block .= "Append the marker `[STEP_ADVANCE:N]` (literal, in square brackets) at the very END of the message that opens each phase. The marker is INVISIBLE to the student — it is stripped before display and only used to advance the sidebar progress indicator.\n";
+            $block .= "Emission rules:\n";
+            $block .= "- When you display **Question 1** (after the student has selected board + unit), append `[STEP_ADVANCE:2]`.\n";
+            $block .= "- When you display **Question 6**, append `[STEP_ADVANCE:3]`.\n";
+            $block .= "- When you deliver the **scoring breakdown / grade calculation** after Q10, append `[STEP_ADVANCE:4]`.\n";
+            $block .= "- When you deliver **personalised feedback / strengths-and-targets**, append `[STEP_ADVANCE:5]`.\n";
+            $block .= "- When you deliver the **action plan / next-steps recap / session conclusion**, append `[STEP_ADVANCE:6]`.\n";
+            $block .= "Emit each marker ONCE per session, on the message that OPENS the phase. Do not repeat the same marker in subsequent messages within the same phase. Do not emit a marker for a phase the student has not yet reached.\n";
+        }
+
         // v7.17.77: Quiz answer-handling guard. Audit finding 2026-04-27: Sophia
         // sometimes received a single-letter answer (A/B/C/D) and re-emitted the
         // question + options instead of giving feedback. Forces direct feedback.
