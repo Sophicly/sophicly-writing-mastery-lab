@@ -219,6 +219,10 @@ Wait for the student to click the button or type `A`, `next`, or `results` befor
 
    ---
 
+   📝 **Optional:** Jot any reflections, useful facts, or "I want to remember this" moments into the **General Notes** section of the document. It is entirely optional — but anything you save there will be there when you come back for Topic 1.
+
+   ---
+
    **What would you like to do next?**
 
    A) Try another round (5 new questions)

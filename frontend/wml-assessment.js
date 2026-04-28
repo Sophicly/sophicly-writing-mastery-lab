@@ -2377,6 +2377,27 @@
                         }).catch(e => console.warn('WML v7.18.11: FQ persist error', e));
                     }
 
+                    // v7.18.12: Quiz step tracking for sidebar progress (MSQ + FQ).
+                    // Sidebar Protocol Progress shows Welcome / Q1..Q5 / Results.
+                    // Detect "Question N of 5" + "Quiz Complete" markers in the AI
+                    // reply and advance updateProgress accordingly. Step mapping:
+                    //   Welcome=1, Q1=2, Q2=3, Q3=4, Q4=5, Q5=6, Results=7.
+                    if (state.task === 'foundational_quiz' || state.task === 'mark_scheme_unit') {
+                        const _qMatch = res.reply.match(/Question\s+(\d+)\s+of\s+5/i);
+                        let _quizStep = null;
+                        if (_qMatch) {
+                            const _qNum = parseInt(_qMatch[1], 10);
+                            if (_qNum >= 1 && _qNum <= 5) _quizStep = _qNum + 1;
+                        }
+                        if (/Quiz\s+Complete|\[QUIZ_COMPLETE/i.test(res.reply)) {
+                            _quizStep = 7;
+                        }
+                        if (_quizStep && _quizStep > (state.step || 0)) {
+                            updateProgress(_quizStep);
+                            console.log('WML v7.18.12: Quiz step → ' + _quizStep + ' (task=' + state.task + ')');
+                        }
+                    }
+
                     // v7.17.47: Assessment state mirror + resume-confirm quick actions.
                     // Server returns `res.assessmentState` when the AQA Literature state
                     // machine is enabled for this attempt. Cache it + render hard-coded
