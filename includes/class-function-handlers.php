@@ -89,11 +89,35 @@ class SWML_Function_Handlers {
         // the discarded-return-values issue affects them too.
         global $swml_request_context;
         $task = $swml_request_context['task'] ?? '';
-        if ($task === 'mark_scheme_unit') {
-            error_log('WML Function Handlers: Skipping function attachment for mark_scheme_unit (v7.18.5 test gate)');
-            return $query;
-        }
+        // v7.18.8: UNIVERSAL GATE — skip function attachment for ALL WML tasks.
+        // AI Engine's mwai_ai_feedback filter discards function-handler return
+        // values for every handler (not just one) — any function the LLM calls
+        // 4+ times hits AI Engine's loop-detection safety, the wml-claude →
+        // wml fallback chain fires, and the next turn is answered by GPT-5.
+        // That mid-conversation model swap is the universal cause of WML
+        // drift / lost count / "feedback feels different turn-to-turn" /
+        // Mohammed-style bad student experiences.
+        //
+        // SAFE because every save path that previously relied on the LLM
+        // calling save_session_element / update_progress already has a
+        // frontend equivalent that runs from the chat reply text:
+        //   • plan elements: extractAndSavePlan confirm interceptor +
+        //     [PANEL] regex (frontend/wml-app.js:5346-5410)
+        //   • assessment scores: total_score/grade/strength_*/target_*
+        //     regex extracted in extractAndSavePlan (wml-app.js:5650-5697),
+        //     POSTed to /plan/element (same endpoint save_session_element used)
+        //   • step progression: estimateStep(state.plan) +
+        //     updateProgress (wml-app.js:5762, wml-assessment.js:213)
+        //
+        // class-quiz-engine.php Tier 1 dormant code is preserved — engine
+        // class stays in code, functions are simply not attached. When the
+        // MeowApps mwai_ai_feedback return-value flow is investigated and
+        // properly fixed, function-calling can be re-enabled cleanly.
+        error_log("WML Function Handlers: Skipping function attachment for task={$task} (v7.18.8 universal gate — function-call return-value flow disabled until MeowApps return-value channel investigated)");
+        return $query;
 
+        // Unreachable below; preserved for fast rollback if the universal
+        // gate causes regression on any task.
         foreach ($this->build_functions() as $func) {
             $query->add_function($func);
         }

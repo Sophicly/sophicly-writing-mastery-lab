@@ -775,16 +775,17 @@ class SWML_REST_API {
             ? [$bot_id, $fallback_bot_id]  // Claude first, OpenAI fallback
             : [$bot_id];                    // Claude only
 
-        // v7.18.5: TEST GATE — for mark_scheme_unit, FORCE Claude-only.
-        // Belt + braces alongside the function-attachment gate. If the chat
-        // STILL switches to GPT despite no functions registered, the fallback
-        // would surface the bug. Forcing Claude-only ensures the test sees
-        // pure-Claude behaviour with no possibility of model mid-switch.
-        // Other tasks keep the fallback chain unchanged.
-        if (($req_task ?? '') === 'mark_scheme_unit') {
-            $bot_ids_to_try = [$bot_id];
-            error_log("WML: mark_scheme_unit — forcing Claude-only (v7.18.5 test gate, no GPT fallback)");
-        }
+        // v7.18.8: UNIVERSAL — force Claude-only fallback chain for ALL WML tasks.
+        // Pairs with the universal function-attachment gate in
+        // class-function-handlers.php:attach_functions(). With function-call
+        // dispatch disabled the loop-detection path that triggered the
+        // wml-claude → wml fallback no longer fires, but keeping the GPT
+        // fallback alive would still allow mid-session model switching on
+        // unrelated transient Claude errors (rate-limit, timeout, etc.).
+        // Forcing Claude-only locks the entire WML session to a single model
+        // and eliminates the universal-drift root cause completely.
+        $bot_ids_to_try = [$bot_id];
+        error_log("WML: All tasks — forcing Claude-only (v7.18.8 universal gate, no GPT fallback to eliminate mid-session model switching)");
         error_log("WML: Fallback chain: " . implode(' → ', $bot_ids_to_try));
 
         // ════════════════════════════════════════════════════════════
