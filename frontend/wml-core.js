@@ -2296,15 +2296,19 @@ window.WML = (function() {
         );
 
         // Render blank placeholders as inline inputs (v7.14.51)
-        // v7.18.12: dropped the auto-rendered "Submit Answer" button. Quiz protocols
-        // (MSQ + FQ) explicitly say "the student just types the missing word and
-        // presses Enter — no button". The Enter-key handler in addMessage already
-        // fires submitBlanks() (wml-app.js:4031), so the button was redundant +
-        // misleading. Multi-blank Enter still advances focus to the next blank
-        // until the last one, which submits.
-        html = html.replace(/\[SWML_BLANK_(\d+)\]/g, (_, idx) =>
-            `<input type="text" class="swml-blank-input" data-blank-idx="${idx}" placeholder="type and press Enter..." autocomplete="off" />`
-        );
+        // v7.18.18: Submit Answer button re-added (was dropped in v7.18.12). Student
+        // UX feedback: students instinctively look for a submit button under the
+        // input. Enter-key path still works — the button is an additional submit
+        // path. ONE button per message regardless of how many blanks (multi-blank
+        // submit gathers all values).
+        let _hadBlank = false;
+        html = html.replace(/\[SWML_BLANK_(\d+)\]/g, (_, idx) => {
+            _hadBlank = true;
+            return `<input type="text" class="swml-blank-input" data-blank-idx="${idx}" placeholder="type your answer..." autocomplete="off" />`;
+        });
+        if (_hadBlank) {
+            html += '<div class="swml-blank-submit-wrap"><button class="swml-blank-submit" type="button">Submit Answer</button></div>';
+        }
 
         // Render "Step X of Y" within AI messages as visual step blocks
         // v7.14.55: Skip step blocks when a CSS progress bar already renders in the same message

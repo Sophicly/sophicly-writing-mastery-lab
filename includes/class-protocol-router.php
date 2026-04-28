@@ -3631,6 +3631,21 @@ TEMPLATE;
             $block .= "Do NOT repeat a marker once it has fired. Do NOT emit a marker for a step the student has not yet reached. Do NOT emit the marker on any feedback / clarification message between question displays — only on the message that OPENS a new step.\n";
         }
 
+        // v7.18.18: Mark Scheme Self-Assessment is an ASSESSMENT, not a quiz.
+        // The student must NOT see their per-question score during the session —
+        // the full breakdown is revealed only at Step 12 (Results & Grade) after
+        // Q10. (mark_scheme_unit Quiz keeps its running score; that's a coaching
+        // tool, not an assessment.)
+        if ($task === 'mark_scheme') {
+            $block .= "\n### NO RUNNING SCORE — REVEAL AT END ONLY (CRITICAL)\n";
+            $block .= "This is the Mark Scheme Self-ASSESSMENT, not a quiz. Students must NOT see their score during the session. The complete breakdown is delivered only at Step 12 (Results & Grade) after Q10.\n";
+            $block .= "After each question's feedback line:\n";
+            $block .= "- DO NOT emit a `💯 Current score: X / Y marks` line.\n";
+            $block .= "- DO NOT emit any per-question running tally (`Score so far`, `Running total`, `X out of Y`, etc.) in any form.\n";
+            $block .= "- DO NOT show a tally in the assessment status panel, the chat header, or anywhere else mid-session.\n";
+            $block .= "Continue tracking scores INTERNALLY (you'll need them for the Step 12 breakdown), but display nothing. The student answers each question without knowing whether they are tracking high or low — that is what makes this an assessment rather than a coaching exercise. The scoring breakdown at Step 12 is the FIRST time the student sees any score figures.\n";
+        }
+
         // v7.17.77: Quiz answer-handling guard. Audit finding 2026-04-27: Sophia
         // sometimes received a single-letter answer (A/B/C/D) and re-emitted the
         // question + options instead of giving feedback. Forces direct feedback.

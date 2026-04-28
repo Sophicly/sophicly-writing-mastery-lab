@@ -4000,12 +4000,13 @@
         body.innerHTML = formatAI(text);
         content.appendChild(body);
 
-        // ── Fill-in-the-blank event handling (v7.14.51 / v7.18.12) ──
-        // v7.18.12: Submit Answer button removed from formatAI render (wml-core.js).
-        // Enter-key on the (last) blank input is the only submit path. Multi-blank
-        // Enter on inputs 1..N-1 advances focus; last input submits.
+        // ── Fill-in-the-blank event handling (v7.14.51 / v7.18.18) ──
+        // v7.18.18: Submit Answer button re-added in formatAI (wml-core.js). Enter
+        // key still works as alternate submit path. Multi-blank Enter advances
+        // focus on inputs 1..N-1; last input or button click triggers submit.
         if (from === 'ai' && !silent) {
             const blankInputs = body.querySelectorAll('.swml-blank-input');
+            const blankSubmit = body.querySelector('.swml-blank-submit');
             if (blankInputs.length > 0) {
                 const submitBlanks = () => {
                     const answers = [];
@@ -4015,6 +4016,7 @@
                     });
                     if (answers.length === 0) return;
                     blankInputs.forEach(inp => { inp.disabled = true; });
+                    if (blankSubmit) blankSubmit.disabled = true;
                     const input = $('#swml-input');
                     if (input) { input.value = answers.join(', '); }
                     sendMessage();
@@ -4030,6 +4032,9 @@
                         }
                     });
                 });
+                if (blankSubmit) {
+                    blankSubmit.addEventListener('click', (e) => { e.stopPropagation(); submitBlanks(); });
+                }
                 // Auto-focus the first blank when this message renders so the
                 // student can start typing immediately without clicking.
                 if (blankInputs[0]) {
@@ -4348,6 +4353,18 @@
             ];
         }
 
+        // v7.18.18: "Ready for Question N?" / "Ready for the next question?"
+        // — quiz + assessment ready-checks that arrive without explicit A/B
+        // letter options. Without this gate students have to type a response
+        // by hand. Returns Yes / Hold-on quick actions.
+        const readyForNextRegex = /ready\s+for\s+(?:the\s+)?(?:next\s+question|question\s*\d*)\s*\??/i;
+        if (readyForNextRegex.test(text)) {
+            return [
+                { label: '✓ Yes — continue', value: 'yes' },
+                { label: '⏸ Hold on', value: 'hold on' }
+            ];
+        }
+
         // Implied yes/no at end of message (would you like / are you happy / ready to)
         const lastChunk = lines.slice(-3).join(' ');
         const hasLetterChoices = /^\s*[-•🔹]*\s*\*{0,2}[A-Z][).:—\-]\*{0,2}\s/m.test(text);
@@ -4528,7 +4545,12 @@
         if (/\btype\s+\*{0,2}['"]?(?:ready|READY)['"]?\*{0,2}\b/i.test(text) || /\b(?:say|respond(?:\s+with)?|send)\s+['"]?ready['"]?\b/i.test(text)) {
             return [{ label: '✓ Ready', value: 'ready' }];
         }
-        if (/\btype\s+['"]?M(?:ENU)?['"]?\b/i.test(text)) {
+        // v7.18.18: Suppress the standalone Menu button when the message contains
+        // a fill-in-blank input. Otherwise students see the M button under the
+        // input and instinctively click it as Submit. The "Type 'M' for menu"
+        // breadcrumb in the protocol header is preserved as text — students who
+        // actually want the menu can still type M.
+        if (/\btype\s+['"]?M(?:ENU)?['"]?\b/i.test(text) && !/\[SWML_BLANK_\d+\]/.test(text)) {
             return [{ label: '📋 Menu', value: 'M' }];
         }
         if (/\btype\s+['"]?K['"]?\b/i.test(text) && /key.?scene|suggestions/i.test(text)) {
