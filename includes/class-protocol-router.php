@@ -3598,21 +3598,37 @@ TEMPLATE;
         // that task has a different sidebar shape (handled in Bite 2).
         if ($task === 'mark_scheme') {
             $block .= "\n### SIDEBAR STEP MARKER EMISSION (MANDATORY)\n";
-            $block .= "The Mark Scheme Self-Assessment sidebar has 6 progress steps:\n";
-            $block .= "  1. Setup & Board\n";
-            $block .= "  2. Questions 1-5\n";
-            $block .= "  3. Questions 6-10\n";
-            $block .= "  4. Results & Grade\n";
-            $block .= "  5. Feedback\n";
-            $block .= "  6. Action Plan\n";
-            $block .= "Append the marker `[STEP_ADVANCE:N]` (literal, in square brackets) at the very END of the message that opens each phase. The marker is INVISIBLE to the student — it is stripped before display and only used to advance the sidebar progress indicator.\n";
-            $block .= "Emission rules:\n";
-            $block .= "- When you display **Question 1** (after the student has selected board + unit), append `[STEP_ADVANCE:2]`.\n";
-            $block .= "- When you display **Question 6**, append `[STEP_ADVANCE:3]`.\n";
-            $block .= "- When you deliver the **scoring breakdown / grade calculation** after Q10, append `[STEP_ADVANCE:4]`.\n";
-            $block .= "- When you deliver **personalised feedback / strengths-and-targets**, append `[STEP_ADVANCE:5]`.\n";
-            $block .= "- When you deliver the **action plan / next-steps recap / session conclusion**, append `[STEP_ADVANCE:6]`.\n";
-            $block .= "Emit each marker ONCE per session, on the message that OPENS the phase. Do not repeat the same marker in subsequent messages within the same phase. Do not emit a marker for a phase the student has not yet reached.\n";
+            $block .= "The Mark Scheme Self-Assessment sidebar has 14 progress steps grouped into two accordion blocks:\n";
+            $block .= "  1.  Setup & Board\n";
+            $block .= "  2.  Q1   ┐\n";
+            $block .= "  3.  Q2   │\n";
+            $block .= "  4.  Q3   │ Questions 1-5 accordion\n";
+            $block .= "  5.  Q4   │\n";
+            $block .= "  6.  Q5   ┘\n";
+            $block .= "  7.  Q6   ┐\n";
+            $block .= "  8.  Q7   │\n";
+            $block .= "  9.  Q8   │ Questions 6-10 accordion\n";
+            $block .= "  10. Q9   │\n";
+            $block .= "  11. Q10  ┘\n";
+            $block .= "  12. Results & Grade\n";
+            $block .= "  13. Feedback\n";
+            $block .= "  14. Action Plan\n";
+            $block .= "Append the marker `[STEP_ADVANCE:N]` (literal, in square brackets) at the very END of the message that opens each step. The marker is INVISIBLE to the student — it is stripped before display and only used to advance the sidebar progress indicator.\n";
+            $block .= "Emission rules — emit each marker ONCE on the message that OPENS that step:\n";
+            $block .= "- Display Q1 → append `[STEP_ADVANCE:2]`.\n";
+            $block .= "- Display Q2 → append `[STEP_ADVANCE:3]`.\n";
+            $block .= "- Display Q3 → append `[STEP_ADVANCE:4]`.\n";
+            $block .= "- Display Q4 → append `[STEP_ADVANCE:5]`.\n";
+            $block .= "- Display Q5 → append `[STEP_ADVANCE:6]`.\n";
+            $block .= "- Display Q6 → append `[STEP_ADVANCE:7]`.\n";
+            $block .= "- Display Q7 → append `[STEP_ADVANCE:8]`.\n";
+            $block .= "- Display Q8 → append `[STEP_ADVANCE:9]`.\n";
+            $block .= "- Display Q9 → append `[STEP_ADVANCE:10]`.\n";
+            $block .= "- Display Q10 → append `[STEP_ADVANCE:11]`.\n";
+            $block .= "- Deliver scoring breakdown / grade calculation after Q10 → append `[STEP_ADVANCE:12]`.\n";
+            $block .= "- Deliver personalised feedback / strengths-and-targets → append `[STEP_ADVANCE:13]`.\n";
+            $block .= "- Deliver action plan / next-steps recap / session conclusion → append `[STEP_ADVANCE:14]`.\n";
+            $block .= "Do NOT repeat a marker once it has fired. Do NOT emit a marker for a step the student has not yet reached. Do NOT emit the marker on any feedback / clarification message between question displays — only on the message that OPENS a new step.\n";
         }
 
         // v7.17.77: Quiz answer-handling guard. Audit finding 2026-04-27: Sophia

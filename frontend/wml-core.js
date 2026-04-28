@@ -886,13 +886,26 @@ window.WML = (function() {
             completionType: 'manual',
             storageSuffix: '_ms',
             chatHeaderLabel: 'Mark Scheme Assessment',
+            // v7.18.17: granular Q-by-Q sidebar with two accordion groups
+            // (Questions 1-5 + Questions 6-10). Standalone steps render flat;
+            // grouped steps wrap in an accordion via _renderSidebarSteps in
+            // wml-assessment.js. Preamble at protocol-router.php emits
+            // [STEP_ADVANCE:N] markers per Q + scoring + feedback + action plan.
             sidebarSteps: [
-                { step: 1, label: 'Setup & Board' },
-                { step: 2, label: 'Questions 1-5' },
-                { step: 3, label: 'Questions 6-10' },
-                { step: 4, label: 'Results & Grade' },
-                { step: 5, label: 'Feedback' },
-                { step: 6, label: 'Action Plan' },
+                { step: 1,  label: 'Setup & Board' },
+                { step: 2,  label: 'Q1',  group: 'Questions 1-5' },
+                { step: 3,  label: 'Q2',  group: 'Questions 1-5' },
+                { step: 4,  label: 'Q3',  group: 'Questions 1-5' },
+                { step: 5,  label: 'Q4',  group: 'Questions 1-5' },
+                { step: 6,  label: 'Q5',  group: 'Questions 1-5' },
+                { step: 7,  label: 'Q6',  group: 'Questions 6-10' },
+                { step: 8,  label: 'Q7',  group: 'Questions 6-10' },
+                { step: 9,  label: 'Q8',  group: 'Questions 6-10' },
+                { step: 10, label: 'Q9',  group: 'Questions 6-10' },
+                { step: 11, label: 'Q10', group: 'Questions 6-10' },
+                { step: 12, label: 'Results & Grade' },
+                { step: 13, label: 'Feedback' },
+                { step: 14, label: 'Action Plan' },
             ],
         },
         model_answer_video: {
@@ -1307,6 +1320,13 @@ window.WML = (function() {
         if (state.task === 'memory_practice') return MEMORY_PRACTICE_STEPS;
         if (state.task === 'verbal_rehearsal') return QUOTE_ANALYSIS_STEPS;
         if (state.task === 'foundational_quiz') return FOUNDATIONAL_QUIZ_STEPS;
+        // v7.18.17: mark_scheme has 14 sidebar steps (Setup + Q1-Q10 + Results +
+        // Feedback + Action Plan). Pull straight from the manifest so the
+        // universal step-marker handler at wml-assessment.js:2545 validates
+        // marker N against the real upper bound (14, not the PLAN_STEPS default 8).
+        if (state.task === 'mark_scheme' && EXERCISE_MANIFEST.mark_scheme && EXERCISE_MANIFEST.mark_scheme.sidebarSteps) {
+            return EXERCISE_MANIFEST.mark_scheme.sidebarSteps;
+        }
         if (state.task === 'conceptual_notes') {
             if (isNonfictionSubject()) return NONFICTION_CN_STEPS;
             return isPoetrySubject() ? POETRY_CN_STEPS : CONCEPTUAL_NOTES_STEPS;

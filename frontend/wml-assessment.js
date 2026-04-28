@@ -137,6 +137,74 @@
         document.body.appendChild(overlay);
     }
 
+    // v7.18.17: shared sidebar-steps renderer. Wraps consecutive steps that
+    // share a `group` field in an accordion (matches the literature/poetry
+    // sidebar shape). Steps without `group` render standalone. Active class
+    // is set on step 1 at initial paint; updateProgress() in wml-app.js
+    // re-applies active/complete classes on every advance.
+    function _renderSidebarSteps(container, steps) {
+        if (!steps || !steps.length) return;
+        const groups = [];
+        let currentGroup = null;
+        steps.forEach((s, i) => {
+            if (s.group) {
+                if (!currentGroup || currentGroup.label !== s.group) {
+                    currentGroup = { label: s.group, steps: [] };
+                    groups.push(currentGroup);
+                }
+                currentGroup.steps.push({ ...s, index: i });
+            } else {
+                groups.push({ label: null, steps: [{ ...s, index: i }] });
+                currentGroup = null;
+            }
+        });
+        groups.forEach(group => {
+            if (!group.label || group.steps.length <= 1) {
+                group.steps.forEach(s => {
+                    const cls = s.step === 1 ? 'active' : '';
+                    container.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
+                        el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
+                        el('span', { className: 'swml-step-label', textContent: s.label }),
+                    ]));
+                });
+            } else {
+                const groupEl = el('div', { className: 'swml-step-group', 'data-group': group.label });
+                const isFirstGroup = container.querySelectorAll('.swml-step-group').length === 0;
+                const headerEl = el('div', {
+                    className: `swml-step-group-header${isFirstGroup ? ' open' : ''}`,
+                    onClick: (e) => {
+                        const parent = e.currentTarget.parentElement;
+                        const wasOpen = e.currentTarget.classList.contains('open');
+                        container.querySelectorAll('.swml-step-group-header').forEach(h => h.classList.remove('open'));
+                        container.querySelectorAll('.swml-step-group-body').forEach(b => { b.style.maxHeight = '0'; });
+                        if (!wasOpen) {
+                            e.currentTarget.classList.add('open');
+                            const body = parent.querySelector('.swml-step-group-body');
+                            if (body) body.style.maxHeight = body.scrollHeight + 'px';
+                        }
+                    }
+                }, [
+                    el('span', { className: 'swml-step-group-title', textContent: group.label }),
+                    el('span', { className: 'swml-step-group-count', textContent: `${group.steps.length} steps` }),
+                    el('span', { className: 'swml-step-group-icon', textContent: '+' }),
+                ]);
+                groupEl.appendChild(headerEl);
+                const bodyEl = el('div', {
+                    className: 'swml-step-group-body',
+                    style: { maxHeight: isFirstGroup ? '500px' : '0', overflow: 'hidden', transition: 'max-height 0.3s ease' }
+                });
+                group.steps.forEach(s => {
+                    bodyEl.appendChild(el('div', { className: 'swml-step', 'data-step': s.step }, [
+                        el('div', { className: 'swml-step-circle', textContent: s.step }),
+                        el('span', { className: 'swml-step-label', textContent: s.label }),
+                    ]));
+                });
+                groupEl.appendChild(bodyEl);
+                container.appendChild(groupEl);
+            }
+        });
+    }
+
     // v7.15.56: entry modal shown once per (user, student, post) combo so tutors
     // landing on a lesson in review mode see the context before they start reviewing.
     function maybeShowReviewEntryModal() {
@@ -1431,7 +1499,8 @@
             const progressLabel = isCwTask ? `Step ${cwStepDef?.step || ''} Progress` : 'Protocol Progress';
             protoBody.appendChild(el('div', { className: 'swml-sidebar-section-label', textContent: progressLabel }));
 
-            // Steps — manifest-driven
+            // Steps — manifest-driven. v7.18.17: render via shared helper that
+            // honours `group` field for accordion grouping (used by mark_scheme).
             const protoSteps = el('div', { id: 'swml-progress-steps' });
             const assessSteps = canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
                 { step: 1, label: 'Setup & Details' },
@@ -1443,13 +1512,7 @@
                 { step: 7, label: 'Conclusion' },
                 { step: 8, label: 'Summary & Action Plan' },
             ]);
-            assessSteps.forEach((s, i) => {
-                const cls = i === 0 ? 'active' : '';
-                protoSteps.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
-                    el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
-                    el('span', { className: 'swml-step-label', textContent: s.label }),
-                ]));
-            });
+            _renderSidebarSteps(protoSteps, assessSteps);
             protoBody.appendChild(protoSteps);
         }
 
@@ -6608,6 +6671,8 @@
                             protoBody.appendChild(el('div', { className: 'swml-sidebar-section-label', textContent: progressLabel }));
 
                             // Steps — manifest-driven (v7.13.11, replaces hardcoded if/else)
+                            // v7.18.17: render via shared helper that honours `group`
+                            // field for accordion grouping (used by mark_scheme).
                             const protoSteps = el('div', { id: 'swml-progress-steps' });
                             // v7.13.97: Use task-specific steps for exam prep, manifest sidebarSteps for assessment, fallback to defaults
                             const assessSteps = canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
@@ -6620,13 +6685,7 @@
                                 { step: 7, label: 'Conclusion' },
                                 { step: 8, label: 'Summary & Action Plan' },
                             ]);
-                            assessSteps.forEach((s, i) => {
-                                const cls = i === 0 ? 'active' : '';
-                                protoSteps.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
-                                    el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
-                                    el('span', { className: 'swml-step-label', textContent: s.label }),
-                                ]));
-                            });
+                            _renderSidebarSteps(protoSteps, assessSteps);
                             protoBody.appendChild(protoSteps);
                         }
 
