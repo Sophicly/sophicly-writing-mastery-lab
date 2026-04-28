@@ -2411,6 +2411,17 @@ body.swml-fullscreen-active { overflow: hidden !important; }
    (writer_profile through scene_selection). Widget reappears on cw_step_9+. */
 .swml-canvas[data-cw-stage="ideas"] .swml-wc-widget { display: none !important; }
 
+/* v7.18.14: While an attempt-selector overlay is mounted, hide every OTHER
+   child so the document doesn't flash visible behind it. JS sets
+   data-swml-attempt-overlay-active="1" on the host (either
+   #swml-canvas-overlay or #swml-canvas / .swml-canvas-content depending on
+   the overlay site); CSS hides every sibling that ISN'T an attempt overlay.
+   Cleared when overlay.remove() fires. Result: student sees overlay first,
+   picks an attempt, then the document loads in. */
+[data-swml-attempt-overlay-active="1"] > *:not(.swml-attempt-overlay):not(.swml-attempt-switch-overlay):not(.swml-mode-overlay) {
+    visibility: hidden;
+}
+
 /* ── CW Project Switcher / Naming Overlay (v7.17.29) ──
    Replaces the v7.17.28 inline-styled overlay. Theme-aware: dark-mode picks
    purple/teal brand chrome; light-mode keeps white card with brand accents. */

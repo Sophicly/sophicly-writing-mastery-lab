@@ -548,6 +548,19 @@
         overlay.appendChild(card);
         const host = document.getElementById('swml-canvas-overlay') || document.body;
         host.appendChild(overlay);
+
+        // v7.18.14: prevent the canvas-loads-then-overlay flicker. While the
+        // attempt selector is mounted, mark the host with a data-attribute that
+        // CSS uses to hide every OTHER child (editor, chat, sidebar). Cleared
+        // automatically when overlay.remove() is called from any branch.
+        try {
+            host.dataset.swmlAttemptOverlayActive = '1';
+            const _origRemove = overlay.remove.bind(overlay);
+            overlay.remove = function() {
+                try { delete host.dataset.swmlAttemptOverlayActive; } catch (_) {}
+                _origRemove();
+            };
+        } catch (_) {}
     }
 
     // v7.15.48: Diagnostic-entry attempt overlay. Shown when a student enters the
@@ -5384,9 +5397,13 @@
                         // on remove via the wrapped remove() below.
                         const _prevOverflow = canvasEl.style.overflow;
                         canvasEl.style.overflow = 'hidden';
+                        // v7.18.14: hide canvas content behind the overlay so the doc
+                        // doesn't flicker into view before the student picks an attempt.
+                        canvasEl.dataset.swmlAttemptOverlayActive = '1';
                         const _origRemove = overlay.remove.bind(overlay);
                         overlay.remove = function() {
                             try { canvasEl.style.overflow = _prevOverflow; } catch (_) {}
+                            try { delete canvasEl.dataset.swmlAttemptOverlayActive; } catch (_) {}
                             _origRemove();
                         };
                         canvasEl.appendChild(overlay);
@@ -5483,9 +5500,12 @@
                         // v7.15.74: lock canvas scroll while mode overlay mounted, restore on remove
                         const _prevOverflowMode = canvasEl.style.overflow;
                         canvasEl.style.overflow = 'hidden';
+                        // v7.18.14: hide canvas content behind mode overlay too
+                        canvasEl.dataset.swmlAttemptOverlayActive = '1';
                         const _origRemoveMode = overlay.remove.bind(overlay);
                         overlay.remove = function() {
                             try { canvasEl.style.overflow = _prevOverflowMode; } catch (_) {}
+                            try { delete canvasEl.dataset.swmlAttemptOverlayActive; } catch (_) {}
                             _origRemoveMode();
                         };
                         canvasEl.appendChild(overlay);
