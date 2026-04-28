@@ -1574,7 +1574,7 @@
                 // v7.15.14: Strip protocol navigation/breadcrumbs from AI output
                 text = text.replace(/<p>[^<]*(?:Planning|📌)[^<]*(?:Part\s+[A-Z]\.\d|Step\s+\d+\s+of\s+\d+)[^<]*<\/p>/gi, '');
                 text = text.replace(/<p>\[Progress bar:.*?\]<\/p>/gi, '');
-                text = text.replace(/\[PROGRESS:\s*\d+\]/g, '');
+                text = text.replace(/\[(?:STEP_ADVANCE|PROGRESS):\s*\d+\]/gi, '');
 
                 // v7.17.32: @POPULATE_CHECKLIST marker → mutate canvas + strip from display.
                 // Helpers live at outer IIFE scope (see top of file).
@@ -2541,6 +2541,23 @@
                         await refreshPlan();
                         await extractAndSavePlan(msg, res.reply);
                         console.log('WML Canvas: Plan state after extraction:', { total_score: state.plan.total_score, grade: state.plan.grade, task: state.task });
+
+                        // v7.18.15: Universal step marker — any protocol can emit
+                        // [STEP_ADVANCE:N] (preferred) or legacy [PROGRESS:N] to advance
+                        // the sidebar stepper. Runs for every task, before task-specific
+                        // routes. Validated against getSteps().length so a runaway N
+                        // can't jump past the last step.
+                        try {
+                            const _stepMarker = res.reply && res.reply.match(/\[(?:STEP_ADVANCE|PROGRESS):\s*(\d+)\]/i);
+                            if (_stepMarker) {
+                                const _n = parseInt(_stepMarker[1], 10);
+                                const _maxStep = (typeof getSteps === 'function' ? (getSteps() || []).length : 0) || 0;
+                                if (_n > state.step && (!_maxStep || _n <= _maxStep)) {
+                                    console.log('WML Canvas: Universal step marker → step', _n, '(task:', state.task, ')');
+                                    updateProgress(_n);
+                                }
+                            }
+                        } catch (_e) { console.warn('WML Canvas: universal step marker error', _e); }
 
                         // v7.14.68: Planning/polishing step detection — advance sidebar based on AI content
                         if (state.task === 'planning' || state.task === 'polishing') {

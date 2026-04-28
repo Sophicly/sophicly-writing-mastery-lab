@@ -2016,8 +2016,9 @@ window.WML = (function() {
         text = text.replace(/\[PANEL:\s*\w+\]([\s\S]*?)\[\/PANEL\]/g, '$1').trim();
         // v7.14.68: Also strip [PANEL:...] without closing tag (AI sometimes omits [/PANEL])
         text = text.replace(/\[PANEL:\s*\w+\]/g, '').trim();
-        // v7.14.68: Strip [PROGRESS: N] step markers (used for sidebar tracking, not for display)
-        text = text.replace(/\[PROGRESS:\s*\d+\]/g, '').trim();
+        // v7.14.68 / v7.18.15: Strip [PROGRESS:N] and [STEP_ADVANCE:N] step markers
+        // (used for sidebar tracking, not for display)
+        text = text.replace(/\[(?:STEP_ADVANCE|PROGRESS):\s*\d+\]/gi, '').trim();
         // v7.14.69: Strip [SUBSTEP_COMPLETE: step_N, substep_N, "Name"] markers (CW sub-step tracking)
         text = text.replace(/\[SUBSTEP_COMPLETE:\s*[^\]]*\]/g, '').trim();
         // Strip LaTeX $$ blocks

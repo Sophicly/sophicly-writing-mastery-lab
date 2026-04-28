@@ -5653,7 +5653,7 @@
             const cleanStudentMsg = studentMsg
                 .replace(/📌[^\n]*(?:Planning|Setting|Assessment|Polishing|Goal Setting)[^\n]*/gi, '')
                 .replace(/\[Progress bar:[^\]]*\]/gi, '')
-                .replace(/\[PROGRESS:\s*\d+\]/gi, '')
+                .replace(/\[(?:STEP_ADVANCE|PROGRESS):\s*\d+\]/gi, '')
                 .trim();
             if (!state.plan.question_text && cleanStudentMsg.length > 30) {
                 const looksLikeQuestion = /(?:starting with this (?:extract|speech)|how (?:does|far|is)|to what extent|read the following extract)/i.test(cleanStudentMsg);
