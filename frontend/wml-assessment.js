@@ -2339,22 +2339,42 @@
                     if (res.method) console.log('WML Canvas:', res.method, 'model:', res.model);
                     saveCanvasChat(canvasChatHistory, canvasChatId);
 
-                    // v7.17.73: Mark Scheme Quiz score capture (Option α).
-                    // Protocol emits [QUIZ_COMPLETE:score=N,total=10,percentage=M,grade=G]
-                    // at end of Phase 3 dashboard. Cache on state then trigger an explicit
-                    // canvas autosave so the score fields ride a /canvas/save POST and
-                    // student-data v2.29.6+ listener can persist to session_records.
-                    // Gated to mark_scheme_unit step 1 (Quiz) — FYW step 2 must NOT carry score.
-                    const _quizMatch = res.reply.match(/\[QUIZ_COMPLETE:score=(\d+),total=(\d+),percentage=(\d+),grade=(\d+)\]/i);
+                    // v7.17.73 / v7.18.11: Quiz score capture via [QUIZ_COMPLETE] marker.
+                    // Protocol emits at end of Phase 3 dashboard:
+                    //   MSQ:  [QUIZ_COMPLETE:score=N,total=10,percentage=M,grade=G]
+                    //   FQ:   [QUIZ_COMPLETE:score=N,total=5,percentage=M,grade=G,categories=...]
+                    // Score-allowed-half-marks supports decimal scores (FQ partial credit on Select-All).
+                    // Branch on task: MSQ → cache + canvas-save piggyback (existing v7.17.73 path);
+                    // FQ → POST /foundational-quiz/result directly (no canvas to piggyback).
+                    const _quizMatch = res.reply.match(/\[QUIZ_COMPLETE:score=(\d+(?:\.\d+)?),total=(\d+),percentage=(\d+),grade=(\d+)(?:,categories=([^\]]*))?\]/i);
                     if (_quizMatch && state.task === 'mark_scheme_unit' && state.step === 1) {
                         state.lastQuizScore = {
-                            score: parseInt(_quizMatch[1], 10),
+                            score: parseFloat(_quizMatch[1]),
                             total: parseInt(_quizMatch[2], 10),
                             percentage: parseInt(_quizMatch[3], 10),
                             grade: parseInt(_quizMatch[4], 10),
                         };
-                        console.log('WML v7.17.73: Quiz score extracted', state.lastQuizScore);
+                        console.log('WML v7.17.73: MSQ score extracted', state.lastQuizScore);
                         if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                    } else if (_quizMatch && state.task === 'foundational_quiz') {
+                        // v7.18.11: FQ path. POST directly to /foundational-quiz/result —
+                        // server writes swml_foundational_quiz_results user_meta + fires
+                        // sophicly_foundational_quiz_complete (student-data listener
+                        // dual-writes to session_records via existing v2.22.5+ hook).
+                        const fqPayload = {
+                            board: state.board || '',
+                            text: state.text || '',
+                            score: parseFloat(_quizMatch[1]),
+                            max: parseInt(_quizMatch[2], 10),
+                            grade: _quizMatch[4],
+                            categories: (_quizMatch[5] || '').trim(),
+                            lesson_url: window.location.href,
+                        };
+                        console.log('WML v7.18.11: FQ score extracted, POST → /foundational-quiz/result', fqPayload);
+                        apiPost(API.foundationalQuizResult, fqPayload).then(res => {
+                            if (res && res.success) console.log('WML v7.18.11: FQ result persisted', res.result);
+                            else console.warn('WML v7.18.11: FQ persist FAILED', res);
+                        }).catch(e => console.warn('WML v7.18.11: FQ persist error', e));
                     }
 
                     // v7.17.47: Assessment state mirror + resume-confirm quick actions.

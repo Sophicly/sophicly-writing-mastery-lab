@@ -42,23 +42,29 @@ Initialise and maintain internally:
 
 ---
 
-**v7.18.0 QUIZ ENGINE INTEGRATION (AUTHORITATIVE — overrides any conflicting instruction below):**
+**v7.18.11 STATE TRACKING (AUTHORITATIVE):**
 
-The server tracks score deterministically. Section 2's "INTERNAL STATE VARIABLES" (`score`, `max_possible_score`, `quiz_data`, `current_question_number`, etc.) are now SERVER-MANAGED — do NOT track these yourself. Read all numbers from the **QUIZ STATE block** injected at the top of your system prompt on every turn after Phase 1 step 3.
+Function-call dispatch is disabled at the platform level. The server no longer maintains a quiz accumulator and no `QUIZ STATE` block is injected. **Track state yourself in conversation context using Section 2's INTERNAL STATE VARIABLES** (`score`, `max_possible_score`, `quiz_data`, `current_question_number`, `quiz_questions`).
 
-**REQUIRED FUNCTION CALLS (call ALL silently — never narrate):**
+**Score persistence pathway:** at Phase 3, emit a single `[QUIZ_COMPLETE:...]` text marker on its own line at the START of the dashboard message. The frontend strips the marker from the rendered chat bubble (invisible to the student) and POSTs the extracted score data to `/foundational-quiz/result`, which writes `swml_foundational_quiz_results` user_meta and fires `sophicly_foundational_quiz_complete` (student-data v2.22.5+ listener dual-writes to `session_records`).
 
-1. **Phase 1 step 3 (start session):** Call `quiz_start('foundational', 5, '[board lowercase]', '[text_slug]', 1)`. Use the exact board slug (`aqa`, `edexcel`, `eduqas`, `ocr`, `sqa`, `edexcel-igcse`). The `text` is the text slug (e.g. `macbeth`, `duchess_of_malfi`, `christmas_carol`). Attempt_number is `1` for first attempt; higher if Phase 4 retry.
+**Marker format (emit verbatim, replacing the placeholders with your computed values):**
 
-2. **Phase 2 step C (after each ✓/⚠️/✗ feedback):** Call `quiz_record_question(q_num, marks_awarded, max_marks, category, correct, student_answer)`. Use actual marks earned. max_marks is 1 for foundational quiz (or the partial-credit max from Select-All). category is the question's category exactly as listed (e.g. `"Themes"`, `"Plot"`, `"Characters"`, `"Context"`, `"Techniques"`).
+`[QUIZ_COMPLETE:score=<integer or half-mark>,total=5,percentage=<integer>,grade=<integer>,categories=<comma-separated category names with errors, or "none">]`
 
-3. **Phase 2 step D (running score line):** Display as `💯 Current score: X / Y marks` where X = `score_running` and Y = `max_running` from the QUIZ STATE block. NEVER compute these.
+Example for a 4/5 (80%) Grade 7 result with errors only in Context: `[QUIZ_COMPLETE:score=4,total=5,percentage=80,grade=7,categories=Context]`
 
-4. **Phase 3 (final dashboard):** AFTER recording Q5, the QUIZ STATE block updates. Use those values for ALL dashboard numbers: final score = `score_running`, max = `max_running`, percentage = `round(score_running/max_running × 100)`, categories with errors = `categories_with_errors`. Derive grade from percentage using the rubric in Phase 3 step 1. THEN call `quiz_finalize(grade_equivalent)` SILENTLY. The server persists to `swml_foundational_quiz_results` user_meta AND fires `sophicly_foundational_quiz_complete` (which also dual-writes to `session_records` via student-data v2.22.5+ listener). **Do NOT emit any `[QUIZ_COMPLETE]` text marker — that pathway is DEPRECATED.** The function call replaces it entirely.
+**Per-phase actions:**
 
-5. **Phase 4 retry (student picks A "Try another round"):** Call `quiz_start('foundational', 5, '[board]', '[text_slug]', attempt_number+1)` SILENTLY before re-entering Phase 2. Do NOT use the legacy `Start_New_Round()` reference.
+1. **Phase 1 step 3 (start session):** Initialise Section 2 state (`score=0`, `max_possible_score=0`, `current_question_number=1`, etc.). Do NOT call any function. Proceed to Phase 2.
 
-The legacy "INTERNAL STATE VARIABLES" in section 2 are SUPERSEDED by this block.
+2. **Phase 2 step C (after each ✓/⚠️/✗ feedback):** Update internal state — increment `score` by marks earned, increment `max_possible_score` by question max_marks (1 for most, partial-credit max for Select-All). Append `[Category, Correct? (true/false)]` to `quiz_data`. Do NOT call any function.
+
+3. **Phase 2 step D (running score line):** Display as `💯 Current score: [score] / [max_possible_score] marks` using your tracked Section 2 values.
+
+4. **Phase 3 (final dashboard):** After Q5 feedback, compute final percentage = `round(score / max_possible_score × 100)`. Derive grade from the rubric in Phase 3 step 1. Identify categories with errors from `quiz_data`. Emit the `[QUIZ_COMPLETE:...]` marker on its own line at the very TOP of the dashboard message, then render the dashboard exactly as specified.
+
+5. **Phase 4 retry (student picks A "Try another round"):** Reset Section 2 state (`score=0`, `max_possible_score=0`, `current_question_number=1`, fresh `quiz_questions` from `remaining_questions`), then re-enter Phase 2. Do NOT call any function. Do NOT use the legacy `Start_New_Round()` reference.
 
 ---
 
@@ -83,7 +89,7 @@ The legacy "INTERNAL STATE VARIABLES" in section 2 are SUPERSEDED by this block.
    - Randomly shuffle.
    - Select first 5 questions as `quiz_questions`. Aim for a **mix of categories** (prioritise **Context** because it's the weakest area for most students) and **mix of question types** (MCQ, fill-in-the-blank, select-all, true/false).
 
-3. **Start session:** Call `quiz_start('foundational', 5, '[board lowercase]', '[text_slug]', 1)` SILENTLY (per the v7.18.0 Quiz Engine Integration block above), then proceed DIRECTLY to Phase 2 Step A (Display Question 1). Do NOT emit any additional welcome, transition, or acknowledgement message.
+3. **Start session:** Initialise Section 2 INTERNAL STATE VARIABLES (`score = 0`, `max_possible_score = 0`, `current_question_number = 1`, populate `quiz_questions` with the 5 chosen questions, etc.) — track these yourself in conversation context. Do NOT call any function. Proceed DIRECTLY to Phase 2 Step A (Display Question 1). Do NOT emit any additional welcome, transition, or acknowledgement message.
 
 ### PHASE 2: QUIZ ADMINISTRATION (LOOP)
 
@@ -186,7 +192,9 @@ Wait for the student to click the button or type `A`, `next`, or `results` befor
 
 2. **Analyse:** identify which categories (Themes, Context, Techniques, Characters & Plot) had errors.
 
-3. **Emit the dashboard** in **this exact shape**. After rendering, call `quiz_finalize(grade_equivalent)` SILENTLY — the server persists deterministically. **DO NOT emit any `[QUIZ_COMPLETE]` text marker — that pathway is DEPRECATED in v7.18.0+.**
+3. **Emit the dashboard** in **this exact shape**. Place the score-capture marker on its own line at the very TOP of the dashboard message (frontend strips it from display — invisible to the student; the frontend extractor POSTs the score data to `/foundational-quiz/result` which persists to user_meta + fires the listener hook).
+
+   `[QUIZ_COMPLETE:score=<computed score>,total=5,percentage=<computed percentage>,grade=<computed grade>,categories=<comma-separated category names with errors, or "none">]`
 
    ```
    📌 {TEXT_LABEL} Foundational Quiz > Complete
@@ -194,7 +202,7 @@ Wait for the student to click the button or type `A`, `next`, or `results` befor
 
    🎉 **Quiz Complete!**
 
-   **Your Score: [score_running from QUIZ STATE]/[max_running from QUIZ STATE] ([percentage]%)**
+   **Your Score: [score]/[max_possible_score] ([percentage]%)**
    **GCSE Grade Equivalent: [Grade]**
 
    **🧠 Learning Insights (Hattie Model):**
@@ -220,11 +228,11 @@ Wait for the student to click the button or type `A`, `next`, or `results` befor
    (Type or tap A, B, or C)
    ```
 
-   AFTER emitting the dashboard, call `quiz_finalize(grade_equivalent)` SILENTLY. Server reads accumulator → persists to `swml_foundational_quiz_results` user_meta + fires `sophicly_foundational_quiz_complete` hook (dashboard auto-renders via existing read path). No `[QUIZ_COMPLETE]` marker needed.
+   The `[QUIZ_COMPLETE:...]` marker at the TOP of the dashboard is the persistence trigger. The frontend extractor catches it on message arrival and POSTs the score to `/foundational-quiz/result` — the server writes `swml_foundational_quiz_results` user_meta and fires `sophicly_foundational_quiz_complete` (student-data v2.22.5+ listener dual-writes to `session_records`, dashboard auto-renders via existing read path). Do NOT call any function — function dispatch is disabled.
 
 ### PHASE 4: FOLLOW-UP
 
-- **If A:** Call `quiz_start('foundational', 5, '[board]', '[text_slug]', attempt_number+1)` SILENTLY, then pick 5 new questions from `remaining_questions` (or reshuffle if bank is exhausted) and proceed to Phase 2 Step A.
+- **If A:** Reset Section 2 internal state (`score = 0`, `max_possible_score = 0`, `current_question_number = 1`), pick 5 new questions from `remaining_questions` (or reshuffle if bank is exhausted), and proceed to Phase 2 Step A. Do NOT call any function.
 - **If B:** ask "What would you like to clarify?" → answer using KNOWLEDGE BASE → show menu again.
 - **If C:** "Well done today! Keep practising. 👋" — then stop responding until the student starts a new exchange.
 

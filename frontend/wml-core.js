@@ -47,6 +47,7 @@ window.WML = (function() {
         deleteSession: config.restUrl + 'session/delete',
         savedQuestions: config.restUrl + 'saved-questions',
         canvasSave:    config.restUrl + 'canvas/save',
+        foundationalQuizResult: config.restUrl + 'foundational-quiz/result',
         canvasLoad:    config.restUrl + 'canvas/load',
         canvasList:    config.restUrl + 'canvas/list',
         topicQuestion: config.restUrl + 'topic-question',
