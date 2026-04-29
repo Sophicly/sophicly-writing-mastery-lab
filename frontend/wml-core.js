@@ -520,6 +520,27 @@ window.WML = (function() {
         { step: 7, label: 'Results' },
     ];
 
+    // v7.18.23: mark_scheme_unit sub-task sidebar steps. The task slug carries
+    // two distinct flows — Quiz (bridgeStep=1, mark-scheme-quiz/* protocols)
+    // and Forging Your Weapon (bridgeStep=2, forging-your-weapon/* protocols).
+    // getSteps() returns the right array based on state.bridgeStep below.
+    const MARK_SCHEME_QUIZ_STEPS = [
+        { step: 1, label: 'Welcome' },
+        { step: 2, label: 'Q1' },
+        { step: 3, label: 'Q2' },
+        { step: 4, label: 'Q3' },
+        { step: 5, label: 'Q4' },
+        { step: 6, label: 'Q5' },
+        { step: 7, label: 'Results' },
+    ];
+    const FORGING_YOUR_WEAPON_STEPS = [
+        { step: 1, label: 'The Forge' },
+        { step: 2, label: 'Comparison' },
+        { step: 3, label: 'Critique' },
+        { step: 4, label: 'Anatomy' },
+        { step: 5, label: 'Next Steps' },
+    ];
+
     const POETRY_CN_STEPS = [
         { step: 1, label: 'S1 Speaker' },
         { step: 2, label: 'S2 Context' },
@@ -980,7 +1001,11 @@ window.WML = (function() {
             label: 'Mark Scheme Unit',
             environment: 'training',
             // v7.17.16: progress panel hidden — this task is chat-driven, no protocol step progression.
-            panels: { sidebar: true, chat: true, guidance: false, document: true, progress: false },
+            // v7.18.23: progress panel restored. Quiz (bridgeStep=1) gets a 7-step Welcome→Q1-Q5→Results
+            // sidebar; FYW (bridgeStep=2) gets a 5-step Forge→Comparison→Critique→Anatomy→Next Steps
+            // sidebar. getSteps() returns the right array per state.bridgeStep. state.sidebarStep
+            // tracks position so state.step can stay pinned to bridge dispatch (1/2) without conflict.
+            panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: null,
             elements: null,
             protocolSource: 'shared',
@@ -1326,6 +1351,14 @@ window.WML = (function() {
         // marker N against the real upper bound (14, not the PLAN_STEPS default 8).
         if (state.task === 'mark_scheme' && EXERCISE_MANIFEST.mark_scheme && EXERCISE_MANIFEST.mark_scheme.sidebarSteps) {
             return EXERCISE_MANIFEST.mark_scheme.sidebarSteps;
+        }
+        // v7.18.23: mark_scheme_unit dispatches to two flows. Bridge step 1 = Quiz
+        // (mark-scheme-quiz/* protocol, 7-step Welcome→Q1-Q5→Results sidebar);
+        // bridge step 2 = Forging Your Weapon (forging-your-weapon/* protocol,
+        // 5-step Forge→Comparison→Critique→Anatomy→Next Steps sidebar).
+        // state.bridgeStep is captured at boot in wml-app.js:83 for this task.
+        if (state.task === 'mark_scheme_unit') {
+            return state.bridgeStep === 2 ? FORGING_YOUR_WEAPON_STEPS : MARK_SCHEME_QUIZ_STEPS;
         }
         if (state.task === 'conceptual_notes') {
             if (isNonfictionSubject()) return NONFICTION_CN_STEPS;

@@ -3777,6 +3777,54 @@ TEMPLATE;
             $block .= "- Proceed directly from the Phase 1.1 greeting to Phase 1.5 Ready Gate using {$board_display}'s AO2 criteria.\n";
         }
 
+        // v7.18.23: Forging Your Weapon sidebar step-marker emission. The
+        // mark_scheme_unit task progress panel was hidden until v7.18.23; with
+        // it visible, FYW renders a 5-step sidebar (Forge / Comparison /
+        // Critique / Anatomy / Next Steps) driven by [STEP_ADVANCE:N] markers.
+        // Universal step-marker handler at wml-assessment.js:2545 picks them
+        // up. Marker is invisible to student (stripped by stripAIInternals).
+        if ($task === 'mark_scheme_unit' && $step === 2) {
+            $block .= "\n### FYW SIDEBAR STEP MARKERS (MANDATORY)\n";
+            $block .= "The Forging Your Weapon sidebar has 5 progress steps:\n";
+            $block .= "  1. The Forge\n";
+            $block .= "  2. Comparison\n";
+            $block .= "  3. Critique\n";
+            $block .= "  4. Anatomy\n";
+            $block .= "  5. Next Steps\n";
+            $block .= "Append `[STEP_ADVANCE:N]` (literal, square brackets) at the END of the message that opens each phase. Marker is INVISIBLE to the student.\n";
+            $block .= "- When you display the extract + the two paragraphs (Phase 2 — Comparison Test) → append `[STEP_ADVANCE:2]`.\n";
+            $block .= "- When you start the Challenge & Critique block (Phase 3) → append `[STEP_ADVANCE:3]`.\n";
+            $block .= "- When you start the Anatomy of the Weapon dissection (Phase 4) → append `[STEP_ADVANCE:4]`.\n";
+            $block .= "- When you deliver Next Steps / reflection (Phase 5) → append `[STEP_ADVANCE:5]`.\n";
+            $block .= "Emit each marker ONCE, on the message that OPENS that phase. Do not repeat on follow-up messages within the same phase.\n";
+        }
+
+        // v7.18.23: Mark Scheme Quiz sidebar step-marker emission. v7.18.12
+        // already advances the sidebar via keyword detection ("Question N of
+        // 5"), but explicit [STEP_ADVANCE:N] markers are more reliable when
+        // Sophia phrases questions differently. Both routes coexist — whichever
+        // fires first advances; downstream markers are no-ops because the
+        // current-step gate skips them.
+        if ($task === 'mark_scheme_unit' && $step === 1) {
+            $block .= "\n### MSQ SIDEBAR STEP MARKERS (MANDATORY)\n";
+            $block .= "The Mark Scheme Quiz sidebar has 7 progress steps:\n";
+            $block .= "  1. Welcome\n";
+            $block .= "  2. Q1\n";
+            $block .= "  3. Q2\n";
+            $block .= "  4. Q3\n";
+            $block .= "  5. Q4\n";
+            $block .= "  6. Q5\n";
+            $block .= "  7. Results\n";
+            $block .= "Append `[STEP_ADVANCE:N]` at the END of the message that opens each step. Marker is INVISIBLE to the student.\n";
+            $block .= "- Display Q1 → append `[STEP_ADVANCE:2]`.\n";
+            $block .= "- Display Q2 → append `[STEP_ADVANCE:3]`.\n";
+            $block .= "- Display Q3 → append `[STEP_ADVANCE:4]`.\n";
+            $block .= "- Display Q4 → append `[STEP_ADVANCE:5]`.\n";
+            $block .= "- Display Q5 → append `[STEP_ADVANCE:6]`.\n";
+            $block .= "- Deliver final results dashboard → append `[STEP_ADVANCE:7]` alongside the existing `[QUIZ_COMPLETE:...]` marker.\n";
+            $block .= "Emit each marker ONCE per session, on the message that OPENS that step.\n";
+        }
+
         // v7.17.76: Assessment task — confirm question text before marking.
         // Audit finding 2026-04-27: Sophia jumped straight into Q1 assessment
         // without echoing the question being marked. Pedagogically, students need

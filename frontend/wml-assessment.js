@@ -2488,7 +2488,9 @@
                         if (/Quiz\s+Complete|\[QUIZ_COMPLETE/i.test(res.reply)) {
                             _quizStep = 7;
                         }
-                        if (_quizStep && _quizStep > (state.step || 0)) {
+                        // v7.18.23: mark_scheme_unit reads state.sidebarStep (state.step is bridge dispatch).
+                        const _curStep = state.task === 'mark_scheme_unit' ? (state.sidebarStep || 0) : (state.step || 0);
+                        if (_quizStep && _quizStep > _curStep) {
                             updateProgress(_quizStep);
                             console.log('WML v7.18.12: Quiz step → ' + _quizStep + ' (task=' + state.task + ')');
                         }
@@ -2635,7 +2637,9 @@
                             if (_stepMarker) {
                                 const _n = parseInt(_stepMarker[1], 10);
                                 const _maxStep = (typeof getSteps === 'function' ? (getSteps() || []).length : 0) || 0;
-                                if (_n > state.step && (!_maxStep || _n <= _maxStep)) {
+                                // v7.18.23: mark_scheme_unit reads state.sidebarStep, not state.step (bridge dispatch).
+                                const _curStep = state.task === 'mark_scheme_unit' ? (state.sidebarStep || 0) : (state.step || 0);
+                                if (_n > _curStep && (!_maxStep || _n <= _maxStep)) {
                                     console.log('WML Canvas: Universal step marker → step', _n, '(task:', state.task, ')');
                                     updateProgress(_n);
                                 }
@@ -5700,7 +5704,9 @@
                                 if (n > markerStep) markerStep = n;
                             }
                         });
-                        if (markerStep > (state.step || 0)) {
+                        // v7.18.23: mark_scheme_unit reads state.sidebarStep (state.step pinned to bridge dispatch).
+                        const _curStep = state.task === 'mark_scheme_unit' ? (state.sidebarStep || 0) : (state.step || 0);
+                        if (markerStep > _curStep) {
                             console.log('WML v7.18.21: restored sidebar step from chat markers → step', markerStep, 'task=' + state.task);
                             updateProgress(markerStep);
                         }
@@ -7654,7 +7660,9 @@
                                                         if (n > markerStep) markerStep = n;
                                                     }
                                                 });
-                                                if (markerStep > (state.step || 0)) {
+                                                // v7.18.23: mark_scheme_unit reads state.sidebarStep (state.step pinned to bridge dispatch).
+                                                const _curStep = state.task === 'mark_scheme_unit' ? (state.sidebarStep || 0) : (state.step || 0);
+                                                if (markerStep > _curStep) {
                                                     console.log('WML v7.18.21: restored sidebar step from chat markers → step', markerStep, 'task=' + state.task);
                                                     updateProgress(markerStep);
                                                 }

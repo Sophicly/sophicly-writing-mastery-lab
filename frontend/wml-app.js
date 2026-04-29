@@ -3895,7 +3895,15 @@
     }
 
     function updateProgress(step) {
-        state.step = step;
+        // v7.18.23: mark_scheme_unit pins state.step to bridge dispatch
+        // (1=Quiz, 2=FYW — sent to protocol-router.php for sub-protocol routing).
+        // Sidebar position lives in state.sidebarStep so the two semantics no
+        // longer collide. Every other task continues using state.step directly.
+        if (state.task === 'mark_scheme_unit') {
+            state.sidebarStep = step;
+        } else {
+            state.step = step;
+        }
         const ind = $('#swml-step-indicator');
         const info = getSteps().find(s => s.step === step);
         if (ind && info) ind.textContent = `Section ${step} of ${getSteps().length} · ${info.label}`;
