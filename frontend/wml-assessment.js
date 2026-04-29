@@ -5702,10 +5702,15 @@
 
                 // Unified assessment state initialiser
                 async function initAssessmentState() {
-                    // v7.18.21: Universal step-marker restore. Scan saved chat for
-                    // [STEP_ADVANCE:N] / [PROGRESS:N] markers BEFORE the task-gated
-                    // assessment logic. Restores the sidebar progress bar on refresh
-                    // for any task that emits step markers (mark_scheme + future).
+                    // v7.18.21 / v7.18.26: Universal step-marker restore. Scan saved
+                    // chat for [STEP_ADVANCE:N] / [PROGRESS:N] markers BEFORE the
+                    // task-gated assessment logic. Restores the sidebar progress bar
+                    // on refresh for any task that emits step markers. v7.18.26
+                    // adds keyword fallback for tasks where Sophia doesn't always
+                    // emit the literal marker — Quiz ("Question N of 5" + "Quiz
+                    // Complete") + Foundational Quiz mirror the v7.18.12 live
+                    // tracker so refreshed chats restore sidebar even without
+                    // explicit markers in the persisted history.
                     if (tp.canvasChatHistory && tp.canvasChatHistory.length > 0) {
                         let markerStep = 1;
                         tp.canvasChatHistory.forEach(m => {
@@ -5715,11 +5720,27 @@
                                 const n = parseInt(mm[1], 10);
                                 if (n > markerStep) markerStep = n;
                             }
+                            // v7.18.26: keyword-based restore for Quiz tasks (mark_scheme_unit
+                            // bridgeStep=1 + foundational_quiz). Mirrors the v7.18.12 live
+                            // tracker. Welcome=1, Q1=2, Q2=3, ..., Q5=6, Results=7.
+                            if (state.task === 'foundational_quiz' || (state.task === 'mark_scheme_unit' && state.bridgeStep === 1)) {
+                                const _qm = m.content.match(/Question\s+(\d+)\s+of\s+5/i);
+                                if (_qm) {
+                                    const _qn = parseInt(_qm[1], 10);
+                                    if (_qn >= 1 && _qn <= 5) {
+                                        const _qs = _qn + 1;
+                                        if (_qs > markerStep) markerStep = _qs;
+                                    }
+                                }
+                                if (/Quiz\s+Complete|\[QUIZ_COMPLETE/i.test(m.content) && markerStep < 7) {
+                                    markerStep = 7;
+                                }
+                            }
                         });
                         // v7.18.23: mark_scheme_unit reads state.sidebarStep (state.step pinned to bridge dispatch).
                         const _curStep = state.task === 'mark_scheme_unit' ? (state.sidebarStep || 0) : (state.step || 0);
                         if (markerStep > _curStep) {
-                            console.log('WML v7.18.21: restored sidebar step from chat markers → step', markerStep, 'task=' + state.task);
+                            console.log('WML v7.18.26: restored sidebar step from chat history → step', markerStep, 'task=' + state.task + ' bridgeStep=' + state.bridgeStep);
                             updateProgress(markerStep);
                         }
                     }

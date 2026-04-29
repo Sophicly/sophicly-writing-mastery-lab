@@ -3577,14 +3577,23 @@ TEMPLATE;
         // corrupted (2/10 instead of 0/10). Phase 2.C of every quiz protocol
         // already specifies one-attempt-only marking, but the AI's supportive-teacher
         // instinct overrides it without an explicit anti-retry directive.
+        // v7.17.63 / v7.18.26: anti-retry guard for diagnostic quizzes. v7.18.26
+        // strips the "explain the correct answer" phrase — Neil's feedback was
+        // that revealing the correct answer mid-assessment tempts students to
+        // restart. New shape: mark wrong as `Feedback — ✗ Not quite.` (no
+        // letter / no truth value), then route into Distractor Analysis (which
+        // probes the OPTIONS neutrally per the v7.18.20 distractor directive).
+        // Correct-answer reveal happens at Results step only.
         if ($task === 'mark_scheme' || $task === 'mark_scheme_unit') {
-            $block .= "\n### MARK SCHEME QUIZ — NO HINTS, NO RETRY (CRITICAL)\n";
-            $block .= "You are running a diagnostic quiz. Each question has ONE attempt only.\n";
-            $block .= "- When the student answers wrong, mark it 0/2 IMMEDIATELY using \"Feedback — ✗ Not quite. (0/2 marks)\" + explain the correct answer + show running score + ready check.\n";
+            $block .= "\n### MARK SCHEME — NO HINTS, NO RETRY, NO ANSWER REVEAL (CRITICAL)\n";
+            $block .= "You are running a diagnostic assessment. Each question has ONE attempt only and the student must NOT learn whether they got it right or wrong until the Results step.\n";
+            $block .= "- When the student answers wrong, mark internally as 0/2 and emit ONLY \"Feedback — ✗ Not quite.\" (no letter, no truth value, no \"the correct answer is X\").\n";
+            $block .= "- When the student answers correctly, mark internally and emit ONLY \"Feedback — ✓ Recorded.\" (no \"correct\", no praise, symmetric with the wrong-answer feedback).\n";
             $block .= "- DO NOT offer a hint, clue, scaffold, leading question, or \"have another think\".\n";
             $block .= "- DO NOT allow the student to re-answer the same question.\n";
             $block .= "- DO NOT soften the wrong answer with phrases like \"good instinct\" before marking.\n";
-            $block .= "The student answered. The answer was wrong. Award 0/2. Explain the correct answer. Move on. Hints and retry loops corrupt the score and break the diagnostic value of the quiz.\n";
+            $block .= "- DO NOT reveal the correct answer in any per-question feedback message. The Distractor Analysis block that follows must probe the OPTIONS neutrally (per the v7.18.20 distractor directive) — it MUST NOT name the right answer.\n";
+            $block .= "The student answered. Mark internally. Emit symmetric feedback. Route to Distractor Analysis (neutral). Move on. Score reveal + correct-answer reveal happen ONLY at the Results step at the end of the assessment.\n";
         }
 
         // v7.18.16: Sidebar step marker emission for Mark Scheme Self-Assessment
@@ -3631,12 +3640,13 @@ TEMPLATE;
             $block .= "Do NOT repeat a marker once it has fired. Do NOT emit a marker for a step the student has not yet reached. Do NOT emit the marker on any feedback / clarification message between question displays — only on the message that OPENS a new step.\n";
         }
 
-        // v7.18.18: Mark Scheme Self-Assessment is an ASSESSMENT, not a quiz.
-        // The student must NOT see their per-question score during the session —
-        // the full breakdown is revealed only at Step 12 (Results & Grade) after
-        // Q10. (mark_scheme_unit Quiz keeps its running score; that's a coaching
-        // tool, not an assessment.)
-        if ($task === 'mark_scheme') {
+        // v7.18.18 / v7.18.26: This is an ASSESSMENT. Student must NOT see
+        // per-question score during the session — full breakdown revealed only
+        // at the Results step. v7.18.26 EXTENDS to mark_scheme_unit per Neil's
+        // 2026-04-29 reframe ("It's meant to be an assessment where they find
+        // out their score at the end"). MSQ + FYW now match mark_scheme
+        // behavior: no running score mid-assessment.
+        if ($task === 'mark_scheme' || $task === 'mark_scheme_unit') {
             $block .= "\n### NO RUNNING SCORE — REVEAL AT END ONLY (CRITICAL)\n";
             $block .= "This is the Mark Scheme Self-ASSESSMENT, not a quiz. Students must NOT see their score during the session. The complete breakdown is delivered only at Step 12 (Results & Grade) after Q10.\n";
             $block .= "After each question's feedback line:\n";
@@ -3652,12 +3662,12 @@ TEMPLATE;
         // piggybacks it into the canvas-save payload. Same shape and route as
         // the v7.17.73 MSQ marker. Without this marker, the dashboard sees the
         // assessment as "started but never scored".
-        // v7.18.20: Vocabulary override — this is an ASSESSMENT, not a quiz.
-        // Protocol prose was inherited from mark-scheme-quiz files and uses
-        // "quiz" lexicon throughout the greeting and per-question framing.
-        // Pedagogically the framing matters: students prepare differently for
-        // an assessment versus a quiz.
-        if ($task === 'mark_scheme') {
+        // v7.18.20 / v7.18.26: Vocabulary override — this is an ASSESSMENT,
+        // not a quiz. Protocol prose was inherited from mark-scheme-quiz files
+        // and uses "quiz" lexicon throughout the greeting and per-question
+        // framing. v7.18.26 extends the directive to mark_scheme_unit so MSQ
+        // (Quiz lessons) + FYW also frame as an assessment, not casual quiz.
+        if ($task === 'mark_scheme' || $task === 'mark_scheme_unit') {
             $block .= "\n### LEXICON — \"ASSESSMENT\", NOT \"QUIZ\" (CRITICAL)\n";
             $block .= "This is the Mark Scheme Self-ASSESSMENT. In every message you send (greeting, per-question framing, Step 12 results delivery, action plan):\n";
             $block .= "- Use \"assessment\" / \"this assessment\" / \"the assessment\". DO NOT use \"quiz\" or \"this quiz\".\n";
@@ -3666,11 +3676,12 @@ TEMPLATE;
             $block .= "If protocol source text says \"quiz\", silently substitute \"assessment\" before emitting. The student-facing copy must consistently signal that this is a measured diagnostic, not a casual quiz.\n";
         }
 
-        // v7.18.20: Distractor Analysis — neutral phrasing only. The default
-        // protocol prose asks "Why might someone INCORRECTLY choose A?", which
-        // leaks the correct answer mid-assessment. Symmetric phrasing is
-        // pedagogically equivalent and preserves the diagnostic value.
-        if ($task === 'mark_scheme') {
+        // v7.18.20 / v7.18.26: Distractor Analysis — neutral phrasing only.
+        // Default protocol prose asks "Why might someone INCORRECTLY choose A?",
+        // which leaks the correct answer mid-assessment. Symmetric phrasing is
+        // pedagogically equivalent and preserves the diagnostic value. v7.18.26
+        // extends to mark_scheme_unit so MSQ + FYW also use neutral framing.
+        if ($task === 'mark_scheme' || $task === 'mark_scheme_unit') {
             $block .= "\n### DISTRACTOR ANALYSIS — NEUTRAL PHRASING (CRITICAL)\n";
             $block .= "Distractor Analysis runs after each MCQ question. The framing must NOT reveal which answer was correct. Use SYMMETRIC, NEUTRAL phrasing that treats every option as a candidate worth interrogating:\n";
             $block .= "- DO NOT say \"Why might someone INCORRECTLY choose A?\" / \"What makes A WRONG?\" / \"What makes it tempting but WRONG?\".\n";
@@ -3678,10 +3689,11 @@ TEMPLATE;
             $block .= "Frame the distractor probe as exploration of the OPTIONS, not as confirmation of the student's right/wrong status. Wait until Step 12 (Results & Grade) to reveal scoring.\n";
         }
 
-        // v7.18.20: Continue-prompt mandate. Every question (closed MCQ, open,
-        // matching, fill-in-blank) must end with an explicit continuation cue
-        // so the v7.18.18 \"Ready for Question N?\" quick-action detector
-        // surfaces a button. Without this students get stuck typing \"yes\".
+        // v7.18.20 / v7.18.26: Continue-prompt mandate. Every question (closed
+        // MCQ, open, matching, fill-in-blank) must end with an explicit
+        // continuation cue so the v7.18.18 \"Ready for Question N?\" quick-action
+        // detector surfaces a button. Without this students get stuck typing
+        // \"yes\". v7.18.26 extends to mark_scheme_unit so MSQ + FYW also benefit.
         if ($task === 'mark_scheme') {
             $block .= "\n### CONTINUE-PROMPT MANDATE (CRITICAL)\n";
             $block .= "Every per-question feedback / distractor message must END with an explicit continuation cue, regardless of question type:\n";
@@ -3690,25 +3702,48 @@ TEMPLATE;
             $block .= "- ... and so on through Q9. After Q10: \"Ready for the results?\".\n";
             $block .= "The exact phrase \"Ready for Question N?\" or \"Ready for the results?\" surfaces a Yes / Hold-on quick-action button so the student can click instead of typing. Place this cue on its own line at the end of the message. Do NOT place it before the distractor prompt; it always comes LAST.\n";
         }
+        // v7.18.26: continue-prompt mandate for mark_scheme_unit Quiz (5 Qs).
+        if ($task === 'mark_scheme_unit' && $step === 1) {
+            $block .= "\n### CONTINUE-PROMPT MANDATE (CRITICAL)\n";
+            $block .= "Every per-question feedback / distractor message must END with an explicit continuation cue, regardless of question type:\n";
+            $block .= "- After Q1 feedback: \"Ready for Question 2?\"\n";
+            $block .= "- After Q2 feedback: \"Ready for Question 3?\"\n";
+            $block .= "- ... and so on through Q4. After Q5: \"Ready for the results?\".\n";
+            $block .= "The exact phrase \"Ready for Question N?\" or \"Ready for the results?\" surfaces a Yes / Hold-on quick-action button so the student can click instead of typing. Place this cue on its own line at the end of the message. Do NOT place it before the distractor prompt; it always comes LAST.\n";
+        }
+        // v7.18.26: continue-prompt mandate for FYW (5 phases).
+        if ($task === 'mark_scheme_unit' && $step === 2) {
+            $block .= "\n### CONTINUE-PROMPT MANDATE (CRITICAL)\n";
+            $block .= "Every multi-paragraph response from you must END with an explicit continuation cue so the student gets a Yes / Hold-on quick-action button:\n";
+            $block .= "- After delivering the extract + paragraph pair (Phase 2): \"Ready to commit to your pick?\"\n";
+            $block .= "- After the student's pick + your critique (Phase 3): \"Ready for the anatomy of the weapon?\"\n";
+            $block .= "- After the anatomy walkthrough (Phase 4): \"Ready for next steps?\"\n";
+            $block .= "- After Next Steps reflection (Phase 5): close naturally — no continuation cue needed at end.\n";
+            $block .= "Place the cue on its own line at the end of the message.\n";
+        }
 
-        // v7.18.20: No over-coaching on open questions. CLAUDE.md is explicit:
-        // this is an assessment, not a coaching session. Default protocol
-        // prose drifts into probing follow-ups (\"What makes you say that?\",
-        // \"Let's see if the options sharpen that up\") — break that habit.
-        if ($task === 'mark_scheme') {
-            $block .= "\n### NO OVER-COACHING — ACK + ANSWER + ONE EXPLANATION (CRITICAL)\n";
+        // v7.18.20 / v7.18.26: No over-coaching. CLAUDE.md is explicit: this is
+        // an assessment, not a coaching session. Default protocol prose drifts
+        // into probing follow-ups — break that habit.
+        // v7.18.26: critical change — feedback shape NO LONGER includes "Statement
+        // of the correct answer" (that violates the v7.18.26 NO ANSWER REVEAL
+        // directive above). Symmetric "Recorded" / "Not quite" + neutral
+        // distractor probe + continue cue. Correct-answer reveal happens at
+        // Results step. Also extends to mark_scheme_unit (MSQ + FYW).
+        if ($task === 'mark_scheme' || $task === 'mark_scheme_unit') {
+            $block .= "\n### NO OVER-COACHING — SYMMETRIC ACK + DISTRACTOR + CONTINUE (CRITICAL)\n";
             $block .= "After every question's response (closed or open), the feedback message has THIS shape only:\n";
-            $block .= "1. Brief acknowledgement of the student's answer (one sentence).\n";
-            $block .= "2. Statement of the correct answer (or, for open questions where there is no single answer, the model answer).\n";
-            $block .= "3. ONE short explanation of why the correct answer is correct (one paragraph, max ~3 sentences).\n";
-            $block .= "4. (Optional) The Distractor Analysis block per the existing rules — ONE clarifying open question is allowed for the student to type a one-sentence reflection. NO follow-up to that reflection.\n";
-            $block .= "5. The continue-prompt cue per the rule above.\n";
-            $block .= "Specifically banned:\n";
+            $block .= "1. Brief acknowledgement using the symmetric \"Recorded\" / \"Not quite\" feedback shape from the rule above. NO letter, NO truth value, NO correct answer named, NO running score.\n";
+            $block .= "2. (Optional) ONE short framing sentence about the criterion the question tests — DO NOT name the right answer here either.\n";
+            $block .= "3. (Optional) The Distractor Analysis block per the existing neutral-phrasing rules — ONE clarifying open question is allowed for the student to type a one-sentence reflection. NO follow-up to that reflection.\n";
+            $block .= "4. The continue-prompt cue per the rule above.\n";
+            $block .= "Specifically banned mid-assessment:\n";
+            $block .= "- \"The correct answer is X\" / \"You should have picked Y\" / \"That's right\" / \"You got it\". Symmetric feedback only — student must not learn whether they were right or wrong until Results step.\n";
             $block .= "- Probing follow-ups like \"What makes you say that?\", \"Tell me more about why you think that\", \"Let's see if the options sharpen that up\".\n";
             $block .= "- Multi-paragraph explanations or coaching scaffolds.\n";
             $block .= "- Encouragement / validation prefixes like \"Good starting instinct — \", \"Solid reader-focused answer\", \"You've picked up on \". Land the assessment-feedback shape directly.\n";
-            $block .= "- Any second open question after the student has typed their reflection. Acknowledge briefly, deliver the model answer, move on.\n";
-            $block .= "This is an ASSESSMENT. The student is being measured, not coached. Save coaching tone for Step 13 (Feedback) and Step 14 (Action Plan), where it belongs.\n";
+            $block .= "- Any second open question after the student has typed their reflection. Acknowledge briefly, move on.\n";
+            $block .= "This is an ASSESSMENT. The student is being measured, not coached. Save coaching tone (and answer reveals) for the Results / Feedback / Action Plan steps where it belongs.\n";
         }
 
         if ($task === 'mark_scheme') {
