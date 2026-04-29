@@ -1515,11 +1515,19 @@
             // Steps — manifest-driven. v7.18.17: render via shared helper that
             // honours `group` field for accordion grouping (used by mark_scheme).
             const protoSteps = el('div', { id: 'swml-progress-steps' });
-            // v7.18.24: mark_scheme_unit also routes to getSteps() so Quiz
-            // (bridgeStep=1, 7 steps) and FYW (bridgeStep=2, 5 steps) render
-            // their own sidebar arrays. Without this gate the fallback ran and
-            // both lessons showed the default 8-step ASSESSMENT layout.
-            const assessSteps = canvasSidebarSteps || ((isExamPrep || state.task === 'mark_scheme_unit') ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
+            // v7.18.25: universal step-array resolution. Drop the isExamPrep
+            // gate (and the v7.18.24 mark_scheme_unit gate) — getSteps() is now
+            // ALWAYS consulted when the manifest doesn't provide an explicit
+            // sidebarSteps array. Each task's getSteps() branch returns the
+            // right array (assessment / polishing / planning / exam-prep /
+            // mark_scheme_unit / etc.). The hardcoded 8-step ASSESSMENT fallback
+            // remains as last resort if getSteps() is missing or empty.
+            // For planning + polishing, Site 3 (the async /protocol-steps
+            // fetch at L4536) still overrides with server-side groupings —
+            // this change just means the brief initial paint uses the right
+            // task labels instead of the generic ASSESSMENT defaults.
+            const _gs = (typeof getSteps === 'function') ? getSteps() : null;
+            const assessSteps = canvasSidebarSteps || (_gs && _gs.length ? _gs.map((s, i) => ({ step: i + 1, label: s.label })) : [
                 { step: 1, label: 'Setup & Details' },
                 { step: 2, label: 'Goal Setting' },
                 { step: 3, label: 'Self-Reflection' },
