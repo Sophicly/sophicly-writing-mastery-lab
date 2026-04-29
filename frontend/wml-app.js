@@ -83,6 +83,11 @@
         if (embedConfig.step && embedConfig.task === 'mark_scheme_unit') {
             state.bridgeStep = embedConfig.step;
         }
+        // v7.18.28: explicit clear of WML protocol-progress panel position
+        // at boot. Mirrored at the SPA reinit handler below so lesson-to-
+        // lesson navigation also resets correctly (initAssessmentState's
+        // marker-scan repopulates from the right lesson's chat history).
+        state.sidebarStep = 0;
         if (embedConfig.phase) {
             state.phase = embedConfig.phase;
             state.isRedraft = embedConfig.phase === 'redraft';
@@ -7136,6 +7141,12 @@ Before marking the introduction, ask the student to confirm their essay structur
             // Clear unconditionally; re-set if mark_scheme_unit so lessons that
             // are NOT mark_scheme_unit don't carry a stale value.
             state.bridgeStep = (cfg.task === 'mark_scheme_unit' && cfg.step) ? cfg.step : 0;
+            // v7.18.28: clear WML protocol-progress panel position on lesson-
+            // to-lesson navigation so initAssessmentState's marker-scan can
+            // repopulate from the new lesson's chat history. Without this,
+            // the previous lesson's sidebarStep blocks the marker-scan
+            // comparison (markerStep > stale-value never advances).
+            state.sidebarStep = 0;
             // v7.17.20: preserve all bridge-supplied phase values
             // ('preliminary', 'exam_practice', etc.) — previous code coerced
             // anything non-'redraft'/'initial' to null, clobbering
