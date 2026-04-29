@@ -4267,6 +4267,18 @@
         text = text.replace(/\*{2}/g, '');
         const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
 
+        // v7.18.20: Matching-question suppression. Mark Scheme Q10 ("Match each
+        // number to a letter (e.g. 1-X, 2-Y, 3-Z)") renders criteria like
+        // "X — Selects a judicious range" / "Y — Analyses the effects" — those
+        // letter-labelled lines pass the letterRegex below and surface as
+        // standalone quick-action buttons. Click submits ONE letter and breaks
+        // the multi-pair answer. Until a proper matching-grid UI ships
+        // (v7.18.21+), suppress quick-actions entirely on matching messages so
+        // the student types the full pairing into the input box.
+        const isMatchingQ = /\bmatch\s+(?:each|the)\s+\w+/i.test(text)
+            && /\(e\.g\.\s*\d+\s*[-–]\s*[A-Z]/i.test(text);
+        if (isMatchingQ) return [];
+
         // ══════════════════════════════════════════
         //  LETTER OPTIONS: A) B) C) / A. B. / **A** — / A — etc.
         //  Single unified pattern that handles all markdown variants

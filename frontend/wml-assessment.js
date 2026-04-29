@@ -5637,22 +5637,14 @@
                         try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
                     }
                 }
-                // v7.17.71: ROLLBACK of v7.17.70 chat-preservation experiment. Removing
-                // these wipes exposed a deeper bug — `canvasInAssessment` is a legacy alias
-                // for ALL training-env exercises (set at L4364), so the assessment greeting
-                // branch fires on mark_scheme_unit Clear Chat with bogus essay-question
-                // extraction + Grade 9/8/7 buttons. Restoring wipes pending a proper
-                // canvasInAssessment audit + task-gated greeting branches in v7.17.72+.
-                if (canvasInMarkScheme && savedChat && savedChat.history && savedChat.history.length > 0) {
-                    console.log('WML Training: Discarding saved mark_scheme chat — protocol must drive from scratch');
-                    savedChat = null;
-                    try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
-                }
-                if (canvasInMarkSchemeUnit && savedChat && savedChat.history && savedChat.history.length > 0) {
-                    console.log('WML Training: Discarding saved mark_scheme_unit chat — protocol must drive from scratch');
-                    savedChat = null;
-                    try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
-                }
+                // v7.18.20: Chat persistence restored for mark_scheme + mark_scheme_unit.
+                // The v7.17.71 wipes existed because the assessment greeting branch
+                // (canvasInAssessment + grade-button gate) misfired on mark_scheme_unit
+                // restored chats. The fix is to gate that branch on state.task ===
+                // 'assessment' directly (see hardening at the grade-button site
+                // around line 7700) instead of the canvasInAssessment legacy alias.
+                // With the gate hardened, restored chats are safe and Neil's 30-min
+                // assessment session is preserved across refresh.
                 if (isCwSi && savedChat && savedChat.history && savedChat.history.length > 0) {
                     const firstAI = savedChat.history.find(m => m.role === 'assistant');
                     if (firstAI && firstAI.content.includes('assessment phase')) {
@@ -7593,13 +7585,11 @@
                                                 try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
                                             }
                                         }
-                                        // v7.17.71: ROLLBACK of v7.17.70 chat-preservation experiment.
-                                        // Restored attempt-reload wipe pending canvasInAssessment audit.
-                                        if (canvasInMarkScheme && savedChat && savedChat.history && savedChat.history.length > 0) {
-                                            console.log('WML Canvas: Discarding saved mark_scheme chat — protocol must drive from scratch');
-                                            savedChat = null;
-                                            try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
-                                        }
+                                        // v7.18.20: Chat persistence restored on canvas-load path
+                                        // for mark_scheme. canvasInAssessment audit complete (grade-
+                                        // button gate now uses state.task === 'assessment'), so the
+                                        // v7.17.71 wipe is no longer needed. Pair with the matching
+                                        // restoration in the training-env path above.
                                         // v7.13.36: Discard stale chat for CW exercises — check that saved chat belongs to this exercise type
                                         if (isCwSi && savedChat && savedChat.history && savedChat.history.length > 0) {
                                             const firstAI = savedChat.history.find(m => m.role === 'assistant');
@@ -7695,7 +7685,12 @@
                                             // (grade buttons are DOM elements that don't persist in saved history)
                                             const userMsgs = savedChat.history.filter(m => m.role === 'user');
                                             const aiMsgs = savedChat.history.filter(m => m.role === 'assistant');
-                                            if (canvasInAssessment && !canvasInMarkScheme && !canvasInFeedback && !isCwTask
+                                            // v7.18.20: gate hardened from canvasInAssessment alias
+                                            // (true for ALL training-env tasks) to direct task check.
+                                            // Pairs with the chat-persistence restore for
+                                            // mark_scheme + mark_scheme_unit. Grade-button bar only
+                                            // surfaces for the actual essay-assessment task.
+                                            if (state.task === 'assessment' && !canvasInMarkScheme && !canvasInFeedback && !isCwTask
                                                 && aiMsgs.length === 1 && userMsgs.length === 0) {
                                                 setTimeout(() => {
                                                     const lastBubble = chatMessages.lastElementChild;
@@ -19039,8 +19034,18 @@ ${html}
             name: 'sectionBlock', group: 'block', content: 'block+', defining: true,
             addAttributes() { return { sectionType: { default: 'response' }, label: { default: '' }, editable: { default: 'true' }, readonly: { default: null }, part: { default: null } }; },
             parseHTML() { return [{ tag: 'div[data-section-type]', getAttrs: d => ({ sectionType: d.getAttribute('data-section-type'), label: d.getAttribute('data-section-label') || '', editable: d.getAttribute('data-editable') || 'true', readonly: d.getAttribute('data-readonly') || null, part: d.getAttribute('data-part') || null }) }]; },
-            // v7.15.6: contenteditable="false" on readonly sections prevents TipTap editing
-            renderHTML({ HTMLAttributes: a }) { const isRO = a.readonly === 'true' || a.readonly === true; return ['div', { 'data-section-type': a.sectionType, 'data-section-label': a.label, 'data-editable': a.editable, ...(isRO ? { 'data-readonly': 'true', contenteditable: 'false' } : {}), ...(a.part ? { 'data-part': a.part } : {}), class: `swml-section-block swml-section-${a.sectionType}${isRO ? ' swml-section-readonly' : ''}` }, 0]; },
+            // v7.15.6: contenteditable="false" on readonly sections prevents TipTap editing.
+            // v7.18.20: Feedback sections recompute readonly from _feedbackEditable() at
+            // render time. Old documents created before v7.18.9 saved with data-readonly="true"
+            // baked into feedback section markup; with this override, those documents
+            // now unlock automatically when the student is in edit mode. Tutor / parent
+            // review modes stay locked because _feedbackEditable() returns false there.
+            // Non-feedback sections still respect their saved readonly attribute.
+            renderHTML({ HTMLAttributes: a }) {
+                const savedRO = a.readonly === 'true' || a.readonly === true;
+                const isRO = a.sectionType === 'feedback' ? !_feedbackEditable() : savedRO;
+                return ['div', { 'data-section-type': a.sectionType, 'data-section-label': a.label, 'data-editable': isRO ? 'false' : 'true', ...(isRO ? { 'data-readonly': 'true', contenteditable: 'false' } : {}), ...(a.part ? { 'data-part': a.part } : {}), class: `swml-section-block swml-section-${a.sectionType}${isRO ? ' swml-section-readonly' : ''}` }, 0];
+            },
         });
 
         // Load saved content or template

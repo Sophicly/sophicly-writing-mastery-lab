@@ -3652,6 +3652,65 @@ TEMPLATE;
         // piggybacks it into the canvas-save payload. Same shape and route as
         // the v7.17.73 MSQ marker. Without this marker, the dashboard sees the
         // assessment as "started but never scored".
+        // v7.18.20: Vocabulary override — this is an ASSESSMENT, not a quiz.
+        // Protocol prose was inherited from mark-scheme-quiz files and uses
+        // "quiz" lexicon throughout the greeting and per-question framing.
+        // Pedagogically the framing matters: students prepare differently for
+        // an assessment versus a quiz.
+        if ($task === 'mark_scheme') {
+            $block .= "\n### LEXICON — \"ASSESSMENT\", NOT \"QUIZ\" (CRITICAL)\n";
+            $block .= "This is the Mark Scheme Self-ASSESSMENT. In every message you send (greeting, per-question framing, Step 12 results delivery, action plan):\n";
+            $block .= "- Use \"assessment\" / \"this assessment\" / \"the assessment\". DO NOT use \"quiz\" or \"this quiz\".\n";
+            $block .= "- Use \"questions\" not \"quiz items\".\n";
+            $block .= "- Use \"results\" not \"quiz results\".\n";
+            $block .= "If protocol source text says \"quiz\", silently substitute \"assessment\" before emitting. The student-facing copy must consistently signal that this is a measured diagnostic, not a casual quiz.\n";
+        }
+
+        // v7.18.20: Distractor Analysis — neutral phrasing only. The default
+        // protocol prose asks "Why might someone INCORRECTLY choose A?", which
+        // leaks the correct answer mid-assessment. Symmetric phrasing is
+        // pedagogically equivalent and preserves the diagnostic value.
+        if ($task === 'mark_scheme') {
+            $block .= "\n### DISTRACTOR ANALYSIS — NEUTRAL PHRASING (CRITICAL)\n";
+            $block .= "Distractor Analysis runs after each MCQ question. The framing must NOT reveal which answer was correct. Use SYMMETRIC, NEUTRAL phrasing that treats every option as a candidate worth interrogating:\n";
+            $block .= "- DO NOT say \"Why might someone INCORRECTLY choose A?\" / \"What makes A WRONG?\" / \"What makes it tempting but WRONG?\".\n";
+            $block .= "- DO say \"What might draw a student to option A?\" / \"What makes A and B each tempting? Which one is sharper, and why?\" / \"Why might a student pick A here? Why might a different student pick B?\".\n";
+            $block .= "Frame the distractor probe as exploration of the OPTIONS, not as confirmation of the student's right/wrong status. Wait until Step 12 (Results & Grade) to reveal scoring.\n";
+        }
+
+        // v7.18.20: Continue-prompt mandate. Every question (closed MCQ, open,
+        // matching, fill-in-blank) must end with an explicit continuation cue
+        // so the v7.18.18 \"Ready for Question N?\" quick-action detector
+        // surfaces a button. Without this students get stuck typing \"yes\".
+        if ($task === 'mark_scheme') {
+            $block .= "\n### CONTINUE-PROMPT MANDATE (CRITICAL)\n";
+            $block .= "Every per-question feedback / distractor message must END with an explicit continuation cue, regardless of question type:\n";
+            $block .= "- After Q1 feedback: \"Ready for Question 2?\"\n";
+            $block .= "- After Q2 feedback: \"Ready for Question 3?\"\n";
+            $block .= "- ... and so on through Q9. After Q10: \"Ready for the results?\".\n";
+            $block .= "The exact phrase \"Ready for Question N?\" or \"Ready for the results?\" surfaces a Yes / Hold-on quick-action button so the student can click instead of typing. Place this cue on its own line at the end of the message. Do NOT place it before the distractor prompt; it always comes LAST.\n";
+        }
+
+        // v7.18.20: No over-coaching on open questions. CLAUDE.md is explicit:
+        // this is an assessment, not a coaching session. Default protocol
+        // prose drifts into probing follow-ups (\"What makes you say that?\",
+        // \"Let's see if the options sharpen that up\") — break that habit.
+        if ($task === 'mark_scheme') {
+            $block .= "\n### NO OVER-COACHING — ACK + ANSWER + ONE EXPLANATION (CRITICAL)\n";
+            $block .= "After every question's response (closed or open), the feedback message has THIS shape only:\n";
+            $block .= "1. Brief acknowledgement of the student's answer (one sentence).\n";
+            $block .= "2. Statement of the correct answer (or, for open questions where there is no single answer, the model answer).\n";
+            $block .= "3. ONE short explanation of why the correct answer is correct (one paragraph, max ~3 sentences).\n";
+            $block .= "4. (Optional) The Distractor Analysis block per the existing rules — ONE clarifying open question is allowed for the student to type a one-sentence reflection. NO follow-up to that reflection.\n";
+            $block .= "5. The continue-prompt cue per the rule above.\n";
+            $block .= "Specifically banned:\n";
+            $block .= "- Probing follow-ups like \"What makes you say that?\", \"Tell me more about why you think that\", \"Let's see if the options sharpen that up\".\n";
+            $block .= "- Multi-paragraph explanations or coaching scaffolds.\n";
+            $block .= "- Encouragement / validation prefixes like \"Good starting instinct — \", \"Solid reader-focused answer\", \"You've picked up on \". Land the assessment-feedback shape directly.\n";
+            $block .= "- Any second open question after the student has typed their reflection. Acknowledge briefly, deliver the model answer, move on.\n";
+            $block .= "This is an ASSESSMENT. The student is being measured, not coached. Save coaching tone for Step 13 (Feedback) and Step 14 (Action Plan), where it belongs.\n";
+        }
+
         if ($task === 'mark_scheme') {
             $block .= "\n### SCORE PERSISTENCE — EMIT [QUIZ_COMPLETE] AT STEP 12 (CRITICAL)\n";
             $block .= "On the message that opens Step 12 (Results & Grade) — i.e. the message that ALSO carries `[STEP_ADVANCE:12]` — append the score-persistence marker:\n";
