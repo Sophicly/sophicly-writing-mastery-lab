@@ -74,6 +74,15 @@
         if (embedConfig.topic)   state.topicNumber = embedConfig.topic;
         // v7.17.15: bridge-provided step (mark_scheme_unit Quiz=1, FYW=2)
         if (embedConfig.step)    state.step    = embedConfig.step;
+        // v7.18.21: capture original bridge step into state.bridgeStep for
+        // mark_scheme_unit specifically. state.step itself gets mutated by the
+        // v7.18.12 quiz-step tracker during the session and can no longer be
+        // relied on for chat-storage keying. state.bridgeStep stays pinned to
+        // the bridge dispatch (1=Quiz, 2=FYW) and is what disambiguates the
+        // two sub-tasks' chat histories without breaking the shared canvas doc.
+        if (embedConfig.step && embedConfig.task === 'mark_scheme_unit') {
+            state.bridgeStep = embedConfig.step;
+        }
         if (embedConfig.phase) {
             state.phase = embedConfig.phase;
             state.isRedraft = embedConfig.phase === 'redraft';

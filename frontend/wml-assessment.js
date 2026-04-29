@@ -1256,8 +1256,21 @@
             ? `__p${state.cwProjectId}` : '';
         return `swml_canvas_${state.board}_${state.text}_${state.topicNumber || 'free'}${suffix}${att}${cwP}`;
     };
+    // v7.18.21: Chat storage suffix helper. Wraps WML.resolveStorageSuffix and
+    // appends a bridge-step disambiguator for mark_scheme_unit so Quiz (step=1)
+    // and Forging Your Weapon (step=2) keep separate chat histories despite
+    // sharing the canvas doc per attempt. Server-side chat_meta_key keys by
+    // the `suffix` param verbatim, so this client-side change automatically
+    // produces separate server meta_keys with no schema change.
+    const _chatStorageSuffix = () => {
+        let suffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
+        if (state.task === 'mark_scheme_unit' && state.bridgeStep) {
+            suffix = suffix + '_s' + state.bridgeStep;
+        }
+        return suffix;
+    };
     const CHAT_SAVE_KEY = () => {
-        const suffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
+        const suffix = _chatStorageSuffix();
         const att = (state.attempt || 1) > 1 ? `__a${state.attempt}` : '';
         // v7.17.38: CW projects are independent writing works, NOT attempts.
         // Without project-scoping, switching projects shows prior project's chat.
@@ -1305,7 +1318,7 @@
         clearTimeout(chatSaveTimer);
         // v7.17.39: stash the body so beforeunload can sendBeacon if the tab closes
         // before the 8s timer fires (Writer Profile text-loss parity for chat).
-        _pendingChatSaveBody = Object.assign({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.resolveStorageSuffix(state.task, state.phase) || '', attempt: state.attempt || 1, history, chatId }, cwScopeBody());
+        _pendingChatSaveBody = Object.assign({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: _chatStorageSuffix(), attempt: state.attempt || 1, history, chatId }, cwScopeBody());
         chatSaveTimer = setTimeout(() => {
             const body = _pendingChatSaveBody;
             _pendingChatSaveBody = null;
@@ -5610,7 +5623,7 @@
                 // skip so CW also rehydrates chat from server on fresh device / cleared localStorage.
                 if (!savedChat || !savedChat.history || savedChat.history.length === 0) {
                     try {
-                        const _chatSuffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
+                        const _chatSuffix = _chatStorageSuffix();
                         // Tutor review: load student's chat via review endpoint (v7.15.2)
                         const _chatAtt = state.attempt || 1;
                         const chatUrl = state.reviewMode && state.reviewStudentId
@@ -5673,6 +5686,26 @@
 
                 // Unified assessment state initialiser
                 async function initAssessmentState() {
+                    // v7.18.21: Universal step-marker restore. Scan saved chat for
+                    // [STEP_ADVANCE:N] / [PROGRESS:N] markers BEFORE the task-gated
+                    // assessment logic. Restores the sidebar progress bar on refresh
+                    // for any task that emits step markers (mark_scheme + future).
+                    if (tp.canvasChatHistory && tp.canvasChatHistory.length > 0) {
+                        let markerStep = 1;
+                        tp.canvasChatHistory.forEach(m => {
+                            if (m.role !== 'assistant' || !m.content) return;
+                            const matches = m.content.matchAll(/\[(?:STEP_ADVANCE|PROGRESS):\s*(\d+)\]/gi);
+                            for (const mm of matches) {
+                                const n = parseInt(mm[1], 10);
+                                if (n > markerStep) markerStep = n;
+                            }
+                        });
+                        if (markerStep > (state.step || 0)) {
+                            console.log('WML v7.18.21: restored sidebar step from chat markers → step', markerStep, 'task=' + state.task);
+                            updateProgress(markerStep);
+                        }
+                    }
+
                     if (state.task !== 'assessment' && state.task !== 'redraft_assessment' && !isCwSi && !isExamPrep) return;
                     const allAiMsgs = tp.canvasChatHistory.filter(m => m.role === 'assistant');
                     let maxStep = allAiMsgs.length > 0 ? 1 : 0;
@@ -7557,7 +7590,7 @@
                                         // v7.17.39: CW chat is now project-scoped server-side — drop the pre-v7.17.39 skip
                                         if (!savedChat || !savedChat.history || savedChat.history.length === 0) {
                                             try {
-                                                const _chatSuffix = WML.resolveStorageSuffix(state.task, state.phase) || '';
+                                                const _chatSuffix = _chatStorageSuffix();
                                                 const _chatAtt2 = state.attempt || 1;
                                                 // Tutor review: load student's chat via review endpoint (v7.15.2)
                                                 const chatUrl = state.reviewMode && state.reviewStudentId
@@ -7607,6 +7640,26 @@
                                         // Scans canvasChatHistory for sidebar progress + Session Complete,
                                         // checks phase status, shows Mark Complete if appropriate.
                                         async function initAssessmentState() {
+                                            // v7.18.21: Universal step-marker restore. Scan saved chat for
+                                            // [STEP_ADVANCE:N] / [PROGRESS:N] markers BEFORE the task-gated
+                                            // assessment logic. Restores the sidebar progress bar on refresh
+                                            // for any task that emits step markers (mark_scheme + future).
+                                            if (canvasChatHistory && canvasChatHistory.length > 0) {
+                                                let markerStep = 1;
+                                                canvasChatHistory.forEach(m => {
+                                                    if (m.role !== 'assistant' || !m.content) return;
+                                                    const matches = m.content.matchAll(/\[(?:STEP_ADVANCE|PROGRESS):\s*(\d+)\]/gi);
+                                                    for (const mm of matches) {
+                                                        const n = parseInt(mm[1], 10);
+                                                        if (n > markerStep) markerStep = n;
+                                                    }
+                                                });
+                                                if (markerStep > (state.step || 0)) {
+                                                    console.log('WML v7.18.21: restored sidebar step from chat markers → step', markerStep, 'task=' + state.task);
+                                                    updateProgress(markerStep);
+                                                }
+                                            }
+
                                             if (state.task !== 'assessment' && state.task !== 'redraft_assessment' && !isCwSi && !isExamPrep) return;
                                             // 1. Scan ALL chat messages for sidebar step keywords
                                             const allAiMsgs = canvasChatHistory.filter(m => m.role === 'assistant');
