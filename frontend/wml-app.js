@@ -7120,6 +7120,14 @@ Before marking the introduction, ask the student to confirm their essay structur
             // v7.17.20: SPA re-init must pipe cfg.step (multi-step tasks like
             // mark_scheme_unit). Otherwise state.step leaks across lessons.
             state.step        = cfg.step    || 0;
+            // v7.18.22: same for state.bridgeStep — captured at boot in line 83+
+            // for mark_scheme_unit but the SPA re-init path was missing the
+            // mirror. Without this, navigating Quiz (step=1) → FYW (step=2) via
+            // SPA kept state.bridgeStep stale at 1 → both lessons wrote to the
+            // same _msu_s1 chat key → cross-contamination remained on staging.
+            // Clear unconditionally; re-set if mark_scheme_unit so lessons that
+            // are NOT mark_scheme_unit don't carry a stale value.
+            state.bridgeStep = (cfg.task === 'mark_scheme_unit' && cfg.step) ? cfg.step : 0;
             // v7.17.20: preserve all bridge-supplied phase values
             // ('preliminary', 'exam_practice', etc.) — previous code coerced
             // anything non-'redraft'/'initial' to null, clobbering
