@@ -1515,7 +1515,11 @@
             // Steps — manifest-driven. v7.18.17: render via shared helper that
             // honours `group` field for accordion grouping (used by mark_scheme).
             const protoSteps = el('div', { id: 'swml-progress-steps' });
-            const assessSteps = canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
+            // v7.18.24: mark_scheme_unit also routes to getSteps() so Quiz
+            // (bridgeStep=1, 7 steps) and FYW (bridgeStep=2, 5 steps) render
+            // their own sidebar arrays. Without this gate the fallback ran and
+            // both lessons showed the default 8-step ASSESSMENT layout.
+            const assessSteps = canvasSidebarSteps || ((isExamPrep || state.task === 'mark_scheme_unit') ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
                 { step: 1, label: 'Setup & Details' },
                 { step: 2, label: 'Goal Setting' },
                 { step: 3, label: 'Self-Reflection' },
