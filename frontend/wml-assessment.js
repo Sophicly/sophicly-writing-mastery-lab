@@ -2423,14 +2423,21 @@
                     // Branch on task: MSQ → cache + canvas-save piggyback (existing v7.17.73 path);
                     // FQ → POST /foundational-quiz/result directly (no canvas to piggyback).
                     const _quizMatch = res.reply.match(/\[QUIZ_COMPLETE:score=(\d+(?:\.\d+)?),total=(\d+),percentage=(\d+),grade=(\d+)(?:,categories=([^\]]*))?\]/i);
-                    if (_quizMatch && state.task === 'mark_scheme_unit' && state.step === 1) {
+                    // v7.18.19: extractor now also accepts mark_scheme (Final Assessment),
+                    // not just mark_scheme_unit step=1 (MSQ). Same payload shape; same
+                    // canvas-save piggyback path; backend listener writes score_raw to
+                    // wp_sophicly_session_records for both tasks.
+                    if (_quizMatch && (
+                            (state.task === 'mark_scheme_unit' && state.step === 1) ||
+                            state.task === 'mark_scheme'
+                        )) {
                         state.lastQuizScore = {
                             score: parseFloat(_quizMatch[1]),
                             total: parseInt(_quizMatch[2], 10),
                             percentage: parseInt(_quizMatch[3], 10),
                             grade: parseInt(_quizMatch[4], 10),
                         };
-                        console.log('WML v7.17.73: MSQ score extracted', state.lastQuizScore);
+                        console.log('WML v7.18.19: ' + state.task + ' score extracted', state.lastQuizScore);
                         if (typeof saveCanvasContent === 'function') saveCanvasContent();
                     } else if (_quizMatch && state.task === 'foundational_quiz') {
                         // v7.18.11: FQ path. POST directly to /foundational-quiz/result —
@@ -15764,10 +15771,11 @@
                 ? window.location.href
                 : _buildWmlDeepLink({ board: snap.board, text: snap.text, topic: snap.topicNumber, task: snap.task }),
             cw_project_id: snap.cwProjectId,
-            // v7.17.73: Mark Scheme Quiz score piggyback (Option α). Spread-only-when-set
-            // keeps every other autosave (planning, FYW step 2, CW typing, essay assessment)
-            // untouched. Gate matches the extraction site in sendCanvasMessage.
-            ...(snap.task === 'mark_scheme_unit' && state.step === 1 && state.lastQuizScore ? {
+            // v7.17.73 / v7.18.19: Score piggyback. Spread-only-when-set keeps every
+            // other autosave untouched (planning / FYW / CW / essay assessment).
+            // Gate matches the extraction site in sendCanvasMessage. Now covers
+            // both mark_scheme_unit (Quiz, step=1) AND mark_scheme (Final Assessment).
+            ...(((snap.task === 'mark_scheme_unit' && state.step === 1) || snap.task === 'mark_scheme') && state.lastQuizScore ? {
                 score_raw:        state.lastQuizScore.score,
                 score_max:        state.lastQuizScore.total,
                 score_percentage: state.lastQuizScore.percentage,

@@ -2160,7 +2160,10 @@ window.WML = (function() {
     // mounts of the same task slugs (topicNumber falsy / out of range) keep
     // the attempts UI.
     // v7.17.16: mark_scheme_unit also suppressed — pre-topic standalone drill, completes once.
-    const TOPIC_FLOW_TASKS = ['diagnostic', 'assessment', 'planning', 'outlining', 'polishing', 'mark_scheme_unit', ''];
+    // v7.18.19: mark_scheme (Final Assessment) also suppressed — no formal attempt
+    // system; one assessment per unit, free-form re-attempt via clear-chat is fine
+    // but no counter / overlay should render.
+    const TOPIC_FLOW_TASKS = ['diagnostic', 'assessment', 'planning', 'outlining', 'polishing', 'mark_scheme_unit', 'mark_scheme', ''];
     const GUIDED_PHASES    = ['initial', 'redraft', 'preliminary'];
     function isTopicFlow() {
         const n = Number(window.WML?.state?.topicNumber ?? 0);
@@ -2171,6 +2174,9 @@ window.WML = (function() {
         // single completion, tutor re-assigns for redo. phase may not be
         // 'preliminary' if bridge wml_phase isn't populated, so don't depend on it.
         if (t === 'mark_scheme_unit') return true;
+        // v7.18.19: mark_scheme suppression mirrors mark_scheme_unit — no
+        // formal attempt counter for the Final Assessment task.
+        if (t === 'mark_scheme') return true;
         // v7.17.12: belt-and-braces — treat a guided phase as the fallback signal
         // for topic-flow identity when the bridge failed to populate topicNumber
         // (e.g. missing wml_topic mapping). Keeps attempt-UX suppression correct

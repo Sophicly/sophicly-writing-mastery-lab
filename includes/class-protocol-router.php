@@ -3646,6 +3646,25 @@ TEMPLATE;
             $block .= "Continue tracking scores INTERNALLY (you'll need them for the Step 12 breakdown), but display nothing. The student answers each question without knowing whether they are tracking high or low — that is what makes this an assessment rather than a coaching exercise. The scoring breakdown at Step 12 is the FIRST time the student sees any score figures.\n";
         }
 
+        // v7.18.19: Score-persistence marker emission for mark_scheme. The DB row
+        // is created on every canvas save; the score columns stay NULL until
+        // Sophia emits the [QUIZ_COMPLETE:...] marker at Step 12 and the frontend
+        // piggybacks it into the canvas-save payload. Same shape and route as
+        // the v7.17.73 MSQ marker. Without this marker, the dashboard sees the
+        // assessment as "started but never scored".
+        if ($task === 'mark_scheme') {
+            $block .= "\n### SCORE PERSISTENCE — EMIT [QUIZ_COMPLETE] AT STEP 12 (CRITICAL)\n";
+            $block .= "On the message that opens Step 12 (Results & Grade) — i.e. the message that ALSO carries `[STEP_ADVANCE:12]` — append the score-persistence marker:\n";
+            $block .= "  `[QUIZ_COMPLETE:score=N,total=20,percentage=M,grade=G]`\n";
+            $block .= "Where:\n";
+            $block .= "- N = the student's weighted raw score (the `Weighted Score (out of 20)` figure you compute in Step 12). Decimals allowed (e.g. 14.5).\n";
+            $block .= "- total = always 20 (the weighted-score denominator from the protocol).\n";
+            $block .= "- M = the percentage (integer, 0-100), computed from N / 20 × 100.\n";
+            $block .= "- G = the GCSE grade equivalent (integer 1-9), per the grade boundaries in the protocol.\n";
+            $block .= "Emit the marker EXACTLY ONCE per assessment, on the Step 12 opening message only. Do not emit on Step 11, Step 13, Step 14, or any subsequent reflection / clarification message. The marker is INVISIBLE to the student — it is stripped before display and only used to write the score to the database.\n";
+            $block .= "If you cannot compute one of the fields confidently (e.g. grade ambiguous), still emit the marker with your best estimate — the row is overwriteable on next save, and a partial row is more useful to the dashboard than no row.\n";
+        }
+
         // v7.17.77: Quiz answer-handling guard. Audit finding 2026-04-27: Sophia
         // sometimes received a single-letter answer (A/B/C/D) and re-emitted the
         // question + options instead of giving feedback. Forces direct feedback.
