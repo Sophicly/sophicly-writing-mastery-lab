@@ -3577,23 +3577,35 @@ TEMPLATE;
         // corrupted (2/10 instead of 0/10). Phase 2.C of every quiz protocol
         // already specifies one-attempt-only marking, but the AI's supportive-teacher
         // instinct overrides it without an explicit anti-retry directive.
-        // v7.17.63 / v7.18.26: anti-retry guard for diagnostic quizzes. v7.18.26
-        // strips the "explain the correct answer" phrase — Neil's feedback was
-        // that revealing the correct answer mid-assessment tempts students to
-        // restart. New shape: mark wrong as `Feedback — ✗ Not quite.` (no
-        // letter / no truth value), then route into Distractor Analysis (which
-        // probes the OPTIONS neutrally per the v7.18.20 distractor directive).
-        // Correct-answer reveal happens at Results step only.
+        // v7.17.63: anti-retry guard for both mark_scheme + mark_scheme_unit
+        // diagnostic quizzes. Per-Q correct-answer reveal + running score is
+        // fine for mark_scheme_unit (coaching-tool-shaped Quiz) — only the
+        // mark_scheme Final Assessment suppresses both per the v7.18.26
+        // directive below.
         if ($task === 'mark_scheme' || $task === 'mark_scheme_unit') {
-            $block .= "\n### MARK SCHEME — NO HINTS, NO RETRY, NO ANSWER REVEAL (CRITICAL)\n";
-            $block .= "You are running a diagnostic assessment. Each question has ONE attempt only and the student must NOT learn whether they got it right or wrong until the Results step.\n";
-            $block .= "- When the student answers wrong, mark internally as 0/2 and emit ONLY \"Feedback — ✗ Not quite.\" (no letter, no truth value, no \"the correct answer is X\").\n";
-            $block .= "- When the student answers correctly, mark internally and emit ONLY \"Feedback — ✓ Recorded.\" (no \"correct\", no praise, symmetric with the wrong-answer feedback).\n";
+            $block .= "\n### MARK SCHEME QUIZ — NO HINTS, NO RETRY (CRITICAL)\n";
+            $block .= "You are running a diagnostic quiz. Each question has ONE attempt only.\n";
+            $block .= "- When the student answers wrong, mark it 0/2 IMMEDIATELY using \"Feedback — ✗ Not quite. (0/2 marks)\" + explain the correct answer + show running score + ready check.\n";
             $block .= "- DO NOT offer a hint, clue, scaffold, leading question, or \"have another think\".\n";
             $block .= "- DO NOT allow the student to re-answer the same question.\n";
             $block .= "- DO NOT soften the wrong answer with phrases like \"good instinct\" before marking.\n";
+            $block .= "The student answered. The answer was wrong. Award 0/2. Explain the correct answer. Move on. Hints and retry loops corrupt the score and break the diagnostic value of the quiz.\n";
+        }
+
+        // v7.18.26 / v7.18.27: NO ANSWER REVEAL — gated to mark_scheme task ONLY
+        // (the Final Assessment). mark_scheme_unit Quiz keeps its coaching-style
+        // per-Q correct-answer reveal + running score because that's the right
+        // shape for that task. The Final Assessment is a measured diagnostic
+        // where students must NOT learn whether they were right until the
+        // Results step (otherwise temptation to restart corrupts the score).
+        if ($task === 'mark_scheme') {
+            $block .= "\n### NO ANSWER REVEAL — MARK INTERNALLY, REVEAL AT RESULTS (CRITICAL)\n";
+            $block .= "Per-question feedback in the Mark Scheme Final Assessment must NOT tell the student whether they were right or wrong:\n";
+            $block .= "- When the student answers wrong, mark internally as 0/2 and emit ONLY \"Feedback — ✗ Not quite.\" (no letter, no truth value, no \"the correct answer is X\").\n";
+            $block .= "- When the student answers correctly, mark internally and emit ONLY \"Feedback — ✓ Recorded.\" (no \"correct\", no praise, symmetric with the wrong-answer feedback).\n";
             $block .= "- DO NOT reveal the correct answer in any per-question feedback message. The Distractor Analysis block that follows must probe the OPTIONS neutrally (per the v7.18.20 distractor directive) — it MUST NOT name the right answer.\n";
-            $block .= "The student answered. Mark internally. Emit symmetric feedback. Route to Distractor Analysis (neutral). Move on. Score reveal + correct-answer reveal happen ONLY at the Results step at the end of the assessment.\n";
+            $block .= "Mark internally. Emit symmetric feedback. Route to Distractor Analysis (neutral). Move on. The full breakdown including correct answers + score is revealed ONLY at the Results step at the end of the assessment.\n";
+            $block .= "This OVERRIDES the v7.17.63 anti-retry directive's \"explain the correct answer\" instruction for the mark_scheme task. The anti-retry rules (one attempt only, no hints, no soften) still apply.\n";
         }
 
         // v7.18.16: Sidebar step marker emission for Mark Scheme Self-Assessment
@@ -3640,13 +3652,11 @@ TEMPLATE;
             $block .= "Do NOT repeat a marker once it has fired. Do NOT emit a marker for a step the student has not yet reached. Do NOT emit the marker on any feedback / clarification message between question displays — only on the message that OPENS a new step.\n";
         }
 
-        // v7.18.18 / v7.18.26: This is an ASSESSMENT. Student must NOT see
-        // per-question score during the session — full breakdown revealed only
-        // at the Results step. v7.18.26 EXTENDS to mark_scheme_unit per Neil's
-        // 2026-04-29 reframe ("It's meant to be an assessment where they find
-        // out their score at the end"). MSQ + FYW now match mark_scheme
-        // behavior: no running score mid-assessment.
-        if ($task === 'mark_scheme' || $task === 'mark_scheme_unit') {
+        // v7.18.18 / v7.18.27: NO RUNNING SCORE for mark_scheme Final Assessment
+        // ONLY. mark_scheme_unit Quiz keeps its running score (per Neil's earlier
+        // directive: "for quizzes, students CAN see their running score"). The
+        // v7.18.26 over-broad gate has been narrowed back to mark_scheme.
+        if ($task === 'mark_scheme') {
             $block .= "\n### NO RUNNING SCORE — REVEAL AT END ONLY (CRITICAL)\n";
             $block .= "This is the Mark Scheme Self-ASSESSMENT, not a quiz. Students must NOT see their score during the session. The complete breakdown is delivered only at Step 12 (Results & Grade) after Q10.\n";
             $block .= "After each question's feedback line:\n";
@@ -3722,18 +3732,17 @@ TEMPLATE;
             $block .= "Place the cue on its own line at the end of the message.\n";
         }
 
-        // v7.18.20 / v7.18.26: No over-coaching. CLAUDE.md is explicit: this is
-        // an assessment, not a coaching session. Default protocol prose drifts
-        // into probing follow-ups — break that habit.
-        // v7.18.26: critical change — feedback shape NO LONGER includes "Statement
-        // of the correct answer" (that violates the v7.18.26 NO ANSWER REVEAL
-        // directive above). Symmetric "Recorded" / "Not quite" + neutral
-        // distractor probe + continue cue. Correct-answer reveal happens at
-        // Results step. Also extends to mark_scheme_unit (MSQ + FYW).
-        if ($task === 'mark_scheme' || $task === 'mark_scheme_unit') {
+        // v7.18.20 / v7.18.27: No over-coaching for the Final Assessment.
+        // CLAUDE.md is explicit: this is an assessment, not a coaching session.
+        // Default protocol prose drifts into probing follow-ups — break that
+        // habit. v7.18.27 narrowed back to mark_scheme task only — Quiz
+        // (mark_scheme_unit) keeps its coaching-style per-Q feedback.
+        // v7.18.26's "no correct-answer in feedback shape" change preserved
+        // here and combined with the v7.18.26 NO ANSWER REVEAL directive.
+        if ($task === 'mark_scheme') {
             $block .= "\n### NO OVER-COACHING — SYMMETRIC ACK + DISTRACTOR + CONTINUE (CRITICAL)\n";
             $block .= "After every question's response (closed or open), the feedback message has THIS shape only:\n";
-            $block .= "1. Brief acknowledgement using the symmetric \"Recorded\" / \"Not quite\" feedback shape from the rule above. NO letter, NO truth value, NO correct answer named, NO running score.\n";
+            $block .= "1. Brief acknowledgement using the symmetric \"Recorded\" / \"Not quite\" feedback shape from the NO ANSWER REVEAL rule above. NO letter, NO truth value, NO correct answer named, NO running score.\n";
             $block .= "2. (Optional) ONE short framing sentence about the criterion the question tests — DO NOT name the right answer here either.\n";
             $block .= "3. (Optional) The Distractor Analysis block per the existing neutral-phrasing rules — ONE clarifying open question is allowed for the student to type a one-sentence reflection. NO follow-up to that reflection.\n";
             $block .= "4. The continue-prompt cue per the rule above.\n";
