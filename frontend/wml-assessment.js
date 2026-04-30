@@ -1037,7 +1037,11 @@
     // nodes matching data-item-id prefix "<qId>-stmt-<n>" with the statement
     // at position n-1 in the statements array. Safe no-op if editor missing,
     // no matches, or statement shorter than placeholders.
-    function _populateChecklist(editor, qId, statements) {
+    // v7.18.33: also writes `correct` attr per item from the answerKey array
+    // so Sophia receives the ground-truth key back at score time without
+    // depending on chat-history memory. answerKey is optional — null entries
+    // leave existing attr untouched.
+    function _populateChecklist(editor, qId, statements, answerKey) {
         if (!editor || !editor.state || !Array.isArray(statements)) return;
         const prefixLc = String(qId || '').toLowerCase() + '-stmt-';
         const matches = [];
@@ -1052,6 +1056,9 @@
         });
         if (matches.length === 0) return;
         matches.sort((a, b) => b.pos - a.pos);
+        // v7.18.33: compute current Source A hash once per populate call so
+        // every item written here gets stamped with the same hash.
+        const currentSourceHash = _hashString(_readSourceAText(editor));
         let tr = editor.state.tr;
         matches.forEach((m) => {
             const t = statements[m.n - 1];
@@ -1059,6 +1066,12 @@
             const from = m.pos + 1;
             const to = m.pos + m.node.nodeSize - 1;
             tr = tr.replaceWith(from, to, editor.schema.text(t));
+            // v7.18.33: stamp the answer-key bool + source hash onto the node attrs.
+            const newAttrs = { ...m.node.attrs, sourceHash: currentSourceHash };
+            if (Array.isArray(answerKey) && typeof answerKey[m.n - 1] === 'boolean') {
+                newAttrs.correct = answerKey[m.n - 1];
+            }
+            tr = tr.setNodeMarkup(m.pos, undefined, newAttrs);
         });
         if (tr.docChanged) {
             editor.view.dispatch(tr);
@@ -1080,6 +1093,7 @@
         if (!editor || !editor.state) return [];
         const buckets = {};
         const ticked = {};
+        const answerKey = {};
         editor.state.doc.descendants((node) => {
             if (node.type && node.type.name === 'checklistItem') {
                 const itemId = String(node.attrs && node.attrs.itemId || '');
@@ -1094,17 +1108,27 @@
                     if (!ticked[qId]) ticked[qId] = new Set();
                     ticked[qId].add(n);
                 }
+                // v7.18.33: read ground-truth `correct` attr if present.
+                if (node.attrs && (node.attrs.correct === true || node.attrs.correct === false)) {
+                    if (!answerKey[qId]) answerKey[qId] = {};
+                    answerKey[qId][n] = node.attrs.correct;
+                }
             }
         });
         return Object.keys(buckets).map((qId) => ({
             qId: qId,
             statements: buckets[qId],
             ticked: ticked[qId] ? Array.from(ticked[qId]).sort((a, b) => a - b) : [],
+            answerKey: answerKey[qId] || null,
         }));
     }
 
     // Format a pre-parsed tick summary block for Sophia's prompt context.
     // Returns empty string if no checklistItems on canvas.
+    // v7.18.33: also emits an internal-only ANSWER KEY block when canvas has
+    // ground-truth `correct` attrs persisted on items. Sophia uses the key for
+    // scoring; the protocol module also instructs her never to reveal it
+    // verbatim to the student.
     function _formatChecklistSummary(editor) {
         const items = _readChecklistTicks(editor);
         if (items.length === 0) return '';
@@ -1119,9 +1143,94 @@
                 const isChecked = it.ticked.indexOf(n) !== -1;
                 lines.push('  ' + n + '. ' + (isChecked ? '[✓]' : '[ ]') + ' ' + it.statements[n]);
             });
+            // v7.18.33: append authoritative answer key when persisted on canvas.
+            if (it.answerKey && Object.keys(it.answerKey).length > 0) {
+                lines.push('');
+                lines.push('[ANSWER KEY — INTERNAL ONLY, DO NOT QUOTE TO STUDENT — ' + it.qId + ']');
+                lines.push('This is the ground-truth key from when the statements were generated.');
+                lines.push('Use it verbatim to mark ticks. Do not infer your own ground truth.');
+                keys.forEach((n) => {
+                    const v = it.answerKey[n];
+                    const label = (v === true) ? 'TRUE' : (v === false ? 'FALSE' : 'UNKNOWN');
+                    lines.push('  ' + n + '. ' + label);
+                });
+            }
             return lines.join('\n');
         });
         return blocks.join('\n\n');
+    }
+
+    // v7.18.33: small DJB2-style string hash. Stable across runs without
+    // pulling in a crypto dep. 32-bit hex output is fine for cache keying.
+    function _hashString(s) {
+        let h = 5381;
+        const str = String(s || '');
+        for (let i = 0; i < str.length; i++) {
+            h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+        }
+        return (h >>> 0).toString(16);
+    }
+
+    // v7.18.33: read the first 'source' sectionBlock's text from the editor.
+    // Used as the canonical Source A for Q1 cache invalidation. Trims and
+    // collapses whitespace so trivial whitespace edits do not invalidate.
+    function _readSourceAText(editor) {
+        if (!editor || !editor.state) return '';
+        let found = '';
+        editor.state.doc.descendants((node) => {
+            if (found) return false;
+            if (node.type && node.type.name === 'sectionBlock' &&
+                node.attrs && node.attrs.sectionType === 'source') {
+                found = String(node.textContent || '').trim().replace(/\s+/g, ' ');
+                return false;
+            }
+        });
+        return found;
+    }
+
+    // v7.18.33: invalidate stale Q1 (or any qId) MSQ cache when:
+    //   (a) items have populated text but no `correct` attr → legacy hallucinations
+    //       from before the answer-key persistence fix, OR
+    //   (b) items have a stored sourceHash that mismatches the current Source A
+    //       hash → the source text changed under a stale Q1.
+    // Invalidation clears text + correct + sourceHash on every matching item,
+    // returning them to the placeholder state so _autoFireChecklistIfStale
+    // re-fires generation with the now-current Source A.
+    function _invalidateStaleChecklistCache(editor) {
+        if (!editor || !editor.state) return;
+        const currentHash = _hashString(_readSourceAText(editor));
+        const matches = [];
+        editor.state.doc.descendants((node, pos) => {
+            if (node.type && node.type.name === 'checklistItem') {
+                const itemId = String(node.attrs && node.attrs.itemId || '');
+                if (!/^[A-Za-z0-9_]+-stmt-\d+$/.test(itemId)) return;
+                const text = String(node.textContent || '').trim();
+                const hasText = text.length > 0 && !/^waiting\s+for\s+statement/i.test(text);
+                const hasCorrect = (node.attrs.correct === true || node.attrs.correct === false);
+                const storedHash = String(node.attrs.sourceHash || '');
+                const isLegacyNoKey = hasText && !hasCorrect;
+                const isHashMismatch = hasText && storedHash && storedHash !== currentHash;
+                if (isLegacyNoKey || isHashMismatch) {
+                    matches.push({ pos: pos, node: node, reason: isLegacyNoKey ? 'legacy-no-key' : 'hash-mismatch' });
+                }
+            }
+        });
+        if (matches.length === 0) return;
+        console.log('[WML MSQ] invalidating stale checklist items:', matches.length, 'reasons:', matches.map(m => m.reason));
+        matches.sort((a, b) => b.pos - a.pos);
+        let tr = editor.state.tr;
+        matches.forEach((m) => {
+            const from = m.pos + 1;
+            const to = m.pos + m.node.nodeSize - 1;
+            // Clear inline content; reset correct + sourceHash attrs.
+            tr = tr.replaceWith(from, to, []);
+            tr = tr.setNodeMarkup(m.pos, undefined, {
+                ...m.node.attrs,
+                correct: null,
+                sourceHash: '',
+            });
+        });
+        if (tr.docChanged) editor.view.dispatch(tr);
     }
 
     // Detect stale/unpopulated MSQ placeholders in the editor doc. Returns
@@ -1155,6 +1264,11 @@
                 return;
             }
             await new Promise((r) => setTimeout(r, 1500));
+            // v7.18.33: clear legacy-no-key items + source-mismatch items BEFORE
+            // the staleQIds scan so they get re-generated against the current
+            // Source A. Without this, prior-session statements (incl. hallucinated
+            // ones) survive forever once any text is written into the placeholders.
+            _invalidateStaleChecklistCache(editor);
             const qIds = _findStaleChecklistQIds(editor);
             if (qIds.length === 0) {
                 console.log('[WML MSQ] auto-fire: no stale placeholders, skipping');
@@ -1219,7 +1333,7 @@
                         continue;
                     }
                     console.log('[WML MSQ] auto-fire: parsed hits', hits);
-                    hits.forEach((h) => _populateChecklist(editor, h.qId, h.statements));
+                    hits.forEach((h) => _populateChecklist(editor, h.qId, h.statements, h.answerKey));
                 } catch (innerErr) {
                     console.warn('[WML MSQ] auto-fire: request failed for', qId, innerErr);
                 }
@@ -1666,7 +1780,7 @@
 
                 // v7.17.32: @POPULATE_CHECKLIST marker → mutate canvas + strip from display.
                 // Helpers live at outer IIFE scope (see top of file).
-                _parseChecklistMarker(text).forEach((hit) => _populateChecklist(canvasEditor, hit.qId, hit.statements));
+                _parseChecklistMarker(text).forEach((hit) => _populateChecklist(canvasEditor, hit.qId, hit.statements, hit.answerKey));
                 text = _stripChecklistMarker(text);
 
                 const body = el('div', { className: 'swml-bubble-body' });
@@ -7054,7 +7168,7 @@
                                 }
                                 content.appendChild(header);
                                 // v7.17.32: @POPULATE_CHECKLIST marker → mutate canvas + strip from display.
-                                _parseChecklistMarker(text).forEach((hit) => _populateChecklist(canvasEditor, hit.qId, hit.statements));
+                                _parseChecklistMarker(text).forEach((hit) => _populateChecklist(canvasEditor, hit.qId, hit.statements, hit.answerKey));
                                 text = _stripChecklistMarker(text);
                                 const body = el('div', { className: 'swml-bubble-body' });
                                 body.innerHTML = text;
@@ -8608,6 +8722,37 @@
                         parseHTML: el => el.getAttribute('data-item-id') || '',
                         renderHTML: attrs => attrs.itemId ? { 'data-item-id': attrs.itemId } : {},
                     },
+                    // v7.18.33: ground-truth answer key per item — true / false / null.
+                    // Written by _populateChecklist when the @POPULATE_CHECKLIST marker
+                    // includes a `k` array. Read at score time by _formatChecklistSummary
+                    // so Sophia receives the authoritative key instead of fabricating one
+                    // from chat-history memory. Persists with canvas save/load.
+                    correct: {
+                        default: null,
+                        parseHTML: el => {
+                            const v = el.getAttribute('data-correct');
+                            if (v === 'true') return true;
+                            if (v === 'false') return false;
+                            return null;
+                        },
+                        renderHTML: attrs => {
+                            if (attrs.correct === true)  return { 'data-correct': 'true' };
+                            if (attrs.correct === false) return { 'data-correct': 'false' };
+                            return {};
+                        },
+                    },
+                    // v7.18.33: hash of the Source A text used when these statements
+                    // were generated. On canvas mount, the auto-fire path compares
+                    // this against the current Source A hash and invalidates the
+                    // populated items (clears text + correct + sourceHash) if they
+                    // diverge. Forces regeneration when the source changes under
+                    // a stale Q1 cache (the bug Neil saw — Ben Fogle statements
+                    // surviving across a paper change).
+                    sourceHash: {
+                        default: '',
+                        parseHTML: el => el.getAttribute('data-source-hash') || '',
+                        renderHTML: attrs => attrs.sourceHash ? { 'data-source-hash': attrs.sourceHash } : {},
+                    },
                 };
             },
 
@@ -8630,6 +8775,12 @@
                     dom.setAttribute('data-checklist-item', 'true');
                     dom.setAttribute('data-checked', node.attrs.checked ? 'true' : 'false');
                     if (node.attrs.itemId) dom.setAttribute('data-item-id', node.attrs.itemId);
+                    // v7.18.33: ground-truth answer key per item; needed for parseHTML
+                    // round-trip on mount so Sophia can read the authoritative key
+                    // back via _formatChecklistSummary at score time.
+                    if (node.attrs.correct === true)  dom.setAttribute('data-correct', 'true');
+                    if (node.attrs.correct === false) dom.setAttribute('data-correct', 'false');
+                    if (node.attrs.sourceHash) dom.setAttribute('data-source-hash', node.attrs.sourceHash);
 
                     const checkbox = document.createElement('span');
                     checkbox.classList.add('swml-checklist-box');

@@ -25,7 +25,7 @@ Execute Phase 1 immediately on activation. Do not route through the Protocol A "
 
 ### Step 1.1 — Greet and check Source A
 
-**[CONDITIONAL]** IF `SESSION_STATE.source_a` is empty OR not present:
+**[CONDITIONAL]** IF `SESSION_STATE.source_a` is empty OR not present AND the canvas document does NOT contain a populated Source A section:
 
 **[SAY]** "Let's tackle Question 1 — **'Choose 4 true statements from 8 about Source A'**. I'll generate the 8 statements from your source text.
 
@@ -35,7 +35,9 @@ First, please paste **Source A** here. If the question specifies particular line
 
 **[AI_INTERNAL]** Store student's pasted text in `SESSION_STATE.source_a`.
 
-**[CONDITIONAL]** ELSE (Source A already stored): PROCEED to Step 1.2.
+**[ABSOLUTE_PROHIBITION]** While waiting for the student to paste Source A, you MUST NOT generate any Q1 statements. NEVER fabricate, invent, or recall statements from training data. The 8 statements MUST be derived ONLY from the Source A text the student supplies (or from a Source A already populated in the canvas document). If you have no source text in front of you, you have no statements to generate. Halt the turn after the prompt above and wait. If somehow you have already produced statements without a verifiable source, retract them and emit `[Q1_BLOCKED: source_required]` instead.
+
+**[CONDITIONAL]** ELSE (Source A already stored OR present in the canvas document — read it from the document's Source section before proceeding): PROCEED to Step 1.2.
 
 ### Step 1.2 — Confirm the line reference
 
@@ -129,7 +131,9 @@ Store the ticked numbers in `SESSION_STATE.q1_ticks`.
 
 ### Step 2.3 — Score
 
-Refer to `SESSION_STATE.q1_answer_key` from Phase 1. If you cannot locate it in your working state, re-read your prior message containing the `@POPULATE_CHECKLIST` marker — the `"k"` array is still there.
+**Authoritative source for the answer key (v7.18.33+):** the frontend now persists the ground-truth key on the canvas itself and re-injects it into your prompt context as a block titled `[ANSWER KEY — INTERNAL ONLY, DO NOT QUOTE TO STUDENT — Q1]` immediately after the `[STUDENT CHECKLIST TICKS — Q1]` block. Use that block verbatim. It contains one line per statement: `1. TRUE`, `2. FALSE`, etc. Do NOT infer your own ground truth — every TRUE / FALSE label in your scoring must match the injected key.
+
+If, and only if, the injected ANSWER KEY block is absent (legacy canvas, frontend pre-v7.18.33), fall back to `SESSION_STATE.q1_answer_key` from Phase 1. If THAT is also unavailable, you MUST refuse to score and emit `[Q1_BLOCKED: key_unavailable]` rather than guess. Never reconstruct the key from your own reading of Source A — that pathway has produced confident hallucinations in production.
 
 Scoring rule (AQA-authentic):
 
@@ -207,3 +211,4 @@ No planning is required for Q1 (correct — planning manifest has no Q1 group). 
 ## Version history
 
 - **v7.17.31** — Created. Q1 moved from "rejected" to a full generate + assess flow. Marker `@POPULATE_CHECKLIST` wired to frontend mutator in wml-assessment.js.
+- **v7.18.33** — Hardened against hallucination. Step 1.1 now carries an `[ABSOLUTE_PROHIBITION]` against generating statements without a verifiable Source A, with a `[Q1_BLOCKED: source_required]` retraction marker. Step 2.3 requires the frontend-injected `[ANSWER KEY — INTERNAL ONLY]` block as the authoritative key (frontend now persists the key per item via TipTap node attrs `correct` + `sourceHash`). Reconstructing the key from a re-reading of Source A is forbidden. Frontend also auto-invalidates Q1 statements when the Source A hash changes under a stale cache, fixing the prior-session-leak bug (Ben Fogle statements surviving a paper change to Death Zone).
