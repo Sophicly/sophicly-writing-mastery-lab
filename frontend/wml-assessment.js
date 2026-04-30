@@ -2613,6 +2613,23 @@
                     console.warn('WML Canvas: Essay too short or empty. getResponseText returned:', essay.substring(0, 100));
                 }
 
+                // v7.18.38 (ported from v7.18.36 \u2014 was applied to the wrong sendCanvasMessage path):
+                // invalidate stale Q1 cache + inject MSQ tick summary + canvas-supplied sources
+                // here in the actual sendCanvasMessage path that the student's chat goes through.
+                _invalidateStaleChecklistCache(canvasEditor);
+                const mcqSummary = _formatChecklistSummary(canvasEditor);
+                if (mcqSummary) {
+                    promptText = mcqSummary + '\n\n---\n\n' + promptText;
+                    console.log('[WML MSQ] tick summary injected:', mcqSummary.slice(0, 200));
+                }
+                if (state.task !== 'planning' && state.task !== 'polishing') {
+                    const sourceText = getSourceText(canvasEditor);
+                    if (sourceText && sourceText.trim().length > 50) {
+                        promptText = `[SOURCES \u2014 supplied via canvas, do NOT ask the student to paste them]\n\n${sourceText}\n\n---\n\n` + promptText;
+                        console.log('[WML Sources] canvas sources injected:', sourceText.length, 'chars');
+                    }
+                }
+
                 const historyToSend = canvasChatHistory.slice(0, -1).slice(-24);
 
                 const response = await fetch(API.chat, {
