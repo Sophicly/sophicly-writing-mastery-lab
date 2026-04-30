@@ -1090,31 +1090,72 @@
     // Used to inject a tick summary into assessment prompts so Sophia can
     // score MSQ without asking the student to re-type numbers.
     function _readChecklistTicks(editor) {
-        if (!editor || !editor.state) return [];
         const buckets = {};
         const ticked = {};
         const answerKey = {};
-        editor.state.doc.descendants((node) => {
-            if (node.type && node.type.name === 'checklistItem') {
-                const itemId = String(node.attrs && node.attrs.itemId || '');
-                const m = itemId.match(/^([A-Za-z0-9_]+)-stmt-(\d+)$/);
-                if (!m) return;
-                const qId = m[1];
-                const n = parseInt(m[2], 10);
-                const text = (node.textContent || '').trim();
-                if (!buckets[qId]) buckets[qId] = {};
-                buckets[qId][n] = text;
-                if (node.attrs && node.attrs.checked) {
-                    if (!ticked[qId]) ticked[qId] = new Set();
-                    ticked[qId].add(n);
+
+        // PRIMARY — ProseMirror state extraction
+        if (editor && editor.state) {
+            editor.state.doc.descendants((node) => {
+                if (node.type && node.type.name === 'checklistItem') {
+                    const itemId = String(node.attrs && node.attrs.itemId || '');
+                    const m = itemId.match(/^([A-Za-z0-9_]+)-stmt-(\d+)$/);
+                    if (!m) return;
+                    const qId = m[1];
+                    const n = parseInt(m[2], 10);
+                    const text = (node.textContent || '').trim();
+                    if (!buckets[qId]) buckets[qId] = {};
+                    buckets[qId][n] = text;
+                    if (node.attrs && node.attrs.checked) {
+                        if (!ticked[qId]) ticked[qId] = new Set();
+                        ticked[qId].add(n);
+                    }
+                    // v7.18.33: read ground-truth `correct` attr if present.
+                    if (node.attrs && (node.attrs.correct === true || node.attrs.correct === false)) {
+                        if (!answerKey[qId]) answerKey[qId] = {};
+                        answerKey[qId][n] = node.attrs.correct;
+                    }
                 }
-                // v7.18.33: read ground-truth `correct` attr if present.
-                if (node.attrs && (node.attrs.correct === true || node.attrs.correct === false)) {
-                    if (!answerKey[qId]) answerKey[qId] = {};
-                    answerKey[qId][n] = node.attrs.correct;
+            });
+        }
+
+        // v7.18.38: DOM fallback — mirrors getResponseText's resilience pattern.
+        // The canvasEditor closure can be null at chat-send time after an
+        // attempt-resume / SPA navigation race (see v7.17.53 notes on
+        // getResponseText). Without a fallback, ticks + answer-key + statement
+        // text never reach the chat payload, and Sophia fabricates answers.
+        // The DOM still has the populated nodeView with data-* attrs intact, so
+        // we can read everything we need.
+        if (Object.keys(buckets).length === 0) {
+            const liveEditorEl = document.getElementById('swml-tiptap-editor')
+                || (editor && editor.options && editor.options.element)
+                || document;
+            if (liveEditorEl) {
+                liveEditorEl.querySelectorAll('[data-checklist-item]').forEach((el) => {
+                    const itemId = el.getAttribute('data-item-id') || '';
+                    const m = itemId.match(/^([A-Za-z0-9_]+)-stmt-(\d+)$/);
+                    if (!m) return;
+                    const qId = m[1];
+                    const n = parseInt(m[2], 10);
+                    const text = (el.textContent || '').trim();
+                    if (!buckets[qId]) buckets[qId] = {};
+                    buckets[qId][n] = text;
+                    if (el.getAttribute('data-checked') === 'true') {
+                        if (!ticked[qId]) ticked[qId] = new Set();
+                        ticked[qId].add(n);
+                    }
+                    const correctAttr = el.getAttribute('data-correct');
+                    if (correctAttr === 'true' || correctAttr === 'false') {
+                        if (!answerKey[qId]) answerKey[qId] = {};
+                        answerKey[qId][n] = (correctAttr === 'true');
+                    }
+                });
+                if (Object.keys(buckets).length > 0) {
+                    console.log('[WML MSQ] _readChecklistTicks: PM-state empty/null, used DOM fallback —', Object.keys(buckets).map(q => q + ':' + Object.keys(buckets[q]).length).join(' '));
                 }
             }
-        });
+        }
+
         return Object.keys(buckets).map((qId) => ({
             qId: qId,
             statements: buckets[qId],
