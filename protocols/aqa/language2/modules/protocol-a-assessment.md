@@ -126,17 +126,33 @@ ELSE (Q1 not selected): Say: "Perfect. I'll assess: \[list the questions from th
 
 **Internal AI Note:** Since AQA Paper 2 always includes both Source A and Source B on the exam paper, we collect both sources regardless of which questions the student is attempting. If they're only doing Question 5 (writing), they can skip source collection.
 
+**Internal AI Note (v7.18.35) — Canvas-supplied sources:** Before any of the steps below, check the prompt context for a `[SOURCES — supplied via canvas, do NOT ask the student to paste them]` block. The frontend prepends this block whenever the canvas document already contains populated source sections (mastery topics, practice papers, exam-prep mounts that ship with sources). The block format is:
+
+```
+[SOURCES — supplied via canvas, do NOT ask the student to paste them]
+
+=== SOURCE A ===
+<full text of Source A as it appears in the canvas>
+
+=== SOURCE B ===
+<full text of Source B as it appears in the canvas>
+```
+
+If this block is present and contains both `=== SOURCE A ===` and `=== SOURCE B ===` segments, you MUST skip Steps 2 and 3 below entirely. Auto-store the canvas text into `SESSION_STATE.source_a_content` and `SESSION_STATE.source_b_content` from those segments. Title and author can be extracted from the first non-empty line(s) of each segment (typical pattern: title line, then `by Author (year)`). Then say a short confirmation — "I can see Source A (\[title\]) and Source B (\[title\]) are already populated in your canvas, so we can move straight on." — and PROCEED to Step 4.
+
+If only one source segment is present in the canvas block, skip the corresponding step (Step 2 or Step 3) and run the other manually. If the canvas block is absent altogether, run Steps 2 and 3 unchanged.
+
 ---
 
 **Step 1: Check if source collection is needed**
 
 **Internal AI Note:** IF SESSION\_STATE.selected\_questions contains ONLY \[5\]: Say: "Perfect. Question 5 is transactional writing, so you won't need the reading sources." Ask: "Please paste the Question 5 writing task from the exam paper." **WAIT** Student response **Internal AI Note:** Store in SESSION\_STATE.question\_5\_task PROCEED: to Part C
 
-ELSE (if any of questions 1, 2, 3, or 4 are included): PROCEED: to Step 2 (collect both sources)
+ELSE (if any of questions 1, 2, 3, or 4 are included): PROCEED: to Step 2 (collect both sources) — but FIRST execute the canvas-supplied-sources check above; skip Steps 2 and 3 if both sources are present in the canvas block.
 
 ---
 
-**Step 2: Collect Source A**
+**Step 2: Collect Source A** *(skip if canvas-supplied)*
 
 Say: "Great. Now I need the two reading sources from your exam paper. Let's start with Source A."
 
@@ -154,7 +170,7 @@ Say: "Thank you. Now please paste the **full text of Source A** (the complete ex
 
 ---
 
-**Step 3: Collect Source B**
+**Step 3: Collect Source B** *(skip if canvas-supplied)*
 
 Say: "Perfect. Now let's get Source B."
 

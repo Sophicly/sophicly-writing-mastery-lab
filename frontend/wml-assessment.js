@@ -7527,6 +7527,21 @@
                                     console.log('[WML MSQ] tick summary injected:', mcqSummary.slice(0, 200));
                                 }
 
+                                // v7.18.35: Prepend source extracts (Source A / Source B / etc.)
+                                // when they are populated in the canvas. getResponseText only
+                                // extracts the student's response sections, so without this block
+                                // Sophia genuinely never sees the sources in the chat payload and
+                                // (per protocol-a-assessment.md Part B Step 2) asks the student
+                                // to paste them. With this block, the protocol's "skip if present"
+                                // branch can recognise the sources and avoid the redundant ask.
+                                if (!canvasInMarkScheme && state.task !== 'planning' && state.task !== 'polishing') {
+                                    const sourceText = getSourceText(canvasEditor);
+                                    if (sourceText && sourceText.trim().length > 50) {
+                                        promptText = `[SOURCES — supplied via canvas, do NOT ask the student to paste them]\n\n${sourceText}\n\n---\n\n` + promptText;
+                                        console.log('[WML Sources] canvas sources injected:', sourceText.length, 'chars');
+                                    }
+                                }
+
                                 // Sliding window: last 24 messages (excluding current)
                                 const historyToSend = canvasChatHistory.slice(0, -1).slice(-24);
 
@@ -13093,6 +13108,66 @@
         // Label neutrally — the AI determines each paragraph's function (intro/body/conclusion)
         const labelled = blocks.map((block, i) => `=== PARAGRAPH ${i + 1} ===\n${block}`);
         return labelled.join('\n\n');
+    }
+
+    // v7.18.35: Extract source extracts (Source A, Source B, etc.) from the canvas.
+    // Mirrors getResponseText's PM-state-then-DOM fallback chain but targets
+    // sectionType === 'source' instead of 'response'. Returns one labelled block
+    // per source section, or '' when no source sections present. Used at chat
+    // payload assembly to make Sophia aware that sources are populated in the
+    // canvas, so she does not have to ask the student to paste them.
+    function getSourceText(editor) {
+        // PRIMARY — ProseMirror state extraction
+        if (editor && typeof editor.getJSON === 'function') {
+            try {
+                const json = editor.getJSON();
+                if (json && typeof json === 'object') {
+                    const sourceTexts = [];
+                    const extractText = (node) => {
+                        if (!node) return '';
+                        if (node.type === 'text') return node.text || '';
+                        if (Array.isArray(node.content)) return node.content.map(extractText).join(' ');
+                        return '';
+                    };
+                    const walk = (node) => {
+                        if (!node) return;
+                        if (node.type === 'sectionBlock') {
+                            const attrs = node.attrs || {};
+                            const type = attrs.sectionType || attrs.type || '';
+                            const label = attrs.sectionLabel || attrs.label || '';
+                            if (type === 'source') {
+                                const text = extractText(node).replace(/\s+/g, ' ').trim();
+                                if (text) sourceTexts.push({ label: label || 'SOURCE', text });
+                            }
+                        }
+                        if (Array.isArray(node.content)) node.content.forEach(walk);
+                    };
+                    walk(json);
+                    if (sourceTexts.length > 0) {
+                        return sourceTexts.map(({ label, text }) =>
+                            `=== ${label.toUpperCase()} ===\n${text}`
+                        ).join('\n\n');
+                    }
+                }
+            } catch (e) {
+                console.warn('WML getSourceText: PM-state extraction threw', (e && e.message) || e);
+            }
+        }
+        // FALLBACK — live DOM, query the source sections by data attribute.
+        const liveEditorEl = document.getElementById('swml-tiptap-editor')
+            || (editor && editor.options && editor.options.element)
+            || null;
+        if (!liveEditorEl) return '';
+        const sourceSections = liveEditorEl.querySelectorAll('[data-section-type="source"]');
+        if (sourceSections.length === 0) return '';
+        const parts = [];
+        sourceSections.forEach((section) => {
+            const text = (section.textContent || '').trim();
+            if (!text) return;
+            const label = (section.getAttribute('data-section-label') || 'SOURCE').toUpperCase();
+            parts.push(`=== ${label} ===\n${text}`);
+        });
+        return parts.join('\n\n');
     }
 
     // v7.15.79: Minimal TipTap JSON → HTML walker for read-only document embed
