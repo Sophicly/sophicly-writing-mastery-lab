@@ -1253,6 +1253,61 @@
         return Object.keys(seen);
     }
 
+    // v7.18.37: Force-regenerate every checklistItem for a given qId, bypassing
+    // the staleness gate. Clears inline content + resets `correct`, `sourceHash`,
+    // `checked` attrs to placeholder values, then delegates to
+    // `_autoFireChecklistIfStale(editor)` which will now see the items as empty
+    // and run the standard generate-and-populate path.
+    //
+    // Use case: hallucinated content with valid-looking metadata (post-v7.18.33
+    // but generated against the wrong source) is indistinguishable from real
+    // generation to the cache layer. The hash matches and `correct` attrs are
+    // populated, so neither `_findStaleChecklistQIds` nor
+    // `_invalidateStaleChecklistCache` will catch it. This manual path is the
+    // explicit purge button.
+    //
+    // Triggered by:
+    //   1. `WML.regenerateQ1()` — browser-console helper.
+    //   2. `?regenerate_msq=1` URL query param — wired at canvas onCreate.
+    function _forceRegenerateChecklist(editor, qId) {
+        if (!editor || !editor.state) {
+            console.warn('[WML MSQ] force-regenerate: editor missing');
+            return;
+        }
+        const prefixLc = String(qId || 'Q1').toLowerCase() + '-stmt-';
+        const matches = [];
+        editor.state.doc.descendants((node, pos) => {
+            if (node.type && node.type.name === 'checklistItem') {
+                const itemId = String(node.attrs && node.attrs.itemId || '').toLowerCase();
+                if (itemId.indexOf(prefixLc) === 0) {
+                    matches.push({ pos: pos, node: node });
+                }
+            }
+        });
+        if (matches.length === 0) {
+            console.log('[WML MSQ] force-regenerate: no matching items for qId=', qId);
+            return;
+        }
+        console.log('[WML MSQ] force-regenerating', qId, '— clearing', matches.length, 'items');
+        matches.sort((a, b) => b.pos - a.pos);
+        let tr = editor.state.tr;
+        matches.forEach((m) => {
+            const from = m.pos + 1;
+            const to = m.pos + m.node.nodeSize - 1;
+            tr = tr.replaceWith(from, to, []);
+            tr = tr.setNodeMarkup(m.pos, undefined, {
+                ...m.node.attrs,
+                checked: false,
+                correct: null,
+                sourceHash: '',
+            });
+        });
+        if (tr.docChanged) editor.view.dispatch(tr);
+        // Delegate to the existing auto-fire path — items are now empty,
+        // _findStaleChecklistQIds will detect them as stale, generation runs.
+        _autoFireChecklistIfStale(editor);
+    }
+
     // Fire a silent API call to generate statements for any stale qIds on
     // this editor's canvas. Runs once per onCreate — if statements are
     // already populated, no-op. Used for diagnostic (no chat UI) + back-fill
@@ -10263,7 +10318,21 @@
 
                 // v7.17.32: Auto-fire @POPULATE_CHECKLIST for any unpopulated MSQ
                 // placeholders (diagnostic has no chat, also back-fills legacy stuck attempts).
-                _autoFireChecklistIfStale(editor);
+                // v7.18.37: ?regenerate_msq=1 URL param — explicit purge for sessions with
+                // hallucinated content that has valid metadata (cache layer cannot detect).
+                try {
+                    const _urlParams = new URLSearchParams(window.location.search);
+                    if (_urlParams.get('regenerate_msq')) {
+                        const qId = (typeof _urlParams.get('regenerate_msq') === 'string' &&
+                            /^Q\d+$/i.test(_urlParams.get('regenerate_msq'))) ? _urlParams.get('regenerate_msq').toUpperCase() : 'Q1';
+                        console.log('[WML MSQ] force-regenerate triggered via URL param for', qId);
+                        _forceRegenerateChecklist(editor, qId);
+                    } else {
+                        _autoFireChecklistIfStale(editor);
+                    }
+                } catch (_) {
+                    _autoFireChecklistIfStale(editor);
+                }
 
                 // Update toolbar active states
                 updateToolbarState(toolbar, editor);
@@ -19425,7 +19494,19 @@ ${html}
                 const wc = getResponseWordCount(editor);
                 wcDisplay.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
                 // v7.17.32: Auto-fire MSQ statement generation on exam-prep canvas too.
-                _autoFireChecklistIfStale(editor);
+                // v7.18.37: also honour ?regenerate_msq URL param here for parity.
+                try {
+                    const _urlParams = new URLSearchParams(window.location.search);
+                    if (_urlParams.get('regenerate_msq')) {
+                        const qId = (/^Q\d+$/i.test(_urlParams.get('regenerate_msq'))) ? _urlParams.get('regenerate_msq').toUpperCase() : 'Q1';
+                        console.log('[WML MSQ] force-regenerate triggered via URL param for', qId);
+                        _forceRegenerateChecklist(editor, qId);
+                    } else {
+                        _autoFireChecklistIfStale(editor);
+                    }
+                } catch (_) {
+                    _autoFireChecklistIfStale(editor);
+                }
             },
         });
 
@@ -19774,6 +19855,27 @@ ${html}
     WML.injectQuestionIntoCanvas = _injectQuestionIntoCanvas;
     WML.injectExamQuestionSlot = _injectExamQuestionSlot;
     WML.autoAppendArtefact = _autoAppendArtefact;
+
+    // v7.18.37: Console helper to force-regenerate Q1 (or any qId) MSQ statements
+    // when hallucinated content is stuck in the cache. Usage from devtools:
+    //   WML.regenerateQ1()       — clears + regenerates Q1 against the current Source A
+    //   WML.regenerateMsq('Q1')  — same, explicit qId
+    // Equivalent URL trigger: append ?regenerate_msq=1 (or ?regenerate_msq=Q1) to the
+    // lesson URL, which fires the same function from the canvas onCreate handler.
+    WML.regenerateQ1 = function() {
+        if (!canvasEditor) {
+            console.warn('[WML MSQ] regenerateQ1: no canvas editor available');
+            return;
+        }
+        _forceRegenerateChecklist(canvasEditor, 'Q1');
+    };
+    WML.regenerateMsq = function(qId) {
+        if (!canvasEditor) {
+            console.warn('[WML MSQ] regenerateMsq: no canvas editor available');
+            return;
+        }
+        _forceRegenerateChecklist(canvasEditor, qId || 'Q1');
+    };
 
     // v7.14.71: Console utility to reset documents for testing.
     // Usage: WML.resetDocuments()        — clears ALL saved docs + chats
