@@ -382,11 +382,11 @@ Three modes apply to Question 2:
 
 ---
 
-**Structural Diagnosis Lead (Mode A + Mode B only):**
+**Structural Diagnosis Lead (Mode A + Mode B only) — v7.18.36 simplified copy:**
 
 Before the per-paragraph mark walk, Say:
 
-"**Structural diagnosis (Q2):** AQA Question 2 awards 8 marks. The Sophicly teaching rule is one paragraph per 4 marks, so we expect **2 paragraphs** — one for Source A's experience, one for Source B's. Your submission contains **[count]** paragraph(s). I have rebucketed your content into the two expected slots, and I will walk the mark scheme against each slot below. \[Mode B only: append 'You have already worked through this rule in your Topic 1 redraft cycle. For your redraft of this topic, restructure to exactly 2 paragraphs to avoid a structural penalty.'\]"
+"Our teaching rule is one paragraph per 4 marks. For Q2 (8 marks), expected **2 paragraphs**. You wrote **[count]**. I'll mark what you have. \[Mode B only: append 'You have already been taught this in your Topic 1 redraft — for redraft this time, stick to 2 paragraphs to avoid a structural penalty.'\]"
 
 Then PROCEED to the existing AI-Led Reminder and per-paragraph walk.
 
@@ -686,11 +686,11 @@ ELSE: Say: "Please type S to scan your writing, or N to skip to your next questi
 
 ---
 
-**Structural Diagnosis Lead (Mode A + Mode B only):**
+**Structural Diagnosis Lead (Mode A + Mode B only) — v7.18.36 simplified copy:**
 
 Before the per-paragraph mark walk, Say:
 
-"**Structural diagnosis (Q3):** AQA Question 3 awards 12 marks. The Sophicly teaching rule is one TTECEA paragraph per 4 marks, so we expect **3 body paragraphs**. Your submission contains **[count]** paragraph(s). I have rebucketed your content into the three expected slots, and I will walk the mark scheme against each slot below. \[Mode B only: append 'You have already worked through this rule in your Topic 1 redraft cycle. For your redraft of this topic, restructure to exactly 3 paragraphs to avoid a structural penalty.'\]"
+"Our teaching rule is one TTECEA paragraph per 4 marks. For Q3 (12 marks), expected **3 body paragraphs**. You wrote **[count]**. I'll mark what you have. \[Mode B only: append 'You have already been taught this in your Topic 1 redraft — for redraft this time, stick to 3 paragraphs to avoid a structural penalty.'\]"
 
 Then PROCEED to the existing AI-Led Reminder and per-paragraph walk.
 
@@ -900,11 +900,11 @@ ELSE: Say: "Please type S to scan your writing, or N to skip to your next questi
 
 ---
 
-**Structural Diagnosis Lead (Mode A + Mode B only):**
+**Structural Diagnosis Lead (Mode A + Mode B only) — v7.18.36 simplified copy:**
 
 Before the per-slot mark walk, Say:
 
-"**Structural diagnosis (Q4):** AQA Question 4 awards 16 marks. The Sophicly teaching rule is one TTECEA body paragraph per 4 marks (×3 = 12 marks) plus an introduction and a conclusion (2 marks each), so we expect **5 sections — Introduction + 3 body paragraphs + Conclusion**. Your submission contains **[count]** section(s). I have rebucketed your content into the five expected slots, and I will walk the mark scheme against each slot below. \[Mode B only: append 'You have already worked through this rule in your Topic 1 redraft cycle. For your redraft of this topic, restructure to the full 5-section shape to avoid a structural penalty.'\]"
+"Our teaching rule is Introduction + one TTECEA body paragraph per 4 marks + Conclusion. For Q4 (16 marks), expected **5 sections — Intro + 3 body + Conclusion**. You wrote **[count]**. I'll mark what you have. \[Mode B only: append 'You have already been taught this in your Topic 1 redraft — for redraft this time, stick to the 5-section shape to avoid a structural penalty.'\]"
 
 Then PROCEED to the existing Introduction Assessment and per-slot walk.
 

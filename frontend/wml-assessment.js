@@ -1278,11 +1278,22 @@
             for (const qId of qIds) {
                 try {
                     const docContent = editor.getHTML();
+                    // v7.18.36: also extract the canonical Source A text via the
+                    // PM-state walker (more reliable than asking the LLM to parse
+                    // the raw HTML doc) and embed it literally in the prompt. This
+                    // collapses the surface area for hallucination — Sophia cannot
+                    // generate statements about a different source if the source is
+                    // sitting verbatim in front of her.
+                    const sourceLiteral = (typeof getSourceText === 'function') ? getSourceText(editor) : '';
+                    const sourceBlock = sourceLiteral && sourceLiteral.trim().length > 50
+                        ? ('\n\n[SOURCE A — verbatim from the canvas; generate statements ONLY from this text]\n' + sourceLiteral + '\n')
+                        : '';
                     const prompt = '[CANVAS_AUTO_TRIGGER] Execute protocol-q1-msq.md Phase 1 for ' + qId +
                         ' now. The student document below contains the question, Source A extract, and line reference. ' +
                         'Read Source A within the specified line range, generate 4 true + 4 plausible-false statements per the module\'s quality rules, ' +
                         'and emit the @POPULATE_CHECKLIST ' + qId + ' marker as a single line with exact JSON shape (s array of 8 strings, k array of 8 booleans). ' +
-                        'Do not emit any prose, greeting, or trailing commentary — marker line only.';
+                        'Do not emit any prose, greeting, or trailing commentary — marker line only.' +
+                        sourceBlock;
                     // Force task='assessment' so the assessment manifest (which includes
                     // protocol-q1-msq.md) loads, regardless of the canvas state.task
                     // (diagnostic / development / assessment). Without this forcing,
@@ -7518,6 +7529,14 @@
                                     console.warn('WML Canvas: Essay too short or empty. getResponseText returned:', essay.substring(0, 100));
                                 }
 
+                                // v7.18.36: Invalidate stale Q1 cache before reading the
+                                // tick summary so legacy items (no `correct` attr from
+                                // pre-v7.18.33 sessions) get cleared, forcing auto-fire to
+                                // regenerate against the current Source A. Without this,
+                                // canvases mounted before v7.18.33 keep their legacy
+                                // hallucinations forever because _autoFireChecklistIfStale
+                                // only runs on editor onCreate, never on resume.
+                                _invalidateStaleChecklistCache(canvasEditor);
                                 // v7.17.35: Append MSQ tick summary so Sophia can score checklist
                                 // questions without asking student to re-type numbers. The canvas
                                 // serializer (getResponseText) strips data-checked attributes.
