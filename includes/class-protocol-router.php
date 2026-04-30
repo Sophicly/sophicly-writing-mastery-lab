@@ -2905,6 +2905,25 @@ TEMPLATE;
                 $preamble .= "Do NOT import AOs, paragraph shapes, or quality rules from a different paper or board. When a paper does not assess AO3, do not include contextual analysis in that paper's gold standard. When a paper labels Context as AO4 (Edexcel IGCSE Lit), do not confuse it with SPaG-AO4 (AQA). The schema + protocol module are the ONLY source of truth for content; this preamble rule only mandates that delivery happens.\n\n";
                 $preamble .= "Applies to every analytical question across AQA, Edexcel, Eduqas, OCR, Edexcel-IGCSE, SQA, CCEA — language reading and literature essays. Creative / extended writing (Q5-type) delivers holistic-structural feedback per the creative-writing protocol instead; this mandate does not cover those questions.\n";
 
+                $preamble .= "### ⛔ METACOGNITIVE REFLECTION CYCLE — UNIVERSAL MANDATE (v7.18.29)\n\n";
+                $preamble .= "BEFORE marking each individual paragraph in any analytical question (Q2 / Q3 / Q4) and any transactional Q5 (letter, speech, IUMVCC structure), execute a two-question metacognitive reflection cycle:\n\n";
+                $preamble .= "1. **Self-Rate (1-5):** Ask the student to rate (1-5) how well they think they achieved the AO goal for that paragraph. WAIT for response.\n";
+                $preamble .= "2. **AO Targeting:** Ask which Assessment Objectives they were targeting and what they specifically tried to demonstrate. WAIT for response.\n";
+                $preamble .= "3. **Connect to feedback:** Reference the student's self-rating and AO targeting throughout the subsequent assessment to build calibration (e.g. \"You rated yourself a 3/5, and based on the mark scheme, this shows Level X qualities…\").\n\n";
+                $preamble .= "**Scope (universal across all boards × papers):**\n";
+                $preamble .= "- Q1 (list / true-false / retrieval): NO metacog — proceed directly to marking.\n";
+                $preamble .= "- Q2 / Q3 / Q4: per-paragraph metacog — one cycle BEFORE each paragraph or body paragraph is marked.\n";
+                $preamble .= "- Q5 transactional writing (letter / speech / IUMVCC 6-paragraph structure): per-paragraph metacog — one cycle BEFORE each paragraph is marked.\n";
+                $preamble .= "- Q5 creative writing (narrative / descriptive / fiction): AT-START ONLY — single whole-piece reflection before AO5+AO6 marking, NOT per-paragraph.\n\n";
+                $preamble .= "**Bracket DSL → Markdown DSL translation map.** Some legacy protocol modules use bracket DSL (`\\[ASK\\]`, `\\[SAY\\]`, `\\[WAIT\\]`, `\\[AI\\_INTERNAL\\]`, `\\[CONDITIONAL\\]`). Treat them identically to Markdown DSL:\n";
+                $preamble .= "- `\\[ASK\\]` ≡ `Ask:` — emit the question text verbatim, then halt for student response.\n";
+                $preamble .= "- `\\[SAY\\]` ≡ `Say:` — emit the text verbatim.\n";
+                $preamble .= "- `\\[WAIT\\]` ≡ `WAIT` — halt for student response before proceeding.\n";
+                $preamble .= "- `\\[AI\\_INTERNAL\\]` ≡ `Internal AI Note:` — internal directive; act on it but do not show to student.\n";
+                $preamble .= "- `\\[CONDITIONAL\\] IF X: action_a ELIF Y: action_b ELSE: action_c` — evaluate the conditions in order and execute the matching branch's action.\n\n";
+                $preamble .= "Any directive in either DSL is MANDATORY. Skipping a metacog cycle, ASK gate, or CONDITIONAL branch = protocol non-compliance. The metacognitive cycles ARE the AO calibration teaching (Hattie / Dunlosky / Bjork pedagogy).\n\n";
+                $preamble .= "Source-of-truth reference for Markdown DSL pattern: AQA Lang P1 modularised `protocol-a-assessment.md` (mirrors source `AQA GCSE English Language Paper 1 ... v3.2`).\n\n";
+
                 $preamble .= $schema_block;
                 $preamble .= $this->build_assessment_workflow_reminder();
             } else {
