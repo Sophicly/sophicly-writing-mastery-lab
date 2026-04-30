@@ -2922,7 +2922,20 @@ TEMPLATE;
                 $preamble .= "- `\\[AI\\_INTERNAL\\]` ≡ `Internal AI Note:` — internal directive; act on it but do not show to student.\n";
                 $preamble .= "- `\\[CONDITIONAL\\] IF X: action_a ELIF Y: action_b ELSE: action_c` — evaluate the conditions in order and execute the matching branch's action.\n\n";
                 $preamble .= "Any directive in either DSL is MANDATORY. Skipping a metacog cycle, ASK gate, or CONDITIONAL branch = protocol non-compliance. The metacognitive cycles ARE the AO calibration teaching (Hattie / Dunlosky / Bjork pedagogy).\n\n";
-                $preamble .= "Source-of-truth reference for Markdown DSL pattern: AQA Lang P1 modularised `protocol-a-assessment.md` (mirrors source `AQA GCSE English Language Paper 1 ... v3.2`).\n\n";
+
+                $preamble .= "### ⛔ VERBATIM METACOG EMISSION (v7.18.31)\n\n";
+                $preamble .= "When the protocol provides a Self-Rate (1-5) prompt, you MUST emit the FULL prompt VERBATIM — including ALL the 1, 2, 3, 4, 5 scale labels (\"1 = Didn't achieve…\" through \"5 = Achieved comprehensively…\"). Do NOT paraphrase the Self-Rate prompt into a single open-ended reflection question. The 1-5 scale is the calibration mechanism; rephrasing destroys it.\n\n";
+                $preamble .= "When the protocol provides an AO-Targeting prompt, emit it as a SEPARATE question AFTER the student responds to the Self-Rate. Two-question pattern: (1) Self-Rate → WAIT → student types number → (2) AO-Targeting → WAIT → student types explanation → (3) only THEN proceed to marking.\n\n";
+
+                $preamble .= "### ⛔ PER-PARAGRAPH TURN CYCLE (v7.18.31)\n\n";
+                $preamble .= "For analytical questions with multiple paragraphs (Q2 Source A + Source B; Q3 Body Paragraphs 1-3; Q4 Body Paragraphs 1-3; Q5 transactional IUMVCC paragraphs 1-6), each paragraph is its OWN multi-turn exchange. Workflow per paragraph:\n";
+                $preamble .= "1. Self-Rate (1-5) prompt → WAIT for student rating.\n";
+                $preamble .= "2. AO-Targeting prompt → WAIT for student response.\n";
+                $preamble .= "3. Acknowledge their reflection briefly + emit assessment for THAT paragraph only (mark breakdown, penalty codes, paragraph score).\n";
+                $preamble .= "4. Y gate (\"Type Y when ready for next paragraph\") → WAIT.\n";
+                $preamble .= "5. ONLY THEN move to next paragraph metacog cycle.\n\n";
+                $preamble .= "Do NOT consolidate multiple paragraph marks into one message. Do NOT skip the Self-Rate cycle for paragraph 2 because you already did one for paragraph 1. Each paragraph repeats the full cycle.\n\n";
+                $preamble .= "Source-of-truth reference for Markdown DSL pattern AND per-paragraph turn cycle: AQA Lang P1 modularised `protocol-a-assessment.md` (mirrors source `AQA GCSE English Language Paper 1 ... v3.2`). Q2/Q3 each fire 2 paragraph cycles; Q4 fires 3 BP cycles; Q5 creative-writing fires 1 at-start cycle. P1 transcript is the gold pattern.\n\n";
 
                 $preamble .= $schema_block;
                 $preamble .= $this->build_assessment_workflow_reminder();
