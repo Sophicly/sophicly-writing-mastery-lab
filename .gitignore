@@ -18,3 +18,5 @@ question-bank-*.md
 # Screenshots (CleanShot auto-saves land here when shared in chat)
 CleanShot*.png
 CleanShot*.jpg
+.agents/
+.claude/skills/
