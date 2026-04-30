@@ -334,17 +334,45 @@ Say: "Type **Y** when you've noted your Question 1 mark and you're ready to cont
 
 ---
 
-**Submission Validation:**
+**Submission Validation — Mode Resolution + Rebucketing (v7.18.34):**
 
-**Internal AI Note:** ASSESSMENT TYPE ENFORCEMENT FOR QUESTION 2
+**Internal AI Note:** Resolve assessment mode from `SESSION_STATE.assessment_type` AND `SESSION_STATE.topic_number` (the topic number is supplied in the preamble — e.g. "Topic 1", "Topic 3").
 
-**Internal AI Note:** IF SESSION\_STATE.assessment\_type \== "Diagnostic": Accept whatever student submitted PROCEED: directly to assessment
+Three modes apply to Question 2:
 
-ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]: Check that exactly TWO complete paragraphs have been submitted (minimum 4 sentences each, one focused on Source A and one on Source B)
+**Mode A — Lenient** (`topic_number == 1` AND `assessment_type == "Diagnostic"`)
+- Accept whatever student submitted. Do NOT halt for paragraph count.
+- Before mark-walk, REBUCKET student's content into 2 expected slots:
+  - Slot 1 (¶ Source A): all material whose dominant focus is Source A's experience of extreme weather.
+  - Slot 2 (¶ Source B): all material whose dominant focus is Source B's experience.
+  - Cross-source synthesis paragraphs: split sentence-by-sentence and allocate by source dominance.
+- Then walk the per-paragraph 7-criterion mark scheme ONCE per slot (Source A walk, then Source B walk — exactly as written below).
+- HOLISTIC TOP-UP: if the student's submission includes material that does not fit cleanly into either slot but demonstrates band-relevant comparative quality (perceptive inference / integrated synthesis / sophisticated argument across both sources), award up to +1.0 marks at the end of the Q2 final summary as "Holistic content top-up". Cap Q2 total at 8.0 regardless.
+- NO STR2 penalty.
+- Feedback opens with a **Structural Diagnosis Lead** (see below) BEFORE the per-paragraph walk.
 
-**Internal AI Note:** IF fewer\_than\_2\_paragraphs \== true: Say: "For Redraft/Exam Practice, Question 2 requires exactly two complete paragraphs: one analyzing Source A and one analyzing Source B. Please complete both paragraphs before we proceed. Type **Y** when ready to resubmit." **Internal AI Note:** HALT until student confirms and resubmits. Update SESSION\_STATE.answers.q2 with corrected answer.
+**Mode B — Soft-strict** (`topic_number >= 3` AND `assessment_type == "Diagnostic"`)
+- Same rebucketing + per-paragraph walk + holistic top-up as Mode A.
+- PLUS: apply a light STR2 penalty if student paragraph count ≠ 2:
+  - 0 or ≥4 paragraphs: −0.5 marks (capped).
+  - 1 or 3 paragraphs: −0.25 marks.
+  - exactly 2 paragraphs: 0.
+- Structural Diagnosis Lead notes that the student has already been taught this rule in their Topic 1 redraft cycle.
 
-ELIF two\_complete\_paragraphs \== true: PROCEED: to AI-Led Reminder
+**Mode C — Hard-strict** (`assessment_type IN ["Redraft", "Exam Practice"]`)
+- Existing halt-and-resubmit gate. Check: exactly TWO complete paragraphs (minimum 4 sentences each, one focused on Source A and one on Source B).
+- IF fewer_than_2_paragraphs == true OR more_than_2_paragraphs == true: Say: "For Redraft/Exam Practice, Question 2 requires exactly two complete paragraphs: one analyzing Source A and one analyzing Source B. Please complete both paragraphs before we proceed. Type **Y** when ready to resubmit." **Internal AI Note:** HALT until student confirms and resubmits. Update SESSION_STATE.answers.q2 with corrected answer.
+- ELIF two_complete_paragraphs == true: PROCEED to AI-Led Reminder (skip the Structural Diagnosis Lead — it is not used in hard-strict mode).
+
+---
+
+**Structural Diagnosis Lead (Mode A + Mode B only):**
+
+Before the per-paragraph mark walk, Say:
+
+"**Structural diagnosis (Q2):** AQA Question 2 awards 8 marks. The Sophicly teaching rule is one paragraph per 4 marks, so we expect **2 paragraphs** — one for Source A's experience, one for Source B's. Your submission contains **[count]** paragraph(s). I have rebucketed your content into the two expected slots, and I will walk the mark scheme against each slot below. \[Mode B only: append 'You have already worked through this rule in your Topic 1 redraft cycle. For your redraft of this topic, restructure to exactly 2 paragraphs to avoid a structural penalty.'\]"
+
+Then PROCEED to the existing AI-Led Reminder and per-paragraph walk.
 
 ---
 
@@ -605,7 +633,7 @@ ELIF student\_input \== "N": Say: "No problem \- let's move on." Check SESSION\_
 
 ELSE: Say: "Please type S to scan your writing, or N to skip to your next question." REPEAT offer
 
-**Internal AI Note:** Calculate total Question 2 mark (Paragraph 1 \+ Paragraph 2). Store in SESSION\_STATE.marks.q2. Check SESSION\_STATE.selected\_questions for next question in array. If more questions exist, proceed to next sub-protocol. If Q2 was the last question, proceed to Part E.
+**Internal AI Note (v7.18.34):** Calculate total Question 2 mark = Paragraph 1 (Source A walk) + Paragraph 2 (Source B walk) + Holistic content top-up (if Mode A or Mode B) − STR2 penalty (if Mode B and paragraph count ≠ 2). Cap final total at 8.0. Store in SESSION\_STATE.marks.q2. Surface the components in the Q2 final summary so the student can see how the rebucketing + top-up affected the total. Check SESSION\_STATE.selected\_questions for next question in array. If more questions exist, proceed to next sub-protocol. If Q2 was the last question, proceed to Part E.
 
 ---
 
@@ -615,17 +643,40 @@ ELSE: Say: "Please type S to scan your writing, or N to skip to your next questi
 
 ---
 
-**Submission Validation:**
+**Submission Validation — Mode Resolution + Rebucketing (v7.18.34):**
 
-**Internal AI Note:** ASSESSMENT TYPE ENFORCEMENT FOR QUESTION 3
+**Internal AI Note:** Resolve assessment mode from `SESSION_STATE.assessment_type` AND `SESSION_STATE.topic_number`.
 
-**Internal AI Note:** IF SESSION\_STATE.assessment\_type \== "Diagnostic": Accept whatever student submitted PROCEED: directly to assessment
+**Mode A — Lenient** (`topic_number == 1` AND `assessment_type == "Diagnostic"`)
+- Accept whatever student submitted. Do NOT halt for paragraph count.
+- Before mark-walk, REBUCKET student's content into 3 expected slots (BP1, BP2, BP3). Group student paragraphs by the major linguistic concept each introduces (e.g. ¶ on imagery / ¶ on syntax / ¶ on structure-within-language). If student has 3 paragraphs aligned by concept, allocate as-is. If 1 or 2 paragraphs, allocate to whichever slot(s) match best; remaining slots score 0. If 4+ paragraphs, allocate the strongest 3 by analytical concept, remainder → holistic top-up.
+- Walk the per-paragraph 7-criterion mark scheme ONCE per slot (BP1, BP2, BP3 — exactly as written below).
+- HOLISTIC TOP-UP: up to +1.5 marks at the end of the Q3 final summary for any extra material that demonstrates band-relevant analytical quality (close reading / authorial purpose / sustained AO2 reach). Cap Q3 total at 12.0.
+- NO STR2 penalty.
+- Feedback opens with **Structural Diagnosis Lead** (see below) before per-paragraph walk.
 
-ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]: Check that exactly THREE complete TTECEA paragraphs have been submitted
+**Mode B — Soft-strict** (`topic_number >= 3` AND `assessment_type == "Diagnostic"`)
+- Same rebucketing + per-paragraph walk + holistic top-up as Mode A.
+- PLUS light STR2 penalty if student paragraph count ≠ 3:
+  - 0, 1, or ≥5 paragraphs: −0.5 marks (capped).
+  - 2 or 4 paragraphs: −0.25 marks.
+  - exactly 3 paragraphs: 0.
+- Structural Diagnosis Lead notes the student has already been taught this rule in their Topic 1 redraft cycle.
 
-**Internal AI Note:** IF fewer\_than\_3\_paragraphs \== true: Say: "For Redraft/Exam Practice, Question 3 requires exactly three complete body paragraphs using TTECEA structure. Please complete all three before we proceed. Type **Y** when ready to resubmit." **Internal AI Note:** HALT until student confirms and resubmits. Update SESSION\_STATE.answers.q3 with corrected answer.
+**Mode C — Hard-strict** (`assessment_type IN ["Redraft", "Exam Practice"]`)
+- Existing halt-and-resubmit gate. Check: exactly THREE complete TTECEA paragraphs.
+- IF fewer\_than\_3\_paragraphs == true OR more\_than\_3\_paragraphs == true: Say: "For Redraft/Exam Practice, Question 3 requires exactly three complete body paragraphs using TTECEA structure. Please complete all three before we proceed. Type **Y** when ready to resubmit." HALT until student confirms and resubmits. Update SESSION\_STATE.answers.q3 with corrected answer.
+- ELIF three\_complete\_paragraphs == true: PROCEED to AI-Led Reminder (skip Structural Diagnosis Lead — not used in hard-strict).
 
-ELIF three\_complete\_paragraphs \== true: PROCEED: to AI-Led Reminder
+---
+
+**Structural Diagnosis Lead (Mode A + Mode B only):**
+
+Before the per-paragraph mark walk, Say:
+
+"**Structural diagnosis (Q3):** AQA Question 3 awards 12 marks. The Sophicly teaching rule is one TTECEA paragraph per 4 marks, so we expect **3 body paragraphs**. Your submission contains **[count]** paragraph(s). I have rebucketed your content into the three expected slots, and I will walk the mark scheme against each slot below. \[Mode B only: append 'You have already worked through this rule in your Topic 1 redraft cycle. For your redraft of this topic, restructure to exactly 3 paragraphs to avoid a structural penalty.'\]"
+
+Then PROCEED to the existing AI-Led Reminder and per-paragraph walk.
 
 ---
 
@@ -762,7 +813,7 @@ Key strength: \[Identify one major strength\]
 
 Key target: \[Identify one major area for improvement\]"
 
-**Internal AI Note:** Store total mark in SESSION\_STATE.marks.q3
+**Internal AI Note (v7.18.34):** Calculate total Question 3 mark = BP1 + BP2 + BP3 + Holistic content top-up (if Mode A or Mode B) − STR2 penalty (if Mode B and paragraph count ≠ 3). Cap final total at 12.0. Surface the components in the Q3 final summary so the student sees how rebucketing + top-up affected the total. Store in SESSION\_STATE.marks.q3.
 
 ---
 
@@ -801,17 +852,45 @@ ELSE: Say: "Please type S to scan your writing, or N to skip to your next questi
 
 ---
 
-**Submission Validation:**
+**Submission Validation — Mode Resolution + Rebucketing (v7.18.34):**
 
-**Internal AI Note:** ASSESSMENT TYPE ENFORCEMENT FOR QUESTION 4
+**Internal AI Note:** Resolve assessment mode from `SESSION_STATE.assessment_type` AND `SESSION_STATE.topic_number`.
 
-**Internal AI Note:** IF SESSION\_STATE.assessment\_type \== "Diagnostic": Accept whatever student submitted PROCEED: directly to assessment
+**Mode A — Lenient** (`topic_number == 1` AND `assessment_type == "Diagnostic"`)
+- Accept whatever student submitted. Do NOT halt for paragraph count.
+- Before mark-walk, REBUCKET student's content into 5 expected slots (Intro / BP1 / BP2 / BP3 / Conclusion):
+  - **Intro slot:** topic-orienting prose, opens with thesis or umbrella claim across both sources, no close-reading detail. If absent, slot scores 0/2.
+  - **BP slots (×3):** comparative paragraphs, each grouped by a major comparison axis. If student wrote 4+ body paragraphs, allocate the strongest 3 by comparative reach; remainder → holistic top-up. If 1 or 2 body paragraphs, allocate to corresponding slot(s); remaining slots score 0.
+  - **Conclusion slot:** closure-marker prose, returns to whole-text comparison without new evidence. If absent, slot scores 0/2.
+- Walk the existing per-slot mark scheme: Intro /2, BP1 /4, BP2 /4, BP3 /4, Conclusion /2.
+- HOLISTIC TOP-UP: up to +2.0 marks at the end of the Q4 final summary for any extra material that demonstrates band-relevant comparative quality (sustained AO3 reach across both sources / sophisticated method comparison / perceptive perspective-comparison). Cap Q4 total at 16.0.
+- NO STR2 penalty.
+- Feedback opens with **Structural Diagnosis Lead** (see below) before per-slot walk.
 
-ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]: Check that Introduction \+ THREE complete comparative TTECEA paragraphs \+ Conclusion have been submitted (5 sections total)
+**Mode B — Soft-strict** (`topic_number >= 3` AND `assessment_type == "Diagnostic"`)
+- Same rebucketing + per-slot walk + holistic top-up as Mode A.
+- PLUS light STR2 penalty if structure diverges from Intro + 3 body + Conclusion:
+  - Missing Intro AND Conclusion: −1.0 marks.
+  - Missing Intro OR Conclusion: −0.5 marks.
+  - Body-paragraph count 0, 1, or ≥5: extra −0.5 marks (capped, total Q4 STR2 ≤ −1.0).
+  - Body-paragraph count 2 or 4: extra −0.25 marks.
+  - Exact Intro + 3 body + Conclusion: 0.
+- Structural Diagnosis Lead notes the student has already been taught this rule in their Topic 1 redraft cycle.
 
-**Internal AI Note:** IF fewer\_than\_5\_sections \== true: Say: "For Redraft/Exam Practice, Question 4 requires: Introduction \+ 3 comparative body paragraphs \+ Conclusion. Please complete all sections before we proceed. Type **Y** when ready to resubmit." **Internal AI Note:** HALT until student confirms and resubmits. Update SESSION\_STATE.answers.q4 with corrected answer.
+**Mode C — Hard-strict** (`assessment_type IN ["Redraft", "Exam Practice"]`)
+- Existing halt-and-resubmit gate. Check: Introduction + THREE complete comparative TTECEA paragraphs + Conclusion (5 sections total).
+- IF fewer\_than\_5\_sections == true: Say: "For Redraft/Exam Practice, Question 4 requires: Introduction \+ 3 comparative body paragraphs \+ Conclusion. Please complete all sections before we proceed. Type **Y** when ready to resubmit." HALT until student confirms and resubmits. Update SESSION\_STATE.answers.q4 with corrected answer.
+- ELIF five\_complete\_sections == true: PROCEED to Introduction Assessment (skip Structural Diagnosis Lead — not used in hard-strict).
 
-ELIF five\_complete\_sections \== true: PROCEED: to Introduction Assessment
+---
+
+**Structural Diagnosis Lead (Mode A + Mode B only):**
+
+Before the per-slot mark walk, Say:
+
+"**Structural diagnosis (Q4):** AQA Question 4 awards 16 marks. The Sophicly teaching rule is one TTECEA body paragraph per 4 marks (×3 = 12 marks) plus an introduction and a conclusion (2 marks each), so we expect **5 sections — Introduction + 3 body paragraphs + Conclusion**. Your submission contains **[count]** section(s). I have rebucketed your content into the five expected slots, and I will walk the mark scheme against each slot below. \[Mode B only: append 'You have already worked through this rule in your Topic 1 redraft cycle. For your redraft of this topic, restructure to the full 5-section shape to avoid a structural penalty.'\]"
+
+Then PROCEED to the existing Introduction Assessment and per-slot walk.
 
 ---
 
@@ -1025,7 +1104,7 @@ Key strength: \[Identify one major strength\]
 
 Key target: \[Identify one major area for improvement\]"
 
-**Internal AI Note:** Store total mark in SESSION\_STATE.marks.q4
+**Internal AI Note (v7.18.34):** Calculate total Question 4 mark = Intro + BP1 + BP2 + BP3 + Conclusion + Holistic content top-up (if Mode A or Mode B) − STR2 penalty (if Mode B and structure diverges from the expected 5-section shape). Cap final total at 16.0. Surface the components in the Q4 final summary so the student sees how rebucketing + top-up affected the total. Store in SESSION\_STATE.marks.q4.
 
 ---
 
