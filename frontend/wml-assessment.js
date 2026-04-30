@@ -1239,7 +1239,22 @@
     // re-fires generation with the now-current Source A.
     function _invalidateStaleChecklistCache(editor) {
         if (!editor || !editor.state) return;
-        const currentHash = _hashString(_readSourceAText(editor));
+        const sourceAText = _readSourceAText(editor);
+        const currentHash = _hashString(sourceAText);
+        // v7.18.40: tokenise Source A once for content-overlap detection of
+        // hallucinated statements that have valid metadata (correct attrs +
+        // matching sourceHash) but content unrelated to the source. Hash and
+        // attr checks alone cannot distinguish these from real generations,
+        // so we add a token-overlap heuristic.
+        const sourceTokens = new Set(
+            (sourceAText.toLowerCase().match(/\b[a-z]{4,}\b/g) || [])
+        );
+        const _hallucinationOverlap = (statementText) => {
+            const stTokens = (statementText.toLowerCase().match(/\b[a-z]{4,}\b/g) || []);
+            if (stTokens.length === 0 || sourceTokens.size === 0) return 1;
+            const hits = stTokens.filter((t) => sourceTokens.has(t)).length;
+            return hits / stTokens.length;
+        };
         const matches = [];
         editor.state.doc.descendants((node, pos) => {
             if (node.type && node.type.name === 'checklistItem') {
@@ -1251,8 +1266,22 @@
                 const storedHash = String(node.attrs.sourceHash || '');
                 const isLegacyNoKey = hasText && !hasCorrect;
                 const isHashMismatch = hasText && storedHash && storedHash !== currentHash;
-                if (isLegacyNoKey || isHashMismatch) {
-                    matches.push({ pos: pos, node: node, reason: isLegacyNoKey ? 'legacy-no-key' : 'hash-mismatch' });
+                // v7.18.40: hallucinated content detection. A statement that
+                // shares less than 20% of its 4+-char tokens with Source A is
+                // almost certainly off-topic — distractors typically share most
+                // of their vocabulary with the source even when they invert or
+                // contradict facts. 20% is conservative (genuine distractors
+                // routinely score 40%+); only clear hallucinations cross it.
+                const hasLowOverlap = hasText && hasCorrect && sourceAText.length > 100
+                    && _hallucinationOverlap(text) < 0.2;
+                if (isLegacyNoKey || isHashMismatch || hasLowOverlap) {
+                    matches.push({
+                        pos: pos,
+                        node: node,
+                        reason: isLegacyNoKey ? 'legacy-no-key'
+                            : isHashMismatch ? 'hash-mismatch'
+                            : 'hallucinated-content',
+                    });
                 }
             }
         });

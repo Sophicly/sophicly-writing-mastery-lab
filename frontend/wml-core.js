@@ -2092,7 +2092,16 @@ window.WML = (function() {
         // Strip [SAVE: element_type] protocol markers
         text = text.replace(/\[SAVE:\s*\w+\]\s*/g, '').trim();
         // Strip [ASSESSMENT_COMPLETE] code word (v7.12.23)
-        text = text.replace(/\[ASSESSMENT_COMPLETE\]\s*/gi, '').trim();
+        // v7.18.40: also accept the optional question-id suffix variant
+        // (e.g. `[ASSESSMENT_COMPLETE Q1]`) emitted by protocol-q1-msq.md.
+        // The original regex left the suffixed form visible in chat.
+        text = text.replace(/\[ASSESSMENT_COMPLETE(?:\s+[A-Z0-9_]+)?\]\s*/gi, '').trim();
+        // v7.18.40: strip stale "💯 Current score: 0 / 0 marks" lines. The
+        // running-score display is meaningful only when X / Y are non-zero
+        // (mark scheme quizzes etc.). When the AI emits "0 / 0" — typical of
+        // Q1-MSQ flows where there is no running tally — the line is just
+        // visual noise that contradicts the per-question score above it.
+        text = text.replace(/^\s*(?:💯\s*)?\*{0,2}Current score:\s*\*{0,2}\s*0\s*\/\s*0\s*marks?\*{0,2}\s*$/gim, '').trim();
         // Strip [QUIZ_COMPLETE] code word + machine-readable payload (v7.15.93)
         // v7.17.74: original regex required `]` immediately after QUIZ_COMPLETE, so the
         // payload form `[QUIZ_COMPLETE:score=...,grade=N]` (colon, not `]`) leaked into
