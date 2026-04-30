@@ -2210,6 +2210,12 @@ window.WML = (function() {
         // v7.18.19: mark_scheme suppression mirrors mark_scheme_unit — no
         // formal attempt counter for the Final Assessment task.
         if (t === 'mark_scheme') return true;
+        // v7.18.32: any LD-topic embed (sfwd-topic post) with a topic-flow task
+        // is in topic flow, regardless of whether the bridge populated topicNumber
+        // or phase. Standalone shortcode mounts (isLdTopic: false) fall through
+        // to the topicNumber/phase checks below — preserves exam-prep selector UX.
+        const cfg = window.swmlEmbedConfig || {};
+        if (cfg.isLdTopic) return true;
         // v7.17.12: belt-and-braces — treat a guided phase as the fallback signal
         // for topic-flow identity when the bridge failed to populate topicNumber
         // (e.g. missing wml_topic mapping). Keeps attempt-UX suppression correct
