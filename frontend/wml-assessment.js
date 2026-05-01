@@ -13039,6 +13039,12 @@
             editableSections.forEach(section => {
                 const clone = section.cloneNode(true);
                 clone.querySelectorAll('h3').forEach(el => el.remove());
+                // v7.18.41: exclude checklistItem statements + their instruction
+                // line. Q1 STATEMENTS section is data-section-type="response"
+                // but its content is AI-generated 8 statements + a hint line —
+                // not student writing. Counting them inflated the wc by ~110.
+                clone.querySelectorAll('[data-checklist-item]').forEach(el => el.remove());
+                clone.querySelectorAll('em').forEach(el => el.remove());
                 const text = clone.textContent || '';
                 const words = text.trim().split(/\s+/).filter(w => w.length > 0);
                 total += words.length;
@@ -13050,6 +13056,9 @@
         responseSections.forEach(section => {
             const clone = section.cloneNode(true);
             clone.querySelectorAll('h3').forEach(el => el.remove());
+            // v7.18.41: exclude checklistItem statements + instruction line — see comment above.
+            clone.querySelectorAll('[data-checklist-item]').forEach(el => el.remove());
+            clone.querySelectorAll('em').forEach(el => el.remove());
             const text = clone.textContent || '';
             const words = text.trim().split(/\s+/).filter(w => w.length > 0);
             total += words.length;
@@ -13154,6 +13163,12 @@
                     const responseTexts = [];
                     const extractText = (node) => {
                         if (!node) return '';
+                        // v7.18.41: skip Q1 STATEMENTS (and any future MSQ) — these
+                        // are AI-generated multiple-choice items inside a response
+                        // section, not student writing. Including them in the
+                        // injected essay text inflated word counts and added noise
+                        // to Q2-Q5 marking prompts.
+                        if (node.type === 'checklistItem') return '';
                         if (node.type === 'text') return node.text || '';
                         if (Array.isArray(node.content)) return node.content.map(extractText).join(' ');
                         return '';
@@ -13218,7 +13233,13 @@
         if (responseSections.length > 1) {
             const parts = [];
             responseSections.forEach(section => {
-                const text = section.textContent?.trim() || '';
+                // v7.18.41: clone + strip Q1 STATEMENTS (checklistItem) and
+                // instruction italics before extracting text. Same surgical
+                // exclusion as the PM-state walker above.
+                const clone = section.cloneNode(true);
+                clone.querySelectorAll('[data-checklist-item]').forEach(el => el.remove());
+                clone.querySelectorAll('em').forEach(el => el.remove());
+                const text = clone.textContent?.trim() || '';
                 if (text) {
                     const label = section.getAttribute('data-section-label') || '';
                     parts.push(label ? `=== ${label.toUpperCase()} ===\n${text}` : text);
