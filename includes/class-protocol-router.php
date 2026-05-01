@@ -3835,9 +3835,18 @@ TEMPLATE;
         // forging-your-weapon/*.md L29-37 hardcode a 7-option exam-board menu that
         // wastes a student turn on a known-answer question. Universal preamble guard
         // tells Sophia the board is set and she must skip Phase 1.2 board selection.
+        // v7.18.43: extended to Mark Scheme Quiz (mark_scheme_unit step 1).
+        // Protocols at protocols/shared/mark-scheme-quiz/*.md declare DSL variable
+        // `selected_board` (L25-36) and check it at L47-50 before falling through
+        // to a "Greet & Select Board" prompt (L52-60). The DSL variable was never
+        // populated router-side — preamble only injects board as display markdown
+        // (`**Exam Board:** AQA`), not as a settable variable. Same band-aid shape
+        // as FYW: explicit "DO NOT ASK" directive overrides the protocol fallback.
+        // Systemic root fix (uniform `## SESSION CONTEXT — PRE-SET VARIABLES`
+        // block) tracked in plan: ~/.claude/plans/you-are-the-wml-sparkling-lynx.md.
         $step = isset($context['step']) ? (int) $context['step'] : 0;
         $board_raw = $context['board'] ?? '';
-        if ($task === 'mark_scheme_unit' && $step === 2 && $board_raw !== '') {
+        if ($task === 'mark_scheme_unit' && $board_raw !== '' && in_array($step, [1, 2], true)) {
             $board_display_map = [
                 'aqa' => 'AQA', 'edexcel' => 'Edexcel', 'eduqas' => 'Eduqas',
                 'ocr' => 'OCR', 'edexcel-igcse' => 'Edexcel IGCSE',
@@ -3845,12 +3854,22 @@ TEMPLATE;
                 'ccea' => 'CCEA',
             ];
             $board_display = $board_display_map[strtolower($board_raw)] ?? strtoupper($board_raw);
-            $block .= "\n### FORGING YOUR WEAPON — BOARD ALREADY SET (DO NOT ASK)\n";
-            $block .= "Student is training for **{$board_display}**. The board is already known from session context.\n";
-            $block .= "- DO NOT display the Phase 1.2 \"which Exam Board are you training for?\" menu (A-G options).\n";
-            $block .= "- DO NOT ask the student to confirm or re-select their board.\n";
-            $block .= "- In your greeting, naturally reference the board (e.g. \"Welcome to the Forge — let's calibrate to your **{$board_display}** mark scheme\").\n";
-            $block .= "- Proceed directly from the Phase 1.1 greeting to Phase 1.5 Ready Gate using {$board_display}'s AO2 criteria.\n";
+            if ($step === 1) {
+                $block .= "\n### MARK SCHEME QUIZ — BOARD ALREADY SET (DO NOT ASK)\n";
+                $block .= "Student is training for **{$board_display}**. The board is already known from session context.\n";
+                $block .= "- The MSQ protocol's internal DSL variable `selected_board` is PRE-RESOLVED to `{$board_display}`. Treat it as already set.\n";
+                $block .= "- DO NOT display the \"First, which Exam Board are you studying?\" menu (the AQA / Edexcel / Edexcel IGCSE Spec A / Spec B / Eduqas / OCR / Cambridge option list).\n";
+                $block .= "- DO NOT ask the student to confirm or re-select their board.\n";
+                $block .= "- SKIP the welcome-and-board-prompt copy entirely. Emit ONLY the Ready Gate (\"Hey [first_name]! 👋 Welcome to your quick **{$board_display}** [Paper/Subject] Mark Scheme Quiz — five questions, each worth 2 marks. Let's see how well you can think like an examiner.\") followed by **A)** I'm ready / **B)** Hold on options.\n";
+                $block .= "- Load `quiz_questions` internally from the protocol's QUESTION_BANK matching `{$board_display}`, randomly shuffle, select first 5. Do NOT narrate this initialization.\n";
+            } elseif ($step === 2) {
+                $block .= "\n### FORGING YOUR WEAPON — BOARD ALREADY SET (DO NOT ASK)\n";
+                $block .= "Student is training for **{$board_display}**. The board is already known from session context.\n";
+                $block .= "- DO NOT display the Phase 1.2 \"which Exam Board are you training for?\" menu (A-G options).\n";
+                $block .= "- DO NOT ask the student to confirm or re-select their board.\n";
+                $block .= "- In your greeting, naturally reference the board (e.g. \"Welcome to the Forge — let's calibrate to your **{$board_display}** mark scheme\").\n";
+                $block .= "- Proceed directly from the Phase 1.1 greeting to Phase 1.5 Ready Gate using {$board_display}'s AO2 criteria.\n";
+            }
         }
 
         // v7.18.23: Forging Your Weapon sidebar step-marker emission. The
