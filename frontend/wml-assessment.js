@@ -1592,10 +1592,16 @@
 
     function clearCanvasChat() {
         try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch (e) {}
+        // v7.18.45: chat-clear suffix MUST match save + load (`_chatStorageSuffix()`),
+        // NOT base `WML.resolveStorageSuffix()`. For mark_scheme_unit, save writes to
+        // `_msu_s${bridgeStep}` (e.g. `_msu_s1`) but pre-v7.18.45 clear deleted base
+        // `_msu` — a different server key. Chat-clear button + stale-detection discard
+        // paths both silently failed to nuke server chat. Fixed by using the same
+        // suffix resolver as save/load.
         fetch(API.chatClear, {
             method: 'POST', headers,
             // v7.17.39: include cw_project_id for project-scoped clear
-            body: JSON.stringify(Object.assign({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: WML.resolveStorageSuffix(state.task, state.phase) || '', attempt: state.attempt || 1 }, cwScopeBody()))
+            body: JSON.stringify(Object.assign({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: _chatStorageSuffix(), attempt: state.attempt || 1 }, cwScopeBody()))
         }).catch(() => {});
     }
 
@@ -5970,6 +5976,38 @@
                         console.log('WML Training: Discarding broken planning chat —', state.task, 'reason:', aiText.substring(0, 80));
                         savedChat = null;
                         try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+                    }
+                }
+                // v7.18.45: Discard stale assessment-shape chats from mark_scheme_unit /
+                // mark_scheme mounts. Pre-v7.18.45 chat-clear used the wrong suffix
+                // (base `_msu` instead of `_msu_s1`), so server chat under the
+                // bridge-step-disambiguated key never got deleted. Old `task=assessment`
+                // chat (essay-marking shape) reloaded into MSQ / FYW / Final Assessment
+                // mounts. Discard rule mirrors the planning/polishing pattern at L5959.
+                // Phase B systemic fix queued (~/.claude/plans/you-are-the-wml-sparkling-lynx.md)
+                // — uniform SessionContext + per-task chat-key isolation.
+                if ((state.task === 'mark_scheme_unit' || state.task === 'mark_scheme') && savedChat && savedChat.history && savedChat.history.length > 0) {
+                    const firstAI = savedChat.history.find(m => m.role === 'assistant');
+                    const aiText = firstAI?.content || '';
+                    const isBroken = aiText.includes('assessment phase')
+                        || aiText.includes('what grade are you aiming for')
+                        || aiText.includes('I’ve received your')
+                        || aiText.includes("I've received your")
+                        || (aiText.includes('essay (') && aiText.includes('words)'))
+                        || aiText.includes('Before I begin marking')
+                        || aiText.includes('Complete all 8 steps');
+                    if (isBroken) {
+                        console.log('WML Training: Discarding stale assessment-shape chat from', state.task, '— reason:', aiText.substring(0, 80));
+                        savedChat = null;
+                        try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
+                        // Fire server-side delete with correct suffix so the polluted
+                        // server chat is nuked too — otherwise next mount reloads it.
+                        try {
+                            fetch(API.chatClear, {
+                                method: 'POST', headers,
+                                body: JSON.stringify(Object.assign({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: _chatStorageSuffix(), attempt: state.attempt || 1 }, cwScopeBody()))
+                            }).catch(() => {});
+                        } catch(e) {}
                     }
                 }
                 const hasSavedChat = savedChat && savedChat.history && savedChat.history.length > 0;
