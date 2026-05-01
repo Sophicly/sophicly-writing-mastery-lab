@@ -2238,6 +2238,24 @@
                                 renderCanvasWorkspace();
                             }
                         }, 200);
+                        } else if (state.task === 'mark_scheme_unit' || state.task === 'mark_scheme') {
+                        // v7.18.46: mark-scheme-* tasks get a fresh protocol-driven start
+                        // (same pattern as exam_prep at L2232). Pre-v7.18.46 fell through to
+                        // the hardcoded assessment-shape "Welcome to the assessment phase" /
+                        // "I've received your essay (N words)" / "what grade are you aiming
+                        // for?" branch below — wrong task, wrong lexicon, hardcoded the
+                        // exact pollution shape v7.18.45 was added to discard. Chat-clear
+                        // button itself was the regenerator. Fix: route through silent
+                        // auto-send so Sophia emits the correct task-specific greeting
+                        // (Mark Scheme Quiz / Forging Your Weapon Forge / Mark Scheme Final
+                        // Assessment) per current preamble + v7.18.44 LEXICON split.
+                        setTimeout(() => {
+                            if (canvasEditor && canvasEditor.options?.element) {
+                                canvasSilentSend = true; chatTextarea.value = "Let's begin!"; sendCanvasMessage();
+                            } else {
+                                renderCanvasWorkspace();
+                            }
+                        }, 200);
                         } else {
                         // v7.17.59: post-clear assessment greeting now uses STYLED
                         // HTML (info-note "20-25 minutes" box + bold word count +
