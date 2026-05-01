@@ -4803,7 +4803,14 @@
         // v7.17.22: mark_scheme_unit is a protocol-driven quiz + notes canvas — same
         // discard-stale-chat + silent-auto-send pattern as mark_scheme / exam-prep.
         const canvasInMarkSchemeUnit = state.task === 'mark_scheme_unit';
-        const canvasChatHeaderLabel = exerciseConfig.chatHeaderLabel || 'Essay Assessment';
+        // v7.18.42: language papers are response-based, not essay-based.
+        // Override the default "Essay Assessment" header to "Response Assessment"
+        // when the subject is a language paper. Literature subjects keep the
+        // existing essay-centric label.
+        let canvasChatHeaderLabel = exerciseConfig.chatHeaderLabel || 'Essay Assessment';
+        if (state.task === 'assessment' && /language/i.test(state.subject || '')) {
+            canvasChatHeaderLabel = 'Response Assessment';
+        }
         let canvasSidebarSteps = exerciseConfig.sidebarSteps || null;
 
         // v7.15.1: Fetch manifest step labels + groups for sidebar accordion display.

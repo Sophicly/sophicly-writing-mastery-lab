@@ -2998,7 +2998,9 @@
         const ch = el('div', { className: 'swml-panel-header' });
         const essayPlanTitle = state.planningMode ? `📋 Essay Plan · ${{ A: 'Recall', B: 'Guided', C: 'Instant' }[state.planningMode]}` : '📋 Essay Plan Builder';
         const modelTitle = state.planningMode ? `📄 Model Answer · ${state.planningMode === 'C' ? `Advanced L${state.advancedLevel || 1}` : state.planningMode === 'A' ? 'Coached' : 'Instant'}` : '📄 Model Answer';
-        const chatTitles = { assessment: '📊 Essay Assessment', polishing: '✨ Writing Polish', exam_question: '✏️ Exam Question Creator', essay_plan: essayPlanTitle, model_answer: modelTitle, verbal_rehearsal: '🎙️ Random Quote Analysis', conceptual_notes: '📚 Conceptual Notes', memory_practice: SVG_BRAIN + ' Memory Practice' };
+        // v7.18.42: language papers use "Response Assessment" — see same override in wml-assessment.js:4806.
+        const _isLangAssessment = state.task === 'assessment' && /language/i.test(state.subject || '');
+        const chatTitles = { assessment: _isLangAssessment ? '📊 Response Assessment' : '📊 Essay Assessment', polishing: '✨ Writing Polish', exam_question: '✏️ Exam Question Creator', essay_plan: essayPlanTitle, model_answer: modelTitle, verbal_rehearsal: '🎙️ Random Quote Analysis', conceptual_notes: '📚 Conceptual Notes', memory_practice: SVG_BRAIN + ' Memory Practice' };
         const titleEl = el('div', { className: 'swml-panel-title' });
         titleEl.innerHTML = chatTitles[state.task] || (SVG_SOCRATIC + ' Socratic Conversation');
         ch.appendChild(titleEl);
