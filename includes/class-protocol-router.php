@@ -3704,18 +3704,44 @@ TEMPLATE;
         // piggybacks it into the canvas-save payload. Same shape and route as
         // the v7.17.73 MSQ marker. Without this marker, the dashboard sees the
         // assessment as "started but never scored".
-        // v7.18.20 / v7.18.26: Vocabulary override — this is an ASSESSMENT,
-        // not a quiz. Protocol prose was inherited from mark-scheme-quiz files
-        // and uses "quiz" lexicon throughout the greeting and per-question
-        // framing. v7.18.26 extends the directive to mark_scheme_unit so MSQ
-        // (Quiz lessons) + FYW also frame as an assessment, not casual quiz.
-        if ($task === 'mark_scheme' || $task === 'mark_scheme_unit') {
+        // v7.18.20 / v7.18.26: Vocabulary override.
+        // v7.18.44: SPLIT per-task per-step lexicon. The v7.18.26 unification
+        // collapsed three distinct exercises ("Mark Scheme Quiz" / "Mark Scheme
+        // Final Assessment" / "Forging Your Weapon") into one "ASSESSMENT"
+        // lexicon — pedagogically wrong. Each task is a distinct exercise type:
+        //   - mark_scheme (lesson 6, Final Assessment) = formal assessment
+        //     (10 Qs, no running score, no answer reveal, scored at end)
+        //   - mark_scheme_unit step=1 (lessons 2 + 4, Mark Scheme Quiz) =
+        //     coaching quiz (5 Qs, running score, immediate per-Q feedback,
+        //     answer reveals + explanations after each Q)
+        //   - mark_scheme_unit step=2 (lesson 5, Forging Your Weapon) =
+        //     creative critique workshop ("Forge" / "Weapon-forging" lexicon,
+        //     not quiz, not assessment)
+        // Tracked for systemic root fix in v7.19.0 (SessionContext contract +
+        // single-source-of-truth via EXERCISE_MANIFEST). See plan file.
+        if ($task === 'mark_scheme') {
             $block .= "\n### LEXICON — \"ASSESSMENT\", NOT \"QUIZ\" (CRITICAL)\n";
-            $block .= "This is the Mark Scheme Self-ASSESSMENT. In every message you send (greeting, per-question framing, Step 12 results delivery, action plan):\n";
+            $block .= "This is the Mark Scheme Final ASSESSMENT — a measured 10-question diagnostic, not a coaching quiz. In every message you send (greeting, per-question framing, Step 12 results delivery, action plan):\n";
             $block .= "- Use \"assessment\" / \"this assessment\" / \"the assessment\". DO NOT use \"quiz\" or \"this quiz\".\n";
             $block .= "- Use \"questions\" not \"quiz items\".\n";
             $block .= "- Use \"results\" not \"quiz results\".\n";
-            $block .= "If protocol source text says \"quiz\", silently substitute \"assessment\" before emitting. The student-facing copy must consistently signal that this is a measured diagnostic, not a casual quiz.\n";
+            $block .= "If protocol source text says \"quiz\", silently substitute \"assessment\" before emitting. The student-facing copy must consistently signal that this is a measured diagnostic.\n";
+        } elseif ($task === 'mark_scheme_unit' && $step === 1) {
+            $block .= "\n### LEXICON — \"QUIZ\", NOT \"ASSESSMENT\" (CRITICAL)\n";
+            $block .= "This is the **Mark Scheme Quiz** — a 5-question coaching quiz (running score visible, immediate per-Q feedback with answer reveals + explanations). It is NOT an assessment. The Mark Scheme **Final Assessment** is a separate exercise (lesson 6, task=mark_scheme) — that one is the formal assessment.\n";
+            $block .= "In every message you send (greeting, per-question framing, results delivery, action plan):\n";
+            $block .= "- Use \"quiz\" / \"this quiz\" / \"the quiz\". DO NOT use \"assessment\" / \"this assessment\".\n";
+            $block .= "- Name the exercise verbatim as \"Mark Scheme Quiz\" (e.g. \"Welcome to your quick **{Board} {Subject} Mark Scheme Quiz** — five questions, each worth 2 marks\"). DO NOT name it \"Mark Scheme Assessment\", \"Mark Scheme Mastery Quiz\", or \"Mark Scheme Self-Assessment\".\n";
+            $block .= "- Use \"questions\" / \"quiz results\" / \"end-of-quiz dashboard\".\n";
+            $block .= "If protocol source text says \"assessment\", silently substitute \"quiz\". The student-facing copy must consistently signal this is a coaching quiz, not the formal assessment.\n";
+        } elseif ($task === 'mark_scheme_unit' && $step === 2) {
+            $block .= "\n### LEXICON — \"FORGE\" / \"FORGING YOUR WEAPON\", NOT \"QUIZ\" OR \"ASSESSMENT\" (CRITICAL)\n";
+            $block .= "This is **Forging Your Weapon** — a creative critique workshop where the student dissects a model essay and forges their own technique-arsenal. It is NOT a quiz and NOT an assessment.\n";
+            $block .= "In every message you send (greeting, phase framing, reflection delivery):\n";
+            $block .= "- Name the exercise as \"Forging Your Weapon\" or \"the Forge\". DO NOT use \"quiz\" / \"assessment\" / \"Mark Scheme Quiz\" / \"Mark Scheme Assessment\".\n";
+            $block .= "- Use \"phases\" not \"questions\". Use \"critique\" / \"dissection\" / \"forge\" / \"weapon\" / \"calibrate\" workshop vocabulary.\n";
+            $block .= "- The 5 sidebar steps are \"The Forge / Comparison / Critique / Anatomy / Next Steps\" — refer to them by name when transitioning.\n";
+            $block .= "If protocol source text says \"quiz\" or \"assessment\", silently substitute the workshop framing. The student-facing copy must signal craft-development, not a measured drill.\n";
         }
 
         // v7.18.20 / v7.18.26: Distractor Analysis — neutral phrasing only.
