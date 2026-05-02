@@ -4171,12 +4171,16 @@ TEMPLATE;
             $board_display_ms = $board_display_map_ms[strtolower($board_raw)] ?? strtoupper($board_raw);
             $block .= "\n### MARK SCHEME FINAL ASSESSMENT — GREETING MANDATE (DO NOT SKIP)\n";
             $block .= "Even though board/subject/task/UNIT are pre-set in SESSION CONTEXT, you MUST emit the protocol's Phase 1 greeting at session start. The pre-set context authorises the board-selection-menu skip AND the unit-selection-prompt skip. Greeting prose remains MANDATORY.\n";
-            $block .= "- Emit the welcome line (e.g. \"Welcome to the **{{board_display}} {{subject_display}}: {{task_display}}**. 📚\"), the diagnostic description (\"This diagnostic tests your understanding of marking criteria...\"), and the persistence note (\"Do not delete this chat...\").\n";
+            $block .= "- Two-message contract: FIRST message = greeting only (no Q1). SECOND message (after student clicks the launch button) = Q1.\n";
+            $block .= "- FIRST MESSAGE — emit the welcome line (e.g. \"Welcome to the **{{board_display}} {{subject_display}}: {{task_display}}**. 📚\"), the diagnostic description (\"This diagnostic tests your understanding of marking criteria...\"), and the persistence note (\"Do not delete this chat...\").\n";
             $block .= "- DO NOT display the 7-option board-selection menu (1. AQA / 2. Edexcel / ...). Board is **{$board_display_ms}**, already confirmed.\n";
-            $block .= "- IMMEDIATELY emit \"Board confirmed: **{$board_display_ms}** ✓ — Starting Unit 1.\" then proceed directly to Phase 2 Q1.\n";
             $block .= "- DO NOT display the unit-selection prompt (Unit 1 vs Unit 2 / \"Type 1 or 2\"). Unit is pre-determined.\n";
             $block .= "- DO NOT ask the student which unit they want. Default to Unit 1 for all fresh sessions.\n";
-            $block .= "- Use the Unit 1 question bank from the protocol module. Generate questions per Unit 1's tariff structure (3×1mk, 5×2mk, 2×3mk; AO coverage AO1≥2, AO2≥4, AO4≥1, AO5/AO6≥2).\n";
+            $block .= "- IMMEDIATELY emit \"Board confirmed: **{$board_display_ms}** ✓ — Starting Unit 1.\" as part of the FIRST message.\n";
+            $block .= "- End the FIRST message with the EXACT launch line: \"Ready to begin? Hit the button below when you're ready.\" — these phrases are required so the frontend launch-prompt detector renders a \"▶ Let's go\" quick-action button.\n";
+            $block .= "- DO NOT include Q1 / question prose / progress indicator / TTECEA / AO references in the FIRST message. Greeting + launch line ONLY.\n";
+            $block .= "- WAIT for the student's launch click (their reply will be \"Let's go\" or similar) before emitting the SECOND message.\n";
+            $block .= "- SECOND MESSAGE — emit Phase 2 Q1 only: progress indicator (\"Language Paper 1 Assessment > Unit 1 > Question 1 of 10\"), then Question 1 with its full prose. Use the Unit 1 question bank (3×1mk, 5×2mk, 2×3mk; AO coverage AO1≥2, AO2≥4, AO4≥1, AO5/AO6≥2).\n";
         }
 
         // v7.18.23: Forging Your Weapon sidebar step-marker emission. The
