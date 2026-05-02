@@ -6002,20 +6002,41 @@
                 // bridge-step-disambiguated key never got deleted. Old `task=assessment`
                 // chat (essay-marking shape) reloaded into MSQ / FYW / Final Assessment
                 // mounts. Discard rule mirrors the planning/polishing pattern at L5959.
-                // Phase B systemic fix queued (~/.claude/plans/you-are-the-wml-sparkling-lynx.md)
-                // — uniform SessionContext + per-task chat-key isolation.
+                // v7.19.2: extended to catch CROSS-BRIDGESTEP stale content within
+                // mark_scheme_unit (MSQ ↔ FYW). Surfaced 2026-05-02 — at FYW lesson 5
+                // mount, stale MSQ Ready Gate ("Mark Scheme Quiz — five questions")
+                // restored from localStorage and rendered as a fake "turn 1". Then
+                // auto-send "Let's begin!" hits the correct (FYW) protocol → Sophia
+                // emits real Forge greeting as "turn 2". Looked like a step-routing
+                // bug; was actually a chat-history pollution from a prior MSQ key
+                // collision (pre-v7.18.21 chat-keys lacked `_s${bridgeStep}` so MSQ
+                // and FYW shared base `_msu` storage). Stage 4 hard isolation will
+                // make this structurally impossible; this guard catches existing
+                // polluted data until then.
                 if ((state.task === 'mark_scheme_unit' || state.task === 'mark_scheme') && savedChat && savedChat.history && savedChat.history.length > 0) {
                     const firstAI = savedChat.history.find(m => m.role === 'assistant');
                     const aiText = firstAI?.content || '';
-                    const isBroken = aiText.includes('assessment phase')
+                    const isAssessmentShape = aiText.includes('assessment phase')
                         || aiText.includes('what grade are you aiming for')
                         || aiText.includes('I’ve received your')
                         || aiText.includes("I've received your")
                         || (aiText.includes('essay (') && aiText.includes('words)'))
                         || aiText.includes('Before I begin marking')
                         || aiText.includes('Complete all 8 steps');
+                    // v7.19.2: cross-bridgeStep mismatch detection within mark_scheme_unit.
+                    // FYW (bridgeStep=2) loading MSQ-shape content, OR MSQ (bridgeStep=1)
+                    // loading FYW-shape content, both indicate stale storage-key collision.
+                    const isMsqShape = /Mark Scheme Quiz\b|five questions, each worth 2 marks|think like an examiner/i.test(aiText);
+                    const isFywShape = /Welcome to the Forge|blunt instrument|razor-sharp weapon|Master Smith/i.test(aiText);
+                    const isCrossBridgeStepLeak = state.task === 'mark_scheme_unit' && (
+                        (state.bridgeStep === 2 && isMsqShape) ||
+                        (state.bridgeStep === 1 && isFywShape)
+                    );
+                    const isBroken = isAssessmentShape || isCrossBridgeStepLeak;
                     if (isBroken) {
-                        console.log('WML Training: Discarding stale assessment-shape chat from', state.task, '— reason:', aiText.substring(0, 80));
+                        const _reason = isAssessmentShape ? 'assessment-shape'
+                            : (isCrossBridgeStepLeak ? ('cross-bridgeStep leak: bridgeStep=' + state.bridgeStep + ' chat=' + (isMsqShape ? 'MSQ' : 'FYW')) : 'unknown');
+                        console.log('WML Training: Discarding stale chat from', state.task, '— reason:', _reason, '|', aiText.substring(0, 80));
                         savedChat = null;
                         try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch(e) {}
                         // Fire server-side delete with correct suffix so the polluted
