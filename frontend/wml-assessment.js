@@ -2201,7 +2201,14 @@
                         chatMessages.innerHTML = '';
                         state.plan = {};
                         state._phaseMarkedComplete = false;
-                        state.step = 1;
+                        // v7.19.3: preserve state.step for mark_scheme_unit (it's the bridge
+                        // dispatch value 1=Quiz / 2=FYW, NOT a sidebar position). Pre-fix
+                        // chat-clear in FYW lesson reset state.step from 2 back to 1, so
+                        // auto-send routed to MSQ protocol → "Welcome to your quick AQA
+                        // Language Paper 1 Mark Scheme Quiz" (wrong) instead of FYW Forge
+                        // greeting. Mirrors the guards at L5651 + L8432. updateProgress
+                        // for mark_scheme_unit writes state.sidebarStep, not state.step.
+                        if (state.task !== 'mark_scheme_unit') state.step = 1;
                         if (assessCompleteBtnRef.value) assessCompleteBtnRef.value.classList.remove('swml-assess-ready');
                         updateProgress(1);
                         const fn = (config.userName || '').split(' ')[0] || 'there';
@@ -7219,7 +7226,9 @@
                                         chatMessages.innerHTML = '';
                                         state.plan = {};
                                         state._phaseMarkedComplete = false;
-                                        state.step = 1;
+                                        // v7.19.3: preserve state.step for mark_scheme_unit (bridge dispatch
+                                        // 1=Quiz / 2=FYW). See twin guard at L2211.
+                                        if (state.task !== 'mark_scheme_unit') state.step = 1;
                                         if (assessCompleteBtn) assessCompleteBtn.classList.remove('swml-assess-ready');
                                         // Reset protocol progress sidebar to step 1
                                         updateProgress(1);
