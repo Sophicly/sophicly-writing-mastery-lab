@@ -2072,6 +2072,10 @@ window.WML = (function() {
         // v7.14.68 / v7.18.15: Strip [PROGRESS:N] and [STEP_ADVANCE:N] step markers
         // (used for sidebar tracking, not for display)
         text = text.replace(/\[(?:STEP_ADVANCE|PROGRESS):\s*\d+\]/gi, '').trim();
+        // v7.19.11: Strip @PANEL:fieldId=value markers (auto-populate doc fields).
+        // Distinct from legacy [PANEL:name][/PANEL] above. fieldId chars: a-z A-Z 0-9 _ -.
+        // Value runs to end-of-line OR a closing pipe `|` (terminator for inline use).
+        text = text.replace(/@PANEL:[A-Za-z0-9_\-]+=[^\n|]*\|?/g, '').trim();
         // v7.14.69: Strip [SUBSTEP_COMPLETE: step_N, substep_N, "Name"] markers (CW sub-step tracking)
         text = text.replace(/\[SUBSTEP_COMPLETE:\s*[^\]]*\]/g, '').trim();
         // Strip LaTeX $$ blocks

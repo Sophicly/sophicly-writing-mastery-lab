@@ -4185,6 +4185,29 @@ TEMPLATE;
             $block .= "- DO NOT ask the student which unit they want. Default to Unit 1 for all fresh sessions.\n";
             $block .= "- **STOP after the launch line.** Do NOT continue the response with \"In this assessment you'll work through 10 questions...\" or any meta-commentary about the upcoming questions. Do NOT include Q1, the progress indicator (\"Question 1 of 10\"), TTECEA/AO references, or any question prose in the FIRST message. Greeting items 1-5 above ONLY. Anything beyond item 5 is a violation.\n";
             $block .= "- SECOND MESSAGE — emit Phase 2 Q1 only: progress indicator (\"Language Paper 1 Assessment > Unit 1 > Question 1 of 10\"), then Question 1 with its full prose. Use the Unit 1 question bank (3×1mk, 5×2mk, 2×3mk; AO coverage AO1≥2, AO2≥4, AO4≥1, AO5/AO6≥2).\n";
+
+            // v7.19.11: OUTPUT MARKER CONTRACT — auto-populate canvas-doc fields
+            // via @PANEL:fieldId=value markers. Markers are INVISIBLE to the
+            // student (stripped at the addCanvasMessage boundary by
+            // _stripPanelMarkers + stripAIInternals). Apply pipeline lives at
+            // wml-assessment.js _applyPanelMarkers + scans selectField/inputField
+            // nodes by data-field-id. Rule: emit ONCE per field, on the message
+            // that produces the value. Append at end of message after the prose.
+            $block .= "\n### MSF OUTPUT MARKER CONTRACT — @PANEL field auto-populate\n";
+            $block .= "The student's canvas doc on the right has form fields wired to specific fieldIds. As you produce results in Phase 3, append `@PANEL:fieldId=value` markers (literal `@PANEL`, no square brackets, value runs to end-of-line) at the END of the message that produces each value. Markers are INVISIBLE to the student.\n";
+            $block .= "- Phase 3 step 5 (Scoring & Grade Calculation) — append, in any order:\n";
+            $block .= "    `@PANEL:ms-questions-correct=N` (integer 0-10)\n";
+            $block .= "    `@PANEL:ms-weighted-score=N` (integer 0-20)\n";
+            $block .= "    `@PANEL:ms-percentage=N%` (string with %)\n";
+            $block .= "    `@PANEL:ms-predicted-grade=N` (integer 1-9)\n";
+            $block .= "- Phase 3 step 4 (Performance Analysis) — append:\n";
+            $block .= "    `@PANEL:ms-top-missed=AO1,AO2,AO3` (comma-separated AO labels, each from {AO1,AO2,AO3,AO4,AO5,AO6})\n";
+            $block .= "    `@PANEL:ms-optouts-count=N` (integer 0-10)\n";
+            $block .= "    `@PANEL:ms-optout-items=multiple-choice,short-answer` (comma-separated from {multiple-choice, short-answer, reasoning, apply-to-extract, compare-criteria})\n";
+            $block .= "- Phase 3 step 6 (Personalised Next Steps) — append:\n";
+            $block .= "    `@PANEL:ms-personalised-summary=One concise paragraph distilling the student's top priority + the next concrete action.` (free text, no newlines, no pipes)\n";
+            $block .= "- Emit each marker ONCE per session. Markers are append-only at end of message; do not embed in mid-prose.\n";
+            $block .= "- DO NOT emit markers for Phase 1 or Phase 2 messages — only Phase 3 results emissions.\n";
         }
 
         // v7.18.23: Forging Your Weapon sidebar step-marker emission. The

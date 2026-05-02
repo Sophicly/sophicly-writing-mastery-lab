@@ -4742,6 +4742,109 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     box-shadow: 0 0 0 2px rgba(125, 249, 233, 0.06);
 }
 
+/* ── v7.19.11: SelectField (bounded-choice picker) ── */
+.swml-select-field {
+    position: relative;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 6px 0 14px 0;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+.swml-select-prompt {
+    font-size: 11px;
+    font-style: italic;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+.swml-select-input {
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255,255,255,0.06);
+    color: inherit;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 4px;
+    padding: 6px 28px 6px 10px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    min-width: 120px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' fill-opacity='0.6'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    background-size: 16px;
+}
+.swml-select-input:focus {
+    outline: none;
+    border-color: #51dacf;
+    box-shadow: 0 0 0 2px rgba(81, 218, 207, 0.15);
+}
+.swml-select-input option {
+    background: #1a1a2e;
+    color: #fff;
+}
+.swml-select-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.swml-select-chip {
+    appearance: none;
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.75);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.swml-select-chip:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.3);
+}
+.swml-select-chip.selected {
+    background: linear-gradient(135deg, #5333ed 0%, #4D76FD 100%);
+    border-color: #51dacf;
+    color: #fff;
+}
+.swml-select-chip.selected:hover {
+    filter: brightness(1.1);
+}
+
+/* Light theme — SelectField */
+[data-swml-theme="light"] .swml-select-field {
+    background: rgba(0,0,0,0.02);
+    border-color: rgba(0,0,0,0.1);
+}
+[data-swml-theme="light"] .swml-select-prompt {
+    color: rgba(0,0,0,0.55);
+}
+[data-swml-theme="light"] .swml-select-input {
+    background: #fff;
+    color: #2c003e;
+    border-color: rgba(0,0,0,0.2);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232c003e' fill-opacity='0.7'><path d='M7 10l5 5 5-5z'/></svg>");
+}
+[data-swml-theme="light"] .swml-select-input option {
+    background: #fff;
+    color: #2c003e;
+}
+[data-swml-theme="light"] .swml-select-chip {
+    background: rgba(0,0,0,0.04);
+    color: #2c003e;
+    border-color: rgba(0,0,0,0.18);
+}
+[data-swml-theme="light"] .swml-select-chip:hover {
+    background: rgba(0,0,0,0.08);
+}
+[data-swml-theme="light"] .swml-select-chip.selected {
+    color: #fff;
+}
+
 /* Light theme */
 [data-swml-theme="light"] .swml-input-field {
     background: rgba(0,0,0,0.02);
