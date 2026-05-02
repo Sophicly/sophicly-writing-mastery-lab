@@ -6560,15 +6560,15 @@
                     initAssessmentState();
                     };
                     _waitEditorReady(0);
-                } else if (canvasInMarkScheme) {
-                    // v7.14.50: Mark scheme — welcome message explaining why this matters, then silent auto-send
-                    const msFirstName = (config.userName || '').split(' ')[0] || 'there';
-                    const msGreeting = `Hi ${msFirstName}! Welcome to your **Mark Scheme Assessment**.\n\nUnderstanding the marking criteria is one of the most powerful ways to improve your grades. Many students lose marks in exams not because they can\u2019t write well, but because they forget what the examiner is actually looking for.\n\nThis quiz will test your knowledge of how essays are marked against the assessment objectives. Your results will help you see exactly which criteria to focus on in your next essay.\n\nWhen you\u2019re ready, I\u2019ll start with Question 1.`;
-                    tp.addChatMessage(formatAI(msGreeting), 'ai', msGreeting);
-                    tp.canvasChatHistory.push({ role: 'assistant', content: msGreeting });
-                    saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
 
-                    // Quick action: "Let's begin"
+                    // v7.19.5: dropped JS-hardcoded "Let's begin" button. Was a
+                    // 50ms-setTimeout DOM injection — not part of saved chat, so
+                    // returning to the lesson replayed the welcome text without
+                    // the button. MSF now silent-auto-sends like MSQ + FYW; the
+                    // server-side v7.19.4 GREETING MANDATE directive emits the
+                    // unit-selection prompt, which formatAI renders as buttons
+                    // 1 / 2 on every mount + resume.
+                    /* dropped — see comment above
                     setTimeout(() => {
                         const startBar = el('div', { className: 'swml-quick-actions' });
                         startBar.appendChild(el('button', { className: 'swml-quick-btn', textContent: "Let's begin",
@@ -6580,6 +6580,7 @@
                             bc.appendChild(startBar);
                         }
                     }, 50);
+                    */
                 } else if (!state.reviewMode) {
                     // All other training-env exercises: silent auto-send (protocol drives greeting)
                     // v7.17.71: ROLLBACK of v7.17.70 _isQuizResume gate. Original always-send
