@@ -4171,16 +4171,19 @@ TEMPLATE;
             $board_display_ms = $board_display_map_ms[strtolower($board_raw)] ?? strtoupper($board_raw);
             $block .= "\n### MARK SCHEME FINAL ASSESSMENT — GREETING MANDATE (DO NOT SKIP)\n";
             $block .= "Even though board/subject/task/UNIT are pre-set in SESSION CONTEXT, you MUST emit the protocol's Phase 1 greeting at session start. The pre-set context authorises the board-selection-menu skip AND the unit-selection-prompt skip. Greeting prose remains MANDATORY.\n";
-            $block .= "- Two-message contract: FIRST assistant message = greeting only (no Q1). SECOND assistant message (after student clicks the launch button) = Q1.\n";
+            $block .= "- **TWO-MESSAGE CONTRACT (NON-NEGOTIABLE)**: FIRST assistant message = greeting only. SECOND assistant message (separate turn, after student clicks the launch button) = Q1. Greeting and Q1 MUST NOT be combined in a single response.\n";
             $block .= "- FIRST-TURN MOUNT TRIGGER: when there are ZERO prior assistant messages in the chat history, treat the student's first message (e.g. \"Let's begin!\", \"start\", \"go\", any other text) as a generic MOUNT TRIGGER, NOT a launch click. Always emit the FIRST assistant message (greeting) on this turn regardless of the student's text. Do NOT jump to Q1 just because the user typed \"Let's begin\" — the mount silent-auto-send fires that phrase before the greeting is even visible to the student.\n";
             $block .= "- LAUNCH CLICK = the SECOND user message (only valid after FIRST assistant message has been emitted). After the student replies to your greeting (\"Let's go\" / \"ready\" / etc.), emit the SECOND assistant message (Q1).\n";
-            $block .= "- FIRST MESSAGE — emit the welcome line (e.g. \"Welcome to the **{{board_display}} {{subject_display}}: {{task_display}}**. 📚\"), the diagnostic description (\"This diagnostic tests your understanding of marking criteria...\"), and the persistence note (\"Do not delete this chat...\").\n";
+            $block .= "- FIRST MESSAGE CONTENT — emit:\n";
+            $block .= "    1. Welcome line: \"Welcome to the **{{board_display}} {{subject_display}}: {{task_display}}**. 📚\"\n";
+            $block .= "    2. Diagnostic description: \"This diagnostic tests your understanding of marking criteria — not your ability to analyse texts. You'll answer 10 questions covering Assessment Objectives, the TTECEA framework, and mark scheme terminology.\"\n";
+            $block .= "    3. Persistence note: \"**Important:** Do not delete this chat. We use your answers across units to track improvements and recurring issues.\"\n";
+            $block .= "    4. \"Board confirmed: **{$board_display_ms}** ✓ — Starting Unit 1.\"\n";
+            $block .= "    5. EXACT launch line: \"Ready to begin. Hit the button below when you're ready.\" (period after \"begin\", NOT a question mark — frontend detector requires this exact form for the \"▶ Let's go\" button).\n";
             $block .= "- DO NOT display the 7-option board-selection menu (1. AQA / 2. Edexcel / ...). Board is **{$board_display_ms}**, already confirmed.\n";
             $block .= "- DO NOT display the unit-selection prompt (Unit 1 vs Unit 2 / \"Type 1 or 2\"). Unit is pre-determined.\n";
             $block .= "- DO NOT ask the student which unit they want. Default to Unit 1 for all fresh sessions.\n";
-            $block .= "- IMMEDIATELY emit \"Board confirmed: **{$board_display_ms}** ✓ — Starting Unit 1.\" as part of the FIRST message.\n";
-            $block .= "- End the FIRST message with the EXACT launch line: \"Ready to begin? Hit the button below when you're ready.\" — these phrases are required so the frontend launch-prompt detector renders a \"▶ Let's go\" quick-action button.\n";
-            $block .= "- DO NOT include Q1 / question prose / progress indicator / TTECEA / AO references in the FIRST message. Greeting + launch line ONLY.\n";
+            $block .= "- **STOP after the launch line.** Do NOT continue the response with \"In this assessment you'll work through 10 questions...\" or any meta-commentary about the upcoming questions. Do NOT include Q1, the progress indicator (\"Question 1 of 10\"), TTECEA/AO references, or any question prose in the FIRST message. Greeting items 1-5 above ONLY. Anything beyond item 5 is a violation.\n";
             $block .= "- SECOND MESSAGE — emit Phase 2 Q1 only: progress indicator (\"Language Paper 1 Assessment > Unit 1 > Question 1 of 10\"), then Question 1 with its full prose. Use the Unit 1 question bank (3×1mk, 5×2mk, 2×3mk; AO coverage AO1≥2, AO2≥4, AO4≥1, AO5/AO6≥2).\n";
         }
 
