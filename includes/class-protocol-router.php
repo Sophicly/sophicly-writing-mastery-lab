@@ -4150,6 +4150,34 @@ TEMPLATE;
             }
         }
 
+        // v7.19.4: Mark Scheme Final Assessment — GREETING MANDATE.
+        // Surfaced 2026-05-02 — AQA Lang P1 lesson 6 (mark_scheme task) mount
+        // jumps straight to Q1 with no greeting. Sidebar Setup & Board
+        // pre-checkmarked. Root cause: protocols/shared/mark-scheme/{subject}.md
+        // Phase 1 bundles greeting + board-selection menu in one display block
+        // (e.g. language1.md:991-1014). With board pre-set via SESSION CONTEXT
+        // (v7.18.47+), Sophia rationalises the entire Phase 1 as "skippable" and
+        // also auto-defaults Unit 1, jumping straight to Phase 2 Q1.
+        // Fix: emit a directive that mandates the greeting prose + unit selection
+        // prompt, while explicitly authorising the board-menu skip. Mirrors the
+        // mark_scheme_unit BOARD ALREADY SET pattern at L4127.
+        if ($task === 'mark_scheme' && $board_raw !== '') {
+            $board_display_map_ms = [
+                'aqa' => 'AQA', 'edexcel' => 'Edexcel', 'eduqas' => 'Eduqas',
+                'ocr' => 'OCR', 'edexcel-igcse' => 'Edexcel IGCSE',
+                'cambridge-igcse' => 'Cambridge IGCSE', 'sqa' => 'SQA',
+                'ccea' => 'CCEA',
+            ];
+            $board_display_ms = $board_display_map_ms[strtolower($board_raw)] ?? strtoupper($board_raw);
+            $block .= "\n### MARK SCHEME FINAL ASSESSMENT — GREETING MANDATE (DO NOT SKIP)\n";
+            $block .= "Even though board/subject/task are pre-set in SESSION CONTEXT, you MUST emit the protocol's Phase 1 greeting at session start. The pre-set context authorises ONLY the board-selection-menu skip. Greeting prose + unit selection prompt remain MANDATORY.\n";
+            $block .= "- Emit the welcome line (e.g. \"Welcome to the **{{board_display}} {{subject_display}}: {{task_display}}**. 📚\"), the diagnostic description (\"This diagnostic tests your understanding of marking criteria...\"), and the persistence note (\"Do not delete this chat...\").\n";
+            $block .= "- DO NOT display the 7-option board-selection menu (1. AQA / 2. Edexcel / ...). Board is **{$board_display_ms}**, already confirmed.\n";
+            $block .= "- IMMEDIATELY emit \"Board confirmed: **{$board_display_ms}** ✓\" then the unit-selection prompt (Unit 1 vs Unit 2).\n";
+            $block .= "- WAIT for student to pick Unit 1 or Unit 2 before generating questions or starting Phase 2.\n";
+            $block .= "- Do NOT auto-default to Unit 1. Do NOT jump straight to Q1.\n";
+        }
+
         // v7.18.23: Forging Your Weapon sidebar step-marker emission. The
         // mark_scheme_unit task progress panel was hidden until v7.18.23; with
         // it visible, FYW renders a 5-step sidebar (Forge / Comparison /
