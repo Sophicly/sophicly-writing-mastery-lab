@@ -1847,6 +1847,14 @@ TEMPLATE;
         $student_name = $user ? $user->display_name : 'Student';
         $first_name = $user ? ($user->first_name ?: $user->display_name) : 'Student';
 
+        // v7.18.47: Phase B Stage 1 — SESSION CONTEXT block. Structured single source
+        // of truth for board / subject / text / task / step / lexicon / display name.
+        // Prepended to ALL preamble return paths. Band-aid override directives
+        // (LEXICON L3712, BOARD ALREADY SET L3839, NEVER REFERENCE L3825) still
+        // fire alongside in Stage 1 — Stage 2 next session drops them once this
+        // block proves stable. Per ~/.claude/plans/you-are-the-wml-sparkling-lynx.md.
+        $session_context_block = $this->build_session_context_block($context, $first_name);
+
         // v7.18.3 SUBTRACTION TEST — mark_scheme_unit gets MINIMAL preamble.
         // Hypothesis (per Neil 2026-04-27): the bare modular protocol works fine
         // (he tested by pasting raw protocol into AI Engine direct chatbot and it
@@ -1866,7 +1874,8 @@ TEMPLATE;
             $minimal .= "**Student:** {$student_name} (call them {$first_name})\n";
             $minimal .= "**Exam Board:** {$board_label}\n\n";
             $minimal .= "You are Sophia. Follow the modular protocol below precisely. The protocol's Phase 1-4 instructions are the source of truth — do not improvise around them.\n";
-            return $minimal;
+            // v7.18.47 Stage 1: prepend SESSION CONTEXT block (single source of truth).
+            return $session_context_block . $minimal;
         }
 
         // Task → Protocol mapping
@@ -1939,7 +1948,8 @@ TEMPLATE;
             $preamble .= "At natural moments during the exercise, briefly connect what the student is doing to how published authors do the same. For example: 'Notice how you're drawing from your own values here — this is exactly what authors like Dickens and Priestley did.' ";
             $preamble .= "Do NOT overdo this — one or two brief connections per exercise is enough. The priority is the creative writing exercise itself.\n";
 
-            return $preamble;
+            // v7.18.47 Stage 1: prepend SESSION CONTEXT block (single source of truth).
+            return $session_context_block . $preamble;
         }
 
         // Subject label
@@ -3125,7 +3135,229 @@ TEMPLATE;
             $preamble .= $standalone_feedback_note;
         }
 
-        return $preamble;
+        // v7.18.47 Stage 1: prepend SESSION CONTEXT block (single source of truth).
+        return $session_context_block . $preamble;
+    }
+
+    /**
+     * v7.18.47 Phase B Stage 1: build the SESSION CONTEXT — PRE-SET preamble block.
+     * Single source of truth for board / subject / text / task / step / lexicon /
+     * task display name / scoring shape / Q count.
+     *
+     * Stage 1 is ADDITIVE — band-aid override directives (LEXICON L3712, BOARD
+     * ALREADY SET L3839, NEVER REFERENCE L3825) still fire alongside in case the
+     * structured block alone proves insufficient. Stage 2 (next session) drops
+     * the band-aids once this block is verified stable across all tasks. Stage 3
+     * rewrites protocol Ready Gates with `{{placeholder}}` substitution. Stage 4
+     * isolates chat key + canvas key suffix per task. Full design at
+     * ~/.claude/plans/you-are-the-wml-sparkling-lynx.md.
+     */
+    private function build_session_context_block($context, $first_name) {
+        $board_raw    = $context['board']    ?? '';
+        $subject_raw  = $context['subject']  ?? '';
+        $text_raw     = $context['text']     ?? '';
+        $text_name    = $context['text_name'] ?? '';
+        $task         = $context['task']     ?? '';
+        $step         = (int)($context['step']       ?? 0);
+        $bridge_step  = (int)($context['bridgeStep'] ?? $step);
+
+        $board_display_map = [
+            'aqa' => 'AQA', 'edexcel' => 'Edexcel', 'eduqas' => 'Eduqas',
+            'ocr' => 'OCR', 'edexcel-igcse' => 'Edexcel IGCSE',
+            'cambridge-igcse' => 'Cambridge IGCSE', 'sqa' => 'SQA', 'ccea' => 'CCEA',
+        ];
+        $board_display = $board_display_map[strtolower($board_raw)] ?? strtoupper($board_raw);
+
+        $subject_display_map = [
+            'language_p1'      => 'Language Paper 1',
+            'language_p2'      => 'Language Paper 2',
+            'language1'        => 'Language Paper 1',
+            'language2'        => 'Language Paper 2',
+            '19th_century'     => '19th Century Novel',
+            'modern_text'      => 'Modern Text',
+            'poetry_anthology' => 'Poetry Anthology',
+            'unseen_poetry'    => 'Unseen Poetry',
+            'shakespeare'      => 'Shakespeare',
+            'creative_writing' => 'Creative Writing',
+        ];
+        $subject_display = $subject_display_map[$subject_raw] ?? ucwords(str_replace('_', ' ', $subject_raw));
+
+        $text_display = $text_name ?: ($text_raw ? ucwords(str_replace('_', ' ', $text_raw)) : '');
+
+        $contract = $this->resolve_task_contract($task, $bridge_step);
+
+        $block  = "## SESSION CONTEXT — PRE-SET (DO NOT ASK STUDENT FOR ANY OF THESE)\n\n";
+        $block .= "These variables are AUTHORITATIVE and pre-resolved by WML. The protocol below uses them as already-set values.\n\n";
+        $block .= "```\n";
+        $block .= "board:                 {$board_raw}\n";
+        $block .= "board_display:         {$board_display}\n";
+        if ($subject_raw)  $block .= "subject:               {$subject_raw}\n";
+        if ($subject_display && $subject_display !== $subject_raw) $block .= "subject_display:       {$subject_display}\n";
+        if ($text_raw)     $block .= "text:                  {$text_raw}\n";
+        if ($text_display) $block .= "text_display:          {$text_display}\n";
+        $block .= "task:                  {$task}\n";
+        if (!empty($contract['task_display'])) $block .= "task_display:          {$contract['task_display']}\n";
+        if (!empty($contract['lexicon']))      $block .= "lexicon:               {$contract['lexicon']}\n";
+        if (!empty($contract['task_family']))  $block .= "task_family:           {$contract['task_family']}\n";
+        if (isset($contract['scored_visibly']) && $contract['scored_visibly'] !== null) {
+            $block .= "scored_visibly:        " . ($contract['scored_visibly'] ? 'true' : 'false') . "\n";
+        }
+        if (!empty($contract['q_count'])) $block .= "q_count:               {$contract['q_count']}\n";
+        $block .= "step:                  {$step}\n";
+        if ($task === 'mark_scheme_unit' && $bridge_step) $block .= "bridge_step:           {$bridge_step}\n";
+        $block .= "student_first_name:    {$first_name}\n";
+        $block .= "```\n\n";
+        $block .= "Authoring rules derived from above:\n";
+        $block .= "- DO NOT ask the student for any field listed above. Treat them as authoritative.\n";
+        if (!empty($contract['task_display'])) {
+            $block .= "- Name the exercise as `{$contract['task_display']}` verbatim. Do NOT use alternative names for the same exercise.\n";
+        }
+        if (!empty($contract['lexicon'])) {
+            $block .= "- Use the `{$contract['lexicon']}` lexicon consistently. Substitute conflicting protocol prose accordingly.\n";
+        }
+        if (isset($contract['scored_visibly']) && $contract['scored_visibly'] === false) {
+            $block .= "- Running score is HIDDEN during the exercise. Do not emit \"Current score: N/M\" lines mid-flow. Reveal only at the designated results phase.\n";
+        } elseif (isset($contract['scored_visibly']) && $contract['scored_visibly'] === true) {
+            $block .= "- Running score is VISIBLE during the exercise. Emit a brief score line after each Q's feedback (e.g. \"Current score: N/M marks\").\n";
+        }
+        if (!empty($contract['q_count'])) {
+            $block .= "- The exercise has exactly {$contract['q_count']} questions. Do not announce a different count.\n";
+        }
+        $block .= "- The exam board is `{$board_display}`. The subject is `{$subject_display}`. Both are pre-resolved — never ask the student to choose or confirm them.\n";
+        $block .= "- The student's first name is `{$first_name}`. Use it naturally in greetings.\n";
+        $block .= "- If a protocol step asks the student to provide a value already pre-set above, SKIP that step entirely.\n\n";
+        $block .= "---\n\n";
+
+        return $block;
+    }
+
+    /**
+     * v7.18.47 Phase B Stage 1: resolve the per-task contract (single source of
+     * truth for display name + lexicon + task family + scoring shape + Q count).
+     *
+     * For mark_scheme_unit, contract differs per bridge_step (Quiz vs Forging
+     * Your Weapon). Other tasks have a single contract regardless of step.
+     */
+    private function resolve_task_contract($task, $bridge_step = 0) {
+        $contracts = [
+            'mark_scheme' => [
+                'task_display'   => 'Mark Scheme Final Assessment',
+                'lexicon'        => 'assessment',
+                'task_family'    => 'formal_assessment',
+                'scored_visibly' => false,
+                'q_count'        => 10,
+            ],
+            'mark_scheme_unit' => [
+                1 => [
+                    'task_display'   => 'Mark Scheme Quiz',
+                    'lexicon'        => 'quiz',
+                    'task_family'    => 'mastery_drill',
+                    'scored_visibly' => true,
+                    'q_count'        => 5,
+                ],
+                2 => [
+                    'task_display'   => 'Forging Your Weapon',
+                    'lexicon'        => 'weapon-forging',
+                    'task_family'    => 'craft_workshop',
+                    'scored_visibly' => false,
+                    'q_count'        => null,
+                ],
+            ],
+            'assessment' => [
+                'task_display'   => 'Diagnostic Assessment',
+                'lexicon'        => 'assessment',
+                'task_family'    => 'phase1_diagnostic',
+                'scored_visibly' => false,
+                'q_count'        => null,
+            ],
+            'redraft_assessment' => [
+                'task_display'   => 'Redraft Reassessment',
+                'lexicon'        => 'reassessment',
+                'task_family'    => 'phase2_reassessment',
+                'scored_visibly' => false,
+                'q_count'        => null,
+            ],
+            'planning' => [
+                'task_display'   => 'Response Planning',
+                'lexicon'        => 'planning',
+                'task_family'    => 'phase2_planning',
+                'scored_visibly' => null,
+                'q_count'        => null,
+            ],
+            'polishing' => [
+                'task_display'   => 'Prose Polishing',
+                'lexicon'        => 'polishing',
+                'task_family'    => 'phase2_polishing',
+                'scored_visibly' => null,
+                'q_count'        => null,
+            ],
+            'foundational_quiz' => [
+                'task_display'   => 'Foundational Quiz',
+                'lexicon'        => 'quiz',
+                'task_family'    => 'mastery_drill',
+                'scored_visibly' => true,
+                'q_count'        => null,
+            ],
+            'memory_practice' => [
+                'task_display'   => 'Memory Practice',
+                'lexicon'        => 'memory_practice',
+                'task_family'    => 'mastery_drill',
+                'scored_visibly' => null,
+                'q_count'        => null,
+            ],
+            'conceptual_notes' => [
+                'task_display'   => 'Conceptual Notes',
+                'lexicon'        => 'notes',
+                'task_family'    => 'reference',
+                'scored_visibly' => null,
+                'q_count'        => null,
+            ],
+            'exam_question' => [
+                'task_display'   => 'Exam Question',
+                'lexicon'        => 'exam_question',
+                'task_family'    => 'exam_prep',
+                'scored_visibly' => null,
+                'q_count'        => null,
+            ],
+            'essay_plan' => [
+                'task_display'   => 'Essay Plan',
+                'lexicon'        => 'planning',
+                'task_family'    => 'exam_prep',
+                'scored_visibly' => null,
+                'q_count'        => null,
+            ],
+            'model_answer' => [
+                'task_display'   => 'Model Answer',
+                'lexicon'        => 'model_answer',
+                'task_family'    => 'exam_prep',
+                'scored_visibly' => null,
+                'q_count'        => null,
+            ],
+            'feedback_discussion' => [
+                'task_display'   => 'Feedback Discussion',
+                'lexicon'        => 'feedback',
+                'task_family'    => 'review',
+                'scored_visibly' => null,
+                'q_count'        => null,
+            ],
+        ];
+
+        if (!isset($contracts[$task])) {
+            return [
+                'task_display'   => null,
+                'lexicon'        => null,
+                'task_family'    => null,
+                'scored_visibly' => null,
+                'q_count'        => null,
+            ];
+        }
+
+        $entry = $contracts[$task];
+        if ($task === 'mark_scheme_unit') {
+            $bs = $bridge_step ?: 1;
+            return $entry[$bs] ?? $entry[1];
+        }
+        return $entry;
     }
 
     /**
