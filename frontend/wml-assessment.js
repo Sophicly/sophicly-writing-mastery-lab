@@ -1602,7 +1602,7 @@
             method: 'POST', headers,
             // v7.17.39: include cw_project_id for project-scoped clear
             body: JSON.stringify(Object.assign({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: _chatStorageSuffix(), attempt: state.attempt || 1 }, cwScopeBody()))
-        }).catch(() => {});
+        }).catch(e => console.warn('WML chat-clear: server-side delete failed', e && e.message));
     }
 
     function closeCanvasOverlay() {
@@ -6071,6 +6071,13 @@
                     // explicit markers in the persisted history.
                     if (tp.canvasChatHistory && tp.canvasChatHistory.length > 0) {
                         let markerStep = 1;
+                        // v7.19.10: count assistant turns for length-cap guard. Stale-history
+                        // bumps surfaced 2026-05-02 — MSQ lesson 4 with only 2 chat messages
+                        // (welcome + Q1) restored sidebar to step 7 (Results) because the
+                        // protocol prose for Q1 contained a literal "Quiz Complete!" preview
+                        // (or AI echoed it). Length-cap stops the bump when chat is too short
+                        // to plausibly be at Results.
+                        const _aiTurns = tp.canvasChatHistory.filter(m => m.role === 'assistant').length;
                         tp.canvasChatHistory.forEach(m => {
                             if (m.role !== 'assistant' || !m.content) return;
                             const matches = m.content.matchAll(/\[(?:STEP_ADVANCE|PROGRESS):\s*(\d+)\]/gi);
@@ -6090,11 +6097,27 @@
                                         if (_qs > markerStep) markerStep = _qs;
                                     }
                                 }
-                                if (/Quiz\s+Complete|\[QUIZ_COMPLETE/i.test(m.content) && markerStep < 7) {
+                                // v7.19.10: tightened from /Quiz\s+Complete|\[QUIZ_COMPLETE/i
+                                // (case-insensitive freeform). Old form matched protocol
+                                // prose like "🎉 **Quiz Complete!**" preview text echoed in
+                                // AI early replies, falsely advancing sidebar to step 7 on
+                                // turn 1. New form requires the canonical machine-emitted
+                                // marker `[QUIZ_COMPLETE:...]` (per v7.18.11 contract).
+                                if (/\[QUIZ_COMPLETE:/.test(m.content) && markerStep < 7) {
                                     markerStep = 7;
                                 }
                             }
                         });
+                        // v7.19.10: length-cap guard. Cap markerStep at 2 when chat has
+                        // fewer than 3 assistant turns. Welcome counts as 1; Q1 as 2; if
+                        // the scan claims step 3+ on a session with ≤ 2 AI turns, that's
+                        // stale-marker contamination, not legitimate progression. Caps
+                        // protect against AI echoes of "Question 5 of 5" / "Quiz Complete"
+                        // in early-turn prose AND against state-bleed from prior sessions.
+                        if (_aiTurns <= 2 && markerStep > 2) {
+                            console.log('WML v7.19.10: capping markerStep ' + markerStep + ' → 2 (only ' + _aiTurns + ' assistant turns, stale data suspected)');
+                            markerStep = 2;
+                        }
                         // v7.18.23: mark_scheme_unit reads state.sidebarStep (state.step pinned to bridge dispatch).
                         const _curStep = state.task === 'mark_scheme_unit' ? (state.sidebarStep || 0) : (state.step || 0);
                         if (markerStep > _curStep) {
