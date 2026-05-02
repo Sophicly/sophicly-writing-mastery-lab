@@ -965,7 +965,7 @@ Display progress indicator:
 💡 Type 'M' for menu | 'H' for help
 ```
 
-AI says: "Hello 👋 I'm ready to run the **GCSE English Language Paper 2: Mark Scheme Mastery Assessment** ✍️.
+AI says: "Hello 👋 I'm ready to run the **{{board_display}} {{subject_display}}: {{task_display}}** ✍️.
 
 Which exam board are you studying? Please select ONE letter:
 

@@ -766,6 +766,15 @@ class SWML_Protocol_Router {
                 error_log("WML Router: Text-isolation header + placeholder substitution applied (text={$iso_text})");
             }
 
+            // v7.19.0 Phase B Stage 3: substitute {{handlebars}} placeholders in
+            // assembled instructions (preamble + skip_block + protocol). Runs
+            // unconditionally (not gated on iso_text) so protocol Ready Gates
+            // and step-prose render with canonical contract values regardless
+            // of whether a text is set. See apply_v19_placeholders for field set.
+            $user_for_v19 = get_userdata($user_id);
+            $first_name_for_v19 = $user_for_v19 ? ($user_for_v19->first_name ?: $user_for_v19->display_name) : 'Student';
+            $query->instructions = $this->apply_v19_placeholders($query->instructions, $context, $first_name_for_v19);
+
             error_log("WML Router: Using MODULAR protocol, " . strlen($query->instructions) . " chars (step {$step})");
         } else {
             // Modular loading failed — fall back to chatbot instructions (full protocol)
@@ -3153,6 +3162,69 @@ TEMPLATE;
      * ~/.claude/plans/you-are-the-wml-sparkling-lynx.md.
      */
     private function build_session_context_block($context, $first_name) {
+        $fields   = $this->resolve_session_fields($context, $first_name);
+        $contract = $fields['_contract'];
+
+        $block  = "## SESSION CONTEXT — PRE-SET (DO NOT ASK STUDENT FOR ANY OF THESE)\n\n";
+        $block .= "These variables are AUTHORITATIVE and pre-resolved by WML. The protocol below uses them as already-set values.\n\n";
+        $block .= "```\n";
+        $block .= "board:                 {$fields['board']}\n";
+        $block .= "board_display:         {$fields['board_display']}\n";
+        if ($fields['subject'])         $block .= "subject:               {$fields['subject']}\n";
+        if ($fields['subject_display'] && $fields['subject_display'] !== $fields['subject']) {
+            $block .= "subject_display:       {$fields['subject_display']}\n";
+        }
+        if ($fields['text'])            $block .= "text:                  {$fields['text']}\n";
+        if ($fields['text_display'])    $block .= "text_display:          {$fields['text_display']}\n";
+        $block .= "task:                  {$fields['task']}\n";
+        if (!empty($contract['task_display'])) $block .= "task_display:          {$contract['task_display']}\n";
+        if (!empty($contract['lexicon']))      $block .= "lexicon:               {$contract['lexicon']}\n";
+        if (!empty($contract['task_family']))  $block .= "task_family:           {$contract['task_family']}\n";
+        if (isset($contract['scored_visibly']) && $contract['scored_visibly'] !== null) {
+            $block .= "scored_visibly:        " . ($contract['scored_visibly'] ? 'true' : 'false') . "\n";
+        }
+        if (!empty($contract['q_count'])) $block .= "q_count:               {$contract['q_count']}\n";
+        $block .= "step:                  {$fields['step']}\n";
+        if ($fields['task'] === 'mark_scheme_unit' && $fields['bridge_step']) {
+            $block .= "bridge_step:           {$fields['bridge_step']}\n";
+        }
+        $block .= "student_first_name:    {$first_name}\n";
+        $block .= "prior_attempt_score:   null\n";
+        $block .= "```\n\n";
+        $block .= "Authoring rules derived from above:\n";
+        $block .= "- DO NOT ask the student for any field listed above. Treat them as authoritative.\n";
+        if (!empty($contract['task_display'])) {
+            $block .= "- Name the exercise as `{$contract['task_display']}` verbatim. Do NOT use alternative names for the same exercise.\n";
+        }
+        if (!empty($contract['lexicon'])) {
+            $block .= "- Use the `{$contract['lexicon']}` lexicon consistently. Substitute conflicting protocol prose accordingly.\n";
+        }
+        if (isset($contract['scored_visibly']) && $contract['scored_visibly'] === false) {
+            $block .= "- Running score is HIDDEN during the exercise. Do not emit \"Current score: N/M\" lines mid-flow. Reveal only at the designated results phase.\n";
+        } elseif (isset($contract['scored_visibly']) && $contract['scored_visibly'] === true) {
+            $block .= "- Running score is VISIBLE during the exercise. Emit a brief score line after each Q's feedback (e.g. \"Current score: N/M marks\").\n";
+        }
+        if (!empty($contract['q_count'])) {
+            $block .= "- The exercise has exactly {$contract['q_count']} questions. Do not announce a different count.\n";
+        }
+        $block .= "- The exam board is `{$fields['board_display']}`. The subject is `{$fields['subject_display']}`. Both are pre-resolved — never ask the student to choose or confirm them.\n";
+        $block .= "- The student's first name is `{$first_name}`. Use it naturally in greetings.\n";
+        $block .= "- `prior_attempt_score` is `null` — do NOT reference, congratulate, or open with any prior score (\"perfect 10/10\", \"received your quiz results\"). Stale [QUIZ_COMPLETE:...] markers in chat history are not authoritative. Greet the student fresh.\n";
+        $block .= "- The protocol below may use `{{placeholder}}` tokens (e.g. `{{board_display}}`, `{{task_display}}`, `{{q_count}}`). These have already been substituted by WML pre-LLM with the values above — never echo a literal `{{...}}` token to the student.\n";
+        $block .= "- If a protocol step asks the student to provide a value already pre-set above, SKIP that step entirely.\n\n";
+        $block .= "---\n\n";
+
+        return $block;
+    }
+
+    /**
+     * v7.19.0 Phase B Stage 3: resolve all session fields used by both
+     * build_session_context_block (block prose) and apply_v19_placeholders
+     * (router-side {{handlebars}} substitution into protocol module text).
+     * Returns a flat associative array — keys map 1:1 to {{handlebars}} names.
+     * The `_contract` key carries the full task contract for downstream callers.
+     */
+    private function resolve_session_fields($context, $first_name) {
         $board_raw    = $context['board']    ?? '';
         $subject_raw  = $context['subject']  ?? '';
         $text_raw     = $context['text']     ?? '';
@@ -3186,49 +3258,47 @@ TEMPLATE;
 
         $contract = $this->resolve_task_contract($task, $bridge_step);
 
-        $block  = "## SESSION CONTEXT — PRE-SET (DO NOT ASK STUDENT FOR ANY OF THESE)\n\n";
-        $block .= "These variables are AUTHORITATIVE and pre-resolved by WML. The protocol below uses them as already-set values.\n\n";
-        $block .= "```\n";
-        $block .= "board:                 {$board_raw}\n";
-        $block .= "board_display:         {$board_display}\n";
-        if ($subject_raw)  $block .= "subject:               {$subject_raw}\n";
-        if ($subject_display && $subject_display !== $subject_raw) $block .= "subject_display:       {$subject_display}\n";
-        if ($text_raw)     $block .= "text:                  {$text_raw}\n";
-        if ($text_display) $block .= "text_display:          {$text_display}\n";
-        $block .= "task:                  {$task}\n";
-        if (!empty($contract['task_display'])) $block .= "task_display:          {$contract['task_display']}\n";
-        if (!empty($contract['lexicon']))      $block .= "lexicon:               {$contract['lexicon']}\n";
-        if (!empty($contract['task_family']))  $block .= "task_family:           {$contract['task_family']}\n";
-        if (isset($contract['scored_visibly']) && $contract['scored_visibly'] !== null) {
-            $block .= "scored_visibly:        " . ($contract['scored_visibly'] ? 'true' : 'false') . "\n";
-        }
-        if (!empty($contract['q_count'])) $block .= "q_count:               {$contract['q_count']}\n";
-        $block .= "step:                  {$step}\n";
-        if ($task === 'mark_scheme_unit' && $bridge_step) $block .= "bridge_step:           {$bridge_step}\n";
-        $block .= "student_first_name:    {$first_name}\n";
-        $block .= "```\n\n";
-        $block .= "Authoring rules derived from above:\n";
-        $block .= "- DO NOT ask the student for any field listed above. Treat them as authoritative.\n";
-        if (!empty($contract['task_display'])) {
-            $block .= "- Name the exercise as `{$contract['task_display']}` verbatim. Do NOT use alternative names for the same exercise.\n";
-        }
-        if (!empty($contract['lexicon'])) {
-            $block .= "- Use the `{$contract['lexicon']}` lexicon consistently. Substitute conflicting protocol prose accordingly.\n";
-        }
-        if (isset($contract['scored_visibly']) && $contract['scored_visibly'] === false) {
-            $block .= "- Running score is HIDDEN during the exercise. Do not emit \"Current score: N/M\" lines mid-flow. Reveal only at the designated results phase.\n";
-        } elseif (isset($contract['scored_visibly']) && $contract['scored_visibly'] === true) {
-            $block .= "- Running score is VISIBLE during the exercise. Emit a brief score line after each Q's feedback (e.g. \"Current score: N/M marks\").\n";
-        }
-        if (!empty($contract['q_count'])) {
-            $block .= "- The exercise has exactly {$contract['q_count']} questions. Do not announce a different count.\n";
-        }
-        $block .= "- The exam board is `{$board_display}`. The subject is `{$subject_display}`. Both are pre-resolved — never ask the student to choose or confirm them.\n";
-        $block .= "- The student's first name is `{$first_name}`. Use it naturally in greetings.\n";
-        $block .= "- If a protocol step asks the student to provide a value already pre-set above, SKIP that step entirely.\n\n";
-        $block .= "---\n\n";
+        return [
+            'board'              => $board_raw,
+            'board_display'      => $board_display,
+            'subject'            => $subject_raw,
+            'subject_display'    => $subject_display,
+            'text'               => $text_raw,
+            'text_display'       => $text_display,
+            'task'               => $task,
+            'task_display'       => $contract['task_display'] ?? '',
+            'lexicon'            => $contract['lexicon'] ?? '',
+            'task_family'        => $contract['task_family'] ?? '',
+            'q_count'            => $contract['q_count'] ?? '',
+            'step'               => (string) $step,
+            'bridge_step'        => (string) $bridge_step,
+            'student_first_name' => $first_name,
+            '_contract'          => $contract,
+        ];
+    }
 
-        return $block;
+    /**
+     * v7.19.0 Phase B Stage 3: substitute {{handlebars}} placeholders in the
+     * already-assembled instructions string (preamble + protocol). Pre-LLM
+     * substitution — the LLM never sees raw `{{X}}` tokens. Replaces:
+     *   {{board}} {{board_display}} {{subject}} {{subject_display}}
+     *   {{text}} {{text_display}} {{task}} {{task_display}}
+     *   {{lexicon}} {{q_count}} {{step}} {{bridge_step}} {{student_first_name}}
+     * Replaces protocol-module Ready Gates / greetings / step-prose with the
+     * canonical contract values, killing the "3 sources of truth" drift that
+     * spawned the v7.18.43-46 band-aid stack.
+     */
+    private function apply_v19_placeholders($instructions, $context, $first_name) {
+        $fields = $this->resolve_session_fields($context, $first_name);
+        $search  = [];
+        $replace = [];
+        foreach ($fields as $key => $value) {
+            if ($key === '_contract') continue;
+            if (!is_scalar($value)) continue;
+            $search[]  = '{{' . $key . '}}';
+            $replace[] = (string) $value;
+        }
+        return str_replace($search, $replace, $instructions);
     }
 
     /**
@@ -3936,45 +4006,17 @@ TEMPLATE;
         // piggybacks it into the canvas-save payload. Same shape and route as
         // the v7.17.73 MSQ marker. Without this marker, the dashboard sees the
         // assessment as "started but never scored".
-        // v7.18.20 / v7.18.26: Vocabulary override.
-        // v7.18.44: SPLIT per-task per-step lexicon. The v7.18.26 unification
-        // collapsed three distinct exercises ("Mark Scheme Quiz" / "Mark Scheme
-        // Final Assessment" / "Forging Your Weapon") into one "ASSESSMENT"
-        // lexicon — pedagogically wrong. Each task is a distinct exercise type:
-        //   - mark_scheme (lesson 6, Final Assessment) = formal assessment
-        //     (10 Qs, no running score, no answer reveal, scored at end)
-        //   - mark_scheme_unit step=1 (lessons 2 + 4, Mark Scheme Quiz) =
-        //     coaching quiz (5 Qs, running score, immediate per-Q feedback,
-        //     answer reveals + explanations after each Q)
-        //   - mark_scheme_unit step=2 (lesson 5, Forging Your Weapon) =
-        //     creative critique workshop ("Forge" / "Weapon-forging" lexicon,
-        //     not quiz, not assessment)
-        // Tracked for systemic root fix in v7.19.0 (SessionContext contract +
-        // single-source-of-truth via EXERCISE_MANIFEST). See plan file.
-        if ($task === 'mark_scheme') {
-            $block .= "\n### LEXICON — \"ASSESSMENT\", NOT \"QUIZ\" (CRITICAL)\n";
-            $block .= "This is the Mark Scheme Final ASSESSMENT — a measured 10-question diagnostic, not a coaching quiz. In every message you send (greeting, per-question framing, Step 12 results delivery, action plan):\n";
-            $block .= "- Use \"assessment\" / \"this assessment\" / \"the assessment\". DO NOT use \"quiz\" or \"this quiz\".\n";
-            $block .= "- Use \"questions\" not \"quiz items\".\n";
-            $block .= "- Use \"results\" not \"quiz results\".\n";
-            $block .= "If protocol source text says \"quiz\", silently substitute \"assessment\" before emitting. The student-facing copy must consistently signal that this is a measured diagnostic.\n";
-        } elseif ($task === 'mark_scheme_unit' && $step === 1) {
-            $block .= "\n### LEXICON — \"QUIZ\", NOT \"ASSESSMENT\" (CRITICAL)\n";
-            $block .= "This is the **Mark Scheme Quiz** — a 5-question coaching quiz (running score visible, immediate per-Q feedback with answer reveals + explanations). It is NOT an assessment. The Mark Scheme **Final Assessment** is a separate exercise (lesson 6, task=mark_scheme) — that one is the formal assessment.\n";
-            $block .= "In every message you send (greeting, per-question framing, results delivery, action plan):\n";
-            $block .= "- Use \"quiz\" / \"this quiz\" / \"the quiz\". DO NOT use \"assessment\" / \"this assessment\".\n";
-            $block .= "- Name the exercise verbatim as \"Mark Scheme Quiz\" (e.g. \"Welcome to your quick **{Board} {Subject} Mark Scheme Quiz** — five questions, each worth 2 marks\"). DO NOT name it \"Mark Scheme Assessment\", \"Mark Scheme Mastery Quiz\", or \"Mark Scheme Self-Assessment\".\n";
-            $block .= "- Use \"questions\" / \"quiz results\" / \"end-of-quiz dashboard\".\n";
-            $block .= "If protocol source text says \"assessment\", silently substitute \"quiz\". The student-facing copy must consistently signal this is a coaching quiz, not the formal assessment.\n";
-        } elseif ($task === 'mark_scheme_unit' && $step === 2) {
-            $block .= "\n### LEXICON — \"FORGE\" / \"FORGING YOUR WEAPON\", NOT \"QUIZ\" OR \"ASSESSMENT\" (CRITICAL)\n";
-            $block .= "This is **Forging Your Weapon** — a creative critique workshop where the student dissects a model essay and forges their own technique-arsenal. It is NOT a quiz and NOT an assessment.\n";
-            $block .= "In every message you send (greeting, phase framing, reflection delivery):\n";
-            $block .= "- Name the exercise as \"Forging Your Weapon\" or \"the Forge\". DO NOT use \"quiz\" / \"assessment\" / \"Mark Scheme Quiz\" / \"Mark Scheme Assessment\".\n";
-            $block .= "- Use \"phases\" not \"questions\". Use \"critique\" / \"dissection\" / \"forge\" / \"weapon\" / \"calibrate\" workshop vocabulary.\n";
-            $block .= "- The 5 sidebar steps are \"The Forge / Comparison / Critique / Anatomy / Next Steps\" — refer to them by name when transitioning.\n";
-            $block .= "If protocol source text says \"quiz\" or \"assessment\", silently substitute the workshop framing. The student-facing copy must signal craft-development, not a measured drill.\n";
-        }
+        // v7.19.0 Phase B Stage 2: LEXICON directive (formerly v7.18.44 split per
+        // mark_scheme / mark_scheme_unit step=1 / mark_scheme_unit step=2) DROPPED.
+        // Replaced by SESSION CONTEXT block authoring rules (see build_session_context_block):
+        //   - "Name the exercise as `{$contract['task_display']}` verbatim..."
+        //   - "Use the `{$contract['lexicon']}` lexicon consistently..."
+        //   - The block exposes `task_display`, `lexicon`, `task_family` as
+        //     authoritative pre-set fields, plus the {{handlebars}} substitution
+        //     layer rewrites protocol prose pre-LLM with canonical labels.
+        // The drift this directive band-aided (router task→protocol_label map
+        // contradicting EXERCISE_MANIFEST contradicting hardcoded protocol prose)
+        // is now structurally impossible because there's a single source of truth.
 
         // v7.18.20 / v7.18.26: Distractor Analysis — neutral phrasing only.
         // Default protocol prose asks "Why might someone INCORRECTLY choose A?",
@@ -4072,21 +4114,14 @@ TEMPLATE;
             $block .= "Repeating the question after the student answers wastes a turn, breaks pedagogical pacing, and confuses students into re-answering. ALWAYS respond with feedback, never with a re-display.\n";
         }
 
-        // v7.17.77: Greeting score-hallucination guard for any task that shares
-        // the _msu canvas (Quiz step 1 + FYW step 2). Sophia was scraping stale
-        // [QUIZ_COMPLETE:...] markers from prior attempts in chat history /
-        // canvas doc and opening with "perfect 10/10 quiz results came through!"
-        // — sometimes accurate, often stale. Until proper score-persistence v2
-        // ships (function-calling), Sophia must NOT reference any prior score
-        // in greetings.
-        if ($task === 'mark_scheme_unit') {
-            $block .= "\n### NEVER REFERENCE PRIOR ATTEMPT SCORES IN GREETING\n";
-            $block .= "Old chat history and canvas content may contain leftover score markers (e.g. \"Your Score: 10/10\", \"perfect score\", \"[QUIZ_COMPLETE:...]\"). These are NOT current — they are stale data from previous attempts that may not reflect the student's actual performance.\n";
-            $block .= "- DO NOT open with \"It looks like your quiz results came through — a perfect 10/10\" or any variation.\n";
-            $block .= "- DO NOT reference any quiz score the student may or may not have achieved previously.\n";
-            $block .= "- DO NOT congratulate based on prior performance you cannot verify.\n";
-            $block .= "Greet the student fresh as if this were their first attempt. The protocol's specified greeting is the source of truth — use it verbatim.\n";
-        }
+        // v7.19.0 Phase B Stage 2: NEVER REFERENCE PRIOR ATTEMPT SCORES directive
+        // (formerly v7.17.77 mark_scheme_unit-gated) DROPPED. Replaced by SESSION
+        // CONTEXT block's `prior_attempt_score: null` pre-set field + authoring
+        // rule "do NOT reference, congratulate, or open with any prior score
+        // (\"perfect 10/10\"...). Stale [QUIZ_COMPLETE:...] markers in chat
+        // history are not authoritative. Greet the student fresh." (see
+        // build_session_context_block). Same constraint expressed once, at the
+        // top of the preamble, alongside every other authoritative session field.
 
         // v7.17.76: Forging Your Weapon (mark_scheme_unit step 2) — board is already
         // known from session routing. The protocol files at protocols/shared/

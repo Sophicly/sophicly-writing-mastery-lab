@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.18.47
+ * Version: 7.19.0
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.18.47');
+define('SWML_VERSION', '7.19.0');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -573,6 +573,25 @@ class Sophicly_Writing_Mastery_Lab {
             }
             if (!empty($bridge_entry['wml_step'])) {
                 $step = absint($bridge_entry['wml_step']);
+            }
+        }
+
+        // v7.19.0: FYW mount-race heuristic. Surfaced 2026-05-02 — at AQA Lang P1
+        // lesson 5 (FYW = mark_scheme_unit step=2) MOUNT, Sophia first emitted
+        // the MSQ Ready Gate (step=1 contract) instead of the Forge greeting,
+        // because the LD bridge entry had `wml_step` empty/missing/=1 for that
+        // lesson. Bridge admin UI is the data source-of-truth, but post-title
+        // detection acts as a code-side guard against bridge data drift. If
+        // `task === 'mark_scheme_unit'` and the post title contains FYW-specific
+        // wording, force step=2. Logs the override so Neil can audit + fix the
+        // bridge entry at his leisure.
+        if ($task === 'mark_scheme_unit' && $post_id) {
+            $post_title = get_the_title($post_id);
+            if ($post_title && preg_match('/forging|forge|weapon|FYW/i', $post_title)) {
+                if ($step !== 2) {
+                    error_log("WML v7.19.0: post title '{$post_title}' (post_id={$post_id}) suggests FYW; overriding step from {$step} to 2");
+                    $step = 2;
+                }
             }
         }
 

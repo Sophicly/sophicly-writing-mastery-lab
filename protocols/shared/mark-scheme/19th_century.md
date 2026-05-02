@@ -896,7 +896,7 @@ Display:
 "📌 19th Century Lit Assessment \> Board Selection  
 \[Progress bar: ░░░░░░░░░░ 0%\]  
 💡 Type 'M' for menu | 'H' for help  
-Welcome to the **19th Century Literature Mark Scheme Mastery Assessment**. 🎩
+Welcome to the **{{board_display}} {{subject_display}}: {{task_display}}**. 🎩
 
 This diagnostic tests your understanding of **how to get marks**, not your knowledge of *A Christmas Carol* or *Jekyll & Hyde*.
 

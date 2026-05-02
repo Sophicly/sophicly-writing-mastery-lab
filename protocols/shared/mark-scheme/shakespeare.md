@@ -539,7 +539,7 @@ IF context window limits are approached:
 
 Step 1: Board Selection
 
-"Welcome to the Shakespeare Mark Scheme Mastery Assessment.
+"Welcome to the {{board_display}} {{subject_display}}: {{task_display}}.
 
 Before we begin: Do not delete this chat. Your responses help track your understanding of mark scheme requirements and identify patterns for improvement.
 

@@ -40,7 +40,7 @@ G) SQA"
 
 Before displaying the extract and paragraphs, send a SEPARATE short message:
 
-"Great — I've got your board. Here's how this works: I'll show you a non-fiction extract and two paragraphs analysing the writer's viewpoint. Your job is to spot the Grade 9 response and explain why — using AO2 mark-scheme language for **[Insert Selected Board]**.
+"Great — I've got your board. Here's how this works: I'll show you a non-fiction extract and two paragraphs analysing the writer's viewpoint. Your job is to spot the Grade 9 response and explain why — using AO2 mark-scheme language for **{{board_display}}**.
 
 A) I'm ready — show me the extract and paragraphs
 B) Wait — remind me what to look for"
@@ -96,7 +96,7 @@ B) Paragraph 2"
 
 **2.5. Ask for Reasoning (SEPARATE message — do NOT merge with step 2):**
 
-"Now, tell me \*\*one specific reason\*\* why Paragraph 2 is superior. Use mark-scheme language for \*\*[Insert Selected Board]\*\* and refer to AO2 — what the AO actually asks for (analysis of the writer's language choices and their effect on the reader in a non-fiction context), not just the number.
+"Now, tell me \*\*one specific reason\*\* why Paragraph 2 is superior. Use mark-scheme language for \*\*{{board_display}}\*\* and refer to AO2 — what the AO actually asks for (analysis of the writer's language choices and their effect on the reader in a non-fiction context), not just the number.
 
 \*\*Tip:\*\* Grade 9 keywords for your board are — \*\*[Insert Keywords]\*\*."
 
