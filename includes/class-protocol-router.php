@@ -2260,30 +2260,15 @@ TEMPLATE;
             $preamble .= "After the question is established, follow EVERY subsequent step (goals, keywords, anchors, body paragraphs, etc.) fully — do not rush or skip any step.\n\n";
         }
 
-        // ── MARK SCHEME QUIZ: context injection (v7.14.49) ──
-        // The subject-specific protocol files (protocols/shared/mark-scheme/*.md) contain the
-        // full quiz instructions. This preamble injects session context so the AI skips setup
-        // questions that the system already knows the answers to.
+        // ── MARK SCHEME ASSESSMENT: text-specific examples injection (v7.14.52) ──
+        // v7.19.1: dropped legacy "SKIP THESE STEPS / START DIRECTLY with Question 1"
+        // session-context block (was L2272-2284). It pre-dated Phase B SESSION CONTEXT
+        // block (v7.18.47), which now conveys board/subject/task as pre-set without
+        // suppressing the protocol module's Step 1 greeting. Old block also forced
+        // Sophia to jump straight to Q1, which broke the MSF greeting at mount.
+        // The text-data injection below stays — load-bearing for text-aware quiz
+        // questions (adapts default examples to the student's studied text).
         if ($task === 'mark_scheme') {
-            $board_label = strtoupper(str_replace('-', ' ', $board));
-            $ms_unit = ($topic_num <= 1) ? 2 : 4;
-            $ms_phase_label = ($topic_num <= 1) ? 'First diagnostic checkpoint' : 'Progress check and reinforcement';
-
-            $preamble .= "\n### MARK SCHEME QUIZ — SESSION CONTEXT\n\n";
-            $preamble .= "The following details are already known. Do NOT ask the student for any of these — skip straight to the quiz questions.\n\n";
-            $preamble .= "- **Board:** {$board_label} (pre-selected)\n";
-            $preamble .= "- **Unit:** Unit {$ms_unit} ({$ms_phase_label})\n";
-            if ($phase) {
-                $preamble .= "- **Phase:** " . ucfirst($phase) . "\n";
-            }
-            $preamble .= "\n**SKIP THESE STEPS ENTIRELY:**\n";
-            $preamble .= "- Do NOT ask which exam board the student is on — it is {$board_label}.\n";
-            $preamble .= "- Do NOT ask which unit they are working on — it is Unit {$ms_unit}.\n";
-            $preamble .= "- Do NOT display the 'do not delete this chat' message — the system handles persistence.\n";
-            $preamble .= "- Do NOT ask any setup/confirmation questions.\n\n";
-            $preamble .= "**START DIRECTLY** with the Unit {$ms_unit} quiz questions. Your first message should present Question 1.\n\n";
-
-            // ── Text-specific key quotes for mark scheme examples (v7.14.52) ──
             $text_name = $context['text'] ?? '';
             if (!empty($text_name)) {
                 $text_slug = sanitize_title($text_name);
