@@ -16439,177 +16439,125 @@
     }
 
     /**
-     * Mark Scheme Final Assessment (MSF) canvas-doc template (v7.19.12).
+     * Mark Scheme Final Assessment (MSF) canvas-doc template (v7.19.13 — Hattie redesign).
      *
-     * Sections mirror Sophia's Phase 3 dashboard 1:1 (Step 1-6) so the student
-     * can record what they heard alongside what Sophia said. Per-Q rows for
-     * Steps 2/3/4 + the TTECEA Engagement section make the doc reflective rather
-     * than a copy-paste workbook.
+     * Replaces v7.19.12's per-Q decomposition (10 confidence + 10 BBB + 10 distractor +
+     * 10 score = 40 micro-clicks). Per Hattie & Timperley (2007) "Power of Feedback":
+     * Task-level FT feedback only converts to learning when abstracted into Process (FP)
+     * + Self-Regulation (FR) patterns. Per-question micro-judgements overload working
+     * memory (Sweller / Kirschner) and amplify Dunning-Kruger noise. Concept-level
+     * synthesis is what the literature flags as "under-served, most pedagogically useful."
      *
-     * v7.19.12 changes vs v7.19.11:
-     *   - Dropped @PANEL auto-populate per pedagogy pivot (Bjork generation effect /
-     *     Boud ownership / Nicol self-regulation / Dunning-Kruger calibration gap).
-     *     Student fills everything. SelectField + chip-multi widgets keep friction low.
-     *   - Restructured to mirror 6-step Phase 3 dashboard order.
-     *   - Per-Q AO picker + technique reflection (replaces fixed AO2-only TTECEA
-     *     Translation section). TTECEA serves AO2 + AO3 + AO4 — student picks the AO.
-     *   - Per-Q confidence + BBB rows in Step 2 (Metacognitive Analysis).
-     *   - Per-Q distractor reflection in Step 3 (Deep Learning).
-     *   - Per-Q score-out-of-tariff entry in Step 4 (Results).
+     * New shape: 5 reflection boxes mapping Hattie's 3 questions × 4 levels:
+     *   B. Feed-Up (Where am I going?)
+     *   C. Feed-Back (How am I going? — auto-summary + ONE pattern claim)
+     *   D. Process (FP) — ONE representative breakdown moment
+     *   E. Self-Regulation (FR) — ONE portable check-rule
+     *   F. Feed-Forward (Where to next?) — ONE concrete action
+     *   G. TTECEA Engagement (kept; broader AO bridge — student picks AO + writes one bridge sentence, ONE pick not 10)
+     *   H. Trends (cross-attempt)
+     *
+     * Self-level (FS) praise blocks deliberately omitted — Hattie's weakest level.
      */
     function getMarkSchemeTemplate(topicData) {
         let html = '';
 
-        // Bounded option lists.
-        const SCALE_1_5 = [
-            { value: '1', label: '1 — just starting' },
-            { value: '2', label: '2 — improving' },
-            { value: '3', label: '3 — secure' },
-            { value: '4', label: '4 — strong' },
-            { value: '5', label: '5 — excellent' },
-        ];
-        const CONFIDENCE_1_5 = [
-            { value: '1', label: '1 — complete guess' },
-            { value: '2', label: '2 — very uncertain' },
-            { value: '3', label: '3 — moderately sure' },
-            { value: '4', label: '4 — quite confident' },
-            { value: '5', label: '5 — completely certain' },
-        ];
-        const BBB_OPTIONS = [
-            { value: 'brain',  label: '🧠 Brain — from memory' },
-            { value: 'book',   label: '📖 Book — needed mark scheme' },
-            { value: 'buddy',  label: '👥 Buddy — needed help' },
-        ];
         const GRADE_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => ({ value: String(n), label: String(n) }));
-        const TARIFF_0_3 = [0, 1, 2, 3].map(n => ({ value: String(n), label: String(n) }));
-        const NUM_0_TO = (max) => {
-            const out = [];
-            for (let i = 0; i <= max; i++) out.push({ value: String(i), label: String(i) });
-            return out;
-        };
         const AO_OPTIONS = ['AO1', 'AO2', 'AO3', 'AO4', 'AO5', 'AO6'].map(a => ({ value: a, label: a }));
-
-        // Helper: per-Q row block. Used by Steps 2 / 3 / 4 / TTECEA Engagement (Step H).
-        function perQuestionRow(qNum, sectionType, label, innerHTML) {
-            html += sectionHTML(sectionType, `Q${qNum}: ${label}`, true, null,
-                `<p><strong>Question ${qNum}</strong></p>` + innerHTML
-            );
-        }
+        const PATTERN_HINTS = [
+            { value: 'confused-x-y',      label: 'I confused one term with another (X vs Y)' },
+            { value: 'misread-stem',      label: 'I misread the question stem' },
+            { value: 'trap-distractor',   label: 'I knew the content but picked the trap distractor' },
+            { value: 'lost-precision',    label: 'I had the right idea but lost the precise wording' },
+            { value: 'criteria-mixup',    label: 'I mixed up criteria from two adjacent grade bands' },
+            { value: 'no-pattern',        label: 'No clear pattern — wrong answers were varied' },
+        ];
 
         // ── A. NOTICE BANNER ─────────────────────────────────────
         html += sectionHTML('notice', 'How to Use This Document', false, null,
-            `<p><strong>Sophia runs the Mark Scheme quiz in the chat panel on the right.</strong></p>`
-            + `<p>This workbook follows the same six-step feedback flow Sophia uses at the end of the quiz. `
-            + `Each section here mirrors one of her dashboard steps. Fill it in yourself — that's where the learning lives. `
-            + `Use the dropdowns for ratings and AO labels; use the text fields to think out loud.</p>`
+            `<p><strong>This workbook follows John Hattie's three feedback questions:</strong> Where am I going? — How am I going? — Where to next? <em>(Power of Feedback, 2007).</em></p>`
+            + `<p>Five short boxes. Each one asks for ONE pattern claim, not ten micro-judgements. The point is to abstract a strategy you can carry forward, not to record every datum (Sophia already has those).</p>`
+            + `<p>Take 5–10 minutes. Quality over quantity.</p>`
         );
 
-        // ── B. STEP 1 — SELF-REFLECTION ─────────────────────────
-        html += dividerHTML('STEP 1 — SELF-REFLECTION');
-        html += sectionHTML('mark_scheme_response', 'Hardest AO type', true, null,
-            `<p><strong>Which AO type did you find most challenging this round, and why?</strong></p>`
-            + inputHTML('e.g. "AO4 — I struggle with judging the strength of evidence rather than just describing it."', 'ms-self-reflection-text')
-            + selectHTML('Tag the AOs that felt hardest', 'ms-self-reflection-aos', AO_OPTIONS, true)
+        // ── B. FEED-UP — Where am I going? ──────────────────────
+        html += dividerHTML('1. WHERE AM I GOING?  (Feed-Up)');
+        html += sectionHTML('mark_scheme_response', 'Goal for next attempt', true, null,
+            `<p><strong>By the next attempt, what do you want to be able to do?</strong></p>`
+            + inputHTML('Complete the sentence: "By next time, I want to be able to ___"  (one sentence — keep it specific and observable).', 'ms-feed-up-goal')
+            + selectHTML('Which AO does this goal sit in?', 'ms-feed-up-ao', AO_OPTIONS, false)
         );
 
-        // ── C. STEP 2 — METACOGNITIVE ANALYSIS (per-Q × 10) ─────
-        html += dividerHTML('STEP 2 — METACOGNITIVE ANALYSIS');
+        // ── C. FEED-BACK — How am I going? ──────────────────────
+        html += dividerHTML('2. HOW AM I GOING?  (Feed-Back)');
         html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
-            `<h3>Confidence + Brain-Book-Buddy per question</h3>`
-            + `<p><em>Record how confident you felt and which support you'd reach for if you got the question wrong. `
-            + `Sophia's BBB step shows you the pattern across the round.</em></p>`
+            `<h3>Pattern across the round, not per-question recall</h3>`
+            + `<p><em>Sophia gives you the per-question table. Here you commit to ONE pattern claim across all your wrong (or near-wrong) answers — that's the synthesis the literature shows actually transfers.</em></p>`
         );
-        for (let q = 1; q <= 10; q++) {
-            perQuestionRow(q, 'mark_scheme_response', 'Confidence + BBB',
-                selectHTML('My confidence (1–5)', `ms-q${q}-confidence`, CONFIDENCE_1_5, false)
-                + selectHTML('Brain / Book / Buddy', `ms-q${q}-bbb`, BBB_OPTIONS, false)
-            );
-        }
-
-        // ── D. STEP 3 — DEEP LEARNING (per-Q × 10) ──────────────
-        html += dividerHTML('STEP 3 — DEEP LEARNING THROUGH WRONG ANSWERS');
-        html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
-            `<h3>Distractor reflection per question</h3>`
-            + `<p><em>Even on questions you got right, the wrong options often reveal a misconception. `
-            + `For each question, jot down which distractor pulled you in (or would have) and why it felt tempting. `
-            + `This is where Sophia's distractor analysis lands.</em></p>`
-        );
-        for (let q = 1; q <= 10; q++) {
-            perQuestionRow(q, 'mark_scheme_response', 'Distractor pull',
-                inputHTML(`Which other option drew you in on Q${q}, and why was it tempting?`, `ms-q${q}-distractor`)
-            );
-        }
-
-        // ── E. STEP 4 — RESULTS (per-Q × 10 + totals) ───────────
-        html += dividerHTML('STEP 4 — YOUR RESULTS');
-        html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
-            `<h3>Per-question score record</h3>`
-            + `<p><em>Sophia gives you a Q-by-Q breakdown. Record your mark for each question (out of its tariff), `
-            + `then enter your totals at the bottom. Calibration: did your 1–5 confidence match what you actually scored?</em></p>`
-        );
-        for (let q = 1; q <= 10; q++) {
-            perQuestionRow(q, 'mark_scheme_response', 'Score out of tariff',
-                selectHTML(`Marks awarded on Q${q} (out of tariff)`, `ms-q${q}-score`, TARIFF_0_3, false)
-            );
-        }
-        html += sectionHTML('mark_scheme_response', 'Totals', true, null,
-            `<p><strong>Raw score (out of 20):</strong></p>`
-            + selectHTML('Total marks across all 10 questions', 'ms-weighted-score', NUM_0_TO(20), false)
-            + `<p><strong>Percentage:</strong></p>`
-            + inputHTML('e.g. "75%"', 'ms-percentage')
-        );
-
-        // ── F. STEP 5 — GRADE & CALIBRATION ─────────────────────
-        html += dividerHTML('STEP 5 — GRADE & CALIBRATION');
-        html += sectionHTML('mark_scheme_response', 'Predicted Grade', true, null,
-            `<p><strong>Predicted Grade (1–9) from Sophia's scoring:</strong></p>`
+        html += sectionHTML('mark_scheme_response', 'Score + Grade (record what Sophia gave you)', true, null,
+            `<p><strong>Raw score</strong> (e.g. "15/20" — type as Sophia gave it):</p>`
+            + inputHTML('Score from Sophia’s Step 4 dashboard', 'ms-score-raw')
+            + `<p><strong>Predicted grade (1–9):</strong></p>`
             + selectHTML('Grade Sophia gave you', 'ms-predicted-grade', GRADE_OPTIONS, false)
-        );
-        html += sectionHTML('mark_scheme_response', 'Grade Goal', true, null,
-            `<p><strong>Grade Goal (1–9) — what are you aiming for?</strong></p>`
+            + `<p><strong>Grade you are aiming for (1–9):</strong></p>`
             + selectHTML('Target grade', 'ms-grade-goal', GRADE_OPTIONS, false)
         );
-        html += sectionHTML('mark_scheme_response', 'Calibration Reflection', true, null,
-            `<p><strong>Confidence vs. actual: where did your self-rating diverge from the score?</strong></p>`
-            + inputHTML('e.g. "I rated myself 3/5 on Q4 but scored 1.5/2 — under-confident. On Q7 I felt sure but got 0/2 — over-confident."', 'ms-calibration-reflection')
+        html += sectionHTML('mark_scheme_response', 'ONE pattern across your wrong answers', true, null,
+            `<p><strong>Looking at all the questions you got wrong (or partial), the pattern is:</strong></p>`
+            + selectHTML('Pick the pattern that best fits — or write your own below', 'ms-pattern-shape', PATTERN_HINTS, false)
+            + inputHTML('Now describe the pattern in your own words (one sentence).', 'ms-pattern-claim')
         );
 
-        // ── G. STEP 6 — PERSONALISED NEXT STEPS ─────────────────
-        html += dividerHTML('STEP 6 — PERSONALISED NEXT STEPS');
-        html += sectionHTML('mark_scheme_response', 'Top 3 Priorities', true, null,
-            `<p><strong>Top Priority 1 (highest leverage):</strong></p>`
-            + inputHTML('In your own words — what is your single most important fix?', 'ms-priority-1')
-            + `<p><strong>Top Priority 2:</strong></p>`
-            + inputHTML('Second priority area', 'ms-priority-2')
-            + `<p><strong>Top Priority 3:</strong></p>`
-            + inputHTML('Third priority area', 'ms-priority-3')
-        );
-        html += sectionHTML('mark_scheme_response', 'Action Plan', true, null,
-            `<p><strong>Action 1 (Course &amp; Resources):</strong></p>`
-            + inputHTML('What is the next step you will take in your course towards your goals?', 'ms-action-1')
-            + `<p><strong>Action 2 (Lessons):</strong></p>`
-            + inputHTML('How will you use the lessons to help you reach your goals?', 'ms-action-2')
-            + `<p><strong>Action 3 (Support):</strong></p>`
-            + inputHTML('How will you use available support to help you reach your goals?', 'ms-action-3')
-        );
-
-        // ── H. MARK SCHEME → TTECEA ENGAGEMENT (per-Q × 10) ─────
-        html += dividerHTML('MARK SCHEME → TTECEA ENGAGEMENT');
+        // ── D. PROCESS reflection (FP) ──────────────────────────
+        html += dividerHTML('3. PROCESS REFLECTION  (FP — most powerful)');
         html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
-            `<h3>Bridging mark-scheme literacy to your TTECEA writing</h3>`
-            + `<p><em>The mark scheme tells you what examiners reward. TTECEA is the paragraph structure that delivers it. `
-            + `For each question, pick the AO it tested, then write 1–2 sentences on how a TTECEA element (Topic / Technique / Evidence / Close-analysis / Effects / Author's purpose) `
-            + `would help you address that AO in an essay. TTECEA serves AO2 (Lang P1 analysis), AO3 + AO4 (Lang P2 + Lit) — pick the AO that fits the question.</em></p>`
+            `<h3>Pick ONE wrong answer. Trace the breakdown moment.</h3>`
+            + `<p><em>Hattie: process-level feedback transfers across tasks; per-question correctness does not. Pick the wrong answer that is most representative — not all of them — and walk through the step in your thinking that broke down.</em></p>`
         );
-        for (let q = 1; q <= 10; q++) {
-            perQuestionRow(q, 'mark_scheme_response', 'AO + technique bridge',
-                selectHTML(`Which AO does Q${q} primarily test?`, `ms-q${q}-ao`, AO_OPTIONS, false)
-                + inputHTML(`Which TTECEA element maps to this skill, and how does it help you address that AO? Write 1–2 sentences.`, `ms-q${q}-ttecea`)
-            );
-        }
+        html += sectionHTML('mark_scheme_response', 'My breakdown moment', true, null,
+            `<p><strong>Pick ONE question you got wrong (or partial). Which one?</strong></p>`
+            + inputHTML('e.g. "Q4 — clear vs perceptive analysis"', 'ms-process-question')
+            + `<p><strong>The step in my thinking that broke down was:</strong></p>`
+            + inputHTML('What did you do? What should you have done? Be specific — name the moment, not the topic.', 'ms-process-breakdown')
+        );
 
-        // ── I. TRENDS (cross-attempt) ───────────────────────────
-        html += dividerHTML('TRENDS (across attempts)');
+        // ── E. SELF-REGULATION reflection (FR) ──────────────────
+        html += dividerHTML('4. SELF-REGULATION  (FR — most powerful)');
+        html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
+            `<h3>One portable check-rule for next time.</h3>`
+            + `<p><em>A rule you can run on yourself BEFORE answering similar questions in future. Not specific to this round.</em></p>`
+        );
+        html += sectionHTML('mark_scheme_response', 'My check-rule', true, null,
+            `<p><strong>Next time I see a question like this, the check I will run before answering is:</strong></p>`
+            + inputHTML('e.g. "Before picking a level descriptor, I will write the exact word from the mark scheme that the option matches — if I can’t name the word, I don’t pick that option."', 'ms-self-regulation-rule')
+        );
+
+        // ── F. FEED-FORWARD — Where to next? ────────────────────
+        html += dividerHTML('5. WHERE TO NEXT?  (Feed-Forward)');
+        html += sectionHTML('mark_scheme_response', 'My next concrete action', true, null,
+            `<p><strong>One concrete action you will take BEFORE the next quiz:</strong></p>`
+            + inputHTML('e.g. "Re-read the AQA Q4 level descriptors page and write three sentences distinguishing clear / perceptive / sophisticated."', 'ms-feed-forward-action')
+            + `<p><strong>When will you do it?</strong></p>`
+            + inputHTML('Be specific — date or session.', 'ms-feed-forward-when')
+        );
+
+        // ── G. TTECEA ENGAGEMENT — single bridge, not per-Q ─────
+        html += dividerHTML('6. MARK SCHEME → TTECEA ENGAGEMENT');
+        html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
+            `<h3>Bridge mark-scheme literacy to your essay craft</h3>`
+            + `<p><em>Pick ONE question that taught you something new about an AO. Translate that insight into a TTECEA element you would use in an essay. TTECEA serves AO2 (Lang P1 analysis), AO3 + AO4 (Lang P2 + Lit) — pick the AO that fits.</em></p>`
+        );
+        html += sectionHTML('mark_scheme_response', 'My TTECEA bridge', true, null,
+            `<p><strong>Which question taught you something new about an AO?</strong></p>`
+            + inputHTML('e.g. "Q10 — Author’s Purpose"', 'ms-ttecea-question')
+            + `<p><strong>Which AO did it surface?</strong></p>`
+            + selectHTML('Pick AO', 'ms-ttecea-ao', AO_OPTIONS, false)
+            + `<p><strong>How would you use a TTECEA element to address that AO in an essay?</strong></p>`
+            + inputHTML('Name the TTECEA element (Topic / Technique / Evidence / Close-analysis / Effects / Author’s purpose) and write one sentence on how it delivers what the mark scheme rewards.', 'ms-ttecea-bridge')
+        );
+
+        // ── H. TRENDS (cross-attempt) ───────────────────────────
+        html += dividerHTML('7. TRENDS (across attempts)');
         html += sectionHTML('mark_scheme_response', 'Repeated Errors', true, null,
             `<p><strong>Errors you have seen repeated across units (put "N/A" if first attempt):</strong></p>`
             + inputHTML('Which errors keep coming back?', 'ms-repeated-errors')
@@ -16621,7 +16569,7 @@
             + selectHTML('AOs improved', 'ms-improvements-aos', AO_OPTIONS, true)
         );
 
-        // ── J. SIGN-OFF ─────────────────────────────────────────
+        // ── I. SIGN-OFF ─────────────────────────────────────────
         html += buildSignoffSection();
         return html;
     }
