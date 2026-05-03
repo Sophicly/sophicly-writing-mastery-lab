@@ -4755,7 +4755,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-select-prompt {
     font-size: 11px;
     font-style: italic;
-    color: rgba(255,255,255,0.45);
+    color: rgba(255,255,255,0.65);
     margin-bottom: 8px;
     line-height: 1.4;
 }
@@ -4817,14 +4817,18 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 
 /* Light theme — SelectField */
 [data-swml-theme="light"] .swml-select-field {
-    background: rgba(0,0,0,0.02);
+    background-color: rgba(0,0,0,0.02);
     border-color: rgba(0,0,0,0.1);
 }
 [data-swml-theme="light"] .swml-select-prompt {
     color: rgba(0,0,0,0.55);
 }
+/* v7.19.12: do NOT use `background:` shorthand here — it resets
+   background-repeat/-position/-size set on the base rule, which made the
+   SVG chevron tile + appear at the wrong position (Neil saw 3 chevrons in
+   light theme). Set colour + image separately. */
 [data-swml-theme="light"] .swml-select-input {
-    background: #fff;
+    background-color: #fff;
     color: #2c003e;
     border-color: rgba(0,0,0,0.2);
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232c003e' fill-opacity='0.7'><path d='M7 10l5 5 5-5z'/></svg>");
@@ -4843,6 +4847,168 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 [data-swml-theme="light"] .swml-select-chip.selected {
     color: #fff;
+}
+
+/* ── v7.19.12: Interactive matching widget (@MATCH marker) ── */
+.swml-match-widget {
+    margin: 12px 0 6px;
+    padding: 12px;
+    background: rgba(81, 218, 207, 0.06);
+    border: 1px solid rgba(81, 218, 207, 0.18);
+    border-radius: 8px;
+}
+.swml-match-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+.swml-match-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.swml-match-item {
+    appearance: none;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.85);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+.swml-match-item:hover:not(:disabled) {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(81, 218, 207, 0.4);
+}
+.swml-match-item.selected {
+    background: linear-gradient(135deg, #5333ed 0%, #4D76FD 100%);
+    border-color: #51dacf;
+    color: #fff;
+    transform: scale(1.02);
+}
+.swml-match-item.paired {
+    background: rgba(28, 217, 145, 0.12);
+    border-color: rgba(28, 217, 145, 0.5);
+    color: rgba(255,255,255,0.6);
+    cursor: default;
+}
+.swml-match-item:disabled {
+    opacity: 0.65;
+}
+.swml-match-pairs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0;
+    min-height: 28px;
+}
+.swml-match-pair-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(28, 217, 145, 0.18);
+    border: 1px solid rgba(28, 217, 145, 0.5);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.swml-match-pair-remove {
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0 2px;
+}
+.swml-match-pair-remove:hover {
+    color: #fff;
+}
+.swml-match-controls {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    align-items: center;
+}
+.swml-match-reset, .swml-match-submit {
+    appearance: none;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.85);
+    padding: 6px 14px;
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+.swml-match-reset:hover {
+    background: rgba(255,255,255,0.1);
+}
+.swml-match-submit.ready {
+    background: linear-gradient(135deg, #5333ed 0%, #4D76FD 100%);
+    border-color: #51dacf;
+    color: #fff;
+    animation: swml-match-pulse 1.5s ease-in-out 2;
+}
+.swml-match-submit:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+@keyframes swml-match-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(81, 218, 207, 0); }
+    50% { box-shadow: 0 0 0 6px rgba(81, 218, 207, 0.2); }
+}
+.swml-match-widget.submitted {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Light theme — Matching widget */
+[data-swml-theme="light"] .swml-match-widget {
+    background: rgba(81, 218, 207, 0.05);
+    border-color: rgba(81, 218, 207, 0.25);
+}
+[data-swml-theme="light"] .swml-match-item {
+    background: #fff;
+    color: #2c003e;
+    border-color: rgba(0,0,0,0.18);
+}
+[data-swml-theme="light"] .swml-match-item:hover:not(:disabled) {
+    background: rgba(81, 218, 207, 0.08);
+    border-color: rgba(65, 170, 168, 0.6);
+}
+[data-swml-theme="light"] .swml-match-item.selected {
+    color: #fff;
+}
+[data-swml-theme="light"] .swml-match-item.paired {
+    background: rgba(28, 217, 145, 0.1);
+    border-color: rgba(28, 217, 145, 0.6);
+    color: rgba(44, 0, 62, 0.6);
+}
+[data-swml-theme="light"] .swml-match-pair-badge {
+    color: #2c003e;
+}
+[data-swml-theme="light"] .swml-match-pair-remove {
+    color: rgba(44, 0, 62, 0.7);
+}
+[data-swml-theme="light"] .swml-match-reset, [data-swml-theme="light"] .swml-match-submit {
+    background-color: #fff;
+    color: #2c003e;
+    border-color: rgba(0,0,0,0.2);
+}
+[data-swml-theme="light"] .swml-match-submit.ready {
+    color: #fff;
+    border-color: #51dacf;
 }
 
 /* Light theme */
@@ -6506,15 +6672,17 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
    Mark Scheme Study Sections (v7.12.88)
    ══════════════════════════════════════ */
 
-/* Read-only AO criteria sections — distinct purple left border */
+/* Read-only AO criteria sections — distinct purple left border.
+   v7.19.12: bumped border + background opacity for vibrancy + better contrast. */
 .swml-section-block.swml-section-mark_scheme_ao {
-    border-left: 3px solid rgba(83, 51, 237, 0.6);
-    background: rgba(83, 51, 237, 0.07);
+    border-left: 5px solid #5333ed;
+    background: linear-gradient(90deg, rgba(83, 51, 237, 0.14) 0%, rgba(83, 51, 237, 0.06) 100%);
     padding: 12pt 16pt;
+    border-radius: 0 6px 6px 0;
 }
 .swml-section-block.swml-section-mark_scheme_ao h3 {
     font-size: 11pt; font-weight: 700;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.95);
     margin: 0 0 6pt;
 }
 .swml-section-block.swml-section-mark_scheme_ao h3 em {
@@ -6522,44 +6690,50 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 .swml-section-block.swml-section-mark_scheme_ao p {
     font-size: 9.5pt; line-height: 1.55;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.82);
 }
 .swml-section-block.swml-section-mark_scheme_ao p strong {
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.95);
 }
 
-/* Editable student response sections — teal left border, placeholder style */
+/* Editable student response sections — teal left border, brighter accent.
+   v7.19.12: bumped from 3px+0.06 to 5px+0.12 for clear field affordance. */
 .swml-section-block.swml-section-mark_scheme_response {
-    border-left: 3px solid rgba(81, 218, 207, 0.55);
-    background: rgba(81, 218, 207, 0.06);
+    border-left: 5px solid #51dacf;
+    background: linear-gradient(90deg, rgba(81, 218, 207, 0.12) 0%, rgba(81, 218, 207, 0.04) 100%);
     padding: 10pt 16pt;
     min-height: 60px;
+    border-radius: 0 6px 6px 0;
 }
 .swml-section-block.swml-section-mark_scheme_response p em {
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.55);
     font-size: 9pt;
 }
+.swml-section-block.swml-section-mark_scheme_response p strong {
+    color: rgba(255, 255, 255, 0.95);
+}
 
-/* Light theme variants */
+/* Light theme variants — v7.19.12: brighter, less washed-out.
+   Use background-color (NOT shorthand) so any inherited gradient survives. */
 .swml-canvas-light .swml-section-block.swml-section-mark_scheme_ao {
-    background: rgba(83, 51, 237, 0.04);
-    border-left-color: rgba(83, 51, 237, 0.4);
+    background: linear-gradient(90deg, rgba(83, 51, 237, 0.10) 0%, rgba(83, 51, 237, 0.03) 100%);
+    border-left-color: #5333ed;
 }
 .swml-canvas-light .swml-section-block.swml-section-mark_scheme_ao h3 {
-    color: #1a1a2e;
+    color: #2c003e;
 }
 .swml-canvas-light .swml-section-block.swml-section-mark_scheme_ao p {
-    color: #444;
+    color: #2c003e;
 }
 .swml-canvas-light .swml-section-block.swml-section-mark_scheme_ao p strong {
-    color: #222;
+    color: #2c003e;
 }
 .swml-canvas-light .swml-section-block.swml-section-mark_scheme_response {
-    background: rgba(81, 218, 207, 0.04);
-    border-left-color: rgba(81, 218, 207, 0.35);
+    background: linear-gradient(90deg, rgba(81, 218, 207, 0.10) 0%, rgba(81, 218, 207, 0.03) 100%);
+    border-left-color: #41aaa8;
 }
 .swml-canvas-light .swml-section-block.swml-section-mark_scheme_response p em {
-    color: rgba(0, 0, 0, 0.35);
+    color: rgba(44, 0, 62, 0.65);
 }
 
 /* ─── Plot template: feather pen "write here" icon ─── */

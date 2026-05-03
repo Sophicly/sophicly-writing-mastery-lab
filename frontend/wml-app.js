@@ -4778,7 +4778,11 @@
         // v7.17.67: also match Mark Scheme Quiz final dashboard markers (🎉 **Quiz Complete!** or **Your Score: N/M**)
         // so the rich Copy Feedback button fires on the quiz Hattie dashboard, letting students paste
         // the score + insights into their workbook (parity with essay assessment feedback flow).
-        const startMatch = text.match(/^(#{2,3}\s+(?:\w[\w\s]*)?Assessment|\*{2}(?:\w[\w\s]*)?(?:Assessment|Formal Assessment)[\w\s()]*\*{2}|#{2,3}\s+Mark Breakdown|🎉\s*\*{2}Quiz Complete!?\*{2}|\*{2}Your Score:\s*\d+\/\d+)/m);
+        // v7.19.12: also match MSF (Mark Scheme Final Assessment) Phase 3 step headers
+        // so the button appears on each of Sophia's 6 feedback bubbles (Self-Reflection,
+        // Metacognitive Analysis, Deep Learning, Results, Grade & Calculation, Personalised
+        // Feedback / Plan / Next Steps). Tolerates "Step N of 6" prefixes and bold/heading variants.
+        const startMatch = text.match(/^(#{2,3}\s+(?:\w[\w\s]*)?Assessment|\*{2}(?:\w[\w\s]*)?(?:Assessment|Formal Assessment)[\w\s()]*\*{2}|#{2,3}\s+Mark Breakdown|🎉\s*\*{2}Quiz Complete!?\*{2}|\*{2}Your Score:\s*\d+\/\d+|(?:#{2,3}\s+|\*{2})?\s*(?:Step\s+\d+\s*:\s*)?(?:Self-Reflection|Metacognitive\s+Analysis|Deep\s+Learning(?:\s+Through\s+Wrong\s+Answers)?|(?:Your\s+)?Results|Grade(?:\s+&\s+(?:Calculation|Calibration))?|Personalised\s+(?:Feedback(?:\s+&\s+Action\s+Plan)?|Plan|Next\s+Steps))(?:\s*\*{2})?)/m);
         if (!startMatch) return null;
         const startIdx = text.indexOf(startMatch[0]);
         // Find end: "Please copy" or "Have you copied" or "Are you ready" or Hattie questions

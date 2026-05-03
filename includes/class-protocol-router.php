@@ -4186,28 +4186,24 @@ TEMPLATE;
             $block .= "- **STOP after the launch line.** Do NOT continue the response with \"In this assessment you'll work through 10 questions...\" or any meta-commentary about the upcoming questions. Do NOT include Q1, the progress indicator (\"Question 1 of 10\"), TTECEA/AO references, or any question prose in the FIRST message. Greeting items 1-5 above ONLY. Anything beyond item 5 is a violation.\n";
             $block .= "- SECOND MESSAGE — emit Phase 2 Q1 only: progress indicator (\"Language Paper 1 Assessment > Unit 1 > Question 1 of 10\"), then Question 1 with its full prose. Use the Unit 1 question bank (3×1mk, 5×2mk, 2×3mk; AO coverage AO1≥2, AO2≥4, AO4≥1, AO5/AO6≥2).\n";
 
-            // v7.19.11: OUTPUT MARKER CONTRACT — auto-populate canvas-doc fields
-            // via @PANEL:fieldId=value markers. Markers are INVISIBLE to the
+            // v7.19.12: Interactive matching widget marker contract.
+            // For any \"match X to Y\" question type, Sophia must append a
+            // structured @MATCH:qId={...} marker so the frontend renders a
+            // click-to-pair grid instead of forcing the student to type
+            // \"1-B, 2-C, 3-F...\" manually. Marker is INVISIBLE to the
             // student (stripped at the addCanvasMessage boundary by
-            // _stripPanelMarkers + stripAIInternals). Apply pipeline lives at
-            // wml-assessment.js _applyPanelMarkers + scans selectField/inputField
-            // nodes by data-field-id. Rule: emit ONCE per field, on the message
-            // that produces the value. Append at end of message after the prose.
-            $block .= "\n### MSF OUTPUT MARKER CONTRACT — @PANEL field auto-populate\n";
-            $block .= "The student's canvas doc on the right has form fields wired to specific fieldIds. As you produce results in Phase 3, append `@PANEL:fieldId=value` markers (literal `@PANEL`, no square brackets, value runs to end-of-line) at the END of the message that produces each value. Markers are INVISIBLE to the student.\n";
-            $block .= "- Phase 3 step 5 (Scoring & Grade Calculation) — append, in any order:\n";
-            $block .= "    `@PANEL:ms-questions-correct=N` (integer 0-10)\n";
-            $block .= "    `@PANEL:ms-weighted-score=N` (integer 0-20)\n";
-            $block .= "    `@PANEL:ms-percentage=N%` (string with %)\n";
-            $block .= "    `@PANEL:ms-predicted-grade=N` (integer 1-9)\n";
-            $block .= "- Phase 3 step 4 (Performance Analysis) — append:\n";
-            $block .= "    `@PANEL:ms-top-missed=AO1,AO2,AO3` (comma-separated AO labels, each from {AO1,AO2,AO3,AO4,AO5,AO6})\n";
-            $block .= "    `@PANEL:ms-optouts-count=N` (integer 0-10)\n";
-            $block .= "    `@PANEL:ms-optout-items=multiple-choice,short-answer` (comma-separated from {multiple-choice, short-answer, reasoning, apply-to-extract, compare-criteria})\n";
-            $block .= "- Phase 3 step 6 (Personalised Next Steps) — append:\n";
-            $block .= "    `@PANEL:ms-personalised-summary=One concise paragraph distilling the student's top priority + the next concrete action.` (free text, no newlines, no pipes)\n";
-            $block .= "- Emit each marker ONCE per session. Markers are append-only at end of message; do not embed in mid-prose.\n";
-            $block .= "- DO NOT emit markers for Phase 1 or Phase 2 messages — only Phase 3 results emissions.\n";
+            // _stripMatchMarker). Widget submits ALL pairs as one string
+            // via sendCanvasMessage when the student clicks Submit Matches.
+            $block .= "\n### MSF MATCHING-QUESTION MARKER CONTRACT — @MATCH widget\n";
+            $block .= "When you emit ANY question that asks the student to match items in two parallel lists (e.g. 'Match the letters of TTECEA to their definitions'), append a `@MATCH:qId={...}` marker at the END of the message AFTER the question prose. The frontend will render an interactive click-to-pair widget; the student will not have to type the pairing manually. Marker is INVISIBLE to the student.\n";
+            $block .= "Marker JSON shape:\n";
+            $block .= "    @MATCH:q7={\"left\":[\"1. T (first T)\",\"2. T (second T)\",\"3. E (first E)\",\"4. C\",\"5. E (second E)\",\"6. A\"],\"right\":[\"A. Zooming in on word-level connotations\",\"B. The paragraph's main concept\",\"C. Naming the technique\",\"D. Effect on the reader\",\"E. The writer's overall purpose\",\"F. The quote\"]}\n";
+            $block .= "- `qId` is a short identifier — the question number (e.g. `q7`).\n";
+            $block .= "- `left` + `right` are parallel arrays of EQUAL length. Each element is the FULL display string for that item.\n";
+            $block .= "- Order matters: position N in `left` is the N-th item to match; position N in `right` is the N-th option. The widget shows them in array order, not in correct-pair order.\n";
+            $block .= "- Marker is APPEND-ONLY at end of message. Do NOT embed mid-prose. JSON must be valid (escape inner quotes if needed; no newlines inside the JSON).\n";
+            $block .= "- The student will reply with the pairs string (e.g. `1-B, 2-C, 3-F, 4-A, 5-D, 6-E`). Score it normally — same as if they had typed it manually.\n";
+            $block .= "- Emit the marker EVERY time you display a matching question. Do not omit it on follow-up retries.\n";
         }
 
         // v7.18.23: Forging Your Weapon sidebar step-marker emission. The

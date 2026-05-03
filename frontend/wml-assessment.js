@@ -1085,145 +1085,217 @@
         }
     }
 
-    // ── v7.19.11: @PANEL:fieldId=value markers (auto-populate canvas doc fields) ──
-    // Distinct from legacy [PANEL:name][/PANEL] (chat-panel wrap, deprecated).
-    // Sophia emits during MSF Phase 3 to fill SelectField + InputField nodes by
-    // data-field-id. fieldId chars: a-z A-Z 0-9 _ -. Value runs to end-of-line OR
-    // a closing pipe `|` (terminator for inline use).
+    // ── v7.19.12: Interactive matching widget — @MATCH:qId={...} marker ──
+    // Replaces the typed-input fallback (e.g. "1-B, 2-C, 3-F...") with a
+    // click-to-pair grid. Sophia emits the marker at the END of any matching
+    // question, with parallel `left` + `right` arrays of labels. Frontend strips
+    // the marker, renders a widget in the chat bubble, and submits the full
+    // pairing as ONE string via sendCanvasMessage when the student presses
+    // "Submit Matches". Submit is disabled until all pairs are locked — never
+    // fires on individual taps (the v7.18.20 regression we are fixing here).
+    //
+    // Marker syntax:
+    //   @MATCH:q7={"left":["1","2",...],"right":["A","B",...]}
+    // Optional: leftLabels / rightLabels for richer prose alongside the index.
 
-    function _parsePanelMarkers(text) {
-        if (!text) return [];
+    function _parseMatchMarker(text) {
+        if (!text) return null;
         const plain = String(text).replace(/<[^>]+>/g, ' ');
-        const re = /@PANEL:([A-Za-z0-9_\-]+)=([^\n|]*)\|?/g;
-        const out = [];
-        let m;
-        while ((m = re.exec(plain)) !== null) {
-            out.push({ fieldId: m[1].trim(), value: (m[2] || '').trim() });
+        const re = /@MATCH:([A-Za-z0-9_]+)\s*=\s*(\{[\s\S]*?\})/;
+        const m = re.exec(plain);
+        if (!m) return null;
+        try {
+            const data = JSON.parse(m[2]);
+            if (!data || !Array.isArray(data.left) || !Array.isArray(data.right)) return null;
+            if (data.left.length !== data.right.length) {
+                console.warn('WML @MATCH: left/right length mismatch — skipping');
+                return null;
+            }
+            return {
+                qId: m[1],
+                left: data.left.map(String),
+                right: data.right.map(String),
+                leftLabels: Array.isArray(data.leftLabels) ? data.leftLabels.map(String) : null,
+                rightLabels: Array.isArray(data.rightLabels) ? data.rightLabels.map(String) : null,
+            };
+        } catch (err) {
+            console.warn('WML @MATCH: JSON parse failed', err);
+            return null;
         }
-        return out;
     }
 
-    function _stripPanelMarkers(text) {
+    function _stripMatchMarker(text) {
         if (!text) return text;
         let out = String(text);
-        out = out.replace(/<p>\s*@PANEL:[A-Za-z0-9_\-]+=[^<\n|]*\|?\s*<\/p>/gi, '');
-        out = out.replace(/@PANEL:[A-Za-z0-9_\-]+=[^\n|]*\|?/g, '');
+        out = out.replace(/<p>\s*@MATCH:[A-Za-z0-9_]+\s*=\s*\{[\s\S]*?\}\s*<\/p>/gi, '');
+        out = out.replace(/@MATCH:[A-Za-z0-9_]+\s*=\s*\{[\s\S]*?\}\s*/g, '');
         return out;
     }
 
-    // v7.19.11: Best-effort migration — walk legacy MSF doc HTML (pre-v7.19.11
-    // template using free-text inputField for everything) and extract any
-    // populated values, returning a list of {fieldId, value} pairs that the
-    // standard @PANEL applier can consume against the new SelectField + InputField
-    // template. Field-id rename map handles the few rating slugs that changed
-    // (e.g. ms-rating-topic-sentence-strength → ms-rating-topic-sentence).
-    // Best-effort: malformed legacy HTML / unrecognised values silently dropped.
-    const _LEGACY_MSF_RENAMES = {
-        'ms-rating-topic-sentence-strength': 'ms-rating-topic-sentence',
-        'ms-rating-technical-terms-strength': 'ms-rating-technical-terms',
-        'ms-rating-evidence-choice': 'ms-rating-evidence',
-    };
+    // Build a matching-widget DOM node. Returns the wrapper element.
+    // Caller must append + wire the widget's submit handler to sendCanvasMessage.
+    function _renderMatchWidget(parsed, onSubmit) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'swml-match-widget';
+        wrapper.setAttribute('data-q-id', parsed.qId);
 
-    function _parseLegacyMSFFields(html) {
-        if (!html || typeof html !== 'string') return [];
-        // Quick reject: if new template marker present, don't migrate.
-        if (html.indexOf('MARK SCHEME → TTECEA TRANSLATION') !== -1) return [];
-        // Old marker present? Legacy doc.
-        if (html.indexOf('TTECEA ANALYSIS') === -1 && html.indexOf('mark_scheme_ao') === -1) return [];
+        const grid = document.createElement('div');
+        grid.className = 'swml-match-grid';
 
-        const out = [];
-        let tmp;
-        try {
-            tmp = document.createElement('div');
-            tmp.innerHTML = html;
-        } catch (_) { return []; }
+        const leftCol = document.createElement('div');
+        leftCol.className = 'swml-match-col swml-match-col-left';
+        const rightCol = document.createElement('div');
+        rightCol.className = 'swml-match-col swml-match-col-right';
 
-        tmp.querySelectorAll('[data-input-field][data-field-id]').forEach(el => {
-            const rawId = el.getAttribute('data-field-id') || '';
-            if (!rawId) return;
-            const fieldId = _LEGACY_MSF_RENAMES[rawId] || rawId;
-            const text = (el.textContent || '').trim();
-            if (!text) return;
-            // Numeric-bounded fields: drop value if it can't parse to int in range.
-            const pure = text.match(/^\d+/) ? text.match(/^\d+/)[0] : text;
-            if (/^ms-(questions-correct|optouts-count)$/.test(fieldId)) {
-                const n = parseInt(pure, 10);
-                if (isNaN(n) || n < 0 || n > 10) return;
-                out.push({ fieldId, value: String(n) });
-                return;
-            }
-            if (fieldId === 'ms-weighted-score') {
-                const n = parseInt(pure, 10);
-                if (isNaN(n) || n < 0 || n > 20) return;
-                out.push({ fieldId, value: String(n) });
-                return;
-            }
-            if (/^ms-(predicted-grade|grade-goal)$/.test(fieldId)) {
-                const n = parseInt(pure, 10);
-                if (isNaN(n) || n < 1 || n > 9) return;
-                out.push({ fieldId, value: String(n) });
-                return;
-            }
-            if (/^ms-rating-/.test(fieldId)) {
-                const n = parseInt(pure, 10);
-                if (isNaN(n) || n < 1 || n > 5) return;
-                out.push({ fieldId, value: String(n) });
-                return;
-            }
-            // Multi-select AOs: extract AO1-AO6 tokens, comma-join.
-            if (fieldId === 'ms-top-missed') {
-                const aos = (text.match(/AO[1-6]/gi) || []).map(s => s.toUpperCase());
-                if (!aos.length) return;
-                out.push({ fieldId, value: Array.from(new Set(aos)).join(',') });
-                return;
-            }
-            // Plain text passthrough for free-text fields.
-            out.push({ fieldId, value: text });
-        });
-        return out;
-    }
+        // Pair state: leftIndex → rightIndex (both 0-based positions in arrays)
+        const pairs = new Map();
+        let pendingLeft = null; // 0-based idx of currently-selected left item
 
-    // Apply markers to a TipTap editor: locate selectField / inputField nodes by
-    // fieldId attr, set value (selectField) or replace inline text (inputField).
-    // Last-write-wins if the same fieldId appears more than once in one reply.
-    function _applyPanelMarkers(editor, markers) {
-        if (!editor || !editor.state || !Array.isArray(markers) || !markers.length) return;
-        // Collapse to last-value-wins per fieldId
-        const byId = new Map();
-        markers.forEach(m => { byId.set(m.fieldId, m.value); });
+        const leftButtons = [];
+        const rightButtons = [];
 
-        // Pass 1: setNodeMarkup for selectField (no doc-size change)
-        const selectHits = [];
-        const inputHits = [];
-        editor.state.doc.descendants((node, pos) => {
-            if (!node.attrs || !node.attrs.fieldId) return;
-            if (!byId.has(node.attrs.fieldId)) return;
-            if (node.type.name === 'selectField') selectHits.push({ pos, node });
-            else if (node.type.name === 'inputField') inputHits.push({ pos, node });
+        const updatePairsBar = () => {
+            badgesBar.innerHTML = '';
+            // Sort pair entries by leftIndex for stable display
+            const entries = Array.from(pairs.entries()).sort((a, b) => a[0] - b[0]);
+            entries.forEach(([li, ri]) => {
+                const badge = document.createElement('span');
+                badge.className = 'swml-match-pair-badge';
+                badge.textContent = `${parsed.left[li]} ↔ ${parsed.right[ri]}`;
+                const x = document.createElement('button');
+                x.type = 'button';
+                x.className = 'swml-match-pair-remove';
+                x.setAttribute('aria-label', 'Remove pair');
+                x.textContent = '×';
+                x.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    pairs.delete(li);
+                    leftButtons[li].classList.remove('paired');
+                    rightButtons[ri].classList.remove('paired');
+                    leftButtons[li].disabled = false;
+                    rightButtons[ri].disabled = false;
+                    updatePairsBar();
+                    updateSubmitState();
+                });
+                badge.appendChild(x);
+                badgesBar.appendChild(badge);
+            });
+        };
+
+        const updateSubmitState = () => {
+            const allPaired = pairs.size === parsed.left.length;
+            submitBtn.disabled = !allPaired;
+            submitBtn.classList.toggle('ready', allPaired);
+        };
+
+        const tryPair = () => {
+            // Called whenever pendingLeft changes or a right is clicked
+            // (pairing happens in the right-button handler — this is purely
+            // visual sync). No-op kept for clarity.
+        };
+
+        parsed.left.forEach((label, i) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'swml-match-item swml-match-item-left';
+            btn.textContent = label;
+            if (parsed.leftLabels && parsed.leftLabels[i]) btn.title = parsed.leftLabels[i];
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (btn.classList.contains('paired')) return;
+                if (pendingLeft !== null && leftButtons[pendingLeft]) {
+                    leftButtons[pendingLeft].classList.remove('selected');
+                }
+                pendingLeft = i;
+                btn.classList.add('selected');
+                tryPair();
+            });
+            leftCol.appendChild(btn);
+            leftButtons.push(btn);
         });
 
-        if (selectHits.length) {
-            let tr = editor.state.tr;
-            selectHits.forEach(h => {
-                tr = tr.setNodeMarkup(h.pos, undefined, { ...h.node.attrs, value: byId.get(h.node.attrs.fieldId) });
+        parsed.right.forEach((label, i) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'swml-match-item swml-match-item-right';
+            btn.textContent = label;
+            if (parsed.rightLabels && parsed.rightLabels[i]) btn.title = parsed.rightLabels[i];
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (btn.classList.contains('paired')) return;
+                if (pendingLeft === null) return; // wait for a left selection
+                pairs.set(pendingLeft, i);
+                leftButtons[pendingLeft].classList.add('paired');
+                leftButtons[pendingLeft].classList.remove('selected');
+                leftButtons[pendingLeft].disabled = true;
+                btn.classList.add('paired');
+                btn.disabled = true;
+                pendingLeft = null;
+                updatePairsBar();
+                updateSubmitState();
             });
-            if (tr.docChanged) editor.view.dispatch(tr);
-        }
+            rightCol.appendChild(btn);
+            rightButtons.push(btn);
+        });
 
-        // Pass 2: replace inline content for inputField. Sort descending so earlier
-        // positions stay valid as later replacements shrink/grow the doc.
-        if (inputHits.length) {
-            inputHits.sort((a, b) => b.pos - a.pos);
-            let tr = editor.state.tr;
-            inputHits.forEach(h => {
-                const newText = byId.get(h.node.attrs.fieldId);
-                const from = h.pos + 1;
-                const to = h.pos + h.node.nodeSize - 1;
-                if (newText) tr = tr.replaceWith(from, to, editor.schema.text(newText));
-                else tr = tr.delete(from, to);
+        grid.appendChild(leftCol);
+        grid.appendChild(rightCol);
+        wrapper.appendChild(grid);
+
+        const badgesBar = document.createElement('div');
+        badgesBar.className = 'swml-match-pairs';
+        wrapper.appendChild(badgesBar);
+
+        const controls = document.createElement('div');
+        controls.className = 'swml-match-controls';
+
+        const resetBtn = document.createElement('button');
+        resetBtn.type = 'button';
+        resetBtn.className = 'swml-match-reset';
+        resetBtn.textContent = 'Reset';
+        resetBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            pairs.clear();
+            pendingLeft = null;
+            leftButtons.forEach(b => { b.classList.remove('paired', 'selected'); b.disabled = false; });
+            rightButtons.forEach(b => { b.classList.remove('paired'); b.disabled = false; });
+            updatePairsBar();
+            updateSubmitState();
+        });
+
+        const submitBtn = document.createElement('button');
+        submitBtn.type = 'button';
+        submitBtn.className = 'swml-match-submit';
+        submitBtn.textContent = 'Submit Matches';
+        submitBtn.disabled = true;
+        submitBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (submitBtn.disabled) return;
+            // Build "leftLabel-rightLabel" pairs in left-array order.
+            const out = [];
+            parsed.left.forEach((leftLbl, li) => {
+                if (!pairs.has(li)) return;
+                const ri = pairs.get(li);
+                out.push(`${leftLbl}-${parsed.right[ri]}`);
             });
-            if (tr.docChanged) editor.view.dispatch(tr);
-        }
+            if (!out.length) return;
+            // Lock the widget so re-submit is impossible.
+            submitBtn.disabled = true;
+            resetBtn.disabled = true;
+            wrapper.classList.add('submitted');
+            try { onSubmit(out.join(', ')); } catch (err) { console.warn('WML @MATCH submit handler failed', err); }
+        });
+
+        controls.appendChild(resetBtn);
+        controls.appendChild(submitBtn);
+        wrapper.appendChild(controls);
+
+        return wrapper;
     }
 
     // v7.17.35: Read checklistItem tick state + statement text per qId.
@@ -2066,13 +2138,24 @@
                 _parseChecklistMarker(text).forEach((hit) => _populateChecklist(canvasEditor, hit.qId, hit.statements, hit.answerKey));
                 text = _stripChecklistMarker(text);
 
-                // v7.19.11: @PANEL:fieldId=value markers → auto-populate doc fields + strip.
-                try { _applyPanelMarkers(canvasEditor, _parsePanelMarkers(text)); } catch (e) { console.warn('WML @PANEL apply failed', e); }
-                text = _stripPanelMarkers(text);
+                // v7.19.12: @MATCH:qId={...} interactive matching widget — parse before strip.
+                const _matchData = _parseMatchMarker(text);
+                text = _stripMatchMarker(text);
 
                 const body = el('div', { className: 'swml-bubble-body' });
                 body.innerHTML = text;
                 content.appendChild(body);
+
+                // v7.19.12: render matching widget after body (chat bubble inner).
+                if (_matchData) {
+                    try {
+                        const widget = _renderMatchWidget(_matchData, (answer) => {
+                            if (chatTextarea) { chatTextarea.value = answer; }
+                            sendCanvasMessage();
+                        });
+                        body.appendChild(widget);
+                    } catch (err) { console.warn('WML @MATCH render failed', err); }
+                }
 
                 // v7.15.101: Fill-in-the-blank submit wiring for canvas chat.
                 // Mirrors the wml-app.js handler (main chat). Without this the
@@ -7585,12 +7668,21 @@
                                 // v7.17.32: @POPULATE_CHECKLIST marker → mutate canvas + strip from display.
                                 _parseChecklistMarker(text).forEach((hit) => _populateChecklist(canvasEditor, hit.qId, hit.statements, hit.answerKey));
                                 text = _stripChecklistMarker(text);
-                                // v7.19.11: @PANEL:fieldId=value markers → auto-populate doc fields + strip.
-                                try { _applyPanelMarkers(canvasEditor, _parsePanelMarkers(text)); } catch (e) { console.warn('WML @PANEL apply failed', e); }
-                                text = _stripPanelMarkers(text);
+                                // v7.19.12: @MATCH:qId={...} interactive matching widget — parse before strip.
+                                const _matchData2 = _parseMatchMarker(text);
+                                text = _stripMatchMarker(text);
                                 const body = el('div', { className: 'swml-bubble-body' });
                                 body.innerHTML = text;
                                 content.appendChild(body);
+                                if (_matchData2) {
+                                    try {
+                                        const widget = _renderMatchWidget(_matchData2, (answer) => {
+                                            if (chatTextarea) { chatTextarea.value = answer; }
+                                            sendCanvasMessage();
+                                        });
+                                        body.appendChild(widget);
+                                    } catch (err) { console.warn('WML @MATCH render failed', err); }
+                                }
 
                                 // Quick action buttons — detect from raw (unformatted) text
                                 const detectText = rawText || text.replace(/<[^>]+>/g, '');
@@ -9142,11 +9234,11 @@
             },
         });
 
-        // ── SelectField Node (v7.19.11) ──
+        // ── SelectField Node (v7.19.11, simplified v7.19.12) ──
         // Bounded-choice form input as TipTap atom. Renders <select> (single) or chip-row
-        // (multi). Auto-populated by @PANEL:fieldId=value markers from Sophia, or manually
-        // picked by student. Replaces free-text inputs for fields with bounded options
-        // (1-5 ratings, 1-9 grade, AO labels).
+        // (multi). Student picks the value manually; persists via attr round-trip.
+        // Used for bounded fields (1-5 ratings, 1-9 grade, AO labels) that would otherwise
+        // be free-text. v7.19.12: dropped @PANEL auto-populate per pedagogy pivot.
         const SelectField = Node.create({
             name: 'selectField',
             group: 'block',
@@ -13878,8 +13970,7 @@
     }
 
     // v7.19.11: SelectField HTML generator — bounded-choice form input. Renders a native
-    // <select> (single) or chip-toggle row (multi). Auto-populated by @PANEL:fieldId=value
-    // markers from Sophia, or manually picked by the student.
+    // <select> (single) or chip-toggle row (multi). Student picks manually.
     //   options = [{value, label}, ...]
     //   multi   = true → multi-select chip picker (value persists as comma-separated)
     function selectHTML(prompt, fieldId, options, multi) {
@@ -16348,16 +16439,28 @@
     }
 
     /**
-     * Mark Scheme Final Assessment (MSF) canvas-doc template (v7.19.11 redesign).
-     * Mirrors v7.19.x protocol arc: greeting → Q1-Q10 → 6-step feedback → action plan.
-     * Auto-populated by @PANEL:fieldId=value markers from Sophia (Phase 3 emit).
-     * Self-rating fields use SelectField nodes (bounded picker), not free-text.
-     * TTECEA section reframed as "Mark Scheme → TTECEA Translation" — bridges
-     * mark-scheme literacy to AO2 analytical skill.
+     * Mark Scheme Final Assessment (MSF) canvas-doc template (v7.19.12).
+     *
+     * Sections mirror Sophia's Phase 3 dashboard 1:1 (Step 1-6) so the student
+     * can record what they heard alongside what Sophia said. Per-Q rows for
+     * Steps 2/3/4 + the TTECEA Engagement section make the doc reflective rather
+     * than a copy-paste workbook.
+     *
+     * v7.19.12 changes vs v7.19.11:
+     *   - Dropped @PANEL auto-populate per pedagogy pivot (Bjork generation effect /
+     *     Boud ownership / Nicol self-regulation / Dunning-Kruger calibration gap).
+     *     Student fills everything. SelectField + chip-multi widgets keep friction low.
+     *   - Restructured to mirror 6-step Phase 3 dashboard order.
+     *   - Per-Q AO picker + technique reflection (replaces fixed AO2-only TTECEA
+     *     Translation section). TTECEA serves AO2 + AO3 + AO4 — student picks the AO.
+     *   - Per-Q confidence + BBB rows in Step 2 (Metacognitive Analysis).
+     *   - Per-Q distractor reflection in Step 3 (Deep Learning).
+     *   - Per-Q score-out-of-tariff entry in Step 4 (Results).
      */
     function getMarkSchemeTemplate(topicData) {
         let html = '';
 
+        // Bounded option lists.
         const SCALE_1_5 = [
             { value: '1', label: '1 — just starting' },
             { value: '2', label: '2 — improving' },
@@ -16365,193 +16468,160 @@
             { value: '4', label: '4 — strong' },
             { value: '5', label: '5 — excellent' },
         ];
+        const CONFIDENCE_1_5 = [
+            { value: '1', label: '1 — complete guess' },
+            { value: '2', label: '2 — very uncertain' },
+            { value: '3', label: '3 — moderately sure' },
+            { value: '4', label: '4 — quite confident' },
+            { value: '5', label: '5 — completely certain' },
+        ];
+        const BBB_OPTIONS = [
+            { value: 'brain',  label: '🧠 Brain — from memory' },
+            { value: 'book',   label: '📖 Book — needed mark scheme' },
+            { value: 'buddy',  label: '👥 Buddy — needed help' },
+        ];
         const GRADE_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => ({ value: String(n), label: String(n) }));
+        const TARIFF_0_3 = [0, 1, 2, 3].map(n => ({ value: String(n), label: String(n) }));
         const NUM_0_TO = (max) => {
             const out = [];
             for (let i = 0; i <= max; i++) out.push({ value: String(i), label: String(i) });
             return out;
         };
         const AO_OPTIONS = ['AO1', 'AO2', 'AO3', 'AO4', 'AO5', 'AO6'].map(a => ({ value: a, label: a }));
-        const OPTOUT_TYPES = [
-            { value: 'multiple-choice', label: 'Multiple-choice' },
-            { value: 'short-answer', label: 'Short answer' },
-            { value: 'reasoning', label: 'Reasoning' },
-            { value: 'apply-to-extract', label: 'Apply to extract' },
-            { value: 'compare-criteria', label: 'Compare criteria' },
-        ];
 
-        // Helper: TTECEA translation row (read-only descriptors + insight text + 1-5 select).
-        function ttceaRow(label, descriptors) {
-            let descInner = `<h3>${escapeHTML(label)}</h3>`;
-            descInner += '<p><em>Mark-scheme descriptors (1–5):</em></p>';
-            descriptors.forEach(d => { descInner += `<p>${escapeHTML(d)}</p>`; });
-            html += sectionHTML('mark_scheme_ao', label, false, null, descInner);
-            const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-            html += sectionHTML('mark_scheme_response', `My translation: ${label}`, true, null,
-                inputHTML(`What does the mark scheme reward for ${label}? Write your insight from the quiz.`, `ms-ttecea-insight-${slug}`)
-                + selectHTML('My confidence on this element', `ms-rating-${slug}`, SCALE_1_5, false)
+        // Helper: per-Q row block. Used by Steps 2 / 3 / 4 / TTECEA Engagement (Step H).
+        function perQuestionRow(qNum, sectionType, label, innerHTML) {
+            html += sectionHTML(sectionType, `Q${qNum}: ${label}`, true, null,
+                `<p><strong>Question ${qNum}</strong></p>` + innerHTML
             );
         }
 
-        // A. NOTICE BANNER
+        // ── A. NOTICE BANNER ─────────────────────────────────────
         html += sectionHTML('notice', 'How to Use This Document', false, null,
             `<p><strong>Sophia runs the Mark Scheme quiz in the chat panel on the right.</strong></p>`
-            + `<p>As you progress, your headline results, top missed areas, and personalised next steps will fill in here automatically. `
-            + `Use the dropdowns to record your self-ratings and confidence. Use the text fields to reflect.</p>`
+            + `<p>This workbook follows the same six-step feedback flow Sophia uses at the end of the quiz. `
+            + `Each section here mirrors one of her dashboard steps. Fill it in yourself — that's where the learning lives. `
+            + `Use the dropdowns for ratings and AO labels; use the text fields to think out loud.</p>`
         );
 
-        // B. HEADLINE RESULTS (auto-populated)
-        html += dividerHTML('HEADLINE RESULTS');
-
-        html += sectionHTML('mark_scheme_response', 'Questions Correct', true, null,
-            `<p><strong>Questions Answered Correctly (out of 10):</strong></p>`
-            + selectHTML('Sophia fills this in — or pick manually if needed.', 'ms-questions-correct', NUM_0_TO(10), false)
-        );
-        html += sectionHTML('mark_scheme_response', 'Weighted Score', true, null,
-            `<p><strong>Weighted Score (out of 20):</strong></p>`
-            + selectHTML('Sophia fills this in.', 'ms-weighted-score', NUM_0_TO(20), false)
-        );
-        html += sectionHTML('mark_scheme_response', 'Percentage', true, null,
-            `<p><strong>Percentage:</strong></p>`
-            + inputHTML('Sophia fills this in (e.g. 75%).', 'ms-percentage')
-        );
-        html += sectionHTML('mark_scheme_response', 'Predicted Grade', true, null,
-            `<p><strong>Predicted Grade (1–9):</strong></p>`
-            + selectHTML('Sophia fills this in.', 'ms-predicted-grade', GRADE_OPTIONS, false)
-        );
-        html += sectionHTML('mark_scheme_response', 'Top Missed Areas', true, null,
-            `<p><strong>Top Missed Areas (Assessment Objectives):</strong></p>`
-            + selectHTML('Pick the AOs that cost you the most marks.', 'ms-top-missed', AO_OPTIONS, true)
-        );
-        html += sectionHTML('mark_scheme_response', 'Opt-outs Count', true, null,
-            `<p><strong>Opt-outs This Attempt (0–10):</strong></p>`
-            + selectHTML('Sophia fills this in.', 'ms-optouts-count', NUM_0_TO(10), false)
-        );
-        html += sectionHTML('mark_scheme_response', 'Opt-out Items', true, null,
-            `<p><strong>Opt-out Items (question types):</strong></p>`
-            + selectHTML('Pick the question types you opted out of.', 'ms-optout-items', OPTOUT_TYPES, true)
+        // ── B. STEP 1 — SELF-REFLECTION ─────────────────────────
+        html += dividerHTML('STEP 1 — SELF-REFLECTION');
+        html += sectionHTML('mark_scheme_response', 'Hardest AO type', true, null,
+            `<p><strong>Which AO type did you find most challenging this round, and why?</strong></p>`
+            + inputHTML('e.g. "AO4 — I struggle with judging the strength of evidence rather than just describing it."', 'ms-self-reflection-text')
+            + selectHTML('Tag the AOs that felt hardest', 'ms-self-reflection-aos', AO_OPTIONS, true)
         );
 
-        // C. TRENDS (manual reflection across attempts)
-        html += dividerHTML('TRENDS');
-
-        html += sectionHTML('mark_scheme_response', 'Repeated Errors', true, null,
-            `<p><strong>Trend: Repeated Errors (across units)</strong></p>`
-            + inputHTML('What errors have you seen repeated across units? Put "N/A" if first attempt.', 'ms-repeated-errors')
-            + selectHTML('AOs affected', 'ms-repeated-errors-aos', AO_OPTIONS, true)
-        );
-        html += sectionHTML('mark_scheme_response', 'Improvements', true, null,
-            `<p><strong>Trend: Improvements (across units)</strong></p>`
-            + inputHTML('Which areas have you improved across units? Put "N/A" if first attempt.', 'ms-improvements')
-            + selectHTML('AOs improved', 'ms-improvements-aos', AO_OPTIONS, true)
-        );
-
-        // D. WHAT TO FIX FIRST (auto-populated)
-        html += dividerHTML('WHAT TO FIX FIRST');
-
-        html += sectionHTML('mark_scheme_response', 'Personalised Summary', true, null,
-            `<p><strong>Personalised Summary</strong></p>`
-            + inputHTML('Sophia fills this in from your Personalised Next Steps.', 'ms-personalised-summary')
-        );
-
-        // E. METACOGNITION (manual reflection)
-        html += dividerHTML('METACOGNITION');
-
-        html += sectionHTML('mark_scheme_response', 'Biggest Challenges', true, null,
-            `<p><strong>Biggest Challenges</strong></p>`
-            + inputHTML('What felt hardest and why?', 'ms-biggest-challenges')
-        );
-        html += sectionHTML('mark_scheme_response', 'Short-term Aims', true, null,
-            `<p><strong>Short-term Aims</strong></p>`
-            + inputHTML('What will you do differently next time?', 'ms-short-term-aims')
-        );
-
-        // F. MARK SCHEME → TTECEA TRANSLATION (reframed AO2 bridge)
-        html += dividerHTML('MARK SCHEME → TTECEA TRANSLATION');
-
+        // ── C. STEP 2 — METACOGNITIVE ANALYSIS (per-Q × 10) ─────
+        html += dividerHTML('STEP 2 — METACOGNITIVE ANALYSIS');
         html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
-            `<h3>Bridging the Mark Scheme to your TTECEA paragraph craft</h3>`
-            + `<p><em>The mark scheme tells you what examiners reward. TTECEA is the paragraph structure that delivers it. `
-            + `For each TTECEA element below, write the insight you took from the mark scheme quiz, then rate your confidence (1–5).</em></p>`
-            + `<p><em>This is the AO2-analysis bridge: mark-scheme literacy → paragraph-level analytical writing.</em></p>`
+            `<h3>Confidence + Brain-Book-Buddy per question</h3>`
+            + `<p><em>Record how confident you felt and which support you'd reach for if you got the question wrong. `
+            + `Sophia's BBB step shows you the pattern across the round.</em></p>`
+        );
+        for (let q = 1; q <= 10; q++) {
+            perQuestionRow(q, 'mark_scheme_response', 'Confidence + BBB',
+                selectHTML('My confidence (1–5)', `ms-q${q}-confidence`, CONFIDENCE_1_5, false)
+                + selectHTML('Brain / Book / Buddy', `ms-q${q}-bbb`, BBB_OPTIONS, false)
+            );
+        }
+
+        // ── D. STEP 3 — DEEP LEARNING (per-Q × 10) ──────────────
+        html += dividerHTML('STEP 3 — DEEP LEARNING THROUGH WRONG ANSWERS');
+        html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
+            `<h3>Distractor reflection per question</h3>`
+            + `<p><em>Even on questions you got right, the wrong options often reveal a misconception. `
+            + `For each question, jot down which distractor pulled you in (or would have) and why it felt tempting. `
+            + `This is where Sophia's distractor analysis lands.</em></p>`
+        );
+        for (let q = 1; q <= 10; q++) {
+            perQuestionRow(q, 'mark_scheme_response', 'Distractor pull',
+                inputHTML(`Which other option drew you in on Q${q}, and why was it tempting?`, `ms-q${q}-distractor`)
+            );
+        }
+
+        // ── E. STEP 4 — RESULTS (per-Q × 10 + totals) ───────────
+        html += dividerHTML('STEP 4 — YOUR RESULTS');
+        html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
+            `<h3>Per-question score record</h3>`
+            + `<p><em>Sophia gives you a Q-by-Q breakdown. Record your mark for each question (out of its tariff), `
+            + `then enter your totals at the bottom. Calibration: did your 1–5 confidence match what you actually scored?</em></p>`
+        );
+        for (let q = 1; q <= 10; q++) {
+            perQuestionRow(q, 'mark_scheme_response', 'Score out of tariff',
+                selectHTML(`Marks awarded on Q${q} (out of tariff)`, `ms-q${q}-score`, TARIFF_0_3, false)
+            );
+        }
+        html += sectionHTML('mark_scheme_response', 'Totals', true, null,
+            `<p><strong>Raw score (out of 20):</strong></p>`
+            + selectHTML('Total marks across all 10 questions', 'ms-weighted-score', NUM_0_TO(20), false)
+            + `<p><strong>Percentage:</strong></p>`
+            + inputHTML('e.g. "75%"', 'ms-percentage')
         );
 
-        ttceaRow('TOPIC SENTENCE', [
-            '1: I described surface details only.',
-            '2: I hinted at an idea but mostly described.',
-            '3: I stated a clear idea and started analysing.',
-            '4: I clearly linked my idea to the text’s big message.',
-            '5: I framed a perceptive insightful concept that guided my analysis.',
-        ]);
-
-        ttceaRow('TECHNICAL TERMS', [
-            '1: I misused or skipped methods.',
-            '2: I used some correct terms loosely.',
-            '3: I used the right terms accurately.',
-            '4: I used precise terms for language and structure.',
-            '5: I used varied, exact terms to show how methods combine.',
-        ]);
-
-        ttceaRow('EVIDENCE', [
-            '1: I chose unhelpful or no evidence.',
-            '2: I quoted something loosely linked.',
-            '3: I chose an apt quote to support my point.',
-            '4: I picked a very apt, concise quote that set up analysis.',
-            '5: I chose a pinpoint quote that allowed rich analysis.',
-        ]);
-
-        ttceaRow('CLOSE ANALYSIS', [
-            '1: I paraphrased instead of analysing.',
-            '2: I named words/devices with little meaning.',
-            '3: I explained key words and their connotations.',
-            '4: I analysed details with layered reasons.',
-            '5: I zoomed in at sound/word/structure to explore meaning.',
-        ]);
-
-        ttceaRow('EFFECTS ON THE READER', [
-            '1: I gave a vague effect (“makes you read on”).',
-            '2: I named an effect but barely explained why.',
-            '3: I explained a clear effect with a basic reason.',
-            '4: I weighed specific effects with alternatives.',
-            '5: I linked detailed & nuanced effects to audience and purpose.',
-        ]);
-
-        ttceaRow('AUTHOR’S PURPOSE', [
-            '1: I gave a generic purpose with no evidence link.',
-            '2: I touched on purpose briefly.',
-            '3: I linked a clear purpose to my analysis.',
-            '4: I explored why the purpose matters.',
-            '5: I evaluated author’s purpose & implications perceptively.',
-        ]);
-
-        // G. WHERE YOU'RE GOING (mixed)
-        html += dividerHTML('WHERE YOU’RE GOING');
-
-        html += sectionHTML('mark_scheme_response', 'Next Focus', true, null,
-            `<p><strong>Next Focus:</strong></p>`
-            + inputHTML('Name one precise area you want to focus on to make the most gains.', 'ms-next-focus')
+        // ── F. STEP 5 — GRADE & CALIBRATION ─────────────────────
+        html += dividerHTML('STEP 5 — GRADE & CALIBRATION');
+        html += sectionHTML('mark_scheme_response', 'Predicted Grade', true, null,
+            `<p><strong>Predicted Grade (1–9) from Sophia's scoring:</strong></p>`
+            + selectHTML('Grade Sophia gave you', 'ms-predicted-grade', GRADE_OPTIONS, false)
         );
-        html += sectionHTML('mark_scheme_response', 'Grade Goal Reminder', true, null,
-            `<p><strong>Grade Goal Reminder (1–9):</strong></p>`
-            + selectHTML('What grade are you aiming for?', 'ms-grade-goal', GRADE_OPTIONS, false)
+        html += sectionHTML('mark_scheme_response', 'Grade Goal', true, null,
+            `<p><strong>Grade Goal (1–9) — what are you aiming for?</strong></p>`
+            + selectHTML('Target grade', 'ms-grade-goal', GRADE_OPTIONS, false)
+        );
+        html += sectionHTML('mark_scheme_response', 'Calibration Reflection', true, null,
+            `<p><strong>Confidence vs. actual: where did your self-rating diverge from the score?</strong></p>`
+            + inputHTML('e.g. "I rated myself 3/5 on Q4 but scored 1.5/2 — under-confident. On Q7 I felt sure but got 0/2 — over-confident."', 'ms-calibration-reflection')
         );
 
-        // H. WHERE TO NEXT (action plan, manual)
-        html += dividerHTML('WHERE TO NEXT');
-
-        html += sectionHTML('mark_scheme_response', 'Action 1: Course & Resources', true, null,
+        // ── G. STEP 6 — PERSONALISED NEXT STEPS ─────────────────
+        html += dividerHTML('STEP 6 — PERSONALISED NEXT STEPS');
+        html += sectionHTML('mark_scheme_response', 'Top 3 Priorities', true, null,
+            `<p><strong>Top Priority 1 (highest leverage):</strong></p>`
+            + inputHTML('In your own words — what is your single most important fix?', 'ms-priority-1')
+            + `<p><strong>Top Priority 2:</strong></p>`
+            + inputHTML('Second priority area', 'ms-priority-2')
+            + `<p><strong>Top Priority 3:</strong></p>`
+            + inputHTML('Third priority area', 'ms-priority-3')
+        );
+        html += sectionHTML('mark_scheme_response', 'Action Plan', true, null,
             `<p><strong>Action 1 (Course &amp; Resources):</strong></p>`
-            + inputHTML('What’s the next step you will take in your course towards your goals?', 'ms-action-1')
-        );
-        html += sectionHTML('mark_scheme_response', 'Action 2: Lessons', true, null,
-            `<p><strong>Action 2 (Lessons):</strong></p>`
+            + inputHTML('What is the next step you will take in your course towards your goals?', 'ms-action-1')
+            + `<p><strong>Action 2 (Lessons):</strong></p>`
             + inputHTML('How will you use the lessons to help you reach your goals?', 'ms-action-2')
-        );
-        html += sectionHTML('mark_scheme_response', 'Action 3: Support', true, null,
-            `<p><strong>Action 3 (Support):</strong></p>`
+            + `<p><strong>Action 3 (Support):</strong></p>`
             + inputHTML('How will you use available support to help you reach your goals?', 'ms-action-3')
         );
 
+        // ── H. MARK SCHEME → TTECEA ENGAGEMENT (per-Q × 10) ─────
+        html += dividerHTML('MARK SCHEME → TTECEA ENGAGEMENT');
+        html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
+            `<h3>Bridging mark-scheme literacy to your TTECEA writing</h3>`
+            + `<p><em>The mark scheme tells you what examiners reward. TTECEA is the paragraph structure that delivers it. `
+            + `For each question, pick the AO it tested, then write 1–2 sentences on how a TTECEA element (Topic / Technique / Evidence / Close-analysis / Effects / Author's purpose) `
+            + `would help you address that AO in an essay. TTECEA serves AO2 (Lang P1 analysis), AO3 + AO4 (Lang P2 + Lit) — pick the AO that fits the question.</em></p>`
+        );
+        for (let q = 1; q <= 10; q++) {
+            perQuestionRow(q, 'mark_scheme_response', 'AO + technique bridge',
+                selectHTML(`Which AO does Q${q} primarily test?`, `ms-q${q}-ao`, AO_OPTIONS, false)
+                + inputHTML(`Which TTECEA element maps to this skill, and how does it help you address that AO? Write 1–2 sentences.`, `ms-q${q}-ttecea`)
+            );
+        }
+
+        // ── I. TRENDS (cross-attempt) ───────────────────────────
+        html += dividerHTML('TRENDS (across attempts)');
+        html += sectionHTML('mark_scheme_response', 'Repeated Errors', true, null,
+            `<p><strong>Errors you have seen repeated across units (put "N/A" if first attempt):</strong></p>`
+            + inputHTML('Which errors keep coming back?', 'ms-repeated-errors')
+            + selectHTML('AOs affected', 'ms-repeated-errors-aos', AO_OPTIONS, true)
+        );
+        html += sectionHTML('mark_scheme_response', 'Improvements', true, null,
+            `<p><strong>Areas you have improved across units (put "N/A" if first attempt):</strong></p>`
+            + inputHTML('What is now easier than it was?', 'ms-improvements')
+            + selectHTML('AOs improved', 'ms-improvements-aos', AO_OPTIONS, true)
+        );
+
+        // ── J. SIGN-OFF ─────────────────────────────────────────
         html += buildSignoffSection();
         return html;
     }
@@ -17585,18 +17655,16 @@
         if (state.task === 'mark_scheme') {
             const currentMS = canvasEditor.getHTML();
             // v7.19.11: New template marker is the renamed TTECEA section divider.
-            const hasNewTemplate = currentMS.includes('MARK SCHEME → TTECEA TRANSLATION');
+            const hasNewTemplate = currentMS.includes('MARK SCHEME → TTECEA ENGAGEMENT');
             if (hasNewTemplate) {
                 console.log('WML: Mark scheme document (v7.19.11+) already loaded, skipping template');
                 return;
             }
-            // v7.19.11: Best-effort legacy migration — capture old field values before swap.
-            const _legacyValues = _parseLegacyMSFFields(currentMS);
             if (currentMS.includes('mark_scheme_ao') || currentMS.includes('data-section-type')) {
-                console.log('WML: Clearing stale mark scheme document (pre-v7.19.11 template or leaked exam template)');
+                console.log('WML: Clearing stale mark scheme document (pre-v7.19.12 template or leaked exam template)');
                 try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
             }
-            console.log('WML: Generating mark scheme study template (v7.19.11)');
+            console.log('WML: Generating mark scheme study template (v7.19.12)');
             const msTemplate = getMarkSchemeTemplate(null);
             if (canvasEditor) {
                 _migrationActive = true;
@@ -17605,13 +17673,9 @@
                 } finally {
                     _migrationActive = false;
                 }
-                if (_legacyValues.length) {
-                    try { _applyPanelMarkers(canvasEditor, _legacyValues); console.log('WML: Migrated', _legacyValues.length, 'legacy MSF field(s)'); }
-                    catch (e) { console.warn('WML: legacy MSF migration failed', e); }
-                }
                 snapshotTemplateBaseline(canvasEditor);
                 refreshWordCountUI();
-                console.log('WML: Mark scheme template injected (v7.19.11)');
+                console.log('WML: Mark scheme template injected (v7.19.12)');
             }
             return;
         }
@@ -17658,29 +17722,23 @@
         if (state.task === 'mark_scheme') {
             const currentMS = canvasEditor.getHTML();
             // v7.19.11: New template marker is the renamed TTECEA section divider.
-            const hasNewTemplate = currentMS.includes('MARK SCHEME → TTECEA TRANSLATION');
+            const hasNewTemplate = currentMS.includes('MARK SCHEME → TTECEA ENGAGEMENT');
             if (hasNewTemplate) {
                 console.log('WML: Mark scheme document (v7.19.11+) already loaded, skipping template');
                 return;
             }
-            // v7.19.11: Best-effort legacy migration — capture old field values before swap.
-            const _legacyValues = _parseLegacyMSFFields(currentMS);
             // Old template or essay sections present — clear and inject fresh
             if (currentMS.includes('mark_scheme_ao') || currentMS.includes('data-section-type')) {
-                console.log('WML: Clearing stale mark scheme document (pre-v7.19.11 template)');
+                console.log('WML: Clearing stale mark scheme document (pre-v7.19.12 template)');
                 try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
             }
-            console.log('WML: Generating mark scheme study template (v7.19.11)');
+            console.log('WML: Generating mark scheme study template (v7.19.12)');
             const msTemplate = getMarkSchemeTemplate(topicData);
             if (canvasEditor) {
                 canvasEditor.commands.setContent(msTemplate, false);
-                if (_legacyValues.length) {
-                    try { _applyPanelMarkers(canvasEditor, _legacyValues); console.log('WML: Migrated', _legacyValues.length, 'legacy MSF field(s)'); }
-                    catch (e) { console.warn('WML: legacy MSF migration failed', e); }
-                }
                 snapshotTemplateBaseline(canvasEditor); // v7.14.46: fix word count showing template text
                 refreshWordCountUI();
-                console.log('WML: Mark scheme template injected (v7.19.11)');
+                console.log('WML: Mark scheme template injected (v7.19.12)');
             }
             return;
         }
