@@ -16601,6 +16601,9 @@
 
         // ── B. FEED-UP — Where am I going? ──────────────────────
         html += dividerHTML('1. WHERE AM I GOING?  (Feed-Up)');
+        html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
+            `<p><em>📋 See Sophia's <strong>Step 1 (Self-Reflection)</strong> in the chat for the prompt.</em></p>`
+        );
         html += sectionHTML('mark_scheme_response', 'Goal for next attempt', true, null,
             `<p><strong>By the next attempt, what do you want to be able to do?</strong></p>`
             + inputHTML('Complete the sentence: "By next time, I want to be able to ___"  (one sentence — keep it specific and observable).', 'ms-feed-up-goal')
@@ -16612,6 +16615,7 @@
         html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
             `<h3>Pattern across the round, not per-question recall</h3>`
             + `<p><em>Sophia gives you the per-question table. Here you commit to ONE pattern claim across all your wrong (or near-wrong) answers — that's the synthesis the literature shows actually transfers.</em></p>`
+            + `<p><em>📋 See Sophia's <strong>Step 4 (Results)</strong> + <strong>Step 5 (Grade & Calculation)</strong> in the chat for the data.</em></p>`
         );
         html += sectionHTML('mark_scheme_response', 'Score + Grade (record what Sophia gave you)', true, null,
             `<p><strong>Raw score</strong> (e.g. "15/20" — type as Sophia gave it):</p>`
@@ -16632,6 +16636,7 @@
         html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
             `<h3>Pick ONE wrong answer. Trace the breakdown moment.</h3>`
             + `<p><em>Hattie: process-level feedback transfers across tasks; per-question correctness does not. Pick the wrong answer that is most representative — not all of them — and walk through the step in your thinking that broke down.</em></p>`
+            + `<p><em>📋 See Sophia's <strong>Step 2 (Metacognitive Analysis)</strong> + <strong>Step 3 (Deep Learning)</strong> in the chat for the patterns.</em></p>`
         );
         html += sectionHTML('mark_scheme_response', 'My breakdown moment', true, null,
             `<p><strong>Pick ONE question you got wrong (or partial). Which one?</strong></p>`
@@ -16645,6 +16650,7 @@
         html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
             `<h3>One portable check-rule for next time.</h3>`
             + `<p><em>A rule you can run on yourself BEFORE answering similar questions in future. Not specific to this round.</em></p>`
+            + `<p><em>📋 See Sophia's <strong>Step 2 (Metacognitive Analysis)</strong> in the chat — the BBB / confidence pattern hints at the check-rule you need.</em></p>`
         );
         html += sectionHTML('mark_scheme_response', 'My check-rule', true, null,
             `<p><strong>Next time I see a question like this, the check I will run before answering is:</strong></p>`
@@ -16653,6 +16659,9 @@
 
         // ── F. FEED-FORWARD — Where to next? ────────────────────
         html += dividerHTML('5. WHERE TO NEXT?  (Feed-Forward)');
+        html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
+            `<p><em>📋 See Sophia's <strong>Step 6 (Personalised Next Steps)</strong> in the chat for direction.</em></p>`
+        );
         html += sectionHTML('mark_scheme_response', 'My next concrete action', true, null,
             `<p><strong>One concrete action you will take BEFORE the next quiz:</strong></p>`
             + inputHTML('e.g. "Re-read the AQA Q4 level descriptors page and write three sentences distinguishing clear / perceptive / sophisticated."', 'ms-feed-forward-action')
@@ -16665,6 +16674,7 @@
         html += sectionHTML('mark_scheme_ao', 'About this section', false, null,
             `<h3>Bridge mark-scheme literacy to your essay craft</h3>`
             + `<p><em>Pick ONE question that taught you something new about an AO. Translate that insight into a TTECEA element you would use in an essay. TTECEA serves AO2 (Lang P1 analysis), AO3 + AO4 (Lang P2 + Lit) — pick the AO that fits.</em></p>`
+            + `<p><em>📋 See Sophia's <strong>Step 6 (Personalised Next Steps)</strong> in the chat for the TTECEA bridge inspiration.</em></p>`
         );
         html += sectionHTML('mark_scheme_response', 'My TTECEA bridge', true, null,
             `<p><strong>Which question taught you something new about an AO?</strong></p>`

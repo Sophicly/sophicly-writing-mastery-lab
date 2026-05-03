@@ -4238,6 +4238,29 @@ TEMPLATE;
             $block .= "  A sentence or two for each is fine.'\n";
             $block .= "Do NOT phrase it as 'Option B suggested this was False' or 'Option B's claim was that...' — that wording confuses the student into thinking you are restating their answer. Always frame the un-chosen option(s) as the focus, in the second person ('the option(s) you did NOT choose'), and ask about general student misconceptions, not the student's own thinking.\n";
             $block .= "If the question only has TWO options (True/False), the un-chosen option is exactly one option — name it explicitly: 'You did not pick [B / False]. What makes that option tempting?' Do not say 'Option B suggested this was False'.\n";
+
+            // v7.19.16: Phase 3 workbook callout. The student's canvas doc on the
+            // right is a 5-box Hattie reflection workbook (v7.19.14). Each Phase 3
+            // step has a designated workbook box. At the END of each Phase 3
+            // step message, append a one-line callout naming the box(es) the
+            // student should populate. This pulls them out of read-only chat
+            // mode and into active reflection without auto-filling — preserves
+            // the Hattie digestion loop.
+            $block .= "\n### MSF PHASE 3 WORKBOOK CALLOUT — MANDATORY\n";
+            $block .= "At the END of EACH Phase 3 step message (after the step's content, after any other markers), append exactly ONE callout line directing the student to the matching workbook box(es). Use the EXACT text below — markdown bold around the box name renders as styled in the chat bubble. The 📋 emoji prefixes the line so it stands out as actionable.\n";
+            $block .= "- Step 1 (Self-Reflection) → append:\n";
+            $block .= "    📋 Workbook: now reflect on **Box 1: Where am I going?** in your document.\n";
+            $block .= "- Step 2 (Metacognitive Analysis) → append:\n";
+            $block .= "    📋 Workbook: now reflect on **Box 3: Process Reflection** + **Box 4: Self-Regulation** in your document.\n";
+            $block .= "- Step 3 (Deep Learning) → append:\n";
+            $block .= "    📋 Workbook: now reflect on **Box 3: Process Reflection** in your document.\n";
+            $block .= "- Step 4 (Your Results) → append:\n";
+            $block .= "    📋 Workbook: record your score + ONE pattern claim in **Box 2: How am I going?** in your document.\n";
+            $block .= "- Step 5 (Grade & Calculation) → append:\n";
+            $block .= "    📋 Workbook: record your grade + grade goal in **Box 2: How am I going?** + **Box 5: Where to next?** in your document.\n";
+            $block .= "- Step 6 (Personalised Next Steps) → append:\n";
+            $block .= "    📋 Workbook: write your concrete next action in **Box 5: Where to next?** + your TTECEA bridge in **Box 6** in your document.\n";
+            $block .= "Emit the callout ONCE per step, on its own line, after the step's prose. Do NOT auto-fill the workbook for the student — the callout is a pointer, not a populator.\n";
         }
 
         // v7.18.23: Forging Your Weapon sidebar step-marker emission. The
