@@ -6465,6 +6465,22 @@
                             console.log('WML v7.19.10: capping markerStep ' + markerStep + ' → 2 (only ' + _aiTurns + ' assistant turns, stale data suspected)');
                             markerStep = 2;
                         }
+                        // v7.19.18: MSQ stale-prior-attempt cap (defence-in-depth).
+                        // Per handoff wml-handoff-msq-greeting-missing-sidebar-premature-tick-2026-05-03,
+                        // AQA Lang P2 MSQ first-entry showed sidebar all-ticked because
+                        // a prior completed attempt's chat replayed [QUIZ_COMPLETE:]
+                        // markers, bypassing the v7.19.10 cap (chat had ≥3 AI turns, so
+                        // _aiTurns guard didn't fire). Detection: MSQ context + last AI
+                        // msg contains [QUIZ_COMPLETE:] → cap markerStep at 2 (Welcome=1,
+                        // Q1=2). In-progress resumes are safe: those don't have
+                        // [QUIZ_COMPLETE:] in the LAST AI msg (it appears only after Q5).
+                        if (state.task === 'mark_scheme_unit' && state.bridgeStep === 1 && markerStep > 2) {
+                            const _lastAi = [...tp.canvasChatHistory].reverse().find(m => m.role === 'assistant');
+                            if (_lastAi && /\[QUIZ_COMPLETE:/.test(_lastAi.content || '')) {
+                                console.log('WML v7.19.18: capping markerStep ' + markerStep + ' → 2 (MSQ stale prior-attempt chat — last AI msg has [QUIZ_COMPLETE:] but we are remounting at step=1)');
+                                markerStep = 2;
+                            }
+                        }
                         // v7.18.23: mark_scheme_unit reads state.sidebarStep (state.step pinned to bridge dispatch).
                         const _curStep = state.task === 'mark_scheme_unit' ? (state.sidebarStep || 0) : (state.step || 0);
                         if (markerStep > _curStep) {

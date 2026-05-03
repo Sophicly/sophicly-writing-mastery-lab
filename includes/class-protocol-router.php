@@ -4133,12 +4133,26 @@ TEMPLATE;
             ];
             $board_display = $board_display_map[strtolower($board_raw)] ?? strtoupper($board_raw);
             if ($step === 1) {
-                $block .= "\n### MARK SCHEME QUIZ — BOARD ALREADY SET (DO NOT ASK)\n";
+                // v7.19.18: MSQ GREETING MANDATE — extend the v7.19.4 MSF
+                // (mark_scheme task) two-message contract to MSQ
+                // (mark_scheme_unit task, step=1, lessons 2+4). Surfaced
+                // 2026-05-03 — AQA Lang P2 MSQ on prod fired Q1 directly
+                // with no greeting card. Root cause: prior block only
+                // emitted a Ready Gate paragraph; AI rationalised
+                // SESSION CONTEXT as "task already initialised" and
+                // jumped straight to Phase 2 Q1.
+                $block .= "\n### MARK SCHEME QUIZ — GREETING MANDATE (DO NOT SKIP, BOARD ALREADY SET)\n";
+                $block .= "Even though board is pre-set in SESSION CONTEXT, you MUST emit the protocol's Phase 1 greeting at session start. The pre-set context authorises the board-selection-menu skip. Greeting prose remains MANDATORY.\n";
                 $block .= "Student is training for **{$board_display}**. The board is already known from session context.\n";
+                $block .= "- **TWO-MESSAGE CONTRACT (NON-NEGOTIABLE)**: FIRST assistant message = greeting only (Ready Gate + A/B options). SECOND assistant message (separate turn, after student clicks A) = Q1. Greeting and Q1 MUST NOT be combined in a single response.\n";
+                $block .= "- FIRST-TURN MOUNT TRIGGER: when there are ZERO prior assistant messages in the chat history, treat the student's first message (e.g. \"Let's begin!\", \"start\", \"go\", any other text) as a generic MOUNT TRIGGER, NOT a launch click. Always emit the FIRST assistant message (greeting) on this turn regardless of the student's text. Do NOT jump to Q1 just because the user typed \"Let's begin\" — the mount silent-auto-send fires that phrase before the greeting is even visible.\n";
+                $block .= "- LAUNCH CLICK = the SECOND user message (only valid after FIRST assistant message has been emitted). After the student clicks **A)** I'm ready (or replies \"ready\" / \"go\" / etc.), emit the SECOND assistant message (Q1).\n";
                 $block .= "- The MSQ protocol's internal DSL variable `selected_board` is PRE-RESOLVED to `{$board_display}`. Treat it as already set.\n";
                 $block .= "- DO NOT display the \"First, which Exam Board are you studying?\" menu (the AQA / Edexcel / Edexcel IGCSE Spec A / Spec B / Eduqas / OCR / Cambridge option list).\n";
                 $block .= "- DO NOT ask the student to confirm or re-select their board.\n";
-                $block .= "- SKIP the welcome-and-board-prompt copy entirely. Emit ONLY the Ready Gate (\"Hey [first_name]! 👋 Welcome to your quick **{$board_display}** [Paper/Subject] Mark Scheme Quiz — five questions, each worth 2 marks. Let's see how well you can think like an examiner.\") followed by **A)** I'm ready / **B)** Hold on options.\n";
+                $block .= "- FIRST MESSAGE CONTENT — emit ONLY the Ready Gate greeting (\"Hey [first_name]! 👋 Welcome to your quick **{$board_display}** [Paper/Subject] Mark Scheme Quiz — five questions, each worth 2 marks. Let's see how well you can think like an examiner.\") followed by **A)** I'm ready / **B)** Hold on options.\n";
+                $block .= "- **STOP after the A/B options.** Do NOT continue the response with Q1, the progress indicator (\"Question 1 of 5\"), AO/TTECEA references, or any question prose in the FIRST message. Greeting + A/B options ONLY. Anything beyond that in the FIRST message is a violation.\n";
+                $block .= "- SECOND MESSAGE — emit Q1 only: progress indicator (\"📌 {$board_display} Mark Scheme Quiz > Question 1 of 5\") + 20% progress bar + Q1 prose with full question text + Submit Answer prompt. Do NOT echo \"Quiz Complete\" preview text or any [QUIZ_COMPLETE:] marker in this message.\n";
                 $block .= "- Load `quiz_questions` internally from the protocol's QUESTION_BANK matching `{$board_display}`, randomly shuffle, select first 5. Do NOT narrate this initialization.\n";
             } elseif ($step === 2) {
                 $block .= "\n### FORGING YOUR WEAPON — BOARD ALREADY SET (DO NOT ASK)\n";
