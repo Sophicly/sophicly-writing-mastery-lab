@@ -445,7 +445,7 @@ You are **Sophicly AI Tutor**, an expert in GCSE English Language assessment cri
 
 **3-Mark Questions (Choose 2):**
 
-**Q3A (Socratic - TTECEA Purpose):** Why is the final 'A' (Author's Purpose) in TTECEA essential for a 'perceptive' analysis? (Answer: It moves the analysis beyond *what* a technique does to *why* the writer chose it, showing an understanding of the text as a crafted piece with a deeper message.)
+**Q3A (Socratic - TTECEA Purpose):** A (Author's Purpose) is optional for Language analysis. What does a well-woven A add to a paragraph that a closing-sentence A does not? (Answer: Woven A threads authorial intent through Effects — lifting analysis from describing *what* techniques do to interpreting *why* the writer chose them. A is not required for top marks (clear-and-developed Effects analysis can reach Level 4 alone), but when integrated rather than bolted on, A is what tips competent into perceptive.)
 
 **Q3B (Application - AO4 Top Band):** A student agrees with the Q4 statement and supports it with quotes. Why might this not reach the top band for evaluation? (Answer: A top-band evaluation requires critical engagement - testing the statement, considering alternative interpretations, weighing evidence. Simply agreeing with support is explanation, not critical evaluation.)
 
@@ -523,7 +523,7 @@ You are **Sophicly AI Tutor**, an expert in GCSE English Language assessment cri
 
 **3-Mark Questions (Choose 2):**
 
-**Q3A (Socratic - TTECEA Purpose):** Why is the final 'A' (Author's Purpose) in TTECEA crucial for achieving a 'perceptive' analysis? (Answer: It demonstrates you understand the text as a deliberate construction with a message. This conceptual depth separates perceptive analysis from competent explanation.)
+**Q3A (Socratic - TTECEA Purpose):** A (Author's Purpose) is optional for Language analysis but rewards perceptive readers when integrated. What separates a well-integrated A from one bolted on as a closing sentence? (Answer: Integrated A weaves authorial intent through the Effects discussion — every effect is read in light of the writer's deliberate construction. Bolted-on A adds a single sentence about the message after Effects are already discussed; it doesn't deepen the analysis. A is not required for top marks, but when threaded through E rather than added at the end, A is what tips competent into perceptive.)
 
 **Q3B (Application - AO3 Comparison):** A student lists similarities between Text 1 and Text 2 for Q5. Why won't this score top marks for AO3? (Answer: A top-level comparison (AO3) needs to be analytical. You must use the similarities/differences to explore *why* the writers' ideas and perspectives are similar or different, not just list them.)
 
@@ -552,7 +552,7 @@ You are **Sophicly AI Tutor**, an expert in GCSE English Language assessment cri
 
 **Q2B (Terminology - AO3 Comparison Types):** What does 'interwoven comparison' mean? (Answer: Comparing texts within the same paragraph, weaving concepts about both texts together rather than discussing them separately.)
 
-**Q2C (MCQ - TTECEA) [RANKING EXERCISE]:** Which TTECEA component is most essential for achieving a 'perceptive' analysis? A) T (Topic) B) T (Technique) C) E (Evidence) D) A (Author's Purpose) (Answer: D - Author's Purpose connects techniques to deeper meaning)
+**Q2C (MCQ - TTECEA) [RANKING EXERCISE]:** Which TTECEA component, when integrated rather than bolted on, can lift an already-strong analysis from clear to perceptive? A) T (Topic) B) T (Technique) C) E (Evidence) D) A (Author's Purpose) (Answer: D - When woven through Effects rather than added as a closing sentence, A interprets *why* the writer made each choice. A is optional for marks but rewards readers who integrate authorial intent throughout the paragraph.)
 
 **Q2D (Fill-in-the-Blank - AO5 Writing):** For top band AO5, writing must be 'clear', use 'a range of vocabulary and sentence structures', and have accurate spelling, grammar, and [BLANK]. (Answer: punctuation. **Board note:** IGCSE's AO5 = other boards' AO6.)
 
@@ -601,7 +601,7 @@ You are **Sophicly AI Tutor**, an expert in GCSE English Language assessment cri
 
 **3-Mark Questions (Choose 2):**
 
-**Q3A (Socratic - TTECEA Purpose):** Why is the final 'A' (Author's Purpose) in TTECEA crucial for a 'perceptive' analysis? (Answer: It moves the analysis from description to interpretation of the writer's message, which is the core of 'perceptive' thinking.)
+**Q3A (Socratic - TTECEA Purpose):** A (Author's Purpose) is optional for Language analysis. Why does *integrating* A through Effects (rather than bolting it on as a final sentence) lift analysis toward 'perceptive'? (Answer: Integrated A turns each effect into evidence of the writer's deliberate construction — moving from description to interpretation throughout the paragraph, not just at the end. A bolted on as a closing line repeats what Effects already implied. A is not required for top marks, but well-woven A is what moves competent into perceptive.)
 
 **Q3B (Application - AO4 Evaluation):** A student only agrees with the statement in Q5. Why is their evaluation not yet 'critical'? (Answer: A 'critical' evaluation engages with the statement as an argument to be tested, offering a nuanced view, rather than just finding evidence to agree with it.)
 
@@ -640,7 +640,7 @@ You are **Sophicly AI Tutor**, an expert in GCSE English Language assessment cri
 
 **3-Mark Questions (Choose 2):**
 
-**Q3A (Socratic - TTECEA Purpose):** Why is the final 'A' (Author's Purpose) in TTECEA so important for a sophisticated analysis? (Answer: It shows you understand the text is a deliberate construction designed to convey a message. This is the essence of sophisticated, high-level analysis.)
+**Q3A (Socratic - TTECEA Purpose):** A (Author's Purpose) is optional for Language analysis but can lift writing toward 'sophisticated' when integrated. What does well-woven A add that a closing-sentence A does not? (Answer: Woven A reads each effect in light of the writer's deliberate construction — every choice becomes evidence of authorial intent, not a separate observation about message at the end. A is not required for top marks (sophisticated Effects analysis can reach the top band alone), but when threaded through E rather than bolted on, A is what tips competent into sophisticated.)
 
 **Q3B (Application - AO4 Evaluation):** A student's AO4 evaluation is 'developed' but not 'perceptive'. What do they need to add to their judgement? (Answer: A more considered, critical judgement. They need to evaluate *how successfully* the writer achieves their aims and why, rather than just explaining what they have done.)
 
@@ -900,7 +900,7 @@ You are **Sophicly AI Tutor**, an expert in GCSE English Language assessment cri
 
 **3-Mark Questions (Choose 2):**
 
-**Q3A (Socratic - TTECEA Perceptiveness):** Why does the 'A' (Author's Purpose) in TTECEA distinguish 'perceptive' from 'straightforward' analysis? (Answer: 'A' requires you to interpret the writer's broader message or intention. This conceptual, interpretive thinking is what 'perceptive' analysis demands - moving beyond technique identification to meaning-making.)
+**Q3A (Socratic - TTECEA Perceptiveness):** A (Author's Purpose) is optional for Language analysis. When integrated rather than bolted on, how does A help distinguish 'perceptive' from 'straightforward' analysis? (Answer: Integrated A interprets every technique in light of the writer's broader message — making analysis conceptual throughout, not just at the closing sentence. A bolted on after Effects repeats meaning rather than driving it. A is not required for top marks, but well-woven A is what tips straightforward into perceptive.)
 
 **Q3B (Application - AO5 Organisation):** For Q6, a narrative is described as having 'generally clear' communication. To reach 'sophisticated' level, what organisational features should they add? (Answer: Inventive structural choices - perhaps non-linear chronology, multiple perspectives, deliberate pacing shifts, or carefully placed revelations that shape reader response.)
 

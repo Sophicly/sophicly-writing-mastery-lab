@@ -436,7 +436,7 @@ Q1B (A/B Question \- AO3 Knowledge):** In Paper 2, AO3 tests your ability to com
 
 **Q3A (Socratic \- AO3 Comparison Purpose):** Why is AO3 (comparison) the highest-weighted reading objective in Paper 2? What skill does it demonstrate that AO1 and AO2 don't? (Answer: AO3 requires synthesis across texts \- you must hold two different perspectives in your mind simultaneously and analyze how they differ. This is a higher-order thinking skill than analyzing a single text. It tests your ability to evaluate different viewpoints and understand how writers convey their perspectives.)
 
-**Q3B (MCQ \- TTECEA for Non-Fiction) \[DISTRACTOR ANALYSIS\]:** When analyzing a persuasive speech (Q2), which TTECEA element is MOST important for showing 'perceptive' understanding? A) Identifying techniques like rhetorical questions B) Finding good quotes C) Explaining the Author's purpose and how it shapes every choice D) Analyzing word-level connotations (Answer: C \- Author's purpose is the foundation of non-fiction analysis. In persuasive texts, EVERYTHING serves the purpose.)
+**Q3B (MCQ \- TTECEA for Non-Fiction) \[DISTRACTOR ANALYSIS\]:** When analyzing a persuasive speech (Q2), which TTECEA lens lifts every other element from descriptive to perceptive? A) Identifying techniques like rhetorical questions B) Finding good quotes C) Reading the writer's purpose into every choice D) Analyzing word-level connotations (Answer: C \- Non-fiction is purpose-driven; reading purpose into every technique and effect is the lens that makes analysis perceptive. Naming 'Author's Purpose' explicitly in your paragraph is optional for marks, but treating purpose as the lens through which every choice is read is what tips analysis from descriptive to perceptive.)
 
 ---
 
@@ -468,7 +468,7 @@ Q1B (A/B Question \- AO3 Knowledge):** In Paper 2, AO3 tests your ability to com
 
 **3-Mark Questions (Choose 2):**
 
-**Q3A (Socratic \- TTECEA in Non-Fiction):** How does TTECEA work differently when analyzing non-fiction vs fiction? Why is the 'A' (Author's purpose) even MORE important in non-fiction? (Answer: In non-fiction, the Author's purpose is explicit and central \- the writer is trying to persuade, inform, or argue. Every choice serves this purpose. In fiction, purpose is often more subtle and exploratory. For non-fiction, you must constantly link analysis back to HOW techniques help achieve the writer's explicit goal.)
+**Q3A (Socratic \- TTECEA in Non-Fiction):** How does TTECEA work differently when analyzing non-fiction vs fiction? Why is reading the writer's purpose even MORE central to non-fiction analysis? (Answer: In non-fiction, the writer's purpose is explicit and drives every choice \- they're persuading, informing, or arguing. In fiction, purpose is often more subtle. For non-fiction, you must link every technique to HOW it achieves the writer's explicit goal. Naming 'Author's Purpose' explicitly is optional for marks (clear-and-developed AO2 analysis can reach the top band without an A label), but reading purpose into every choice is non-negotiable for perceptive non-fiction analysis.)
 
 **Q3B (Application \- AO3 Comparison Structure):** A student's Q4 comparison discusses language in both texts, then discusses structure in both texts. Why might this limit their mark? (Answer: While this shows coverage, it can fragment the comparison. Top-level responses often integrate comparison of BOTH language AND structure within the same paragraphs, showing how writers use different methods to achieve their purposes.)
 
@@ -747,7 +747,7 @@ Q1B (A/B Question \- Writing Focus):** For transactional writing, you must alway
 
 **3-Mark Questions (Choose 2):**
 
-**Q3A (Socratic \- Non-Fiction TTECEA):** When applying TTECEA to non-fiction analysis in Q2-Q3, why is the 'A' (Author's purpose) even MORE central than in fiction? (Answer: Non-fiction writers have explicit purposes \- to persuade, argue, inform. Every choice serves this purpose. Understanding the purpose is the lens through which ALL analysis must be viewed. Without it, you're just describing techniques, not analyzing their strategic use.)
+**Q3A (Socratic \- Non-Fiction TTECEA):** When applying TTECEA to non-fiction analysis in Q2-Q3, why is reading the writer's purpose even MORE central than in fiction? (Answer: Non-fiction writers have explicit purposes \- to persuade, argue, inform \- and every choice serves this purpose. Reading purpose into every technique is the lens through which strategic analysis becomes possible. Naming 'Author's Purpose' explicitly in your paragraph is optional for marks, but without reading purpose into every choice, you're just describing techniques rather than analysing their strategic use.)
 
 **Q3B (Matching \- AO3 Descriptors):** Match the comparison quality to its mark scheme descriptor: 1\. Lists similarities without development 2\. Explores how perspectives differ with detail 3\. Perceptive synthesis of how methods convey different viewpoints Match to: A. Level 1-2 B. Level 3 C. Level 5 (Answer: 1-A, 2-B, 3-C)
 
