@@ -1132,6 +1132,125 @@
         return out;
     }
 
+    // ── v7.19.14: MSF doc migration v7.19.12 → v7.19.14 (Hattie redesign) ──
+    // v7.19.12 used per-Q decomposition (10 confidence + 10 BBB + 10 distractor +
+    // 10 score). v7.19.14 collapses to 5 reflection boxes per Hattie's model.
+    // Most v7.19.12 fields don't map cleanly — per-Q noise is dropped. The few
+    // that do map (grade, grade goal, score totals, trends, Q1 TTECEA) are
+    // preserved via the field map below. Failed parses silently dropped.
+
+    // v7.19.12 fieldId → v7.19.14 fieldId. null = drop.
+    const _MSF_V12_TO_V14_MAP = {
+        'ms-self-reflection-text': 'ms-feed-up-goal',
+        'ms-self-reflection-aos': 'ms-feed-up-ao',  // multi → single (take first)
+        'ms-weighted-score':      'ms-score-raw',    // select 0-20 → text "N/20"
+        'ms-predicted-grade':     'ms-predicted-grade',
+        'ms-grade-goal':          'ms-grade-goal',
+        'ms-action-1':            'ms-feed-forward-action',
+        'ms-priority-1':          'ms-pattern-claim',
+        'ms-q1-ao':               'ms-ttecea-ao',
+        'ms-q1-ttecea':           'ms-ttecea-bridge',
+        'ms-repeated-errors':     'ms-repeated-errors',
+        'ms-repeated-errors-aos': 'ms-repeated-errors-aos',
+        'ms-improvements':        'ms-improvements',
+        'ms-improvements-aos':    'ms-improvements-aos',
+    };
+
+    function _parseV12MSFFields(html) {
+        if (!html || typeof html !== 'string') return [];
+        // Quick reject: if v7.19.14 marker present, no migration needed.
+        if (html.indexOf('1. WHERE AM I GOING') !== -1) return [];
+        // v7.19.12 detection: STEP 1 — SELF-REFLECTION divider OR per-Q "Q1: Confidence"
+        if (html.indexOf('STEP 1 — SELF-REFLECTION') === -1 && html.indexOf('Q1: Confidence + BBB') === -1) return [];
+
+        const out = [];
+        let tmp;
+        try { tmp = document.createElement('div'); tmp.innerHTML = html; }
+        catch (_) { return []; }
+
+        // InputField text values
+        tmp.querySelectorAll('[data-input-field][data-field-id]').forEach(el => {
+            const oldId = el.getAttribute('data-field-id') || '';
+            if (!_MSF_V12_TO_V14_MAP[oldId]) return;
+            const newId = _MSF_V12_TO_V14_MAP[oldId];
+            const text = (el.textContent || '').trim();
+            if (!text) return;
+            // Special case: ms-weighted-score (number) → ms-score-raw (text "N/20")
+            if (oldId === 'ms-weighted-score') {
+                const n = parseInt(text.match(/^\d+/) ? text.match(/^\d+/)[0] : text, 10);
+                if (isNaN(n)) return;
+                out.push({ fieldId: newId, value: `${n}/20`, type: 'input' });
+                return;
+            }
+            out.push({ fieldId: newId, value: text, type: 'input' });
+        });
+
+        // SelectField values (data-value attribute)
+        tmp.querySelectorAll('[data-select-field][data-field-id]').forEach(el => {
+            const oldId = el.getAttribute('data-field-id') || '';
+            if (!_MSF_V12_TO_V14_MAP[oldId]) return;
+            const newId = _MSF_V12_TO_V14_MAP[oldId];
+            let val = el.getAttribute('data-value') || '';
+            if (!val) return;
+            // Multi → single: ms-self-reflection-aos (multi) → ms-feed-up-ao (single)
+            if (oldId === 'ms-self-reflection-aos') {
+                val = val.split(',')[0].trim();
+                if (!val) return;
+            }
+            // Special case: ms-weighted-score select → ms-score-raw text "N/20"
+            if (oldId === 'ms-weighted-score') {
+                out.push({ fieldId: newId, value: `${val}/20`, type: 'input' });
+                return;
+            }
+            // Determine target type. Multi target stays multi; single stays single.
+            // Most map 1:1 — emit as select.
+            const isInputTarget = (newId === 'ms-feed-forward-action' || newId === 'ms-pattern-claim'
+                || newId === 'ms-feed-up-goal' || newId === 'ms-ttecea-bridge'
+                || newId === 'ms-repeated-errors' || newId === 'ms-improvements');
+            out.push({ fieldId: newId, value: val, type: isInputTarget ? 'input' : 'select' });
+        });
+
+        return out;
+    }
+
+    // Apply migrated fields to a TipTap editor — locate selectField / inputField
+    // nodes by fieldId, set value (selectField) or replace inline text (inputField).
+    function _applyMigratedMSFFields(editor, fields) {
+        if (!editor || !editor.state || !Array.isArray(fields) || !fields.length) return;
+        const byId = new Map();
+        fields.forEach(f => { byId.set(f.fieldId, f); });
+
+        const selectHits = [];
+        const inputHits = [];
+        editor.state.doc.descendants((node, pos) => {
+            if (!node.attrs || !node.attrs.fieldId) return;
+            if (!byId.has(node.attrs.fieldId)) return;
+            if (node.type.name === 'selectField') selectHits.push({ pos, node });
+            else if (node.type.name === 'inputField') inputHits.push({ pos, node });
+        });
+
+        if (selectHits.length) {
+            let tr = editor.state.tr;
+            selectHits.forEach(h => {
+                const f = byId.get(h.node.attrs.fieldId);
+                tr = tr.setNodeMarkup(h.pos, undefined, { ...h.node.attrs, value: f.value });
+            });
+            if (tr.docChanged) editor.view.dispatch(tr);
+        }
+
+        if (inputHits.length) {
+            inputHits.sort((a, b) => b.pos - a.pos);
+            let tr = editor.state.tr;
+            inputHits.forEach(h => {
+                const f = byId.get(h.node.attrs.fieldId);
+                const from = h.pos + 1;
+                const to = h.pos + h.node.nodeSize - 1;
+                if (f.value) tr = tr.replaceWith(from, to, editor.schema.text(f.value));
+            });
+            if (tr.docChanged) editor.view.dispatch(tr);
+        }
+    }
+
     // Build a matching-widget DOM node. Returns the wrapper element.
     // Caller must append + wire the widget's submit handler to sendCanvasMessage.
     function _renderMatchWidget(parsed, onSubmit) {
@@ -17602,17 +17721,22 @@
         // doesn't revert the swap when section-count delta crosses the threshold.
         if (state.task === 'mark_scheme') {
             const currentMS = canvasEditor.getHTML();
-            // v7.19.11: New template marker is the renamed TTECEA section divider.
-            const hasNewTemplate = currentMS.includes('MARK SCHEME → TTECEA ENGAGEMENT');
-            if (hasNewTemplate) {
-                console.log('WML: Mark scheme document (v7.19.11+) already loaded, skipping template');
+            // v7.19.14: gate tightened to v7.19.14-only marker (Hattie redesign).
+            // Old "MARK SCHEME → TTECEA ENGAGEMENT" exists in BOTH v7.19.12 and
+            // v7.19.14, so it can't distinguish. Use the unique Feed-Up divider.
+            const hasV14Template = currentMS.includes('1. WHERE AM I GOING');
+            if (hasV14Template) {
+                console.log('WML: Mark scheme document (v7.19.14+) already loaded, skipping template');
                 return;
             }
+            // v7.19.14: capture v7.19.12 field values BEFORE swap so they can be
+            // applied to the new doc post-swap.
+            const _migratedFields = _parseV12MSFFields(currentMS);
             if (currentMS.includes('mark_scheme_ao') || currentMS.includes('data-section-type')) {
-                console.log('WML: Clearing stale mark scheme document (pre-v7.19.12 template or leaked exam template)');
+                console.log('WML: Clearing stale mark scheme document (pre-v7.19.14 template or leaked exam template)');
                 try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
             }
-            console.log('WML: Generating mark scheme study template (v7.19.12)');
+            console.log('WML: Generating mark scheme study template (v7.19.14)');
             const msTemplate = getMarkSchemeTemplate(null);
             if (canvasEditor) {
                 _migrationActive = true;
@@ -17621,9 +17745,13 @@
                 } finally {
                     _migrationActive = false;
                 }
+                if (_migratedFields.length) {
+                    try { _applyMigratedMSFFields(canvasEditor, _migratedFields); console.log('WML: Migrated', _migratedFields.length, 'v7.19.12 MSF field(s) → v7.19.14'); }
+                    catch (e) { console.warn('WML: v7.19.12→v7.19.14 MSF migration failed', e); }
+                }
                 snapshotTemplateBaseline(canvasEditor);
                 refreshWordCountUI();
-                console.log('WML: Mark scheme template injected (v7.19.12)');
+                console.log('WML: Mark scheme template injected (v7.19.14)');
             }
             return;
         }
@@ -17669,24 +17797,30 @@
         // Mark scheme: ALWAYS check first — essay sections may have leaked from localStorage (v7.12.95)
         if (state.task === 'mark_scheme') {
             const currentMS = canvasEditor.getHTML();
-            // v7.19.11: New template marker is the renamed TTECEA section divider.
-            const hasNewTemplate = currentMS.includes('MARK SCHEME → TTECEA ENGAGEMENT');
-            if (hasNewTemplate) {
-                console.log('WML: Mark scheme document (v7.19.11+) already loaded, skipping template');
+            // v7.19.14: gate tightened to v7.19.14-only marker (Hattie redesign).
+            const hasV14Template = currentMS.includes('1. WHERE AM I GOING');
+            if (hasV14Template) {
+                console.log('WML: Mark scheme document (v7.19.14+) already loaded, skipping template');
                 return;
             }
+            // v7.19.14: capture v7.19.12 field values BEFORE swap.
+            const _migratedFields = _parseV12MSFFields(currentMS);
             // Old template or essay sections present — clear and inject fresh
             if (currentMS.includes('mark_scheme_ao') || currentMS.includes('data-section-type')) {
-                console.log('WML: Clearing stale mark scheme document (pre-v7.19.12 template)');
+                console.log('WML: Clearing stale mark scheme document (pre-v7.19.14 template)');
                 try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
             }
-            console.log('WML: Generating mark scheme study template (v7.19.12)');
+            console.log('WML: Generating mark scheme study template (v7.19.14)');
             const msTemplate = getMarkSchemeTemplate(topicData);
             if (canvasEditor) {
                 canvasEditor.commands.setContent(msTemplate, false);
+                if (_migratedFields.length) {
+                    try { _applyMigratedMSFFields(canvasEditor, _migratedFields); console.log('WML: Migrated', _migratedFields.length, 'v7.19.12 MSF field(s) → v7.19.14'); }
+                    catch (e) { console.warn('WML: v7.19.12→v7.19.14 MSF migration failed', e); }
+                }
                 snapshotTemplateBaseline(canvasEditor); // v7.14.46: fix word count showing template text
                 refreshWordCountUI();
-                console.log('WML: Mark scheme template injected (v7.19.12)');
+                console.log('WML: Mark scheme template injected (v7.19.14)');
             }
             return;
         }
