@@ -4204,6 +4204,40 @@ TEMPLATE;
             $block .= "- Marker is APPEND-ONLY at end of message. Do NOT embed mid-prose. JSON must be valid (escape inner quotes if needed; no newlines inside the JSON).\n";
             $block .= "- The student will reply with the pairs string (e.g. `1-B, 2-C, 3-F, 4-A, 5-D, 6-E`). Score it normally — same as if they had typed it manually.\n";
             $block .= "- Emit the marker EVERY time you display a matching question. Do not omit it on follow-up retries.\n";
+
+            // v7.19.13: Reinforce NO MID-ASSESSMENT FEEDBACK — Phase 2 has been
+            // leaking covert affirmation. Sophia would say things like "AO6 is
+            // indeed the Technical Accuracy objective" right after the student's
+            // answer — that is a correctness confirmation even though it reads as
+            // factual. The student no longer engages with the distractor honestly
+            // because they already know they were right. This addendum forbids
+            // ALL confirming/factual prose between answer recording and the
+            // distractor-analysis prompt.
+            $block .= "\n### MSF NO MID-ASSESSMENT REVEAL — STRICT (Q1-Q10)\n";
+            $block .= "Between the student's answer and the distractor-analysis prompt, you MUST NOT say anything that could read as confirmation, affirmation, factual restatement of the correct answer, or any signal of correctness/incorrectness. This is the most-violated rule in MSF.\n";
+            $block .= "BANNED phrasings during Q1-Q10 (these all leak correctness even when framed as 'just the facts'):\n";
+            $block .= "  - 'AO6 is indeed the Technical Accuracy objective.' (affirms answer)\n";
+            $block .= "  - 'Correct — AO6 covers SPaG.'\n";
+            $block .= "  - 'Yes, that's right.'\n";
+            $block .= "  - 'Good — AO6 is...' / 'Spot on — ...' / 'You've got it.'\n";
+            $block .= "  - 'AO6 covers spelling, punctuation, and grammar.' (factual restatement = covert confirmation)\n";
+            $block .= "  - 'A small note on terminology: ...' (any teaching content during Q1-Q10)\n";
+            $block .= "  - 'Your answer recorded: A ✓' (the ✓ is a leak)\n";
+            $block .= "ALLOWED Phase 2 reply between answer and distractor prompt:\n";
+            $block .= "  - 'Feedback — Recorded.' (no checkmark, no factual statement, no affirmation)\n";
+            $block .= "Then go straight to the distractor-analysis prompt. ALL teaching, fact-checking, and correctness signalling happens in Phase 3 (post-Q10), never during Q1-Q10.\n";
+
+            // v7.19.13: Tighten distractor-analysis framing. Current per-subject
+            // prose ('Now, engage with the other options...') gets paraphrased by
+            // Sophia into 'Option B suggested this was False' which reads as
+            // 'you picked B' to the student. Replace with explicit framing.
+            $block .= "\n### MSF DISTRACTOR ANALYSIS FRAMING — EXACT TEMPLATE\n";
+            $block .= "When you prompt for distractor reflection (after the answer is recorded), use this EXACT template — do not paraphrase:\n";
+            $block .= "  'Distractor Analysis:\n";
+            $block .= "  Look at the option(s) you did NOT choose. For each one, briefly note: what makes it tempting? Why might a student fall for it?\n";
+            $block .= "  A sentence or two for each is fine.'\n";
+            $block .= "Do NOT phrase it as 'Option B suggested this was False' or 'Option B's claim was that...' — that wording confuses the student into thinking you are restating their answer. Always frame the un-chosen option(s) as the focus, in the second person ('the option(s) you did NOT choose'), and ask about general student misconceptions, not the student's own thinking.\n";
+            $block .= "If the question only has TWO options (True/False), the un-chosen option is exactly one option — name it explicitly: 'You did not pick [B / False]. What makes that option tempting?' Do not say 'Option B suggested this was False'.\n";
         }
 
         // v7.18.23: Forging Your Weapon sidebar step-marker emission. The
