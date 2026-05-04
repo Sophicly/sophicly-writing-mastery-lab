@@ -1014,6 +1014,7 @@ class SWML_Protocol_Router {
                 $modules_dir . 'inline-coaching-core.md',
                 $modules_dir . 'inline-coaching-engine-1.md',
                 $rubrics_dir . 'rubric-base.md',
+                $rubrics_dir . 'gold-standard-exemplars-aqa-lit.md', // v7.19.35: Sophicly exemplar shapes for Move 4 quoting
                 $rubrics_dir . $rubric_file,
             ];
 
