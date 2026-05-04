@@ -1,19 +1,17 @@
 /**
- * Sophicly Writing Mastery Lab — Selection-Chip Module (v7.19.24)
+ * Sophicly Writing Mastery Lab — Selection-Coach Module (v7.19.26)
  *
- * Tiptap-style floating chip on text selection inside the inline-coaching env
- * (task='exam_crib' + future polish-env redesign). Replaces the canvas chat
- * panel as the primary invocation method for Sophia.
- *
- * Pipeline: student selects → chip appears → click opens action menu → action
- * click opens mini-chat anchored to selection → POST to API.chat with Markdown
- * envelope → reply renders inline.
+ * Tiptap-style single floating box on text selection inside the inline-coaching
+ * env (task='exam_crib' + future polish env). Replaces the chip + menu
+ * two-click flow from v7.19.24-25 with a single prompt-box: "Ask Sophia..."
+ * textarea + quick-action buttons + send. Reply renders Socratic-only inside
+ * the box (never replaces text inline — pedagogy red line).
  *
  * Pedagogy: Socratic-only. Sophia never grades, never writes for student. See
- * protocols/shared/modules/inline-coaching-core.md for full red lines.
+ * protocols/shared/modules/inline-coaching-core.md.
  *
- * Exposed: window.WML.SelectionChip = { mount, unmount, ACTION_MAP }.
- * Mounted imperatively from buildInlineCoachingPanels().
+ * Exposed: window.WML.SelectionChip = { mount, unmount, ACTION_MAP, ... }.
+ * Mounted imperatively from the inline-coaching render branch in wml-assessment.js.
  */
 (function () {
     'use strict';
@@ -36,35 +34,36 @@
         'fix-punctuation': 'Fix punctuation',
         'adjust-tone': 'Adjust tone',
         'tighten': 'Tighten',
-        'check-concept-strength': 'Check concept strength',
-        'check-ttecea-element': 'Check TTECEA element',
-        'check-vocabulary-precision': 'Check vocabulary precision',
-        'check-author-purpose': 'Check author purpose',
-        'check-ao3-anchor': 'Check AO3 anchor',
-        'check-quote-presence': 'Check quote presence',
-        'check-coherence': 'Check coherence',
-        'check-structure-adherence': 'Check structure adherence',
-        'check-ao-coverage': 'Check AO coverage',
-        'check-sensory-variety': 'Check sensory variety',
-        'check-scene-structure-beats': 'Check scene structure beats',
-        'check-show-dont-tell': 'Check show-don’t-tell',
+        'check-concept-strength': 'Concept strength',
+        'check-ttecea-element': 'TTECEA element',
+        'check-vocabulary-precision': 'Vocabulary precision',
+        'check-author-purpose': 'Author purpose',
+        'check-ao3-anchor': 'AO3 anchor',
+        'check-quote-presence': 'Quote presence',
+        'check-coherence': 'Coherence',
+        'check-structure-adherence': 'Structure adherence',
+        'check-ao-coverage': 'AO coverage',
+        'check-sensory-variety': 'Sensory variety',
+        'check-scene-structure-beats': 'Scene-structure beats',
+        'check-show-dont-tell': 'Show-don’t-tell',
     };
 
     const SECTION_GROUP_LABELS = {
-        universal: 'Universal',
+        universal: 'Polish',
         litAnalysis: 'Literary analysis',
         paragraphOnly: 'Paragraph-level',
         cw: 'Creative writing',
     };
 
     // ── Module-scoped state ──
-    let _ctx = null;            // { canvas, canvasEditor, exerciseConfig, miniChatHost, taskCtx }
-    let _chip = null;           // floating chip DOM
-    let _menu = null;           // dropdown menu DOM
-    let _miniChat = null;       // active mini-chat panel DOM
-    let _lastSelectionInfo = null;
+    let _ctx = null;
+    let _box = null;                 // floating prompt box DOM
+    let _hint = null;                // floating discovery hint DOM
+    let _hintDismissed = false;      // session-scoped (resets on next mount)
+    let _activeSelection = null;     // last valid selection info, frozen at box-open
     let _bound = false;
     let _selectionTimer = null;
+    let _hintShown = false;
 
     // ── Helpers ──
 
@@ -75,7 +74,6 @@
     function classifyScope(text, anchorEl, focusEl) {
         const wc = _wordCount(text);
         if (wc <= 1) return 'word';
-        // Same paragraph if both anchor and focus share the closest <p> ancestor.
         const anchorP = anchorEl && (anchorEl.closest ? anchorEl.closest('p, li, h1, h2, h3, h4') : null);
         const focusP = focusEl && (focusEl.closest ? focusEl.closest('p, li, h1, h2, h3, h4') : null);
         const sameParagraph = anchorP && focusP && anchorP === focusP;
@@ -83,11 +81,6 @@
         return 'paragraph';
     }
 
-    /**
-     * Walk up to the nearest .swml-section-block. Reject unless data-section-type
-     * is one of the editable types AND data-readonly !== 'true'.
-     * Tested against both anchor + focus — straddling boundaries reject.
-     */
     function isEditableSection(domNode) {
         if (!domNode) return false;
         let cur = domNode.nodeType === 3 ? domNode.parentElement : domNode;
@@ -103,10 +96,6 @@
         return false;
     }
 
-    /**
-     * ±200 words around the selection inside the surrounding section block.
-     * Falls back to the section's text if the selection is short.
-     */
     function extractSectionContext(domNode) {
         if (!domNode) return '';
         let cur = domNode.nodeType === 3 ? domNode.parentElement : domNode;
@@ -118,8 +107,6 @@
         const text = (cur.textContent || '').replace(/\s+/g, ' ').trim();
         const words = text.split(/\s+/);
         if (words.length <= 400) return text;
-        // Truncate to 400 words centred on the section centre — selection-aware
-        // truncation would need precise positions; section-centred is good enough.
         return words.slice(0, 400).join(' ') + '…';
     }
 
@@ -152,22 +139,6 @@
         return lines.join('\n');
     }
 
-    function _removeChip() {
-        if (_chip && _chip.parentNode) _chip.parentNode.removeChild(_chip);
-        _chip = null;
-        _removeMenu();
-    }
-
-    function _removeMenu() {
-        if (_menu && _menu.parentNode) _menu.parentNode.removeChild(_menu);
-        _menu = null;
-    }
-
-    function _removeMiniChat() {
-        if (_miniChat && _miniChat.parentNode) _miniChat.parentNode.removeChild(_miniChat);
-        _miniChat = null;
-    }
-
     function _getOffsetParent() {
         if (!_ctx) return null;
         const editorEl = _ctx.canvasEditor && _ctx.canvasEditor.options && _ctx.canvasEditor.options.element;
@@ -175,175 +146,82 @@
         return editorEl.closest('.swml-canvas-editor') || editorEl.parentElement;
     }
 
-    function _positionChip(rect) {
+    function _removeBox() {
+        if (_box && _box.parentNode) _box.parentNode.removeChild(_box);
+        _box = null;
+        _activeSelection = null;
+    }
+
+    function _positionBox(rect) {
         const offsetParent = _getOffsetParent();
-        if (!offsetParent || !_chip) return;
+        if (!offsetParent || !_box) return;
         const opRect = offsetParent.getBoundingClientRect();
-        const chipH = 36, chipW = 220, gap = 8;
-        let top = rect.top - opRect.top + offsetParent.scrollTop - chipH - gap;
-        let left = rect.left - opRect.left + (rect.width / 2) - (chipW / 2);
-        if (top < offsetParent.scrollTop + 4) {
-            top = rect.bottom - opRect.top + offsetParent.scrollTop + gap;
-            _chip.classList.add('swml-selection-chip--below');
-        } else {
-            _chip.classList.remove('swml-selection-chip--below');
-        }
-        const maxLeft = Math.max(8, opRect.width - chipW - 8);
-        left = Math.max(8, Math.min(left, maxLeft));
-        _chip.style.top = top + 'px';
-        _chip.style.left = left + 'px';
-    }
-
-    function _buildChip(selectionInfo) {
-        const chip = el('button', {
-            className: 'swml-selection-chip',
-            type: 'button',
-            onClick: (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                _toggleMenu(selectionInfo);
-            },
-        });
-        chip.appendChild(el('span', { className: 'swml-selection-chip-label', textContent: 'Sophia' }));
-        return chip;
-    }
-
-    function _toggleMenu(selectionInfo) {
-        if (_menu) { _removeMenu(); return; }
-        _buildMenu(selectionInfo);
-    }
-
-    function _buildMenu(selectionInfo) {
-        _removeMenu();
-        const offsetParent = _getOffsetParent();
-        if (!offsetParent || !_chip) return;
-        const groups = _filterActionsForScope(selectionInfo.scope, _ctx.taskCtx);
-        const menu = el('div', { className: 'swml-selection-chip-menu' });
-        groups.forEach((group) => {
-            menu.appendChild(el('div', {
-                className: 'swml-selection-chip-menu-section-label',
-                textContent: SECTION_GROUP_LABELS[group.key] || group.key,
-            }));
-            group.actions.forEach((action) => {
-                const item = el('button', {
-                    className: 'swml-selection-chip-menu-item',
-                    type: 'button',
-                    textContent: ACTION_LABELS[action] || action,
-                    'data-action': action,
-                    onClick: (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        _removeMenu();
-                        _onActionPicked(action, selectionInfo);
-                    },
-                });
-                menu.appendChild(item);
-            });
-        });
-
-        // Position menu directly below the chip
-        const chipRect = _chip.getBoundingClientRect();
-        const opRect = offsetParent.getBoundingClientRect();
-        const menuW = 260;
-        let top = (parseFloat(_chip.style.top) || 0) + 36 + 6;
-        let left = (parseFloat(_chip.style.left) || 0);
-        const maxLeft = Math.max(8, opRect.width - menuW - 8);
-        left = Math.max(8, Math.min(left, maxLeft));
-        menu.style.top = top + 'px';
-        menu.style.left = left + 'px';
-        offsetParent.appendChild(menu);
-        _menu = menu;
-    }
-
-    function _onActionPicked(action, selectionInfo) {
-        _openMiniChat(action, selectionInfo);
-    }
-
-    // ── Mini-chat panel ──────────────────────────────────────────────
-
-    function _positionMiniChat(rect) {
-        const offsetParent = _getOffsetParent();
-        if (!offsetParent || !_miniChat) return;
-        const opRect = offsetParent.getBoundingClientRect();
-        const panelW = 380;
+        const boxW = 480;
         const gap = 12;
 
-        // Default: open BELOW the selection. Flip ABOVE if it would overflow.
-        let top = rect.bottom - opRect.top + offsetParent.scrollTop + gap;
         let left = rect.left - opRect.left + offsetParent.scrollLeft;
-        const maxLeft = Math.max(8, opRect.width - panelW - 8);
+        const maxLeft = Math.max(8, opRect.width - boxW - 8);
         left = Math.max(8, Math.min(left, maxLeft));
 
-        const panelMaxH = Math.min(window.innerHeight * 0.6, 460);
-        const wouldOverflow = (rect.bottom + gap + panelMaxH) > window.innerHeight;
-        if (wouldOverflow && rect.top > panelMaxH + gap) {
-            top = rect.top - opRect.top + offsetParent.scrollTop - panelMaxH - gap;
-            _miniChat.classList.add('swml-mini-chat-panel--above');
+        // Default: open BELOW selection. Flip above if it would overflow.
+        const estBoxH = Math.min(window.innerHeight * 0.55, 420);
+        const wouldOverflow = (rect.bottom + gap + estBoxH) > window.innerHeight;
+        let top;
+        if (wouldOverflow && rect.top > estBoxH + gap) {
+            top = rect.top - opRect.top + offsetParent.scrollTop - estBoxH - gap;
+            _box.classList.add('swml-coach-box--above');
         } else {
-            _miniChat.classList.remove('swml-mini-chat-panel--above');
+            top = rect.bottom - opRect.top + offsetParent.scrollTop + gap;
+            _box.classList.remove('swml-coach-box--above');
         }
 
-        _miniChat.style.top = top + 'px';
-        _miniChat.style.left = left + 'px';
+        _box.style.top = top + 'px';
+        _box.style.left = left + 'px';
+        _box.style.width = boxW + 'px';
     }
 
-    function _renderMiniChatBubble(messagesEl, role, text, rawText) {
+    function _renderReplyBubble(messagesEl, role, text) {
         const formatAI = (window.WML && window.WML.formatAI) || ((s) => s);
         const stripAIInternals = (window.WML && window.WML.stripAIInternals) || ((s) => s);
-        const bubble = el('div', { className: 'swml-mini-chat-bubble swml-mini-chat-bubble--' + role });
+        const bubble = el('div', { className: 'swml-coach-bubble swml-coach-bubble--' + role });
         if (role === 'ai') {
-            const clean = stripAIInternals(text || '');
-            bubble.innerHTML = formatAI(clean);
+            bubble.innerHTML = formatAI(stripAIInternals(text || ''));
         } else {
-            bubble.textContent = rawText || text || '';
+            bubble.textContent = text || '';
         }
         messagesEl.appendChild(bubble);
         messagesEl.scrollTop = messagesEl.scrollHeight;
         return bubble;
     }
 
-    function _openMiniChat(action, selectionInfo) {
-        if (!_ctx) return;
-        _removeMiniChat();
+    // ── The single floating coach box ───────────────────────────────
+
+    function _openBox(selectionInfo) {
+        _removeBox();
+        _activeSelection = selectionInfo;
 
         const offsetParent = _getOffsetParent();
         if (!offsetParent) return;
 
-        const panel = el('div', { className: 'swml-mini-chat-panel', 'data-action': action || 'freetext' });
+        const box = el('div', { className: 'swml-coach-box', 'data-scope': selectionInfo.scope });
 
-        // Header
-        const header = el('div', { className: 'swml-mini-chat-header' });
-        const headerLabel = ACTION_LABELS[action] || 'Sophia';
-        header.appendChild(el('span', { className: 'swml-mini-chat-title', textContent: headerLabel }));
-        const closeBtn = el('button', {
-            className: 'swml-mini-chat-close',
-            type: 'button',
-            innerHTML: '×',
-            title: 'Close',
-            onClick: (e) => { e.preventDefault(); e.stopPropagation(); _removeMiniChat(); },
+        // 1. Selection echo (truncated, italic)
+        const selPreview = (selectionInfo.text || '').slice(0, 200);
+        const quote = el('div', {
+            className: 'swml-coach-quote',
+            textContent: selectionInfo.text.length > 200 ? selPreview + '…' : selPreview,
         });
-        header.appendChild(closeBtn);
-        panel.appendChild(header);
+        box.appendChild(quote);
 
-        // Selection echo (truncated)
-        const selPreview = (selectionInfo.text || '').slice(0, 240);
-        if (selPreview) {
-            const quote = el('blockquote', {
-                className: 'swml-mini-chat-quote',
-                textContent: selectionInfo.text.length > 240 ? selPreview + '…' : selPreview,
-            });
-            panel.appendChild(quote);
-        }
+        // 2. Messages — Socratic replies render here
+        const messages = el('div', { className: 'swml-coach-messages' });
+        box.appendChild(messages);
 
-        // Messages container
-        const messages = el('div', { className: 'swml-mini-chat-messages' });
-        panel.appendChild(messages);
-
-        // Input row
-        const inputRow = el('div', { className: 'swml-mini-chat-input-row' });
+        // 3. Input row — textarea + send button
+        const inputRow = el('div', { className: 'swml-coach-input-row' });
         const textarea = el('textarea', {
-            className: 'swml-mini-chat-input',
-            placeholder: 'Reply to Sophia…',
+            className: 'swml-coach-input',
+            placeholder: 'Ask Sophia… or pick a quick-action below',
             rows: 1,
         });
         textarea.addEventListener('input', () => {
@@ -351,52 +229,106 @@
             textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
         });
         const sendBtn = el('button', {
-            className: 'swml-mini-chat-send',
+            className: 'swml-coach-send',
             type: 'button',
             innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>',
             title: 'Send',
         });
         inputRow.appendChild(textarea);
         inputRow.appendChild(sendBtn);
-        panel.appendChild(inputRow);
+        box.appendChild(inputRow);
+
+        // 4. Quick-actions row(s) — grouped, scope-filtered
+        const groups = _filterActionsForScope(selectionInfo.scope, _ctx.taskCtx);
+        const actionsWrap = el('div', { className: 'swml-coach-actions' });
+        groups.forEach((group) => {
+            const groupEl = el('div', { className: 'swml-coach-action-group' });
+            groupEl.appendChild(el('div', {
+                className: 'swml-coach-action-label',
+                textContent: SECTION_GROUP_LABELS[group.key] || group.key,
+            }));
+            const btnRow = el('div', { className: 'swml-coach-action-row' });
+            group.actions.forEach((action) => {
+                const btn = el('button', {
+                    className: 'swml-coach-action-btn',
+                    type: 'button',
+                    textContent: ACTION_LABELS[action] || action,
+                    'data-action': action,
+                    title: ACTION_LABELS[action] || action,
+                    onClick: (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        send(action, '');
+                    },
+                });
+                btnRow.appendChild(btn);
+            });
+            groupEl.appendChild(btnRow);
+            actionsWrap.appendChild(groupEl);
+        });
+        box.appendChild(actionsWrap);
+
+        // 5. Footer — close button
+        const closeBtn = el('button', {
+            className: 'swml-coach-close',
+            type: 'button',
+            innerHTML: '×',
+            title: 'Close',
+            onClick: (e) => { e.preventDefault(); e.stopPropagation(); _removeBox(); _hideHint(); },
+        });
+        box.appendChild(closeBtn);
 
         // Mount
-        offsetParent.appendChild(panel);
-        _miniChat = panel;
-        _positionMiniChat(selectionInfo.rect);
+        offsetParent.appendChild(box);
+        _box = box;
+        _positionBox(selectionInfo.rect);
 
-        // Per-session mini-chat state
+        // Pin selection: clicking inside box collapses native selection,
+        // but _activeSelection is preserved. Prevent inner clicks from bubbling
+        // to the document mousedown handler (which would close the box).
+        box.addEventListener('mousedown', (e) => { e.stopPropagation(); });
+
+        // Per-session state
         const miniHistory = [];
         const miniChatId = 'crib_' + Date.now();
         let pending = false;
 
-        const send = async (freeText) => {
+        const send = async (action, freeText) => {
             if (pending) return;
             const trimmed = (freeText || '').trim();
-            const isFirstAction = miniHistory.length === 0;
-            if (!isFirstAction && !trimmed) return;
+            const isAction = !!action;
+            if (!isAction && !trimmed) return;
 
             pending = true;
             sendBtn.disabled = true;
             textarea.disabled = true;
+            actionsWrap.querySelectorAll('button').forEach(b => { b.disabled = true; });
 
+            // Echo user intent in the messages stream
+            const userLabel = isAction
+                ? (ACTION_LABELS[action] || action)
+                : trimmed;
+            _renderReplyBubble(messages, 'user', userLabel);
             if (trimmed) {
-                _renderMiniChatBubble(messages, 'user', trimmed, trimmed);
                 miniHistory.push({ role: 'user', content: trimmed });
+            } else if (isAction) {
+                miniHistory.push({ role: 'user', content: '[' + action + ']' });
             }
 
-            // Typing indicator
-            const typing = el('div', { className: 'swml-mini-chat-bubble swml-mini-chat-bubble--ai swml-mini-chat-typing' });
-            typing.innerHTML = '<span class="swml-mini-chat-dots"><span>.</span><span>.</span><span>.</span></span>';
+            // Hide hint after first invocation
+            _hideHint();
+
+            const typing = el('div', { className: 'swml-coach-bubble swml-coach-bubble--ai swml-coach-typing' });
+            typing.innerHTML = '<span class="swml-coach-dots"><span>.</span><span>.</span><span>.</span></span>';
             messages.appendChild(typing);
             messages.scrollTop = messages.scrollHeight;
 
             const promptText = buildPrompt(
-                isFirstAction ? action : 'freetext',
-                selectionInfo.text,
-                selectionInfo.sectionContext,
+                isAction ? action : 'freetext',
+                _activeSelection.text,
+                _activeSelection.sectionContext,
                 _ctx.taskCtx,
-                isFirstAction ? '' : trimmed
+                trimmed
             );
 
             try {
@@ -405,8 +337,7 @@
                 const state = window.WML && window.WML.state;
                 if (!apiPost || !API || !API.chat) {
                     typing.remove();
-                    _renderMiniChatBubble(messages, 'ai', 'Sorry — chat infrastructure not loaded.');
-                    pending = false; sendBtn.disabled = false; textarea.disabled = false;
+                    _renderReplyBubble(messages, 'ai', 'Chat infrastructure not loaded.');
                     return;
                 }
 
@@ -426,72 +357,97 @@
                 typing.remove();
                 if (res && res.success && res.reply) {
                     miniHistory.push({ role: 'assistant', content: res.reply });
-                    _renderMiniChatBubble(messages, 'ai', res.reply, res.reply);
+                    _renderReplyBubble(messages, 'ai', res.reply);
                 } else {
-                    _renderMiniChatBubble(messages, 'ai', (res && res.message) ? res.message : 'No reply received.');
+                    _renderReplyBubble(messages, 'ai', (res && res.message) ? res.message : 'No reply received.');
                 }
             } catch (err) {
                 typing.remove();
-                console.error('WML SelectionChip mini-chat error', err);
-                _renderMiniChatBubble(messages, 'ai', 'Sorry, something went wrong. Please try again.');
+                console.error('WML SelectionChip coach error', err);
+                _renderReplyBubble(messages, 'ai', 'Sorry, something went wrong. Please try again.');
             } finally {
                 pending = false;
                 sendBtn.disabled = false;
                 textarea.disabled = false;
+                actionsWrap.querySelectorAll('button').forEach(b => { b.disabled = false; });
                 textarea.value = '';
                 textarea.style.height = 'auto';
                 textarea.focus();
             }
         };
 
-        sendBtn.addEventListener('click', () => send(textarea.value));
+        sendBtn.addEventListener('click', () => send(null, textarea.value));
         textarea.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                send(textarea.value);
+                send(null, textarea.value);
             }
         });
 
-        // First fire — sends the action-only envelope (no free text).
-        send('');
+        // Auto-focus textarea so student can start typing immediately.
+        setTimeout(() => { try { textarea.focus(); } catch (_) {} }, 30);
     }
 
-    /**
-     * Re-evaluate the current selection and decide whether to show / move /
-     * remove the chip. Called on debounced mouseup / touchend / keyup.
-     */
+    // ── Discovery hint (bottom-right ghost pill) ────────────────────
+
+    function _showHint() {
+        if (_hintDismissed || _hintShown || !_ctx) return;
+        const offsetParent = _getOffsetParent();
+        if (!offsetParent) return;
+
+        const hint = el('div', { className: 'swml-coach-hint', role: 'status' });
+        hint.appendChild(el('span', { className: 'swml-coach-hint-icon', textContent: '✨' }));
+        hint.appendChild(el('span', {
+            className: 'swml-coach-hint-text',
+            textContent: 'Highlight text in your plan or response to work with Sophia.',
+        }));
+        const closeBtn = el('button', {
+            className: 'swml-coach-hint-close',
+            type: 'button',
+            innerHTML: '×',
+            title: 'Dismiss',
+            onClick: (e) => { e.preventDefault(); e.stopPropagation(); _hideHint(); _hintDismissed = true; },
+        });
+        hint.appendChild(closeBtn);
+        document.body.appendChild(hint);
+        _hint = hint;
+        _hintShown = true;
+
+        // Slide in
+        requestAnimationFrame(() => { hint.classList.add('swml-coach-hint--visible'); });
+    }
+
+    function _hideHint() {
+        if (!_hint) return;
+        _hint.classList.remove('swml-coach-hint--visible');
+        const node = _hint;
+        setTimeout(() => { try { if (node.parentNode) node.parentNode.removeChild(node); } catch (_) {} }, 250);
+        _hint = null;
+        _hintShown = false;
+    }
+
+    // ── Selection event handler ─────────────────────────────────────
+
     function _recomputeSelection() {
         if (!_ctx || !_ctx.canvasEditor) return;
         const editorEl = _ctx.canvasEditor.options && _ctx.canvasEditor.options.element;
         if (!editorEl) return;
 
         const sel = window.getSelection();
-        if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
-            _removeChip();
-            return;
-        }
+        if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
         const range = sel.getRangeAt(0);
 
         // Selection must be inside our editor element
-        if (!editorEl.contains(range.commonAncestorContainer)) {
-            _removeChip();
-            return;
-        }
+        if (!editorEl.contains(range.commonAncestorContainer)) return;
 
         const text = sel.toString().trim();
-        if (!text) { _removeChip(); return; }
+        if (!text) return;
 
         // Reject if either endpoint sits outside an editable section.
-        if (!isEditableSection(sel.anchorNode) || !isEditableSection(sel.focusNode)) {
-            _removeChip();
-            return;
-        }
+        if (!isEditableSection(sel.anchorNode) || !isEditableSection(sel.focusNode)) return;
 
         const rect = range.getBoundingClientRect();
-        if (!rect || (rect.width === 0 && rect.height === 0)) {
-            _removeChip();
-            return;
-        }
+        if (!rect || (rect.width === 0 && rect.height === 0)) return;
 
         const anchorEl = sel.anchorNode && (sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode);
         const focusEl = sel.focusNode && (sel.focusNode.nodeType === 3 ? sel.focusNode.parentElement : sel.focusNode);
@@ -499,16 +455,7 @@
         const sectionContext = extractSectionContext(anchorEl);
 
         const selectionInfo = { text, scope, sectionContext, rect, anchorEl, focusEl };
-        _lastSelectionInfo = selectionInfo;
-
-        const offsetParent = _getOffsetParent();
-        if (!offsetParent) { _removeChip(); return; }
-
-        if (!_chip) {
-            _chip = _buildChip(selectionInfo);
-            offsetParent.appendChild(_chip);
-        }
-        _positionChip(rect);
+        _openBox(selectionInfo);
     }
 
     function _scheduleRecompute() {
@@ -516,26 +463,24 @@
         _selectionTimer = setTimeout(() => {
             _selectionTimer = null;
             _recomputeSelection();
-        }, 60);
+        }, 80);
     }
 
     function _onDocumentMouseDown(e) {
-        if (_chip && _chip.contains(e.target)) return;
-        if (_menu && _menu.contains(e.target)) return;
-        if (_miniChat && _miniChat.contains(e.target)) return;
-        // mousedown outside everything — close menu only; chip rebuild on
-        // selection collapse via _recomputeSelection.
-        _removeMenu();
+        if (_box && _box.contains(e.target)) return;
+        if (_hint && _hint.contains(e.target)) return;
+        // Outside click → close box (but preserve hint, since student may still
+        // want to discover the feature).
+        _removeBox();
     }
 
     function _onKeyDown(e) {
         if (e.key === 'Escape') {
-            if (_menu) { _removeMenu(); return; }
-            if (_chip) { _removeChip(); return; }
+            if (_box) { _removeBox(); return; }
         }
     }
 
-    // ── Mount / unmount lifecycle ──
+    // ── Mount / unmount ─────────────────────────────────────────────
 
     function mount(ctx) {
         if (_bound) {
@@ -547,6 +492,7 @@
             return { unmount };
         }
         _ctx = ctx;
+        _hintDismissed = false;
         const editorEl = ctx.canvasEditor.options && ctx.canvasEditor.options.element;
         if (!editorEl) {
             console.warn('WML SelectionChip: editor element not available');
@@ -560,7 +506,10 @@
         document.addEventListener('keydown', _onKeyDown);
 
         _bound = true;
-        console.log('WML SelectionChip: mounted');
+        console.log('WML SelectionChip v7.19.26: mounted');
+
+        // Show discovery hint shortly after mount — gives doc a beat to seed.
+        setTimeout(_showHint, 1200);
         return { unmount };
     }
 
@@ -575,8 +524,8 @@
         document.removeEventListener('mousedown', _onDocumentMouseDown);
         document.removeEventListener('keydown', _onKeyDown);
         if (_selectionTimer) { clearTimeout(_selectionTimer); _selectionTimer = null; }
-        _removeChip();
-        _removeMiniChat();
+        _removeBox();
+        _hideHint();
         _ctx = null;
         _bound = false;
         console.log('WML SelectionChip: unmounted');
