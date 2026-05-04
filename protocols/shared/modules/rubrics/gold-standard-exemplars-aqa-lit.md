@@ -12,26 +12,47 @@
 
 ### Hook (sentence 1) — Level 5–6 exemplars
 
-Each hook plants the thesis-concept inside a fact. Move pattern:
-- (1) Fact opens (date / event / publication / theological/legal context).
-- (2) Fact carries CONCEPTUAL weight (not just background).
-- (3) Author / character not always named — fact argues first.
+**Sophicly hook rule (HARD — source: `protocols/edexcel-igcse/literature/planning/b7-introduction.md` lines 30-35).**
 
-**Macbeth — conscious damnation:**
-> *In an age when regicide was theological warfare against God's order, Shakespeare in 1606 staged a man who chose damnation in full knowledge of what damnation meant.*
-> *Moves: (1) historical-theological claim opens, (2) verb "chose" lands conscious-sin concept, (3) Macbeth not named — the fact carries the argument.*
+A Sophicly hook uses ONE of four techniques. Job = grab attention + connect to thesis theme. Must surprise / intrigue / provoke curiosity, be specific and concrete (not generic), be ONE powerful sentence. Hook does NOT have to "argue the thesis-concept" — that's only one of four techniques (Technique 4 below).
 
-**Macbeth — Daemonologie / divine kingship:**
-> *James I's* Daemonologie *of 1597, arguing that kings were divinely-protected targets of the devil, sat in the cultural air when Shakespeare premiered* Macbeth *nine years later — and the play asks what happens when a man tears that divine protection from his own throat.*
-> *Moves: (1) named source opens (specificity = Level 6), (2) date placement creates temporal scaffold, (3) closing clause delivers the play's conceptual question.*
+**Sophia attribution rule:** when pointing at hook shape, say *"At Sophicly we use one of four hook techniques…"* — never *"AQA Level 6 wants the hook to…"*. AQA does not prescribe hook shape. (Per `feedback_sophicly_techniques_attribution.md` + `rubric-base.md`.)
 
-**A Christmas Carol — moral economics:**
-> *Dickens published* A Christmas Carol *in December 1843 against the backdrop of the New Poor Law's workhouse system — a context in which a story about a miser's redemption was always also a polemic about whose suffering an economy chooses to see.*
-> *Moves: (1) date + publishing context opens, (2) "always also" links narrative to polemic, (3) thesis-concept (whose suffering an economy sees) plants in the fact.*
+#### The four hook techniques
 
-**Jane Eyre — coverture and self-possession:**
-> *In 1847, when an English wife's legal existence still folded into her husband's under the doctrine of coverture, Charlotte Brontë published a novel whose protagonist insists, against every social pressure of her age, on the integrity of her own self.*
-> *Moves: (1) legal-historical claim opens, (2) "still folded into" carries the constraint, (3) protagonist's stance positions thesis-concept against the constraint.*
+**Technique 1 — Surprising Historical Fact.** Striking, unexpected fact that challenges assumptions and connects to the thesis theme.
+
+> *Macbeth was first performed around 1606 for the King's Men, the theatre company under the patronage of King James I, who had survived the Gunpowder Plot of November 1605 — a court still raw from the prospect of a king's assassination.*
+> *Moves: (1) date + venue + audience anchor, (2) "still raw" carries emotional resonance, (3) connects implicitly to the play's regicide theme.*
+
+> *Dickens published A Christmas Carol in December 1843 against the backdrop of the New Poor Law's workhouse system, just as Britain's industrial wealth and visible poverty were diverging at the fastest rate in the century.*
+> *Moves: (1) publication date + named legal context, (2) "fastest rate in the century" surprise + specificity, (3) connects to social-conscience theme.*
+
+**Technique 2 — Provocative Question.** Bold question that challenges conventional thinking about the text's central tension.
+
+> *Can a play set in the eleventh century, written for a court of the seventeenth, still ask the twenty-first something urgent about the cost of ambition?*
+> *Moves: (1) three time-anchors (eleventh / seventeenth / twenty-first), (2) "still ask … something urgent" provokes curiosity about relevance, (3) "cost of ambition" telegraphs theme without locking thesis.*
+
+**Technique 3 — Intriguing Quote.** Memorable / paradoxical / startling quote that illuminates the theme. Can be from a critic, contemporary writer, or historical figure — not just the text itself.
+
+> *A.C. Bradley once wrote that "the centre of the tragedy is to be sought in the action of the hero" — and few Shakespearean heroes act with the wide-eyed terror of Macbeth, who sees clearly what his own ambition will cost yet acts regardless.*
+> *Moves: (1) named critic + verbatim quote, (2) em-dash bridge connects critic to specific text, (3) "sees clearly … yet acts regardless" telegraphs the conscious-sin theme.*
+
+**Technique 4 — Counter-Intuitive Concept Claim.** Unexpected or paradoxical claim about a theme that defies expectation.
+
+> *The deepest tragedy in Macbeth is not the king who dies — it is the murderer who survives the murder long enough to discover what he has lost.*
+> *Moves: (1) "not … it is" antithesis, (2) "deepest tragedy" reframes default audience expectation onto Macbeth's moral fate, (3) telegraphs conscious-sin / hollow-self theme as paradox.*
+
+#### Stock-hook anti-patterns Sophia must flag
+
+(Per `b7-introduction.md` lines 49-52.)
+
+- **Temporal clichés:** *"Throughout history…"*, *"Since the beginning of time…"*, *"For centuries…"*, *"In today's world…"*
+- **Vague universals:** *"Many people believe…"*, *"Society has always…"*
+- **Dictionary openings:** *"The dictionary defines [X] as…"*, *"According to [source]…"*
+- **Obvious statements:** *"Everyone knows that…"*, *"It is clear that…"*
+
+When student's hook contains a stock pattern, Sophia points at the pattern + suggests one of the four techniques.
 
 ### Building sentence (sentence 2) — Level 5–6 exemplars
 

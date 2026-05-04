@@ -145,10 +145,15 @@
     }
 
     function _getOffsetParent() {
-        if (!_ctx) return null;
-        const editorEl = _ctx.canvasEditor && _ctx.canvasEditor.options && _ctx.canvasEditor.options.element;
+        // v7.19.40: anchor the box inside the .swml-canvas-content scroll
+        // container so the box rides the doc as the student scrolls. The
+        // container is position:relative (per wml-canvas.css L264), so
+        // absolute children position correctly within it.
+        const editorEl = _getEditorEl();
         if (!editorEl) return null;
-        return editorEl.closest('.swml-canvas-editor') || editorEl.parentElement;
+        return editorEl.closest('.swml-canvas-content') ||
+            editorEl.closest('.swml-canvas-editor') ||
+            editorEl.parentElement;
     }
 
     function _removeBox() {
@@ -356,41 +361,44 @@
 
     function _positionBox(rect) {
         if (!_box) return;
-        // v7.19.38: box is position:fixed → coords are viewport-relative.
-        // No offset-parent math, no scrollTop adjustment — rect from
-        // getBoundingClientRect is already viewport-relative.
+        // v7.19.40: box is position:absolute inside the .swml-canvas-content
+        // scroll container. Coords are container-relative, with scrollTop /
+        // scrollLeft baked in so as the doc scrolls, the absolute box scrolls
+        // with it. (Vertical scroll = box rides text. Horizontal layout
+        // reflow / sidebar toggle is handled by ResizeObserver re-deriving
+        // from the live Range.)
+        const offsetParent = _getOffsetParent();
+        if (!offsetParent) return;
+        const opRect = offsetParent.getBoundingClientRect();
+        const scrollTop = offsetParent.scrollTop || 0;
+        const scrollLeft = offsetParent.scrollLeft || 0;
         const boxW = 480;
         const gap = 12;
-        const winW = window.innerWidth;
-        const winH = window.innerHeight;
 
-        // Top floor: clamp below the WML canvas header bar (and below the LD
-        // header, which sits even higher in embedded mode). Re-read live so
-        // the floor adapts to fullscreen / sticky-header changes.
-        let topFloor = 8;
-        const canvasHeader = document.querySelector('.swml-canvas-header');
-        if (canvasHeader) {
-            const headerRect = canvasHeader.getBoundingClientRect();
-            if (headerRect.bottom > topFloor) topFloor = headerRect.bottom + 8;
-        }
+        // rect is viewport-relative (from getBoundingClientRect on the live
+        // Range). Convert to container coords: subtract container's viewport
+        // offset, add the container's scroll offset.
+        const rectTopInContainer = rect.top - opRect.top + scrollTop;
+        const rectBottomInContainer = rect.bottom - opRect.top + scrollTop;
+        const rectLeftInContainer = rect.left - opRect.left + scrollLeft;
 
-        let left = rect.left;
-        const maxLeft = Math.max(8, winW - boxW - 8);
+        let left = rectLeftInContainer;
+        const maxLeft = Math.max(8, opRect.width - boxW - 8);
         left = Math.max(8, Math.min(left, maxLeft));
 
-        // Default: open BELOW selection. Flip above if it would overflow viewport.
-        const estBoxH = Math.min(winH * 0.55, 420);
-        const wouldOverflow = (rect.bottom + gap + estBoxH) > winH;
+        // Default: open BELOW selection. Flip above only if the selection is
+        // far enough from the container's top to fit a box of estimated
+        // height.
+        const estBoxH = Math.min(opRect.height * 0.55, 420);
+        const wouldOverflowBottom = (rect.bottom + gap + estBoxH) > opRect.bottom;
         let top;
-        if (wouldOverflow && rect.top > estBoxH + gap + topFloor) {
-            top = rect.top - estBoxH - gap;
+        if (wouldOverflowBottom && (rect.top - opRect.top) > estBoxH + gap) {
+            top = rectTopInContainer - estBoxH - gap;
             _box.classList.add('swml-coach-box--above');
         } else {
-            top = rect.bottom + gap;
+            top = rectBottomInContainer + gap;
             _box.classList.remove('swml-coach-box--above');
         }
-        // Clamp top to [topFloor, viewport-bottom-margin].
-        top = Math.max(topFloor, Math.min(top, winH - 80));
 
         _box.style.top = top + 'px';
         _box.style.left = left + 'px';
@@ -618,13 +626,11 @@
             box.appendChild(h);
         });
 
-        // Mount + pin selection. v7.19.39: append to document.body so the
-        // position:fixed box anchors to the VIEWPORT, not to a transformed
-        // ancestor (LD's .spl-entry / canvas-overlay can create a containing
-        // block via transform/will-change/filter, which would re-anchor the
-        // fixed box to that block and skew it horizontally — see
-        // wml-canvas.css line 71-75 for the LD will-change comment.)
-        document.body.appendChild(box);
+        // Mount + pin selection. v7.19.40: append back inside the
+        // .swml-canvas-content scroll container so the box rides the doc
+        // text as the user scrolls vertically. Container is position:relative
+        // so absolute children anchor inside it.
+        offsetParent.appendChild(box);
         _box = box;
         _currentRange = selectionInfo.range || null;
         _autoFollow = true;
