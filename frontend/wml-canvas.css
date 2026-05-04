@@ -7801,8 +7801,10 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
 }
 
 /* Floating coach box — single Tiptap-style prompt + actions */
+/* v7.19.38: position: fixed so vertical scroll doesn't carry it; layout
+   reflow + drag still reposition correctly via JS. */
 .swml-coach-box {
-    position: absolute;
+    position: fixed;
     z-index: 90;
     width: 480px;
     max-width: calc(100vw - 32px);

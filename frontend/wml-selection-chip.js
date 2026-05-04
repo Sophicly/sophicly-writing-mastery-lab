@@ -254,27 +254,42 @@
     }
 
     function _positionBox(rect) {
-        const offsetParent = _getOffsetParent();
-        if (!offsetParent || !_box) return;
-        const opRect = offsetParent.getBoundingClientRect();
+        if (!_box) return;
+        // v7.19.38: box is position:fixed → coords are viewport-relative.
+        // No offset-parent math, no scrollTop adjustment — rect from
+        // getBoundingClientRect is already viewport-relative.
         const boxW = 480;
         const gap = 12;
+        const winW = window.innerWidth;
+        const winH = window.innerHeight;
 
-        let left = rect.left - opRect.left + offsetParent.scrollLeft;
-        const maxLeft = Math.max(8, opRect.width - boxW - 8);
+        // Top floor: clamp below the WML canvas header bar (and below the LD
+        // header, which sits even higher in embedded mode). Re-read live so
+        // the floor adapts to fullscreen / sticky-header changes.
+        let topFloor = 8;
+        const canvasHeader = document.querySelector('.swml-canvas-header');
+        if (canvasHeader) {
+            const headerRect = canvasHeader.getBoundingClientRect();
+            if (headerRect.bottom > topFloor) topFloor = headerRect.bottom + 8;
+        }
+
+        let left = rect.left;
+        const maxLeft = Math.max(8, winW - boxW - 8);
         left = Math.max(8, Math.min(left, maxLeft));
 
-        // Default: open BELOW selection. Flip above if it would overflow.
-        const estBoxH = Math.min(window.innerHeight * 0.55, 420);
-        const wouldOverflow = (rect.bottom + gap + estBoxH) > window.innerHeight;
+        // Default: open BELOW selection. Flip above if it would overflow viewport.
+        const estBoxH = Math.min(winH * 0.55, 420);
+        const wouldOverflow = (rect.bottom + gap + estBoxH) > winH;
         let top;
-        if (wouldOverflow && rect.top > estBoxH + gap) {
-            top = rect.top - opRect.top + offsetParent.scrollTop - estBoxH - gap;
+        if (wouldOverflow && rect.top > estBoxH + gap + topFloor) {
+            top = rect.top - estBoxH - gap;
             _box.classList.add('swml-coach-box--above');
         } else {
-            top = rect.bottom - opRect.top + offsetParent.scrollTop + gap;
+            top = rect.bottom + gap;
             _box.classList.remove('swml-coach-box--above');
         }
+        // Clamp top to [topFloor, viewport-bottom-margin].
+        top = Math.max(topFloor, Math.min(top, winH - 80));
 
         _box.style.top = top + 'px';
         _box.style.left = left + 'px';
