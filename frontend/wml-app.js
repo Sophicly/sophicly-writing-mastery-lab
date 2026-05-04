@@ -360,7 +360,7 @@
                 WML.renderFeedbackDiscussionCanvas();
             } else if (state.task === 'feedback_discussion' && state.phase === 'standalone') {
                 WML.renderFeedbackDiscussionCanvas();
-            } else if (['training', 'free', 'flexible'].includes(exerciseConfig.environment)) {
+            } else if (['training', 'free', 'flexible', 'inline-coaching'].includes(exerciseConfig.environment)) {
                 // v7.14.36: All canvas environments — training (protocol), free (independent), flexible (inline-AI)
                 state.canvasTimer = 0;
                 // v7.17.16: state.step is the bridge dispatch value on mark_scheme_unit (1=Quiz, 2=FYW).
@@ -431,7 +431,7 @@
                 // Without this, training-env exercises (mark_scheme, planning, polishing) in embedded mode
                 // never create a session, so the Protocol Router falls back to generic instructions.
                 // Session MUST exist before the first chat message (silent auto-send fires after 400ms).
-                if (exerciseConfig.environment === 'training') {
+                if (exerciseConfig.environment === 'training' || exerciseConfig.environment === 'inline-coaching') {
                     state.sessionId = '';
                     state.chatId = '';
                     resolveCwProject.then(() => apiPost(API.session, {
@@ -573,7 +573,7 @@
                 state.cwProjectName = picked.name || '';
                 try { sessionStorage.setItem('swml_cw_active_project', picked.id); } catch (_) {}
                 const exerciseConfig = WML.getExerciseConfig(state.task);
-                if (['training', 'free', 'flexible'].includes(exerciseConfig.environment)) {
+                if (['training', 'free', 'flexible', 'inline-coaching'].includes(exerciseConfig.environment)) {
                     state.canvasTimer = 0;
                     state.step = 0;
                     WML.renderCanvasWorkspace();
@@ -2875,7 +2875,7 @@
         const exerciseConfig = WML.EXERCISE_MANIFEST?.[taskId] || {};
 
         // v7.14.36: All canvas environments → renderCanvasWorkspace (training, free, flexible)
-        if (['training', 'free', 'flexible'].includes(exerciseConfig.environment)) {
+        if (['training', 'free', 'flexible', 'inline-coaching'].includes(exerciseConfig.environment)) {
             const root = $('#swml-root');
             root.style.transition = 'opacity 0.3s ease';
             root.style.opacity = '0';
