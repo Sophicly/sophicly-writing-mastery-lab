@@ -7677,106 +7677,23 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     display: none;
 }
 
-/* ── Right-side Sophia panel — persistent thread ── */
-.swml-coach-panel {
-    flex: 0 0 360px;
-    max-width: 360px;
-    min-width: 320px;
-    display: flex;
-    flex-direction: column;
-    background: #1c1d1f;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-    overflow: hidden;
-    transition: max-width 0.3s ease, min-width 0.3s ease, flex-basis 0.3s ease;
-}
-.swml-canvas-light .swml-coach-panel {
-    background: #f5f5f7;
-    border-left-color: rgba(0, 0, 0, 0.08);
-}
-.swml-coach-panel--collapsed {
-    flex: 0 0 40px;
-    min-width: 40px;
-    max-width: 40px;
-}
-.swml-coach-panel--collapsed .swml-coach-panel-title,
-.swml-coach-panel--collapsed .swml-coach-panel-subtitle,
-.swml-coach-panel--collapsed .swml-coach-panel-messages {
-    display: none;
-}
-.swml-coach-panel-header {
-    padding: 12px 14px;
-    background: linear-gradient(135deg, #5333ed 0%, #2c003e 100%);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-}
-.swml-coach-panel-icon {
-    font-size: 14px;
-    margin-right: 4px;
-}
-.swml-coach-panel-title {
-    font-weight: 600;
-    font-size: 13px;
-    letter-spacing: 0.01em;
-}
-.swml-coach-panel-subtitle {
-    font-size: 11px;
-    opacity: 0.7;
-    flex: 1;
-    font-style: italic;
-}
-.swml-coach-panel-collapse {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 50%;
-    color: #fff;
-    width: 22px;
-    height: 22px;
-    cursor: pointer;
-    font-size: 16px;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.12s ease;
-}
-.swml-coach-panel-collapse:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-.swml-coach-panel-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 14px 14px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    color: #eee;
-    font-size: 13px;
-    line-height: 1.5;
-}
-.swml-canvas-light .swml-coach-panel-messages {
-    color: #1c1d1f;
-}
+/* ── Right-side Sophia panel — reuses .swml-canvas-chat shell for parity ── */
+/* The panel inherits all of .swml-canvas-chat's training-env look (border, */
+/* bg, header height, padding). Below = inline-coaching-specific overrides. */
 .swml-coach-panel-empty {
     margin: auto 0;
     text-align: center;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--swml-text);
+    opacity: 0.55;
     font-size: 12.5px;
     line-height: 1.5;
-    padding: 0 8px;
+    padding: 24px 16px;
 }
-.swml-canvas-light .swml-coach-panel-empty {
-    color: rgba(28, 29, 31, 0.55);
-}
-.swml-coach-panel-empty p {
-    margin: 0 0 8px;
-}
+.swml-coach-panel-empty p { margin: 0 0 8px; }
 .swml-coach-panel-empty-icon {
-    font-size: 32px;
-    margin-bottom: 12px;
-    opacity: 0.6;
+    font-size: 28px;
+    margin-bottom: 10px;
+    opacity: 0.7;
 }
 .swml-coach-panel-empty-sub {
     font-size: 11px;
@@ -7784,19 +7701,8 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     margin-top: 4px;
 }
 
-/* Message turns inside Sophia panel */
-.swml-coach-msg {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-.swml-coach-msg--user {
-    align-items: flex-end;
-}
-.swml-coach-msg--ai {
-    align-items: flex-start;
-}
-.swml-coach-msg-selection {
+/* Selection echo — sits above the user bubble in the panel */
+.swml-coach-selection-echo {
     align-self: stretch;
     padding: 6px 10px;
     background: rgba(81, 218, 207, 0.07);
@@ -7806,39 +7712,14 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     font-style: italic;
     line-height: 1.4;
     border-radius: 0 4px 4px 0;
+    margin-bottom: -8px;
 }
-.swml-canvas-light .swml-coach-msg-selection {
+.swml-canvas-light .swml-coach-selection-echo {
     background: rgba(81, 218, 207, 0.12);
     color: rgba(28, 29, 31, 0.6);
 }
-.swml-coach-msg-body {
-    padding: 8px 12px;
-    border-radius: 10px;
-    line-height: 1.5;
-    max-width: 92%;
-    word-wrap: break-word;
-    font-size: 12.5px;
-}
-.swml-coach-msg--user .swml-coach-msg-body {
-    background: rgba(83, 51, 237, 0.18);
-    color: #fff;
-    align-self: flex-end;
-}
-.swml-coach-msg--ai .swml-coach-msg-body {
-    background: rgba(255, 255, 255, 0.05);
-    color: #eee;
-    align-self: flex-start;
-}
-.swml-canvas-light .swml-coach-msg--user .swml-coach-msg-body {
-    background: rgba(83, 51, 237, 0.14);
-    color: #1c1d1f;
-}
-.swml-canvas-light .swml-coach-msg--ai .swml-coach-msg-body {
-    background: rgba(0, 0, 0, 0.04);
-    color: #1c1d1f;
-}
-.swml-coach-msg-body p { margin: 0 0 6px; }
-.swml-coach-msg-body p:last-child { margin-bottom: 0; }
+
+/* Typing indicator inside the panel */
 .swml-coach-typing .swml-coach-dots span {
     display: inline-block;
     opacity: 0.4;
@@ -8060,6 +7941,46 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
 .swml-coach-send:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+.swml-coach-mic {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.7);
+    transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+    flex-shrink: 0;
+    padding: 0;
+}
+.swml-coach-mic:hover:not(:disabled) {
+    background: rgba(83, 51, 237, 0.15);
+    border-color: rgba(83, 51, 237, 0.45);
+    color: #fff;
+}
+.swml-coach-mic.swml-mic-active {
+    background: linear-gradient(135deg, #5333ed 0%, #2c003e 100%);
+    border-color: transparent;
+    color: #fff;
+    animation: swml-coach-mic-pulse 1.4s ease-in-out infinite;
+}
+@keyframes swml-coach-mic-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(83, 51, 237, 0.5); }
+    50% { box-shadow: 0 0 0 6px rgba(83, 51, 237, 0); }
+}
+.swml-canvas-light .swml-coach-mic {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: rgba(28, 29, 31, 0.7);
+}
+.swml-canvas-light .swml-coach-mic:hover:not(:disabled) {
+    background: rgba(83, 51, 237, 0.08);
+    border-color: rgba(83, 51, 237, 0.5);
+    color: #1c1d1f;
 }
 
 /* Quick-actions area — grouped, scope-filtered, scrollable if long */

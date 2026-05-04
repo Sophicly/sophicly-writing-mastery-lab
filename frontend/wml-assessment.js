@@ -3474,40 +3474,25 @@
     // ══════════════════════════════════════════════════════════════════
 
     // ══════════════════════════════════════════════════════════════════
-    // v7.19.27: buildInlineCoachingPanels — doc + right-side Sophia panel.
-    // No left sidebar (diagnostic-env shape). Selection-coach box opens
-    // floating near selected text in the doc; replies render in the
-    // right-side persistent thread panel ("Sophia"). Panel is collapsible.
+    // v7.19.31: buildInlineCoachingPanels — doc + right-side Sophia panel.
+    // Panel reuses the training-env chat shell (.swml-canvas-chat) so the
+    // colours / borders / typography / bubble look match the rest of WML.
     //
     // Returns { protoPanel:null, sophiaPanel, messagesHost, _updateAttemptBadge }.
     function buildInlineCoachingPanels(ctx) {
-        const sophiaPanel = el('div', { className: 'swml-coach-panel' });
+        // Reuse the training-env chat shell for visual parity.
+        const sophiaPanel = el('div', { className: 'swml-canvas-chat swml-coach-panel' });
 
-        // Header — title + collapse toggle
-        const header = el('div', { className: 'swml-coach-panel-header' });
-        const title = el('span', { className: 'swml-coach-panel-title' });
-        title.innerHTML = '<span class="swml-coach-panel-icon">✨</span> Sophia';
-        header.appendChild(title);
-
-        const subtitle = el('span', { className: 'swml-coach-panel-subtitle', textContent: 'Exam Prep Coach' });
-        header.appendChild(subtitle);
-
-        const collapseBtn = el('button', {
-            className: 'swml-coach-panel-collapse',
-            type: 'button',
-            innerHTML: '›',
-            title: 'Collapse panel',
-        });
-        collapseBtn.addEventListener('click', () => {
-            sophiaPanel.classList.toggle('swml-coach-panel--collapsed');
-            collapseBtn.innerHTML = sophiaPanel.classList.contains('swml-coach-panel--collapsed') ? '‹' : '›';
-        });
-        header.appendChild(collapseBtn);
-
+        // Header — same shape as training-env chat header.
+        const header = el('div', { className: 'swml-canvas-chat-header swml-coach-panel-header' });
+        const headerLabel = el('span', { className: 'swml-coach-panel-label' });
+        headerLabel.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px;opacity:0.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Sophia — Exam Prep Coach';
+        header.appendChild(headerLabel);
         sophiaPanel.appendChild(header);
 
-        // Messages area + empty state hint
-        const messagesHost = el('div', { className: 'swml-coach-panel-messages' });
+        // Messages area — reuse the same class so bubbles + scrolling +
+        // typography match training-env exactly.
+        const messagesHost = el('div', { className: 'swml-canvas-chat-messages swml-coach-panel-messages' });
         const empty = el('div', { className: 'swml-coach-panel-empty' });
         empty.innerHTML = '<div class="swml-coach-panel-empty-icon">✨</div>'
             + '<p>Highlight text in your <strong>plan</strong> or <strong>response</strong> to ask Sophia.</p>'

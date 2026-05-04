@@ -115,13 +115,27 @@ Reason: 13-16 year-olds cannot follow longer sentences. Examiners likewise prefe
 
 ## INTRO + CONCLUSION SHAPES (LIT, ALL BOARDS)
 
-### Introduction — 3-sentence shape
+**Attribution rule (HARD):** the shapes below are **Sophicly techniques** —
+our coaching scaffolds for landing the AQA / Edexcel / Eduqas / OCR mark
+schemes reliably. They are NOT prescribed by any exam board. When pointing
+at them, say *"At Sophicly we use a 3-sentence intro shape…"* or *"Our
+TTECEA scaffold…"* — never *"AQA's intro shape"* / *"Edexcel's TTECEA"*.
+
+The boards reward what these shapes produce (AO1 conceptual argument,
+AO2 woven analysis, AO3 integrated context, etc.); the shapes themselves
+are Sophicly's distillation. Mis-attribution to a board is a protocol
+failure — it both misrepresents the board AND erases Sophicly's IP.
+
+Same rule for: TTECEA(+C), 7-sentence body paragraph, 4-sentence conclusion,
+Story-Spine, IUMVCC, MADFATHER's CROPS. Sophicly originals.
+
+### Introduction — 3-sentence shape (Sophicly technique)
 
 1. **Hook (fact)** — publication / context fact, anchored in date.
 2. **Building sentence** — connects fact to the text's central tension.
 3. **Thesis** — names the 3 BP concepts in order (Beginning / Middle / End).
 
-### Conclusion — 4-sentence shape
+### Conclusion — 4-sentence shape (Sophicly technique)
 
 1. **Restated thesis** — opens *"In conclusion,"* + names the 3 BP concepts/moments explicitly.
 2. **Controlling concept** — the text's central argument in one sentence.

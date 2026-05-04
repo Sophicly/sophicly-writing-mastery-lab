@@ -174,37 +174,55 @@
         _ensurePanelOpen();
         const formatAI = (window.WML && window.WML.formatAI) || ((s) => s);
         const stripAIInternals = (window.WML && window.WML.stripAIInternals) || ((s) => s);
+        const SENDER_HTML = (window.WML && window.WML.SENDER_HTML) || 'Sophia';
 
-        const wrap = el('div', { className: 'swml-coach-msg swml-coach-msg--' + role });
+        // Selection echo (only on the first user turn for this box) — sits
+        // ABOVE the user bubble as a quoted lead-in, mirroring the prior-art
+        // chat-toolbar selection rendering.
         if (role === 'user' && opts && opts.selection) {
-            const sel = el('div', { className: 'swml-coach-msg-selection' });
-            const truncated = (opts.selection || '').slice(0, 160);
-            sel.textContent = opts.selection.length > 160 ? truncated + '…' : truncated;
-            wrap.appendChild(sel);
+            const echo = el('div', { className: 'swml-coach-selection-echo' });
+            const truncated = (opts.selection || '').slice(0, 200);
+            echo.textContent = opts.selection.length > 200 ? truncated + '…' : truncated;
+            messagesHost.appendChild(echo);
         }
-        const body = el('div', { className: 'swml-coach-msg-body' });
+
+        // Build a training-env-style bubble: .swml-bubble.{ai|user} >
+        // .swml-bubble-content > [.swml-bubble-header (ai only)] + .swml-bubble-body
+        const bubble = el('div', { className: 'swml-bubble ' + (role === 'ai' ? 'ai' : 'user') });
+        const inner = el('div', { className: 'swml-bubble-content' });
         if (role === 'ai') {
+            const headerEl = el('div', { className: 'swml-bubble-header' });
+            headerEl.appendChild(el('span', { className: 'swml-bubble-sender', innerHTML: SENDER_HTML }));
+            inner.appendChild(headerEl);
+            const body = el('div', { className: 'swml-bubble-body' });
             body.innerHTML = formatAI(stripAIInternals(content || ''));
+            inner.appendChild(body);
         } else {
-            body.textContent = content || '';
+            inner.appendChild(el('p', { textContent: content || '' }));
         }
-        wrap.appendChild(body);
-        messagesHost.appendChild(wrap);
+        bubble.appendChild(inner);
+        messagesHost.appendChild(bubble);
         messagesHost.scrollTop = messagesHost.scrollHeight;
-        return wrap;
+        return bubble;
     }
 
     function _appendTyping() {
         const messagesHost = _ctx && _ctx.messagesHost;
         if (!messagesHost) return null;
         _hideEmptyState();
-        const wrap = el('div', { className: 'swml-coach-msg swml-coach-msg--ai swml-coach-typing' });
-        const body = el('div', { className: 'swml-coach-msg-body' });
+        const SENDER_HTML = (window.WML && window.WML.SENDER_HTML) || 'Sophia';
+        const bubble = el('div', { className: 'swml-bubble ai swml-coach-typing' });
+        const inner = el('div', { className: 'swml-bubble-content' });
+        const headerEl = el('div', { className: 'swml-bubble-header' });
+        headerEl.appendChild(el('span', { className: 'swml-bubble-sender', innerHTML: SENDER_HTML }));
+        inner.appendChild(headerEl);
+        const body = el('div', { className: 'swml-bubble-body' });
         body.innerHTML = '<span class="swml-coach-dots"><span>.</span><span>.</span><span>.</span></span>';
-        wrap.appendChild(body);
-        messagesHost.appendChild(wrap);
+        inner.appendChild(body);
+        bubble.appendChild(inner);
+        messagesHost.appendChild(bubble);
         messagesHost.scrollTop = messagesHost.scrollHeight;
-        return wrap;
+        return bubble;
     }
 
     function _positionBox(rect) {
@@ -259,7 +277,7 @@
         handle.appendChild(quote);
         box.appendChild(handle);
 
-        // 2. Input row — textarea + send button
+        // 2. Input row — textarea + mic + send
         const inputRow = el('div', { className: 'swml-coach-input-row' });
         const textarea = el('textarea', {
             className: 'swml-coach-input',
@@ -270,6 +288,85 @@
             textarea.style.height = 'auto';
             textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
         });
+
+        // Mic — Web Speech API, mirrors the training-env mic wiring at
+        // wml-assessment.js:2738. Pushes interim + final transcripts into
+        // the textarea.
+        const SVG_MIC = (window.WML && window.WML.SVG_MIC) || '🎤';
+        const SVG_MIC_STOP = (window.WML && window.WML.SVG_MIC_STOP) || '■';
+        let coachRecognition = null;
+        let coachListening = false;
+        let coachMicRetries = 0;
+        const MIC_MAX_RETRIES = 3;
+        const micBtn = el('button', {
+            className: 'swml-coach-mic',
+            type: 'button',
+            innerHTML: SVG_MIC,
+            title: 'Voice input',
+        });
+        micBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) { alert('Voice input is not supported in this browser.'); return; }
+            if (coachListening && coachRecognition) { coachRecognition.stop(); return; }
+            coachMicRetries = 0;
+            if (!coachRecognition) {
+                coachRecognition = new SR();
+                coachRecognition.continuous = true;
+                coachRecognition.interimResults = true;
+                coachRecognition.lang = 'en-GB';
+                let finalTranscript = '';
+                coachRecognition.onresult = (ev) => {
+                    coachMicRetries = 0;
+                    let interim = '';
+                    for (let i = ev.resultIndex; i < ev.results.length; i++) {
+                        if (ev.results[i].isFinal) finalTranscript += ev.results[i][0].transcript + ' ';
+                        else interim += ev.results[i][0].transcript;
+                    }
+                    textarea.value = finalTranscript + interim;
+                    textarea.dispatchEvent(new Event('input'));
+                };
+                coachRecognition.onstart = () => {
+                    coachListening = true;
+                    finalTranscript = textarea.value || '';
+                    micBtn.innerHTML = SVG_MIC_STOP;
+                    micBtn.classList.add('swml-mic-active');
+                };
+                coachRecognition.onend = () => {
+                    coachListening = false;
+                    micBtn.innerHTML = SVG_MIC;
+                    micBtn.classList.remove('swml-mic-active');
+                    textarea.focus();
+                };
+                coachRecognition.onerror = (ev) => {
+                    if (ev.error === 'no-speech' && coachMicRetries < MIC_MAX_RETRIES) {
+                        coachMicRetries++;
+                        setTimeout(() => {
+                            try { coachRecognition.start(); }
+                            catch (_) {
+                                coachListening = false;
+                                micBtn.innerHTML = SVG_MIC;
+                                micBtn.classList.remove('swml-mic-active');
+                            }
+                        }, 200);
+                        return;
+                    }
+                    coachListening = false;
+                    micBtn.innerHTML = SVG_MIC;
+                    micBtn.classList.remove('swml-mic-active');
+                    if (ev.error === 'network' || ev.error === 'not-allowed') {
+                        const isHTTP = window.location.protocol === 'http:';
+                        alert(isHTTP
+                            ? 'Voice input requires a secure (HTTPS) connection.'
+                            : 'Voice input failed — check microphone permissions.');
+                    }
+                };
+            }
+            try { coachRecognition.start(); }
+            catch (err) { console.warn('WML SelectionChip mic start failed', err); }
+        });
+
         const sendBtn = el('button', {
             className: 'swml-coach-send',
             type: 'button',
@@ -277,6 +374,7 @@
             title: 'Send',
         });
         inputRow.appendChild(textarea);
+        inputRow.appendChild(micBtn);
         inputRow.appendChild(sendBtn);
         box.appendChild(inputRow);
 
