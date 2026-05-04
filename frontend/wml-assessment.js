@@ -5173,8 +5173,15 @@
         const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz'];
         const isExamPrep = EXAM_PREP_TASKS.includes(state.task);
         // v7.14.37: Environment detection from manifest (free/training/flexible)
+        // v7.19.19+: 'inline-coaching' env added for exam-crib task.
+        //   Doc-first canvas, NO chat panel by default, anchor-list sidebar,
+        //   coaching invoked via Tiptap floating selection chip (built next ship).
         const envType = exerciseConfig?.environment || 'free';
         const useTrainingEnv = envType === 'training';
+        const useInlineCoachingEnv = envType === 'inline-coaching';
+        if (useInlineCoachingEnv) {
+            console.log('WML v7.19.19+: inline-coaching env detected, task=' + state.task + ', subject=' + state.subject + ', text=' + state.text);
+        }
         let canvasInAssessment = useTrainingEnv; // legacy alias — all training env exercises get chat + sidebar
         const canvasInFeedback = state.task === 'feedback_discussion';
         const canvasInMarkScheme = state.task === 'mark_scheme';

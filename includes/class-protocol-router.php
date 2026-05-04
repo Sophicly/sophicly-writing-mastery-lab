@@ -984,6 +984,56 @@ class SWML_Protocol_Router {
             return null;
         }
 
+        // Exam Prep Crib: in-line coaching env (Phase 1 build, 2026-05-04).
+        // Selection-driven, no scoring, no progress markers, no greeting mandate.
+        // Loads:
+        //   - inline-coaching-core.md      (shared Socratic primitives + red lines)
+        //   - inline-coaching-engine-1.md  (Selection-First engine)
+        //   - rubric-base.md               (universal Sophicly rules)
+        //   - rubric-{board}-{type}.md     (per-paper criterion override)
+        // Reference: ~/.claude/plans/wml-inline-coaching-build-plan.md
+        if ($task === 'exam_crib') {
+            $crib_subject_map = [
+                // AQA Lit
+                'shakespeare'        => 'rubric-aqa-lit-shakespeare.md',
+                '19th_century'       => 'rubric-aqa-lit-19c-novel.md',
+                'modern_text'        => 'rubric-aqa-lit-modern-text.md',
+                'poetry_anthology'   => 'rubric-aqa-lit-anthology-poetry.md',
+                'unseen_poetry'      => 'rubric-aqa-lit-unseen-poetry.md',
+                'literature'         => 'rubric-aqa-lit-shakespeare.md', // generic fallback
+                // Edexcel IGCSE Lang Spec A
+                'language_p2'        => 'rubric-edexcel-igcse-lang.md',
+                'language2'          => 'rubric-edexcel-igcse-lang.md',
+                // (extend as more rubrics ship — Edexcel/Eduqas Lit + AQA Lang etc.)
+            ];
+            $rubric_file = $crib_subject_map[$subject] ?? 'rubric-aqa-lit-shakespeare.md';
+            $rubrics_dir = $plugin_dir . 'protocols/shared/modules/rubrics/';
+            $modules_dir = $plugin_dir . 'protocols/shared/modules/';
+
+            $files_to_load = [
+                $modules_dir . 'inline-coaching-core.md',
+                $modules_dir . 'inline-coaching-engine-1.md',
+                $rubrics_dir . 'rubric-base.md',
+                $rubrics_dir . $rubric_file,
+            ];
+
+            $parts = [];
+            foreach ($files_to_load as $f) {
+                if (file_exists($f)) {
+                    $parts[] = file_get_contents($f);
+                } else {
+                    error_log("WML Router: exam_crib module missing at {$f}");
+                }
+            }
+            if (empty($parts)) {
+                error_log("WML Router: exam_crib loaded zero modules — protocol empty for subject={$subject}");
+                return null;
+            }
+            $content = implode("\n\n---\n\n", $parts);
+            error_log("WML Router: Loaded exam_crib protocol: " . count($parts) . " modules, " . strlen($content) . " chars (rubric={$rubric_file}, subject={$subject})");
+            return !empty(trim($content)) ? $content : null;
+        }
+
         // Memory Practice: universal single-file protocol — load directly, skip manifest
         if ($task === 'memory_practice') {
             $mp_path = $plugin_dir . 'protocols/shared/modules/memory-practice.md';
