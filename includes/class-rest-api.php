@@ -1412,6 +1412,30 @@ class SWML_REST_API {
             }
         }
         if (empty($raw)) {
+            // v7.19.19+: Exam Prep Crib seed-on-mount.
+            // When suffix='_crib' (task='exam_crib' per manifest) AND no canvas
+            // exists for this user, return the bundled crib template for this
+            // board/text so the student lands on a pre-seeded doc. Template
+            // ships at protocols/shared/crib-templates/{text}.json.
+            // Server returns the template AS-IF it were saved — frontend
+            // renders it; on first edit + autosave, it persists into user_meta.
+            if ($suffix === '_crib') {
+                $crib_text = preg_replace('/[^a-z0-9_]/', '', strtolower($text));
+                $crib_path = SWML_PATH . 'protocols/shared/crib-templates/' . $crib_text . '.json';
+                if (file_exists($crib_path)) {
+                    $crib_raw = file_get_contents($crib_path);
+                    $crib_data = json_decode($crib_raw, true);
+                    if (is_array($crib_data) && !empty($crib_data['html'])) {
+                        return rest_ensure_response([
+                            'success'      => true,
+                            'doc'          => ['html' => $crib_data['html']],
+                            'attempt'      => $attempt,
+                            'generalNotes' => $general_notes,
+                            'is_seed'      => true,
+                        ]);
+                    }
+                }
+            }
             return rest_ensure_response([
                 'success'      => true,
                 'doc'          => null,

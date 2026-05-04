@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.19
+ * Version: 7.19.20
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.19');
+define('SWML_VERSION', '7.19.20');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -459,6 +459,7 @@ class Sophicly_Writing_Mastery_Lab {
             'assessment'    => '📊 Get Your Essay Assessed',
             'polishing'     => '✨ Polish Your Essay',
             'exam_question' => '✏️ Create an Exam Question',
+            'exam_crib'     => '📚 Open Exam Prep Crib',
         ];
         $label = $labels[$task] ?? '✍️ Open The Writing Mastery Lab';
 
