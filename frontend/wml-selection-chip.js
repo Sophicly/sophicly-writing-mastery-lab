@@ -342,8 +342,12 @@
             const userLabel = isAction ? (ACTION_LABELS[action] || action) : trimmed;
 
             // Echo user turn into the right panel + start typing indicator.
-            _appendMessage('user', userLabel, { selection: sel.text });
+            // Echo selection only on the first user turn for this box (subsequent
+            // follow-ups in the same box reference the same selection).
+            const echoSelection = !box.dataset.swmlSent;
+            _appendMessage('user', userLabel, echoSelection ? { selection: sel.text } : null);
             const typingEl = _appendTyping();
+            box.dataset.swmlSent = '1';
 
             if (trimmed) {
                 _conversationHistory.push({ role: 'user', content: trimmed });
@@ -351,9 +355,10 @@
                 _conversationHistory.push({ role: 'user', content: '[' + action + ']' });
             }
 
-            // Close the box now — student sees their turn appear in the side
-            // panel; subsequent replies render there too.
-            _removeBox();
+            // Box stays open — student can keep responding without re-selecting.
+            // Clear textarea + reset height so the next turn feels clean.
+            textarea.value = '';
+            textarea.style.height = 'auto';
 
             const promptText = buildPrompt(
                 isAction ? action : 'freetext',
