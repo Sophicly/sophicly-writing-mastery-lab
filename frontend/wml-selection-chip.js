@@ -184,6 +184,105 @@
         if (empty) empty.remove();
     }
 
+    // ── Persistence ─────────────────────────────────────────────────
+    // localStorage per board+text+task so the right Sophia panel survives
+    // page refresh. Stores the rendered thread (role / content / optional
+    // selection echo) AND the conversation history sent to the API.
+
+    function _storageKey() {
+        if (!_ctx || !_ctx.taskCtx) return '';
+        const t = _ctx.taskCtx;
+        return 'swml_coach_thread_' + (t.board || '') + '_' + (t.text || '') + '_' + (t.task || 'exam_crib');
+    }
+
+    function _saveHistory(thread) {
+        const key = _storageKey();
+        if (!key) return;
+        try {
+            localStorage.setItem(key, JSON.stringify({
+                thread,
+                history: _conversationHistory,
+                lastSelection: _lastSelectionInfo ? {
+                    text: _lastSelectionInfo.text,
+                    sectionContext: _lastSelectionInfo.sectionContext,
+                    scope: _lastSelectionInfo.scope,
+                } : null,
+                ts: Date.now(),
+            }));
+        } catch (_) {}
+    }
+
+    function _loadHistory() {
+        const key = _storageKey();
+        if (!key) return null;
+        try {
+            const raw = localStorage.getItem(key);
+            if (!raw) return null;
+            return JSON.parse(raw);
+        } catch (_) { return null; }
+    }
+
+    function _renderedThread() {
+        // Snapshot the panel's current messages as plain data for re-render
+        // after page reload.
+        const messagesHost = _ctx && _ctx.messagesHost;
+        if (!messagesHost) return [];
+        return Array.from(messagesHost.querySelectorAll('.swml-coach-msg, .swml-coach-selection-echo, .swml-bubble'))
+            .map((node) => {
+                if (node.classList.contains('swml-coach-selection-echo')) {
+                    return { kind: 'echo', content: node.textContent || '' };
+                }
+                if (node.classList.contains('swml-bubble')) {
+                    const isAi = node.classList.contains('ai');
+                    const body = node.querySelector('.swml-bubble-body');
+                    const userP = node.querySelector('p');
+                    return {
+                        kind: 'bubble',
+                        role: isAi ? 'ai' : 'user',
+                        content: isAi
+                            ? (body ? body.innerHTML : '')
+                            : (userP ? userP.textContent : ''),
+                        isHTML: !!isAi,
+                    };
+                }
+                return null;
+            }).filter(Boolean);
+    }
+
+    function _hydrateFromHistory() {
+        const stored = _loadHistory();
+        if (!stored || !stored.thread || stored.thread.length === 0) return;
+        const messagesHost = _ctx && _ctx.messagesHost;
+        if (!messagesHost) return;
+        _hideEmptyState();
+        stored.thread.forEach((entry) => {
+            if (entry.kind === 'echo') {
+                const echo = el('div', { className: 'swml-coach-selection-echo', textContent: entry.content || '' });
+                messagesHost.appendChild(echo);
+            } else if (entry.kind === 'bubble') {
+                const SENDER_HTML = (window.WML && window.WML.SENDER_HTML) || 'Sophia';
+                const bubble = el('div', { className: 'swml-bubble ' + (entry.role === 'ai' ? 'ai' : 'user') });
+                const inner = el('div', { className: 'swml-bubble-content' });
+                if (entry.role === 'ai') {
+                    const headerEl = el('div', { className: 'swml-bubble-header' });
+                    headerEl.appendChild(el('span', { className: 'swml-bubble-sender', innerHTML: SENDER_HTML }));
+                    inner.appendChild(headerEl);
+                    const body = el('div', { className: 'swml-bubble-body' });
+                    body.innerHTML = entry.content || '';
+                    inner.appendChild(body);
+                } else {
+                    inner.appendChild(el('p', { textContent: entry.content || '' }));
+                }
+                bubble.appendChild(inner);
+                messagesHost.appendChild(bubble);
+            }
+        });
+        if (Array.isArray(stored.history)) _conversationHistory = stored.history.slice();
+        // Show Continue button if a thread exists, since the user has no
+        // active selection on reload.
+        if (_conversationHistory.length > 0) _ensureContinueBtn();
+    }
+
     function _appendMessage(role, content, opts) {
         const messagesHost = _ctx && _ctx.messagesHost;
         if (!messagesHost) return null;
@@ -220,6 +319,8 @@
         bubble.appendChild(inner);
         messagesHost.appendChild(bubble);
         messagesHost.scrollTop = messagesHost.scrollHeight;
+        // Persist after each turn so refresh restores the thread.
+        _saveHistory(_renderedThread());
         return bubble;
     }
 
@@ -517,8 +618,13 @@
             box.appendChild(h);
         });
 
-        // Mount + pin selection
-        offsetParent.appendChild(box);
+        // Mount + pin selection. v7.19.39: append to document.body so the
+        // position:fixed box anchors to the VIEWPORT, not to a transformed
+        // ancestor (LD's .spl-entry / canvas-overlay can create a containing
+        // block via transform/will-change/filter, which would re-anchor the
+        // fixed box to that block and skew it horizontally — see
+        // wml-canvas.css line 71-75 for the LD will-change comment.)
+        document.body.appendChild(box);
         _box = box;
         _currentRange = selectionInfo.range || null;
         _autoFollow = true;
@@ -871,7 +977,10 @@
         document.addEventListener('keydown', _onKeyDown);
 
         _bound = true;
-        console.log('WML SelectionChip v7.19.37: mounted (document-level delegation)');
+        // Restore prior thread from localStorage so the panel survives reload.
+        try { _hydrateFromHistory(); }
+        catch (err) { console.warn('WML SelectionChip: hydrate failed', err); }
+        console.log('WML SelectionChip v7.19.39: mounted (body-anchored fixed + persistent thread)');
         return { unmount };
     }
 
