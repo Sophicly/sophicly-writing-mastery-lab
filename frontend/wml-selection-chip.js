@@ -58,12 +58,11 @@
     // ── Module-scoped state ──
     let _ctx = null;
     let _box = null;                 // floating prompt box DOM
-    let _hint = null;                // floating discovery hint DOM
-    let _hintDismissed = false;      // session-scoped (resets on next mount)
     let _activeSelection = null;     // last valid selection info, frozen at box-open
     let _bound = false;
     let _selectionTimer = null;
-    let _hintShown = false;
+    let _conversationHistory = [];   // shared across selections within a mount
+    let _conversationId = '';
 
     // ── Helpers ──
 
@@ -149,7 +148,63 @@
     function _removeBox() {
         if (_box && _box.parentNode) _box.parentNode.removeChild(_box);
         _box = null;
-        _activeSelection = null;
+        // Don't clear _activeSelection here — caller may want to reuse it
+        // for follow-up sends from the right panel later.
+    }
+
+    // ── Right panel — persistent reply thread ───────────────────────
+
+    function _ensurePanelOpen() {
+        const panel = _ctx && _ctx.sophiaPanel;
+        if (!panel) return;
+        panel.classList.remove('swml-coach-panel--collapsed');
+    }
+
+    function _hideEmptyState() {
+        const messagesHost = _ctx && _ctx.messagesHost;
+        if (!messagesHost) return;
+        const empty = messagesHost.querySelector('.swml-coach-panel-empty');
+        if (empty) empty.remove();
+    }
+
+    function _appendMessage(role, content, opts) {
+        const messagesHost = _ctx && _ctx.messagesHost;
+        if (!messagesHost) return null;
+        _hideEmptyState();
+        _ensurePanelOpen();
+        const formatAI = (window.WML && window.WML.formatAI) || ((s) => s);
+        const stripAIInternals = (window.WML && window.WML.stripAIInternals) || ((s) => s);
+
+        const wrap = el('div', { className: 'swml-coach-msg swml-coach-msg--' + role });
+        if (role === 'user' && opts && opts.selection) {
+            const sel = el('div', { className: 'swml-coach-msg-selection' });
+            const truncated = (opts.selection || '').slice(0, 160);
+            sel.textContent = opts.selection.length > 160 ? truncated + '…' : truncated;
+            wrap.appendChild(sel);
+        }
+        const body = el('div', { className: 'swml-coach-msg-body' });
+        if (role === 'ai') {
+            body.innerHTML = formatAI(stripAIInternals(content || ''));
+        } else {
+            body.textContent = content || '';
+        }
+        wrap.appendChild(body);
+        messagesHost.appendChild(wrap);
+        messagesHost.scrollTop = messagesHost.scrollHeight;
+        return wrap;
+    }
+
+    function _appendTyping() {
+        const messagesHost = _ctx && _ctx.messagesHost;
+        if (!messagesHost) return null;
+        _hideEmptyState();
+        const wrap = el('div', { className: 'swml-coach-msg swml-coach-msg--ai swml-coach-typing' });
+        const body = el('div', { className: 'swml-coach-msg-body' });
+        body.innerHTML = '<span class="swml-coach-dots"><span>.</span><span>.</span><span>.</span></span>';
+        wrap.appendChild(body);
+        messagesHost.appendChild(wrap);
+        messagesHost.scrollTop = messagesHost.scrollHeight;
+        return wrap;
     }
 
     function _positionBox(rect) {
@@ -180,21 +235,9 @@
         _box.style.width = boxW + 'px';
     }
 
-    function _renderReplyBubble(messagesEl, role, text) {
-        const formatAI = (window.WML && window.WML.formatAI) || ((s) => s);
-        const stripAIInternals = (window.WML && window.WML.stripAIInternals) || ((s) => s);
-        const bubble = el('div', { className: 'swml-coach-bubble swml-coach-bubble--' + role });
-        if (role === 'ai') {
-            bubble.innerHTML = formatAI(stripAIInternals(text || ''));
-        } else {
-            bubble.textContent = text || '';
-        }
-        messagesEl.appendChild(bubble);
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-        return bubble;
-    }
-
-    // ── The single floating coach box ───────────────────────────────
+    // ── The single floating coach box (entry-point only) ────────────
+    // Box has: selection echo + textarea + send + scope-filtered actions.
+    // After submit, box closes; replies render in the right-side Sophia panel.
 
     function _openBox(selectionInfo) {
         _removeBox();
@@ -213,11 +256,7 @@
         });
         box.appendChild(quote);
 
-        // 2. Messages — Socratic replies render here
-        const messages = el('div', { className: 'swml-coach-messages' });
-        box.appendChild(messages);
-
-        // 3. Input row — textarea + send button
+        // 2. Input row — textarea + send button
         const inputRow = el('div', { className: 'swml-coach-input-row' });
         const textarea = el('textarea', {
             className: 'swml-coach-input',
@@ -238,7 +277,7 @@
         inputRow.appendChild(sendBtn);
         box.appendChild(inputRow);
 
-        // 4. Quick-actions row(s) — grouped, scope-filtered
+        // 3. Quick-actions row(s) — grouped, scope-filtered
         const groups = _filterActionsForScope(selectionInfo.scope, _ctx.taskCtx);
         const actionsWrap = el('div', { className: 'swml-coach-actions' });
         groups.forEach((group) => {
@@ -268,29 +307,22 @@
         });
         box.appendChild(actionsWrap);
 
-        // 5. Footer — close button
+        // 4. Close button
         const closeBtn = el('button', {
             className: 'swml-coach-close',
             type: 'button',
             innerHTML: '×',
             title: 'Close',
-            onClick: (e) => { e.preventDefault(); e.stopPropagation(); _removeBox(); _hideHint(); },
+            onClick: (e) => { e.preventDefault(); e.stopPropagation(); _removeBox(); },
         });
         box.appendChild(closeBtn);
 
-        // Mount
+        // Mount + pin selection
         offsetParent.appendChild(box);
         _box = box;
         _positionBox(selectionInfo.rect);
-
-        // Pin selection: clicking inside box collapses native selection,
-        // but _activeSelection is preserved. Prevent inner clicks from bubbling
-        // to the document mousedown handler (which would close the box).
         box.addEventListener('mousedown', (e) => { e.stopPropagation(); });
 
-        // Per-session state
-        const miniHistory = [];
-        const miniChatId = 'crib_' + Date.now();
         let pending = false;
 
         const send = async (action, freeText) => {
@@ -304,29 +336,29 @@
             textarea.disabled = true;
             actionsWrap.querySelectorAll('button').forEach(b => { b.disabled = true; });
 
-            // Echo user intent in the messages stream
-            const userLabel = isAction
-                ? (ACTION_LABELS[action] || action)
-                : trimmed;
-            _renderReplyBubble(messages, 'user', userLabel);
+            // Snapshot the selection-info NOW (before we close the box —
+            // it'll be needed for follow-up replies even after the box is gone).
+            const sel = _activeSelection;
+            const userLabel = isAction ? (ACTION_LABELS[action] || action) : trimmed;
+
+            // Echo user turn into the right panel + start typing indicator.
+            _appendMessage('user', userLabel, { selection: sel.text });
+            const typingEl = _appendTyping();
+
             if (trimmed) {
-                miniHistory.push({ role: 'user', content: trimmed });
+                _conversationHistory.push({ role: 'user', content: trimmed });
             } else if (isAction) {
-                miniHistory.push({ role: 'user', content: '[' + action + ']' });
+                _conversationHistory.push({ role: 'user', content: '[' + action + ']' });
             }
 
-            // Hide hint after first invocation
-            _hideHint();
-
-            const typing = el('div', { className: 'swml-coach-bubble swml-coach-bubble--ai swml-coach-typing' });
-            typing.innerHTML = '<span class="swml-coach-dots"><span>.</span><span>.</span><span>.</span></span>';
-            messages.appendChild(typing);
-            messages.scrollTop = messages.scrollHeight;
+            // Close the box now — student sees their turn appear in the side
+            // panel; subsequent replies render there too.
+            _removeBox();
 
             const promptText = buildPrompt(
                 isAction ? action : 'freetext',
-                _activeSelection.text,
-                _activeSelection.sectionContext,
+                sel.text,
+                sel.sectionContext,
                 _ctx.taskCtx,
                 trimmed
             );
@@ -336,16 +368,16 @@
                 const API = window.WML && window.WML.API;
                 const state = window.WML && window.WML.state;
                 if (!apiPost || !API || !API.chat) {
-                    typing.remove();
-                    _renderReplyBubble(messages, 'ai', 'Chat infrastructure not loaded.');
+                    if (typingEl && typingEl.parentNode) typingEl.parentNode.removeChild(typingEl);
+                    _appendMessage('ai', 'Chat infrastructure not loaded.');
                     return;
                 }
 
                 const body = {
                     prompt: promptText,
                     botId: 'wml-claude',
-                    chatId: miniChatId,
-                    history: miniHistory.slice(-12),
+                    chatId: _conversationId,
+                    history: _conversationHistory.slice(-12),
                     board: state ? state.board : '',
                     subject: state ? state.subject : '',
                     text: state ? state.text : '',
@@ -354,25 +386,19 @@
                 };
 
                 const res = await apiPost(API.chat, body);
-                typing.remove();
+                if (typingEl && typingEl.parentNode) typingEl.parentNode.removeChild(typingEl);
                 if (res && res.success && res.reply) {
-                    miniHistory.push({ role: 'assistant', content: res.reply });
-                    _renderReplyBubble(messages, 'ai', res.reply);
+                    _conversationHistory.push({ role: 'assistant', content: res.reply });
+                    _appendMessage('ai', res.reply);
                 } else {
-                    _renderReplyBubble(messages, 'ai', (res && res.message) ? res.message : 'No reply received.');
+                    _appendMessage('ai', (res && res.message) ? res.message : 'No reply received.');
                 }
             } catch (err) {
-                typing.remove();
+                if (typingEl && typingEl.parentNode) typingEl.parentNode.removeChild(typingEl);
                 console.error('WML SelectionChip coach error', err);
-                _renderReplyBubble(messages, 'ai', 'Sorry, something went wrong. Please try again.');
+                _appendMessage('ai', 'Sorry, something went wrong. Please try again.');
             } finally {
                 pending = false;
-                sendBtn.disabled = false;
-                textarea.disabled = false;
-                actionsWrap.querySelectorAll('button').forEach(b => { b.disabled = false; });
-                textarea.value = '';
-                textarea.style.height = 'auto';
-                textarea.focus();
             }
         };
 
@@ -384,46 +410,7 @@
             }
         });
 
-        // Auto-focus textarea so student can start typing immediately.
         setTimeout(() => { try { textarea.focus(); } catch (_) {} }, 30);
-    }
-
-    // ── Discovery hint (bottom-right ghost pill) ────────────────────
-
-    function _showHint() {
-        if (_hintDismissed || _hintShown || !_ctx) return;
-        const offsetParent = _getOffsetParent();
-        if (!offsetParent) return;
-
-        const hint = el('div', { className: 'swml-coach-hint', role: 'status' });
-        hint.appendChild(el('span', { className: 'swml-coach-hint-icon', textContent: '✨' }));
-        hint.appendChild(el('span', {
-            className: 'swml-coach-hint-text',
-            textContent: 'Highlight text in your plan or response to work with Sophia.',
-        }));
-        const closeBtn = el('button', {
-            className: 'swml-coach-hint-close',
-            type: 'button',
-            innerHTML: '×',
-            title: 'Dismiss',
-            onClick: (e) => { e.preventDefault(); e.stopPropagation(); _hideHint(); _hintDismissed = true; },
-        });
-        hint.appendChild(closeBtn);
-        document.body.appendChild(hint);
-        _hint = hint;
-        _hintShown = true;
-
-        // Slide in
-        requestAnimationFrame(() => { hint.classList.add('swml-coach-hint--visible'); });
-    }
-
-    function _hideHint() {
-        if (!_hint) return;
-        _hint.classList.remove('swml-coach-hint--visible');
-        const node = _hint;
-        setTimeout(() => { try { if (node.parentNode) node.parentNode.removeChild(node); } catch (_) {} }, 250);
-        _hint = null;
-        _hintShown = false;
     }
 
     // ── Selection event handler ─────────────────────────────────────
@@ -492,7 +479,8 @@
             return { unmount };
         }
         _ctx = ctx;
-        _hintDismissed = false;
+        _conversationHistory = [];
+        _conversationId = 'crib_' + Date.now();
         const editorEl = ctx.canvasEditor.options && ctx.canvasEditor.options.element;
         if (!editorEl) {
             console.warn('WML SelectionChip: editor element not available');
@@ -506,10 +494,7 @@
         document.addEventListener('keydown', _onKeyDown);
 
         _bound = true;
-        console.log('WML SelectionChip v7.19.26: mounted');
-
-        // Show discovery hint shortly after mount — gives doc a beat to seed.
-        setTimeout(_showHint, 1200);
+        console.log('WML SelectionChip v7.19.27: mounted (right-panel mode)');
         return { unmount };
     }
 
@@ -525,7 +510,9 @@
         document.removeEventListener('keydown', _onKeyDown);
         if (_selectionTimer) { clearTimeout(_selectionTimer); _selectionTimer = null; }
         _removeBox();
-        _hideHint();
+        _activeSelection = null;
+        _conversationHistory = [];
+        _conversationId = '';
         _ctx = null;
         _bound = false;
         console.log('WML SelectionChip: unmounted');

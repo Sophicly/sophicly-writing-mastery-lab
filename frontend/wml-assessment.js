@@ -3474,16 +3474,51 @@
     // ══════════════════════════════════════════════════════════════════
 
     // ══════════════════════════════════════════════════════════════════
-    // v7.19.26: buildInlineCoachingPanels — diagnostic-style minimal shell.
-    // Doc-first: NO sidebar, NO right panel, NO chat panel. The doc takes
-    // full canvas width. Sophia is invoked via the floating selection-coach
-    // box (see frontend/wml-selection-chip.js). A bottom-right ghost hint
-    // surfaces the "highlight to work with Sophia" affordance.
+    // v7.19.27: buildInlineCoachingPanels — doc + right-side Sophia panel.
+    // No left sidebar (diagnostic-env shape). Selection-coach box opens
+    // floating near selected text in the doc; replies render in the
+    // right-side persistent thread panel ("Sophia"). Panel is collapsible.
     //
-    // Returned shape kept thin so the caller can mount the chip cleanly.
+    // Returns { protoPanel:null, sophiaPanel, messagesHost, _updateAttemptBadge }.
     function buildInlineCoachingPanels(ctx) {
+        const sophiaPanel = el('div', { className: 'swml-coach-panel' });
+
+        // Header — title + collapse toggle
+        const header = el('div', { className: 'swml-coach-panel-header' });
+        const title = el('span', { className: 'swml-coach-panel-title' });
+        title.innerHTML = '<span class="swml-coach-panel-icon">✨</span> Sophia';
+        header.appendChild(title);
+
+        const subtitle = el('span', { className: 'swml-coach-panel-subtitle', textContent: 'Exam Prep Coach' });
+        header.appendChild(subtitle);
+
+        const collapseBtn = el('button', {
+            className: 'swml-coach-panel-collapse',
+            type: 'button',
+            innerHTML: '›',
+            title: 'Collapse panel',
+        });
+        collapseBtn.addEventListener('click', () => {
+            sophiaPanel.classList.toggle('swml-coach-panel--collapsed');
+            collapseBtn.innerHTML = sophiaPanel.classList.contains('swml-coach-panel--collapsed') ? '‹' : '›';
+        });
+        header.appendChild(collapseBtn);
+
+        sophiaPanel.appendChild(header);
+
+        // Messages area + empty state hint
+        const messagesHost = el('div', { className: 'swml-coach-panel-messages' });
+        const empty = el('div', { className: 'swml-coach-panel-empty' });
+        empty.innerHTML = '<div class="swml-coach-panel-empty-icon">✨</div>'
+            + '<p>Highlight text in your <strong>plan</strong> or <strong>response</strong> to ask Sophia.</p>'
+            + '<p class="swml-coach-panel-empty-sub">Sophia coaches Socratically — she points at the rubric and asks questions, never writes the work for you.</p>';
+        messagesHost.appendChild(empty);
+        sophiaPanel.appendChild(messagesHost);
+
         return {
             protoPanel: null,
+            sophiaPanel,
+            messagesHost,
             miniChatHost: ctx.canvas,
             _updateAttemptBadge: () => {},
         };
@@ -7220,22 +7255,23 @@
 
             console.log('WML: Training-env direct render for', state.task, '(no diagnostic flash)');
         } else if (useInlineCoachingEnv) {
-            // ── v7.19.26: Inline-coaching env render branch ──
-            // Diagnostic-style minimal shell: NO sidebar, NO right panel.
-            // Doc takes full canvas width. Sophia invoked via floating
-            // selection-coach box + bottom-right discovery hint. Coaching is
-            // Socratic-only (see protocols/shared/modules/inline-coaching-core.md).
+            // ── v7.19.27: Inline-coaching env render branch ──
+            // Doc + right-side Sophia panel. Selection-coach box floats near
+            // text on selection (entry point); replies render in the right
+            // panel (persistent thread). Coaching is Socratic-only — see
+            // protocols/shared/modules/inline-coaching-core.md.
             const ip = buildInlineCoachingPanels({
                 canvas, canvasEditor, exerciseConfig,
                 boardLabel, subjectLabel, textLabel,
             });
-            // No protoPanel insert in v7.19.26 — sidebar dropped per UX feedback.
             rightPanel.style.display = 'none';
             canvas.classList.add('swml-canvas-inline-coaching');
 
-            // Mount selection-chip — the primary invocation surface for Sophia
-            // in this env. Gated on viewerMode so parent/reviewer modes never
-            // see the chip.
+            // Append the Sophia side panel as a canvas child (sibling to
+            // editorPane). Existing rightPanel stays appended later by the
+            // shared canvas mount; we hide it above.
+            if (ip.sophiaPanel) canvas.appendChild(ip.sophiaPanel);
+
             requestAnimationFrame(() => {
                 if (state.viewerMode === 'readonly' || state.reviewRole === 'parent') {
                     console.log('WML SelectionChip: skipped — viewerMode=', state.viewerMode, 'reviewRole=', state.reviewRole);
@@ -7249,6 +7285,8 @@
                     canvas,
                     canvasEditor,
                     exerciseConfig,
+                    sophiaPanel: ip.sophiaPanel,
+                    messagesHost: ip.messagesHost,
                     miniChatHost: ip.miniChatHost || canvas,
                     taskCtx: {
                         board: state.board,
@@ -7260,7 +7298,7 @@
                 });
             });
 
-            console.log('WML v7.19.24: inline-coaching env render branch active for task=' + state.task);
+            console.log('WML v7.19.27: inline-coaching env render branch active for task=' + state.task);
         } else {
             // Diagnostic mode — guidance tips
             // v7.15.47: Attempt badge resolution moved to after overlay attachment (below).
