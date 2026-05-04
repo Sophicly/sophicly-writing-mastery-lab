@@ -861,7 +861,9 @@ window.WML = (function() {
         exam_crib: {
             label: 'Exam Prep Crib',
             environment: 'training', // v7.19.20: training panels until chip ships; will flip to 'inline-coaching'
-            panels: { sidebar: true, chat: true, guidance: false, document: true },
+            // v7.19.23: panels.progress=false suppresses the 8-step default sidebar.
+            // Anchor-list (Q1...Q10) renders in next ship alongside selection-chip.
+            panels: { sidebar: true, chat: true, guidance: false, document: true, progress: false },
             steps: null,
             elements: null,
             protocolSource: 'shared',
@@ -869,7 +871,7 @@ window.WML = (function() {
             completionType: 'manual',
             storageSuffix: '_crib',
             chatHeaderLabel: 'Sophia — Exam Prep Coach',
-            sidebarSteps: null, // anchor-list rendered dynamically per doc structure
+            sidebarSteps: null, // anchor-list rendered dynamically per doc structure (next ship)
         },
         assessment: {
             label: 'Assessment',

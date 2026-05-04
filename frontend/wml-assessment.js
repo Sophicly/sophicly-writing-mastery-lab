@@ -2078,6 +2078,9 @@
             // v7.17.29: CW tasks never show attempt N — the project name IS the
             // attempt identity. _updateCwProjectNameBadge handles CW badge.
             if (state.task && state.task.startsWith('cw_')) return;
+            // v7.19.23: Exam Crib has no attempt model — single perpetual doc
+            // student edits over time. Hide attempt badge.
+            if (state.task === 'exam_crib') return;
             let badge = protoBadges.querySelector('.swml-attempt-badge');
             if (badge) {
                 badge.textContent = `Attempt ${state.attempt}`;
@@ -4089,7 +4092,9 @@
         // Previously used display:none but the CSS `swml-canvas-ctx-badge` class
         // has min-width/padding that keeps an empty chip visible.
         const _tfHideAttempt = !!(WML.isTopicFlow && WML.isTopicFlow());
-        if (!_tfHideAttempt) {
+        // v7.19.23: Exam Crib has no attempt model — hide canvas-header attempt badge too.
+        const _cribHideAttempt = state.task === 'exam_crib';
+        if (!_tfHideAttempt && !_cribHideAttempt) {
             const attemptPlaceholder = el('span', {
                 className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
                 textContent: ((state.attempt || 0) >= 1) ? `Attempt ${state.attempt}` : '',
@@ -6977,6 +6982,13 @@
                         }
                     }, 50);
                     */
+                } else if (state.task === 'exam_crib' && !state.reviewMode) {
+                    // v7.19.23: Exam Crib env is default-quiet. No auto-greeting fires.
+                    // Engine-1 (inline-coaching) opens silently — student invokes Sophia
+                    // by selecting text + clicking floating chip (selection-chip ships
+                    // next), or by typing directly into chat panel until then. Doc IS
+                    // the welcome.
+                    console.log('WML v7.19.23: Exam Crib — silent default, no auto-greeting');
                 } else if (!state.reviewMode) {
                     // All other training-env exercises: silent auto-send (protocol drives greeting)
                     // v7.17.71: ROLLBACK of v7.17.70 _isQuizResume gate. Original always-send
