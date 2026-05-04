@@ -63,6 +63,10 @@
     let _selectionTimer = null;
     let _conversationHistory = [];   // shared across selections within a mount
     let _conversationId = '';
+    let _currentRange = null;        // live Range used to follow layout shifts
+    let _autoFollow = true;          // false once user drags — they own the spot
+    let _resizeObs = null;
+    let _onWindowResize = null;
 
     // ── Helpers ──
 
@@ -146,8 +150,15 @@
     }
 
     function _removeBox() {
+        if (_resizeObs) { try { _resizeObs.disconnect(); } catch (_) {} _resizeObs = null; }
+        if (_onWindowResize) {
+            window.removeEventListener('resize', _onWindowResize);
+            _onWindowResize = null;
+        }
         if (_box && _box.parentNode) _box.parentNode.removeChild(_box);
         _box = null;
+        _currentRange = null;
+        _autoFollow = true;
         // Don't clear _activeSelection here — caller may want to reuse it
         // for follow-up sends from the right panel later.
     }
@@ -223,6 +234,17 @@
         messagesHost.appendChild(bubble);
         messagesHost.scrollTop = messagesHost.scrollHeight;
         return bubble;
+    }
+
+    // Re-derive the box position from the LIVE selection Range. Used after
+    // canvas reflow (LD sidebar toggle, window resize, fullscreen toggle, …).
+    function _positionBoxFromRange() {
+        if (!_box || !_currentRange || !_autoFollow) return;
+        let rect;
+        try { rect = _currentRange.getBoundingClientRect(); }
+        catch (_) { return; }
+        if (!rect || (rect.width === 0 && rect.height === 0)) return;
+        _positionBox(rect);
     }
 
     function _positionBox(rect) {
@@ -431,18 +453,33 @@
         // Mount + pin selection
         offsetParent.appendChild(box);
         _box = box;
+        _currentRange = selectionInfo.range || null;
+        _autoFollow = true;
         _positionBox(selectionInfo.rect);
         box.addEventListener('mousedown', (e) => { e.stopPropagation(); });
 
-        // Snapshot original (anchored) position for the snap-back button.
-        const originalTop = parseFloat(box.style.top) || 0;
-        const originalLeft = parseFloat(box.style.left) || 0;
+        // Follow layout shifts: ResizeObserver on the offset parent catches
+        // sidebar / fullscreen / panel-collapse reflows; window resize covers
+        // browser resizes. Both re-derive position from the live Range, so
+        // the box always tracks the highlighted text — until the user drags
+        // it (then they own the spot until they hit snap-back).
+        if (typeof ResizeObserver !== 'undefined') {
+            try {
+                _resizeObs = new ResizeObserver(() => { _positionBoxFromRange(); });
+                _resizeObs.observe(offsetParent);
+            } catch (_) { _resizeObs = null; }
+        }
+        _onWindowResize = () => { _positionBoxFromRange(); };
+        window.addEventListener('resize', _onWindowResize);
+
+        // Snap-back: re-derive from the live Range so it tracks the current
+        // selection rect, not the stale open-time coordinates.
         snapBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            box.style.top = originalTop + 'px';
-            box.style.left = originalLeft + 'px';
+            _autoFollow = true;
             box.classList.remove('swml-coach-box--floating');
+            _positionBoxFromRange();
         });
 
         // ── Drag handling ──
@@ -485,6 +522,9 @@
             startY = e.clientY;
             startLeft = parseFloat(box.style.left) || 0;
             startTop = parseFloat(box.style.top) || 0;
+            // User now owns the position — stop auto-following layout shifts
+            // until they hit snap-back.
+            _autoFollow = false;
             box.classList.add('swml-coach-box--dragging', 'swml-coach-box--floating');
             document.addEventListener('mousemove', onMove);
             document.addEventListener('mouseup', endDrag);
@@ -622,7 +662,12 @@
         const scope = classifyScope(text, anchorEl, focusEl);
         const sectionContext = extractSectionContext(anchorEl);
 
-        const selectionInfo = { text, scope, sectionContext, rect, anchorEl, focusEl };
+        // Clone the Range so we can re-derive its rect later (after layout
+        // shifts) even once the user's selection has collapsed into the box.
+        let rangeClone = null;
+        try { rangeClone = range.cloneRange(); } catch (_) {}
+
+        const selectionInfo = { text, scope, sectionContext, rect, anchorEl, focusEl, range: rangeClone };
         _openBox(selectionInfo);
     }
 
