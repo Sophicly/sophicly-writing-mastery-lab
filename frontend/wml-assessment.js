@@ -6014,7 +6014,10 @@
             // v7.17.23: 'diagnostic' + 'development' preserved so reviewer deep-links honour URL intent.
             // Students never reach this branch with those values — wml-app.js:85-87 clears them first
             // (the clear is gated to !reviewMode); reviewer path preserves the URL hint end-to-end.
-            if (state.task !== 'mark_scheme' && state.task !== 'mark_scheme_unit' && state.task !== 'planning' && state.task !== 'polishing' && state.task !== 'diagnostic' && state.task !== 'development' && !(state.task && state.task.startsWith('cw_')) && !isExamPrep) state.task = 'assessment';
+            // v7.19.22: include exam_crib in the allow-list — Phase 1 inline-coaching env. Without
+            // this clause, exam_crib falls through to coercion → state.task='assessment' → wrong
+            // protocol fires. Bridge picker generates task=exam_crib correctly; bug was here.
+            if (state.task !== 'mark_scheme' && state.task !== 'mark_scheme_unit' && state.task !== 'planning' && state.task !== 'polishing' && state.task !== 'diagnostic' && state.task !== 'development' && state.task !== 'exam_crib' && !(state.task && state.task.startsWith('cw_')) && !isExamPrep) state.task = 'assessment';
 
             // ── v7.15.12: Attempt Selector Overlay ──
             // Shows when a student returns to an exercise with completed attempts
@@ -8867,7 +8870,8 @@
                         // v7.17.16: preserve state.step on mark_scheme_unit (bridge dispatch value).
                         if (state.task !== 'mark_scheme_unit') state.step = 0; // Reset so initAssessmentState can restore from chat history (v7.12.32)
                         // v7.13.37 / v7.17.16: Preserve CW + mark_scheme + mark_scheme_unit tasks — only set 'assessment' for diagnostic→assessment transition
-                        if (state.task !== 'mark_scheme' && state.task !== 'mark_scheme_unit' && state.task !== 'planning' && state.task !== 'polishing' && !(state.task && state.task.startsWith('cw_')) && !isExamPrep) state.task = 'assessment';
+                        // v7.19.22: include exam_crib in preserve-list — inline-coaching env must not be coerced to assessment.
+                        if (state.task !== 'mark_scheme' && state.task !== 'mark_scheme_unit' && state.task !== 'planning' && state.task !== 'polishing' && state.task !== 'exam_crib' && !(state.task && state.task.startsWith('cw_')) && !isExamPrep) state.task = 'assessment';
 
                         // Show notepad in assessment mode (it was hidden during diagnostic)
                         if (snFab) snFab.style.display = '';
