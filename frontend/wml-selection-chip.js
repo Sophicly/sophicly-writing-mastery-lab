@@ -67,6 +67,8 @@
     let _autoFollow = true;          // false once user drags — they own the spot
     let _resizeObs = null;
     let _onWindowResize = null;
+    let _lastSelectionInfo = null;   // remembers last opened selection for re-open
+    let _continueBtn = null;         // sticky footer in right panel
 
     // ── Helpers ──
 
@@ -159,8 +161,12 @@
         _box = null;
         _currentRange = null;
         _autoFollow = true;
-        // Don't clear _activeSelection here — caller may want to reuse it
-        // for follow-up sends from the right panel later.
+        // Surface the "Continue conversation" button in the right panel so the
+        // student can reopen the inline coach box at their last selection
+        // without having to re-highlight. Only shown when a thread exists.
+        if (_lastSelectionInfo && _conversationHistory.length > 0) {
+            _ensureContinueBtn();
+        }
     }
 
     // ── Right panel — persistent reply thread ───────────────────────
@@ -279,9 +285,45 @@
     // Box has: selection echo + textarea + send + scope-filtered actions.
     // After submit, box closes; replies render in the right-side Sophia panel.
 
+    function _ensureContinueBtn() {
+        const panel = _ctx && _ctx.sophiaPanel;
+        if (!panel || _continueBtn) return;
+        const btn = el('button', {
+            className: 'swml-coach-continue-btn',
+            type: 'button',
+            innerHTML: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Continue conversation',
+            title: 'Reopen the inline coach box at your last selection',
+            onClick: (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!_lastSelectionInfo) return;
+                // Re-derive a fresh rect from the live Range so the box anchors
+                // wherever the source text now sits.
+                let freshRect = _lastSelectionInfo.rect;
+                if (_lastSelectionInfo.range) {
+                    try {
+                        const r = _lastSelectionInfo.range.getBoundingClientRect();
+                        if (r && (r.width !== 0 || r.height !== 0)) freshRect = r;
+                    } catch (_) {}
+                }
+                const reopenInfo = Object.assign({}, _lastSelectionInfo, { rect: freshRect });
+                _openBox(reopenInfo);
+            },
+        });
+        panel.appendChild(btn);
+        _continueBtn = btn;
+    }
+
+    function _removeContinueBtn() {
+        if (_continueBtn && _continueBtn.parentNode) _continueBtn.parentNode.removeChild(_continueBtn);
+        _continueBtn = null;
+    }
+
     function _openBox(selectionInfo) {
         _removeBox();
+        _removeContinueBtn();
         _activeSelection = selectionInfo;
+        _lastSelectionInfo = selectionInfo;
 
         const offsetParent = _getOffsetParent();
         if (!offsetParent) return;
@@ -450,6 +492,16 @@
         });
         box.appendChild(closeBtn);
 
+        // 6. Resize handles — 4 edges + 4 corners. Mirror the extract panel
+        //    pattern at wml-assessment.js:5499.
+        ['n', 's', 'e', 'w', 'nw', 'ne', 'sw', 'se'].forEach((dir) => {
+            const h = el('div', {
+                className: 'swml-coach-rh swml-coach-rh-' + (dir.length > 1 ? 'corner' : 'edge') + ' swml-coach-rh-' + dir,
+            });
+            h.dataset.dir = dir;
+            box.appendChild(h);
+        });
+
         // Mount + pin selection
         offsetParent.appendChild(box);
         _box = box;
@@ -457,6 +509,58 @@
         _autoFollow = true;
         _positionBox(selectionInfo.rect);
         box.addEventListener('mousedown', (e) => { e.stopPropagation(); });
+
+        // Resize handlers — track per-direction drag, clamp to a min width/height.
+        const RH_MIN_W = 320, RH_MIN_H = 220;
+        let resizing = false, resizeDir = '', resizeSX = 0, resizeSY = 0,
+            resizeSW = 0, resizeSH = 0, resizeSL = 0, resizeST = 0;
+        const onResizeMove = (e) => {
+            if (!resizing) return;
+            e.preventDefault();
+            const dx = e.clientX - resizeSX;
+            const dy = e.clientY - resizeSY;
+            let w = resizeSW, h = resizeSH, l = resizeSL, t = resizeST;
+            if (resizeDir.indexOf('e') > -1) w = Math.max(RH_MIN_W, resizeSW + dx);
+            if (resizeDir.indexOf('w') > -1) { w = Math.max(RH_MIN_W, resizeSW - dx); l = resizeSL + (resizeSW - w); }
+            if (resizeDir.indexOf('s') > -1) h = Math.max(RH_MIN_H, resizeSH + dy);
+            if (resizeDir.indexOf('n') > -1) { h = Math.max(RH_MIN_H, resizeSH - dy); t = resizeST + (resizeSH - h); }
+            box.style.width = w + 'px';
+            box.style.height = h + 'px';
+            box.style.left = l + 'px';
+            box.style.top = t + 'px';
+            // Resizing implies the user owns the spot now — stop auto-following
+            // layout shifts until they hit snap-back.
+            _autoFollow = false;
+            box.classList.add('swml-coach-box--floating');
+        };
+        const endResize = () => {
+            resizing = false;
+            resizeDir = '';
+            box.classList.remove('swml-coach-box--resizing');
+            document.removeEventListener('mousemove', onResizeMove);
+            document.removeEventListener('mouseup', endResize);
+        };
+        box.querySelectorAll('.swml-coach-rh').forEach((h) => {
+            h.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                e.preventDefault();
+                e.stopPropagation();
+                resizing = true;
+                resizeDir = h.dataset.dir;
+                const r = box.getBoundingClientRect();
+                const offsetParentEl = _getOffsetParent();
+                const opRect = offsetParentEl ? offsetParentEl.getBoundingClientRect() : { left: 0, top: 0 };
+                resizeSX = e.clientX;
+                resizeSY = e.clientY;
+                resizeSW = r.width;
+                resizeSH = r.height;
+                resizeSL = parseFloat(box.style.left) || 0;
+                resizeST = parseFloat(box.style.top) || 0;
+                box.classList.add('swml-coach-box--resizing');
+                document.addEventListener('mousemove', onResizeMove);
+                document.addEventListener('mouseup', endResize);
+            });
+        });
 
         // Follow layout shifts: ResizeObserver on the offset parent catches
         // sidebar / fullscreen / panel-collapse reflows; window resize covers
@@ -736,7 +840,9 @@
         document.removeEventListener('keydown', _onKeyDown);
         if (_selectionTimer) { clearTimeout(_selectionTimer); _selectionTimer = null; }
         _removeBox();
+        _removeContinueBtn();
         _activeSelection = null;
+        _lastSelectionInfo = null;
         _conversationHistory = [];
         _conversationId = '';
         _ctx = null;

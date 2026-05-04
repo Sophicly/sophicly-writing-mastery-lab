@@ -7701,6 +7701,71 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     margin-top: 4px;
 }
 
+/* ── v7.19.36: Coach box resize handles (4 edges + 4 corners) ── */
+.swml-coach-rh {
+    position: absolute;
+    z-index: 91;
+    background: transparent;
+}
+.swml-coach-rh-edge { /* base for n/s/e/w */ }
+.swml-coach-rh-corner { width: 14px; height: 14px; }
+.swml-coach-rh-n { top: -3px; left: 14px; right: 14px; height: 6px; cursor: ns-resize; }
+.swml-coach-rh-s { bottom: -3px; left: 14px; right: 14px; height: 6px; cursor: ns-resize; }
+.swml-coach-rh-e { right: -3px; top: 14px; bottom: 14px; width: 6px; cursor: ew-resize; }
+.swml-coach-rh-w { left: -3px; top: 14px; bottom: 14px; width: 6px; cursor: ew-resize; }
+.swml-coach-rh-nw { top: -3px; left: -3px; cursor: nwse-resize; }
+.swml-coach-rh-ne { top: -3px; right: -3px; cursor: nesw-resize; }
+.swml-coach-rh-sw { bottom: -3px; left: -3px; cursor: nesw-resize; }
+.swml-coach-rh-se { bottom: -3px; right: -3px; cursor: nwse-resize; }
+/* Subtle visual hint on the SE handle so users discover resizability */
+.swml-coach-rh-se::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid rgba(255, 255, 255, 0.3);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    border-bottom-right-radius: 4px;
+    pointer-events: none;
+}
+.swml-canvas-light .swml-coach-rh-se::after {
+    border-color: rgba(28, 29, 31, 0.3);
+}
+.swml-coach-box--resizing {
+    user-select: none;
+}
+
+/* "Continue conversation" sticky footer in right Sophia panel */
+.swml-coach-continue-btn {
+    position: sticky;
+    bottom: 0;
+    margin: 8px 12px;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #5333ed 0%, #4D76FD 100%);
+    color: #fff;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(83, 51, 237, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    transition: filter 0.12s ease, transform 0.12s ease;
+    align-self: stretch;
+}
+.swml-coach-continue-btn:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+.swml-coach-continue-btn:active {
+    transform: translateY(0);
+}
+
 /* Selection echo — sits above the user bubble in the panel as a quoted lead-in */
 .swml-coach-selection-echo {
     align-self: stretch;
