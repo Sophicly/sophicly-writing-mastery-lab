@@ -860,10 +860,10 @@ window.WML = (function() {
         // `inline-coaching-engine-1.md` + per-paper rubric (router L987+).
         exam_crib: {
             label: 'Exam Prep Crib',
-            environment: 'training', // v7.19.20: training panels until chip ships; will flip to 'inline-coaching'
-            // v7.19.23: panels.progress=false suppresses the 8-step default sidebar.
-            // Anchor-list (Q1...Q10) renders in next ship alongside selection-chip.
-            panels: { sidebar: true, chat: true, guidance: false, document: true, progress: false },
+            environment: 'inline-coaching', // v7.19.24: chip ships; flip from training
+            // v7.19.24: chat panel hidden — selection-chip is primary invocation.
+            // Anchor-list sidebar (Q1...Qn) rendered by buildInlineCoachingPanels().
+            panels: { sidebar: true, chat: false, guidance: false, document: true, progress: false },
             steps: null,
             elements: null,
             protocolSource: 'shared',
@@ -871,7 +871,7 @@ window.WML = (function() {
             completionType: 'manual',
             storageSuffix: '_crib',
             chatHeaderLabel: 'Sophia — Exam Prep Coach',
-            sidebarSteps: null, // anchor-list rendered dynamically per doc structure (next ship)
+            sidebarSteps: null,
         },
         assessment: {
             label: 'Assessment',

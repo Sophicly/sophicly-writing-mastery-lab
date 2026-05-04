@@ -3473,6 +3473,146 @@
     }
     // ══════════════════════════════════════════════════════════════════
 
+    // ══════════════════════════════════════════════════════════════════
+    // v7.19.24: buildInlineCoachingPanels — sibling of buildTrainingPanels.
+    // Renders the inline-coaching env (env='inline-coaching', task='exam_crib').
+    // Sidebar = anchor list parsed from `[data-section-type="divider"]` nodes.
+    // No chat panel (panels.chat:false). Selection-chip module owns invocation.
+    // Returns { protoPanel, miniChatHost, _updateAttemptBadge } — subset of the
+    // training-env contract; _updateAttemptBadge is a no-op stub for caller parity.
+    function buildInlineCoachingPanels(ctx) {
+        const {
+            canvas, canvasEditor, exerciseConfig,
+            boardLabel, subjectLabel, textLabel,
+        } = ctx;
+
+        // 1. Build left sidebar shell — mirrors training-env header pattern
+        const protoPanel = el('div', { className: 'swml-sidebar swml-canvas-proto' });
+
+        const protoHead = el('div', { className: 'swml-sidebar-head', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } });
+        protoHead.appendChild(renderLogo ? renderLogo() : el('span'));
+        const protoCollapseBtn = el('button', { className: 'swml-collapse-btn', textContent: '◀', title: 'Collapse sidebar' });
+        protoCollapseBtn.addEventListener('click', () => {
+            protoPanel.classList.toggle('collapsed');
+            const isC = protoPanel.classList.contains('collapsed');
+            protoCollapseBtn.textContent = isC ? '▶' : '◀';
+            protoCollapseBtn.title = isC ? 'Expand sidebar' : 'Collapse sidebar';
+        });
+        protoHead.appendChild(protoCollapseBtn);
+        protoPanel.appendChild(protoHead);
+
+        // 2. Body — badges + anchor list + bottom buttons
+        const protoBody = el('div', { className: 'swml-sidebar-body' });
+
+        const protoBadges = el('div', { className: 'swml-sidebar-badges' });
+        if (state.reviewMode && typeof buildTutorViewPill === 'function') {
+            protoBadges.appendChild(buildTutorViewPill());
+        }
+        [boardLabel, subjectLabel, textLabel].filter(Boolean).forEach(b =>
+            protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: b }))
+        );
+        const sidebarTaskLabel = exerciseConfig.label || 'Exam Prep Crib';
+        protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge active', textContent: sidebarTaskLabel }));
+        protoBody.appendChild(protoBadges);
+
+        // 3. Anchor list — section label + container
+        protoBody.appendChild(el('div', { className: 'swml-sidebar-section-label', textContent: 'Jump to section' }));
+        const anchorContainer = el('div', { className: 'swml-ic-anchors' });
+        protoBody.appendChild(anchorContainer);
+
+        // Renderer reads the live editor DOM so it picks up the seeded crib doc.
+        function _renderAnchors() {
+            const editorEl = canvasEditor && canvasEditor.options && canvasEditor.options.element;
+            if (!editorEl) return;
+
+            anchorContainer.innerHTML = '';
+
+            // Top-of-doc anchor — always present.
+            const topBtn = el('button', {
+                className: 'swml-ic-anchor swml-ic-anchor--top',
+                type: 'button',
+                textContent: 'Top of doc',
+                onClick: (e) => {
+                    e.preventDefault();
+                    const wrap = canvas.querySelector('.swml-canvas-content') || canvas;
+                    if (wrap.scrollTo) wrap.scrollTo({ top: 0, behavior: 'smooth' });
+                    else wrap.scrollTop = 0;
+                },
+            });
+            anchorContainer.appendChild(topBtn);
+
+            // Section dividers — Q1, Q2, … (whatever data-section-label says).
+            const dividers = editorEl.querySelectorAll('[data-section-type="divider"]');
+            dividers.forEach((d) => {
+                const label = d.getAttribute('data-section-label') || 'Section';
+                const btn = el('button', {
+                    className: 'swml-ic-anchor',
+                    type: 'button',
+                    textContent: label,
+                    onClick: (e) => {
+                        e.preventDefault();
+                        d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    },
+                });
+                anchorContainer.appendChild(btn);
+            });
+        }
+
+        // First render attempt — editor may not yet have content (async seed).
+        _renderAnchors();
+
+        // Observe the editor for seed-completion → re-render anchors. Single
+        // shot: as soon as we see at least one divider, disconnect.
+        const editorElForObs = canvasEditor && canvasEditor.options && canvasEditor.options.element;
+        if (editorElForObs && typeof MutationObserver !== 'undefined') {
+            let observer = null;
+            const tryRender = () => {
+                _renderAnchors();
+                if (editorElForObs.querySelector('[data-section-type="divider"]') && observer) {
+                    observer.disconnect();
+                    observer = null;
+                }
+            };
+            observer = new MutationObserver(tryRender);
+            observer.observe(editorElForObs, { childList: true, subtree: true });
+            // Safety: stop observing after 10s regardless.
+            setTimeout(() => { if (observer) { observer.disconnect(); observer = null; } }, 10000);
+        }
+
+        // 4. Bottom buttons — Save + Dashboard. No Mark Complete (env has no
+        // discrete completion); no Past Work / Attempts (single perpetual doc).
+        const protoSpacer = el('div', { style: { marginTop: 'auto' } });
+
+        function iconBtn(svgIcon, text, onClick) {
+            const btn = el('button', { className: 'swml-sidebar-btn swml-sidebar-icon-btn', onClick });
+            btn.appendChild(el('span', { className: 'swml-btn-icon', innerHTML: svgIcon }));
+            btn.appendChild(el('span', { className: 'swml-btn-text', innerHTML: svgIcon + ' ' + text }));
+            return btn;
+        }
+
+        const saveBtn = iconBtn(SVG_SAVE, 'Save Progress', () => {
+            if (canvasEditor) saveCanvasContent();
+            saveBtn.querySelector('.swml-btn-text').textContent = '✓ Saved';
+            setTimeout(() => { saveBtn.querySelector('.swml-btn-text').innerHTML = SVG_SAVE + ' Save Progress'; }, 2000);
+        });
+        saveBtn.classList.add('swml-save-btn');
+        protoSpacer.appendChild(saveBtn);
+
+        if (!WML.isEmbedded) {
+            protoSpacer.appendChild(iconBtn(SVG_DASHBOARD, 'My Dashboard', () => window.open('/dashboard/', '_blank')));
+        }
+
+        protoBody.appendChild(protoSpacer);
+        protoPanel.appendChild(protoBody);
+
+        return {
+            protoPanel,
+            miniChatHost: canvas,
+            _updateAttemptBadge: () => {},
+        };
+    }
+    // ══════════════════════════════════════════════════════════════════
+
     let _canvasGuard = false; // Prevents double-render of canvas workspace (v7.12.61)
     function renderCanvasWorkspace() {
         if (_canvasGuard) return;
@@ -7202,6 +7342,48 @@
             }, 800);
 
             console.log('WML: Training-env direct render for', state.task, '(no diagnostic flash)');
+        } else if (useInlineCoachingEnv) {
+            // ── v7.19.24: Inline-coaching env render branch ──
+            // Doc-first canvas. Anchor-list sidebar (Q1...Qn parsed from
+            // [data-section-type="divider"]). No chat panel — selection-chip
+            // module owns invocation. Coaching is Socratic-only via Sophia
+            // (see protocols/shared/modules/inline-coaching-core.md).
+            const ip = buildInlineCoachingPanels({
+                canvas, canvasEditor, exerciseConfig,
+                boardLabel, subjectLabel, textLabel,
+            });
+            canvas.insertBefore(ip.protoPanel, editorPane);
+            rightPanel.style.display = 'none';
+            canvas.classList.add('swml-canvas-inline-coaching');
+
+            // Mount selection-chip — the primary invocation surface for Sophia
+            // in this env. Gated on viewerMode so parent/reviewer modes never
+            // see the chip.
+            requestAnimationFrame(() => {
+                if (state.viewerMode === 'readonly' || state.reviewRole === 'parent') {
+                    console.log('WML SelectionChip: skipped — viewerMode=', state.viewerMode, 'reviewRole=', state.reviewRole);
+                    return;
+                }
+                if (!window.WML || !window.WML.SelectionChip) {
+                    console.warn('WML SelectionChip: module not loaded');
+                    return;
+                }
+                window.WML.SelectionChip.mount({
+                    canvas,
+                    canvasEditor,
+                    exerciseConfig,
+                    miniChatHost: ip.miniChatHost || canvas,
+                    taskCtx: {
+                        board: state.board,
+                        subject: state.subject,
+                        text: state.text,
+                        task: state.task,
+                        topicNumber: state.topicNumber || 0,
+                    },
+                });
+            });
+
+            console.log('WML v7.19.24: inline-coaching env render branch active for task=' + state.task);
         } else {
             // Diagnostic mode — guidance tips
             // v7.15.47: Attempt badge resolution moved to after overlay attachment (below).
