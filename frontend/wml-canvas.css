@@ -7930,106 +7930,128 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     border-color: rgba(0, 0, 0, 0.1);
     color: #1c1d1f;
 }
-/* ── Neumorphic icon buttons (send + mic) ── */
+/* ── Coach buttons — match the canvas toolbar shape (.swml-tb-winona) ──
+   Same radial-gradient surface + dual inset/outset shadows + bright purple
+   hover lift in dark, bright blue hover lift in light. */
 .swml-coach-send,
-.swml-coach-mic {
-    width: 38px;
-    height: 38px;
+.swml-coach-mic,
+.swml-coach-action-btn {
     border: none;
-    border-radius: 12px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    font-family: inherit;
+    line-height: 1;
+    user-select: none;
     flex-shrink: 0;
     padding: 0;
-    transition: box-shadow 0.15s ease, transform 0.12s ease, color 0.12s ease, background 0.15s ease;
-}
 
-/* Send — purple gradient with neumorphic lift */
-.swml-coach-send {
-    background: linear-gradient(135deg, #5333ed 0%, #2c003e 100%);
-    color: #fff;
-    box-shadow:
-        0 4px 10px rgba(0, 0, 0, 0.45),
-        -2px -2px 6px rgba(83, 51, 237, 0.25),
-        inset 0 1px 0 rgba(255, 255, 255, 0.18),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.25);
-}
-.swml-coach-send:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow:
-        0 6px 14px rgba(0, 0, 0, 0.5),
-        -3px -3px 8px rgba(83, 51, 237, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.22),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.28);
-}
-.swml-coach-send:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow:
-        inset 0 3px 6px rgba(0, 0, 0, 0.4),
-        inset 0 -1px 0 rgba(255, 255, 255, 0.05);
-}
-.swml-coach-send:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    box-shadow: none;
-}
-
-/* Mic — neutral neumorphic surface */
-.swml-coach-mic {
-    background: linear-gradient(145deg, #25272a 0%, #16181a 100%);
+    /* Toolbar dark-theme defaults */
+    --btn-inner: hsla(252deg 20% 22% / 60%);
+    --btn-outer: hsla(252deg 20% 16% / 50%);
+    --btn-glow: hsla(252deg 70% 60% / 0%);
+    background: radial-gradient(ellipse at 50% 10%, var(--btn-glow), transparent),
+                radial-gradient(var(--btn-inner), var(--btn-outer));
     color: rgba(255, 255, 255, 0.7);
     box-shadow:
-        4px 4px 10px rgba(0, 0, 0, 0.55),
-        -3px -3px 8px rgba(255, 255, 255, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        inset 0 2px 1px -1px rgba(255, 255, 255, 0.1),
+        inset 0 2px 4px 2px rgba(9, 11, 10, 0.16),
+        0 1px 0 1px #1a1e1c,
+        0 1px 0 2px rgba(0, 0, 0, 0.6);
+    transition: background 200ms, box-shadow 200ms, color 200ms, transform 100ms ease;
 }
-.swml-coach-mic:hover:not(:disabled) {
+
+.swml-coach-send,
+.swml-coach-mic { width: 38px; height: 38px; border-radius: 10px; }
+.swml-coach-action-btn { padding: 6px 14px; border-radius: 999px; font-size: 11.5px; }
+
+.swml-coach-send:hover:not(:disabled),
+.swml-coach-mic:hover:not(:disabled),
+.swml-coach-action-btn:hover:not(:disabled) {
+    --btn-glow: hsla(252deg 70% 65% / 25%);
+    --btn-inner: hsla(252deg 55% 40% / 100%);
+    --btn-outer: hsla(252deg 60% 32% / 100%);
     color: #fff;
-    transform: translateY(-1px);
     box-shadow:
-        5px 5px 12px rgba(0, 0, 0, 0.6),
-        -4px -4px 10px rgba(83, 51, 237, 0.12),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        inset 0 -1px 1px rgba(255, 255, 255, 0.25),
+        inset 0 0 12px rgba(44, 0, 62, 0.25),
+        0 1px 0 1px rgba(83, 51, 237, 0.6),
+        0 1px 6px rgba(255, 255, 255, 0.1),
+        0 2px 12px rgba(83, 51, 237, 0.3),
+        0 1px 0 2px rgba(0, 0, 0, 0.5);
 }
-.swml-coach-mic:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow:
-        inset 3px 3px 6px rgba(0, 0, 0, 0.5),
-        inset -2px -2px 4px rgba(255, 255, 255, 0.04);
+
+.swml-coach-send:active:not(:disabled),
+.swml-coach-mic:active:not(:disabled),
+.swml-coach-action-btn:active:not(:disabled) {
+    transform: translateY(1px);
 }
+
+.swml-coach-send:disabled,
+.swml-coach-mic:disabled,
+.swml-coach-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Mic-active state — locked teal/purple glow while listening */
 .swml-coach-mic.swml-mic-active {
-    background: linear-gradient(135deg, #5333ed 0%, #2c003e 100%);
+    --btn-glow: hsla(252deg 70% 65% / 35%);
+    --btn-inner: hsla(252deg 60% 42% / 100%);
+    --btn-outer: hsla(280deg 70% 28% / 100%);
     color: #fff;
     animation: swml-coach-mic-pulse 1.4s ease-in-out infinite;
-    box-shadow:
-        0 0 0 0 rgba(83, 51, 237, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 @keyframes swml-coach-mic-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(83, 51, 237, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.18); }
-    50% { box-shadow: 0 0 0 6px rgba(83, 51, 237, 0), inset 0 1px 0 rgba(255, 255, 255, 0.18); }
+    0%, 100% {
+        box-shadow:
+            0 0 0 0 rgba(83, 51, 237, 0.5),
+            inset 0 -1px 1px rgba(255, 255, 255, 0.25),
+            inset 0 0 12px rgba(44, 0, 62, 0.25),
+            0 1px 0 1px rgba(83, 51, 237, 0.6);
+    }
+    50% {
+        box-shadow:
+            0 0 0 8px rgba(83, 51, 237, 0),
+            inset 0 -1px 1px rgba(255, 255, 255, 0.25),
+            inset 0 0 12px rgba(44, 0, 62, 0.25),
+            0 1px 0 1px rgba(83, 51, 237, 0.6);
+    }
 }
-.swml-canvas-light .swml-coach-mic {
-    background: linear-gradient(145deg, #f0f0f3 0%, #d8d9dc 100%);
-    color: rgba(28, 29, 31, 0.7);
+
+/* ── Light theme — toolbar's blue palette ── */
+.swml-canvas-light .swml-coach-send,
+.swml-canvas-light .swml-coach-mic,
+.swml-canvas-light .swml-coach-action-btn {
+    --btn-inner: hsla(226deg 60% 96% / 100%);
+    --btn-outer: hsla(226deg 50% 92% / 100%);
+    --btn-glow: hsla(226deg 70% 60% / 0%);
+    color: #4D76FD;
     box-shadow:
-        4px 4px 10px rgba(0, 0, 0, 0.12),
-        -3px -3px 8px rgba(255, 255, 255, 0.9),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        inset 0 2px 1px rgba(255, 255, 255, 0.8),
+        0 1px 0 0 #c8d4f0;
 }
-.swml-canvas-light .swml-coach-mic:hover:not(:disabled) {
-    color: #1c1d1f;
+.swml-canvas-light .swml-coach-send:hover:not(:disabled),
+.swml-canvas-light .swml-coach-mic:hover:not(:disabled),
+.swml-canvas-light .swml-coach-action-btn:hover:not(:disabled) {
+    --btn-inner: hsla(226deg 97% 65% / 100%);
+    --btn-outer: hsla(226deg 90% 55% / 100%);
+    color: #fff;
     box-shadow:
-        5px 5px 12px rgba(0, 0, 0, 0.15),
-        -4px -4px 10px rgba(255, 255, 255, 0.95),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        inset 0 -1px 2px rgba(255, 255, 255, 0.4),
+        0 2px 8px rgba(77, 118, 253, 0.3),
+        0 1px 0 0 rgba(77, 118, 253, 0.5);
 }
-.swml-canvas-light .swml-coach-mic:active:not(:disabled) {
-    box-shadow:
-        inset 3px 3px 6px rgba(0, 0, 0, 0.12),
-        inset -2px -2px 4px rgba(255, 255, 255, 0.7);
+.swml-canvas-light .swml-coach-mic.swml-mic-active {
+    --btn-inner: hsla(226deg 97% 65% / 100%);
+    --btn-outer: hsla(226deg 90% 55% / 100%);
+    color: #fff;
+    animation: swml-coach-mic-pulse-light 1.4s ease-in-out infinite;
+}
+@keyframes swml-coach-mic-pulse-light {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(77, 118, 253, 0.45), inset 0 -1px 2px rgba(255, 255, 255, 0.4); }
+    50%      { box-shadow: 0 0 0 8px rgba(77, 118, 253, 0),  inset 0 -1px 2px rgba(255, 255, 255, 0.4); }
 }
 
 /* Quick-actions area — grouped, scope-filtered, scrollable if long */
@@ -8062,57 +8084,4 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     flex-wrap: wrap;
     gap: 4px;
 }
-.swml-coach-action-btn {
-    background: linear-gradient(145deg, #25272a 0%, #16181a 100%);
-    border: none;
-    border-radius: 999px;
-    padding: 6px 14px;
-    color: rgba(255, 255, 255, 0.78);
-    font-family: inherit;
-    font-size: 11.5px;
-    cursor: pointer;
-    transition: box-shadow 0.15s ease, transform 0.12s ease, color 0.12s ease, background 0.15s ease;
-    box-shadow:
-        2px 2px 6px rgba(0, 0, 0, 0.5),
-        -2px -2px 5px rgba(255, 255, 255, 0.03),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-.swml-coach-action-btn:hover:not(:disabled) {
-    color: #fff;
-    transform: translateY(-1px);
-    box-shadow:
-        3px 3px 8px rgba(0, 0, 0, 0.55),
-        -3px -3px 7px rgba(83, 51, 237, 0.12),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-.swml-coach-action-btn:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow:
-        inset 2px 2px 5px rgba(0, 0, 0, 0.5),
-        inset -1px -1px 3px rgba(255, 255, 255, 0.03);
-}
-.swml-coach-action-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    box-shadow: none;
-}
-.swml-canvas-light .swml-coach-action-btn {
-    background: linear-gradient(145deg, #f0f0f3 0%, #d8d9dc 100%);
-    color: rgba(28, 29, 31, 0.78);
-    box-shadow:
-        2px 2px 6px rgba(0, 0, 0, 0.1),
-        -2px -2px 5px rgba(255, 255, 255, 0.9),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-}
-.swml-canvas-light .swml-coach-action-btn:hover:not(:disabled) {
-    color: #1c1d1f;
-    box-shadow:
-        3px 3px 8px rgba(0, 0, 0, 0.13),
-        -3px -3px 7px rgba(255, 255, 255, 0.95),
-        inset 0 1px 0 rgba(255, 255, 255, 0.7);
-}
-.swml-canvas-light .swml-coach-action-btn:active:not(:disabled) {
-    box-shadow:
-        inset 2px 2px 5px rgba(0, 0, 0, 0.12),
-        inset -1px -1px 3px rgba(255, 255, 255, 0.7);
-}
+/* (Action chip styling consolidated above with .swml-coach-send / .swml-coach-mic — toolbar parity) */
