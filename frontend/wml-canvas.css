@@ -7874,30 +7874,66 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     border-color: rgba(83, 51, 237, 0.3);
     color: #1c1d1f;
 }
-.swml-coach-quote {
-    padding: 10px 36px 10px 14px;
+/* Drag handle bar — top strip of the box. Whole bar is grabbable. */
+.swml-coach-handle {
+    display: flex;
+    align-items: stretch;
     background: rgba(81, 218, 207, 0.07);
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    cursor: grab;
+    user-select: none;
+    flex-shrink: 0;
+}
+.swml-coach-handle:active {
+    cursor: grabbing;
+}
+.swml-canvas-light .swml-coach-handle {
+    background: rgba(81, 218, 207, 0.12);
+    border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+.swml-coach-handle-grip {
+    padding: 10px 6px 10px 10px;
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: -2px;
+    align-self: center;
+    flex-shrink: 0;
+}
+.swml-canvas-light .swml-coach-handle-grip {
+    color: rgba(28, 29, 31, 0.35);
+}
+.swml-coach-quote {
+    flex: 1;
+    padding: 10px 70px 10px 4px;
     color: rgba(255, 255, 255, 0.78);
     font-size: 12px;
     font-style: italic;
     line-height: 1.45;
-    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 .swml-canvas-light .swml-coach-quote {
-    background: rgba(81, 218, 207, 0.12);
     color: rgba(28, 29, 31, 0.78);
-    border-bottom-color: rgba(0, 0, 0, 0.06);
 }
-.swml-coach-close {
+.swml-coach-box--dragging {
+    opacity: 0.92;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+}
+.swml-coach-box--floating .swml-coach-snap {
+    color: #51dacf;
+}
+.swml-coach-close,
+.swml-coach-snap {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 6px;
     background: transparent;
     border: none;
     color: rgba(255, 255, 255, 0.55);
     cursor: pointer;
-    font-size: 20px;
     line-height: 1;
     width: 24px;
     height: 24px;
@@ -7907,15 +7943,21 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     justify-content: center;
     transition: background 0.12s ease, color 0.12s ease;
     z-index: 2;
+    padding: 0;
 }
-.swml-coach-close:hover {
+.swml-coach-close { right: 8px; font-size: 20px; }
+.swml-coach-snap { right: 38px; }
+.swml-coach-close:hover,
+.swml-coach-snap:hover {
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
 }
-.swml-canvas-light .swml-coach-close {
+.swml-canvas-light .swml-coach-close,
+.swml-canvas-light .swml-coach-snap {
     color: rgba(28, 29, 31, 0.55);
 }
-.swml-canvas-light .swml-coach-close:hover {
+.swml-canvas-light .swml-coach-close:hover,
+.swml-canvas-light .swml-coach-snap:hover {
     background: rgba(0, 0, 0, 0.06);
     color: #1c1d1f;
 }

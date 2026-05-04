@@ -248,13 +248,16 @@
 
         const box = el('div', { className: 'swml-coach-box', 'data-scope': selectionInfo.scope });
 
-        // 1. Selection echo (truncated, italic)
+        // 1. Drag handle + selection echo. The whole top strip is grabbable.
+        const handle = el('div', { className: 'swml-coach-handle' });
+        handle.appendChild(el('span', { className: 'swml-coach-handle-grip', innerHTML: '&#8942;&#8942;' }));
         const selPreview = (selectionInfo.text || '').slice(0, 200);
         const quote = el('div', {
             className: 'swml-coach-quote',
             textContent: selectionInfo.text.length > 200 ? selPreview + '…' : selPreview,
         });
-        box.appendChild(quote);
+        handle.appendChild(quote);
+        box.appendChild(handle);
 
         // 2. Input row — textarea + send button
         const inputRow = el('div', { className: 'swml-coach-input-row' });
@@ -307,7 +310,17 @@
         });
         box.appendChild(actionsWrap);
 
-        // 4. Close button
+        // 4. Snap-back button — returns box to its original anchor near the
+        //    selection rect after the student has dragged it elsewhere.
+        const snapBtn = el('button', {
+            className: 'swml-coach-snap',
+            type: 'button',
+            innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="1" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="1" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="23" y2="12"/></svg>',
+            title: 'Snap back to selection',
+        });
+        box.appendChild(snapBtn);
+
+        // 5. Close button
         const closeBtn = el('button', {
             className: 'swml-coach-close',
             type: 'button',
@@ -322,6 +335,65 @@
         _box = box;
         _positionBox(selectionInfo.rect);
         box.addEventListener('mousedown', (e) => { e.stopPropagation(); });
+
+        // Snapshot original (anchored) position for the snap-back button.
+        const originalTop = parseFloat(box.style.top) || 0;
+        const originalLeft = parseFloat(box.style.left) || 0;
+        snapBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            box.style.top = originalTop + 'px';
+            box.style.left = originalLeft + 'px';
+            box.classList.remove('swml-coach-box--floating');
+        });
+
+        // ── Drag handling ──
+        // Whole top strip (handle + selection echo) is grabbable. Drag clamps
+        // box to the viewport so it can't be dragged completely off-screen.
+        let dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
+        const onMove = (e) => {
+            if (!dragging) return;
+            e.preventDefault();
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            const offsetParentEl = _getOffsetParent();
+            const opRect = offsetParentEl ? offsetParentEl.getBoundingClientRect() : null;
+            const boxRect = box.getBoundingClientRect();
+            let nextLeft = startLeft + dx;
+            let nextTop = startTop + dy;
+            if (opRect) {
+                // Clamp inside the offset-parent so the drag stays usable.
+                const maxLeft = opRect.width - boxRect.width;
+                const maxTop = (offsetParentEl.scrollHeight || opRect.height) - boxRect.height;
+                nextLeft = Math.max(0, Math.min(nextLeft, Math.max(0, maxLeft)));
+                nextTop = Math.max(0, Math.min(nextTop, Math.max(0, maxTop)));
+            }
+            box.style.left = nextLeft + 'px';
+            box.style.top = nextTop + 'px';
+        };
+        const endDrag = () => {
+            if (!dragging) return;
+            dragging = false;
+            box.classList.remove('swml-coach-box--dragging');
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', endDrag);
+        };
+        const startDrag = (e) => {
+            if (e.button !== 0) return;
+            // Don't start drag from interactive elements inside the handle.
+            if (e.target.closest('button')) return;
+            dragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = parseFloat(box.style.left) || 0;
+            startTop = parseFloat(box.style.top) || 0;
+            box.classList.add('swml-coach-box--dragging', 'swml-coach-box--floating');
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', endDrag);
+            e.preventDefault();
+            e.stopPropagation();
+        };
+        handle.addEventListener('mousedown', startDrag);
 
         let pending = false;
 
