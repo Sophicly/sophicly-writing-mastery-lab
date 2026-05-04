@@ -403,7 +403,13 @@
                 console.error('WML SelectionChip coach error', err);
                 _appendMessage('ai', 'Sorry, something went wrong. Please try again.');
             } finally {
+                // Re-enable inline controls so the student can keep responding
+                // in the same box without re-selecting. Box stays open.
                 pending = false;
+                sendBtn.disabled = false;
+                textarea.disabled = false;
+                actionsWrap.querySelectorAll('button').forEach(b => { b.disabled = false; });
+                try { textarea.focus(); } catch (_) {}
             }
         };
 
