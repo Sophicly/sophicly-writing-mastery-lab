@@ -740,42 +740,77 @@
 
     // ── Selection event handler ─────────────────────────────────────
 
+    // _getEditorEl — re-resolves the LIVE editor element each call, in case
+    // TipTap rebuilt it during a layout reflow (theme toggle / fullscreen /
+    // sidebar). Falls back to DOM lookup by id if the closure handle is stale.
+    function _getEditorEl() {
+        if (_ctx && _ctx.canvasEditor && _ctx.canvasEditor.options && _ctx.canvasEditor.options.element) {
+            return _ctx.canvasEditor.options.element;
+        }
+        return document.getElementById('swml-tiptap-editor') ||
+            document.querySelector('.ProseMirror');
+    }
+
     function _recomputeSelection() {
-        if (!_ctx || !_ctx.canvasEditor) return;
-        const editorEl = _ctx.canvasEditor.options && _ctx.canvasEditor.options.element;
-        if (!editorEl) return;
+        if (!_ctx) { console.debug('[SelectionChip] no ctx'); return; }
+        const editorEl = _getEditorEl();
+        if (!editorEl) { console.debug('[SelectionChip] no editor element'); return; }
 
         const sel = window.getSelection();
         if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
         const range = sel.getRangeAt(0);
 
-        // Selection must be inside our editor element
-        if (!editorEl.contains(range.commonAncestorContainer)) return;
+        if (!editorEl.contains(range.commonAncestorContainer)) {
+            console.debug('[SelectionChip] selection outside editor', range.commonAncestorContainer);
+            return;
+        }
 
         const text = sel.toString().trim();
         if (!text) return;
 
-        // Reject if either endpoint sits outside an editable section.
-        if (!isEditableSection(sel.anchorNode) || !isEditableSection(sel.focusNode)) return;
+        if (!isEditableSection(sel.anchorNode)) {
+            console.debug('[SelectionChip] anchor not in plan/response', sel.anchorNode);
+            return;
+        }
+        if (!isEditableSection(sel.focusNode)) {
+            console.debug('[SelectionChip] focus not in plan/response', sel.focusNode);
+            return;
+        }
 
-        const rect = range.getBoundingClientRect();
-        if (!rect || (rect.width === 0 && rect.height === 0)) return;
+        let rect = range.getBoundingClientRect();
+        if (!rect || (rect.width === 0 && rect.height === 0)) {
+            // Fallback: try first client rect (multi-line ranges can return 0x0
+            // bounding rect on some browsers / after transform shifts).
+            try {
+                const rects = range.getClientRects();
+                if (rects && rects.length > 0) rect = rects[0];
+            } catch (_) {}
+            if (!rect || (rect.width === 0 && rect.height === 0)) {
+                console.debug('[SelectionChip] zero-rect range — skipping', range);
+                return;
+            }
+        }
 
         const anchorEl = sel.anchorNode && (sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode);
         const focusEl = sel.focusNode && (sel.focusNode.nodeType === 3 ? sel.focusNode.parentElement : sel.focusNode);
         const scope = classifyScope(text, anchorEl, focusEl);
         const sectionContext = extractSectionContext(anchorEl);
 
-        // Clone the Range so we can re-derive its rect later (after layout
-        // shifts) even once the user's selection has collapsed into the box.
         let rangeClone = null;
         try { rangeClone = range.cloneRange(); } catch (_) {}
 
         const selectionInfo = { text, scope, sectionContext, rect, anchorEl, focusEl, range: rangeClone };
+        console.debug('[SelectionChip] opening box', { scope, textLen: text.length });
         _openBox(selectionInfo);
     }
 
-    function _scheduleRecompute() {
+    function _scheduleRecompute(e) {
+        // Only fire when the gesture originated inside the live editor —
+        // protects against random page-wide selections triggering the chip.
+        if (e && e.target) {
+            const editorEl = _getEditorEl();
+            if (!editorEl || !editorEl.contains(e.target)) return;
+        }
         if (_selectionTimer) clearTimeout(_selectionTimer);
         _selectionTimer = setTimeout(() => {
             _selectionTimer = null;
@@ -811,31 +846,25 @@
         _ctx = ctx;
         _conversationHistory = [];
         _conversationId = 'crib_' + Date.now();
-        const editorEl = ctx.canvasEditor.options && ctx.canvasEditor.options.element;
-        if (!editorEl) {
-            console.warn('WML SelectionChip: editor element not available');
-            return { unmount };
-        }
-
-        editorEl.addEventListener('mouseup', _scheduleRecompute);
-        editorEl.addEventListener('touchend', _scheduleRecompute);
-        editorEl.addEventListener('keyup', _scheduleRecompute);
+        // v7.19.37: document-level delegation so listeners survive TipTap
+        // editor rebuilds (theme toggle / fullscreen / sidebar reflow can
+        // detach the editor element). _scheduleRecompute filters by ancestry.
+        document.addEventListener('mouseup', _scheduleRecompute);
+        document.addEventListener('touchend', _scheduleRecompute);
+        document.addEventListener('keyup', _scheduleRecompute);
         document.addEventListener('mousedown', _onDocumentMouseDown);
         document.addEventListener('keydown', _onKeyDown);
 
         _bound = true;
-        console.log('WML SelectionChip v7.19.27: mounted (right-panel mode)');
+        console.log('WML SelectionChip v7.19.37: mounted (document-level delegation)');
         return { unmount };
     }
 
     function unmount() {
         if (!_bound) return;
-        const editorEl = _ctx && _ctx.canvasEditor && _ctx.canvasEditor.options && _ctx.canvasEditor.options.element;
-        if (editorEl) {
-            editorEl.removeEventListener('mouseup', _scheduleRecompute);
-            editorEl.removeEventListener('touchend', _scheduleRecompute);
-            editorEl.removeEventListener('keyup', _scheduleRecompute);
-        }
+        document.removeEventListener('mouseup', _scheduleRecompute);
+        document.removeEventListener('touchend', _scheduleRecompute);
+        document.removeEventListener('keyup', _scheduleRecompute);
         document.removeEventListener('mousedown', _onDocumentMouseDown);
         document.removeEventListener('keydown', _onKeyDown);
         if (_selectionTimer) { clearTimeout(_selectionTimer); _selectionTimer = null; }
