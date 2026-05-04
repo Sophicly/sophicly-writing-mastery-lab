@@ -7701,6 +7701,56 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     margin-top: 4px;
 }
 
+/* ── v7.19.41: Coach trigger chip — small floating "Sophia" pill ── */
+.swml-coach-chip {
+    position: absolute;
+    z-index: 91;
+    height: 28px;
+    padding: 0 12px 0 10px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, #5333ed 0%, #2c003e 100%);
+    color: #fff;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(83, 51, 237, 0.45),
+                inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    user-select: none;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    animation: swml-coach-chip-fade 0.18s ease;
+}
+@keyframes swml-coach-chip-fade {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.swml-coach-chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(83, 51, 237, 0.55),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    filter: brightness(1.05);
+}
+.swml-coach-chip:active {
+    transform: translateY(0);
+}
+.swml-coach-chip-icon {
+    font-size: 13px;
+    line-height: 1;
+}
+.swml-coach-chip-label {
+    font-style: italic;
+    letter-spacing: 0.01em;
+}
+.swml-canvas-light .swml-coach-chip {
+    box-shadow: 0 4px 12px rgba(83, 51, 237, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
 /* ── v7.19.36: Coach box resize handles (4 edges + 4 corners) ── */
 .swml-coach-rh {
     position: absolute;

@@ -57,7 +57,8 @@
 
     // ── Module-scoped state ──
     let _ctx = null;
-    let _box = null;                 // floating prompt box DOM
+    let _chip = null;                // small floating "Sophia" trigger pill
+    let _box = null;                  // full prompt box (opens on chip click)
     let _activeSelection = null;     // last valid selection info, frozen at box-open
     let _bound = false;
     let _selectionTimer = null;
@@ -69,6 +70,7 @@
     let _onWindowResize = null;
     let _lastSelectionInfo = null;   // remembers last opened selection for re-open
     let _continueBtn = null;         // sticky footer in right panel
+    let _pendingSelectionInfo = null; // selection captured at chip-show time
 
     // ── Helpers ──
 
@@ -348,6 +350,65 @@
         return bubble;
     }
 
+    // ── Floating chip — non-intrusive trigger ──────────────────────
+    // Highlighting text inside plan/response shows a small "✨ Sophia" chip
+    // near the selection. Click chip → opens the full coach box. This lets
+    // students still type-over / copy / delete a selection naturally —
+    // plain highlight does NOT hijack input.
+
+    function _removeChip() {
+        if (_chip && _chip.parentNode) _chip.parentNode.removeChild(_chip);
+        _chip = null;
+        _pendingSelectionInfo = null;
+    }
+
+    function _showChip(selectionInfo) {
+        _removeChip();
+        const offsetParent = _getOffsetParent();
+        if (!offsetParent) return;
+
+        _pendingSelectionInfo = selectionInfo;
+
+        const chip = el('button', {
+            className: 'swml-coach-chip',
+            type: 'button',
+            title: 'Coach this selection with Sophia',
+            innerHTML: '<span class="swml-coach-chip-icon">✨</span><span class="swml-coach-chip-label">Sophia</span>',
+        });
+        // Stop mousedown from collapsing the selection before the chip
+        // click handler runs.
+        chip.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
+        chip.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const info = _pendingSelectionInfo;
+            _removeChip();
+            if (info) _openBox(info);
+        });
+
+        // Position chip above the selection's first line. Use the same
+        // container-relative math as _positionBox so the chip rides the
+        // doc on scroll.
+        const opRect = offsetParent.getBoundingClientRect();
+        const scrollTop = offsetParent.scrollTop || 0;
+        const scrollLeft = offsetParent.scrollLeft || 0;
+        const chipH = 28, chipW = 96, gap = 6;
+        let top = (selectionInfo.rect.top - opRect.top + scrollTop) - chipH - gap;
+        let left = (selectionInfo.rect.left - opRect.left + scrollLeft);
+        // Clamp to container bounds.
+        const maxLeft = Math.max(8, opRect.width - chipW - 8);
+        left = Math.max(8, Math.min(left, maxLeft));
+        // If above-flip would clip top, fall below selection.
+        if (top < scrollTop + 4) {
+            top = (selectionInfo.rect.bottom - opRect.top + scrollTop) + gap;
+        }
+        chip.style.top = top + 'px';
+        chip.style.left = left + 'px';
+
+        offsetParent.appendChild(chip);
+        _chip = chip;
+    }
+
     // Re-derive the box position from the LIVE selection Range. Used after
     // canvas reflow (LD sidebar toggle, window resize, fullscreen toggle, …).
     function _positionBoxFromRange() {
@@ -445,6 +506,7 @@
 
     function _openBox(selectionInfo) {
         _removeBox();
+        _removeChip();
         _removeContinueBtn();
         _activeSelection = selectionInfo;
         _lastSelectionInfo = selectionInfo;
@@ -927,8 +989,11 @@
         try { rangeClone = range.cloneRange(); } catch (_) {}
 
         const selectionInfo = { text, scope, sectionContext, rect, anchorEl, focusEl, range: rangeClone };
-        console.debug('[SelectionChip] opening box', { scope, textLen: text.length });
-        _openBox(selectionInfo);
+        // v7.19.41: show the small chip — student must click it to open the
+        // full box. Prevents auto-open from hijacking native typing / copy /
+        // delete on the highlighted text.
+        console.debug('[SelectionChip] showing chip', { scope, textLen: text.length });
+        _showChip(selectionInfo);
     }
 
     function _scheduleRecompute(e) {
@@ -947,15 +1012,16 @@
 
     function _onDocumentMouseDown(e) {
         if (_box && _box.contains(e.target)) return;
-        if (_hint && _hint.contains(e.target)) return;
-        // Outside click → close box (but preserve hint, since student may still
-        // want to discover the feature).
+        if (_chip && _chip.contains(e.target)) return;
+        // Outside click → close box AND chip. The student is moving on.
         _removeBox();
+        _removeChip();
     }
 
     function _onKeyDown(e) {
         if (e.key === 'Escape') {
             if (_box) { _removeBox(); return; }
+            if (_chip) { _removeChip(); return; }
         }
     }
 
@@ -999,6 +1065,7 @@
         document.removeEventListener('keydown', _onKeyDown);
         if (_selectionTimer) { clearTimeout(_selectionTimer); _selectionTimer = null; }
         _removeBox();
+        _removeChip();
         _removeContinueBtn();
         _activeSelection = null;
         _lastSelectionInfo = null;
