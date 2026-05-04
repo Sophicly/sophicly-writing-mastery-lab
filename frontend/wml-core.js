@@ -850,22 +850,25 @@ window.WML = (function() {
             sidebarSteps: null,
         },
         // v7.19.19+ Exam Prep Crib — in-line coaching env (Phase 1).
-        // Doc-first canvas, anchor-list sidebar (Q1...Q10 jumps),
-        // chat panel HIDDEN by default. Coaching invoked via Tiptap
-        // floating selection chip (built in subsequent ship).
+        // Doc-first canvas + per-Q anchor sidebar + Sophia coaching.
+        // v7.19.20: TEMPORARILY uses training-env panels (chat panel visible
+        //          so students can invoke Sophia by typing) until the Tiptap
+        //          floating selection chip ships in the next sub-ship. After
+        //          selection-chip lands, env type flips to 'inline-coaching'
+        //          + chat panel hides + chip becomes primary invocation.
         // Routes to `protocols/shared/modules/inline-coaching-core.md` +
         // `inline-coaching-engine-1.md` + per-paper rubric (router L987+).
         exam_crib: {
             label: 'Exam Prep Crib',
-            environment: 'inline-coaching',
-            panels: { sidebar: true, chat: false, guidance: false, document: true },
+            environment: 'training', // v7.19.20: training panels until chip ships; will flip to 'inline-coaching'
+            panels: { sidebar: true, chat: true, guidance: false, document: true },
             steps: null,
             elements: null,
             protocolSource: 'shared',
             protocolTask: 'exam_crib',
             completionType: 'manual',
             storageSuffix: '_crib',
-            chatHeaderLabel: 'Sophia',
+            chatHeaderLabel: 'Sophia — Exam Prep Coach',
             sidebarSteps: null, // anchor-list rendered dynamically per doc structure
         },
         assessment: {
