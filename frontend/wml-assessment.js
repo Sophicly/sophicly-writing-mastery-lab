@@ -9382,12 +9382,30 @@
                 const type = node.attrs.sectionType || 'response';
                 const label = node.attrs.label || type.charAt(0).toUpperCase() + type.slice(1);
                 // v7.15.6: Check both boolean false and string "false" for readonly
-                const readOnly = node.attrs.editable === false || node.attrs.editable === 'false' || node.attrs.readonly === 'true' || node.attrs.readonly === true;
-                return ['div', {
-                    ...HTMLAttributes,
-                    ...(readOnly ? { 'data-readonly': 'true', contenteditable: 'false' } : {}),
-                    class: `swml-section-block swml-section-${type}${readOnly ? ' swml-section-readonly' : ''}`,
-                }, 0];
+                const savedRO = node.attrs.editable === false || node.attrs.editable === 'false' || node.attrs.readonly === 'true' || node.attrs.readonly === true;
+                // v7.19.69: Feedback sections recompute readonly from
+                // _feedbackEditable() at render time so old documents (Lang P1
+                // diagnostic / redraft etc.) saved before v7.18.9 with
+                // data-editable="false" or data-readonly="true" baked into
+                // feedback markup unlock automatically when the student is in
+                // edit mode (viewerMode='edit'). Tutor / parent review modes
+                // stay locked because _feedbackEditable() returns false there.
+                // Mirrors the override on the exam-prep canvas SectionBlock at
+                // L20405. Same-fix-shipped-twice problem: the v7.18.20 patch
+                // was added to the exam-prep canvas only and never propagated
+                // to this (main) canvas SectionBlock — diagnosed 2026-05-06.
+                const readOnly = type === 'feedback' ? !_feedbackEditable() : savedRO;
+                const newAttrs = { ...HTMLAttributes };
+                newAttrs['data-editable'] = readOnly ? 'false' : 'true';
+                if (readOnly) {
+                    newAttrs['data-readonly'] = 'true';
+                    newAttrs.contenteditable = 'false';
+                } else {
+                    delete newAttrs['data-readonly'];
+                    delete newAttrs.contenteditable;
+                }
+                newAttrs.class = `swml-section-block swml-section-${type}${readOnly ? ' swml-section-readonly' : ''}`;
+                return ['div', newAttrs, 0];
             },
 
             addKeyboardShortcuts() {
