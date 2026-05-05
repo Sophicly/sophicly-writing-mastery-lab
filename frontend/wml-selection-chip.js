@@ -986,18 +986,10 @@
             document.querySelector('.ProseMirror');
     }
 
-    function _onDocumentMouseDown(e) {
-        if (!_box) return;
-        if (_box.contains(e.target)) return;
-        // Don't close the box when the user mouses down inside the canvas
-        // selection toolbar — toolbar buttons (incl. Sophia re-open) need
-        // a clean click cycle.
-        const tb = e.target.closest && e.target.closest('.swml-selection-toolbar');
-        if (tb) return;
-        // Outside click → close box. Student is moving on.
-        _removeBox();
-    }
-
+    // v7.19.48: outside-click close DROPPED. The box is a persistent chat
+    // surface, not a popover. Closing on any outside click made theme toggle
+    // / sidebar / notes tab / canvas click destroy the conversation. Now
+    // close paths are: × button, Escape, or unmount on env teardown.
     function _onKeyDown(e) {
         if (e.key === 'Escape' && _box) { _removeBox(); }
     }
@@ -1017,9 +1009,10 @@
         _conversationHistory = [];
         _conversationId = 'crib_' + Date.now();
         // v7.19.42: drop mouseup/touchend/keyup chip-trigger listeners.
-        // Toolbar Sophia button is the single entry point now. Keep
-        // mousedown for outside-click close + keydown for Escape.
-        document.addEventListener('mousedown', _onDocumentMouseDown);
+        // Toolbar Sophia button is the single entry point now.
+        // v7.19.48: outside-click close also dropped — box persists until
+        // × button / Escape / unmount. Theme toggle, sidebar, notes tab,
+        // canvas clicks no longer destroy the conversation.
         document.addEventListener('keydown', _onKeyDown);
 
         _bound = true;
@@ -1032,7 +1025,6 @@
 
     function unmount() {
         if (!_bound) return;
-        document.removeEventListener('mousedown', _onDocumentMouseDown);
         document.removeEventListener('keydown', _onKeyDown);
         _removeBox();
         _removeContinueBtn();
