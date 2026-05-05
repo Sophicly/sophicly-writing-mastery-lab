@@ -7910,6 +7910,12 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     font-size: 13px;
     font-family: inherit;
 }
+/* v7.19.47: body-anchored variant — survives canvas re-render
+   (theme toggle / fullscreen toggle / TipTap rebuild). */
+.swml-coach-box.swml-coach-box--fixed {
+    position: fixed;
+    z-index: 9998;
+}
 .swml-canvas-light .swml-coach-box {
     background: #fff;
     border-color: rgba(83, 51, 237, 0.3);

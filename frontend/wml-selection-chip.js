@@ -70,6 +70,8 @@
     let _resizeObs = null;
     let _onWindowResize = null;
     let _detachWatcher = null;       // v7.19.46: watches for box detachment (theme toggle / canvas re-render)
+    let _onCanvasScroll = null;      // v7.19.47: tracks .swml-canvas-content scroll → reposition
+    let _scrollHost = null;          // resolved scroll container; cleared on _removeBox
     let _lastSelectionInfo = null;   // remembers last opened selection for re-open
     let _continueBtn = null;         // sticky footer in right panel
 
@@ -166,6 +168,11 @@
             window.removeEventListener('resize', _onWindowResize);
             _onWindowResize = null;
         }
+        if (_onCanvasScroll && _scrollHost) {
+            try { _scrollHost.removeEventListener('scroll', _onCanvasScroll); } catch (_) {}
+        }
+        _onCanvasScroll = null;
+        _scrollHost = null;
         if (_box && _box.parentNode) _box.parentNode.removeChild(_box);
         _box = null;
         _currentRange = null;
@@ -436,62 +443,45 @@
     function _ensureBoxAttached() {
         if (!_box) return;
         if (_box.isConnected) return;
-        const offsetParent = _getOffsetParent();
-        if (!offsetParent) return;
-        // Rebind the ResizeObserver to the new parent so subsequent reflows
-        // (e.g. theme toggled twice) keep firing. The window-resize handler
-        // is parent-agnostic so doesn't need rebinding.
-        if (_resizeObs) { try { _resizeObs.disconnect(); } catch (_) {} _resizeObs = null; }
-        offsetParent.appendChild(_box);
-        if (typeof ResizeObserver !== 'undefined') {
-            try {
-                _resizeObs = new ResizeObserver(() => { _positionBoxFromRange(); });
-                _resizeObs.observe(offsetParent);
-            } catch (_) { _resizeObs = null; }
-        }
-        console.log('[SelectionChip] box re-attached to .swml-canvas-content after canvas re-render');
+        // v7.19.47: box now lives on document.body (position:fixed). Body
+        // doesn't get rebuilt on theme toggle / canvas re-render, so the
+        // box survives. Re-append to body if some external cleanup detached.
+        document.body.appendChild(_box);
+        console.log('[SelectionChip] box re-attached to document.body');
     }
 
     function _positionBox(rect) {
         if (!_box) return;
-        // v7.19.40: box is position:absolute inside the .swml-canvas-content
-        // scroll container. Coords are container-relative, with scrollTop /
-        // scrollLeft baked in so as the doc scrolls, the absolute box scrolls
-        // with it. (Vertical scroll = box rides text. Horizontal layout
-        // reflow / sidebar toggle is handled by ResizeObserver re-deriving
-        // from the live Range.)
-        const offsetParent = _getOffsetParent();
-        if (!offsetParent) return;
-        const opRect = offsetParent.getBoundingClientRect();
-        const scrollTop = offsetParent.scrollTop || 0;
-        const scrollLeft = offsetParent.scrollLeft || 0;
+        // v7.19.47: box uses position:fixed anchored to document.body.
+        // rect is viewport-coords (from getBoundingClientRect), so we apply
+        // it directly — no offset-parent / scrollTop math. Survives theme
+        // toggle / canvas re-render because body never detaches. Vertical
+        // scroll on .swml-canvas-content is tracked by a scroll listener
+        // (re-fires _positionBoxFromRange).
+        const vw = window.innerWidth || document.documentElement.clientWidth;
+        const vh = window.innerHeight || document.documentElement.clientHeight;
         const boxW = 480;
         const gap = 12;
+        const estBoxH = Math.min(vh * 0.55, 420);
 
-        // rect is viewport-relative (from getBoundingClientRect on the live
-        // Range). Convert to container coords: subtract container's viewport
-        // offset, add the container's scroll offset.
-        const rectTopInContainer = rect.top - opRect.top + scrollTop;
-        const rectBottomInContainer = rect.bottom - opRect.top + scrollTop;
-        const rectLeftInContainer = rect.left - opRect.left + scrollLeft;
-
-        let left = rectLeftInContainer;
-        const maxLeft = Math.max(8, opRect.width - boxW - 8);
+        // Horizontal: align to selection left, clamp to viewport.
+        let left = rect.left;
+        const maxLeft = Math.max(8, vw - boxW - 8);
         left = Math.max(8, Math.min(left, maxLeft));
 
-        // Default: open BELOW selection. Flip above only if the selection is
-        // far enough from the container's top to fit a box of estimated
-        // height.
-        const estBoxH = Math.min(opRect.height * 0.55, 420);
-        const wouldOverflowBottom = (rect.bottom + gap + estBoxH) > opRect.bottom;
+        // Default: open BELOW. Flip above if it would overflow viewport bottom.
         let top;
-        if (wouldOverflowBottom && (rect.top - opRect.top) > estBoxH + gap) {
-            top = rectTopInContainer - estBoxH - gap;
+        const wouldOverflowBottom = (rect.bottom + gap + estBoxH) > vh;
+        if (wouldOverflowBottom && rect.top > estBoxH + gap) {
+            top = rect.top - estBoxH - gap;
             _box.classList.add('swml-coach-box--above');
         } else {
-            top = rectBottomInContainer + gap;
+            top = rect.bottom + gap;
             _box.classList.remove('swml-coach-box--above');
         }
+
+        // Clamp top to keep box in viewport even if selection scrolled off.
+        top = Math.max(8, Math.min(top, vh - 80));
 
         _box.style.top = top + 'px';
         _box.style.left = left + 'px';
@@ -719,11 +709,13 @@
             box.appendChild(h);
         });
 
-        // Mount + pin selection. v7.19.40: append back inside the
-        // .swml-canvas-content scroll container so the box rides the doc
-        // text as the user scrolls vertically. Container is position:relative
-        // so absolute children anchor inside it.
-        offsetParent.appendChild(box);
+        // Mount + pin selection. v7.19.47: anchor to document.body with
+        // position:fixed (CSS class .swml-coach-box--fixed) so the box
+        // survives theme toggle / canvas re-render — body never detaches.
+        // Vertical scroll on .swml-canvas-content tracked by scroll listener
+        // (re-fires _positionBoxFromRange to ride the highlighted text).
+        box.classList.add('swml-coach-box--fixed');
+        document.body.appendChild(box);
         _box = box;
         _currentRange = selectionInfo.range || null;
         _autoFollow = true;
@@ -796,6 +788,14 @@
         _onWindowResize = () => { _positionBoxFromRange(); };
         window.addEventListener('resize', _onWindowResize);
 
+        // v7.19.47: track .swml-canvas-content scroll so the box rides the
+        // highlighted text vertically (the body-anchored fixed box doesn't
+        // move with the canvas's internal scroll otherwise).
+        _scrollHost = offsetParent;
+        _onCanvasScroll = () => { _positionBoxFromRange(); };
+        try { _scrollHost.addEventListener('scroll', _onCanvasScroll, { passive: true }); }
+        catch (_) {}
+
         // v7.19.46: theme toggle / canvas re-render can detach the box (and
         // its offset parent) from the DOM. ResizeObserver fires only if a
         // surviving element gets resized, so it doesn't catch full subtree
@@ -832,18 +832,16 @@
             e.preventDefault();
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
-            const offsetParentEl = _getOffsetParent();
-            const opRect = offsetParentEl ? offsetParentEl.getBoundingClientRect() : null;
+            // v7.19.47: position:fixed → clamp inside viewport, not offsetParent.
+            const vw = window.innerWidth || document.documentElement.clientWidth;
+            const vh = window.innerHeight || document.documentElement.clientHeight;
             const boxRect = box.getBoundingClientRect();
             let nextLeft = startLeft + dx;
             let nextTop = startTop + dy;
-            if (opRect) {
-                // Clamp inside the offset-parent so the drag stays usable.
-                const maxLeft = opRect.width - boxRect.width;
-                const maxTop = (offsetParentEl.scrollHeight || opRect.height) - boxRect.height;
-                nextLeft = Math.max(0, Math.min(nextLeft, Math.max(0, maxLeft)));
-                nextTop = Math.max(0, Math.min(nextTop, Math.max(0, maxTop)));
-            }
+            const maxLeft = Math.max(0, vw - boxRect.width);
+            const maxTop = Math.max(0, vh - 60); // keep the drag handle reachable
+            nextLeft = Math.max(0, Math.min(nextLeft, maxLeft));
+            nextTop = Math.max(0, Math.min(nextTop, maxTop));
             box.style.left = nextLeft + 'px';
             box.style.top = nextTop + 'px';
         };
