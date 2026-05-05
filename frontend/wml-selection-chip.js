@@ -357,17 +357,28 @@
     // can collapse/remove the native selection (toolbar removal does this).
 
     function openBox(opts) {
+        console.log('[SelectionChip] openBox called', {
+            bound: _bound,
+            hasOpts: !!opts,
+            hasRange: !!(opts && opts.range),
+            hasText: !!(opts && opts.selectedText),
+            textLen: opts && opts.selectedText ? opts.selectedText.length : 0,
+            hasRect: !!(opts && opts.rect),
+        });
         if (!_bound) {
-            console.warn('WML SelectionChip: openBox called before mount');
+            console.error('[SelectionChip] openBox called before mount — chip module never mounted. Check that inline-coaching render branch fired.');
             return;
         }
         if (!opts || !opts.range || !opts.selectedText) {
-            console.warn('WML SelectionChip: openBox missing range/selectedText');
+            console.error('[SelectionChip] openBox missing range/selectedText', opts);
             return;
         }
         const range = opts.range;
         const text = String(opts.selectedText || '').trim();
-        if (!text) return;
+        if (!text) {
+            console.warn('[SelectionChip] openBox empty text after trim');
+            return;
+        }
 
         // Derive anchor/focus elements from range endpoints.
         const startNode = range.startContainer;

@@ -10689,24 +10689,35 @@
                     // Sophia — inline-coaching env only. Replaces the standalone
                     // chip from v7.19.24-v7.19.41 (collision with this toolbar
                     // on short selections). Toolbar now hosts the entry point.
+                    // v7.19.44: bundled sparkles.svg (purple gradient, two stars)
+                    // replaces single-star placeholder; diagnostic logs trace
+                    // the click → openBox path so silent failures surface.
                     if (isInlineCoaching && !isDiagnosticMode) {
-                        const SVG_SOPHIA = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.39 5.27L20 8.24l-4 3.84.94 5.41L12 14.77 7.06 17.49 8 12.08 4 8.24l5.61-.97z"/></svg>';
+                        const SVG_SOPHIA = '<svg width="16" height="16" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="swmlSparkA" x1="32.63" x2="8.63" y1="8.98" y2="30.77" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#6560fe"/><stop offset=".2" stop-color="#9a97fe"/><stop offset=".53" stop-color="#dad9fe"/><stop offset=".85" stop-color="#fafafe"/><stop offset="1" stop-color="#fff"/></linearGradient><linearGradient id="swmlSparkB" x1="41.78" x2="30.83" y1="30.35" y2="41.6" xlink:href="#swmlSparkA"/></defs><path fill="url(#swmlSparkA)" d="M23.47 30.13l-1.47 3.36c-.56 1.29-2.35 1.29-2.92 0l-1.47-3.36c-1.31-2.99-3.66-5.37-6.59-6.67l-4.04-1.79c-1.28-.57-1.28-2.44 0-3.01l3.91-1.74c3.01-1.33 5.4-3.8 6.68-6.9l1.49-3.58c.55-1.33 2.39-1.33 2.94 0l1.49 3.58c1.28 3.09 3.68 5.56 6.68 6.9l3.91 1.74c1.28.57 1.28 2.44 0 3.01l-4.04 1.79c-2.93 1.3-5.28 3.68-6.59 6.67Z"/><path fill="url(#swmlSparkB)" d="M37.24 41.32l-.41.94c-.3.69-1.25.69-1.55 0l-.41-.94c-.73-1.67-2.04-3-3.68-3.73l-1.26-.56c-.68-.3-.68-1.29 0-1.6l1.19-.53c1.68-.75 3.02-2.13 3.73-3.85l.42-1.01c.29-.71 1.27-.71 1.56 0l.42 1.01c.72 1.73 2.05 3.11 3.73 3.85l1.19.53c.68.3.68 1.29 0 1.6l-1.26.56c-1.64.73-2.95 2.06-3.68 3.73Z"/></svg>';
                         tb.appendChild(el('button', { className: 'swml-sel-btn swml-sel-sophia', innerHTML: SVG_SOPHIA + ' <span>Sophia</span>',
                             onClick: (ev) => {
                                 ev.stopPropagation();
+                                ev.preventDefault();
+                                console.log('[Sophia button] clicked', { selectedText: selectedText && selectedText.slice(0, 60), rect, hasRange: !!range });
                                 // Capture range + text BEFORE toolbar removal —
                                 // toolbar removal collapses the native selection
                                 // (same pattern as Comment button capturing tFrom/tTo).
                                 let capturedRange = null;
-                                try { capturedRange = range.cloneRange(); } catch (_) {}
+                                try { capturedRange = range.cloneRange(); } catch (err) {
+                                    console.warn('[Sophia button] range.cloneRange() failed', err);
+                                }
                                 const capturedText = selectedText;
                                 const capturedRect = rect;
                                 removeCanvasSelToolbar();
                                 requestAnimationFrame(() => {
                                     if (!window.WML || !window.WML.SelectionChip || !window.WML.SelectionChip.openBox) {
-                                        console.warn('WML SelectionChip: openBox not available');
+                                        console.error('[Sophia button] WML.SelectionChip.openBox not available', {
+                                            hasWML: !!window.WML,
+                                            hasModule: !!(window.WML && window.WML.SelectionChip),
+                                        });
                                         return;
                                     }
+                                    console.log('[Sophia button] calling openBox');
                                     window.WML.SelectionChip.openBox({
                                         range: capturedRange,
                                         selectedText: capturedText,
@@ -13887,7 +13898,16 @@
         });
         editorEl._swmlTemplateBaseline = total;
         // v7.14.73: Also snapshot response-only baseline for accurate word count
-        const responseSections = editorEl.querySelectorAll('[data-section-type="response"]');
+        // v7.19.44: exam_crib snapshots COMBINED plan + response baseline so the
+        // wc widget starts at 0 (otherwise the seed template's plan + response
+        // text — ~9800 words for the Macbeth crib — count toward the student's
+        // total). Selector mirrors getResponseWordCount's crib-aware widening.
+        const _state = window.WML && window.WML.state;
+        const _isCrib = _state && _state.task === 'exam_crib';
+        const _baselineSelector = _isCrib
+            ? '[data-section-type="response"], [data-section-type="plan"]'
+            : '[data-section-type="response"]';
+        const responseSections = editorEl.querySelectorAll(_baselineSelector);
         if (responseSections.length > 0) {
             let respTotal = 0;
             responseSections.forEach(section => {

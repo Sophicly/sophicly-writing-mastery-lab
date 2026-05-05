@@ -1115,8 +1115,9 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     overflow: visible;
 }
 .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia svg {
-    filter: drop-shadow(0 0 4px rgba(125,249,233,0.7));
+    filter: drop-shadow(0 0 5px rgba(255,255,255,0.85)) drop-shadow(0 0 10px rgba(125,249,233,0.55));
     animation: swmlSophiaSparkle 2.4s ease-in-out infinite;
+    transform-origin: 50% 50%;
 }
 .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia:hover {
     background: linear-gradient(135deg, #6a47ff 0%, #9656ff 50%, #51dacf 100%) !important;
@@ -1131,8 +1132,8 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     transform: translateY(0) scale(0.98);
 }
 @keyframes swmlSophiaSparkle {
-    0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
-    50% { transform: scale(1.18) rotate(8deg); opacity: 0.85; }
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.18); opacity: 0.88; }
 }
 
 /* ── Pinch-to-Zoom ── */
