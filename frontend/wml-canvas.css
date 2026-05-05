@@ -7847,16 +7847,15 @@ body[data-swml-theme="light"] .swml-coach-rh-se::after {
 }
 
 /* "Continue with Sophia" sticky footer in right Sophia panel.
-   v7.19.58: neumorphic shell matching .swml-coach-action-btn / toolbar
-   buttons. Same dual radial-gradient surface, dual inset/outset shadow
-   stack, custom-property driven hover lift. Brand-consistent with
-   every other coach control. */
+   v7.19.59: matches the toolbar Sophia button (.swml-sel-sophia) so the
+   two coach entry points read as siblings. Brand purple→teal gradient
+   body, white text, brand-purple+teal halo, sparkle pulse on the icon. */
 .swml-coach-continue-btn {
     position: sticky;
     bottom: 0;
     margin: 10px 14px 14px;
-    padding: 11px 18px;
-    border: none;
+    padding: 12px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 12px;
     cursor: pointer;
     display: inline-flex;
@@ -7865,62 +7864,51 @@ body[data-swml-theme="light"] .swml-coach-rh-se::after {
     justify-content: center;
     align-self: stretch;
     font-family: inherit;
-    font-size: 12.5px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
     letter-spacing: 0.2px;
     line-height: 1;
     user-select: none;
-    --btn-inner: hsla(252deg 20% 22% / 60%);
-    --btn-outer: hsla(252deg 20% 16% / 50%);
-    --btn-glow: hsla(252deg 70% 60% / 0%);
-    background: radial-gradient(ellipse at 50% 10%, var(--btn-glow), transparent),
-                radial-gradient(var(--btn-inner), var(--btn-outer));
-    color: rgba(255, 255, 255, 0.78);
+    color: #fff;
+    background: linear-gradient(135deg, #5333ed 0%, #7e3df0 50%, #41aaa8 100%);
     box-shadow:
-        inset 0 2px 1px -1px rgba(255, 255, 255, 0.1),
-        inset 0 2px 4px 2px rgba(9, 11, 10, 0.16),
-        0 1px 0 1px #1a1e1c,
-        0 1px 0 2px rgba(0, 0, 0, 0.6);
-    transition: background 200ms, box-shadow 200ms, color 200ms, transform 100ms ease;
+        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+        0 0 0 1px rgba(83, 51, 237, 0.55),
+        0 4px 14px rgba(83, 51, 237, 0.45),
+        0 0 18px rgba(125, 249, 233, 0.20);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    transition: background 200ms, box-shadow 200ms, transform 100ms ease;
 }
 .swml-coach-continue-btn:hover {
-    --btn-glow: hsla(252deg 70% 65% / 28%);
-    --btn-inner: hsla(252deg 55% 40% / 100%);
-    --btn-outer: hsla(252deg 60% 32% / 100%);
-    color: #fff;
+    background: linear-gradient(135deg, #6a47ff 0%, #9656ff 50%, #51dacf 100%);
     box-shadow:
-        inset 0 -1px 1px rgba(255, 255, 255, 0.25),
-        inset 0 0 12px rgba(44, 0, 62, 0.25),
-        0 1px 0 1px rgba(83, 51, 237, 0.6),
-        0 1px 6px rgba(255, 255, 255, 0.1),
-        0 2px 14px rgba(83, 51, 237, 0.32),
-        0 1px 0 2px rgba(0, 0, 0, 0.5);
-    transform: translateY(-1px);
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        0 0 0 1px rgba(125, 249, 233, 0.65),
+        0 6px 22px rgba(83, 51, 237, 0.55),
+        0 0 24px rgba(125, 249, 233, 0.35);
+    transform: translateY(-1px) scale(1.01);
 }
 .swml-coach-continue-btn:active {
-    transform: translateY(1px);
+    transform: translateY(0) scale(0.99);
 }
-/* Light theme — toolbar's blue palette parity */
+/* Light theme — keep brand purple+teal so it still pops on white panel. */
 body[data-swml-theme="light"] .swml-coach-continue-btn {
-    --btn-inner: hsla(212deg 80% 96% / 100%);
-    --btn-outer: hsla(212deg 60% 90% / 100%);
-    color: rgba(0, 0, 0, 0.55);
+    background: linear-gradient(135deg, #5333ed 0%, #7e3df0 50%, #41aaa8 100%);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.30);
     box-shadow:
-        inset 0 2px 1px -1px rgba(255, 255, 255, 0.6),
-        inset 0 2px 3px rgba(0, 0, 0, 0.04),
-        0 1px 0 1px rgba(0, 0, 0, 0.08),
-        0 1px 0 2px rgba(77, 118, 253, 0.04);
+        inset 0 1px 0 rgba(255, 255, 255, 0.30),
+        0 0 0 1px rgba(83, 51, 237, 0.30),
+        0 4px 14px rgba(83, 51, 237, 0.30),
+        0 0 18px rgba(125, 249, 233, 0.18);
 }
 body[data-swml-theme="light"] .swml-coach-continue-btn:hover {
-    --btn-glow: hsla(212deg 90% 65% / 25%);
-    --btn-inner: hsla(212deg 90% 56% / 100%);
-    --btn-outer: hsla(212deg 80% 50% / 100%);
-    color: #fff;
+    background: linear-gradient(135deg, #6a47ff 0%, #9656ff 50%, #51dacf 100%);
     box-shadow:
-        inset 0 -1px 1px rgba(255, 255, 255, 0.4),
-        inset 0 0 12px rgba(77, 118, 253, 0.18),
-        0 1px 0 1px rgba(77, 118, 253, 0.5),
-        0 2px 12px rgba(77, 118, 253, 0.3);
+        inset 0 1px 0 rgba(255, 255, 255, 0.40),
+        0 0 0 1px rgba(125, 249, 233, 0.55),
+        0 6px 22px rgba(83, 51, 237, 0.40),
+        0 0 24px rgba(125, 249, 233, 0.32);
 }
 .swml-coach-continue-icon {
     display: inline-flex;
@@ -7931,12 +7919,10 @@ body[data-swml-theme="light"] .swml-coach-continue-btn:hover {
     flex-shrink: 0;
 }
 .swml-coach-continue-icon svg {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 8px rgba(125, 249, 233, 0.55));
     animation: swmlSophiaSparkle 2.4s ease-in-out infinite;
-}
-.swml-coach-continue-btn:hover .swml-coach-continue-icon svg {
-    filter: drop-shadow(0 0 4px rgba(125, 249, 233, 0.45));
 }
 .swml-coach-continue-label {
     flex: 0 0 auto;
