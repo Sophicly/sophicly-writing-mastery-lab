@@ -69,6 +69,7 @@
     let _autoFollow = true;          // false once user drags — they own the spot
     let _resizeObs = null;
     let _onWindowResize = null;
+    let _detachWatcher = null;       // v7.19.46: watches for box detachment (theme toggle / canvas re-render)
     let _lastSelectionInfo = null;   // remembers last opened selection for re-open
     let _continueBtn = null;         // sticky footer in right panel
 
@@ -160,6 +161,7 @@
 
     function _removeBox() {
         if (_resizeObs) { try { _resizeObs.disconnect(); } catch (_) {} _resizeObs = null; }
+        if (_detachWatcher) { try { _detachWatcher.disconnect(); } catch (_) {} _detachWatcher = null; }
         if (_onWindowResize) {
             window.removeEventListener('resize', _onWindowResize);
             _onWindowResize = null;
@@ -420,11 +422,34 @@
     // canvas reflow (LD sidebar toggle, window resize, fullscreen toggle, …).
     function _positionBoxFromRange() {
         if (!_box || !_currentRange || !_autoFollow) return;
+        // v7.19.46: theme toggle / canvas re-render can detach .swml-canvas-content
+        // (box's offset parent), removing the box from the DOM. Re-attach to
+        // the current parent before positioning so the chat survives reflows.
+        _ensureBoxAttached();
         let rect;
         try { rect = _currentRange.getBoundingClientRect(); }
         catch (_) { return; }
         if (!rect || (rect.width === 0 && rect.height === 0)) return;
         _positionBox(rect);
+    }
+
+    function _ensureBoxAttached() {
+        if (!_box) return;
+        if (_box.isConnected) return;
+        const offsetParent = _getOffsetParent();
+        if (!offsetParent) return;
+        // Rebind the ResizeObserver to the new parent so subsequent reflows
+        // (e.g. theme toggled twice) keep firing. The window-resize handler
+        // is parent-agnostic so doesn't need rebinding.
+        if (_resizeObs) { try { _resizeObs.disconnect(); } catch (_) {} _resizeObs = null; }
+        offsetParent.appendChild(_box);
+        if (typeof ResizeObserver !== 'undefined') {
+            try {
+                _resizeObs = new ResizeObserver(() => { _positionBoxFromRange(); });
+                _resizeObs.observe(offsetParent);
+            } catch (_) { _resizeObs = null; }
+        }
+        console.log('[SelectionChip] box re-attached to .swml-canvas-content after canvas re-render');
     }
 
     function _positionBox(rect) {
@@ -770,6 +795,23 @@
         }
         _onWindowResize = () => { _positionBoxFromRange(); };
         window.addEventListener('resize', _onWindowResize);
+
+        // v7.19.46: theme toggle / canvas re-render can detach the box (and
+        // its offset parent) from the DOM. ResizeObserver fires only if a
+        // surviving element gets resized, so it doesn't catch full subtree
+        // replacement. MutationObserver on document.body subtree spots the
+        // detach + _ensureBoxAttached re-mounts to the fresh parent.
+        if (typeof MutationObserver !== 'undefined') {
+            try {
+                _detachWatcher = new MutationObserver(() => {
+                    if (_box && !_box.isConnected) {
+                        _ensureBoxAttached();
+                        _positionBoxFromRange();
+                    }
+                });
+                _detachWatcher.observe(document.body, { childList: true, subtree: true });
+            } catch (_) { _detachWatcher = null; }
+        }
 
         // Snap-back: re-derive from the live Range so it tracks the current
         // selection rect, not the stale open-time coordinates.
