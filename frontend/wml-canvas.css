@@ -7794,7 +7794,7 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     font-style: italic;
     letter-spacing: 0.01em;
 }
-.swml-canvas-light .swml-coach-chip {
+body[data-swml-theme="light"] .swml-coach-chip {
     box-shadow: 0 4px 12px rgba(83, 51, 237, 0.3),
                 inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
@@ -7828,7 +7828,7 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     border-bottom-right-radius: 4px;
     pointer-events: none;
 }
-.swml-canvas-light .swml-coach-rh-se::after {
+body[data-swml-theme="light"] .swml-coach-rh-se::after {
     border-color: rgba(28, 29, 31, 0.3);
 }
 .swml-coach-box--resizing {
@@ -7880,7 +7880,7 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     overflow-y: auto;
     overscroll-behavior: contain;
 }
-.swml-canvas-light .swml-coach-selection-echo {
+body[data-swml-theme="light"] .swml-coach-selection-echo {
     background: rgba(81, 218, 207, 0.12);
     color: rgba(28, 29, 31, 0.6);
 }
@@ -7926,7 +7926,7 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     position: fixed;
     z-index: 9998;
 }
-.swml-canvas-light .swml-coach-box {
+body[data-swml-theme="light"] .swml-coach-box {
     background: #fff;
     border-color: rgba(83, 51, 237, 0.3);
     color: #1c1d1f;
@@ -7944,7 +7944,7 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
 .swml-coach-handle:active {
     cursor: grabbing;
 }
-.swml-canvas-light .swml-coach-handle {
+body[data-swml-theme="light"] .swml-coach-handle {
     background: rgba(81, 218, 207, 0.12);
     border-bottom-color: rgba(0, 0, 0, 0.06);
 }
@@ -7957,7 +7957,7 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     align-self: center;
     flex-shrink: 0;
 }
-.swml-canvas-light .swml-coach-handle-grip {
+body[data-swml-theme="light"] .swml-coach-handle-grip {
     color: rgba(28, 29, 31, 0.35);
 }
 .swml-coach-quote {
@@ -7977,10 +7977,10 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     background: rgba(255, 255, 255, 0.15);
     border-radius: 3px;
 }
-.swml-canvas-light .swml-coach-quote {
+body[data-swml-theme="light"] .swml-coach-quote {
     color: rgba(28, 29, 31, 0.78);
 }
-.swml-canvas-light .swml-coach-quote::-webkit-scrollbar-thumb {
+body[data-swml-theme="light"] .swml-coach-quote::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.18);
 }
 .swml-coach-box--dragging {
@@ -8016,12 +8016,12 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
 }
-.swml-canvas-light .swml-coach-close,
-.swml-canvas-light .swml-coach-snap {
+body[data-swml-theme="light"] .swml-coach-close,
+body[data-swml-theme="light"] .swml-coach-snap {
     color: rgba(28, 29, 31, 0.55);
 }
-.swml-canvas-light .swml-coach-close:hover,
-.swml-canvas-light .swml-coach-snap:hover {
+body[data-swml-theme="light"] .swml-coach-close:hover,
+body[data-swml-theme="light"] .swml-coach-snap:hover {
     background: rgba(0, 0, 0, 0.06);
     color: #1c1d1f;
 }
@@ -8057,8 +8057,8 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     background: rgba(255, 255, 255, 0.04);
     color: #eee;
 }
-.swml-canvas-light .swml-coach-bubble--user { background: rgba(83, 51, 237, 0.12); color: #1c1d1f; }
-.swml-canvas-light .swml-coach-bubble--ai { background: rgba(0, 0, 0, 0.04); color: #1c1d1f; }
+body[data-swml-theme="light"] .swml-coach-bubble--user { background: rgba(83, 51, 237, 0.12); color: #1c1d1f; }
+body[data-swml-theme="light"] .swml-coach-bubble--ai { background: rgba(0, 0, 0, 0.04); color: #1c1d1f; }
 .swml-coach-bubble--ai p { margin: 0 0 6px; }
 .swml-coach-bubble--ai p:last-child { margin-bottom: 0; }
 .swml-coach-typing .swml-coach-dots span {
@@ -8080,7 +8080,7 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     gap: 6px;
     flex-shrink: 0;
 }
-.swml-canvas-light .swml-coach-input-row { border-top-color: rgba(0, 0, 0, 0.06); }
+body[data-swml-theme="light"] .swml-coach-input-row { border-top-color: rgba(0, 0, 0, 0.06); }
 .swml-coach-input {
     flex: 1;
     min-height: 36px;
@@ -8098,9 +8098,88 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     transition: border-color 0.15s ease;
 }
 .swml-coach-input:focus { border-color: rgba(83, 51, 237, 0.6); }
-.swml-canvas-light .swml-coach-input {
+body[data-swml-theme="light"] .swml-coach-input {
     background: rgba(0, 0, 0, 0.03);
     border-color: rgba(0, 0, 0, 0.1);
+    color: #1c1d1f;
+}
+
+/* v7.19.50: animated conic-gradient border around the input area —
+   matches training-env .swml-chat-input-wrapper styling. The input row
+   gets a 2px gradient padding that rotates; brightens on focus-within.
+   Uses the same @property + keyframes from wml-styles.css L1444. */
+.swml-coach-input-row {
+    position: relative;
+    border-radius: 14px;
+    margin: 8px 10px 10px;
+    padding: 2px;
+    background: conic-gradient(
+        from var(--swml-input-rotation, 0deg) in oklch,
+        oklch(0.55 0.2 285) 0%, oklch(0.75 0.18 180) 25%, oklch(0.85 0.15 165) 40%,
+        oklch(0.65 0.2 260) 55%, oklch(0.55 0.2 285) 70%, oklch(0.35 0.15 310) 85%, oklch(0.55 0.2 285) 100%
+    );
+    animation: swml-input-rotate 5s linear infinite;
+    opacity: 0.55;
+    transition: opacity 0.3s ease;
+    border-top: none;
+    gap: 0;
+}
+.swml-coach-input-row:focus-within { opacity: 1; }
+.swml-coach-input-row::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 17px;
+    background: conic-gradient(
+        from var(--swml-input-rotation, 0deg) in oklch,
+        oklch(0.55 0.2 285) 0%, oklch(0.75 0.18 180) 25%, oklch(0.85 0.15 165) 40%,
+        oklch(0.65 0.2 260) 55%, oklch(0.55 0.2 285) 70%, oklch(0.35 0.15 310) 85%, oklch(0.55 0.2 285) 100%
+    );
+    animation: swml-input-rotate 5s linear infinite;
+    filter: blur(12px);
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s ease;
+}
+.swml-coach-input-row:focus-within::after { opacity: 0.45; }
+/* Inner row — restored layout properties since outer is now the gradient border. */
+.swml-coach-input-row > * { position: relative; z-index: 1; }
+.swml-coach-input-row {
+    display: flex;
+    gap: 6px;
+}
+/* Reset coach-input border because the wrapper IS the border now. */
+.swml-coach-input {
+    background: #1c1d1f;
+    border: 1px solid transparent;
+    border-radius: 12px;
+}
+.swml-coach-input:focus { border-color: transparent; }
+body[data-swml-theme="light"] .swml-coach-input { background: #ffffff; }
+body[data-swml-theme="light"] .swml-coach-input:focus { border-color: transparent; }
+/* Mic + send buttons: pull them out of the gradient row's inner background
+   so they sit cleanly on the box surface. */
+.swml-coach-input-row .swml-coach-mic,
+.swml-coach-input-row .swml-coach-send {
+    margin: 0;
+}
+
+/* v7.19.50: selection echo (the quoted highlighted text at top of box) —
+   was muted italic; now gets a subtle teal gradient bar + soft tint so
+   it reads as the active anchor, not dead text. */
+.swml-coach-quote {
+    position: relative;
+    background: linear-gradient(135deg, rgba(83, 51, 237, 0.08) 0%, rgba(81, 218, 207, 0.06) 100%);
+    border-left: 3px solid rgba(81, 218, 207, 0.7);
+    border-radius: 0 8px 8px 0;
+    margin: 8px 70px 0 8px;
+    padding: 10px 14px;
+    color: rgba(255, 255, 255, 0.92);
+    font-style: normal;
+}
+body[data-swml-theme="light"] .swml-coach-quote {
+    background: linear-gradient(135deg, rgba(83, 51, 237, 0.06) 0%, rgba(81, 218, 207, 0.10) 100%);
+    border-left-color: #41aaa8;
     color: #1c1d1f;
 }
 /* ── Coach buttons — match the canvas toolbar shape (.swml-tb-winona) ──
@@ -8194,9 +8273,9 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
 }
 
 /* ── Light theme — toolbar's blue palette ── */
-.swml-canvas-light .swml-coach-send,
-.swml-canvas-light .swml-coach-mic,
-.swml-canvas-light .swml-coach-action-btn {
+body[data-swml-theme="light"] .swml-coach-send,
+body[data-swml-theme="light"] .swml-coach-mic,
+body[data-swml-theme="light"] .swml-coach-action-btn {
     --btn-inner: hsla(226deg 60% 96% / 100%);
     --btn-outer: hsla(226deg 50% 92% / 100%);
     --btn-glow: hsla(226deg 70% 60% / 0%);
@@ -8205,9 +8284,9 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
         inset 0 2px 1px rgba(255, 255, 255, 0.8),
         0 1px 0 0 #c8d4f0;
 }
-.swml-canvas-light .swml-coach-send:hover:not(:disabled),
-.swml-canvas-light .swml-coach-mic:hover:not(:disabled),
-.swml-canvas-light .swml-coach-action-btn:hover:not(:disabled) {
+body[data-swml-theme="light"] .swml-coach-send:hover:not(:disabled),
+body[data-swml-theme="light"] .swml-coach-mic:hover:not(:disabled),
+body[data-swml-theme="light"] .swml-coach-action-btn:hover:not(:disabled) {
     --btn-inner: hsla(226deg 97% 65% / 100%);
     --btn-outer: hsla(226deg 90% 55% / 100%);
     color: #fff;
@@ -8216,7 +8295,7 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
         0 2px 8px rgba(77, 118, 253, 0.3),
         0 1px 0 0 rgba(77, 118, 253, 0.5);
 }
-.swml-canvas-light .swml-coach-mic.swml-mic-active {
+body[data-swml-theme="light"] .swml-coach-mic.swml-mic-active {
     --btn-inner: hsla(226deg 97% 65% / 100%);
     --btn-outer: hsla(226deg 90% 55% / 100%);
     color: #fff;
@@ -8238,7 +8317,7 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     max-height: 200px;
     overflow-y: auto;
 }
-.swml-canvas-light .swml-coach-actions { border-top-color: rgba(0, 0, 0, 0.06); }
+body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0, 0, 0.06); }
 .swml-coach-action-group {
     display: flex;
     flex-direction: column;
