@@ -1862,9 +1862,16 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 }
 /* ── Light mode — Outline ── */
 .swml-canvas-light .swml-outline-panel {
-    background: rgba(255,255,255,0.92);
-    border-color: rgba(0,0,0,0.06);
+    background: #ffffff; /* v7.19.49: solid white — was rgba 0.92 see-through */
+    border-color: rgba(0,0,0,0.08);
     box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+/* v7.19.49: chevrons were near-invisible in light theme (rgba white). */
+.swml-canvas-light .swml-outline-chevron {
+    color: rgba(0,0,0,0.45);
+}
+.swml-canvas-light .swml-outline-chevron:hover {
+    color: #4D76FD;
 }
 .swml-canvas-light .swml-outline-header {
     color: rgba(0,0,0,0.45);
@@ -2071,6 +2078,9 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 /* Resize handles — hidden until detached */
 .swml-outline-rh { position: absolute; z-index: 10; display: none; }
 .swml-outline-detached .swml-outline-rh { display: block; }
+/* v7.19.49: east edge resize available even when docked — adjust width
+   without detaching. North/south/west/corners stay detached-only. */
+.swml-outline-panel.swml-outline-open:not(.swml-outline-detached) .swml-outline-rh-e { display: block; }
 .swml-outline-rh-edge.swml-outline-rh-n { top: 0; left: 20px; right: 20px; height: 6px; cursor: n-resize; }
 .swml-outline-rh-edge.swml-outline-rh-s { bottom: 0; left: 20px; right: 20px; height: 6px; cursor: s-resize; }
 .swml-outline-rh-edge.swml-outline-rh-w { left: 0; top: 20px; bottom: 20px; width: 6px; cursor: w-resize; }

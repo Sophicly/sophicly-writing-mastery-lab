@@ -4549,15 +4549,23 @@
         const OL_MIN_W = 180, OL_MIN_H = 200;
         outlinePanel.querySelectorAll('.swml-outline-rh').forEach(h => {
             h.addEventListener('mousedown', (e) => {
-                if (!outlineFloating || e.button !== 0) return;
+                if (e.button !== 0) return;
+                // v7.19.49: east edge works in docked + detached states (width
+                // resize). Other directions still detached-only (need free
+                // top/left, not viable inside the sticky margin layout).
+                const dirOnly = h.dataset.dir;
+                if (!outlineFloating && dirOnly !== 'e') return;
                 e.preventDefault(); e.stopPropagation();
                 olResizing = true;
-                olResDir = h.dataset.dir;
+                olResDir = dirOnly;
                 olRSX = e.clientX; olRSY = e.clientY;
-                olRSW = parseFloat(outlinePanel.style.width);
-                olRSH = parseFloat(outlinePanel.style.height);
-                olRSL = parseFloat(outlinePanel.style.left);
-                olRST = parseFloat(outlinePanel.style.top);
+                // Docked panel has no inline width yet → fall back to actual rect.
+                const rectW = outlinePanel.getBoundingClientRect().width;
+                const rectH = outlinePanel.getBoundingClientRect().height;
+                olRSW = parseFloat(outlinePanel.style.width) || rectW;
+                olRSH = parseFloat(outlinePanel.style.height) || rectH;
+                olRSL = parseFloat(outlinePanel.style.left) || 0;
+                olRST = parseFloat(outlinePanel.style.top) || 0;
             });
         });
         document.addEventListener('mousemove', (e) => {
@@ -4568,7 +4576,15 @@
             if (olResDir.includes('w')) { w = Math.max(OL_MIN_W, olRSW - dx); l = olRSL + (olRSW - w); }
             if (olResDir.includes('s')) h = Math.max(OL_MIN_H, olRSH + dy);
             if (olResDir.includes('n')) { h = Math.max(OL_MIN_H, olRSH - dy); t = olRST + (olRSH - h); }
-            Object.assign(outlinePanel.style, { width: w+'px', height: h+'px', left: l+'px', top: t+'px' });
+            // v7.19.49: when docked, only set width — height/top/left would
+            // fight the sticky margin layout (margin: -30px -220px 0 8px).
+            // Sync the negative right margin so float-over math stays correct.
+            if (!outlineFloating) {
+                outlinePanel.style.width = w + 'px';
+                outlinePanel.style.marginRight = (-w) + 'px';
+            } else {
+                Object.assign(outlinePanel.style, { width: w+'px', height: h+'px', left: l+'px', top: t+'px' });
+            }
         });
         document.addEventListener('mouseup', () => { olResizing = false; });
 
