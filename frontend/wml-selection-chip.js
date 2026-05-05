@@ -303,6 +303,8 @@
                 }
                 bubble.appendChild(inner);
                 messagesHost.appendChild(bubble);
+                // v7.19.68: re-add copy button on rehydrated bubbles.
+                _addCopyButton(bubble);
             }
         });
         if (Array.isArray(stored.history)) _conversationHistory = stored.history.slice();
@@ -324,6 +326,75 @@
         // Show Continue button if a thread exists, since the user has no
         // active selection on reload.
         if (_conversationHistory.length > 0) _ensureContinueBtn();
+    }
+
+    // v7.19.68: clipboard helper + copy-button factory for chat bubbles.
+    // Mirrors the wml-app.js clip()/SVG_COPY pattern so visual feedback
+    // matches the training-env chat (icon flash + "Copied!" tooltip).
+    function _clipText(text, btn) {
+        if (!text || !btn) return;
+        const SVG_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--swml-teal,#51dacf)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>';
+        const showFeedback = () => {
+            const button = btn.closest('button') || btn;
+            const origHTML = button.innerHTML;
+            button.innerHTML = SVG_CHECK;
+            button.classList.add('swml-copied');
+            const tip = document.createElement('span');
+            tip.className = 'swml-copy-tooltip';
+            tip.textContent = 'Copied!';
+            button.style.position = 'relative';
+            button.appendChild(tip);
+            setTimeout(() => {
+                button.innerHTML = origHTML;
+                button.classList.remove('swml-copied');
+            }, 1500);
+        };
+        try {
+            navigator.clipboard.writeText(text).then(showFeedback).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy'); } catch (_) {}
+                document.body.removeChild(ta);
+                showFeedback();
+            });
+        } catch (_) {
+            // Fallback only.
+        }
+    }
+
+    function _addCopyButton(bubble) {
+        if (!bubble || bubble.querySelector('.swml-bubble-copy')) return;
+        const SVG_COPY = (window.WML && window.WML.SVG_COPY) ||
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+        const isUser = bubble.classList.contains('user');
+        const btn = el('button', {
+            type: 'button',
+            className: 'swml-bubble-copy' + (isUser ? ' swml-user-copy' : ''),
+            innerHTML: SVG_COPY,
+            title: 'Copy message',
+        });
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const body = bubble.querySelector('.swml-bubble-body');
+            const userP = bubble.querySelector('.swml-bubble-content > p');
+            const text = (body ? body.textContent : (userP ? userP.textContent : (bubble.textContent || ''))).trim();
+            if (!text) return;
+            _clipText(text, btn);
+        });
+        // Place the button inside the bubble — for AI bubbles the existing
+        // .swml-bubble-header sits above body, so we append into header to
+        // mirror the wml-assessment.js "swml-copy-assess" placement. For
+        // user bubbles append into the bubble-content (no header).
+        const header = bubble.querySelector('.swml-bubble-header');
+        if (header) {
+            header.appendChild(btn);
+        } else {
+            const inner = bubble.querySelector('.swml-bubble-content') || bubble;
+            inner.appendChild(btn);
+        }
     }
 
     function _appendMessage(role, content, opts) {
@@ -361,6 +432,8 @@
         }
         bubble.appendChild(inner);
         messagesHost.appendChild(bubble);
+        // v7.19.68: copy button on every message (user + AI) per Neil 2026-05-06.
+        _addCopyButton(bubble);
         messagesHost.scrollTop = messagesHost.scrollHeight;
         // Persist after each turn so refresh restores the thread.
         _saveHistory(_renderedThread());
