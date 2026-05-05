@@ -10735,7 +10735,7 @@
                                 '<path d="M6.5 4L6.303 4.5915C6.24777 4.75718 6.15472 4.90774 6.03123 5.03123C5.90774 5.15472 5.75718 5.24777 5.5915 5.303L5 5.5L5.5915 5.697C5.75718 5.75223 5.90774 5.84528 6.03123 5.96877C6.15472 6.09226 6.24777 6.24282 6.303 6.4085L6.5 7L6.697 6.4085C6.75223 6.24282 6.84528 6.09226 6.96877 5.96877C7.09226 5.84528 7.24282 5.75223 7.4085 5.697L8 5.5L7.4085 5.303C7.24282 5.24777 7.09226 5.15472 6.96877 5.03123C6.84528 4.90774 6.75223 4.75718 6.697 4.5915L6.5 4Z" stroke-linecap="round" stroke-linejoin="round" />' +
                             '</svg>' +
                             '<span class="text">Sophia</span>';
-                        tb.appendChild(el('button', { className: 'swml-sel-btn swml-sel-sophia', innerHTML: SOPHIA_SPARKLE_INNER,
+                        const sophiaBtn = el('button', { className: 'swml-sel-btn swml-sel-sophia', innerHTML: SOPHIA_SPARKLE_INNER,
                             onClick: (ev) => {
                                 ev.stopPropagation();
                                 ev.preventDefault();
@@ -10766,7 +10766,34 @@
                                     });
                                 });
                             }
-                        }));
+                        });
+                        // v7.19.62: wrap Sophia button + particle-pen sibling so
+                        // particles emanate on hover. Wrap is the flex item;
+                        // particles drift just outside the button (mask-clipped).
+                        const sophiaWrap = el('span', { className: 'swml-sel-sophia-wrap' });
+                        sophiaWrap.appendChild(sophiaBtn);
+                        const sophiaPen = document.createElement('span');
+                        sophiaPen.className = 'particle-pen';
+                        sophiaPen.setAttribute('aria-hidden', 'true');
+                        const SOPHIA_PARTICLE_SVG = '<svg class="particle" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                            '<path d="M6.937 3.846L7.75 1L8.563 3.846C8.77313 4.58114 9.1671 5.25062 9.70774 5.79126C10.2484 6.3319 10.9179 6.72587 11.653 6.936L14.5 7.75L11.654 8.563C10.9189 8.77313 10.2494 9.1671 9.70874 9.70774C9.1681 10.2484 8.77413 10.9179 8.564 11.653L7.75 14.5L6.937 11.654C6.72687 10.9189 6.3329 10.2494 5.79226 9.70874C5.25162 9.1681 4.58214 8.77413 3.847 8.564L1 7.75L3.846 6.937C4.58114 6.72687 5.25062 6.3329 5.79126 5.79226C6.3319 5.25162 6.72587 4.58214 6.936 3.847L6.937 3.846Z" stroke-linecap="round" stroke-linejoin="round" />' +
+                            '</svg>';
+                        sophiaPen.innerHTML = Array(18).fill(SOPHIA_PARTICLE_SVG).join('');
+                        const SOPHIA_RAND = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
+                        sophiaPen.querySelectorAll('.particle').forEach((p) => {
+                            p.setAttribute('style',
+                                '--x:' + SOPHIA_RAND(20, 80) + ';' +
+                                '--y:' + SOPHIA_RAND(20, 80) + ';' +
+                                '--duration:' + SOPHIA_RAND(6, 20) + ';' +
+                                '--delay:' + SOPHIA_RAND(1, 10) + ';' +
+                                '--alpha:' + (SOPHIA_RAND(40, 90) / 100) + ';' +
+                                '--origin-x:' + (Math.random() > 0.5 ? -SOPHIA_RAND(300, 800) : SOPHIA_RAND(300, 800)) + '%;' +
+                                '--origin-y:' + (Math.random() > 0.5 ? -SOPHIA_RAND(300, 800) : SOPHIA_RAND(300, 800)) + '%;' +
+                                '--size:' + (SOPHIA_RAND(40, 90) / 100) + ';'
+                            );
+                        });
+                        sophiaWrap.appendChild(sophiaPen);
+                        tb.appendChild(sophiaWrap);
                     }
 
                     // Append to measure, then position (matching chat toolbar pattern)

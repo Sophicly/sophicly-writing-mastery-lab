@@ -1097,45 +1097,58 @@ body.swml-fullscreen-active { overflow: hidden !important; }
         0 1px 0 1px rgba(81,218,207,0.5),
         0 2px 8px rgba(81,218,207,0.2);
 }
-/* v7.19.61: toolbar Sophia button gets the sparkle-button design — same
-   spinning conic halo + 3-path bouncing sparkle SVG + gradient text fill
-   as the right-panel Continue button (v7.19.60). Particle-pen SKIPPED:
-   would bleed across sibling toolbar buttons.
-   Keyframes (swmlSparkFlip / swmlSparkRotate / swmlSparkleBounce) are
+/* v7.19.62: toolbar Sophia button — sparkle-button design with particles.
+   Square (7px corner radius) to match sibling Comment/Copy/Note buttons.
+   Sparkle SVG forced visible at rest (lifted base lightness — was bouncing
+   off-screen before; now legible icon at rest, brightens on hover).
+   Reuses keyframes (swmlSparkFlip / swmlSparkRotate / swmlSparkleBounce)
    defined alongside .swml-coach-continue-btn lower in this file.
    Inline-coaching env only (toolbar gated by .swml-canvas-inline-coaching). */
+.swml-sel-sophia-wrap {
+    --transition: 0.25s;
+    --spark: 1.8s;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    overflow: visible;
+}
 .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia {
     --transition: 0.25s;
     --spark: 1.8s;
-    --cut: 0.1em;
+    --cut: 0.08em;
     --active: 0;
     --bg:
         radial-gradient(40% 50% at center 100%, hsl(258 calc(var(--active) * 97%) 72% / var(--active)), transparent),
         radial-gradient(80% 100% at center 120%, hsl(252 calc(var(--active) * 97%) 70% / var(--active)), transparent),
-        hsl(252 calc(var(--active) * 97%) calc((var(--active) * 44%) + 12%));
+        hsl(252 calc((var(--active) * 60%) + 35%) calc((var(--active) * 42%) + 16%));
     background: var(--bg) !important;
     border: 0 !important;
-    border-radius: 100px !important;
+    border-radius: 7px !important;
     color: transparent;
+    font-size: 11px !important;
     font-weight: 600;
-    padding: 0.55em 0.95em !important;
+    padding: 5px 10px !important;
     display: inline-flex;
     align-items: center;
-    gap: 0.35em;
+    gap: 4px !important;
     white-space: nowrap;
     position: relative;
     overflow: visible;
     cursor: pointer;
     box-shadow:
-        0 0 calc(var(--active) * 4em) calc(var(--active) * 1.6em) hsl(252 97% 61% / 0.75),
-        0 0.05em 0 0 hsl(252 calc(var(--active) * 97%) calc((var(--active) * 50%) + 30%)) inset,
-        0 -0.05em 0 0 hsl(252 calc(var(--active) * 97%) calc(var(--active) * 60%)) inset !important;
+        0 0 calc(var(--active) * 3.5em) calc(var(--active) * 1.4em) hsl(252 97% 61% / 0.75),
+        0 0.05em 0 0 hsl(252 calc(var(--active) * 97%) calc((var(--active) * 40%) + 38%)) inset,
+        0 -0.05em 0 0 hsl(252 calc(var(--active) * 97%) calc((var(--active) * 50%) + 12%)) inset !important;
     transition: box-shadow var(--transition), background var(--transition);
     text-shadow: none;
 }
 .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia:is(:hover, :focus-visible) {
     --active: 1;
     transform: none;
+}
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia:is(:hover, :focus-visible) ~ .particle-pen {
+    --active: 1;
+    --play-state: running;
 }
 .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia:active {
     transform: scale(0.98);
@@ -1145,21 +1158,24 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     position: absolute;
     inset: -0.2em;
     z-index: -1;
-    border: 0.2em solid hsl(252 97% 50% / 0.5);
-    border-radius: 100px;
+    border: 0.18em solid hsl(252 97% 50% / 0.5);
+    border-radius: 9px;
     opacity: var(--active, 0);
     transition: opacity var(--transition);
     pointer-events: none;
 }
 .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle {
     overflow: visible !important;
-    inline-size: 1.15em;
+    width: 13px !important;
+    height: 13px !important;
     flex-shrink: 0;
-    filter: none !important;
+    filter: drop-shadow(0 0 3px hsl(252 90% 70% / calc((var(--active) * 0.6) + 0.2))) !important;
     animation: none !important;
+    position: relative;
+    z-index: 2;
 }
 .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle path {
-    color: hsl(0 0% calc((var(--active, 0) * 70%) + var(--base)));
+    color: hsl(0 0% calc((var(--active, 0) * 30%) + var(--base)));
     transform-box: fill-box;
     transform-origin: center;
     fill: currentColor;
@@ -1174,13 +1190,15 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     -webkit-animation-name: swmlSparkleBounce;
             animation-name: swmlSparkleBounce;
 }
-.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle path:nth-of-type(1) { --scale: 0.5; --delay: 0.1; --base: 40%; }
-.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle path:nth-of-type(2) { --scale: 1.5; --delay: 0.2; --base: 20%; }
-.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle path:nth-of-type(3) { --scale: 2.5; --delay: 0.35; --base: 30%; }
+/* Sparkle path base lightness lifted from codepen 40/20/30% to 88/72/82%
+   so the icon is clearly legible on the dark resting button. */
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle path:nth-of-type(1) { --scale: 0.5; --delay: 0.1; --base: 88%; }
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle path:nth-of-type(2) { --scale: 1.5; --delay: 0.2; --base: 72%; }
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle path:nth-of-type(3) { --scale: 2.5; --delay: 0.35; --base: 82%; }
 .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .spark {
     position: absolute;
     inset: 0;
-    border-radius: 100px;
+    border-radius: 7px;
     rotate: 0deg;
     overflow: hidden;
     -webkit-mask: linear-gradient(white, transparent 50%);
@@ -1199,7 +1217,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     translate: -50% -15%;
     rotate: 0;
     transform: rotate(-90deg);
-    opacity: calc(var(--active) + 0.4);
+    opacity: calc(var(--active) + 0.45);
     background: conic-gradient(from 0deg, transparent 0 340deg, white 360deg);
     transition: opacity var(--transition);
     -webkit-animation: swmlSparkRotate var(--spark) linear infinite both;
@@ -1209,19 +1227,19 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     content: "";
     position: absolute;
     inset: var(--cut);
-    border-radius: 100px;
+    border-radius: 6px;
 }
 .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .backdrop {
     position: absolute;
     inset: var(--cut);
     background: var(--bg);
-    border-radius: 100px;
+    border-radius: 6px;
     transition: background var(--transition);
 }
 .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .text {
     translate: 0 -3%;
     letter-spacing: 0.01ch;
-    background: linear-gradient(90deg, hsl(0 0% calc((var(--active) * 100%) + 65%)), hsl(0 0% calc((var(--active) * 100%) + 26%)));
+    background: linear-gradient(90deg, hsl(0 0% calc((var(--active) * 30%) + 75%)), hsl(0 0% calc((var(--active) * 30%) + 55%)));
     -webkit-background-clip: text;
             background-clip: text;
     color: transparent;
@@ -1229,19 +1247,72 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     position: relative;
     z-index: 1;
 }
-/* Light theme: lift base lightness so resting toolbar Sophia reads on
-   white panel; swap text gradient to dark for legibility. */
+.swml-sel-sophia-wrap .particle-pen {
+    position: absolute;
+    width: 200%;
+    aspect-ratio: 1;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    -webkit-mask: radial-gradient(white, transparent 60%);
+            mask: radial-gradient(white, transparent 60%);
+    z-index: 1;
+    opacity: var(--active, 0);
+    transition: opacity var(--transition);
+    pointer-events: none;
+}
+.swml-sel-sophia-wrap .particle-pen .particle {
+    fill: white;
+    width: calc(var(--size, 0.25) * 0.7rem);
+    aspect-ratio: 1;
+    position: absolute;
+    top: calc(var(--y) * 1%);
+    left: calc(var(--x) * 1%);
+    opacity: var(--alpha, 1);
+    -webkit-animation: swmlParticleFloat calc(var(--duration, 1) * 1s) calc(var(--delay) * -1s) infinite linear;
+            animation: swmlParticleFloat calc(var(--duration, 1) * 1s) calc(var(--delay) * -1s) infinite linear;
+    transform-origin: var(--origin-x, 1000%) var(--origin-y, 1000%);
+    -webkit-animation-play-state: var(--play-state, paused);
+            animation-play-state: var(--play-state, paused);
+}
+.swml-sel-sophia-wrap .particle-pen .particle path {
+    fill: hsl(252 90% 90%);
+    stroke: none;
+}
+.swml-sel-sophia-wrap .particle-pen .particle:nth-of-type(even) {
+    animation-direction: reverse;
+}
+/* Light theme — toolbar Sophia.
+   Rest: subtle purple-tinted gradient (no longer flat grey).
+   Hover: deeper saturation + visible halo. Sparkle paths darken so they
+   stay legible on the brighter resting button. */
 body[data-swml-theme="light"] .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia {
     --bg:
-        radial-gradient(40% 50% at center 100%, hsl(258 calc(var(--active) * 97%) 72% / var(--active)), transparent),
-        radial-gradient(80% 100% at center 120%, hsl(252 calc(var(--active) * 97%) 70% / var(--active)), transparent),
-        hsl(252 calc(var(--active) * 70%) calc((var(--active) * 30%) + 88%));
+        radial-gradient(40% 60% at center 100%, hsl(258 calc((var(--active) * 60%) + 40%) 72% / calc(var(--active) * 0.8 + 0.25)), transparent),
+        radial-gradient(80% 110% at center 120%, hsl(252 calc((var(--active) * 60%) + 40%) 70% / calc(var(--active) * 0.8 + 0.2)), transparent),
+        linear-gradient(135deg,
+            hsl(252 calc((var(--active) * 50%) + 50%) calc((var(--active) * -25%) + 92%)) 0%,
+            hsl(258 calc((var(--active) * 50%) + 55%) calc((var(--active) * -22%) + 86%)) 55%,
+            hsl(174 calc((var(--active) * 40%) + 45%) calc((var(--active) * -18%) + 84%)) 100%);
+    box-shadow:
+        0 0 calc((var(--active) * 3em) + 0.4em) calc((var(--active) * 1.4em) + 0.1em) hsl(252 90% 60% / calc((var(--active) * 0.4) + 0.18)),
+        0 0.05em 0 0 hsl(252 calc((var(--active) * 60%) + 60%) calc((var(--active) * 30%) + 60%)) inset,
+        0 -0.05em 0 0 hsl(252 calc((var(--active) * 70%) + 50%) calc((var(--active) * 30%) + 30%)) inset !important;
 }
+body[data-swml-theme="light"] .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle path {
+    color: hsl(252 calc((var(--active) * 30%) + 60%) calc((var(--active) * 70%) + var(--base-light)));
+}
+body[data-swml-theme="light"] .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle path:nth-of-type(1) { --base-light: 32%; }
+body[data-swml-theme="light"] .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle path:nth-of-type(2) { --base-light: 22%; }
+body[data-swml-theme="light"] .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle path:nth-of-type(3) { --base-light: 28%; }
 body[data-swml-theme="light"] .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .text {
-    background: linear-gradient(90deg, hsl(252 calc(var(--active) * 60%) calc((var(--active) * -10%) + 28%)), hsl(252 calc(var(--active) * 80%) calc((var(--active) * -10%) + 18%)));
+    background: linear-gradient(90deg, hsl(252 calc((var(--active) * 70%) + 30%) calc((var(--active) * -8%) + 25%)), hsl(252 calc((var(--active) * 80%) + 40%) calc((var(--active) * -8%) + 15%)));
     -webkit-background-clip: text;
             background-clip: text;
     color: transparent;
+}
+body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path {
+    fill: hsl(252 80% 45%);
 }
 
 /* ── Pinch-to-Zoom ── */
@@ -8145,26 +8216,38 @@ body[data-swml-theme="light"] .swml-coach-rh-se::after {
 }
 @-webkit-keyframes swmlParticleFloat { to { rotate: 360deg; } }
 @keyframes swmlParticleFloat { to { rotate: 360deg; } }
-/* Light theme: lift base lightness so resting button reads on white panel,
-   and swap text gradient to dark so it stays legible. */
+/* v7.19.62 light-theme polish for Continue button.
+   Rest: brand-tinted purple→teal pearlescent gradient + soft constant
+   halo (no longer flat lavender-grey).
+   Hover: stronger saturation + dramatic halo + visible spinning conic.
+   Particle paths darkened so they read on the brighter resting bg. */
 body[data-swml-theme="light"] .swml-coach-continue-btn {
     --bg:
-        radial-gradient(40% 50% at center 100%, hsl(258 calc(var(--active) * 97%) 72% / var(--active)), transparent),
-        radial-gradient(80% 100% at center 120%, hsl(252 calc(var(--active) * 97%) 70% / var(--active)), transparent),
-        hsl(252 calc(var(--active) * 70%) calc((var(--active) * 30%) + 88%));
+        radial-gradient(40% 60% at center 100%, hsl(258 calc((var(--active) * 60%) + 40%) 72% / calc(var(--active) * 0.85 + 0.3)), transparent),
+        radial-gradient(80% 110% at center 120%, hsl(252 calc((var(--active) * 60%) + 40%) 70% / calc(var(--active) * 0.85 + 0.25)), transparent),
+        linear-gradient(135deg,
+            hsl(252 calc((var(--active) * 60%) + 50%) calc((var(--active) * -28%) + 90%)) 0%,
+            hsl(258 calc((var(--active) * 55%) + 60%) calc((var(--active) * -25%) + 84%)) 50%,
+            hsl(174 calc((var(--active) * 50%) + 45%) calc((var(--active) * -20%) + 82%)) 100%);
     box-shadow:
-        0 0 calc(var(--active) * 6em) calc(var(--active) * 3em) hsl(252 97% 55% / 0.55),
-        0 0.05em 0 0 hsl(252 calc(var(--active) * 97%) calc((var(--active) * 50%) + 50%)) inset,
-        0 -0.05em 0 0 hsl(252 calc(var(--active) * 97%) calc((var(--active) * 60%) + 20%)) inset;
+        0 0 calc((var(--active) * 5.5em) + 0.6em) calc((var(--active) * 2.8em) + 0.15em) hsl(252 90% 58% / calc((var(--active) * 0.5) + 0.22)),
+        0 0.05em 0 0 hsl(252 calc((var(--active) * 70%) + 60%) calc((var(--active) * 35%) + 60%)) inset,
+        0 -0.05em 0 0 hsl(252 calc((var(--active) * 80%) + 50%) calc((var(--active) * 40%) + 28%)) inset;
 }
+body[data-swml-theme="light"] .swml-coach-continue-btn .sparkle path {
+    color: hsl(252 calc((var(--active) * 30%) + 65%) calc((var(--active) * 60%) + var(--base-light)));
+}
+body[data-swml-theme="light"] .swml-coach-continue-btn .sparkle path:nth-of-type(1) { --base-light: 28%; }
+body[data-swml-theme="light"] .swml-coach-continue-btn .sparkle path:nth-of-type(2) { --base-light: 18%; }
+body[data-swml-theme="light"] .swml-coach-continue-btn .sparkle path:nth-of-type(3) { --base-light: 24%; }
 body[data-swml-theme="light"] .swml-coach-continue-btn .text {
-    background: linear-gradient(90deg, hsl(252 calc(var(--active) * 60%) calc((var(--active) * -10%) + 28%)), hsl(252 calc(var(--active) * 80%) calc((var(--active) * -10%) + 18%)));
+    background: linear-gradient(90deg, hsl(252 calc((var(--active) * 70%) + 30%) calc((var(--active) * -10%) + 26%)), hsl(252 calc((var(--active) * 80%) + 40%) calc((var(--active) * -10%) + 14%)));
     -webkit-background-clip: text;
             background-clip: text;
     color: transparent;
 }
 body[data-swml-theme="light"] .swml-coach-continue-wrap .particle-pen .particle path {
-    fill: hsl(252 60% 35%);
+    fill: hsl(252 80% 42%);
 }
 
 /* Selection echo — sits above the user bubble in the panel as a quoted lead-in */
