@@ -8104,14 +8104,15 @@ body[data-swml-theme="light"] .swml-coach-input {
     color: #1c1d1f;
 }
 
-/* v7.19.50: animated conic-gradient border around the input area —
-   matches training-env .swml-chat-input-wrapper styling. The input row
-   gets a 2px gradient padding that rotates; brightens on focus-within.
-   Uses the same @property + keyframes from wml-styles.css L1444. */
-.swml-coach-input-row {
+/* v7.19.51: animated conic-gradient border around the textarea ONLY —
+   matches training-env .swml-chat-input-wrapper styling. The textarea
+   sits in a 2px gradient frame; mic + send buttons stay outside the
+   gradient. Uses --swml-input-rotation @property + swml-input-rotate
+   keyframes from wml-styles.css L1444. */
+.swml-coach-input-frame {
     position: relative;
+    flex: 1;
     border-radius: 14px;
-    margin: 8px 10px 10px;
     padding: 2px;
     background: conic-gradient(
         from var(--swml-input-rotation, 0deg) in oklch,
@@ -8121,11 +8122,10 @@ body[data-swml-theme="light"] .swml-coach-input {
     animation: swml-input-rotate 5s linear infinite;
     opacity: 0.55;
     transition: opacity 0.3s ease;
-    border-top: none;
-    gap: 0;
+    display: flex;
 }
-.swml-coach-input-row:focus-within { opacity: 1; }
-.swml-coach-input-row::after {
+.swml-coach-input-frame:focus-within { opacity: 1; }
+.swml-coach-input-frame::after {
     content: '';
     position: absolute;
     inset: -3px;
@@ -8141,28 +8141,17 @@ body[data-swml-theme="light"] .swml-coach-input {
     z-index: -1;
     transition: opacity 0.3s ease;
 }
-.swml-coach-input-row:focus-within::after { opacity: 0.45; }
-/* Inner row — restored layout properties since outer is now the gradient border. */
-.swml-coach-input-row > * { position: relative; z-index: 1; }
-.swml-coach-input-row {
-    display: flex;
-    gap: 6px;
-}
-/* Reset coach-input border because the wrapper IS the border now. */
+.swml-coach-input-frame:focus-within::after { opacity: 0.45; }
+/* Reset coach-input border because the frame IS the border now. */
 .swml-coach-input {
     background: #1c1d1f;
     border: 1px solid transparent;
     border-radius: 12px;
+    width: 100%;
 }
 .swml-coach-input:focus { border-color: transparent; }
 body[data-swml-theme="light"] .swml-coach-input { background: #ffffff; }
 body[data-swml-theme="light"] .swml-coach-input:focus { border-color: transparent; }
-/* Mic + send buttons: pull them out of the gradient row's inner background
-   so they sit cleanly on the box surface. */
-.swml-coach-input-row .swml-coach-mic,
-.swml-coach-input-row .swml-coach-send {
-    margin: 0;
-}
 
 /* v7.19.50: selection echo (the quoted highlighted text at top of box) —
    was muted italic; now gets a subtle teal gradient bar + soft tint so
