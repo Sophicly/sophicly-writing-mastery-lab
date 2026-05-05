@@ -513,7 +513,6 @@
 
     function _openBox(selectionInfo) {
         _removeBox();
-        _removeChip();
         _removeContinueBtn();
         _activeSelection = selectionInfo;
         _lastSelectionInfo = selectionInfo;

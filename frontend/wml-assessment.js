@@ -11161,7 +11161,15 @@
                 // path still snapshots normally so true template/placeholder words
                 // get subtracted from a fresh student's count.
                 const _wasResumedFromSave = !!savedContent && savedContent.indexOf('data-section-type') !== -1;
-                if (_wasResumedFromSave) {
+                // v7.19.45: exam_crib doc seeds plan + response with extensive
+                // template scaffolds + sample paragraphs (~9800 words for the
+                // Macbeth crib). Forcing baseline to 0 on resume leaks every
+                // seed word into the live wc. Snapshot the current doc as the
+                // baseline instead — wc tracks NEW typing in this session
+                // (cumulative cross-session count is sacrificed; the widget's
+                // job is "X new words this session", not "X total ever").
+                const _isCribResume = _wasResumedFromSave && state.task === 'exam_crib';
+                if (_wasResumedFromSave && !_isCribResume) {
                     const _editorEl = editor.options.element;
                     if (_editorEl) {
                         _editorEl._swmlTemplateBaseline = 0;
@@ -11170,7 +11178,9 @@
                     console.log('WML: Editor resumed from save — baselines forced to 0 (avoids student-text-as-template race)');
                 } else {
                     // v7.13.53: Snapshot template word count BEFORE first getResponseWordCount
+                    // v7.19.45: also runs on exam_crib resume so seed text doesn't count.
                     snapshotTemplateBaseline(editor);
+                    if (_isCribResume) console.log('WML v7.19.45: exam_crib resume — baseline snapshotted against current doc, wc tracks new session typing');
                 }
                 const wc = getResponseWordCount(editor);
                 wcDisplay.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
