@@ -23,39 +23,48 @@
     const { el } = window.WML;
     if (typeof el !== 'function') { console.warn('WML SelectionChip: el helper missing'); return; }
 
-    // ── Quick-action vocabulary (locked to inline-coaching-core.md L194-229) ──
+    // ── Quick-action vocabulary (locked to inline-coaching-engine-1.md v3 — 7-tier polish ladder) ──
+    // T1-T5 = silent-audit tier scans (BLOCK-on-gap within tier).
+    // T6 = prose mechanics (vocab / sentence length / register).
+    // T7 = SPaG (spelling / punctuation / grammar).
+    // Reference = Move 4 quote-exemplar from gold-standard-exemplars-aqa-lit.md.
     const ACTION_MAP = {
-        universal: ['fix-spelling', 'fix-grammar', 'fix-punctuation', 'adjust-tone', 'tighten'],
-        litAnalysis: ['check-concept-strength', 'check-ttecea-element', 'check-vocabulary-precision', 'check-author-purpose', 'check-ao3-anchor', 'check-quote-presence'],
-        paragraphOnly: ['check-coherence', 'check-structure-adherence', 'check-ao-coverage'],
-        cw: ['check-sensory-variety', 'check-scene-structure-beats', 'check-show-dont-tell'],
+        tierScans:   ['scan-structure', 'scan-elements', 'scan-coherence', 'scan-concept', 'scan-context-drive'],
+        polishProse: ['strengthen-vocabulary', 'tighten', 'adjust-tone'],
+        fixSpag:     ['fix-spelling', 'fix-grammar', 'fix-punctuation'],
+        reference:   ['compare-gold-standard'],
+        cw:          ['check-sensory-variety', 'check-scene-structure-beats', 'check-show-dont-tell'],
     };
 
     const ACTION_LABELS = {
-        'fix-spelling': 'Fix spelling',
-        'fix-grammar': 'Fix grammar',
+        // T1-T5 tier scans
+        'scan-structure':       'Scan structure',
+        'scan-elements':        'Scan elements',
+        'scan-coherence':       'Scan coherence',
+        'scan-concept':         'Scan concept',
+        'scan-context-drive':   'Scan context-drive',
+        // T6 polish prose
+        'strengthen-vocabulary': 'Strengthen vocabulary',
+        'tighten':               'Tighten sentence',
+        'adjust-tone':           'Adjust tone',
+        // T7 fix SPaG
+        'fix-spelling':    'Fix spelling',
+        'fix-grammar':     'Fix grammar',
         'fix-punctuation': 'Fix punctuation',
-        'adjust-tone': 'Adjust tone',
-        'tighten': 'Tighten',
-        'check-concept-strength': 'Concept strength',
-        'check-ttecea-element': 'TTECEA element',
-        'check-vocabulary-precision': 'Vocabulary precision',
-        'check-author-purpose': 'Author purpose',
-        'check-ao3-anchor': 'AO3 anchor',
-        'check-quote-presence': 'Quote presence',
-        'check-coherence': 'Coherence',
-        'check-structure-adherence': 'Structure adherence',
-        'check-ao-coverage': 'AO coverage',
-        'check-sensory-variety': 'Sensory variety',
+        // Reference
+        'compare-gold-standard': 'Compare gold-standard',
+        // CW (subject-conditional)
+        'check-sensory-variety':       'Sensory variety',
         'check-scene-structure-beats': 'Scene-structure beats',
-        'check-show-dont-tell': 'Show-don’t-tell',
+        'check-show-dont-tell':        'Show-don’t-tell',
     };
 
     const SECTION_GROUP_LABELS = {
-        universal: 'Polish',
-        litAnalysis: 'Literary analysis',
-        paragraphOnly: 'Paragraph-level',
-        cw: 'Creative writing',
+        tierScans:   'Tier scan',
+        polishProse: 'Polish prose',
+        fixSpag:     'Fix SPaG',
+        reference:   'Reference',
+        cw:          'Creative writing',
     };
 
     // ── Module-scoped state ──
@@ -121,12 +130,15 @@
     }
 
     function _filterActionsForScope(scope, taskCtx) {
+        // v7.19.67: 7-tier polish ladder — tier-scan group always visible
+        // (scans operate on parent element/doc, not the highlighted span).
+        // Polish-prose + Fix-SPaG groups operate on the highlighted span.
+        // Reference (Compare gold-standard) always available.
         const groups = [];
-        groups.push({ key: 'universal', actions: ACTION_MAP.universal });
-        groups.push({ key: 'litAnalysis', actions: ACTION_MAP.litAnalysis });
-        if (scope === 'paragraph') {
-            groups.push({ key: 'paragraphOnly', actions: ACTION_MAP.paragraphOnly });
-        }
+        groups.push({ key: 'tierScans',   actions: ACTION_MAP.tierScans });
+        groups.push({ key: 'polishProse', actions: ACTION_MAP.polishProse });
+        groups.push({ key: 'fixSpag',     actions: ACTION_MAP.fixSpag });
+        groups.push({ key: 'reference',   actions: ACTION_MAP.reference });
         if (taskCtx && taskCtx.subject === 'creative_writing') {
             groups.push({ key: 'cw', actions: ACTION_MAP.cw });
         }
