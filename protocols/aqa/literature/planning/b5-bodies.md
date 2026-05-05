@@ -283,9 +283,9 @@ How do your techniques work together?"
      
    \[Internal AI **Note:** Ensure response explicitly connects purpose→technique(s)→concept. After validation, proceed to Context.\]  
      
-7. **C—Context (AO3):** Ask: "For Level 5-6's 'detailed links between context/text,' how might historical, social, or cultural context have driven the author to make these choices and explore this concept?"  
+7. **C—Context (AO3):** Ask: "For Level 5-6's 'detailed links between context/text,' look at the **[TEXT] context bank** loaded into your session (per-text dated facts and critical voices for AO3 substrate). Which one or two factors are most relevant to this paragraph's concept, and how do they DRIVE that concept?"  
      
-   \[Internal AI **Note:** After student responds, run CONTEXT\_DRIVE\_CHECK() to ensure causal relationship\]
+   \[Internal AI **Note:** Pull substrate from `protocols/aqa/literature/modules/knowledge-text-context-banks.md` for the active text. Hand the student ONE named fact / voice at a time — never list every fact at once. Causal language required ("drove" / "compelled" / "shaped" / "forced"); reject correlational ("relates to" / "connects with"). After student responds, run CONTEXT\_DRIVE\_CHECK() per `context-drive-check.md` to validate causal relationship. If text bank is missing or the active text is not yet covered, fall back to Socratic prompt without substrate but flag the gap to Neil for substrate-bank extension.\]
 
 **After Each Body Plan:**
 

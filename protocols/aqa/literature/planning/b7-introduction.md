@@ -132,7 +132,9 @@ Wait for student response first.
 
 → **LEVEL 1 \- Anchor to their body paragraph context:** "In your body paragraphs, you mentioned \[reference any context from their body plans\]. Can you expand on how that contextual factor drove \[author\]'s exploration of \[concept\]?"
 
-→ **LEVEL 2 \- Provide historical anchor:** "Let me give you a contextual starting point: \[Provide 1-2 sentences of relevant historical/social context for the text\]. How might this context have driven \[author\] to explore \[student's concept\]?"
+→ **LEVEL 2 \- Provide historical anchor from text-context-bank:** "Let me give you a contextual starting point from the **[TEXT] context bank** loaded into your session. \[Pull ONE named historical fact (dated, named source) from `protocols/aqa/literature/modules/knowledge-text-context-banks.md` matching the active text — e.g. for Macbeth: 'James I held that monarchs answer to God alone, so killing one is theological warfare not just political treason — and the Jacobean audience would have read regicide through that frame.'\] How might this context have driven \[author\] to explore \[student's concept\]?"
+
+\[Internal AI **Note:** Hand ONE substrate item per turn — never list every fact. If the text-context-bank does not yet cover the active text, fall back to a generic period-anchored fact for the era and flag the gap to Neil for substrate-bank extension.\]
 
 → **LEVEL 3 \- Deploy "Did You Know":** Provide text-specific contextual insight, then return to Level 1 with new perspective.
 

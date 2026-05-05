@@ -1018,6 +1018,14 @@ class SWML_Protocol_Router {
                 $rubrics_dir . $rubric_file,
             ];
 
+            // v7.19.66: per-text AO3 substrate bank + context-drive-check for AQA Lit polish T5.
+            // Loaded only when subject is one of the AQA Lit subjects so non-Lit cribs (e.g. IGCSE Lang) skip them.
+            $aqa_lit_subjects = ['shakespeare', '19th_century', 'modern_text', 'poetry_anthology', 'unseen_poetry', 'literature'];
+            if (in_array($subject, $aqa_lit_subjects, true)) {
+                $files_to_load[] = $plugin_dir . 'protocols/aqa/literature/modules/knowledge-text-context-banks.md';
+                $files_to_load[] = $plugin_dir . 'protocols/shared/literature/modules/context-drive-check.md';
+            }
+
             $parts = [];
             foreach ($files_to_load as $f) {
                 if (file_exists($f)) {
