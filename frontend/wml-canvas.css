@@ -1097,43 +1097,151 @@ body.swml-fullscreen-active { overflow: hidden !important; }
         0 1px 0 1px rgba(81,218,207,0.5),
         0 2px 8px rgba(81,218,207,0.2);
 }
-/* v7.19.43: Sophia button — brand purple/teal gradient fill, sparkle pulse.
-   Stands out from the dark neumorphic siblings as the assistance entry point.
-   Inline-coaching env only (toolbar render gates by .swml-canvas-inline-coaching). */
+/* v7.19.61: toolbar Sophia button gets the sparkle-button design — same
+   spinning conic halo + 3-path bouncing sparkle SVG + gradient text fill
+   as the right-panel Continue button (v7.19.60). Particle-pen SKIPPED:
+   would bleed across sibling toolbar buttons.
+   Keyframes (swmlSparkFlip / swmlSparkRotate / swmlSparkleBounce) are
+   defined alongside .swml-coach-continue-btn lower in this file.
+   Inline-coaching env only (toolbar gated by .swml-canvas-inline-coaching). */
 .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia {
-    background: linear-gradient(135deg, #5333ed 0%, #7e3df0 50%, #41aaa8 100%) !important;
-    color: #fff !important;
-    border: 1px solid rgba(255,255,255,0.18) !important;
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.25),
-        0 0 0 1px rgba(83,51,237,0.55),
-        0 4px 14px rgba(83,51,237,0.45),
-        0 0 18px rgba(125,249,233,0.20) !important;
-    font-weight: 700;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    --transition: 0.25s;
+    --spark: 1.8s;
+    --cut: 0.1em;
+    --active: 0;
+    --bg:
+        radial-gradient(40% 50% at center 100%, hsl(258 calc(var(--active) * 97%) 72% / var(--active)), transparent),
+        radial-gradient(80% 100% at center 120%, hsl(252 calc(var(--active) * 97%) 70% / var(--active)), transparent),
+        hsl(252 calc(var(--active) * 97%) calc((var(--active) * 44%) + 12%));
+    background: var(--bg) !important;
+    border: 0 !important;
+    border-radius: 100px !important;
+    color: transparent;
+    font-weight: 600;
+    padding: 0.55em 0.95em !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    white-space: nowrap;
     position: relative;
     overflow: visible;
-}
-.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia svg {
-    filter: drop-shadow(0 0 5px rgba(255,255,255,0.85)) drop-shadow(0 0 10px rgba(125,249,233,0.55));
-    animation: swmlSophiaSparkle 2.4s ease-in-out infinite;
-    transform-origin: 50% 50%;
-}
-.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia:hover {
-    background: linear-gradient(135deg, #6a47ff 0%, #9656ff 50%, #51dacf 100%) !important;
+    cursor: pointer;
     box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.35),
-        0 0 0 1px rgba(125,249,233,0.65),
-        0 6px 22px rgba(83,51,237,0.55),
-        0 0 24px rgba(125,249,233,0.35) !important;
-    transform: translateY(-1px) scale(1.04);
+        0 0 calc(var(--active) * 4em) calc(var(--active) * 1.6em) hsl(252 97% 61% / 0.75),
+        0 0.05em 0 0 hsl(252 calc(var(--active) * 97%) calc((var(--active) * 50%) + 30%)) inset,
+        0 -0.05em 0 0 hsl(252 calc(var(--active) * 97%) calc(var(--active) * 60%)) inset !important;
+    transition: box-shadow var(--transition), background var(--transition);
+    text-shadow: none;
+}
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia:is(:hover, :focus-visible) {
+    --active: 1;
+    transform: none;
 }
 .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia:active {
-    transform: translateY(0) scale(0.98);
+    transform: scale(0.98);
 }
-@keyframes swmlSophiaSparkle {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.18); opacity: 0.88; }
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia::before {
+    content: "";
+    position: absolute;
+    inset: -0.2em;
+    z-index: -1;
+    border: 0.2em solid hsl(252 97% 50% / 0.5);
+    border-radius: 100px;
+    opacity: var(--active, 0);
+    transition: opacity var(--transition);
+    pointer-events: none;
+}
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle {
+    overflow: visible !important;
+    inline-size: 1.15em;
+    flex-shrink: 0;
+    filter: none !important;
+    animation: none !important;
+}
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle path {
+    color: hsl(0 0% calc((var(--active, 0) * 70%) + var(--base)));
+    transform-box: fill-box;
+    transform-origin: center;
+    fill: currentColor;
+    stroke: currentColor;
+    -webkit-animation-delay: calc((var(--transition) * 1.5) + (var(--delay) * 1s));
+            animation-delay: calc((var(--transition) * 1.5) + (var(--delay) * 1s));
+    -webkit-animation-duration: 0.6s;
+            animation-duration: 0.6s;
+    transition: color var(--transition);
+}
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia:is(:hover, :focus-visible) .sparkle path {
+    -webkit-animation-name: swmlSparkleBounce;
+            animation-name: swmlSparkleBounce;
+}
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle path:nth-of-type(1) { --scale: 0.5; --delay: 0.1; --base: 40%; }
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle path:nth-of-type(2) { --scale: 1.5; --delay: 0.2; --base: 20%; }
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .sparkle path:nth-of-type(3) { --scale: 2.5; --delay: 0.35; --base: 30%; }
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .spark {
+    position: absolute;
+    inset: 0;
+    border-radius: 100px;
+    rotate: 0deg;
+    overflow: hidden;
+    -webkit-mask: linear-gradient(white, transparent 50%);
+            mask: linear-gradient(white, transparent 50%);
+    -webkit-animation: swmlSparkFlip calc(var(--spark) * 2) infinite steps(2, end);
+            animation: swmlSparkFlip calc(var(--spark) * 2) infinite steps(2, end);
+}
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .spark::before {
+    content: "";
+    position: absolute;
+    width: 200%;
+    aspect-ratio: 1;
+    top: 0%;
+    left: 50%;
+    z-index: -1;
+    translate: -50% -15%;
+    rotate: 0;
+    transform: rotate(-90deg);
+    opacity: calc(var(--active) + 0.4);
+    background: conic-gradient(from 0deg, transparent 0 340deg, white 360deg);
+    transition: opacity var(--transition);
+    -webkit-animation: swmlSparkRotate var(--spark) linear infinite both;
+            animation: swmlSparkRotate var(--spark) linear infinite both;
+}
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .spark::after {
+    content: "";
+    position: absolute;
+    inset: var(--cut);
+    border-radius: 100px;
+}
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .backdrop {
+    position: absolute;
+    inset: var(--cut);
+    background: var(--bg);
+    border-radius: 100px;
+    transition: background var(--transition);
+}
+.swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .text {
+    translate: 0 -3%;
+    letter-spacing: 0.01ch;
+    background: linear-gradient(90deg, hsl(0 0% calc((var(--active) * 100%) + 65%)), hsl(0 0% calc((var(--active) * 100%) + 26%)));
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+    transition: background var(--transition);
+    position: relative;
+    z-index: 1;
+}
+/* Light theme: lift base lightness so resting toolbar Sophia reads on
+   white panel; swap text gradient to dark for legibility. */
+body[data-swml-theme="light"] .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia {
+    --bg:
+        radial-gradient(40% 50% at center 100%, hsl(258 calc(var(--active) * 97%) 72% / var(--active)), transparent),
+        radial-gradient(80% 100% at center 120%, hsl(252 calc(var(--active) * 97%) 70% / var(--active)), transparent),
+        hsl(252 calc(var(--active) * 70%) calc((var(--active) * 30%) + 88%));
+}
+body[data-swml-theme="light"] .swml-sel-neumorphic .swml-sel-btn.swml-sel-sophia .text {
+    background: linear-gradient(90deg, hsl(252 calc(var(--active) * 60%) calc((var(--active) * -10%) + 28%)), hsl(252 calc(var(--active) * 80%) calc((var(--active) * -10%) + 18%)));
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
 }
 
 /* ── Pinch-to-Zoom ── */
