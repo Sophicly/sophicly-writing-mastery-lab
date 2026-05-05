@@ -7846,33 +7846,72 @@ body[data-swml-theme="light"] .swml-coach-rh-se::after {
     user-select: none;
 }
 
-/* "Continue conversation" sticky footer in right Sophia panel */
+/* "Continue with Sophia" sticky footer in right Sophia panel.
+   v7.19.57: redesigned — brand purple→teal gradient with darker base,
+   sparkles icon in a soft halo on the left, label centred. Hover lifts
+   slightly + intensifies glow. */
 .swml-coach-continue-btn {
     position: sticky;
     bottom: 0;
-    margin: 8px 12px;
-    padding: 10px 14px;
-    border: none;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #5333ed 0%, #4D76FD 100%);
+    margin: 10px 14px 14px;
+    padding: 12px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 12px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 50%),
+        linear-gradient(135deg, #5333ed 0%, #6e3df0 45%, #41aaa8 100%);
     color: #fff;
     font-family: inherit;
-    font-size: 12.5px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
+    gap: 10px;
     justify-content: center;
-    box-shadow: 0 4px 14px rgba(83, 51, 237, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-    transition: filter 0.12s ease, transform 0.12s ease;
+    box-shadow:
+        0 0 0 1px rgba(83, 51, 237, 0.35),
+        0 6px 20px rgba(83, 51, 237, 0.40),
+        0 0 24px rgba(125, 249, 233, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.30);
+    transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.3s ease;
     align-self: stretch;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.30);
 }
 .swml-coach-continue-btn:hover {
-    filter: brightness(1.08);
     transform: translateY(-1px);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, transparent 50%),
+        linear-gradient(135deg, #6a47ff 0%, #8651ff 45%, #51dacf 100%);
+    box-shadow:
+        0 0 0 1px rgba(125, 249, 233, 0.55),
+        0 8px 26px rgba(83, 51, 237, 0.55),
+        0 0 30px rgba(125, 249, 233, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.40);
 }
 .swml-coach-continue-btn:active {
-    transform: translateY(0);
+    transform: translateY(0) scale(0.99);
+}
+.swml-coach-continue-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(125, 249, 233, 0.35) 0%, transparent 70%);
+}
+.swml-coach-continue-icon svg {
+    width: 16px;
+    height: 16px;
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 8px rgba(125, 249, 233, 0.55));
+    animation: swmlSophiaSparkle 2.4s ease-in-out infinite;
+}
+.swml-coach-continue-label {
+    flex: 1;
+    text-align: center;
 }
 
 /* Selection echo — sits above the user bubble in the panel as a quoted lead-in */

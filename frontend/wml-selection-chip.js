@@ -294,6 +294,21 @@
             }
         });
         if (Array.isArray(stored.history)) _conversationHistory = stored.history.slice();
+        // v7.19.57: rehydrate _lastSelectionInfo from stored.lastSelection
+        // so Continue button has the text + scope to reopen a box. The DOM
+        // Range can't survive reload, so rect/range fields stay null and
+        // _openBox falls back to a viewport-anchored position.
+        if (stored.lastSelection && stored.lastSelection.text) {
+            _lastSelectionInfo = {
+                text: stored.lastSelection.text,
+                sectionContext: stored.lastSelection.sectionContext || '',
+                scope: stored.lastSelection.scope || 'paragraph',
+                rect: null,
+                range: null,
+                anchorEl: null,
+                focusEl: null,
+            };
+        }
         // Show Continue button if a thread exists, since the user has no
         // active selection on reload.
         if (_conversationHistory.length > 0) _ensureContinueBtn();
@@ -454,15 +469,23 @@
         if (!_box) return;
         // v7.19.47: box uses position:fixed anchored to document.body.
         // rect is viewport-coords (from getBoundingClientRect), so we apply
-        // it directly — no offset-parent / scrollTop math. Survives theme
-        // toggle / canvas re-render because body never detaches. Vertical
-        // scroll on .swml-canvas-content is tracked by a scroll listener
-        // (re-fires _positionBoxFromRange).
+        // it directly — no offset-parent / scrollTop math.
         const vw = window.innerWidth || document.documentElement.clientWidth;
         const vh = window.innerHeight || document.documentElement.clientHeight;
         const boxW = 480;
         const gap = 12;
         const estBoxH = Math.min(vh * 0.55, 420);
+
+        // v7.19.57: null rect → fallback (Continue button after page reload
+        // when the live Range is gone). Anchor near right edge above the
+        // Sophia panel's Continue button so the user sees continuity.
+        if (!rect || (rect.width === 0 && rect.height === 0)) {
+            _box.style.left = Math.max(8, vw - boxW - 24) + 'px';
+            _box.style.top = Math.max(8, (vh - estBoxH) / 2) + 'px';
+            _box.style.width = boxW + 'px';
+            _box.classList.remove('swml-coach-box--above');
+            return;
+        }
 
         // Horizontal: align to selection left, clamp to viewport.
         let left = rect.left;
@@ -495,17 +518,25 @@
     function _ensureContinueBtn() {
         const panel = _ctx && _ctx.sophiaPanel;
         if (!panel || _continueBtn) return;
+        // v7.19.57: bundled sparkles SVG + cleaner brand-aligned shell.
+        const SVG_CONTINUE_SPARK = '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="swmlContSparkA" x1="32.63" x2="8.63" y1="8.98" y2="30.77" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#dad9fe"/><stop offset="1" stop-color="#9a97fe"/></linearGradient></defs><path fill="url(#swmlContSparkA)" d="M23.47 30.13l-1.47 3.36c-.56 1.29-2.35 1.29-2.92 0l-1.47-3.36c-1.31-2.99-3.66-5.37-6.59-6.67l-4.04-1.79c-1.28-.57-1.28-2.44 0-3.01l3.91-1.74c3.01-1.33 5.4-3.8 6.68-6.9l1.49-3.58c.55-1.33 2.39-1.33 2.94 0l1.49 3.58c1.28 3.09 3.68 5.56 6.68 6.9l3.91 1.74c1.28.57 1.28 2.44 0 3.01l-4.04 1.79c-2.93 1.3-5.28 3.68-6.59 6.67Z"/></svg>';
         const btn = el('button', {
             className: 'swml-coach-continue-btn',
             type: 'button',
-            innerHTML: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Continue conversation',
-            title: 'Reopen the inline coach box at your last selection',
+            innerHTML:
+                '<span class="swml-coach-continue-icon">' + SVG_CONTINUE_SPARK + '</span>' +
+                '<span class="swml-coach-continue-label">Continue with Sophia</span>',
+            title: 'Reopen the coach box with your last conversation',
             onClick: (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (!_lastSelectionInfo) return;
-                // Re-derive a fresh rect from the live Range so the box anchors
-                // wherever the source text now sits.
+                if (!_lastSelectionInfo) {
+                    console.warn('WML SelectionChip: Continue clicked but no _lastSelectionInfo');
+                    return;
+                }
+                // Re-derive a fresh rect from the live Range if available.
+                // After page reload range is null → _openBox + _positionBox
+                // fall back to a viewport-anchored position.
                 let freshRect = _lastSelectionInfo.rect;
                 if (_lastSelectionInfo.range) {
                     try {
