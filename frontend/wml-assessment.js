@@ -3704,12 +3704,6 @@
                 const span2 = el('span', { className: 'swml-tb-icon swml-tb-clone', innerHTML: def.html });
                 li.appendChild(span1);
                 li.appendChild(span2);
-                // v7.19.52: prevent toolbar item from stealing editor focus
-                // on mousedown — without this, ProseMirror collapses the
-                // selection before the click handler runs, so toggleBold
-                // applies at the new caret position (which may not match
-                // the highlighted word).
-                li.addEventListener('mousedown', (ev) => { ev.preventDefault(); });
                 li.addEventListener('click', (ev) => {
                     if (tbDragMoved) return; // ignore clicks from drags
                     ev.stopPropagation();
@@ -3723,6 +3717,21 @@
 
         // Toolbar container
         const toolbar = el('div', { className: 'swml-canvas-toolbar' });
+
+        // v7.19.54: capture-phase listeners on toolbar root prevent toolbar
+        // items from stealing editor focus. Pointerdown fires BEFORE mousedown
+        // and ProseMirror reacts to the focus loss on either, so block both.
+        // preventDefault stops focus shift; selection stays intact through
+        // the click cycle so toggleBold applies to the highlighted text, not
+        // a relocated caret. Capture phase ensures we run before tbScroll's
+        // own pointerdown handler at L3964.
+        const _preventToolbarFocusSteal = (ev) => {
+            if (ev.target.closest && ev.target.closest('.swml-tb-item')) {
+                ev.preventDefault();
+            }
+        };
+        toolbar.addEventListener('pointerdown', _preventToolbarFocusSteal, true);
+        toolbar.addEventListener('mousedown', _preventToolbarFocusSteal, true);
 
         // Gradient masks
         toolbar.appendChild(el('div', { className: 'swml-tb-gradient swml-tb-gradient-left' }));
