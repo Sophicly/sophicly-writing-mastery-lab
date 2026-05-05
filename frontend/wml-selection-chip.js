@@ -538,13 +538,18 @@
         const box = el('div', { className: 'swml-coach-box', 'data-scope': selectionInfo.scope });
 
         // 1. Drag handle + selection echo. The whole top strip is grabbable.
+        // v7.19.53: redesigned echo as glowing inset card with sparkle gutter
+        // (option B from the design review).
         const handle = el('div', { className: 'swml-coach-handle' });
         handle.appendChild(el('span', { className: 'swml-coach-handle-grip', innerHTML: '&#8942;&#8942;' }));
         const selPreview = (selectionInfo.text || '').slice(0, 200);
-        const quote = el('div', {
-            className: 'swml-coach-quote',
-            textContent: selectionInfo.text.length > 200 ? selPreview + '…' : selPreview,
-        });
+        const quote = el('div', { className: 'swml-coach-quote' });
+        const SVG_QUOTE_SPARK = '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M23.47 30.13l-1.47 3.36c-.56 1.29-2.35 1.29-2.92 0l-1.47-3.36c-1.31-2.99-3.66-5.37-6.59-6.67l-4.04-1.79c-1.28-.57-1.28-2.44 0-3.01l3.91-1.74c3.01-1.33 5.4-3.8 6.68-6.9l1.49-3.58c.55-1.33 2.39-1.33 2.94 0l1.49 3.58c1.28 3.09 3.68 5.56 6.68 6.9l3.91 1.74c1.28.57 1.28 2.44 0 3.01l-4.04 1.79c-2.93 1.3-5.28 3.68-6.59 6.67Z"/></svg>';
+        quote.innerHTML =
+            '<span class="swml-coach-quote-gutter">' + SVG_QUOTE_SPARK + '</span>' +
+            '<span class="swml-coach-quote-text"></span>';
+        quote.querySelector('.swml-coach-quote-text').textContent =
+            selectionInfo.text.length > 200 ? selPreview + '…' : selPreview;
         handle.appendChild(quote);
         box.appendChild(handle);
 
