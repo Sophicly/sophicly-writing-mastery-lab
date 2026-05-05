@@ -2926,20 +2926,16 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     border-top: 1px solid rgba(255,255,255,0.1);
     margin: 24px 0;
 }
+/* v7.19.55: every highlighted <mark> gets dark text in dark theme — inline
+   background-color (TipTap Highlight extension OR data-color from plan
+   templates) leaves white-on-pastel unreadable otherwise. Plan-beat rules
+   at L6829+ declare their own paired text colour at same specificity AND
+   come later in the stylesheet, so they win on tie-break. */
 .swml-canvas-content .ProseMirror mark {
     background: rgba(81,218,207,0.25);
-    color: inherit;
+    color: #1c1d1f;
     border-radius: 2px;
     padding: 1px 2px;
-}
-/* v7.19.54: TipTap Highlight extension sets inline background-color on
-   <mark style="background-color: ..."> spans. Without an override, the
-   text inherits white from .ProseMirror, leaving white-on-pastel that's
-   unreadable. Force dark text whenever an inline background is present.
-   Plan-beat marks use [data-color] + their own paired colour pairs at
-   L6829+, so exclude those via :not. */
-.swml-canvas-content .ProseMirror mark[style*="background"]:not([data-color]) {
-    color: #1c1d1f;
 }
 .swml-canvas-content .ProseMirror u {
     text-decoration-color: rgba(81,218,207,0.5);
@@ -8363,15 +8359,18 @@ body[data-swml-theme="light"] .swml-coach-mic.swml-mic-active {
     50%      { box-shadow: 0 0 0 8px rgba(77, 118, 253, 0),  inset 0 -1px 2px rgba(255, 255, 255, 0.4); }
 }
 
-/* Quick-actions area — grouped, scope-filtered, scrollable if long */
+/* Quick-actions area — grouped, scope-filtered, scrollable.
+   v7.19.55: flex-grow + min-height:0 so the action panel expands when
+   the box is resized taller (was capped at 200px regardless of box
+   size; paragraph-level group got cut off). */
 .swml-coach-actions {
     padding: 6px 10px 10px;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
     display: flex;
     flex-direction: column;
     gap: 6px;
-    flex-shrink: 0;
-    max-height: 200px;
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
 }
 body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0, 0, 0.06); }

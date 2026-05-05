@@ -3707,8 +3707,17 @@
                 li.addEventListener('click', (ev) => {
                     if (tbDragMoved) return; // ignore clicks from drags
                     ev.stopPropagation();
+                    // v7.19.55: log selection state at click-time so we can
+                    // see whether ProseMirror still has the user's range or
+                    // it's collapsed/moved by the time the action fires.
+                    const atClick = canvasEditor && canvasEditor.state && canvasEditor.state.selection;
+                    console.log('[toolbar] click on ' + def.id + ' — selection at click:',
+                        atClick ? { from: atClick.from, to: atClick.to, empty: atClick.empty } : 'none');
                     const action = toolActions[def.id];
                     if (action) action(ev, li);
+                    const after = canvasEditor && canvasEditor.state && canvasEditor.state.selection;
+                    console.log('[toolbar] after action — selection now:',
+                        after ? { from: after.from, to: after.to, empty: after.empty } : 'none');
                 });
                 frag.appendChild(li);
             });
@@ -3719,15 +3728,16 @@
         const toolbar = el('div', { className: 'swml-canvas-toolbar' });
 
         // v7.19.54: capture-phase listeners on toolbar root prevent toolbar
-        // items from stealing editor focus. Pointerdown fires BEFORE mousedown
-        // and ProseMirror reacts to the focus loss on either, so block both.
-        // preventDefault stops focus shift; selection stays intact through
-        // the click cycle so toggleBold applies to the highlighted text, not
-        // a relocated caret. Capture phase ensures we run before tbScroll's
-        // own pointerdown handler at L3964.
+        // items from stealing editor focus on pointerdown / mousedown.
+        // v7.19.55: also stopPropagation to defeat any other handler that
+        // might trigger blur via different path; diagnostic logs trace the
+        // selection across the click cycle.
         const _preventToolbarFocusSteal = (ev) => {
             if (ev.target.closest && ev.target.closest('.swml-tb-item')) {
                 ev.preventDefault();
+                const before = canvasEditor && canvasEditor.state && canvasEditor.state.selection;
+                console.log('[toolbar] ' + ev.type + ' captured — selection before:',
+                    before ? { from: before.from, to: before.to, empty: before.empty } : 'none');
             }
         };
         toolbar.addEventListener('pointerdown', _preventToolbarFocusSteal, true);
