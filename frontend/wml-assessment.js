@@ -10663,14 +10663,52 @@
                         }
                     }));
 
-                    // Note — hidden in diagnostic mode (no assistance allowed)
+                    // v7.19.42: detect inline-coaching env — Note button hidden
+                    // (Notes side panel not surfaced in this env, so the button
+                    // would dead-end), Sophia button surfaced as the assistance
+                    // entry point.
+                    const isInlineCoaching = !!document.querySelector('.swml-canvas-inline-coaching');
+
+                    // Note — hidden in diagnostic mode (no assistance allowed),
+                    // also hidden in inline-coaching env (no Notes panel).
                     const isDiagnosticMode = state.phase === 'initial' && state.mode === 'guided' && !canvasInAssessment;
-                    if (!isDiagnosticMode) {
+                    if (!isDiagnosticMode && !isInlineCoaching) {
                         tb.appendChild(el('button', { className: 'swml-sel-btn swml-sel-notes', innerHTML: SVG_SEL_NOTE + ' <span>Note</span>',
                             onClick: (ev) => {
                                 ev.stopPropagation();
                                 sendToNotes(selectedText);
                                 removeCanvasSelToolbar(); sel.removeAllRanges();
+                            }
+                        }));
+                    }
+
+                    // Sophia — inline-coaching env only. Replaces the standalone
+                    // chip from v7.19.24-v7.19.41 (collision with this toolbar
+                    // on short selections). Toolbar now hosts the entry point.
+                    if (isInlineCoaching && !isDiagnosticMode) {
+                        const SVG_SOPHIA = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.39 5.27L20 8.24l-4 3.84.94 5.41L12 14.77 7.06 17.49 8 12.08 4 8.24l5.61-.97z"/></svg>';
+                        tb.appendChild(el('button', { className: 'swml-sel-btn swml-sel-sophia', innerHTML: SVG_SOPHIA + ' <span>Sophia</span>',
+                            onClick: (ev) => {
+                                ev.stopPropagation();
+                                // Capture range + text BEFORE toolbar removal —
+                                // toolbar removal collapses the native selection
+                                // (same pattern as Comment button capturing tFrom/tTo).
+                                let capturedRange = null;
+                                try { capturedRange = range.cloneRange(); } catch (_) {}
+                                const capturedText = selectedText;
+                                const capturedRect = rect;
+                                removeCanvasSelToolbar();
+                                requestAnimationFrame(() => {
+                                    if (!window.WML || !window.WML.SelectionChip || !window.WML.SelectionChip.openBox) {
+                                        console.warn('WML SelectionChip: openBox not available');
+                                        return;
+                                    }
+                                    window.WML.SelectionChip.openBox({
+                                        range: capturedRange,
+                                        selectedText: capturedText,
+                                        rect: capturedRect,
+                                    });
+                                });
                             }
                         }));
                     }
@@ -13758,7 +13796,16 @@
                 : 0;
         }
         // v7.14.73: Count only response sections (not outline/plan/question sections).
-        const responseSections = liveEditorEl.querySelectorAll('[data-section-type="response"]');
+        // v7.19.42: exam_crib doc renders BOTH plan + response as editable
+        // student-writing zones (skeleton-plan-then-essay shape). Widen the
+        // selector for that task so the wc widget tracks combined output;
+        // all other tasks unchanged.
+        const _state = window.WML && window.WML.state;
+        const _isCrib = _state && _state.task === 'exam_crib';
+        const _sectionSelector = _isCrib
+            ? '[data-section-type="response"], [data-section-type="plan"]'
+            : '[data-section-type="response"]';
+        const responseSections = liveEditorEl.querySelectorAll(_sectionSelector);
         if (responseSections.length === 0) {
             // Fallback for legacy templates without section types
             const editableSections = liveEditorEl.querySelectorAll('[data-editable="true"]');

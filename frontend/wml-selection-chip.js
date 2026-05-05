@@ -1,17 +1,20 @@
 /**
- * Sophicly Writing Mastery Lab — Selection-Coach Module (v7.19.26)
+ * Sophicly Writing Mastery Lab — Selection-Coach Module (v7.19.42)
  *
- * Tiptap-style single floating box on text selection inside the inline-coaching
- * env (task='exam_crib' + future polish env). Replaces the chip + menu
- * two-click flow from v7.19.24-25 with a single prompt-box: "Ask Sophia..."
- * textarea + quick-action buttons + send. Reply renders Socratic-only inside
- * the box (never replaces text inline — pedagogy red line).
+ * Tiptap-style coach box opened from the canvas selection toolbar's Sophia
+ * button (`.swml-sel-btn.swml-sel-sophia` in wml-assessment.js). Box has:
+ * selection echo + textarea + mic + send + scope-filtered quick-actions +
+ * drag / resize / snap-back / auto-follow on layout reflow. Replies render
+ * in the right Sophia panel (persistent thread, localStorage-backed).
+ *
+ * v7.19.42: dropped the standalone "Sophia" chip — collision with the canvas
+ * selection toolbar (Comment / Copy / Note) on short selections. Toolbar is
+ * now the single host; Sophia button calls `WML.SelectionChip.openBox()`.
  *
  * Pedagogy: Socratic-only. Sophia never grades, never writes for student. See
  * protocols/shared/modules/inline-coaching-core.md.
  *
- * Exposed: window.WML.SelectionChip = { mount, unmount, ACTION_MAP, ... }.
- * Mounted imperatively from the inline-coaching render branch in wml-assessment.js.
+ * Exposed: window.WML.SelectionChip = { mount, unmount, openBox, ACTION_MAP, ... }.
  */
 (function () {
     'use strict';
@@ -57,11 +60,9 @@
 
     // ── Module-scoped state ──
     let _ctx = null;
-    let _chip = null;                // small floating "Sophia" trigger pill
-    let _box = null;                  // full prompt box (opens on chip click)
+    let _box = null;                  // full prompt box (opens on toolbar Sophia button)
     let _activeSelection = null;     // last valid selection info, frozen at box-open
     let _bound = false;
-    let _selectionTimer = null;
     let _conversationHistory = [];   // shared across selections within a mount
     let _conversationId = '';
     let _currentRange = null;        // live Range used to follow layout shifts
@@ -70,7 +71,6 @@
     let _onWindowResize = null;
     let _lastSelectionInfo = null;   // remembers last opened selection for re-open
     let _continueBtn = null;         // sticky footer in right panel
-    let _pendingSelectionInfo = null; // selection captured at chip-show time
 
     // ── Helpers ──
 
@@ -350,63 +350,59 @@
         return bubble;
     }
 
-    // ── Floating chip — non-intrusive trigger ──────────────────────
-    // Highlighting text inside plan/response shows a small "✨ Sophia" chip
-    // near the selection. Click chip → opens the full coach box. This lets
-    // students still type-over / copy / delete a selection naturally —
-    // plain highlight does NOT hijack input.
+    // ── Public opener ──────────────────────────────────────────────
+    // v7.19.42: chip dropped — toolbar Sophia button opens the box directly.
+    // Caller supplies a Range + the selected text; we derive scope, section
+    // context, and the bounding rect. Range is cloned defensively so caller
+    // can collapse/remove the native selection (toolbar removal does this).
 
-    function _removeChip() {
-        if (_chip && _chip.parentNode) _chip.parentNode.removeChild(_chip);
-        _chip = null;
-        _pendingSelectionInfo = null;
-    }
-
-    function _showChip(selectionInfo) {
-        _removeChip();
-        const offsetParent = _getOffsetParent();
-        if (!offsetParent) return;
-
-        _pendingSelectionInfo = selectionInfo;
-
-        const chip = el('button', {
-            className: 'swml-coach-chip',
-            type: 'button',
-            title: 'Coach this selection with Sophia',
-            innerHTML: '<span class="swml-coach-chip-icon">✨</span><span class="swml-coach-chip-label">Sophia</span>',
-        });
-        // Stop mousedown from collapsing the selection before the chip
-        // click handler runs.
-        chip.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
-        chip.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const info = _pendingSelectionInfo;
-            _removeChip();
-            if (info) _openBox(info);
-        });
-
-        // Position chip above the selection's first line. Use the same
-        // container-relative math as _positionBox so the chip rides the
-        // doc on scroll.
-        const opRect = offsetParent.getBoundingClientRect();
-        const scrollTop = offsetParent.scrollTop || 0;
-        const scrollLeft = offsetParent.scrollLeft || 0;
-        const chipH = 28, chipW = 96, gap = 6;
-        let top = (selectionInfo.rect.top - opRect.top + scrollTop) - chipH - gap;
-        let left = (selectionInfo.rect.left - opRect.left + scrollLeft);
-        // Clamp to container bounds.
-        const maxLeft = Math.max(8, opRect.width - chipW - 8);
-        left = Math.max(8, Math.min(left, maxLeft));
-        // If above-flip would clip top, fall below selection.
-        if (top < scrollTop + 4) {
-            top = (selectionInfo.rect.bottom - opRect.top + scrollTop) + gap;
+    function openBox(opts) {
+        if (!_bound) {
+            console.warn('WML SelectionChip: openBox called before mount');
+            return;
         }
-        chip.style.top = top + 'px';
-        chip.style.left = left + 'px';
+        if (!opts || !opts.range || !opts.selectedText) {
+            console.warn('WML SelectionChip: openBox missing range/selectedText');
+            return;
+        }
+        const range = opts.range;
+        const text = String(opts.selectedText || '').trim();
+        if (!text) return;
 
-        offsetParent.appendChild(chip);
-        _chip = chip;
+        // Derive anchor/focus elements from range endpoints.
+        const startNode = range.startContainer;
+        const endNode = range.endContainer;
+        const anchorEl = startNode && (startNode.nodeType === 3 ? startNode.parentElement : startNode);
+        const focusEl = endNode && (endNode.nodeType === 3 ? endNode.parentElement : endNode);
+
+        // Bounding rect: prefer caller-supplied (toolbar already had one) —
+        // fall back to live range. Falls back to first client rect if 0×0.
+        let rect = opts.rect;
+        if (!rect || (rect.width === 0 && rect.height === 0)) {
+            try { rect = range.getBoundingClientRect(); } catch (_) { rect = null; }
+        }
+        if (!rect || (rect.width === 0 && rect.height === 0)) {
+            try {
+                const rects = range.getClientRects();
+                if (rects && rects.length > 0) rect = rects[0];
+            } catch (_) {}
+        }
+        if (!rect || (rect.width === 0 && rect.height === 0)) {
+            console.debug('[SelectionChip] openBox: zero-rect range, skipping');
+            return;
+        }
+
+        const scope = classifyScope(text, anchorEl, focusEl);
+        const sectionContext = extractSectionContext(anchorEl);
+
+        let rangeClone = null;
+        try { rangeClone = range.cloneRange(); } catch (_) {}
+
+        const selectionInfo = {
+            text, scope, sectionContext, rect, anchorEl, focusEl,
+            range: rangeClone,
+        };
+        _openBox(selectionInfo);
     }
 
     // Re-derive the box position from the LIVE selection Range. Used after
@@ -940,89 +936,20 @@
             document.querySelector('.ProseMirror');
     }
 
-    function _recomputeSelection() {
-        if (!_ctx) { console.debug('[SelectionChip] no ctx'); return; }
-        const editorEl = _getEditorEl();
-        if (!editorEl) { console.debug('[SelectionChip] no editor element'); return; }
-
-        const sel = window.getSelection();
-        if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
-        const range = sel.getRangeAt(0);
-
-        if (!editorEl.contains(range.commonAncestorContainer)) {
-            console.debug('[SelectionChip] selection outside editor', range.commonAncestorContainer);
-            return;
-        }
-
-        const text = sel.toString().trim();
-        if (!text) return;
-
-        if (!isEditableSection(sel.anchorNode)) {
-            console.debug('[SelectionChip] anchor not in plan/response', sel.anchorNode);
-            return;
-        }
-        if (!isEditableSection(sel.focusNode)) {
-            console.debug('[SelectionChip] focus not in plan/response', sel.focusNode);
-            return;
-        }
-
-        let rect = range.getBoundingClientRect();
-        if (!rect || (rect.width === 0 && rect.height === 0)) {
-            // Fallback: try first client rect (multi-line ranges can return 0x0
-            // bounding rect on some browsers / after transform shifts).
-            try {
-                const rects = range.getClientRects();
-                if (rects && rects.length > 0) rect = rects[0];
-            } catch (_) {}
-            if (!rect || (rect.width === 0 && rect.height === 0)) {
-                console.debug('[SelectionChip] zero-rect range — skipping', range);
-                return;
-            }
-        }
-
-        const anchorEl = sel.anchorNode && (sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode);
-        const focusEl = sel.focusNode && (sel.focusNode.nodeType === 3 ? sel.focusNode.parentElement : sel.focusNode);
-        const scope = classifyScope(text, anchorEl, focusEl);
-        const sectionContext = extractSectionContext(anchorEl);
-
-        let rangeClone = null;
-        try { rangeClone = range.cloneRange(); } catch (_) {}
-
-        const selectionInfo = { text, scope, sectionContext, rect, anchorEl, focusEl, range: rangeClone };
-        // v7.19.41: show the small chip — student must click it to open the
-        // full box. Prevents auto-open from hijacking native typing / copy /
-        // delete on the highlighted text.
-        console.debug('[SelectionChip] showing chip', { scope, textLen: text.length });
-        _showChip(selectionInfo);
-    }
-
-    function _scheduleRecompute(e) {
-        // Only fire when the gesture originated inside the live editor —
-        // protects against random page-wide selections triggering the chip.
-        if (e && e.target) {
-            const editorEl = _getEditorEl();
-            if (!editorEl || !editorEl.contains(e.target)) return;
-        }
-        if (_selectionTimer) clearTimeout(_selectionTimer);
-        _selectionTimer = setTimeout(() => {
-            _selectionTimer = null;
-            _recomputeSelection();
-        }, 80);
-    }
-
     function _onDocumentMouseDown(e) {
-        if (_box && _box.contains(e.target)) return;
-        if (_chip && _chip.contains(e.target)) return;
-        // Outside click → close box AND chip. The student is moving on.
+        if (!_box) return;
+        if (_box.contains(e.target)) return;
+        // Don't close the box when the user mouses down inside the canvas
+        // selection toolbar — toolbar buttons (incl. Sophia re-open) need
+        // a clean click cycle.
+        const tb = e.target.closest && e.target.closest('.swml-selection-toolbar');
+        if (tb) return;
+        // Outside click → close box. Student is moving on.
         _removeBox();
-        _removeChip();
     }
 
     function _onKeyDown(e) {
-        if (e.key === 'Escape') {
-            if (_box) { _removeBox(); return; }
-            if (_chip) { _removeChip(); return; }
-        }
+        if (e.key === 'Escape' && _box) { _removeBox(); }
     }
 
     // ── Mount / unmount ─────────────────────────────────────────────
@@ -1039,12 +966,9 @@
         _ctx = ctx;
         _conversationHistory = [];
         _conversationId = 'crib_' + Date.now();
-        // v7.19.37: document-level delegation so listeners survive TipTap
-        // editor rebuilds (theme toggle / fullscreen / sidebar reflow can
-        // detach the editor element). _scheduleRecompute filters by ancestry.
-        document.addEventListener('mouseup', _scheduleRecompute);
-        document.addEventListener('touchend', _scheduleRecompute);
-        document.addEventListener('keyup', _scheduleRecompute);
+        // v7.19.42: drop mouseup/touchend/keyup chip-trigger listeners.
+        // Toolbar Sophia button is the single entry point now. Keep
+        // mousedown for outside-click close + keydown for Escape.
         document.addEventListener('mousedown', _onDocumentMouseDown);
         document.addEventListener('keydown', _onKeyDown);
 
@@ -1052,20 +976,15 @@
         // Restore prior thread from localStorage so the panel survives reload.
         try { _hydrateFromHistory(); }
         catch (err) { console.warn('WML SelectionChip: hydrate failed', err); }
-        console.log('WML SelectionChip v7.19.39: mounted (body-anchored fixed + persistent thread)');
+        console.log('WML SelectionChip v7.19.42: mounted (toolbar-driven, persistent thread)');
         return { unmount };
     }
 
     function unmount() {
         if (!_bound) return;
-        document.removeEventListener('mouseup', _scheduleRecompute);
-        document.removeEventListener('touchend', _scheduleRecompute);
-        document.removeEventListener('keyup', _scheduleRecompute);
         document.removeEventListener('mousedown', _onDocumentMouseDown);
         document.removeEventListener('keydown', _onKeyDown);
-        if (_selectionTimer) { clearTimeout(_selectionTimer); _selectionTimer = null; }
         _removeBox();
-        _removeChip();
         _removeContinueBtn();
         _activeSelection = null;
         _lastSelectionInfo = null;
@@ -1079,6 +998,7 @@
     window.WML.SelectionChip = {
         mount,
         unmount,
+        openBox,
         ACTION_MAP,
         ACTION_LABELS,
         buildPrompt,
