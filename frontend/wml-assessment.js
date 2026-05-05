@@ -3707,17 +3707,8 @@
                 li.addEventListener('click', (ev) => {
                     if (tbDragMoved) return; // ignore clicks from drags
                     ev.stopPropagation();
-                    // v7.19.55: log selection state at click-time so we can
-                    // see whether ProseMirror still has the user's range or
-                    // it's collapsed/moved by the time the action fires.
-                    const atClick = canvasEditor && canvasEditor.state && canvasEditor.state.selection;
-                    console.log('[toolbar] click on ' + def.id + ' — selection at click:',
-                        atClick ? { from: atClick.from, to: atClick.to, empty: atClick.empty } : 'none');
                     const action = toolActions[def.id];
                     if (action) action(ev, li);
-                    const after = canvasEditor && canvasEditor.state && canvasEditor.state.selection;
-                    console.log('[toolbar] after action — selection now:',
-                        after ? { from: after.from, to: after.to, empty: after.empty } : 'none');
                 });
                 frag.appendChild(li);
             });
@@ -3729,15 +3720,12 @@
 
         // v7.19.54: capture-phase listeners on toolbar root prevent toolbar
         // items from stealing editor focus on pointerdown / mousedown.
-        // v7.19.55: also stopPropagation to defeat any other handler that
-        // might trigger blur via different path; diagnostic logs trace the
-        // selection across the click cycle.
+        // Without these the tbScroll pointerdown handler at L3964 fires
+        // first, ProseMirror sees focus loss + collapses selection at the
+        // wrong caret. preventDefault keeps focus + selection intact.
         const _preventToolbarFocusSteal = (ev) => {
             if (ev.target.closest && ev.target.closest('.swml-tb-item')) {
                 ev.preventDefault();
-                const before = canvasEditor && canvasEditor.state && canvasEditor.state.selection;
-                console.log('[toolbar] ' + ev.type + ' captured — selection before:',
-                    before ? { from: before.from, to: before.to, empty: before.empty } : 'none');
             }
         };
         toolbar.addEventListener('pointerdown', _preventToolbarFocusSteal, true);

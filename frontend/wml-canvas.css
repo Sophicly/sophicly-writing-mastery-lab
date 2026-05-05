@@ -2926,16 +2926,20 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     border-top: 1px solid rgba(255,255,255,0.1);
     margin: 24px 0;
 }
-/* v7.19.55: every highlighted <mark> gets dark text in dark theme — inline
-   background-color (TipTap Highlight extension OR data-color from plan
-   templates) leaves white-on-pastel unreadable otherwise. Plan-beat rules
-   at L6829+ declare their own paired text colour at same specificity AND
-   come later in the stylesheet, so they win on tie-break. */
+/* v7.19.56: highlighted text — any element with an inline background gets
+   dark text. Catches <mark>, TipTap BackgroundColor <span style="...">,
+   and any custom highlight wrapper. !important defeats per-element rules
+   that would otherwise let text inherit white from .ProseMirror. Plan-beat
+   rules at L6829+ use !important on their colour too so they win there. */
 .swml-canvas-content .ProseMirror mark {
     background: rgba(81,218,207,0.25);
-    color: #1c1d1f;
+    color: #1c1d1f !important;
     border-radius: 2px;
     padding: 1px 2px;
+}
+.swml-canvas-content .ProseMirror [style*="background-color"],
+.swml-canvas-content .ProseMirror [style*="background:"] {
+    color: #1c1d1f !important;
 }
 .swml-canvas-content .ProseMirror u {
     text-decoration-color: rgba(81,218,207,0.5);
@@ -6833,7 +6837,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* Override inline background-color from PHP for dark canvas readability */
 .swml-section-plan mark[data-color="#ff8b94"] {
     background-color: rgba(160, 50, 55, 0.28) !important;
-    color: #f0a8ab;
+    color: #f0a8ab !important; /* v7.19.56: !important needed since global .ProseMirror mark now has !important on color. */
     border-radius: 3px;
     padding-top: 2px;
     padding-bottom: 2px;
@@ -6841,7 +6845,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 .swml-section-plan mark[data-color="#a8e6cf"] {
     background-color: rgba(50, 150, 90, 0.25) !important;
-    color: #a8e6cf;
+    color: #a8e6cf !important;
     border-radius: 3px;
     padding-top: 2px;
     padding-bottom: 2px;
@@ -6849,7 +6853,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 .swml-section-plan mark[data-color="#ffd3b6"] {
     background-color: rgba(170, 130, 60, 0.25) !important;
-    color: #ffe0b2;
+    color: #ffe0b2 !important;
     border-radius: 3px;
     padding-top: 2px;
     padding-bottom: 2px;
@@ -6857,7 +6861,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 .swml-section-plan mark[data-color="#51dacf"] {
     background-color: rgba(60, 160, 155, 0.25) !important;
-    color: #7df9e9;
+    color: #7df9e9 !important;
     border-radius: 3px;
     padding-top: 2px;
     padding-bottom: 2px;
