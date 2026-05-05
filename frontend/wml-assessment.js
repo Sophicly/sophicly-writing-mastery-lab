@@ -9224,9 +9224,12 @@
 
         // Hide notepad during diagnostic (no assistance allowed)
         // v7.14.48: Training-env exercises get notepad immediately — only hide for diagnostic (free-env)
+        // v7.19.43: inline-coaching env also keeps notepad — Note button in
+        // canvas selection toolbar adds highlights to the Notes app, so the
+        // Notes tab must be reachable.
         const snFab = document.querySelector('.sn-fab');
         const snPanel = document.querySelector('.sn-panel');
-        if (!useTrainingEnv) {
+        if (!useTrainingEnv && !useInlineCoachingEnv) {
             if (snFab) snFab.style.display = 'none';
             if (snPanel) snPanel.style.display = 'none';
             document.querySelectorAll('.sn-tab, .sn-tab-trigger, #snTabTrigger, [class*="sticky-note-tab"], [class*="notes-tab"]').forEach(t => t.style.display = 'none');
@@ -10663,16 +10666,17 @@
                         }
                     }));
 
-                    // v7.19.42: detect inline-coaching env — Note button hidden
-                    // (Notes side panel not surfaced in this env, so the button
-                    // would dead-end), Sophia button surfaced as the assistance
-                    // entry point.
+                    // v7.19.42: detect inline-coaching env so we can surface a
+                    // Sophia button as an additional entry point alongside
+                    // Comment / Copy / Note.
+                    // v7.19.43: Note button stays in inline-coaching env —
+                    // students still want to add highlights to the Notes app
+                    // (the missing right-side tab is a separate fix).
                     const isInlineCoaching = !!document.querySelector('.swml-canvas-inline-coaching');
 
-                    // Note — hidden in diagnostic mode (no assistance allowed),
-                    // also hidden in inline-coaching env (no Notes panel).
+                    // Note — hidden in diagnostic mode only.
                     const isDiagnosticMode = state.phase === 'initial' && state.mode === 'guided' && !canvasInAssessment;
-                    if (!isDiagnosticMode && !isInlineCoaching) {
+                    if (!isDiagnosticMode) {
                         tb.appendChild(el('button', { className: 'swml-sel-btn swml-sel-notes', innerHTML: SVG_SEL_NOTE + ' <span>Note</span>',
                             onClick: (ev) => {
                                 ev.stopPropagation();
