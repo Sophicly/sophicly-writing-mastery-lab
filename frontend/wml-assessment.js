@@ -11143,8 +11143,14 @@
             },
             onUpdate: ({ editor }) => {
                 // Word count — response sections only (v7.11.0)
+                // v7.19.63: live id-lookup for footer + widget. Closure refs
+                // (wcDisplay, wcWidgetLabel) become detached after canvas
+                // re-render — keystrokes were updating orphan nodes while the
+                // visible DOM stayed at "0 / 650". Diag refs stay closure-bound
+                // (diagnostic mode rebuilds its own scope when re-rendered).
                 const wc = getResponseWordCount(editor);
-                wcDisplay.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
+                const _liveFooterWc = document.getElementById('swml-footer-wc');
+                if (_liveFooterWc) _liveFooterWc.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
 
                 // Progress bar + mark complete (diagnostic mode) — direct refs
                 if (diagProgressFill) {
@@ -11155,7 +11161,8 @@
                 if (diagWcLabel) diagWcLabel.textContent = getWordCountLabel(wc);
                 if (diagCompleteBtn) diagCompleteBtn.style.display = wc >= canvasWordMinimum ? 'block' : 'none';
                 // Floating widget
-                if (wcWidgetLabel) wcWidgetLabel.textContent = `${wc} / ${canvasWordTarget}`;
+                const _liveWcWidget = document.getElementById('swml-wc-widget-label');
+                if (_liveWcWidget) _liveWcWidget.textContent = `${wc} / ${canvasWordTarget}`;
 
                 // v7.15.0: Mark Plan/Response InputFields as filled/empty
                 // v7.15.0: Single debounced pass for ALL completion indicators (no per-row observers)
