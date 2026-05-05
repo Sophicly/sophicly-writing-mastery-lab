@@ -3704,6 +3704,12 @@
                 const span2 = el('span', { className: 'swml-tb-icon swml-tb-clone', innerHTML: def.html });
                 li.appendChild(span1);
                 li.appendChild(span2);
+                // v7.19.52: prevent toolbar item from stealing editor focus
+                // on mousedown — without this, ProseMirror collapses the
+                // selection before the click handler runs, so toggleBold
+                // applies at the new caret position (which may not match
+                // the highlighted word).
+                li.addEventListener('mousedown', (ev) => { ev.preventDefault(); });
                 li.addEventListener('click', (ev) => {
                     if (tbDragMoved) return; // ignore clicks from drags
                     ev.stopPropagation();

@@ -4556,13 +4556,15 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     cursor: default;
 }
 /* Selection colour fix for dark-background sections */
+/* v7.19.52: dark-theme selection was 35% teal — too pale, text unreadable.
+   Switch to richer purple at 65% alpha + pure white text for contrast. */
 .swml-section-block ::selection {
-    background: rgba(81, 218, 207, 0.35);
-    color: #fff;
+    background: rgba(83, 51, 237, 0.65);
+    color: #ffffff;
 }
 .swml-section-block ::-moz-selection {
-    background: rgba(81, 218, 207, 0.35);
-    color: #fff;
+    background: rgba(83, 51, 237, 0.65);
+    color: #ffffff;
 }
 [data-swml-theme="light"] .swml-section-block ::selection {
     background: rgba(83, 51, 237, 0.25);
