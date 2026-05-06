@@ -145,15 +145,26 @@
         return groups;
     }
 
-    function buildPrompt(action, selection, sectionContext, taskCtx, freeText) {
+    function buildPrompt(action, selection, sectionContext, taskCtx, freeText, fullDoc) {
         const lines = [
             '## Inline Coaching Invocation',
             '',
             '- **Action:** ' + (action || 'freetext'),
-            '- **Selection:** ' + JSON.stringify(selection || ''),
-            '- **Section context:** ' + JSON.stringify(sectionContext || ''),
+            '- **Selection (frozen at open):** ' + JSON.stringify(selection || ''),
+            '- **Section context (live, re-read this turn):** ' + JSON.stringify(sectionContext || ''),
             '- **Task context:** ' + JSON.stringify(taskCtx || {}),
         ];
+        // v7.19.72: live full-doc snapshot per turn so cross-section student
+        // edits become visible to Sophia without copy-paste workaround. The
+        // frozen Selection above is what the student originally asked about;
+        // this Current Document block is everything as it stands NOW.
+        if (fullDoc && fullDoc.trim()) {
+            lines.push('');
+            lines.push('**Current full document (live this turn):**');
+            lines.push('```');
+            lines.push(fullDoc);
+            lines.push('```');
+        }
         if (freeText) {
             lines.push('');
             lines.push('**Student message:** ' + freeText);
@@ -1066,12 +1077,32 @@
             textarea.value = '';
             textarea.style.height = 'auto';
 
+            // v7.19.72: doc-awareness fix — re-read live section context + full
+            // document per turn. Previously sel.sectionContext was the snapshot
+            // captured at openBox() time; doc edits after the box opened were
+            // invisible to Sophia, forcing students to copy-paste their changes.
+            // Now: section context refreshes from live DOM (anchorEl still in tree),
+            // full doc text pulled from canvasEditor.getText() and appended via
+            // buildPrompt's new fullDoc param.
+            let liveSectionContext = sel.sectionContext;
+            try {
+                if (sel.anchorEl && sel.anchorEl.isConnected) {
+                    liveSectionContext = extractSectionContext(sel.anchorEl);
+                }
+            } catch (_) { /* fall back to frozen snapshot */ }
+            let liveFullDoc = '';
+            try {
+                if (_ctx && _ctx.canvasEditor && typeof _ctx.canvasEditor.getText === 'function') {
+                    liveFullDoc = _ctx.canvasEditor.getText() || '';
+                }
+            } catch (_) { /* leave empty if editor handle stale */ }
             const promptText = buildPrompt(
                 isAction ? action : 'freetext',
                 sel.text,
-                sel.sectionContext,
+                liveSectionContext,
                 _ctx.taskCtx,
-                trimmed
+                trimmed,
+                liveFullDoc
             );
 
             try {

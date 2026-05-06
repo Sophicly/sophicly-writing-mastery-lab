@@ -8272,6 +8272,20 @@
                                         promptText = `[STUDENT'S DOCUMENT — current state]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
                                     }
                                     console.log('WML Canvas: Planning/polishing doc injected. Length:', docContent.length);
+                                } else if (state.task === 'exam_crib') {
+                                    // v7.19.72: explicit exam_crib branch — without this the task
+                                    // fell through to the generic essay branch (L8285) which only
+                                    // injects getResponseText() (the YOUR RESPONSE section), so
+                                    // edits to the SKELETON PLAN section were invisible to Sophia.
+                                    // Mirrors the planning/polishing pattern above so question +
+                                    // skeleton plan + response are all visible per turn.
+                                    const docContent = canvasEditor ? canvasEditor.getText() : '';
+                                    if (userMsgCount === 1) {
+                                        promptText = `[CONTEXT: ${boardName} ${subjectName} — ${textName} — EXAM CRIB]\n[STUDENT'S DOCUMENT — contains question, skeleton plan, and response sections]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                                    } else if (docContent.trim().length > 50) {
+                                        promptText = `[STUDENT'S DOCUMENT — current state]\n\n${docContent}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                                    }
+                                    console.log('WML Canvas: exam_crib doc injected. Length:', docContent.length);
                                 } else if (isCwSi) {
                                     // v7.13.34: Creative Writing — inject document as "CREATIVE WRITING DOCUMENT"
                                     const docContent = canvasEditor ? canvasEditor.getText() : '';
