@@ -29,11 +29,12 @@
     // T7 = SPaG (spelling / punctuation / grammar).
     // Reference = Move 4 quote-exemplar from gold-standard-exemplars-aqa-lit.md.
     const ACTION_MAP = {
-        tierScans:   ['scan-structure', 'scan-elements', 'scan-coherence', 'scan-concept', 'scan-context-drive'],
-        polishProse: ['strengthen-vocabulary', 'tighten', 'adjust-tone'],
-        fixSpag:     ['fix-spelling', 'fix-grammar', 'fix-punctuation'],
-        reference:   ['compare-gold-standard'],
-        cw:          ['check-sensory-variety', 'check-scene-structure-beats', 'check-show-dont-tell'],
+        tierScans:    ['scan-structure', 'scan-elements', 'scan-coherence', 'scan-concept', 'scan-context-drive'],
+        elementPolish:['strengthen-hook'],
+        polishProse:  ['strengthen-vocabulary', 'tighten', 'adjust-tone'],
+        fixSpag:      ['fix-spelling', 'fix-grammar', 'fix-punctuation'],
+        reference:    ['compare-gold-standard'],
+        cw:           ['check-sensory-variety', 'check-scene-structure-beats', 'check-show-dont-tell'],
     };
 
     const ACTION_LABELS = {
@@ -43,7 +44,10 @@
         'scan-coherence':       'Scan coherence',
         'scan-concept':         'Scan concept',
         'scan-context-drive':   'Scan context-drive',
-        // T6 polish prose
+        // Element polish (v7.19.74) — element-scoped strengthen actions.
+        // Sophia diagnoses + offers ONE alternative using a different technique.
+        'strengthen-hook':       'Strengthen hook',
+        // T6 polish prose (span-scoped)
         'strengthen-vocabulary': 'Strengthen vocabulary',
         'tighten':               'Tighten sentence',
         'adjust-tone':           'Adjust tone',
@@ -60,11 +64,12 @@
     };
 
     const SECTION_GROUP_LABELS = {
-        tierScans:   'Tier scan',
-        polishProse: 'Polish prose',
-        fixSpag:     'Fix SPaG',
-        reference:   'Reference',
-        cw:          'Creative writing',
+        tierScans:    'Tier scan',
+        elementPolish:'Element polish',
+        polishProse:  'Polish prose',
+        fixSpag:      'Fix SPaG',
+        reference:    'Reference',
+        cw:           'Creative writing',
     };
 
     // ── Module-scoped state ──
@@ -134,11 +139,17 @@
         // (scans operate on parent element/doc, not the highlighted span).
         // Polish-prose + Fix-SPaG groups operate on the highlighted span.
         // Reference (Compare gold-standard) always available.
+        // v7.19.74: Element polish group — element-scoped strengthen actions
+        // (currently just Strengthen hook). Sophia diagnoses the highlighted
+        // element + offers ONE alternative using a different technique. The
+        // chip itself is always visible; the protocol module enforces scope
+        // (e.g. redirects if highlight isn't actually a hook).
         const groups = [];
-        groups.push({ key: 'tierScans',   actions: ACTION_MAP.tierScans });
-        groups.push({ key: 'polishProse', actions: ACTION_MAP.polishProse });
-        groups.push({ key: 'fixSpag',     actions: ACTION_MAP.fixSpag });
-        groups.push({ key: 'reference',   actions: ACTION_MAP.reference });
+        groups.push({ key: 'tierScans',    actions: ACTION_MAP.tierScans });
+        groups.push({ key: 'elementPolish',actions: ACTION_MAP.elementPolish });
+        groups.push({ key: 'polishProse',  actions: ACTION_MAP.polishProse });
+        groups.push({ key: 'fixSpag',      actions: ACTION_MAP.fixSpag });
+        groups.push({ key: 'reference',    actions: ACTION_MAP.reference });
         if (taskCtx && taskCtx.subject === 'creative_writing') {
             groups.push({ key: 'cw', actions: ACTION_MAP.cw });
         }
