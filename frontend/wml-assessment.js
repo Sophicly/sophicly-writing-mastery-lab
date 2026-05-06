@@ -2836,7 +2836,8 @@
                 const sel = window.getSelection();
                 if (!sel || sel.isCollapsed || !sel.toString().trim()) { removeChatSelToolbar(); return; }
                 const selectedText = sel.toString().trim();
-                if (selectedText.length < 2 || selectedText.length > 2000) return;
+                // v7.19.71: drop silent 2000-char upper cap (parity with canvas-doc toolbar fix).
+                if (selectedText.length < 2) return;
                 const anchorEl = sel.anchorNode?.parentElement;
                 if (!anchorEl || !chatMessages.contains(anchorEl)) return;
 
@@ -8109,7 +8110,8 @@
                                 const sel = window.getSelection();
                                 if (!sel || sel.isCollapsed || !sel.toString().trim()) { removeChatSelToolbar(); return; }
                                 const selectedText = sel.toString().trim();
-                                if (selectedText.length < 2 || selectedText.length > 2000) return;
+                                // v7.19.71: drop silent 2000-char upper cap (parity with canvas-doc toolbar fix).
+                                if (selectedText.length < 2) return;
                                 const anchorEl = sel.anchorNode?.parentElement;
                                 if (!anchorEl || !chatMessages.contains(anchorEl)) return;
 
@@ -10651,14 +10653,22 @@
                     if (!pm || !wrap) return;
 
                     const selectedText = sel.toString().trim();
-                    if (selectedText.length < 2 || selectedText.length > 2000) return;
+                    // v7.19.71: drop the silent 2000-char upper cap — Neil reported toolbar
+                    // missing on whole-essay-plan highlights (>2000 chars, e.g. exam-prep crib
+                    // SKELETON PLAN sections). Lower bound stays at 2 to keep stray clicks out.
+                    if (selectedText.length < 2) return;
 
                     // Remove any existing toolbar
                     const old = wrap.querySelector('.swml-selection-toolbar');
                     if (old) old.remove();
 
                     const range = sel.getRangeAt(0);
-                    const rect = range.getBoundingClientRect();
+                    // v7.19.71: prefer first client rect over bounding rect for multi-block
+                    // selections — getBoundingClientRect() returns oversized rect when the
+                    // selection spans many block elements, pushing the toolbar off-screen.
+                    // First client rect = top line of selection, always sane for positioning.
+                    const clientRects = range.getClientRects();
+                    const rect = clientRects.length > 0 ? clientRects[0] : range.getBoundingClientRect();
                     const wrapRect = wrap.getBoundingClientRect();
 
                     const tFrom = canvasEditor?.state?.selection?.from;
@@ -10817,7 +10827,14 @@
                     // Append to measure, then position (matching chat toolbar pattern)
                     wrap.appendChild(tb);
                     const tbW = tb.offsetWidth;
-                    tb.style.top = (rect.top - wrapRect.top + wrap.scrollTop - 40) + 'px';
+                    const tbH = tb.offsetHeight;
+                    // v7.19.71: clamp top so the toolbar never mounts above the visible
+                    // canvas top — protects against very-tall selections (or selections
+                    // starting above the current scroll position) where the raw rect-top
+                    // would place the toolbar offscreen and Neil sees nothing.
+                    const desiredTop = rect.top - wrapRect.top + wrap.scrollTop - tbH - 8;
+                    const minTop = wrap.scrollTop + 8;
+                    tb.style.top = Math.max(minTop, desiredTop) + 'px';
                     // v7.17.77: clamp BOTH edges so toolbar never bleeds off the right
                     // of the canvas wrap (was only clamping left at 0).
                     tb.style.left = Math.max(4, Math.min(
