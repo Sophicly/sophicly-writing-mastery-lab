@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.76
+ * Version: 7.19.77
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.76');
+define('SWML_VERSION', '7.19.77');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -232,11 +232,22 @@ class Sophicly_Writing_Mastery_Lab {
             true
         );
 
+        // v7.19.77: Shared SectionBlock NodeView factory — must load BEFORE wml-assessment
+        // so window.WML.SectionBlock.createNodeView exists when both SectionBlock Node
+        // definitions in wml-assessment.js call it via addNodeView().
+        wp_enqueue_script(
+            'swml-section-block',
+            SWML_URL . 'frontend/wml-section-block.js',
+            ['swml-core'],
+            SWML_VERSION,
+            true
+        );
+
         // Assessment module: canvas workspace, document building, TipTap editor
         wp_enqueue_script(
             'swml-assessment',
             SWML_URL . 'frontend/wml-assessment.js',
-            ['swml-core', 'swml-tiptap'],
+            ['swml-core', 'swml-section-block', 'swml-tiptap'],
             SWML_VERSION,
             true
         );
@@ -694,7 +705,9 @@ class Sophicly_Writing_Mastery_Lab {
         wp_enqueue_script('swml-shader', SWML_URL . 'frontend/wml-shader.js', [], SWML_VERSION, true);
         wp_enqueue_script('swml-tiptap', SWML_URL . 'frontend/wml-tiptap.min.js', [], SWML_VERSION, true);
         wp_enqueue_script('swml-core', SWML_URL . 'frontend/wml-core.js', [], SWML_VERSION, true);
-        wp_enqueue_script('swml-assessment', SWML_URL . 'frontend/wml-assessment.js', ['swml-core', 'swml-tiptap'], SWML_VERSION, true);
+        // v7.19.77: shared SectionBlock NodeView factory — load before wml-assessment.
+        wp_enqueue_script('swml-section-block', SWML_URL . 'frontend/wml-section-block.js', ['swml-core'], SWML_VERSION, true);
+        wp_enqueue_script('swml-assessment', SWML_URL . 'frontend/wml-assessment.js', ['swml-core', 'swml-section-block', 'swml-tiptap'], SWML_VERSION, true);
         wp_enqueue_script('swml-app', SWML_URL . 'frontend/wml-app.js', ['swml-core', 'swml-assessment', 'swml-shader'], SWML_VERSION, true);
 
         // Video player

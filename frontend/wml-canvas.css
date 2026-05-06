@@ -4428,6 +4428,70 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     content: '✓ 🔒 ' counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
 }
 
+/* v7.19.77: Section content wrapper. Used when SectionBlock NodeView appends a
+   Select-All chip (plan/response/extract sections in exam_crib docs). Plain
+   passthrough — no padding/margin so existing layout stays intact. */
+.swml-section-content {
+    display: block;
+}
+
+/* v7.19.77: Select-All chip on section heading row. Sits at top-right of the
+   section block, mirroring the position of the section-label badge on the left.
+   Click selects whole section content + dispatches synthetic mouseup so the
+   existing canvas-doc selection toolbar mounts via its normal codepath. */
+.swml-section-select-all {
+    position: absolute;
+    top: -10px;
+    right: 12px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 20px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 4px;
+    background: linear-gradient(180deg, rgba(83,51,237,0.85), rgba(44,0,62,0.92));
+    color: rgba(255,255,255,0.85);
+    cursor: pointer;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        0 1px 2px rgba(0,0,0,0.3);
+    transition: transform 150ms ease, box-shadow 200ms ease, background 200ms ease, color 200ms ease, opacity 200ms ease;
+    opacity: 0.65;
+}
+.swml-section-select-all:hover {
+    opacity: 1;
+    color: #fff;
+    transform: translateY(-1px);
+    background: linear-gradient(180deg, rgba(125,249,233,0.5), rgba(83,51,237,0.95));
+    box-shadow:
+        inset 0 -1px 1px rgba(255,255,255,0.2),
+        0 2px 8px rgba(83,51,237,0.4);
+}
+.swml-section-select-all:active {
+    transform: translateY(0);
+}
+.swml-section-select-all:focus-visible {
+    outline: 2px solid rgba(125,249,233,0.6);
+    outline-offset: 2px;
+    opacity: 1;
+}
+.swml-section-select-all svg {
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+}
+.swml-canvas-light .swml-section-select-all {
+    background: linear-gradient(180deg, rgba(83,51,237,0.95), rgba(83,51,237,0.78));
+    color: rgba(255,255,255,0.95);
+}
+.swml-canvas-light .swml-section-select-all:hover {
+    background: linear-gradient(180deg, rgba(125,249,233,0.7), rgba(83,51,237,0.95));
+}
+
 /* ── Section type colours ── */
 
 /* Cover — full bleed DOM element (outside TipTap) */

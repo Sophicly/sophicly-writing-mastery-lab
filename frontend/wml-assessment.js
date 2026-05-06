@@ -9424,6 +9424,15 @@
                 return ['div', newAttrs, 0];
             },
 
+            // v7.19.77: Select-All chip on heading row for plan / response / extract
+            // sections in exam_crib docs. NodeView opt-in only — non-chip sections fall
+            // through to renderHTML default with zero behavioural change.
+            addNodeView() {
+                const factory = window.WML && window.WML.SectionBlock && window.WML.SectionBlock.createNodeView;
+                if (!factory) return undefined;
+                return factory({ getStateRef: () => state });
+            },
+
             addKeyboardShortcuts() {
                 return {
                     Backspace: () => isSectionBoundary(this.editor.state, 'backspace'),
@@ -20468,6 +20477,14 @@ ${html}
                 const savedRO = a.readonly === 'true' || a.readonly === true;
                 const isRO = a.sectionType === 'feedback' ? !_feedbackEditable() : savedRO;
                 return ['div', { 'data-section-type': a.sectionType, 'data-section-label': a.label, 'data-editable': isRO ? 'false' : 'true', ...(isRO ? { 'data-readonly': 'true', contenteditable: 'false' } : {}), ...(a.part ? { 'data-part': a.part } : {}), class: `swml-section-block swml-section-${a.sectionType}${isRO ? ' swml-section-readonly' : ''}` }, 0];
+            },
+            // v7.19.77: Select-All chip on heading row for plan / response / extract
+            // sections in exam_crib docs. Same NodeView factory as the main canvas
+            // SectionBlock; both definitions opt in via the shared module.
+            addNodeView() {
+                const factory = window.WML && window.WML.SectionBlock && window.WML.SectionBlock.createNodeView;
+                if (!factory) return undefined;
+                return factory({ getStateRef: () => state });
             },
         });
 
