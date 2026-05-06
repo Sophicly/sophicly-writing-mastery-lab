@@ -258,7 +258,11 @@ Sophicly favours techniques 1 and 2 (question / historical fact). Techniques 3 a
 
 ### Behaviour when `strengthen-hook` fires
 
-**Step 1 — Identify the technique used.** Read the student's hook. State which of the four techniques it currently uses (or note if it's none / unclear). One line.
+**Source-of-truth rule (HARD):** read the Hook from the **live full-document block** delivered with the prompt (the `**Current full document (live this turn):**` section). Do **NOT** rely on the frozen `Selection (frozen at open)` block — that is the text the student happened to highlight when they first opened the coaching box, and it may now be stale (e.g. they have since split that span into Hook + Building Sentence, or rewritten it). The student's CURRENT hook is the first sentence of the intro section in the live doc, regardless of what was originally selected.
+
+If the live doc has no detectable intro section yet (empty / not started): say so in one line and ask the student to draft a candidate hook before running the chip.
+
+**Step 1 — Identify the technique used.** Read the student's CURRENT hook from the live doc (per the source-of-truth rule above). State which of the four techniques it currently uses (or note if it's none / unclear). One line.
 
 **Step 2 — Name ONE specific weakness.** Pick the single biggest problem. Examples:
 - *"It uses Technique 2 (historical fact) but the fact is too long — we lose the conceptual point by line three."*
