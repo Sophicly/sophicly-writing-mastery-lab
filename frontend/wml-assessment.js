@@ -10681,8 +10681,23 @@
                     // selections — getBoundingClientRect() returns oversized rect when the
                     // selection spans many block elements, pushing the toolbar off-screen.
                     // First client rect = top line of selection, always sane for positioning.
+                    // v7.19.73: HYBRID — first client rect for VERTICAL anchor (sane top,
+                    // never off-screen), but bounding rect for HORIZONTAL centering so the
+                    // toolbar centers over the FULL selection width, not just the first
+                    // line. Without this hybrid, multi-line selections (e.g. Hook +
+                    // Building Sentence both highlighted) make the toolbar appear
+                    // left-aligned because clientRects[0] is just the first short line.
                     const clientRects = range.getClientRects();
-                    const rect = clientRects.length > 0 ? clientRects[0] : range.getBoundingClientRect();
+                    const firstLineRect = clientRects.length > 0 ? clientRects[0] : null;
+                    const boundingRect = range.getBoundingClientRect();
+                    const rect = firstLineRect ? {
+                        top:    firstLineRect.top,
+                        bottom: firstLineRect.bottom,
+                        height: firstLineRect.height,
+                        left:   boundingRect.left,
+                        right:  boundingRect.right,
+                        width:  boundingRect.width,
+                    } : boundingRect;
                     const wrapRect = wrap.getBoundingClientRect();
 
                     const tFrom = canvasEditor?.state?.selection?.from;
