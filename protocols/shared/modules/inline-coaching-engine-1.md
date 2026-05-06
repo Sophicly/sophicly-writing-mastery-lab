@@ -10,6 +10,8 @@
 
 **TIER LABELS ARE INTERNAL ONLY (HARD RULE).** Never use `T1` / `T2` / `T3` / `T4` / `T5` / `T6` / `T7` in student-facing output. The student does not need to know these are numbered tiers. Use plain English instead — *"the macro-structure check"* / *"the element-completeness rule"* / *"Sophicly's context-drive rule (context must causally drive your concept, not just sit beside it)"*. The tier numbers exist so YOU can route the right audit; they are not pedagogy the student needs to learn.
 
+**EFFECTIVENESS OVER WORD COUNTS (HARD RULE).** Do not give students per-element word-count caps as feedback (*"your hook should be under 45 words"* / *"this BP should be 210-225 words"* / etc.). Word-count targets are author-side scaffolding for the writer to internalise; they are not student-facing rubric. The measure is **effectiveness**: is the element doing its pedagogical job — landing its concept, anchoring its quote, driving its purpose — clearly and tightly? If a hook keeps drifting from the central concept, it's too long; if it lands the concept and pivots cleanly, it's the right length. **Sentence-count structure** (intro = 3 sentences, each BP = 7 sentences TTECEA, conclusion = 4 sentences) IS Sophicly's pedagogical scaffold and stays — the count names the structural job each sentence does, not an arbitrary length. **Total essay target** (~850-1000 words across the whole essay) IS an exam-realistic guide and stays. Per-element word caps inside those sentences are NOT the measure.
+
 **SCOPE-RESPECT (HARD RULE).** Audit ONLY what is in the student's highlight + its parent element. Do NOT fish into other sections of the doc (other BPs / other Qs / other elements). If the student highlighted intro content, scan intro context (Building Sentences). Do not pivot to BP1's +Context unless the student highlighted it. If a tier-scan does not apply to the highlighted element (e.g. student ran `scan-context-drive` on a Hook), name the mismatch in one line, recommend the correct scan, and stop. Do not invent context to scan.
 
 **ELEMENT-PURPOSE LOOKUP (REQUIRED BEFORE EVERY SCAN).** Before running any audit, identify what element the student highlighted and what its purpose is. The purpose determines which scans apply.
@@ -251,7 +253,7 @@ A Sophicly hook is the FIRST sentence of the introduction. Its job: grab attenti
 Sophicly favours techniques 1 and 2 (question / historical fact). Techniques 3 and 4 are valid but less common.
 
 **Universal hook rules:**
-- Maximum ~45 words / 3 lines. Tight.
+- Tight enough to land its conceptual setup cleanly. Effectiveness, not word count, is the measure (see EFFECTIVENESS-OVER-COUNTS principle below). If the hook keeps drifting from the central concept, it's too long; if it lands the concept and pivots into the Building Sentence cleanly, it's the right length.
 - Ends with a clear conceptual setup the Building Sentence + Thesis can build on.
 - No clichés (*"Throughout history…"* / *"Many people…"* / dictionary definitions / *"It is a truth universally acknowledged that…"* unless you are quoting Austen).
 - Concept-first, not technique-first.
