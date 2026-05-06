@@ -19,27 +19,41 @@
             '<path d="M8 8h8M8 12h8M8 16h6"/>' +
         '</svg>';
 
-    const CHIPPED_TYPES = new Set(['plan', 'response', 'extract']);
+    const CHIPPED_TYPES = new Set(['plan', 'response', 'extract', 'question']);
 
     /**
      * Create a TipTap NodeView for SectionBlock.
      *
-     * @param {Object}  deps
-     * @param {Function} deps.getStateRef  () => current canvas state object (for state.task gating).
+     * @param {Object}   deps
+     * @param {Function} deps.getStateRef       () => current canvas state object (for state.task gating).
+     * @param {Function} deps.computeDomAttrs   (node) => { class, data-section-type, ... }
+     *                                          MUST return the same attribute set that main renderHTML
+     *                                          would emit. Constructed at the callsite where
+     *                                          _feedbackEditable() is in scope. Without this, the
+     *                                          dom lacks .swml-section-block / .swml-section-{type}
+     *                                          classes (NodeView's `HTMLAttributes` param does NOT
+     *                                          include the assembled class string from main
+     *                                          renderHTML — only the raw addAttributes output).
      * @returns {Function} TipTap NodeView factory: ({ node, HTMLAttributes }) => ({ dom, contentDOM, ... })
      */
     function createNodeView(deps) {
         const getStateRef = (deps && typeof deps.getStateRef === 'function') ? deps.getStateRef : (() => null);
+        const computeDomAttrs = (deps && typeof deps.computeDomAttrs === 'function') ? deps.computeDomAttrs : null;
 
         return ({ node, HTMLAttributes }) => {
             const type = (node && node.attrs && node.attrs.sectionType) || 'response';
 
+            // Prefer caller-supplied computeDomAttrs (mirrors main renderHTML, includes class
+            // string + readonly handling). Fall back to raw HTMLAttributes if not provided —
+            // safer than rendering an unstyled dom.
+            const attrs = computeDomAttrs ? computeDomAttrs(node) : (HTMLAttributes || {});
+
             const dom = document.createElement('div');
-            const attrs = HTMLAttributes || {};
             for (const key in attrs) {
-                if (Object.prototype.hasOwnProperty.call(attrs, key)) {
-                    try { dom.setAttribute(key, attrs[key]); } catch (_) { /* skip bad attrs */ }
-                }
+                if (!Object.prototype.hasOwnProperty.call(attrs, key)) continue;
+                const val = attrs[key];
+                if (val == null || val === false) continue;
+                try { dom.setAttribute(key, String(val)); } catch (_) { /* skip bad attrs */ }
             }
 
             const st = getStateRef();

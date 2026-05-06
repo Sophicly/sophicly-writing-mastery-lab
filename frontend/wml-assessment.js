@@ -9424,13 +9424,35 @@
                 return ['div', newAttrs, 0];
             },
 
-            // v7.19.77: Select-All chip on heading row for plan / response / extract
-            // sections in exam_crib docs. NodeView opt-in only — non-chip sections fall
-            // through to renderHTML default with zero behavioural change.
+            // v7.19.77: Select-All chip on heading row for plan / response / extract /
+            // question sections in exam_crib docs. computeDomAttrs mirrors this Node's
+            // renderHTML so the live-rendered dom carries the same class string +
+            // readonly handling — without it, NodeView's HTMLAttributes param contains
+            // only the raw addAttributes output (no .swml-section-block class).
             addNodeView() {
                 const factory = window.WML && window.WML.SectionBlock && window.WML.SectionBlock.createNodeView;
                 if (!factory) return undefined;
-                return factory({ getStateRef: () => state });
+                return factory({
+                    getStateRef: () => state,
+                    computeDomAttrs: (node) => {
+                        const type = node.attrs.sectionType || 'response';
+                        const label = node.attrs.label || type.charAt(0).toUpperCase() + type.slice(1);
+                        const savedRO = node.attrs.editable === false || node.attrs.editable === 'false' || node.attrs.readonly === 'true' || node.attrs.readonly === true;
+                        const readOnly = type === 'feedback' ? !_feedbackEditable() : savedRO;
+                        const out = {
+                            'data-section-type': type,
+                            'data-section-label': label,
+                            'data-editable': readOnly ? 'false' : 'true',
+                            class: `swml-section-block swml-section-${type}${readOnly ? ' swml-section-readonly' : ''}`,
+                        };
+                        if (readOnly) {
+                            out['data-readonly'] = 'true';
+                            out.contenteditable = 'false';
+                        }
+                        if (node.attrs.partNumber) out['data-part'] = String(node.attrs.partNumber);
+                        return out;
+                    },
+                });
             },
 
             addKeyboardShortcuts() {
@@ -20478,13 +20500,35 @@ ${html}
                 const isRO = a.sectionType === 'feedback' ? !_feedbackEditable() : savedRO;
                 return ['div', { 'data-section-type': a.sectionType, 'data-section-label': a.label, 'data-editable': isRO ? 'false' : 'true', ...(isRO ? { 'data-readonly': 'true', contenteditable: 'false' } : {}), ...(a.part ? { 'data-part': a.part } : {}), class: `swml-section-block swml-section-${a.sectionType}${isRO ? ' swml-section-readonly' : ''}` }, 0];
             },
-            // v7.19.77: Select-All chip on heading row for plan / response / extract
-            // sections in exam_crib docs. Same NodeView factory as the main canvas
-            // SectionBlock; both definitions opt in via the shared module.
+            // v7.19.77: Select-All chip on heading row for plan / response / extract /
+            // question sections in exam_crib docs. computeDomAttrs mirrors this Node's
+            // renderHTML (note: this canvas uses `readonly` + `part` attr names, distinct
+            // from main canvas which uses `editable` + `partNumber`).
             addNodeView() {
                 const factory = window.WML && window.WML.SectionBlock && window.WML.SectionBlock.createNodeView;
                 if (!factory) return undefined;
-                return factory({ getStateRef: () => state });
+                return factory({
+                    getStateRef: () => state,
+                    computeDomAttrs: (node) => {
+                        const a = node.attrs || {};
+                        const type = a.sectionType || 'response';
+                        const label = a.label || '';
+                        const savedRO = a.readonly === 'true' || a.readonly === true;
+                        const isRO = type === 'feedback' ? !_feedbackEditable() : savedRO;
+                        const out = {
+                            'data-section-type': type,
+                            'data-section-label': label,
+                            'data-editable': isRO ? 'false' : 'true',
+                            class: `swml-section-block swml-section-${type}${isRO ? ' swml-section-readonly' : ''}`,
+                        };
+                        if (isRO) {
+                            out['data-readonly'] = 'true';
+                            out.contenteditable = 'false';
+                        }
+                        if (a.part) out['data-part'] = String(a.part);
+                        return out;
+                    },
+                });
             },
         });
 
