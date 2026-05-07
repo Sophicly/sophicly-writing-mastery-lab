@@ -11787,6 +11787,7 @@
         /** Build the transfer button overlay layer */
         function buildTransferOverlays(container) {
             if (!canvasEditor) return;
+            if (state.task === 'exam_crib') return;
             var editor = document.getElementById('swml-tiptap-editor');
             if (!editor) return;
             if (transferLayer) transferLayer.remove();

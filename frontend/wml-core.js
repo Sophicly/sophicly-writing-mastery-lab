@@ -859,7 +859,7 @@ window.WML = (function() {
         // Routes to `protocols/shared/modules/inline-coaching-core.md` +
         // `inline-coaching-engine-1.md` + per-paper rubric (router L987+).
         exam_crib: {
-            label: 'Exam Prep Crib',
+            label: '10 Most Likely Qs',
             environment: 'inline-coaching', // v7.19.24: chip ships; flip from training
             // v7.19.24: chat panel hidden — selection-chip is primary invocation.
             // Anchor-list sidebar (Q1...Qn) rendered by buildInlineCoachingPanels().
