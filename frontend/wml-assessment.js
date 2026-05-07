@@ -3512,7 +3512,7 @@
                     '<span class="spark"></span>' +
                     '<span class="backdrop"></span>' +
                     SPARKLE_SVG_EMPTY +
-                    '<span class="text">Start a conversation with Sophia</span>' +
+                    '<span class="text">Start with Sophia</span>' +
                 '</button>' +
                 '<span class="particle-pen" aria-hidden="true">' + Array(18).fill(PARTICLE_SVG_EMPTY).join('') + '</span>' +
             '</div>' +
@@ -4534,7 +4534,15 @@
 
         let outlineOpen = false;
         function toggleOutlinePanel(force) {
-            outlineOpen = typeof force === 'boolean' ? force : !outlineOpen;
+            const next = typeof force === 'boolean' ? force : !outlineOpen;
+            // v7.19.92: when closing while detached, dock first so inline
+            // styles + body parentage clear and the panel can hide cleanly.
+            // Otherwise the close-class toggle fires but inline position:fixed
+            // + size styles keep the panel visible — looks "jammed".
+            if (!next && outlineFloating) {
+                dockOutline();
+            }
+            outlineOpen = next;
             outlinePanel.classList.toggle('swml-outline-open', outlineOpen);
             outlineBtn.classList.toggle('is-active', outlineOpen);
             if (outlineOpen) {
@@ -4547,11 +4555,17 @@
         contentWrap.addEventListener('click', (e) => {
             if (!outlineOpen) return;
             if (outlineFloating) return; // Don't auto-close when detached (v7.12.40)
+            // v7.19.92: ignore the synthetic click that fires when a resize-drag
+            // ends with the cursor outside the panel (east-edge drag pulls the
+            // edge inward → mouseup lands on canvas → click target = canvas).
+            if (_olJustResized) return;
             if (outlinePanel.contains(e.target) || outlineBtn.contains(e.target)) return;
             // Don't close when interacting with score dropdowns (v7.12.38)
             if (e.target.closest('.swml-dropdown-overlay, .swml-dropdown-select')) return;
             toggleOutlinePanel(false);
         });
+        // v7.19.92: short-lived flag set on resize end, cleared by next tick.
+        let _olJustResized = false;
 
         // ── Detachable Outline Panel (v7.12.40) ──
         let outlineFloating = false;
@@ -4686,7 +4700,15 @@
                 Object.assign(outlinePanel.style, { width: w+'px', height: h+'px', left: l+'px', top: t+'px' });
             }
         });
-        document.addEventListener('mouseup', () => { olResizing = false; });
+        document.addEventListener('mouseup', () => {
+            if (olResizing) {
+                // v7.19.92: prime the flag so the next click event (synthesised
+                // from this mouseup) doesn't trigger close-on-click-outside.
+                _olJustResized = true;
+                setTimeout(() => { _olJustResized = false; }, 50);
+            }
+            olResizing = false;
+        });
 
         // ── Detachable Resources Panel (v7.13.53) ──
         let resFloating = false;
