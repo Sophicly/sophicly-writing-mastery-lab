@@ -1017,10 +1017,25 @@
             const boxRect = box.getBoundingClientRect();
             let nextLeft = startLeft + dx;
             let nextTop = startTop + dy;
+
+            // Left/right: viewport-edge clamp (Neil spec — natural viewport boundaries OK).
             const maxLeft = Math.max(0, vw - boxRect.width);
-            const maxTop = Math.max(0, vh - 60); // keep the drag handle reachable
             nextLeft = Math.max(0, Math.min(nextLeft, maxLeft));
-            nextTop = Math.max(0, Math.min(nextTop, maxTop));
+
+            // Top/bottom: v7.19.81 — clamp inside .swml-canvas-content rect so the box
+            // can't drift into the LearnDash header above or behind the WML canvas
+            // footer (Mark Complete / Extract row) below. Falls back to viewport-edge
+            // math if canvas content isn't in the DOM.
+            let minTop = 0;
+            let maxTop = Math.max(0, vh - 60);
+            const canvasContent = document.querySelector('.swml-canvas-content');
+            if (canvasContent) {
+                const ccRect = canvasContent.getBoundingClientRect();
+                minTop = ccRect.top;
+                maxTop = Math.max(minTop, ccRect.bottom - boxRect.height);
+            }
+            nextTop = Math.max(minTop, Math.min(nextTop, maxTop));
+
             box.style.left = nextLeft + 'px';
             box.style.top = nextTop + 'px';
         };

@@ -4492,6 +4492,33 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     background: linear-gradient(180deg, rgba(125,249,233,0.7), rgba(83,51,237,0.95));
 }
 
+/* Instant styled tooltip on hover (replaces native title's slow display).
+   v7.19.81 — students need clearer affordance for what the chip does. */
+.swml-section-select-all[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: rgba(28, 26, 46, 0.95);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.3;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: opacity 120ms ease, transform 120ms ease;
+    z-index: 1000;
+}
+.swml-section-select-all[data-tooltip]:hover::after {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 /* ── Section type colours ── */
 
 /* Cover — full bleed DOM element (outside TipTap) */

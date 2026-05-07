@@ -75,8 +75,8 @@
             chip.type = 'button';
             chip.className = 'swml-section-select-all';
             chip.setAttribute('contenteditable', 'false');
-            chip.setAttribute('aria-label', 'Select all in this section');
-            chip.title = 'Select section';
+            chip.setAttribute('aria-label', 'Select all text in this section');
+            chip.setAttribute('data-tooltip', 'Select all text in this section to edit with Sophia');
             chip.innerHTML = SVG_SELECT_ALL;
 
             // Prevent focus shift / selection collapse before click handler runs.
