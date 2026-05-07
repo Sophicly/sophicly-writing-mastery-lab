@@ -5574,14 +5574,43 @@
 
             if (isTabsMode) {
                 // v7.19.86: Tab strip for multi-extract docs (exam_crib has 10 extracts).
+                // v7.19.87: pad now shows preamble + extract + question per Q. Frame
+                // intentionally excluded — frame is the controlling concept the student
+                // should articulate themselves; showing it = spoiler.
                 const tabStrip = document.createElement('div');
                 tabStrip.className = 'swml-extract-tabs';
                 const tabBtns = [];
                 const renderBody = (i) => {
                     body.innerHTML = '';
-                    const cloned = sourceEls[i].cloneNode(true);
-                    _stripChipsFromClone(cloned);
-                    body.appendChild(cloned);
+                    const extractEl = sourceEls[i];
+                    // Walk back: most recent preamble before this extract.
+                    let preambleEl = null;
+                    let walker = extractEl.previousElementSibling;
+                    let hops = 0;
+                    while (walker && hops < 6) {
+                        const t = walker.getAttribute && walker.getAttribute('data-section-type');
+                        if (t === 'preamble') { preambleEl = walker; break; }
+                        if (t === 'divider') break; // hit Q-divider, no preamble
+                        walker = walker.previousElementSibling;
+                        hops++;
+                    }
+                    // Walk forward: question section immediately following (skip non-question siblings up to next divider).
+                    let questionEl = null;
+                    walker = extractEl.nextElementSibling;
+                    hops = 0;
+                    while (walker && hops < 6) {
+                        const t = walker.getAttribute && walker.getAttribute('data-section-type');
+                        if (t === 'question') { questionEl = walker; break; }
+                        if (t === 'divider') break;
+                        walker = walker.nextElementSibling;
+                        hops++;
+                    }
+                    [preambleEl, extractEl, questionEl].forEach(node => {
+                        if (!node) return;
+                        const cloned = node.cloneNode(true);
+                        _stripChipsFromClone(cloned);
+                        body.appendChild(cloned);
+                    });
                 };
                 sourceEls.forEach((src, i) => {
                     const tab = document.createElement('button');
