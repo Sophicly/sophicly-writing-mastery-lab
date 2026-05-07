@@ -4519,6 +4519,76 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     transform: translateY(0);
 }
 
+/* v7.19.83 — exam_crib new section types: preamble / extract / frame */
+
+.swml-section-preamble {
+    font-style: italic;
+    font-size: 0.95em;
+    color: rgba(255,255,255,0.75);
+    border-left: 2px solid rgba(125,249,233,0.4);
+    padding-left: 12px;
+    margin: 8px 0;
+}
+.swml-canvas-light .swml-section-preamble {
+    color: rgba(28,26,46,0.75);
+    border-left-color: rgba(83,51,237,0.5);
+}
+
+.swml-section-extract {
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid rgba(125,249,233,0.5);
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 4px;
+}
+.swml-section-extract h3 {
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(125,249,233,0.85);
+    margin: 0 0 8px 0;
+}
+.swml-section-extract blockquote {
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-family: 'Playfair Display Complete', Georgia, serif;
+    font-style: italic;
+    line-height: 1.6;
+}
+.swml-canvas-light .swml-section-extract {
+    background: rgba(83,51,237,0.04);
+    border-left-color: rgba(83,51,237,0.6);
+}
+.swml-canvas-light .swml-section-extract h3 {
+    color: rgba(83,51,237,0.9);
+}
+
+.swml-section-frame {
+    background: linear-gradient(180deg, rgba(83,51,237,0.12), rgba(83,51,237,0.06));
+    border-left: 3px solid rgba(83,51,237,0.8);
+    padding: 10px 14px;
+    margin: 12px 0;
+    border-radius: 4px;
+    font-weight: 500;
+}
+.swml-section-frame::before {
+    content: 'FRAME';
+    display: block;
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(125,249,233,0.85);
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+.swml-canvas-light .swml-section-frame {
+    background: linear-gradient(180deg, rgba(83,51,237,0.08), rgba(83,51,237,0.04));
+}
+.swml-canvas-light .swml-section-frame::before {
+    color: rgba(83,51,237,0.85);
+}
+
 /* ── Section type colours ── */
 
 /* Cover — full bleed DOM element (outside TipTap) */
