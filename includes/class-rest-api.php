@@ -1473,30 +1473,25 @@ class SWML_REST_API {
         // template_version vs current crib JSON's template_version. If saved is
         // older, reseed from new template, preserving any student-typed responses.
         // Persists migration so it doesn't re-run on every load.
-        // v7.19.85: instrumented with diagnostic logs to confirm it fires.
-        error_log("WML_LOAD: suffix=" . var_export($suffix, true) . " text=" . var_export($text, true) . " has_doc=" . (is_array($doc) ? 'yes' : 'no') . " has_html=" . (is_array($doc) && !empty($doc['html']) ? 'yes' : 'no'));
         if ($suffix === '_crib' && is_array($doc) && !empty($doc['html'])) {
             $crib_text = preg_replace('/[^a-z0-9_]/', '', strtolower($text));
             $crib_path = SWML_PATH . 'protocols/shared/crib-templates/' . $crib_text . '.json';
-            error_log("WML_MIGRATION_GATE: text={$crib_text} crib_path_exists=" . (file_exists($crib_path) ? 'yes' : 'no'));
             if (file_exists($crib_path)) {
                 $crib_raw = file_get_contents($crib_path);
                 $crib_data = json_decode($crib_raw, true);
-                $tv_set = is_array($crib_data) && isset($crib_data['template_version']);
-                $current_ver = $tv_set ? (int)$crib_data['template_version'] : -1;
-                $saved_ver = isset($doc['_template_version']) ? (int)$doc['_template_version'] : 0;
-                error_log("WML_MIGRATION_VER: tv_in_json={$tv_set} current_ver={$current_ver} saved_ver={$saved_ver}");
-                if ($tv_set && !empty($crib_data['html']) && $saved_ver < $current_ver) {
-                    $migrated_html = self::merge_student_responses_into_template(
-                        $crib_data['html'],
-                        $doc['html']
-                    );
-                    $doc['html'] = $migrated_html;
-                    $doc['_template_version'] = $current_ver;
-                    update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($doc)));
-                    // Add a visible comment marker so frontend view-source confirms migration.
-                    $doc['html'] = "<!-- WML_MIGRATED v{$saved_ver}->v{$current_ver} -->\n" . $doc['html'];
-                    error_log("WML_MIGRATION: user={$user_id} text={$crib_text} suffix={$suffix} reseed v{$saved_ver}->v{$current_ver}");
+                if (is_array($crib_data) && !empty($crib_data['html']) && isset($crib_data['template_version'])) {
+                    $current_ver = (int)$crib_data['template_version'];
+                    $saved_ver = isset($doc['_template_version']) ? (int)$doc['_template_version'] : 0;
+                    if ($saved_ver < $current_ver) {
+                        $migrated_html = self::merge_student_responses_into_template(
+                            $crib_data['html'],
+                            $doc['html']
+                        );
+                        $doc['html'] = $migrated_html;
+                        $doc['_template_version'] = $current_ver;
+                        update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($doc)));
+                        error_log("WML_MIGRATION: user={$user_id} text={$crib_text} suffix={$suffix} reseed v{$saved_ver}->v{$current_ver}");
+                    }
                 }
             }
         }

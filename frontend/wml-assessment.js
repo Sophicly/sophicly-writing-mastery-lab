@@ -5524,24 +5524,86 @@
             });
             extractBtn.classList.remove('active');
         }
+        // v7.19.86: Strip Select-All chip from cloned section content before
+        // injecting into the extract pad. Pad clones source nodes that already
+        // had a TipTap NodeView chip rendered; cloning copies the chip DOM too,
+        // which would surface stray chips inside the pad.
+        function _stripChipsFromClone(node) {
+            if (!node || !node.querySelectorAll) return node;
+            node.querySelectorAll('.swml-section-select-all').forEach(c => c.remove());
+            return node;
+        }
+
+        // v7.19.86: Derive a tab label for a multi-extract source. Walks back
+        // to the nearest preceding divider (e.g. "Q3 — Lady Macbeth..."),
+        // extracts the "Q{n}" prefix. Falls back to ordinal when no Q-divider
+        // sits above the section.
+        function _deriveTabLabel(srcEl, idx) {
+            let walker = srcEl && srcEl.previousElementSibling;
+            let hops = 0;
+            while (walker && hops < 12) {
+                if (walker.getAttribute && walker.getAttribute('data-section-type') === 'divider') {
+                    const lbl = walker.getAttribute('data-section-label') || '';
+                    const m = lbl.match(/^(Q\d+)/);
+                    if (m) return m[1];
+                    break;
+                }
+                walker = walker.previousElementSibling;
+                hops++;
+            }
+            return 'Q' + (idx + 1);
+        }
+
         function spawnExtractPanel(sourceEls, sourceIdx, position) {
-            // sourceIdx: number (specific source) or 'single' (non-multi / question extract)
+            // sourceIdx: number (specific source) | 'single' (single-source / question fallback) |
+            //            'tabs' (v7.19.86 — multi-extract tab-strip mode for exam_crib)
             if (extractPanels[sourceIdx]) { extractPanels[sourceIdx].remove(); delete extractPanels[sourceIdx]; return; }
             const panel = el('div', { className: 'swml-extract-panel' });
             const header = el('div', { className: 'swml-extract-panel-header' });
             const srcEl = typeof sourceIdx === 'number' ? sourceEls[sourceIdx] : null;
-            const label = srcEl ? (srcEl.getAttribute('data-section-label') || ('Source ' + (sourceIdx + 1))) : (sourceEls.length > 0 ? 'Source Material' : 'Extract');
+            const isTabsMode = sourceIdx === 'tabs' && sourceEls && sourceEls.length >= 2;
+            const label = isTabsMode ? 'Extract' : (srcEl ? (srcEl.getAttribute('data-section-label') || ('Source ' + (sourceIdx + 1))) : (sourceEls.length > 0 ? 'Source Material' : 'Extract'));
             header.appendChild(el('span', { textContent: label }));
             header.appendChild(el('button', {
                 className: 'swml-extract-panel-close', textContent: '✕',
                 onClick: () => { panel.remove(); delete extractPanels[sourceIdx]; if (!Object.keys(extractPanels).length) extractBtn.classList.remove('active'); }
             }));
             panel.appendChild(header);
+
             const body = el('div', { className: 'swml-extract-panel-body' });
-            if (srcEl) {
-                body.appendChild(srcEl.cloneNode(true));
+
+            if (isTabsMode) {
+                // v7.19.86: Tab strip for multi-extract docs (exam_crib has 10 extracts).
+                const tabStrip = document.createElement('div');
+                tabStrip.className = 'swml-extract-tabs';
+                const tabBtns = [];
+                const renderBody = (i) => {
+                    body.innerHTML = '';
+                    const cloned = sourceEls[i].cloneNode(true);
+                    _stripChipsFromClone(cloned);
+                    body.appendChild(cloned);
+                };
+                sourceEls.forEach((src, i) => {
+                    const tab = document.createElement('button');
+                    tab.type = 'button';
+                    tab.className = i === 0 ? 'swml-extract-tab active' : 'swml-extract-tab';
+                    tab.textContent = _deriveTabLabel(src, i);
+                    tab.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        tabBtns.forEach(b => b.classList.remove('active'));
+                        tab.classList.add('active');
+                        renderBody(i);
+                    });
+                    tabStrip.appendChild(tab);
+                    tabBtns.push(tab);
+                });
+                panel.appendChild(tabStrip);
+                renderBody(0);
+            } else if (srcEl) {
+                body.appendChild(_stripChipsFromClone(srcEl.cloneNode(true)));
             } else if (sourceEls.length > 0) {
-                sourceEls.forEach(src => body.appendChild(src.cloneNode(true)));
+                sourceEls.forEach(src => body.appendChild(_stripChipsFromClone(src.cloneNode(true))));
             } else {
                 // v7.15.21: Prefer the Essay Question section, not the first question section (which is "About This Exercise")
                 const essayQEl = editorEl.querySelector('[data-section-type="question"][data-section-label="Essay Question"]')
@@ -5629,6 +5691,20 @@
             title: 'Pop out the question extract so you can view it while writing',
             onClick: () => {
                 if (Object.keys(extractPanels).length > 0) { closeAllExtractPanels(); return; }
+
+                // v7.19.86: prefer dedicated extract sections (exam_crib has 10).
+                // Falls back to legacy `source` (dual-text mode) and then to
+                // `question` heuristics for older shapes.
+                const extractEls = editorEl.querySelectorAll('[data-section-type="extract"]');
+                if (extractEls.length >= 2) {
+                    spawnExtractPanel(extractEls, 'tabs', { top: '60px', right: '20px' });
+                    return;
+                }
+                if (extractEls.length === 1) {
+                    spawnExtractPanel(extractEls, 0, { top: '60px', right: '20px' });
+                    return;
+                }
+
                 const sourceEls = editorEl.querySelectorAll('[data-section-type="source"]');
                 const questionEl = editorEl.querySelector('[data-section-type="question"]');
                 if (sourceEls.length === 0 && !questionEl) return;
