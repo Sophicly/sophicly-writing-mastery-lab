@@ -433,6 +433,99 @@ class SWML_Protocol_Router {
         add_filter('mwai_ai_query', [$this, 'inject_session_context'], 10, 2);
         // Route embeddings to the correct vector store based on subject
         add_filter('mwai_context_search', [$this, 'route_vector_store'], 10, 2);
+        // Lock-discipline gate: strip/swap ban-list phrasings from retrieved chunks
+        // Runs at 99 — after AI Engine's context_search at priority 10 populates $context
+        add_filter('mwai_context_search', [$this, 'filter_chunk_content'], 99, 3);
+    }
+
+    /**
+     * Lock-discipline gate over retrieved vector chunks.
+     *
+     * AI Engine populates $context['content'] (concatenated chunks) at priority 10.
+     * This filter runs at 99 — after retrieval, before LLM injection.
+     *
+     * Word-swap pass replaces tokens in-place with curated substitutes.
+     * Strip-sentence pass removes whole sentences containing embedded framings
+     * that can't be swapped at word-level (e.g. "madwoman in the attic").
+     */
+    public function filter_chunk_content($context, $query, $options = []) {
+        if (!is_array($context) || empty($context['content'])) {
+            return $context;
+        }
+
+        $original = $context['content'];
+        $context['content'] = $this->apply_ban_list($original);
+
+        // Recompute length AI Engine references downstream
+        if (isset($context['length'])) {
+            $context['length'] = strlen($context['content']);
+        }
+
+        return $context;
+    }
+
+    /**
+     * Run ban-list passes over chunk text.
+     *
+     * Word-swap: case-insensitive regex with curated replacement.
+     * Strip-sentence: any sentence containing a strip-pattern is dropped.
+     */
+    private function apply_ban_list($text) {
+        global $swml_current_subject;
+        $user_id  = get_current_user_id();
+        $session  = \SWML_Session_Manager::get_active_session($user_id);
+        $task     = $session['context']['task'] ?? '';
+        $log_ctx  = "subject={$swml_current_subject} task={$task}";
+
+        // Word-swap pass — preserves surrounding sentence structure.
+        $word_swaps = [
+            '/\bpatriarchy\b/i'      => 'social order',
+            '/\bpatriarchal\b/i'     => 'social',
+            '/\bfatal flaws?\b/i'    => 'fatal error in action',
+            '/\bspellbooks?\b/i'     => 'tools',
+            '/\bwizardry\b/i'        => 'rhetoric',
+            '/\bsorcery\b/i'         => 'rhetoric',
+            '/\bincantations?\b/i'   => 'chants',
+            '/\bspells?\b(?!ing)/i'  => 'chants',
+        ];
+
+        foreach ($word_swaps as $pattern => $replacement) {
+            $count = 0;
+            $text = preg_replace($pattern, $replacement, $text, -1, $count);
+            if ($count > 0) {
+                error_log("WML_GATE_FILTER: action=swap pattern={$pattern} count={$count} {$log_ctx}");
+            }
+        }
+
+        // Strip-sentence pass — drop any sentence matching one of these.
+        $strip_patterns = [
+            '/madwoman\s+in\s+the\s+attic/i',
+            '/feminist\s+(critique|reading|lens|interpretation|framework)/i',
+            '/\b(sexual|sexually|seduction|chastity|virginity|consummation|intercourse|libido|carnal)\b/i',
+            '/witches\s+(are|were|act\s+as)\s+(devils?|demons?|evil\s+spirits?)/i',
+            '/witches\s+(cause|force|make|control|determine)\b/i',
+            '/absolute\s+supernatural\s+(agency|causation|control|determinism|power)/i',
+            '/supernatural\s+(causation|determinism)/i',
+        ];
+
+        // Sentence split keeps terminator with the sentence so reassembly is clean.
+        $sentences = preg_split('/(?<=[.!?])\s+/', $text);
+        $kept = [];
+        foreach ($sentences as $sentence) {
+            $stripped = false;
+            foreach ($strip_patterns as $pattern) {
+                if (preg_match($pattern, $sentence)) {
+                    error_log("WML_GATE_FILTER: action=strip pattern={$pattern} {$log_ctx} sentence_preview=" . substr(trim($sentence), 0, 80));
+                    $stripped = true;
+                    break;
+                }
+            }
+            if (!$stripped) {
+                $kept[] = $sentence;
+            }
+        }
+
+        return implode(' ', $kept);
     }
 
     /**
