@@ -15,8 +15,23 @@
     const SVG_SELECT_ALL =
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
         'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-            '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>' +
-            '<path d="M8 8h8M8 12h8M8 16h6"/>' +
+            '<path d="M8 8m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z" />' +
+            '<path d="M12 20v.01" />' +
+            '<path d="M16 20v.01" />' +
+            '<path d="M8 20v.01" />' +
+            '<path d="M4 20v.01" />' +
+            '<path d="M4 16v.01" />' +
+            '<path d="M4 12v.01" />' +
+            '<path d="M4 8v.01" />' +
+            '<path d="M4 4v.01" />' +
+            '<path d="M8 4v.01" />' +
+            '<path d="M12 4v.01" />' +
+            '<path d="M16 4v.01" />' +
+            '<path d="M20 4v.01" />' +
+            '<path d="M20 8v.01" />' +
+            '<path d="M20 12v.01" />' +
+            '<path d="M20 16v.01" />' +
+            '<path d="M20 20v.01" />' +
         '</svg>';
 
     const CHIPPED_TYPES = new Set(['plan', 'response', 'extract', 'question']);
