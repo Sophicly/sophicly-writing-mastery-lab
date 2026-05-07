@@ -5666,9 +5666,15 @@
                     if (e.button !== 0) return;
                     e.preventDefault(); e.stopPropagation();
                     epResizing = true; epDir = h.dataset.dir;
+                    // v7.19.88: account for ancestor CSS transforms (LearnDash embed
+                    // chrome). getBoundingClientRect() returns transformed visual coords,
+                    // but panel.style.left/top write to the untransformed coord system.
+                    // Mirror drag handler's getFixedOriginOffset() correction.
+                    const origin = typeof getFixedOriginOffset === 'function' ? getFixedOriginOffset(panel) : { x: 0, y: 0 };
                     const r = panel.getBoundingClientRect();
                     epSX = e.clientX; epSY = e.clientY;
-                    epSW = r.width; epSH = r.height; epSL = r.left; epST = r.top;
+                    epSW = r.width; epSH = r.height;
+                    epSL = r.left - origin.x; epST = r.top - origin.y;
                 });
             });
             document.addEventListener('mousemove', (e) => {
