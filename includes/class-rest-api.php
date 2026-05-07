@@ -1469,6 +1469,33 @@ class SWML_REST_API {
             $doc['html'] = preg_replace('/\[QUIZ_COMPLETE[^\]\n]*\][^\n<]*/i', '', $doc['html']);
         }
 
+        // v7.19.84: Crib-template version migration. Compare saved doc's stamped
+        // template_version vs current crib JSON's template_version. If saved is
+        // older, reseed from new template, preserving any student-typed responses.
+        // Persists migration so it doesn't re-run on every load.
+        if ($suffix === '_crib' && is_array($doc) && !empty($doc['html'])) {
+            $crib_text = preg_replace('/[^a-z0-9_]/', '', strtolower($text));
+            $crib_path = SWML_PATH . 'protocols/shared/crib-templates/' . $crib_text . '.json';
+            if (file_exists($crib_path)) {
+                $crib_raw = file_get_contents($crib_path);
+                $crib_data = json_decode($crib_raw, true);
+                if (is_array($crib_data) && !empty($crib_data['html']) && isset($crib_data['template_version'])) {
+                    $current_ver = (int)$crib_data['template_version'];
+                    $saved_ver = isset($doc['_template_version']) ? (int)$doc['_template_version'] : 0;
+                    if ($saved_ver < $current_ver) {
+                        $migrated_html = self::merge_student_responses_into_template(
+                            $crib_data['html'],
+                            $doc['html']
+                        );
+                        $doc['html'] = $migrated_html;
+                        $doc['_template_version'] = $current_ver;
+                        update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($doc)));
+                        error_log("WML_MIGRATION: user={$user_id} text={$crib_text} suffix={$suffix} reseed v{$saved_ver}->v{$current_ver}");
+                    }
+                }
+            }
+        }
+
         return rest_ensure_response([
             'success'      => true,
             'doc'          => $doc,
@@ -2063,6 +2090,73 @@ class SWML_REST_API {
         }
 
         return !empty($result) ? $result : null;
+    }
+
+    /**
+     * v7.19.84: Merge student-typed response sections from old saved HTML
+     * into a new template HTML during template-version migration.
+     *
+     * Strategy: parse both HTML strings via DOMDocument, build a map of
+     * non-placeholder student responses keyed by section-label, then for
+     * each response section in the new template replace its content with
+     * the saved one if a match exists.
+     *
+     * Plan / preamble / extract / question / frame sections are pedagogy-
+     * driven readonly content — always overwritten with new template.
+     */
+    private static function merge_student_responses_into_template($new_template_html, $old_saved_html) {
+        if (empty($old_saved_html) || empty($new_template_html)) return $new_template_html;
+
+        libxml_use_internal_errors(true);
+
+        $old_dom = new \DOMDocument();
+        $old_dom->loadHTML('<?xml encoding="UTF-8"?><div id="__wrap__">' . $old_saved_html . '</div>', LIBXML_NOERROR | LIBXML_NOWARNING);
+        $old_xpath = new \DOMXPath($old_dom);
+
+        // Collect saved responses keyed by section-label
+        $saved_responses = [];
+        $nodes = $old_xpath->query('//div[@data-section-type="response"]');
+        if ($nodes !== false) {
+            foreach ($nodes as $node) {
+                $label = $node->getAttribute('data-section-label');
+                if (empty($label)) continue;
+                $stripped = trim(strip_tags($node->textContent));
+                // Skip placeholder content
+                if (preg_match('/^(Type your response here|Start writing|Your .* will appear)\.?\s*$/i', $stripped)) continue;
+                if (mb_strlen($stripped) < 50) continue;
+                $saved_responses[$label] = $node;
+            }
+        }
+        if (empty($saved_responses)) {
+            libxml_clear_errors();
+            return $new_template_html;
+        }
+
+        $new_dom = new \DOMDocument();
+        $new_dom->loadHTML('<?xml encoding="UTF-8"?><div id="__wrap__">' . $new_template_html . '</div>', LIBXML_NOERROR | LIBXML_NOWARNING);
+        $new_xpath = new \DOMXPath($new_dom);
+
+        $new_nodes = $new_xpath->query('//div[@data-section-type="response"]');
+        if ($new_nodes !== false) {
+            foreach ($new_nodes as $node) {
+                $label = $node->getAttribute('data-section-label');
+                if (!isset($saved_responses[$label])) continue;
+                $imported = $new_dom->importNode($saved_responses[$label]->cloneNode(true), true);
+                $node->parentNode->replaceChild($imported, $node);
+            }
+        }
+
+        // Extract inner HTML of the wrapper div we added
+        $wrapper = $new_xpath->query('//div[@id="__wrap__"]')->item(0);
+        $merged = '';
+        if ($wrapper) {
+            foreach ($wrapper->childNodes as $child) {
+                $merged .= $new_dom->saveHTML($child);
+            }
+        }
+
+        libxml_clear_errors();
+        return $merged !== '' ? $merged : $new_template_html;
     }
 
     // ═══════════════════════════════════════════
