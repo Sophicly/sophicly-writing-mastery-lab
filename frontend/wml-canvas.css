@@ -2249,9 +2249,8 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     position: fixed;
     float: none;
     margin: 0;
-    /* v7.19.89: 200 to match extract-panel — LearnDash sidebar sits above 50,
-       caused outline panel to slip behind sidebar when dragged left. */
-    z-index: 200;
+    /* v7.19.90: 9999 to clear LearnDash sidebar fully (200 still got occluded). */
+    z-index: 9999;
     border-radius: 16px;
     border: 1px solid rgba(255,255,255,0.1);
     box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
@@ -2267,9 +2266,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 /* Resize handles — hidden until detached */
 .swml-outline-rh { position: absolute; z-index: 10; display: none; }
 .swml-outline-detached .swml-outline-rh { display: block; }
-/* v7.19.49: east edge resize available even when docked — adjust width
-   without detaching. North/south/west/corners stay detached-only. */
-.swml-outline-panel.swml-outline-open:not(.swml-outline-detached) .swml-outline-rh-e { display: block; }
+/* v7.19.49: east edge resize available when docked — adjust width without detaching.
+   v7.19.90: corners (ne/se) also enabled when docked — Neil request. North/south/west
+   stay detached-only since they don't make sense for a right-docked panel. */
+.swml-outline-panel.swml-outline-open:not(.swml-outline-detached) .swml-outline-rh-e,
+.swml-outline-panel.swml-outline-open:not(.swml-outline-detached) .swml-outline-rh-ne,
+.swml-outline-panel.swml-outline-open:not(.swml-outline-detached) .swml-outline-rh-se { display: block; }
 .swml-outline-rh-edge.swml-outline-rh-n { top: 0; left: 20px; right: 20px; height: 6px; cursor: n-resize; }
 .swml-outline-rh-edge.swml-outline-rh-s { bottom: 0; left: 20px; right: 20px; height: 6px; cursor: s-resize; }
 .swml-outline-rh-edge.swml-outline-rh-w { left: 0; top: 20px; bottom: 20px; width: 6px; cursor: w-resize; }
