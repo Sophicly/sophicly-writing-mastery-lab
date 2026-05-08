@@ -153,6 +153,7 @@
                     ev.preventDefault();
                     ev.stopPropagation();
                     const sectionLabel = (node && node.attrs && (node.attrs.sectionLabel || node.attrs.partLabel)) || dom.getAttribute('data-section-label') || '';
+                    if (window.console) console.log('[pull-chip] clicked, sectionLabel=' + sectionLabel + ', dispatching wml:pull-plan-request');
                     document.dispatchEvent(new CustomEvent('wml:pull-plan-request', {
                         detail: {
                             sectionLabel,

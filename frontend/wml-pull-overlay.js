@@ -28,11 +28,6 @@
 
     function closeOverlay() {
         if (activeOverlay && activeOverlay.parentNode) {
-            try {
-                if (activeOverlay._restoreOverflow !== undefined && activeOverlay._canvasContent) {
-                    activeOverlay._canvasContent.style.overflow = activeOverlay._restoreOverflow;
-                }
-            } catch (_) {}
             activeOverlay.parentNode.removeChild(activeOverlay);
         }
         activeOverlay = null;
@@ -141,30 +136,29 @@
      * Build + mount the overlay. Receives the request detail.
      */
     function openOverlay(detail) {
+        if (window.console) console.log('[pull-overlay] openOverlay called', detail);
         closeOverlay(); // singleton
         activeRequest = detail;
 
-        const state = (window.WML && typeof window.WML.getStateRef === 'function') ? window.WML.getStateRef() : (window.WML && window.WML.state) || {};
+        const state = (window.WML && window.WML.state) || {};
         const board = state.board || '';
         const text  = state.text || '';
+        if (window.console) console.log('[pull-overlay] board=' + board + ' text=' + text);
 
         const overlay = document.createElement('div');
         overlay.className = 'swml-pull-overlay';
-        overlay.style.cssText = 'position:absolute;inset:0;z-index:200;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);overflow:hidden;overscroll-behavior:contain;';
+        // v7.19.96: position:fixed (was absolute) so overlay is viewport-anchored
+        // regardless of canvas-content scroll position. Mount on body (was
+        // canvas-content) so ancestor CSS transforms in LD focus-mode don't trap
+        // the fixed positioning — same fix shipped for outline panel in v7.19.91.
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);overflow:hidden;overscroll-behavior:contain;';
 
         // Block backdrop wheel/touch from leaking into doc behind
         const _block = (e) => { if (e.target === overlay) e.preventDefault(); };
         overlay.addEventListener('wheel', _block, { passive: false });
         overlay.addEventListener('touchmove', _block, { passive: false });
-
-        // Lock canvas overflow while mounted
-        const canvasContent = document.querySelector('.swml-canvas-content') || document.body;
-        if (canvasContent && canvasContent !== document.body) {
-            canvasContent.style.position = canvasContent.style.position || 'relative';
-            overlay._canvasContent = canvasContent;
-            overlay._restoreOverflow = canvasContent.style.overflow;
-            canvasContent.style.overflow = 'hidden';
-        }
+        // Click on backdrop (outside card) closes
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
 
         // ── Card ──
         const card = document.createElement('div');
@@ -214,10 +208,12 @@
 
         overlay.appendChild(card);
 
-        // Mount inside canvas-content so it scrolls with the canvas, mirroring
-        // attempt-selector overlay (CLAUDE.md OVERLAY pattern).
-        canvasContent.appendChild(overlay);
+        // v7.19.96: mount on body for fixed positioning + escape ancestor
+        // stacking context (LearnDash focus-mode applies CSS transforms that
+        // trap descendant fixed elements — same workaround as outline panel).
+        document.body.appendChild(overlay);
         activeOverlay = overlay;
+        if (window.console) console.log('[pull-overlay] overlay mounted');
 
         // Wire close button
         header.querySelector('.swml-pull-overlay__close').addEventListener('click', closeOverlay);
