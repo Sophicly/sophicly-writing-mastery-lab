@@ -36,6 +36,18 @@
 
     const CHIPPED_TYPES = new Set(['plan', 'response', 'extract', 'question']);
 
+    // v7.19.95: pull-chip lives on plan sections in exam_crib only — students can
+    // import a plan they wrote in another exercise (Phase-2 planning, essay-plan,
+    // exam-practice, model-answer, conceptual-notes) into THIS slot.
+    const PULL_CHIPPED_TYPES = new Set(['plan']);
+    const SVG_PULL =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+        'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+            '<path d="M12 5v14"/>' +
+            '<path d="M19 12l-7 7-7-7"/>' +
+            '<path d="M5 21h14"/>' +
+        '</svg>';
+
     /**
      * Create a TipTap NodeView for SectionBlock.
      *
@@ -122,14 +134,46 @@
 
             dom.appendChild(chip);
 
+            // v7.19.95: pull-chip on plan sections in exam_crib. Sits above the
+            // Select-All chip (top-right with offset). Click dispatches a custom
+            // event picked up by wml-pull-overlay.js, which opens the source
+            // chooser modal. No direct overlay coupling here — keeps this file
+            // light and the chip simple.
+            let pullChip = null;
+            if (PULL_CHIPPED_TYPES.has(type)) {
+                pullChip = document.createElement('button');
+                pullChip.type = 'button';
+                pullChip.className = 'swml-section-pull';
+                pullChip.setAttribute('contenteditable', 'false');
+                pullChip.setAttribute('aria-label', 'Pull a plan from your other work');
+                pullChip.setAttribute('data-tooltip', 'Pull a plan from your other work');
+                pullChip.innerHTML = SVG_PULL;
+                pullChip.addEventListener('mousedown', (ev) => { ev.preventDefault(); ev.stopPropagation(); });
+                pullChip.addEventListener('click', (ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    const sectionLabel = (node && node.attrs && (node.attrs.sectionLabel || node.attrs.partLabel)) || dom.getAttribute('data-section-label') || '';
+                    document.dispatchEvent(new CustomEvent('wml:pull-plan-request', {
+                        detail: {
+                            sectionLabel,
+                            sectionEl: dom,
+                            contentDOM,
+                        },
+                    }));
+                });
+                dom.appendChild(pullChip);
+            }
+
             return {
                 dom,
                 contentDOM,
-                // Firewall the chip from ProseMirror's mutation observer so chip-subtree changes
+                // Firewall the chips from ProseMirror's mutation observer so chip-subtree changes
                 // never trigger a transaction / re-render loop.
                 ignoreMutation: (mutation) => {
                     if (!mutation || !mutation.target) return false;
-                    return chip === mutation.target || chip.contains(mutation.target);
+                    if (chip === mutation.target || chip.contains(mutation.target)) return true;
+                    if (pullChip && (pullChip === mutation.target || pullChip.contains(mutation.target))) return true;
+                    return false;
                 },
             };
         };

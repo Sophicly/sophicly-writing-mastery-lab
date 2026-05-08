@@ -113,6 +113,17 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
+        // v7.19.95: per-slot pull feature — list user's prior plan-source canvases
+        // for a given text + fetch one source's full HTML.
+        register_rest_route($namespace, '/canvas/list-pull-sources', [
+            'methods' => 'GET', 'callback' => [$this, 'list_pull_sources'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/canvas/pull-source', [
+            'methods' => 'GET', 'callback' => [$this, 'get_pull_source'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+
         // Safe diagnostic — probes AI Engine without calling it
         register_rest_route($namespace, '/debug', [
             'methods' => 'GET', 'callback' => [$this, 'handle_debug'],
@@ -2157,6 +2168,126 @@ class SWML_REST_API {
 
         libxml_clear_errors();
         return $merged !== '' ? $merged : $new_template_html;
+    }
+
+    // ═══════════════════════════════════════════
+    //  PER-SLOT PULL (v7.19.95)
+    // ═══════════════════════════════════════════
+
+    /**
+     * Allow-list of canvas suffixes that count as plan-pull sources.
+     * Maps suffix -> {task slug, display label, colour-class hint}.
+     * Suffix sourced from frontend/wml-core.js storageSuffix declarations.
+     * Per Neil's locked source list.
+     */
+    private static function pull_source_map() {
+        return [
+            '_planning' => ['task' => 'planning',         'label' => 'Phase 2 — Redraft Planning', 'colour' => 'planning'],
+            '_ep'       => ['task' => 'essay_plan',       'label' => 'Essay Plan',                 'colour' => 'essay_plan'],
+            '_eq'       => ['task' => 'exam_question',    'label' => 'Exam Practice',              'colour' => 'exam_question'],
+            '_ma'       => ['task' => 'model_answer',     'label' => 'Model Answer',               'colour' => 'model_answer'],
+            '_cn'       => ['task' => 'conceptual_notes', 'label' => 'Conceptual Notes',           'colour' => 'conceptual_notes'],
+        ];
+    }
+
+    /**
+     * GET /canvas/list-pull-sources?text=<slug>&board=<slug>
+     *
+     * Returns the current user's saved canvases that:
+     * - belong to this board+text (key prefix `swml_canvas_{board}_{text}`)
+     * - carry one of the allowed pull-source suffixes
+     *
+     * Each item: { key, task, label, colour, snippet, saved_at }.
+     * Sorted by saved_at descending. Empty array when none.
+     */
+    public function list_pull_sources($request) {
+        $user_id = get_current_user_id();
+        if (!$user_id) {
+            return rest_ensure_response(['success' => false, 'message' => 'Not authenticated', 'sources' => []]);
+        }
+        $board = sanitize_text_field($request->get_param('board') ?? '');
+        $text  = sanitize_text_field($request->get_param('text')  ?? '');
+        if (empty($board) || empty($text)) {
+            return rest_ensure_response(['success' => false, 'message' => 'Missing board or text', 'sources' => []]);
+        }
+
+        global $wpdb;
+        $prefix = 'swml_canvas_' . $board . '_' . $text;
+        $like = $wpdb->esc_like($prefix) . '%';
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT meta_key, meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key LIKE %s",
+            $user_id,
+            $like
+        ));
+
+        $map = self::pull_source_map();
+        $sources = [];
+        foreach ((array)$rows as $row) {
+            // Extract suffix: strip prefix, strip optional `_t<N>`, strip optional `__a<N>` and `__p<id>` tails.
+            $rest = substr($row->meta_key, strlen($prefix));
+            // Remove topic segment if present
+            $rest = preg_replace('/^_t\d+/', '', $rest);
+            // Strip attempt + cw-project trailers
+            $rest = preg_replace('/__a\d+(__p[a-zA-Z0-9_-]+)?$/', '', $rest);
+            $rest = preg_replace('/__p[a-zA-Z0-9_-]+$/', '', $rest);
+            // What remains should match one of the allow-list suffixes
+            if (!isset($map[$rest])) continue;
+
+            $info = $map[$rest];
+            $doc = is_array($row->meta_value) ? $row->meta_value : self::decode_canvas_json($row->meta_value);
+            if (!is_array($doc) || empty($doc['html'])) continue;
+            $stripped = trim(strip_tags($doc['html']));
+            if (mb_strlen($stripped) < 20) continue;
+
+            $sources[] = [
+                'key'       => $row->meta_key,
+                'task'      => $info['task'],
+                'label'     => $info['label'],
+                'colour'    => $info['colour'],
+                'snippet'   => mb_substr($stripped, 0, 220),
+                'saved_at'  => isset($doc['savedAt']) ? $doc['savedAt'] : '',
+                'wordCount' => isset($doc['wordCount']) ? (int)$doc['wordCount'] : 0,
+            ];
+        }
+
+        // Sort by saved_at desc (string compare on ISO date is fine)
+        usort($sources, function($a, $b) {
+            return strcmp($b['saved_at'], $a['saved_at']);
+        });
+
+        return rest_ensure_response(['success' => true, 'sources' => $sources]);
+    }
+
+    /**
+     * GET /canvas/pull-source?key=<meta_key>
+     *
+     * Returns the full saved canvas HTML for one source. Auth: key must
+     * match the current user (we read via get_user_meta which is scoped
+     * to user_id automatically — a foreign key returns empty).
+     */
+    public function get_pull_source($request) {
+        $user_id = get_current_user_id();
+        if (!$user_id) {
+            return rest_ensure_response(['success' => false, 'message' => 'Not authenticated']);
+        }
+        $key = sanitize_text_field($request->get_param('key') ?? '');
+        if (empty($key) || strpos($key, 'swml_canvas_') !== 0) {
+            return rest_ensure_response(['success' => false, 'message' => 'Invalid key']);
+        }
+
+        $raw = get_user_meta($user_id, $key, true);
+        if (empty($raw)) {
+            return rest_ensure_response(['success' => false, 'message' => 'Source not found']);
+        }
+        $doc = is_array($raw) ? $raw : self::decode_canvas_json($raw);
+        if (!is_array($doc) || empty($doc['html'])) {
+            return rest_ensure_response(['success' => false, 'message' => 'Source malformed']);
+        }
+        return rest_ensure_response([
+            'success' => true,
+            'key'     => $key,
+            'html'    => $doc['html'],
+        ]);
     }
 
     // ═══════════════════════════════════════════

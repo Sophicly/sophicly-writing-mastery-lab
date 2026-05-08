@@ -992,6 +992,9 @@
     // ══════════════════════════════════════════
 
     let canvasEditor = null;
+    // v7.19.95: expose live editor reference for cross-module use (e.g.
+    // wml-pull-overlay.js needs the editor to replace plan-section content).
+    if (window.WML) window.WML.getCanvasEditor = () => canvasEditor;
     let canvasSaveTimer = null;
     // v7.14.74: Checkbox/dropdown state stored OUTSIDE TipTap to avoid transactions on click.
     // Keyed by fieldId. Flushed into TipTap attributes only before save.

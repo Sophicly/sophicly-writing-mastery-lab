@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.94
+ * Version: 7.19.95
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.94');
+define('SWML_VERSION', '7.19.95');
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
@@ -258,6 +258,17 @@ class Sophicly_Writing_Mastery_Lab {
         wp_enqueue_script(
             'swml-selection-chip',
             SWML_URL . 'frontend/wml-selection-chip.js',
+            ['swml-core', 'swml-assessment'],
+            SWML_VERSION,
+            true
+        );
+
+        // v7.19.95: Pull-overlay module — per-slot plan import for exam_crib docs.
+        // Listens for `wml:pull-plan-request` events from the pull chip in
+        // wml-section-block.js. Self-registers as window.WML.PullOverlay.
+        wp_enqueue_script(
+            'swml-pull-overlay',
+            SWML_URL . 'frontend/wml-pull-overlay.js',
             ['swml-core', 'swml-assessment'],
             SWML_VERSION,
             true

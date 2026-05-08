@@ -4593,6 +4593,264 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     color: rgba(83,51,237,0.85);
 }
 
+/* v7.19.95 — pull chip on plan sections in exam_crib (sibling to Select-All).
+   Sits ABOVE the Select-All chip in the top-right corner with offset. */
+.swml-section-pull {
+    position: absolute;
+    top: -10px;
+    right: 44px; /* clears the Select-All chip (32px wide + 12px gap) */
+    z-index: 3;
+    width: 26px;
+    height: 20px;
+    border-radius: 6px;
+    border: 1px solid rgba(125,249,233,0.35);
+    background: linear-gradient(180deg, rgba(28,217,145,0.85), rgba(28,217,145,0.55));
+    color: rgba(255,255,255,0.95);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.18);
+    transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+    padding: 0;
+}
+.swml-section-pull:hover {
+    background: linear-gradient(180deg, rgba(28,217,145,1), rgba(28,217,145,0.7));
+    border-color: rgba(125,249,233,0.6);
+    transform: translateY(-1px);
+}
+.swml-section-pull:active { transform: translateY(0); }
+.swml-section-pull:focus-visible { outline: 2px solid rgba(125,249,233,0.6); outline-offset: 2px; }
+.swml-section-pull svg {
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+}
+.swml-section-pull[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: rgba(28, 26, 46, 0.95);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.3;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: opacity 120ms ease, transform 120ms ease;
+    z-index: 1000;
+}
+.swml-section-pull[data-tooltip]:hover::after {
+    opacity: 1;
+    transform: translateY(0);
+}
+.swml-canvas-light .swml-section-pull {
+    background: linear-gradient(180deg, rgba(28,217,145,0.95), rgba(28,217,145,0.75));
+    color: rgba(255,255,255,0.98);
+}
+
+/* v7.19.95 — pull overlay (modal) */
+.swml-pull-overlay__card {
+    background: rgba(20, 22, 28, 0.97);
+    border: 1px solid rgba(125,249,233,0.2);
+    border-radius: 14px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+    width: min(900px, 90vw);
+    max-height: min(640px, 82vh);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.swml-pull-overlay__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.swml-pull-overlay__header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.95);
+}
+.swml-pull-overlay__close {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.6);
+    font-size: 16px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.swml-pull-overlay__close:hover { color: #ff6b6b; background: rgba(255,100,100,0.1); border-color: rgba(255,100,100,0.2); }
+
+.swml-pull-overlay__body {
+    flex: 1;
+    display: grid;
+    grid-template-columns: minmax(280px, 38%) 1fr;
+    overflow: hidden;
+    min-height: 0;
+}
+.swml-pull-overlay__list {
+    border-right: 1px solid rgba(255,255,255,0.06);
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.swml-pull-overlay__loading,
+.swml-pull-overlay__empty,
+.swml-pull-overlay__preview-empty,
+.swml-pull-overlay__preview-loading,
+.swml-pull-overlay__preview-error {
+    color: rgba(255,255,255,0.55);
+    font-size: 13px;
+    padding: 20px;
+    text-align: center;
+}
+.swml-pull-overlay__empty p { margin: 6px 0; }
+.swml-pull-overlay__empty-sub {
+    color: rgba(255,255,255,0.4);
+    font-size: 12px;
+    line-height: 1.4;
+}
+.swml-pull-overlay__item {
+    text-align: left;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    color: rgba(255,255,255,0.85);
+    font: inherit;
+    transition: background 120ms ease, border-color 120ms ease;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.swml-pull-overlay__item:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(125,249,233,0.18);
+}
+.swml-pull-overlay__item--active {
+    background: rgba(125,249,233,0.08);
+    border-color: rgba(125,249,233,0.4);
+}
+.swml-pull-overlay__task-chip {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    align-self: flex-start;
+}
+.swml-pull-overlay__task-chip--planning      { background: rgba(83,51,237,0.18);  color: #a999ff; }
+.swml-pull-overlay__task-chip--essay_plan    { background: rgba(125,249,233,0.18); color: #7df9e9; }
+.swml-pull-overlay__task-chip--exam_question { background: rgba(66,161,236,0.18); color: #8cc5f5; }
+.swml-pull-overlay__task-chip--model_answer  { background: rgba(241,196,15,0.18);  color: #f5d56a; }
+.swml-pull-overlay__task-chip--conceptual_notes { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); }
+.swml-pull-overlay__item-meta {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+}
+.swml-pull-overlay__item-snippet {
+    margin: 4px 0 0 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: rgba(255,255,255,0.7);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.swml-pull-overlay__preview {
+    overflow-y: auto;
+    padding: 18px 22px;
+    color: rgba(255,255,255,0.85);
+    font-size: 13.5px;
+    line-height: 1.6;
+}
+.swml-pull-overlay__preview-content {
+    /* Inherits canvas typography roughly */
+    color: rgba(255,255,255,0.88);
+}
+.swml-pull-overlay__preview-content h1,
+.swml-pull-overlay__preview-content h2,
+.swml-pull-overlay__preview-content h3 {
+    font-size: 14px;
+    margin: 12px 0 6px 0;
+    color: rgba(125,249,233,0.85);
+}
+.swml-pull-overlay__preview-content p,
+.swml-pull-overlay__preview-content li {
+    font-size: 13px;
+    margin: 4px 0;
+}
+.swml-pull-overlay__footer {
+    padding: 14px 20px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    background: rgba(0,0,0,0.2);
+}
+.swml-pull-overlay__btn {
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 120ms ease;
+    font-family: inherit;
+}
+.swml-pull-overlay__btn--ghost {
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.7);
+}
+.swml-pull-overlay__btn--ghost:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.swml-pull-overlay__btn--primary {
+    background: linear-gradient(180deg, #5333ed, #4D76FD);
+    color: #fff;
+    border-color: rgba(125,249,233,0.3);
+}
+.swml-pull-overlay__btn--primary:hover { background: linear-gradient(180deg, #6b50ff, #5a8eff); }
+.swml-pull-overlay__btn--primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.4);
+}
+
+/* Light theme for pull overlay */
+.swml-canvas-light .swml-pull-overlay__card {
+    background: rgba(245,247,250,0.98);
+    border-color: rgba(83,51,237,0.18);
+    box-shadow: 0 12px 48px rgba(0,0,0,0.2);
+}
+.swml-canvas-light .swml-pull-overlay__header h3 { color: rgba(28,26,46,0.95); }
+.swml-canvas-light .swml-pull-overlay__list { border-right-color: rgba(0,0,0,0.06); }
+.swml-canvas-light .swml-pull-overlay__item { background: rgba(255,255,255,0.6); border-color: rgba(0,0,0,0.06); color: rgba(28,26,46,0.85); }
+.swml-canvas-light .swml-pull-overlay__item:hover { background: rgba(255,255,255,0.9); border-color: rgba(83,51,237,0.18); }
+.swml-canvas-light .swml-pull-overlay__item--active { background: rgba(83,51,237,0.06); border-color: rgba(83,51,237,0.4); }
+.swml-canvas-light .swml-pull-overlay__preview { color: rgba(28,26,46,0.85); }
+.swml-canvas-light .swml-pull-overlay__btn--ghost { background: rgba(0,0,0,0.04); color: rgba(28,26,46,0.7); }
+.swml-canvas-light .swml-pull-overlay__btn--ghost:hover { background: rgba(0,0,0,0.08); color: rgba(28,26,46,0.95); }
+
 /* ── Section type colours ── */
 
 /* Cover — full bleed DOM element (outside TipTap) */
