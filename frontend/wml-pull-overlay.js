@@ -50,30 +50,95 @@
     }
 
     /**
-     * Strip the source HTML down to the most relevant plan-like content per task.
-     * For tasks with a clear "plan" section, return that section's inner HTML.
-     * Otherwise return the whole html (let student see it all).
+     * Extract plain prose (paragraphs / lists / headings) from a source canvas.
+     *
+     * v7.19.97 — strip ALL section-block wrappers + InputField placeholders +
+     * feedback / outline / divider / notice sections. Keep only the text-bearing
+     * content from PLAN-relevant sections. Result is a flat sequence of <p>,
+     * <ul>, <ol>, <h2>, <h3>, <li> nodes the TipTap schema understands.
+     *
+     * Per Neil: pulled content should be just the text, not the source doc's
+     * structural sections (general-notes, protagonist, feedback, etc.).
      */
     function extractPlanFromSource(sourceHtml, task) {
         try {
             const wrap = document.createElement('div');
             wrap.innerHTML = sourceHtml;
-            const planSection = wrap.querySelector('[data-section-type="plan"]');
-            if (planSection) {
-                // Prefer the inner content holder if it exists (chip-wrapped sections).
-                const inner = planSection.querySelector('.swml-section-content');
-                return (inner ? inner.innerHTML : planSection.innerHTML).trim();
+
+            // Always drop these — they pollute the pulled prose.
+            wrap.querySelectorAll([
+                '[data-section-type="divider"]',
+                '[data-section-type="notice"]',
+                '[data-section-type="feedback"]',
+                '[data-section-type="outline"]',
+                '[data-section-type="response"]',
+                '[data-section-type="extract"]',
+                '[data-section-type="question"]',
+                '[data-section-type="preamble"]',
+                '[data-section-type="frame"]',
+                '.swml-comment-popover',
+                '.swml-section-select-all',
+                '.swml-section-pull',
+                '.swml-input-field-placeholder',
+            ].join(',')).forEach(n => n.remove());
+
+            // Pick scope: prefer plan section's inner content if present, else
+            // whole doc minus the strip-list above.
+            let scope = wrap.querySelector('[data-section-type="plan"]');
+            if (scope) {
+                const inner = scope.querySelector('.swml-section-content');
+                if (inner) scope = inner;
+            } else {
+                scope = wrap;
             }
-            // For pure essay-plan / model-answer / notes docs the whole doc IS the plan.
-            return wrap.innerHTML.trim();
-        } catch (_) {
-            return sourceHtml;
+
+            // Collect text-bearing nodes only. TipTap schema knows: p, ul, ol,
+            // li, h1, h2, h3, blockquote. Anything else (custom NodeView attrs,
+            // SectionBlock wrappers) gets unwrapped to its children.
+            const allowed = new Set(['P', 'UL', 'OL', 'LI', 'H1', 'H2', 'H3', 'H4', 'BLOCKQUOTE', 'STRONG', 'EM', 'BR', 'A', 'CODE']);
+            const out = [];
+            (function walk(node) {
+                if (!node) return;
+                node.childNodes.forEach((child) => {
+                    if (child.nodeType === 3) {
+                        const t = (child.textContent || '').trim();
+                        if (t) out.push(t);
+                        return;
+                    }
+                    if (child.nodeType !== 1) return;
+                    const tag = child.tagName;
+                    if (allowed.has(tag)) {
+                        out.push(child.outerHTML);
+                    } else {
+                        // Unwrap container — descend into its children.
+                        walk(child);
+                    }
+                });
+            })(scope);
+
+            // Wrap loose text fragments in <p>. Most fragments will already be
+            // <p>/<ul> outerHTML strings, but stray text nodes need wrapping.
+            const html = out
+                .map((s) => s.trim())
+                .filter(Boolean)
+                .map((s) => (/^<(p|ul|ol|h\d|blockquote)/i.test(s) ? s : '<p>' + s + '</p>'))
+                .join('');
+
+            return html || '<p></p>';
+        } catch (err) {
+            if (window.console) console.warn('[pull-overlay] extract failed', err);
+            return '<p></p>';
         }
     }
 
     /**
      * Replace the target plan section's content with new HTML via TipTap's
      * transaction system (so undo works). Returns true on success.
+     *
+     * Strategy v7.19.97: locate the wrapping section node by walking the
+     * resolved position upwards until we find the node whose attrs.sectionType
+     * === 'plan'. Then chain delete-inner-range + insertContentAt as ONE atomic
+     * transaction so undo reverts in a single Cmd-Z.
      */
     function replaceSectionContent(contentDOM, newHtml) {
         const editor = window.WML && typeof window.WML.getCanvasEditor === 'function' ? window.WML.getCanvasEditor() : null;
@@ -83,47 +148,40 @@
         }
         try {
             const view = editor.view;
-            // posAtDOM gives the position INSIDE the contentDOM; we want the
-            // start + end of its range relative to the doc.
             const startPos = view.posAtDOM(contentDOM, 0);
-            // Walk to the contentDOM's last child end for the end position. If
-            // contentDOM has no children, treat it as zero-length range.
-            const lastChild = contentDOM.lastChild;
-            const endPos = lastChild
-                ? view.posAtDOM(lastChild, lastChild.childNodes ? lastChild.childNodes.length : 0)
-                : startPos;
-            // Resolve outwards to the plan-section node range (inclusive content).
             const $start = view.state.doc.resolve(Math.max(0, startPos));
-            // Use the depth at startPos to find the wrapping section block.
-            // Plan nodes typically sit at depth 1 (top-level). Going up one
-            // gets the block boundary. Then `before` / `after` give the slot.
-            let depth = $start.depth;
-            // Find the node whose contentMatch produces a document fragment for
-            // a plan-section. Simplest: pick the deepest ancestor whose DOM
-            // matches contentDOM's parent (the section block dom).
-            let nodeStart = $start.before(depth);
-            let nodeEnd = $start.after(depth);
-            // Defensive: if computed range is empty, fall back to deleting any
-            // content between startPos and endPos and inserting at startPos.
-            if (nodeStart >= nodeEnd) {
-                nodeStart = startPos;
-                nodeEnd = endPos;
+
+            // Walk depths to find the section-block node (by attrs.sectionType).
+            let nodeStart = -1, nodeEnd = -1, foundDepth = -1;
+            for (let d = $start.depth; d >= 0; d--) {
+                const n = $start.node(d);
+                const st = n && n.attrs && n.attrs.sectionType;
+                if (st === 'plan') {
+                    nodeStart = $start.before(d);
+                    nodeEnd = $start.after(d);
+                    foundDepth = d;
+                    break;
+                }
             }
-            // Replace just the inner content (don't destroy the section block
-            // itself — we want to keep its data-attrs / class / chips). We do
-            // this by deleting the inner range then inserting at startPos.
+            if (nodeStart < 0) {
+                if (window.console) console.warn('[pull-overlay] could not locate plan section node');
+                return false;
+            }
+            // Inner content range = (nodeStart + 1) .. (nodeEnd - 1)
+            const innerStart = nodeStart + 1;
+            const innerEnd = Math.max(innerStart, nodeEnd - 1);
+            if (window.console) console.log('[pull-overlay] replace range', { nodeStart, nodeEnd, innerStart, innerEnd, depth: foundDepth, htmlLen: newHtml.length });
+
+            // Single atomic transaction: delete inner + insert new.
+            // insertContent at innerStart after delete should land inside the section node.
             editor
                 .chain()
                 .focus()
-                .command(({ tr }) => {
-                    // Inner range = (nodeStart + 1) .. (nodeEnd - 1)
-                    const innerStart = nodeStart + 1;
-                    const innerEnd = Math.max(innerStart, nodeEnd - 1);
+                .command(({ tr, dispatch }) => {
                     if (innerEnd > innerStart) tr.delete(innerStart, innerEnd);
-                    tr.insertText('', innerStart); // no-op anchor
                     return true;
                 })
-                .insertContentAt(nodeStart + 1, newHtml, { updateSelection: false })
+                .insertContentAt(innerStart, newHtml, { updateSelection: false })
                 .run();
             return true;
         } catch (err) {
@@ -151,7 +209,10 @@
         // regardless of canvas-content scroll position. Mount on body (was
         // canvas-content) so ancestor CSS transforms in LD focus-mode don't trap
         // the fixed positioning — same fix shipped for outline panel in v7.19.91.
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);overflow:hidden;overscroll-behavior:contain;';
+        // v7.19.97 — dropped backdrop-filter: blur(4px). Caused flicker on
+        // Chrome/Safari composite layers. Darker bg gives the focal effect
+        // without the GPU paint cost.
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.78);display:flex;align-items:center;justify-content:center;overflow:hidden;overscroll-behavior:contain;';
 
         // Block backdrop wheel/touch from leaking into doc behind
         const _block = (e) => { if (e.target === overlay) e.preventDefault(); };
@@ -281,19 +342,25 @@
         // ── Replace handler ──
         replaceBtn.addEventListener('click', () => {
             if (!selectedSource || !selectedHtml) return;
-            // Confirm
-            const confirmed = window.confirm(
-                'Replace ' + headerLabel + '’s plan with this content?\n\n' +
-                'Your existing plan content will be replaced. You can undo with ⌘Z (Mac) or Ctrl+Z (Windows).'
-            );
-            if (!confirmed) return;
-            const planHtml = extractPlanFromSource(selectedHtml, selectedSource.task);
-            const ok = replaceSectionContent(detail.contentDOM, planHtml);
-            closeOverlay();
-            if (ok && window.WML && typeof window.WML.toast === 'function') {
-                window.WML.toast('Plan pulled from ' + selectedSource.label + '. ⌘Z to undo.');
-            } else if (!ok && window.console) {
-                console.warn('[pull-overlay] replace returned false');
+            // v7.19.97 — use brand-styled confirm modal (was native window.confirm).
+            const doReplace = () => {
+                const planHtml = extractPlanFromSource(selectedHtml, selectedSource.task);
+                const ok = replaceSectionContent(detail.contentDOM, planHtml);
+                closeOverlay();
+                if (ok && window.WML && typeof window.WML.showToast === 'function') {
+                    window.WML.showToast('Plan pulled from ' + selectedSource.label + '. ⌘Z to undo.');
+                } else if (!ok && window.console) {
+                    console.warn('[pull-overlay] replace returned false');
+                }
+            };
+            if (window.WML && typeof window.WML.showConfirm === 'function') {
+                window.WML.showConfirm(
+                    'Replace ' + headerLabel + '’s plan with this content? Your existing plan content will be replaced. You can undo with ⌘Z (Mac) or Ctrl+Z (Windows).',
+                    doReplace,
+                    { confirmText: 'Replace plan', cancelText: 'Cancel', danger: true }
+                );
+            } else {
+                if (window.confirm('Replace ' + headerLabel + '’s plan? You can undo with ⌘Z.')) doReplace();
             }
         });
     }
