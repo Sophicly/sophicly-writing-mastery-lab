@@ -456,3 +456,4 @@ At the end of every work session, generate a comprehensive handoff document. See
 4. Score Summary in document not updating when scores change
 5. Deep protocol audit — remove panel save references from all protocol files
 6. Comments positioning (stuck at top instead of attached to commented text)
+7. Hybrid XML/Markdown protocol experiment — wrap hard gates / rules / examples / skip-blocks in XML tags inside existing Markdown. Test on ONE protocol first (suggest AQA P1 Q2 `protocol-a-assessment.md`), A/B vs current Markdown over 5–10 assessments. Scale only if clear AI-compliance win. Rationale: Anthropic's prompt docs recommend XML wrappers; Tarek (Anthropic) flagged HTML-over-Markdown gain. Don't blanket-convert (~50+ files, token cost, hurts your readability).
