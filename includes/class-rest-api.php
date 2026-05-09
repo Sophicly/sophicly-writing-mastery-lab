@@ -11,6 +11,54 @@ class SWML_REST_API {
 
     private static $instance = null;
 
+    /**
+     * v7.19.99: Text-slug canonicalisation map.
+     *
+     * Background: WML grew two parallel slug conventions for the same texts.
+     *   - frontend/wml-core.js TEXT_CATALOGUE uses short legacy abbreviations
+     *     (e.g. 'acc', 'aic', 'jekyll_hyde').
+     *   - sophicly-student-data course-map.php uses descriptive slugs
+     *     (e.g. 'christmas_carol', 'inspector_calls', 'jekyll_and_hyde').
+     *
+     * The Bridge → REST path (LearnDash lesson context) sends course-map
+     * slugs. The WML picker path sends wml-core slugs. Same physical text,
+     * two different cache/file/meta keys — silently splits state and breaks
+     * crib-template seed-on-mount for shared lessons.
+     *
+     * This map normalises every legacy slug to its canonical course-map slug
+     * at the REST boundary. All downstream meta-key construction, crib-template
+     * file lookup, and lazy-backfill use the canonical form. Frontend stays
+     * unchanged; existing user_meta migrates lazily on first canvas load.
+     */
+    private static $SLUG_ALIASES = [
+        'acc'             => 'christmas_carol',
+        'aic'             => 'inspector_calls',
+        'jekyll_hyde'     => 'jekyll_and_hyde',
+        'pride_prejudice' => 'pride_and_prejudice',
+        'romeo_juliet'    => 'romeo_and_juliet',
+        'sign_of_four'    => 'sign_of_the_four',
+    ];
+
+    /**
+     * Resolve any text slug (legacy or canonical) to canonical form.
+     * Idempotent — passing a canonical slug returns it unchanged.
+     */
+    private function normalize_text_slug($text) {
+        if (!is_string($text) || $text === '') return $text;
+        return self::$SLUG_ALIASES[$text] ?? $text;
+    }
+
+    /**
+     * Reverse-lookup: given a canonical slug, return the legacy slug if any
+     * (for lazy-backfill of pre-v7.19.99 user_meta keyed under the legacy form).
+     * Returns null when the canonical has no legacy form (no migration needed).
+     */
+    private function legacy_text_slug($canonical) {
+        if (!is_string($canonical) || $canonical === '') return null;
+        $rev = array_flip(self::$SLUG_ALIASES);
+        return $rev[$canonical] ?? null;
+    }
+
     public static function instance() {
         if (null === self::$instance) {
             self::$instance = new self();
@@ -1258,6 +1306,10 @@ class SWML_REST_API {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
         }
 
+        // v7.19.99: Normalise text slug at endpoint entry so save lands on the
+        // canonical-slug meta key regardless of which call path supplied $text.
+        $text = $this->normalize_text_slug($text);
+
         // v7.15.12: Resolve attempt number — use provided, or fall back to current from index
         if ($attempt < 1) {
             $idx = $this->get_attempt_index($user_id, $board, $text, $topic_number, $suffix);
@@ -1392,6 +1444,13 @@ class SWML_REST_API {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
         }
 
+        // v7.19.99: Normalise text slug to canonical form (course-map naming) so
+        // every downstream lookup — meta key, crib-template path, attempt index —
+        // resolves to the same physical record regardless of which call path
+        // (WML picker vs Bridge shared-lesson) sent the request.
+        $text = $this->normalize_text_slug($text);
+        $legacy_text = $this->legacy_text_slug($text);
+
         // v7.15.12: Resolve attempt — use provided, or current from index
         if ($attempt < 1) {
             $idx = $this->get_attempt_index($user_id, $board, $text, $topic_number, $suffix);
@@ -1420,6 +1479,24 @@ class SWML_REST_API {
                 update_user_meta($user_id, $meta_key, is_array($legacy_raw) ? $legacy_raw : wp_slash($legacy_raw));
                 delete_user_meta($user_id, $legacy_key);
                 $raw = $legacy_raw;
+            }
+        }
+        // v7.19.99: Legacy-slug lazy backfill — pre-v7.19.99 canvases were keyed
+        // under the wml-core abbreviated slug (acc/aic/jekyll_hyde/etc). On first
+        // canonical-slug load, fall back to the legacy-slug key, migrate forward,
+        // then delete the legacy key. canvas_meta_key() normalises internally,
+        // so we manually reconstruct the legacy key by passing the legacy slug.
+        if (empty($raw) && $legacy_text !== null) {
+            $legacy_slug_key = 'swml_canvas_' . $board . '_' . $legacy_text;
+            if ($topic_number !== null && $topic_number > 0) $legacy_slug_key .= '_t' . $topic_number;
+            if (!empty($suffix)) $legacy_slug_key .= $suffix;
+            if ($attempt > 1) $legacy_slug_key .= '__a' . $attempt;
+            if (!empty($cw_project_id)) $legacy_slug_key .= '__p' . $cw_project_id;
+            $legacy_slug_raw = get_user_meta($user_id, $legacy_slug_key, true);
+            if (!empty($legacy_slug_raw)) {
+                update_user_meta($user_id, $meta_key, is_array($legacy_slug_raw) ? $legacy_slug_raw : wp_slash($legacy_slug_raw));
+                delete_user_meta($user_id, $legacy_slug_key);
+                $raw = $legacy_slug_raw;
             }
         }
         if (empty($raw)) {
@@ -1539,6 +1616,10 @@ class SWML_REST_API {
         if (empty($board) || empty($text)) {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
         }
+
+        // v7.19.99: Normalise text slug — tutor reads must hit the same
+        // canonical-slug meta key the student writes to.
+        $text = $this->normalize_text_slug($text);
 
         // v7.15.12: Resolve attempt for tutor review
         if ($attempt < 1) {
@@ -2430,6 +2511,7 @@ class SWML_REST_API {
     // project isolates its canvas doc / chat end-to-end (client localStorage keys already carry
     // the same suffix; server had been lesson-scoped and leaked across projects).
     private function canvas_meta_key($board, $text, $topic, $suffix = '', $attempt = 1, $cw_project_id = '') {
+        $text = $this->normalize_text_slug($text);
         $key = 'swml_canvas_' . $board . '_' . $text;
         if ($topic !== null && $topic > 0) {
             $key .= '_t' . $topic;
@@ -2447,6 +2529,7 @@ class SWML_REST_API {
     }
 
     private function chat_meta_key($board, $text, $topic, $suffix = '', $attempt = 1, $cw_project_id = '') {
+        $text = $this->normalize_text_slug($text);
         $key = 'swml_chat_' . $board . '_' . $text;
         if ($topic > 0) $key .= '_t' . $topic;
         if (!empty($suffix)) $key .= $suffix;
@@ -2457,6 +2540,7 @@ class SWML_REST_API {
 
     // v7.15.12: Attempt index — base key without attempt suffix, stores attempt metadata
     private function attempt_index_key($board, $text, $topic, $suffix = '') {
+        $text = $this->normalize_text_slug($text);
         $key = 'swml_attempts_' . $board . '_' . $text;
         if ($topic !== null && $topic > 0) $key .= '_t' . $topic;
         if (!empty($suffix)) $key .= $suffix;
@@ -2465,6 +2549,7 @@ class SWML_REST_API {
 
     // v7.15.44: Phase completion meta key — attempt-aware. Attempt 1 keeps legacy un-suffixed format for backward compat.
     private function phase_meta_key($board, $text, $topic, $phase, $attempt = 1) {
+        $text = $this->normalize_text_slug($text);
         $key = sprintf('swml_phase_%s_%s_t%d_%s', $board, $text, $topic, $phase);
         if ($attempt > 1) $key .= '__a' . $attempt;
         return $key;
@@ -3558,6 +3643,7 @@ class SWML_REST_API {
     // only by explicit student deletion (propagated via the save mirror).
 
     private function general_notes_meta_key($board, $text) {
+        $text = $this->normalize_text_slug($text);
         return 'swml_general_notes_' . sanitize_key($board) . '_' . sanitize_key($text);
     }
 
