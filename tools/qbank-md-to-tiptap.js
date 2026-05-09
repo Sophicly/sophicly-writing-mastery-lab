@@ -153,7 +153,9 @@ function parseQuestionBlock(block, qNum, title) {
     for (const line of lines) {
         if (/^## Q\d+\s+—/.test(line)) { inSection = 'header'; continue; }
         if (/^\*\*Question \(.*\):\*\*/.test(line)) { inSection = 'question'; continue; }
-        if (/^\*\*Typical extract\.\*\*/.test(line.trim())) { inSection = 'extract'; continue; }
+        // v7.19.100: source banks use `**Extract.**` (with optional preamble line);
+        // older converter regex expected `**Typical extract.**` which matched no bank.
+        if (/^\*\*(Typical extract|Extract|Preamble)\.\*\*/.test(line.trim())) { inSection = 'extract'; continue; }
         if (/^\*\*Frame\.\*\*/.test(line.trim())) { inSection = 'frame'; continue; }
         if (/^### Skeleton plan/.test(line)) { inSection = 'plan'; continue; }
         if (/^---\s*$/.test(line)) continue; // section break, ignore
