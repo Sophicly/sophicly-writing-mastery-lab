@@ -14218,11 +14218,14 @@
         // student-writing zones (skeleton-plan-then-essay shape). Widen the
         // selector for that task so the wc widget tracks combined output;
         // all other tasks unchanged.
-        const _state = window.WML && window.WML.state;
-        const _isCrib = _state && _state.task === 'exam_crib';
-        const _sectionSelector = _isCrib
-            ? '[data-section-type="response"], [data-section-type="plan"]'
-            : '[data-section-type="response"]';
+        // v7.19.102: revert v7.19.42 widening for exam_crib. Crib templates now
+        // ship pre-seeded with the full 10×skeleton plan (~10k words of seeded
+        // scaffolding). Counting plan-section content meant the wc widget
+        // showed e.g. 10752/650 before the student typed a single word.
+        // Plan stays editable (student can annotate bullets) but only the
+        // response section counts toward the target — same rule as every
+        // other task.
+        const _sectionSelector = '[data-section-type="response"]';
         const responseSections = liveEditorEl.querySelectorAll(_sectionSelector);
         if (responseSections.length === 0) {
             // Fallback for legacy templates without section types
