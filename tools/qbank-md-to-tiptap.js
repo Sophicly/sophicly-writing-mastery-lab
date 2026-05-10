@@ -75,14 +75,31 @@ function responseHTML(label) {
 }
 
 // Convert a block of markdown lines to HTML paragraphs (preserves bullets, blockquotes).
+// v7.19.101: Skip bare `>` separator lines (they emit as empty blockquotes — visible
+// as stray arrows in the rendered canvas). Coalesce consecutive blockquote lines
+// into a single <blockquote> with one <p> per line so multi-paragraph extracts
+// render as a single quoted block.
 function mdLinesToHTML(lines) {
     let html = '';
+    let bqBuffer = []; // pending blockquote paragraphs
+    const flushBq = () => {
+        if (bqBuffer.length === 0) return;
+        html += '<blockquote>' + bqBuffer.map(p => `<p>${p}</p>`).join('') + '</blockquote>';
+        bqBuffer = [];
+    };
     for (const line of lines) {
         const trimmed = line.trim();
-        if (!trimmed) continue;
+        if (!trimmed) { flushBq(); continue; }
+        if (trimmed === '>') {
+            // Bare blockquote separator — skip silently.
+            continue;
+        }
         if (trimmed.startsWith('> ')) {
-            html += `<blockquote><p>${richText(trimmed.slice(2))}</p></blockquote>`;
-        } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+            bqBuffer.push(richText(trimmed.slice(2)));
+            continue;
+        }
+        flushBq();
+        if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
             html += `<p>• ${richText(trimmed.slice(2))}</p>`;
         } else if (trimmed.startsWith('#### ')) {
             html += `<h4>${richText(trimmed.slice(5))}</h4>`;
@@ -96,6 +113,7 @@ function mdLinesToHTML(lines) {
             html += `<p>${richText(trimmed)}</p>`;
         }
     }
+    flushBq();
     return html;
 }
 
@@ -143,30 +161,60 @@ function parsePreamble(preambleMd) {
 }
 
 function parseQuestionBlock(block, qNum, title) {
-    // Parse a single Q block into: question_text, typical_extract, frame, skeleton_plan_md.
-    // Strategy: find sub-headers "**Question (...)**", "**Typical extract.**", "**Frame.**", "### Skeleton plan".
+    // Parse a single Q block into: preamble, extract, question, frame, skeleton plan.
+    // Source markers (one per Q section): `**Preamble.** ...` (1-line context),
+    // `**Extract.** Stave/Act/Chapter — scene label:` followed by `>` blockquote(s),
+    // `**Question (AQA house style):**` followed by `>` blockquote question,
+    // `**Frame.** ...` (analytical framing), `### Skeleton plan` (editable plan).
+    //
+    // v7.19.101: Preamble + Extract are now separate buckets so render order can
+    // match the AQA paper exactly: Preamble → Extract → Question → Frame.
+    // Inline content after `**Preamble.**` and `**Extract.**` markers is captured
+    // (the preamble text and the scene-setup label respectively).
     const lines = block.split('\n');
 
-    let inSection = 'header'; // 'header' | 'question' | 'extract' | 'frame' | 'plan'
-    const buckets = { header: [], question: [], extract: [], frame: [], plan: [] };
+    let inSection = 'header'; // 'header' | 'preamble' | 'extract' | 'question' | 'frame' | 'plan'
+    const buckets = { header: [], preamble: [], extract: [], question: [], frame: [], plan: [] };
+
+    const switchSection = (newSection, inlineRest) => {
+        inSection = newSection;
+        const trimmed = (inlineRest || '').trim();
+        if (trimmed) buckets[newSection].push(trimmed);
+    };
 
     for (const line of lines) {
         if (/^## Q\d+\s+—/.test(line)) { inSection = 'header'; continue; }
-        if (/^\*\*Question \(.*\):\*\*/.test(line)) { inSection = 'question'; continue; }
-        // v7.19.100: source banks use `**Extract.**` (with optional preamble line);
-        // older converter regex expected `**Typical extract.**` which matched no bank.
-        if (/^\*\*(Typical extract|Extract|Preamble)\.\*\*/.test(line.trim())) { inSection = 'extract'; continue; }
-        if (/^\*\*Frame\.\*\*/.test(line.trim())) { inSection = 'frame'; continue; }
+        const preMatch = line.match(/^\*\*Preamble\.\*\*\s*(.*)$/);
+        if (preMatch) { switchSection('preamble', preMatch[1]); continue; }
+        // v7.19.101: tolerate `**Extract.** Stave 5 — title:` (CC/Macbeth/J&H/SOTF/R&J)
+        // AND `**Extract — Act 1 Scene 1:**` (Much Ado dialogue extracts use em-dash
+        // inside the bold). Also keeps legacy `**Typical extract.**`.
+        const extMatch = line.match(/^\*\*(?:Typical extract|Extract)(?:\.|\s+—\s+[^*]+:)\*\*\s*(.*)$/);
+        if (extMatch) { switchSection('extract', extMatch[1]); continue; }
+        // Explicit `**Question (AQA house style):**` marker — most banks.
+        if (/^\*\*Question[^*]*\*\*/.test(line)) { inSection = 'question'; continue; }
+        const frMatch = line.match(/^\*\*Frame\.\*\*\s*(.*)$/);
+        if (frMatch) { switchSection('frame', frMatch[1]); continue; }
         if (/^### Skeleton plan/.test(line)) { inSection = 'plan'; continue; }
         if (/^---\s*$/.test(line)) continue; // section break, ignore
+        // v7.19.101: For banks without explicit `**Question.**` markers
+        // (IC/Much Ado/P&P), detect the AQA-style question blockquote by content
+        // signature and switch buckets here. Question always opens with one of
+        // these standard examiner phrasings, so detection is unambiguous.
+        if (/^>\s*(Starting with this extract|How does\b|How is\b|How far\b|Read again|Explore how|Write about\b)/i.test(line.trim())) {
+            if (inSection === 'extract' || inSection === 'header' || inSection === 'preamble') {
+                inSection = 'question';
+            }
+        }
         buckets[inSection].push(line);
     }
 
     return {
         qNum,
         title,
-        questionLines: buckets.question,
+        preambleLines: buckets.preamble,
         extractLines: buckets.extract,
+        questionLines: buckets.question,
         frameLines: buckets.frame,
         planLines: buckets.plan,
     };
@@ -199,22 +247,29 @@ function buildQuestionHTML(parsed) {
     // 1. Divider with anchor — "Q1 — Macbeth as a powerful but troubled character"
     html += dividerHTML(`Q${parsed.qNum} — ${parsed.title}`);
 
-    // 2. Question + extract + frame bundle (readonly notice)
+    // 2. Preamble + Extract + Question + Frame bundle (readonly notice).
+    // v7.19.101: AQA paper order — Preamble → Extract → Question → Frame.
+    // Earlier versions rendered Question first which inverted the actual exam
+    // paper layout (extract anchors the question, not the other way round).
     let bundle = '';
+    if (parsed.preambleLines.length > 0) {
+        bundle += `<h3>Preamble</h3>`;
+        bundle += mdLinesToHTML(parsed.preambleLines);
+    }
+    if (parsed.extractLines.length > 0) {
+        bundle += `<h3>Extract</h3>`;
+        bundle += mdLinesToHTML(parsed.extractLines);
+    }
     if (parsed.questionLines.length > 0) {
         bundle += `<h3>Question</h3>`;
         bundle += mdLinesToHTML(parsed.questionLines);
-    }
-    if (parsed.extractLines.length > 0) {
-        bundle += `<h3>Typical Extract</h3>`;
-        bundle += mdLinesToHTML(parsed.extractLines);
     }
     if (parsed.frameLines.length > 0) {
         bundle += `<h3>Frame</h3>`;
         bundle += mdLinesToHTML(parsed.frameLines);
     }
     if (bundle) {
-        html += questionHTML(`Q${parsed.qNum} — Question + Extract + Frame`, bundle);
+        html += questionHTML(`Q${parsed.qNum} — Preamble + Extract + Question + Frame`, bundle);
     }
 
     // 3. Skeleton plan (editable)
