@@ -19687,6 +19687,48 @@
             });
         });
 
+        // v7.19.103: Inject label badges + Q-separator HRs for Google-Docs
+        // friendliness. Word renders the inline border-left + background fine,
+        // but Google Docs strips div background/border on import — sections
+        // collapse to plain paragraphs and the visual hierarchy is lost.
+        // Span backgrounds + horizontal rules survive both Word and GDocs.
+        const sectionBadgeColours = {
+            question:    '#51dacf',
+            plan:        '#5333ed',
+            outline:     '#42A1EC',
+            response:    '#1CD991',
+            feedback:    '#ffb432',
+            scores:      '#ff6b6b',
+            action:      '#4D76FD',
+            signoff:     '#1CD991',
+            improvement: '#7DF9E9',
+            notice:      '#9b87ff',
+        };
+        // Match every section-block div opener — capture type + label + the
+        // full opening tag so we can insert a badge as the first child.
+        const sectionOpenerRe = /<div\s+data-section-type="(\w+)"\s+data-section-label="([^"]*)"([^>]*)>/g;
+        html = html.replace(sectionOpenerRe, (match, type, label, rest) => {
+            // Dividers handled separately below — they're decorative break-strips,
+            // not labelled content blocks. Skip badge injection for divider type.
+            if (type === 'divider') return match;
+            const colour = sectionBadgeColours[type] || '#888';
+            const escapedLabel = (label || type.toUpperCase()).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const badge = `<p style="margin:0 0 8pt 0;padding:0;"><span style="display:inline-block;background:${colour};color:#fff;padding:3pt 10pt;font-weight:bold;font-size:9pt;letter-spacing:1.5pt;text-transform:uppercase;border-radius:3pt;font-family:Calibri,Arial,sans-serif;">${escapedLabel}</span></p>`;
+            return `${match}${badge}`;
+        });
+
+        // Insert a horizontal-rule separator before each Q-divider section
+        // so each Q starts on a clearly-bounded page region. Skips the very
+        // first divider (no preceding content to separate from).
+        const dividerRe = /<div\s+data-section-type="divider"[^>]*>/g;
+        let dividerCount = 0;
+        html = html.replace(dividerRe, (match) => {
+            dividerCount++;
+            if (dividerCount === 1) return match; // first Q-divider — no leading HR
+            const hr = '<hr style="border:none;border-top:2pt solid #d0d0d0;margin:32pt 0 24pt 0;page-break-before:always;">';
+            return `${hr}${match}`;
+        });
+
         // Word-compatible HTML envelope with proper namespaces
         const docHtml = `
 <!DOCTYPE html>
