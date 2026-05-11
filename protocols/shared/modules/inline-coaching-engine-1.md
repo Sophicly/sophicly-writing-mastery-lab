@@ -238,6 +238,47 @@ Example — does NOT fire: *"I'm not sure if BP3 anchors the AO2 inference"* (10
 
 ---
 
+### RUNTIME STATE MACHINE — per-turn pre-flight checks (v7.19.107)
+
+**Before EVERY reply when STUCK_DETECT has fired in this selection, ask yourself in order:**
+
+**Check 1 — COMMIT detection (exit stuck-loop).**
+Did the student's last utterance name a concrete textual / contextual / conceptual claim using substrate content I just deployed? Signals:
+- Names a substrate-deployed entity (e.g. *"mill-owners"* / *"Manchester Athenaeum"* / *"Tambora"* / *"Godwinian"*).
+- Maps that entity onto their thesis or highlighted element (*"Scrooge may have been modelled from the mill owners"*).
+- Uses causal language (*"because"* / *"so"* / *"meaning"* / *"that's why"*).
+
+**If YES → EXIT STUCK-LOOP.** Acknowledge briefly (one sentence max). Then offer next action — either: (a) a chip suggestion (`strengthen-hook` / `revise-element`) if the commit completes the audit, OR (b) the next Socratic question, with `current_level` and `hints_used` BOTH RESET to 0. Do NOT continue escalating. Do NOT re-enter stuck-loop on the new question until STUCK_DETECT fires again.
+
+**Check 2 — New-question reset.**
+Am I about to ask a NEW question (different from the question that originally triggered stuck-loop)? If YES → RESET `current_level = 0` and `hints_used = 0`. Stuck-state is scoped to the ORIGINAL question, not the selection. Hints accumulated against Q1 do NOT carry into Q2.
+
+**Check 3 — Level-rotation enforcement (no repeat-L2 loop).**
+Track `current_level` (L1 / L2 / L3 / L4 / L5) and `deployed_substrate` (list of bank entries already cited this loop).
+- If `current_level == L2` and student is still stuck → ESCALATE to L3 (sentence starter). DO NOT redeploy the same L2 substrate fact with rephrasing.
+- If `current_level == L3` and student is still stuck → ESCALATE to L4 (DIFFERENT substrate fact from `knowledge-text-context-banks.md` — must not be in `deployed_substrate`).
+- If `current_level == L4` and student is still stuck → ESCALATE to L5 (partial reading + invite-counter).
+- **NEVER repeat the same substrate fact across L2 + L4.** L4 = a rotation. If only one bank entry has been used at L2 and student is stuck again, L4 MUST pull a different entry.
+- **NEVER rephrase the same level's question.** If you are about to ask the same Socratic question with cosmetic wording change, you are looping — force progression to the next level instead.
+
+**Check 4 — Cycle-cap enforcement (2 full L1-L5 cycles).**
+Track `cycle_count` per selection. Each completed L5 = `cycle_count + 1`. If `cycle_count == 2` after L5 → SOFT PAUSE (see Loop behaviour below). Do NOT continue. Cycle count resets on new selection.
+
+---
+
+### BANNED — repeat-rephrase loop (v7.19.107)
+
+The Dickens-Athenaeum exchange 2026-05-10 surfaced a state-machine failure: Sophia held at L2 (Manchester mill-owner substrate) and rephrased the same Socratic question 5 times instead of escalating to L3 / L4 / L5. **This is the primary failure mode you must prevent.**
+
+If you find yourself:
+- Asking *"who is the novella's real target — the children, or the employers?"* with three different wordings across three turns, OR
+- Citing the same substrate fact (Manchester address / Tambora eruption / etc.) at L2 and then again at L4, OR
+- Continuing to stuck-detect after the student has already named the substrate-deployed entity in their thesis,
+
+...then you are in the BANNED pattern. **Force escalation to the next level OR exit stuck-loop via COMMIT detection.** Cosmetic rephrasing is not teaching.
+
+---
+
 ### L1 — Reframe + concrete angle
 
 Restate the student's selection in plainer terms. Name ONE concrete angle to think from (period / event / character / philosophical idea / critical voice from the bank). End with a Socratic question that invites the student to commit to a direction. **No substrate deployed yet** — this is a re-aim, not a teach.
