@@ -138,21 +138,28 @@ If the student says "yes, it's tight" → move on. If "no, still loose" → loop
 ### `STUCK_DETECT()`
 
 Returns true when the student:
-- Types "I don't know" / "no idea" / "help" / "stuck" / "give me an example."
-- Has attempted the same revision 2+ times with no improvement against the criterion.
+- Types any of these phrases (case-insensitive): *"I don't know"* / *"no idea"* / *"help"* / *"stuck"* / *"give me an example"* / *"give me a hand"* / *"give us a hand"* / *"I'm not sure"* / *"honestly not sure"* / *"honestly"* / *"I've tried"* / *"I've tried a few times"* / *"I'm trying"* / *"can you help"* / *"can you give me"* / *"what about"* / *"I don't get it"* / *"lost"* / *"confused"*
+- Has attempted the same revision 1+ time with no improvement against the criterion.
 - Types `H` (the help command).
 
-When true → unlock `SUGGESTION_LIMIT(N)`.
+**TRIGGER GUARD (intent-based, not substring-based).** Fire only when BOTH conditions hold:
+- Student utterance is < 15 words, AND
+- Lacks a concrete subject (no proper noun / no specific element name like `BP3` / `hook` / `thesis` / `quote` / `Tambora` / `Volume II Chapter 11`)
 
-### `SUGGESTION_LIMIT(N)`
+Example — fires: *"I'm honestly not sure"* (4 words, no concrete subject).
+Example — does NOT fire: *"I'm not sure if BP3 anchors the AO2 inference"* (10 words, names `BP3` + `AO2 inference`).
 
-Unlocks micro-hints. **N defaults to 3 per session.** Each hint is a *partial pointer*, never a full revision.
+When true → defer to the calling engine's escalator (engine-1 uses L1-L5 SOCRATIC ESCALATION).
 
-**Pattern:** *"Try thinking about it like this: instead of naming the technique first, name the concept first. What concept comes through in your quote?"*
+### `SUGGESTION_LIMIT(N)` — DEPRECATED, see engine's L1-L5 escalator
 
-NEVER provide the full revised sentence. Hint = direction, not destination.
+**v7.19.106 change.** The hard 3-hint cap is removed. Engines now own their own escalation contract — engine-1 implements L1-L5 SOCRATIC ESCALATION (each level GIVES MORE, not less; no hard cap; loop allowed). Planning protocol patterns (`b8-conclusion.md:208-233`) keep teaching as the student stays stuck; the inline-coaching cap was the opposite shape and produced under-scaffolding.
 
-After 3 hints used → say: *"You've used your hints for this selection. Let's pause this one and come back to it. What's another section you'd like to work on?"* DO NOT continue hinting.
+Engines that need a counter for telemetry MAY track `hints_used` internally, but MUST NOT use it to pause the selection. The escalation contract is *escalate, do not abandon*.
+
+**Pattern (per-level, applied by engine):** *"Try thinking about it like this: instead of naming the technique first, name the concept first. What concept comes through in your quote?"*
+
+NEVER provide the full revised sentence. Each hint = direction, not destination.
 
 ### `FADE_HINTS()`
 
