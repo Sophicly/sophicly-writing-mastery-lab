@@ -11483,6 +11483,25 @@
 
         // ── Initialise TipTap Editor ──
         let savedContent = state.reviewMode ? null : loadCanvasContent(); // Review mode: skip localStorage, server will inject
+        // v7.19.136 instrumentation — mount-time state snapshot + sibling-key audit.
+        // Designed to pin "close window + reopen lose work" repro: shows the exact
+        // CANVAS_SAVE_KEY in use at load time and every sibling key currently in
+        // localStorage so we can detect key drift (e.g. phase suffix mismatch).
+        try {
+            const _mountKey = CANVAS_SAVE_KEY();
+            console.log('[WML load-debug v7.19.136] mount editor init', {
+                task: state.task, phase: state.phase, attempt: state.attempt,
+                topic: state.topicNumber, board: state.board, text: state.text,
+                key: _mountKey, savedContentSize: savedContent ? savedContent.length : 0
+            });
+            const _allCanvasKeys = Object.keys(localStorage).filter(function (k) { return k.indexOf('swml_canvas_') === 0; });
+            const _siblings = _allCanvasKeys.map(function (k) {
+                let _size = 0;
+                try { _size = (localStorage.getItem(k) || '').length; } catch (_) {}
+                return { key: k, size: _size, isCurrent: k === _mountKey };
+            });
+            console.log('[WML load-debug v7.19.136] sibling localStorage canvas keys', _siblings);
+        } catch (_) {}
         // v7.13.42 (REMOVED v7.17.41): CW tasks used to discard localStorage unconditionally
         // on mount because "CW documents are saved as project artifacts on the server, not
         // localStorage". v7.17.38+ made CANVAS_SAVE_KEY() project-scoped, and v7.17.40+
@@ -11702,6 +11721,14 @@
                 requestAnimationFrame(updatePageCount);
                 saveStatus.textContent = 'Editing...';
                 saveStatus.classList.remove('saving');
+                // v7.19.136 instrumentation — diagnose close+reopen save loss
+                try {
+                    console.log('[WML save-debug v7.19.136] onUpdate fired', {
+                        task: state.task, phase: state.phase, attempt: state.attempt,
+                        topic: state.topicNumber, board: state.board, text: state.text,
+                        key: CANVAS_SAVE_KEY(), docSize: editor.getHTML().length
+                    });
+                } catch (_) {}
                 clearTimeout(canvasSaveTimer);
                 canvasSaveTimer = setTimeout(() => {
                     saveCanvasContent();
@@ -11985,18 +12012,31 @@
         }).then(() => {
             // Clean corrupted content from v7.11.8 (serialized selects as text)
             cleanCorruptedContent();
+            // v7.19.136 instrumentation — snapshot doc size before & after each migrate
+            // pass. Any step that drops the size significantly is a strip-suspect.
+            let _preMigrateSize = 0;
+            try { _preMigrateSize = canvasEditor.getHTML().length; } catch (_) {}
+            try { console.log('[WML load-debug v7.19.136] migrate chain START', { docSize: _preMigrateSize }); } catch (_) {}
+            const _migrateStep = function (label, fn) {
+                let _before = 0; try { _before = canvasEditor.getHTML().length; } catch (_) {}
+                try { fn(); } catch (e) { try { console.warn('[WML load-debug v7.19.136] migrate step threw', label, e && e.message); } catch (_) {} }
+                let _after = 0; try { _after = canvasEditor.getHTML().length; } catch (_) {}
+                try { console.log('[WML load-debug v7.19.136] migrate step', { step: label, before: _before, after: _after, delta: _after - _before }); } catch (_) {}
+            };
             // Migrate old documents — inject missing sections + dividers + plans + outlines + InputFields
-            migrateDocument();
-            migrateDividers();
-            migrateExtractQuestionDivider();
-            migrateMissingPlans();
-            migrateMissingOutlines();
-            migrateOutlineCriteria();
-            migrateInputFields();
+            _migrateStep('migrateDocument', migrateDocument);
+            _migrateStep('migrateDividers', migrateDividers);
+            _migrateStep('migrateExtractQuestionDivider', migrateExtractQuestionDivider);
+            _migrateStep('migrateMissingPlans', migrateMissingPlans);
+            _migrateStep('migrateMissingOutlines', migrateMissingOutlines);
+            _migrateStep('migrateOutlineCriteria', migrateOutlineCriteria);
+            _migrateStep('migrateInputFields', migrateInputFields);
             // v7.15.90: prepend General Notes into conceptual-notes docs that
             // pre-date v7.15.89. Non-destructive — existing 7 concept sections
             // and any saved content are left untouched.
-            migrateGeneralNotesSection();
+            _migrateStep('migrateGeneralNotesSection', migrateGeneralNotesSection);
+            // v7.19.136 instrumentation — final migrate-chain doc size
+            try { console.log('[WML load-debug v7.19.136] migrate chain END', { docSize: canvasEditor.getHTML().length, delta: canvasEditor.getHTML().length - _preMigrateSize }); } catch (_) {}
             // Inject cover image if missing from loaded document
             tryInjectCover();
             // Build table of contents (after cover + migration)
@@ -17593,8 +17633,23 @@
         let html = canvasEditor.getHTML();
         html = patchCheckStateIntoHTML(html);
         const wc = getResponseWordCount(canvasEditor);
+        // v7.19.136 instrumentation — entry breadcrumb before localStorage write
+        try {
+            console.log('[WML save-debug v7.19.136] saveCanvasContent entry', {
+                task: state.task, phase: state.phase, attempt: state.attempt,
+                topic: state.topicNumber, board: state.board, text: state.text,
+                key: CANVAS_SAVE_KEY(), htmlSize: html.length, wc: wc
+            });
+        } catch (_) {}
         // 1. Immediate localStorage write (instant, no latency)
-        try { localStorage.setItem(CANVAS_SAVE_KEY(), html); } catch (e) { /* storage full */ }
+        try {
+            const _key = CANVAS_SAVE_KEY();
+            localStorage.setItem(_key, html);
+            // v7.19.136 instrumentation — confirm localStorage write success + size
+            try { console.log('[WML save-debug v7.19.136] localStorage written', { key: _key, size: html.length }); } catch (_) {}
+        } catch (e) { /* storage full */
+            try { console.warn('[WML save-debug v7.19.136] localStorage write FAILED', e && e.message); } catch (_) {}
+        }
         // v7.15.14: Skip server save if board/text not set (admin preview, free mode)
         if (!state.board || !state.text) return;
         // 2. Extract structured section data (v7.11.9)
@@ -17657,13 +17712,28 @@
         canvasSaveToServerTimer = setTimeout(() => {
             const body = _pendingCanvasSaveBody;
             _pendingCanvasSaveBody = null;
+            // v7.19.136 instrumentation — server save firing + suffix/attempt at fire time
+            try {
+                console.log('[WML save-debug v7.19.136] server save firing', {
+                    board: snap.board, text: snap.text, topic: snap.topicNumber,
+                    suffix: snap.suffix, attempt: snap.attempt, htmlSize: body && body.html ? body.html.length : 0
+                });
+            } catch (_) {}
             fetch(API.canvasSave, {
                 method: 'POST', headers,
                 body: JSON.stringify(body)
             }).then(r => r.json()).then(res => {
-                if (res.success) console.log('WML: Canvas saved to server', { key: res.key, savedAt: res.savedAt, board: snap.board, text: snap.text, topic: snap.topicNumber, wc: wc });
-                else console.warn('WML: Canvas save FAILED', res);
-            }).catch(e => console.warn('WML: Server save failed, localStorage retained', e.message));
+                if (res.success) {
+                    console.log('WML: Canvas saved to server', { key: res.key, savedAt: res.savedAt, board: snap.board, text: snap.text, topic: snap.topicNumber, wc: wc });
+                    try { console.log('[WML save-debug v7.19.136] server save OK', { serverKey: res.key, savedAt: res.savedAt }); } catch (_) {}
+                } else {
+                    console.warn('WML: Canvas save FAILED', res);
+                    try { console.warn('[WML save-debug v7.19.136] server save FAILED', res); } catch (_) {}
+                }
+            }).catch(e => {
+                console.warn('WML: Server save failed, localStorage retained', e.message);
+                try { console.warn('[WML save-debug v7.19.136] server save fetch threw', e && e.message); } catch (_) {}
+            });
         }, 5000);
 
         // v7.17.40: mirror CW typing into the per-project artifact. `_loadCWProjectIntoEditor`
@@ -17738,7 +17808,13 @@
 
     function loadCanvasContent() {
         // Synchronous: return localStorage for instant editor init
-        try { return localStorage.getItem(CANVAS_SAVE_KEY()) || ''; } catch (e) { return ''; }
+        try {
+            const _key = CANVAS_SAVE_KEY();
+            const _val = localStorage.getItem(_key) || '';
+            // v7.19.136 instrumentation — every localStorage read for the canvas doc
+            try { console.log('[WML load-debug v7.19.136] localStorage read', { key: _key, size: _val.length }); } catch (_) {}
+            return _val;
+        } catch (e) { return ''; }
     }
 
     /**
@@ -17773,7 +17849,18 @@
             } else {
                 url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${cwScopeQuery()}`;
             }
+            // v7.19.136 instrumentation — record the URL we're about to fetch
+            try { console.log('[WML load-debug v7.19.136] tryServerLoad fetch', { url: url, task: state.task, phase: state.phase, attempt: state.attempt, suffix: suffix }); } catch (_) {}
             const res = await fetch(url, { headers }).then(r => r.json());
+            // v7.19.136 instrumentation — record server response shape
+            try {
+                console.log('[WML load-debug v7.19.136] tryServerLoad response', {
+                    success: !!(res && res.success),
+                    hasDoc: !!(res && res.doc && res.doc.html),
+                    serverDocSize: (res && res.doc && res.doc.html) ? res.doc.html.length : 0,
+                    serverKey: res && res.key ? res.key : null
+                });
+            } catch (_) {}
             // v7.15.99: Capture General Notes mirror for later splice into
             // whatever document ends up in the editor (server doc or fresh template).
             if (res && res.generalNotes) {
@@ -17808,7 +17895,22 @@
                     // is a debounce buffer, not the source of truth here.
                     const isCwTaskHydrate = state.task && state.task.startsWith('cw_');
                     const isCribHydrate = state.task === 'exam_crib';
-                    if (isCwTaskHydrate || isCribHydrate || !localContent || localContent.length < 20) {
+                    const _preferServer = isCwTaskHydrate || isCribHydrate || !localContent || localContent.length < 20;
+                    // v7.19.136 instrumentation — prefer-server decision + editor doc size at this moment
+                    let _editorDocSize = 0;
+                    try { _editorDocSize = canvasEditor.getHTML().length; } catch (_) {}
+                    try {
+                        console.log('[WML load-debug v7.19.136] prefer-server gate', {
+                            isCwTaskHydrate: isCwTaskHydrate,
+                            isCribHydrate: isCribHydrate,
+                            localContentSize: localContent ? localContent.length : 0,
+                            serverDocSize: res.doc.html.length,
+                            editorDocSize: _editorDocSize,
+                            preferServer: _preferServer,
+                            action: _preferServer ? 'OVERWRITE editor with server doc' : 'KEEP localStorage / editor doc'
+                        });
+                    } catch (_) {}
+                    if (_preferServer) {
                         canvasEditor.commands.setContent(res.doc.html, false);
                         console.log(isCwTaskHydrate
                             ? 'WML v7.17.44: CW canvas loaded from server (project-authoritative on mount)'
