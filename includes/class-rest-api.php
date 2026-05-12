@@ -1693,23 +1693,39 @@ class SWML_REST_API {
                 }
             }
         }
-        // v7.19.143: Attempt fall-through for tutor review.
+        // v7.19.143 / v7.19.144: Attempt fall-through for tutor review.
         // Frontend defaults state.attempt to 1 when not explicitly set, so review
         // URLs hit attempt=1 even if the student's CURRENT attempt is higher (e.g.
         // student abandoned attempt 1 with wordCount=0 and did all work in attempt
-        // 2). Without this, tutor sees the empty attempt-1 doc and thinks the
-        // student has no work. If requested attempt is empty AND attempts index
-        // has a higher current attempt with content, fall through to that.
-        if (empty($raw) && $topic_number !== null && $topic_number > 0) {
-            $idx = $this->get_attempt_index($student_id, $board, $text, $topic_number, $suffix);
-            $current = isset($idx['current']) ? absint($idx['current']) : 0;
-            if ($current > 0 && $current !== $attempt) {
-                $fallthrough_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $current);
-                $fallthrough_raw = get_user_meta($student_id, $fallthrough_key, true);
-                if (!empty($fallthrough_raw)) {
-                    $raw = $fallthrough_raw;
-                    $attempt = $current;
-                }
+        // 2). v7.19.143 only fell through when $raw was bytewise empty — but the
+        // requested attempt's doc is full scaffolding HTML (~37KB) with empty
+        // student response sections inside, so the bytewise check never fired.
+        //
+        // v7.19.144: check wordCount in the attempts index instead. If requested
+        // attempt has wordCount=0 AND a different attempt with wordCount>0 exists,
+        // prefer that attempt's doc + report the swap via the response.attempt
+        // field so the frontend shows the right attempt label.
+        $idx = $this->get_attempt_index($student_id, $board, $text, $topic_number, $suffix);
+        $attempts_arr = isset($idx['attempts']) && is_array($idx['attempts']) ? $idx['attempts'] : [];
+        $requested_wc = null;
+        $best_attempt = $attempt;
+        $best_wc = 0;
+        foreach ($attempts_arr as $a) {
+            if (!isset($a['num'])) continue;
+            $num = absint($a['num']);
+            $wc = isset($a['wordCount']) ? absint($a['wordCount']) : 0;
+            if ($num === $attempt) $requested_wc = $wc;
+            if ($wc > $best_wc) {
+                $best_wc = $wc;
+                $best_attempt = $num;
+            }
+        }
+        if ($requested_wc !== null && $requested_wc === 0 && $best_wc > 0 && $best_attempt !== $attempt) {
+            $alt_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $best_attempt);
+            $alt_raw = get_user_meta($student_id, $alt_key, true);
+            if (!empty($alt_raw)) {
+                $raw = $alt_raw;
+                $attempt = $best_attempt;
             }
         }
         if (empty($raw)) {
