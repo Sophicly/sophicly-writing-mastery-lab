@@ -4192,7 +4192,7 @@
             : _epTasks.includes(state.task) ? (_epConfig.chatHeaderLabel || ucfirst(state.task))
             : 'Diagnostic';
         const diagBadge = el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-diag', innerHTML: SVG_DIAGNOSTIC + diagBadgeLabel });
-        if (!_isCwBadge) ctxBadges.appendChild(diagBadge);
+        if (!_isCwBadge && state.phase !== 'exam_practice') ctxBadges.appendChild(diagBadge);
 
         // v7.15.48: Attempt badge placeholder — always inserted, visibility controlled
         // by _updateCtxAttemptBadge. Previously gated on state.mode === 'guided', but on
