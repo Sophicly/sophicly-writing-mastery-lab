@@ -1746,7 +1746,17 @@
         deletions.sort((a, b) => b.from - a.from);
         const tr = editor.state.tr;
         deletions.forEach(d => tr.delete(tr.mapping.map(d.from), tr.mapping.map(d.to)));
-        editor.view.dispatch(tr);
+        // v7.19.129: set _migrationActive so the onTransaction section-deletion
+        // guard treats this strip as a legitimate migration (not a stray delete
+        // that needs reverting). Without this the strip was being undone by
+        // editor.commands.undo() at L11720 — see Neil's console log "Section
+        // deletion blocked — reverting (89 → 85)".
+        try { _migrationActive = true; } catch (_) {}
+        try {
+            editor.view.dispatch(tr);
+        } finally {
+            try { _migrationActive = false; } catch (_) {}
+        }
         console.log('[WML v7.19.124] exam_crib footer strip — removed', deletions.length, 'trailing sections');
         return deletions.length;
     }
@@ -18868,7 +18878,12 @@
         // v7.13.43: CW exercises have their own section structure — skip assessment migration
         if (state.task && state.task.startsWith('cw_')) { console.log('WML Migration: Skipping — CW exercise document'); return; }
         // v7.14.85: Conceptual notes, memory practice, and exam question creator don't have assessment sections
-        if (['conceptual_notes', 'memory_practice', 'exam_question'].includes(state.task)) { console.log('WML Migration: Skipping — non-assessment exercise'); return; }
+        // v7.19.128: exam_crib is also not an assessment doc — it's memorise+draft. Without
+        // this skip, migrateDocument() injects Score Summary / Self-Assessment / Analytics /
+        // Action Plan into every crib mount, fighting the v7.19.124 footer-strip pass.
+        // Console diagnostic from Neil's IC pilot showed the cycle: strip removes 4 sections,
+        // this migration injects 4 back. Adding exam_crib here breaks the cycle.
+        if (['conceptual_notes', 'memory_practice', 'exam_question', 'exam_crib'].includes(state.task)) { console.log('WML Migration: Skipping — non-assessment exercise'); return; }
         const currentHTML = canvasEditor.getHTML();
         // Only run on documents that have section blocks (i.e. structured templates)
         if (!currentHTML.includes('data-section-type')) return;
