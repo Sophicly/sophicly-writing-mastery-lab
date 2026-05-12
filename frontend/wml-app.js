@@ -3136,21 +3136,28 @@
             if (toolbar) { toolbar.remove(); toolbar = null; }
         }
 
-        // v7.19.116: chat-toolbar now supports BOTH the planning chat
-        // (#swml-messages → #swml-input) AND the canvas chat
-        // (#swml-canvas-chat-messages → #swml-canvas-chat-input) used by
-        // assessment + exam_crib. The Reply / Insert / Copy / Note chips
-        // target whichever chat container has the active selection.
+        // v7.19.120: chat-toolbar now supports THREE chat surfaces:
+        //   1. Planning chat — #swml-messages → #swml-input
+        //   2. Canvas chat (assessment) — #swml-canvas-chat-messages → #swml-canvas-chat-input
+        //   3. Coach panel (exam_crib, polishing inline-coaching) — .swml-coach-panel-messages
+        //      Coach panel has no inline textarea; coach-box .swml-coach-input is
+        //      ephemeral. Reply/Insert target it if open, else clipboard fallback.
+        //
+        // Selector-based lookup so containers without explicit IDs (coach panel
+        // has class-only) still match.
         const CHAT_PANELS = [
-            { msgsId: 'swml-messages',              inputId: 'swml-input' },
-            { msgsId: 'swml-canvas-chat-messages',  inputId: 'swml-canvas-chat-input' },
+            { msgsSelector: '#swml-messages',             inputSelector: '#swml-input' },
+            { msgsSelector: '#swml-canvas-chat-messages', inputSelector: '#swml-canvas-chat-input' },
+            { msgsSelector: '.swml-coach-panel-messages', inputSelector: '.swml-coach-input' },
         ];
 
         function _findActiveChatPanel(msgEl) {
             for (const p of CHAT_PANELS) {
-                const msgs = document.getElementById(p.msgsId);
-                if (msgs && msgs.contains(msgEl)) {
-                    return { msgs, input: document.getElementById(p.inputId) };
+                const candidates = document.querySelectorAll(p.msgsSelector);
+                for (const msgs of candidates) {
+                    if (msgs.contains(msgEl)) {
+                        return { msgs, input: document.querySelector(p.inputSelector) };
+                    }
                 }
             }
             return null;
@@ -3203,24 +3210,32 @@
                     : selectedText;
 
                 // 1. Reply — "Regarding '...' —"
+                // v7.19.120: if no inline textarea is available (coach panel has none —
+                // input is in the ephemeral coach-box), fall back to clipboard so the
+                // student can paste into whichever input they open next.
                 toolbar.appendChild(el('button', {
                     className: 'swml-sel-btn',
                     innerHTML: SVG_SEL_REPLY + ' <span>Reply</span>',
                     title: 'Reply to this text',
                     onClick: (ev) => {
                         ev.stopPropagation();
+                        const payload = `Regarding "${quote}" — `;
                         if (activeInput) {
-                            activeInput.value = `Regarding "${quote}" — `;
+                            activeInput.value = payload;
                             activeInput.focus();
                             activeInput.setSelectionRange(activeInput.value.length, activeInput.value.length);
                             activeInput.style.height = 'auto';
                             activeInput.style.height = Math.min(activeInput.scrollHeight, 200) + 'px';
+                        } else {
+                            navigator.clipboard.writeText(payload).then(() => {
+                                showToast(SVG_SEL_REPLY + ' <strong>Copied reply.</strong> Open Sophia and paste.', 4000, true);
+                            }).catch(() => {});
                         }
                         removeToolbar(); sel.removeAllRanges();
                     }
                 }));
 
-                // 2. Insert — paste raw text into input
+                // 2. Insert — paste raw text into input (or clipboard if no inline input)
                 toolbar.appendChild(el('button', {
                     className: 'swml-sel-btn',
                     innerHTML: SVG_SEL_INSERT + ' <span>Insert</span>',
@@ -3234,6 +3249,10 @@
                             activeInput.setSelectionRange(activeInput.value.length, activeInput.value.length);
                             activeInput.style.height = 'auto';
                             activeInput.style.height = Math.min(activeInput.scrollHeight, 200) + 'px';
+                        } else {
+                            navigator.clipboard.writeText(selectedText).then(() => {
+                                showToast(SVG_SEL_INSERT + ' <strong>Copied.</strong> Open Sophia and paste.', 4000, true);
+                            }).catch(() => {});
                         }
                         removeToolbar(); sel.removeAllRanges();
                     }
