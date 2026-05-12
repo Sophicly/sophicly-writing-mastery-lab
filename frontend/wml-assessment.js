@@ -4972,10 +4972,14 @@
             // ── Compute section numbers (v7.14.34: divider-based major.minor, matching TOC) ──
             // Dividers start new groups (major++), sections after a divider get major.minor.
             // Fallback: GROUP_PREFIXES for documents without dividers.
+            // v7.19.123: section-header is the super-group marker (e.g. "Top 10 Theme Questions"
+            // wrapping T1-T10 dividers). It produces no number and does not advance the major
+            // counter — child dividers continue the sequence below the super-group.
             const GROUP_PREFIXES = ['Plan:', 'Outline:', 'Feedback:'];
             let _major = 0, _minor = 0, _inDividerGroup = false, _lastPrefixGroup = null;
             const sectionNumbers = sections.map(s => {
                 if (s.type === 'cover') return '';
+                if (s.type === 'section-header') return '';
                 if (s.type === 'divider') {
                     _major++; _minor = 0; _inDividerGroup = true; _lastPrefixGroup = null;
                     return ''; // dividers don't get a number
@@ -5037,21 +5041,47 @@
 
             // v7.14.29: Group sections using dividers as boundaries (fundamental fix — works for all doc types)
             // Dividers become group headers in the outline. Fallback: PREFIX_MAP for docs without dividers.
+            // v7.19.123: section-header opens a super-group that wraps subsequent dividers
+            // (used by AQA Modern Text 20-Q cribs to nest "Top 10 Theme" / "Top 10 Character"
+            // chevrons above each T/C-divider in the TOC).
             const groups = [];
+            let currentSuperGroup = null;
             let currentDividerGroup = null;
             const PREFIX_MAP = { 'Plan:': 'Essay Plan', 'Outline:': 'Outline', 'Feedback:': 'Feedback' };
             sections.forEach(s => {
                 if (s.type === 'cover') return;
-                // Dividers start new groups
+                // section-header opens a super-group; subsequent dividers nest inside it
+                if (s.type === 'section-header') {
+                    currentSuperGroup = {
+                        key: s.label,
+                        isSuperGroup: true,
+                        pos: s.pos,
+                        dividerGroups: [],
+                        directChildren: [],
+                    };
+                    groups.push(currentSuperGroup);
+                    currentDividerGroup = null;
+                    return;
+                }
+                // Dividers start new groups (children of super-group when one is open)
                 if (s.type === 'divider') {
                     currentDividerGroup = { key: s.label, children: [], type: null, isDivider: true, pos: s.pos };
-                    groups.push(currentDividerGroup);
+                    if (currentSuperGroup) {
+                        currentSuperGroup.dividerGroups.push(currentDividerGroup);
+                    } else {
+                        groups.push(currentDividerGroup);
+                    }
                     return;
                 }
                 // If inside a divider group, add as child
                 if (currentDividerGroup) {
                     if (!currentDividerGroup.type) currentDividerGroup.type = s.type;
                     currentDividerGroup.children.push({ ...s, childLabel: s.label });
+                    return;
+                }
+                // Inside super-group but no divider yet → direct child (e.g. preamble notices)
+                if (currentSuperGroup) {
+                    currentSuperGroup.directChildren.push({ ...s, childLabel: s.label });
                     return;
                 }
                 // Fallback: PREFIX_MAP grouping for sections before any divider
@@ -5065,7 +5095,7 @@
                 }
                 if (groupKey) {
                     const lastGroup = groups[groups.length - 1];
-                    if (lastGroup && lastGroup.key === groupKey && !lastGroup.isDivider) {
+                    if (lastGroup && lastGroup.key === groupKey && !lastGroup.isDivider && !lastGroup.isSuperGroup) {
                         lastGroup.children.push({ ...s, childLabel });
                     } else {
                         groups.push({ key: groupKey, children: [{ ...s, childLabel }], type: s.type });
@@ -5098,9 +5128,127 @@
             }
 
             // v7.14.31: Render grouped outline with accordion collapse + brand colour dots
+            // v7.19.123: super-group support — section-header dividers wrap a collapsible
+            // tier above the existing per-Q chevrons.
             const OUTLINE_GROUP_COLOURS = ['#51dacf', '#42A1EC', '#4D76FD', '#5333ed', '#7DF9E9', '#1CD991', '#41aaa8'];
             let _groupColorIdx = 0;
+
+            // Render a single divider/prefix group (existing single-tier shape) into a
+            // target container. Returns the chevron element so callers can chain a
+            // parent-chevron toggle that closes nested children too.
+            function renderDividerGroupInto(g, container, groupColor) {
+                const groupWrap = el('div', { className: 'swml-outline-group-wrap' });
+                const header = el('div', { className: 'swml-outline-item swml-outline-group' });
+                const chevron = el('button', { className: 'swml-outline-chevron', tabIndex: -1 });
+                chevron.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>';
+                header.appendChild(chevron);
+                const dot = el('span', { className: 'swml-outline-dot' });
+                dot.style.background = groupColor;
+                header.appendChild(dot);
+                const groupMajor = (g.children[0]?._num || '').split('.')[0];
+                const titleBtn = el('button', {
+                    className: 'swml-outline-group-title',
+                    tabIndex: -1,
+                    textContent: (groupMajor ? groupMajor + '. ' : '') + g.key,
+                    onClick: () => scrollToPos(g.children[0].pos),
+                });
+                header.appendChild(titleBtn);
+                const childWrap = el('div', { className: 'swml-outline-children swml-outline-collapsed' });
+                chevron.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isCollapsed = childWrap.classList.contains('swml-outline-collapsed');
+                    if (isCollapsed) {
+                        childWrap.classList.remove('swml-outline-collapsed');
+                        chevron.classList.add('swml-outline-chevron-open');
+                    } else {
+                        childWrap.classList.add('swml-outline-collapsed');
+                        chevron.classList.remove('swml-outline-chevron-open');
+                    }
+                });
+                groupWrap.appendChild(header);
+                container.appendChild(groupWrap);
+                outlineHeadingPositions.push({ pos: g.children[0].pos, itemEl: header });
+                g.children.forEach(child => {
+                    const childIndicator = getSectionIndicator(child);
+                    const item = el('button', {
+                        className: 'swml-outline-item swml-outline-child',
+                        tabIndex: -1,
+                        onClick: () => scrollToPos(child.pos),
+                    });
+                    item.appendChild(el('span', { className: 'swml-outline-label', textContent: (child._num ? child._num + ' ' : '') + (child.childLabel || child.label) }));
+                    if (childIndicator) {
+                        const chk = el('span', { className: 'swml-outline-check' });
+                        chk.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#1CD991" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="4" fill="#1CD991"/><path d="M7.5 12.5l3 3 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
+                        item.appendChild(chk);
+                    }
+                    childWrap.appendChild(item);
+                    outlineHeadingPositions.push({ pos: child.pos, itemEl: item });
+                });
+                groupWrap.appendChild(childWrap);
+                return { chevron, childWrap };
+            }
+
+            // Render a super-group (section-header) as an outer chevron whose collapsible
+            // wrapper contains (a) directChildren as flat items + (b) each dividerGroup
+            // rendered as a nested chevron-collapsible group via renderDividerGroupInto.
+            function renderSuperGroup(g, color) {
+                const groupWrap = el('div', { className: 'swml-outline-group-wrap swml-outline-super-wrap' });
+                const header = el('div', { className: 'swml-outline-item swml-outline-group swml-outline-super-group' });
+                const chevron = el('button', { className: 'swml-outline-chevron', tabIndex: -1 });
+                chevron.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>';
+                header.appendChild(chevron);
+                const dot = el('span', { className: 'swml-outline-dot' });
+                dot.style.background = color;
+                header.appendChild(dot);
+                const titleBtn = el('button', {
+                    className: 'swml-outline-group-title',
+                    tabIndex: -1,
+                    textContent: g.key,
+                    onClick: () => scrollToPos(g.pos),
+                });
+                header.appendChild(titleBtn);
+                const childWrap = el('div', { className: 'swml-outline-children swml-outline-collapsed swml-outline-super-children' });
+                chevron.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isCollapsed = childWrap.classList.contains('swml-outline-collapsed');
+                    if (isCollapsed) {
+                        childWrap.classList.remove('swml-outline-collapsed');
+                        chevron.classList.add('swml-outline-chevron-open');
+                    } else {
+                        childWrap.classList.add('swml-outline-collapsed');
+                        chevron.classList.remove('swml-outline-chevron-open');
+                    }
+                });
+                groupWrap.appendChild(header);
+                outlineList.appendChild(groupWrap);
+                outlineHeadingPositions.push({ pos: g.pos, itemEl: header });
+                // Direct children (e.g. preamble notices) — flat items inside super-group
+                (g.directChildren || []).forEach(child => {
+                    const item = el('button', {
+                        className: 'swml-outline-item swml-outline-child',
+                        tabIndex: -1,
+                        onClick: () => scrollToPos(child.pos),
+                    });
+                    item.appendChild(el('span', { className: 'swml-outline-label', textContent: child.childLabel || child.label }));
+                    childWrap.appendChild(item);
+                    outlineHeadingPositions.push({ pos: child.pos, itemEl: item });
+                });
+                // Nested divider-groups
+                (g.dividerGroups || []).forEach(dg => {
+                    if (!dg.children || dg.children.length === 0) return;
+                    const dgColor = OUTLINE_GROUP_COLOURS[_groupColorIdx++ % OUTLINE_GROUP_COLOURS.length];
+                    renderDividerGroupInto(dg, childWrap, dgColor);
+                });
+                groupWrap.appendChild(childWrap);
+            }
+
             groups.forEach(g => {
+                // Super-group from section-header — render nested chevrons
+                if (g.isSuperGroup) {
+                    const color = OUTLINE_GROUP_COLOURS[_groupColorIdx++ % OUTLINE_GROUP_COLOURS.length];
+                    renderSuperGroup(g, color);
+                    return;
+                }
                 // Skip divider groups with no children (empty structural dividers)
                 if (g.isDivider && (!g.children || g.children.length === 0)) return;
                 if (g.key && g.children && g.children.length >= 1) {

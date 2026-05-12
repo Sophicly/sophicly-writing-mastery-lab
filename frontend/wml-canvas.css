@@ -1993,6 +1993,48 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     color: #fff;
 }
 
+/* v7.19.123: super-group (section-header) outline tier — outer chevron contains
+   nested divider-group chevrons. Super-group header bolder + uppercase; nested
+   divider-groups inside indent further so the hierarchy reads at a glance. */
+.swml-outline-item.swml-outline-super-group {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 700;
+    margin-top: 10px;
+}
+.swml-outline-item.swml-outline-super-group:hover {
+    color: #fff;
+}
+.swml-outline-super-children > .swml-outline-group-wrap {
+    margin-left: 14px;
+    border-left: 1px solid rgba(255,255,255,0.06);
+    padding-left: 4px;
+}
+.swml-outline-super-children > .swml-outline-group-wrap .swml-outline-item.swml-outline-group {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 500;
+    font-size: 11px;
+}
+.swml-outline-super-children > .swml-outline-item.swml-outline-child {
+    padding-left: 44px;
+}
+.swml-outline-super-children .swml-outline-children > .swml-outline-item.swml-outline-child {
+    padding-left: 56px;
+    font-size: 10.5px;
+}
+.swml-canvas-light .swml-outline-item.swml-outline-super-group {
+    color: rgba(0,0,0,0.65);
+}
+.swml-canvas-light .swml-outline-item.swml-outline-super-group:hover {
+    color: #4D76FD;
+}
+.swml-canvas-light .swml-outline-super-children > .swml-outline-group-wrap {
+    border-left-color: rgba(0,0,0,0.08);
+}
+
 /* Legacy h3 support (fallback) */
 .swml-outline-item.swml-outline-h3 {
     padding-left: 28px;
@@ -4091,6 +4133,43 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-section-notice em { color: rgba(255,255,255,0.6); font-size: 0.9em; }
 /* v7.14.50: Show notice in diagnostic AND mark_scheme (training-env exercises that need it) */
 .swml-canvas:not(.swml-canvas-diagnostic):not(.swml-canvas-mark-scheme) .swml-section-notice { display: none !important; }
+
+/* v7.19.123: section-header — super-group banner used by AQA Modern Text 20-Q cribs to
+   visually separate Preamble / Theme Questions / Character Questions sections. Read-only.
+   Pairs with the outline-builder super-group renderer for nested TOC chevrons. */
+.swml-section-block.swml-section-header {
+    border-left: 4px solid #5333ed;
+    background: linear-gradient(135deg, rgba(83,51,237,0.16), rgba(81,218,207,0.06));
+    padding: 22px 28px;
+    margin: 40px 0 18px;
+    border-radius: 0 10px 10px 0;
+    counter-increment: none !important;
+    counter-reset: none !important;
+    break-after: avoid;
+}
+.swml-section-block.swml-section-header h1,
+.swml-section-block.swml-section-header h2 {
+    margin: 0 0 6px;
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+.swml-section-block.swml-section-header p {
+    margin: 0;
+    color: rgba(255,255,255,0.7);
+    font-size: 0.95em;
+    line-height: 1.55;
+}
+.swml-canvas-light .swml-section-block.swml-section-header {
+    background: linear-gradient(135deg, rgba(83,51,237,0.10), rgba(81,218,207,0.04));
+}
+.swml-canvas-light .swml-section-block.swml-section-header h1,
+.swml-canvas-light .swml-section-block.swml-section-header h2 {
+    color: #2c003e;
+}
+.swml-canvas-light .swml-section-block.swml-section-header p {
+    color: rgba(0,0,0,0.65);
+}
 
 .swml-section-block {
     position: relative;
