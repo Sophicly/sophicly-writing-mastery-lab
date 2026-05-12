@@ -1539,6 +1539,14 @@ class SWML_REST_API {
             $doc = self::decode_canvas_json($raw);
         }
 
+        // v7.19.127: strip assessment-flow tail sections from every `_crib` load
+        // (score summary / self-assess / analytics / action plan + their dividers).
+        // Crib docs are memorise+draft only — no assessment footer wanted. Runs in
+        // PHP so it covers every load path regardless of when content was saved.
+        if ($suffix === '_crib' && is_array($doc) && !empty($doc['html'])) {
+            $doc['html'] = self::strip_crib_assessment_tail($doc['html']);
+        }
+
         // v7.15.99: Splice persisted General Notes into the returned HTML so
         // every load reflects the authoritative shared value (not a stale copy
         // baked into an older attempt's canvas).
@@ -3684,6 +3692,39 @@ class SWML_REST_API {
             }
         }
         return $out;
+    }
+
+    /**
+     * v7.19.127: strip assessment-flow tail sections from a crib canvas HTML
+     * before serving. Crib docs (AQA Modern Text 20-Q etc.) are memorise+draft
+     * only — students don't need score summary / self-assessment / analytics /
+     * action-plan blocks. Tutor Sign-off is intentionally retained as optional
+     * affordance.
+     *
+     * Strips:
+     *   <div data-section-type="scores" ...>...</div>
+     *   <div data-section-type="improvement" ...>...</div>
+     *   <div data-section-type="action" data-section-label="Self-Assessment" ...>...</div>
+     *   <div data-section-type="action" data-section-label="Action Plan" ...>...</div>
+     *   <div data-section-type="feedback" data-section-label="Analytics" ...>...</div>
+     *   <div data-section-type="divider" data-section-label="FEEDBACK|RESULTS|SCORES" ...>...</div>
+     *
+     * Idempotent. Returns html unchanged if nothing matched.
+     */
+    public static function strip_crib_assessment_tail($html) {
+        if (empty($html) || !is_string($html)) return $html;
+        $patterns = [
+            '/<div\s+data-section-type="scores"[^>]*>.*?<\/div>/is',
+            '/<div\s+data-section-type="improvement"[^>]*>.*?<\/div>/is',
+            '/<div\s+data-section-type="action"[^>]*data-section-label="Self-Assessment"[^>]*>.*?<\/div>/is',
+            '/<div\s+data-section-type="action"[^>]*data-section-label="Action Plan"[^>]*>.*?<\/div>/is',
+            '/<div\s+data-section-type="feedback"[^>]*data-section-label="Analytics"[^>]*>.*?<\/div>/is',
+            '/<div\s+data-section-type="divider"[^>]*data-section-label="(?:FEEDBACK|RESULTS|SCORES|Feedback|Results|Scores)"[^>]*>.*?<\/div>/is',
+        ];
+        foreach ($patterns as $pat) {
+            $html = preg_replace($pat, '', $html);
+        }
+        return $html;
     }
 
     /**

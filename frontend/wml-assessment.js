@@ -11732,6 +11732,16 @@
                 // section-count snapshot so the post-strip count is the baseline
                 // and the guard doesn't fire on the strip itself.
                 try { _stripExamCribFooterSections(editor); } catch (e) { console.warn('[WML v7.19.124] strip failed', e); }
+                // v7.19.127: setContent fires AFTER onCreate when canvas resumes from
+                // server data — onCreate only sees the initial empty placeholder. Run
+                // the strip again on a short delay so late-injected setContent gets
+                // cleaned. Section-count guard updates after second pass.
+                setTimeout(() => {
+                    try {
+                        const removed = _stripExamCribFooterSections(editor);
+                        if (removed > 0) _sectionCount = countSections(editor.state.doc);
+                    } catch (e) { console.warn('[WML v7.19.127] deferred strip failed', e); }
+                }, 1200);
                 // v7.13.92: Snapshot initial section count for guard
                 _sectionCount = countSections(editor.state.doc);
                 // v7.17.48: BASELINE-CAPTURE RACE FIX. When the editor is constructed
