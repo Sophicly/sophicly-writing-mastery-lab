@@ -1950,9 +1950,23 @@ class SWML_REST_API {
         // v7.19.137: allow admins to query an arbitrary user via ?user_id=N.
         // v7.19.141: optional ?prefix=swml_  param widens the LIKE scope so admins
         // can audit non-canvas WML meta keys (chat, attempts, outline, phase, etc).
+        // v7.19.142: optional ?full_key=X param returns the FULL meta_value for a
+        // single key (instead of paginated previews) so admins can inspect saved
+        // canvas docs / chat histories end-to-end during debug.
         // Endpoint already gated by check_admin_auth (manage_options).
         $requested = $request ? intval($request->get_param('user_id')) : 0;
         $user_id = $requested > 0 ? $requested : get_current_user_id();
+        $full_key = $request ? sanitize_text_field($request->get_param('full_key') ?? '') : '';
+        if (!empty($full_key) && strpos($full_key, 'swml_') === 0) {
+            $raw = get_user_meta($user_id, $full_key, true);
+            return rest_ensure_response([
+                'success'   => true,
+                'user_id'   => $user_id,
+                'key'       => $full_key,
+                'size'      => is_string($raw) ? strlen($raw) : (is_array($raw) ? strlen(wp_json_encode($raw)) : 0),
+                'value'     => $raw,
+            ]);
+        }
         $prefix = $request ? sanitize_text_field($request->get_param('prefix') ?? '') : '';
         if (empty($prefix)) $prefix = 'swml_canvas_';
         // safety: only allow swml_ scoped prefixes
