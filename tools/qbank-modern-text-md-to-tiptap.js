@@ -58,6 +58,10 @@ function escapeHTML(str) {
 function richText(str) {
     if (!str) return '';
     let s = escapeHTML(str);
+    // v7.19.133: BP "Scene focus:" labels styled separately so CSS can render
+    // them in Playfair Display italic instead of plain bold. Special-cased
+    // before the generic **bold** rule so the Scene focus span survives.
+    s = s.replace(/\*\*Scene focus:\*\*/g, '<em class="swml-scene-focus">Scene focus:</em>');
     s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
     return s;
@@ -447,7 +451,9 @@ function main() {
         // now render as rich paragraph rows instead of literal `| ... |` text
         // (TipTap StarterKit has no Table extension so real <table> markup is
         // stripped on setContent).
-        template_version: 4,
+        // 2026-05-12 v5 — BP "Scene focus:" labels wrapped in
+        // <em class="swml-scene-focus"> for Playfair Display italic styling.
+        template_version: 5,
         question_count: charQs.length + themeQs.length,
         character_count: charQs.length,
         theme_count: themeQs.length,
