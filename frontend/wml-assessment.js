@@ -19667,8 +19667,13 @@
                 currentDivGroup.children.push({ type: s.type, label: s.label, displayLabel: s.label });
                 return;
             }
-            // Inside super-group but no divider yet — skip in TOC (no flat listing wanted at super level)
+            // v7.19.131: inside super-group, no divider yet → preamble notice etc.
+            // Add as leaf children of the super-group so they appear under the
+            // chevron in the TOC (e.g. AQA Modern Text "How to use this guide"
+            // expands to "How this list was generated / Priority order / How to
+            // use this document / Pedagogical depth / 7-sent shape / Memorise once").
             if (currentSuperGroup) {
+                currentSuperGroup.children.push({ type: s.type, label: s.label, displayLabel: s.label });
                 return;
             }
             // Fallback: prefix-based grouping for sections before any divider

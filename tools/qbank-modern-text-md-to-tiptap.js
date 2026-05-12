@@ -76,8 +76,54 @@ const questionHTML      = (l, b) => sectionHTML('question', l, false, b);
 const planHTML          = (l, b) => sectionHTML('plan', l, true, b);
 const responseHTML      = (l)    => sectionHTML('response', l, true, '<p></p>');
 
+// Parse a markdown table starting at lines[i]. Returns { html, consumed } where
+// consumed is the count of lines covered (header + separator + N body rows).
+// TipTap StarterKit has no Table extension, so we render table rows as rich
+// paragraphs instead: each body row becomes one paragraph headed by a bold
+// label (cells joined into a structured "label — value (modifier): rest" form).
+// The priority-order tables in the AQA Modern Text preamble follow the shape
+// `| C1 | **The Inspector** | HIGH | Core character + ... |` which the row
+// formatter renders as `<p><strong>C1 — The Inspector (HIGH)</strong>: Core ...</p>`.
+function parseMarkdownTable(lines, i) {
+    const isTableRow = ln => /^\s*\|.*\|\s*$/.test(ln);
+    const isAlignRow = ln => /^\s*\|?(\s*:?-+:?\s*\|)+\s*:?-+:?\s*\|?\s*$/.test(ln);
+    if (!isTableRow(lines[i])) return null;
+    if (i + 1 >= lines.length || !isAlignRow(lines[i + 1])) return null;
+    const splitRow = ln => ln.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+    let consumed = 2;
+    const body = [];
+    let j = i + 2;
+    while (j < lines.length && isTableRow(lines[j])) {
+        body.push(splitRow(lines[j]));
+        consumed++;
+        j++;
+    }
+    let html = '';
+    for (const row of body) {
+        // Strip surrounding bold from any cell — already-bold cells get a single
+        // <strong> wrap on the composite label.
+        const clean = row.map(c => c.replace(/^\*\*(.+)\*\*$/, '$1'));
+        if (clean.length >= 4) {
+            // Priority-order shape: Section | Name | Confidence | Why
+            const label = clean[0] + ' — ' + clean[1] + ' (' + clean[2] + ')';
+            html += '<p><strong>' + richText(label) + '</strong>: ' + richText(clean.slice(3).join(' — ')) + '</p>';
+        } else if (clean.length === 3) {
+            const label = clean[0] + ' — ' + clean[1];
+            html += '<p><strong>' + richText(label) + '</strong>: ' + richText(clean[2]) + '</p>';
+        } else if (clean.length === 2) {
+            html += '<p><strong>' + richText(clean[0]) + '</strong>: ' + richText(clean[1]) + '</p>';
+        } else {
+            html += '<p>' + richText(clean.join(' — ')) + '</p>';
+        }
+    }
+    return { html, consumed };
+}
+
 // Coalesce consecutive `> ...` lines into one <blockquote>. Bullets become <p>•...</p>
 // to match existing crib markup convention. Bare `>` separator lines drop silently.
+// v7.19.131: also detects pipe tables (header row + `|---|---|` align row + body rows)
+// and emits real <table> markup so the priority-order tables in the AQA Modern Text
+// preamble render as tables instead of literal `| Section | ... |` text.
 function mdLinesToHTML(lines) {
     let html = '';
     let bqBuffer = [];
@@ -86,17 +132,27 @@ function mdLinesToHTML(lines) {
         html += '<blockquote>' + bqBuffer.map(p => `<p>${p}</p>`).join('') + '</blockquote>';
         bqBuffer = [];
     };
-    for (const raw of lines) {
+    let i = 0;
+    while (i < lines.length) {
+        const raw = lines[i];
         const line = raw.replace(/\s+$/, '');
         const trimmed = line.trim();
-        if (!trimmed) { flushBq(); continue; }
-        if (trimmed === '>') continue;
+        if (!trimmed) { flushBq(); i++; continue; }
+        if (trimmed === '>') { i++; continue; }
         if (trimmed.startsWith('> ')) {
             bqBuffer.push(richText(trimmed.slice(2)));
+            i++;
             continue;
         }
         flushBq();
-        if (/^---+$/.test(trimmed)) continue;
+        if (/^---+$/.test(trimmed)) { i++; continue; }
+        // Markdown table — pipe row followed by alignment row.
+        const tbl = parseMarkdownTable(lines, i);
+        if (tbl) {
+            html += tbl.html;
+            i += tbl.consumed;
+            continue;
+        }
         if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
             html += `<p>• ${richText(trimmed.slice(2))}</p>`;
         } else if (trimmed.startsWith('#### ')) {
@@ -110,6 +166,7 @@ function mdLinesToHTML(lines) {
         } else {
             html += `<p>${richText(trimmed)}</p>`;
         }
+        i++;
     }
     flushBq();
     return html;
@@ -386,7 +443,11 @@ function main() {
         // 2026-05-12 v3 — preamble now multiple notice blocks (visible in
         // exam_crib via CSS override) + per-Q plan split into 5 sub-sections
         // (Intro / BP1 / BP2 / BP3 / Conclusion) instead of one monolith.
-        template_version: 3,
+        // 2026-05-12 v4 — markdown tables in preamble (Priority order, etc.)
+        // now render as rich paragraph rows instead of literal `| ... |` text
+        // (TipTap StarterKit has no Table extension so real <table> markup is
+        // stripped on setContent).
+        template_version: 4,
         question_count: charQs.length + themeQs.length,
         character_count: charQs.length,
         theme_count: themeQs.length,
