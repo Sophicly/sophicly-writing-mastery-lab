@@ -5058,8 +5058,11 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     transition: max-height 0.3s ease, opacity 0.25s ease;
     opacity: 0;
 }
-.swml-toc-expanded .swml-toc-sublist {
-    max-height: 500px;
+/* v7.19.125: direct-child selector so opening a super-group only expands ITS
+   immediate sublist, not the nested per-Q chevrons inside. Bumped max-height
+   so a super-group's 10 children fit without clipping. */
+.swml-toc-expanded > .swml-toc-sublist {
+    max-height: 2400px;
     opacity: 1;
 }
 .swml-toc-subitem {
