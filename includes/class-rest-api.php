@@ -1948,15 +1948,21 @@ class SWML_REST_API {
      */
     public function debug_canvas_keys($request) {
         // v7.19.137: allow admins to query an arbitrary user via ?user_id=N.
-        // Endpoint already gated by check_admin_auth (manage_options) so no extra check.
+        // v7.19.141: optional ?prefix=swml_  param widens the LIKE scope so admins
+        // can audit non-canvas WML meta keys (chat, attempts, outline, phase, etc).
+        // Endpoint already gated by check_admin_auth (manage_options).
         $requested = $request ? intval($request->get_param('user_id')) : 0;
         $user_id = $requested > 0 ? $requested : get_current_user_id();
+        $prefix = $request ? sanitize_text_field($request->get_param('prefix') ?? '') : '';
+        if (empty($prefix)) $prefix = 'swml_canvas_';
+        // safety: only allow swml_ scoped prefixes
+        if (strpos($prefix, 'swml_') !== 0) $prefix = 'swml_canvas_';
         global $wpdb;
 
         $rows = $wpdb->get_results($wpdb->prepare(
             "SELECT meta_key, LENGTH(meta_value) as size, LEFT(meta_value, 200) as preview FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key LIKE %s ORDER BY meta_key",
             $user_id,
-            'swml_canvas_%'
+            $prefix . '%'
         ));
 
         $keys = [];
