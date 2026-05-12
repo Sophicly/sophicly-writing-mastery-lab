@@ -33,7 +33,7 @@
         elementPolish:['strengthen-hook', 'rephrase'],
         polishProse:  ['strengthen-vocabulary', 'tighten', 'adjust-tone'],
         fixSpag:      ['fix-spelling', 'fix-grammar', 'fix-punctuation'],
-        reference:    ['compare-gold-standard'],
+        reference:    ['explain', 'compare-gold-standard'],
         cw:           ['check-sensory-variety', 'check-scene-structure-beats', 'check-show-dont-tell'],
     };
 
@@ -61,6 +61,7 @@
         'fix-grammar':     'Fix grammar',
         'fix-punctuation': 'Fix punctuation',
         // Reference
+        'explain':               'Explain',
         'compare-gold-standard': 'Compare gold-standard',
         // CW (subject-conditional)
         'check-sensory-variety':       'Sensory variety',
