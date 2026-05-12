@@ -30,7 +30,7 @@
     // Reference = Move 4 quote-exemplar from gold-standard-exemplars-aqa-lit.md.
     const ACTION_MAP = {
         tierScans:    ['scan-structure', 'scan-elements', 'scan-coherence', 'scan-concept', 'scan-context-drive'],
-        elementPolish:['strengthen-hook'],
+        elementPolish:['strengthen-hook', 'rephrase'],
         polishProse:  ['strengthen-vocabulary', 'tighten', 'adjust-tone'],
         fixSpag:      ['fix-spelling', 'fix-grammar', 'fix-punctuation'],
         reference:    ['compare-gold-standard'],
@@ -47,6 +47,11 @@
         // Element polish (v7.19.74) — element-scoped strengthen actions.
         // Sophia diagnoses + offers ONE alternative using a different technique.
         'strengthen-hook':       'Strengthen hook',
+        // Rephrase (v7.19.113) — generic sentence-shape rephrase. Sophia diagnoses
+        // what's loose in the highlighted sentence, offers ONE alternative shape
+        // (named rhetorical move + skeleton), then waits for student to apply.
+        // Section-gated: only fires on plan / response sections (NOT read-only crib).
+        'rephrase':              'Rephrase',
         // T6 polish prose (span-scoped)
         'strengthen-vocabulary': 'Strengthen vocabulary',
         'tighten':               'Tighten sentence',
