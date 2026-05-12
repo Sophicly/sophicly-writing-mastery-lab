@@ -3123,12 +3123,8 @@
      */
     let _swmlSelToolbarBound = false;
     function setupSelectionReply() {
-        if (_swmlSelToolbarBound) {
-            console.log('[ChatToolbar] setupSelectionReply called again — no-op (already bound)');
-            return;
-        }
+        if (_swmlSelToolbarBound) return;
         _swmlSelToolbarBound = true;
-        console.log('[ChatToolbar] binding document mouseup handler — v7.19.118 diag');
 
         let toolbar = null;
 
@@ -3163,12 +3159,51 @@
             return null;
         }
 
+        // v7.19.121: open the coach-box and inject text when there is no inline
+        // textarea (coach-panel context — exam_crib / polishing). If the coach-box
+        // is already open, inject directly. Otherwise click the empty-state CTA
+        // (which opens coach-box on the default plan/response selection), wait
+        // briefly for it to render, then inject.
+        function _injectIntoCoachInput(payload, mode) {
+            const setVal = (input) => {
+                if (!input) return false;
+                if (mode === 'reply') {
+                    input.value = payload;
+                } else { // 'insert'
+                    const existing = input.value || '';
+                    input.value = existing + (existing && !existing.endsWith(' ') ? ' ' : '') + payload;
+                }
+                input.focus();
+                try { input.setSelectionRange(input.value.length, input.value.length); } catch (_) {}
+                input.style.height = 'auto';
+                input.style.height = Math.min(input.scrollHeight, 200) + 'px';
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                return true;
+            };
+            // Already open?
+            const existing = document.querySelector('.swml-coach-input');
+            if (existing) return setVal(existing);
+            // Try empty-state CTA to open coach-box
+            const cta = document.querySelector('.swml-coach-empty-cta');
+            if (cta) {
+                cta.click();
+                let attempts = 0;
+                const poll = () => {
+                    const input = document.querySelector('.swml-coach-input');
+                    if (input) { setVal(input); return; }
+                    if (attempts++ < 20) setTimeout(poll, 50);
+                };
+                setTimeout(poll, 50);
+                return true;
+            }
+            return false;
+        }
+
         document.addEventListener('mouseup', (e) => {
             // Small delay to let selection finalise
             setTimeout(() => {
                 const sel = window.getSelection();
                 if (!sel || sel.isCollapsed || !sel.toString().trim()) {
-                    console.log('[ChatToolbar] no selection');
                     removeToolbar();
                     return;
                 }
@@ -3176,22 +3211,17 @@
                 // Check selection is inside an AI message bubble in EITHER chat panel
                 const anchor = sel.anchorNode;
                 const msgEl = anchor?.parentElement?.closest?.('.swml-bubble.ai');
-                console.log('[ChatToolbar] anchor:', anchor, 'parentElement:', anchor?.parentElement, 'closest .swml-bubble.ai:', msgEl);
                 if (!msgEl) {
-                    console.log('[ChatToolbar] no .swml-bubble.ai ancestor — toolbar suppressed');
                     removeToolbar();
                     return;
                 }
                 const panel = _findActiveChatPanel(msgEl);
-                console.log('[ChatToolbar] panel match:', panel, 'available panels:', CHAT_PANELS.map(p => ({ ...p, msgsEl: document.getElementById(p.msgsId) })));
                 if (!panel) {
-                    console.log('[ChatToolbar] msgEl not inside any known panel — toolbar suppressed');
                     removeToolbar();
                     return;
                 }
                 const msgs = panel.msgs;
                 const activeInput = panel.input;
-                console.log('[ChatToolbar] firing — panel:', panel.msgs.id, 'input:', activeInput?.id);
 
                 const selectedText = sel.toString().trim();
                 if (selectedText.length < 2 || selectedText.length > 2000) { removeToolbar(); return; }
@@ -3202,17 +3232,18 @@
                 const rect = range.getBoundingClientRect();
                 const msgsRect = msgs.getBoundingClientRect();
 
-                toolbar = el('div', { className: 'swml-selection-toolbar' });
+                // v7.19.121: neumorphic style + .swml-sel-neumorphic class shares
+                // the same CSS used by the canvas selection toolbar (wml-canvas.css:1058).
+                toolbar = el('div', { className: 'swml-selection-toolbar swml-sel-neumorphic' });
 
                 // Truncate for display
-                const quote = selectedText.length > 120 
-                    ? selectedText.substring(0, 120) + '...' 
+                const quote = selectedText.length > 120
+                    ? selectedText.substring(0, 120) + '...'
                     : selectedText;
 
                 // 1. Reply — "Regarding '...' —"
-                // v7.19.120: if no inline textarea is available (coach panel has none —
-                // input is in the ephemeral coach-box), fall back to clipboard so the
-                // student can paste into whichever input they open next.
+                // v7.19.121: if no inline textarea, open the coach-box and inject
+                // (auto-open Sophia rather than clipboard-then-paste).
                 toolbar.appendChild(el('button', {
                     className: 'swml-sel-btn',
                     innerHTML: SVG_SEL_REPLY + ' <span>Reply</span>',
@@ -3223,10 +3254,11 @@
                         if (activeInput) {
                             activeInput.value = payload;
                             activeInput.focus();
-                            activeInput.setSelectionRange(activeInput.value.length, activeInput.value.length);
+                            try { activeInput.setSelectionRange(activeInput.value.length, activeInput.value.length); } catch (_) {}
                             activeInput.style.height = 'auto';
                             activeInput.style.height = Math.min(activeInput.scrollHeight, 200) + 'px';
-                        } else {
+                        } else if (!_injectIntoCoachInput(payload, 'reply')) {
+                            // Last-resort clipboard if no inline input AND no coach-box reachable.
                             navigator.clipboard.writeText(payload).then(() => {
                                 showToast(SVG_SEL_REPLY + ' <strong>Copied reply.</strong> Open Sophia and paste.', 4000, true);
                             }).catch(() => {});
@@ -3235,7 +3267,7 @@
                     }
                 }));
 
-                // 2. Insert — paste raw text into input (or clipboard if no inline input)
+                // 2. Insert — paste raw text into input (or coach-box, or clipboard last-resort)
                 toolbar.appendChild(el('button', {
                     className: 'swml-sel-btn',
                     innerHTML: SVG_SEL_INSERT + ' <span>Insert</span>',
@@ -3246,10 +3278,10 @@
                             const existing = activeInput.value;
                             activeInput.value = existing + (existing && !existing.endsWith(' ') ? ' ' : '') + selectedText;
                             activeInput.focus();
-                            activeInput.setSelectionRange(activeInput.value.length, activeInput.value.length);
+                            try { activeInput.setSelectionRange(activeInput.value.length, activeInput.value.length); } catch (_) {}
                             activeInput.style.height = 'auto';
                             activeInput.style.height = Math.min(activeInput.scrollHeight, 200) + 'px';
-                        } else {
+                        } else if (!_injectIntoCoachInput(selectedText, 'insert')) {
                             navigator.clipboard.writeText(selectedText).then(() => {
                                 showToast(SVG_SEL_INSERT + ' <strong>Copied.</strong> Open Sophia and paste.', 4000, true);
                             }).catch(() => {});
@@ -3289,10 +3321,14 @@
                     }
                 }));
 
-                // Position relative to the messages container
-                toolbar.style.top = (rect.top - msgsRect.top + msgs.scrollTop - 40) + 'px';
-                toolbar.style.left = Math.max(0, (rect.left - msgsRect.left + rect.width / 2 - 100)) + 'px';
+                // Position relative to the messages container.
+                // v7.19.121: append first so we can measure offsetWidth and centre
+                // the toolbar precisely on the selection mid-point (previous code
+                // hard-coded 100px = half a 200px-wide bar, but the neumorphic
+                // toolbar's actual width depends on chip count + padding).
                 msgs.appendChild(toolbar);
+                toolbar.style.top = (rect.top - msgsRect.top + msgs.scrollTop - 44) + 'px';
+                toolbar.style.left = Math.max(0, (rect.left - msgsRect.left + rect.width / 2 - toolbar.offsetWidth / 2)) + 'px';
             }, 10);
         });
 
