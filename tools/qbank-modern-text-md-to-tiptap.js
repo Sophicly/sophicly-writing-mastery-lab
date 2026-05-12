@@ -307,6 +307,13 @@ function main() {
     const out = {
         source_file: filename + '.md',
         text_slug: textSlug,
+        // template_version drives the canvas-load auto-migration path in
+        // class-rest-api.php:1568-1593. Saved canvases stamped with a lower
+        // _template_version get re-seeded (student response edits preserved
+        // via merge_student_responses_into_template). Bump when the template
+        // shape changes meaningfully (section structure, preamble layout etc.).
+        // 2026-05-12 — first stamped version of the 20-Q + super-group shape.
+        template_version: 2,
         question_count: charQs.length + themeQs.length,
         character_count: charQs.length,
         theme_count: themeQs.length,
