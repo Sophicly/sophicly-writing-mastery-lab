@@ -10218,6 +10218,20 @@
                                     tr.setNodeMarkup(pos, undefined, { ...node.attrs, checked: !currentChecked });
                                     return true;
                                 }).run();
+                            // v7.19.145: setNodeMarkup transactions on ChecklistItem
+                            // don't reliably fire the editor's onUpdate callback (the
+                            // attribute change isn't always treated as a doc change for
+                            // dispatch purposes), so saveCanvasContent's 2s debounce
+                            // never queues. Result: tick state lives only in the live
+                            // editor instance and is lost on next mount — confirmed by
+                            // student 1298's saved doc having 0 `data-checked="true"`
+                            // attrs after ticking 4 P2 Q1 statements. Explicit save
+                            // call here forces the canvas write so ticks persist to
+                            // localStorage + server.
+                            try {
+                                clearTimeout(canvasSaveTimer);
+                                canvasSaveTimer = setTimeout(() => { saveCanvasContent(); }, 200);
+                            } catch (_) { /* canvasSaveTimer/saveCanvasContent always in scope */ }
                         }
                     });
                     dom.appendChild(checkbox);
