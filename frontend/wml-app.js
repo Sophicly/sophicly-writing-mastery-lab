@@ -3113,10 +3113,19 @@
         setupSelectionReply();
     }
 
-    /** 
+    /**
      * Selection Toolbar: highlight text in AI messages → floating toolbar with Reply, Insert, Copy, Add to Notes.
+     *
+     * v7.19.117: idempotent. Binds document-level listeners exactly once across
+     * the IIFE lifetime so canvas screens (which don't go through renderPlan)
+     * still get the toolbar. Safe to call from boot + renderPlan; second + later
+     * calls are no-ops.
      */
+    let _swmlSelToolbarBound = false;
     function setupSelectionReply() {
+        if (_swmlSelToolbarBound) return;
+        _swmlSelToolbarBound = true;
+
         let toolbar = null;
 
         function removeToolbar() {
@@ -7105,6 +7114,10 @@ Before marking the introduction, ask the student to confirm their essay structur
     });
 
     // ── Boot ──
+    // v7.19.117: bind the chat selection toolbar at IIFE init so it works on
+    // canvas screens (assessment / exam_crib / etc.) that never call renderPlan.
+    // Function is idempotent — safe even though renderPlan also calls it.
+    setupSelectionReply();
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderSetup);
     else renderSetup();
 
