@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.137
+ * Version: 7.19.138
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.137');
+define('SWML_VERSION', '7.19.138');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -623,6 +623,15 @@ class Sophicly_Writing_Mastery_Lab {
         // 3. Fall back to lesson post meta if course map didn't resolve
         if (empty($board))   $board   = get_post_meta($post_id, '_sophicly_exam_board', true);
         if (empty($subject)) $subject = get_post_meta($post_id, '_sophicly_literature_type', true);
+        // v7.19.138: post-meta fallback for topic — mirrors wml_button shortcode at L452.
+        // Without this, lessons missing both `topic=` attribute AND `wml_topic` bridge entry
+        // produce embed_config.topic=0 → frontend state.topicNumber=0 → save lands on the
+        // no-topic canvas meta key. Then any sibling lesson access that DOES resolve topic
+        // (e.g. via bridge) reads the _t{N} key and finds nothing — student loses work on
+        // close+reopen. Closing this gap pins topic consistently across access paths.
+        if (!$topic) {
+            $topic = absint(get_post_meta($post_id, '_sophicly_topic_number', true));
+        }
 
         // Detect LearnDash Focus Mode (template = focus, or body has ld-in-focus-mode)
         $in_focus_mode = false;

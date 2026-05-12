@@ -1499,6 +1499,25 @@ class SWML_REST_API {
                 $raw = $legacy_slug_raw;
             }
         }
+        // v7.19.138: Topic-suffix orphan rescue — pre-v7.19.138 the embed_config
+        // omitted `_sophicly_topic_number` post-meta fallback, so any lesson access
+        // path lacking both shortcode `topic=` AND bridge `wml_topic` produced
+        // state.topicNumber=0 → save landed on the no-topic canvas key. After the
+        // root fix (PHP post-meta fallback) the load comes with topic_number>0 and
+        // misses that orphan. Read from `_t{N}` first; on miss, try the no-topic
+        // variant of the SAME (board, text, suffix, attempt, cw_project_id) tuple
+        // and return whichever has content. Lazy backfill: copy forward to the
+        // canonical `_t{N}` key + DO NOT delete the no-topic key (other sibling
+        // access paths may still be in transition; safer to leave the legacy key
+        // intact than break a load mid-roll-out).
+        if (empty($raw) && $topic_number !== null && $topic_number > 0) {
+            $no_topic_key = $this->canvas_meta_key($board, $text, null, $suffix, $attempt, $cw_project_id);
+            $no_topic_raw = get_user_meta($user_id, $no_topic_key, true);
+            if (!empty($no_topic_raw)) {
+                update_user_meta($user_id, $meta_key, is_array($no_topic_raw) ? $no_topic_raw : wp_slash($no_topic_raw));
+                $raw = $no_topic_raw;
+            }
+        }
         if (empty($raw)) {
             // v7.19.19+: Exam Prep Crib seed-on-mount.
             // When suffix='_crib' (task='exam_crib' per manifest) AND no canvas
