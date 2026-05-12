@@ -1499,23 +1499,45 @@ class SWML_REST_API {
                 $raw = $legacy_slug_raw;
             }
         }
-        // v7.19.138: Topic-suffix orphan rescue — pre-v7.19.138 the embed_config
-        // omitted `_sophicly_topic_number` post-meta fallback, so any lesson access
-        // path lacking both shortcode `topic=` AND bridge `wml_topic` produced
-        // state.topicNumber=0 → save landed on the no-topic canvas key. After the
-        // root fix (PHP post-meta fallback) the load comes with topic_number>0 and
-        // misses that orphan. Read from `_t{N}` first; on miss, try the no-topic
-        // variant of the SAME (board, text, suffix, attempt, cw_project_id) tuple
-        // and return whichever has content. Lazy backfill: copy forward to the
-        // canonical `_t{N}` key + DO NOT delete the no-topic key (other sibling
-        // access paths may still be in transition; safer to leave the legacy key
-        // intact than break a load mid-roll-out).
+        // v7.19.138 / v7.19.140: Bidirectional topic-suffix orphan rescue.
+        //
+        // Pre-v7.19.138 the embed_config omitted `_sophicly_topic_number` post-meta
+        // fallback, so any lesson access path lacking both shortcode `topic=` AND
+        // bridge `wml_topic` produced state.topicNumber=0 → save landed on the
+        // no-topic canvas key.
+        //
+        // Direction A (v7.19.138): Load arrives with topic_number>0 and misses the
+        // canonical `_t{N}` key → fall back to the no-topic variant.
+        //
+        // Direction B (v7.19.140): Load arrives with topic_number=null/0 (e.g.
+        // tutor review URL whose state.topicNumber wasn't set) and misses the
+        // no-topic key → scan user_meta for ANY `swml_canvas_{board}_{text}_t%`
+        // variant matching the same suffix/attempt/cw_project_id tuple and return
+        // the first non-empty match. Single LIKE query + filter; not a hot path.
+        //
+        // Lazy backfill (Direction A only): copy forward to the canonical key,
+        // leave the source key intact through the roll-out. Direction B does NOT
+        // write forward — there's no single "canonical" target if multiple _t{N}
+        // variants exist, and the next session with topic_number>0 will land on
+        // the right key anyway.
         if (empty($raw) && $topic_number !== null && $topic_number > 0) {
             $no_topic_key = $this->canvas_meta_key($board, $text, null, $suffix, $attempt, $cw_project_id);
             $no_topic_raw = get_user_meta($user_id, $no_topic_key, true);
             if (!empty($no_topic_raw)) {
                 update_user_meta($user_id, $meta_key, is_array($no_topic_raw) ? $no_topic_raw : wp_slash($no_topic_raw));
                 $raw = $no_topic_raw;
+            }
+        }
+        if (empty($raw) && ($topic_number === null || $topic_number === 0)) {
+            // Scan topics 1-15 (covers all current Sophicly mastery courses; cheap
+            // since get_user_meta is cached per request). Return first non-empty.
+            for ($t = 1; $t <= 15; $t++) {
+                $variant_key = $this->canvas_meta_key($board, $text, $t, $suffix, $attempt, $cw_project_id);
+                $variant_raw = get_user_meta($user_id, $variant_key, true);
+                if (!empty($variant_raw)) {
+                    $raw = $variant_raw;
+                    break;
+                }
             }
         }
         if (empty($raw)) {
@@ -1646,17 +1668,29 @@ class SWML_REST_API {
 
         $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
         $raw = get_user_meta($student_id, $meta_key, true);
-        // v7.19.138: Topic-suffix orphan rescue for tutor review reads. Mirrors the
-        // load_canvas() fallback so a tutor viewing a student's orphaned no-topic
-        // canvas (pre-v7.19.138 save when embed_config.topic was 0) still sees the
-        // content. Read-only: NO write-forward in tutor path — tutor must not mutate
-        // student meta, that would shift the canonical key under the student's own
-        // load handler before they've re-opened the lesson.
+        // v7.19.138 / v7.19.140: Bidirectional topic-suffix orphan rescue for tutor
+        // review reads. Mirrors the load_canvas() fallback so a tutor viewing a
+        // student's orphaned canvas (pre-v7.19.138 saves where embed_config.topic
+        // was 0) still sees the content. Read-only: NO write-forward in tutor path
+        // — tutor must not mutate student meta.
+        //
+        // Direction A: topic_number>0 + main key empty → fall back to no-topic.
+        // Direction B: topic_number=null/0 + main key empty → scan _t1.._t15.
         if (empty($raw) && $topic_number !== null && $topic_number > 0) {
             $no_topic_key = $this->canvas_meta_key($board, $text, null, $suffix, $attempt);
             $no_topic_raw = get_user_meta($student_id, $no_topic_key, true);
             if (!empty($no_topic_raw)) {
                 $raw = $no_topic_raw;
+            }
+        }
+        if (empty($raw) && ($topic_number === null || $topic_number === 0)) {
+            for ($t = 1; $t <= 15; $t++) {
+                $variant_key = $this->canvas_meta_key($board, $text, $t, $suffix, $attempt);
+                $variant_raw = get_user_meta($student_id, $variant_key, true);
+                if (!empty($variant_raw)) {
+                    $raw = $variant_raw;
+                    break;
+                }
             }
         }
         if (empty($raw)) {
