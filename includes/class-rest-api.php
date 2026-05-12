@@ -1693,6 +1693,25 @@ class SWML_REST_API {
                 }
             }
         }
+        // v7.19.143: Attempt fall-through for tutor review.
+        // Frontend defaults state.attempt to 1 when not explicitly set, so review
+        // URLs hit attempt=1 even if the student's CURRENT attempt is higher (e.g.
+        // student abandoned attempt 1 with wordCount=0 and did all work in attempt
+        // 2). Without this, tutor sees the empty attempt-1 doc and thinks the
+        // student has no work. If requested attempt is empty AND attempts index
+        // has a higher current attempt with content, fall through to that.
+        if (empty($raw) && $topic_number !== null && $topic_number > 0) {
+            $idx = $this->get_attempt_index($student_id, $board, $text, $topic_number, $suffix);
+            $current = isset($idx['current']) ? absint($idx['current']) : 0;
+            if ($current > 0 && $current !== $attempt) {
+                $fallthrough_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $current);
+                $fallthrough_raw = get_user_meta($student_id, $fallthrough_key, true);
+                if (!empty($fallthrough_raw)) {
+                    $raw = $fallthrough_raw;
+                    $attempt = $current;
+                }
+            }
+        }
         if (empty($raw)) {
             return rest_ensure_response(['success' => true, 'doc' => null, 'attempt' => $attempt]);
         }
