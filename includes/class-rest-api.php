@@ -2276,6 +2276,11 @@ class SWML_REST_API {
             '_eq'       => ['task' => 'exam_question',    'label' => 'Exam Practice',              'colour' => 'exam_question'],
             '_ma'       => ['task' => 'model_answer',     'label' => 'Model Answer',               'colour' => 'model_answer'],
             '_cn'       => ['task' => 'conceptual_notes', 'label' => 'Conceptual Notes',           'colour' => 'conceptual_notes'],
+            // v7.19.134: AQA Modern Text 20-Q crib added as a pull source. Each Q
+            // carries 5 plan slots (Intro / BP1 / BP2 / BP3 / Conclusion) with
+            // distinct data-section-labels, so the existing label-match path in
+            // merge_student_responses_into_template can target one slot at a time.
+            '_crib'     => ['task' => 'exam_crib',        'label' => '20 Most Likely Questions Crib', 'colour' => 'exam_crib'],
         ];
     }
 
