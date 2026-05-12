@@ -200,14 +200,14 @@ function buildSuperGroupHeader(title, descriptionHTML) {
 
 function buildPreambleHTML(preambleMd) {
     // Whole preamble (lines from doc start to "## CHARACTER QUESTIONS") becomes
-    // ONE notice block under a super-group header. The notice retains all h1/h2/p
-    // structure so students can read everything inside the chevron.
-    let html = '';
-    html += buildSuperGroupHeader('How to use this guide',
-        '<p>Read once before drilling the plans. Covers priority order, the seven-sentence body paragraph shape, the three non-negotiable depths for HIGH-confidence questions, and the universal terminology you must memorise (TTECEA, story-spine, IUMVCC, MADFATHER’s CROPS).</p>');
+    // ONE section-header banner. The section-header retains all h1/h2/p structure
+    // so students can read everything inside. No separate notice block — section-
+    // header is the visible preamble in exam_crib canvas mode (notice is CSS-
+    // hidden in exam_crib; section-header is the visible super-group banner that
+    // doubles as the preamble carrier).
     const lines = preambleMd.split('\n');
-    html += noticeHTML('How to use this guide', mdLinesToHTML(lines));
-    return html;
+    const innerHTML = mdLinesToHTML(lines);
+    return sectionHeaderHTML('How to use this guide', innerHTML);
 }
 
 function buildQuestionTripletHTML(parsed) {
@@ -284,6 +284,18 @@ function main() {
         'Top 10 Theme Questions',
         '<p>Most likely AQA Modern Text theme questions, ordered by examiner-prediction confidence. Identical scaffolding to the character set — every plan is yours to memorise, redraft, and write against.</p>',
         themeQs
+    );
+
+    // Optional Tutor Sign-off block — kept at the bottom of every crib so a tutor can
+    // mark the work as reviewed. No score/self-assess/analytics/action-plan tail
+    // (per Neil 2026-05-12 — exam_crib does not need the assessment-flow footer).
+    html += sectionHTML(
+        'signoff',
+        'Tutor Sign-off (optional)',
+        false,
+        '<h3>Tutor Sign-off (optional)</h3>'
+        + '<p><em>Status: NOT STARTED</em></p>'
+        + '<p><em>This block is optional. A tutor can sign here to confirm the student has rehearsed the plans in this crib.</em></p>'
     );
 
     const filename = path.basename(absPath, '.md');

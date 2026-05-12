@@ -32,7 +32,12 @@ if (!defined('ABSPATH')) exit;
 
 class SWML_Crib_20q_Migration {
 
-    const VERSION_OPTION = 'swml_crib_20q_migration_done_v1';
+    // v7.19.124 bumped to v2 — v1 left the redundant "How to use" notice block
+    // alongside the section-header banner and shipped no Tutor Sign-off tail. v2
+    // re-seeds with the cleaner template (no notice, signoff appended). Re-seed
+    // criterion expanded: any canvas that still carries the old notice OR lacks
+    // the trailing signoff section.
+    const VERSION_OPTION = 'swml_crib_20q_migration_done_v2';
 
     /** @var string[] Target text slugs (AQA Modern Text 20-Q split). */
     private static $text_slugs = [
@@ -103,8 +108,14 @@ class SWML_Crib_20q_Migration {
                 continue;
             }
 
-            // Idempotency guard: section-header marker = already 20-Q.
-            if (strpos($doc['html'], 'data-section-type="section-header"') !== false) {
+            // v2 idempotency guard: skip when both conditions hold —
+            //   (a) section-header marker present (= already 20-Q shape)
+            //   (b) Tutor Sign-off block present (= already v2-shaped tail)
+            //   (c) no leftover redundant "How to use" notice from v1
+            $has_super = strpos($doc['html'], 'data-section-type="section-header"') !== false;
+            $has_signoff = strpos($doc['html'], 'data-section-type="signoff"') !== false;
+            $has_old_notice = strpos($doc['html'], 'data-section-label="How to use this guide" data-editable="false" data-readonly="true" class="swml-section-block swml-section-notice') !== false;
+            if ($has_super && $has_signoff && !$has_old_notice) {
                 $stats['skipped']++;
                 continue;
             }

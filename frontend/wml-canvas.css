@@ -5081,6 +5081,27 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     width: 5px;
     height: 5px;
 }
+/* v7.19.124: super-group styling — top-level chevron that contains nested
+   divider-group accordions (used by AQA Modern Text 20-Q cribs for
+   "Top 10 Character / Top 10 Theme" two-tier TOC nesting). */
+.swml-toc-superrow .swml-toc-label {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-size: 11.5px;
+}
+.swml-toc-supersublist {
+    padding-left: 0;
+}
+.swml-toc-supersublist > .swml-toc-item {
+    border-bottom: none;
+}
+.swml-toc-supersublist .swml-toc-row {
+    padding-left: 36px;
+}
+.swml-toc-supersublist .swml-toc-subitem {
+    padding-left: 80px;
+}
 /* TOC gap — same as pagination gaps */
 .swml-toc-gap {
     height: 24px;

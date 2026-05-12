@@ -1713,6 +1713,44 @@
         _autoFireChecklistIfStale(editor);
     }
 
+    // v7.19.124: strip trailing assessment-flow sections from exam_crib canvases.
+    // Crib docs are for memorisation + drafting, not assessment — the score
+    // summary / self-assessment / analytics / action-plan blocks that the
+    // assessment template leaves behind have no purpose here. Tutor Sign-off
+    // is intentionally kept (Neil 2026-05-12 — useful optional affordance).
+    // Walks doc descendants in reverse so positions stay stable; dispatches
+    // a single transaction with all deletions. Idempotent — no-op if no
+    // matching sections present.
+    function _stripExamCribFooterSections(editor) {
+        if (!editor) return 0;
+        if (!window.WML || WML.state?.task !== 'exam_crib') return 0;
+        const STRIP_TYPES = new Set(['scores', 'improvement']);
+        // Specific label-matched action / feedback sections (don't catch valid Q feedback).
+        const STRIP_LABELS = new Set(['Analytics', 'Self-Assessment', 'Action Plan']);
+        // Trailing divider labels that introduce the stripped sections — drop them too
+        // so we don't leave orphan section-break headers.
+        const STRIP_DIVIDER_LABELS = new Set(['FEEDBACK', 'RESULTS', 'SCORES', 'Feedback', 'Results']);
+        const deletions = [];
+        editor.state.doc.descendants((node, pos) => {
+            if (node.type.name !== 'sectionBlock') return;
+            const type = node.attrs.sectionType || '';
+            const label = node.attrs.label || '';
+            let strip = false;
+            if (STRIP_TYPES.has(type)) strip = true;
+            if ((type === 'action' || type === 'feedback') && STRIP_LABELS.has(label)) strip = true;
+            if (type === 'divider' && STRIP_DIVIDER_LABELS.has(label)) strip = true;
+            if (strip) deletions.push({ from: pos, to: pos + node.nodeSize });
+        });
+        if (deletions.length === 0) return 0;
+        // Reverse order so later positions don't shift earlier ones during deletion.
+        deletions.sort((a, b) => b.from - a.from);
+        const tr = editor.state.tr;
+        deletions.forEach(d => tr.delete(tr.mapping.map(d.from), tr.mapping.map(d.to)));
+        editor.view.dispatch(tr);
+        console.log('[WML v7.19.124] exam_crib footer strip — removed', deletions.length, 'trailing sections');
+        return deletions.length;
+    }
+
     // Fire a silent API call to generate statements for any stale qIds on
     // this editor's canvas. Runs once per onCreate — if statements are
     // already populated, no-op. Used for diagnostic (no chat UI) + back-fill
@@ -11688,6 +11726,12 @@
                 }
             },
             onCreate: ({ editor }) => {
+                // v7.19.124: defensive strip of assessment-flow tail sections from
+                // exam_crib canvases (score summary / self-assess / analytics /
+                // action plan / their introducing dividers). Runs before
+                // section-count snapshot so the post-strip count is the baseline
+                // and the guard doesn't fire on the strip itself.
+                try { _stripExamCribFooterSections(editor); } catch (e) { console.warn('[WML v7.19.124] strip failed', e); }
                 // v7.13.92: Snapshot initial section count for guard
                 _sectionCount = countSections(editor.state.doc);
                 // v7.17.48: BASELINE-CAPTURE RACE FIX. When the editor is constructed
@@ -19557,22 +19601,49 @@
 
         // v7.14.30: Group using dividers as boundaries first, then prefix fallback.
         // Dividers create accordion groups — all sections after a divider become its children.
+        // v7.19.124: section-header opens a super-group — subsequent dividers nest under
+        // it as second-tier chevrons (used by AQA Modern Text 20-Q cribs so the in-doc
+        // TOC reads "How to use this guide / Top 10 Character / Top 10 Theme" at the
+        // top tier and "C1 — The Inspector / T1 — Social Responsibility ..." inside).
         const tocEntries = [];
+        let currentSuperGroup = null;
         let currentDivGroup = null;
         const groupPrefixes = ['Feedback', 'Plan', 'Outline'];
         const groupMap = {};
 
         sections.forEach(s => {
+            // section-header — open super-group; flush divider context
+            if (s.type === 'section-header') {
+                currentSuperGroup = {
+                    type: null,
+                    label: s.label,
+                    displayLabel: s.label,
+                    children: [],
+                    isGroup: true,
+                    isSuperGroup: true,
+                };
+                tocEntries.push(currentSuperGroup);
+                currentDivGroup = null;
+                return;
+            }
             // Dividers start new groups
             if (s.type === 'divider') {
                 currentDivGroup = { type: null, label: s.label, displayLabel: s.label, children: [], isGroup: true, isDivider: true };
-                tocEntries.push(currentDivGroup);
+                if (currentSuperGroup) {
+                    currentSuperGroup.children.push(currentDivGroup);
+                } else {
+                    tocEntries.push(currentDivGroup);
+                }
                 return;
             }
             // If inside a divider group, add as child
             if (currentDivGroup) {
                 if (!currentDivGroup.type) currentDivGroup.type = s.type;
                 currentDivGroup.children.push({ type: s.type, label: s.label, displayLabel: s.label });
+                return;
+            }
+            // Inside super-group but no divider yet — skip in TOC (no flat listing wanted at super level)
+            if (currentSuperGroup) {
                 return;
             }
             // Fallback: prefix-based grouping for sections before any divider
@@ -19609,108 +19680,199 @@
         const list = document.createElement('ul');
         list.className = 'swml-toc-list';
 
-        tocEntries.forEach((entry, idx) => {
+        // v7.14.30: Brand colour cycle for divider-based groups
+        const BRAND_DOT_COLOURS = ['#51dacf', '#42A1EC', '#4D76FD', '#5333ed', '#7DF9E9', '#1CD991', '#41aaa8'];
+
+        // Scroll-to-section helper — finds first DOM section matching label, scrolls to it.
+        function scrollToLabel(label) {
+            const editor = document.getElementById('swml-tiptap-editor');
+            const cw = document.querySelector('.swml-canvas-content');
+            if (!editor || !cw) return;
+            let target = null;
+            editor.querySelectorAll('[data-section-label]').forEach(el => {
+                if (el.getAttribute('data-section-label') === label) target = el;
+            });
+            if (target) {
+                const cwRect = cw.getBoundingClientRect();
+                const tRect = target.getBoundingClientRect();
+                cw.scrollTo({ top: cw.scrollTop + (tRect.top - cwRect.top) - (cwRect.height / 3), behavior: 'smooth' });
+            }
+        }
+
+        // Render a chevron-collapsible divider group (existing single-tier shape). Used for
+        // both top-level dividers and dividers nested inside a super-group. Returns the
+        // li element so callers can attach it wherever required.
+        function renderDividerEntry(entry, numberLabel, dotColor) {
             const item = document.createElement('li');
             item.className = 'swml-toc-item';
-
             const row = document.createElement('div');
             row.className = 'swml-toc-row';
-
             const dot = document.createElement('span');
             dot.className = 'swml-toc-dot';
-            // v7.14.30: Brand colour cycle for divider-based groups
-            const BRAND_DOT_COLOURS = ['#51dacf', '#42A1EC', '#4D76FD', '#5333ed', '#7DF9E9', '#1CD991', '#41aaa8'];
-            dot.style.background = entry.isDivider
-                ? BRAND_DOT_COLOURS[idx % BRAND_DOT_COLOURS.length]
-                : (SECTION_COLOURS[entry.type] || '#888');
+            dot.style.background = dotColor;
             row.appendChild(dot);
-
             const labelSpan = document.createElement('span');
             labelSpan.className = 'swml-toc-label';
-            const sectionNum = idx + 1;
-            labelSpan.textContent = sectionNum + '. ' + entry.displayLabel;
+            labelSpan.textContent = numberLabel + ' ' + entry.displayLabel;
             row.appendChild(labelSpan);
-
-            // Page number (approximate based on position in document)
             const pageNum = document.createElement('span');
             pageNum.className = 'swml-toc-page';
-            pageNum.textContent = sectionNum;
+            pageNum.textContent = numberLabel.replace(/\.$/, '');
             row.appendChild(pageNum);
-
-            // Click to scroll (on the row) — v7.13.74: manual scrollTo to avoid multi-ancestor scrollIntoView conflicts
             row.addEventListener('click', (e) => {
                 if (e.target.closest('.swml-toc-chevron')) return;
-                const editor = document.getElementById('swml-tiptap-editor');
-                const cw = document.querySelector('.swml-canvas-content');
-                if (!editor || !cw) return;
-                let target = null;
-                editor.querySelectorAll('[data-section-label]').forEach(el => {
-                    if (el.getAttribute('data-section-label') === entry.label) target = el;
-                });
-                if (target) {
-                    const cwRect = cw.getBoundingClientRect();
-                    const tRect = target.getBoundingClientRect();
-                    cw.scrollTo({ top: cw.scrollTop + (tRect.top - cwRect.top) - (cwRect.height / 3), behavior: 'smooth' });
-                }
+                scrollToLabel(entry.label);
             });
-
             item.appendChild(row);
 
-            // Accordion for grouped sections
-            if (entry.isGroup && entry.children.length > 0) {
+            if (entry.children && entry.children.length > 0) {
                 const chevron = document.createElement('button');
                 chevron.className = 'swml-toc-chevron';
                 chevron.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>';
                 chevron.title = 'Expand';
-                // Insert chevron before dot
                 row.insertBefore(chevron, dot);
 
                 const subList = document.createElement('ul');
                 subList.className = 'swml-toc-sublist';
-
                 entry.children.forEach((child, ci) => {
                     const subItem = document.createElement('li');
                     subItem.className = 'swml-toc-subitem';
-
                     const subDot = document.createElement('span');
                     subDot.className = 'swml-toc-dot';
-                    // v7.14.34: Child dots match parent's brand colour
                     subDot.style.background = dot.style.background || SECTION_COLOURS[child.type] || '#888';
                     subItem.appendChild(subDot);
-
                     const subLabel = document.createElement('span');
                     subLabel.className = 'swml-toc-label';
-                    subLabel.textContent = sectionNum + '.' + (ci + 1) + ' ' + child.displayLabel;
+                    subLabel.textContent = numberLabel.replace(/\.$/, '') + '.' + (ci + 1) + ' ' + child.displayLabel;
                     subItem.appendChild(subLabel);
-
-                    subItem.addEventListener('click', () => {
-                        const editor = document.getElementById('swml-tiptap-editor');
-                        const cw = document.querySelector('.swml-canvas-content');
-                        if (!editor || !cw) return;
-                        let target = null;
-                        editor.querySelectorAll('[data-section-label]').forEach(el => {
-                            if (el.getAttribute('data-section-label') === child.label) target = el;
-                        });
-                        if (target) {
-                            const cwRect = cw.getBoundingClientRect();
-                            const tRect = target.getBoundingClientRect();
-                            cw.scrollTo({ top: cw.scrollTop + (tRect.top - cwRect.top) - (cwRect.height / 3), behavior: 'smooth' });
-                        }
-                    });
-
+                    subItem.addEventListener('click', () => scrollToLabel(child.label));
                     subList.appendChild(subItem);
                 });
-
                 item.appendChild(subList);
-
-                // Toggle accordion
                 chevron.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const expanded = item.classList.toggle('swml-toc-expanded');
                     chevron.title = expanded ? 'Collapse' : 'Expand';
                 });
             }
+            return item;
+        }
 
+        // v7.19.124: render a super-group entry. Top-level chevron toggles a subList
+        // that contains nested divider-group items (each with their OWN chevron and
+        // q/plan/response children) — true two-tier accordion.
+        function renderSuperGroupEntry(entry, numberLabel) {
+            const item = document.createElement('li');
+            item.className = 'swml-toc-item swml-toc-superitem';
+            const row = document.createElement('div');
+            row.className = 'swml-toc-row swml-toc-superrow';
+            const dot = document.createElement('span');
+            dot.className = 'swml-toc-dot';
+            dot.style.background = '#5333ed';
+            row.appendChild(dot);
+            const labelSpan = document.createElement('span');
+            labelSpan.className = 'swml-toc-label';
+            labelSpan.textContent = numberLabel + ' ' + entry.displayLabel;
+            row.appendChild(labelSpan);
+            const pageNum = document.createElement('span');
+            pageNum.className = 'swml-toc-page';
+            pageNum.textContent = numberLabel.replace(/\.$/, '');
+            row.appendChild(pageNum);
+            row.addEventListener('click', (e) => {
+                if (e.target.closest('.swml-toc-chevron')) return;
+                scrollToLabel(entry.label);
+            });
+            item.appendChild(row);
+
+            if (entry.children && entry.children.length > 0) {
+                const chevron = document.createElement('button');
+                chevron.className = 'swml-toc-chevron';
+                chevron.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>';
+                chevron.title = 'Expand';
+                row.insertBefore(chevron, dot);
+
+                const subList = document.createElement('ul');
+                subList.className = 'swml-toc-sublist swml-toc-supersublist';
+                entry.children.forEach((dg, di) => {
+                    const subColor = BRAND_DOT_COLOURS[di % BRAND_DOT_COLOURS.length];
+                    const subDivItem = renderDividerEntry(dg, numberLabel.replace(/\.$/, '') + '.' + (di + 1), subColor);
+                    subList.appendChild(subDivItem);
+                });
+                item.appendChild(subList);
+                chevron.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const expanded = item.classList.toggle('swml-toc-expanded');
+                    chevron.title = expanded ? 'Collapse' : 'Expand';
+                });
+            }
+            return item;
+        }
+
+        tocEntries.forEach((entry, idx) => {
+            const sectionNum = idx + 1;
+            // Super-group → nested two-tier render
+            if (entry.isSuperGroup) {
+                list.appendChild(renderSuperGroupEntry(entry, sectionNum + '.'));
+                return;
+            }
+            // Divider group → existing single-tier render
+            if (entry.isDivider) {
+                const dotColor = BRAND_DOT_COLOURS[idx % BRAND_DOT_COLOURS.length];
+                list.appendChild(renderDividerEntry(entry, sectionNum + '.', dotColor));
+                return;
+            }
+            // Other group (prefix-based or flat) — existing inline render
+            const item = document.createElement('li');
+            item.className = 'swml-toc-item';
+            const row = document.createElement('div');
+            row.className = 'swml-toc-row';
+            const dot = document.createElement('span');
+            dot.className = 'swml-toc-dot';
+            dot.style.background = SECTION_COLOURS[entry.type] || '#888';
+            row.appendChild(dot);
+            const labelSpan = document.createElement('span');
+            labelSpan.className = 'swml-toc-label';
+            labelSpan.textContent = sectionNum + '. ' + entry.displayLabel;
+            row.appendChild(labelSpan);
+            const pageNum = document.createElement('span');
+            pageNum.className = 'swml-toc-page';
+            pageNum.textContent = sectionNum;
+            row.appendChild(pageNum);
+            row.addEventListener('click', (e) => {
+                if (e.target.closest('.swml-toc-chevron')) return;
+                scrollToLabel(entry.label);
+            });
+            item.appendChild(row);
+
+            if (entry.isGroup && entry.children && entry.children.length > 0) {
+                const chevron = document.createElement('button');
+                chevron.className = 'swml-toc-chevron';
+                chevron.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>';
+                chevron.title = 'Expand';
+                row.insertBefore(chevron, dot);
+                const subList = document.createElement('ul');
+                subList.className = 'swml-toc-sublist';
+                entry.children.forEach((child, ci) => {
+                    const subItem = document.createElement('li');
+                    subItem.className = 'swml-toc-subitem';
+                    const subDot = document.createElement('span');
+                    subDot.className = 'swml-toc-dot';
+                    subDot.style.background = dot.style.background || SECTION_COLOURS[child.type] || '#888';
+                    subItem.appendChild(subDot);
+                    const subLabel = document.createElement('span');
+                    subLabel.className = 'swml-toc-label';
+                    subLabel.textContent = sectionNum + '.' + (ci + 1) + ' ' + child.displayLabel;
+                    subItem.appendChild(subLabel);
+                    subItem.addEventListener('click', () => scrollToLabel(child.label));
+                    subList.appendChild(subItem);
+                });
+                item.appendChild(subList);
+                chevron.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const expanded = item.classList.toggle('swml-toc-expanded');
+                    chevron.title = expanded ? 'Collapse' : 'Expand';
+                });
+            }
             list.appendChild(item);
         });
 
