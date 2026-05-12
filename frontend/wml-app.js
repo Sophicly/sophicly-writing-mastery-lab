@@ -3124,11 +3124,11 @@
     let _swmlSelToolbarBound = false;
     function setupSelectionReply() {
         if (_swmlSelToolbarBound) {
-            console.debug('[ChatToolbar] setupSelectionReply called again — no-op (already bound)');
+            console.log('[ChatToolbar] setupSelectionReply called again — no-op (already bound)');
             return;
         }
         _swmlSelToolbarBound = true;
-        console.debug('[ChatToolbar] binding document mouseup handler — v7.19.118 diag');
+        console.log('[ChatToolbar] binding document mouseup handler — v7.19.118 diag');
 
         let toolbar = null;
 
@@ -3161,7 +3161,7 @@
             setTimeout(() => {
                 const sel = window.getSelection();
                 if (!sel || sel.isCollapsed || !sel.toString().trim()) {
-                    console.debug('[ChatToolbar] no selection');
+                    console.log('[ChatToolbar] no selection');
                     removeToolbar();
                     return;
                 }
@@ -3169,22 +3169,22 @@
                 // Check selection is inside an AI message bubble in EITHER chat panel
                 const anchor = sel.anchorNode;
                 const msgEl = anchor?.parentElement?.closest?.('.swml-bubble.ai');
-                console.debug('[ChatToolbar] anchor:', anchor, 'parentElement:', anchor?.parentElement, 'closest .swml-bubble.ai:', msgEl);
+                console.log('[ChatToolbar] anchor:', anchor, 'parentElement:', anchor?.parentElement, 'closest .swml-bubble.ai:', msgEl);
                 if (!msgEl) {
-                    console.debug('[ChatToolbar] no .swml-bubble.ai ancestor — toolbar suppressed');
+                    console.log('[ChatToolbar] no .swml-bubble.ai ancestor — toolbar suppressed');
                     removeToolbar();
                     return;
                 }
                 const panel = _findActiveChatPanel(msgEl);
-                console.debug('[ChatToolbar] panel match:', panel, 'available panels:', CHAT_PANELS.map(p => ({ ...p, msgsEl: document.getElementById(p.msgsId) })));
+                console.log('[ChatToolbar] panel match:', panel, 'available panels:', CHAT_PANELS.map(p => ({ ...p, msgsEl: document.getElementById(p.msgsId) })));
                 if (!panel) {
-                    console.debug('[ChatToolbar] msgEl not inside any known panel — toolbar suppressed');
+                    console.log('[ChatToolbar] msgEl not inside any known panel — toolbar suppressed');
                     removeToolbar();
                     return;
                 }
                 const msgs = panel.msgs;
                 const activeInput = panel.input;
-                console.debug('[ChatToolbar] firing — panel:', panel.msgs.id, 'input:', activeInput?.id);
+                console.log('[ChatToolbar] firing — panel:', panel.msgs.id, 'input:', activeInput?.id);
 
                 const selectedText = sel.toString().trim();
                 if (selectedText.length < 2 || selectedText.length > 2000) { removeToolbar(); return; }
