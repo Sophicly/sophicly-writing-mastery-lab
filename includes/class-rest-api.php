@@ -1341,6 +1341,31 @@ class SWML_REST_API {
             $doc['lessonUrl'] = $lesson_url;
         }
 
+        // v7.19.146 safeguard #2: reject empty-overwrite of a populated canvas.
+        // Prevents catastrophic data loss from a misfired save (editor unmount race,
+        // template injection clobbering student work, etc). If incoming HTML is
+        // tiny (<100 chars) AND the existing meta has substantial content
+        // (>1000 chars), refuse the write + log. Legitimate "user cleared
+        // everything" goes through other paths (explicit reset, new attempt) which
+        // route around this guard. Read-only safety net for the assessment flow.
+        if (strlen($html) < 100) {
+            $existing_raw = get_user_meta($user_id, $meta_key, true);
+            $existing_size = is_string($existing_raw) ? strlen($existing_raw) : (is_array($existing_raw) ? strlen(wp_json_encode($existing_raw)) : 0);
+            if ($existing_size > 1000) {
+                error_log(sprintf(
+                    '[WML v7.19.146] empty-overwrite REJECTED user=%d key=%s incoming=%d existing=%d',
+                    $user_id, $meta_key, strlen($html), $existing_size
+                ));
+                return rest_ensure_response([
+                    'success' => false,
+                    'message' => 'Refused empty overwrite of populated canvas',
+                    'guard'   => 'empty_overwrite',
+                    'incoming_size' => strlen($html),
+                    'existing_size' => $existing_size,
+                ]);
+            }
+        }
+
         // wp_slash prevents WordPress's internal wp_unslash from stripping backslashes in JSON
         $result = update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($doc)));
 

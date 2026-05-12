@@ -11776,7 +11776,35 @@
                     _sectionCount = newCount;
                 }
             },
+            onBlur: ({ editor, event }) => {
+                // v7.19.146 safeguard #3: force save when any editable field loses
+                // focus. Catches the scenario where a student types in section A,
+                // tabs/clicks into section B, and the in-flight 2s debounce hasn't
+                // yet fired. Without this, a quick focus transition can leak the
+                // most recent typing to a phantom state. Cheap — same saveCanvasContent
+                // path; no extra calls unless the user actually switches focus.
+                try { if (!state.reviewMode) saveCanvasContent(); } catch (_) {}
+            },
             onCreate: ({ editor }) => {
+                // v7.19.146 safeguard #1: periodic unconditional 30s autosave. Any
+                // UI mutation that bypasses onUpdate (e.g. setNodeMarkup on custom
+                // nodes, programmatic content changes that don't dispatch a doc-
+                // changing transaction) auto-recovers within 30s. Cheap insurance
+                // for unknown save-side bugs; saveCanvasContent already has its own
+                // 5s server debounce so the actual server-write cadence is bounded.
+                if (typeof window !== 'undefined') {
+                    if (window._wmlPeriodicCanvasSaveInterval) {
+                        try { clearInterval(window._wmlPeriodicCanvasSaveInterval); } catch (_) {}
+                    }
+                    window._wmlPeriodicCanvasSaveInterval = setInterval(() => {
+                        try {
+                            if (!canvasEditor || state.reviewMode) return;
+                            const _html = canvasEditor.getHTML();
+                            if (!_html || _html.length < 50) return; // skip empty/uninitialised editor
+                            saveCanvasContent();
+                        } catch (_) { /* never throw out of periodic save */ }
+                    }, 30000);
+                }
                 // v7.19.124: defensive strip of assessment-flow tail sections from
                 // exam_crib canvases (score summary / self-assess / analytics /
                 // action plan / their introducing dividers). Runs before
