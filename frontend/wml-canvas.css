@@ -4132,7 +4132,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 .swml-section-notice em { color: rgba(255,255,255,0.6); font-size: 0.9em; }
 /* v7.14.50: Show notice in diagnostic AND mark_scheme (training-env exercises that need it) */
-.swml-canvas:not(.swml-canvas-diagnostic):not(.swml-canvas-mark-scheme) .swml-section-notice { display: none !important; }
+/* v7.19.130: also show in inline-coaching (exam_crib) — preamble lives in notice blocks
+   under the "How to use this guide" super-group banner; without this override the
+   notice CSS hides the whole preamble in crib mode. */
+.swml-canvas:not(.swml-canvas-diagnostic):not(.swml-canvas-mark-scheme):not(.swml-canvas-inline-coaching) .swml-section-notice { display: none !important; }
 
 /* v7.19.123: section-header — super-group banner used by AQA Modern Text 20-Q cribs to
    visually separate Preamble / Theme Questions / Character Questions sections. Read-only.

@@ -198,16 +198,77 @@ function buildSuperGroupHeader(title, descriptionHTML) {
     return sectionHeaderHTML(title, inner);
 }
 
-function buildPreambleHTML(preambleMd) {
-    // Whole preamble (lines from doc start to "## CHARACTER QUESTIONS") becomes
-    // ONE section-header banner. The section-header retains all h1/h2/p structure
-    // so students can read everything inside. No separate notice block — section-
-    // header is the visible preamble in exam_crib canvas mode (notice is CSS-
-    // hidden in exam_crib; section-header is the visible super-group banner that
-    // doubles as the preamble carrier).
+// Split the preamble markdown into discrete chunks keyed by their h2 headings.
+// Returns an array of { label, lines } where label is the h2 heading text and
+// lines are the markdown lines underneath (until the next h2 or end).
+// The first chunk (before the first h2) keeps the document title + label info.
+function splitPreambleByH2(preambleMd) {
     const lines = preambleMd.split('\n');
-    const innerHTML = mdLinesToHTML(lines);
-    return sectionHeaderHTML('How to use this guide', innerHTML);
+    const chunks = [];
+    let current = { label: 'Overview', lines: [] };
+    for (const ln of lines) {
+        const m = ln.match(/^##\s+(.+?)\s*$/);
+        if (m) {
+            if (current.lines.length > 0) chunks.push(current);
+            current = { label: m[1].trim(), lines: [] };
+        } else {
+            current.lines.push(ln);
+        }
+    }
+    if (current.lines.length > 0) chunks.push(current);
+    return chunks;
+}
+
+function buildPreambleHTML(preambleMd) {
+    // Preamble structure: a super-group section-header banner ("How to use this
+    // guide") followed by one notice block per logical chunk of the original
+    // preamble (How list was generated / Priority order / How to use / Pedagogical
+    // depth / 7-sent body paragraph shape / Memorise these once). Each notice is
+    // visible in exam_crib mode (CSS override for .swml-canvas-inline-coaching)
+    // so the full preamble renders directly in canvas. The super-group banner
+    // gives the TOC a single "How to use this guide" chevron entry.
+    let html = '';
+    html += sectionHeaderHTML('How to use this guide',
+        '<h2>How to use this guide</h2>'
+        + '<p>Read the briefing notes below before drilling the plans. They explain how the question list was generated, which characters and themes to rehearse first, what the seven-sentence body paragraph shape looks like, the three pedagogical depths Sophia threads into every Grade-9 answer, and the universal terminology you must memorise.</p>');
+
+    const chunks = splitPreambleByH2(preambleMd);
+    for (const chunk of chunks) {
+        const inner = '<h2>' + escapeHTML(chunk.label) + '</h2>' + mdLinesToHTML(chunk.lines);
+        html += noticeHTML(chunk.label, inner);
+    }
+    return html;
+}
+
+// Split plan lines into 5 chunks at each `### ` heading (INTRODUCTION / BODY
+// PARAGRAPH 1 / BODY PARAGRAPH 2 / BODY PARAGRAPH 3 / CONCLUSION). Returns an
+// array of { label, lines } where label is normalised for display.
+function splitPlanByH3(planLines) {
+    const chunks = [];
+    let current = null;
+    for (const ln of planLines) {
+        const m = ln.match(/^###\s+(.+?)\s*$/);
+        if (m) {
+            if (current) chunks.push(current);
+            current = { rawLabel: m[1].trim(), lines: [] };
+        } else if (current) {
+            current.lines.push(ln);
+        }
+    }
+    if (current) chunks.push(current);
+    // Normalise display labels — strip the parenthetical word-count.
+    for (const c of chunks) {
+        c.label = c.rawLabel
+            .replace(/\s*\(.*?\)\s*$/, '')
+            .replace(/^INTRODUCTION$/i, 'Introduction')
+            .replace(/^BODY PARAGRAPH (\d)$/i, 'Body Paragraph $1')
+            .replace(/^BODY PARAGRAPH (\d)\s+—.*$/i, 'Body Paragraph $1')
+            .replace(/^CONCLUSION$/i, 'Conclusion');
+        // Preserve any "— Act 1: theatrical dominance" sub-title in a stored field.
+        const sub = c.rawLabel.match(/^BODY PARAGRAPH \d\s+—\s+(.*?)\s*(?:\(.*\))?$/i);
+        if (sub) c.subtitle = sub[1].trim();
+    }
+    return chunks;
 }
 
 function buildQuestionTripletHTML(parsed) {
@@ -222,9 +283,19 @@ function buildQuestionTripletHTML(parsed) {
     html += questionHTML(`${parsed.prefix}${parsed.qNum} — Question + Frame + Technique Gloss`,
         `<h3>Question</h3>${qInner}`);
 
-    // Plan
-    const planInner = mdLinesToHTML(parsed.planLines);
-    html += planHTML(`${parsed.prefix}${parsed.qNum} — Skeleton Plan`, planInner);
+    // Plan — split into 5 sub-sections (Introduction / BP1 / BP2 / BP3 / Conclusion).
+    // Per Neil 2026-05-12: one monolithic plan block with all elements bullet-ed
+    // together reads as visually confusing to teenagers. Splitting into the five
+    // canonical paragraph blocks groups the elements where they belong.
+    const planChunks = splitPlanByH3(parsed.planLines);
+    for (const chunk of planChunks) {
+        const label = `${parsed.prefix}${parsed.qNum} — ${chunk.label}`;
+        const headerHTML = '<h3>' + escapeHTML(chunk.label)
+            + (chunk.subtitle ? ' — ' + escapeHTML(chunk.subtitle) : '')
+            + '</h3>';
+        const inner = headerHTML + mdLinesToHTML(chunk.lines);
+        html += planHTML(label, inner);
+    }
 
     // Empty response
     html += responseHTML(`${parsed.prefix}${parsed.qNum} — Your Response`);
@@ -312,8 +383,10 @@ function main() {
         // _template_version get re-seeded (student response edits preserved
         // via merge_student_responses_into_template). Bump when the template
         // shape changes meaningfully (section structure, preamble layout etc.).
-        // 2026-05-12 — first stamped version of the 20-Q + super-group shape.
-        template_version: 2,
+        // 2026-05-12 v3 — preamble now multiple notice blocks (visible in
+        // exam_crib via CSS override) + per-Q plan split into 5 sub-sections
+        // (Intro / BP1 / BP2 / BP3 / Conclusion) instead of one monolith.
+        template_version: 3,
         question_count: charQs.length + themeQs.length,
         character_count: charQs.length,
         theme_count: themeQs.length,
