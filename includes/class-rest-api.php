@@ -1881,7 +1881,10 @@ class SWML_REST_API {
      * Returns every meta_key starting with swml_canvas_ and its size.
      */
     public function debug_canvas_keys($request) {
-        $user_id = get_current_user_id();
+        // v7.19.137: allow admins to query an arbitrary user via ?user_id=N.
+        // Endpoint already gated by check_admin_auth (manage_options) so no extra check.
+        $requested = $request ? intval($request->get_param('user_id')) : 0;
+        $user_id = $requested > 0 ? $requested : get_current_user_id();
         global $wpdb;
 
         $rows = $wpdb->get_results($wpdb->prepare(
@@ -1899,13 +1902,17 @@ class SWML_REST_API {
             ];
         }
 
-        // Also try a test write/read/delete to verify DB is working
+        // Also try a test write/read/delete to verify DB is working.
+        // v7.19.137: always run the test against the CALLER (current user), never the
+        // queried user — admin querying a student must not write test data into the
+        // student's user_meta.
+        $test_uid = get_current_user_id();
         $test_key = 'swml_canvas_debug_test_' . time();
         $test_val = wp_json_encode(['test' => true, 'time' => current_time('c')]);
-        $write_result = update_user_meta($user_id, $test_key, $test_val);
-        $read_result  = get_user_meta($user_id, $test_key, true);
+        $write_result = update_user_meta($test_uid, $test_key, $test_val);
+        $read_result  = get_user_meta($test_uid, $test_key, true);
         $read_ok      = ($read_result === $test_val);
-        delete_user_meta($user_id, $test_key);
+        delete_user_meta($test_uid, $test_key);
 
         return rest_ensure_response([
             'success'     => true,
