@@ -17800,12 +17800,21 @@
                     // to project's server-persisted text. For non-CW tasks, keep the
                     // local-wins gate — localStorage is the authoritative in-progress
                     // buffer for debounce-window protection on exam writing.
+                    // v7.19.132: exam_crib joins the prefer-server list. Cribs auto-
+                    // migrate on the server side (class-rest-api.php:1568 reseed path
+                    // based on template_version) so localStorage-wins traps students
+                    // on stale crib shapes after a template ship. Drafts are safe
+                    // because exam_crib autosaves to server every 2s — localStorage
+                    // is a debounce buffer, not the source of truth here.
                     const isCwTaskHydrate = state.task && state.task.startsWith('cw_');
-                    if (isCwTaskHydrate || !localContent || localContent.length < 20) {
+                    const isCribHydrate = state.task === 'exam_crib';
+                    if (isCwTaskHydrate || isCribHydrate || !localContent || localContent.length < 20) {
                         canvasEditor.commands.setContent(res.doc.html, false);
                         console.log(isCwTaskHydrate
                             ? 'WML v7.17.44: CW canvas loaded from server (project-authoritative on mount)'
-                            : 'WML: Canvas loaded from server (no local content found)');
+                            : (isCribHydrate
+                                ? 'WML v7.19.132: exam_crib canvas loaded from server (template-migration-authoritative on mount)'
+                                : 'WML: Canvas loaded from server (no local content found)'));
                     } else {
                         console.log('WML: Local canvas content exists, server backup available');
                     }
