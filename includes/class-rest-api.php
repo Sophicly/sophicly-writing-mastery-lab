@@ -1646,6 +1646,19 @@ class SWML_REST_API {
 
         $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
         $raw = get_user_meta($student_id, $meta_key, true);
+        // v7.19.138: Topic-suffix orphan rescue for tutor review reads. Mirrors the
+        // load_canvas() fallback so a tutor viewing a student's orphaned no-topic
+        // canvas (pre-v7.19.138 save when embed_config.topic was 0) still sees the
+        // content. Read-only: NO write-forward in tutor path — tutor must not mutate
+        // student meta, that would shift the canonical key under the student's own
+        // load handler before they've re-opened the lesson.
+        if (empty($raw) && $topic_number !== null && $topic_number > 0) {
+            $no_topic_key = $this->canvas_meta_key($board, $text, null, $suffix, $attempt);
+            $no_topic_raw = get_user_meta($student_id, $no_topic_key, true);
+            if (!empty($no_topic_raw)) {
+                $raw = $no_topic_raw;
+            }
+        }
         if (empty($raw)) {
             return rest_ensure_response(['success' => true, 'doc' => null, 'attempt' => $attempt]);
         }
