@@ -3123,17 +3123,40 @@
             if (toolbar) { toolbar.remove(); toolbar = null; }
         }
 
+        // v7.19.116: chat-toolbar now supports BOTH the planning chat
+        // (#swml-messages → #swml-input) AND the canvas chat
+        // (#swml-canvas-chat-messages → #swml-canvas-chat-input) used by
+        // assessment + exam_crib. The Reply / Insert / Copy / Note chips
+        // target whichever chat container has the active selection.
+        const CHAT_PANELS = [
+            { msgsId: 'swml-messages',              inputId: 'swml-input' },
+            { msgsId: 'swml-canvas-chat-messages',  inputId: 'swml-canvas-chat-input' },
+        ];
+
+        function _findActiveChatPanel(msgEl) {
+            for (const p of CHAT_PANELS) {
+                const msgs = document.getElementById(p.msgsId);
+                if (msgs && msgs.contains(msgEl)) {
+                    return { msgs, input: document.getElementById(p.inputId) };
+                }
+            }
+            return null;
+        }
+
         document.addEventListener('mouseup', (e) => {
             // Small delay to let selection finalise
             setTimeout(() => {
                 const sel = window.getSelection();
                 if (!sel || sel.isCollapsed || !sel.toString().trim()) { removeToolbar(); return; }
 
-                // Check selection is inside an AI message bubble
+                // Check selection is inside an AI message bubble in EITHER chat panel
                 const anchor = sel.anchorNode;
                 const msgEl = anchor?.parentElement?.closest?.('.swml-bubble.ai');
-                const msgs = $('#swml-messages');
-                if (!msgEl || !msgs?.contains(msgEl)) { removeToolbar(); return; }
+                if (!msgEl) { removeToolbar(); return; }
+                const panel = _findActiveChatPanel(msgEl);
+                if (!panel) { removeToolbar(); return; }
+                const msgs = panel.msgs;
+                const activeInput = panel.input;
 
                 const selectedText = sel.toString().trim();
                 if (selectedText.length < 2 || selectedText.length > 2000) { removeToolbar(); return; }
@@ -3158,13 +3181,12 @@
                     title: 'Reply to this text',
                     onClick: (ev) => {
                         ev.stopPropagation();
-                        const input = $('#swml-input');
-                        if (input) {
-                            input.value = `Regarding "${quote}" — `;
-                            input.focus();
-                            input.setSelectionRange(input.value.length, input.value.length);
-                            input.style.height = 'auto';
-                            input.style.height = Math.min(input.scrollHeight, 200) + 'px';
+                        if (activeInput) {
+                            activeInput.value = `Regarding "${quote}" — `;
+                            activeInput.focus();
+                            activeInput.setSelectionRange(activeInput.value.length, activeInput.value.length);
+                            activeInput.style.height = 'auto';
+                            activeInput.style.height = Math.min(activeInput.scrollHeight, 200) + 'px';
                         }
                         removeToolbar(); sel.removeAllRanges();
                     }
@@ -3177,14 +3199,13 @@
                     title: 'Add text to input',
                     onClick: (ev) => {
                         ev.stopPropagation();
-                        const input = $('#swml-input');
-                        if (input) {
-                            const existing = input.value;
-                            input.value = existing + (existing && !existing.endsWith(' ') ? ' ' : '') + selectedText;
-                            input.focus();
-                            input.setSelectionRange(input.value.length, input.value.length);
-                            input.style.height = 'auto';
-                            input.style.height = Math.min(input.scrollHeight, 200) + 'px';
+                        if (activeInput) {
+                            const existing = activeInput.value;
+                            activeInput.value = existing + (existing && !existing.endsWith(' ') ? ' ' : '') + selectedText;
+                            activeInput.focus();
+                            activeInput.setSelectionRange(activeInput.value.length, activeInput.value.length);
+                            activeInput.style.height = 'auto';
+                            activeInput.style.height = Math.min(activeInput.scrollHeight, 200) + 'px';
                         }
                         removeToolbar(); sel.removeAllRanges();
                     }
@@ -3228,12 +3249,14 @@
             }, 10);
         });
 
-        // Remove on click elsewhere or scroll
+        // Remove on click elsewhere or any scroll. Capture-mode scroll listener
+        // catches scroll events from any descendant (planning chat, canvas chat,
+        // or anything else) without needing to know container IDs up front —
+        // works whether or not the canvas chat container is mounted at init.
         document.addEventListener('mousedown', (e) => {
             if (toolbar && !toolbar.contains(e.target)) removeToolbar();
         });
-        const msgs = $('#swml-messages');
-        if (msgs) msgs.addEventListener('scroll', removeToolbar);
+        document.addEventListener('scroll', removeToolbar, true);
     }
 
     // ── Sophicly Notes Integration ──
