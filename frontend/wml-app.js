@@ -3159,12 +3159,13 @@
             return null;
         }
 
-        // v7.19.121: open the coach-box and inject text when there is no inline
+        // v7.19.122: open the coach-box and inject text when there is no inline
         // textarea (coach-panel context — exam_crib / polishing). If the coach-box
-        // is already open, inject directly. Otherwise click the empty-state CTA
-        // (which opens coach-box on the default plan/response selection), wait
-        // briefly for it to render, then inject.
-        function _injectIntoCoachInput(payload, mode) {
+        // is already open, inject directly. Otherwise call
+        // window.WML.SelectionChip.openBox() with the CHAT selection's range +
+        // rect (openBox accepts any DOM range; it doesn't require canvas context),
+        // wait briefly for the coach-box textarea to render, then inject.
+        function _injectIntoCoachInput(payload, mode, range, selectedText, rect) {
             const setVal = (input) => {
                 if (!input) return false;
                 if (mode === 'reply') {
@@ -3183,20 +3184,30 @@
             // Already open?
             const existing = document.querySelector('.swml-coach-input');
             if (existing) return setVal(existing);
-            // Try empty-state CTA to open coach-box
-            const cta = document.querySelector('.swml-coach-empty-cta');
-            if (cta) {
-                cta.click();
-                let attempts = 0;
-                const poll = () => {
-                    const input = document.querySelector('.swml-coach-input');
-                    if (input) { setVal(input); return; }
-                    if (attempts++ < 20) setTimeout(poll, 50);
-                };
-                setTimeout(poll, 50);
-                return true;
+            // Open coach-box directly via the public API (works for any range/rect,
+            // including a chat-panel selection — openBox doesn't require canvas
+            // context). Then poll for the textarea and inject.
+            const SC = window.WML && window.WML.SelectionChip;
+            if (!SC || typeof SC.openBox !== 'function') {
+                console.warn('[ChatToolbar] WML.SelectionChip.openBox unavailable');
+                return false;
             }
-            return false;
+            let openBoxRange = null;
+            try { openBoxRange = range.cloneRange(); } catch (_) { openBoxRange = range; }
+            try {
+                SC.openBox({ range: openBoxRange, selectedText, rect });
+            } catch (err) {
+                console.warn('[ChatToolbar] openBox threw', err);
+                return false;
+            }
+            let attempts = 0;
+            const poll = () => {
+                const input = document.querySelector('.swml-coach-input');
+                if (input) { setVal(input); return; }
+                if (attempts++ < 30) setTimeout(poll, 50);
+            };
+            setTimeout(poll, 50);
+            return true;
         }
 
         document.addEventListener('mouseup', (e) => {
@@ -3257,7 +3268,7 @@
                             try { activeInput.setSelectionRange(activeInput.value.length, activeInput.value.length); } catch (_) {}
                             activeInput.style.height = 'auto';
                             activeInput.style.height = Math.min(activeInput.scrollHeight, 200) + 'px';
-                        } else if (!_injectIntoCoachInput(payload, 'reply')) {
+                        } else if (!_injectIntoCoachInput(payload, 'reply', range, selectedText, rect)) {
                             // Last-resort clipboard if no inline input AND no coach-box reachable.
                             navigator.clipboard.writeText(payload).then(() => {
                                 showToast(SVG_SEL_REPLY + ' <strong>Copied reply.</strong> Open Sophia and paste.', 4000, true);
@@ -3281,7 +3292,7 @@
                             try { activeInput.setSelectionRange(activeInput.value.length, activeInput.value.length); } catch (_) {}
                             activeInput.style.height = 'auto';
                             activeInput.style.height = Math.min(activeInput.scrollHeight, 200) + 'px';
-                        } else if (!_injectIntoCoachInput(selectedText, 'insert')) {
+                        } else if (!_injectIntoCoachInput(selectedText, 'insert', range, selectedText, rect)) {
                             navigator.clipboard.writeText(selectedText).then(() => {
                                 showToast(SVG_SEL_INSERT + ' <strong>Copied.</strong> Open Sophia and paste.', 4000, true);
                             }).catch(() => {});
