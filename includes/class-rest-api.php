@@ -1508,20 +1508,15 @@ class SWML_REST_API {
             // Server returns the template AS-IF it were saved — frontend
             // renders it; on first edit + autosave, it persists into user_meta.
             if ($suffix === '_crib') {
-                $crib_text = preg_replace('/[^a-z0-9_]/', '', strtolower($text));
-                $crib_path = SWML_PATH . 'protocols/shared/crib-templates/' . $crib_text . '.json';
-                if (file_exists($crib_path)) {
-                    $crib_raw = file_get_contents($crib_path);
-                    $crib_data = json_decode($crib_raw, true);
-                    if (is_array($crib_data) && !empty($crib_data['html'])) {
-                        return rest_ensure_response([
-                            'success'      => true,
-                            'doc'          => ['html' => $crib_data['html']],
-                            'attempt'      => $attempt,
-                            'generalNotes' => $general_notes,
-                            'is_seed'      => true,
-                        ]);
-                    }
+                $crib_data = self::resolve_crib_template($text, $board);
+                if ($crib_data && !empty($crib_data['html'])) {
+                    return rest_ensure_response([
+                        'success'      => true,
+                        'doc'          => ['html' => $crib_data['html']],
+                        'attempt'      => $attempt,
+                        'generalNotes' => $general_notes,
+                        'is_seed'      => true,
+                    ]);
                 }
             }
             return rest_ensure_response([
@@ -1570,24 +1565,19 @@ class SWML_REST_API {
         // older, reseed from new template, preserving any student-typed responses.
         // Persists migration so it doesn't re-run on every load.
         if ($suffix === '_crib' && is_array($doc) && !empty($doc['html'])) {
-            $crib_text = preg_replace('/[^a-z0-9_]/', '', strtolower($text));
-            $crib_path = SWML_PATH . 'protocols/shared/crib-templates/' . $crib_text . '.json';
-            if (file_exists($crib_path)) {
-                $crib_raw = file_get_contents($crib_path);
-                $crib_data = json_decode($crib_raw, true);
-                if (is_array($crib_data) && !empty($crib_data['html']) && isset($crib_data['template_version'])) {
-                    $current_ver = (int)$crib_data['template_version'];
-                    $saved_ver = isset($doc['_template_version']) ? (int)$doc['_template_version'] : 0;
-                    if ($saved_ver < $current_ver) {
-                        $migrated_html = self::merge_student_responses_into_template(
-                            $crib_data['html'],
-                            $doc['html']
-                        );
-                        $doc['html'] = $migrated_html;
-                        $doc['_template_version'] = $current_ver;
-                        update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($doc)));
-                        error_log("WML_MIGRATION: user={$user_id} text={$crib_text} suffix={$suffix} reseed v{$saved_ver}->v{$current_ver}");
-                    }
+            $crib_data = self::resolve_crib_template($text, $board);
+            if ($crib_data && !empty($crib_data['html']) && isset($crib_data['template_version'])) {
+                $current_ver = (int)$crib_data['template_version'];
+                $saved_ver = isset($doc['_template_version']) ? (int)$doc['_template_version'] : 0;
+                if ($saved_ver < $current_ver) {
+                    $migrated_html = self::merge_student_responses_into_template(
+                        $crib_data['html'],
+                        $doc['html']
+                    );
+                    $doc['html'] = $migrated_html;
+                    $doc['_template_version'] = $current_ver;
+                    update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($doc)));
+                    error_log("WML_MIGRATION: user={$user_id} text={$text} suffix={$suffix} reseed v{$saved_ver}->v{$current_ver}");
                 }
             }
         }
@@ -3697,6 +3687,61 @@ class SWML_REST_API {
             }
         }
         return $out;
+    }
+
+    /**
+     * v7.19.135: resolve a crib JSON template from disk, trying multiple file-name
+     * conventions so the same code supports per-text cribs ("blood_brothers.json")
+     * AND per-text+board cribs ("blood_brothers_aqa.json", "aqa_blood_brothers.json").
+     *
+     * Lookup order (first hit wins):
+     *   1. {text}.json                — bare text, single-board era
+     *   2. {text}_{board}.json        — text + board suffix (Neil's preferred convention for
+     *                                   multi-board variants e.g. blood_brothers_eduqas)
+     *   3. {board}_{text}.json        — board + text prefix (alternative shape)
+     *
+     * Board is normalised to a-z0-9_; text is sanitised the same way. Returns the
+     * decoded JSON array (with html / template_version / etc.) or null when no
+     * candidate file exists.
+     */
+    public static function resolve_crib_template($text, $board = '') {
+        if (!is_string($text) || $text === '') return null;
+        $text_norm  = preg_replace('/[^a-z0-9_]/', '', strtolower($text));
+        $board_norm = preg_replace('/[^a-z0-9_]/', '', strtolower((string)$board));
+
+        $candidates = [$text_norm . '.json'];
+        if ($board_norm !== '') {
+            $has_board_suffix = (substr($text_norm, -strlen($board_norm) - 1) === '_' . $board_norm);
+            $has_board_prefix = (substr($text_norm, 0, strlen($board_norm) + 1) === $board_norm . '_');
+            // Board-suffixed / board-prefixed candidates — skipped when the text
+            // already encodes the board (avoids "blood_brothers_aqa_aqa.json").
+            if (!$has_board_suffix) $candidates[] = $text_norm . '_' . $board_norm . '.json';
+            if (!$has_board_prefix) $candidates[] = $board_norm . '_' . $text_norm . '.json';
+            // If text already encodes the board (Neil's `blood_brothers_aqa`),
+            // ALSO try the bare-text variant by stripping the encoded board so
+            // existing single-board disk templates ("blood_brothers.json")
+            // resolve under the board-prefixed slug too. Backwards-compat shim.
+            if ($has_board_suffix) {
+                $bare = substr($text_norm, 0, -strlen($board_norm) - 1);
+                if ($bare !== '') $candidates[] = $bare . '.json';
+            }
+            if ($has_board_prefix) {
+                $bare = substr($text_norm, strlen($board_norm) + 1);
+                if ($bare !== '') $candidates[] = $bare . '.json';
+            }
+        }
+
+        foreach ($candidates as $filename) {
+            $path = SWML_PATH . 'protocols/shared/crib-templates/' . $filename;
+            if (file_exists($path)) {
+                $raw = file_get_contents($path);
+                $data = json_decode($raw, true);
+                if (is_array($data) && !empty($data['html'])) {
+                    return $data;
+                }
+            }
+        }
+        return null;
     }
 
     /**
