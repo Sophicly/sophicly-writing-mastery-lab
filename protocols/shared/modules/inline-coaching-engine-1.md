@@ -444,7 +444,16 @@ Steps 1-3 fit inside the standard 3-line cap when delivered tightly. If the stud
 
 Triggered when student clicks the **Rephrase** chip on a highlighted sentence. Generic sentence-shape rephrase — works on any sentence the student wrote, not just hooks. Pairs with `strengthen-hook` (hook-specific) as the second element-polish chip in the Element-polish group.
 
-**SECTION GATE (HARD).** Fires ONLY when the highlighted selection sits inside a `plan` or `response` section (`data-section-type="plan" | "response"`). Refuses on read-only crib content (`question` section: Q stem / Frame / Technique gloss / Marks line). Frontend `isEditableSection()` enforces this at click time, but Sophia must also respect it server-side — if the prompt arrives with a read-only selection, respond in one line:
+**SECTION GATE (HARD — v7.19.114 metadata-trust).** Read the `Section type:` line in the prompt header. That value comes from the live DOM's `data-section-type` attribute — it is authoritative, do NOT guess from text content.
+
+- `Section type: "plan"` → run rephrase flow. The student's plan IS theirs to edit. Sophicly seeds it as a starting scaffold, but everything inside `plan` is editable and rewritable by design. Treat plan sentences exactly like response sentences.
+- `Section type: "response"` → run rephrase flow.
+- `Section type: "question"` → refuse with the redirect message below. The `question` section holds the Q stem / Frame / Technique gloss / Marks line — Sophicly-authored read-only crib content.
+- `Section type: "unknown"` → run rephrase flow (graceful degradation; let the student rewrite rather than mis-refuse).
+
+**Do NOT classify sections by inspecting text content.** Frame paragraphs, technique-gloss bullets, and INTRODUCTION/Hook bullets can read similarly; only the `Section type:` field tells you which is which. The engine-1 v7.19.113 spec previously asked Sophia to refuse when content "looked like" Frame/question content — that produced false positives on plan-section bullets that referenced crib language (e.g. a Hook bullet that quotes a historical fact). v7.19.114 fixes this: trust the metadata, run the flow.
+
+Refusal message (only for `Section type: "question"`):
 
 > *"That sentence is part of the crib's question + frame block — Sophicly authored it, so it's not yours to rephrase. Highlight a sentence in YOUR plan or response instead."*
 

@@ -139,6 +139,23 @@
         return words.slice(0, 400).join(' ') + '…';
     }
 
+    // v7.19.114: pass explicit section-type metadata to the AI prompt so Sophia
+    // does not have to guess editability from text content. Returns the value of
+    // the parent swml-section-block's data-section-type attribute (or 'unknown'
+    // if no section ancestor exists). Used by buildPrompt to add a `Section
+    // type:` line that engine-1's rephrase rule (and others) can trust.
+    function extractSectionType(domNode) {
+        if (!domNode) return 'unknown';
+        let cur = domNode.nodeType === 3 ? domNode.parentElement : domNode;
+        while (cur && cur !== document.body) {
+            if (cur.classList && cur.classList.contains('swml-section-block')) {
+                return cur.getAttribute('data-section-type') || 'unknown';
+            }
+            cur = cur.parentElement;
+        }
+        return 'unknown';
+    }
+
     function _filterActionsForScope(scope, taskCtx) {
         // v7.19.67: 7-tier polish ladder — tier-scan group always visible
         // (scans operate on parent element/doc, not the highlighted span).
@@ -161,12 +178,13 @@
         return groups;
     }
 
-    function buildPrompt(action, selection, sectionContext, taskCtx, freeText, fullDoc) {
+    function buildPrompt(action, selection, sectionContext, taskCtx, freeText, fullDoc, sectionType) {
         const lines = [
             '## Inline Coaching Invocation',
             '',
             '- **Action:** ' + (action || 'freetext'),
             '- **Selection (frozen at open):** ' + JSON.stringify(selection || ''),
+            '- **Section type:** ' + JSON.stringify(sectionType || 'unknown'),
             '- **Section context (live, re-read this turn):** ' + JSON.stringify(sectionContext || ''),
             '- **Task context:** ' + JSON.stringify(taskCtx || {}),
         ];
@@ -541,12 +559,13 @@
 
         const scope = classifyScope(text, anchorEl, focusEl);
         const sectionContext = extractSectionContext(anchorEl);
+        const sectionType = extractSectionType(anchorEl);
 
         let rangeClone = null;
         try { rangeClone = range.cloneRange(); } catch (_) {}
 
         const selectionInfo = {
-            text, scope, sectionContext, rect, anchorEl, focusEl,
+            text, scope, sectionContext, sectionType, rect, anchorEl, focusEl,
             range: rangeClone,
         };
         _openBox(selectionInfo);
@@ -1116,9 +1135,11 @@
             // full doc text pulled from canvasEditor.getText() and appended via
             // buildPrompt's new fullDoc param.
             let liveSectionContext = sel.sectionContext;
+            let liveSectionType = sel.sectionType || 'unknown';
             try {
                 if (sel.anchorEl && sel.anchorEl.isConnected) {
                     liveSectionContext = extractSectionContext(sel.anchorEl);
+                    liveSectionType = extractSectionType(sel.anchorEl);
                 }
             } catch (_) { /* fall back to frozen snapshot */ }
             let liveFullDoc = '';
@@ -1133,7 +1154,8 @@
                 liveSectionContext,
                 _ctx.taskCtx,
                 trimmed,
-                liveFullDoc
+                liveFullDoc,
+                liveSectionType
             );
 
             try {
@@ -1266,5 +1288,6 @@
         classifyScope,
         isEditableSection,
         extractSectionContext,
+        extractSectionType,
     };
 })();
