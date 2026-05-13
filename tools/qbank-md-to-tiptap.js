@@ -218,6 +218,23 @@ function parseQuestionBlock(block, qNum, title) {
         // inside the bold). Also keeps legacy `**Typical extract.**`.
         const extMatch = line.match(/^\*\*(?:Typical extract|Extract)(?:\.|\s+—\s+[^*]+:)\*\*\s*(.*)$/);
         if (extMatch) { switchSection('extract', extMatch[1]); continue; }
+        // v7.19.161: AQA Poetry anthology source uses `**Anchor poem (printed on the AQA paper):**`
+        // (or similar) heading before a blockquote-wrapped poem. Treat as extract.
+        // Capture the heading itself so the rendered extract section retains its label.
+        const anchorMatch = line.match(/^\*\*Anchor poem[^*]*\*\*\s*(.*)$/);
+        if (anchorMatch) {
+            inSection = 'extract';
+            buckets.extract.push(line); // keep the bold heading line in the extract
+            continue;
+        }
+        // v7.19.161: also bucket the poetry meta-headers (Predicted anchor / Suggested
+        // comparison / Alternative comparison candidates) as part of the extract so
+        // students see the comparison guidance alongside the anchor poem.
+        if (/^\*\*(Predicted anchor|Suggested comparison|Alternative comparison)/i.test(line)) {
+            inSection = 'extract';
+            buckets.extract.push(line);
+            continue;
+        }
         // Explicit `**Question (AQA house style):**` marker — most banks.
         if (/^\*\*Question[^*]*\*\*/.test(line)) { inSection = 'question'; continue; }
         const frMatch = line.match(/^\*\*Frame\.\*\*\s*(.*)$/);
@@ -236,7 +253,8 @@ function parseQuestionBlock(block, qNum, title) {
         // (IC/Much Ado/P&P), detect the AQA-style question blockquote by content
         // signature and switch buckets here. Question always opens with one of
         // these standard examiner phrasings, so detection is unambiguous.
-        if (/^>\s*(Starting with this extract|How does\b|How is\b|How far\b|Read again|Explore how|Write about\b)/i.test(line.trim())) {
+        // v7.19.161: added "Compare how" / "Compare the ways" for poetry anthology.
+        if (/^>\s*(Starting with this extract|How does\b|How is\b|How far\b|Read again|Explore how|Write about\b|Compare how\b|Compare the ways\b|In ['‘"]\w)/i.test(line.trim())) {
             if (inSection === 'extract' || inSection === 'header' || inSection === 'preamble') {
                 inSection = 'question';
             }
