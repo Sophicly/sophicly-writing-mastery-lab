@@ -14532,15 +14532,19 @@
             let total = 0;
             editableSections.forEach(section => {
                 const clone = section.cloneNode(true);
-                clone.querySelectorAll('h3').forEach(el => el.remove());
+                // v7.19.148: stop stripping <h3>. Template response section has no h3
+                // (ships only <p><em>Write your essay here.</em></p><p></p>), so the
+                // strip was unnecessary defense — and silently ate ~316 words for
+                // student 1180 whose intro paragraphs were accidentally formatted as
+                // <h3><strong>...</strong></h3> (TipTap heading shortcut or paste-from-Word).
                 // v7.18.41: exclude checklistItem statements + their instruction
                 // line. Q1 STATEMENTS section is data-section-type="response"
                 // but its content is AI-generated 8 statements + a hint line —
                 // not student writing. Counting them inflated the wc by ~110.
                 clone.querySelectorAll('[data-checklist-item]').forEach(el => el.remove());
                 // v7.19.147: stop stripping <em>. Counter was eating student italics
-                // (quoted passages, emphasis) — 817-word essay reported as 501.
-                // Template em ("Write your essay here.") is handled by baseline subtraction.
+                // (quoted passages, emphasis). Template em ("Write your essay here.")
+                // is handled by baseline subtraction.
                 const text = clone.textContent || '';
                 const words = text.trim().split(/\s+/).filter(w => w.length > 0);
                 total += words.length;
@@ -14551,7 +14555,7 @@
         let total = 0;
         responseSections.forEach(section => {
             const clone = section.cloneNode(true);
-            clone.querySelectorAll('h3').forEach(el => el.remove());
+            // v7.19.148: h3 strip removed — see note in editableSections branch above.
             // v7.18.41: exclude checklistItem statements + instruction line — see comment above.
             clone.querySelectorAll('[data-checklist-item]').forEach(el => el.remove());
             // v7.19.147: em strip removed — see note in editableSections branch above.
