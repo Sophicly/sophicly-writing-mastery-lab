@@ -3859,8 +3859,12 @@ class SWML_REST_API {
      */
     public static function resolve_crib_template($text, $board = '') {
         if (!is_string($text) || $text === '') return null;
-        $text_norm  = preg_replace('/[^a-z0-9_]/', '', strtolower($text));
-        $board_norm = preg_replace('/[^a-z0-9_]/', '', strtolower((string)$board));
+        // v7.19.159: convert dashes to underscores BEFORE stripping non-alphanum.
+        // Previously `power-and-conflict` collapsed to `powerandconflict` (dashes
+        // stripped entirely) and never matched `power_and_conflict.json`. Now it
+        // round-trips through the underscore form.
+        $text_norm  = preg_replace('/[^a-z0-9_]/', '', strtolower(str_replace('-', '_', $text)));
+        $board_norm = preg_replace('/[^a-z0-9_]/', '', strtolower(str_replace('-', '_', (string)$board)));
 
         $candidates = [$text_norm . '.json'];
         if ($board_norm !== '') {
