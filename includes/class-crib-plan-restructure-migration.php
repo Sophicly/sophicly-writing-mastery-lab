@@ -46,6 +46,12 @@ class SWML_Crib_Plan_Restructure_Migration {
         'macbeth',
         'romeo_and_juliet',
         'much_ado',
+        // Poetry anthologies (v7.19.157)
+        'power_and_conflict',
+        'love_and_relationships',
+        'worlds_and_lives',
+        // Unseen Poetry (v7.19.158 — separate generator shape)
+        'unseen_poetry',
     ];
 
     public static function init() {
