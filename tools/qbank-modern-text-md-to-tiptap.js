@@ -348,13 +348,17 @@ function buildQuestionTripletHTML(parsed) {
     // Per Neil 2026-05-12: one monolithic plan block with all elements bullet-ed
     // together reads as visually confusing to teenagers. Splitting into the five
     // canonical paragraph blocks groups the elements where they belong.
+    // v7.19.152: universal plan-section shape — label as "Plan: <Paragraph>",
+    // drop <h3> heading (redundant with section label), strip <strong> from
+    // bullet element labels (plain inline text). Aligns with diagnostic / planning /
+    // exam_plan / quote_analysis canvases. Migration class handles legacy docs.
     const planChunks = splitPlanByH3(parsed.planLines);
     for (const chunk of planChunks) {
-        const label = `${parsed.prefix}${parsed.qNum} — ${chunk.label}`;
-        const headerHTML = '<h3>' + escapeHTML(chunk.label)
-            + (chunk.subtitle ? ' — ' + escapeHTML(chunk.subtitle) : '')
-            + '</h3>';
-        const inner = headerHTML + mdLinesToHTML(chunk.lines);
+        const label = `${parsed.prefix}${parsed.qNum} — Plan: ${chunk.label}`;
+        let inner = mdLinesToHTML(chunk.lines);
+        // Strip <strong> wrappers from element labels (Hook / Building / Topic / etc.) —
+        // keep their text as plain inline labels at the start of each bullet.
+        inner = inner.replace(/<strong>(.*?)<\/strong>/gs, '$1');
         html += planHTML(label, inner);
     }
 
@@ -453,7 +457,11 @@ function main() {
         // stripped on setContent).
         // 2026-05-12 v5 — BP "Scene focus:" labels wrapped in
         // <em class="swml-scene-focus"> for Playfair Display italic styling.
-        template_version: 5,
+        // 2026-05-13 v6 — universal plan-section shape: labels carry "Plan:" prefix
+        // (e.g. "C1 — Plan: Introduction"), <h3> headings dropped inside plan sections,
+        // <strong> stripped from bullet element labels. Aligns crib with diagnostic /
+        // planning / exam_plan / quote_analysis. Migration via SWML_Crib_Plan_Restructure_Migration.
+        template_version: 6,
         question_count: charQs.length + themeQs.length,
         character_count: charQs.length,
         theme_count: themeQs.length,
