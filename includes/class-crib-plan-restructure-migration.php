@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) exit;
 
 class SWML_Crib_Plan_Restructure_Migration {
 
-    const VERSION_OPTION = 'swml_crib_plan_restructure_done_v1';
+    const VERSION_OPTION = 'swml_crib_plan_restructure_done_v2';
 
     /** @var string[] Target text slugs across all AQA Lit cribs (Modern + 19C + Shakespeare). */
     private static $text_slugs = [
@@ -101,18 +101,20 @@ class SWML_Crib_Plan_Restructure_Migration {
                 continue;
             }
 
-            // Idempotency: skip docs already at template_version >= 3.
-            $tv = isset($doc['template_version']) ? (int) $doc['template_version'] : 0;
-            if ($tv >= 3) {
+            // Idempotency: shape-based. If any plan section label already contains "Plan:",
+            // the doc is already in the new universal shape. (template_version is reserved
+            // for other generator-version concerns — values 2/3/5/7 already in use for
+            // unrelated reasons, so don't conflate.)
+            if (!empty($doc['_plan_restructured_v3']) || preg_match('/data-section-label="[^"]*Plan:/', $doc['html'])) {
                 $stats['skipped']++;
                 continue;
             }
 
             $new_html = self::transform_html($doc['html']);
             if ($new_html === null || $new_html === $doc['html']) {
-                // No structural change required (maybe already restructured by frontend).
-                // Still stamp template_version forward so future runs skip.
-                $doc['template_version'] = 3;
+                // Transform was a no-op (no plan sections found, or already clean).
+                // Stamp the flag so future sweeps skip this doc cleanly.
+                $doc['_plan_restructured_v3'] = true;
                 $encoded = wp_json_encode($doc);
                 if ($encoded !== false) {
                     update_user_meta($row->user_id, $row->meta_key, wp_slash($encoded));
@@ -122,7 +124,7 @@ class SWML_Crib_Plan_Restructure_Migration {
             }
 
             $doc['html'] = $new_html;
-            $doc['template_version'] = 3;
+            $doc['_plan_restructured_v3'] = true;
             $doc['savedAt'] = current_time('c');
             $doc['_migrated_v3'] = '2026-05-13';
 
