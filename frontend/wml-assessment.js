@@ -19287,6 +19287,13 @@
     function migrateInputFields() {
         if (!canvasEditor) return;
         let html = canvasEditor.getHTML();
+        // v7.19.155: exam_crib runs a separate consolidation pass even if input-fields exist
+        // (handles legacy user_meta migrated by SWML_Crib_Plan_Restructure_Migration as
+        // N input-fields per plan section — collapse to one). For fresh crib mounts the
+        // standard path below kicks in and crib branch in the per-section loop consolidates.
+        if (state.task === 'exam_crib') {
+            consolidateCribPlanInputFields();
+        }
         // Already has InputFields — skip
         if (html.includes('data-input-field')) return;
         // Only structured essay documents
@@ -19306,6 +19313,24 @@
 
             const sectionType = section.getAttribute('data-section-type');
             const label = section.getAttribute('data-section-label') || '';
+
+            // v7.19.155: exam_crib plan sections — multi-bullet pre-prepared content
+            // (Hook / Building / Thesis / Topic / Tech+Ev / ...) all collapse into ONE
+            // input field per paragraph plan section. Matches diagnostic plan-section
+            // visual (single free-form box per paragraph). Preserves inline <em> from
+            // the <p> innerHTML (italicized quotes in crib content).
+            if (state.task === 'exam_crib' && sectionType === 'plan') {
+                const idBaseC = _inputFieldIdBase(sectionType, label);
+                const allInner = Array.from(section.querySelectorAll('p'))
+                    .map(p => (p.innerHTML || '').trim())
+                    .filter(s => s)
+                    .join('<br><br>');
+                section.innerHTML = '<div data-input-field="true" data-field-id="' + idBaseC
+                    + '" class="swml-input-field">' + allInner + '</div>';
+                changed = true;
+                return;
+            }
+
             const children = Array.from(section.children);
             const pairs = [];
             let i = 0;
@@ -19375,6 +19400,40 @@
         if (changed) {
             canvasEditor.commands.setContent(tmp.innerHTML, false);
             console.log('WML Migration: Plan/outline sections upgraded to InputField format');
+        }
+    }
+
+    /**
+     * v7.19.155: Collapse multi-input-field crib plan sections into ONE input field
+     * per paragraph (Plan: Introduction / BP1 / BP2 / BP3 / Conclusion).
+     * Handles legacy user_meta where SWML_Crib_Plan_Restructure_Migration left N
+     * input-fields per plan section, and any case where migrateInputFields previously
+     * ran in pre-v7.19.155 logic. Idempotent — exits if every plan section already
+     * has exactly 1 input field. Preserves inner HTML (italics, line breaks).
+     */
+    function consolidateCribPlanInputFields() {
+        if (!canvasEditor) return;
+        if (state.task !== 'exam_crib') return;
+        const editorEl = canvasEditor.options && canvasEditor.options.element;
+        if (!editorEl) return;
+        const planSections = editorEl.querySelectorAll('[data-section-type="plan"]');
+        let changed = false;
+        planSections.forEach(section => {
+            const fields = section.querySelectorAll('[data-input-field]');
+            if (fields.length <= 1) return;
+            const label = section.getAttribute('data-section-label') || '';
+            const idBaseC = _inputFieldIdBase('plan', label);
+            const allInner = Array.from(fields)
+                .map(f => (f.innerHTML || '').trim())
+                .filter(s => s)
+                .join('<br><br>');
+            section.innerHTML = '<div data-input-field="true" data-field-id="' + idBaseC
+                + '" class="swml-input-field">' + allInner + '</div>';
+            changed = true;
+        });
+        if (changed) {
+            canvasEditor.commands.setContent(editorEl.innerHTML, false);
+            console.log('WML v7.19.155: consolidated exam_crib plan sections to single input field each');
         }
     }
 

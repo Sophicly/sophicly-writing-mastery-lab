@@ -9337,21 +9337,5 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 }
 /* (Action chip styling consolidated above with .swml-coach-send / .swml-coach-mic — toolbar parity) */
 
-/* v7.19.154: Neutralise the card-per-<p> visual treatment inside exam_crib plan
-   sections. Crib plan bullets (Hook / Topic / Tech+Ev / etc.) were rendering as
-   individual rounded panels, making each bullet look like its own sub-section —
-   visually conflicts with Neil's preference for "5 paragraph plan sections with
-   plain bullets inside". Whatever rule was adding the card effect (couldn't
-   localise via grep — possibly a cascaded interaction between ProseMirror block
-   styling + .swml-section-plan tint), force flat <p>: no background, no border,
-   no border-radius, no padding. Keep <em> emphasis intact (legitimate italic). */
-.swml-canvas-inline-coaching .swml-section-plan > p,
-.swml-canvas-inline-coaching .swml-section-plan .ProseMirror > p {
-    background: transparent !important;
-    background-color: transparent !important;
-    border: none !important;
-    border-radius: 0 !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-    margin: 6px 0 !important;
-}
+/* v7.19.154 CSS override removed (wrong selector — cards were swml-input-field
+   divs, not <p>). v7.19.155 fixes via migrateInputFields consolidation. */
