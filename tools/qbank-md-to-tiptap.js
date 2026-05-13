@@ -65,6 +65,33 @@ function questionHTML(label, innerHTML) {
     return sectionHTML('question', label, false, innerHTML);
 }
 
+// v7.19.153: split plan lines into 5 chunks at each `### ` heading (INTRODUCTION /
+// BODY PARAGRAPH 1/2/3 / CONCLUSION). Returns array of { label, lines } where
+// label is normalised for display (parenthetical word-counts stripped).
+function splitPlanByH3(planLines) {
+    const chunks = [];
+    let current = null;
+    for (const ln of planLines) {
+        const m = ln.match(/^###\s+(.+?)\s*$/);
+        if (m) {
+            if (current) chunks.push(current);
+            current = { rawLabel: m[1].trim(), lines: [] };
+        } else if (current) {
+            current.lines.push(ln);
+        }
+    }
+    if (current) chunks.push(current);
+    for (const c of chunks) {
+        c.label = c.rawLabel
+            .replace(/\s*\(.*?\)\s*$/, '')
+            .replace(/^INTRODUCTION$/i, 'Introduction')
+            .replace(/^BODY PARAGRAPH (\d)$/i, 'Body Paragraph $1')
+            .replace(/^BODY PARAGRAPH (\d)\s+—.*$/i, 'Body Paragraph $1')
+            .replace(/^CONCLUSION$/i, 'Conclusion');
+    }
+    return chunks;
+}
+
 function planHTML(label, innerHTML) {
     return sectionHTML('plan', label, true, innerHTML);
 }
@@ -196,6 +223,14 @@ function parseQuestionBlock(block, qNum, title) {
         const frMatch = line.match(/^\*\*Frame\.\*\*\s*(.*)$/);
         if (frMatch) { switchSection('frame', frMatch[1]); continue; }
         if (/^### Skeleton plan/.test(line)) { inSection = 'plan'; continue; }
+        // v7.19.153: P&P + Much Ado don't have `### Skeleton plan` parent — they jump
+        // straight to `### INTRODUCTION` after the technique gloss. Treat that (and the
+        // BP / CONCLUSION sub-headings) as an implicit plan-section start so the lines
+        // bucket correctly.
+        if (inSection !== 'plan' && /^###\s+(INTRODUCTION|BODY\s+PARAGRAPH|CONCLUSION)\b/i.test(line)) {
+            inSection = 'plan';
+            // fall through — `buckets[inSection].push(line)` below catches the header line
+        }
         if (/^---\s*$/.test(line)) continue; // section break, ignore
         // v7.19.101: For banks without explicit `**Question.**` markers
         // (IC/Much Ado/P&P), detect the AQA-style question blockquote by content
@@ -272,10 +307,26 @@ function buildQuestionHTML(parsed) {
         html += questionHTML(`Q${parsed.qNum} — Preamble + Extract + Question + Frame`, bundle);
     }
 
-    // 3. Skeleton plan (editable)
+    // 3. Plan — v7.19.153: split into 5 plan sections (Plan: Introduction / BP1 / BP2 / BP3 / Conclusion).
+    // Each section is its own data-section-type="plan" block. <h3> sub-headings dropped (redundant
+    // with section label). <strong> stripped from bullet element labels (Hook / Topic / etc. → plain
+    // inline text). Aligns with universal plan-section shape across diagnostic / planning / exam_plan
+    // / exam_crib. Saved canvases convert via SWML_Crib_Plan_Restructure_Migration.
     if (parsed.planLines.length > 0) {
-        const planInner = mdLinesToHTML(parsed.planLines);
-        html += planHTML(`Q${parsed.qNum} — Skeleton Plan`, planInner);
+        const planChunks = splitPlanByH3(parsed.planLines);
+        if (planChunks.length === 0) {
+            // Fallback: emit a single plan section if no <h3> sub-headings found.
+            let inner = mdLinesToHTML(parsed.planLines);
+            inner = inner.replace(/<strong>(.*?)<\/strong>/gs, '$1');
+            html += planHTML(`Q${parsed.qNum} — Plan`, inner);
+        } else {
+            for (const chunk of planChunks) {
+                const label = `Q${parsed.qNum} — Plan: ${chunk.label}`;
+                let inner = mdLinesToHTML(chunk.lines);
+                inner = inner.replace(/<strong>(.*?)<\/strong>/gs, '$1');
+                html += planHTML(label, inner);
+            }
+        }
     }
 
     // 4. Response area (editable, empty)
@@ -316,6 +367,13 @@ function main() {
     const out = {
         source_file: filename + '.md',
         text_slug: textSlug,
+        // v7.19.153: bump to 8 — plan section now splits into 5 sub-sections
+        // (Plan: Introduction / BP1 / BP2 / BP3 / Conclusion) with stripped
+        // <strong> labels. Aligns with Modern crib generator (tv 6 there is the
+        // Modern-specific counter; this 19C/Shakespeare counter advances independently).
+        // Previous tv values: 2/3/7 used for unrelated shape changes; 8 marks the
+        // plan-section restructure.
+        template_version: 8,
         question_count: questions.length,
         generated_at: new Date().toISOString(),
         html: html,
