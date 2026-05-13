@@ -46,10 +46,10 @@ class SWML_Crib_Plan_Restructure_Migration {
         'macbeth',
         'romeo_and_juliet',
         'much_ado',
-        // Poetry anthologies (v7.19.157)
-        'power_and_conflict',
-        'love_and_relationships',
-        'worlds_and_lives',
+        // Poetry anthologies (v7.19.157 → renamed v7.19.160 to bridge slugs)
+        'power_conflict_poetry',
+        'love_relationships_poetry',
+        'worlds_lives_poetry',
         // Unseen Poetry (v7.19.158 — separate generator shape)
         'unseen_poetry',
     ];
