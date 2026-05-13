@@ -14538,7 +14538,9 @@
                 // but its content is AI-generated 8 statements + a hint line —
                 // not student writing. Counting them inflated the wc by ~110.
                 clone.querySelectorAll('[data-checklist-item]').forEach(el => el.remove());
-                clone.querySelectorAll('em').forEach(el => el.remove());
+                // v7.19.147: stop stripping <em>. Counter was eating student italics
+                // (quoted passages, emphasis) — 817-word essay reported as 501.
+                // Template em ("Write your essay here.") is handled by baseline subtraction.
                 const text = clone.textContent || '';
                 const words = text.trim().split(/\s+/).filter(w => w.length > 0);
                 total += words.length;
@@ -14552,7 +14554,7 @@
             clone.querySelectorAll('h3').forEach(el => el.remove());
             // v7.18.41: exclude checklistItem statements + instruction line — see comment above.
             clone.querySelectorAll('[data-checklist-item]').forEach(el => el.remove());
-            clone.querySelectorAll('em').forEach(el => el.remove());
+            // v7.19.147: em strip removed — see note in editableSections branch above.
             const text = clone.textContent || '';
             const words = text.trim().split(/\s+/).filter(w => w.length > 0);
             total += words.length;
