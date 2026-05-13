@@ -16878,27 +16878,24 @@
      * Student fills in plan sections with AI guidance.
      */
     function getEssayPlanTemplate() {
+        // v7.19.156: flattened to single free-form box per paragraph plan section.
+        // Matches universal plan-section shape (diagnostic / redraft / exam_crib).
+        // Element scaffolding (Hook / Building / Topic / Tech+Ev / etc) is the student's
+        // job to add inline — not pre-baked. Enables straightforward pull-plan import
+        // between exam_plan ↔ diagnostic ↔ exam_crib (label-matched).
         let html = '';
         html += dividerHTML('Essay Plan');
         html += sectionHTML('question', 'Question', false, null,
             `<p><em>The essay question will appear here.</em></p>`);
         html += dividerHTML('Your Plan');
         html += sectionHTML('plan', 'Plan: Introduction', true, null,
-            `<p><em>Hook:</em></p><p></p>` +
-            `<p><em>Building sentences (context):</em></p><p></p>` +
-            `<p><em>Thesis (3 key ideas):</em></p><p></p>`);
+            inputHTML('Hook + Building sentences (context) + Thesis (3 key ideas).', 'plan-intro'));
         for (let i = 1; i <= 3; i++) {
             html += sectionHTML('plan', `Plan: Body Paragraph ${i}`, true, null,
-                `<p><em>Topic sentence (key idea):</em></p><p></p>` +
-                `<p><em>Technical term + Evidence (quote):</em></p><p></p>` +
-                `<p><em>Close analysis + Effects:</em></p><p></p>` +
-                `<p><em>Author's purpose + Context:</em></p><p></p>`);
+                inputHTML(`Focus only on KEY IDEA #${i}. Topic + Technique + Evidence + Close analysis + Effects + Author's purpose + Context.`, `plan-body-${i}`));
         }
         html += sectionHTML('plan', 'Plan: Conclusion', true, null,
-            `<p><em>Restated thesis:</em></p><p></p>` +
-            `<p><em>Controlling concept:</em></p><p></p>` +
-            `<p><em>Central purpose:</em></p><p></p>` +
-            `<p><em>Universal message:</em></p><p></p>`);
+            inputHTML('Restated thesis + Controlling concept + Central purpose + Universal message.', 'plan-conclusion'));
         html += buildSignoffSection();
         return html;
     }

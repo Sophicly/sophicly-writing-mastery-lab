@@ -60,7 +60,7 @@
      * Per Neil: pulled content should be just the text, not the source doc's
      * structural sections (general-notes, protagonist, feedback, etc.).
      */
-    function extractPlanFromSource(sourceHtml, task) {
+    function extractPlanFromSource(sourceHtml, task, targetLabel) {
         try {
             const wrap = document.createElement('div');
             wrap.innerHTML = sourceHtml;
@@ -82,14 +82,34 @@
                 '.swml-input-field-placeholder',
             ].join(',')).forEach(n => n.remove());
 
-            // Pick scope: prefer plan section's inner content if present, else
-            // whole doc minus the strip-list above.
-            let scope = wrap.querySelector('[data-section-type="plan"]');
-            if (scope) {
-                const inner = scope.querySelector('.swml-section-content');
-                if (inner) scope = inner;
-            } else {
-                scope = wrap;
+            // v7.19.156: if target slot is a per-paragraph plan section (Plan: Introduction
+            // / Body Paragraph N / Conclusion), match source by paragraph suffix. Enables
+            // pull import across exam_crib / diagnostic / redraft / essay_plan which all
+            // ship the universal 5-paragraph plan shape.
+            let scope = null;
+            const paraMatch = (targetLabel || '').match(/Plan:\s*(Introduction|Body Paragraph\s*\d+|Conclusion)\b/i);
+            if (paraMatch) {
+                const wanted = paraMatch[1].toLowerCase().replace(/\s+/g, ' ').trim();
+                const allPlanSecs = Array.from(wrap.querySelectorAll('[data-section-type="plan"]'));
+                const match = allPlanSecs.find(s => {
+                    const lbl = (s.getAttribute('data-section-label') || '').toLowerCase().replace(/\s+/g, ' ').trim();
+                    return lbl.includes(wanted);
+                });
+                if (match) {
+                    const inner = match.querySelector('.swml-section-content');
+                    scope = inner || match;
+                }
+            }
+
+            // Fallback: first plan section's inner content (legacy single-plan docs).
+            if (!scope) {
+                scope = wrap.querySelector('[data-section-type="plan"]');
+                if (scope) {
+                    const inner = scope.querySelector('.swml-section-content');
+                    if (inner) scope = inner;
+                } else {
+                    scope = wrap;
+                }
             }
 
             // Collect text-bearing nodes only. TipTap schema knows: p, ul, ol,
@@ -344,7 +364,7 @@
             if (!selectedSource || !selectedHtml) return;
             // v7.19.97 — use brand-styled confirm modal (was native window.confirm).
             const doReplace = () => {
-                const planHtml = extractPlanFromSource(selectedHtml, selectedSource.task);
+                const planHtml = extractPlanFromSource(selectedHtml, selectedSource.task, detail.sectionLabel);
                 const ok = replaceSectionContent(detail.contentDOM, planHtml);
                 closeOverlay();
                 if (ok && window.WML && typeof window.WML.showToast === 'function') {
