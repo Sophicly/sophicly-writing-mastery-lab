@@ -14492,6 +14492,14 @@
         return qRaw.length > 10 ? qRaw : '';
     }
 
+    // ⚠️ DO NOT add element-tag strips (`h3`, `em`, `p`, etc.) to this function
+    // without verifying the tag isn't used by students inside the response section.
+    // v7.19.146 had `<em>` and `<h3>` strips that silently ate ~316 words of a
+    // student's essay (intro paragraphs accidentally formatted as <h3><strong>...).
+    // The current strip list is intentionally minimal: ONLY `[data-checklist-item]`,
+    // which is reserved for AQA Lang P2 Q1's AI-generated multi-select statements.
+    // If you need to exclude template scaffolding, prefer `snapshotTemplateBaseline`
+    // (baseline subtraction) or a `data-*` attribute on the specific template node.
     function getResponseWordCount(editor) {
         // v7.17.60: null-editor survival pattern (mirror v7.17.53 getResponseText).
         // RunCloudRescue 2026-04-25: clear-chat handler computed wc immediately
