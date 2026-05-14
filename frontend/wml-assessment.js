@@ -13272,6 +13272,15 @@
                     } else {
                         p.innerHTML = `<em>Grade:</em> ${allSet ? grade : grade + ' (in progress)'}`;
                     }
+                    // v7.19.170: color the "Grade: N" text by tier so the score
+                    // summary visually echoes the active grade tier.
+                    const effectiveGrade = gradeOverride ? String(gradeOverride) : (grade === 'U' ? '1' : String(grade));
+                    p.classList.remove(
+                        'swml-grade-text-1', 'swml-grade-text-2', 'swml-grade-text-3',
+                        'swml-grade-text-4', 'swml-grade-text-5', 'swml-grade-text-6',
+                        'swml-grade-text-7', 'swml-grade-text-8', 'swml-grade-text-9'
+                    );
+                    if (effectiveGrade) p.classList.add('swml-grade-text-' + effectiveGrade);
                 } else if (text.includes('Date Completed:') && allSet && totalMarks > 0) {
                     const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
                     p.innerHTML = `<em>Date Completed:</em> ${today}`;
@@ -13280,6 +13289,22 @@
                     p.innerHTML = `<em>Word Count:</em> ${wc} / ${canvasWordTarget}`;
                 }
             });
+
+            // v7.19.170: when in Auto mode, tint the Auto pill with the
+            // currently-computed grade tier so Neil can see the live grade
+            // reflected on the pill itself.
+            const autoPill = dropdownLayer && dropdownLayer.querySelector('.swml-pill-auto');
+            if (autoPill) {
+                autoPill.classList.remove(
+                    'swml-tier-1', 'swml-tier-2', 'swml-tier-3',
+                    'swml-tier-4', 'swml-tier-5', 'swml-tier-6',
+                    'swml-tier-7', 'swml-tier-8', 'swml-tier-9'
+                );
+                if (!gradeOverride) {
+                    const effective = grade === 'U' ? '1' : String(grade);
+                    autoPill.classList.add('swml-tier-' + effective);
+                }
+            }
         }
 
         // ── Document Data Extraction (v7.11.9) ──
