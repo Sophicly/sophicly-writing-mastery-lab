@@ -6453,6 +6453,108 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     color: #2d7a78;
 }
 
+/* ────────────────────────────────────────────────────────────────────
+   v7.19.169: Grade-tier color heatmap (pills + popover options)
+   Pills carry their tier color as a tinted background (unselected) and
+   fill saturated with white text when .is-active. Same scale applies
+   inside .swml-popover-option for ≥12 marks dropdowns.
+   ──────────────────────────────────────────────────────────────────── */
+
+/* Tier base — unselected pills carry tier tint at ~25-30% opacity */
+.swml-pill.swml-tier-9 { background-color: rgba(44, 0, 62, 0.28); color: rgba(255,255,255,0.92); }
+.swml-pill.swml-tier-8 { background-color: rgba(83, 51, 237, 0.28); color: rgba(255,255,255,0.92); }
+.swml-pill.swml-tier-7 { background-color: rgba(77, 118, 253, 0.28); color: rgba(255,255,255,0.92); }
+.swml-pill.swml-tier-6 { background-color: rgba(28, 217, 145, 0.28); color: rgba(255,255,255,0.92); }
+.swml-pill.swml-tier-5 { background-color: rgba(255, 193, 7, 0.30); color: rgba(255,255,255,0.92); }
+.swml-pill.swml-tier-4 { background-color: rgba(255, 152, 0, 0.30); color: rgba(255,255,255,0.92); }
+.swml-pill.swml-tier-3 { background-color: rgba(229, 57, 53, 0.28); color: rgba(255,255,255,0.92); }
+.swml-pill.swml-tier-2 { background-color: rgba(229, 57, 53, 0.28); color: rgba(255,255,255,0.92); }
+.swml-pill.swml-tier-1 { background-color: rgba(229, 57, 53, 0.28); color: rgba(255,255,255,0.92); }
+
+.swml-pill.swml-tier-9:hover { background-color: rgba(44, 0, 62, 0.55); }
+.swml-pill.swml-tier-8:hover { background-color: rgba(83, 51, 237, 0.55); }
+.swml-pill.swml-tier-7:hover { background-color: rgba(77, 118, 253, 0.55); }
+.swml-pill.swml-tier-6:hover { background-color: rgba(28, 217, 145, 0.55); }
+.swml-pill.swml-tier-5:hover { background-color: rgba(255, 193, 7, 0.55); }
+.swml-pill.swml-tier-4:hover { background-color: rgba(255, 152, 0, 0.55); }
+.swml-pill.swml-tier-3:hover { background-color: rgba(229, 57, 53, 0.55); }
+.swml-pill.swml-tier-2:hover { background-color: rgba(229, 57, 53, 0.55); }
+.swml-pill.swml-tier-1:hover { background-color: rgba(229, 57, 53, 0.55); }
+
+/* Active state — saturated brand color + white text + shadow */
+.swml-pill.is-active.swml-tier-9 { background: #2c003e; color: #fff; box-shadow: 0 1px 4px rgba(44, 0, 62, 0.55); }
+.swml-pill.is-active.swml-tier-8 { background: #5333ED; color: #fff; box-shadow: 0 1px 4px rgba(83, 51, 237, 0.45); }
+.swml-pill.is-active.swml-tier-7 { background: #4D76FD; color: #fff; box-shadow: 0 1px 4px rgba(77, 118, 253, 0.45); }
+.swml-pill.is-active.swml-tier-6 { background: #1CD991; color: #fff; box-shadow: 0 1px 4px rgba(28, 217, 145, 0.45); }
+.swml-pill.is-active.swml-tier-5 { background: #FFC107; color: #1a1a2e; box-shadow: 0 1px 4px rgba(255, 193, 7, 0.45); }
+.swml-pill.is-active.swml-tier-4 { background: #FF9800; color: #fff; box-shadow: 0 1px 4px rgba(255, 152, 0, 0.45); }
+.swml-pill.is-active.swml-tier-3 { background: #E53935; color: #fff; box-shadow: 0 1px 4px rgba(229, 57, 53, 0.45); }
+.swml-pill.is-active.swml-tier-2 { background: #E53935; color: #fff; box-shadow: 0 1px 4px rgba(229, 57, 53, 0.45); }
+.swml-pill.is-active.swml-tier-1 { background: #E53935; color: #fff; box-shadow: 0 1px 4px rgba(229, 57, 53, 0.45); }
+
+/* Popover options — same tier scale, smaller tint when not active */
+.swml-popover-option.swml-tier-9 { color: rgba(232, 210, 245, 0.95); }
+.swml-popover-option.swml-tier-8 { color: rgba(196, 184, 250, 0.95); }
+.swml-popover-option.swml-tier-7 { color: rgba(184, 200, 255, 0.95); }
+.swml-popover-option.swml-tier-6 { color: rgba(170, 240, 210, 0.95); }
+.swml-popover-option.swml-tier-5 { color: rgba(255, 225, 130, 0.95); }
+.swml-popover-option.swml-tier-4 { color: rgba(255, 200, 130, 0.95); }
+.swml-popover-option.swml-tier-3,
+.swml-popover-option.swml-tier-2,
+.swml-popover-option.swml-tier-1 { color: rgba(255, 170, 170, 0.95); }
+
+.swml-popover-option.is-active.swml-tier-9 { background: #2c003e; color: #fff; }
+.swml-popover-option.is-active.swml-tier-8 { background: #5333ED; color: #fff; }
+.swml-popover-option.is-active.swml-tier-7 { background: #4D76FD; color: #fff; }
+.swml-popover-option.is-active.swml-tier-6 { background: #1CD991; color: #fff; }
+.swml-popover-option.is-active.swml-tier-5 { background: #FFC107; color: #1a1a2e; }
+.swml-popover-option.is-active.swml-tier-4 { background: #FF9800; color: #fff; }
+.swml-popover-option.is-active.swml-tier-3,
+.swml-popover-option.is-active.swml-tier-2,
+.swml-popover-option.is-active.swml-tier-1 { background: #E53935; color: #fff; }
+
+.swml-popover-option.swml-tier-9:hover { background: rgba(44, 0, 62, 0.45); }
+.swml-popover-option.swml-tier-8:hover { background: rgba(83, 51, 237, 0.35); }
+.swml-popover-option.swml-tier-7:hover { background: rgba(77, 118, 253, 0.35); }
+.swml-popover-option.swml-tier-6:hover { background: rgba(28, 217, 145, 0.30); }
+.swml-popover-option.swml-tier-5:hover { background: rgba(255, 193, 7, 0.30); }
+.swml-popover-option.swml-tier-4:hover { background: rgba(255, 152, 0, 0.30); }
+.swml-popover-option.swml-tier-3:hover,
+.swml-popover-option.swml-tier-2:hover,
+.swml-popover-option.swml-tier-1:hover { background: rgba(229, 57, 53, 0.30); }
+
+/* Light theme tier — pills */
+[data-swml-theme="light"] .swml-pill.swml-tier-9 { background-color: rgba(44, 0, 62, 0.16); color: #2c003e; }
+[data-swml-theme="light"] .swml-pill.swml-tier-8 { background-color: rgba(83, 51, 237, 0.18); color: #4024b5; }
+[data-swml-theme="light"] .swml-pill.swml-tier-7 { background-color: rgba(77, 118, 253, 0.18); color: #2952d8; }
+[data-swml-theme="light"] .swml-pill.swml-tier-6 { background-color: rgba(28, 217, 145, 0.22); color: #0d8055; }
+[data-swml-theme="light"] .swml-pill.swml-tier-5 { background-color: rgba(255, 193, 7, 0.30); color: #7a5800; }
+[data-swml-theme="light"] .swml-pill.swml-tier-4 { background-color: rgba(255, 152, 0, 0.28); color: #8a4a00; }
+[data-swml-theme="light"] .swml-pill.swml-tier-3,
+[data-swml-theme="light"] .swml-pill.swml-tier-2,
+[data-swml-theme="light"] .swml-pill.swml-tier-1 { background-color: rgba(229, 57, 53, 0.20); color: #a02824; }
+
+[data-swml-theme="light"] .swml-pill.is-active.swml-tier-9 { background: #2c003e; color: #fff; }
+[data-swml-theme="light"] .swml-pill.is-active.swml-tier-8 { background: #5333ED; color: #fff; }
+[data-swml-theme="light"] .swml-pill.is-active.swml-tier-7 { background: #4D76FD; color: #fff; }
+[data-swml-theme="light"] .swml-pill.is-active.swml-tier-6 { background: #1CD991; color: #fff; }
+[data-swml-theme="light"] .swml-pill.is-active.swml-tier-5 { background: #FFC107; color: #1a1a2e; }
+[data-swml-theme="light"] .swml-pill.is-active.swml-tier-4 { background: #FF9800; color: #fff; }
+[data-swml-theme="light"] .swml-pill.is-active.swml-tier-3,
+[data-swml-theme="light"] .swml-pill.is-active.swml-tier-2,
+[data-swml-theme="light"] .swml-pill.is-active.swml-tier-1 { background: #E53935; color: #fff; }
+
+/* Light theme popover options */
+[data-swml-theme="light"] .swml-popover-option.swml-tier-9 { color: #2c003e; }
+[data-swml-theme="light"] .swml-popover-option.swml-tier-8 { color: #4024b5; }
+[data-swml-theme="light"] .swml-popover-option.swml-tier-7 { color: #2952d8; }
+[data-swml-theme="light"] .swml-popover-option.swml-tier-6 { color: #0d8055; }
+[data-swml-theme="light"] .swml-popover-option.swml-tier-5 { color: #7a5800; }
+[data-swml-theme="light"] .swml-popover-option.swml-tier-4 { color: #8a4a00; }
+[data-swml-theme="light"] .swml-popover-option.swml-tier-3,
+[data-swml-theme="light"] .swml-popover-option.swml-tier-2,
+[data-swml-theme="light"] .swml-popover-option.swml-tier-1 { color: #a02824; }
+
 /* ── Tutor Sign-off ── */
 .swml-signoff-disclaimer {
     display: flex; align-items: flex-start; gap: 8px;

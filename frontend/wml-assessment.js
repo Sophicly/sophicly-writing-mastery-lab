@@ -12190,6 +12190,22 @@
             return 'U';
         }
 
+        // v7.19.169: grade-tier color mapping for pill + popover-option visual heatmap.
+        // Maps a raw mark / max → grade tier class for CSS color lookup.
+        // U (< G1) treated as G1-tier color (red) for visual consistency.
+        function getGradeFromMarks(marks, max) {
+            if (max <= 0) return null;
+            const m = parseInt(marks);
+            if (isNaN(m) || m < 0) return null;
+            const pct = (m / max) * 100;
+            const g = getGradeFromPercentage(pct);
+            return g === 'U' ? '1' : g;
+        }
+        function _swmlTierClass(grade) {
+            if (!grade) return null;
+            return 'swml-tier-' + grade;
+        }
+
         let dropdownLayer = null;
         let gradeOverride = null; // When set (1-9), overrides auto-calculated grade
 
@@ -12482,18 +12498,28 @@
                 popover.style.visibility = 'visible';
             });
         }
-        function createSwmlPillRow({ options, currentValue, onChange, extraClass }) {
-            // options: [{value, label, isDash, isAuto}]
+        function createSwmlPillRow({ options, currentValue, onChange, extraClass, tierFn }) {
+            // options: [{value, label, isDash, isAuto, tier}]
+            // tierFn(option) → grade-tier string ('1'..'9') for color class, or null
             const row = document.createElement('div');
             row.className = 'swml-pill-row' + (extraClass ? ' ' + extraClass : '');
             row.addEventListener('mousedown', (e) => e.stopPropagation());
             options.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
-                btn.className = 'swml-pill' + (opt.isDash ? ' swml-pill-dash' : '') + (opt.isAuto ? ' swml-pill-auto' : '');
+                btn.tabIndex = -1;
+                const tier = opt.tier || (tierFn ? tierFn(opt) : null);
+                const tierCls = _swmlTierClass(tier);
+                btn.className = 'swml-pill' +
+                    (opt.isDash ? ' swml-pill-dash' : '') +
+                    (opt.isAuto ? ' swml-pill-auto' : '') +
+                    (tierCls ? ' ' + tierCls : '');
                 btn.textContent = opt.label;
                 btn.dataset.value = String(opt.value);
                 if (String(opt.value) === String(currentValue)) btn.classList.add('is-active');
+                // v7.19.169: preventDefault on mousedown prevents browser focus-shift
+                // and the auto-scroll-into-view of focused element that caused jumps.
+                btn.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -12505,20 +12531,22 @@
             });
             return row;
         }
-        function createSwmlPopoverDropdown({ options, currentValue, onChange, extraClass, triggerClass, valueLabelFn }) {
-            // options: [{value, label}]
+        function createSwmlPopoverDropdown({ options, currentValue, onChange, extraClass, triggerClass, valueLabelFn, tierFn }) {
+            // options: [{value, label, tier}] — tierFn(option) → '1'..'9' for color class
             const wrap = document.createElement('div');
             wrap.className = 'swml-popover-wrap' + (extraClass ? ' ' + extraClass : '');
             wrap.addEventListener('mousedown', (e) => e.stopPropagation());
 
             const trigger = document.createElement('button');
             trigger.type = 'button';
+            trigger.tabIndex = -1;
             trigger.className = 'swml-popover-trigger' + (triggerClass ? ' ' + triggerClass : '');
             const currentOpt = options.find(o => String(o.value) === String(currentValue));
             trigger.textContent = valueLabelFn
                 ? valueLabelFn(currentValue, currentOpt)
                 : (currentOpt ? currentOpt.label : '—');
-
+            // v7.19.169: preventDefault on mousedown — same anti-focus-jump as pills.
+            trigger.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
             trigger.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -12533,9 +12561,13 @@
                 options.forEach(opt => {
                     const optBtn = document.createElement('button');
                     optBtn.type = 'button';
-                    optBtn.className = 'swml-popover-option';
+                    optBtn.tabIndex = -1;
+                    const optTier = opt.tier || (tierFn ? tierFn(opt) : null);
+                    const optTierCls = _swmlTierClass(optTier);
+                    optBtn.className = 'swml-popover-option' + (optTierCls ? ' ' + optTierCls : '');
                     if (String(opt.value) === String(currentValue)) optBtn.classList.add('is-active');
                     optBtn.textContent = opt.label;
+                    optBtn.addEventListener('mousedown', (ev) => { ev.preventDefault(); ev.stopPropagation(); });
                     optBtn.addEventListener('click', (ev) => {
                         ev.preventDefault();
                         ev.stopPropagation();
@@ -12616,6 +12648,10 @@
                 const opts = [{ value: -1, label: '—', isDash: true }];
                 for (let i = 0; i <= maxMarks; i++) opts.push({ value: i, label: String(i) });
 
+                // v7.19.169: grade-tier color heatmap per mark (each pill/option colored by
+                // grade-equivalent of mark / maxMarks). Dash stays neutral.
+                const feedbackTierFn = (opt) => opt.value === -1 ? null : getGradeFromMarks(opt.value, maxMarks);
+
                 let widget;
                 if (maxMarks <= 8) {
                     widget = createSwmlPillRow({
@@ -12623,10 +12659,15 @@
                         currentValue: currentMarks,
                         onChange: onMarkChange,
                         extraClass: 'swml-pill-row-feedback',
+                        tierFn: feedbackTierFn,
                     });
                 } else {
                     widget = createSwmlPopoverDropdown({
-                        options: opts.map(o => ({ value: o.value, label: o.value === -1 ? '—' : `${o.value} / ${maxMarks}` })),
+                        options: opts.map(o => ({
+                            value: o.value,
+                            label: o.value === -1 ? '—' : `${o.value} / ${maxMarks}`,
+                            tier: o.value === -1 ? null : getGradeFromMarks(o.value, maxMarks),
+                        })),
                         currentValue: currentMarks,
                         onChange: onMarkChange,
                         extraClass: 'swml-popover-feedback',
@@ -12729,6 +12770,8 @@
                         currentValue: currentGrade,
                         onChange: handleGradeChange,
                         extraClass: 'swml-pill-row-grade',
+                        // v7.19.169: each grade pill colored as its own tier (G9 dark purple, etc).
+                        tierFn: (opt) => opt.isAuto ? null : String(opt.value),
                     });
                     wrapper.appendChild(gradeWidget);
                     dropdownLayer.appendChild(wrapper);
@@ -12736,18 +12779,33 @@
             }
 
             // ── Action Plan Grade Goal Dropdown ──
+            // v7.19.169: detect BOTH old paragraph shape ("target grade: N") AND
+            // new input-field shape (data-field-id="action-grade-goal"). The
+            // 4 modern-text JSONs (AIC/AF/LotF/Anita) ship with the input-field
+            // shape per buildActionPlanSection L16969+ — paragraph search returned
+            // null and the pill row never rendered (Neil flag, screenshot 2026-05-14).
             const actionPlanSection = editor.querySelector('[data-section-label="Action Plan"]');
             if (actionPlanSection) {
                 const gradeGoalPara = Array.from(actionPlanSection.querySelectorAll('p')).find(p =>
                     p.querySelector('em')?.textContent?.includes('target grade') || p.textContent?.includes('target grade')
                 );
-                if (gradeGoalPara) {
+                const gradeGoalField = actionPlanSection.querySelector('[data-field-id="action-grade-goal"]');
+                const goalAnchor = gradeGoalPara || gradeGoalField;
+                if (goalAnchor) {
                     const wrapper = document.createElement('div');
                     wrapper.className = 'swml-dropdown-overlay swml-dropdown-overlay-gradegoal';
                     wrapper.style.pointerEvents = 'auto';
 
-                    const currentMatch = gradeGoalPara.textContent.match(/target grade:\s*(\d)/);
-                    const currentVal = currentMatch ? parseInt(currentMatch[1]) : 0;
+                    // Recover current value from either shape
+                    let currentVal = 0;
+                    if (gradeGoalPara) {
+                        const currentMatch = gradeGoalPara.textContent.match(/target grade:\s*(\d)/);
+                        if (currentMatch) currentVal = parseInt(currentMatch[1]);
+                    } else if (gradeGoalField) {
+                        const stored = gradeGoalField.textContent?.trim() || '';
+                        const m = stored.match(/(\d)/);
+                        if (m) currentVal = parseInt(m[1]);
+                    }
                     const goalOpts = [{ value: 0, label: '—', isDash: true }];
                     for (let g = 9; g >= 1; g--) goalOpts.push({ value: g, label: String(g) });
 
@@ -12755,7 +12813,12 @@
                         const v = parseInt(rawVal);
                         const scrollContainer = editor.closest('.swml-canvas-content');
                         const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
-                        gradeGoalPara.innerHTML = `<em>Your target grade:</em> ${v || '—'}`;
+                        if (gradeGoalPara) {
+                            gradeGoalPara.innerHTML = `<em>Your target grade:</em> ${v || '—'}`;
+                        } else if (gradeGoalField) {
+                            // Input-field shape: write value as plain text (preserves field-id wrapper)
+                            gradeGoalField.textContent = v ? `Grade ${v}` : '';
+                        }
                         requestAnimationFrame(() => {
                             if (scrollContainer) scrollContainer.scrollTop = scrollTop;
                         });
@@ -12766,8 +12829,49 @@
                         currentValue: currentVal,
                         onChange: handleGoalChange,
                         extraClass: 'swml-pill-row-grade',
+                        // v7.19.169: target-grade pills colored as their own tier.
+                        tierFn: (opt) => opt.isDash ? null : String(opt.value),
                     });
                     wrapper.appendChild(goalWidget);
+                    dropdownLayer.appendChild(wrapper);
+                }
+            }
+
+            // ── Analytics: Opt-outs This Attempt counter (v7.19.169) ──
+            // New pill row 0-10 wired to <p>Number of opt-outs: —</p> paragraph
+            // inside the Analytics section (buildAnalyticsSection L16953+).
+            const analyticsSection = editor.querySelector('[data-section-label="Analytics"]');
+            if (analyticsSection) {
+                const optOutPara = Array.from(analyticsSection.querySelectorAll('p')).find(p =>
+                    p.querySelector('em')?.textContent?.includes('Number of opt-outs') || p.textContent?.includes('Number of opt-outs')
+                );
+                if (optOutPara) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'swml-dropdown-overlay swml-dropdown-overlay-optouts';
+                    wrapper.style.pointerEvents = 'auto';
+
+                    const currentMatch = optOutPara.textContent.match(/opt-outs:\s*(\d+)/);
+                    const currentOptVal = currentMatch ? parseInt(currentMatch[1]) : -1;
+                    const optOpts = [{ value: -1, label: '—', isDash: true }];
+                    for (let n = 0; n <= 10; n++) optOpts.push({ value: n, label: String(n) });
+
+                    const handleOptChange = (rawVal) => {
+                        const v = parseInt(rawVal);
+                        const scrollContainer = editor.closest('.swml-canvas-content');
+                        const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
+                        optOutPara.innerHTML = `<em>Number of opt-outs:</em> ${v === -1 ? '—' : v}`;
+                        requestAnimationFrame(() => {
+                            if (scrollContainer) scrollContainer.scrollTop = scrollTop;
+                        });
+                    };
+
+                    const optWidget = createSwmlPillRow({
+                        options: optOpts,
+                        currentValue: currentOptVal,
+                        onChange: handleOptChange,
+                        extraClass: 'swml-pill-row-optouts',
+                    });
+                    wrapper.appendChild(optWidget);
                     dropdownLayer.appendChild(wrapper);
                 }
             }
@@ -13003,6 +13107,7 @@
             }
 
             // ── Position grade goal dropdown ──
+            // v7.19.169: also handle new input-field shape (data-field-id="action-grade-goal").
             const gradeGoalOverlay = dropdownLayer.querySelector('.swml-dropdown-overlay-gradegoal');
             if (gradeGoalOverlay) {
                 const actionPlanSection = editor.querySelector('[data-section-label="Action Plan"]');
@@ -13010,10 +13115,16 @@
                     const gradeGoalPara = Array.from(actionPlanSection.querySelectorAll('p')).find(p =>
                         p.querySelector('em')?.textContent?.includes('target grade') || p.textContent?.includes('target grade')
                     );
-                    if (gradeGoalPara) {
-                        const pRect = gradeGoalPara.getBoundingClientRect();
+                    const gradeGoalField = actionPlanSection.querySelector('[data-field-id="action-grade-goal"]');
+                    let anchorEl = gradeGoalPara;
+                    if (!anchorEl && gradeGoalField) {
+                        // New shape: anchor on the H3 heading "Grade Goal" sibling above the input.
+                        const h3 = Array.from(actionPlanSection.querySelectorAll('h3')).find(h => h.textContent.trim() === 'Grade Goal');
+                        anchorEl = h3 || gradeGoalField;
+                    }
+                    if (anchorEl) {
+                        const pRect = anchorEl.getBoundingClientRect();
                         const apRect = actionPlanSection.getBoundingClientRect();
-                        // If paragraph spans a page break, use bottom edge (v7.12.39)
                         let top;
                         if (pRect.height / z > 50) {
                             top = (pRect.bottom - dwRect.top) / z - 18;
@@ -13022,6 +13133,29 @@
                         }
                         const right = (dwRect.right - apRect.right) / z + 24;
                         gradeGoalOverlay.style.cssText = `position:absolute;top:${top}px;right:${right}px;pointer-events:auto;z-index:5;`;
+                    }
+                }
+            }
+
+            // ── Position opt-outs counter (v7.19.169) ──
+            const optOutsOverlay = dropdownLayer.querySelector('.swml-dropdown-overlay-optouts');
+            if (optOutsOverlay) {
+                const analyticsSection = editor.querySelector('[data-section-label="Analytics"]');
+                if (analyticsSection) {
+                    const optOutPara = Array.from(analyticsSection.querySelectorAll('p')).find(p =>
+                        p.querySelector('em')?.textContent?.includes('Number of opt-outs') || p.textContent?.includes('Number of opt-outs')
+                    );
+                    if (optOutPara) {
+                        const pRect = optOutPara.getBoundingClientRect();
+                        const anRect = analyticsSection.getBoundingClientRect();
+                        let top;
+                        if (pRect.height / z > 50) {
+                            top = (pRect.bottom - dwRect.top) / z - 18;
+                        } else {
+                            top = (pRect.top - dwRect.top) / z + (pRect.height / z / 2) - 10;
+                        }
+                        const right = (dwRect.right - anRect.right) / z + 24;
+                        optOutsOverlay.style.cssText = `position:absolute;top:${top}px;right:${right}px;pointer-events:auto;z-index:5;`;
                     }
                 }
             }
