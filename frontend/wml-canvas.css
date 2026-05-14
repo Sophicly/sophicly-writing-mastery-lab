@@ -6285,13 +6285,12 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     padding: 3px 9px;
 }
 
-/* Grade pill variant (purple) */
-.swml-pill-row-grade .swml-pill.is-active {
-    background: rgba(83, 51, 237, 0.5);
-    box-shadow: 0 1px 3px rgba(83, 51, 237, 0.3);
-}
-.swml-pill-row-grade .swml-pill.swml-pill-auto.is-active {
+/* Grade pill variant — Auto pill default purple ONLY when no tier class
+   yet computed (e.g. before any feedback marks are set). Once
+   recalculateScoreSummary() runs it adds swml-tier-N which overrides this. */
+.swml-pill-row-grade .swml-pill.swml-pill-auto.is-active:not([class*="swml-tier-"]) {
     background: rgba(83, 51, 237, 0.55);
+    box-shadow: 0 1px 3px rgba(83, 51, 237, 0.3);
 }
 
 /* Feedback pill variant inherits orange .is-active default (no override) */
@@ -6307,11 +6306,11 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     background: rgba(0, 0, 0, 0.08);
     color: #1a1a2e;
 }
-[data-swml-theme="light"] .swml-pill.is-active {
+[data-swml-theme="light"] .swml-pill.is-active:not([class*="swml-tier-"]) {
     background: rgba(255, 180, 50, 0.55);
     color: #5a3e00;
 }
-[data-swml-theme="light"] .swml-pill-row-grade .swml-pill.is-active {
+[data-swml-theme="light"] .swml-pill-row-grade .swml-pill.swml-pill-auto.is-active:not([class*="swml-tier-"]) {
     background: rgba(83, 51, 237, 0.55);
     color: #fff;
 }
@@ -6526,27 +6525,31 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* Light theme — unselected popover options stay neutral */
 [data-swml-theme="light"] .swml-popover-option[class*="swml-tier-"] { color: rgba(0,0,0,0.75); background: transparent; }
 
-/* v7.19.170 — Score Summary "Grade: N" text colored by tier (Neil ask:
-   visually echo the active grade in the score summary text, not just pills). */
-.swml-grade-text-9 { color: #ad5cd9; font-weight: 700; }
-.swml-grade-text-8 { color: #8d6dff; font-weight: 700; }
-.swml-grade-text-7 { color: #7da0ff; font-weight: 700; }
-.swml-grade-text-6 { color: #1CD991; font-weight: 700; }
-.swml-grade-text-5 { color: #FFC107; font-weight: 700; }
-.swml-grade-text-4 { color: #FF9800; font-weight: 700; }
-.swml-grade-text-3,
-.swml-grade-text-2,
-.swml-grade-text-1 { color: #E53935; font-weight: 700; }
+/* v7.19.171 — Popover trigger reflects selected mark's tier color.
+   Applies when a value is chosen; trigger has swml-tier-N class added in JS. */
+.swml-popover-trigger.swml-tier-9 { background-color: #2c003e !important; color: #fff !important; background-image: none !important; }
+.swml-popover-trigger.swml-tier-8 { background-color: #5333ED !important; color: #fff !important; background-image: none !important; }
+.swml-popover-trigger.swml-tier-7 { background-color: #4D76FD !important; color: #fff !important; background-image: none !important; }
+.swml-popover-trigger.swml-tier-6 { background-color: #1CD991 !important; color: #fff !important; background-image: none !important; }
+.swml-popover-trigger.swml-tier-5 { background-color: #FFC107 !important; color: #1a1a2e !important; background-image: none !important; }
+.swml-popover-trigger.swml-tier-4 { background-color: #FF9800 !important; color: #fff !important; background-image: none !important; }
+.swml-popover-trigger.swml-tier-3,
+.swml-popover-trigger.swml-tier-2,
+.swml-popover-trigger.swml-tier-1 { background-color: #E53935 !important; color: #fff !important; background-image: none !important; }
 
-[data-swml-theme="light"] .swml-grade-text-9 { color: #2c003e; }
-[data-swml-theme="light"] .swml-grade-text-8 { color: #4024b5; }
-[data-swml-theme="light"] .swml-grade-text-7 { color: #2952d8; }
-[data-swml-theme="light"] .swml-grade-text-6 { color: #0d8055; }
-[data-swml-theme="light"] .swml-grade-text-5 { color: #7a5800; }
-[data-swml-theme="light"] .swml-grade-text-4 { color: #8a4a00; }
-[data-swml-theme="light"] .swml-grade-text-3,
-[data-swml-theme="light"] .swml-grade-text-2,
-[data-swml-theme="light"] .swml-grade-text-1 { color: #a02824; }
+/* v7.19.170 — Score Summary grade value colored by tier. Wrapped in
+   <span class="swml-grade-value swml-grade-text-N"> to win specificity
+   against high-priority parent rules. */
+.swml-grade-value { font-weight: 700; padding: 1px 6px; border-radius: 4px; }
+.swml-grade-text-9.swml-grade-value { background: rgba(44, 0, 62, 0.85); color: #fff; }
+.swml-grade-text-8.swml-grade-value { background: #5333ED; color: #fff; }
+.swml-grade-text-7.swml-grade-value { background: #4D76FD; color: #fff; }
+.swml-grade-text-6.swml-grade-value { background: #1CD991; color: #fff; }
+.swml-grade-text-5.swml-grade-value { background: #FFC107; color: #1a1a2e; }
+.swml-grade-text-4.swml-grade-value { background: #FF9800; color: #fff; }
+.swml-grade-text-3.swml-grade-value,
+.swml-grade-text-2.swml-grade-value,
+.swml-grade-text-1.swml-grade-value { background: #E53935; color: #fff; }
 
 /* ── Tutor Sign-off ── */
 .swml-signoff-disclaimer {

@@ -12545,6 +12545,18 @@
             trigger.textContent = valueLabelFn
                 ? valueLabelFn(currentValue, currentOpt)
                 : (currentOpt ? currentOpt.label : '—');
+            // v7.19.171: trigger reflects selected mark's tier color.
+            const _applyTriggerTier = (val) => {
+                trigger.classList.remove(
+                    'swml-tier-1', 'swml-tier-2', 'swml-tier-3',
+                    'swml-tier-4', 'swml-tier-5', 'swml-tier-6',
+                    'swml-tier-7', 'swml-tier-8', 'swml-tier-9'
+                );
+                const opt = options.find(o => String(o.value) === String(val));
+                const t = (opt && opt.tier) || (tierFn ? tierFn(opt || { value: val }) : null);
+                if (t) trigger.classList.add('swml-tier-' + t);
+            };
+            _applyTriggerTier(currentValue);
             // v7.19.169: preventDefault on mousedown — same anti-focus-jump as pills.
             trigger.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
             trigger.addEventListener('click', (e) => {
@@ -12573,6 +12585,7 @@
                         ev.stopPropagation();
                         currentValue = opt.value;
                         trigger.textContent = valueLabelFn ? valueLabelFn(opt.value, opt) : opt.label;
+                        _applyTriggerTier(opt.value);
                         onChange(opt.value);
                         _swmlClosePopover();
                     });
@@ -13267,20 +13280,17 @@
                 } else if (text.includes('Percentage:')) {
                     p.innerHTML = `<em>Percentage:</em> ${pct}%`;
                 } else if (text.startsWith('Grade:') || (p.querySelector('em') && p.querySelector('em').textContent.includes('Grade:'))) {
-                    if (gradeOverride) {
-                        p.innerHTML = `<em>Grade:</em> ${gradeOverride} (tutor override)`;
-                    } else {
-                        p.innerHTML = `<em>Grade:</em> ${allSet ? grade : grade + ' (in progress)'}`;
-                    }
-                    // v7.19.170: color the "Grade: N" text by tier so the score
-                    // summary visually echoes the active grade tier.
+                    // v7.19.171: wrap grade value in span with tier class so the
+                    // pill-style colored background renders correctly (span has
+                    // higher specificity than the inheriting <p> color rule).
                     const effectiveGrade = gradeOverride ? String(gradeOverride) : (grade === 'U' ? '1' : String(grade));
-                    p.classList.remove(
-                        'swml-grade-text-1', 'swml-grade-text-2', 'swml-grade-text-3',
-                        'swml-grade-text-4', 'swml-grade-text-5', 'swml-grade-text-6',
-                        'swml-grade-text-7', 'swml-grade-text-8', 'swml-grade-text-9'
-                    );
-                    if (effectiveGrade) p.classList.add('swml-grade-text-' + effectiveGrade);
+                    const tierCls = 'swml-grade-value swml-grade-text-' + effectiveGrade;
+                    if (gradeOverride) {
+                        p.innerHTML = `<em>Grade:</em> <span class="${tierCls}">${gradeOverride}</span> (tutor override)`;
+                    } else {
+                        const inProgress = allSet ? '' : ' (in progress)';
+                        p.innerHTML = `<em>Grade:</em> <span class="${tierCls}">${grade}</span>${inProgress}`;
+                    }
                 } else if (text.includes('Date Completed:') && allSet && totalMarks > 0) {
                     const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
                     p.innerHTML = `<em>Date Completed:</em> ${today}`;
