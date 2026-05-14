@@ -13038,6 +13038,25 @@
                 }, { passive: true });
                 window._swmlOverlayResizeBound = true;
             }
+            // v7.19.174: ResizeObserver on canvas overlay catches container
+            // size changes that don't fire window.resize — fullscreen toggle,
+            // sidebar collapse, theme padding shifts.
+            if (!window._swmlOverlayResizeObserverBound && typeof ResizeObserver !== 'undefined') {
+                const canvasOverlay = document.getElementById('swml-canvas-overlay');
+                if (canvasOverlay) {
+                    let roRaf = 0;
+                    const ro = new ResizeObserver(() => {
+                        if (roRaf) cancelAnimationFrame(roRaf);
+                        roRaf = requestAnimationFrame(() => {
+                            positionDropdownOverlays();
+                            _swmlClosePopover();
+                        });
+                    });
+                    ro.observe(canvasOverlay);
+                    window._swmlOverlayResizeObserver = ro;
+                    window._swmlOverlayResizeObserverBound = true;
+                }
+            }
         }
 
         function positionDropdownOverlays() {
