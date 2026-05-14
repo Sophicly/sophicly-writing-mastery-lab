@@ -6526,16 +6526,27 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 [data-swml-theme="light"] .swml-popover-option[class*="swml-tier-"] { color: rgba(0,0,0,0.75); background: transparent; }
 
 /* v7.19.171 — Popover trigger reflects selected mark's tier color.
-   Applies when a value is chosen; trigger has swml-tier-N class added in JS. */
-.swml-popover-trigger.swml-tier-9 { background-color: #2c003e !important; color: #fff !important; background-image: none !important; }
-.swml-popover-trigger.swml-tier-8 { background-color: #5333ED !important; color: #fff !important; background-image: none !important; }
-.swml-popover-trigger.swml-tier-7 { background-color: #4D76FD !important; color: #fff !important; background-image: none !important; }
-.swml-popover-trigger.swml-tier-6 { background-color: #1CD991 !important; color: #fff !important; background-image: none !important; }
-.swml-popover-trigger.swml-tier-5 { background-color: #FFC107 !important; color: #1a1a2e !important; background-image: none !important; }
-.swml-popover-trigger.swml-tier-4 { background-color: #FF9800 !important; color: #fff !important; background-image: none !important; }
+   v7.19.172 — KEEP chevron arrow visible (Neil flag: students need
+   dropdown affordance). White chevron over color, dark chevron for yellow. */
+.swml-popover-trigger[class*="swml-tier-"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 6px center !important;
+}
+.swml-popover-trigger.swml-tier-9 { background-color: #2c003e !important; color: #fff !important; }
+.swml-popover-trigger.swml-tier-8 { background-color: #5333ED !important; color: #fff !important; }
+.swml-popover-trigger.swml-tier-7 { background-color: #4D76FD !important; color: #fff !important; }
+.swml-popover-trigger.swml-tier-6 { background-color: #1CD991 !important; color: #fff !important; }
+.swml-popover-trigger.swml-tier-5 {
+    background-color: #FFC107 !important;
+    color: #1a1a2e !important;
+    /* Dark chevron on yellow for contrast */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%231a1a2e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+}
+.swml-popover-trigger.swml-tier-4 { background-color: #FF9800 !important; color: #fff !important; }
 .swml-popover-trigger.swml-tier-3,
 .swml-popover-trigger.swml-tier-2,
-.swml-popover-trigger.swml-tier-1 { background-color: #E53935 !important; color: #fff !important; background-image: none !important; }
+.swml-popover-trigger.swml-tier-1 { background-color: #E53935 !important; color: #fff !important; }
 
 /* v7.19.170 — Score Summary grade value colored by tier. Wrapped in
    <span class="swml-grade-value swml-grade-text-N"> to win specificity
