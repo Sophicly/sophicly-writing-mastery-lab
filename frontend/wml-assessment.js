@@ -12438,13 +12438,132 @@
             if (transferLayer.style.visibility === 'hidden') transferLayer.style.visibility = 'visible';
         }
 
+        // v7.19.168: Custom dropdown components — replace native <select> with
+        // pill rows (≤8 marks) + portal-attached popovers (≥12 marks / SA).
+        // Fixes: scroll-jump on open (native select scrollIntoView focus)
+        //        position drift on resize (no listener)
+        //        OS-styled options popover not brand-styled
+        let _swmlOpenPopover = null;
+        function _swmlClosePopover() {
+            if (_swmlOpenPopover) {
+                _swmlOpenPopover.remove();
+                _swmlOpenPopover = null;
+                document.removeEventListener('mousedown', _swmlPopoverOutsideHandler, true);
+                document.removeEventListener('keydown', _swmlPopoverKeyHandler, true);
+            }
+        }
+        function _swmlPopoverOutsideHandler(e) {
+            if (!_swmlOpenPopover) return;
+            if (e.target.closest('.swml-popover, .swml-popover-trigger')) return;
+            _swmlClosePopover();
+        }
+        function _swmlPopoverKeyHandler(e) {
+            if (e.key === 'Escape') _swmlClosePopover();
+        }
+        function _swmlPositionPopover(popover, triggerRect) {
+            popover.style.visibility = 'hidden';
+            popover.style.position = 'fixed';
+            popover.style.top = (triggerRect.bottom + 4) + 'px';
+            popover.style.left = triggerRect.left + 'px';
+            popover.style.minWidth = triggerRect.width + 'px';
+            requestAnimationFrame(() => {
+                if (!_swmlOpenPopover) return;
+                const pRect = popover.getBoundingClientRect();
+                let top = triggerRect.bottom + 4;
+                let left = triggerRect.left;
+                if (top + pRect.height > window.innerHeight - 8) {
+                    top = Math.max(8, triggerRect.top - pRect.height - 4);
+                }
+                if (left + pRect.width > window.innerWidth - 8) {
+                    left = Math.max(8, window.innerWidth - pRect.width - 8);
+                }
+                popover.style.top = top + 'px';
+                popover.style.left = left + 'px';
+                popover.style.visibility = 'visible';
+            });
+        }
+        function createSwmlPillRow({ options, currentValue, onChange, extraClass }) {
+            // options: [{value, label, isDash, isAuto}]
+            const row = document.createElement('div');
+            row.className = 'swml-pill-row' + (extraClass ? ' ' + extraClass : '');
+            row.addEventListener('mousedown', (e) => e.stopPropagation());
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'swml-pill' + (opt.isDash ? ' swml-pill-dash' : '') + (opt.isAuto ? ' swml-pill-auto' : '');
+                btn.textContent = opt.label;
+                btn.dataset.value = String(opt.value);
+                if (String(opt.value) === String(currentValue)) btn.classList.add('is-active');
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    row.querySelectorAll('.swml-pill.is-active').forEach(p => p.classList.remove('is-active'));
+                    btn.classList.add('is-active');
+                    onChange(opt.value);
+                });
+                row.appendChild(btn);
+            });
+            return row;
+        }
+        function createSwmlPopoverDropdown({ options, currentValue, onChange, extraClass, triggerClass, valueLabelFn }) {
+            // options: [{value, label}]
+            const wrap = document.createElement('div');
+            wrap.className = 'swml-popover-wrap' + (extraClass ? ' ' + extraClass : '');
+            wrap.addEventListener('mousedown', (e) => e.stopPropagation());
+
+            const trigger = document.createElement('button');
+            trigger.type = 'button';
+            trigger.className = 'swml-popover-trigger' + (triggerClass ? ' ' + triggerClass : '');
+            const currentOpt = options.find(o => String(o.value) === String(currentValue));
+            trigger.textContent = valueLabelFn
+                ? valueLabelFn(currentValue, currentOpt)
+                : (currentOpt ? currentOpt.label : '—');
+
+            trigger.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (_swmlOpenPopover && _swmlOpenPopover.dataset.ownerId === trigger.dataset.ownerId) {
+                    _swmlClosePopover();
+                    return;
+                }
+                _swmlClosePopover();
+                const popover = document.createElement('div');
+                popover.className = 'swml-popover' + (extraClass ? ' ' + extraClass : '');
+                popover.dataset.ownerId = trigger.dataset.ownerId || (trigger.dataset.ownerId = 'swp-' + Math.random().toString(36).slice(2));
+                options.forEach(opt => {
+                    const optBtn = document.createElement('button');
+                    optBtn.type = 'button';
+                    optBtn.className = 'swml-popover-option';
+                    if (String(opt.value) === String(currentValue)) optBtn.classList.add('is-active');
+                    optBtn.textContent = opt.label;
+                    optBtn.addEventListener('click', (ev) => {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        currentValue = opt.value;
+                        trigger.textContent = valueLabelFn ? valueLabelFn(opt.value, opt) : opt.label;
+                        onChange(opt.value);
+                        _swmlClosePopover();
+                    });
+                    popover.appendChild(optBtn);
+                });
+                document.body.appendChild(popover);
+                _swmlOpenPopover = popover;
+                document.addEventListener('mousedown', _swmlPopoverOutsideHandler, true);
+                document.addEventListener('keydown', _swmlPopoverKeyHandler, true);
+                _swmlPositionPopover(popover, trigger.getBoundingClientRect());
+            });
+            wrap.appendChild(trigger);
+            return wrap;
+        }
+
         function buildDropdownOverlays(container) {
             if (!canvasEditor) return;
             const editor = document.getElementById('swml-tiptap-editor');
             if (!editor) return;
 
-            // Remove existing overlay layer
+            // Remove existing overlay layer + any open popover
             if (dropdownLayer) dropdownLayer.remove();
+            _swmlClosePopover();
             dropdownLayer = el('div', { className: 'swml-dropdown-layer' });
             dropdownLayer.style.cssText = 'position:absolute;top:0;left:0;right:0;pointer-events:none;z-index:5;visibility:hidden;';
             // Insert into docWrap (sibling position to editor, outside ProseMirror)
@@ -12467,30 +12586,12 @@
                 wrapper.style.pointerEvents = 'auto';
                 wrapper.dataset.sectionIdx = idx;
 
-                const select = document.createElement('select');
-                select.className = 'swml-dropdown-select';
-                // — option (unset/reset)
-                const dashOpt = document.createElement('option');
-                dashOpt.value = '-1';
-                dashOpt.textContent = '—';
-                if (currentMarks === -1) dashOpt.selected = true;
-                select.appendChild(dashOpt);
-                for (let i = 0; i <= maxMarks; i++) {
-                    const opt = document.createElement('option');
-                    opt.value = i;
-                    opt.textContent = `${i} / ${maxMarks}`;
-                    if (i === currentMarks) opt.selected = true;
-                    select.appendChild(opt);
-                }
-                select.addEventListener('mousedown', (e) => e.stopPropagation());
-                select.addEventListener('change', () => {
-                    const rawVal = parseInt(select.value);
-                    const displayVal = rawVal === -1 ? '—' : rawVal;
+                const onMarkChange = (rawVal) => {
+                    const intVal = parseInt(rawVal);
+                    const displayVal = intVal === -1 ? '—' : intVal;
                     const newLabel = `${baseName} (${displayVal} / ${maxMarks})`;
-                    // Save scroll position before DOM mutation
                     const scrollContainer = editor.closest('.swml-canvas-content');
                     const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
-                    // Update ProseMirror model directly — avoids fragile posAtDOM (v7.12.39)
                     let found = false;
                     canvasEditor.state.doc.descendants((node, pos) => {
                         if (found) return false;
@@ -12505,14 +12606,34 @@
                             return false;
                         }
                     });
-                    // recalculateScoreSummary after ProseMirror re-render settles;
-                    // updateOutline() is called automatically by TipTap onUpdate (line 6430)
                     requestAnimationFrame(() => {
                         recalculateScoreSummary();
                         if (scrollContainer) scrollContainer.scrollTop = scrollTop;
                     });
-                });
-                wrapper.appendChild(select);
+                };
+
+                // Build options: dash sentinel + 0..maxMarks
+                const opts = [{ value: -1, label: '—', isDash: true }];
+                for (let i = 0; i <= maxMarks; i++) opts.push({ value: i, label: String(i) });
+
+                let widget;
+                if (maxMarks <= 8) {
+                    widget = createSwmlPillRow({
+                        options: opts,
+                        currentValue: currentMarks,
+                        onChange: onMarkChange,
+                        extraClass: 'swml-pill-row-feedback',
+                    });
+                } else {
+                    widget = createSwmlPopoverDropdown({
+                        options: opts.map(o => ({ value: o.value, label: o.value === -1 ? '—' : `${o.value} / ${maxMarks}` })),
+                        currentValue: currentMarks,
+                        onChange: onMarkChange,
+                        extraClass: 'swml-popover-feedback',
+                        valueLabelFn: (v) => v === -1 ? '—' : `${v} / ${maxMarks}`,
+                    });
+                }
+                wrapper.appendChild(widget);
                 dropdownLayer.appendChild(wrapper);
             });
 
@@ -12533,39 +12654,40 @@
                     wrapper.dataset.saIdx = pIdx;
                     wrapper.dataset.skill = skillName;
 
-                    const select = document.createElement('select');
-                    select.className = 'swml-dropdown-select swml-dropdown-sa';
-                    // Use skill-specific descriptors from SureForms if available, otherwise generic
+                    // Build SA options: dash + 1..5 with skill-specific descriptors
                     const descriptors = SA_DESCRIPTORS[skillName];
                     const SA_FALLBACK = ['—', '1 – Basic', '2 – Developing', '3 – Secure', '4 – Good', '5 – Perceptive'];
+                    const saOpts = [];
                     for (let v = 0; v <= 5; v++) {
-                        const opt = document.createElement('option');
-                        opt.value = v;
-                        opt.textContent = v === 0 ? '—' : descriptors ? `${v}: ${descriptors[v - 1]}` : SA_FALLBACK[v];
-                        if (v === currentVal) opt.selected = true;
-                        select.appendChild(opt);
+                        const label = v === 0 ? '—' : descriptors ? `${v}: ${descriptors[v - 1]}` : SA_FALLBACK[v];
+                        saOpts.push({ value: v, label, isDash: v === 0 });
                     }
-                    select.addEventListener('mousedown', (e) => e.stopPropagation());
-                    select.addEventListener('change', () => {
-                        const newVal = parseInt(select.value);
+                    const handleSAChange = (rawVal) => {
+                        const intVal = parseInt(rawVal);
+                        const newVal = intVal === 0 ? null : intVal;
                         const newText = `${skillName}: ${newVal || '—'} / 5`;
-                        // Save scroll position before DOM mutation
                         const scrollContainer = editor.closest('.swml-canvas-content');
                         const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
-                        // Update ProseMirror paragraph text
                         if (p.querySelector('em')) {
                             // Don't touch if it has em tags (it's a prompt, not a rating)
                         } else {
                             p.textContent = newText;
                         }
-                        // Restore scroll position after ProseMirror reconciles
                         requestAnimationFrame(() => {
                             if (scrollContainer) scrollContainer.scrollTop = scrollTop;
-                            recalculateScoreSummary(); // Update totals when SA changes (v7.12.37)
+                            recalculateScoreSummary();
                             if (typeof updateOutline === 'function') updateOutline();
                         });
+                    };
+
+                    const saWidget = createSwmlPopoverDropdown({
+                        options: saOpts.map(o => ({ value: o.value, label: o.label })),
+                        currentValue: currentVal,
+                        onChange: handleSAChange,
+                        extraClass: 'swml-popover-sa',
+                        valueLabelFn: (v, opt) => v === 0 ? '—' : (opt ? opt.label : String(v)),
                     });
-                    wrapper.appendChild(select);
+                    wrapper.appendChild(saWidget);
                     dropdownLayer.appendChild(wrapper);
                 });
             }
@@ -12582,40 +12704,33 @@
                     wrapper.className = 'swml-dropdown-overlay swml-dropdown-overlay-grade';
                     wrapper.style.pointerEvents = 'auto';
 
-                    const select = document.createElement('select');
-                    select.className = 'swml-dropdown-select swml-dropdown-grade';
-                    // Options: Auto (from marks), then Grades 9 → 1
-                    const autoOpt = document.createElement('option');
-                    autoOpt.value = 'auto';
-                    autoOpt.textContent = 'Auto';
-                    select.appendChild(autoOpt);
-                    for (let g = 9; g >= 1; g--) {
-                        const opt = document.createElement('option');
-                        opt.value = g;
-                        opt.textContent = `Grade ${g}`;
-                        select.appendChild(opt);
-                    }
-                    // Check if a manual override is already set
-                    if (gradeOverride) {
-                        select.value = String(gradeOverride);
-                    }
-                    select.addEventListener('mousedown', (e) => e.stopPropagation());
-                    select.addEventListener('change', () => {
+                    // Build options: Auto + Grades 9 → 1
+                    const gradeOpts = [{ value: 'auto', label: 'Auto', isAuto: true }];
+                    for (let g = 9; g >= 1; g--) gradeOpts.push({ value: g, label: String(g) });
+                    const currentGrade = gradeOverride ? gradeOverride : 'auto';
+
+                    const handleGradeChange = (rawVal) => {
                         const scrollContainer = editor.closest('.swml-canvas-content');
                         const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
-                        if (select.value === 'auto') {
+                        if (rawVal === 'auto') {
                             gradeOverride = null;
-                            recalculateScoreSummary(); // Re-apply auto grade
+                            recalculateScoreSummary();
                         } else {
-                            gradeOverride = parseInt(select.value);
-                            // Manually set grade text
+                            gradeOverride = parseInt(rawVal);
                             gradePara.innerHTML = `<em>Grade:</em> ${gradeOverride} (tutor override)`;
                         }
                         requestAnimationFrame(() => {
                             if (scrollContainer) scrollContainer.scrollTop = scrollTop;
                         });
+                    };
+
+                    const gradeWidget = createSwmlPillRow({
+                        options: gradeOpts,
+                        currentValue: currentGrade,
+                        onChange: handleGradeChange,
+                        extraClass: 'swml-pill-row-grade',
                     });
-                    wrapper.appendChild(select);
+                    wrapper.appendChild(gradeWidget);
                     dropdownLayer.appendChild(wrapper);
                 }
             }
@@ -12631,33 +12746,28 @@
                     wrapper.className = 'swml-dropdown-overlay swml-dropdown-overlay-gradegoal';
                     wrapper.style.pointerEvents = 'auto';
 
-                    const select = document.createElement('select');
-                    select.className = 'swml-dropdown-select swml-dropdown-grade';
-                    // Current value
                     const currentMatch = gradeGoalPara.textContent.match(/target grade:\s*(\d)/);
                     const currentVal = currentMatch ? parseInt(currentMatch[1]) : 0;
-                    // Options: — then 9 → 1
-                    const defOpt = document.createElement('option');
-                    defOpt.value = '0'; defOpt.textContent = '—';
-                    select.appendChild(defOpt);
-                    for (let g = 9; g >= 1; g--) {
-                        const opt = document.createElement('option');
-                        opt.value = g; opt.textContent = `Grade ${g}`;
-                        if (g === currentVal) opt.selected = true;
-                        select.appendChild(opt);
-                    }
-                    if (currentVal > 0) select.value = String(currentVal);
-                    select.addEventListener('mousedown', (e) => e.stopPropagation());
-                    select.addEventListener('change', () => {
+                    const goalOpts = [{ value: 0, label: '—', isDash: true }];
+                    for (let g = 9; g >= 1; g--) goalOpts.push({ value: g, label: String(g) });
+
+                    const handleGoalChange = (rawVal) => {
+                        const v = parseInt(rawVal);
                         const scrollContainer = editor.closest('.swml-canvas-content');
                         const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
-                        const v = parseInt(select.value);
                         gradeGoalPara.innerHTML = `<em>Your target grade:</em> ${v || '—'}`;
                         requestAnimationFrame(() => {
                             if (scrollContainer) scrollContainer.scrollTop = scrollTop;
                         });
+                    };
+
+                    const goalWidget = createSwmlPillRow({
+                        options: goalOpts,
+                        currentValue: currentVal,
+                        onChange: handleGoalChange,
+                        extraClass: 'swml-pill-row-grade',
                     });
-                    wrapper.appendChild(select);
+                    wrapper.appendChild(goalWidget);
                     dropdownLayer.appendChild(wrapper);
                 }
             }
@@ -12794,8 +12904,23 @@
 
             // Position overlays
             positionDropdownOverlays();
-            // Reposition on scroll
-            container.addEventListener('scroll', positionDropdownOverlays, { passive: true });
+            // Reposition on scroll + resize (v7.19.168 — resize listener added to fix
+            // drift bug where dropdowns lost position when window resized)
+            container.addEventListener('scroll', () => {
+                positionDropdownOverlays();
+                _swmlClosePopover();
+            }, { passive: true });
+            if (!window._swmlOverlayResizeBound) {
+                let resizeRaf = 0;
+                window.addEventListener('resize', () => {
+                    if (resizeRaf) cancelAnimationFrame(resizeRaf);
+                    resizeRaf = requestAnimationFrame(() => {
+                        positionDropdownOverlays();
+                        _swmlClosePopover();
+                    });
+                }, { passive: true });
+                window._swmlOverlayResizeBound = true;
+            }
         }
 
         function positionDropdownOverlays() {
