@@ -13038,21 +13038,26 @@
                 }, { passive: true });
                 window._swmlOverlayResizeBound = true;
             }
-            // v7.19.174: ResizeObserver on canvas overlay catches container
-            // size changes that don't fire window.resize — fullscreen toggle,
-            // sidebar collapse, theme padding shifts.
+            // v7.19.174: ResizeObserver on canvas overlay AND canvas-doc catches
+            // container size changes that don't fire window.resize — fullscreen
+            // toggle (overlay), sidebar collapse / content flex transition (doc).
+            // Doc is critical: overlay resizes instantly, but .swml-canvas-doc
+            // animates via 0.6s flex transition (wml-canvas.css line 252) — RO
+            // fires on every transition frame, last fire = final size.
             if (!window._swmlOverlayResizeObserverBound && typeof ResizeObserver !== 'undefined') {
                 const canvasOverlay = document.getElementById('swml-canvas-overlay');
-                if (canvasOverlay) {
-                    let roRaf = 0;
-                    const ro = new ResizeObserver(() => {
-                        if (roRaf) cancelAnimationFrame(roRaf);
-                        roRaf = requestAnimationFrame(() => {
-                            positionDropdownOverlays();
-                            _swmlClosePopover();
-                        });
+                const canvasDoc = document.querySelector('.swml-canvas-doc');
+                let roRaf = 0;
+                const ro = new ResizeObserver(() => {
+                    if (roRaf) cancelAnimationFrame(roRaf);
+                    roRaf = requestAnimationFrame(() => {
+                        positionDropdownOverlays();
+                        _swmlClosePopover();
                     });
-                    ro.observe(canvasOverlay);
+                });
+                if (canvasOverlay) ro.observe(canvasOverlay);
+                if (canvasDoc) ro.observe(canvasDoc);
+                if (canvasOverlay || canvasDoc) {
                     window._swmlOverlayResizeObserver = ro;
                     window._swmlOverlayResizeObserverBound = true;
                 }
