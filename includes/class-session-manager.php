@@ -427,6 +427,12 @@ class SWML_Session_Manager {
             'development'         => 'Development Essay',
             'development_redraft' => 'Development Redraft',
             'notes'               => 'Conceptual Notes',
+            // v7.19.178: Creative Writing project draft types — without these
+            // entries the Currently Working On banner fell through to the
+            // 'Exam Practice' default, mis-framing CW work as exam-board
+            // practice. Mirrors student-data v2.30.3 CW course_map entry.
+            'cw_project'          => 'Creative Writing',
+            'cw_step'             => 'Creative Writing',
         ];
         return $labels[$draft_type] ?? 'Exam Practice';
     }
