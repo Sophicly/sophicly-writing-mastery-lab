@@ -24,19 +24,65 @@ class SWML_Qbank_Admin {
     const UPLOADS_SUBDIR = 'sophicly-qbank-uploads';
     const MAX_UPLOAD_BYTES = 1048576; // 1 MB
 
-    /** v7.19.181: per-slug parser routing for .md uploads. */
+    /** v7.19.181+v7.19.182: per-slug parser routing for .md uploads. */
     private static $parser_map = [
+        // Modern texts (AQA Paper 2 Section A) — modern-text parser, 2-arg invocation.
         'inspector_calls'   => ['script' => 'qbank-modern-text-md-to-tiptap.js', 'mode' => 'file_out'],
         'blood_brothers'    => ['script' => 'qbank-modern-text-md-to-tiptap.js', 'mode' => 'file_out'],
         'animal_farm'       => ['script' => 'qbank-modern-text-md-to-tiptap.js', 'mode' => 'file_out'],
         'anita_and_me'      => ['script' => 'qbank-modern-text-md-to-tiptap.js', 'mode' => 'file_out'],
         'lord_of_the_flies' => ['script' => 'qbank-modern-text-md-to-tiptap.js', 'mode' => 'file_out'],
         'leave_taking'      => ['script' => 'qbank-modern-text-md-to-tiptap.js', 'mode' => 'file_out'],
+        // 19C novels (AQA Paper 1 Section B) — general parser, stdout.
+        'jane_eyre'           => ['script' => 'qbank-md-to-tiptap.js', 'mode' => 'stdout'],
+        'jekyll_and_hyde'     => ['script' => 'qbank-md-to-tiptap.js', 'mode' => 'stdout'],
+        'christmas_carol'     => ['script' => 'qbank-md-to-tiptap.js', 'mode' => 'stdout'],
+        'frankenstein'        => ['script' => 'qbank-md-to-tiptap.js', 'mode' => 'stdout'],
+        'pride_and_prejudice' => ['script' => 'qbank-md-to-tiptap.js', 'mode' => 'stdout'],
+        'sign_of_the_four'    => ['script' => 'qbank-md-to-tiptap.js', 'mode' => 'stdout'],
+        // Shakespeare (AQA Paper 1 Section A) — general parser, stdout.
+        'macbeth'          => ['script' => 'qbank-md-to-tiptap.js', 'mode' => 'stdout'],
+        'romeo_and_juliet' => ['script' => 'qbank-md-to-tiptap.js', 'mode' => 'stdout'],
+        'much_ado'         => ['script' => 'qbank-md-to-tiptap.js', 'mode' => 'stdout'],
+        // Poetry anthology (AQA Paper 2 Section B) — general parser, stdout.
         'worlds_lives_poetry'       => ['script' => 'qbank-md-to-tiptap.js', 'mode' => 'stdout'],
         'love_relationships_poetry' => ['script' => 'qbank-md-to-tiptap.js', 'mode' => 'stdout'],
         'power_conflict_poetry'     => ['script' => 'qbank-md-to-tiptap.js', 'mode' => 'stdout'],
-        'unseen_poetry'             => ['script' => 'qbank-unseen-poetry-to-tiptap.js', 'mode' => 'stdout'],
+        // Unseen poetry (AQA Paper 2 Section C) — unseen parser, stdout.
+        'unseen_poetry'    => ['script' => 'qbank-unseen-poetry-to-tiptap.js', 'mode' => 'stdout'],
     ];
+
+    /**
+     * v7.19.182: group slugs by (board, subject) for collapsible accordion UI.
+     * Future boards (Edexcel / WJEC / OCR / Eduqas / CCEA / SQA / IGCSE) are
+     * detected via slug suffix (`_edexcel`, `_wjec`, etc.). Boardless slugs
+     * default to AQA.
+     */
+    private static $subject_map = [
+        // text slug => subject group
+        'inspector_calls'   => 'Modern Texts (Lit P2A)',
+        'blood_brothers'    => 'Modern Texts (Lit P2A)',
+        'animal_farm'       => 'Modern Texts (Lit P2A)',
+        'anita_and_me'      => 'Modern Texts (Lit P2A)',
+        'lord_of_the_flies' => 'Modern Texts (Lit P2A)',
+        'leave_taking'      => 'Modern Texts (Lit P2A)',
+        'jane_eyre'           => '19C Novels (Lit P1B)',
+        'jekyll_and_hyde'     => '19C Novels (Lit P1B)',
+        'christmas_carol'     => '19C Novels (Lit P1B)',
+        'frankenstein'        => '19C Novels (Lit P1B)',
+        'pride_and_prejudice' => '19C Novels (Lit P1B)',
+        'sign_of_the_four'    => '19C Novels (Lit P1B)',
+        'macbeth'          => 'Shakespeare (Lit P1A)',
+        'romeo_and_juliet' => 'Shakespeare (Lit P1A)',
+        'much_ado'         => 'Shakespeare (Lit P1A)',
+        'worlds_lives_poetry'       => 'Poetry Anthology (Lit P2B)',
+        'love_relationships_poetry' => 'Poetry Anthology (Lit P2B)',
+        'power_conflict_poetry'     => 'Poetry Anthology (Lit P2B)',
+        'unseen_poetry' => 'Unseen Poetry (Lit P2C)',
+    ];
+
+    /** v7.19.182: known board suffixes to detect from filename. */
+    private static $board_suffixes = ['edexcel', 'wjec', 'eduqas', 'ocr', 'ccea', 'sqa', 'igcse', 'aqa'];
 
     private static $instance = null;
 
@@ -95,6 +141,30 @@ class SWML_Qbank_Admin {
         return isset($data['template_version']) ? (int)$data['template_version'] : null;
     }
 
+    /**
+     * v7.19.182: detect (board, text_stub) from a slug.
+     * `inspector_calls` → ['AQA', 'inspector_calls']
+     * `inspector_calls_edexcel` → ['Edexcel', 'inspector_calls']
+     * `edexcel_inspector_calls` → ['Edexcel', 'inspector_calls']
+     */
+    private function detect_board_and_text($slug) {
+        foreach (self::$board_suffixes as $b) {
+            if (substr($slug, -strlen($b) - 1) === '_' . $b) {
+                return [strtoupper($b), substr($slug, 0, -strlen($b) - 1)];
+            }
+            if (substr($slug, 0, strlen($b) + 1) === $b . '_') {
+                return [strtoupper($b), substr($slug, strlen($b) + 1)];
+            }
+        }
+        // Boardless → AQA implicit (current convention).
+        return ['AQA', $slug];
+    }
+
+    /** v7.19.182: subject group for a text stub. Falls back to "Other". */
+    private function detect_subject($text_stub) {
+        return self::$subject_map[$text_stub] ?? 'Other';
+    }
+
     /** Render admin page. */
     public function render_page() {
         if (!current_user_can('manage_options')) wp_die('Unauthorized');
@@ -102,77 +172,113 @@ class SWML_Qbank_Admin {
         $uploads_dir = $this->uploads_dir();
         $bundled_dir = SWML_PATH . 'protocols/shared/crib-templates/';
         $notice = isset($_GET['swml_notice']) ? sanitize_text_field(wp_unslash($_GET['swml_notice'])) : '';
+
+        // v7.19.182: group slugs by (board, subject).
+        $groups = [];
+        foreach ($slugs as $slug) {
+            [$board, $text_stub] = $this->detect_board_and_text($slug);
+            $subject = $this->detect_subject($text_stub);
+            $groups[$board][$subject][] = $slug;
+        }
+        // Stable order: AQA first, then alphabetical.
+        uksort($groups, function ($a, $b) { if ($a === 'AQA') return -1; if ($b === 'AQA') return 1; return strcmp($a, $b); });
         ?>
         <div class="wrap">
             <h1>WML Crib Templates</h1>
-            <p style="max-width:720px">Upload an updated JSON crib for any text. The override
-            replaces the shipping default for that text. Existing student snapshots auto-merge
-            on next canvas load — plan + response elements the student has typed into are
-            preserved; everything else refreshes to the new template.</p>
+            <p style="max-width:720px">Upload an updated MD or JSON crib for any text. The override
+            replaces the shipping default. Existing student snapshots auto-merge on next canvas
+            load — typed plan + response content preserved; everything else refreshes.</p>
 
             <?php if ($notice): ?>
                 <div class="notice notice-info is-dismissible"><p><?php echo esc_html($notice); ?></p></div>
             <?php endif; ?>
 
             <style>
-                .swml-qbank-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 18px; margin-top: 20px; }
-                .swml-qbank-card { background: #fff; border: 1px solid #c3c4c7; border-radius: 8px; padding: 18px; }
-                .swml-qbank-card h2 { margin: 0 0 6px; font-size: 16px; }
-                .swml-qbank-state { color: #555; font-size: 13px; margin-bottom: 10px; }
+                .swml-qbank-board { margin: 16px 0; border: 1px solid #c3c4c7; border-radius: 8px; background: #fff; }
+                .swml-qbank-board > summary { cursor: pointer; padding: 14px 18px; font-size: 18px; font-weight: 600; background: #f0f0f1; border-radius: 8px 8px 0 0; user-select: none; }
+                .swml-qbank-board[open] > summary { border-radius: 8px 8px 0 0; border-bottom: 1px solid #c3c4c7; }
+                .swml-qbank-subject { margin: 0; padding: 8px 18px 4px; border-top: 1px solid #f0f0f1; }
+                .swml-qbank-subject:first-of-type { border-top: 0; }
+                .swml-qbank-subject > summary { cursor: pointer; padding: 8px 0; font-size: 14px; font-weight: 600; color: #2271b1; user-select: none; }
+                .swml-qbank-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; padding: 6px 0 14px; }
+                .swml-qbank-card { background: #fafbfc; border: 1px solid #dcdcde; border-radius: 6px; padding: 14px; }
+                .swml-qbank-card h3 { margin: 0 0 4px; font-size: 14px; font-family: monospace; }
+                .swml-qbank-state { color: #555; font-size: 12px; margin-bottom: 8px; }
                 .swml-qbank-state.override { color: #135e96; font-weight: 600; }
-                .swml-qbank-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+                .swml-qbank-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: flex-start; }
                 .swml-qbank-actions form { margin: 0; }
                 .swml-qbank-actions input[type="file"] { font-size: 11px; max-width: 180px; }
                 .swml-qbank-actions button { font-size: 12px; }
+                .swml-qbank-accept-hint { display: block; color: #666; font-size: 10px; margin-top: 2px; }
+                .swml-qbank-count { font-size: 12px; color: #666; font-weight: normal; margin-left: 6px; }
             </style>
 
-            <div class="swml-qbank-grid">
-            <?php foreach ($slugs as $slug):
-                $bundled_path  = $bundled_dir . $slug . '.json';
-                $override_path = $uploads_dir ? ($uploads_dir . '/' . $slug . '.json') : null;
-                $bundled_ver   = $this->read_version($bundled_path);
-                $override_ver  = $override_path ? $this->read_version($override_path) : null;
-                $has_override  = ($override_ver !== null);
-                $upload_url    = admin_url('admin-post.php');
-                $upload_nonce  = wp_create_nonce('swml_qbank_action_' . $slug);
+            <?php foreach ($groups as $board => $subjects):
+                $board_count = 0;
+                foreach ($subjects as $list) $board_count += count($list);
+                // Default-open for AQA only (others empty until shipped); user can collapse.
+                $board_open = ($board === 'AQA');
+                // Stable subject order.
+                ksort($subjects);
             ?>
-                <div class="swml-qbank-card">
-                    <h2><?php echo esc_html($slug); ?></h2>
-                    <div class="swml-qbank-state <?php echo $has_override ? 'override' : ''; ?>">
-                        <?php if ($has_override): ?>
-                            Override active — template_version <?php echo (int)$override_ver; ?>
-                            (bundled default: v<?php echo (int)$bundled_ver; ?>)
-                        <?php else: ?>
-                            Bundled default — template_version <?php echo (int)$bundled_ver; ?>
-                        <?php endif; ?>
-                    </div>
-                    <div class="swml-qbank-actions">
-                        <form method="post" action="<?php echo esc_url($upload_url); ?>" enctype="multipart/form-data">
-                            <input type="hidden" name="action" value="swml_qbank_upload">
-                            <input type="hidden" name="slug" value="<?php echo esc_attr($slug); ?>">
-                            <input type="hidden" name="_wpnonce" value="<?php echo esc_attr($upload_nonce); ?>">
-                            <input type="file" name="qbank_json" accept=".json,.md,application/json,text/markdown,text/plain" required>
-                            <small style="display:block;color:#666;margin-top:2px"><?php echo isset(self::$parser_map[$slug]) ? '.md or .json accepted' : '.json only (no MD parser registered)'; ?></small>
-                            <button type="submit" class="button button-primary">Upload</button>
-                        </form>
-                        <?php if ($has_override): ?>
-                            <form method="post" action="<?php echo esc_url($upload_url); ?>" onsubmit="return confirm('Revert <?php echo esc_js($slug); ?> to bundled default? The uploaded JSON will be deleted.');">
-                                <input type="hidden" name="action" value="swml_qbank_revert">
-                                <input type="hidden" name="slug" value="<?php echo esc_attr($slug); ?>">
-                                <input type="hidden" name="_wpnonce" value="<?php echo esc_attr($upload_nonce); ?>">
-                                <button type="submit" class="button">Revert</button>
-                            </form>
-                        <?php endif; ?>
-                        <form method="post" action="<?php echo esc_url($upload_url); ?>" onsubmit="return confirm('Force-refresh every existing student snapshot for <?php echo esc_js($slug); ?>? Per-element merge preserves typed plan + response content.');">
-                            <input type="hidden" name="action" value="swml_qbank_refresh">
-                            <input type="hidden" name="slug" value="<?php echo esc_attr($slug); ?>">
-                            <input type="hidden" name="_wpnonce" value="<?php echo esc_attr($upload_nonce); ?>">
-                            <button type="submit" class="button">Force-refresh students</button>
-                        </form>
-                    </div>
-                </div>
+                <details class="swml-qbank-board"<?php echo $board_open ? ' open' : ''; ?>>
+                    <summary><?php echo esc_html($board); ?><span class="swml-qbank-count">(<?php echo (int)$board_count; ?> texts)</span></summary>
+                    <?php foreach ($subjects as $subject => $subject_slugs):
+                        sort($subject_slugs);
+                    ?>
+                        <details class="swml-qbank-subject" open>
+                            <summary><?php echo esc_html($subject); ?><span class="swml-qbank-count">(<?php echo count($subject_slugs); ?>)</span></summary>
+                            <div class="swml-qbank-grid">
+                            <?php foreach ($subject_slugs as $slug):
+                                $bundled_path  = $bundled_dir . $slug . '.json';
+                                $override_path = $uploads_dir ? ($uploads_dir . '/' . $slug . '.json') : null;
+                                $bundled_ver   = $this->read_version($bundled_path);
+                                $override_ver  = $override_path ? $this->read_version($override_path) : null;
+                                $has_override  = ($override_ver !== null);
+                                $upload_url    = admin_url('admin-post.php');
+                                $upload_nonce  = wp_create_nonce('swml_qbank_action_' . $slug);
+                                $accepts_md    = isset(self::$parser_map[$slug]);
+                            ?>
+                                <div class="swml-qbank-card">
+                                    <h3><?php echo esc_html($slug); ?></h3>
+                                    <div class="swml-qbank-state <?php echo $has_override ? 'override' : ''; ?>">
+                                        <?php if ($has_override): ?>
+                                            Override v<?php echo (int)$override_ver; ?> (bundled v<?php echo (int)$bundled_ver; ?>)
+                                        <?php else: ?>
+                                            Bundled v<?php echo (int)$bundled_ver; ?>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="swml-qbank-actions">
+                                        <form method="post" action="<?php echo esc_url($upload_url); ?>" enctype="multipart/form-data">
+                                            <input type="hidden" name="action" value="swml_qbank_upload">
+                                            <input type="hidden" name="slug" value="<?php echo esc_attr($slug); ?>">
+                                            <input type="hidden" name="_wpnonce" value="<?php echo esc_attr($upload_nonce); ?>">
+                                            <input type="file" name="qbank_json" accept=".json,.md,application/json,text/markdown,text/plain" required>
+                                            <span class="swml-qbank-accept-hint"><?php echo $accepts_md ? '.md or .json' : '.json only'; ?></span>
+                                            <button type="submit" class="button button-primary">Upload</button>
+                                        </form>
+                                        <?php if ($has_override): ?>
+                                            <form method="post" action="<?php echo esc_url($upload_url); ?>" onsubmit="return confirm('Revert <?php echo esc_js($slug); ?> to bundled?');">
+                                                <input type="hidden" name="action" value="swml_qbank_revert">
+                                                <input type="hidden" name="slug" value="<?php echo esc_attr($slug); ?>">
+                                                <input type="hidden" name="_wpnonce" value="<?php echo esc_attr($upload_nonce); ?>">
+                                                <button type="submit" class="button">Revert</button>
+                                            </form>
+                                        <?php endif; ?>
+                                        <form method="post" action="<?php echo esc_url($upload_url); ?>" onsubmit="return confirm('Force-refresh all student snapshots for <?php echo esc_js($slug); ?>?');">
+                                            <input type="hidden" name="action" value="swml_qbank_refresh">
+                                            <input type="hidden" name="slug" value="<?php echo esc_attr($slug); ?>">
+                                            <input type="hidden" name="_wpnonce" value="<?php echo esc_attr($upload_nonce); ?>">
+                                            <button type="submit" class="button">Refresh students</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                            </div>
+                        </details>
+                    <?php endforeach; ?>
+                </details>
             <?php endforeach; ?>
-            </div>
         </div>
         <?php
     }
