@@ -2918,6 +2918,30 @@ body.swml-page {
     border-color: rgba(81,218,207,0.4);
     background: rgba(81,218,207,0.05);
 }
+/* v7.19.179: Step 1 picker — "Continue here" highlight on most-recent project. */
+.swml-cw-project-card.swml-cw-project-continue {
+    border-color: rgba(28,217,145,0.55);
+    background: rgba(28,217,145,0.06);
+    box-shadow: 0 0 0 1px rgba(28,217,145,0.25) inset, 0 8px 24px -12px rgba(28,217,145,0.4);
+}
+.swml-cw-project-card.swml-cw-project-continue:hover {
+    border-color: rgba(28,217,145,0.8);
+    background: rgba(28,217,145,0.1);
+}
+.swml-cw-project-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(28,217,145,0.18);
+    color: #1CD991;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+    position: relative;
+    z-index: 1;
+}
 .swml-cw-project-name {
     font-size: 16px;
     font-weight: 700;

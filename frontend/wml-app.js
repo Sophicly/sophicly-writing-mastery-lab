@@ -561,6 +561,21 @@
                     });
                     return;
                 }
+                // v7.19.179: Step 1 entry without explicit cw_project_id URL param
+                // → show project picker so student confirms continue-vs-new before
+                // Writer Profile foundation is set against possibly-wrong project.
+                // Other steps (2-29) + explicit deep-link skip the picker.
+                if (state.task === 'cw_step_1' && !_urlProjectIdDL) {
+                    renderCwStep1Picker(projects, (picked) => {
+                        state.cwProjectId = picked.id;
+                        state.cwProjectName = picked.name || '';
+                        try { sessionStorage.setItem('swml_cw_active_project', picked.id); } catch (_) {}
+                        state.canvasTimer = 0;
+                        state.step = 0;
+                        WML.renderCanvasWorkspace();
+                    });
+                    return;
+                }
                 // v7.17.44: URL > sessionStorage > most-recent
                 let picked = null;
                 if (_urlProjectIdDL) picked = projects.find(p => p.id === _urlProjectIdDL) || null;
@@ -1382,6 +1397,51 @@
 
             // Auto-focus the input
             requestAnimationFrame(() => nameInput.focus());
+        });
+    }
+
+    // ── Step 1 Project Picker (v7.19.179) ──
+    // Fires when student enters cw_step_1 without an explicit ?cw_project_id=
+    // URL param AND has at least one existing project. Writer Profile (Step 1)
+    // sets the foundation for one specific project — auto-picking most-recent
+    // risks landing the student in the wrong project. Picker reuses the
+    // selector grid; most-recent project highlighted as "Continue here".
+    function renderCwStep1Picker(projects, onPicked) {
+        projects.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+        const mostRecent = projects[0];
+        transitionSetup(inner => {
+            inner.appendChild(renderLogo());
+            inner.appendChild(el('h2', { textContent: 'Welcome back', style: { marginBottom: '8px' } }));
+            inner.appendChild(el('p', { className: 'swml-setup-hint', textContent: 'Step 1 sets the Writer Profile foundation for one project. Continue your current project or start a new one.' }));
+
+            const grid = el('div', { className: 'swml-cw-project-grid' });
+            projects.forEach((p, idx) => {
+                const isContinue = idx === 0;
+                const pCard = el('div', { className: 'swml-cw-project-card' + (p.status === 'completed' ? ' completed' : '') + (isContinue ? ' swml-cw-project-continue' : '') });
+                const statusIcon = p.status === 'completed' ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="#1CD991"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M7.5 12.5l3 3 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>' : '';
+                pCard.innerHTML = statusIcon;
+                if (isContinue) {
+                    pCard.appendChild(el('div', { className: 'swml-cw-project-badge', textContent: 'Continue here' }));
+                }
+                pCard.appendChild(el('div', { className: 'swml-cw-project-name', textContent: p.name || 'Untitled' }));
+                pCard.appendChild(el('div', { className: 'swml-cw-project-meta', textContent: p.status === 'completed' ? 'Completed' : `Step ${p.current_step || 0} of 29` }));
+                const updated = p.updated ? new Date(p.updated) : null;
+                if (updated) pCard.appendChild(el('div', { className: 'swml-cw-project-date', textContent: 'Last worked: ' + updated.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) }));
+                pCard.addEventListener('click', () => onPicked(p));
+                grid.appendChild(pCard);
+            });
+
+            // "New Project" card
+            const newCard = el('div', { className: 'swml-cw-project-card swml-cw-project-new' });
+            newCard.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+            newCard.appendChild(el('div', { className: 'swml-cw-project-name', textContent: 'New Project' }));
+            newCard.appendChild(el('div', { className: 'swml-cw-project-meta', textContent: 'Start fresh' }));
+            newCard.addEventListener('click', () => {
+                renderCwProjectNaming(projects, (newProject) => onPicked(newProject));
+            });
+            grid.appendChild(newCard);
+
+            inner.appendChild(grid);
         });
     }
 
