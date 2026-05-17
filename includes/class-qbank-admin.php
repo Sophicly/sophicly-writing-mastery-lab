@@ -102,8 +102,8 @@ class SWML_Qbank_Admin {
         $parent = class_exists('Sophicly_Admin_Hub') ? 'sophicly' : 'options-general.php';
         add_submenu_page(
             $parent,
-            'WML Crib Templates',
-            'WML Crib Templates',
+            'WML Exam Question Banks',
+            'WML Exam Question Banks',
             'manage_options',
             'sophicly-wml-qbanks',
             [$this, 'render_page']
@@ -180,14 +180,21 @@ class SWML_Qbank_Admin {
             $subject = $this->detect_subject($text_stub);
             $groups[$board][$subject][] = $slug;
         }
-        // Stable order: AQA first, then alphabetical.
+        // v7.19.183: pre-seed empty placeholders for the other GCSE boards so
+        // Neil can see what's still to come at a glance. Order: AQA first
+        // (real cribs), then alphabetical placeholders. Boards with no cribs
+        // render an "(empty — no cribs uploaded yet)" stub.
+        $all_boards = ['AQA', 'EDEXCEL', 'EDUQAS', 'WJEC', 'OCR', 'CCEA', 'SQA', 'IGCSE'];
+        foreach ($all_boards as $b) {
+            if (!isset($groups[$b])) $groups[$b] = [];
+        }
         uksort($groups, function ($a, $b) { if ($a === 'AQA') return -1; if ($b === 'AQA') return 1; return strcmp($a, $b); });
         ?>
         <div class="wrap">
-            <h1>WML Crib Templates</h1>
-            <p style="max-width:720px">Upload an updated MD or JSON crib for any text. The override
-            replaces the shipping default. Existing student snapshots auto-merge on next canvas
-            load — typed plan + response content preserved; everything else refreshes.</p>
+            <h1>WML Exam Question Banks</h1>
+            <p style="max-width:720px">Upload an updated MD or JSON exam-question-bank for any text.
+            The override replaces the shipping default. Existing student snapshots auto-merge on
+            next canvas load — typed plan + response content preserved; everything else refreshes.</p>
 
             <?php if ($notice): ?>
                 <div class="notice notice-info is-dismissible"><p><?php echo esc_html($notice); ?></p></div>
@@ -222,7 +229,10 @@ class SWML_Qbank_Admin {
                 ksort($subjects);
             ?>
                 <details class="swml-qbank-board"<?php echo $board_open ? ' open' : ''; ?>>
-                    <summary><?php echo esc_html($board); ?><span class="swml-qbank-count">(<?php echo (int)$board_count; ?> texts)</span></summary>
+                    <summary><?php echo esc_html($board); ?><span class="swml-qbank-count"><?php echo $board_count === 0 ? '(empty — no cribs uploaded yet)' : '(' . (int)$board_count . ' texts)'; ?></span></summary>
+                    <?php if ($board_count === 0): ?>
+                        <p style="padding: 14px 18px; color: #666; font-size: 13px; margin: 0;">No <?php echo esc_html($board); ?> cribs registered yet. Upload an MD/JSON named <code><?php echo esc_html(strtolower($board)); ?>_&lt;text_slug&gt;.json</code> or <code>&lt;text_slug&gt;_<?php echo esc_html(strtolower($board)); ?>.json</code> via any existing card, then refresh this page — the file will move into this group automatically.</p>
+                    <?php endif; ?>
                     <?php foreach ($subjects as $subject => $subject_slugs):
                         sort($subject_slugs);
                     ?>
@@ -283,9 +293,21 @@ class SWML_Qbank_Admin {
         <?php
     }
 
-    /** Validate slug against bundled-slugs whitelist. */
+    /**
+     * Validate slug. Accepts (a) any existing bundled slug, OR
+     * (b) v7.19.183: a board-suffixed/prefixed variant of a known text stub
+     *     (e.g. inspector_calls_edexcel, edexcel_inspector_calls). This allows
+     *     new-board uploads without a bundled default. Pattern-checked
+     *     ([a-z0-9_]+) to defeat path traversal.
+     */
     private function valid_slug($slug) {
-        return in_array($slug, $this->bundled_slugs(), true);
+        if (!is_string($slug) || $slug === '') return false;
+        if (!preg_match('/^[a-z0-9_]+$/', $slug)) return false;
+        if (in_array($slug, $this->bundled_slugs(), true)) return true;
+        // Allow board-prefixed/suffixed variants of known text stubs.
+        [$board, $stub] = $this->detect_board_and_text($slug);
+        if ($board === 'AQA') return false; // no bundled match + no board suffix → reject
+        return in_array($stub, $this->bundled_slugs(), true);
     }
 
     /** Common entry guard for POST handlers. Returns sanitised slug or wp_die's. */
