@@ -2347,6 +2347,14 @@ class SWML_REST_API {
      * Plan / preamble / extract / question / frame sections are pedagogy-
      * driven readonly content — always overwritten with new template.
      */
+    /**
+     * v7.19.180: public entry point so eager-refresh admin actions
+     * (class-qbank-admin.php) can call the same merge as the on-load path.
+     */
+    public static function run_template_merge($new_template_html, $old_saved_html) {
+        return self::merge_student_responses_into_template($new_template_html, $old_saved_html);
+    }
+
     private static function merge_student_responses_into_template($new_template_html, $old_saved_html) {
         if (empty($old_saved_html) || empty($new_template_html)) return $new_template_html;
 
@@ -2370,7 +2378,22 @@ class SWML_REST_API {
                 $saved_responses[$label] = $node;
             }
         }
-        if (empty($saved_responses)) {
+
+        // v7.19.180: Collect saved plan blocks keyed by section-label for per-element merge.
+        // Plans are preserved at element granularity (Hook / Building / Thesis / Topic
+        // sentences / Conclusion) rather than whole-block, so students who typed only
+        // a hook still get the new template's building + thesis on next load.
+        $saved_plans = [];
+        $plan_nodes = $old_xpath->query('//div[@data-section-type="plan"]');
+        if ($plan_nodes !== false) {
+            foreach ($plan_nodes as $node) {
+                $label = $node->getAttribute('data-section-label');
+                if (empty($label)) continue;
+                $saved_plans[$label] = $node;
+            }
+        }
+
+        if (empty($saved_responses) && empty($saved_plans)) {
             libxml_clear_errors();
             return $new_template_html;
         }
@@ -2389,6 +2412,41 @@ class SWML_REST_API {
             }
         }
 
+        // v7.19.180: Plan-block per-element merge.
+        // For each matched old/new plan pair, walk paragraphs identified by their
+        // leading bullet + keyword (e.g. "• Hook (...)", "• Building sentence", "• Thesis").
+        // Replace the new template's paragraph with the saved paragraph ONLY where the
+        // student's substantive text (after stripping the bullet/keyword prefix) is
+        // ≥ 15 chars. Empty or scaffold-only paragraphs keep the new template version.
+        $new_plan_nodes = $new_xpath->query('//div[@data-section-type="plan"]');
+        if ($new_plan_nodes !== false) {
+            foreach ($new_plan_nodes as $new_plan) {
+                $label = $new_plan->getAttribute('data-section-label');
+                if (!isset($saved_plans[$label])) continue;
+                $old_plan = $saved_plans[$label];
+
+                $old_elements = self::_parse_plan_elements($old_plan);
+                $new_elements = self::_parse_plan_elements($new_plan);
+
+                // Fallback: if old plan has no recognised keyword-prefixed paragraphs
+                // (student restructured), preserve the whole old plan as-is.
+                if (empty($old_elements)) {
+                    $imported = $new_dom->importNode($old_plan->cloneNode(true), true);
+                    $new_plan->parentNode->replaceChild($imported, $new_plan);
+                    continue;
+                }
+
+                // Per-element merge.
+                foreach ($new_elements as $keyword => $new_el) {
+                    if (!isset($old_elements[$keyword])) continue;
+                    $old_el = $old_elements[$keyword];
+                    if (mb_strlen($old_el['substantive']) < 15) continue; // untouched → keep new template
+                    $imported = $new_dom->importNode($old_el['node']->cloneNode(true), true);
+                    $new_el['node']->parentNode->replaceChild($imported, $new_el['node']);
+                }
+            }
+        }
+
         // Extract inner HTML of the wrapper div we added
         $wrapper = $new_xpath->query('//div[@id="__wrap__"]')->item(0);
         $merged = '';
@@ -2400,6 +2458,36 @@ class SWML_REST_API {
 
         libxml_clear_errors();
         return $merged !== '' ? $merged : $new_template_html;
+    }
+
+    /**
+     * v7.19.180: Parse a plan block's <p> children into keyword-keyed elements.
+     * Expects each paragraph to lead with "• Keyword: ..." (or "· Keyword: ...").
+     * Returns ['hook' => ['node' => DOMNode, 'substantive' => 'text after keyword'], ...].
+     * Empty array if no paragraph matches the bullet+keyword pattern (unparseable plan).
+     */
+    private static function _parse_plan_elements(\DOMNode $plan_node) {
+        $result = [];
+        foreach ($plan_node->childNodes as $child) {
+            if ($child->nodeType !== XML_ELEMENT_NODE) continue;
+            if (strtolower($child->nodeName) !== 'p') continue;
+            $text = $child->textContent;
+            if ($text === null) continue;
+            $text = trim($text);
+            if ($text === '') continue;
+            // Match a leading bullet + keyword + colon.
+            if (!preg_match('/^[\xE2\x80\xA2\xC2\xB7•·]\s*([^:]+?)\s*:/u', $text, $m)) continue;
+            $keyword_raw = trim($m[1]);
+            // Normalise: lowercase, drop parenthesised qualifier ("Hook (historical fact)" → "hook").
+            $keyword = preg_replace('/\s*\([^)]*\)\s*/u', '', $keyword_raw);
+            $keyword = strtolower(trim($keyword));
+            if ($keyword === '') continue;
+            // Substantive text = textContent after first colon, stripped.
+            $colon_pos = mb_strpos($text, ':');
+            $after_colon = $colon_pos === false ? '' : trim(mb_substr($text, $colon_pos + 1));
+            $result[$keyword] = ['node' => $child, 'substantive' => $after_colon];
+        }
+        return $result;
     }
 
     // ═══════════════════════════════════════════
@@ -3885,6 +3973,25 @@ class SWML_REST_API {
             if ($has_board_prefix) {
                 $bare = substr($text_norm, strlen($board_norm) + 1);
                 if ($bare !== '') $candidates[] = $bare . '.json';
+            }
+        }
+
+        // v7.19.180: Check admin-uploaded override first. wp-content/uploads/sophicly-qbank-uploads/{slug}.json
+        // wins over the bundled default; deleting the uploads file falls back to bundled.
+        $uploads = function_exists('wp_upload_dir') ? wp_upload_dir() : null;
+        $uploads_dir = (is_array($uploads) && !empty($uploads['basedir']))
+            ? rtrim($uploads['basedir'], '/\\') . '/sophicly-qbank-uploads/'
+            : null;
+        if ($uploads_dir) {
+            foreach ($candidates as $filename) {
+                $override = $uploads_dir . $filename;
+                if (file_exists($override)) {
+                    $raw = file_get_contents($override);
+                    $data = json_decode($raw, true);
+                    if (is_array($data) && !empty($data['html'])) {
+                        return $data;
+                    }
+                }
             }
         }
 
