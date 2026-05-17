@@ -24,6 +24,20 @@ class SWML_Qbank_Admin {
     const UPLOADS_SUBDIR = 'sophicly-qbank-uploads';
     const MAX_UPLOAD_BYTES = 1048576; // 1 MB
 
+    /** v7.19.181: per-slug parser routing for .md uploads. */
+    private static $parser_map = [
+        'inspector_calls'   => ['script' => 'qbank-modern-text-md-to-tiptap.js', 'mode' => 'file_out'],
+        'blood_brothers'    => ['script' => 'qbank-modern-text-md-to-tiptap.js', 'mode' => 'file_out'],
+        'animal_farm'       => ['script' => 'qbank-modern-text-md-to-tiptap.js', 'mode' => 'file_out'],
+        'anita_and_me'      => ['script' => 'qbank-modern-text-md-to-tiptap.js', 'mode' => 'file_out'],
+        'lord_of_the_flies' => ['script' => 'qbank-modern-text-md-to-tiptap.js', 'mode' => 'file_out'],
+        'leave_taking'      => ['script' => 'qbank-modern-text-md-to-tiptap.js', 'mode' => 'file_out'],
+        'worlds_lives_poetry'       => ['script' => 'qbank-md-to-tiptap.js', 'mode' => 'stdout'],
+        'love_relationships_poetry' => ['script' => 'qbank-md-to-tiptap.js', 'mode' => 'stdout'],
+        'power_conflict_poetry'     => ['script' => 'qbank-md-to-tiptap.js', 'mode' => 'stdout'],
+        'unseen_poetry'             => ['script' => 'qbank-unseen-poetry-to-tiptap.js', 'mode' => 'stdout'],
+    ];
+
     private static $instance = null;
 
     public static function instance() {
@@ -137,7 +151,8 @@ class SWML_Qbank_Admin {
                             <input type="hidden" name="action" value="swml_qbank_upload">
                             <input type="hidden" name="slug" value="<?php echo esc_attr($slug); ?>">
                             <input type="hidden" name="_wpnonce" value="<?php echo esc_attr($upload_nonce); ?>">
-                            <input type="file" name="qbank_json" accept=".json,application/json" required>
+                            <input type="file" name="qbank_json" accept=".json,.md,application/json,text/markdown,text/plain" required>
+                            <small style="display:block;color:#666;margin-top:2px"><?php echo isset(self::$parser_map[$slug]) ? '.md or .json accepted' : '.json only (no MD parser registered)'; ?></small>
                             <button type="submit" class="button button-primary">Upload</button>
                         </form>
                         <?php if ($has_override): ?>
@@ -182,6 +197,71 @@ class SWML_Qbank_Admin {
         exit;
     }
 
+    /**
+     * v7.19.181: locate node binary on the server.
+     * Returns absolute path or null. Checks common locations then `command -v`.
+     */
+    private function find_node_binary() {
+        $candidates = [
+            '/usr/bin/node',
+            '/usr/local/bin/node',
+            '/opt/homebrew/bin/node',
+            '/home/runcloud/.nvm/versions/node/current/bin/node',
+        ];
+        foreach ($candidates as $p) if (is_executable($p)) return $p;
+        if (function_exists('shell_exec')) {
+            $which = @shell_exec('command -v node 2>/dev/null');
+            if (is_string($which)) {
+                $which = trim($which);
+                if ($which && is_executable($which)) return $which;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * v7.19.181: parse uploaded MD via the matching Node converter script.
+     * Returns raw JSON string on success, or redirects with notice on failure.
+     */
+    private function parse_md_via_node($slug, $tmp_md_path) {
+        if (!isset(self::$parser_map[$slug])) {
+            $this->redirect_with_notice('MD upload not supported for ' . $slug . ' (no parser registered). Upload pre-converted JSON instead.');
+        }
+        if (!function_exists('shell_exec')) {
+            $this->redirect_with_notice('MD upload requires shell_exec on the server. Upload pre-converted JSON instead.');
+        }
+        $node = $this->find_node_binary();
+        if (!$node) {
+            $this->redirect_with_notice('MD upload requires Node on the server. Upload pre-converted JSON instead.');
+        }
+        $route  = self::$parser_map[$slug];
+        $script = SWML_PATH . 'tools/' . $route['script'];
+        if (!file_exists($script)) {
+            $this->redirect_with_notice('MD parser script missing: ' . $route['script']);
+        }
+
+        if ($route['mode'] === 'file_out') {
+            $tmp_json = $tmp_md_path . '.json';
+            $cmd = escapeshellcmd($node) . ' ' . escapeshellarg($script) . ' ' . escapeshellarg($tmp_md_path) . ' ' . escapeshellarg($tmp_json) . ' 2>&1';
+            $log = @shell_exec($cmd);
+            $raw = file_exists($tmp_json) ? @file_get_contents($tmp_json) : '';
+            if (file_exists($tmp_json)) @unlink($tmp_json);
+            if (!$raw) {
+                $excerpt = is_string($log) ? mb_substr(trim($log), 0, 200) : '';
+                $this->redirect_with_notice('MD parse failed: ' . ($excerpt ?: 'empty output from parser'));
+            }
+            return $raw;
+        }
+
+        // stdout mode
+        $cmd = escapeshellcmd($node) . ' ' . escapeshellarg($script) . ' ' . escapeshellarg($tmp_md_path);
+        $raw = @shell_exec($cmd);
+        if (!is_string($raw) || trim($raw) === '') {
+            $this->redirect_with_notice('MD parse failed — Node returned empty output.');
+        }
+        return $raw;
+    }
+
     public function handle_upload() {
         $slug = $this->guard_post();
         if (empty($_FILES['qbank_json']['tmp_name'])) $this->redirect_with_notice('Upload failed — no file received.');
@@ -189,12 +269,28 @@ class SWML_Qbank_Admin {
         if ((int)$_FILES['qbank_json']['size'] > self::MAX_UPLOAD_BYTES) $this->redirect_with_notice('Upload failed — file too large (>1 MB).');
 
         $tmp = $_FILES['qbank_json']['tmp_name'];
-        $raw = @file_get_contents($tmp);
-        if (!$raw) $this->redirect_with_notice('Upload failed — could not read uploaded file.');
+        $orig_name = isset($_FILES['qbank_json']['name']) ? (string)$_FILES['qbank_json']['name'] : '';
+        $ext = strtolower(pathinfo($orig_name, PATHINFO_EXTENSION));
+
+        if ($ext === 'md') {
+            // Copy upload to a stable tmp path with .md suffix so the Node parser can read it.
+            $tmp_md = wp_tempnam('qbank-md-' . $slug . '.md');
+            // wp_tempnam may not preserve extension; rename for safety.
+            $tmp_md_md = $tmp_md . '.md';
+            if (!@rename($tmp_md, $tmp_md_md)) $tmp_md_md = $tmp_md; // fall back
+            if (!@move_uploaded_file($tmp, $tmp_md_md) && !@copy($tmp, $tmp_md_md)) {
+                $this->redirect_with_notice('Upload failed — could not stage MD file for parsing.');
+            }
+            $raw = $this->parse_md_via_node($slug, $tmp_md_md);
+            @unlink($tmp_md_md);
+        } else {
+            $raw = @file_get_contents($tmp);
+            if (!$raw) $this->redirect_with_notice('Upload failed — could not read uploaded file.');
+        }
 
         $data = json_decode($raw, true);
         if (!is_array($data) || empty($data['html']) || !is_string($data['html'])) {
-            $this->redirect_with_notice('Upload failed — JSON missing valid `html` field.');
+            $this->redirect_with_notice('Upload failed — ' . ($ext === 'md' ? 'parsed JSON' : 'JSON') . ' missing valid `html` field.');
         }
 
         // Auto-bump template_version above bundled + uploaded current values.
