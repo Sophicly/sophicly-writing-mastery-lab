@@ -985,6 +985,16 @@ class SWML_Protocol_Router {
         $task    = $context['task'] ?? 'planning';
         $step    = (int) ($context['step'] ?? 1);
 
+        // v7.19.184: redraft_assessment aliases to assessment for manifest lookup.
+        // Manifests declare protocol modules under `assessment` only; without this alias,
+        // Phase 2 redraft sessions fall through to `return null` (manifest missing task) and
+        // run with no protocol module at all — AI freelances mark scheme + AOs + scaffolding.
+        // Task contract (display name, lexicon, task_family) stays distinct; only protocol
+        // shell is shared with the Phase 1 diagnostic assessment.
+        if ($task === 'redraft_assessment') {
+            $task = 'assessment';
+        }
+
         // v7.17.62: Defensive subject normalisation. Bridge dispatchers occasionally
         // emit hyphenated or short-form slugs (e.g. 'language-p1', 'language_p1').
         // Canonical WML keys use underscores + the 'paper_N' / 'languageN' shapes
@@ -3013,10 +3023,14 @@ TEMPLATE;
             $preamble .= "When asking for anchor quotes, always offer a 'choose for me' option (A — I'll choose my own / B — Choose for me).\n";
             $preamble .= "This ensures every step has clickable buttons for the student.\n";
 
-        } elseif ($task === 'assessment') {
+        } elseif ($task === 'assessment' || $task === 'redraft_assessment') {
             // v7.15.113: Spec-driven assessment preamble.
             // Attempt to build a canonical schema block from language-paper-specs.json /
             // literature-paper-specs.json. Falls back to legacy essay preamble when no spec.
+            // v7.19.184: redraft_assessment shares the entire assessment preamble shell
+            // (schema block + hard gates + metacog mandate + gold-standard mandate). Without
+            // this branch, Phase 2 redraft sessions skipped every behavioural guardrail and
+            // produced freestyle mark-scheme output (catastrophic AO + tariff failures).
             $schema_block = $this->build_assessment_schema_block($board, $subject);
             if ($schema_block) {
                 // v7.17.5: Pattern-based structure ban + universal gold-standard DELIVERY mandate.
