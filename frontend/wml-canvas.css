@@ -6970,7 +6970,11 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     /* v7.17.6: Positioned BELOW the button (previously above via bottom:100%).
        The scroll container .swml-canvas-chat-messages has overflow-y:auto and
        was clipping the tooltip when it rendered above the first message. Also
-       reworded to "Copy feedback" so students know this is the feedback copier. */
+       reworded to "Copy feedback" so students know this is the feedback copier.
+       v7.19.188: harden against ancestor opacity / backdrop-filter cascading
+       through — same bug that bit .swml-copy-tooltip earlier (wml-styles.css:1763).
+       Use background-color + !important + explicit background-image:none so the
+       tooltip stays solid regardless of parent bubble's translucency. */
     content: 'Copy feedback';
     position: absolute;
     top: 100%;
@@ -6981,13 +6985,15 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     font-size: 10px;
     font-weight: 500;
     white-space: nowrap;
-    background: #14121e;
-    color: #fff;
+    background-color: #14121e !important;
+    background-image: none !important;
+    color: #fff !important;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.15s ease;
     z-index: 9999;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .swml-copy-assess:hover::after {
     opacity: 1;
@@ -7056,8 +7062,11 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 
 /* ── Light mode tooltip ── */
 .swml-canvas-light .swml-copy-assess::after {
-    background: #28292b;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    background-color: #28292b !important;
+    background-image: none !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    border-color: rgba(0, 0, 0, 0.12);
 }
 
 /* ── Phase Completion Card ── */
