@@ -7000,6 +7000,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 .swml-copy-assess:hover {
     color: #7DF9E9 !important;
+    /* v7.19.189: force full opacity on the button itself when hovered.
+       Parent rule .swml-bubble-content:hover .swml-bubble-copy sets opacity:0.6,
+       which cascades to the ::after tooltip child — opacity is non-overridable
+       from child rules. Same fix pattern as .swml-bubble-copy.swml-copied
+       (wml-styles.css:1344). Tooltip needed solid background to be readable;
+       this completes the fix v7.19.188 started. */
+    opacity: 1 !important;
 }
 .swml-canvas-light .swml-copy-assess {
     color: #5333ed !important;
