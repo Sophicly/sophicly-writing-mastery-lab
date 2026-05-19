@@ -3107,6 +3107,60 @@ TEMPLATE;
                 $preamble .= "Do NOT consolidate multiple paragraph marks into one message. Do NOT skip the Self-Rate cycle for paragraph 2 because you already did one for paragraph 1. Each paragraph repeats the full cycle.\n\n";
                 $preamble .= "Source-of-truth reference for Markdown DSL pattern AND per-paragraph turn cycle: AQA Lang P1 modularised `protocol-a-assessment.md` (mirrors source `AQA GCSE English Language Paper 1 ... v3.2`). Q2/Q3 each fire 2 paragraph cycles; Q4 fires 3 BP cycles; Q5 creative-writing fires 1 at-start cycle. P1 transcript is the gold pattern.\n\n";
 
+                // v7.19.186: STOP-AND-YIELD enforcement. Reeham redraft staging
+                // test (2026-05-19): even with the per-paragraph rule above, the
+                // model batched Q2 P1 + Q2 P2 into a single message after a single
+                // self-rate + AO-targeting cycle (collapsed both assessments,
+                // both mark tables, both gold-standards, then a single Y/C gate).
+                // The cycle wording above describes WHAT to do but does not
+                // explicitly forbid continuing past the Y gate inside the same
+                // message. Helpful-LLM drift: model treated whole-Q2 submission
+                // as license to "save the student turns" by batching. That
+                // destroys half the calibration teaching (P2 reflection never
+                // happens). This block adds an explicit turn-yield directive
+                // with concrete violation/success patterns.
+                $preamble .= "### ⛔ STOP-AND-YIELD BEFORE NEXT PARAGRAPH (v7.19.186)\n\n";
+                $preamble .= "After you deliver Paragraph N's full bundle (acknowledgement + mark breakdown table + penalty codes + paragraph total + Your Paragraph Rewritten to Gold Standard + Optimal Gold Standard Model + Y/C gate), your turn ENDS THERE. End the message. Wait for the student to type Y or C.\n\n";
+                $preamble .= "Do NOT continue to Paragraph N+1's metacog or assessment in the SAME message. Do NOT include a 'Now for Paragraph 2...' header at the bottom of Paragraph 1's reply. Do NOT pre-emptively emit Paragraph 2's self-rate prompt. The student must respond Y first; only THEN do you start a fresh turn with Paragraph 2's metacog cycle (new self-rate prompt with full 1-5 scale + new AO-targeting prompt, both verbatim).\n\n";
+                $preamble .= "**VIOLATION PATTERN (do NOT emit):**\n";
+                $preamble .= "```\n";
+                $preamble .= "[P1 self-rate + AO targeting answered]\n";
+                $preamble .= "## Q2 — Paragraph 1 Assessment\n";
+                $preamble .= "[critique]\n";
+                $preamble .= "Your second paragraph also shows strong instincts — \"furious\" is well-chosen...\n";
+                $preamble .= "[P2 critique smuggled in]\n";
+                $preamble .= "Mark Breakdown — Paragraph 1: [table]\n";
+                $preamble .= "Mark Breakdown — Paragraph 2: [table]\n";
+                $preamble .= "Q2 Total: 5.5/8\n";
+                $preamble .= "Gold Standard rewrite (P1 only)\n";
+                $preamble .= "Type Y when copied.\n";
+                $preamble .= "```\n";
+                $preamble .= "This batches BOTH paragraphs after ONE metacog cycle. Critical protocol failure — P2 self-rate calibration never happens. Student loses half the metacognitive teaching.\n\n";
+                $preamble .= "**SUCCESS PATTERN (DO emit):**\n";
+                $preamble .= "```\n";
+                $preamble .= "TURN 1 (after P1 self-rate + AO targeting):\n";
+                $preamble .= "  ## Q2 — Paragraph 1 Assessment\n";
+                $preamble .= "  [P1 critique ONLY — do not reference P2 yet]\n";
+                $preamble .= "  Mark Breakdown — Paragraph 1: [table]\n";
+                $preamble .= "  Paragraph 1 Total: X/4\n";
+                $preamble .= "  Your Paragraph Rewritten to Gold Standard: [...]\n";
+                $preamble .= "  Optimal Gold Standard Model: [...]\n";
+                $preamble .= "  Type C to clarify, or Y when copied.\n";
+                $preamble .= "  [TURN ENDS — WAIT]\n\n";
+                $preamble .= "TURN 2 (after student types Y):\n";
+                $preamble .= "  Now let's assess your second paragraph for Q2. First, please reflect:\n";
+                $preamble .= "  [Self-Rate prompt VERBATIM with full 1-5 scale]\n";
+                $preamble .= "  [TURN ENDS — WAIT]\n\n";
+                $preamble .= "TURN 3 (after student types rating):\n";
+                $preamble .= "  [AO-Targeting prompt]\n";
+                $preamble .= "  [TURN ENDS — WAIT]\n\n";
+                $preamble .= "TURN 4 (after student types AO response):\n";
+                $preamble .= "  ## Q2 — Paragraph 2 Assessment\n";
+                $preamble .= "  [P2 critique + marks + gold-standard + Y/C gate]\n";
+                $preamble .= "```\n\n";
+                $preamble .= "The per-paragraph cycle is NOT a suggestion — it is the calibration mechanism. Each paragraph gets its own self-assessment-vs-actual-mark moment. Batching destroys that.\n\n";
+                $preamble .= "**Scope:** Q2 P1 + P2; Q3 P1 + P2; Q4 Intro + BP1 + BP2 + BP3 + Conclusion (5 separate turns); Q5 transactional letter/speech (per-paragraph). Q1 retrieval and Q5 creative-writing are SINGLE-CYCLE (no per-paragraph). Q5 creative gets ONE at-start reflection, then holistic AO5+AO6 marking in one turn.\n\n";
+
                 $preamble .= $schema_block;
                 $preamble .= $this->build_assessment_workflow_reminder();
             } else {
