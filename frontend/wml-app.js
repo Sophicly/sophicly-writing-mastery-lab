@@ -4981,11 +4981,25 @@
         // so the button appears on each of Sophia's 6 feedback bubbles (Self-Reflection,
         // Metacognitive Analysis, Deep Learning, Results, Grade & Calculation, Personalised
         // Feedback / Plan / Next Steps). Tolerates "Step N of 6" prefixes and bold/heading variants.
-        const startMatch = text.match(/^(#{2,3}\s+(?:\w[\w\s]*)?Assessment|\*{2}(?:\w[\w\s]*)?(?:Assessment|Formal Assessment)[\w\s()]*\*{2}|#{2,3}\s+Mark Breakdown|🎉\s*\*{2}Quiz Complete!?\*{2}|\*{2}Your Score:\s*\d+\/\d+|(?:#{2,3}\s+|\*{2})?\s*(?:Step\s+\d+\s*:\s*)?(?:Self-Reflection|Metacognitive\s+Analysis|Deep\s+Learning(?:\s+Through\s+Wrong\s+Answers)?|(?:Your\s+)?Results|Grade(?:\s+&\s+(?:Calculation|Calibration))?|Personalised\s+(?:Feedback(?:\s+&\s+Action\s+Plan)?|Plan|Next\s+Steps))(?:\s*\*{2})?)/m);
+        //
+        // v7.19.187: also match Paragraph-N headers that Sophia now emits per the
+        // per-paragraph turn cycle (v7.18.31 + v7.19.186 STOP-AND-YIELD). Examples
+        // surfaced in Reeham redraft staging test (2026-05-19):
+        //   "### Paragraph 1 — Strengths & Weaknesses"
+        //   "### Mark Breakdown — Paragraph 1"
+        //   "### Q2 — Paragraph 1 Assessment"
+        // The pre-v7.19.187 regex required the literal word "Assessment" in the
+        // heading; without it the Copy Feedback button disappeared on the new
+        // per-paragraph bundle. Widening: any ## / ### heading mentioning
+        // "Paragraph N" or "Mark Breakdown" qualifies.
+        // Also widened end-marker to include "Type Y when ..." / "Type Y once ..."
+        // which is the protocol-a-assessment Y/C gate wording (was only catching
+        // "Please copy" / "Have you copied" / "Are you ready" / Hattie tail).
+        const startMatch = text.match(/^(#{2,3}\s+(?:\w[\w\s]*)?Assessment|\*{2}(?:\w[\w\s]*)?(?:Assessment|Formal Assessment)[\w\s()]*\*{2}|#{2,3}\s+Mark Breakdown|#{2,3}\s+(?:[^\n]*?\bParagraph\s+\d+\b[^\n]*|[^\n]*?\bMark Breakdown\b[^\n]*)|🎉\s*\*{2}Quiz Complete!?\*{2}|\*{2}Your Score:\s*\d+\/\d+|(?:#{2,3}\s+|\*{2})?\s*(?:Step\s+\d+\s*:\s*)?(?:Self-Reflection|Metacognitive\s+Analysis|Deep\s+Learning(?:\s+Through\s+Wrong\s+Answers)?|(?:Your\s+)?Results|Grade(?:\s+&\s+(?:Calculation|Calibration))?|Personalised\s+(?:Feedback(?:\s+&\s+Action\s+Plan)?|Plan|Next\s+Steps))(?:\s*\*{2})?)/m);
         if (!startMatch) return null;
         const startIdx = text.indexOf(startMatch[0]);
-        // Find end: "Please copy" or "Have you copied" or "Are you ready" or Hattie questions
-        const endRegex = /(?:Please copy this full feedback|Have you copied everything|Are you ready to (?:move|continue)|Action Plan.*Hattie)/i;
+        // Find end: "Please copy" / "Have you copied" / "Are you ready" / "Type Y when|once" / Hattie
+        const endRegex = /(?:Please copy this full feedback|Have you copied everything|Are you ready to (?:move|continue)|Type\s+\*{0,2}Y\*{0,2}\s+(?:when|once)\b|Action Plan.*Hattie)/i;
         const endMatch = text.substring(startIdx).match(endRegex);
         let endIdx;
         if (endMatch) {
