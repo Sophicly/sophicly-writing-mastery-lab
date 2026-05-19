@@ -4556,6 +4556,28 @@
         }
 
         // ══════════════════════════════════════════
+        //  v7.19.185: Inline "Type Y / Type C" gate
+        //  ══════════════════════════════════════════
+        //  Protocol-a-assessment after every paragraph mark says:
+        //    "Type C to request clarifications now, or type Y once you've copied..."
+        //  Without this matcher, those inline phrases miss the line-anchored
+        //  letterRegex above and fall through to the impliedYesNo fallback
+        //  ("would you like" → "Yes / No, explain more"), which is wrong for
+        //  copy-confirmation gates. Emit single Y button when only Type Y, or
+        //  Y/C pair when both Type Y and Type C clarify appear.
+        const inlineTypeY = /\btype\s+\*{0,2}Y\*{0,2}\s+(?:when|once|to)\b/i.test(text);
+        const inlineTypeC = /\btype\s+\*{0,2}C\*{0,2}\s+(?:to\s+(?:request\s+)?clarif|for\s+clarif)/i.test(text);
+        if (inlineTypeY && inlineTypeC) {
+            return [
+                { label: 'Y — copied, continue', value: 'Y' },
+                { label: 'C — clarify feedback', value: 'C' },
+            ];
+        }
+        if (inlineTypeY) {
+            return [{ label: 'Y — confirm', value: 'Y' }];
+        }
+
+        // ══════════════════════════════════════════
         //  YES/NO: explicit or implied confirmation questions
         // ══════════════════════════════════════════
         const yesNoExplicit = /\byes\s+or\s+no\b/i;
