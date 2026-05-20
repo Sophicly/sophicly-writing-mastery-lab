@@ -4995,7 +4995,21 @@
         // Also widened end-marker to include "Type Y when ..." / "Type Y once ..."
         // which is the protocol-a-assessment Y/C gate wording (was only catching
         // "Please copy" / "Have you copied" / "Are you ready" / Hattie tail).
-        const startMatch = text.match(/^(#{2,3}\s+(?:\w[\w\s]*)?Assessment|\*{2}(?:\w[\w\s]*)?(?:Assessment|Formal Assessment)[\w\s()]*\*{2}|#{2,3}\s+Mark Breakdown|#{2,3}\s+(?:[^\n]*?\bParagraph\s+\d+\b[^\n]*|[^\n]*?\bMark Breakdown\b[^\n]*)|🎉\s*\*{2}Quiz Complete!?\*{2}|\*{2}Your Score:\s*\d+\/\d+|(?:#{2,3}\s+|\*{2})?\s*(?:Step\s+\d+\s*:\s*)?(?:Self-Reflection|Metacognitive\s+Analysis|Deep\s+Learning(?:\s+Through\s+Wrong\s+Answers)?|(?:Your\s+)?Results|Grade(?:\s+&\s+(?:Calculation|Calibration))?|Personalised\s+(?:Feedback(?:\s+&\s+Action\s+Plan)?|Plan|Next\s+Steps))(?:\s*\*{2})?)/m);
+        //
+        // v7.19.193: also catch Q1 (retrieval) + Q4 Intro/Conclusion bundles that
+        // v7.19.187 missed. Symptoms (Neil staging 2026-05-20): no Copy Feedback
+        // button on Q1 list-four result + Q4 Introduction mark breakdown.
+        // - Q1 emits NO "Paragraph N" heading (retrieval, not paragraph-based) and
+        //   NO "Mark Breakdown" heading. Sophia's actual opener: "Now assessing
+        //   Question 1: List four things..." followed by a Statement-by-Statement
+        //   table + "Q1 Total: N/4".
+        // - Q4 Intro emits headings like "### Introduction Mark Breakdown" or
+        //   "### Q4 Introduction" — no "Paragraph" keyword. Conclusion + Source A/B
+        //   sections same shape.
+        // Added universal start patterns: "Now assessing Question N" (Sophia emits
+        // this verbatim for every Q per protocol-a) + ### headings mentioning
+        // Introduction / Conclusion / Body / Source A|B + "Q\d+ Total:" as fallback.
+        const startMatch = text.match(/^(#{2,3}\s+(?:\w[\w\s]*)?Assessment|\*{2}(?:\w[\w\s]*)?(?:Assessment|Formal Assessment)[\w\s()]*\*{2}|#{2,3}\s+Mark Breakdown|#{2,3}\s+(?:[^\n]*?\bParagraph\s+\d+\b[^\n]*|[^\n]*?\bMark Breakdown\b[^\n]*)|#{2,3}\s+(?:[^\n]*?\b(?:Introduction|Conclusion|Body(?:\s+Paragraph)?\s*\d*|Source\s+[AB])\b[^\n]*)|Now\s+assessing\s+Question\s+\d+|Q\d+\s+Total\s*:|🎉\s*\*{2}Quiz Complete!?\*{2}|\*{2}Your Score:\s*\d+\/\d+|(?:#{2,3}\s+|\*{2})?\s*(?:Step\s+\d+\s*:\s*)?(?:Self-Reflection|Metacognitive\s+Analysis|Deep\s+Learning(?:\s+Through\s+Wrong\s+Answers)?|(?:Your\s+)?Results|Grade(?:\s+&\s+(?:Calculation|Calibration))?|Personalised\s+(?:Feedback(?:\s+&\s+Action\s+Plan)?|Plan|Next\s+Steps))(?:\s*\*{2})?)/m);
         if (!startMatch) return null;
         const startIdx = text.indexOf(startMatch[0]);
         // Find end: "Please copy" / "Have you copied" / "Are you ready" / "Before you confirm" / "Type Y when|once" / Hattie
