@@ -3060,6 +3060,13 @@ TEMPLATE;
                 $preamble .= "- Essay/paper structure, format, or type\n";
                 $preamble .= "- Which exam board or paper this is\n\n";
                 $preamble .= "This rule covers EVERY paraphrase. Forbidden openers include (non-exhaustive): \"Before I assess...\", \"Before I dive into...\", \"Before we begin...\", \"Just to confirm the structure...\", \"Let me verify...\", \"I can see [N] paragraphs... is this correct?\", \"Is this the standard [board] [paper] format?\". If your next turn would ask the student to validate ANY aspect of the paper, STOP — you are the authority on structure, they are not.\n\n";
+                // v7.19.197: Reeham 2026-05-20 fresh-chat regression — intermittent
+                // helpful-LLM drift produced "Before I assess your responses, I need
+                // to confirm one thing about your Q4 answer... did you write a full
+                // five-paragraph Q4 essay?" Verbatim match to forbidden-openers but
+                // sampled around the rule. Add the verbatim bad-turn patterns to
+                // increase probability mass on AVOIDING these specific strings.
+                $preamble .= "**Additional forbidden patterns (v7.19.197 — Reeham regression):** \"did you write a full five-paragraph\", \"did you write [N] sections\", \"is this a full [N]-paragraph essay\", \"I need to confirm one thing about your Q[N] answer\", \"make sure I'm reading the structure correctly\", \"could you confirm: did you write\", \"or did you submit fewer sections\". These are paraphrases of paragraph-count confirmation. The canvas submission is the authoritative source for paragraph count — never ask the student.\n\n";
                 $preamble .= "You MAY ask the student to confirm THEIR OWN WORK (\"did you paste the full paragraph?\", \"is this your final answer?\"). That is different — it is about their submission, not paper structure.\n\n";
                 $preamble .= "For workflow order inside the assessment (Part A → Part B → Part C question-by-question → Part D summary), follow the protocol module below EXACTLY.\n\n";
 
@@ -3184,9 +3191,21 @@ TEMPLATE;
                 $preamble .= "   - Search for `On a scale of 1-5` AND `1 = Didn't achieve`.\n";
                 $preamble .= "   - Count = R.\n";
                 $preamble .= "   - If R >= 2: you are pre-emptively emitting the next paragraph's metacog. Delete all but the FIRST (or all if you are mid-paragraph assessment).\n\n";
-                $preamble .= "5. **Final inspection:** scan top-to-bottom. Does your draft contain content for ONE paragraph (mark breakdown + gold-standard + gate) OR ONE prompt step? If YES, send. If it spans MULTIPLE paragraphs / multiple prompt steps, REWRITE before sending.\n\n";
-                $preamble .= "This self-check is mechanical and non-negotiable. Treat it as a syntactic gate. The reason: in prior staging tests (Reeham 2026-05-20 fresh chat), abstract turn-cycle rules + violation/success patterns alone did not prevent batching — the model continued to bias toward 'comprehensive single reply' from training defaults. The self-check forces a count-based audit the model must execute literally.\n\n";
-                $preamble .= "**Pass criterion:** N <= 1, G <= 1, R <= 1, and the message represents exactly ONE step in the protocol turn cycle (metacog prompt, OR self-rate response acknowledgement, OR AO-targeting prompt response, OR ONE paragraph's assessment bundle, OR end-of-Q transition).\n\n";
+                // v7.19.197: Reeham 2026-05-20 fresh-chat regression. Even with
+                // STOP-AND-YIELD + NEVER CONFIRM STRUCTURE rules, model drifted to
+                // "Before I assess your responses, I need to confirm one thing about
+                // your Q4 answer... did you write a full five-paragraph Q4 essay?"
+                // Verbatim forbidden opener. Add mechanical pattern count to the
+                // self-check so the model audits its own draft for structure-
+                // confirmation language before send.
+                $preamble .= "5. **Count structure-confirmation patterns in your draft (v7.19.197).**\n";
+                $preamble .= "   - Search for: `did you write`, `is this a full`, `is it a full`, `make sure I'm reading the structure`, `I need to confirm one thing about your Q\\d`, `confirm the structure`, `or did you submit fewer`, `could you confirm: did you`.\n";
+                $preamble .= "   - Count = S.\n";
+                $preamble .= "   - If S >= 1: **CRITICAL VIOLATION.** You are asking the student to verify paper structure. Delete the question. The canvas is the authoritative source — count sections yourself per Mode A/B/C protocol. Proceed to marking with whatever exists, applying STR2 penalty if applicable.\n";
+                $preamble .= "   - Allowed counter-examples (do NOT count toward S): `did you paste the full paragraph`, `is this your final answer`, `did you intend this as your final response`. These confirm SUBMISSION COMPLETENESS, not paper STRUCTURE.\n\n";
+                $preamble .= "6. **Final inspection:** scan top-to-bottom. Does your draft contain content for ONE paragraph (mark breakdown + gold-standard + gate) OR ONE prompt step? If YES, send. If it spans MULTIPLE paragraphs / multiple prompt steps, REWRITE before sending.\n\n";
+                $preamble .= "This self-check is mechanical and non-negotiable. Treat it as a syntactic gate. The reason: in prior staging tests (Reeham 2026-05-20 fresh chat), abstract turn-cycle rules + violation/success patterns alone did not prevent batching OR structure-confirmation drift — the model continued to bias toward 'comprehensive single reply' AND 'let me clarify with the student' from training defaults. The self-check forces a count-based audit the model must execute literally.\n\n";
+                $preamble .= "**Pass criterion:** N <= 1, G <= 1, R <= 1, S == 0, and the message represents exactly ONE step in the protocol turn cycle (metacog prompt, OR self-rate response acknowledgement, OR AO-targeting prompt response, OR ONE paragraph's assessment bundle, OR end-of-Q transition).\n\n";
 
                 // v7.19.192: PENALTY APPLICATION DISCIPLINE. Reeham redraft staging
                 // test (2026-05-20): Sophia applied three penalties to Q3 P1 that

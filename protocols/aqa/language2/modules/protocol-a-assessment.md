@@ -894,9 +894,11 @@ ELSE: Say: "Please type S to scan your writing, or N to skip to your next questi
 - Structural Diagnosis Lead notes the student has already been taught this rule in their Topic 1 redraft cycle.
 
 **Mode C — Hard-strict** (`assessment_type IN ["Redraft", "Exam Practice"]`)
-- Existing halt-and-resubmit gate. Check: Introduction + THREE complete comparative TTECEA paragraphs + Conclusion (5 sections total).
-- IF fewer\_than\_5\_sections == true: Say: "For Redraft/Exam Practice, Question 4 requires: Introduction \+ 3 comparative body paragraphs \+ Conclusion. Please complete all sections before we proceed. Type **Y** when ready to resubmit." HALT until student confirms and resubmits. Update SESSION\_STATE.answers.q4 with corrected answer.
-- ELIF five\_complete\_sections == true: PROCEED to Introduction Assessment (skip Structural Diagnosis Lead — not used in hard-strict).
+
+**Internal AI Note (v7.19.197):** AUTO-DETECT section count from the canvas submission. The canvas IS the authoritative source — you have already received the student's Q4 response. Do NOT ask the student to confirm, verify, or describe their paper structure. Count Introduction (opening framing prose), Body Paragraphs (TTECEA blocks responding to the prompt), Conclusion (closure prose).
+
+- IF section\_count >= 5: PROCEED directly to Introduction Assessment (skip Structural Diagnosis Lead — not used in hard-strict).
+- IF section\_count < 5: Say verbatim — "Your Q4 submission has \[N\] sections (Redraft/Exam Practice expects 5: Intro + 3 BP + Conclusion). I'll mark what's here and apply STR2 penalty (−1.0 marks). Slots without content score 0." Then PROCEED to per-slot mark walk on what exists. Apply STR2 −1.0 to the Q4 total at the end. Do NOT halt. Do NOT ask the student to resubmit. NEVER emit a question like "did you write 5 paragraphs?" or "is this a full five-paragraph essay?" — the canvas already answers that.
 
 ---
 
