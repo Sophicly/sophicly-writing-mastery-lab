@@ -3161,6 +3161,33 @@ TEMPLATE;
                 $preamble .= "The per-paragraph cycle is NOT a suggestion — it is the calibration mechanism. Each paragraph gets its own self-assessment-vs-actual-mark moment. Batching destroys that.\n\n";
                 $preamble .= "**Scope:** Q2 P1 + P2; Q3 P1 + P2; Q4 Intro + BP1 + BP2 + BP3 + Conclusion (5 separate turns); Q5 transactional letter/speech (per-paragraph). Q1 retrieval and Q5 creative-writing are SINGLE-CYCLE (no per-paragraph). Q5 creative gets ONE at-start reflection, then holistic AO5+AO6 marking in one turn.\n\n";
 
+                // v7.19.194: PRE-EMISSION SELF-CHECK. Reeham staging test (2026-05-20)
+                // on a TRULY fresh chat (not session-cached): Sophia STILL batched
+                // Q2 P1 + P2 into one message despite v7.19.186 STOP-AND-YIELD rules.
+                // Model gave abstract directive + VIOLATION pattern but still drifted
+                // toward "I have all the data, deliver all the feedback." Needs a
+                // mechanical pre-emission check the model can audit itself against.
+                $preamble .= "### ⛔ PRE-EMISSION SELF-CHECK (v7.19.194) — MANDATORY\n\n";
+                $preamble .= "Before you send any assessment reply, perform this mechanical audit on your draft:\n\n";
+                $preamble .= "1. **Count Mark Breakdown / Paragraph Total headers in your draft.**\n";
+                $preamble .= "   - Search for headers matching any of: `Mark Breakdown — Paragraph \\d+`, `Paragraph \\d+ Mark Breakdown`, `Paragraph \\d+ Total:`, `### Q\\d.*Paragraph`, `Body Paragraph \\d+`, `BP\\d+ Total`.\n";
+                $preamble .= "   - Count = N.\n\n";
+                $preamble .= "2. **Validate N:**\n";
+                $preamble .= "   - If N == 0: you are emitting non-paragraph content (Q1 retrieval / Q5 creative / metacog prompt / setup). Proceed.\n";
+                $preamble .= "   - If N == 1: correct shape for a per-paragraph turn. Proceed.\n";
+                $preamble .= "   - If N >= 2: **CRITICAL VIOLATION**. You have batched multiple paragraphs into one message. The student will lose half their metacog calibration. **DO NOT SEND.** Rewrite your draft to include ONLY the FIRST paragraph's bundle (mark breakdown + penalties + paragraph total + Gold Standard rewrite + Optimal Model + Y/C gate). DELETE all P2+ content from this turn. P2 begins after student types Y on the next turn.\n\n";
+                $preamble .= "3. **Count Y/C gates.**\n";
+                $preamble .= "   - Search for `Type C to (?:request )?clarif`, `type Y once`, `Y when you've copied`.\n";
+                $preamble .= "   - Count = G.\n";
+                $preamble .= "   - If G >= 2: you have multiple gates in one message. Same violation. Delete all but the FIRST.\n\n";
+                $preamble .= "4. **Count Self-Rate prompts.**\n";
+                $preamble .= "   - Search for `On a scale of 1-5` AND `1 = Didn't achieve`.\n";
+                $preamble .= "   - Count = R.\n";
+                $preamble .= "   - If R >= 2: you are pre-emptively emitting the next paragraph's metacog. Delete all but the FIRST (or all if you are mid-paragraph assessment).\n\n";
+                $preamble .= "5. **Final inspection:** scan top-to-bottom. Does your draft contain content for ONE paragraph (mark breakdown + gold-standard + gate) OR ONE prompt step? If YES, send. If it spans MULTIPLE paragraphs / multiple prompt steps, REWRITE before sending.\n\n";
+                $preamble .= "This self-check is mechanical and non-negotiable. Treat it as a syntactic gate. The reason: in prior staging tests (Reeham 2026-05-20 fresh chat), abstract turn-cycle rules + violation/success patterns alone did not prevent batching — the model continued to bias toward 'comprehensive single reply' from training defaults. The self-check forces a count-based audit the model must execute literally.\n\n";
+                $preamble .= "**Pass criterion:** N <= 1, G <= 1, R <= 1, and the message represents exactly ONE step in the protocol turn cycle (metacog prompt, OR self-rate response acknowledgement, OR AO-targeting prompt response, OR ONE paragraph's assessment bundle, OR end-of-Q transition).\n\n";
+
                 // v7.19.192: PENALTY APPLICATION DISCIPLINE. Reeham redraft staging
                 // test (2026-05-20): Sophia applied three penalties to Q3 P1 that
                 // were unjustified — W1 on "establishes" (not in banned-verb list),
