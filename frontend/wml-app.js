@@ -4798,6 +4798,45 @@
         }
 
         // ══════════════════════════════════════════
+        //  SCALE: "on a scale of 1 to 5" / "rate 1-5" / "1–5" (em/en dash)
+        //
+        //  v7.19.196: hoisted ABOVE the SPECIAL KEYWORDS block (NEXT/MENU/HELP/etc).
+        //  Sophia's metacog Self-Rate prompts always carry the breadcrumb header
+        //  "💡 Type 'M' for menu | 'H' for help" which the Menu detector at the
+        //  former position matched FIRST — returning a single Menu button and
+        //  starving the 1-5 scale buttons (Neil staging report 2026-05-20).
+        //  SCALE is more specific (requires N-M range + labelled "1 = ...", "2 = ..."
+        //  lines) so it's safe to fire ahead of generic single-letter triggers.
+        // ══════════════════════════════════════════
+        const scaleMatch = text.match(/(?:on a )?scale (?:of |from )?(\d)\s*(?:to|[-–—])\s*(\d)/i)
+            || text.match(/rate\s*(?:from\s*)?(\d)\s*(?:to|[-–—])\s*(\d)/i)
+            || text.match(/(?:type|enter|choose|confidence)\s*\(?(\d)\s*[-–—]\s*(\d)\)?/i);
+        if (scaleMatch) {
+            const lo = parseInt(scaleMatch[1]);
+            const hi = parseInt(scaleMatch[2]);
+            if (hi - lo <= 6 && hi > lo) {
+                // Require ≥ 2 labelled lines (e.g. "1 = ...", "2 = ...") so we don't
+                // false-positive on prose that incidentally mentions a numeric range.
+                const labelledCount = [];
+                for (let n = lo; n <= hi; n++) {
+                    if (lines.some(l => new RegExp(`^[-•*\\s]*${n}\\s*[=:–—-]\\s*(.+)`, 'i').test(l))) {
+                        labelledCount.push(n);
+                    }
+                }
+                if (labelledCount.length >= 2) {
+                    const scaleOptions = [];
+                    for (let n = lo; n <= hi; n++) {
+                        const labelLine = lines.find(l => new RegExp(`^[-•*\\s]*${n}\\s*[=:–—-]\\s*(.+)`, 'i').test(l));
+                        const labelMatch = labelLine?.match(new RegExp(`^[-•*\\s]*${n}\\s*[=:–—-]\\s*(.+)`, 'i'));
+                        const desc = labelMatch ? labelMatch[1].replace(/[\*_]/g, '').trim() : '';
+                        scaleOptions.push({ label: desc ? `${n} — ${desc}` : String(n), value: String(n) });
+                    }
+                    return scaleOptions;
+                }
+            }
+        }
+
+        // ══════════════════════════════════════════
         //  SPECIAL KEYWORDS: NEXT, MENU, READY, HELP, KEY SCENES, TIP, DONE
         // ══════════════════════════════════════════
         if (/\btype\s+['"]?NEXT['"]?\b/i.test(text) || /\bNEXT\s+to\s+(?:continue|proceed)\b/i.test(text)) {
@@ -4825,28 +4864,6 @@
         }
         if (/\btype\s+['"]?done['"]?\b/i.test(text)) {
             return [{ label: '✅ Done', value: 'done' }];
-        }
-
-        // ══════════════════════════════════════════
-        //  SCALE: "on a scale of 1 to 5" / "rate 1-5" / "1–5" (em/en dash)
-        // ══════════════════════════════════════════
-        const scaleMatch = text.match(/(?:on a )?scale (?:of |from )?(\d)\s*(?:to|[-–—])\s*(\d)/i)
-            || text.match(/rate\s*(?:from\s*)?(\d)\s*(?:to|[-–—])\s*(\d)/i)
-            || text.match(/(?:type|enter|choose|confidence)\s*\(?(\d)\s*[-–—]\s*(\d)\)?/i);
-        if (scaleMatch) {
-            const lo = parseInt(scaleMatch[1]);
-            const hi = parseInt(scaleMatch[2]);
-            if (hi - lo <= 6 && hi > lo) {
-                const scaleOptions = [];
-                // Try to find descriptive labels from bullet list: "• 1 = Struggled" or "1 = Struggled"
-                for (let n = lo; n <= hi; n++) {
-                    const labelLine = lines.find(l => new RegExp(`^[-•*\\s]*${n}\\s*[=:–—-]\\s*(.+)`, 'i').test(l));
-                    const labelMatch = labelLine?.match(new RegExp(`^[-•*\\s]*${n}\\s*[=:–—-]\\s*(.+)`, 'i'));
-                    const desc = labelMatch ? labelMatch[1].replace(/[\*_]/g, '').trim() : '';
-                    scaleOptions.push({ label: desc ? `${n} — ${desc}` : String(n), value: String(n) });
-                }
-                return scaleOptions;
-            }
         }
 
         // ══════════════════════════════════════════
