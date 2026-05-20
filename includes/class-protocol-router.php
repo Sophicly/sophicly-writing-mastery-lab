@@ -3161,6 +3161,43 @@ TEMPLATE;
                 $preamble .= "The per-paragraph cycle is NOT a suggestion — it is the calibration mechanism. Each paragraph gets its own self-assessment-vs-actual-mark moment. Batching destroys that.\n\n";
                 $preamble .= "**Scope:** Q2 P1 + P2; Q3 P1 + P2; Q4 Intro + BP1 + BP2 + BP3 + Conclusion (5 separate turns); Q5 transactional letter/speech (per-paragraph). Q1 retrieval and Q5 creative-writing are SINGLE-CYCLE (no per-paragraph). Q5 creative gets ONE at-start reflection, then holistic AO5+AO6 marking in one turn.\n\n";
 
+                // v7.19.192: PENALTY APPLICATION DISCIPLINE. Reeham redraft staging
+                // test (2026-05-20): Sophia applied three penalties to Q3 P1 that
+                // were unjustified — W1 on "establishes" (not in banned-verb list),
+                // S1 on "Consequently" + "Overall" (discourse markers, not weak
+                // starters), C1 on a textbook TTECEA structural analysis sentence.
+                // Dropped student from 3.0 → 1.5/4. Across 5+ paragraphs that's a
+                // grade-boundary slip from invented penalties. Penalty codes are
+                // SHARED across all boards (W1/S1/C1 definitions identical in
+                // AQA Lang, AQA Lit, Edexcel, Eduqas, OCR protocols — verified by
+                // grep). So a router-level guard with universal non-examples lands
+                // once + applies to every board. Same v7.19.186 pattern: concrete
+                // VIOLATION + SUCCESS examples force literal-match discipline.
+                $preamble .= "### ⛔ PENALTY APPLICATION DISCIPLINE (v7.19.192)\n\n";
+                $preamble .= "Penalties are deducted ONLY when the cited sentence literally matches the protocol's penalty definition. Before deducting, you MUST be able to quote the exact protocol definition that matches the cited evidence. If you cannot, do NOT deduct — note the concern as 'observation' instead, surface it in feedback without a mark loss.\n\n";
+                $preamble .= "**Penalty-by-penalty non-examples (universal across all boards — shared penalty codes):**\n\n";
+                $preamble .= "**W1 (Weak analytical verb)** — protocol bans ONLY `shows`, `tells us`, `is about`. Do NOT deduct W1 on: `establishes`, `creates`, `presents`, `conveys`, `signals`, `emphasises`, `highlights`, `reveals`, `exposes`, `portrays`, `demonstrates`, `illustrates`, `enacts`, `mirrors`, `constructs`, `positions`, `engineers`, `evokes`, `frames`, `crafts`. These are STRONG analytical verbs. If you would deduct W1 but the verb is not literally `shows / tells us / is about`, do NOT deduct — accept the verb as strong.\n\n";
+                $preamble .= "**S1 (Weak/repetitive sentence starters)** — protocol covers ONLY `the / this / these` openings, OR a genuinely repeated identical opener used 3+ times in a paragraph. Do NOT deduct S1 on discourse markers / connectives: `Consequently`, `Overall`, `Furthermore`, `Additionally`, `In contrast`, `Moreover`, `Ultimately`, `As a consequence`, `In turn`, `Subsequently`, `Specifically`, `However`, `Indeed`, `Crucially`, `Notably`, `Importantly`. Discourse markers are encouraged transitions — they are the OPPOSITE of weak starters and earn marks for cohesion.\n\n";
+                $preamble .= "**C1 (Lacks clarity or logical flow)** — applies ONLY to prose that is genuinely unclear, fragmented, or illogical. Do NOT deduct C1 on: a sentence connecting structural choice to thematic effect (that is exactly Q3 analysis), a sentence connecting language choice to reader effect (that is exactly Q2 analysis), a sentence linking technique to author's purpose (that is the (A) step in TTECEA), or any well-formed sentence whose meaning is recoverable on a single read. C1 is NOT a vehicle for pedagogical preferences or framing critique.\n\n";
+                $preamble .= "**T1 (Technique naming too micro)** — applies ONLY when the student names a technique at a sub-feature granularity that loses analytical purchase (e.g. \"plosive consonant /p/\" in isolation without analysis). Do NOT deduct T1 on legitimate technique names: `triadic list`, `personification`, `sibilance`, `asyndeton`, `parallelism`, `pathetic fallacy`, `caesura`, `enjambment` — these are standard GCSE-level technique terminology and earn marks for subject-terminology accuracy.\n\n";
+                $preamble .= "**VIOLATION PATTERN (do NOT emit):**\n";
+                $preamble .= "```\n";
+                $preamble .= "W1 (weak verb): 'establishes' should be 'engineers' / 'constructs' / 'positions' — -0.5\n";
+                $preamble .= "S1 (weak starters): 'Consequently, the reader...', 'Overall, Allende...' — -0.5\n";
+                $preamble .= "C1 (clarity lapse): 'the opening positions the nightmare to be symbolic of his everyday life' — conflates structural analysis with thematic analysis — -0.5\n";
+                $preamble .= "```\n";
+                $preamble .= "Each of the above deducts on a NON-banned token / on textbook-correct analysis. The protocol does NOT back these deductions. They invent prohibitions that don't exist. Reeham's Q3 P1 (2026-05-20) lost 1.5 marks to exactly this pattern — corrected mark would be 2.75/4, reported was 1.5/4. Critical pedagogy failure.\n\n";
+                $preamble .= "**SUCCESS PATTERN (DO emit):**\n";
+                $preamble .= "```\n";
+                $preamble .= "W1 (weak verb): 'the writer shows the reader' — protocol bans 'shows / tells us / is about' — -0.5\n";
+                $preamble .= "S1 (weak starters): paragraph opens with 'The...' three times consecutively — protocol covers 'the/this/these or repeated openings' — -0.5\n";
+                $preamble .= "C1 (clarity lapse): 'the thing about which the writer does about so as it might' — prose is genuinely unclear — -0.5\n";
+                $preamble .= "```\n";
+                $preamble .= "Deduct ONLY when the cited evidence literally contains a banned token or genuinely demonstrates the protocol's defined failure mode.\n\n";
+                $preamble .= "**Penalty quoting requirement:** for every deduction, your mark breakdown must include a parenthetical quote of the protocol's exact penalty definition (e.g. `(protocol: \"shows / tells us / is about\")` or `(protocol: \"the/this/these or repeated openings\")`). Without the quoted definition next to the deduction, do NOT deduct. This forces a literal-match audit before any mark loss.\n\n";
+                $preamble .= "**Observations vs deductions:** if a sentence is stylistically improvable but doesn't literally match a penalty definition, surface it in the feedback prose as an 'observation' or 'consider' note. Do NOT mechanically convert observations into mark losses. Pedagogically: deductions are evidence-locked; observations are interpretive.\n\n";
+                $preamble .= "Cap unchanged: maximum 3 penalties per paragraph (-1.5 total). Additional issues noted as observations.\n\n";
+
                 $preamble .= $schema_block;
                 $preamble .= $this->build_assessment_workflow_reminder();
             } else {
