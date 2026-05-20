@@ -12616,6 +12616,31 @@
             if (!dw) return;
             dw.appendChild(dropdownLayer);
 
+            // v7.19.191: scroll-preserve wrapper for any handler that mutates
+            // score/grade/SA DOM. Captures scrollTop + blurs active element
+            // BEFORE mutation, restores scrollTop in a 2-rAF chain AFTER
+            // mutation. Prevents the "doc jumps to end" bug Neil hit when
+            // clicking section mark pills, SA dropdowns, and grade pills.
+            // Single rAF wasn't enough — recalculateScoreSummary() triggers
+            // a downstream re-render whose layout settles in the next frame.
+            // Blur defeats the focus-auto-scroll race. Same family of bug
+            // as the parked v7.19.175 dropdown-fullscreen-reposition.
+            const _withScrollPreserve = (mutateFn) => {
+                const scrollContainer = editor.closest('.swml-canvas-content');
+                const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
+                const activeEl = document.activeElement;
+                if (activeEl && typeof activeEl.blur === 'function') activeEl.blur();
+                mutateFn();
+                if (!scrollContainer) return;
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        if (scrollContainer.scrollTop !== scrollTop) {
+                            scrollContainer.scrollTop = scrollTop;
+                        }
+                    });
+                });
+            };
+
             const feedbackSections = editor.querySelectorAll('[data-section-type="feedback"]');
             feedbackSections.forEach((section, idx) => {
                 const label = section.getAttribute('data-section-label') || '';
@@ -12635,25 +12660,23 @@
                     const intVal = parseInt(rawVal);
                     const displayVal = intVal === -1 ? '—' : intVal;
                     const newLabel = `${baseName} (${displayVal} / ${maxMarks})`;
-                    const scrollContainer = editor.closest('.swml-canvas-content');
-                    const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
-                    let found = false;
-                    canvasEditor.state.doc.descendants((node, pos) => {
-                        if (found) return false;
-                        if (node.type.name === 'sectionBlock' && node.attrs.label.startsWith(baseName + ' (')) {
-                            canvasEditor.view.dispatch(
-                                canvasEditor.state.tr.setNodeMarkup(pos, undefined, {
-                                    ...node.attrs,
-                                    label: newLabel,
-                                })
-                            );
-                            found = true;
-                            return false;
-                        }
-                    });
-                    requestAnimationFrame(() => {
+                    // v7.19.191: wrap mutation + recalculate in scroll-preserve guard.
+                    _withScrollPreserve(() => {
+                        let found = false;
+                        canvasEditor.state.doc.descendants((node, pos) => {
+                            if (found) return false;
+                            if (node.type.name === 'sectionBlock' && node.attrs.label.startsWith(baseName + ' (')) {
+                                canvasEditor.view.dispatch(
+                                    canvasEditor.state.tr.setNodeMarkup(pos, undefined, {
+                                        ...node.attrs,
+                                        label: newLabel,
+                                    })
+                                );
+                                found = true;
+                                return false;
+                            }
+                        });
                         recalculateScoreSummary();
-                        if (scrollContainer) scrollContainer.scrollTop = scrollTop;
                     });
                 };
 
@@ -12720,15 +12743,13 @@
                         const intVal = parseInt(rawVal);
                         const newVal = intVal === 0 ? null : intVal;
                         const newText = `${skillName}: ${newVal || '—'} / 5`;
-                        const scrollContainer = editor.closest('.swml-canvas-content');
-                        const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
-                        if (p.querySelector('em')) {
-                            // Don't touch if it has em tags (it's a prompt, not a rating)
-                        } else {
-                            p.textContent = newText;
-                        }
-                        requestAnimationFrame(() => {
-                            if (scrollContainer) scrollContainer.scrollTop = scrollTop;
+                        // v7.19.191: scroll-preserve guard around SA mutation + recalc + outline update.
+                        _withScrollPreserve(() => {
+                            if (p.querySelector('em')) {
+                                // Don't touch if it has em tags (it's a prompt, not a rating)
+                            } else {
+                                p.textContent = newText;
+                            }
                             recalculateScoreSummary();
                             if (typeof updateOutline === 'function') updateOutline();
                         });
@@ -12764,17 +12785,15 @@
                     const currentGrade = gradeOverride ? gradeOverride : 'auto';
 
                     const handleGradeChange = (rawVal) => {
-                        const scrollContainer = editor.closest('.swml-canvas-content');
-                        const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
-                        if (rawVal === 'auto') {
-                            gradeOverride = null;
-                            recalculateScoreSummary();
-                        } else {
-                            gradeOverride = parseInt(rawVal);
-                            gradePara.innerHTML = `<em>Grade:</em> ${gradeOverride} (tutor override)`;
-                        }
-                        requestAnimationFrame(() => {
-                            if (scrollContainer) scrollContainer.scrollTop = scrollTop;
+                        // v7.19.191: scroll-preserve guard around grade override mutation.
+                        _withScrollPreserve(() => {
+                            if (rawVal === 'auto') {
+                                gradeOverride = null;
+                                recalculateScoreSummary();
+                            } else {
+                                gradeOverride = parseInt(rawVal);
+                                gradePara.innerHTML = `<em>Grade:</em> ${gradeOverride} (tutor override)`;
+                            }
                         });
                     };
 
