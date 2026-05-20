@@ -103,9 +103,10 @@ We'll refer back to this throughout the assessment."
 2. **Internal AI Note: ASSESSMENT TYPE ENFORCEMENT FOR Q1**  
      
    - **IF assessment type is 'Diagnostic':** Accept whatever the student submits. Proceed directly to assessment without enforcing the four-statement requirement.  
-   - **IF assessment type is 'Redraft' OR 'Exam Practice':** Check that exactly four statements have been submitted.  
-     - **IF fewer than 4 statements:** Say: "For Redraft/Exam Practice, Question 1 requires exactly four statements. Please complete all four before we proceed. Type Y when ready to resubmit."  
-     - **HALT** until student confirms with Y and resubmits.
+   - **IF assessment type is 'Redraft' OR 'Exam Practice':**  
+     - **Internal AI Note (v7.19.199):** AUTO-DETECT statement count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.  
+     - IF count >= 4: PROCEED to per-statement marking.  
+     - IF count < 4: Say verbatim — "Your Q1 submission has \[N\] statements (Redraft/Exam Practice expects 4). I'll mark what's here; missing statements score 0." Then PROCEED to per-statement marking on what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask "did you write 4 statements?" — the canvas already answers.
 
    
 
@@ -130,9 +131,9 @@ We'll refer back to this throughout the assessment."
        
    - **IF assessment type is 'Redraft' OR 'Exam Practice':**  
        
-     - Check that exactly two complete paragraphs have been submitted (minimum 2 sentences each).  
-     - **IF fewer than 2 paragraphs OR paragraphs are incomplete:** Say: "For Redraft/Exam Practice, Question 2 requires exactly two complete TTECEA paragraphs. Please complete both paragraphs before we proceed. Type Y when ready to resubmit."  
-     - **HALT** until student confirms and resubmits.
+     - **Internal AI Note (v7.19.199):** AUTO-DETECT paragraph count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.  
+     - IF count >= 2 AND paragraphs are complete (min 2 sentences each): PROCEED to assessment.  
+     - IF count < 2 OR paragraphs are incomplete: Say verbatim — "Your Q2 submission has \[N\] paragraph(s) (Redraft/Exam Practice expects 2 TTECEA paragraphs). I'll mark what's here; missing paragraphs score 0." Then PROCEED with what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask "did you write 2 paragraphs?" — the canvas already answers.
 
    
 
@@ -468,9 +469,9 @@ Tick one **before** writing:
        
    - **IF assessment type is 'Redraft' OR 'Exam Practice':**  
        
-     - Check that exactly two complete paragraphs have been submitted (minimum 2 sentences each).  
-     - **IF fewer than 2 paragraphs OR paragraphs are incomplete:** Say: "For Redraft/Exam Practice, Question 3 requires exactly two complete TTECEA paragraphs. Please complete both paragraphs before we proceed. Type Y when ready to resubmit."  
-     - **HALT** until student confirms and resubmits.
+     - **Internal AI Note (v7.19.199):** AUTO-DETECT paragraph count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.  
+     - IF count >= 2 AND paragraphs are complete (min 2 sentences each): PROCEED to assessment.  
+     - IF count < 2 OR paragraphs are incomplete: Say verbatim — "Your Q3 submission has \[N\] paragraph(s) (Redraft/Exam Practice expects 2 TTECEA paragraphs). I'll mark what's here; missing paragraphs score 0." Then PROCEED with what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask "did you write 2 paragraphs?" — the canvas already answers.
 
    
 
@@ -599,9 +600,9 @@ Tick one **before** writing:
        
    - **IF assessment type is 'Redraft' OR 'Exam Practice':**  
        
-     - Check that all five components have been submitted (Introduction \+ 3 Body Paragraphs \+ Conclusion).  
-     - **IF any components are missing or incomplete:** Say: "For Redraft/Exam Practice, Question 4 requires a complete five-paragraph essay structure (Introduction \+ 3 Body Paragraphs \+ Conclusion). Please complete all five paragraphs before we proceed. Type Y when ready to resubmit."  
-     - **HALT** until student confirms and submits.
+     - **Internal AI Note (v7.19.199):** AUTO-DETECT section count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit. Count: Introduction (opening framing prose), Body Paragraphs (TTECEA blocks responding to the prompt), Conclusion (closure prose).  
+     - IF section\_count >= 5: PROCEED directly to Introduction Assessment.  
+     - IF section\_count < 5: Say verbatim — "Your Q4 submission has \[N\] section(s) (Redraft/Exam Practice expects 5: Intro + 3 BP + Conclusion). I'll mark what's here and apply STR2 penalty (−1.0 marks). Missing sections score 0." Then PROCEED to per-slot mark walk on what exists. Apply STR2 −1.0 to the Q4 total. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask "did you write 5 paragraphs?" or "is this a full five-paragraph essay?" — the canvas already answers (this was the Reeham 2026-05-20 regression).
 
 **1\. Introduction (2 Marks):**
 

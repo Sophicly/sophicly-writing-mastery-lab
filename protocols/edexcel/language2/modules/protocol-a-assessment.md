@@ -333,11 +333,12 @@ This question tests your ability to identify and retrieve explicit information f
 
 **\[CONDITIONAL\]** IF SESSION\_STATE.assessment\_type \== "Diagnostic": Accept whatever student submitted PROCEED: directly to assessment
 
-ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]: Check that exactly THREE complete TTECEA body paragraphs have been submitted (minimum 6 sentences each)
+ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]:
 
-**\[CONDITIONAL\]** IF fewer\_than\_3\_paragraphs \== true: \[SAY\] "For Redraft/Exam Practice, Question 3 requires exactly three complete TTECEA body paragraphs. Please complete all three paragraphs before we proceed. Type **Y** when ready to resubmit." **\[AI\_INTERNAL\]** HALT until student confirms and resubmits. Update SESSION\_STATE.answers.q3 with corrected answer.
+**\[AI\_INTERNAL\]** v7.19.199: AUTO-DETECT paragraph count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.
 
-ELIF three\_complete\_paragraphs \== true: PROCEED: to AI-Led Reminder
+- IF count >= 3 AND each paragraph has min 6 sentences: PROCEED: to AI-Led Reminder.
+- IF count < 3 OR paragraphs are incomplete: \[SAY\] "Your Q3 submission has \[N\] paragraph(s) (Redraft/Exam Practice expects 3 TTECEA body paragraphs). I'll mark what's here; missing paragraphs score 0." Then PROCEED to AI-Led Reminder on what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask the student to confirm structure — the canvas already answers.
 
 ---
 
@@ -599,11 +600,12 @@ This question tests your ability to identify and retrieve explicit information f
 
 **\[CONDITIONAL\]** IF SESSION\_STATE.assessment\_type \== "Diagnostic": Accept whatever student submitted PROCEED: directly to assessment
 
-ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]: Check that exactly THREE complete TTECEA body paragraphs have been submitted (minimum 6 sentences each)
+ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]:
 
-**\[CONDITIONAL\]** IF fewer\_than\_3\_paragraphs \== true: \[SAY\] "For Redraft/Exam Practice, Question 6 requires exactly three complete TTECEA body paragraphs. Please complete all three paragraphs before we proceed. Type **Y** when ready to resubmit." **\[AI\_INTERNAL\]** HALT until student confirms and resubmits. Update SESSION\_STATE.answers.q6 with corrected answer.
+**\[AI\_INTERNAL\]** v7.19.199: AUTO-DETECT paragraph count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.
 
-ELIF three\_complete\_paragraphs \== true: PROCEED: to AI-Led Reminder
+- IF count >= 3 AND each paragraph has min 6 sentences: PROCEED: to AI-Led Reminder.
+- IF count < 3 OR paragraphs are incomplete: \[SAY\] "Your Q6 submission has \[N\] paragraph(s) (Redraft/Exam Practice expects 3 TTECEA body paragraphs). I'll mark what's here; missing paragraphs score 0." Then PROCEED to AI-Led Reminder on what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask the student to confirm structure — the canvas already answers.
 
 ---
 
@@ -763,11 +765,12 @@ ELSE: \[SAY\] "Please type S to scan your writing, or N to skip to your next que
 
 **\[CONDITIONAL\]** IF SESSION\_STATE.assessment\_type \== "Diagnostic": Accept whatever student submitted PROCEED: directly to assessment
 
-ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]: Check that exactly TWO complete TTECEA paragraphs have been submitted (minimum 5 sentences each, one focused on Source A and one on Source B)
+ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]:
 
-**\[CONDITIONAL\]** IF fewer\_than\_2\_paragraphs \== true: \[SAY\] "For Redraft/Exam Practice, Question 7a requires exactly two complete TTECEA paragraphs: one analyzing Source A and one analyzing Source B. Please complete both paragraphs before we proceed. Type **Y** when ready to resubmit." **\[AI\_INTERNAL\]** HALT until student confirms and resubmits. Update SESSION\_STATE.answers.q7a with corrected answer.
+**\[AI\_INTERNAL\]** v7.19.199: AUTO-DETECT paragraph count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.
 
-ELIF two\_complete\_paragraphs \== true: PROCEED: to AI-Led Reminder
+- IF count >= 2 AND each paragraph has min 5 sentences AND covers Source A + Source B: PROCEED: to AI-Led Reminder.
+- IF count < 2 OR paragraphs are incomplete: \[SAY\] "Your Q7a submission has \[N\] paragraph(s) (Redraft/Exam Practice expects 2 TTECEA paragraphs: one analyzing Source A and one analyzing Source B). I'll mark what's here; missing paragraphs score 0." Then PROCEED to AI-Led Reminder on what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask the student to confirm structure — the canvas already answers.
 
 ---
 
@@ -934,11 +937,12 @@ ELSE: \[SAY\] "Please type S to scan your writing, or N to skip to your next que
 
 **\[CONDITIONAL\]** IF SESSION\_STATE.assessment\_type \== "Diagnostic": Accept whatever student submitted PROCEED: directly to assessment
 
-ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]: Check that exactly THREE complete comparative TTECEA body paragraphs have been submitted (minimum 7 sentences each, comparing both sources)
+ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]:
 
-**\[CONDITIONAL\]** IF fewer\_than\_3\_paragraphs \== true: \[SAY\] "For Redraft/Exam Practice, Question 7b requires exactly three complete comparative TTECEA body paragraphs. No introduction or conclusion is needed. Please complete all three comparative paragraphs before we proceed. Type **Y** when ready to resubmit." **\[AI\_INTERNAL\]** HALT until student confirms and resubmits. Update SESSION\_STATE.answers.q7b with corrected answer.
+**\[AI\_INTERNAL\]** v7.19.199: AUTO-DETECT comparative paragraph count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.
 
-ELIF three\_complete\_paragraphs \== true: PROCEED: to AI-Led Reminder
+- IF count >= 3 AND each paragraph has min 7 sentences AND each compares both sources AND no introduction/conclusion is present: PROCEED: to AI-Led Reminder.
+- IF count < 3 OR paragraphs are incomplete OR an introduction/conclusion is present: \[SAY\] "Your Q7b submission has \[N\] comparative paragraph(s) (Redraft/Exam Practice expects 3 comparative TTECEA body paragraphs, no intro/conclusion). I'll mark what's here; missing paragraphs score 0. Any intro/conclusion content does not earn marks for this question." Then PROCEED to AI-Led Reminder on what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask the student to confirm structure — the canvas already answers.
 
 ---
 

@@ -447,10 +447,12 @@ Students will submit complete answers in the following order: Q1 → Q2 → Q3 �
      
 - **IF assessment type is 'Diagnostic':** Accept whatever the student submits. Proceed directly to assessment without enforcing the one-statement requirement.  
     
-- **IF assessment type is 'Redraft' OR 'Exam Practice':** Check that exactly one statement has been submitted.  
+- **IF assessment type is 'Redraft' OR 'Exam Practice':**  
     
-  - **IF no statement or multiple statements:** Say: "For Redraft/Exam Practice, Question 1 requires exactly one statement. Please provide one clear statement before we proceed. Type Y when ready to resubmit."  
-  - **HALT** until student confirms with Y and resubmits.
+  - **Internal AI Note (v7.19.199):** AUTO-DETECT statement count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.  
+  - IF statement\_count == 1: PROCEED to AI Analysis & Feedback.  
+  - IF statement\_count == 0: Say verbatim — "Your Q1 submission contains no statement (Redraft/Exam Practice expects exactly 1). I'll mark what's here; this scores 0." Then PROCEED to AI Analysis & Feedback. Do NOT halt. Do NOT ask the student to resubmit.  
+  - IF statement\_count > 1: Say verbatim — "Your Q1 submission contains \[N\] statements (Redraft/Exam Practice expects exactly 1). I'll mark only the first statement against the criteria." Then PROCEED to AI Analysis & Feedback. Do NOT halt. NEVER ask the student to confirm structure — the canvas already answers.
 
 
 3. **AI Analysis & Feedback:** Say: "I'm now assessing your Question 1 response." State if the answer is correct and award 1 mark if valid, or 0 marks if invalid. Provide a **Total Mark out of 1\.**  
@@ -471,9 +473,9 @@ Students will submit complete answers in the following order: Q1 → Q2 → Q3 �
     
 - **IF assessment type is 'Redraft' OR 'Exam Practice':**  
     
-  - Check that exactly two statements have been submitted.  
-  - **IF fewer than 2 statements:** Say: "For Redraft/Exam Practice, Question 2 requires exactly two statements. Please complete both statements before we proceed. Type Y when ready to resubmit."  
-  - **HALT** until student confirms and resubmits.
+  - **Internal AI Note (v7.19.199):** AUTO-DETECT statement count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.  
+  - IF statement\_count >= 2: PROCEED to AI Analysis & Feedback.  
+  - IF statement\_count < 2: Say verbatim — "Your Q2 submission contains \[N\] statement(s) (Redraft/Exam Practice expects 2). I'll mark what's here; missing statements score 0." Then PROCEED to AI Analysis & Feedback on what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask the student to confirm structure — the canvas already answers.
 
 
 3. **AI Analysis & Feedback:** Say: "I'm now assessing your Question 2 response." For each of the student's two statements, state if it is correct and award 1 mark if valid. Provide a **Total Mark out of 2\.**  
@@ -500,9 +502,9 @@ Students will submit complete answers in the following order: Q1 → Q2 → Q3 �
     
 - **IF assessment type is 'Redraft' OR 'Exam Practice':**  
     
-  - Check that exactly two complete paragraphs have been submitted (minimum 2 sentences each).  
-  - **IF fewer than 2 paragraphs OR paragraphs are incomplete:** Say: "For Redraft/Exam Practice, Question 3 requires exactly two complete TTECEA paragraphs assessing both language and structure. Please complete both paragraphs before we proceed. Type Y when ready to resubmit."  
-  - **HALT** until student confirms and resubmits.
+  - **Internal AI Note (v7.19.199):** AUTO-DETECT paragraph count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.  
+  - IF paragraph\_count >= 2 AND each paragraph has min 2 sentences: PROCEED to Attention Safeguard & Inline Scaffold.  
+  - IF paragraph\_count < 2 OR paragraphs are incomplete: Say verbatim — "Your Q3 submission has \[N\] paragraph(s) (Redraft/Exam Practice expects 2 TTECEA paragraphs assessing both language and structure). I'll mark what's here; missing paragraphs score 0." Then PROCEED to Attention Safeguard & Inline Scaffold on what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask the student to confirm structure — the canvas already answers.
 
 
 3. **\[AI:\] Attention Safeguard & Inline Scaffold** Say: "This next step should only take a couple of minutes. Before I assess your paragraphs, here is a quick checklist of the TTECEA structure to keep in mind:" Display: \[ \] Topic \[ \] Technique+Evidence+Inference \[ \] Close Analysis \[ \] Effects 1 \[ \] Effects 2 \[ \] Purpose  
@@ -824,9 +826,9 @@ Students will submit complete answers in the following order: Q1 → Q2 → Q3 �
     
 - **IF assessment type is 'Redraft' OR 'Exam Practice':**  
     
-  - Check that all four TTECEA paragraphs have been submitted.  
-  - **IF any paragraphs are missing or incomplete:** Say: "For Redraft/Exam Practice, Question 4 requires four complete TTECEA paragraphs. Please complete all four paragraphs before we proceed. Type Y when ready to resubmit."  
-  - **HALT** until student confirms and submits.
+  - **Internal AI Note (v7.19.199):** AUTO-DETECT paragraph count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.  
+  - IF paragraph\_count >= 4 AND each paragraph is complete: PROCEED to assessment.  
+  - IF paragraph\_count < 4 OR paragraphs are incomplete: Say verbatim — "Your Q4 submission has \[N\] paragraph(s) (Redraft/Exam Practice expects 4 TTECEA paragraphs). I'll mark what's here; missing paragraphs score 0." Then PROCEED to assessment on what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask the student to confirm structure — the canvas already answers.
 
 **Paragraph 1 (3 Marks):**
 

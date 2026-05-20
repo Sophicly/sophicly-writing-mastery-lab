@@ -476,11 +476,12 @@ Your answer: \[student's answer\]
 
 **\[CONDITIONAL\]** IF SESSION\_STATE.assessment\_type \== "Diagnostic": Accept whatever student submitted PROCEED: directly to assessment
 
-ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]: Check that exactly TWO complete paragraphs have been submitted (minimum 4 sentences each, one focused on Source A and one on Source B)
+ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]:
 
-**\[CONDITIONAL\]** IF fewer\_than\_2\_paragraphs \== true: \[SAY\] "For Redraft/Exam Practice, Question 2 requires exactly two complete paragraphs analyzing language in Source A (covering different sections or aspects of the text). Please complete both paragraphs before we proceed. Type **Y** when ready to resubmit." **\[AI\_INTERNAL\]** HALT until student confirms and resubmits. Update SESSION\_STATE.answers.q2 with corrected answer.
+**\[AI\_INTERNAL\]** v7.19.199: AUTO-DETECT paragraph count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.
 
-ELIF two\_complete\_paragraphs \== true: PROCEED: to AI-Led Self-Assessment
+- IF count >= 2 AND each paragraph has min 4 sentences: PROCEED: to AI-Led Self-Assessment.
+- IF count < 2 OR paragraphs are incomplete: \[SAY\] "Your Q2 submission has \[N\] paragraph(s) (Redraft/Exam Practice expects 2 paragraphs analyzing language in Source A). I'll mark what's here; missing paragraphs score 0." Then PROCEED to AI-Led Self-Assessment on what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask the student to confirm structure — the canvas already answers.
 
 ---
 
@@ -806,11 +807,12 @@ Your answer: \[student's answer\]
 
 **\[CONDITIONAL\]** IF SESSION\_STATE.assessment\_type \== "Diagnostic": Accept whatever student submitted PROCEED: directly to assessment
 
-ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]: Check that exactly TWO complete paragraphs have been submitted (minimum 4 sentences each, both focused on evaluating the statement about Source B)
+ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]:
 
-**\[CONDITIONAL\]** IF fewer\_than\_2\_paragraphs \== true: \[SAY\] "For Redraft/Exam Practice, Question 4 requires exactly two complete evaluation paragraphs, both analyzing Source B against the given statement. Please complete both paragraphs before we proceed. Type **Y** when ready to resubmit." **\[AI\_INTERNAL\]** HALT until student confirms and resubmits. Update SESSION\_STATE.answers.q4 with corrected answer.
+**\[AI\_INTERNAL\]** v7.19.199: AUTO-DETECT paragraph count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.
 
-ELIF two\_complete\_paragraphs \== true: PROCEED: to AI-Led Self-Assessment
+- IF count >= 2 AND each paragraph has min 4 sentences: PROCEED: to AI-Led Self-Assessment.
+- IF count < 2 OR paragraphs are incomplete: \[SAY\] "Your Q4 submission has \[N\] paragraph(s) (Redraft/Exam Practice expects 2 evaluation paragraphs analyzing Source B against the statement). I'll mark what's here; missing paragraphs score 0." Then PROCEED to AI-Led Self-Assessment on what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask the student to confirm structure — the canvas already answers.
 
 ---
 
@@ -1195,11 +1197,12 @@ ELSE: \[SAY\] "Please type S to scan your writing, or N to skip to your next que
 
 **\[CONDITIONAL\]** IF SESSION\_STATE.assessment\_type \== "Diagnostic": Accept whatever student submitted PROCEED: directly to assessment
 
-ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]: Check that response is approximately 150-200 words and references BOTH sources
+ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]:
 
-**\[CONDITIONAL\]** IF word\_count \< 100 OR no\_mention\_of\_both\_sources \== true: \[SAY\] "For Redraft/Exam Practice, Question 5 requires synthesis from BOTH texts (approximately 150-200 words). Please ensure you've referenced both Source A and Source B in your response. Type **Y** when ready to resubmit." **\[AI\_INTERNAL\]** HALT until student confirms and resubmits. Update SESSION\_STATE.answers.q5 with corrected answer.
+**\[AI\_INTERNAL\]** v7.19.199: AUTO-DETECT word count + Source A/B references from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.
 
-ELIF meets\_requirements \== true: PROCEED: to AI-Led Self-Assessment
+- IF word\_count >= 100 AND both sources are referenced: PROCEED: to AI-Led Self-Assessment.
+- IF word\_count < 100 OR only one source is referenced OR neither source is referenced: \[SAY\] "Your Q5 submission has \[N\] words and references \[Source A only / Source B only / neither source\] (Redraft/Exam Practice expects ~150–200 words synthesising BOTH texts). I'll mark what's here against the available criteria; missing source coverage caps the AO band." Then PROCEED to AI-Led Self-Assessment on what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask the student to confirm structure — the canvas already answers.
 
 ---
 
@@ -1297,11 +1300,12 @@ Type your response (2-3 sentences explaining your synthesis approach)."
 
 **\[CONDITIONAL\]** IF SESSION\_STATE.assessment\_type \== "Diagnostic": Accept whatever student submitted PROCEED: directly to assessment
 
-ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]: Check that exactly TWO complete comparative paragraphs have been submitted (minimum 4 sentences each, both comparing BOTH sources throughout)
+ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]:
 
-**\[CONDITIONAL\]** IF fewer\_than\_2\_paragraphs \== true: \[SAY\] "For Redraft/Exam Practice, Question 6 requires exactly two complete comparative paragraphs. Each paragraph must compare BOTH sources throughout using comparative connectives. Please complete both paragraphs before we proceed. Type **Y** when ready to resubmit." **\[AI\_INTERNAL\]** HALT until student confirms and resubmits. Update SESSION\_STATE.answers.q6 with corrected answer.
+**\[AI\_INTERNAL\]** v7.19.199: AUTO-DETECT comparative paragraph count from the canvas submission. The canvas IS the authoritative source — do NOT ask the student to confirm structure or resubmit.
 
-ELIF two\_complete\_paragraphs \== true: PROCEED: to AI-Led Self-Assessment
+- IF count >= 2 AND each paragraph has min 4 sentences AND each compares BOTH sources throughout: PROCEED: to AI-Led Self-Assessment.
+- IF count < 2 OR paragraphs are incomplete OR comparison is single-sided: \[SAY\] "Your Q6 submission has \[N\] paragraph(s) (Redraft/Exam Practice expects 2 comparative paragraphs that compare BOTH sources throughout using comparative connectives). I'll mark what's here; missing comparison scores 0." Then PROCEED to AI-Led Self-Assessment on what exists. Do NOT halt. Do NOT ask the student to resubmit. NEVER ask the student to confirm structure — the canvas already answers.
 
 ---
 
