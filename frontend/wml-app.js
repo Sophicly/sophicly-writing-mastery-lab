@@ -4998,8 +4998,14 @@
         const startMatch = text.match(/^(#{2,3}\s+(?:\w[\w\s]*)?Assessment|\*{2}(?:\w[\w\s]*)?(?:Assessment|Formal Assessment)[\w\s()]*\*{2}|#{2,3}\s+Mark Breakdown|#{2,3}\s+(?:[^\n]*?\bParagraph\s+\d+\b[^\n]*|[^\n]*?\bMark Breakdown\b[^\n]*)|🎉\s*\*{2}Quiz Complete!?\*{2}|\*{2}Your Score:\s*\d+\/\d+|(?:#{2,3}\s+|\*{2})?\s*(?:Step\s+\d+\s*:\s*)?(?:Self-Reflection|Metacognitive\s+Analysis|Deep\s+Learning(?:\s+Through\s+Wrong\s+Answers)?|(?:Your\s+)?Results|Grade(?:\s+&\s+(?:Calculation|Calibration))?|Personalised\s+(?:Feedback(?:\s+&\s+Action\s+Plan)?|Plan|Next\s+Steps))(?:\s*\*{2})?)/m);
         if (!startMatch) return null;
         const startIdx = text.indexOf(startMatch[0]);
-        // Find end: "Please copy" / "Have you copied" / "Are you ready" / "Type Y when|once" / Hattie
-        const endRegex = /(?:Please copy this full feedback|Have you copied everything|Are you ready to (?:move|continue)|Type\s+\*{0,2}Y\*{0,2}\s+(?:when|once)\b|Action Plan.*Hattie)/i;
+        // Find end: "Please copy" / "Have you copied" / "Are you ready" / "Before you confirm" / "Type Y when|once" / Hattie
+        // v7.19.190: also stop at "Before you confirm" — that's the canonical opener of the
+        // protocol-a-assessment Y/C clarification gate (line 387). Without this end-marker,
+        // the Y/C prose ("Before you confirm — would you like me to clarify any feedback...")
+        // gets captured in the Copy Feedback clipboard output. "Type Y once" matched the LATER
+        // prompt but everything before it was over-captured. "Before you confirm" comes first
+        // in Sophia's bundle, so stopping there clips the entire Y/C gate cleanly.
+        const endRegex = /(?:Please copy this full feedback|Have you copied everything|Are you ready to (?:move|continue)|Before you confirm|Type\s+\*{0,2}Y\*{0,2}\s+(?:when|once)\b|Action Plan.*Hattie)/i;
         const endMatch = text.substring(startIdx).match(endRegex);
         let endIdx;
         if (endMatch) {
