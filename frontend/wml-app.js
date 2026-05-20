@@ -3361,6 +3361,32 @@
                     }
                 }));
 
+                // 2b. Insert into Doc — append selection to canvas TipTap editor.
+                // v7.19.195: ported from legacy wml-assessment.js:2879 canvas-chat
+                // toolbar (deleted same ship). Only renders when the canvas editor
+                // is mounted — wml-app.js can't access the editor closure directly,
+                // so it goes through window.WML.getCanvasEditor() (wml-assessment.js:997).
+                // Hidden in review mode (tutor / parent viewer) since the doc is read-only.
+                const _getCanvasEditorFn = window.WML && typeof window.WML.getCanvasEditor === 'function'
+                    ? window.WML.getCanvasEditor : null;
+                const _canvasEditorReady = _getCanvasEditorFn && _getCanvasEditorFn();
+                const _isReviewMode = !!(window.WML && window.WML.state && window.WML.state.reviewMode);
+                if (_canvasEditorReady && !_isReviewMode) {
+                    toolbar.appendChild(el('button', {
+                        className: 'swml-sel-btn',
+                        innerHTML: SVG_SEL_INSERT + ' <span>Insert into Doc</span>',
+                        title: 'Append selection to the canvas document',
+                        onClick: (ev) => {
+                            ev.stopPropagation();
+                            const editor = _getCanvasEditorFn();
+                            if (editor && editor.chain) {
+                                editor.chain().focus().insertContent(selectedText + '\n').run();
+                            }
+                            removeToolbar(); sel.removeAllRanges();
+                        }
+                    }));
+                }
+
                 // 3. Copy — clipboard
                 toolbar.appendChild(el('button', {
                     className: 'swml-sel-btn',
@@ -4973,6 +4999,13 @@
      */
     function extractAssessmentContent(text) {
         if (!text) return null;
+        // v7.19.195: strip markdown bold ** before matching. Sophia emits
+        // "Now assessing **Question 1**:" / "**Q1 Total: 4/4**" — the bold
+        // markers broke the v7.19.193 regex alternatives (Now assessing Q\d
+        // expected plain text). Stripping ** mirrors the same defence in
+        // detectQuickActions (wml-app.js:4494). Doesn't change semantics of
+        // assessment block, just makes start/end matching markdown-agnostic.
+        text = text.replace(/\*{2}/g, '');
         // Find start: ## Something Assessment, **Something Assessment**, or **Something — Formal Assessment**
         // v7.17.67: also match Mark Scheme Quiz final dashboard markers (🎉 **Quiz Complete!** or **Your Score: N/M**)
         // so the rich Copy Feedback button fires on the quiz Hattie dashboard, letting students paste

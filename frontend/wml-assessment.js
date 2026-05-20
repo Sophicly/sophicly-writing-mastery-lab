@@ -2883,6 +2883,14 @@
         }
 
         chatMessages.addEventListener('mouseup', () => {
+            // v7.19.195: disabled. Superseded by wml-app.js setupSelectionReply
+            // (v7.19.117+) which handles every chat surface (planning + canvas +
+            // coach panel) via CHAT_PANELS. Keeping both alive made TWO toolbars
+            // render on every canvas-chat selection (Neil report 2026-05-20).
+            // "Insert into Doc" button preserved — ported to wml-app.js handler
+            // same ship, gated on window.WML.getCanvasEditor() + !state.reviewMode.
+            return;
+            // eslint-disable-next-line no-unreachable
             setTimeout(() => {
                 const sel = window.getSelection();
                 if (!sel || sel.isCollapsed || !sel.toString().trim()) { removeChatSelToolbar(); return; }
