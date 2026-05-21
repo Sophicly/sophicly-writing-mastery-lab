@@ -5088,6 +5088,13 @@
                     if (domSection) {
                         const indicator = getSectionIndicator(s);
                         domSection.setAttribute('data-section-complete', indicator ? 'true' : 'false');
+                        // v7.19.219: Mastery Codex — stamp computed section number on
+                        // DOM as data-codex-num. CSS reads via attr() in ::before, bypassing
+                        // unreliable CSS counter behaviour in TipTap nodeView rendering.
+                        if (_isCodexNumbering) {
+                            const _num = sectionNumbers[i] || '';
+                            domSection.setAttribute('data-codex-num', _num ? _num + '. ' : '');
+                        }
                     }
                 });
             }

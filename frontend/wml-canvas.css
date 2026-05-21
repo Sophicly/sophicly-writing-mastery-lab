@@ -276,26 +276,17 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     overflow: visible;
     counter-reset: swml-major 0 swml-minor 0; /* Section numbering (v7.12.56) */
 }
-/* v7.19.213: Mastery Codex offset — About the Codex = 0, UNIT 1 children = 1.1, 1.2, ... */
-.swml-codex-doc {
-    counter-reset: swml-major -1 swml-minor 0 !important;
+/* v7.19.219: Mastery Codex section badge — use JS-written data-codex-num attribute
+   instead of CSS counters. Counters were unreliable in TipTap-rendered nodeView
+   DOM; specificity wars with the global rules produced jumps + duplicates.
+   JS path computes the correct major.minor in sectionNumbers[i] (wml-assessment.js
+   ~line 5040) and stamps it onto each section's DOM as data-codex-num.
+   Selector specificity (0,3,1) beats global .swml-section-block::before (0,1,1). */
+.swml-codex-doc .swml-section-block:not(.swml-section-divider)::before {
+    content: attr(data-codex-num) attr(data-section-label) !important;
 }
-/* v7.19.218: Codex-scope counter rewrite — make divider itself increment major + reset
-   minor. Without this, the global rule "after-divider plan = inc major+minor" interacted
-   unpredictably with TipTap rendering, producing jumps (3.1 -> 3.7) and duplicates.
-   Scope = .swml-codex-doc so other documents (assessment / planning / outlining / etc)
-   are untouched. */
-.swml-codex-doc .swml-section-block.swml-section-divider {
-    counter-increment: swml-major !important;
-    counter-reset: swml-minor !important;
-}
-.swml-codex-doc .swml-section-divider + .swml-section-plan,
-.swml-codex-doc .swml-section-divider + .swml-section-outline,
-.swml-codex-doc .swml-section-divider + .swml-section-feedback,
-.swml-codex-doc .swml-section-divider + .swml-section-response,
-.swml-codex-doc .swml-section-divider + .swml-section-scores {
-    counter-increment: swml-minor !important;
-    counter-reset: none !important;
+.swml-codex-doc .swml-section-block:not(.swml-section-divider)[data-section-complete="true"]::before {
+    content: '✓ ' attr(data-codex-num) attr(data-section-label) !important;
 }
 .swml-canvas-light .swml-canvas-doc {
     background: #fff;
