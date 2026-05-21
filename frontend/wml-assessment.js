@@ -4239,7 +4239,7 @@
         const SVG_DIAGNOSTIC = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.91" stroke-miterlimit="10" style="display:inline-block;vertical-align:-2px;margin-right:3px"><path d="M8.18,16.77V13H4.36v3.82L2.09,19a2,2,0,0,0-.59,1.44h0a2,2,0,0,0,2,2H9a2,2,0,0,0,2-2h0a2,2,0,0,0-.6-1.44Z"/><line x1="2.45" y1="12.95" x2="10.09" y2="12.95"/><path d="M20.59,15.39V11.05H16.77v4.34a3.82,3.82,0,1,0,3.82,0Z"/><line x1="22.5" y1="11.05" x2="14.86" y2="11.05"/><path d="M18.68,11.05V3.89A2.39,2.39,0,0,0,16.3,1.5h0a2.39,2.39,0,0,0-2.39,2.39V6.27A1.91,1.91,0,0,1,12,8.18h0a1.91,1.91,0,0,1-1.91-1.91V5.32A1.9,1.9,0,0,0,8.18,3.41h0A1.91,1.91,0,0,0,6.27,5.32v.95"/><line x1="5.32" y1="9.14" x2="7.23" y2="9.14"/><line x1="14.86" y1="17.73" x2="19.64" y2="17.73"/><line x1="2.45" y1="18.68" x2="6.27" y2="18.68"/></svg>';
         // v7.13.42: Skip diagnostic badge for CW exercises
         // v7.14.34: Added planning + polishing (Phase 2 canvas exercises)
-        const _epTasks = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'planning', 'polishing'];
+        const _epTasks = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'planning', 'polishing', 'mastery_codex'];
         const _epConfig = WML.getExerciseConfig(state.task);
         // v7.14.39: Context-aware badge labels — mastery programme uses redraft-specific names
         const diagBadgeLabel = state.task === 'feedback_discussion' ? 'Discuss Feedback'
@@ -7746,7 +7746,9 @@
             // v7.15.46's early call here fired before ctxBadges was populated, so the badge
             // landed outside the overflow-dropdown logic on soft nav.
             // v7.15.111: Outlining task uses its own panel title — everything else is diagnostic-style.
-            const _guidanceTitle = (state.task === 'outlining') ? 'Outline Response' : 'Diagnostic Guidance';
+            const _guidanceTitle = (state.task === 'outlining') ? 'Outline Response'
+                : (state.task === 'mastery_codex') ? 'Mastery Codex'
+                : 'Diagnostic Guidance';
             rightPanel.appendChild(el('h3', {
                 innerHTML: `<span class="swml-sidebar-close-icon">−</span> ${_guidanceTitle}`,
                 style: { cursor: 'pointer' }
@@ -12019,7 +12021,12 @@
         const EXAM_PREP_DOC_VER = 3; // v7.14.13: rebuilt all exam prep templates
         const tryExamPrepTemplate = () => {
             if (!isExamPrep || !canvasEditor) return;
-            const docVerKey = CANVAS_SAVE_KEY() + '_ver';
+            // v7.19.205: task-scoped version key. Previously CANVAS_SAVE_KEY() + '_ver'
+            // was shared across tasks bound to the same board/text/topic — so if a
+            // LearnDash topic was re-bound from `diagnostic` to `mastery_codex`, the
+            // existing version stamp blocked Codex template injection. Append the
+            // task slug so each task has its own version stamp.
+            const docVerKey = CANVAS_SAVE_KEY() + '_ver_' + (state.task || 'default');
             // Check stored template version
             try {
                 const savedVer = parseInt(localStorage.getItem(docVerKey) || '0');

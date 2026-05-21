@@ -1196,7 +1196,7 @@ window.WML = (function() {
             completionType: 'manual',
             storageSuffix: '',
             documentTemplate: 'mastery_codex',
-            chatHeaderLabel: null,
+            chatHeaderLabel: 'Mastery Codex',
             sidebarSteps: null,
         },
 
