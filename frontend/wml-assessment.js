@@ -17513,6 +17513,11 @@
             inputHTML('Two meta-skills you know you currently lack — #2', 'unit-1.exit-ticket.meta-skills-lacked.2') +
             inputHTML('One reason you are willing to do this course differently.', 'unit-1.exit-ticket.reason-different')
         );
+        // v7.19.209: 100% Standard hook-hypothesis — answer arrives in Unit 6.
+        // Per g9-handoff-session-2026-05-20-pre-filming-state.md §"100% Block".
+        html += sectionHTML('plan', 'The 100% Standard', true, null,
+            inputHTML('Before you sign the pledge: can you name one good reason to aim for less than 100% in your English? Write your best guess here (the answer arrives in Unit 6).', 'unit-1.hundred-percent-hypothesis')
+        );
         html += sectionHTML('plan', 'Mastery Pledge', true, null,
             inputHTML('Type your name to sign the pledge.', 'unit-1.pledge.name') +
             inputHTML('If/then implementation intention — e.g. "If I fall behind by a week, then I will book a catch-up session that day."', 'unit-1.pledge.implementation-intention') +
@@ -17619,6 +17624,12 @@
         html += sectionHTML('plan', 'Launch Retrieval & Hypothesis', true, null,
             inputHTML('What did you take away from Unit 5?', 'unit-6.launch.retrieval') +
             inputHTML('Hypothesis — why does re-reading and highlighting feel productive but isn\'t?', 'unit-6.hook-hypothesis')
+        );
+        // v7.19.209: 100% Commitment implementation-intention (answer to u1 hypothesis arrives this unit).
+        // Per g9-handoff-session-2026-05-20-pre-filming-state.md §"100% Block".
+        html += sectionHTML('plan', '100% Commitment — Implementation Intention', true, null,
+            inputHTML('Name one task you will give 100% to this week.', 'unit-6.hundred-percent-commitment.task') +
+            inputHTML('Name the first small step you will take + when you will take it.', 'unit-6.hundred-percent-commitment.first-step-when')
         );
         html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
             inputHTML('Three takeaways — #1', 'unit-6.exit-ticket.three.1') +
