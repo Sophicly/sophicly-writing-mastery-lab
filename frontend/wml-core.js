@@ -1176,6 +1176,27 @@ window.WML = (function() {
             chatHeaderLabel: 'Memory Practice',
             sidebarSteps: null,
         },
+        // v7.19.202: Mastery Codex — Grade 9 Core Skills induction. ONE
+        // user-scoped doc across all 9 units. No Sophia chat, no protocol
+        // stepper. Environment 'codex' is intentionally NOT in the
+        // ['training','free','flexible','inline-coaching'] dispatcher list
+        // (wml-app.js:363, 434, 600). That forces fall-through to the
+        // bootstrap if/else chain which routes mastery_codex to
+        // WML.renderCodexWorkspace() (defined in wml-codex.js).
+        mastery_codex: {
+            label: 'Mastery Codex',
+            environment: 'codex',
+            panels: { sidebar: false, chat: false, guidance: false, document: true },
+            steps: null,
+            elements: null,
+            protocolSource: null,
+            protocolTask: 'mastery_codex',
+            completionType: null,
+            storageSuffix: '',
+            documentTemplate: null,
+            chatHeaderLabel: 'Mastery Codex',
+            sidebarSteps: null,
+        },
 
         // ── Creative Writing: SI-Guided Steps (v7.13.34) ──
         cw_si: {
