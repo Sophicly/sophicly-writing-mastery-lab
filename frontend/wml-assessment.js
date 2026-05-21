@@ -7817,6 +7817,15 @@
                     { icon: SVG_GUIDE_BRAIN, colour: '#51dacf', text: 'Refer back to your plan from the previous step. Keep its core ideas and structure — elevate the prose.' },
                     { icon: SVG_GUIDE_TARGET, colour: '#4D76FD', text: getWordGuidanceText(), id: 'swml-guide-word-target' },
                 ];
+            } else if (state.task === 'mastery_codex') {
+                // v7.19.208: Mastery Codex tips — induction reflection doc, not assessment.
+                // Drop word-target + structure badges (no word count, no essay shape).
+                tips = [
+                    { icon: SVG_GUIDE_LOCK, colour: '#5333ed', text: 'This is your Mastery Codex — your private record of growth across the Grade 9 Core Skills course. Capture your honest reflections as you move through each unit.' },
+                    { icon: SVG_GUIDE_BRAIN, colour: '#51dacf', text: 'Try to recall everything you were taught. Extract your best knowledge and put it on the page.' },
+                    { icon: SVG_GUIDE_STOPWATCH, colour: '#51dacf', text: 'Work efficiently. Get your ideas down as quickly as possible to the best of your ability.' },
+                    { icon: SVG_GUIDE_ARM, colour: '#1CD991', text: 'Don\'t worry about grades — the Codex isn\'t graded. But give every reflection your full effort: the more honestly and completely you write, the more useful your Codex becomes.' },
+                ];
             } else {
                 tips = [
                     { icon: SVG_GUIDE_LOCK, colour: '#5333ed', text: 'This is your independent assessment. No help is available — no AI, no notes, no resources. Rely entirely on what you\'ve learned.' },
@@ -7910,17 +7919,20 @@
             rightPanel.appendChild(timeWrap);
 
             // Word target progress
-            const progressWrap = el('div', { className: 'swml-canvas-plan-section', id: 'swml-canvas-wc-progress' });
-            progressWrap.appendChild(el('h4', { innerHTML: '<span class="swml-guide-icon" style="color:#4D76FD">' + SVG_GUIDE_GRAPH + '</span> Word Count Target' }));
-            const progressBar = el('div', { className: 'swml-canvas-progress-bar' });
-            const progressFill = el('div', { className: 'swml-canvas-progress-fill', id: 'swml-canvas-progress-fill' });
-            diagProgressFill = progressFill;
-            progressBar.appendChild(progressFill);
-            progressWrap.appendChild(progressBar);
-            const wcLabel = el('p', { id: 'swml-canvas-wc-label', textContent: `0 / ${canvasWordTarget} words` });
-            diagWcLabel = wcLabel;
-            progressWrap.appendChild(wcLabel);
-            rightPanel.appendChild(progressWrap);
+            // v7.19.208: Skip for mastery_codex — induction reflections, no word target.
+            if (state.task !== 'mastery_codex') {
+                const progressWrap = el('div', { className: 'swml-canvas-plan-section', id: 'swml-canvas-wc-progress' });
+                progressWrap.appendChild(el('h4', { innerHTML: '<span class="swml-guide-icon" style="color:#4D76FD">' + SVG_GUIDE_GRAPH + '</span> Word Count Target' }));
+                const progressBar = el('div', { className: 'swml-canvas-progress-bar' });
+                const progressFill = el('div', { className: 'swml-canvas-progress-fill', id: 'swml-canvas-progress-fill' });
+                diagProgressFill = progressFill;
+                progressBar.appendChild(progressFill);
+                progressWrap.appendChild(progressBar);
+                const wcLabel = el('p', { id: 'swml-canvas-wc-label', textContent: `0 / ${canvasWordTarget} words` });
+                diagWcLabel = wcLabel;
+                progressWrap.appendChild(wcLabel);
+                rightPanel.appendChild(progressWrap);
+            }
 
             // Mark Complete button — hidden until 450 words
             const markCompleteBtn = el('button', {
