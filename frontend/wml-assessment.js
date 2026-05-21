@@ -5037,7 +5037,11 @@
             // wrapping T1-T10 dividers). It produces no number and does not advance the major
             // counter — child dividers continue the sequence below the super-group.
             const GROUP_PREFIXES = ['Plan:', 'Outline:', 'Feedback:'];
-            let _major = 0, _minor = 0, _inDividerGroup = false, _lastPrefixGroup = null;
+            // v7.19.212: Mastery Codex — start _major at -1 so "About the Codex"
+            // (first non-divider section) becomes "0", UNIT 1 divider sets _major=1,
+            // Unit 1 children become 1.1, 1.2, etc. Matches TOC offset shipped v7.19.211.
+            const _isCodexNumbering = (typeof WML !== 'undefined' && WML.state && WML.state.task === 'mastery_codex');
+            let _major = _isCodexNumbering ? -1 : 0, _minor = 0, _inDividerGroup = false, _lastPrefixGroup = null;
             const sectionNumbers = sections.map(s => {
                 if (s.type === 'cover') return '';
                 if (s.type === 'section-header') return '';
@@ -7866,7 +7870,8 @@
             }
             const startDate = new Date(startTime);
             // v7.15.111: Outlining is Phase 2 → 14-day cycle; diagnostic stays on 10-day.
-            const _deadlineDays = state.task === 'outlining' ? 14 : 10;
+            // v7.19.212: Mastery Codex induction = 7-day cycle.
+            const _deadlineDays = state.task === 'outlining' ? 14 : state.task === 'mastery_codex' ? 7 : 10;
             const deadlineDate = new Date(startDate.getTime() + _deadlineDays * 24 * 60 * 60 * 1000);
 
             function formatRelativeTime(date) {
