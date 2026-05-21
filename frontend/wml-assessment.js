@@ -17614,11 +17614,6 @@
             inputHTML('What did you take away from Unit 3?', 'unit-4.launch.retrieval') +
             inputHTML('Hypothesis — what single mistake do you think most students make?', 'unit-4.hook-hypothesis')
         );
-        html += sectionHTML('plan', 'Know Thyself', true, null,
-            inputHTML('What is one strength you bring to your English studies?', 'unit-4.know-thyself.1') +
-            inputHTML('What is one weakness or habit that holds you back?', 'unit-4.know-thyself.2') +
-            inputHTML('What is one thing you will commit to working on, knowing yourself?', 'unit-4.know-thyself.3')
-        );
         html += sectionHTML('plan', "Hero's Tale", true, null,
             inputHTML('Write one paragraph: one habit you will adopt + one obstacle you anticipate.', 'unit-4.heros-tale')
         );
