@@ -4420,7 +4420,11 @@
 
         // Content area
         const contentWrap = el('div', { className: 'swml-canvas-content' });
-        const docWrap = el('div', { className: 'swml-canvas-doc' });
+        // v7.19.213: Add codex class so CSS counter scope offsets section numbering
+        // (About the Codex = 0, Unit 1 children = 1.1, 1.2, ...). Pairs with
+        // .swml-codex-doc counter-reset rule in wml-canvas.css.
+        const _isCodexDoc = state.task === 'mastery_codex';
+        const docWrap = el('div', { className: 'swml-canvas-doc' + (_isCodexDoc ? ' swml-codex-doc' : '') });
         const editorEl = el('div', { id: 'swml-tiptap-editor' });
         const gutterWrap = el('div', { className: 'swml-comment-gutter' });
         docWrap.appendChild(editorEl);
@@ -7939,6 +7943,39 @@
                 diagWcLabel = wcLabel;
                 progressWrap.appendChild(wcLabel);
                 rightPanel.appendChild(progressWrap);
+            }
+
+            // v7.19.213: Mastery Codex — Share-link-with-tutor button. Same shape as the
+            // Feedback view share button (line 6202). Generates current-URL + ?student_id=<uid>
+            // so a tutor clicking lands in viewerMode=comment review mode.
+            if (state.task === 'mastery_codex' && !state.reviewMode) {
+                const codexShareBtn = build3DButton('🔗 Share link with tutor', 'Copied — paste in chat', async () => {
+                    const uid = (window.swmlConfig && window.swmlConfig.userId) || 0;
+                    if (!uid) return false;
+                    let urlStr;
+                    try {
+                        const u = new URL(window.location.href);
+                        u.searchParams.set('student_id', String(uid));
+                        urlStr = u.toString();
+                    } catch (_) {
+                        urlStr = window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'student_id=' + uid;
+                    }
+                    try {
+                        await navigator.clipboard.writeText(urlStr);
+                        if (typeof showToast === 'function') showToast('Tutor-view link copied to clipboard', 3000, true);
+                        return true;
+                    } catch (_) {
+                        prompt('Copy this link and share with your tutor:', urlStr);
+                        return false;
+                    }
+                });
+                codexShareBtn.style.marginTop = '12px';
+                rightPanel.appendChild(codexShareBtn);
+                const codexShareHint = el('p', {
+                    textContent: 'Paste this in your tutor chat. The tutor sees a read-only view of your Codex and can leave comments.',
+                });
+                codexShareHint.style.cssText = 'margin:8px 0 0;font-size:11px;opacity:0.55;text-align:center;line-height:1.4;';
+                rightPanel.appendChild(codexShareHint);
             }
 
             // Mark Complete button — hidden until 450 words
@@ -17738,6 +17775,9 @@
         html += sectionHTML('plan', 'Pledge Re-Affirm (Final)', true, null,
             inputHTML('Type "I re-affirm" — final affirmation of your Mastery Pledge.', 'unit-9.pledge-reaffirm')
         );
+
+        // v7.19.213: Tutor Sign-off section at end (matches other doc templates).
+        html += buildSignoffSection();
 
         return html;
     }

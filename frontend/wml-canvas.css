@@ -276,6 +276,10 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     overflow: visible;
     counter-reset: swml-major 0 swml-minor 0; /* Section numbering (v7.12.56) */
 }
+/* v7.19.213: Mastery Codex offset — About the Codex = 0, UNIT 1 children = 1.1, 1.2, ... */
+.swml-codex-doc {
+    counter-reset: swml-major -1 swml-minor 0 !important;
+}
 .swml-canvas-light .swml-canvas-doc {
     background: #fff;
     border-color: rgba(0,0,0,0.06);
