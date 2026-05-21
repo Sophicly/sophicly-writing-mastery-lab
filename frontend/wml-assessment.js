@@ -17609,6 +17609,9 @@
             inputHTML('What did you take away from Unit 3?', 'unit-4.launch.retrieval') +
             inputHTML('Hypothesis — what single mistake do you think most students make?', 'unit-4.hook-hypothesis')
         );
+        html += sectionHTML('plan', 'Khan Reflection', true, null,
+            inputHTML('After watching the Khan video — what is the single most important habit it suggests you adopt?', 'unit-4.khan-video-reflection')
+        );
         html += sectionHTML('plan', "Hero's Tale", true, null,
             inputHTML('Write one paragraph: one habit you will adopt + one obstacle you anticipate.', 'unit-4.heros-tale')
         );
@@ -17711,6 +17714,9 @@
         html += dividerHTML('UNIT 8 — CROSSING THE THRESHOLD');
         html += sectionHTML('plan', 'Launch Retrieval', true, null,
             inputHTML('Pull one key takeaway from each previous unit (Units 1–7).', 'unit-8.launch.retrieval')
+        );
+        html += sectionHTML('plan', 'Four Traps Reflection', true, null,
+            inputHTML('Name one trap you recognise in your own work + how you will counter it.', 'unit-8.traps-reflection')
         );
         html += sectionHTML('plan', 'First Quest Log Entry', true, null,
             inputHTML('Skill you will work on first.', 'unit-8.first-quest-log.skill') +
