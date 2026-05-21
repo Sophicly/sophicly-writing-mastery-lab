@@ -17588,9 +17588,6 @@
             inputHTML('One specific resource you will explore in the next 48 hours.', 'unit-2.exit-ticket.one') +
             inputHTML('When-intention: "When [day + time] arrives this week, I will [a specific action with my chosen resource]."', 'unit-2.exit-ticket.implementation-intention')
         );
-        html += sectionHTML('plan', 'Pledge Re-Affirm', true, null,
-            inputHTML('Type "I re-affirm" to confirm your pledge for this unit.', 'unit-2.pledge-reaffirm')
-        );
 
         // ── UNIT 3 — CODE OF THE QUEST (was old Unit 4 + definitions moved from old Unit 2) ──
         html += dividerHTML('UNIT 3 — CODE OF THE QUEST');
@@ -17611,9 +17608,6 @@
             inputHTML('Two questions — #2', 'unit-3.exit-ticket.two.2') +
             inputHTML('One action you will take this week.', 'unit-3.exit-ticket.one') +
             inputHTML('When-intention: "When [a specific session this week] starts, I will [arrive 5 minutes early with my screen on and materials ready]."', 'unit-3.exit-ticket.implementation-intention')
-        );
-        html += sectionHTML('plan', 'Pledge Re-Affirm', true, null,
-            inputHTML('Type "I re-affirm" to confirm your pledge for this unit.', 'unit-3.pledge-reaffirm')
         );
 
         // ── UNIT 4 — FORGING A HERO'S MINDSET (was old Unit 5 + Know Thyself moved from old Unit 2) ──
@@ -17638,9 +17632,6 @@
             inputHTML('Two questions — #2', 'unit-4.exit-ticket.two.2') +
             inputHTML('One action you will take this week.', 'unit-4.exit-ticket.one') +
             inputHTML('When-intention: "When [I feel disappointed in a result this week], I will [name Trust, Focus, Practice — and ask which I am missing]."', 'unit-4.exit-ticket.implementation-intention')
-        );
-        html += sectionHTML('plan', 'Pledge Re-Affirm', true, null,
-            inputHTML('Type "I re-affirm" to confirm your pledge for this unit.', 'unit-4.pledge-reaffirm')
         );
 
         // ── UNIT 5 — SCIENCE OF MASTERY (slide-aligned activities per g9 handoff 2026-05-20) ──
@@ -17672,9 +17663,6 @@
             inputHTML('When-intention — When [day + time]…', 'unit-5.exit-ticket.intention-when') +
             inputHTML('…I will [what specific action]', 'unit-5.exit-ticket.intention-what')
         );
-        html += sectionHTML('plan', 'Pledge Re-Affirm', true, null,
-            inputHTML('Type "I re-affirm" to confirm your pledge for this unit.', 'unit-5.pledge-reaffirm')
-        );
 
         // ── UNIT 6 — LANGUAGE OF EXCELLENCE (was old Unit 7 + 100% Commitment moved here) ──
         html += dividerHTML('UNIT 6 — LANGUAGE OF EXCELLENCE');
@@ -17694,9 +17682,6 @@
             inputHTML('Two questions — #2', 'unit-6.exit-ticket.two.2') +
             inputHTML('One action you will take this week.', 'unit-6.exit-ticket.one') +
             inputHTML('When-intention: "When [day + time this week] arrives, I will [open one mark scheme and highlight three Grade 9 descriptors]."', 'unit-6.exit-ticket.implementation-intention')
-        );
-        html += sectionHTML('plan', 'Pledge Re-Affirm', true, null,
-            inputHTML('Type "I re-affirm" to confirm your pledge for this unit.', 'unit-6.pledge-reaffirm')
         );
 
         // ── UNIT 7 — HERO'S ARSENAL (MADFATHER + TTECEA + Story-Spine + IUMVCC) ──
@@ -17737,9 +17722,6 @@
             inputHTML('Two questions — #2', 'unit-7.exit-ticket.two.2') +
             inputHTML('One action you will take this week.', 'unit-7.exit-ticket.one') +
             inputHTML('When-intention: "When [I write my next analytical paragraph], I will [use TTECEA+C and check each letter is present]."', 'unit-7.exit-ticket.implementation-intention')
-        );
-        html += sectionHTML('plan', 'Pledge Re-Affirm', true, null,
-            inputHTML('Type "I re-affirm" to confirm your pledge for this unit.', 'unit-7.pledge-reaffirm')
         );
 
         // ── UNIT 8 — CROSSING THE THRESHOLD (collapsed old Unit 9; final ceremony) ──
