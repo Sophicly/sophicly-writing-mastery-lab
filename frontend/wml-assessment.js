@@ -7820,11 +7820,13 @@
             } else if (state.task === 'mastery_codex') {
                 // v7.19.208: Mastery Codex tips — induction reflection doc, not assessment.
                 // Drop word-target + structure badges (no word count, no essay shape).
+                // v7.19.210: Added "everything counts" 100% effort badge (Neil 2026-05-21).
                 tips = [
                     { icon: SVG_GUIDE_LOCK, colour: '#5333ed', text: 'This is your Mastery Codex — your private record of growth across the Grade 9 Core Skills course. Capture your honest reflections as you move through each unit.' },
                     { icon: SVG_GUIDE_BRAIN, colour: '#51dacf', text: 'Try to recall everything you were taught. Extract your best knowledge and put it on the page.' },
                     { icon: SVG_GUIDE_STOPWATCH, colour: '#51dacf', text: 'Work efficiently. Get your ideas down as quickly as possible to the best of your ability.' },
-                    { icon: SVG_GUIDE_ARM, colour: '#1CD991', text: 'Don\'t worry about grades — the Codex isn\'t graded. But give every reflection your full effort: the more honestly and completely you write, the more useful your Codex becomes.' },
+                    { icon: SVG_GUIDE_TARGET, colour: '#4D76FD', text: 'Everything you write here counts toward your average grade. Aim for 100% effort: full sentences, complete answers, no shortcuts.' },
+                    { icon: SVG_GUIDE_ARM, colour: '#1CD991', text: 'The Codex itself isn\'t graded — but the effort you show here feeds your overall grade average. Give every reflection your full attention.' },
                 ];
             } else {
                 tips = [
@@ -9638,7 +9640,9 @@
         // (draft_1) and later draft beats. Belt-and-braces with the CSS rule
         // [data-cw-stage="ideas"] in wml-canvas.css set just below.
         // v7.18.7: also hide floating widget for exam_question (AI-generated content, not student writing).
-        const _hideWcByTask = ['essay_plan', 'mark_scheme', 'mark_scheme_assessment', 'mark_scheme_unit', 'foundational_quiz', 'conceptual_notes', 'exam_question'].includes(state.task);
+        // v7.19.210: also hide for mastery_codex — induction reflections, no word target.
+        // Separate from `_hideWcForTask` (line 5499) which hides the footer counter.
+        const _hideWcByTask = ['essay_plan', 'mark_scheme', 'mark_scheme_assessment', 'mark_scheme_unit', 'foundational_quiz', 'conceptual_notes', 'exam_question', 'mastery_codex'].includes(state.task);
         const _hideWcByCwStage = isCwTask && cwStepDef?.step && cwStepDef.step <= 8;
         if (_hideWcByTask || _hideWcByCwStage) {
             wcWidget.style.display = 'none';
