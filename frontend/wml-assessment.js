@@ -12039,7 +12039,16 @@
             respSections.forEach(s => {
                 studentChars += s.replace(/<[^>]*>/g, '').replace(/Start writing.*|Write your.*|Your .* will appear.*/gi, '').trim().length;
             });
-            if (studentChars > 50) {
+            // v7.19.206: Mastery Codex task-switch override. If task=mastery_codex
+            // AND current canvas has NO Codex section markers (data-field-id
+            // beginning with "unit-"), force inject — the existing content is
+            // from a prior task binding (e.g. diagnostic essay scaffold from
+            // when this topic was bound to 'diagnostic'). studentChars guard
+            // false-positives on placeholder text in essay response sections.
+            const hasCodexMarkers = /data-field-id="unit-/i.test(currentHTML);
+            if (state.task === 'mastery_codex' && !hasCodexMarkers) {
+                console.log('WML v7.19.206: mastery_codex task-switch detected, force-injecting Codex template (canvas has no unit-* field markers).');
+            } else if (studentChars > 50) {
                 // Real student work — stamp version, don't replace
                 try { localStorage.setItem(docVerKey, String(EXAM_PREP_DOC_VER)); } catch(e) {}
                 console.log('WML: Keeping student content (' + studentChars + ' chars), version stamped');
