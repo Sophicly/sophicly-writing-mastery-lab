@@ -4248,7 +4248,10 @@
             : _epTasks.includes(state.task) ? (_epConfig.chatHeaderLabel || ucfirst(state.task))
             : 'Diagnostic';
         const diagBadge = el('span', { className: 'swml-canvas-ctx-badge swml-canvas-ctx-diag', innerHTML: SVG_DIAGNOSTIC + diagBadgeLabel });
-        if (!_isCwBadge && state.phase !== 'exam_practice') ctxBadges.appendChild(diagBadge);
+        // v7.19.207: skip diagBadge for mastery_codex — headerConfig.label badge
+        // above (line 4233) already renders "Mastery Codex" via manifest, so
+        // diagBadge would duplicate it.
+        if (!_isCwBadge && state.phase !== 'exam_practice' && state.task !== 'mastery_codex') ctxBadges.appendChild(diagBadge);
 
         // v7.15.48: Attempt badge placeholder — always inserted, visibility controlled
         // by _updateCtxAttemptBadge. Previously gated on state.mode === 'guided', but on
@@ -4262,7 +4265,9 @@
         const _tfHideAttempt = !!(WML.isTopicFlow && WML.isTopicFlow());
         // v7.19.23: Exam Crib has no attempt model — hide canvas-header attempt badge too.
         const _cribHideAttempt = state.task === 'exam_crib';
-        if (!_tfHideAttempt && !_cribHideAttempt) {
+        // v7.19.207: Mastery Codex has no attempt model — single user-scoped doc.
+        const _codexHideAttempt = state.task === 'mastery_codex';
+        if (!_tfHideAttempt && !_cribHideAttempt && !_codexHideAttempt) {
             const attemptPlaceholder = el('span', {
                 className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
                 textContent: ((state.attempt || 0) >= 1) ? `Attempt ${state.attempt}` : '',
@@ -5491,7 +5496,7 @@
         // v7.17.21: hide footer word count + restore slot for non-essay tasks (quizzes, mark scheme, notes).
         // v7.18.7: also hide for exam_question — AI generates the question text, student
         // doesn't write the words. Counting them would inflate dashboard word count.
-        const _hideWcForTask = ['mark_scheme_unit', 'mark_scheme', 'mark_scheme_assessment', 'foundational_quiz', 'conceptual_notes', 'essay_plan', 'exam_question'].includes(state.task);
+        const _hideWcForTask = ['mark_scheme_unit', 'mark_scheme', 'mark_scheme_assessment', 'foundational_quiz', 'conceptual_notes', 'essay_plan', 'exam_question', 'mastery_codex'].includes(state.task);
         if (!_hideWcForTask) statusBar.appendChild(wcDisplay);
         // wcRestore added after widget creation below
         let wcRestore; // forward declaration
