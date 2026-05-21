@@ -7949,7 +7949,7 @@
             // Feedback view share button (line 6202). Generates current-URL + ?student_id=<uid>
             // so a tutor clicking lands in viewerMode=comment review mode.
             if (state.task === 'mastery_codex' && !state.reviewMode) {
-                const codexShareBtn = build3DButton('🔗 Share link with tutor', 'Copied — paste in chat', async () => {
+                const codexShareBtn = build3DButton('🔗 Share link with tutor', 'Copied', async () => {
                     const uid = (window.swmlConfig && window.swmlConfig.userId) || 0;
                     if (!uid) return false;
                     let urlStr;
@@ -7969,10 +7969,6 @@
                         return false;
                     }
                 });
-                // v7.19.214: scope-class so we can hide the build3DButton arrow icon,
-                // which animates to rest on top of the "Copied" state-2 text in the
-                // narrow right-panel column.
-                codexShareBtn.classList.add('swml-codex-share-btn');
                 codexShareBtn.style.marginTop = '12px';
                 rightPanel.appendChild(codexShareBtn);
                 const codexShareHint = el('p', {
