@@ -20715,8 +20715,13 @@
             return item;
         }
 
+        // v7.19.211: Mastery Codex — "About the Codex" displays as 0, so Unit 1 = 1,
+        // Unit 2 = 2, ... Unit 9 = 9, with children 1.1, 1.2, ... matching units.
+        // Without this offset, About = 1 forced Unit 1 children to 2.x which felt
+        // out of sync with the deck's Unit 1 / Unit 2 / ... structure.
+        const _isCodexToc = (typeof WML !== 'undefined' && WML.state && WML.state.task === 'mastery_codex');
         tocEntries.forEach((entry, idx) => {
-            const sectionNum = idx + 1;
+            const sectionNum = _isCodexToc ? idx : idx + 1;
             // Super-group → nested two-tier render
             if (entry.isSuperGroup) {
                 list.appendChild(renderSuperGroupEntry(entry, sectionNum + '.'));
