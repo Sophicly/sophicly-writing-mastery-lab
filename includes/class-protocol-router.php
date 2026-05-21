@@ -3698,6 +3698,13 @@ TEMPLATE;
                 'scored_visibly' => null,
                 'q_count'        => null,
             ],
+            'mastery_codex' => [
+                'task_display'   => 'Mastery Codex',
+                'lexicon'        => 'codex',
+                'task_family'    => 'induction',
+                'scored_visibly' => null,
+                'q_count'        => null,
+            ],
         ];
 
         if (!isset($contracts[$task])) {

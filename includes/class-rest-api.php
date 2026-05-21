@@ -192,6 +192,18 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
+        // v7.19.200: Mastery Codex — user-scoped sectioned document for Grade 9
+        // Core Skills induction. ONE doc per user, persists across all 9 units.
+        // Storage key: user_meta `swml_canvas_mastery_codex` (flat, NOT board/text scoped).
+        register_rest_route($namespace, '/codex/load', [
+            'methods' => 'GET', 'callback' => [$this, 'load_codex'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/codex/save', [
+            'methods' => 'POST', 'callback' => [$this, 'save_codex'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+
         // v7.14.66: Protocol manifest step labels — for sidebar
         register_rest_route($namespace, '/protocol-steps', [
             'methods' => 'GET', 'callback' => [$this, 'get_protocol_steps'],
@@ -4276,6 +4288,157 @@ class SWML_REST_API {
 
         $state = SWML_Session_Manager::update_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt, $patch);
         return rest_ensure_response(['success' => true, 'state' => $state]);
+    }
+
+    // ═══════════════════════════════════════════
+    //  MASTERY CODEX — SECTIONED USER DOCUMENT (v7.19.200)
+    //
+    //  ONE document per user, persists across all 9 units of the Grade 9
+    //  Core Skills induction course. Sections addressed by stable IDs
+    //  (e.g. `unit-1.launch.improvement`, `unit-1.pledge.name`) stored
+    //  as a flat sections map. HTML can be present alongside for TipTap
+    //  canvas rendering.
+    //
+    //  Storage key: user_meta `swml_canvas_mastery_codex` (flat, user-
+    //  scoped, NOT board/text/topic-scoped like assessment canvases).
+    //
+    //  Pledge lock: once `unit-1.pledge.signed-at` is set, all
+    //  `unit-1.pledge.*` fields are immutable except via admin override
+    //  (`admin_override=true` + `current_user_can('manage_options')`).
+    //
+    //  Re-affirm timestamps: `unit-N.pledge-reaffirm.at` server-stamped
+    //  on first true value for N in [2..9].
+    //
+    //  Server-stamped keys (`.at`, `.signed-at`) are never student-writable.
+    // ═══════════════════════════════════════════
+
+    public function load_codex($request) {
+        $current_uid = get_current_user_id();
+        if (!$current_uid) {
+            return new WP_Error('rest_forbidden', 'Login required.', ['status' => 401]);
+        }
+
+        $target = $request->get_param('student_id');
+        if ($target === null || $target === '') $target = $request->get_param('studentId');
+        $target_uid = absint($target ?? 0) ?: $current_uid;
+
+        $viewer_mode = 'edit';
+        if ($target_uid !== $current_uid) {
+            if (class_exists('Sophicly_Writing_Mastery_Lab')) {
+                $viewer_mode = Sophicly_Writing_Mastery_Lab::resolve_viewer_mode($current_uid, $target_uid);
+            }
+            if ($viewer_mode === false) {
+                return new WP_Error('forbidden_viewer', 'Not authorised to view this Codex.', ['status' => 403]);
+            }
+        }
+
+        $raw = get_user_meta($target_uid, 'swml_canvas_mastery_codex', true);
+        $doc = $this->decode_canvas_json($raw);
+        if (!is_array($doc)) {
+            $doc = [
+                'html'     => '',
+                'sections' => (object) [],
+                'savedAt'  => null,
+            ];
+        }
+        if (!isset($doc['sections']) || !is_array($doc['sections'])) {
+            $doc['sections'] = [];
+        }
+
+        return rest_ensure_response([
+            'success'    => true,
+            'doc'        => $doc,
+            'viewerMode' => $viewer_mode,
+        ]);
+    }
+
+    public function save_codex($request) {
+        $gate = $this->check_viewer_write_allowed($request);
+        if (is_wp_error($gate)) return $gate;
+
+        $current_uid = get_current_user_id();
+        $params = $request->get_json_params();
+
+        $target = $params['student_id'] ?? $params['studentId'] ?? 0;
+        $target_uid = absint($target) ?: $current_uid;
+
+        $html = $params['html'] ?? '';
+        $sections_in = isset($params['sections']) && is_array($params['sections']) ? $params['sections'] : [];
+        $admin_override = !empty($params['admin_override']) && current_user_can('manage_options');
+
+        $allowed_canvas_tags = wp_kses_allowed_html('post');
+        $tiptap_tags = ['p','h1','h2','h3','h4','h5','h6','span','div','li','ul','ol',
+                        'blockquote','table','tr','td','th','thead','tbody','section','mark','br','hr','label'];
+        $codex_data_attrs = [
+            'class', 'style',
+            'data-type', 'data-id', 'data-indent', 'data-text-align',
+            'data-input-field', 'data-prompt', 'data-field-id', 'data-field-type', 'data-editable', 'data-readonly',
+            'data-codex-section', 'data-codex-kind', 'data-codex-required', 'data-codex-cap',
+            'data-section-type', 'data-section-label', 'data-section-complete',
+            'data-comment-id',
+        ];
+        foreach ($tiptap_tags as $tag) {
+            if (!isset($allowed_canvas_tags[$tag])) $allowed_canvas_tags[$tag] = [];
+            foreach ($codex_data_attrs as $attr) {
+                $allowed_canvas_tags[$tag][$attr] = true;
+            }
+        }
+        $html = wp_kses($html, $allowed_canvas_tags);
+
+        $existing_raw = get_user_meta($target_uid, 'swml_canvas_mastery_codex', true);
+        $existing = $this->decode_canvas_json($existing_raw);
+        $existing_sections = (is_array($existing) && isset($existing['sections']) && is_array($existing['sections']))
+            ? $existing['sections'] : [];
+
+        $pledge_signed = !empty($existing_sections['unit-1.pledge.signed-at']);
+
+        $clean_sections = $existing_sections;
+        foreach ($sections_in as $key => $value) {
+            if (!is_string($key) || !preg_match('/^unit-[0-9]+\.[a-z0-9.\-]+$/i', $key)) continue;
+
+            if ($pledge_signed && !$admin_override && strpos($key, 'unit-1.pledge.') === 0) {
+                continue;
+            }
+
+            $suffix3 = strlen($key) >= 3 ? substr($key, -3) : '';
+            $suffix10 = strlen($key) >= 10 ? substr($key, -10) : '';
+            if ($suffix3 === '.at' || $suffix10 === '.signed-at') {
+                continue;
+            }
+
+            if (is_string($value)) {
+                $clean_sections[$key] = sanitize_textarea_field(substr($value, 0, 5000));
+            } elseif (is_bool($value) || is_int($value)) {
+                $clean_sections[$key] = $value;
+            } elseif ($value === null || $value === '') {
+                unset($clean_sections[$key]);
+            }
+        }
+
+        if (!$pledge_signed && !empty($clean_sections['unit-1.pledge.committed'])) {
+            $clean_sections['unit-1.pledge.signed-at'] = current_time('c');
+        }
+
+        for ($u = 2; $u <= 9; $u++) {
+            $reaffirm_key = 'unit-' . $u . '.pledge-reaffirm';
+            $at_key = $reaffirm_key . '.at';
+            if (!empty($clean_sections[$reaffirm_key]) && empty($existing_sections[$at_key])) {
+                $clean_sections[$at_key] = current_time('c');
+            }
+        }
+
+        $doc = [
+            'html'     => $html,
+            'sections' => $clean_sections,
+            'savedAt'  => current_time('c'),
+        ];
+
+        update_user_meta($target_uid, 'swml_canvas_mastery_codex', wp_slash(wp_json_encode($doc)));
+
+        return rest_ensure_response([
+            'success' => true,
+            'doc'     => $doc,
+        ]);
     }
 }
 
