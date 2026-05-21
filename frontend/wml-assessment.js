@@ -7969,6 +7969,10 @@
                         return false;
                     }
                 });
+                // v7.19.214: scope-class so we can hide the build3DButton arrow icon,
+                // which animates to rest on top of the "Copied" state-2 text in the
+                // narrow right-panel column.
+                codexShareBtn.classList.add('swml-codex-share-btn');
                 codexShareBtn.style.marginTop = '12px';
                 rightPanel.appendChild(codexShareBtn);
                 const codexShareHint = el('p', {

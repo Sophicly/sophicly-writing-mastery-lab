@@ -280,6 +280,12 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-codex-doc {
     counter-reset: swml-major -1 swml-minor 0 !important;
 }
+/* v7.19.214: Hide arrow icon on the Codex right-panel share button — it animates
+   to a resting position that overlaps the centred "Copied — paste in chat" state-2
+   text when the button sits in the narrow right-panel column. */
+.swml-codex-share-btn .swml-3d-icon {
+    display: none !important;
+}
 .swml-canvas-light .swml-canvas-doc {
     background: #fff;
     border-color: rgba(0,0,0,0.06);
