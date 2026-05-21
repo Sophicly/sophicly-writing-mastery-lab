@@ -5557,7 +5557,7 @@
         const cwStepDef = isCwTask ? WML.getCwStepDef(state.task) : null;
         const isCwSi = isCwTask && cwStepDef?.tier === 'si';
         const isCwWorkbook = isCwTask && cwStepDef?.tier === 'workbook';
-        const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz'];
+        const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz', 'mastery_codex'];
         const isExamPrep = EXAM_PREP_TASKS.includes(state.task);
         // v7.14.37: Environment detection from manifest (free/training/flexible)
         // v7.19.19+: 'inline-coaching' env added for exam-crib task.
@@ -17437,8 +17437,269 @@
      * @param {string} exerciseType — manifest key (exam_question, essay_plan, model_answer, etc.)
      * @returns {string} TipTap-compatible HTML
      */
+    // v7.19.204: Mastery Codex template — Grade 9 Core Skills induction.
+    // ONE document, all 9 units, ~45 stable section IDs as InputField /
+    // SelectField TipTap nodes. Saves persist via existing canvas save
+    // pipeline (each field's data-field-id becomes the addressable key
+    // inside the saved doc HTML).
+    function buildMasteryCodexTemplate() {
+        let html = '';
+
+        const GRADE_OPTIONS = [
+            { value: '1', label: 'Grade 1' }, { value: '2', label: 'Grade 2' },
+            { value: '3', label: 'Grade 3' }, { value: '4', label: 'Grade 4' },
+            { value: '5', label: 'Grade 5' }, { value: '6', label: 'Grade 6' },
+            { value: '7', label: 'Grade 7' }, { value: '8', label: 'Grade 8' },
+            { value: '9', label: 'Grade 9' },
+            { value: 'not-sat', label: 'Not sat yet' },
+        ];
+
+        // ── Cover / About ────────────────────────────────────────────────
+        html += sectionHTML('question', 'About the Codex', false, null,
+            '<h2>The Mastery Codex</h2>' +
+            '<p><em>Your personal record across the nine units of Grade 9 Core Skills.</em></p>' +
+            '<p>Every reflection, exit ticket, and pledge you complete in this induction lives here. The document persists across every unit and every lesson — what you write in Unit 1 will still be here when you reach Unit 9.</p>'
+        );
+
+        // ── UNIT 1 ───────────────────────────────────────────────────────
+        html += dividerHTML('UNIT 1 — WHY THIS COURSE EXISTS');
+        html += sectionHTML('plan', 'Launch Reflection', true, null,
+            selectHTML('What grade did you last achieve in English?', 'unit-1.launch.grade-last', GRADE_OPTIONS, false) +
+            inputHTML('What is one thing your English teacher said you needed to improve?', 'unit-1.launch.improvement') +
+            inputHTML('If you could change one thing about how you study English, what would it be?', 'unit-1.launch.change-one-thing')
+        );
+        html += sectionHTML('plan', 'Hypothesis & Definition', true, null,
+            inputHTML('Hypothesis — write your guess to the hook question on the previous slide (before we tell you the answer).', 'unit-1.hook-hypothesis') +
+            inputHTML('Define meta-skills in your own words.', 'unit-1.meta-skills.in-own-words')
+        );
+        html += sectionHTML('plan', 'Exit Ticket (3-2-1)', true, null,
+            inputHTML('Three things from this introduction that surprised you — #1', 'unit-1.exit-ticket.surprises.1') +
+            inputHTML('Three things from this introduction that surprised you — #2', 'unit-1.exit-ticket.surprises.2') +
+            inputHTML('Three things from this introduction that surprised you — #3', 'unit-1.exit-ticket.surprises.3') +
+            inputHTML('Two meta-skills you know you currently lack — #1', 'unit-1.exit-ticket.meta-skills-lacked.1') +
+            inputHTML('Two meta-skills you know you currently lack — #2', 'unit-1.exit-ticket.meta-skills-lacked.2') +
+            inputHTML('One reason you are willing to do this course differently.', 'unit-1.exit-ticket.reason-different')
+        );
+        html += sectionHTML('plan', 'Mastery Pledge', true, null,
+            inputHTML('Type your name to sign the pledge.', 'unit-1.pledge.name') +
+            inputHTML('If/then implementation intention — e.g. "If I fall behind by a week, then I will book a catch-up session that day."', 'unit-1.pledge.implementation-intention') +
+            inputHTML('Type "I commit" to confirm the pledge. (I commit to walking this road with intention.)', 'unit-1.pledge.committed')
+        );
+
+        // ── UNIT 2 ───────────────────────────────────────────────────────
+        html += dividerHTML('UNIT 2 — THE CALL TO MASTERY');
+        html += sectionHTML('plan', 'Launch Retrieval', true, null,
+            inputHTML('Name the percentage of students nationally who reach Grade 7–9.', 'unit-2.launch.percentage-national') +
+            inputHTML('Name two of the eight meta-skills students often lack — #1', 'unit-2.launch.meta-skills-named.1') +
+            inputHTML('Name two of the eight meta-skills students often lack — #2', 'unit-2.launch.meta-skills-named.2') +
+            inputHTML('Why do we frame your journey as a Hero\'s Journey?', 'unit-2.launch.heros-journey-framing')
+        );
+        html += sectionHTML('plan', 'Hypothesis & Definitions', true, null,
+            inputHTML('Hypothesis — two heroes start the same road on the same day. One has a map and a quest log. The other does not. Who arrives first, and why?', 'unit-2.hook-hypothesis') +
+            inputHTML('Define Literature in your own words.', 'unit-2.literature-definition') +
+            inputHTML('Define Story in your own words.', 'unit-2.story-definition') +
+            inputHTML('Define Protagonist in your own words + name the protagonist of the last text you studied.', 'unit-2.protagonist-definition')
+        );
+        html += sectionHTML('plan', 'Activity A — Know Thyself', true, null,
+            inputHTML('Prompt 1', 'unit-2.activity-a.know-thyself.1') +
+            inputHTML('Prompt 2', 'unit-2.activity-a.know-thyself.2') +
+            inputHTML('Prompt 3', 'unit-2.activity-a.know-thyself.3')
+        );
+        html += sectionHTML('plan', 'Activity B — Accept the Call', true, null,
+            inputHTML('Write a 4–6 sentence paragraph: why are you accepting this call to mastery?', 'unit-2.activity-b.accept-call')
+        );
+        html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
+            inputHTML('Three of the six resources you can name from memory — #1', 'unit-2.exit-ticket.three-resources.1') +
+            inputHTML('Three of the six resources you can name from memory — #2', 'unit-2.exit-ticket.three-resources.2') +
+            inputHTML('Three of the six resources you can name from memory — #3', 'unit-2.exit-ticket.three-resources.3') +
+            inputHTML('Two questions about which resource to use when — #1', 'unit-2.exit-ticket.two-questions.1') +
+            inputHTML('Two questions about which resource to use when — #2', 'unit-2.exit-ticket.two-questions.2') +
+            inputHTML('One specific resource you will explore in the next 48 hours.', 'unit-2.exit-ticket.one-resource-explored') +
+            inputHTML('When-intention: "When [day + time] arrives this week, I will [a specific action with my chosen resource]."', 'unit-2.exit-ticket.implementation-intention')
+        );
+        html += sectionHTML('plan', 'Pledge Re-Affirm', true, null,
+            inputHTML('Type "I re-affirm" to confirm your pledge for this unit.', 'unit-2.pledge-reaffirm')
+        );
+
+        // ── UNIT 3 ───────────────────────────────────────────────────────
+        html += dividerHTML('UNIT 3 — EQUIPPING FOR THE QUEST');
+        html += sectionHTML('plan', 'Launch Retrieval & Hypothesis', true, null,
+            inputHTML('What did you take away from Unit 2?', 'unit-3.launch.retrieval') +
+            inputHTML('Hypothesis — what single mistake stops more students from reaching Grade 9 than any other?', 'unit-3.hook-hypothesis')
+        );
+        html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
+            inputHTML('Three takeaways — #1', 'unit-3.exit-ticket.three.1') +
+            inputHTML('Three takeaways — #2', 'unit-3.exit-ticket.three.2') +
+            inputHTML('Three takeaways — #3', 'unit-3.exit-ticket.three.3') +
+            inputHTML('Two questions — #1', 'unit-3.exit-ticket.two.1') +
+            inputHTML('Two questions — #2', 'unit-3.exit-ticket.two.2') +
+            inputHTML('One action you will take this week.', 'unit-3.exit-ticket.one') +
+            inputHTML('When-intention: "When [a specific session this week] starts, I will [arrive 5 minutes early with my screen on and materials ready]."', 'unit-3.exit-ticket.implementation-intention')
+        );
+        html += sectionHTML('plan', 'Pledge Re-Affirm', true, null,
+            inputHTML('Type "I re-affirm" to confirm your pledge for this unit.', 'unit-3.pledge-reaffirm')
+        );
+
+        // ── UNIT 4 ───────────────────────────────────────────────────────
+        html += dividerHTML('UNIT 4 — CODE OF THE QUEST');
+        html += sectionHTML('plan', 'Launch Retrieval & Hypothesis', true, null,
+            inputHTML('What did you take away from Unit 3?', 'unit-4.launch.retrieval') +
+            inputHTML('Hypothesis — what single mistake do you think most students make?', 'unit-4.hook-hypothesis')
+        );
+        html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
+            inputHTML('Three takeaways — #1', 'unit-4.exit-ticket.three.1') +
+            inputHTML('Three takeaways — #2', 'unit-4.exit-ticket.three.2') +
+            inputHTML('Three takeaways — #3', 'unit-4.exit-ticket.three.3') +
+            inputHTML('Two questions — #1', 'unit-4.exit-ticket.two.1') +
+            inputHTML('Two questions — #2', 'unit-4.exit-ticket.two.2') +
+            inputHTML('One action you will take this week.', 'unit-4.exit-ticket.one') +
+            inputHTML('When-intention: "When [I feel disappointed in a result this week], I will [name Trust, Focus, Practice — and ask which I am missing]."', 'unit-4.exit-ticket.implementation-intention')
+        );
+        html += sectionHTML('plan', 'Pledge Re-Affirm', true, null,
+            inputHTML('Type "I re-affirm" to confirm your pledge for this unit.', 'unit-4.pledge-reaffirm')
+        );
+
+        // ── UNIT 5 ───────────────────────────────────────────────────────
+        html += dividerHTML('UNIT 5 — FORGING A HERO\'S MINDSET');
+        html += sectionHTML('plan', 'Launch Retrieval & Hypothesis', true, null,
+            inputHTML('What did you take away from Unit 4?', 'unit-5.launch.retrieval') +
+            inputHTML('Hypothesis — why does mock-9 sometimes drop in the real exam?', 'unit-5.hook-hypothesis')
+        );
+        html += sectionHTML('plan', 'Activity C — Hero\'s Tale', true, null,
+            inputHTML('Write one paragraph: one habit you will adopt + one obstacle you anticipate.', 'unit-5.activity-c.heros-tale')
+        );
+        html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
+            inputHTML('Three takeaways — #1', 'unit-5.exit-ticket.three.1') +
+            inputHTML('Three takeaways — #2', 'unit-5.exit-ticket.three.2') +
+            inputHTML('Three takeaways — #3', 'unit-5.exit-ticket.three.3') +
+            inputHTML('Two questions — #1', 'unit-5.exit-ticket.two.1') +
+            inputHTML('Two questions — #2', 'unit-5.exit-ticket.two.2') +
+            inputHTML('One action you will take this week.', 'unit-5.exit-ticket.one') +
+            inputHTML('When-intention: "When [day + time next week] arrives, I will [close the book and write everything I remember from memory]."', 'unit-5.exit-ticket.implementation-intention')
+        );
+        html += sectionHTML('plan', 'Pledge Re-Affirm', true, null,
+            inputHTML('Type "I re-affirm" to confirm your pledge for this unit.', 'unit-5.pledge-reaffirm')
+        );
+
+        // ── UNIT 6 ───────────────────────────────────────────────────────
+        html += dividerHTML('UNIT 6 — SCIENCE OF MASTERY');
+        html += sectionHTML('plan', 'Launch Retrieval & Hypothesis', true, null,
+            inputHTML('What did you take away from Unit 5?', 'unit-6.launch.retrieval') +
+            inputHTML('Hypothesis — why does re-reading and highlighting feel productive but isn\'t?', 'unit-6.hook-hypothesis')
+        );
+        html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
+            inputHTML('Three takeaways — #1', 'unit-6.exit-ticket.three.1') +
+            inputHTML('Three takeaways — #2', 'unit-6.exit-ticket.three.2') +
+            inputHTML('Three takeaways — #3', 'unit-6.exit-ticket.three.3') +
+            inputHTML('Two questions — #1', 'unit-6.exit-ticket.two.1') +
+            inputHTML('Two questions — #2', 'unit-6.exit-ticket.two.2') +
+            inputHTML('One action you will take this week.', 'unit-6.exit-ticket.one') +
+            inputHTML('When-intention: "When [day + time this week] arrives, I will [open one mark scheme and highlight three Grade 9 descriptors]."', 'unit-6.exit-ticket.implementation-intention')
+        );
+        html += sectionHTML('plan', 'Pledge Re-Affirm', true, null,
+            inputHTML('Type "I re-affirm" to confirm your pledge for this unit.', 'unit-6.pledge-reaffirm')
+        );
+
+        // ── UNIT 7 ───────────────────────────────────────────────────────
+        html += dividerHTML('UNIT 7 — LANGUAGE OF EXCELLENCE');
+        html += sectionHTML('plan', 'Launch Retrieval & Hypothesis', true, null,
+            inputHTML('What did you take away from Unit 6?', 'unit-7.launch.retrieval') +
+            inputHTML('Hypothesis — what single document tells you exactly how to score Grade 9 — and most students never read it?', 'unit-7.hook-hypothesis')
+        );
+        html += sectionHTML('plan', "MADFATHER's CROPS — Apply Three Letters", true, null,
+            inputHTML('Letter 1 — technique found + exact quote + effect on reader.', 'unit-7.madfather-application.1') +
+            inputHTML('Letter 2 — technique found + exact quote + effect on reader.', 'unit-7.madfather-application.2') +
+            inputHTML('Letter 3 — technique found + exact quote + effect on reader.', 'unit-7.madfather-application.3')
+        );
+        html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
+            inputHTML('Three takeaways — #1', 'unit-7.exit-ticket.three.1') +
+            inputHTML('Three takeaways — #2', 'unit-7.exit-ticket.three.2') +
+            inputHTML('Three takeaways — #3', 'unit-7.exit-ticket.three.3') +
+            inputHTML('Two questions — #1', 'unit-7.exit-ticket.two.1') +
+            inputHTML('Two questions — #2', 'unit-7.exit-ticket.two.2') +
+            inputHTML('One action you will take this week.', 'unit-7.exit-ticket.one') +
+            inputHTML('When-intention: "When [I write my next analytical paragraph], I will [use TTECEA+C and check each letter is present]."', 'unit-7.exit-ticket.implementation-intention')
+        );
+        html += sectionHTML('plan', 'Pledge Re-Affirm', true, null,
+            inputHTML('Type "I re-affirm" to confirm your pledge for this unit.', 'unit-7.pledge-reaffirm')
+        );
+
+        // ── UNIT 8 ───────────────────────────────────────────────────────
+        html += dividerHTML('UNIT 8 — THE HERO\'S ARSENAL');
+        html += sectionHTML('plan', 'Launch Retrieval & Hypothesis', true, null,
+            inputHTML('What did you take away from Unit 7?', 'unit-8.launch.retrieval') +
+            inputHTML('Hypothesis — what separates the student who signs the pledge and forgets it from the one who lives by it?', 'unit-8.hook-hypothesis')
+        );
+        html += sectionHTML('plan', 'TTECEA Application', true, null,
+            inputHTML('Write one TTECEA+C paragraph (~7 sentences) on a sentence your tutor supplies.', 'unit-8.ttecea-application')
+        );
+        html += sectionHTML('plan', 'Story-Spine Draft (6 Beats)', true, null,
+            inputHTML('Beat 1', 'unit-8.story-spine-draft.1') +
+            inputHTML('Beat 2', 'unit-8.story-spine-draft.2') +
+            inputHTML('Beat 3', 'unit-8.story-spine-draft.3') +
+            inputHTML('Beat 4', 'unit-8.story-spine-draft.4') +
+            inputHTML('Beat 5', 'unit-8.story-spine-draft.5') +
+            inputHTML('Beat 6', 'unit-8.story-spine-draft.6')
+        );
+        html += sectionHTML('plan', 'IUMVCC Draft (6 Beats)', true, null,
+            inputHTML('I — Issue', 'unit-8.iumvcc-draft.1') +
+            inputHTML('U — Urgency', 'unit-8.iumvcc-draft.2') +
+            inputHTML('M — Methodology', 'unit-8.iumvcc-draft.3') +
+            inputHTML('V — Vision', 'unit-8.iumvcc-draft.4') +
+            inputHTML('C — Counter-argument', 'unit-8.iumvcc-draft.5') +
+            inputHTML('C — Conclusion', 'unit-8.iumvcc-draft.6')
+        );
+        html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
+            inputHTML('Three takeaways — #1', 'unit-8.exit-ticket.three.1') +
+            inputHTML('Three takeaways — #2', 'unit-8.exit-ticket.three.2') +
+            inputHTML('Three takeaways — #3', 'unit-8.exit-ticket.three.3') +
+            inputHTML('Two questions — #1', 'unit-8.exit-ticket.two.1') +
+            inputHTML('Two questions — #2', 'unit-8.exit-ticket.two.2') +
+            inputHTML('One action you will take this week.', 'unit-8.exit-ticket.one') +
+            inputHTML('When-intention: "When [the date above] arrives, I will [open the curriculum and begin Piece 1 — even if I don\'t feel ready]."', 'unit-8.exit-ticket.implementation-intention')
+        );
+        html += sectionHTML('plan', 'Pledge Re-Affirm', true, null,
+            inputHTML('Type "I re-affirm" to confirm your pledge for this unit.', 'unit-8.pledge-reaffirm')
+        );
+
+        // ── UNIT 9 ───────────────────────────────────────────────────────
+        html += dividerHTML('UNIT 9 — CROSSING THE THRESHOLD');
+        html += sectionHTML('plan', 'Launch Retrieval', true, null,
+            inputHTML('Pull one key takeaway from each previous unit (Units 1–8).', 'unit-9.launch.retrieval')
+        );
+        html += sectionHTML('plan', 'First Quest Log Entry', true, null,
+            inputHTML('Skill you will work on first.', 'unit-9.first-quest-log.skill') +
+            inputHTML('How you will measure progress.', 'unit-9.first-quest-log.measure') +
+            inputHTML('Weekly action you commit to.', 'unit-9.first-quest-log.weekly-action')
+        );
+        html += sectionHTML('plan', 'Exit Ticket (3-2-1) + Date Commitment', true, null,
+            inputHTML('Three takeaways — #1', 'unit-9.exit-ticket.three.1') +
+            inputHTML('Three takeaways — #2', 'unit-9.exit-ticket.three.2') +
+            inputHTML('Three takeaways — #3', 'unit-9.exit-ticket.three.3') +
+            inputHTML('Two questions — #1', 'unit-9.exit-ticket.two.1') +
+            inputHTML('Two questions — #2', 'unit-9.exit-ticket.two.2') +
+            inputHTML('One action you will take this week.', 'unit-9.exit-ticket.one') +
+            inputHTML('Date you commit to your first piece (DD/MM/YYYY).', 'unit-9.exit-ticket.first-piece-date') +
+            inputHTML('When-intention for your first piece.', 'unit-9.exit-ticket.implementation-intention')
+        );
+        html += sectionHTML('plan', 'Pledge Re-Affirm (Final)', true, null,
+            inputHTML('Type "I re-affirm" — final affirmation of your Mastery Pledge.', 'unit-9.pledge-reaffirm')
+        );
+
+        return html;
+    }
+
     function getExamPrepDocTemplate(exerciseType) {
         let html = '';
+
+        // v7.19.204: Mastery Codex \u2014 Grade 9 Core Skills induction. ONE
+        // document, all 9 units, ~45 stable section IDs. Uses InputField +
+        // SelectField TipTap nodes (existing infrastructure) \u2014 same chrome
+        // as language/literature documents.
+        if (exerciseType === 'mastery_codex') {
+            return buildMasteryCodexTemplate();
+        }
+
         const board = (WML.state.board || '').toUpperCase();
         const subject = WML.state.subject || '';
         const text = WML.state.text ? ucfirst(WML.state.text.replace(/_/g, ' ')) : '';
@@ -18978,7 +19239,7 @@
         if (!canvasEditor) return;
         if (state.task && state.task.startsWith('cw_')) return; // v7.13.36: CW exercises don't use topic templates
         // v7.13.93: Exam prep tasks use their own templates (via tryExamPrepTemplate), skip topic template
-        const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz'];
+        const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz', 'mastery_codex'];
         if (EXAM_PREP_TASKS.includes(state.task)) return;
         // v7.17.20: mark_scheme_unit uses a 2-section notes template — same doc across
         // Quiz (step 1) + FYW (step 2), shared suffix so notes persist between steps.
