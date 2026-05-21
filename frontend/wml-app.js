@@ -457,6 +457,15 @@
                 state.draftType = 'notes';
                 state.phase = null;
                 selectTask('conceptual_notes');
+            } else if (state.task === 'mastery_codex') {
+                // v7.19.201: Mastery Codex — student-write doc, no Sophia chat,
+                // no protocol stepper. Single user-scoped doc across all 9 units
+                // of Grade 9 Core Skills induction. See wml-codex.js.
+                if (typeof WML.renderCodexWorkspace === 'function') {
+                    WML.renderCodexWorkspace();
+                } else {
+                    console.error('WML: renderCodexWorkspace not loaded — wml-codex.js enqueue missing.');
+                }
             } else if (state.task) {
                 // Chat-based exercises: planning, polishing, etc.
                 selectTask(state.task);

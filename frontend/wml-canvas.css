@@ -9692,3 +9692,191 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 
 /* v7.19.154 CSS override removed (wrong selector — cards were swml-input-field
    divs, not <p>). v7.19.155 fixes via migrateInputFields consolidation. */
+
+/* ═══════════════════════════════════════════════════════════════════
+   v7.19.201 — MASTERY CODEX (Grade 9 Core Skills induction)
+   Single user-scoped doc rendered when state.task === 'mastery_codex'.
+   See wml-codex.js + /codex/* REST endpoints (WML v7.19.200).
+   ═══════════════════════════════════════════════════════════════════ */
+
+.swml-codex-overlay {
+    position: fixed;
+    inset: 0;
+    background: #0f0a1f;
+    z-index: 100;
+    overflow-y: auto;
+    color: #e8e3f5;
+}
+
+.swml-codex-canvas {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 64px 32px 96px;
+    font-family: 'Proxima Soft', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.swml-codex-header {
+    padding-bottom: 32px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid rgba(83, 51, 237, 0.3);
+}
+
+.swml-codex-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-weight: 900;
+    font-size: 48px;
+    line-height: 1.1;
+    margin: 0 0 8px;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+}
+
+.swml-codex-subtitle {
+    margin: 0;
+    font-size: 16px;
+    color: rgba(232, 227, 245, 0.7);
+    max-width: 60ch;
+}
+
+.swml-codex-save-status {
+    margin-top: 16px;
+    font-size: 13px;
+    color: #5eead4;
+    letter-spacing: 0.02em;
+}
+
+.swml-codex-unit-nav {
+    padding: 12px 16px;
+    background: rgba(83, 51, 237, 0.08);
+    border: 1px solid rgba(83, 51, 237, 0.2);
+    border-radius: 6px;
+    margin-bottom: 24px;
+    font-size: 14px;
+}
+
+.swml-codex-unit-nav a {
+    color: #a78bfa;
+    text-decoration: underline;
+}
+
+.swml-codex-unit {
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.swml-codex-unit:last-child {
+    border-bottom: 0;
+}
+
+.swml-codex-unit-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-weight: 900;
+    font-size: 28px;
+    margin: 0 0 24px;
+    color: #c4b5fd;
+}
+
+.swml-codex-section-heading {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: #5eead4;
+    margin: 32px 0 12px;
+    font-weight: 700;
+}
+
+.swml-codex-field {
+    margin-bottom: 20px;
+}
+
+.swml-codex-label {
+    display: block;
+    font-size: 15px;
+    line-height: 1.4;
+    color: #e8e3f5;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.swml-codex-field input[type="text"],
+.swml-codex-field input[type="date"],
+.swml-codex-field select,
+.swml-codex-field textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.5;
+    box-sizing: border-box;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.swml-codex-field input[type="text"]:focus,
+.swml-codex-field input[type="date"]:focus,
+.swml-codex-field select:focus,
+.swml-codex-field textarea:focus {
+    outline: none;
+    border-color: #5eead4;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.swml-codex-field textarea {
+    resize: vertical;
+    min-height: 84px;
+}
+
+.swml-codex-field input[disabled],
+.swml-codex-field textarea[disabled],
+.swml-codex-field select[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.swml-codex-field input.swml-codex-locked,
+.swml-codex-field textarea.swml-codex-locked {
+    border-color: rgba(94, 234, 212, 0.4);
+    background: rgba(94, 234, 212, 0.04);
+}
+
+.swml-codex-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(83, 51, 237, 0.06);
+    border: 1px solid rgba(83, 51, 237, 0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.swml-codex-checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #5eead4;
+    cursor: pointer;
+}
+
+.swml-codex-checkbox-label input[disabled] {
+    cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+    .swml-codex-canvas {
+        padding: 32px 16px 64px;
+    }
+    .swml-codex-title {
+        font-size: 32px;
+    }
+    .swml-codex-unit-title {
+        font-size: 22px;
+    }
+}
