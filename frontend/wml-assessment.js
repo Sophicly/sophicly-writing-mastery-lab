@@ -5500,7 +5500,9 @@
             }
         });
         // v7.14.50: Hide Reset for training-env (document is protocol-driven, resetting breaks flow)
-        if ((WML.getExerciseConfig(state.task)?.environment || 'free') !== 'training') statusBar.appendChild(resetBtn);
+        // v7.19.216: Also hide for mastery_codex — induction reflection doc filled across 9 weeks;
+        // one stray click would wipe everything.
+        if ((WML.getExerciseConfig(state.task)?.environment || 'free') !== 'training' && state.task !== 'mastery_codex') statusBar.appendChild(resetBtn);
         // v7.17.21: hide footer word count + restore slot for non-essay tasks (quizzes, mark scheme, notes).
         // v7.18.7: also hide for exam_question — AI generates the question text, student
         // doesn't write the words. Counting them would inflate dashboard word count.
@@ -6096,7 +6098,8 @@
         // v7.14.50: Also hide for mark_scheme (no question extract)
         // v7.18.7: also hide for exam_question — the document IS the question + extract;
         // there's no separate question to pop out and reference while writing.
-        if (!(state.task && state.task.startsWith('cw_')) && state.task !== 'mark_scheme' && state.task !== 'exam_question') {
+        // v7.19.216: also hide for mastery_codex — induction reflection doc, no extract.
+        if (!(state.task && state.task.startsWith('cw_')) && state.task !== 'mark_scheme' && state.task !== 'exam_question' && state.task !== 'mastery_codex') {
             statusBar.appendChild(extractBtn);
         }
 
