@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.202
+ * Version: 7.19.203
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.202');
+define('SWML_VERSION', '7.19.203');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -280,23 +280,11 @@ class Sophicly_Writing_Mastery_Lab {
             true
         );
 
-        // v7.19.201: Mastery Codex — student-write doc for Grade 9 Core Skills
-        // induction. Renders simple form fields against the /codex REST endpoints
-        // when state.task === 'mastery_codex'. Enqueued BEFORE swml-app so the
-        // bootstrap dispatch in wml-app.js finds WML.renderCodexWorkspace ready.
-        wp_enqueue_script(
-            'swml-codex',
-            SWML_URL . 'frontend/wml-codex.js',
-            ['swml-core'],
-            SWML_VERSION,
-            true
-        );
-
         // App module: navigation, planning, chat, boot (loads LAST — contains boot sequence)
         wp_enqueue_script(
             'swml-app',
             SWML_URL . 'frontend/wml-app.js',
-            ['swml-core', 'swml-assessment', 'swml-shader', 'swml-codex'],
+            ['swml-core', 'swml-assessment', 'swml-shader'],
             SWML_VERSION,
             true
         );

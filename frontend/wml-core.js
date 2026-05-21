@@ -1176,25 +1176,27 @@ window.WML = (function() {
             chatHeaderLabel: 'Memory Practice',
             sidebarSteps: null,
         },
-        // v7.19.202: Mastery Codex — Grade 9 Core Skills induction. ONE
-        // user-scoped doc across all 9 units. No Sophia chat, no protocol
-        // stepper. Environment 'codex' is intentionally NOT in the
-        // ['training','free','flexible','inline-coaching'] dispatcher list
-        // (wml-app.js:363, 434, 600). That forces fall-through to the
-        // bootstrap if/else chain which routes mastery_codex to
-        // WML.renderCodexWorkspace() (defined in wml-codex.js).
+        // v7.19.203: Mastery Codex — Grade 9 Core Skills induction. ONE
+        // user-scoped doc across all 9 units. Mirrors `diagnostic` env so
+        // students see the same WML TipTap canvas chrome as language/lit
+        // documents — no Sophia chat, no protocol stepper, no sidebar nav
+        // (Codex is one continuous document; navigation between units is
+        // by scrolling within the doc). Storage uses canvas pipeline; key
+        // resolves to swml_canvas_all_g9_core_skills (bridge passes board=all
+        // text=g9_core_skills) which is functionally user-scoped because
+        // every Codex page binds to the same board/text in the bridge.
         mastery_codex: {
             label: 'Mastery Codex',
-            environment: 'codex',
+            environment: 'free',
             panels: { sidebar: false, chat: false, guidance: false, document: true },
             steps: null,
             elements: null,
             protocolSource: null,
-            protocolTask: 'mastery_codex',
-            completionType: null,
+            protocolTask: null,
+            completionType: 'manual',
             storageSuffix: '',
-            documentTemplate: null,
-            chatHeaderLabel: 'Mastery Codex',
+            documentTemplate: 'mastery_codex',
+            chatHeaderLabel: null,
             sidebarSteps: null,
         },
 
