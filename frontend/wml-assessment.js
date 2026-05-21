@@ -17596,11 +17596,6 @@
             inputHTML('What did you take away from Unit 2?', 'unit-3.launch.retrieval') +
             inputHTML('Hypothesis — what single mistake stops more students from reaching Grade 9 than any other?', 'unit-3.hook-hypothesis')
         );
-        html += sectionHTML('plan', 'Definitions', true, null,
-            inputHTML('Define Literature in your own words.', 'unit-3.definitions.literature') +
-            inputHTML('Define Story in your own words.', 'unit-3.definitions.story') +
-            inputHTML('Define Protagonist in your own words + name the protagonist of the last text you studied.', 'unit-3.definitions.protagonist')
-        );
         html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
             inputHTML('Three takeaways from this unit.', 'unit-3.exit-ticket.three') +
             inputHTML('Two questions you still have.', 'unit-3.exit-ticket.two') +
@@ -17675,6 +17670,11 @@
         html += sectionHTML('plan', 'Launch Retrieval & Hypothesis', true, null,
             inputHTML('What did you take away from Unit 6?', 'unit-7.launch.retrieval') +
             inputHTML('Hypothesis — what separates the student who signs the pledge and forgets it from the one who lives by it?', 'unit-7.hook-hypothesis')
+        );
+        html += sectionHTML('plan', 'Definitions', true, null,
+            inputHTML('Define Literature in your own words.', 'unit-7.definitions.literature') +
+            inputHTML('Define Story in your own words.', 'unit-7.definitions.story') +
+            inputHTML('Define Protagonist in your own words + name the protagonist of the last text you studied.', 'unit-7.definitions.protagonist')
         );
         html += sectionHTML('plan', "MADFATHER's CROPS — Apply Three Letters", true, null,
             inputHTML('Letter 1 — technique found + exact quote + effect on reader.', 'unit-7.madfather-application.1') +
