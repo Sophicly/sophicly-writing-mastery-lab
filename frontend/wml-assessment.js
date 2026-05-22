@@ -17556,6 +17556,7 @@
         html += dividerHTML('UNIT 1 — WHY THIS COURSE EXISTS');
         html += sectionHTML('plan', 'Launch Reflection', true, null,
             selectHTML('What grade did you last achieve in English?', 'unit-1.launch.grade-last', GRADE_OPTIONS, false) +
+            selectHTML('What grade would you like to score in your actual exams?', 'unit-1.launch.grade-target', GRADE_OPTIONS, false) +
             inputHTML('What is one thing your English teacher said you needed to improve?', 'unit-1.launch.improvement') +
             inputHTML('If you could change one thing about how you study English, what would it be?', 'unit-1.launch.change-one-thing')
         );
