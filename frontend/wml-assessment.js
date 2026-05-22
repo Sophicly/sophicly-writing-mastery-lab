@@ -4347,11 +4347,25 @@
         headerRight.appendChild(el('span', { className: 'swml-canvas-ctx-mode', textContent: 'BETA' }));
 
         // Theme toggle — hidden in embedded mode unless fullscreen (v7.14.24)
+        // v7.19.227: In embedded mode, defer to LD's theme system by writing
+        // html[data-theme] (the attribute LD's own toggle writes). The existing
+        // LD MutationObserver (line ~4383) then propagates the change to WML
+        // state in one direction — avoids feedback loops AND ensures LD's CSS
+        // variables flip alongside WML's, so the visible theme actually
+        // changes in fullscreen where LD's own toggle is hidden. In
+        // standalone (non-embedded) mode there is no LD observer, so retain
+        // the direct toggleTheme path.
         const canvasThemeToggle = createThemeToggleBtn('swml-canvas-theme-toggle', () => {
-            toggleTheme();
-            const t = getTheme();
-            canvas.classList.toggle('swml-canvas-light', t === 'light');
-            overlay.dataset.swmlTheme = t;
+            if (WML.isEmbedded) {
+                const cur = document.documentElement.getAttribute('data-theme') || getTheme();
+                const next = cur === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', next);
+            } else {
+                toggleTheme();
+                const t = getTheme();
+                canvas.classList.toggle('swml-canvas-light', t === 'light');
+                overlay.dataset.swmlTheme = t;
+            }
         });
         if (WML.isEmbedded) canvasThemeToggle.style.display = 'none';
         headerRight.appendChild(canvasThemeToggle);
