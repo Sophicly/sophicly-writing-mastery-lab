@@ -4359,14 +4359,24 @@
             if (WML.isEmbedded) {
                 const cur = document.documentElement.getAttribute('data-theme') || getTheme();
                 const next = cur === 'light' ? 'dark' : 'light';
-                // v7.19.228: write localStorage swml-theme-manual SYNCHRONOUSLY before
-                // returning so the click handler's post-onToggle getTheme() (used to
-                // set aria-pressed on the Jhey toggle visual) reads the new value.
-                // Without this, the LD MutationObserver fires async — getTheme()
-                // returns stale value — aria-pressed lags one click behind, leaving
-                // the button visually stuck (jet-black in light theme + half-animate).
+                // v7.19.228: write localStorage swml-theme-manual SYNCHRONOUSLY so
+                // the click handler's post-onToggle getTheme() (used to set
+                // aria-pressed on the Jhey toggle visual) reads the new value.
                 try { localStorage.setItem('swml-theme-manual', next); } catch(e) {}
-                document.documentElement.setAttribute('data-theme', next);
+                // v7.19.229: defer to LD's canonical theme API when available — that
+                // flips EVERY flag LD considers complete (html[data-theme] +
+                // html.dark + body.dark-mode + CSS variables). Without this, html.dark
+                // class persisted while html[data-theme] was the only thing we
+                // changed, so wml-theme-toggle.css:69 (`html.dark .theme-toggle__face-plate`)
+                // kept rendering the Jhey toggle dark in light mode. Fallback writes
+                // both html[data-theme] AND html.classList.dark for environments
+                // where the LD API isn't exposed.
+                if (window.themeToggle && typeof window.themeToggle.setTheme === 'function') {
+                    window.themeToggle.setTheme(next);
+                } else {
+                    document.documentElement.setAttribute('data-theme', next);
+                    document.documentElement.classList.toggle('dark', next === 'dark');
+                }
             } else {
                 toggleTheme();
                 const t = getTheme();
