@@ -12090,8 +12090,67 @@
             }
         };
 
-        // v7.14.3: Exam prep template injection — version-stamped cache busting
-        const EXAM_PREP_DOC_VER = 3; // v7.14.13: rebuilt all exam prep templates
+        // v7.14.3: Exam prep template injection — version-stamped cache busting.
+        // v7.19.226: per-task version map + Codex field-id-aware merge. Bump the
+        // task's number when its template changes; merge preserves student-filled
+        // field values during the upgrade (Codex only — exam-prep essays have no
+        // stable field IDs, just response sections, so they keep the legacy
+        // studentChars-guard path).
+        const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
+        const EXAM_PREP_DOC_VER_BY_TASK = {
+            'mastery_codex': 4, // bump on EVERY buildMasteryCodexTemplate change
+        };
+        const getExamPrepDocVer = (task) => (
+            EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
+                ? EXAM_PREP_DOC_VER_BY_TASK[task]
+                : EXAM_PREP_DOC_VER
+        );
+
+        /**
+         * v7.19.226 Codex merge — preserve student-filled field values when the
+         * template structure upgrades. Walks oldHTML for every [data-field-id],
+         * captures the value (data-value for SelectField, innerHTML for InputField),
+         * then walks the new template + writes matching field-ids back. Field-ids
+         * that no longer exist in the new template are silently dropped. Field-ids
+         * new in the template are left blank. Failures fall back to fresh template
+         * (caller catches via try/catch). Returns HTML string.
+         */
+        const mergeCodexFields = (oldHTML, newHTML) => {
+            try {
+                const parser = new DOMParser();
+                const oldDoc = parser.parseFromString('<!doctype html><html><body><div id="wml-merge-root">' + oldHTML + '</div></body></html>', 'text/html');
+                const newDoc = parser.parseFromString('<!doctype html><html><body><div id="wml-merge-root">' + newHTML + '</div></body></html>', 'text/html');
+                const fieldMap = {};
+                oldDoc.querySelectorAll('[data-field-id]').forEach(el => {
+                    const fid = el.getAttribute('data-field-id');
+                    if (!fid) return;
+                    if (el.hasAttribute('data-select-field')) {
+                        const val = el.getAttribute('data-value') || '';
+                        if (val) fieldMap[fid] = { type: 'select', value: val };
+                    } else if (el.hasAttribute('data-input-field')) {
+                        const inner = el.innerHTML || '';
+                        const visible = inner.replace(/<p>\s*<\/p>/g, '').replace(/<[^>]*>/g, '').trim();
+                        if (visible) fieldMap[fid] = { type: 'input', value: inner };
+                    }
+                });
+                newDoc.querySelectorAll('[data-field-id]').forEach(el => {
+                    const fid = el.getAttribute('data-field-id');
+                    if (!fid || !fieldMap[fid]) return;
+                    const old = fieldMap[fid];
+                    if (old.type === 'select' && el.hasAttribute('data-select-field')) {
+                        el.setAttribute('data-value', old.value);
+                    } else if (old.type === 'input' && el.hasAttribute('data-input-field')) {
+                        el.innerHTML = old.value;
+                    }
+                });
+                const root = newDoc.getElementById('wml-merge-root');
+                return root ? root.innerHTML : newHTML;
+            } catch (e) {
+                console.warn('WML Codex merge failed, falling back to fresh template:', e && e.message);
+                return newHTML;
+            }
+        };
+
         const tryExamPrepTemplate = () => {
             if (!isExamPrep || !canvasEditor) return;
             // v7.19.205: task-scoped version key. Previously CANVAS_SAVE_KEY() + '_ver'
@@ -12100,30 +12159,46 @@
             // existing version stamp blocked Codex template injection. Append the
             // task slug so each task has its own version stamp.
             const docVerKey = CANVAS_SAVE_KEY() + '_ver_' + (state.task || 'default');
+            const currentVer = getExamPrepDocVer(state.task);
             // Check stored template version
             try {
                 const savedVer = parseInt(localStorage.getItem(docVerKey) || '0');
-                if (savedVer >= EXAM_PREP_DOC_VER) return; // Up to date
+                if (savedVer >= currentVer) return; // Up to date
             } catch(e) {}
-            // Outdated — check for real student writing before replacing
+            // Outdated — check current canvas state before replacing
             const currentHTML = canvasEditor.getHTML();
+            const isCodex = state.task === 'mastery_codex';
+            const hasCodexMarkers = /data-field-id="unit-/i.test(currentHTML);
+
+            // v7.19.226: Codex template-version upgrade path with field-id merge.
+            // Triggered when task=mastery_codex AND canvas already has unit-* markers
+            // AND version stamp is behind. Preserves all student-filled field values.
+            if (isCodex && hasCodexMarkers) {
+                const template = getExamPrepDocTemplate(state.task);
+                if (template) {
+                    const merged = mergeCodexFields(currentHTML, template);
+                    try {
+                        localStorage.removeItem(CANVAS_SAVE_KEY());
+                        localStorage.setItem(docVerKey, String(currentVer));
+                    } catch(e) {}
+                    canvasEditor.commands.setContent(merged);
+                    console.log('WML Codex: template upgraded to v' + currentVer + ' (field values preserved via merge)');
+                }
+                return;
+            }
+
+            // v7.19.206: Mastery Codex task-switch override — no markers yet, fresh inject.
+            // Else: legacy exam-prep path. studentChars > 50 keeps essay response content.
             const respSections = currentHTML.match(/data-section-type="response"[^>]*>[\s\S]*?<\/div>/g) || [];
             let studentChars = 0;
             respSections.forEach(s => {
                 studentChars += s.replace(/<[^>]*>/g, '').replace(/Start writing.*|Write your.*|Your .* will appear.*/gi, '').trim().length;
             });
-            // v7.19.206: Mastery Codex task-switch override. If task=mastery_codex
-            // AND current canvas has NO Codex section markers (data-field-id
-            // beginning with "unit-"), force inject — the existing content is
-            // from a prior task binding (e.g. diagnostic essay scaffold from
-            // when this topic was bound to 'diagnostic'). studentChars guard
-            // false-positives on placeholder text in essay response sections.
-            const hasCodexMarkers = /data-field-id="unit-/i.test(currentHTML);
-            if (state.task === 'mastery_codex' && !hasCodexMarkers) {
+            if (isCodex && !hasCodexMarkers) {
                 console.log('WML v7.19.206: mastery_codex task-switch detected, force-injecting Codex template (canvas has no unit-* field markers).');
             } else if (studentChars > 50) {
                 // Real student work — stamp version, don't replace
-                try { localStorage.setItem(docVerKey, String(EXAM_PREP_DOC_VER)); } catch(e) {}
+                try { localStorage.setItem(docVerKey, String(currentVer)); } catch(e) {}
                 console.log('WML: Keeping student content (' + studentChars + ' chars), version stamped');
                 return;
             }
@@ -12132,10 +12207,10 @@
             if (template) {
                 try {
                     localStorage.removeItem(CANVAS_SAVE_KEY());
-                    localStorage.setItem(docVerKey, String(EXAM_PREP_DOC_VER));
+                    localStorage.setItem(docVerKey, String(currentVer));
                 } catch(e) {}
                 canvasEditor.commands.setContent(template);
-                console.log('WML: Template upgraded to v' + EXAM_PREP_DOC_VER + ' for', state.task);
+                console.log('WML: Template upgraded to v' + currentVer + ' for', state.task);
             }
         };
 
