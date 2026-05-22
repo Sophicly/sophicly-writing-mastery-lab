@@ -4359,6 +4359,13 @@
             if (WML.isEmbedded) {
                 const cur = document.documentElement.getAttribute('data-theme') || getTheme();
                 const next = cur === 'light' ? 'dark' : 'light';
+                // v7.19.228: write localStorage swml-theme-manual SYNCHRONOUSLY before
+                // returning so the click handler's post-onToggle getTheme() (used to
+                // set aria-pressed on the Jhey toggle visual) reads the new value.
+                // Without this, the LD MutationObserver fires async — getTheme()
+                // returns stale value — aria-pressed lags one click behind, leaving
+                // the button visually stuck (jet-black in light theme + half-animate).
+                try { localStorage.setItem('swml-theme-manual', next); } catch(e) {}
                 document.documentElement.setAttribute('data-theme', next);
             } else {
                 toggleTheme();
