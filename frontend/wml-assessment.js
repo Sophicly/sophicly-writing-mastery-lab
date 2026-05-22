@@ -12417,6 +12417,8 @@
         function buildTransferOverlays(container) {
             if (!canvasEditor) return;
             if (state.task === 'exam_crib') return;
+            // v7.19.224: Codex has no Response section — Transfer-to-Response buttons irrelevant.
+            if (state.task === 'mastery_codex') return;
             var editor = document.getElementById('swml-tiptap-editor');
             if (!editor) return;
             if (transferLayer) transferLayer.remove();
