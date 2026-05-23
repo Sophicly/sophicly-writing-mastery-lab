@@ -5736,7 +5736,8 @@
             }).catch(e => console.warn('WML: Could not load protocol steps:', e));
         }
         // v7.14.11: Diagnostic mode — hide assessment-only sections (feedback, scores, etc.)
-        const isDiagnosticEnv = envType === 'free' && !canvasInFeedback;
+        // v7.19.230: exclude mastery_codex — uses free env but needs Tutor Sign-off visible.
+        const isDiagnosticEnv = envType === 'free' && !canvasInFeedback && state.task !== 'mastery_codex';
         if (isDiagnosticEnv) canvas.classList.add('swml-canvas-diagnostic');
         // v7.14.50: Mark scheme class — enables notice section visibility via CSS
         if (canvasInMarkScheme) canvas.classList.add('swml-canvas-mark-scheme');
