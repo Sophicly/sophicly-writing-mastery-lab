@@ -12212,7 +12212,7 @@
             }
         };
 
-        tryServerLoad().then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => spliceGeneralNotesIntoEditor()).catch(err => {
+        tryServerLoad().then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => spliceGeneralNotesIntoEditor()).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -18353,6 +18353,48 @@
         } catch (e) {
             console.warn('WML: Topic fetch failed', e.message);
             return null;
+        }
+    }
+
+    /**
+     * v7.19.235: Topic Bank type-field → state.task mapping.
+     *
+     * The Topic Bank's `type` field is authoritative for what KIND of exercise
+     * each numbered topic is (e.g. Topic 2 for AQA Lang P1 has type='conceptual-notes').
+     * The bridge picker dropdown sometimes carries draftType slugs like 'diagnostic'
+     * or 'development', which wml-app.js intentionally clears (those are NOT exercise
+     * tasks). When that happens, fall back to the Topic Bank so the right doc shape
+     * renders without requiring admins to set the bridge dropdown perfectly per lesson.
+     *
+     * Allowlist is intentionally tight: only types whose mapping is unambiguous AND
+     * whose target task has a dedicated WML template. Essay/extract types stay empty
+     * so the diagnostic-essay default keeps rendering (current behaviour).
+     */
+    const TOPIC_BANK_TYPE_TO_TASK = {
+        'conceptual-notes': 'conceptual_notes',
+    };
+
+    async function deriveTaskFromTopicBank() {
+        if (state.task) return; // bridge/admin already provided a task — respect it
+        if (!state.topicNumber || state.topicNumber < 1) return;
+        if (!state.board || !state.text) return;
+
+        // Direct fetch (not fetchTopicData) because conceptual-notes topics have
+        // no question_text, so fetchTopicData's filter would return null. We only
+        // need the `type` field to make the routing decision.
+        let meta = null;
+        try {
+            const url = `${API.topicQuestion}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topic=${state.topicNumber}`;
+            meta = await fetch(url, { headers }).then(r => r.json());
+        } catch (e) {
+            return;
+        }
+        if (!meta || !meta.type) return;
+
+        const derived = TOPIC_BANK_TYPE_TO_TASK[meta.type];
+        if (derived) {
+            state.task = derived;
+            console.log(`WML v7.19.235: derived state.task='${derived}' from Topic Bank type='${meta.type}'`);
         }
     }
 
