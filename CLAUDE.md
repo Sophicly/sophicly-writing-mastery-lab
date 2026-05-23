@@ -183,9 +183,18 @@ if (studentText.length > THRESHOLD) return ' ✓';
 - **"Lessons"** = LearnDash Topics (sfwd-topic) — renamed for clarity
 - **Phase 1** = Initial Attempt (Diagnostic → Assessment)
 - **Phase 2** = Redraft (Planning → Outlining → Polishing → Assessment)
-- **Topic 1** = Diagnostic (solo essay → assess → guided redraft → assess)
-- **Topic 2** = Conceptual Notes (the only notes topic)
-- **Topics 3-10+** = Development Essays (same pipeline as Topic 1)
+
+**Topic numbering — Literature texts + Edexcel IGCSE Language (Spec A 4EA1 P1/P2):**
+- **Topic 1** = First essay — diagnostic + redraft phases inside (solo essay → assess → guided redraft → assess)
+- **Topic 2** = Conceptual Notes (notes scratchpad for the fixed text/anthology)
+- **Topics 3-10+** = Development essays (same pipeline as Topic 1)
+
+**Topic numbering — Language papers (AQA / Edexcel GCSE / Cambridge IGCSE / CCEA / Eduqas / OCR):**
+- **Topic N** = Practice Paper N. 5 topics total per paper, one per PP.
+- Each Topic contains diagnostic write + initial assessment + guided redraft + reassessment as PHASES — they are NOT separate Topics.
+- No Conceptual Notes (the text is unseen each time — no fixed concepts to study upfront).
+
+The distinction matters because Topic Bank `.md` files for language papers should have exactly 5 topics, and the bridge picker's `wml_topic` field maps each LD lesson (Write Essay / Assessment / Planning / Outlining / Polishing / Reassessment) to which Practice Paper it belongs to.
 
 ---
 
