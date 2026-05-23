@@ -3814,9 +3814,15 @@
                     frag.appendChild(li);
                     return;
                 }
-                const li = el('li', { className: 'swml-tb-item swml-tb-winona', title: def.label });
+                // v7.19.232: data-tooltip + aria-label instead of `title` —
+                // `title` triggered the browser-native tooltip at ~500ms, racing
+                // with the styled tooltip's 600ms reveal. Whichever fired first
+                // won, producing the inconsistent grey/purple tooltips Neil hit.
+                const li = el('li', { className: 'swml-tb-item swml-tb-winona' });
                 li.dataset.tool = def.id;
                 li.dataset.set = setIndex;
+                li.dataset.tooltip = def.label;
+                li.setAttribute('aria-label', def.label);
                 // Two identical spans for icon→icon roll effect
                 const span1 = el('span', { className: 'swml-tb-icon', innerHTML: def.html });
                 const span2 = el('span', { className: 'swml-tb-icon swml-tb-clone', innerHTML: def.html });
@@ -4157,18 +4163,17 @@
             if (!item) return;
             clearTimeout(tbTooltipTimer);
             tbTooltipTimer = setTimeout(() => {
-                const label = item.getAttribute('title');
+                // v7.19.232: read from data-tooltip (set at button creation).
+                // Buttons no longer carry `title=`, so no native browser tooltip
+                // can race with this styled reveal.
+                const label = item.dataset.tooltip;
                 if (!label) return;
                 tbTooltip.textContent = label;
                 tbTooltip.classList.add('visible');
-                // Position above the hovered item
                 const tbRect = toolbar.getBoundingClientRect();
                 const itemRect = item.getBoundingClientRect();
                 tbTooltip.style.left = (itemRect.left - tbRect.left + itemRect.width / 2) + 'px';
                 tbTooltip.style.bottom = '';
-                // Suppress native title while showing styled tooltip
-                item.dataset.titleBackup = label;
-                item.removeAttribute('title');
             }, 600);
         }, true);
 
@@ -4177,11 +4182,6 @@
             if (!item) return;
             clearTimeout(tbTooltipTimer);
             tbTooltip.classList.remove('visible');
-            // Restore native title
-            if (item.dataset.titleBackup) {
-                item.setAttribute('title', item.dataset.titleBackup);
-                delete item.dataset.titleBackup;
-            }
         }, true);
 
         // Hide tooltip during scroll/drag (picker closes via document click handler)
