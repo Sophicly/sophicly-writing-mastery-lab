@@ -12130,7 +12130,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 4, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 5, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -19814,7 +19814,11 @@
         // Action Plan into every crib mount, fighting the v7.19.124 footer-strip pass.
         // Console diagnostic from Neil's IC pilot showed the cycle: strip removes 4 sections,
         // this migration injects 4 back. Adding exam_crib here breaks the cycle.
-        if (['conceptual_notes', 'memory_practice', 'exam_question', 'exam_crib'].includes(state.task)) { console.log('WML Migration: Skipping — non-assessment exercise'); return; }
+        // v7.19.231: mastery_codex emits its own sections via buildMasteryCodexTemplate;
+        // no Score Summary / Self-Assessment / Analytics / Action Plan. Without this skip,
+        // migrateDocument injects all four (visible after diagnostic-class exclusion in v7.19.230).
+        // Tutor Sign-off is already appended inside the Codex template itself.
+        if (['conceptual_notes', 'memory_practice', 'exam_question', 'exam_crib', 'mastery_codex'].includes(state.task)) { console.log('WML Migration: Skipping — non-assessment exercise'); return; }
         const currentHTML = canvasEditor.getHTML();
         // Only run on documents that have section blocks (i.e. structured templates)
         if (!currentHTML.includes('data-section-type')) return;
