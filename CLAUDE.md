@@ -184,17 +184,31 @@ if (studentText.length > THRESHOLD) return ' ✓';
 - **Phase 1** = Initial Attempt (Diagnostic → Assessment)
 - **Phase 2** = Redraft (Planning → Outlining → Polishing → Assessment)
 
-**Topic numbering — Literature texts + Edexcel IGCSE Language (Spec A 4EA1 P1/P2):**
-- **Topic 1** = First essay — diagnostic + redraft phases inside (solo essay → assess → guided redraft → assess)
-- **Topic 2** = Conceptual Notes (notes scratchpad for the fixed text/anthology)
-- **Topics 3-10+** = Development essays (same pipeline as Topic 1)
+**Topic 2 = Conceptual Notes when:**
+- All Literature texts (fixed text — notes scratchpad)
+- Paper 2 across most boards (anthology + creative-writing mix): AQA, Edexcel GCSE, Edexcel IGCSE, Cambridge IGCSE, CCEA, Eduqas
+- All Edexcel IGCSE Language papers (Spec A anthology-style — both P1 and P2)
 
-**Topic numbering — Language papers (AQA / Edexcel GCSE / Cambridge IGCSE / CCEA / Eduqas / OCR):**
-- **Topic N** = Practice Paper N. 5 topics total per paper, one per PP.
-- Each Topic contains diagnostic write + initial assessment + guided redraft + reassessment as PHASES — they are NOT separate Topics.
-- No Conceptual Notes (the text is unseen each time — no fixed concepts to study upfront).
+**Topic 2 = PP2 (NO Conceptual Notes) when:**
+- All Language Paper 1 across most boards — AQA, Edexcel GCSE, Cambridge IGCSE, CCEA, Eduqas, OCR. Paper 1 is fiction-based and Sophicly embeds its separate Creative Writing course into these papers, so no need for Conceptual Notes at the paper level.
+- OCR Paper 2 (also fiction-based — exception to the P2-has-CN rule above).
 
-The distinction matters because Topic Bank `.md` files for language papers should have exactly 5 topics, and the bridge picker's `wml_topic` field maps each LD lesson (Write Essay / Assessment / Planning / Outlining / Polishing / Reassessment) to which Practice Paper it belongs to.
+**Topic numbering — Language Paper 1 (fiction-based, no CN):**
+- **Topic N** = Practice Paper N. 5 topics total per paper.
+- Each Topic contains diagnostic write + initial assessment + guided redraft + reassessment as PHASES — NOT separate Topics.
+
+**Topic numbering — Language Paper 2 (anthology + CW mix, has CN — AQA / Edexcel GCSE):**
+- Topic 1 = Diagnostic Paper (paired sources)
+- Topic 2 = Conceptual Notes
+- Topics 3, 5, 7, 9 = Transactional Writing prompts (Article, Speech, Letter, Leaflet)
+- Topics 4, 6, 8, 10 = Practice Papers 2-5 (paired sources)
+
+**Topic numbering — Literature texts + Edexcel IGCSE Language:**
+- **Topic 1** = First essay — diagnostic + redraft phases inside
+- **Topic 2** = Conceptual Notes
+- **Topics 3-10+** = Development essays / anthology items
+
+The bridge picker's `wml_topic` field maps each LD lesson (Write Essay / Assessment / Planning / Outlining / Polishing / Reassessment) to which Practice Paper or topic it belongs to.
 
 ---
 
