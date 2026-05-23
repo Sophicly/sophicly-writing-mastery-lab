@@ -4158,14 +4158,22 @@
         toolbar.appendChild(tbTooltip);
         let tbTooltipTimer = null;
 
-        toolbar.addEventListener('pointerenter', (ev) => {
+        // v7.19.233: track currentItem to dedupe re-entries on child spans.
+        // pointerenter with capture-true fires on EVERY descendant including
+        // the two child icon spans (span1 + clone). Each entry was re-clearing
+        // the 600ms timer, so the tooltip almost never reached reveal unless
+        // the pointer landed perfectly still on a single child node.
+        // mouseover bubbles and fires for each entered child too, but we now
+        // bail out if the closest .swml-tb-item is unchanged since last fire.
+        let tbCurrentItem = null;
+        toolbar.addEventListener('mouseover', (ev) => {
             const item = ev.target.closest('.swml-tb-item');
-            if (!item) return;
+            if (item === tbCurrentItem) return;
+            tbCurrentItem = item;
             clearTimeout(tbTooltipTimer);
+            tbTooltip.classList.remove('visible');
+            if (!item) return;
             tbTooltipTimer = setTimeout(() => {
-                // v7.19.232: read from data-tooltip (set at button creation).
-                // Buttons no longer carry `title=`, so no native browser tooltip
-                // can race with this styled reveal.
                 const label = item.dataset.tooltip;
                 if (!label) return;
                 tbTooltip.textContent = label;
@@ -4175,14 +4183,13 @@
                 tbTooltip.style.left = (itemRect.left - tbRect.left + itemRect.width / 2) + 'px';
                 tbTooltip.style.bottom = '';
             }, 600);
-        }, true);
+        });
 
-        toolbar.addEventListener('pointerleave', (ev) => {
-            const item = ev.target.closest('.swml-tb-item');
-            if (!item) return;
+        toolbar.addEventListener('mouseleave', () => {
+            tbCurrentItem = null;
             clearTimeout(tbTooltipTimer);
             tbTooltip.classList.remove('visible');
-        }, true);
+        });
 
         // Hide tooltip during scroll/drag (picker closes via document click handler)
         tbScroll.addEventListener('pointerdown', () => {
