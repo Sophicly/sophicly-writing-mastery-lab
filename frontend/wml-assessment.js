@@ -4153,52 +4153,11 @@
             }, 250);
         });
 
-        // ── Styled Tooltip (delayed, neumorphic) ──
-        const tbTooltip = el('div', { className: 'swml-tb-tooltip' });
-        toolbar.appendChild(tbTooltip);
-        let tbTooltipTimer = null;
-
-        // v7.19.233: track currentItem to dedupe re-entries on child spans.
-        // pointerenter with capture-true fires on EVERY descendant including
-        // the two child icon spans (span1 + clone). Each entry was re-clearing
-        // the 600ms timer, so the tooltip almost never reached reveal unless
-        // the pointer landed perfectly still on a single child node.
-        // mouseover bubbles and fires for each entered child too, but we now
-        // bail out if the closest .swml-tb-item is unchanged since last fire.
-        let tbCurrentItem = null;
-        toolbar.addEventListener('mouseover', (ev) => {
-            const item = ev.target.closest('.swml-tb-item');
-            if (item === tbCurrentItem) return;
-            tbCurrentItem = item;
-            clearTimeout(tbTooltipTimer);
-            tbTooltip.classList.remove('visible');
-            if (!item) return;
-            tbTooltipTimer = setTimeout(() => {
-                const label = item.dataset.tooltip;
-                if (!label) return;
-                tbTooltip.textContent = label;
-                tbTooltip.classList.add('visible');
-                const tbRect = toolbar.getBoundingClientRect();
-                const itemRect = item.getBoundingClientRect();
-                tbTooltip.style.left = (itemRect.left - tbRect.left + itemRect.width / 2) + 'px';
-                tbTooltip.style.bottom = '';
-            }, 600);
-        });
-
-        toolbar.addEventListener('mouseleave', () => {
-            tbCurrentItem = null;
-            clearTimeout(tbTooltipTimer);
-            tbTooltip.classList.remove('visible');
-        });
-
-        // Hide tooltip during scroll/drag (picker closes via document click handler)
-        tbScroll.addEventListener('pointerdown', () => {
-            clearTimeout(tbTooltipTimer);
-            tbTooltip.classList.remove('visible');
-        });
+        // v7.19.234: canvas-toolbar tooltip handling moved to the global
+        // installGlobalTooltip() in wml-core.js. Buttons carry `data-tooltip`
+        // (set at creation) so the global system picks them up automatically.
+        // Highlight picker still needs to close on wheel.
         tbScroll.addEventListener('wheel', () => {
-            clearTimeout(tbTooltipTimer);
-            tbTooltip.classList.remove('visible');
             hlPicker.style.display = 'none';
         });
 

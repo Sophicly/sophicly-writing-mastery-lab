@@ -31,6 +31,121 @@
     } catch (e) { /* silent */ }
 })();
 
+// v7.19.234: Global styled-tooltip system.
+// Replaces ad-hoc per-surface tooltip code and the browser-native title tooltip.
+// Reads from `data-tooltip` OR `title`. On hover, immediately strips `title`
+// (preventing browser-native race) and reveals the styled tooltip after a delay.
+// On mouse-leave, restores the `title` so non-WML consumers (screen readers,
+// browser bookmarks) still see the label. Tracks `currentEl` to ignore re-entry
+// on child nodes of the same hovered element — child entries no longer reset
+// the reveal timer.
+(function () {
+    if (window.__swmlTooltipInstalled) return;
+    window.__swmlTooltipInstalled = true;
+
+    function init() {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'swml-tooltip';
+        document.body.appendChild(tooltip);
+
+        let currentEl = null;
+        let timer = null;
+        const HOVER_DELAY = 500;
+
+        function findTipEl(target) {
+            let el = target;
+            while (el && el !== document.body && el.nodeType === 1) {
+                if (el.dataset && el.dataset.tooltip) return el;
+                if (el.hasAttribute && el.hasAttribute('title') && el.getAttribute('title')) return el;
+                el = el.parentElement;
+            }
+            return null;
+        }
+
+        function showTooltip(el, label) {
+            tooltip.textContent = label;
+            // Reset position attrs so getBoundingClientRect picks the new label width
+            tooltip.classList.add('visible');
+            const rect = el.getBoundingClientRect();
+            const tipRect = tooltip.getBoundingClientRect();
+            // Default: below the element
+            let top = rect.bottom + 8;
+            let placement = 'below';
+            // Flip above if no room below
+            if (top + tipRect.height > window.innerHeight - 4) {
+                top = rect.top - tipRect.height - 8;
+                placement = 'above';
+            }
+            let left = rect.left + rect.width / 2 - tipRect.width / 2;
+            // Clamp horizontally within viewport
+            left = Math.max(4, Math.min(left, window.innerWidth - tipRect.width - 4));
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+            tooltip.dataset.placement = placement;
+        }
+
+        function hideTooltip() {
+            clearTimeout(timer);
+            tooltip.classList.remove('visible');
+            if (currentEl && currentEl._swmlTitleBackup !== undefined) {
+                try { currentEl.setAttribute('title', currentEl._swmlTitleBackup); } catch (_) {}
+                delete currentEl._swmlTitleBackup;
+            }
+            currentEl = null;
+        }
+
+        document.addEventListener('mouseover', (ev) => {
+            const el = findTipEl(ev.target);
+            if (!el) {
+                if (currentEl) hideTooltip();
+                return;
+            }
+            if (el === currentEl) return;
+            // Switching elements: hide first
+            if (currentEl) hideTooltip();
+            currentEl = el;
+            // Capture label; backup + strip native title so browser doesn't race
+            let label = (el.dataset && el.dataset.tooltip) || '';
+            if (!label && el.hasAttribute('title')) {
+                label = el.getAttribute('title') || '';
+                if (label) {
+                    el._swmlTitleBackup = label;
+                    try { el.removeAttribute('title'); } catch (_) {}
+                }
+            }
+            if (!label) return;
+            clearTimeout(timer);
+            timer = setTimeout(() => showTooltip(el, label), HOVER_DELAY);
+        }, true);
+
+        document.addEventListener('mouseout', (ev) => {
+            if (!currentEl) return;
+            // If moving to a child of currentEl, ignore
+            const related = ev.relatedTarget;
+            if (related && currentEl.contains(related)) return;
+            hideTooltip();
+        }, true);
+
+        // Hide on scroll / wheel / pointerdown to avoid stuck tooltip
+        const interruptEvents = ['scroll', 'wheel', 'pointerdown', 'keydown', 'touchstart'];
+        interruptEvents.forEach(e => window.addEventListener(e, hideTooltip, true));
+
+        // Re-parent into fullscreen element so it stays visible
+        document.addEventListener('fullscreenchange', () => {
+            const fs = document.fullscreenElement;
+            const parent = fs || document.body;
+            if (tooltip.parentElement !== parent) parent.appendChild(tooltip);
+            hideTooltip();
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+
 window.WML = (function() {
     'use strict';
 
