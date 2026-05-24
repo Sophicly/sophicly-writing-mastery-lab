@@ -11877,11 +11877,21 @@
                     if (window._wmlPeriodicCanvasSaveInterval) {
                         try { clearInterval(window._wmlPeriodicCanvasSaveInterval); } catch (_) {}
                     }
+                    // v7.19.238: skip-if-unchanged guard. Keeps the safety-net
+                    // semantics (still catches UI mutations that bypass onUpdate)
+                    // but stops idle writes when the editor HTML hasn't changed
+                    // since the last periodic save. Cheap djb2-style hash.
+                    window._wmlPeriodicCanvasSaveLastSig = '';
                     window._wmlPeriodicCanvasSaveInterval = setInterval(() => {
                         try {
                             if (!canvasEditor || state.reviewMode) return;
                             const _html = canvasEditor.getHTML();
                             if (!_html || _html.length < 50) return; // skip empty/uninitialised editor
+                            let _h = 0;
+                            for (let _i = 0; _i < _html.length; _i++) _h = ((_h << 5) - _h + _html.charCodeAt(_i)) | 0;
+                            const _sig = _h.toString(16);
+                            if (_sig === window._wmlPeriodicCanvasSaveLastSig) return; // unchanged — no write
+                            window._wmlPeriodicCanvasSaveLastSig = _sig;
                             saveCanvasContent();
                         } catch (_) { /* never throw out of periodic save */ }
                     }, 30000);

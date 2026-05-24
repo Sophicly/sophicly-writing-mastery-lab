@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(scp -i ~/.ssh/sophicly_staging -o StrictHostKeyChecking=no /tmp/sequences_new.json runcloud@18.133.5.229:/tmp/sequences_new.json)",
+      "Bash(scp -i ~/.ssh/sophicly_staging -o StrictHostKeyChecking=no /tmp/exercises_new.json /tmp/sequences_new.json runcloud@18.133.5.229:/tmp/)",
+      "Bash(mv ~/.claude/handoffs/open/components-handoff-2026-05-24-ttecea-drag-drop-macbeth-captain.md ~/.claude/handoffs/done/ && echo \"moved to done\")",
+      "Bash(grep -n 'function is_phase_complete\\\\b\\\\|completions\\\\[\\\\$un\\\\]\\\\|\\\\$completions\\\\[' sophicly-student-data/includes/class-deadline-engine.php)",
+      "Bash(git -C sophicly-student-data log --oneline -20)",
+      "Bash(git -C sophicly-student-data show 033011d --stat)",
+      "Bash(git -C sophicly-student-data show 033011d:sophicly-student-data/includes/class-wml-rest-api.php)",
+      "Bash(git -C sophicly-student-data log --all --oneline -S 'steps_in_order' -- includes/class-wml-rest-api.php)",
+      "Bash(sed -n '95,115p' sophicly-student-data/includes/class-database.php)",
+      "Bash(sed -n '915,940p' sophicly-student-data/includes/class-database.php)",
+      "Bash(grep -n 'var $content\\\\s*=\\\\|$content\\\\.html\\\\|sophicly-ld-course-content' '/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins/sophicly-student-data/admin/class-learndash-bridge-settings.php')"
+    ],
+    "additionalDirectories": [
+      "/Users/neilwilliams/.claude/handoffs/open"
+    ]
+  }
+}
