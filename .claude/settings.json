@@ -11,7 +11,23 @@
       "Bash(git -C sophicly-student-data log --all --oneline -S 'steps_in_order' -- includes/class-wml-rest-api.php)",
       "Bash(sed -n '95,115p' sophicly-student-data/includes/class-database.php)",
       "Bash(sed -n '915,940p' sophicly-student-data/includes/class-database.php)",
-      "Bash(grep -n 'var $content\\\\s*=\\\\|$content\\\\.html\\\\|sophicly-ld-course-content' '/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins/sophicly-student-data/admin/class-learndash-bridge-settings.php')"
+      "Bash(grep -n 'var $content\\\\s*=\\\\|$content\\\\.html\\\\|sophicly-ld-course-content' '/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins/sophicly-student-data/admin/class-learndash-bridge-settings.php')",
+      "Bash(cd \"/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins\" && grep -rn 'learndash_update_user_activity\\\\|learndash_user_course_progress_updated\\\\|ld_course_access_from\\\\|access_from\\\\|update_course_access\\\\|ld_update_course_access\\\\|learndash_user_activity.*action\\\\|do_action.*activity_started' /usr/local/lib/php 2>/dev/null | head -10; echo '---LD plugin search:' ; find / -path '*/sfwd-lms/*' -name '*.php' 2>/dev/null | head -5)",
+      "Read(//usr/local/lib/**)",
+      "Bash(grep -n 'start_date\\\\|\"start_date\"\\\\|sr.start_date\\\\|\\\\$table' sophicly-student-data/includes/class-deadline-engine.php)",
+      "Bash(php -l sophicly-student-data/includes/class-deadline-engine.php)",
+      "Bash(ssh runcloud@18.133.5.229 \"cd /home/runcloud/webapps/SophiclyMain && wp db query \\\\\"SELECT meta_value, FROM_UNIXTIME\\(meta_value\\) AS access_from FROM wp_usermeta WHERE user_id=1 AND meta_key='course_45624_access_from';\\\\\"\")",
+      "Bash(mv ~/.claude/handoffs/open/dashboard-handoff-2026-05-25-neil-g9-deadline-reset-for-recording.md ~/.claude/handoffs/done/)",
+      "Bash(mv ~/.claude/handoffs/open/components-nudge-2026-05-23-grades-pipeline-status.md ~/.claude/handoffs/done/)",
+      "Bash(mv ~/.claude/handoffs/open/components-handoff-2026-05-22-grades-pipeline.md ~/.claude/handoffs/done/)",
+      "Bash(mv ~/.claude/handoffs/open/components-handoff-2026-05-22-grades-pipeline.md ~/.claude/handoffs/done/ && echo 'Done')",
+      "Bash(rsync -avz -e 'ssh -i __TRACKED_VAR__/.ssh/sophicly_staging' --exclude=deploy-*.sh includes/class-deadline-engine.php sophicly-student-data.php runcloud@18.133.5.229:/home/runcloud/webapps/SophiclyMain/wp-content/plugins/sophicly-student-data/)",
+      "Bash(FORCE_DIRTY_DEPLOY=1 echo y)",
+      "Bash(curl -s 'https://sophicly.com/sophicly-opcache-reset.php')",
+      "Bash(curl -sk 'https://sophicly.com/wp-content/uploads/sophicly-opcache-reset.php')",
+      "Bash(curl -skI 'https://sophicly.com/wp-content/uploads/sophicly-opcache-reset.php')",
+      "Bash(curl -skL 'https://sophicly.com/wp-content/uploads/sophicly-opcache-reset.php')",
+      "Bash(curl -skL \"https://sophicly.com/wp-content/uploads/sophicly-opcache-reset.php?$\\(date +%s\\)\")"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"

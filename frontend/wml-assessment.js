@@ -12113,7 +12113,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 5, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 6, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -17672,8 +17672,14 @@
 
         // ── UNIT 2 — EQUIPPING FOR THE QUEST (was old Unit 3, renumbered per slide deck) ──
         html += dividerHTML('UNIT 2 — EQUIPPING FOR THE QUEST');
+        // v7.19.242: sync to slide deck — Unit 2 launch shows THREE specific
+        // recall questions from Unit 1, not the generic "What did you take
+        // away from Unit 1?" placeholder. New field IDs so old single-answer
+        // data isn't coerced into the wrong slot.
         html += sectionHTML('plan', 'Launch Retrieval & Hypothesis', true, null,
-            inputHTML('What did you take away from Unit 1?', 'unit-2.launch.retrieval') +
+            inputHTML('Name the percentage of students nationally who reach Grade 7–9.', 'unit-2.launch.retrieval-percentage') +
+            inputHTML('Name two of the eight meta-skills students often lack.', 'unit-2.launch.retrieval-metaskills') +
+            inputHTML('Why do we frame your journey as a Hero\'s Journey?', 'unit-2.launch.retrieval-heroes-journey') +
             inputHTML('Hypothesis — write your guess to the hook question on the previous slide (before we tell you the answer).', 'unit-2.hook-hypothesis')
         );
         html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
