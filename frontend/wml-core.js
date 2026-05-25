@@ -46,6 +46,12 @@
     function init() {
         const tooltip = document.createElement('div');
         tooltip.className = 'swml-tooltip';
+        // v7.19.241: seed inline hide with !important. Some cascade rule (LD
+        // focus mode / Etch theme) forces opacity:1 / visibility:visible on
+        // generic divs and beats both CSS default and regular inline style.
+        // Inline !important beats !important cascade (highest cascade rank).
+        tooltip.style.setProperty('opacity', '0', 'important');
+        tooltip.style.setProperty('visibility', 'hidden', 'important');
         document.body.appendChild(tooltip);
 
         let currentEl = null;
@@ -64,9 +70,11 @@
 
         function showTooltip(el, label) {
             tooltip.textContent = label;
-            // v7.19.240: clear inline-style hide fallback set by hideTooltip
-            tooltip.style.opacity = '';
-            tooltip.style.visibility = '';
+            // v7.19.241: switch inline !important to opacity:1 / visibility:visible.
+            // Plain inline-clear doesn't work because some cascade rule forces
+            // opacity/visibility — only !important inline beats !important cascade.
+            tooltip.style.setProperty('opacity', '1', 'important');
+            tooltip.style.setProperty('visibility', 'visible', 'important');
             // Reset position attrs so getBoundingClientRect picks the new label width
             tooltip.classList.add('visible');
             const rect = el.getBoundingClientRect();
@@ -90,11 +98,11 @@
         function hideTooltip() {
             clearTimeout(timer);
             tooltip.classList.remove('visible');
-            // v7.19.240: inline-style fallback. CSS opacity:0 didn't hold in
-            // observed cases on prod (computed opacity stayed 1 after .visible
-            // class removed). Inline style beats any cascade override.
-            tooltip.style.opacity = '0';
-            tooltip.style.visibility = 'hidden';
+            // v7.19.241: inline !important — see init() comment. Regular inline
+            // didn't hold on prod (some cascade rule forces visibility:visible
+            // !important on generic divs). Inline !important beats it.
+            tooltip.style.setProperty('opacity', '0', 'important');
+            tooltip.style.setProperty('visibility', 'hidden', 'important');
             if (currentEl && currentEl._swmlTitleBackup !== undefined) {
                 try { currentEl.setAttribute('title', currentEl._swmlTitleBackup); } catch (_) {}
                 delete currentEl._swmlTitleBackup;
