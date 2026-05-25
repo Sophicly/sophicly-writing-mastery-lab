@@ -4295,7 +4295,12 @@
             if (ctxOverflowDrop.children.length > 0) ctxOverflowBtn.style.display = '';
         }
         if (typeof ResizeObserver !== 'undefined') {
-            new ResizeObserver(() => requestAnimationFrame(checkCtxOverflow)).observe(ctxBadges);
+            // v7.19.239: observe the header parent, not ctxBadges. Toolbar is
+            // position:absolute so it doesn't take flex space — ctxBadges never
+            // shrinks when the window narrows, and the resize observer never
+            // fires. Watching the header (which DOES resize with the window)
+            // re-runs checkCtxOverflow → _badgesOverlapToolbar() collapses chips.
+            new ResizeObserver(() => requestAnimationFrame(checkCtxOverflow)).observe(ctxBadges.parentElement || ctxBadges);
         }
         setTimeout(checkCtxOverflow, 200);
 
@@ -9771,9 +9776,11 @@
         // v7.19.43: inline-coaching env also keeps notepad — Note button in
         // canvas selection toolbar adds highlights to the Notes app, so the
         // Notes tab must be reachable.
+        // v7.19.239: Mastery Codex is induction/reflection, not diagnostic.
+        // Students need the Notes tab to capture cross-unit reflections.
         const snFab = document.querySelector('.sn-fab');
         const snPanel = document.querySelector('.sn-panel');
-        if (!useTrainingEnv && !useInlineCoachingEnv) {
+        if (!useTrainingEnv && !useInlineCoachingEnv && state.task !== 'mastery_codex') {
             if (snFab) snFab.style.display = 'none';
             if (snPanel) snPanel.style.display = 'none';
             document.querySelectorAll('.sn-tab, .sn-tab-trigger, #snTabTrigger, [class*="sticky-note-tab"], [class*="notes-tab"]').forEach(t => t.style.display = 'none');
