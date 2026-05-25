@@ -2978,6 +2978,11 @@ body.swml-page {
     max-width: 280px;
     pointer-events: none;
     opacity: 0;
+    /* v7.19.240: visibility:hidden by default — opacity alone leaves the box
+       in the DOM, so any race / override produces a ghost. visibility:hidden
+       removes it from hit-testing AND prevents any paint, regardless of
+       opacity state. Delayed transition keeps the fade-out smooth. */
+    visibility: hidden;
     z-index: 100000;
     color: #fff;
     background: radial-gradient(ellipse at 50% 10%, hsla(252deg 70% 60% / 10%), transparent),
@@ -2986,9 +2991,13 @@ body.swml-page {
         inset 0 1px 0 rgba(255,255,255,0.08),
         0 4px 12px rgba(0,0,0,0.5),
         0 1px 0 1px rgba(0,0,0,0.3);
-    transition: opacity 0.15s ease;
+    transition: opacity 0.15s ease, visibility 0s linear 0.15s;
 }
-.swml-tooltip.visible { opacity: 1; }
+.swml-tooltip.visible {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.15s ease, visibility 0s linear 0s;
+}
 .swml-tooltip::after {
     content: '';
     position: absolute;

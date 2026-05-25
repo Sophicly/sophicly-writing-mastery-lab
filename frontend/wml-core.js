@@ -64,6 +64,9 @@
 
         function showTooltip(el, label) {
             tooltip.textContent = label;
+            // v7.19.240: clear inline-style hide fallback set by hideTooltip
+            tooltip.style.opacity = '';
+            tooltip.style.visibility = '';
             // Reset position attrs so getBoundingClientRect picks the new label width
             tooltip.classList.add('visible');
             const rect = el.getBoundingClientRect();
@@ -87,6 +90,11 @@
         function hideTooltip() {
             clearTimeout(timer);
             tooltip.classList.remove('visible');
+            // v7.19.240: inline-style fallback. CSS opacity:0 didn't hold in
+            // observed cases on prod (computed opacity stayed 1 after .visible
+            // class removed). Inline style beats any cascade override.
+            tooltip.style.opacity = '0';
+            tooltip.style.visibility = 'hidden';
             if (currentEl && currentEl._swmlTitleBackup !== undefined) {
                 try { currentEl.setAttribute('title', currentEl._swmlTitleBackup); } catch (_) {}
                 delete currentEl._swmlTitleBackup;
@@ -129,6 +137,11 @@
         // Hide on scroll / wheel / pointerdown to avoid stuck tooltip
         const interruptEvents = ['scroll', 'wheel', 'pointerdown', 'keydown', 'touchstart'];
         interruptEvents.forEach(e => window.addEventListener(e, hideTooltip, true));
+        // v7.19.240: also hide on window blur (alt-tab, devtools focus, etc.)
+        // and when pointer leaves the document (mouseout to null relatedTarget
+        // doesn't always fire reliably across browser quirks).
+        window.addEventListener('blur', hideTooltip);
+        document.addEventListener('mouseleave', hideTooltip);
 
         // Re-parent into fullscreen element so it stays visible
         document.addEventListener('fullscreenchange', () => {
