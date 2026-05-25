@@ -12113,7 +12113,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 6, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 7, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -17691,8 +17691,12 @@
 
         // ── UNIT 3 — CODE OF THE QUEST (was old Unit 4 + definitions moved from old Unit 2) ──
         html += dividerHTML('UNIT 3 — CODE OF THE QUEST');
+        // v7.19.243: sync to slide deck — 4 specific recall Qs spanning Units 1+2.
         html += sectionHTML('plan', 'Launch Retrieval & Hypothesis', true, null,
-            inputHTML('What did you take away from Unit 2?', 'unit-3.launch.retrieval') +
+            inputHTML('What percentage of students reach Grade 7–9?', 'unit-3.launch.retrieval-percentage') +
+            inputHTML('Why do we frame your journey as a Hero\'s Journey?', 'unit-3.launch.retrieval-heroes-journey') +
+            inputHTML('Name two of the six programme resources.', 'unit-3.launch.retrieval-resources') +
+            inputHTML('Where do you find every link and schedule?', 'unit-3.launch.retrieval-link-schedule') +
             inputHTML('Hypothesis — what single mistake stops more students from reaching Grade 9 than any other?', 'unit-3.hook-hypothesis')
         );
         html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
@@ -17704,8 +17708,12 @@
 
         // ── UNIT 4 — FORGING A HERO'S MINDSET (was old Unit 5 + Know Thyself moved from old Unit 2) ──
         html += dividerHTML('UNIT 4 — FORGING A HERO\'S MINDSET');
+        // v7.19.243: sync to slide deck — 4 specific recall Qs spanning Units 1+2+3.
         html += sectionHTML('plan', 'Launch Retrieval & Hypothesis', true, null,
-            inputHTML('What did you take away from Unit 3?', 'unit-4.launch.retrieval') +
+            inputHTML('What is the rare territory you are walking toward?', 'unit-4.launch.retrieval-rare-territory') +
+            inputHTML('Name two of the six programme resources.', 'unit-4.launch.retrieval-resources') +
+            inputHTML('Name the three Pillars of Success.', 'unit-4.launch.retrieval-pillars') +
+            inputHTML('What is the #1 mistake that stops heroes?', 'unit-4.launch.retrieval-no1-mistake') +
             inputHTML('Hypothesis — what single mistake do you think most students make?', 'unit-4.hook-hypothesis')
         );
         html += sectionHTML('plan', 'Khan Reflection', true, null,
@@ -17723,11 +17731,14 @@
 
         // ── UNIT 5 — SCIENCE OF MASTERY (slide-aligned activities per g9 handoff 2026-05-20) ──
         html += dividerHTML('UNIT 5 — SCIENCE OF MASTERY');
+        // v7.19.243: sync to slide deck — labels mismatched (Trifecta conflated
+        // with Pillars; "Three Pillars of Mastery" doesn't appear on slide; slide
+        // says "Name one of the three pillars of success" singular).
         html += sectionHTML('plan', 'Launch Recall (Units 1-4)', true, null,
-            inputHTML('Trifecta — recall the three pillars from Unit 3.', 'unit-5.recall.trifecta') +
-            inputHTML('Trust the Process — explain in your own words.', 'unit-5.recall.trust-the-process') +
-            inputHTML('Three Pillars of Mastery — name them.', 'unit-5.recall.three-pillars') +
-            inputHTML('Ericsson improvement principle — one sentence.', 'unit-5.recall.ericsson-improvement')
+            inputHTML('What is the Grade 9 Trifecta?', 'unit-5.recall.trifecta') +
+            inputHTML('What does "Trust the Process" mean?', 'unit-5.recall.trust-the-process') +
+            inputHTML('Name one of the three Pillars of Success.', 'unit-5.recall.pillar-of-success') +
+            inputHTML('What did Anders Ericsson say leads to improvement?', 'unit-5.recall.ericsson-improvement')
         );
         html += sectionHTML('plan', 'Hypothesis', true, null,
             inputHTML('Hypothesis — why does re-reading and highlighting feel productive but isn\'t?', 'unit-5.hook-hypothesis')
@@ -17752,8 +17763,12 @@
 
         // ── UNIT 6 — LANGUAGE OF EXCELLENCE (was old Unit 7 + 100% Commitment moved here) ──
         html += dividerHTML('UNIT 6 — LANGUAGE OF EXCELLENCE');
+        // v7.19.243: sync to slide deck — 4 specific recall Qs across Units 3+4+5.
         html += sectionHTML('plan', 'Launch Retrieval & Hypothesis', true, null,
-            inputHTML('What did you take away from Unit 5?', 'unit-6.launch.retrieval') +
+            inputHTML('Name two of the three cognitive secrets.', 'unit-6.launch.retrieval-cognitive-secrets') +
+            inputHTML('What did Anders Ericsson say leads to improvement?', 'unit-6.launch.retrieval-ericsson') +
+            inputHTML('What is the Grade 9 Trifecta?', 'unit-6.launch.retrieval-trifecta') +
+            inputHTML('What is the #1 mistake?', 'unit-6.launch.retrieval-no1-mistake') +
             inputHTML('Hypothesis — what single document tells you exactly how to score Grade 9 — and most students never read it?', 'unit-6.hook-hypothesis')
         );
         html += sectionHTML('plan', '100% Commitment — Implementation Intention', true, null,
@@ -17769,8 +17784,12 @@
 
         // ── UNIT 7 — HERO'S ARSENAL (MADFATHER + TTECEA + Story-Spine + IUMVCC) ──
         html += dividerHTML('UNIT 7 — THE HERO\'S ARSENAL');
+        // v7.19.243: sync to slide deck — 4 specific recall Qs across Units 4+5+6.
         html += sectionHTML('plan', 'Launch Retrieval & Hypothesis', true, null,
-            inputHTML('What did you take away from Unit 6?', 'unit-7.launch.retrieval') +
+            inputHTML('Name one AO and what it scores.', 'unit-7.launch.retrieval-ao') +
+            inputHTML('Name two of the seven skills examiners test.', 'unit-7.launch.retrieval-examiner-skills') +
+            inputHTML('Name two of the three cognitive secrets.', 'unit-7.launch.retrieval-cognitive-secrets') +
+            inputHTML('What is the Grade 9 Trifecta?', 'unit-7.launch.retrieval-trifecta') +
             inputHTML('Hypothesis — what separates the student who signs the pledge and forgets it from the one who lives by it?', 'unit-7.hook-hypothesis')
         );
         html += sectionHTML('plan', 'Definitions', true, null,
@@ -17811,8 +17830,17 @@
 
         // ── UNIT 8 — CROSSING THE THRESHOLD (collapsed old Unit 9; final ceremony) ──
         html += dividerHTML('UNIT 8 — CROSSING THE THRESHOLD');
+        // v7.19.243: sync to slide deck — 8 specific recall Qs (one per prior unit
+        // plus a cross-unit Four Traps question).
         html += sectionHTML('plan', 'Launch Retrieval', true, null,
-            inputHTML('Pull one key takeaway from each previous unit (Units 1–7).', 'unit-8.launch.retrieval')
+            inputHTML('Unit 1. What is the percentage of students who reach Grade 7–9?', 'unit-8.launch.retrieval-u1') +
+            inputHTML('Unit 2. Where do you find every link and schedule?', 'unit-8.launch.retrieval-u2') +
+            inputHTML('Unit 3. Name the three Pillars of Success.', 'unit-8.launch.retrieval-u3') +
+            inputHTML('Unit 4. Name the Grade 9 Trifecta.', 'unit-8.launch.retrieval-u4') +
+            inputHTML('Unit 5. Name the three cognitive secrets.', 'unit-8.launch.retrieval-u5') +
+            inputHTML('Unit 6. Name the analytical toolkit.', 'unit-8.launch.retrieval-u6') +
+            inputHTML('Unit 7. Name the four steps to mastery.', 'unit-8.launch.retrieval-u7') +
+            inputHTML('Across Units 4–7. Name the Four Traps.', 'unit-8.launch.retrieval-four-traps')
         );
         html += sectionHTML('plan', 'Four Traps Reflection', true, null,
             inputHTML('Name one trap you recognise in your own work + how you will counter it.', 'unit-8.traps-reflection')
@@ -20638,12 +20666,19 @@
         if (existingTocGap) existingTocGap.remove();
 
         // v7.14.30: Collect sections INCLUDING dividers (used as group boundaries)
+        // v7.19.243: track per-label occurrence index so the TOC click can target
+        // the Nth element with that label (multiple units reuse the same section
+        // title — e.g. "Launch Retrieval & Hypothesis" appears once per unit).
         const sections = [];
+        const _labelOccurrence = {};
         canvasEditor.state.doc.descendants((node, pos) => {
             if (node.type.name === 'sectionBlock') {
                 const type = node.attrs.sectionType || 'response';
                 const label = node.attrs.label || '';
-                if (type !== 'cover') sections.push({ type, label, pos });
+                if (type !== 'cover') {
+                    _labelOccurrence[label] = (_labelOccurrence[label] || 0) + 1;
+                    sections.push({ type, label, pos, occurrence: _labelOccurrence[label] - 1 });
+                }
             }
         });
 
@@ -20689,7 +20724,7 @@
             // If inside a divider group, add as child
             if (currentDivGroup) {
                 if (!currentDivGroup.type) currentDivGroup.type = s.type;
-                currentDivGroup.children.push({ type: s.type, label: s.label, displayLabel: s.label });
+                currentDivGroup.children.push({ type: s.type, label: s.label, displayLabel: s.label, occurrence: s.occurrence });
                 return;
             }
             // v7.19.131: inside super-group, no divider yet → preamble notice etc.
@@ -20698,7 +20733,7 @@
             // expands to "How this list was generated / Priority order / How to
             // use this document / Pedagogical depth / 7-sent shape / Memorise once").
             if (currentSuperGroup) {
-                currentSuperGroup.children.push({ type: s.type, label: s.label, displayLabel: s.label });
+                currentSuperGroup.children.push({ type: s.type, label: s.label, displayLabel: s.label, occurrence: s.occurrence });
                 return;
             }
             // Fallback: prefix-based grouping for sections before any divider
@@ -20738,15 +20773,19 @@
         // v7.14.30: Brand colour cycle for divider-based groups
         const BRAND_DOT_COLOURS = ['#51dacf', '#42A1EC', '#4D76FD', '#5333ed', '#7DF9E9', '#1CD991', '#41aaa8'];
 
-        // Scroll-to-section helper — finds first DOM section matching label, scrolls to it.
-        function scrollToLabel(label) {
+        // Scroll-to-section helper — finds DOM section matching label + occurrence index.
+        // v7.19.243: previous version assigned `target` for every match without breaking,
+        // so duplicate labels (Codex Units 2-8 all have "Launch Retrieval & Hypothesis")
+        // always landed on the LAST match. Now picks matches[occurrence].
+        function scrollToLabel(label, occurrence) {
             const editor = document.getElementById('swml-tiptap-editor');
             const cw = document.querySelector('.swml-canvas-content');
             if (!editor || !cw) return;
-            let target = null;
+            const matches = [];
             editor.querySelectorAll('[data-section-label]').forEach(el => {
-                if (el.getAttribute('data-section-label') === label) target = el;
+                if (el.getAttribute('data-section-label') === label) matches.push(el);
             });
+            const target = matches[occurrence || 0] || matches[0];
             if (target) {
                 const cwRect = cw.getBoundingClientRect();
                 const tRect = target.getBoundingClientRect();
@@ -20776,7 +20815,7 @@
             row.appendChild(pageNum);
             row.addEventListener('click', (e) => {
                 if (e.target.closest('.swml-toc-chevron')) return;
-                scrollToLabel(entry.label);
+                scrollToLabel(entry.label, entry.occurrence);
             });
             item.appendChild(row);
 
@@ -20800,7 +20839,7 @@
                     subLabel.className = 'swml-toc-label';
                     subLabel.textContent = numberLabel.replace(/\.$/, '') + '.' + (ci + 1) + ' ' + child.displayLabel;
                     subItem.appendChild(subLabel);
-                    subItem.addEventListener('click', () => scrollToLabel(child.label));
+                    subItem.addEventListener('click', () => scrollToLabel(child.label, child.occurrence));
                     subList.appendChild(subItem);
                 });
                 item.appendChild(subList);
@@ -20835,7 +20874,7 @@
             row.appendChild(pageNum);
             row.addEventListener('click', (e) => {
                 if (e.target.closest('.swml-toc-chevron')) return;
-                scrollToLabel(entry.label);
+                scrollToLabel(entry.label, entry.occurrence);
             });
             item.appendChild(row);
 
@@ -20900,7 +20939,7 @@
             row.appendChild(pageNum);
             row.addEventListener('click', (e) => {
                 if (e.target.closest('.swml-toc-chevron')) return;
-                scrollToLabel(entry.label);
+                scrollToLabel(entry.label, entry.occurrence);
             });
             item.appendChild(row);
 
@@ -20923,7 +20962,7 @@
                     subLabel.className = 'swml-toc-label';
                     subLabel.textContent = sectionNum + '.' + (ci + 1) + ' ' + child.displayLabel;
                     subItem.appendChild(subLabel);
-                    subItem.addEventListener('click', () => scrollToLabel(child.label));
+                    subItem.addEventListener('click', () => scrollToLabel(child.label, child.occurrence));
                     subList.appendChild(subItem);
                 });
                 item.appendChild(subList);
