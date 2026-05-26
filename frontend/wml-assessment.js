@@ -2982,6 +2982,41 @@
         async function sendCanvasMessage() {
             const msg = chatTextarea.value.trim();
             if (!msg || canvasChatLoading) return;
+
+            // v7.19.244: Paragraph-boundary preflight. Runs once per assessment
+            // chat (first user turn only) when an essay is present in the canvas.
+            // Diagnostic phase = silent diagnosis only (no modal).
+            // Redraft phase = modal asks student to confirm split / decline / re-edit.
+            // 'cancel' choice aborts the send and returns focus to the editor.
+            let _structureDiagnosis = null;
+            if (state.task === 'assessment' && canvasEditor && typeof getResponseText === 'function') {
+                const _firstTurn = canvasChatHistory.filter(m => m.role === 'user').length === 0;
+                if (_firstTurn) {
+                    try {
+                        const _essayPreflight = getResponseText(canvasEditor);
+                        if (_essayPreflight && _essayPreflight.length > 50) {
+                            const _isLit = !(WML && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject());
+                            const _detection = _detectPackedParagraphs(_essayPreflight, _isLit);
+                            if (_detection.has_packed_blocks) {
+                                if (state.phase === 'redraft') {
+                                    const _choice = await _showStructureDiagnosisModal(_detection);
+                                    if (_choice === 'cancel') {
+                                        chatTextarea.value = msg; // restore input
+                                        return;
+                                    }
+                                    _structureDiagnosis = { detection: _detection, choice: _choice, phase: 'redraft' };
+                                } else {
+                                    _structureDiagnosis = { detection: _detection, choice: 'silent_diagnostic', phase: state.phase || 'initial' };
+                                }
+                                console.log('[WML structure-preflight] detected packed blocks. Phase=' + (state.phase || 'initial') + ', choice=' + _structureDiagnosis.choice);
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('[WML structure-preflight] error (non-fatal):', e && e.message);
+                    }
+                }
+            }
+
             canvasChatLoading = true;
 
             if (canvasListening && canvasRecognition) {
@@ -3062,22 +3097,54 @@
                     }
                     console.log('WML Canvas: Quiz task — doc injection skipped for', state.task);
                 } else if (essay.trim().length > 50) {
+                    // v7.19.244: If the structure preflight ran and student chose
+                    // 'split', rebuild the essay text with paragraph breaks inserted
+                    // at the suggested breakpoints BEFORE injection. Sophia then sees
+                    // the restructured paragraphs and can mark per-beat as taught.
+                    let essayForInjection = essay;
+                    let structureBlock = '';
+                    if (_structureDiagnosis) {
+                        if (_structureDiagnosis.choice === 'split') {
+                            for (const sect of _structureDiagnosis.detection.sections) {
+                                essayForInjection = essayForInjection.replace(sect.original_text, sect.split_text);
+                            }
+                        }
+                        const diagLines = ['[STRUCTURE_DIAGNOSIS]'];
+                        diagLines.push('Phase: ' + _structureDiagnosis.phase);
+                        diagLines.push('Student choice: ' + _structureDiagnosis.choice);
+                        for (const sect of _structureDiagnosis.detection.sections) {
+                            const label = sect.label || '(unlabelled response)';
+                            const beatNote = _structureDiagnosis.choice === 'split'
+                                ? 'Now restructured into ' + sect.detected_beats + ' paragraphs (paragraph breaks inserted before injection). Mark each paragraph as a separate TTECEA beat.'
+                                : _structureDiagnosis.choice === 'no_split'
+                                    ? 'Student declined the split; mark as one paragraph but FLAG the missing break in structural feedback (lower analytical ceiling \u2014 second beat reads as repetition).'
+                                    : 'Diagnostic phase \u2014 flag the packed block in structural feedback but do NOT penalise; student is still learning paragraph discipline.';
+                            diagLines.push('- ' + label + ': written as 1 block; ' + sect.detected_beats + ' concept-beats detected (signals: ' + sect.signals.join(', ') + '). ' + beatNote);
+                        }
+                        diagLines.push('When commenting on structure, attribute to Sophicly teaching: "At Sophicly we teach one paragraph per concept-beat \u2014 the board does not mandate paragraph breaks but the examiner tracks shifts in argument by paragraph." Do NOT claim paragraph breaks are required by the mark scheme.');
+                        structureBlock = diagLines.join('\n');
+                    }
+
                     const wc = getResponseWordCount(canvasEditor);
                     // v7.14.67: Detect multi-question papers by counting distinct response sections
-                    const isMultiQ = (essay.match(/=== Q\d/g) || []).length > 1;
+                    const isMultiQ = (essayForInjection.match(/=== Q\d/g) || []).length > 1;
                     const essayLabel = isMultiQ
                         ? `STUDENT'S RESPONSES \u2014 multiple questions \u2014 ${wc} total words`
                         : `STUDENT'S ESSAY \u2014 ${wc} words`;
                     if (userMsgCount === 1) {
-                        promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName}]\n[${essayLabel}]\n\n${essay}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                        promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName}]\n[${essayLabel}]\n\n${essayForInjection}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
                     } else {
                         const reminderLabel = isMultiQ
                             ? `REMINDER \u2014 STUDENT'S RESPONSES (${wc} total words) \u2014 assess each question's response individually`
                             : `REMINDER \u2014 STUDENT'S ACTUAL ESSAY (${wc} words) \u2014 assess ONLY this text, quote from it directly`;
-                        promptText = `[${reminderLabel}]\n\n${essay}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
+                        promptText = `[${reminderLabel}]\n\n${essayForInjection}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
                     }
-                    const sectionLabels = (essay.match(/=== .+? ===/g) || []).join(', ');
-                    console.log('WML Canvas: Essay injected (' + wc + ' words). Sections: [' + (sectionLabels || 'no labels') + ']. First 200 chars:', essay.substring(0, 200));
+                    if (structureBlock) {
+                        promptText = structureBlock + '\n\n---\n\n' + promptText;
+                        console.log('[WML structure-diagnosis] injected:', structureBlock.slice(0, 240));
+                    }
+                    const sectionLabels = (essayForInjection.match(/=== .+? ===/g) || []).join(', ');
+                    console.log('WML Canvas: Essay injected (' + wc + ' words). Sections: [' + (sectionLabels || 'no labels') + ']. First 200 chars:', essayForInjection.substring(0, 200));
                 } else if (userMsgCount === 1) {
                     promptText = `[CONTEXT: ${boardName} ${subjectName} \u2014 ${textName}]\n[NOTE: The student's Response sections are empty or very short. Ask them to write their response in the Response sections of the document before continuing.]\n\n[STUDENT'S RESPONSE]\n${msg}`;
                     console.warn('WML Canvas: Essay too short or empty. getResponseText returned:', essay.substring(0, 100));
@@ -15183,6 +15250,236 @@
             parts.push(`${heading}\n${text}`);
         });
         return parts.join('\n\n');
+    }
+
+    // v7.19.244: Paragraph-boundary detector. Walks the essay output of
+    // getResponseText() (sections joined by '\n\n'), finds packed blocks
+    // (single paragraph that contains multiple concept-beats), and suggests
+    // split points using canonical Sophicly connectors + sentence/word/quote
+    // signals. Used by sendCanvasMessage preflight on first assessment turn
+    // to surface structure feedback aligned with Sophicly's TTECEA (Lang) /
+    // TTECEA+C (Lit) teaching, NOT board mark-scheme rules.
+    function _detectPackedParagraphs(essay, isLiterature) {
+        if (!essay || typeof essay !== 'string') return { has_packed_blocks: false, sections: [], is_literature: !!isLiterature };
+
+        // Canonical beat-opener connectors (start of a new TTECEA paragraph).
+        // Intra-paragraph connectors ("Consequently,", "However,", "Therefore,")
+        // intentionally excluded — they belong INSIDE a beat, not between beats.
+        var BEAT_OPENERS = [
+            'at the beginning,', 'initially,', 'firstly,', 'to begin with,', 'to start with,',
+            'additionally,', 'moreover,', 'furthermore,', 'in addition,', 'secondly,', 'thirdly,',
+            'at the end,', 'finally,', 'lastly,', 'towards the end,', 'in the final paragraph,',
+            'overall,', 'ultimately,', 'in conclusion,', 'to conclude,',
+            'on the other hand,', 'in contrast,', 'conversely,', 'by contrast,'
+        ];
+
+        var MIN_WORDS_FOR_PACKED = 80;       // below this, treat as one beat regardless
+        var MAX_SENTENCES_PER_BEAT = 7;      // Sophicly 7-sentence BP teaching
+        var WORD_HARD_THRESHOLD = 150;       // typical TTECEA BP = 80-130 words
+        var MIN_OPENERS_TO_FLAG = 2;         // ≥2 beat-openers in same block
+
+        // Split essay into sections via "=== LABEL ===" markers (multi-Q papers).
+        var sections = [];
+        var sectionRe = /^===\s+(.+?)\s+===$/gm;
+        var lastIndex = 0;
+        var lastLabel = '';
+        var m;
+        while ((m = sectionRe.exec(essay)) !== null) {
+            if (lastIndex < m.index) {
+                var chunk = essay.slice(lastIndex, m.index).trim();
+                if (chunk) sections.push({ label: lastLabel, text: chunk });
+            }
+            lastLabel = m[1];
+            lastIndex = sectionRe.lastIndex;
+        }
+        var tail = essay.slice(lastIndex).trim();
+        if (tail) sections.push({ label: lastLabel, text: tail });
+        if (sections.length === 0) sections.push({ label: '', text: essay.trim() });
+
+        var analyses = [];
+        for (var i = 0; i < sections.length; i++) {
+            var sect = sections[i];
+            // Skip if section already has paragraph breaks — student structured it.
+            if (/\n\s*\n/.test(sect.text)) continue;
+
+            var text = sect.text;
+            var wordCount = (text.match(/\S+/g) || []).length;
+            var sentences = (text.match(/[.!?]+(\s|$)/g) || []).length || 1;
+            var quoteAnchors = (text.match(/['‘’][^'‘’]{4,}['‘’]|"[^"]{4,}"/g) || []).length;
+
+            // Find connector positions at sentence-start.
+            var lowerText = text.toLowerCase();
+            var openerHits = [];
+            for (var c = 0; c < BEAT_OPENERS.length; c++) {
+                var conn = BEAT_OPENERS[c];
+                var idx = 0;
+                while ((idx = lowerText.indexOf(conn, idx)) !== -1) {
+                    var atStart = idx === 0;
+                    var before = idx > 0 ? lowerText.slice(Math.max(0, idx - 4), idx) : '';
+                    var atSentenceStart = atStart || /[.!?]\s*$/.test(before) || /\n\s*$/.test(before);
+                    if (atSentenceStart) {
+                        openerHits.push({ index: idx, connector: conn, marker: text.slice(idx, idx + conn.length) });
+                    }
+                    idx += conn.length;
+                }
+            }
+            openerHits.sort(function (a, b) { return a.index - b.index; });
+
+            // Packed test — must meet word floor AND at least one positive signal.
+            var signals = [];
+            if (sentences > MAX_SENTENCES_PER_BEAT) signals.push('sentence_count=' + sentences);
+            if (openerHits.length >= MIN_OPENERS_TO_FLAG) signals.push('beat_openers=' + openerHits.length);
+            if (wordCount > WORD_HARD_THRESHOLD) signals.push('word_count=' + wordCount);
+            if (quoteAnchors >= 2) signals.push('quote_anchors=' + quoteAnchors);
+
+            var isPacked = wordCount >= MIN_WORDS_FOR_PACKED && signals.length > 0;
+            if (!isPacked) continue;
+
+            // Breakpoints: every beat-opener AFTER the first one signals a new beat.
+            var breakpoints = [];
+            for (var k = 1; k < openerHits.length; k++) {
+                breakpoints.push({ char_index: openerHits[k].index, marker: openerHits[k].marker });
+            }
+
+            // No canonical opener found but block is huge by sentence count — mid-block fallback.
+            if (breakpoints.length === 0 && sentences > MAX_SENTENCES_PER_BEAT * 1.5) {
+                var sentenceBreaks = [];
+                var sIdx = 0;
+                while ((sIdx = text.indexOf('. ', sIdx)) !== -1) {
+                    sentenceBreaks.push(sIdx + 2);
+                    sIdx += 2;
+                }
+                if (sentenceBreaks.length > 0) {
+                    var mid = sentenceBreaks[Math.floor(sentenceBreaks.length / 2)];
+                    breakpoints.push({ char_index: mid, marker: '(detected by sentence-count midpoint)' });
+                }
+            }
+
+            if (breakpoints.length === 0) continue;
+
+            // Build the split version by inserting \n\n at each breakpoint.
+            breakpoints.sort(function (a, b) { return a.char_index - b.char_index; });
+            var splitText = '';
+            var cursor = 0;
+            for (var b = 0; b < breakpoints.length; b++) {
+                splitText += text.slice(cursor, breakpoints[b].char_index).trim() + '\n\n';
+                cursor = breakpoints[b].char_index;
+            }
+            splitText += text.slice(cursor).trim();
+
+            analyses.push({
+                label: sect.label,
+                original_text: text,
+                paragraph_count: 1,
+                detected_beats: breakpoints.length + 1,
+                breakpoints: breakpoints,
+                split_text: splitText,
+                signals: signals,
+                word_count: wordCount,
+                sentence_count: sentences,
+                expects_context_beat: !!isLiterature
+            });
+        }
+
+        return {
+            has_packed_blocks: analyses.length > 0,
+            sections: analyses,
+            is_literature: !!isLiterature
+        };
+    }
+
+    // v7.19.244: Modal asking the student to confirm paragraph split
+    // when redraft-phase essay contains packed blocks. Resolves with
+    // 'split' | 'no_split' | 'cancel'. Diagnostic phase skips the modal.
+    function _showStructureDiagnosisModal(detection) {
+        return new Promise(function (resolve) {
+            var prevBodyOverflow = document.body.style.overflow;
+
+            var overlay = document.createElement('div');
+            overlay.className = 'swml-structure-modal-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:20px;overscroll-behavior:contain;overflow:hidden;';
+
+            var card = document.createElement('div');
+            card.style.cssText = 'background:#fff;border-radius:16px;max-width:640px;width:100%;max-height:85vh;overflow-y:auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.4);font-family:inherit;color:#1a1a1a;overscroll-behavior:contain;';
+
+            function esc(s) {
+                return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+                    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+                });
+            }
+
+            var sectionCount = detection.sections.length;
+            var html = '';
+            html += '<h2 style="margin:0 0 14px 0;font-size:1.35em;color:#2c003e;line-height:1.3;">Paragraph structure check</h2>';
+
+            if (sectionCount === 1) {
+                var s0 = detection.sections[0];
+                html += '<p style="margin:0 0 14px 0;line-height:1.5;">Your <strong>' + esc(s0.label || 'response') + '</strong> is written as one block, but I count <strong>' + s0.detected_beats + ' concept-beats</strong> inside it.</p>';
+            } else {
+                html += '<p style="margin:0 0 8px 0;line-height:1.5;">I count packed paragraphs in <strong>' + sectionCount + ' response sections</strong>:</p>';
+                html += '<ul style="margin:0 0 14px 18px;padding:0;line-height:1.5;">';
+                for (var i = 0; i < detection.sections.length; i++) {
+                    var s = detection.sections[i];
+                    html += '<li><strong>' + esc(s.label || 'Response') + ':</strong> ' + s.detected_beats + ' beats packed into 1 block</li>';
+                }
+                html += '</ul>';
+            }
+
+            html += '<div style="background:#f3eaff;padding:12px 14px;border-radius:8px;border-left:4px solid #5333ed;margin:0 0 16px 0;font-size:0.95em;line-height:1.5;">';
+            html += '<strong>At Sophicly we teach one paragraph per concept-beat.</strong> Each beat needs space on the page so the examiner can track shifts in your argument. The board does not mandate paragraph breaks — they mark the analysis. But analysis squeezed into one block tends to be read as one beat.';
+            html += '</div>';
+
+            for (var j = 0; j < detection.sections.length; j++) {
+                var sj = detection.sections[j];
+                html += '<div style="margin:14px 0;padding:12px;background:#f8f8ff;border-radius:8px;font-size:0.9em;">';
+                html += '<div style="color:#666;margin-bottom:8px;">Detected split for <strong>' + esc(sj.label || 'response') + '</strong>:</div>';
+                var parts = sj.split_text.split(/\n\s*\n/);
+                for (var p = 0; p < parts.length; p++) {
+                    var preview = parts[p].trim().slice(0, 140);
+                    if (parts[p].length > 140) preview += '…';
+                    html += '<div style="margin:6px 0;padding:6px 8px;background:#fff;border-radius:4px;border-left:3px solid #5333ed;"><strong>Beat ' + (p + 1) + ':</strong> ' + esc(preview) + '</div>';
+                }
+                html += '</div>';
+            }
+
+            html += '<div style="display:flex;flex-direction:column;gap:8px;margin-top:20px;">';
+            html += '<button type="button" data-choice="split" style="background:#5333ed;color:#fff;border:none;border-radius:8px;padding:13px 16px;font-size:0.98em;cursor:pointer;font-weight:600;text-align:left;">A &mdash; Yes, split the paragraphs as suggested</button>';
+            html += '<button type="button" data-choice="no_split" style="background:#fff;color:#5333ed;border:2px solid #5333ed;border-radius:8px;padding:11px 16px;font-size:0.98em;cursor:pointer;text-align:left;">B &mdash; No, mark as I wrote it</button>';
+            html += '<button type="button" data-choice="cancel" style="background:transparent;color:#666;border:none;padding:10px;font-size:0.92em;cursor:pointer;text-decoration:underline;text-align:left;">C &mdash; Let me re-edit my response first</button>';
+            html += '</div>';
+
+            card.innerHTML = html;
+            overlay.appendChild(card);
+
+            function cleanup() {
+                document.body.style.overflow = prevBodyOverflow;
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                document.removeEventListener('keydown', onKey);
+            }
+            function onKey(e) { if (e.key === 'Escape') { cleanup(); resolve('cancel'); } }
+            document.addEventListener('keydown', onKey);
+
+            // Scroll isolation (3-layer per CLAUDE.md OVERLAY rule):
+            // 1. CSS — done above (overscroll-behavior + overflow on overlay + card).
+            // 2. JS — block wheel/touchmove originating on backdrop.
+            overlay.addEventListener('wheel', function (e) { if (e.target === overlay) e.preventDefault(); }, { passive: false });
+            overlay.addEventListener('touchmove', function (e) { if (e.target === overlay) e.preventDefault(); }, { passive: false });
+            // 3. JS — lock body overflow while overlay is mounted.
+            document.body.style.overflow = 'hidden';
+
+            var buttons = card.querySelectorAll('button[data-choice]');
+            for (var bi = 0; bi < buttons.length; bi++) {
+                (function (btn) {
+                    btn.addEventListener('click', function () {
+                        var choice = btn.getAttribute('data-choice') || 'cancel';
+                        cleanup();
+                        resolve(choice);
+                    });
+                })(buttons[bi]);
+            }
+
+            document.body.appendChild(overlay);
+        });
     }
 
     /**
