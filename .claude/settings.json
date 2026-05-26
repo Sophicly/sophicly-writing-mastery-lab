@@ -27,7 +27,19 @@
       "Bash(curl -sk 'https://sophicly.com/wp-content/uploads/sophicly-opcache-reset.php')",
       "Bash(curl -skI 'https://sophicly.com/wp-content/uploads/sophicly-opcache-reset.php')",
       "Bash(curl -skL 'https://sophicly.com/wp-content/uploads/sophicly-opcache-reset.php')",
-      "Bash(curl -skL \"https://sophicly.com/wp-content/uploads/sophicly-opcache-reset.php?$\\(date +%s\\)\")"
+      "Bash(curl -skL \"https://sophicly.com/wp-content/uploads/sophicly-opcache-reset.php?$\\(date +%s\\)\")",
+      "Bash(grep -vE \"function sophicly_get|sophicly_get_user_tier\\\\\\(\\\\\\)$|//|\\\\*\")",
+      "Bash(grep -nA3 \"parse_canvas_target_key\\\\b.*function\\\\|function parse_canvas_target_key\" sophicly-student-data/includes/class-wml-rest-api.php)",
+      "Bash(php -l sophicly-student-data/includes/class-learndash-bridge.php)",
+      "Bash(php -l sophicly-writing-mastery-lab/sophicly-writing-mastery-lab.php)",
+      "Bash(grep -n ''\\\\''sessions'\\\\''\\\\s*=>\\\\s*$sessions\\\\|return.*$sessions\\\\|$sessions\\\\[\\\\]\\\\s*=' sophicly-student-data/includes/class-wml-rest-api.php)",
+      "Bash(grep -n \"function on_ld_complete_session_upsert\\\\|^    }$\" sophicly-student-data/includes/class-learndash-bridge.php)",
+      "Bash(mv ~/.claude/handoffs/open/dashboard-handoff-2026-05-25-ld-activity-mywork-bridge.md ~/.claude/handoffs/done/dashboard-handoff-2026-05-25-ld-activity-mywork-bridge-SUPERSEDED.md && grep -n \"ld-activity-mywork-bridge\" ~/.claude/handoffs/HANDOFFS.md | head -2)",
+      "Bash(awk 'NR==1422{print \"checking...\"} /function [a-z_]+/{fn=$0} NR==1426{print \"Function context:\", fn}' \"/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins/sophicly-student-data/includes/class-wml-rest-api.php\")",
+      "Bash(awk -F: '$2>1100 && $2<1430')",
+      "Bash(awk 'NR>=1200 && NR<=1430 && /\\\\$user_id\\\\s*=/' '/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins/sophicly-student-data/includes/class-wml-rest-api.php')",
+      "Bash(awk 'NR>=1100 && NR<=1200' \"/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins/sophicly-student-data/includes/class-wml-rest-api.php\")",
+      "Bash(git update-index *)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
