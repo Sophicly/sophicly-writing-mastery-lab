@@ -1063,6 +1063,8 @@ Tick one **before** writing:
    
 
 8. **Conclusion:** State: "This has been an incredibly detailed assessment. Well done."  
+
+   * **Internal AI Note — WHOLE-PAPER COMPLETION MARKER:** This is the END of the entire multi-question assessment (Part D, after every question in Part C has been scored). On this final turn ONLY, emit the hidden marker `[ASSESSMENT_COMPLETE]` on its own line. The frontend strips it from the student's view and uses it as the sole signal to mark the session complete. **NEVER emit `[ASSESSMENT_COMPLETE]` after an individual question's feedback** — only here, once, at the end of the whole paper. (Per-question Q1 retrieval uses the separate `[ASSESSMENT_COMPLETE Q1]` marker, which is distinct and does NOT signal whole-paper completion.)
      
 9. Ask: "When you are ready for your next task, please choose an option by typing the letter:  
    A) Start a new assessment  

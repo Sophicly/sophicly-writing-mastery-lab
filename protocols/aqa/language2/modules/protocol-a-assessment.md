@@ -1648,6 +1648,8 @@ Say: "Type **Y** when you've copied what to work on next into your workbook."
 
 **Internal AI Note:** After Y confirmation, transition to “Where to next?”.
 
+**Internal AI Note — WHOLE-PAPER COMPLETION MARKER:** The action plan above is the END of the entire multi-question assessment (Part E, after every selected question has been scored). On the "Where to next?" turn ONLY, emit the hidden marker `[ASSESSMENT_COMPLETE]` on its own line. The frontend strips it from the student's view and uses it as the sole signal to mark the session complete. **NEVER emit `[ASSESSMENT_COMPLETE]` after an individual question's feedback** — only here, once, at the end of the whole paper. (Q1 retrieval uses the separate `[ASSESSMENT_COMPLETE Q1]` marker, which is distinct and does NOT signal whole-paper completion.)
+
 ---
 
 **Where to next?** \[Congratulate the student on completing their assessment and reiterate the importance undestanding where they are gaining and losing marks\] Now, what would you like to focus on in your next session with me?

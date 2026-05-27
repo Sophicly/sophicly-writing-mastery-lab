@@ -3458,19 +3458,43 @@
 
                         if (state.task === 'assessment') {
                             const detected = detectAssessmentStep(res.reply);
-                            console.log('WML Canvas: detectAssessmentStep \u2192', { step: detected.step, isComplete: detected.isComplete, totalScore: detected.totalScore, grade: detected.grade, currentStep: state.step });
+                            // v7.19.245: Language papers are MULTI-QUESTION (Q1\u2013Q5). detectAssessmentStep's
+                            // step-8 keyword fallbacks (Action Plan / Priority Target / Total+Grade \u2014
+                            // wml-core.js:2350-2356) appear in EVERY question's feedback, so they falsely
+                            // trip "Session Complete" + Mark Complete at Q2. For Language, the explicit
+                            // [ASSESSMENT_COMPLETE] marker (protocol emits it ONLY after the final question)
+                            // is the sole completion authority \u2014 mirroring how the quiz tracker trusts
+                            // "Quiz Complete". Literature is untouched (single essay + server state machine).
+                            // Scoped to AQA Language for now: only AQA P1+P2 protocols emit the
+                            // whole-paper [ASSESSMENT_COMPLETE] marker. Gating other boards before
+                            // their protocols emit it would leave them unable to ever complete.
+                            const _isLangPaper = !!(WML && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject() && (state.board || '').toLowerCase() === 'aqa');
+                            const _hasCompleteMarker = /\[ASSESSMENT_COMPLETE\]/i.test(res.reply);
+                            if (_isLangPaper && !_hasCompleteMarker && (detected.step >= 8 || detected.isComplete)) {
+                                detected.step = 0;          // ignore the keyword-only step-8 false positive
+                                detected.isComplete = false; // not complete until the marker arrives
+                            }
+                            console.log('WML Canvas: detectAssessmentStep \u2192', { step: detected.step, isComplete: detected.isComplete, totalScore: detected.totalScore, grade: detected.grade, currentStep: state.step, lang: _isLangPaper, marker: _hasCompleteMarker });
                             if (detected.step > state.step) updateProgress(detected.step);
                             if (detected.isComplete) {
                                 console.log('WML Canvas: Assessment Complete detected in AI response');
                                 if (!state.plan.total_score && detected.totalScore) { state.plan.total_score = detected.totalScore; console.log('WML: Force-extracted total_score:', detected.totalScore); }
                                 if (!state.plan.grade && detected.grade) { state.plan.grade = detected.grade; console.log('WML: Force-extracted grade:', detected.grade); }
                             }
-                            if (!state._phaseMarkedComplete && assessCompleteBtnRef.value && assessCompleteBtnRef.value.style.display === 'none') {
+                            // v7.19.245: Hide WML Mark Complete in the LearnDash training
+                            // env. LearnDash owns topic completion there (.learndash_mark_complete_button),
+                            // and the grade persists via the canvas-save piggyback regardless.
+                            // The WML button is redundant + confusing when embedded.
+                            if (!WML.isEmbedded && !state._phaseMarkedComplete && assessCompleteBtnRef.value && assessCompleteBtnRef.value.style.display === 'none') {
                                 // v7.17.47: State-machine gate for AQA Literature. Requires
                                 // tables_emitted_total === 5 AND completion_emitted when state
                                 // block is active. Prevents false-positive when AI emits
                                 // [ASSESSMENT_COMPLETE] after partial scoring (Mohammed case).
                                 let isAssessmentDone = detected.isComplete || state.step >= 8 || (state.plan.total_score && state.plan.grade);
+                                // v7.19.245: Language papers — require the explicit completion marker.
+                                // The (total_score && grade) heuristic is true after ANY single question,
+                                // so it would surface Mark Complete mid-paper. Marker is the sole authority.
+                                if (_isLangPaper) isAssessmentDone = _hasCompleteMarker;
                                 if (res.assessmentState) {
                                     const fullyScored = (res.assessmentState.tables_emitted_total === 5)
                                         && res.assessmentState.completion_emitted;
@@ -3496,11 +3520,14 @@
                                     console.log('WML: Mark Complete button \u2192 VISIBLE (assessment complete detected)');
                                 }
                             }
-                            if (!state._phaseMarkedComplete && assessCompleteBtnRef.value && assessCompleteBtnRef.value.style.display === 'none') {
+                            if (!WML.isEmbedded && !state._phaseMarkedComplete && assessCompleteBtnRef.value && assessCompleteBtnRef.value.style.display === 'none') {
                                 // v7.17.47: Also gate the Closing Summary safety-net on state machine.
                                 const _stateGateOk = !res.assessmentState
                                     || ((res.assessmentState.tables_emitted_total === 5) && res.assessmentState.completion_emitted);
-                                if (_stateGateOk && (/Closing\s+Summary/i.test(res.reply) || /Session\s+Complete/i.test(res.reply))) {
+                                // v7.19.245: Language safety-net also requires the explicit marker —
+                                // "Closing Summary"/"Session Complete" phrasing recurs per question.
+                                const _langGateOk = !_isLangPaper || _hasCompleteMarker;
+                                if (_stateGateOk && _langGateOk && (/Closing\s+Summary/i.test(res.reply) || /Session\s+Complete/i.test(res.reply))) {
                                     assessCompleteBtnRef.value.style.display = '';
                                     assessCompleteBtnRef.value.classList.add('swml-assess-ready');
                                     assessCompleteBtnRef.value.style.opacity = '0';
