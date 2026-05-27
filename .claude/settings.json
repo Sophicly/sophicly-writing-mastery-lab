@@ -39,7 +39,8 @@
       "Bash(awk -F: '$2>1100 && $2<1430')",
       "Bash(awk 'NR>=1200 && NR<=1430 && /\\\\$user_id\\\\s*=/' '/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins/sophicly-student-data/includes/class-wml-rest-api.php')",
       "Bash(awk 'NR>=1100 && NR<=1200' \"/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins/sophicly-student-data/includes/class-wml-rest-api.php\")",
-      "Bash(git update-index *)"
+      "Bash(git update-index *)",
+      "Bash(grep -nE \"^#{2,5} |Part [A-E]|Question [1-5]|Sub-Protocol|Paragraph [123]|Body Paragraph|Introduction|Conclusion|Metacognitive|Mark Breakdown|Total Mark|Self-Rating|Now assessing|AO5|AO6|Section B\" protocols/aqa/language1/modules/protocol-a-assessment.md)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
