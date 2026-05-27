@@ -13217,6 +13217,17 @@
                     disclaimerRow.appendChild(disclaimerLabel);
                     wrapper.appendChild(disclaimerRow);
 
+                    // v7.19.247: marks-complete gate. Sign-off is the completion event
+                    // (stamps Date Completed), so it must not fire on an unmarked doc.
+                    // Only gates docs that HAVE feedback sections — Codex / Conceptual
+                    // Notes / CW have none, so _marksReadyForSignoff returns true for them
+                    // and sign-off stays available on the tutor's judgement.
+                    const marksHint = document.createElement('div');
+                    marksHint.className = 'swml-signoff-marks-hint';
+                    marksHint.textContent = '⚠ Enter all marks before signing off.';
+                    marksHint.style.cssText = 'display:none;font-size:12px;color:#ffb432;margin-top:6px;';
+                    wrapper.appendChild(marksHint);
+
                     const signBtn = document.createElement('button');
                     signBtn.className = 'swml-signoff-btn';
                     signBtn.textContent = '🔒 Sign Off';
@@ -13224,25 +13235,23 @@
                     signBtn.style.opacity = '0.5';
                     signBtn.style.cursor = 'not-allowed';
 
-                    checkbox.addEventListener('change', () => {
-                        if (checkbox.checked) {
-                            signBtn.disabled = false;
-                            signBtn.style.opacity = '';
-                            signBtn.style.cursor = '';
-                            signBtn.textContent = '✍ Sign Off';
-                        } else {
-                            signBtn.disabled = true;
-                            signBtn.style.opacity = '0.5';
-                            signBtn.style.cursor = 'not-allowed';
-                            signBtn.textContent = '🔒 Sign Off';
-                            signBtn.dataset.confirming = 'false';
-                        }
-                    });
+                    const _refreshSignBtnState = () => {
+                        const marksReady = _marksReadyForSignoff(editor);
+                        const ready = checkbox.checked && marksReady;
+                        signBtn.disabled = !ready;
+                        signBtn.style.opacity = ready ? '' : '0.5';
+                        signBtn.style.cursor = ready ? '' : 'not-allowed';
+                        signBtn.textContent = ready ? '✍ Sign Off' : '🔒 Sign Off';
+                        marksHint.style.display = (checkbox.checked && !marksReady) ? '' : 'none';
+                        if (!ready) signBtn.dataset.confirming = 'false';
+                    };
+                    checkbox.addEventListener('change', _refreshSignBtnState);
 
                     signBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        if (signBtn.disabled) return;
+                        // v7.19.247: re-check marks at click — they may have changed since render.
+                        if (signBtn.disabled || !_marksReadyForSignoff(editor)) { _refreshSignBtnState(); return; }
                         console.log('WML: Sign-off button clicked, canSignOff:', config.canSignOff);
                         // Two-step confirmation: first click shows "Confirm?", second click signs off
                         if (signBtn.dataset.confirming === 'true') {
@@ -13263,11 +13272,14 @@
                             }).then(r => r.json()).then(res => {
                                 console.log('WML: Sign-off response:', res);
                                 if (res.success) {
+                                    // v7.19.247: sign-off is the completion event → Date Completed.
+                                    _canvasSignoffAt = (res.signoff && res.signoff.timestamp) || _canvasSignoffAt || '';
                                     applySignoffToSection(signoffSection, res.signoff);
                                     wrapper.innerHTML = '';
                                     wrapper.appendChild(buildSignedBadge(res.signoff));
                                     wrapper.classList.add('swml-signoff-complete');
                                     showToast('✓ Document signed off', 4000, true);
+                                    if (typeof recalculateScoreSummary === 'function') recalculateScoreSummary();
                                 } else {
                                     signBtn.textContent = '✍ Sign Off';
                                     signBtn.disabled = false;
@@ -13313,10 +13325,13 @@
                     .then(r => r.ok ? r.json() : null)
                     .then(res => {
                         if (res && res.success && res.signoff && !res.signoff.revoked) {
+                            // v7.19.247: existing sign-off → fill Date Completed in the summary.
+                            _canvasSignoffAt = res.signoff.timestamp || _canvasSignoffAt || '';
                             applySignoffToSection(signoffSection, res.signoff);
                             wrapper.innerHTML = '';
                             wrapper.appendChild(buildSignedBadge(res.signoff));
                             wrapper.classList.add('swml-signoff-complete');
+                            if (typeof recalculateScoreSummary === 'function') recalculateScoreSummary();
                         }
                     }).catch(() => { /* No signoff yet — leave as pending */ });
             }
@@ -13578,6 +13593,21 @@
             return badge;
         }
 
+        // v7.19.247: sign-off readiness gate. True when there are no feedback sections
+        // to mark (Codex / Conceptual Notes / CW) OR every feedback section has a mark.
+        // Sign-off stamps Date Completed, so it must not fire on a part-marked assessment.
+        function _marksReadyForSignoff(editor) {
+            if (!editor) return true;
+            const fb = editor.querySelectorAll('[data-section-type="feedback"]');
+            if (fb.length === 0) return true; // nothing to mark — tutor judges completion
+            for (const section of fb) {
+                const label = section.getAttribute('data-section-label') || '';
+                const m = label.match(/\((\S+)\s*\/\s*(\d+)\)$/);
+                if (m && m[1] === '—') return false; // a mark is still unset
+            }
+            return true;
+        }
+
         function recalculateScoreSummary() {
             const editor = document.getElementById('swml-tiptap-editor');
             if (!editor) return;
@@ -13599,6 +13629,23 @@
 
             const scoreSection = editor.querySelector('[data-section-type="scores"]');
             if (!scoreSection) return;
+            // v7.19.247: render dates from real data (server startedAt + tutor signoff),
+            // never from new Date() at render time. Date Completed waits for sign-off.
+            const _fmtDMY = (iso) => {
+                if (!iso) return '';
+                const dt = new Date(iso);
+                return isNaN(dt.getTime()) ? '' : dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            };
+            const startedStr = _fmtDMY(_canvasStartedAt);
+            const completedStr = _fmtDMY(_canvasSignoffAt);
+            let elapsedStr = '';
+            if (_canvasStartedAt && _canvasSignoffAt) {
+                const ms = new Date(_canvasSignoffAt).getTime() - new Date(_canvasStartedAt).getTime();
+                if (!isNaN(ms) && ms >= 0) {
+                    const days = Math.round(ms / 86400000);
+                    elapsedStr = days + (days === 1 ? ' day' : ' days');
+                }
+            }
             scoreSection.querySelectorAll('p').forEach(p => {
                 const text = p.textContent || '';
                 if (text.includes('Total Marks:')) {
@@ -13617,9 +13664,13 @@
                         const inProgress = allSet ? '' : ' (in progress)';
                         p.innerHTML = `<em>Grade:</em> <span class="${tierCls}">${grade}</span>${inProgress}`;
                     }
-                } else if (text.includes('Date Completed:') && allSet && totalMarks > 0) {
-                    const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-                    p.innerHTML = `<em>Date Completed:</em> ${today}`;
+                } else if (text.includes('Date Started:')) {
+                    p.innerHTML = `<em>Date Started:</em> ${startedStr || '—'}`;
+                } else if (text.includes('Date Completed:')) {
+                    // Sign-off is the completion event. "—" until the tutor signs off.
+                    p.innerHTML = `<em>Date Completed:</em> ${completedStr || '—'}`;
+                } else if (text.includes('Days Elapsed:')) {
+                    p.innerHTML = `<em>Days Elapsed:</em> ${elapsedStr || '—'}`;
                 } else if (text.includes('Word Count:')) {
                     const wc = getResponseWordCount(canvasEditor);
                     p.innerHTML = `<em>Word Count:</em> ${wc} / ${canvasWordTarget}`;
@@ -13642,6 +13693,13 @@
                 }
             }
         }
+
+        // v7.19.247: expose recalc + paint dates once now. tryServerLoad sets
+        // _canvasStartedAt before setContent, so by the time this builder runs the
+        // value is ready; the init call renders Date Started without a mark-change.
+        // recalc is idempotent (reads DOM + module vars fresh), so extra calls are safe.
+        _recalcScoreSummaryRef = recalculateScoreSummary;
+        recalculateScoreSummary();
 
         // ── Document Data Extraction (v7.11.9) ──
         // Hoisted reference — assigned inside canvas scope, callable from module-level saveCanvasContent
@@ -14791,6 +14849,12 @@
     let canvasWordMinimum = 450;
     let canvasWordIdeal = 800;
     let canvasUsesWordCount = true;  // false for short-form (<20 marks)
+    // v7.19.247: real Score-Summary dates as DATA (not new Date() baked into HTML).
+    // _canvasStartedAt = first student content edit (server-stamped, from /canvas/load).
+    // _canvasSignoffAt = tutor sign-off timestamp (from /canvas/load-signoff). Both feed
+    // recalculateScoreSummary which renders Date Started / Date Completed / Days elapsed.
+    let _canvasStartedAt = '';
+    let _canvasSignoffAt = '';
     let canvasDualTargets = null;    // { partA: {target,minimum,ideal}, partB: {target,minimum,ideal} } for dual questions
 
     // Word count colour tiers: orange (< min) → yellow (min→target) → green (target→ideal) → purple gradient (ideal+)
@@ -17562,7 +17626,9 @@
 
     function buildScoresSection(totalMarks) {
         const marks = totalMarks || 30;
-        const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        // v7.19.247: dates are no longer baked here. recalculateScoreSummary fills
+        // Date Started / Date Completed / Days Elapsed from real data (server-stamped
+        // startedAt + tutor signoff timestamp) on every load.
         // Grade boundaries with colour coding (purple → blue → green → yellow → orange → red)
         const grades = [
             { g: '9', pct: 84, color: '#7c3aed' }, { g: '8', pct: 74, color: '#5333ed' },
@@ -17579,8 +17645,9 @@
             gradeRef += `<p><em style="color:${b.color};opacity:0.85">Grade ${b.g}: ${minMark}–${maxMark} marks (${b.pct}–${nextPct}%)</em></p>`;
         });
         const inner =
-            `<p><em>Date Started:</em> ${today}</p>` +
+            `<p><em>Date Started:</em> —</p>` +
             `<p><em>Date Completed:</em> —</p>` +
+            `<p><em>Days Elapsed:</em> —</p>` +
             `<p><em>Word Count:</em> — / ${canvasWordTarget}</p>` +
             `<p><em>Total Marks:</em> — / ${marks}</p>` +
             `<p><em>Percentage:</em> —</p>` +
@@ -18811,6 +18878,9 @@
 
     let canvasSaveToServerTimer = null;
     let _extractDocumentData = null; // Assigned inside canvas builder, used by saveCanvasContent
+    // v7.19.247: hoisted recalc ref — assigned inside canvas builder, called from
+    // tryServerLoad so real Score-Summary dates paint after an async server load.
+    let _recalcScoreSummaryRef = null;
     // v7.14.77: Patch checkbox state into HTML string AFTER getHTML() —
     // no TipTap transaction needed, zero scroll side-effects.
     function patchCheckStateIntoHTML(html) {
@@ -19070,6 +19140,8 @@
                 _pendingGeneralNotes = res.generalNotes;
             }
             if (res.success && res.doc && res.doc.html) {
+                // v7.19.247: capture the real first-edit start date for the Score Summary.
+                _canvasStartedAt = res.doc.startedAt || _canvasStartedAt || '';
                 if (state.reviewMode) {
                     // Review mode: always load server content (student's document)
                     canvasEditor.commands.setContent(res.doc.html, false);
@@ -19124,6 +19196,10 @@
                         console.log('WML: Local canvas content exists, server backup available');
                     }
                 }
+                // v7.19.247: re-paint Score-Summary dates after the async server doc
+                // lands. Deferred a tick so the canvas builder has (re)assigned the ref
+                // and the score section exists in the DOM. Idempotent.
+                setTimeout(() => { if (typeof _recalcScoreSummaryRef === 'function') _recalcScoreSummaryRef(); }, 0);
             }
         } catch (e) {
             console.log('WML: Server load unavailable, using localStorage');

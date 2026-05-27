@@ -1353,6 +1353,30 @@ class SWML_REST_API {
             $doc['lessonUrl'] = $lesson_url;
         }
 
+        // v7.19.247: set-once startedAt — real "Date Started" data. The Score Summary
+        // previously baked new Date() at template-build time (presentation, not data),
+        // so the stamped date was doc-creation, not first engagement, and reset on regen.
+        // Root fix: store the first moment this doc held real student response content
+        // (wordCount counts only [data-section-type="response"], so >0 means the student
+        // wrote, not the scaffold), then render Date Started FROM this field on load.
+        // Carry any existing value forward unchanged; never overwrite once set.
+        $existing_started = '';
+        $existing_doc_raw = get_user_meta($user_id, $meta_key, true);
+        if (!empty($existing_doc_raw)) {
+            $existing_doc = is_array($existing_doc_raw) ? $existing_doc_raw : json_decode($existing_doc_raw, true);
+            if (!is_array($existing_doc)) {
+                $existing_doc = json_decode(wp_unslash((string) $existing_doc_raw), true);
+            }
+            if (is_array($existing_doc) && !empty($existing_doc['startedAt'])) {
+                $existing_started = $existing_doc['startedAt'];
+            }
+        }
+        if (!empty($existing_started)) {
+            $doc['startedAt'] = $existing_started;
+        } elseif ($word_count > 0) {
+            $doc['startedAt'] = current_time('c');
+        }
+
         // v7.19.146 safeguard #2: reject empty-overwrite of a populated canvas.
         // Prevents catastrophic data loss from a misfired save (editor unmount race,
         // template injection clobbering student work, etc). If incoming HTML is
