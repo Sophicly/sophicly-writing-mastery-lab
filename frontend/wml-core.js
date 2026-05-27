@@ -1207,6 +1207,10 @@ window.WML = (function() {
             protocolTask: 'polishing',
             completionType: 'step_complete',
             storageSuffix: '_polishing',
+            // v7.19.248: polishing is part of Phase 2 → shares the same redraft doc as
+            // planning / outlining / response / reassessment. Chat stays on _polishing
+            // so Sophia's polishing session is isolated. Mirrors the planning pattern.
+            canvasStorageSuffix: '_redraft',
             chatHeaderLabel: 'Essay Polishing',
             sidebarSteps: null,
         },
