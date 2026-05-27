@@ -12207,7 +12207,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 7, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 8, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -18024,9 +18024,9 @@
             inputHTML('Hypothesis — what single mistake stops more students from reaching Grade 9 than any other?', 'unit-3.hook-hypothesis')
         );
         html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
-            inputHTML('Three takeaways from this unit.', 'unit-3.exit-ticket.three') +
-            inputHTML('Two questions you still have.', 'unit-3.exit-ticket.two') +
-            inputHTML('One action you will take this week.', 'unit-3.exit-ticket.one') +
+            inputHTML('Three rules of the Code you commit to honouring this week.', 'unit-3.exit-ticket.three') +
+            inputHTML('Two excuses you\'ve used before that you will not use again.', 'unit-3.exit-ticket.two') +
+            inputHTML('One specific session you will arrive at on time, fully prepared.', 'unit-3.exit-ticket.one') +
             inputHTML('When-intention: "When [a specific session this week] starts, I will [arrive 5 minutes early with my screen on and materials ready]."', 'unit-3.exit-ticket.implementation-intention')
         );
 
@@ -18047,10 +18047,10 @@
             inputHTML('Write one paragraph: one habit you will adopt + one obstacle you anticipate.', 'unit-4.heros-tale')
         );
         html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
-            inputHTML('Three takeaways from this unit.', 'unit-4.exit-ticket.three') +
-            inputHTML('Two questions you still have.', 'unit-4.exit-ticket.two') +
-            inputHTML('One action you will take this week.', 'unit-4.exit-ticket.one') +
-            inputHTML('When-intention: "When [I feel disappointed in a result this week], I will [name Trust, Focus, Practice — and ask which I am missing]."', 'unit-4.exit-ticket.implementation-intention')
+            inputHTML('Three mindset shifts you will make as a result of this unit.', 'unit-4.exit-ticket.three') +
+            inputHTML('Two emotional triggers (excitement or disappointment) that have derailed you before.', 'unit-4.exit-ticket.two') +
+            inputHTML('One specific habit from the Hero\'s Tale interview you will adopt this week.', 'unit-4.exit-ticket.one') +
+            inputHTML('When-intention: "When [I feel disappointed in a result this week], I will [name the trio — Trust, Focus, Practice — and ask which I am missing]."', 'unit-4.exit-ticket.implementation-intention')
         );
 
         // ── UNIT 5 — SCIENCE OF MASTERY (slide-aligned activities per g9 handoff 2026-05-20) ──
@@ -18079,10 +18079,10 @@
             inputHTML('Name one weekly habit that will close the gap.', 'unit-5.activity-b.gap-closing-habit')
         );
         html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
-            inputHTML('Three techniques you will use this week.', 'unit-5.exit-ticket.three') +
-            inputHTML('Two things that are currently NOT working in your study.', 'unit-5.exit-ticket.two') +
-            inputHTML('One session this week dedicated to closing-the-loop.', 'unit-5.exit-ticket.one') +
-            inputHTML('When-intention: "When [day + time] arrives, I will [a specific action]."', 'unit-5.exit-ticket.implementation-intention')
+            inputHTML('Three study techniques you will start using as a result of this unit.', 'unit-5.exit-ticket.three') +
+            inputHTML('Two things you\'ve been doing that the science says don\'t actually work.', 'unit-5.exit-ticket.two') +
+            inputHTML('One specific session next week where you will apply retrieval practice.', 'unit-5.exit-ticket.one') +
+            inputHTML('When-intention: "When [day + time next week] arrives, I will [close the book and write everything I remember about the topic from memory]."', 'unit-5.exit-ticket.implementation-intention')
         );
 
         // ── UNIT 6 — LANGUAGE OF EXCELLENCE (was old Unit 7 + 100% Commitment moved here) ──
@@ -18100,9 +18100,9 @@
             inputHTML('Name the first small step you will take + when you will take it.', 'unit-6.hundred-percent-commitment.first-step-when')
         );
         html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
-            inputHTML('Three takeaways from this unit.', 'unit-6.exit-ticket.three') +
-            inputHTML('Two questions you still have.', 'unit-6.exit-ticket.two') +
-            inputHTML('One action you will take this week.', 'unit-6.exit-ticket.one') +
+            inputHTML('Three of the seven skills you most want to develop.', 'unit-6.exit-ticket.three') +
+            inputHTML('Two mark-scheme phrases you will learn this week.', 'unit-6.exit-ticket.two') +
+            inputHTML('One short text you will analyse using MADFATHER\'s CROPS this week.', 'unit-6.exit-ticket.one') +
             inputHTML('When-intention: "When [day + time this week] arrives, I will [open one mark scheme and highlight three Grade 9 descriptors]."', 'unit-6.exit-ticket.implementation-intention')
         );
 
@@ -18146,9 +18146,9 @@
             inputHTML('C — Conclusion', 'unit-7.iumvcc-draft.6')
         );
         html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
-            inputHTML('Three takeaways from this unit.', 'unit-7.exit-ticket.three') +
-            inputHTML('Two questions you still have.', 'unit-7.exit-ticket.two') +
-            inputHTML('One action you will take this week.', 'unit-7.exit-ticket.one') +
+            inputHTML('The three weapons — named in your own words.', 'unit-7.exit-ticket.three') +
+            inputHTML('Two of the four steps you can name from memory.', 'unit-7.exit-ticket.two') +
+            inputHTML('One step you are about to enter on the path.', 'unit-7.exit-ticket.one') +
             inputHTML('When-intention: "When [I write my next analytical paragraph], I will [use TTECEA+C and check each letter is present]."', 'unit-7.exit-ticket.implementation-intention')
         );
 
@@ -18175,11 +18175,11 @@
             inputHTML('Weekly action you commit to.', 'unit-8.first-quest-log.weekly-action')
         );
         html += sectionHTML('plan', 'Exit Ticket (3-2-1) + Date Commitment', true, null,
-            inputHTML('Three takeaways from this unit.', 'unit-8.exit-ticket.three') +
-            inputHTML('Two questions you still have.', 'unit-8.exit-ticket.two') +
-            inputHTML('One action you will take this week.', 'unit-8.exit-ticket.one') +
+            inputHTML('Three things from this induction that changed how you think about studying English.', 'unit-8.exit-ticket.three') +
+            inputHTML('Two beliefs you held before that you no longer hold.', 'unit-8.exit-ticket.two') +
+            inputHTML('One specific date this week when you will write your first piece.', 'unit-8.exit-ticket.one') +
             inputHTML('Date you commit to your first piece (DD/MM/YYYY).', 'unit-8.exit-ticket.first-piece-date') +
-            inputHTML('When-intention for your first piece.', 'unit-8.exit-ticket.implementation-intention')
+            inputHTML('When-intention: "When [the date above] arrives, I will [open the curriculum and begin Piece 1] — even if I don\'t feel ready."', 'unit-8.exit-ticket.implementation-intention')
         );
         html += sectionHTML('plan', 'Pledge Re-Affirm (Final)', true, null,
             inputHTML('Type "I re-affirm" — final affirmation of your Mastery Pledge.', 'unit-8.pledge-reaffirm')
