@@ -2153,8 +2153,23 @@ class SWML_REST_API {
         $text    = sanitize_text_field((string) $request->get_param('text'));
         $topic   = absint($request->get_param('topic'));
         $attempt = absint($request->get_param('attempt'));
+        // v7.19.259: optional stage filter. Comma-separated list of stage suffixes
+        // (planning, outlining, polishing, reassessment, redraft, '' for bare/Phase 1).
+        // When present, only delete keys whose suffix matches one of these stages.
+        // Lets the caller wipe a SPECIFIC stage's doc to retest seed_from_sibling_stage
+        // without nuking the planning/diagnostic sibling that supplies the seed.
+        $stages_raw = (string) $request->get_param('stages');
+        $stages = array_filter(array_map('trim', explode(',', $stages_raw)), function($s) {
+            return $s !== null;
+        });
+        // Map symbolic names to actual suffixes (planning → _planning; bare → '').
+        $stages = array_map(function($s) {
+            $s = strtolower($s);
+            if ($s === '' || $s === 'bare' || $s === 'phase1') return '';
+            return '_' . preg_replace('/[^a-z0-9_]/', '', $s);
+        }, $stages);
         if (!$user_id || !$board || !$text || !$topic) {
-            return new WP_Error('missing_params', 'Need user_id + board + text + topic (attempt optional)', ['status' => 400]);
+            return new WP_Error('missing_params', 'Need user_id + board + text + topic (attempt + stages optional)', ['status' => 400]);
         }
         global $wpdb;
         $text   = $this->normalize_text_slug($text);
@@ -2178,6 +2193,17 @@ class SWML_REST_API {
                 $ends_with_attempt = (strlen($row->meta_key) >= strlen($attempt_suffix))
                     && (substr($row->meta_key, -strlen($attempt_suffix)) === $attempt_suffix);
                 if (!$ends_with_attempt) continue;
+            }
+            // v7.19.259: stage-suffix filter. Extract the stage suffix from the key:
+            // strip "{prefix}{stage_suffix}{attempt_suffix}" — what remains in the middle
+            // (between prefix end and attempt suffix start) IS the stage suffix.
+            if (!empty($stages)) {
+                $mid = substr($row->meta_key, strlen($prefix));  // e.g. '_planning__a14' or '__a14' or ''
+                if ($attempt > 0 && substr($mid, -strlen($attempt_suffix)) === $attempt_suffix) {
+                    $mid = substr($mid, 0, -strlen($attempt_suffix));  // strip attempt suffix
+                }
+                // $mid is now the stage suffix (e.g. '_planning' or '')
+                if (!in_array($mid, $stages, true)) continue;
             }
             delete_user_meta($user_id, $row->meta_key);
             $deleted[] = $row->meta_key;
