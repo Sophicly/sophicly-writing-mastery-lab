@@ -9720,9 +9720,14 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
  * `_stageCls` near the editorEl creation).
  */
 
-/* Planning: hide outline/response/feedback/scores/signoff/analytics/improvement/action/self-assessment + their dividers */
+/* Planning: hide outline/response/feedback/scores/signoff/analytics/improvement/action/self-assessment + their dividers.
+ * EXCEPTION (v7.19.254): keep response sections labelled "* Statements" visible — those are
+ * the low-mark AO1 retrieval cells (Lang P1 Q1 "Identify four things…" + equivalents on
+ * Lang P2 / other boards). Students complete those AS PART OF planning; nothing to "plan"
+ * for a 1-4 mark retrieval. Essay-style responses (Q2/Q3/Q4/Q5, analytical / evaluation /
+ * creative writing) stay hidden — they belong from outlining onwards. */
 .swml-stage-planning [data-section-type="outline"],
-.swml-stage-planning [data-section-type="response"],
+.swml-stage-planning [data-section-type="response"]:not([data-section-label*="Statements"]),
 .swml-stage-planning [data-section-type="feedback"],
 .swml-stage-planning [data-section-type="scores"],
 .swml-stage-planning [data-section-type="signoff"],
