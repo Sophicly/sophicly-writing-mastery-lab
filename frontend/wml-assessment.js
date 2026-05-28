@@ -18336,7 +18336,7 @@
             inputHTML('Name two of the seven skills examiners test.', 'unit-7.launch.retrieval-examiner-skills') +
             inputHTML('Name two of the three cognitive secrets.', 'unit-7.launch.retrieval-cognitive-secrets') +
             inputHTML('What is the Grade 9 Trifecta?', 'unit-7.launch.retrieval-trifecta') +
-            inputHTML('Hypothesis — what separates the student who signs the pledge and forgets it from the one who lives by it?', 'unit-7.hook-hypothesis')
+            inputHTML('Hypothesis — why do most students leave the exam empty-handed even when they know the content?', 'unit-7.hook-hypothesis')
         );
         html += sectionHTML('plan', 'Definitions', true, null,
             inputHTML('Define Literature in your own words.', 'unit-7.definitions.literature') +
