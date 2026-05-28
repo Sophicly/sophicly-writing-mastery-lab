@@ -1210,13 +1210,18 @@ window.WML = (function() {
         },
         polishing: {
             label: 'Polishing',
-            environment: 'training', // placeholder — moves to 'flexible' when inline-AI environment is built
-            panels: { sidebar: true, chat: true, guidance: false, document: true },
+            // v7.19.250: inline-coaching env (was 'training'). Mirrors exam_crib pattern:
+            // student highlights any text → Sophia SelectionChip → Socratic coaching reply
+            // (server still injects the board polishing protocol rubric via protocolTask).
+            // No rigid sidebar steps; no auto-greet. Resolves the long-standing "placeholder"
+            // comment that anticipated this migration.
+            environment: 'inline-coaching',
+            panels: { sidebar: true, chat: false, guidance: false, document: true },
             steps: null,
             elements: null,
             protocolSource: 'board',
             protocolTask: 'polishing',
-            completionType: 'step_complete',
+            completionType: 'manual',
             storageSuffix: '_polishing',
             // v7.19.249 (Model B): polishing is its own frozen stage doc (supersedes the
             // v7.19.248 shared-_redraft merge — Model B separates per stage). Copy-forward

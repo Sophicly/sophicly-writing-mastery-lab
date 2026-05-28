@@ -2626,8 +2626,9 @@
                             // emits "▶ Let's go" because the greeting contains
                             // "hit the button below". Dual emission produced two
                             // duplicate buttons on CW step 2+.
-                        } else if (state.task === 'planning' || state.task === 'polishing') {
-                        // v7.14.68: Planning/polishing — silent auto-send after clear
+                        } else if (state.task === 'planning') {
+                        // v7.14.68 / v7.19.250: Planning silent auto-send after clear.
+                        // Polishing migrated to inline-coaching env (v7.19.250) — no auto-send.
                         // Use setTimeout to let DOM settle; verify editor is alive before sending
                         setTimeout(() => {
                             if (canvasEditor && canvasEditor.options?.element) {
@@ -7464,10 +7465,11 @@
                         }
                     }, 50);
                     }, 400);
-                } else if (state.task === 'planning' || state.task === 'polishing') {
-                    // v7.14.68: Planning/polishing — wait for document to load, then silent auto-send
-                    // The template loads async from server — we must wait for content before sending
-                    // so the AI can read the questions and sources from the document.
+                } else if (state.task === 'planning') {
+                    // v7.14.68 / v7.19.250: Planning silent auto-sends "Let's begin!" to fire
+                    // Sophia's greeting once the doc has loaded. Polishing used to share this
+                    // branch but migrated to the inline-coaching env (v7.19.250) — it's now a
+                    // selection-driven coaching surface with no auto-greet, like exam_crib.
                     const _waitAndSend = (attempt) => {
                         const docText = canvasEditor ? getDocumentText(canvasEditor) : '';
                         if (docText.length > 100 || attempt >= 15) {
@@ -11846,6 +11848,21 @@
                             .replace(/^\s*<br\s*\/?>/i, '')
                             .replace(/<br\s*\/?>\s*$/i, '')
                             .trim();
+                        // v7.19.250: Google Docs paste uses <table> for layout (incl. nested
+                        // <tbody>/<tr>/<td>) and embeds <meta>/<style>. Block content inside
+                        // an inputField (content:'inline*') collapses the node entirely in
+                        // ProseMirror. DOM-unwrap these wrappers — keep their text content,
+                        // drop the elements — before insertContent.
+                        try {
+                            const _tmp = document.createElement('div');
+                            _tmp.innerHTML = inlineHtml;
+                            _tmp.querySelectorAll('table, tbody, tr, td, th, thead, tfoot, meta, style, script').forEach(_el => {
+                                const _frag = document.createDocumentFragment();
+                                while (_el.firstChild) _frag.appendChild(_el.firstChild);
+                                _el.replaceWith(_frag);
+                            });
+                            inlineHtml = _tmp.innerHTML;
+                        } catch (_) { /* if DOM unwrap fails, fall through with regex-only result */ }
                     } else if (text) {
                         inlineHtml = text.split('\n').map(l => l.replace(/</g, '&lt;').replace(/>/g, '&gt;')).join('<br>');
                     } else {
@@ -17538,7 +17555,17 @@
             // Retrieval questions (AO1 fact recall) never need planning regardless of marks
             if (qType !== 'multiple_choice' && qType !== 'retrieval' && qMarks >= 5) {
                 html += dividerHTML(`PLAN \u2014 ${qId}`);
-                if (isCreativeWritingQ && isWritingQ) {
+                // v7.19.250: Language PAPER 1 Q5 (40-mark Section B fiction writing) is creative
+                // writing pedagogically, but state.subject is 'language1' / 'language_p1' (not
+                // 'creative_writing') and the isCreativeWritingQ keyword regex doesn't always
+                // catch it (depends on question text shape). Explicit override forces Scene
+                // Structure for Lang P1 Q5 only. Lang P2 Q5 = transactional/persuasive →
+                // continues to fall through to isPersuasive → IUMVCC, unchanged.
+                // (Language fiction = Scene Structure only, per feedback_language_fiction_scene_structure_only.)
+                const _isLangP1Q5Creative = qId === 'Q5'
+                    && qMarks >= 40
+                    && /^language[_-]?p?1$/.test(String(state.subject || ''));
+                if ((isCreativeWritingQ && isWritingQ) || _isLangP1Q5Creative) {
                     // Fiction Section B: 7-element scene structure (reused from CW Step 8)
                     html += buildCreativeScenePlan(qId);
                 } else if (isPersuasive) {
@@ -19178,7 +19205,13 @@
                     // is a debounce buffer, not the source of truth here.
                     const isCwTaskHydrate = state.task && state.task.startsWith('cw_');
                     const isCribHydrate = state.task === 'exam_crib';
-                    const _preferServer = isCwTaskHydrate || isCribHydrate || !localContent || localContent.length < 20;
+                    // v7.19.250: a server-marked seed (Model B copy-forward, crib bundled template,
+                    // or any future seed-on-mount flow) is always more authoritative than the local
+                    // template HTML autosave fires on mount. Without this, the localStorage-wins
+                    // gate threw away every Model B copy-forward seed (~35KB local template > 20
+                    // chars → preferServer=false), blanking each new stage.
+                    const _isSeed = !!(res && res.is_seed);
+                    const _preferServer = _isSeed || isCwTaskHydrate || isCribHydrate || !localContent || localContent.length < 20;
                     // v7.19.136 instrumentation — prefer-server decision + editor doc size at this moment
                     let _editorDocSize = 0;
                     try { _editorDocSize = canvasEditor.getHTML().length; } catch (_) {}
