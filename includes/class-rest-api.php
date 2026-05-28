@@ -224,6 +224,16 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_admin_auth'],
         ]);
 
+        // v7.19.253: Admin tool — clear per-stage canvas docs for a (user, topic, attempt)
+        // so Model B copy-forward can re-seed cleanly. Used to wipe pre-v7.19.249 stale
+        // per-stage content during staging tests + prod migration. Strictly admin-only.
+        // POST /sophicly-wml/v1/admin/canvas/clear-stage-docs
+        //   body: { user_id, board, text, topic, attempt? }
+        register_rest_route($namespace, '/admin/canvas/clear-stage-docs', [
+            'methods' => 'POST', 'callback' => [$this, 'admin_clear_stage_docs'],
+            'permission_callback' => [$this, 'check_admin_auth'],
+        ]);
+
         // Tutor sign-off — role-restricted
         register_rest_route($namespace, '/canvas/signoff', [
             'methods' => 'POST', 'callback' => [$this, 'tutor_signoff'],
@@ -2124,6 +2134,58 @@ class SWML_REST_API {
                 'write' => $write_result !== false,
                 'read'  => $read_ok,
             ],
+        ]);
+    }
+
+    /**
+     * v7.19.253: Admin tool — clear per-stage canvas docs for a (user, topic, attempt).
+     * Wipes pre-v7.19.249 stale per-stage content so Model B copy-forward can re-seed
+     * cleanly from the most-recent sibling. Used during staging tests + as the building
+     * block for the prod migration sweep. Strictly admin-only (check_admin_auth on route).
+     *
+     * POST body: { user_id, board, text, topic, attempt? }
+     *   - omitting attempt clears ALL attempts under that (user, topic) prefix.
+     * Returns: { success, deleted: [meta_key...], count }
+     */
+    public function admin_clear_stage_docs($request) {
+        $user_id = absint($request->get_param('user_id'));
+        $board   = sanitize_key((string) $request->get_param('board'));
+        $text    = sanitize_text_field((string) $request->get_param('text'));
+        $topic   = absint($request->get_param('topic'));
+        $attempt = absint($request->get_param('attempt'));
+        if (!$user_id || !$board || !$text || !$topic) {
+            return new WP_Error('missing_params', 'Need user_id + board + text + topic (attempt optional)', ['status' => 400]);
+        }
+        global $wpdb;
+        $text   = $this->normalize_text_slug($text);
+        $prefix = 'swml_canvas_' . $board . '_' . $text . '_t' . $topic;
+        $like   = $wpdb->esc_like($prefix) . '%';
+        $rows   = $wpdb->get_results($wpdb->prepare(
+            "SELECT meta_key FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key LIKE %s",
+            $user_id,
+            $like
+        ));
+        $deleted = [];
+        $attempt_suffix = $attempt > 0 ? ('__a' . $attempt) : '';
+        foreach ($rows as $row) {
+            // Exact-topic guard: prevent _t1 matching _t10 / _t11 etc.
+            $after = substr($row->meta_key, strlen($prefix), 1);
+            if ($after !== '' && $after !== '_') continue;
+            // Attempt-scope guard: if a specific attempt was requested, only delete
+            // keys ending in __a{attempt} (or the bare prefix for attempt 1, which
+            // canvas_meta_key elides). Without an attempt param, delete every match.
+            if ($attempt > 0) {
+                $ends_with_attempt = (strlen($row->meta_key) >= strlen($attempt_suffix))
+                    && (substr($row->meta_key, -strlen($attempt_suffix)) === $attempt_suffix);
+                if (!$ends_with_attempt) continue;
+            }
+            delete_user_meta($user_id, $row->meta_key);
+            $deleted[] = $row->meta_key;
+        }
+        return rest_ensure_response([
+            'success' => true,
+            'deleted' => $deleted,
+            'count'   => count($deleted),
         ]);
     }
 

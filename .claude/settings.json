@@ -46,7 +46,10 @@
       "Bash(grep -nE ''\\\\''doc'\\\\''|return rest_ensure|\\\\$doc\\\\b|signoff')",
       "Bash(php -l '/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins/sophicly-student-data/includes/class-deadline-engine.php')",
       "Bash(mv ~/.claude/handoffs/open/ldbridge-handoff-2026-05-27-wml-doc-deadline-by-unit-endpoint.md ~/.claude/handoffs/done/ 2>/dev/null && echo \"moved\" || echo \"not in open\")",
-      "Bash(grep -nE \"API\\\\.canvasLoad\\\\}\\\\?board|cwScopeQuery\\\\\\(\\\\\\)\\\\`|reviewCanvas\\\\}\\\\?student\" frontend/wml-assessment.js)"
+      "Bash(grep -nE \"API\\\\.canvasLoad\\\\}\\\\?board|cwScopeQuery\\\\\\(\\\\\\)\\\\`|reviewCanvas\\\\}\\\\?student\" frontend/wml-assessment.js)",
+      "Bash(sed -n '55,115p' sophicly-dashboard/src/components/Grades.jsx)",
+      "Bash(awk '/function calculate_grades_average/,/^    }$/' sophicly-student-data/includes/class-wml-rest-api.php)",
+      "Bash(git pull *)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
