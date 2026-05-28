@@ -4521,7 +4521,18 @@
         // (About the Codex = 0, Unit 1 children = 1.1, 1.2, ...). Pairs with
         // .swml-codex-doc counter-reset rule in wml-canvas.css.
         const _isCodexDoc = state.task === 'mastery_codex';
-        const docWrap = el('div', { className: 'swml-canvas-doc' + (_isCodexDoc ? ' swml-codex-doc' : '') });
+        // v7.19.252 (Fix F): per-stage class drives progressive section-reveal CSS.
+        // Planning shows plan sections only; outlining adds outline + response; polishing
+        // unchanged from outlining (refines existing); reassessment adds feedback + scores
+        // + signoff. The doc HTML stays cumulative (Model B copy-forward keeps the full
+        // scaffold intact) — only the VIEW differs per stage via CSS in wml-canvas.css.
+        // task='assessment' + phase='redraft' = the collapsed reassessment; resolve to
+        // 'reassessment' for the stage class so it's distinct from Phase 1 assessment.
+        const _stageTask = (state.task === 'assessment' && state.phase === 'redraft') ? 'reassessment' : state.task;
+        const _stageCls = (_stageTask && ['planning','outlining','polishing','reassessment'].includes(_stageTask))
+            ? ' swml-stage-' + _stageTask
+            : '';
+        const docWrap = el('div', { className: 'swml-canvas-doc' + (_isCodexDoc ? ' swml-codex-doc' : '') + _stageCls });
         const editorEl = el('div', { id: 'swml-tiptap-editor' });
         const gutterWrap = el('div', { className: 'swml-comment-gutter' });
         docWrap.appendChild(editorEl);

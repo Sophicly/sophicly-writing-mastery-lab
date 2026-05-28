@@ -9708,3 +9708,58 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 /* v7.19.201 custom Codex styles removed in v7.19.203 — Codex now uses
    existing WML canvas pipeline + diagnostic-mirror manifest config. No
    bespoke Codex stylesheet needed. */
+
+/* v7.19.252 (Fix F): Phase 2 stage progressive section reveal.
+ * Doc HTML stays cumulative across stages (Model B copy-forward preserves
+ * the full scaffold). Each stage's lesson view hides sections that belong
+ * to later stages so students see only stage-relevant scaffolding:
+ *   - Planning: plan sections only.
+ *   - Outlining + Polishing: + outline + response sections.
+ *   - Reassessment: + feedback + scores + sign-off.
+ * The stage class is applied to .swml-canvas-doc by wml-assessment.js (see
+ * `_stageCls` near the editorEl creation).
+ */
+
+/* Planning: hide outline/response/feedback/scores/signoff/analytics/improvement/action/self-assessment + their dividers */
+.swml-stage-planning [data-section-type="outline"],
+.swml-stage-planning [data-section-type="response"],
+.swml-stage-planning [data-section-type="feedback"],
+.swml-stage-planning [data-section-type="scores"],
+.swml-stage-planning [data-section-type="signoff"],
+.swml-stage-planning [data-section-type="analytics"],
+.swml-stage-planning [data-section-type="improvement"],
+.swml-stage-planning [data-section-type="action"],
+.swml-stage-planning [data-section-type="self-assessment"],
+.swml-stage-planning [data-section-type="divider"][data-section-label*="OUTLINE"],
+.swml-stage-planning [data-section-type="divider"][data-section-label*="RESPONSE"],
+.swml-stage-planning [data-section-type="divider"][data-section-label*="FEEDBACK"],
+.swml-stage-planning [data-section-type="divider"][data-section-label*="RESULTS"],
+.swml-stage-planning [data-section-type="divider"][data-section-label*="ACTION"] {
+    display: none !important;
+}
+
+/* Outlining + Polishing: hide assessment-stage sections + their dividers */
+.swml-stage-outlining [data-section-type="feedback"],
+.swml-stage-outlining [data-section-type="scores"],
+.swml-stage-outlining [data-section-type="signoff"],
+.swml-stage-outlining [data-section-type="analytics"],
+.swml-stage-outlining [data-section-type="improvement"],
+.swml-stage-outlining [data-section-type="action"],
+.swml-stage-outlining [data-section-type="self-assessment"],
+.swml-stage-outlining [data-section-type="divider"][data-section-label*="FEEDBACK"],
+.swml-stage-outlining [data-section-type="divider"][data-section-label*="RESULTS"],
+.swml-stage-outlining [data-section-type="divider"][data-section-label*="ACTION"],
+.swml-stage-polishing [data-section-type="feedback"],
+.swml-stage-polishing [data-section-type="scores"],
+.swml-stage-polishing [data-section-type="signoff"],
+.swml-stage-polishing [data-section-type="analytics"],
+.swml-stage-polishing [data-section-type="improvement"],
+.swml-stage-polishing [data-section-type="action"],
+.swml-stage-polishing [data-section-type="self-assessment"],
+.swml-stage-polishing [data-section-type="divider"][data-section-label*="FEEDBACK"],
+.swml-stage-polishing [data-section-type="divider"][data-section-label*="RESULTS"],
+.swml-stage-polishing [data-section-type="divider"][data-section-label*="ACTION"] {
+    display: none !important;
+}
+
+/* Reassessment: shows all — no hide rules (full marking view). */
