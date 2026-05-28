@@ -18260,7 +18260,7 @@
             inputHTML('Name two of the six programme resources.', 'unit-4.launch.retrieval-resources') +
             inputHTML('Name the three Pillars of Success.', 'unit-4.launch.retrieval-pillars') +
             inputHTML('What is the #1 mistake that stops heroes?', 'unit-4.launch.retrieval-no1-mistake') +
-            inputHTML('Hypothesis — what single mistake do you think most students make?', 'unit-4.hook-hypothesis')
+            inputHTML('Hypothesis — why do students who score Grade 9 in mocks sometimes drop in the real exam?', 'unit-4.hook-hypothesis')
         );
         html += sectionHTML('plan', 'Khan Reflection', true, null,
             inputHTML('After watching the Khan video — what is the single most important habit it suggests you adopt?', 'unit-4.khan-video-reflection')
