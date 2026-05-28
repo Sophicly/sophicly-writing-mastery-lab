@@ -10000,6 +10000,17 @@
                         parseHTML: el => el.getAttribute('data-part') ? parseInt(el.getAttribute('data-part')) : null,
                         renderHTML: attrs => attrs.partNumber ? { 'data-part': String(attrs.partNumber) } : {},
                     },
+                    // v7.19.255: per-Q stage-reveal tag. 'planning' = visible from
+                    // planning stage onwards (no-plan Qs: AO1 retrieval, multiple_choice,
+                    // ≤5-mark short retrieval). Default (null/missing) = hidden in
+                    // planning, revealed in outlining (full-essay Qs). Set at HTML
+                    // build time in buildMultiQuestionTemplate + live-tagged by
+                    // _tagResponseStageReveal() as a backup for old docs.
+                    stageReveal: {
+                        default: null,
+                        parseHTML: el => el.getAttribute('data-stage-reveal') || null,
+                        renderHTML: attrs => attrs.stageReveal ? { 'data-stage-reveal': attrs.stageReveal } : {},
+                    },
                 };
             },
 
@@ -10063,6 +10074,8 @@
                             out.contenteditable = 'false';
                         }
                         if (node.attrs.partNumber) out['data-part'] = String(node.attrs.partNumber);
+                        // v7.19.255: surface stageReveal attr to NodeView dom (mirror renderHTML)
+                        if (node.attrs.stageReveal) out['data-stage-reveal'] = node.attrs.stageReveal;
                         return out;
                     },
                 });
@@ -11752,20 +11765,38 @@
         }
 
         // v7.19.255 (Fix F refinement): per-Q stage-reveal tagger.
-        // Walks the live DOM, builds the set of Q ids that have a plan section,
-        // then tags each response + matching RESPONSE/STATEMENTS divider with
-        // data-stage-reveal="planning" | "outlining". CSS (.swml-stage-planning
-        // [data-stage-reveal="outlining"]) hides the outlining-stage ones in
-        // planning view. Replaces v7.19.254's Statements-label band-aid with a
-        // universal per-question rule: simple Qs that need no plan (Lang P1 Q1
-        // "list four", multiple_choice, ≤5-mark retrieval) keep their response
-        // visible from planning onward; full-essay Qs hide their response until
-        // outlining. Re-runs after every transaction (via onTransaction below).
-        function _tagResponseStageReveal(editorEl) {
-            if (!editorEl) return;
+        // Walks the doc, collects Q ids that have a plan section, then sets the
+        // stageReveal node attr on each response + matching RESPONSE/STATEMENTS
+        // divider. CSS (.swml-stage-planning [data-stage-reveal="planning"]:not-target)
+        // surfaces planning-tagged ones in planning view; un-tagged stay hidden
+        // (fail-safe default). Universal per-Q rule (v7.19.255 — replaces
+        // v7.19.254's Statements-label band-aid):
+        //   - Q with plan section → response un-tagged → hidden in planning,
+        //     revealed in outlining (default behaviour)
+        //   - Q with NO plan (Lang P1 Q1 retrieval, multiple_choice, ≤5-mark
+        //     short retrieval) → response tagged 'planning' → visible from
+        //     planning stage onwards
+        // New docs get the attr baked in buildMultiQuestionTemplate at HTML
+        // build time; old docs catch up via this runtime tagger. Updates node
+        // attrs (not just DOM) so it persists across NodeView re-renders.
+        // Guarded against re-entry by _stageRevealPending.
+        let _stageRevealPending = false;
+        function _scheduleStageRevealTag() {
+            if (_stageRevealPending || !canvasEditor) return;
+            _stageRevealPending = true;
+            requestAnimationFrame(() => {
+                _stageRevealPending = false;
+                _tagResponseStageReveal(canvasEditor);
+            });
+        }
+        function _tagResponseStageReveal(editor) {
+            if (!editor || !editor.state || !editor.view || editor.view.isDestroyed) return;
+            const { state } = editor;
             const qWithPlan = new Set();
-            editorEl.querySelectorAll('[data-section-type="plan"]').forEach(p => {
-                const label = (p.getAttribute('data-section-label') || '').trim();
+            state.doc.descendants(node => {
+                if (node.type.name !== 'sectionBlock') return;
+                if (node.attrs.sectionType !== 'plan') return;
+                const label = (node.attrs.label || '').trim();
                 const m = label.match(/—\s*(.+?)\s*$/);
                 qWithPlan.add(m ? m[1].trim() : '__single__');
             });
@@ -11777,16 +11808,25 @@
                 if (tailMatch) return tailMatch[1].trim();
                 return '__single__';
             };
-            editorEl.querySelectorAll('[data-section-type="response"]').forEach(r => {
-                const qId = _extractQid(r.getAttribute('data-section-label'));
-                r.setAttribute('data-stage-reveal', qWithPlan.has(qId) ? 'outlining' : 'planning');
+            const updates = [];  // { pos, want }
+            state.doc.descendants((node, pos) => {
+                if (node.type.name !== 'sectionBlock') return;
+                const type = node.attrs.sectionType;
+                if (type !== 'response' && type !== 'divider') return;
+                if (type === 'divider' && !/RESPONSE|STATEMENTS/i.test(node.attrs.label || '')) return;
+                const qId = _extractQid(node.attrs.label);
+                const want = qWithPlan.has(qId) ? null : 'planning';
+                const have = node.attrs.stageReveal || null;
+                if (want !== have) updates.push({ pos, want, attrs: node.attrs });
             });
-            editorEl.querySelectorAll('[data-section-type="divider"]').forEach(d => {
-                const label = (d.getAttribute('data-section-label') || '').toUpperCase();
-                if (!/RESPONSE|STATEMENTS/.test(label)) return;
-                const qId = _extractQid(d.getAttribute('data-section-label'));
-                d.setAttribute('data-stage-reveal', qWithPlan.has(qId) ? 'outlining' : 'planning');
+            if (!updates.length) return;
+            const tr = state.tr;
+            updates.forEach(u => {
+                tr.setNodeMarkup(u.pos, null, { ...u.attrs, stageReveal: u.want });
             });
+            tr.setMeta('addToHistory', false);
+            tr.setMeta('preventUpdate', true);
+            editor.view.dispatch(tr);
         }
 
         canvasEditor = new Editor({
@@ -11991,7 +12031,7 @@
                         checkSectionComplete(sec);
                     });
                     // v7.19.255: re-tag stage-reveal (idempotent — also runs in onTransaction)
-                    _tagResponseStageReveal(editorEl);
+                    _scheduleStageRevealTag();
                 });
 
                 // Page count (content may have grown/shrunk)
@@ -12038,13 +12078,12 @@
                     }
                     _sectionCount = newCount;
                 }
-                // v7.19.255: re-tag stage-reveal after any doc change
-                // (programmatic setContent uses emitUpdate=false so onUpdate
-                // doesn't fire; onTransaction does). rAF defers until the DOM
-                // has been re-rendered from the new state.
-                if (transaction.docChanged) {
-                    requestAnimationFrame(() => _tagResponseStageReveal(editor.options.element));
-                }
+                // v7.19.255: re-tag stage-reveal after any doc change.
+                // Programmatic setContent uses emitUpdate=false (skips onUpdate)
+                // but onTransaction still fires — covers the initial load path.
+                // _scheduleStageRevealTag debounces via rAF + re-entry guard so
+                // dispatching the tag transaction here doesn't loop.
+                if (transaction.docChanged) _scheduleStageRevealTag();
             },
             onBlur: ({ editor, event }) => {
                 // v7.19.146 safeguard #3: force save when any editable field loses
@@ -15964,15 +16003,25 @@
         return cfg.viewerMode === 'edit';
     }
 
-    function sectionHTML(type, label, editable, partNumber, innerHTML) {
+    function sectionHTML(type, label, editable, partNumber, innerHTML, extraDataAttrs) {
         const ro = editable === false ? ' data-readonly="true"' : '';
         const part = partNumber ? ` data-part="${partNumber}"` : '';
         const roClass = editable === false ? ' swml-section-readonly' : '';
-        return `<div data-section-type="${type}" data-section-label="${label}" data-editable="${editable !== false}"${ro}${part} class="swml-section-block swml-section-${type}${roClass}">${innerHTML}</div>`;
+        // v7.19.255: extraDataAttrs = { 'stage-reveal': 'planning', ... } → ' data-stage-reveal="planning"'
+        let extra = '';
+        if (extraDataAttrs && typeof extraDataAttrs === 'object') {
+            for (const k in extraDataAttrs) {
+                if (!Object.prototype.hasOwnProperty.call(extraDataAttrs, k)) continue;
+                const v = extraDataAttrs[k];
+                if (v == null || v === false) continue;
+                extra += ` data-${k}="${escapeHTML(String(v))}"`;
+            }
+        }
+        return `<div data-section-type="${type}" data-section-label="${label}" data-editable="${editable !== false}"${ro}${part}${extra} class="swml-section-block swml-section-${type}${roClass}">${innerHTML}</div>`;
     }
 
-    function dividerHTML(label) {
-        return sectionHTML('divider', label, false, null, `<p>${escapeHTML(label)}</p>`);
+    function dividerHTML(label, extraDataAttrs) {
+        return sectionHTML('divider', label, false, null, `<p>${escapeHTML(label)}</p>`, extraDataAttrs);
     }
 
     function escapeHTML(str) {
@@ -17624,7 +17673,13 @@
 
             // v7.15.35: Plan for all AO2/AO3+ questions (>=5 marks), excluding retrieval & multiple_choice
             // Retrieval questions (AO1 fact recall) never need planning regardless of marks
-            if (qType !== 'multiple_choice' && qType !== 'retrieval' && qMarks >= 5) {
+            // v7.19.255: track whether a plan section was built \u2014 drives stage-reveal tagging
+            // on the matching response + divider below. No plan = response visible from
+            // planning stage onward (no point hiding a 1-4 mark retrieval cell behind a plan
+            // that doesn't exist). Plan built = response hidden until outlining stage.
+            const _qPlanBuilt = qType !== 'multiple_choice' && qType !== 'retrieval' && qMarks >= 5;
+            const _respStageAttrs = _qPlanBuilt ? null : { 'stage-reveal': 'planning' };
+            if (_qPlanBuilt) {
                 html += dividerHTML(`PLAN \u2014 ${qId}`);
                 // v7.19.250: Language PAPER 1 Q5 (40-mark Section B fiction writing) is creative
                 // writing pedagogically, but state.subject is 'language1' / 'language_p1' (not
@@ -17678,28 +17733,30 @@
                 // Checkboxes ARE the response — AI populates statement text via @POPULATE_CHECKLIST
                 const stmtCount = specQ?.description?.match(/(\d+)\s+true/i)?.[1] || 4;
                 const totalCount = specQ?.description?.match(/(\d+)\s+(?:about|from|statement)/i)?.[1] || 8;
-                html += dividerHTML(`STATEMENTS \u2014 ${qId}`);
+                // v7.19.255: divider + response carry _respStageAttrs (stage-reveal=planning
+                // when no plan section was built \u2014 surfaces them in the planning stage).
+                html += dividerHTML(`STATEMENTS \u2014 ${qId}`, _respStageAttrs);
                 let checkboxes = `<p><em>Tick the ${stmtCount} correct statements (Sophia will generate these from the source material):</em></p>`;
                 for (let s = 1; s <= parseInt(totalCount); s++) {
                     checkboxes += `<div data-checklist-item="true" data-checked="false" data-item-id="${qId}-stmt-${s}" class="swml-checklist-item swml-checklist-placeholder"><em>Waiting for statement ${s}...</em></div>`;
                 }
-                html += sectionHTML('response', `${qId} Statements`, true, null, checkboxes);
+                html += sectionHTML('response', `${qId} Statements`, true, null, checkboxes, _respStageAttrs);
 
             } else if (qType === 'retrieval' && qMarks <= 5) {
                 // Short retrieval: one InputField per point (too simple for single area)
-                html += dividerHTML(`RESPONSE \u2014 ${qId}`);
+                html += dividerHTML(`RESPONSE \u2014 ${qId}`, _respStageAttrs);
                 const count = Math.max(1, qMarks);
                 let fields = '';
                 for (let i = 1; i <= count; i++) {
                     fields += inputHTML(`Point ${i}`, `${qId}-point-${i}`);
                 }
-                html += sectionHTML('response', `${qId} Response`, true, null, fields);
+                html += sectionHTML('response', `${qId} Response`, true, null, fields, _respStageAttrs);
 
             } else {
                 // v7.14.61: Single InputField for ALL other question types
-                html += dividerHTML(`RESPONSE \u2014 ${qId}`);
+                html += dividerHTML(`RESPONSE \u2014 ${qId}`, _respStageAttrs);
                 html += sectionHTML('response', `${qId} Response`, true, null,
-                    inputHTML('Write your response here.', `${qId}-response`));
+                    inputHTML('Write your response here.', `${qId}-response`), _respStageAttrs);
             }
         });
 

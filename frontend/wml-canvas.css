@@ -9723,16 +9723,17 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 /* Planning: hide outline/feedback/scores/signoff/analytics/improvement/action/self-assessment
  * + the OUTLINE/FEEDBACK/RESULTS/ACTION dividers unconditionally.
  *
- * Response sections + RESPONSE/STATEMENTS dividers are gated by data-stage-reveal,
- * tagged at runtime by _tagResponseStageReveal() in wml-assessment.js. The rule:
- *   - Q has a plan section → response tagged data-stage-reveal="outlining" → hidden here
- *   - Q has NO plan section (simple AO1 retrieval / multiple-choice / low marks)
- *     → response tagged data-stage-reveal="planning" → visible from planning onwards
+ * Response sections + RESPONSE/STATEMENTS dividers are gated by data-stage-reveal.
+ * The selector uses `:not([data-stage-reveal="planning"])` — fail-safe default is
+ * HIDDEN. _tagResponseStageReveal() in wml-assessment.js adds
+ * data-stage-reveal="planning" to responses whose Q has no plan section
+ * (Lang P1 Q1 "list four", multiple_choice, ≤5-mark retrieval) — surfacing those
+ * from planning onwards. Full-essay Qs (with a plan) stay hidden until outlining.
  * Universal per-Q rule (v7.19.255), supersedes v7.19.254's Statements-label band-aid.
- * Language + Literature: applies. Creative writing: state.subject gates plan generation
- * upstream, so CW responses surface in the right view automatically. */
+ * Language + Literature: applies. Creative writing: state.subject gates plan
+ * generation upstream, so CW responses surface in the right view automatically. */
 .swml-stage-planning [data-section-type="outline"],
-.swml-stage-planning [data-section-type="response"][data-stage-reveal="outlining"],
+.swml-stage-planning [data-section-type="response"]:not([data-stage-reveal="planning"]),
 .swml-stage-planning [data-section-type="feedback"],
 .swml-stage-planning [data-section-type="scores"],
 .swml-stage-planning [data-section-type="signoff"],
@@ -9740,7 +9741,8 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-stage-planning [data-section-type="improvement"],
 .swml-stage-planning [data-section-type="action"],
 .swml-stage-planning [data-section-type="self-assessment"],
-.swml-stage-planning [data-section-type="divider"][data-stage-reveal="outlining"],
+.swml-stage-planning [data-section-type="divider"][data-section-label*="RESPONSE"]:not([data-stage-reveal="planning"]),
+.swml-stage-planning [data-section-type="divider"][data-section-label*="STATEMENTS"]:not([data-stage-reveal="planning"]),
 .swml-stage-planning [data-section-type="divider"][data-section-label*="OUTLINE"],
 .swml-stage-planning [data-section-type="divider"][data-section-label*="FEEDBACK"],
 .swml-stage-planning [data-section-type="divider"][data-section-label*="RESULTS"],
