@@ -9720,14 +9720,19 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
  * `_stageCls` near the editorEl creation).
  */
 
-/* Planning: hide outline/response/feedback/scores/signoff/analytics/improvement/action/self-assessment + their dividers.
- * EXCEPTION (v7.19.254): keep response sections labelled "* Statements" visible — those are
- * the low-mark AO1 retrieval cells (Lang P1 Q1 "Identify four things…" + equivalents on
- * Lang P2 / other boards). Students complete those AS PART OF planning; nothing to "plan"
- * for a 1-4 mark retrieval. Essay-style responses (Q2/Q3/Q4/Q5, analytical / evaluation /
- * creative writing) stay hidden — they belong from outlining onwards. */
+/* Planning: hide outline/feedback/scores/signoff/analytics/improvement/action/self-assessment
+ * + the OUTLINE/FEEDBACK/RESULTS/ACTION dividers unconditionally.
+ *
+ * Response sections + RESPONSE/STATEMENTS dividers are gated by data-stage-reveal,
+ * tagged at runtime by _tagResponseStageReveal() in wml-assessment.js. The rule:
+ *   - Q has a plan section → response tagged data-stage-reveal="outlining" → hidden here
+ *   - Q has NO plan section (simple AO1 retrieval / multiple-choice / low marks)
+ *     → response tagged data-stage-reveal="planning" → visible from planning onwards
+ * Universal per-Q rule (v7.19.255), supersedes v7.19.254's Statements-label band-aid.
+ * Language + Literature: applies. Creative writing: state.subject gates plan generation
+ * upstream, so CW responses surface in the right view automatically. */
 .swml-stage-planning [data-section-type="outline"],
-.swml-stage-planning [data-section-type="response"]:not([data-section-label*="Statements"]),
+.swml-stage-planning [data-section-type="response"][data-stage-reveal="outlining"],
 .swml-stage-planning [data-section-type="feedback"],
 .swml-stage-planning [data-section-type="scores"],
 .swml-stage-planning [data-section-type="signoff"],
@@ -9735,8 +9740,8 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-stage-planning [data-section-type="improvement"],
 .swml-stage-planning [data-section-type="action"],
 .swml-stage-planning [data-section-type="self-assessment"],
+.swml-stage-planning [data-section-type="divider"][data-stage-reveal="outlining"],
 .swml-stage-planning [data-section-type="divider"][data-section-label*="OUTLINE"],
-.swml-stage-planning [data-section-type="divider"][data-section-label*="RESPONSE"],
 .swml-stage-planning [data-section-type="divider"][data-section-label*="FEEDBACK"],
 .swml-stage-planning [data-section-type="divider"][data-section-label*="RESULTS"],
 .swml-stage-planning [data-section-type="divider"][data-section-label*="ACTION"] {

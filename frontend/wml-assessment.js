@@ -11751,6 +11751,44 @@
             return n;
         }
 
+        // v7.19.255 (Fix F refinement): per-Q stage-reveal tagger.
+        // Walks the live DOM, builds the set of Q ids that have a plan section,
+        // then tags each response + matching RESPONSE/STATEMENTS divider with
+        // data-stage-reveal="planning" | "outlining". CSS (.swml-stage-planning
+        // [data-stage-reveal="outlining"]) hides the outlining-stage ones in
+        // planning view. Replaces v7.19.254's Statements-label band-aid with a
+        // universal per-question rule: simple Qs that need no plan (Lang P1 Q1
+        // "list four", multiple_choice, ≤5-mark retrieval) keep their response
+        // visible from planning onward; full-essay Qs hide their response until
+        // outlining. Re-runs after every transaction (via onTransaction below).
+        function _tagResponseStageReveal(editorEl) {
+            if (!editorEl) return;
+            const qWithPlan = new Set();
+            editorEl.querySelectorAll('[data-section-type="plan"]').forEach(p => {
+                const label = (p.getAttribute('data-section-label') || '').trim();
+                const m = label.match(/—\s*(.+?)\s*$/);
+                qWithPlan.add(m ? m[1].trim() : '__single__');
+            });
+            const _extractQid = (label) => {
+                const trimmed = (label || '').trim();
+                const startMatch = trimmed.match(/^(Q\d+|Part\s+[A-Z])\b/i);
+                if (startMatch) return startMatch[1];
+                const tailMatch = trimmed.match(/—\s*(.+?)\s*$/);
+                if (tailMatch) return tailMatch[1].trim();
+                return '__single__';
+            };
+            editorEl.querySelectorAll('[data-section-type="response"]').forEach(r => {
+                const qId = _extractQid(r.getAttribute('data-section-label'));
+                r.setAttribute('data-stage-reveal', qWithPlan.has(qId) ? 'outlining' : 'planning');
+            });
+            editorEl.querySelectorAll('[data-section-type="divider"]').forEach(d => {
+                const label = (d.getAttribute('data-section-label') || '').toUpperCase();
+                if (!/RESPONSE|STATEMENTS/.test(label)) return;
+                const qId = _extractQid(d.getAttribute('data-section-label'));
+                d.setAttribute('data-stage-reveal', qWithPlan.has(qId) ? 'outlining' : 'planning');
+            });
+        }
+
         canvasEditor = new Editor({
             element: editorEl,
             // v7.15.30: editor stays editable so programmatic comment marks work,
@@ -11952,6 +11990,8 @@
                     editorEl.querySelectorAll('.swml-section-block[data-section-type="outline"]').forEach(sec => {
                         checkSectionComplete(sec);
                     });
+                    // v7.19.255: re-tag stage-reveal (idempotent — also runs in onTransaction)
+                    _tagResponseStageReveal(editorEl);
                 });
 
                 // Page count (content may have grown/shrunk)
@@ -11997,6 +12037,13 @@
                         return;
                     }
                     _sectionCount = newCount;
+                }
+                // v7.19.255: re-tag stage-reveal after any doc change
+                // (programmatic setContent uses emitUpdate=false so onUpdate
+                // doesn't fire; onTransaction does). rAF defers until the DOM
+                // has been re-rendered from the new state.
+                if (transaction.docChanged) {
+                    requestAnimationFrame(() => _tagResponseStageReveal(editor.options.element));
                 }
             },
             onBlur: ({ editor, event }) => {
