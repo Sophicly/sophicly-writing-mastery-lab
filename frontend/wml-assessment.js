@@ -10074,6 +10074,11 @@
             group: 'block',
             content: 'inline*',
             defining: true,
+            // v7.19.251: isolating prevents inline content from crossing the input-field
+            // boundary on Backspace/Delete at the edges + on multi-node selections being
+            // dragged out. Defensive structural protection — complements the Section Guard
+            // at line ~11960 which reverts any transaction that removes a protected node.
+            isolating: true,
 
             addAttributes() {
                 return {
@@ -11717,13 +11722,21 @@
             savedContent = '';
         }
 
-        // v7.13.92: Section Guard — snapshot section count, revert if sections are deleted
-        // Uses onTransaction instead of ProseMirror Plugin (Plugin not exported from TipTap bundle)
+        // v7.13.92: Section Guard — snapshot count of student-uneditable structural nodes,
+        // revert any transaction that reduces the count. Uses onTransaction instead of a
+        // ProseMirror Plugin (Plugin class not exported from TipTap bundle — see line ~11960).
+        // v7.19.251: extended from sectionBlock-only to ALL protected structural nodes
+        // (sectionBlock + inputField + outlineRow). The document scaffold — section headers,
+        // student response cells, outline rows — must not be deletable by students (paste,
+        // Backspace at boundary, select-all+Delete, Cut, drag-out). Legitimate template
+        // migrations remove protected nodes too: _migrationActive bypasses the guard for
+        // those. The guard then re-snapshots the count so the new baseline is the migrated doc.
+        const _PROTECTED_NODE_TYPES = ['sectionBlock', 'inputField', 'outlineRow'];
         let _sectionCount = 0;
         let _undoGuardActive = false; // v7.14.68: prevents section guard undo cascade
         function countSections(doc) {
             let n = 0;
-            doc.descendants(node => { if (node.type.name === 'sectionBlock') n++; });
+            doc.descendants(node => { if (_PROTECTED_NODE_TYPES.includes(node.type.name)) n++; });
             return n;
         }
 
