@@ -1621,6 +1621,25 @@ class SWML_REST_API {
                     ]);
                 }
             }
+            // v7.19.249: Model B copy-forward. When a phase-stage canvas doc is empty,
+            // seed from the most-recently-saved SIBLING stage doc in this topic (any stage
+            // suffix, incl. legacy _redraft / '') so each stage continues from prior work
+            // AND existing shared-doc students migrate forward. Gated on the client
+            // `seedFromSiblings` flag (sent only for topic-flow / CW stage loads), so this
+            // is INERT until the per-stage suffix split activates it. Returned as a seed;
+            // the first autosave persists it under THIS stage's key (frozen per-stage).
+            if (!empty($request->get_param('seedFromSiblings'))) {
+                $seed_html = $this->seed_from_sibling_stage($user_id, $board, $text, $topic_number, $meta_key);
+                if (!empty($seed_html)) {
+                    return rest_ensure_response([
+                        'success'      => true,
+                        'doc'          => ['html' => $seed_html],
+                        'attempt'      => $attempt,
+                        'generalNotes' => $general_notes,
+                        'is_seed'      => true,
+                    ]);
+                }
+            }
             return rest_ensure_response([
                 'success'      => true,
                 'doc'          => null,
@@ -2806,6 +2825,44 @@ class SWML_REST_API {
             $key .= '__p' . $cw_project_id;
         }
         return $key;
+    }
+
+    /**
+     * v7.19.249: Model B copy-forward seed. Returns the HTML of the most-recently-saved
+     * SIBLING canvas doc for this user + topic (any stage suffix, including legacy
+     * _redraft and the empty assessment suffix), excluding $exclude_key. Seeds a blank
+     * phase-stage doc so each stage continues from prior work AND existing shared-doc
+     * students migrate forward. Topic-scoped (null when no topic). Read-only — does not
+     * write; caller returns the html as a seed and the first autosave persists it.
+     */
+    private function seed_from_sibling_stage($user_id, $board, $text, $topic_number, $exclude_key) {
+        if ($topic_number === null || (int) $topic_number <= 0) return null;
+        global $wpdb;
+        $text   = $this->normalize_text_slug($text);
+        $prefix = 'swml_canvas_' . $board . '_' . $text . '_t' . (int) $topic_number;
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT meta_key, meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key LIKE %s",
+            $user_id,
+            $wpdb->esc_like($prefix) . '%'
+        ));
+        if (empty($rows)) return null;
+        $best_html = null;
+        $best_time = '';
+        foreach ($rows as $row) {
+            if ($row->meta_key === $exclude_key) continue;
+            // Exact-topic guard: the char after the _t{topic} prefix must be '_' or end —
+            // prevents _t1 from matching _t10 / _t11 etc.
+            $after = substr($row->meta_key, strlen($prefix), 1);
+            if ($after !== '' && $after !== '_') continue;
+            $d = self::decode_canvas_json($row->meta_value);
+            if (!is_array($d) || empty($d['html'])) continue;
+            $t = isset($d['savedAt']) ? (string) $d['savedAt'] : '';
+            if ($best_html === null || strcmp($t, $best_time) > 0) {
+                $best_html = $d['html'];
+                $best_time = $t;
+            }
+        }
+        return $best_html;
     }
 
     private function chat_meta_key($board, $text, $topic, $suffix = '', $attempt = 1, $cw_project_id = '') {

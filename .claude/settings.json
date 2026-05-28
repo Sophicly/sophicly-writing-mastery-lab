@@ -45,7 +45,8 @@
       "Bash(grep -niE 'create_attempt|add_attempt|new attempt|get_attempt_index|attempt_index_key|push.*attempt|'\\\\''count'\\\\''\\\\s*=>|$idx\\\\[' includes/class-rest-api.php)",
       "Bash(grep -nE ''\\\\''doc'\\\\''|return rest_ensure|\\\\$doc\\\\b|signoff')",
       "Bash(php -l '/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins/sophicly-student-data/includes/class-deadline-engine.php')",
-      "Bash(mv ~/.claude/handoffs/open/ldbridge-handoff-2026-05-27-wml-doc-deadline-by-unit-endpoint.md ~/.claude/handoffs/done/ 2>/dev/null && echo \"moved\" || echo \"not in open\")"
+      "Bash(mv ~/.claude/handoffs/open/ldbridge-handoff-2026-05-27-wml-doc-deadline-by-unit-endpoint.md ~/.claude/handoffs/done/ 2>/dev/null && echo \"moved\" || echo \"not in open\")",
+      "Bash(grep -nE \"API\\\\.canvasLoad\\\\}\\\\?board|cwScopeQuery\\\\\\(\\\\\\)\\\\`|reviewCanvas\\\\}\\\\?student\" frontend/wml-assessment.js)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"

@@ -1019,6 +1019,11 @@ window.WML = (function() {
             protocolTask: 'assessment',
             completionType: 'assessment_detect',
             storageSuffix: '',
+            // v7.19.249 (Model B): the Phase 2 reassessment mounts as task='assessment'
+            // (redraft_assessment collapses to it) with phase='redraft' → its OWN
+            // _reassessment canvas doc, matching the redraft_assessment manifest. Phase 1
+            // assessment (any other phase) keeps the legacy '' suffix, unchanged.
+            canvasStorageSuffixForPhase: function (phase) { return phase === 'redraft' ? '_reassessment' : ''; },
             chatHeaderLabel: 'Essay Assessment',
             sidebarSteps: [
                 { step: 1, label: 'Setup & Details' },
@@ -1111,9 +1116,11 @@ window.WML = (function() {
             protocolSource: null,
             protocolTask: null,
             completionType: 'manual',
-            // v7.15.112: Phase 2 canvas tasks share the redraft doc. Outlining
-            // has no chat, so the unified _redraft suffix is safe on both sides.
+            // v7.19.249 (Model B): per-stage canvas doc. Outlining keeps its own frozen
+            // snapshot; copy-forward seeds it from the planning stage on first entry.
+            // storageSuffix (_redraft) stays as the per-topic attempt-index key.
             storageSuffix: '_redraft',
+            canvasStorageSuffix: '_outlining',
             chatHeaderLabel: null,
             sidebarSteps: null,
         },
@@ -1140,6 +1147,10 @@ window.WML = (function() {
             protocolTask: 'assessment',
             completionType: 'assessment_detect',
             storageSuffix: '_redraft',
+            // v7.19.249 (Model B): reassessment is its own frozen stage — marks the
+            // polished essay copied forward from polishing. Distinct from Phase 1
+            // assessment (suffix '') so the two phases never collide.
+            canvasStorageSuffix: '_reassessment',
             chatHeaderLabel: 'Essay Assessment',
             sidebarSteps: [
                 { step: 1, label: 'Setup & Details' },
@@ -1190,10 +1201,10 @@ window.WML = (function() {
             protocolTask: 'planning',
             completionType: 'step_complete',
             storageSuffix: '_planning',
-            // v7.15.112: Phase 2 canvas tasks share the redraft doc so planning
-            // work is visible in outlining + response. Chat stays on _planning
-            // to keep Sophia's planning session isolated from reassessment.
-            canvasStorageSuffix: '_redraft',
+            // v7.19.249 (Model B): planning is its own frozen stage doc. It's the FIRST
+            // Phase 2 stage, so it starts from the template (no sibling to copy forward);
+            // outlining then copies planning forward. Chat also on _planning.
+            canvasStorageSuffix: '_planning',
             chatHeaderLabel: 'Essay Planning',
             sidebarSteps: null, // v7.14.66: populated dynamically from manifest via /protocol-steps endpoint
         },
@@ -1207,10 +1218,10 @@ window.WML = (function() {
             protocolTask: 'polishing',
             completionType: 'step_complete',
             storageSuffix: '_polishing',
-            // v7.19.248: polishing is part of Phase 2 → shares the same redraft doc as
-            // planning / outlining / response / reassessment. Chat stays on _polishing
-            // so Sophia's polishing session is isolated. Mirrors the planning pattern.
-            canvasStorageSuffix: '_redraft',
+            // v7.19.249 (Model B): polishing is its own frozen stage doc (supersedes the
+            // v7.19.248 shared-_redraft merge — Model B separates per stage). Copy-forward
+            // seeds it from outlining on first entry; the student then refines that essay.
+            canvasStorageSuffix: '_polishing',
             chatHeaderLabel: 'Essay Polishing',
             sidebarSteps: null,
         },

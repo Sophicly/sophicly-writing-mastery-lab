@@ -19117,10 +19117,18 @@
             // Tutor review mode: load student's canvas via review endpoint (v7.15.2)
             let url;
             const att = state.attempt || 1;
+            // v7.19.249: Model B copy-forward. For phase-stage essay tasks, ask the server
+            // to seed a blank stage doc from the most-recent sibling stage (continuity +
+            // migration off the legacy shared _redraft doc). NOT in review mode (tutor must
+            // see the real stored state, not a seed). Server only seeds when the doc is empty.
+            const _stageSeed = (
+                ['planning', 'outlining', 'polishing', 'assessment', 'redraft_assessment'].includes(state.task)
+                || (state.task && state.task.startsWith('cw_'))
+            ) ? '&seedFromSiblings=1' : '';
             if (state.reviewMode && state.reviewStudentId) {
                 url = `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
             } else {
-                url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${cwScopeQuery()}`;
+                url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${cwScopeQuery()}${_stageSeed}`;
             }
             // v7.19.136 instrumentation — record the URL we're about to fetch
             try { console.log('[WML load-debug v7.19.136] tryServerLoad fetch', { url: url, task: state.task, phase: state.phase, attempt: state.attempt, suffix: suffix }); } catch (_) {}
