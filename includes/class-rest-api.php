@@ -1591,7 +1591,12 @@ class SWML_REST_API {
         // write forward — there's no single "canonical" target if multiple _t{N}
         // variants exist, and the next session with topic_number>0 will land on
         // the right key anyway.
-        if (empty($raw) && $topic_number !== null && $topic_number > 0) {
+        // v7.19.261: when the client asks for sibling-stage seeding (Model B per-stage
+        // load), skip the no-topic orphan rescue — orphan content from a pre-topic
+        // session shouldn't override a fresh sibling-seed for the per-stage chain.
+        // Without this gate, an orphan `swml_canvas_{board}_{text}_outlining` doc
+        // from earlier dev sessions blocked seed_from_sibling_stage from ever firing.
+        if (empty($raw) && $topic_number !== null && $topic_number > 0 && empty($request->get_param('seedFromSiblings'))) {
             $no_topic_key = $this->canvas_meta_key($board, $text, null, $suffix, $attempt, $cw_project_id);
             $no_topic_raw = get_user_meta($user_id, $no_topic_key, true);
             if (!empty($no_topic_raw)) {
