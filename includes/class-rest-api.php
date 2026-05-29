@@ -1680,6 +1680,22 @@ class SWML_REST_API {
             if (!empty($request->get_param('seedFromSiblings'))) {
                 $seed_html = $this->seed_from_sibling_stage($user_id, $board, $text, $topic_number, $meta_key);
                 if (!empty($seed_html)) {
+                    // v7.19.263: stamp the "update dot" baseline at auto-seed time
+                    // (first-pass forward fill), so a LATER edit to the upstream
+                    // stage correctly advances past it and lights the dot. Without
+                    // this, the baseline only initialised lazily on a later normal
+                    // load — by which point an upstream edit would already be baked
+                    // into the baseline and the dot would never show. Preserve any
+                    // existing dismissed value. Only stages with an upstream qualify.
+                    if (self::previous_stage_suffix($suffix) !== null) {
+                        $up_doc  = $this->previous_stage_doc($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
+                        $up_saved = ($up_doc && !empty($up_doc['savedAt'])) ? (string)$up_doc['savedAt'] : '';
+                        $existing = $this->get_pull_stamp($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
+                        $this->set_pull_stamp($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id, [
+                            'pulled'    => $up_saved,
+                            'dismissed' => $existing['dismissed'],
+                        ]);
+                    }
                     return rest_ensure_response([
                         'success'      => true,
                         'doc'          => ['html' => $seed_html],
