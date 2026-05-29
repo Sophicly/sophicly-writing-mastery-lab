@@ -3144,6 +3144,16 @@
                         promptText = structureBlock + '\n\n---\n\n' + promptText;
                         console.log('[WML structure-diagnosis] injected:', structureBlock.slice(0, 240));
                     }
+                    // v7.19.265: student just pulled a newer essay into reassessment
+                    // mid-marking. The essay text above is ALREADY the fresh version
+                    // (read live); this notice tells Sophia to discard any scores she
+                    // gave the earlier version in this chat and re-mark from scratch.
+                    // One-shot — no reset, so the student keeps their assessment progress.
+                    if (_essayRepulled) {
+                        promptText = `[ESSAY UPDATED — the student has just pulled in a newer version of their essay. Re-read the essay text in this message from scratch and base ALL further marking on THIS version only. Disregard any earlier version, scores, or quotations from earlier in this conversation that no longer match the text below.]\n\n---\n\n` + promptText;
+                        _essayRepulled = false;
+                        console.log('[WML pull] essay-updated re-read notice injected for reassessment');
+                    }
                     const sectionLabels = (essayForInjection.match(/=== .+? ===/g) || []).join(', ');
                     console.log('WML Canvas: Essay injected (' + wc + ' words). Sections: [' + (sectionLabels || 'no labels') + ']. First 200 chars:', essayForInjection.substring(0, 200));
                 } else if (userMsgCount === 1) {
@@ -4411,43 +4421,9 @@
         const headerRight = el('div', { className: 'swml-canvas-header-right' });
 
         headerRight.appendChild(el('span', { className: 'swml-canvas-ctx-mode', textContent: 'BETA' }));
-
-        // v7.19.263: "Pull from Previous Stage" — Phase-2 redraft stages only
-        // (Outlining/Polishing/Reassessment have an upstream stage; Planning is
-        // first and Phase-1 diagnostic has none). Lets a student roll edits made
-        // to an earlier stage forward into this one. Hidden in tutor review mode
-        // (tutor sees the stored doc and never re-seeds it).
-        const _pullSfx = !state.reviewMode ? _pullStageSuffix() : '';
-        _pullBtnDot = null; _pullBtnDismiss = null;
-        if (_pullSfx) {
-            const _pl = _PULL_STAGE_LABELS[_pullSfx];
-            const pullWrap = el('div', { className: 'swml-pull-wrap' });
-            const pullBtn = el('button', {
-                className: 'swml-canvas-pull-btn',
-                title: `Replace this ${_pl.current} with your latest ${_pl.previous}`,
-                innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:5px"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Pull from previous stage',
-            });
-            // v7.19.263: "update available" dot — server sets pullUpdateAvailable
-            // when the upstream stage changed since this stage was last
-            // pulled/dismissed. Hidden until tryServerLoad resolves the flag.
-            const pullDot = el('span', { className: 'swml-pull-dot', 'aria-label': 'Update available', title: `Your ${_pl.previous} has changed since you last pulled it in`, style: { display: 'none' } });
-            pullBtn.appendChild(pullDot);
-            pullBtn.addEventListener('click', () => {
-                showConfirm(
-                    `Replace this ${_pl.current} with your latest ${_pl.previous}? Anything written in this stage will be overwritten.`,
-                    () => pullFromPreviousStage(),
-                    { confirmText: 'Pull it through', cancelText: 'Keep this stage', danger: true }
-                );
-            });
-            // Dismiss — clears the dot without pulling (shown only when dot active).
-            const pullDismiss = el('button', { className: 'swml-pull-dismiss', title: 'Dismiss — don’t pull anything in', innerHTML: '&times;', style: { display: 'none' } });
-            pullDismiss.addEventListener('click', (e) => { e.stopPropagation(); dismissPullUpdate(); });
-            pullWrap.appendChild(pullBtn);
-            pullWrap.appendChild(pullDismiss);
-            headerRight.appendChild(pullWrap);
-            _pullBtnDot = pullDot; _pullBtnDismiss = pullDismiss;
-            _applyPullDot();
-        }
+        // v7.19.265: "Pull from Previous Stage" moved OUT of the header to a
+        // floating icon on the canvas column (see _mountPullFab below) — the
+        // header is too cramped on small laptops / Chromebooks.
 
         // Theme toggle — hidden in embedded mode unless fullscreen (v7.14.24)
         // v7.19.227: In embedded mode, defer to LD's theme system by writing
@@ -6257,6 +6233,10 @@
         }
 
         editorPane.appendChild(statusBar);
+
+        // v7.19.265: floating "pull from previous stage" icon — last child so it
+        // stacks above the editor. Appears only when the load flag turns it on.
+        _mountPullFab(editorPane);
 
         canvas.appendChild(editorPane);
 
@@ -19436,17 +19416,51 @@
         const sfx = (WML.resolveCanvasSuffix && WML.resolveCanvasSuffix(state.task, state.phase)) || '';
         return _PULL_STAGE_LABELS[sfx] ? sfx : '';
     }
-    // v7.19.263: "update available" dot state. _pullUpdateFlag is the last value
-    // the server returned (pullUpdateAvailable); _applyPullDot toggles the live
-    // DOM refs (rebuilt each renderCanvasWorkspace). _updatePullDot is called
-    // from tryServerLoad once the load response lands.
-    let _pullUpdateFlag = false, _pullBtnDot = null, _pullBtnDismiss = null;
+    // v7.19.265: floating "pull from previous stage" icon. Appears ONLY when the
+    // server reports the upstream stage changed since this stage was last
+    // pulled/dismissed (pullUpdateAvailable). _pullUpdateFlag is the last value
+    // returned; _applyPullDot toggles the FAB (rebuilt each renderCanvasWorkspace).
+    // _updatePullDot is called from tryServerLoad once the load response lands.
+    let _pullUpdateFlag = false, _pullFab = null;
+    // v7.19.265: one-shot — set when a newer essay is pulled INTO the reassessment
+    // stage mid-marking. Consumed by the assessment essay-injection (sendCanvasMessage)
+    // to tell Sophia to re-anchor on the fresh version without resetting the chat.
+    let _essayRepulled = false;
     function _applyPullDot() {
-        const show = !!_pullUpdateFlag;
-        if (_pullBtnDot) _pullBtnDot.style.display = show ? '' : 'none';
-        if (_pullBtnDismiss) _pullBtnDismiss.style.display = show ? '' : 'none';
+        if (_pullFab) _pullFab.style.display = _pullUpdateFlag ? '' : 'none';
     }
     function _updatePullDot(flag) { _pullUpdateFlag = !!flag; _applyPullDot(); }
+    // Build the floating pull icon onto the canvas column (editorPane). Anchored
+    // there (position:relative, excludes the right chat/guidance panel) so it
+    // works in BOTH the free and training environments. Hidden until the load
+    // flag turns it on. Icon-only + universal tooltip on hover; a small × dismisses.
+    function _mountPullFab(editorPane) {
+        _pullFab = null;
+        const sfx = !state.reviewMode ? _pullStageSuffix() : '';
+        if (!sfx || !editorPane) return;
+        const _pl = _PULL_STAGE_LABELS[sfx];
+        const fab = el('div', { className: 'swml-pull-fab', style: { display: 'none' } });
+        const fabBtn = el('button', {
+            className: 'swml-pull-fab-btn',
+            'data-tooltip': `Your ${_pl.previous} changed since you last pulled it in — click to pull it through`,
+            'aria-label': 'Pull from previous stage',
+            innerHTML: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>',
+        });
+        fabBtn.addEventListener('click', () => {
+            showConfirm(
+                `Replace this ${_pl.current} with your latest ${_pl.previous}? Anything written in this stage will be overwritten.`,
+                () => pullFromPreviousStage(),
+                { confirmText: 'Pull it through', cancelText: 'Keep this stage', danger: true }
+            );
+        });
+        const fabX = el('button', { className: 'swml-pull-fab-x', 'data-tooltip': 'Dismiss — don’t pull anything in', 'aria-label': 'Dismiss', innerHTML: '&times;' });
+        fabX.addEventListener('click', (e) => { e.stopPropagation(); dismissPullUpdate(); });
+        fab.appendChild(fabBtn);
+        fab.appendChild(fabX);
+        editorPane.appendChild(fab);
+        _pullFab = fab;
+        _applyPullDot();
+    }
     function _pullBodyParams(sfx) {
         return {
             board: state.board, text: state.text,
@@ -19477,6 +19491,9 @@
                 finally { _migrationActive = false; }
                 try { saveCanvasContent(); } catch (_) {}
                 _updatePullDot(false); // server cleared the baseline; hide the dot
+                // Reassessment: flag so the next assessment turn tells Sophia to
+                // re-anchor on the fresh essay (no chat reset — keeps her progress).
+                if (sfx === '_reassessment') _essayRepulled = true;
                 if (typeof showToast === 'function') showToast(`Pulled in your latest ${labels.previous}.`);
             } else {
                 if (typeof showToast === 'function') showToast(`Nothing to pull yet — your ${labels.previous} is empty.`);

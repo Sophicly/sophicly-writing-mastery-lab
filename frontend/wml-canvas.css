@@ -1475,56 +1475,46 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-light .swml-canvas-header { border-bottom-color: rgba(0,0,0,0.08); background: rgba(255,255,255,0.7); }
 .swml-canvas-light .swml-canvas-ctx-badge { background: rgba(77,118,253,0.08); color: #4D76FD; }
 .swml-canvas-light .swml-canvas-ctx-mode { background: rgba(77,118,253,0.08); color: #4D76FD; }
-/* v7.19.263: "Pull from Previous Stage" — Phase-2 redraft stages (Outlining/
-   Polishing/Reassessment). Subtle brand-purple pill, no outline border. */
-.swml-canvas-pull-btn {
-    display: inline-flex;
-    align-items: center;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 10px;
-    border: none;
-    border-radius: 6px;
-    background: rgba(83,51,237,0.18);
-    color: #b9a8ff;
-    cursor: pointer;
-    white-space: nowrap;
-    line-height: 1;
-    flex-shrink: 0;
-    transition: background 0.15s ease, color 0.15s ease;
+/* v7.19.265: floating "Pull from previous stage" icon. Lives on the canvas
+   column (.swml-canvas-editor, position:relative) so it works in BOTH the free
+   and training environments and never crowds the header. Appears only when the
+   upstream stage changed (JS toggles display). Icon-only + universal tooltip. */
+.swml-pull-fab {
+    position: absolute;
+    top: 60px; right: 16px;
+    z-index: 30;
+    display: flex; align-items: center; gap: 4px;
+    animation: swml-pull-fab-in 0.25s ease-out;
 }
-.swml-canvas-pull-btn:hover { background: rgba(83,51,237,0.32); color: #d9cfff; }
-.swml-canvas-pull-btn:active { background: rgba(83,51,237,0.40); }
-.swml-canvas-light .swml-canvas-pull-btn { background: rgba(83,51,237,0.10); color: #5333ed; }
-.swml-canvas-light .swml-canvas-pull-btn:hover { background: rgba(83,51,237,0.18); color: #4222d0; }
-/* v7.19.263: "update available" dot + dismiss — shown when upstream changed. */
-.swml-pull-wrap { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; }
-.swml-pull-dot {
-    display: inline-block;
-    width: 7px; height: 7px;
-    margin-left: 6px;
-    border-radius: 50%;
-    background: #51dacf;
-    box-shadow: 0 0 0 0 rgba(81,218,207,0.55);
-    animation: swml-pull-pulse 2s ease-out infinite;
-}
-@keyframes swml-pull-pulse {
-    0%   { box-shadow: 0 0 0 0 rgba(81,218,207,0.55); }
-    70%  { box-shadow: 0 0 0 6px rgba(81,218,207,0); }
-    100% { box-shadow: 0 0 0 0 rgba(81,218,207,0); }
-}
-.swml-pull-dismiss {
+@keyframes swml-pull-fab-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.swml-pull-fab-btn {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 18px; height: 18px;
+    width: 38px; height: 38px;
     padding: 0; border: none; border-radius: 50%;
-    background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.55);
-    font-size: 14px; line-height: 1; cursor: pointer;
+    background: #5333ed; color: #fff;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(83,51,237,0.45), 0 0 0 0 rgba(83,51,237,0.5);
+    animation: swml-pull-fab-pulse 2.4s ease-out infinite;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+.swml-pull-fab-btn:hover { background: #6347f0; transform: scale(1.06); }
+@keyframes swml-pull-fab-pulse {
+    0%   { box-shadow: 0 2px 10px rgba(83,51,237,0.45), 0 0 0 0 rgba(83,51,237,0.5); }
+    70%  { box-shadow: 0 2px 10px rgba(83,51,237,0.45), 0 0 0 9px rgba(83,51,237,0); }
+    100% { box-shadow: 0 2px 10px rgba(83,51,237,0.45), 0 0 0 0 rgba(83,51,237,0); }
+}
+.swml-pull-fab-x {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px;
+    padding: 0; border: none; border-radius: 50%;
+    background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.6);
+    font-size: 15px; line-height: 1; cursor: pointer;
     transition: background 0.15s ease, color 0.15s ease;
 }
-.swml-pull-dismiss:hover { background: rgba(255,255,255,0.16); color: #fff; }
-.swml-canvas-light .swml-pull-dismiss { background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.45); }
-.swml-canvas-light .swml-pull-dismiss:hover { background: rgba(0,0,0,0.12); color: #000; }
-@media (prefers-reduced-motion: reduce) { .swml-pull-dot { animation: none; } }
+.swml-pull-fab-x:hover { background: rgba(255,255,255,0.2); color: #fff; }
+.swml-canvas-light .swml-pull-fab-x { background: rgba(0,0,0,0.08); color: rgba(0,0,0,0.5); }
+.swml-canvas-light .swml-pull-fab-x:hover { background: rgba(0,0,0,0.16); color: #000; }
+@media (prefers-reduced-motion: reduce) { .swml-pull-fab-btn { animation: none; } }
 /* Responsive badges — JS-managed overflow replaces CSS nth-child hiding */
 .swml-canvas-ctx-overflow {
     background: none; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.5);
