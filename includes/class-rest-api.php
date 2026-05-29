@@ -2192,12 +2192,20 @@ class SWML_REST_API {
             $after = substr($row->meta_key, strlen($prefix), 1);
             if ($after !== '' && $after !== '_') continue;
             // Attempt-scope guard: if a specific attempt was requested, only delete
-            // keys ending in __a{attempt} (or the bare prefix for attempt 1, which
-            // canvas_meta_key elides). Without an attempt param, delete every match.
+            // keys matching that attempt.
+            //   attempt=1  → keys WITHOUT any __aN suffix (canvas_meta_key elides __a1)
+            //   attempt>1  → keys ending exactly in __a{attempt}
+            // Without an attempt param, delete every match.
+            // v7.19.262: rewrote — the old check required keys to end with __a1 for
+            // attempt=1, which never matched (since attempt=1 keys have no suffix).
             if ($attempt > 0) {
-                $ends_with_attempt = (strlen($row->meta_key) >= strlen($attempt_suffix))
-                    && (substr($row->meta_key, -strlen($attempt_suffix)) === $attempt_suffix);
-                if (!$ends_with_attempt) continue;
+                if ($attempt === 1) {
+                    if (preg_match('/__a\d+$/', $row->meta_key)) continue;
+                } else {
+                    $ends_with_attempt = (strlen($row->meta_key) >= strlen($attempt_suffix))
+                        && (substr($row->meta_key, -strlen($attempt_suffix)) === $attempt_suffix);
+                    if (!$ends_with_attempt) continue;
+                }
             }
             // v7.19.259: stage-suffix filter. Extract the stage suffix from the key:
             // strip "{prefix}{stage_suffix}{attempt_suffix}" — what remains in the middle
