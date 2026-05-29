@@ -2208,10 +2208,35 @@ class SWML_REST_API {
             delete_user_meta($user_id, $row->meta_key);
             $deleted[] = $row->meta_key;
         }
+        // v7.19.260: optionally wipe the attempts INDEX too. Server's /attempts
+        // endpoint reads from swml_attempts_{board}_{text}_t{topic}[{suffix}]
+        // (separate from canvas docs). Without this, the wipe leaves the index
+        // saying current=N → client resumes the previous attempt number → new
+        // saves recreate _planning__aN keys → seed_from_sibling chain re-breaks.
+        // Pass clearAttemptIndex=true to reset to a fresh attempt=1 state.
+        $clear_idx = (bool) $request->get_param('clearAttemptIndex');
+        $idx_deleted = [];
+        if ($clear_idx) {
+            $idx_prefix = 'swml_attempts_' . $board . '_' . $text . '_t' . $topic;
+            $idx_like   = $wpdb->esc_like($idx_prefix) . '%';
+            $idx_rows   = $wpdb->get_results($wpdb->prepare(
+                "SELECT meta_key FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key LIKE %s",
+                $user_id,
+                $idx_like
+            ));
+            foreach ($idx_rows as $row) {
+                $after = substr($row->meta_key, strlen($idx_prefix), 1);
+                if ($after !== '' && $after !== '_') continue;  // exact-topic guard
+                delete_user_meta($user_id, $row->meta_key);
+                $idx_deleted[] = $row->meta_key;
+            }
+        }
         return rest_ensure_response([
-            'success' => true,
-            'deleted' => $deleted,
-            'count'   => count($deleted),
+            'success'      => true,
+            'deleted'      => $deleted,
+            'count'        => count($deleted),
+            'idx_deleted'  => $idx_deleted,
+            'idx_count'    => count($idx_deleted),
         ]);
     }
 
