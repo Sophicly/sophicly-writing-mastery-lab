@@ -4412,6 +4412,43 @@
 
         headerRight.appendChild(el('span', { className: 'swml-canvas-ctx-mode', textContent: 'BETA' }));
 
+        // v7.19.263: "Pull from Previous Stage" — Phase-2 redraft stages only
+        // (Outlining/Polishing/Reassessment have an upstream stage; Planning is
+        // first and Phase-1 diagnostic has none). Lets a student roll edits made
+        // to an earlier stage forward into this one. Hidden in tutor review mode
+        // (tutor sees the stored doc and never re-seeds it).
+        const _pullSfx = !state.reviewMode ? _pullStageSuffix() : '';
+        _pullBtnDot = null; _pullBtnDismiss = null;
+        if (_pullSfx) {
+            const _pl = _PULL_STAGE_LABELS[_pullSfx];
+            const pullWrap = el('div', { className: 'swml-pull-wrap' });
+            const pullBtn = el('button', {
+                className: 'swml-canvas-pull-btn',
+                title: `Replace this ${_pl.current} with your latest ${_pl.previous}`,
+                innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:5px"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Pull from previous stage',
+            });
+            // v7.19.263: "update available" dot — server sets pullUpdateAvailable
+            // when the upstream stage changed since this stage was last
+            // pulled/dismissed. Hidden until tryServerLoad resolves the flag.
+            const pullDot = el('span', { className: 'swml-pull-dot', 'aria-label': 'Update available', title: `Your ${_pl.previous} has changed since you last pulled it in`, style: { display: 'none' } });
+            pullBtn.appendChild(pullDot);
+            pullBtn.addEventListener('click', () => {
+                showConfirm(
+                    `Replace this ${_pl.current} with your latest ${_pl.previous}? Anything written in this stage will be overwritten.`,
+                    () => pullFromPreviousStage(),
+                    { confirmText: 'Pull it through', cancelText: 'Keep this stage', danger: true }
+                );
+            });
+            // Dismiss — clears the dot without pulling (shown only when dot active).
+            const pullDismiss = el('button', { className: 'swml-pull-dismiss', title: 'Dismiss — don’t pull anything in', innerHTML: '&times;', style: { display: 'none' } });
+            pullDismiss.addEventListener('click', (e) => { e.stopPropagation(); dismissPullUpdate(); });
+            pullWrap.appendChild(pullBtn);
+            pullWrap.appendChild(pullDismiss);
+            headerRight.appendChild(pullWrap);
+            _pullBtnDot = pullDot; _pullBtnDismiss = pullDismiss;
+            _applyPullDot();
+        }
+
         // Theme toggle — hidden in embedded mode unless fullscreen (v7.14.24)
         // v7.19.227: In embedded mode, defer to LD's theme system by writing
         // html[data-theme] (the attribute LD's own toggle writes). The existing
@@ -19302,6 +19339,9 @@
             if (res && res.generalNotes) {
                 _pendingGeneralNotes = res.generalNotes;
             }
+            // v7.19.263: surface the "previous stage updated" dot. False unless the
+            // server reports the upstream stage changed since last pull/dismiss.
+            _updatePullDot(!!(res && res.pullUpdateAvailable));
             if (res.success && res.doc && res.doc.html) {
                 // v7.19.247: capture the real first-edit start date for the Score Summary.
                 _canvasStartedAt = res.doc.startedAt || _canvasStartedAt || '';
@@ -19372,6 +19412,78 @@
             }
         } catch (e) {
             console.log('WML: Server load unavailable, using localStorage');
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  v7.19.263: "Pull from Previous Stage"
+    //  Overwrites THIS Phase-2 redraft stage's canvas with the content of the
+    //  stage immediately upstream — Outlining←Planning, Polishing←Outlining,
+    //  Reassessment←Polishing. The server resolves the upstream stage and
+    //  returns its HTML when force_seed=1 (see class-rest-api.php load_canvas).
+    //  Student-triggered: the header button (renderCanvasWorkspace) gates this
+    //  behind a confirm modal. setContent runs under _migrationActive so the
+    //  onTransaction section-guard does NOT revert the swap (parity with the
+    //  new-attempt reload path); an explicit save persists it under this
+    //  stage's key. One hop only — no cascade to later stages.
+    // ══════════════════════════════════════════════════════════════
+    const _PULL_STAGE_LABELS = {
+        '_outlining':    { current: 'outline',        previous: 'plan'           },
+        '_polishing':    { current: 'polished draft', previous: 'outline'        },
+        '_reassessment': { current: 'reassessment',   previous: 'polished draft' },
+    };
+    function _pullStageSuffix() {
+        const sfx = (WML.resolveCanvasSuffix && WML.resolveCanvasSuffix(state.task, state.phase)) || '';
+        return _PULL_STAGE_LABELS[sfx] ? sfx : '';
+    }
+    // v7.19.263: "update available" dot state. _pullUpdateFlag is the last value
+    // the server returned (pullUpdateAvailable); _applyPullDot toggles the live
+    // DOM refs (rebuilt each renderCanvasWorkspace). _updatePullDot is called
+    // from tryServerLoad once the load response lands.
+    let _pullUpdateFlag = false, _pullBtnDot = null, _pullBtnDismiss = null;
+    function _applyPullDot() {
+        const show = !!_pullUpdateFlag;
+        if (_pullBtnDot) _pullBtnDot.style.display = show ? '' : 'none';
+        if (_pullBtnDismiss) _pullBtnDismiss.style.display = show ? '' : 'none';
+    }
+    function _updatePullDot(flag) { _pullUpdateFlag = !!flag; _applyPullDot(); }
+    function _pullBodyParams(sfx) {
+        return {
+            board: state.board, text: state.text,
+            topicNumber: state.topicNumber || '', suffix: sfx,
+            attempt: state.attempt || 1,
+            cw_project_id: (state.task && state.task.startsWith('cw_') && state.cwProjectId) ? state.cwProjectId : '',
+        };
+    }
+    async function dismissPullUpdate() {
+        _updatePullDot(false); // optimistic — server records the dismissed baseline
+        try {
+            const sfx = _pullStageSuffix();
+            if (!sfx) return;
+            await fetch(API.pullDismiss, { method: 'POST', headers, body: JSON.stringify(_pullBodyParams(sfx)) });
+        } catch (e) { if (window.console) console.warn('[pull-stage] dismiss failed', e); }
+    }
+    async function pullFromPreviousStage() {
+        const sfx = _pullStageSuffix();
+        if (!sfx || !canvasEditor) return;
+        const labels = _PULL_STAGE_LABELS[sfx];
+        try {
+            const att = state.attempt || 1;
+            const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(sfx)}&attempt=${att}${cwScopeQuery()}&force_seed=1`;
+            const res = await fetch(url, { headers }).then(r => r.json());
+            if (res && res.success && res.doc && res.doc.html) {
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(res.doc.html, false); }
+                finally { _migrationActive = false; }
+                try { saveCanvasContent(); } catch (_) {}
+                _updatePullDot(false); // server cleared the baseline; hide the dot
+                if (typeof showToast === 'function') showToast(`Pulled in your latest ${labels.previous}.`);
+            } else {
+                if (typeof showToast === 'function') showToast(`Nothing to pull yet — your ${labels.previous} is empty.`);
+            }
+        } catch (e) {
+            if (window.console) console.warn('[pull-stage] failed', e);
+            if (typeof showToast === 'function') showToast('Pull failed — please try again.');
         }
     }
 

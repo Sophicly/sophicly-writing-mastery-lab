@@ -186,6 +186,7 @@ window.WML = (function() {
         foundationalQuizResult: config.restUrl + 'foundational-quiz/result',
         canvasLoad:    config.restUrl + 'canvas/load',
         canvasList:    config.restUrl + 'canvas/list',
+        pullDismiss:   config.restUrl + 'canvas/pull-dismiss', // v7.19.263
         topicQuestion: config.restUrl + 'topic-question',
         topicQuestions: config.restUrl + 'topic-questions',
         phaseComplete: config.restUrl + 'phase/complete',

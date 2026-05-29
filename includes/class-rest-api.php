@@ -171,6 +171,13 @@ class SWML_REST_API {
             'methods' => 'GET', 'callback' => [$this, 'get_pull_source'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
+        // v7.19.263: dismiss the "previous stage updated" dot without pulling.
+        // Records the current upstream savedAt as the dismissed baseline so the
+        // dot stays hidden until the upstream stage changes AGAIN.
+        register_rest_route($namespace, '/canvas/pull-dismiss', [
+            'methods' => 'POST', 'callback' => [$this, 'dismiss_pull_update'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
 
         // Safe diagnostic — probes AI Engine without calling it
         register_rest_route($namespace, '/debug', [
@@ -1539,6 +1546,33 @@ class SWML_REST_API {
             $general_notes = $this->get_general_notes_meta($user_id, $board, $text);
         }
 
+        // v7.19.263: Student-triggered "Pull from Previous Stage". force_seed=1 bypasses
+        // the existing-doc check ENTIRELY (runs before $raw is read) and returns the
+        // immediately-upstream redraft stage's content as a seed:
+        //   Outlining ← Planning, Polishing ← Outlining, Reassessment ← Polishing.
+        // Client gates this behind a confirm modal; the seed persists under THIS
+        // stage's key on the next autosave, and ⌘Z reverts. One hop only — no cascade.
+        if (!empty($request->get_param('force_seed'))) {
+            $up_doc = $this->previous_stage_doc($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
+            if ($up_doc && !empty($up_doc['html'])) {
+                // Stamp the pull baseline so the "update available" dot clears
+                // until the upstream stage is edited AGAIN.
+                $this->set_pull_stamp($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id, [
+                    'pulled'    => (string)($up_doc['savedAt'] ?? ''),
+                    'dismissed' => '',
+                ]);
+                return rest_ensure_response([
+                    'success'      => true,
+                    'doc'          => ['html' => $up_doc['html']],
+                    'attempt'      => $attempt,
+                    'generalNotes' => $general_notes,
+                    'is_seed'      => true,
+                ]);
+            }
+            // No upstream content to pull — fall through to the normal load below
+            // (returns this stage's existing doc, or null when genuinely empty).
+        }
+
         $raw = get_user_meta($user_id, $meta_key, true);
         // v7.17.39: lazy backfill — pre-v7.17.39 CW data landed under the non-project
         // legacy key. On first project-scoped load with a miss, fall back to the legacy
@@ -1719,10 +1753,12 @@ class SWML_REST_API {
         }
 
         return rest_ensure_response([
-            'success'      => true,
-            'doc'          => $doc,
-            'attempt'      => $attempt,
-            'generalNotes' => $general_notes,
+            'success'             => true,
+            'doc'                 => $doc,
+            'attempt'             => $attempt,
+            'generalNotes'        => $general_notes,
+            // v7.19.263: drives the header "previous stage updated" dot.
+            'pullUpdateAvailable' => $this->pull_update_available($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id),
         ]);
     }
 
@@ -2796,6 +2832,39 @@ class SWML_REST_API {
         ]);
     }
 
+    /**
+     * v7.19.263: POST /canvas/pull-dismiss
+     * Student dismissed the "previous stage updated" dot without pulling.
+     * Records the current upstream savedAt as the dismissed baseline so the dot
+     * stays hidden until the upstream stage is edited AGAIN. Same param shape as
+     * the load endpoint (board/text/topicNumber/suffix/attempt/cw_project_id).
+     */
+    public function dismiss_pull_update($request) {
+        $user_id = get_current_user_id();
+        if (!$user_id) {
+            return rest_ensure_response(['success' => false, 'message' => 'Not authenticated']);
+        }
+        $params = $request->get_json_params() ?: [];
+        $board  = sanitize_text_field($params['board'] ?? '');
+        $text   = $this->normalize_text_slug(sanitize_text_field($params['text'] ?? ''));
+        $topic_number = isset($params['topicNumber']) && $params['topicNumber'] !== '' ? absint($params['topicNumber']) : null;
+        $suffix = sanitize_text_field($params['suffix'] ?? '');
+        $attempt = max(1, absint($params['attempt'] ?? 1));
+        $cw_project_id = sanitize_text_field($params['cw_project_id'] ?? '');
+
+        if (empty($board) || empty($text) || self::previous_stage_suffix($suffix) === null) {
+            return rest_ensure_response(['success' => false, 'message' => 'No upstream stage for this suffix']);
+        }
+
+        $up = $this->previous_stage_doc($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
+        $up_saved = ($up && !empty($up['savedAt'])) ? (string)$up['savedAt'] : '';
+        $stamp = $this->get_pull_stamp($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
+        $stamp['dismissed'] = $up_saved;
+        $this->set_pull_stamp($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id, $stamp);
+
+        return rest_ensure_response(['success' => true]);
+    }
+
     // ═══════════════════════════════════════════
     //  PHASE COMPLETION
     // ═══════════════════════════════════════════
@@ -2989,6 +3058,106 @@ class SWML_REST_API {
             }
         }
         return $best_html;
+    }
+
+    /**
+     * v7.19.263: Ordered Phase-2 redraft stage chain — the lesson sequence a
+     * student walks: Planning → Outlining → Polishing → Reassessment. Used by
+     * the "Pull from Previous Stage" feature to resolve each stage's single
+     * upstream source. Planning is the first stage (no upstream) so it never
+     * appears as a pull TARGET; Diagnostic (Phase 1) and Discuss-Feedback have
+     * no canvas and are deliberately absent.
+     */
+    private static function phase2_stage_order() {
+        return ['_planning', '_outlining', '_polishing', '_reassessment'];
+    }
+
+    /**
+     * Suffix of the stage immediately before $suffix in the redraft chain, or
+     * null when $suffix is the first stage or not a chain stage at all.
+     */
+    private static function previous_stage_suffix($suffix) {
+        $order = self::phase2_stage_order();
+        $i = array_search($suffix, $order, true);
+        if ($i === false || $i === 0) return null;
+        return $order[$i - 1];
+    }
+
+    /**
+     * v7.19.263: Decoded doc of the immediately-upstream redraft stage for the
+     * SAME board/text/topic/attempt/project, or null when there is no upstream
+     * stage / it holds no content. Direction-safe: only ever reads the ONE stage
+     * upstream, never a later stage. Shared by the pull-seed + update-dot paths.
+     */
+    private function previous_stage_doc($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id) {
+        $prev = self::previous_stage_suffix($suffix);
+        if ($prev === null) return null;
+        $prev_key = $this->canvas_meta_key($board, $text, $topic_number, $prev, $attempt, $cw_project_id);
+        $raw = get_user_meta($user_id, $prev_key, true);
+        if (empty($raw)) return null;
+        $doc = is_array($raw) ? $raw : self::decode_canvas_json($raw);
+        if (!is_array($doc) || empty($doc['html'])) return null;
+        return $doc;
+    }
+
+    /**
+     * Return the HTML of the immediately-upstream redraft stage, or null.
+     * Powers the student-triggered "Pull from Previous Stage" overwrite
+     * (force_seed=1 on the load endpoint).
+     */
+    private function seed_from_previous_stage($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id) {
+        $doc = $this->previous_stage_doc($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
+        return ($doc && !empty($doc['html'])) ? $doc['html'] : null;
+    }
+
+    /**
+     * v7.19.263: per-stage meta key holding the "pull update dot" baselines —
+     * { pulled: <upstream savedAt at last seed/pull>, dismissed: <upstream
+     * savedAt at last dismissal> }. Mirrors the canvas-key suffixing so each
+     * stage/attempt/project tracks its own dot state.
+     */
+    private function pull_stamp_key($board, $text, $topic, $suffix = '', $attempt = 1, $cw_project_id = '') {
+        $text = $this->normalize_text_slug($text);
+        $key = 'swml_pullstamp_' . $board . '_' . $text;
+        if ($topic !== null && $topic > 0) $key .= '_t' . $topic;
+        if (!empty($suffix)) $key .= $suffix;
+        if ($attempt > 1) $key .= '__a' . $attempt;
+        if (!empty($cw_project_id)) $key .= '__p' . $cw_project_id;
+        return $key;
+    }
+
+    private function get_pull_stamp($user_id, $board, $text, $topic, $suffix, $attempt, $cw_project_id) {
+        $raw = get_user_meta($user_id, $this->pull_stamp_key($board, $text, $topic, $suffix, $attempt, $cw_project_id), true);
+        $s = is_array($raw) ? $raw : (is_string($raw) && $raw !== '' ? json_decode($raw, true) : null);
+        if (!is_array($s)) $s = [];
+        return ['pulled' => (string)($s['pulled'] ?? ''), 'dismissed' => (string)($s['dismissed'] ?? '')];
+    }
+
+    private function set_pull_stamp($user_id, $board, $text, $topic, $suffix, $attempt, $cw_project_id, $stamp) {
+        update_user_meta($user_id, $this->pull_stamp_key($board, $text, $topic, $suffix, $attempt, $cw_project_id), wp_slash(wp_json_encode($stamp)));
+    }
+
+    /**
+     * v7.19.263: decide whether THIS stage should show the "previous stage
+     * updated" dot. True when the upstream stage's savedAt is newer than BOTH
+     * the last-pulled and last-dismissed baselines. Lazily initialises the
+     * `pulled` baseline on first observation (so existing students / first
+     * entry never see a spurious dot — only FUTURE upstream edits trigger it).
+     * Returns false for stages with no upstream (Planning / non-chain).
+     */
+    private function pull_update_available($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id) {
+        if (self::previous_stage_suffix($suffix) === null) return false;
+        $up = $this->previous_stage_doc($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
+        $up_saved = ($up && !empty($up['savedAt'])) ? (string)$up['savedAt'] : '';
+        if ($up_saved === '') return false; // no upstream content yet
+        $stamp = $this->get_pull_stamp($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
+        if ($stamp['pulled'] === '' && $stamp['dismissed'] === '') {
+            // First observation — set the baseline, show no dot yet.
+            $this->set_pull_stamp($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id, ['pulled' => $up_saved, 'dismissed' => '']);
+            return false;
+        }
+        $baseline = strcmp($stamp['pulled'], $stamp['dismissed']) >= 0 ? $stamp['pulled'] : $stamp['dismissed'];
+        return strcmp($up_saved, $baseline) > 0;
     }
 
     private function chat_meta_key($board, $text, $topic, $suffix = '', $attempt = 1, $cw_project_id = '') {
