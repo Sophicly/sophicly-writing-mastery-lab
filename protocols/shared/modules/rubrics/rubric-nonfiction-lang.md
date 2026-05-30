@@ -19,6 +19,20 @@ These papers reward two things: **what you say + how you organise it** (the high
 - *The higher marks reward communication and organisation — a clear, sustained argument shaped for its audience.*
 - *Technical accuracy marks reward controlled vocabulary, varied sentences, and accurate punctuation and spelling.*
 - *Inventive structure that does not feel formulaic is what lifts the top band — not a paragraph count.*
+- *Length is the most common ceiling: under ~650 words a response cannot reach the top bands — there is not enough developed writing to reward.*
+
+---
+
+## CORE PRINCIPLE — think in IMAGES and EMOTIONS first, then layer technique
+
+This is the unlock for the top band, and the thing weak answers skip. Top-band persuasion is built on **concrete images and specific emotions first** — techniques and arguments layer *on top* of a picture, never instead of one. Before reaching for a device, ask: *what single picture pulls the reader in, and what exact emotion must they feel?* A student writing imperatives and abstract claims ("we must act", "it is important") has skipped this and capped their mark.
+
+**Task analysis comes before any planning.** Make sure the student has answered three questions before coaching structure:
+- **FORM** — what are they being asked to write (article / speech / letter / leaflet / essay)?
+- **AUDIENCE** — who reads it (peers / a Minister / a magazine readership)? Register is judged.
+- **PURPOSE** — what are they persuading the reader to think, feel, or do?
+
+A piece written to the wrong form or audience loses marks no matter how good the prose. **Pointer phrase:** *Before structure — what's your form, who's your audience, and what do you want them to do?*
 
 ---
 
@@ -49,14 +63,16 @@ Sophicly's transactional persuasive shape. Six beats; memorise the name, word ta
 
 The opening must earn its place; a clever hook forced onto the wrong topic loses more than it gains.
 
-1. **Counterintuitive fact** — a number that overturns assumption.
+1. **Counterintuitive fact + metaphor** — a number that overturns assumption, paired with a metaphor that makes the data tangible. A bare statistic is not enough; layer the figurative image on top.
 2. **Personal anecdote** — a two-sentence concrete memory.
 3. **Sensory snapshot** — a single image written like a paragraph from a novel.
 4. **Imagine scenario** — *Picture this:* + a future or hypothetical moment.
 5. **Rhetorical question** — a question only the reader can answer.
-6. **Bold statement** — a claim, no qualifier.
+6. **Bold statement with imagery** — a provocative claim framed as a vivid image, not an abstract piece of logic.
 7. **Contrast / paradox** — two clauses that crash against each other.
 8. **Extended metaphor** — a single comparison the rest of the piece returns to.
+
+Every hook must carry an **image** — the opening is the first place the examiner sees whether the student thinks in pictures.
 
 **Pointer phrase:** *Which hook genuinely suits the statement you've been given — not the one you rehearsed?*
 
