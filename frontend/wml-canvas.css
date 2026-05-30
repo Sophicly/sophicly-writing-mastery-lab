@@ -1516,6 +1516,23 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-light .swml-pull-fab-x { background: rgba(0,0,0,0.08); color: rgba(0,0,0,0.5); }
 .swml-canvas-light .swml-pull-fab-x:hover { background: rgba(0,0,0,0.16); color: #000; }
 @media (prefers-reduced-motion: reduce) { .swml-pull-fab-btn { animation: none; } }
+/* v7.19.271: per-response-section word-count badge (exam_crib — global widget hidden) */
+.swml-section-block[data-section-type="response"] { position: relative; }
+.swml-section-wc {
+    position: absolute;
+    bottom: 8px; right: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: rgba(81,218,207,0.75);
+    background: rgba(81,218,207,0.10);
+    padding: 2px 8px;
+    border-radius: 9px;
+    pointer-events: none;
+    user-select: none;
+    z-index: 2;
+}
+.swml-canvas-light .swml-section-wc { color: #2b8a82; background: rgba(81,218,207,0.16); }
 /* Responsive badges — JS-managed overflow replaces CSS nth-child hiding */
 .swml-canvas-ctx-overflow {
     background: none; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.5);

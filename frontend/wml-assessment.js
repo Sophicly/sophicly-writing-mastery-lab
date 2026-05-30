@@ -5634,7 +5634,11 @@
         // v7.17.21: hide footer word count + restore slot for non-essay tasks (quizzes, mark scheme, notes).
         // v7.18.7: also hide for exam_question — AI generates the question text, student
         // doesn't write the words. Counting them would inflate dashboard word count.
-        const _hideWcForTask = ['mark_scheme_unit', 'mark_scheme', 'mark_scheme_assessment', 'foundational_quiz', 'conceptual_notes', 'essay_plan', 'exam_question', 'mastery_codex'].includes(state.task);
+        // v7.19.271: exam_crib is a multi-question reference/customise doc — a single
+        // summed word count against one target is meaningless (and counts the pre-filled
+        // model essays). Hide the global footer + widget; per-response-section counts
+        // are painted instead (see _paintCribSectionWc).
+        const _hideWcForTask = ['mark_scheme_unit', 'mark_scheme', 'mark_scheme_assessment', 'foundational_quiz', 'conceptual_notes', 'essay_plan', 'exam_question', 'mastery_codex', 'exam_crib'].includes(state.task);
         if (!_hideWcForTask) statusBar.appendChild(wcDisplay);
         // wcRestore added after widget creation below
         let wcRestore; // forward declaration
@@ -9821,7 +9825,7 @@
         // v7.18.7: also hide floating widget for exam_question (AI-generated content, not student writing).
         // v7.19.210: also hide for mastery_codex — induction reflections, no word target.
         // Separate from `_hideWcForTask` (line 5499) which hides the footer counter.
-        const _hideWcByTask = ['essay_plan', 'mark_scheme', 'mark_scheme_assessment', 'mark_scheme_unit', 'foundational_quiz', 'conceptual_notes', 'exam_question', 'mastery_codex'].includes(state.task);
+        const _hideWcByTask = ['essay_plan', 'mark_scheme', 'mark_scheme_assessment', 'mark_scheme_unit', 'foundational_quiz', 'conceptual_notes', 'exam_question', 'mastery_codex', 'exam_crib'].includes(state.task);
         const _hideWcByCwStage = isCwTask && cwStepDef?.step && cwStepDef.step <= 8;
         if (_hideWcByTask || _hideWcByCwStage) {
             wcWidget.style.display = 'none';
@@ -12049,6 +12053,9 @@
                     });
                     // v7.19.255: re-tag stage-reveal (idempotent — also runs in onTransaction)
                     _scheduleStageRevealTag();
+                    // v7.19.271: per-response-section word counts (exam_crib hides the
+                    // global widget — each Q's response is its own ~650-word essay).
+                    if (state.task === 'exam_crib') _paintCribSectionWc(editorEl);
                 });
 
                 // Page count (content may have grown/shrunk)
@@ -12112,6 +12119,12 @@
                 try { if (!state.reviewMode) saveCanvasContent(); } catch (_) {}
             },
             onCreate: ({ editor }) => {
+                // v7.19.271: paint per-response-section word counts on first render
+                // (onUpdate doesn't fire for the programmatic seed). Deferred a tick so
+                // the section DOM + .swml-section-content wrappers exist.
+                if (state.task === 'exam_crib') {
+                    setTimeout(() => { try { _paintCribSectionWc(editor.options.element); } catch (_) {} }, 60);
+                }
                 // v7.19.146 safeguard #1: periodic unconditional 30s autosave. Any
                 // UI mutation that bypasses onUpdate (e.g. setNodeMarkup on custom
                 // nodes, programmatic content changes that don't dispatch a doc-
@@ -19407,6 +19420,30 @@
     //  new-attempt reload path); an explicit save persists it under this
     //  stage's key. One hop only — no cascade to later stages.
     // ══════════════════════════════════════════════════════════════
+    // v7.19.271: paint a live word-count badge on each editable response section
+    // (exam_crib hides the global widget). Counts only the section's own content —
+    // each Q's response is its own ~650-word essay. Badge is a contentEditable=false
+    // sibling of .swml-section-content, so it persists across edits and is never
+    // counted itself.
+    function _paintCribSectionWc(editorEl) {
+        if (!editorEl) return;
+        editorEl.querySelectorAll('[data-section-type="response"]').forEach(sec => {
+            const content = sec.querySelector('.swml-section-content');
+            if (!content) return;
+            const txt = (content.textContent || '').trim();
+            const wc = txt ? txt.split(/\s+/).filter(Boolean).length : 0;
+            let badge = sec.querySelector(':scope > .swml-section-wc');
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'swml-section-wc';
+                badge.setAttribute('aria-hidden', 'true');
+                try { badge.contentEditable = 'false'; } catch (_) {}
+                sec.appendChild(badge);
+            }
+            badge.textContent = (wc === 1) ? '1 word' : wc + ' words';
+        });
+    }
+
     const _PULL_STAGE_LABELS = {
         '_outlining':    { current: 'outline',        previous: 'plan'           },
         '_polishing':    { current: 'polished draft', previous: 'outline'        },
