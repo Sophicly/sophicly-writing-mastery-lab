@@ -1010,25 +1010,6 @@ window.WML = (function() {
             chatHeaderLabel: 'Sophia — Exam Prep Coach',
             sidebarSteps: null,
         },
-        // v7.19.267: Predicted Questions (non-fiction writing) — clones the inline-
-        // coaching shell, but the seeded template also carries read-only MODEL ANSWERS,
-        // and the protocol injects the IUMVCC transactional-writing rubric (not literary
-        // TTECEA). Deliberately NOT named "crib" — this is the 10 most-likely exam
-        // QUESTIONS + plans + model answers. Suffix '_pq' seeds the same way server-side
-        // (resolve_crib_template — a shared template-store mechanism, not student-facing).
-        predicted_questions: {
-            label: '10 Most Likely Questions (Non-fiction Writing)',
-            environment: 'inline-coaching',
-            panels: { sidebar: true, chat: false, guidance: false, document: true, progress: false },
-            steps: null,
-            elements: null,
-            protocolSource: 'shared',
-            protocolTask: 'predicted_questions',
-            completionType: 'manual',
-            storageSuffix: '_pq',
-            chatHeaderLabel: 'Sophia — Writing Coach',
-            sidebarSteps: null,
-        },
         assessment: {
             label: 'Assessment',
             environment: 'training',

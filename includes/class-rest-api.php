@@ -1658,10 +1658,7 @@ class SWML_REST_API {
             // ships at protocols/shared/crib-templates/{text}.json.
             // Server returns the template AS-IF it were saved — frontend
             // renders it; on first edit + autosave, it persists into user_meta.
-            // v7.19.267: '_pq' (task='predicted_questions') seeds the SAME way —
-            // non-fiction language papers (AQA P2 Q5 etc.) whose templates also
-            // carry read-only model-answer sections. Same resolver, same path.
-            if ($suffix === '_crib' || $suffix === '_pq') {
+            if ($suffix === '_crib') {
                 $crib_data = self::resolve_crib_template($text, $board);
                 if ($crib_data && !empty($crib_data['html'])) {
                     return rest_ensure_response([
@@ -1753,7 +1750,7 @@ class SWML_REST_API {
         // template_version vs current crib JSON's template_version. If saved is
         // older, reseed from new template, preserving any student-typed responses.
         // Persists migration so it doesn't re-run on every load.
-        if (($suffix === '_crib' || $suffix === '_pq') && is_array($doc) && !empty($doc['html'])) {
+        if ($suffix === '_crib' && is_array($doc) && !empty($doc['html'])) {
             $crib_data = self::resolve_crib_template($text, $board);
             if ($crib_data && !empty($crib_data['html']) && isset($crib_data['template_version'])) {
                 $current_ver = (int)$crib_data['template_version'];

@@ -1109,7 +1109,20 @@ class SWML_Protocol_Router {
                 'language2'          => 'rubric-edexcel-igcse-lang.md',
                 // (extend as more rubrics ship — Edexcel/Eduqas Lit + AQA Lang etc.)
             ];
-            $rubric_file = $crib_subject_map[$subject] ?? 'rubric-aqa-lit-shakespeare.md';
+            // v7.19.267: Non-fiction language papers route by EXACT text_slug (board+
+            // paper specific) to the IUMVCC transactional-writing rubric — NOT by
+            // subject, because subject 'language1' is ambiguous (AQA/Edexcel P1 are
+            // fiction/creative; OCR P1 + Edexcel IGCSE Spec A P1 are non-fiction). These
+            // are the same shared "10 Most Likely Questions" lesson, course-scoped to a
+            // language course → its aqa_lang_paper_2.json etc. template (model answers
+            // baked in). Lit routing below is untouched.
+            $nonfiction_lang_texts = ['aqa_lang_paper_2', 'eduqas_lang_paper_2', 'edexcel_lang_paper_2', 'ocr_lang_paper_1', 'edexcel_igcse_lang_a'];
+            $crib_text = str_replace('-', '_', strtolower((string) ($context['text'] ?? '')));
+            $is_nonfiction_lang = in_array($crib_text, $nonfiction_lang_texts, true);
+
+            $rubric_file = $is_nonfiction_lang
+                ? 'rubric-nonfiction-lang.md'
+                : ($crib_subject_map[$subject] ?? 'rubric-aqa-lit-shakespeare.md');
             $rubrics_dir = $plugin_dir . 'protocols/shared/modules/rubrics/';
             $modules_dir = $plugin_dir . 'protocols/shared/modules/';
 
@@ -1117,9 +1130,12 @@ class SWML_Protocol_Router {
                 $modules_dir . 'inline-coaching-core.md',
                 $modules_dir . 'inline-coaching-engine-1.md',
                 $rubrics_dir . 'rubric-base.md',
-                $rubrics_dir . 'gold-standard-exemplars-aqa-lit.md', // v7.19.35: Sophicly exemplar shapes for Move 4 quoting
-                $rubrics_dir . $rubric_file,
             ];
+            // Lit-only Move-4 quoting exemplars — skip for non-fiction writing.
+            if (!$is_nonfiction_lang) {
+                $files_to_load[] = $rubrics_dir . 'gold-standard-exemplars-aqa-lit.md';
+            }
+            $files_to_load[] = $rubrics_dir . $rubric_file;
 
             // v7.19.66: per-text AO3 substrate bank + context-drive-check for AQA Lit polish T5.
             // Loaded only when subject is one of the AQA Lit subjects so non-Lit cribs (e.g. IGCSE Lang) skip them.
@@ -1143,36 +1159,6 @@ class SWML_Protocol_Router {
             }
             $content = implode("\n\n---\n\n", $parts);
             error_log("WML Router: Loaded exam_crib protocol: " . count($parts) . " modules, " . strlen($content) . " chars (rubric={$rubric_file}, subject={$subject})");
-            return !empty(trim($content)) ? $content : null;
-        }
-
-        // v7.19.267: Predicted Questions (non-fiction writing) — same inline-coaching
-        // shell as exam_crib, but the rubric is transactional/persuasive (IUMVCC +
-        // MADFATHER'S CROPS + the eight hooks + AO5/AO6), NOT literary TTECEA. One
-        // shared rubric for now; per-board AO nuances can split later (Stage 3).
-        if ($task === 'predicted_questions') {
-            $rubrics_dir = $plugin_dir . 'protocols/shared/modules/rubrics/';
-            $modules_dir = $plugin_dir . 'protocols/shared/modules/';
-            $files_to_load = [
-                $modules_dir . 'inline-coaching-core.md',
-                $modules_dir . 'inline-coaching-engine-1.md',
-                $rubrics_dir . 'rubric-base.md',
-                $rubrics_dir . 'rubric-nonfiction-lang.md',
-            ];
-            $parts = [];
-            foreach ($files_to_load as $f) {
-                if (file_exists($f)) {
-                    $parts[] = file_get_contents($f);
-                } else {
-                    error_log("WML Router: nonfiction_crib module missing at {$f}");
-                }
-            }
-            if (empty($parts)) {
-                error_log("WML Router: nonfiction_crib loaded zero modules — protocol empty for subject={$subject}");
-                return null;
-            }
-            $content = implode("\n\n---\n\n", $parts);
-            error_log("WML Router: Loaded nonfiction_crib protocol: " . count($parts) . " modules, " . strlen($content) . " chars (subject={$subject})");
             return !empty(trim($content)) ? $content : null;
         }
 
