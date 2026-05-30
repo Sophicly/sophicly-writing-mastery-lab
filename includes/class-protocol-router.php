@@ -1146,6 +1146,36 @@ class SWML_Protocol_Router {
             return !empty(trim($content)) ? $content : null;
         }
 
+        // v7.19.267: Predicted Questions (non-fiction writing) — same inline-coaching
+        // shell as exam_crib, but the rubric is transactional/persuasive (IUMVCC +
+        // MADFATHER'S CROPS + the eight hooks + AO5/AO6), NOT literary TTECEA. One
+        // shared rubric for now; per-board AO nuances can split later (Stage 3).
+        if ($task === 'predicted_questions') {
+            $rubrics_dir = $plugin_dir . 'protocols/shared/modules/rubrics/';
+            $modules_dir = $plugin_dir . 'protocols/shared/modules/';
+            $files_to_load = [
+                $modules_dir . 'inline-coaching-core.md',
+                $modules_dir . 'inline-coaching-engine-1.md',
+                $rubrics_dir . 'rubric-base.md',
+                $rubrics_dir . 'rubric-nonfiction-lang.md',
+            ];
+            $parts = [];
+            foreach ($files_to_load as $f) {
+                if (file_exists($f)) {
+                    $parts[] = file_get_contents($f);
+                } else {
+                    error_log("WML Router: nonfiction_crib module missing at {$f}");
+                }
+            }
+            if (empty($parts)) {
+                error_log("WML Router: nonfiction_crib loaded zero modules — protocol empty for subject={$subject}");
+                return null;
+            }
+            $content = implode("\n\n---\n\n", $parts);
+            error_log("WML Router: Loaded nonfiction_crib protocol: " . count($parts) . " modules, " . strlen($content) . " chars (subject={$subject})");
+            return !empty(trim($content)) ? $content : null;
+        }
+
         // Memory Practice: universal single-file protocol — load directly, skip manifest
         if ($task === 'memory_practice') {
             $mp_path = $plugin_dir . 'protocols/shared/modules/memory-practice.md';
