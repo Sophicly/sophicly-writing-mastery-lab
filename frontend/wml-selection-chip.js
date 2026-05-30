@@ -30,7 +30,14 @@
     // Reference = Move 4 quote-exemplar from gold-standard-exemplars-aqa-lit.md.
     const ACTION_MAP = {
         tierScans:    ['scan-structure', 'scan-elements', 'scan-coherence', 'scan-concept', 'scan-context-drive'],
+        // v7.19.272: non-fiction writing has no fixed element set + no context AO,
+        // so its tier scan drops scan-elements + scan-context-drive (structure scan
+        // = IUMVCC, defined in rubric-nonfiction-lang.md).
+        tierScansNonfiction: ['scan-structure', 'scan-coherence', 'scan-concept'],
         elementPolish:['strengthen-hook', 'rephrase'],
+        // v7.19.272: "Turn into a device" — non-fiction only. Socratic (attempt-first):
+        // student writes 1-3 attempts, Sophia grades + models one. Suggest = help pick.
+        devices:      ['device-suggest', 'device-metaphor', 'device-simile', 'device-personification', 'device-alliteration', 'device-triadic', 'device-contrast', 'device-repetition', 'device-hyperbole', 'device-emotive', 'device-rhetorical-question', 'device-onomatopoeia', 'device-assonance', 'device-direct-address', 'device-foreshadowing', 'device-anaphora', 'device-asyndeton', 'device-polysyndeton', 'device-parallelism', 'device-other'],
         polishProse:  ['strengthen-vocabulary', 'tighten', 'adjust-tone'],
         fixSpag:      ['fix-spelling', 'fix-grammar', 'fix-punctuation'],
         reference:    ['explain', 'compare-gold-standard'],
@@ -67,11 +74,33 @@
         'check-sensory-variety':       'Sensory variety',
         'check-scene-structure-beats': 'Scene-structure beats',
         'check-show-dont-tell':        'Show-don’t-tell',
+        // Turn into a device (non-fiction) — v7.19.272
+        'device-suggest':            'Suggest a device',
+        'device-metaphor':           'Metaphor',
+        'device-simile':             'Simile',
+        'device-personification':    'Personification',
+        'device-alliteration':       'Alliteration',
+        'device-triadic':            'Triadic structure',
+        'device-contrast':           'Contrast',
+        'device-repetition':         'Repetition',
+        'device-hyperbole':          'Hyperbole',
+        'device-emotive':            'Emotive language',
+        'device-rhetorical-question':'Rhetorical question',
+        'device-onomatopoeia':       'Onomatopoeia',
+        'device-assonance':          'Assonance',
+        'device-direct-address':     'Direct address',
+        'device-foreshadowing':      'Foreshadowing',
+        'device-anaphora':           'Anaphora',
+        'device-asyndeton':          'Asyndeton',
+        'device-polysyndeton':       'Polysyndeton',
+        'device-parallelism':        'Parallelism',
+        'device-other':              'Other technique…',
     };
 
     const SECTION_GROUP_LABELS = {
         tierScans:    'Tier scan',
         elementPolish:'Element polish',
+        devices:      'Turn into a device',
         polishProse:  'Polish prose',
         fixSpag:      'Fix SPaG',
         reference:    'Reference',
@@ -167,9 +196,18 @@
         // element + offers ONE alternative using a different technique. The
         // chip itself is always visible; the protocol module enforces scope
         // (e.g. redirects if highlight isn't actually a hook).
+        // v7.19.272: non-fiction language writing papers (by text_slug) get a
+        // trimmed tier scan (no elements / no context-drive) + a "Turn into a
+        // device" group. Literature is unchanged.
+        const NF_TEXTS = ['aqa_lang_paper_2', 'eduqas_lang_paper_2', 'edexcel_lang_paper_2', 'ocr_lang_paper_1', 'edexcel_igcse_lang_a'];
+        const isNonfiction = !!(taskCtx && NF_TEXTS.includes(taskCtx.text));
+
         const groups = [];
-        groups.push({ key: 'tierScans',    actions: ACTION_MAP.tierScans });
+        groups.push({ key: 'tierScans',    actions: isNonfiction ? ACTION_MAP.tierScansNonfiction : ACTION_MAP.tierScans });
         groups.push({ key: 'elementPolish',actions: ACTION_MAP.elementPolish });
+        if (isNonfiction) {
+            groups.push({ key: 'devices', actions: ACTION_MAP.devices });
+        }
         groups.push({ key: 'polishProse',  actions: ACTION_MAP.polishProse });
         groups.push({ key: 'fixSpag',      actions: ACTION_MAP.fixSpag });
         groups.push({ key: 'reference',    actions: ACTION_MAP.reference });
@@ -873,6 +911,14 @@
                     onClick: (e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        // v7.19.272: "Other technique…" — don't send; seed the box so
+                        // the student names the device, then sends as a normal message.
+                        if (action === 'device-other') {
+                            textarea.value = 'Turn this into a ';
+                            textarea.focus();
+                            try { textarea.setSelectionRange(textarea.value.length, textarea.value.length); } catch (_) {}
+                            return;
+                        }
                         send(action, '');
                     },
                 });
