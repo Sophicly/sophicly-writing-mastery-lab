@@ -3653,11 +3653,54 @@
         const headerLabel = el('span', { className: 'swml-coach-panel-label' });
         headerLabel.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px;opacity:0.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Sophia — Exam Prep Coach';
         header.appendChild(headerLabel);
+
+        // v7.19.277: Clear-chat button — parity with the training-env chat
+        // header (wml-assessment.js:2591). Clears ONLY the coaching thread
+        // (messages + localStorage); never touches the document/essay text.
+        const clearCoachBtn = el('button', {
+            className: 'swml-clear-chat-btn',
+            title: 'Clear chat and start fresh',
+            innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
+            onClick: () => {
+                showConfirm(
+                    'Clear this coaching chat and start fresh? Your document, plan and response are preserved — only the chat messages will be removed.',
+                    () => {
+                        try {
+                            if (window.WML && window.WML.SelectionChip && typeof window.WML.SelectionChip.clearThread === 'function') {
+                                window.WML.SelectionChip.clearThread();
+                            }
+                        } catch (e) { console.warn('WML coach clear: thread clear failed', e && e.message); }
+                        // Wipe rendered messages, restore the empty state.
+                        messagesHost.innerHTML = '';
+                        messagesHost.appendChild(buildCoachEmptyState());
+                        console.log('WML Coach: chat cleared');
+                    },
+                    { confirmText: 'Clear Chat', cancelText: 'Keep Chat' }
+                );
+            }
+        });
+        header.appendChild(clearCoachBtn);
         sophiaPanel.appendChild(header);
 
         // Messages area — reuse the same class so bubbles + scrolling +
         // typography match training-env exactly.
         const messagesHost = el('div', { className: 'swml-canvas-chat-messages swml-coach-panel-messages' });
+        const empty = buildCoachEmptyState();
+        messagesHost.appendChild(empty);
+        sophiaPanel.appendChild(messagesHost);
+
+        return {
+            protoPanel: null,
+            sophiaPanel,
+            messagesHost,
+            miniChatHost: ctx.canvas,
+            _updateAttemptBadge: () => {},
+        };
+
+        // v7.19.277: empty-state builder hoisted into a named function so the
+        // clear-chat button can rebuild it. Function declarations hoist, so it
+        // is callable from the header clear button + the messagesHost line above.
+        function buildCoachEmptyState() {
         const empty = el('div', { className: 'swml-coach-panel-empty' });
         // v7.19.90 / v7.19.91: replace static empty-state copy with the sparkle
         // CTA button (mirrors the .swml-coach-continue-wrap pattern from
@@ -3720,16 +3763,8 @@
                 if (window.console) console.warn('[empty-cta] failed to start conversation', err);
             }
         });
-        messagesHost.appendChild(empty);
-        sophiaPanel.appendChild(messagesHost);
-
-        return {
-            protoPanel: null,
-            sophiaPanel,
-            messagesHost,
-            miniChatHost: ctx.canvas,
-            _updateAttemptBadge: () => {},
-        };
+        return empty;
+        } // end buildCoachEmptyState
     }
     // ══════════════════════════════════════════════════════════════════
 

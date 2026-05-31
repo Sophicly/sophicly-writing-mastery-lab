@@ -1325,10 +1325,23 @@
         console.log('WML SelectionChip: unmounted');
     }
 
+    // v7.19.277: clear the persistent coach thread — data + persistence only.
+    // The caller (buildInlineCoachingPanels) owns the messagesHost DOM and
+    // rebuilds its empty state. NEVER touches the document/essay text.
+    function clearThread() {
+        _conversationHistory = [];
+        _conversationId = 'crib_' + Date.now();
+        _lastSelectionInfo = null;
+        try { const k = _storageKey(); if (k) localStorage.removeItem(k); } catch (_) {}
+        _removeBox();
+        _removeContinueBtn();
+    }
+
     window.WML.SelectionChip = {
         mount,
         unmount,
         openBox,
+        clearThread,
         ACTION_MAP,
         ACTION_LABELS,
         buildPrompt,
