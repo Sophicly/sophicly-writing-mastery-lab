@@ -19176,7 +19176,14 @@
         // v7.18.7: exam_question task = AI generates question + extract into the document;
         // student doesn't write the words themselves. Persist wordCount: 0 so the saved
         // canvas doc never inflates the dashboard's per-student word count.
-        const _persistedWordCount = (snap.task === 'exam_question') ? 0 : wc;
+        // v7.19.284: exam_crib (10 Most Likely Questions) is a reference/customise doc
+        // shipped pre-seeded with ~10k words of scaffold (10×skeleton plans). The student
+        // does not author original prose here, and getResponseWordCount can leak the seed
+        // when the per-task baseline snapshot misses (response-section seed + baseline 0).
+        // Persist 0 — same rationale as exam_question. This is a strict subset of the
+        // universal template-baseline rule queued for the root fix (see handoff).
+        const _NON_WRITING_TASKS = ['exam_question', 'exam_crib'];
+        const _persistedWordCount = _NON_WRITING_TASKS.includes(snap.task) ? 0 : wc;
         _pendingCanvasSaveBody = {
             board: snap.board,
             text: snap.text,
