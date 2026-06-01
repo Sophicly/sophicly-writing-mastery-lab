@@ -2339,6 +2339,23 @@ TEMPLATE;
                 $preamble .= "**START DIRECTLY** by reading the student's response from the document, identifying the first area to polish, and beginning the Socratic polishing dialogue.\n";
                 $preamble .= "Do NOT ask the student to paste text, select a question, or choose what to polish.\n\n";
             }
+
+            // v7.19.283: Shared inline-coaching pedagogy for ALL polishing (literature
+            // + language + creative writing). Injected here (preamble) — not in
+            // load_modular_protocol — so it ALSO reaches polishing sessions whose subject
+            // (creative_writing / nonfiction) has no modular manifest and falls back to the
+            // legacy path. Subject-agnostic shell: attempt-first → two contrasting worked
+            // examples → fade, STOP RULE (loop must resolve), RE-ANCHOR, no invented quotas.
+            // The worked-example reveal branches by subject INSIDE the module.
+            $pedagogy_path = SWML_PROTOCOLS_PATH . 'shared/modules/coaching-pedagogy-shared.md';
+            if (file_exists($pedagogy_path)) {
+                $pedagogy = file_get_contents($pedagogy_path);
+                if (!empty(trim($pedagogy))) {
+                    $preamble .= "\n" . $pedagogy . "\n";
+                }
+            } else {
+                error_log("WML Router: coaching-pedagogy-shared.md missing at {$pedagogy_path}");
+            }
         }
 
         // Question if established
