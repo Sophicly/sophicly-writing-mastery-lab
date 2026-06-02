@@ -8106,7 +8106,9 @@
             rightPanel.appendChild(timeWrap);
 
             // Word target progress
-            // v7.19.208: Skip for mastery_codex — induction reflections, no word target.
+            // v7.19.208: Skip the essay word-target panel for mastery_codex.
+            // v7.19.285: ...but give the Codex its own SOFT word-count panel (total
+            // words written across the journal, aspirational 650/week target, no gate).
             if (state.task !== 'mastery_codex') {
                 const progressWrap = el('div', { className: 'swml-canvas-plan-section', id: 'swml-canvas-wc-progress' });
                 progressWrap.appendChild(el('h4', { innerHTML: '<span class="swml-guide-icon" style="color:#4D76FD">' + SVG_GUIDE_GRAPH + '</span> Word Count Target' }));
@@ -8119,6 +8121,25 @@
                 diagWcLabel = wcLabel;
                 progressWrap.appendChild(wcLabel);
                 rightPanel.appendChild(progressWrap);
+            } else {
+                const codexWcWrap = el('div', { className: 'swml-canvas-plan-section', id: 'swml-codex-wc-progress' });
+                codexWcWrap.appendChild(el('h4', { innerHTML: '<span class="swml-guide-icon" style="color:#4D76FD">' + SVG_GUIDE_GRAPH + '</span> Codex Word Count' }));
+                const codexBar = el('div', { className: 'swml-canvas-progress-bar' });
+                const codexFill = el('div', { className: 'swml-canvas-progress-fill', id: 'swml-codex-wc-fill' });
+                codexBar.appendChild(codexFill);
+                codexWcWrap.appendChild(codexBar);
+                codexWcWrap.appendChild(el('p', { id: 'swml-codex-wc-label', textContent: '0 words' }));
+                codexWcWrap.appendChild(el('p', {
+                    id: 'swml-codex-wc-sub',
+                    style: { fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '2px', lineHeight: '1.4' },
+                    textContent: codexWcSubText(0),
+                }));
+                rightPanel.appendChild(codexWcWrap);
+                // Initial paint once the editor is mounted (count any resumed answers).
+                // Second delayed pass: on server resume, setContent fires AFTER onCreate,
+                // so the immediate rAF can see an empty doc — repaint once content lands.
+                requestAnimationFrame(() => requestAnimationFrame(() => _paintCodexWc(canvasEditor)));
+                setTimeout(() => _paintCodexWc(canvasEditor), 1400);
             }
 
             // v7.19.213: Mastery Codex — Share-link-with-tutor button. Same shape as the
@@ -9691,8 +9712,16 @@
                     modalOverlay.appendChild(modal);
                     canvas.appendChild(modalOverlay);
                 });
-            diagCompleteBtn = markCompleteBtn;
-            rightPanel.appendChild(markCompleteBtn);
+            // v7.19.285: Mastery Codex does NOT get the green "Mark Complete" button.
+            // It's the inherited diagnostic-submit affordance — it saves + LOCKS editing
+            // ("you won't be able to edit after this point"), which is wrong for a
+            // cumulative 9-week reflection journal you revisit weekly. The LearnDash
+            // footer "Mark Complete" is the correct (and only needed) completion path;
+            // the right panel shows a soft word-count target instead.
+            if (state.task !== 'mastery_codex') {
+                diagCompleteBtn = markCompleteBtn;
+                rightPanel.appendChild(markCompleteBtn);
+            }
 
             // ── Persistent diagnostic completion state (v7.12.30) ──
             // On re-entry, check if diagnostic was already submitted → green bar + disabled button + nav link
@@ -12066,6 +12095,8 @@
                 // Floating widget
                 const _liveWcWidget = document.getElementById('swml-wc-widget-label');
                 if (_liveWcWidget) _liveWcWidget.textContent = `${wc} / ${canvasWordTarget}`;
+                // v7.19.285: Mastery Codex soft word-count panel (input-field totals).
+                if (state.task === 'mastery_codex') _paintCodexWc(editor);
 
                 // v7.15.0: Mark Plan/Response InputFields as filled/empty
                 // v7.15.0: Single debounced pass for ALL completion indicators (no per-row observers)
@@ -15041,6 +15072,20 @@
     let canvasWordMinimum = 450;
     let canvasWordIdeal = 800;
     let canvasUsesWordCount = true;  // false for short-form (<20 marks)
+
+    // v7.19.285: Mastery Codex word count. The Codex is a cumulative reflection
+    // journal filled across the week-long Grade 9 Core Skills course — NOT a
+    // one-shot essay. So this is a SOFT aspirational target, never a gate (the
+    // LearnDash footer button handles lesson completion). 650 = a round weekly
+    // floor (~80 words across the 8 unit reflections); students are encouraged
+    // to go beyond. Subtext adapts so the panel always pulls forward.
+    const CODEX_WORD_TARGET = 650;
+    function codexWcSubText(n) {
+        if (n <= 0)                    return 'Aim for 650 this week — the strongest writers go beyond.';
+        if (n < CODEX_WORD_TARGET)     return `Target 650 this week — ${CODEX_WORD_TARGET - n} to go.`;
+        if (n === CODEX_WORD_TARGET)   return 'Target reached — keep going, the best go further.';
+        return `${n - CODEX_WORD_TARGET} beyond your 650 target — keep going.`;
+    }
     // v7.19.247: real Score-Summary dates as DATA (not new Date() baked into HTML).
     // _canvasStartedAt = first student content edit (server-stamped, from /canvas/load).
     // _canvasSignoffAt = tutor sign-off timestamp (from /canvas/load-signoff). Both feed
@@ -15451,6 +15496,41 @@
         // returns 0 from `|| 0`, total still reflects student's typed words).
         const baseline = liveEditorEl._swmlResponseBaseline || 0;
         return Math.max(0, total - baseline);
+    }
+
+    // v7.19.285: Total words a student has written across the whole Mastery Codex.
+    // Counts ONLY the text inside .swml-input-field nodes — the field prompt lives
+    // in a data-prompt attribute (never in textContent, see inputHTML), so the
+    // scaffold can't contaminate the count the way the exam_crib seed did. Select
+    // fields (grade dropdowns) are excluded — they are picks, not prose.
+    function getCodexWordCount(editor) {
+        const editorEl = (editor && editor.options && editor.options.element)
+            || document.getElementById('swml-tiptap-editor');
+        if (!editorEl) return 0;
+        let total = 0;
+        editorEl.querySelectorAll('.swml-input-field').forEach(field => {
+            const text = (field.textContent || '').trim();
+            if (text) total += text.split(/\s+/).filter(w => w.length > 0).length;
+        });
+        return total;
+    }
+
+    // v7.19.285: paint the Codex word-count panel (live-id lookup, same pattern as
+    // the footer wc — closure refs detach on canvas re-render).
+    function _paintCodexWc(editor) {
+        const n = getCodexWordCount(editor);
+        const fill = document.getElementById('swml-codex-wc-fill');
+        const lbl  = document.getElementById('swml-codex-wc-label');
+        const sub  = document.getElementById('swml-codex-wc-sub');
+        if (fill) {
+            const pct = Math.min(100, Math.round((n / CODEX_WORD_TARGET) * 100));
+            fill.style.width = pct + '%';
+            fill.style.background = n >= CODEX_WORD_TARGET
+                ? 'linear-gradient(90deg, #2c003e, #5333ed)'  // brand purple — beyond target
+                : '#4d76fd';
+        }
+        if (lbl) lbl.textContent = `${n} word${n !== 1 ? 's' : ''}`;
+        if (sub) sub.textContent = codexWcSubText(n);
     }
     // Snapshot the template word count once when editor content is first loaded.
     // Called from TipTap onCreate — captures instruction text before student types.
