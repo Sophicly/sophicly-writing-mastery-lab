@@ -3897,6 +3897,77 @@ TEMPLATE;
     }
 
     // ═══════════════════════════════════════════════════════════════════════
+    //  BEAT SEGMENTATION (v7.19.291, engine increment 1 — AQA Language P2 Q2)
+    //  The assessment was delivered WHOLE every turn (manifest assessment.steps
+    //  was empty) — that is why beats drifted (gold-standard skipped, paragraphs
+    //  batched, turns collapsed). This is the data contract for delivering ONE
+    //  beat per turn and gating advancement on verifying each beat fired.
+    //  DORMANT until the step files + loader override land (next increments) —
+    //  nothing calls these yet, so behaviour is unchanged.
+    //
+    //  Beat descriptor:
+    //    id     unique beat key (also the canvas/state pointer value)
+    //    step   manifest step number (drives load_modular_protocol + sidebar)
+    //    label  short sidebar chip label
+    //    group  sidebar accordion group (per-question, mark_scheme-style)
+    //    file   per-beat protocol step file (relative to manifest base_path)
+    //    type   'ask'     — AI poses a question; advance after the STUDENT answers
+    //           'produce' — AI must emit an artefact; advance only when DETECTED
+    //           'gate'    — Y-confirm hand-off between paragraphs
+    //    detect regex over the AI reply proving this beat fired ('produce'/'ask'/'gate')
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * v7.19.291: ordered beat sequence for a question-mode assessment.
+     * Increment 1 populates AQA Language P2 Q2 only (the freshly restructured
+     * paper); Q1/Q3/Q4/Q5 stubs come in later increments. Returns [] for any
+     * context without a defined sequence (caller falls back to whole-file load).
+     */
+    public function assessment_beat_sequence($context) {
+        // Increment 1 scope: AQA Language Paper 2 question-mode only.
+        if (self::assessment_mode($context) !== 'questions') return [];
+        return [
+            // SHARED setup precedes the per-question beats (step 1).
+            ['id' => 'setup',        'step' => 1,  'label' => 'Setup & Goals', 'group' => 'Setup',      'file' => 'modules/assessment-steps/a-setup.md',        'type' => 'ask',     'detect' => '/grade are you aiming for/i'],
+            // Q2 — 2 paragraphs, each four A-B-A-B inference units.
+            ['id' => 'q2_reflect',   'step' => 2,  'label' => 'Reflect',       'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-reflect.md',    'type' => 'ask',     'detect' => '/inference you drew|anchor it to/i'],
+            ['id' => 'q2_p1_mark',   'step' => 3,  'label' => '¶1 Mark',       'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',       'type' => 'produce', 'detect' => '/Unit 1 — Source A|Paragraph 1 \(4 marks/i'],
+            ['id' => 'q2_p1_feedback','step' => 4, 'label' => '¶1 Feedback',   'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-feedback.md',   'type' => 'produce', 'detect' => '/How to Improve/i'],
+            ['id' => 'q2_p1_gold',   'step' => 5,  'label' => '¶1 Gold',       'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',       'type' => 'produce', 'detect' => '/Your Paragraph Rewritten to Gold Standard[\s\S]*Optimal Gold Standard Model/i'],
+            ['id' => 'q2_p1_gate',   'step' => 6,  'label' => '→ ¶2',          'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gate.md',       'type' => 'gate',    'detect' => '/move to Paragraph 2/i'],
+            ['id' => 'q2_p2_selfrate','step' => 7, 'label' => '¶2 Self-rate',  'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-selfrate.md',   'type' => 'ask',     'detect' => '/scale of 1.?5|rate yourself/i'],
+            ['id' => 'q2_p2_aotarget','step' => 8, 'label' => '¶2 AO',         'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-aotarget.md',   'type' => 'ask',     'detect' => '/Assessment Objective Targeting|which.*AO1/i'],
+            ['id' => 'q2_p2_mark',   'step' => 9,  'label' => '¶2 Mark',       'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',       'type' => 'produce', 'detect' => '/Unit 1 — Source A|Paragraph 2 \(4 marks/i'],
+            ['id' => 'q2_p2_feedback','step' => 10,'label' => '¶2 Feedback',   'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-feedback.md',   'type' => 'produce', 'detect' => '/How to Improve/i'],
+            ['id' => 'q2_p2_gold',   'step' => 11, 'label' => '¶2 Gold',       'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',       'type' => 'produce', 'detect' => '/Your Paragraph Rewritten to Gold Standard[\s\S]*Optimal Gold Standard Model/i'],
+            ['id' => 'q2_summary',   'step' => 12, 'label' => 'Q2 Summary',    'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-summary.md',    'type' => 'produce', 'detect' => '/overall Question 2 score|Q2 Total/i'],
+        ];
+    }
+
+    /**
+     * v7.19.291: look up one beat descriptor by id. Returns null if absent.
+     */
+    public function assessment_beat($beat_id, $context) {
+        foreach ($this->assessment_beat_sequence($context) as $beat) {
+            if ($beat['id'] === $beat_id) return $beat;
+        }
+        return null;
+    }
+
+    /**
+     * v7.19.291: the beat that follows $beat_id in sequence, or null at the end.
+     */
+    public function assessment_next_beat($beat_id, $context) {
+        $seq = $this->assessment_beat_sequence($context);
+        foreach ($seq as $i => $beat) {
+            if ($beat['id'] === $beat_id) {
+                return $seq[$i + 1] ?? null;
+            }
+        }
+        return null;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
     //  QUESTION-MODE STATE MACHINE (v7.19.289, Stage 1 — AQA Language Paper 2)
     //  Mirrors the protocol's own SESSION_STATE.selected_questions / marks.qN
     //  variables back to Sophia every turn so she cannot re-mark a finished
