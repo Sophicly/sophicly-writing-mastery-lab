@@ -70,7 +70,7 @@
           "source_count": 2,
           "questions": [
             { "id": "Q1", "marks": 4, "aos": ["AO1"], "type": "multiple_choice", "description": "Choose 4 true statements from 8 about Source A" },
-            { "id": "Q2", "marks": 8, "aos": ["AO1"], "type": "short_analysis", "description": "Write a summary of differences/similarities using both sources" },
+            { "id": "Q2", "marks": 8, "aos": ["AO1"], "type": "short_analysis", "description": "Infer the differences between the two sources, supported by quotations (2026 spec: inference-led, not summary)" },
             { "id": "Q3", "marks": 12, "aos": ["AO2"], "type": "analysis", "description": "How does the writer use language to..." },
             { "id": "Q4", "marks": 16, "aos": ["AO3"], "type": "comparison", "description": "Compare how the writers convey different perspectives on..." }
           ]

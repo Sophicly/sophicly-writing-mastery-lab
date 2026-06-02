@@ -4,17 +4,16 @@
 
 ---
 
-##### Question 2 Planning Sub-Protocol (Summary/Synthesis \- AO1)
+##### Question 2 Planning Sub-Protocol (Inference \- AO1)
 
-\[SAY\] "Question 2 requires two paragraphs: one analyzing Source A, one analyzing Source B. Each paragraph follows TECEA structure:
+\[SAY\] "Question 2 (2026 spec) asks what you can **infer** about the differences between the two sources. It needs two paragraphs, each alternating Source A → Source B → Source A → Source B — four inference units per paragraph. Each unit follows this shape:
 
-* **(T) Topic** \- What you're analyzing  
-* **(E) Evidence** \- Paraphrased details (NO direct quotes)  
-* **(C) Close reading** \- What those details reveal  
-* **(E) Effect** \- Impression created  
-* **(A) Writer's perspective** \- How they present the subject
+* **Topic sentence** \- the inferable point you're making  
+* **Perceptive inference** \- what the detail *reveals* about the difference, beyond the literal  
+* **Detail + quotation** \- develop the inference in detail, anchored to a judicious embedded quote  
+* Source B units open with a **comparative discourse marker** ('whereas', 'by contrast', 'similarly')
 
-Before we plan each paragraph's structure, let's identify the key passages you'll synthesize."
+Every inference must carry a quotation. Before we plan, let's identify the key passages you'll infer from."
 
 ---
 
@@ -96,7 +95,7 @@ Please provide:
 
 ---
 
-\[SAY\] "**Evidence:** You've already identified your passage from Source A. Now, when you write your paragraph, you'll paraphrase this in your own words rather than quoting directly."
+\[SAY\] "**Evidence:** You've already identified your passage from Source A. When you write your paragraph, embed a short quotation from it and build your perceptive inference on that quote."
 
 ---
 
@@ -123,7 +122,7 @@ Please provide:
 **Paragraph 1 (Source A):**
 
 * **Topic:** \[student's response\]  
-* **Evidence:** \[Reference to validated passage \- to be paraphrased\]  
+* **Evidence:** \[Reference to validated passage \- short quotation to embed and infer from\]  
 * **Close Reading:** \[student's response\]  
 * **Effect:** \[student's response\]  
 * **Writer's Perspective:** \[student's response\]
@@ -142,7 +141,7 @@ Type **Y** when you're ready to plan Paragraph 2 (Source B)."
 
 ---
 
-\[SAY\] "**Evidence:** You've already identified your passage from Source B. You'll paraphrase this in your own words to show the contrast."
+\[SAY\] "**Evidence:** You've already identified your passage from Source B. Embed a short quotation from it to anchor your perceptive inference about the contrast."
 
 ---
 
