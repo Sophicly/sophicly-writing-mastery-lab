@@ -1305,6 +1305,13 @@ class SWML_REST_API {
         $html = wp_kses($html, $allowed_canvas_tags);
 
         $word_count = absint($params['wordCount'] ?? 0);
+        // v7.19.286: Universal template-baseline rule. The pristine template's word
+        // count (whole editable region + response-only) is captured client-side at
+        // fresh injection and persisted SET-ONCE here, so resume never recomputes the
+        // baseline from a doc that already holds student writing (root fix for the
+        // recurring "prepopulated template text counts toward words-written" bug).
+        $template_baseline = isset($params['templateBaseline']) && is_numeric($params['templateBaseline']) ? absint($params['templateBaseline']) : null;
+        $response_baseline = isset($params['responseBaseline']) && is_numeric($params['responseBaseline']) ? absint($params['responseBaseline']) : null;
         $comments = $params['comments'] ?? null;
         $topic_number = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
         $suffix = sanitize_text_field($params['suffix'] ?? '');
@@ -1378,6 +1385,8 @@ class SWML_REST_API {
         // wrote, not the scaffold), then render Date Started FROM this field on load.
         // Carry any existing value forward unchanged; never overwrite once set.
         $existing_started = '';
+        $existing_tpl_baseline = null;   // v7.19.286
+        $existing_resp_baseline = null;  // v7.19.286
         $existing_doc_raw = get_user_meta($user_id, $meta_key, true);
         if (!empty($existing_doc_raw)) {
             $existing_doc = is_array($existing_doc_raw) ? $existing_doc_raw : json_decode($existing_doc_raw, true);
@@ -1387,11 +1396,32 @@ class SWML_REST_API {
             if (is_array($existing_doc) && !empty($existing_doc['startedAt'])) {
                 $existing_started = $existing_doc['startedAt'];
             }
+            if (is_array($existing_doc) && isset($existing_doc['templateBaseline']) && is_numeric($existing_doc['templateBaseline'])) {
+                $existing_tpl_baseline = (int) $existing_doc['templateBaseline'];
+            }
+            if (is_array($existing_doc) && isset($existing_doc['responseBaseline']) && is_numeric($existing_doc['responseBaseline'])) {
+                $existing_resp_baseline = (int) $existing_doc['responseBaseline'];
+            }
         }
         if (!empty($existing_started)) {
             $doc['startedAt'] = $existing_started;
         } elseif ($word_count > 0) {
             $doc['startedAt'] = current_time('c');
+        }
+        // v7.19.286: set-once template baselines. Prefer an already-stored value
+        // (captured from the pristine template at first save); only accept the
+        // incoming value to FIRST-set it. This is the safety mechanism that lets a
+        // resume-save send baseline 0 (editor reset it on resume) WITHOUT clobbering
+        // the real stored baseline — preventing the "resumed essay shows 0 words" regression.
+        if ($existing_tpl_baseline !== null) {
+            $doc['templateBaseline'] = $existing_tpl_baseline;
+        } elseif ($template_baseline !== null) {
+            $doc['templateBaseline'] = $template_baseline;
+        }
+        if ($existing_resp_baseline !== null) {
+            $doc['responseBaseline'] = $existing_resp_baseline;
+        } elseif ($response_baseline !== null) {
+            $doc['responseBaseline'] = $response_baseline;
         }
 
         // v7.19.146 safeguard #2: reject empty-overwrite of a populated canvas.

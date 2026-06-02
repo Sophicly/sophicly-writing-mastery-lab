@@ -12249,26 +12249,26 @@
                 // path still snapshots normally so true template/placeholder words
                 // get subtracted from a fresh student's count.
                 const _wasResumedFromSave = !!savedContent && savedContent.indexOf('data-section-type') !== -1;
-                // v7.19.45: exam_crib doc seeds plan + response with extensive
-                // template scaffolds + sample paragraphs (~9800 words for the
-                // Macbeth crib). Forcing baseline to 0 on resume leaks every
-                // seed word into the live wc. Snapshot the current doc as the
-                // baseline instead — wc tracks NEW typing in this session
-                // (cumulative cross-session count is sacrificed; the widget's
-                // job is "X new words this session", not "X total ever").
-                const _isCribResume = _wasResumedFromSave && state.task === 'exam_crib';
-                if (_wasResumedFromSave && !_isCribResume) {
+                // v7.19.286: UNIVERSAL resume handling — no per-task branches. On resume
+                // the doc already holds student writing, so snapshotting here would absorb
+                // it as "template" (wc stuck at 0 — the Mohammed/RunCloudRescue bug). Default
+                // both baselines to 0; the AUTHORITATIVE set-once baseline (captured from the
+                // pristine template at first save) is rehydrated from the server doc in
+                // tryServerLoad and overrides this default once the async load lands. This is
+                // what makes seeded templates (crib + any future prepopulated doc) subtract
+                // their seed on resume without the old exam_crib special-case.
+                if (_wasResumedFromSave) {
                     const _editorEl = editor.options.element;
                     if (_editorEl) {
                         _editorEl._swmlTemplateBaseline = 0;
                         _editorEl._swmlResponseBaseline = 0;
                     }
-                    console.log('WML: Editor resumed from save — baselines forced to 0 (avoids student-text-as-template race)');
+                    console.log('WML: Editor resumed from save — baselines default 0, server baseline rehydrates in tryServerLoad (v7.19.286)');
                 } else {
-                    // v7.13.53: Snapshot template word count BEFORE first getResponseWordCount
-                    // v7.19.45: also runs on exam_crib resume so seed text doesn't count.
+                    // v7.13.53: Fresh template — snapshot the pristine scaffold/placeholder
+                    // words BEFORE the first getResponseWordCount so they are subtracted from
+                    // the student's count (and persisted set-once on first save).
                     snapshotTemplateBaseline(editor);
-                    if (_isCribResume) console.log('WML v7.19.45: exam_crib resume — baseline snapshotted against current doc, wc tracks new session typing');
                 }
                 const wc = getResponseWordCount(editor);
                 wcDisplay.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
@@ -15567,17 +15567,14 @@
             total += words.length;
         });
         editorEl._swmlTemplateBaseline = total;
-        // v7.14.73: Also snapshot response-only baseline for accurate word count
-        // v7.19.44: exam_crib snapshots COMBINED plan + response baseline so the
-        // wc widget starts at 0 (otherwise the seed template's plan + response
-        // text — ~9800 words for the Macbeth crib — count toward the student's
-        // total). Selector mirrors getResponseWordCount's crib-aware widening.
-        const _state = window.WML && window.WML.state;
-        const _isCrib = _state && _state.task === 'exam_crib';
-        const _baselineSelector = _isCrib
-            ? '[data-section-type="response"], [data-section-type="plan"]'
-            : '[data-section-type="response"]';
-        const responseSections = editorEl.querySelectorAll(_baselineSelector);
+        // v7.14.73: Also snapshot response-only baseline for accurate word count.
+        // v7.19.286: UNIFIED SELECTOR. The snapshot MUST use the exact same selector
+        // getResponseWordCount counts with ([data-section-type="response"]) — otherwise
+        // baseline ≠ counted-set and the subtraction is wrong. The old exam_crib
+        // "response + plan" widening is removed: crib seed exclusion now rides the
+        // universal persisted-baseline rule (set-once server store + resume rehydration),
+        // same path as every other task. No per-task selectors.
+        const responseSections = editorEl.querySelectorAll('[data-section-type="response"]');
         if (responseSections.length > 0) {
             let respTotal = 0;
             responseSections.forEach(section => {
@@ -19278,6 +19275,18 @@
                 ? window.location.href
                 : _buildWmlDeepLink({ board: snap.board, text: snap.text, topic: snap.topicNumber, task: snap.task }),
             cw_project_id: snap.cwProjectId,
+            // v7.19.286: persist the pristine-template baselines (set-once server-side)
+            // so resume subtracts the TEMPLATE, not the student's own words. Captured by
+            // snapshotTemplateBaseline at fresh inject; sent only when numeric. On resume
+            // the editor resets these to 0 — harmless, because the server store is set-once
+            // and will not overwrite the real baseline captured at first save.
+            ...(() => {
+                const _bEl = canvasEditor && canvasEditor.options && canvasEditor.options.element;
+                const _out = {};
+                if (_bEl && typeof _bEl._swmlTemplateBaseline === 'number') _out.templateBaseline = _bEl._swmlTemplateBaseline;
+                if (_bEl && typeof _bEl._swmlResponseBaseline === 'number') _out.responseBaseline = _bEl._swmlResponseBaseline;
+                return _out;
+            })(),
             // v7.17.73 / v7.18.19: Score piggyback. Spread-only-when-set keeps every
             // other autosave untouched (planning / FYW / CW / essay assessment).
             // Gate matches the extraction site in sendCanvasMessage. Now covers
@@ -19460,6 +19469,36 @@
             if (res.success && res.doc && res.doc.html) {
                 // v7.19.247: capture the real first-edit start date for the Score Summary.
                 _canvasStartedAt = res.doc.startedAt || _canvasStartedAt || '';
+                // v7.19.286: UNIVERSAL TEMPLATE-BASELINE REHYDRATION. The set-once
+                // baselines stored at first save describe the pristine template. Restore
+                // them onto the editor element so getResponseWordCount subtracts the
+                // TEMPLATE (not the student's words) after resume — overriding the
+                // onCreate default (baselines forced to 0 before this async load lands).
+                // Authoritative regardless of the local-vs-server content gate below: the
+                // baseline describes the template, not whichever HTML ends up displayed.
+                let _baselineRehydrated = false;
+                try {
+                    const _rEl = canvasEditor && canvasEditor.options && canvasEditor.options.element;
+                    if (_rEl) {
+                        if (typeof res.doc.templateBaseline === 'number') { _rEl._swmlTemplateBaseline = res.doc.templateBaseline; _baselineRehydrated = true; }
+                        if (typeof res.doc.responseBaseline === 'number') { _rEl._swmlResponseBaseline = res.doc.responseBaseline; _baselineRehydrated = true; }
+                    }
+                } catch (_) {}
+                if (_baselineRehydrated) {
+                    // Repaint the visible word-count surfaces with the corrected baseline
+                    // (setContent on resume uses emitUpdate:false, so onUpdate won't fire).
+                    // Deferred a tick: the local-vs-server gate below may setContent(server
+                    // html) synchronously AFTER this point — repaint must read settled content.
+                    setTimeout(() => {
+                        try {
+                            const _wc = getResponseWordCount(canvasEditor);
+                            const _f = document.getElementById('swml-footer-wc'); if (_f) _f.textContent = `${_wc} word${_wc !== 1 ? 's' : ''}`;
+                            const _pf = document.getElementById('swml-canvas-progress-fill'); if (_pf) { _pf.style.width = Math.min(100, Math.round((_wc / canvasWordTarget) * 100)) + '%'; _pf.style.background = getWordCountColour(_wc); }
+                            const _pl = document.getElementById('swml-canvas-wc-label'); if (_pl) _pl.textContent = getWordCountLabel(_wc);
+                            const _wid = document.getElementById('swml-wc-widget-label'); if (_wid) _wid.textContent = `${_wc} / ${canvasWordTarget}`;
+                        } catch (_) {}
+                    }, 0);
+                }
                 if (state.reviewMode) {
                     // Review mode: always load server content (student's document)
                     canvasEditor.commands.setContent(res.doc.html, false);
