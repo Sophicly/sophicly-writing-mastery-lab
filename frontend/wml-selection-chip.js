@@ -37,7 +37,12 @@
         elementPolish:['strengthen-hook', 'rephrase'],
         // v7.19.272: "Turn into a device" — non-fiction only. Socratic (attempt-first):
         // student writes 1-3 attempts, Sophia grades + models one. Suggest = help pick.
-        devices:      ['device-suggest', 'device-metaphor', 'device-simile', 'device-personification', 'device-alliteration', 'device-triadic', 'device-contrast', 'device-repetition', 'device-hyperbole', 'device-emotive', 'device-rhetorical-question', 'device-onomatopoeia', 'device-assonance', 'device-direct-address', 'device-foreshadowing', 'device-anaphora', 'device-asyndeton', 'device-polysyndeton', 'device-parallelism', 'device-other'],
+        // v7.19.287: ordered to the MADFATHER'S CROPS mnemonic (the device list students
+        // are taught) so the buttons mirror the framework: Metaphor, Alliteration, Direct
+        // address, Foreshadowing, Assonance, Triadic, Hyperbole, Emotive, Rhetorical
+        // question, Similes / Contrast, Repetition, Onomatopoeia, Personification, Sibilance.
+        // Suggest stays first (utility); advanced non-mnemonic devices tail; Other last.
+        devices:      ['device-suggest', 'device-metaphor', 'device-alliteration', 'device-direct-address', 'device-foreshadowing', 'device-assonance', 'device-triadic', 'device-hyperbole', 'device-emotive', 'device-rhetorical-question', 'device-simile', 'device-contrast', 'device-repetition', 'device-onomatopoeia', 'device-personification', 'device-sibilance', 'device-anaphora', 'device-asyndeton', 'device-polysyndeton', 'device-parallelism', 'device-other'],
         polishProse:  ['strengthen-vocabulary', 'tighten', 'adjust-tone'],
         fixSpag:      ['fix-spelling', 'fix-grammar', 'fix-punctuation'],
         reference:    ['explain', 'compare-gold-standard'],
@@ -79,6 +84,7 @@
         'device-metaphor':           'Metaphor',
         'device-simile':             'Simile',
         'device-personification':    'Personification',
+        'device-sibilance':          'Sibilance',
         'device-alliteration':       'Alliteration',
         'device-triadic':            'Triadic structure',
         'device-contrast':           'Contrast',
