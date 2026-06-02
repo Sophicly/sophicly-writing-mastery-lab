@@ -3812,8 +3812,27 @@ TEMPLATE;
         $task    = $context['task'] ?? '';
         if ($board !== 'aqa') return false;
         if ($task !== 'assessment' && $task !== 'redraft_assessment') return false;
+        // Paragraph-mode (literature essay) subjects — original v7.17.47 pilot.
         $lit_subjects = ['shakespeare', 'modern_text', '19th_century', 'poetry_anthology', 'unseen_poetry'];
-        return in_array($subject, $lit_subjects, true);
+        // Question-mode (discrete Q1..Q5) subjects — v7.19.289 Stage 1: AQA
+        // Language Paper 2 only. P1 (`language1`) deferred to a later stage
+        // (Section A multi-Q shape differs). `state.subject` arrives short.
+        $question_subjects = ['language2'];
+        return in_array($subject, $lit_subjects, true)
+            || in_array($subject, $question_subjects, true);
+    }
+
+    /**
+     * v7.19.289: which progress model applies to this assessment context.
+     * 'paragraphs' = literature single-essay paragraph pointer (intro→conclusion).
+     * 'questions'  = Language discrete-question pointer (Q1→Q5, each marked once).
+     * Every state-machine fn branches on this; the two models NEVER blend.
+     * Returns 'paragraphs' for any non-question subject (safe default = legacy path).
+     */
+    public static function assessment_mode($context) {
+        $subject = is_array($context) ? ($context['subject'] ?? '') : '';
+        $question_subjects = ['language2'];
+        return in_array($subject, $question_subjects, true) ? 'questions' : 'paragraphs';
     }
 
     /**
@@ -3833,6 +3852,320 @@ TEMPLATE;
     }
 
     /**
+     * v7.19.289: Ordered question list for a question-mode (Language) paper,
+     * sourced from language-paper-specs.json — NOT hardcoded. Flattens every
+     * section's questions in document order (AQA P2 → Q1..Q5).
+     * Returns [ ['id'=>'Q1','marks'=>4,'aos'=>['AO1'],'section'=>'Section A: Reading'], ... ]
+     * or [] when no usable spec is found.
+     */
+    private function assessment_question_order($context) {
+        $board   = $context['board']   ?? '';
+        $subject = $context['subject'] ?? '';
+        $specs = $this->load_paper_specs();
+        $nb = strtolower(str_replace('_', '-', (string) $board));
+        $sk = $this->normalise_subject_key($subject, $board);
+        $paper = $specs['lang'][$nb][$sk] ?? ($specs['lang'][$nb][$subject] ?? null);
+        if (!is_array($paper) || empty($paper['sections']) || !is_array($paper['sections'])) return [];
+        $out = [];
+        foreach ($paper['sections'] as $sec) {
+            $label = $sec['label'] ?? '';
+            foreach (($sec['questions'] ?? []) as $q) {
+                if (empty($q['id'])) continue;
+                $out[] = [
+                    'id'      => (string) $q['id'],
+                    'marks'   => isset($q['marks']) ? (int) $q['marks'] : null,
+                    'aos'     => (array) ($q['aos'] ?? []),
+                    'section' => (string) $label,
+                ];
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * v7.19.289: First question id (document order) not present in $scored_ids.
+     * Returns 'done' once every question is scored, or null when no order exists.
+     */
+    private function assessment_next_question($scored_ids, $context) {
+        $order = $this->assessment_question_order($context);
+        if (empty($order)) return null;
+        $scored = array_map('strval', (array) $scored_ids);
+        foreach ($order as $q) {
+            if (!in_array($q['id'], $scored, true)) return $q['id'];
+        }
+        return 'done';
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  QUESTION-MODE STATE MACHINE (v7.19.289, Stage 1 — AQA Language Paper 2)
+    //  Mirrors the protocol's own SESSION_STATE.selected_questions / marks.qN
+    //  variables back to Sophia every turn so she cannot re-mark a finished
+    //  question or restart from Q1 (Anam's loop). NO new pedagogy — captures
+    //  only what the protocol already emits. Paragraph-mode path is untouched.
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Cap a harvested key-strength / key-target phrase so the sticky note stays
+     * tiny (the block's authority comes from being short, not from re-stating
+     * full feedback that already lives in the last-24 chat window).
+     */
+    private static function trim_phrase($s, $max = 90) {
+        $s = trim(preg_replace('/\s+/', ' ', (string) $s));
+        if (function_exists('mb_strlen') && mb_strlen($s) > $max) {
+            $s = mb_substr($s, 0, $max - 1) . '…';
+        } elseif (strlen($s) > $max) {
+            $s = substr($s, 0, $max - 1) . '…';
+        }
+        return $s;
+    }
+
+    /**
+     * Detect whether one assistant message COMPLETES a given question, and
+     * harvest its overall mark + Key strength / Key target. Returns null if the
+     * message does not complete the question. $q = ['id','marks','section'].
+     *
+     * Completion anchor = the protocol's mandated closing prompt, emitted once
+     * at the end of the question's full sub-loop ("noted your … Question N
+     * mark" / "noted your complete Section B marks"). Secondary anchor = the
+     * question's overall score line. Either is sufficient for "done"; the score
+     * line additionally yields the numeric mark.
+     */
+    private static function extract_question_result_from_message($content, $q) {
+        $content = (string) $content;
+        $id = (string) ($q['id'] ?? '');
+        if ($id === '' || !preg_match('/(\d+)/', $id, $m)) return null;
+        $n       = $m[1];
+        $marks   = isset($q['marks']) ? (int) $q['marks'] : 0;
+        $section = (string) ($q['section'] ?? '');
+        // Section B (the extended-writing question) closes with "Section B",
+        // not "Question N". Detect it by section label or 40-mark weight.
+        $is_section_b = (stripos($section, 'Section B') !== false) || ($marks >= 40);
+
+        $close_re = $is_section_b
+            ? '/noted your\s+(?:complete\s+)?Section\s*B\b/i'
+            : '/noted your\s+(?:complete\s+)?Question\s*' . $n . '\b/i';
+        $score_re = $is_section_b
+            ? '/Total Section B score[:\s\*]+(\d+(?:\.\d+)?)\s*(?:out of|\/)\s*40\b/i'
+            : '/(?:overall\s+)?Question\s*' . $n . '\s*score[:\s\*]+(\d+(?:\.\d+)?)\s*(?:out of|\/)\s*' . max(1, $marks) . '\b/i';
+
+        $closed    = (bool) preg_match($close_re, $content);
+        $has_score = (bool) preg_match($score_re, $content, $sm);
+        if (!$closed && !$has_score) return null;
+
+        $mark = $has_score ? ($sm[1] . '/' . $marks) : null;
+        $strength = null;
+        $target   = null;
+        if (preg_match('/Key strength[:\s\*]+(.+)/i', $content, $ks)) {
+            $strength = self::trim_phrase(preg_replace('/[\*\]\\\\]+\s*$/', '', trim($ks[1])));
+        }
+        if (preg_match('/Key target[:\s\*]+(.+)/i', $content, $kt)) {
+            $target = self::trim_phrase(preg_replace('/[\*\]\\\\]+\s*$/', '', trim($kt[1])));
+        }
+        return ['mark' => $mark, 'strength' => $strength, 'target' => $target];
+    }
+
+    /**
+     * Scan an AI reply's lettered options (A — …, B) …, **C**: …) so a bare
+     * letter reply from the student binds server-side to what was offered.
+     * Returns ['A'=>'label', …] only when ≥2 options are present.
+     */
+    private static function extract_offered_actions($reply) {
+        $out = [];
+        $lines = preg_split('/\r?\n/', (string) $reply);
+        foreach ($lines as $line) {
+            if (preg_match('/^\s*\*{0,2}([A-Z])\*{0,2}\s*[—\-–).:]\s*(.+?)\s*$/u', $line, $m)) {
+                $letter = strtoupper($m[1]);
+                $label = trim(preg_replace('/[\*`]+/', '', $m[2]));
+                if ($label !== '' && !isset($out[$letter])) $out[$letter] = self::trim_phrase($label, 60);
+            }
+        }
+        return count($out) >= 2 ? $out : [];
+    }
+
+    /**
+     * Replay extract_question_result over the full assistant history. Used by
+     * migration (resumed pre-v7.19.289 attempts) + per-turn auto-repair (so the
+     * pointer self-corrects against chat truth, mirroring the paragraph path).
+     * Returns ['scored' => [id => ['mark','strength','target']], 'complete' => bool].
+     */
+    private static function derive_questions_scored_from_history($chat_history, $order) {
+        $scored = [];
+        $complete = false;
+        if (!is_array($chat_history) || empty($order)) return ['scored' => [], 'complete' => false];
+        foreach ($chat_history as $msg) {
+            if (($msg['role'] ?? '') !== 'assistant') continue;
+            $content = (string) ($msg['content'] ?? '');
+            if ($content === '') continue;
+            foreach ($order as $q) {
+                $res = self::extract_question_result_from_message($content, $q);
+                if ($res === null) continue;
+                $id = $q['id'];
+                if (!isset($scored[$id])) {
+                    $scored[$id] = ['mark' => $res['mark'], 'strength' => $res['strength'], 'target' => $res['target']];
+                } else {
+                    foreach (['mark', 'strength', 'target'] as $f) {
+                        if (empty($scored[$id][$f]) && !empty($res[$f])) $scored[$id][$f] = $res[$f];
+                    }
+                }
+            }
+            // Whole-paper completion = BARE [ASSESSMENT_COMPLETE] (Part E). The
+            // distinct [ASSESSMENT_COMPLETE Q1] marker has chars before `]`, so
+            // this strict pattern never false-triggers on it.
+            if (preg_match('/\[ASSESSMENT_COMPLETE\]/i', $content)) $complete = true;
+        }
+        return ['scored' => $scored, 'complete' => $complete];
+    }
+
+    /**
+     * Question-mode per-turn advancer. Detects per-question completion in THIS
+     * AI reply, records mark + strength + target, advances current_question to
+     * the next unscored question, captures the last lettered options offered,
+     * and flips completion on the whole-paper marker.
+     */
+    private function progress_questions_state($user_id, $sig, $state, $reply, $student, $context) {
+        list($board, $text, $topic, $suffix, $attempt) = $sig;
+        $order  = $this->assessment_question_order($context);
+        $scored = (array) ($state['questions_scored'] ?? []);
+        $patch  = [];
+        $changed = false;
+
+        foreach ($order as $q) {
+            $res = self::extract_question_result_from_message($reply, $q);
+            if ($res === null) continue;
+            $id = $q['id'];
+            if (!isset($scored[$id])) {
+                $scored[$id] = ['mark' => $res['mark'], 'strength' => $res['strength'], 'target' => $res['target']];
+                $changed = true;
+            } else {
+                foreach (['mark', 'strength', 'target'] as $f) {
+                    if (empty($scored[$id][$f]) && !empty($res[$f])) { $scored[$id][$f] = $res[$f]; $changed = true; }
+                }
+            }
+        }
+        if ($changed) {
+            $patch['questions_scored'] = $scored;
+            $patch['current_question'] = $this->assessment_next_question(array_keys($scored), $context) ?: 'done';
+        }
+
+        $offered = self::extract_offered_actions($reply);
+        if (!empty($offered)) $patch['last_offered_actions'] = $offered;
+
+        if (preg_match('/\[ASSESSMENT_COMPLETE\]/i', (string) $reply)) {
+            $patch['completion_emitted'] = true;
+            $patch['current_question']   = 'done';
+        }
+
+        if (empty($patch)) return $state;
+        return SWML_Session_Manager::update_assessment_state(
+            $user_id, $board, $text, $topic, $suffix, $attempt, $patch
+        );
+    }
+
+    /**
+     * Question-mode migration: backfill the pointer for an attempt started
+     * before v7.19.289 from its stored chat history, on first post-upgrade turn.
+     */
+    private function migrate_questions_state_from_history($user_id, $sig, $chat_history, $context) {
+        list($board, $text, $topic, $suffix, $attempt) = $sig;
+        $existing = SWML_Session_Manager::get_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt);
+        if (!empty($existing['questions_scored'])) return $existing; // already migrated
+        if (empty($chat_history) || !is_array($chat_history)) return $existing;
+        $order = $this->assessment_question_order($context);
+        $derived = self::derive_questions_scored_from_history($chat_history, $order);
+        if (empty($derived['scored']) && empty($derived['complete'])) return $existing;
+        $patch = [
+            'questions_scored'   => $derived['scored'],
+            'current_question'   => $derived['complete'] ? 'done'
+                                    : ($this->assessment_next_question(array_keys($derived['scored']), $context) ?: 'Q1'),
+            'completion_emitted' => !empty($derived['complete']),
+        ];
+        return SWML_Session_Manager::update_assessment_state(
+            $user_id, $board, $text, $topic, $suffix, $attempt, $patch
+        );
+    }
+
+    /**
+     * Question-mode sticky note. Authoritative per-turn state injected at the
+     * instruction tail. Auto-repairs against chat history first (mirrors the
+     * paragraph path), then emits the <assessment_state> block. Returns '' once
+     * the whole paper is complete.
+     */
+    private function build_questions_state_block($context, $user_id, $sig, $state) {
+        list($board, $text, $topic, $suffix, $attempt) = $sig;
+        $order = $this->assessment_question_order($context);
+
+        // Auto-repair: re-derive scored set from chat truth. If it disagrees
+        // with stored state (corruption / mid-rollout), reset to derived.
+        global $swml_chat_history;
+        if (!empty($swml_chat_history) && is_array($swml_chat_history)) {
+            $derived = self::derive_questions_scored_from_history($swml_chat_history, $order);
+            $stored_ids  = array_keys((array) ($state['questions_scored'] ?? []));
+            $derived_ids = array_keys($derived['scored']);
+            sort($stored_ids);
+            sort($derived_ids);
+            if ($stored_ids !== $derived_ids
+                || (!empty($derived['complete']) && empty($state['completion_emitted']))) {
+                $patch = [
+                    'questions_scored'   => $derived['scored'],
+                    'current_question'   => $derived['complete'] ? 'done'
+                                            : ($this->assessment_next_question($derived_ids, $context) ?: 'Q1'),
+                    'completion_emitted' => !empty($derived['complete']),
+                ];
+                $state = SWML_Session_Manager::update_assessment_state(
+                    $user_id, $board, $text, $topic, $suffix, $attempt, $patch
+                );
+                error_log('WML Assessment State (questions): AUTO-REPAIR scored=' . implode(',', $derived_ids)
+                    . ' user=' . (int) $user_id);
+            }
+        }
+        if (!empty($state['completion_emitted'])) return '';
+
+        $scored  = (array) ($state['questions_scored'] ?? []);
+        $current = $state['current_question'] ?? ($this->assessment_next_question(array_keys($scored), $context) ?: 'Q1');
+        if ($current === 'done') return '';
+
+        // Marked-so-far summary line (mirrors protocol marks.qN + Key strength/target).
+        $marked_lines = [];
+        $cur_meta = null;
+        foreach ($order as $q) {
+            if ($q['id'] === $current) $cur_meta = $q;
+            if (!isset($scored[$q['id']])) continue;
+            $r = $scored[$q['id']];
+            $bit = $q['id'] . (!empty($r['mark']) ? " ({$r['mark']})" : '');
+            $extra = [];
+            if (!empty($r['strength'])) $extra[] = 'strength: ' . $r['strength'];
+            if (!empty($r['target']))   $extra[] = 'target: ' . $r['target'];
+            if ($extra) $bit .= ' — ' . implode(' | ', $extra);
+            $marked_lines[] = $bit;
+        }
+        $marked_str = $marked_lines ? implode('; ', $marked_lines) : 'none yet';
+
+        $cur_marks = $cur_meta['marks'] ?? null;
+        $cur_aos   = !empty($cur_meta['aos']) ? implode('+', $cur_meta['aos']) : '';
+
+        $offered = (array) ($state['last_offered_actions'] ?? []);
+        $offered_str = '';
+        foreach ($offered as $L => $lab) $offered_str .= ($offered_str ? ', ' : '') . $L . '=' . $lab;
+
+        $block  = "\n\n---\n\n";
+        $block .= "<assessment_state authoritative=\"true\">\n";
+        $block .= "This is an ONGOING multi-question assessment, NOT a fresh submission. Trust this block over the conversation if they ever disagree.\n";
+        $block .= "Questions already marked: {$marked_str}.\n";
+        $block .= "Current question: {$current}";
+        if ($cur_marks) $block .= " ({$cur_marks} marks" . ($cur_aos ? ", {$cur_aos}" : '') . ")";
+        $block .= ".\n";
+        $block .= "Do NOT re-mark any question already listed as marked. Do NOT restart from Q1. Do NOT reopen with \"thanks for providing your full responses\" — the responses arrived earlier; the assessment is mid-flight.\n";
+        $block .= "Resume the protocol for {$current} from where the conversation left off. Mark every paragraph/slot of {$current} SEPARATELY exactly as the protocol specifies — its full per-paragraph sub-loop (self-assessment → granular mark table → feedback → gold-standard rewrite(s) → advance). Do NOT collapse the question into a single mark or skip the gold-standard rewrites.\n";
+        if ($offered_str !== '') {
+            $block .= "The last lettered options you offered were: {$offered_str}. If the student replies with a bare letter, it maps to THESE options — do not reinterpret it as essay content.\n";
+        }
+        $block .= "This block is internal bookkeeping — never quote it, never narrate the state machine to the student. Operate silently.\n";
+        $block .= "</assessment_state>\n";
+        $block .= "\n_(WML v7.19.289 — AQA Language Paper 2 question-pointer, Stage 1.)_\n";
+        return $block;
+    }
+
+    /**
      * Build the dynamic ASSESSMENT STATE block appended to system instructions.
      * Returns empty string when the state machine is not enabled for this context.
      */
@@ -3845,6 +4178,12 @@ TEMPLATE;
         $state = SWML_Session_Manager::get_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt);
         if (!empty($state['completion_emitted'])) {
             return '';
+        }
+
+        // v7.19.289: question-mode (AQA Language P2) uses its own sticky note —
+        // the paragraph machinery below NEVER runs for question-mode contexts.
+        if (self::assessment_mode($context) === 'questions') {
+            return $this->build_questions_state_block($context, $user_id, $sig, $state);
         }
 
         // v7.17.58: state auto-repair. Re-derive paragraphs_scored from chat
@@ -4025,6 +4364,13 @@ TEMPLATE;
         $state = SWML_Session_Manager::get_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt);
         if (!empty($state['completion_emitted'])) return $state;
 
+        // v7.19.289: question-mode (AQA Language P2) advancer — separate model.
+        if (self::assessment_mode($context) === 'questions') {
+            return $this->progress_questions_state(
+                $user_id, $sig, $state, (string) $ai_reply, trim((string) $student_turn), $context
+            );
+        }
+
         $reply   = (string) $ai_reply;
         $student = trim((string) $student_turn);
         $patch   = [];
@@ -4150,6 +4496,12 @@ TEMPLATE;
         if (!self::is_assessment_state_machine_enabled($context)) return null;
         $sig = self::resolve_attempt_signature($context);
         if (!$sig) return null;
+
+        // v7.19.289: question-mode (AQA Language P2) migrates via its own path.
+        if (self::assessment_mode($context) === 'questions') {
+            return $this->migrate_questions_state_from_history($user_id, $sig, $chat_history, $context);
+        }
+
         list($board, $text, $topic, $suffix, $attempt) = $sig;
 
         $existing = SWML_Session_Manager::get_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt);
