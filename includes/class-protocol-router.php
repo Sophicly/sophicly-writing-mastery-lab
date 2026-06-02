@@ -3967,6 +3967,27 @@ TEMPLATE;
         return null;
     }
 
+    /**
+     * v7.19.292: beats belong to a question by id prefix ('q2_' → Q2). Returns
+     * the first beat id for a question, or null if that question has no segmented
+     * beat sequence yet (Q1/Q3/Q4/Q5 in increment 2 — caller leaves them on the
+     * whole-protocol path).
+     */
+    public function assessment_first_beat_for_question($qid, $context) {
+        $prefix = strtolower((string) $qid) . '_';
+        foreach ($this->assessment_beat_sequence($context) as $b) {
+            if (strpos($b['id'], $prefix) === 0) return $b['id'];
+        }
+        return null;
+    }
+
+    /**
+     * v7.19.292: does this beat id belong to question $qid? (prefix match)
+     */
+    private function assessment_beat_in_question($beat_id, $qid) {
+        return strpos((string) $beat_id, strtolower((string) $qid) . '_') === 0;
+    }
+
     // ═══════════════════════════════════════════════════════════════════════
     //  QUESTION-MODE STATE MACHINE (v7.19.289, Stage 1 — AQA Language Paper 2)
     //  Mirrors the protocol's own SESSION_STATE.selected_questions / marks.qN
@@ -4126,6 +4147,38 @@ TEMPLATE;
             $patch['current_question']   = 'done';
         }
 
+        // v7.19.292: beat pointer (segmented questions — Q2 in increment 2).
+        // Walks current_beat through the active question's beats, advancing past
+        // EVERY beat whose signature is present in this reply (catch-up loop, so a
+        // batched reply doesn't desync the pointer), and HOLDING at the first beat
+        // whose artefact is missing — that hold is the gate: the state block then
+        // re-asserts that same beat next turn until Sophia produces it. Questions
+        // without a beat sequence (Q1/Q3/Q4/Q5) clear the pointer → whole-protocol.
+        $cur_q = $patch['current_question'] ?? ($state['current_question']
+                 ?? ($this->assessment_next_question(array_keys($scored), $context) ?: 'Q1'));
+        $first_beat = $this->assessment_first_beat_for_question($cur_q, $context);
+        if ($first_beat === null) {
+            if (($state['current_beat'] ?? '') !== '') $patch['current_beat'] = '';
+        } else {
+            $cur_beat = (string) ($state['current_beat'] ?? '');
+            if ($cur_beat === '' || !$this->assessment_beat_in_question($cur_beat, $cur_q)) {
+                $cur_beat = $first_beat;
+            }
+            $guard = 0;
+            $beat  = $this->assessment_beat($cur_beat, $context);
+            while ($beat && $guard++ < 30 && @preg_match($beat['detect'], (string) $reply)) {
+                $nb = $this->assessment_next_beat($cur_beat, $context);
+                if ($nb && $this->assessment_beat_in_question($nb['id'], $cur_q)) {
+                    $cur_beat = $nb['id'];
+                    $beat     = $this->assessment_beat($cur_beat, $context);
+                } else {
+                    $cur_beat = 'q_done';
+                    break;
+                }
+            }
+            if (($state['current_beat'] ?? '') !== $cur_beat) $patch['current_beat'] = $cur_beat;
+        }
+
         if (empty($patch)) return $state;
         return SWML_Session_Manager::update_assessment_state(
             $user_id, $board, $text, $topic, $suffix, $attempt, $patch
@@ -4229,6 +4282,26 @@ TEMPLATE;
         $block .= "Resume the protocol for {$current} from where the conversation left off. Mark every paragraph/slot of {$current} SEPARATELY exactly as the protocol specifies — its full per-paragraph sub-loop (self-assessment → granular mark table → feedback → gold-standard rewrite(s) → advance). Do NOT collapse the question into a single mark or skip the gold-standard rewrites.\n";
         if ($offered_str !== '') {
             $block .= "The last lettered options you offered were: {$offered_str}. If the student replies with a bare letter, it maps to THESE options — do not reinterpret it as essay content.\n";
+        }
+        // v7.19.292: current-beat directive (segmented questions — Q2). Names the
+        // ONE step to produce now and forbids batching/skipping. Pairs with the
+        // advancer, which holds current_beat until this step's artefact is detected
+        // → the model is re-told the same step each turn until it actually does it.
+        $beat_id = (string) ($state['current_beat'] ?? '');
+        if ($beat_id !== '' && $beat_id !== 'q_done' && $this->assessment_beat_in_question($beat_id, $current)) {
+            $beat = $this->assessment_beat($beat_id, $context);
+            if ($beat) {
+                $block .= "CURRENT STEP for {$current}: **{$beat['label']}**. Do ONLY this step this turn — do not run later steps in the same message, do not skip ahead.\n";
+                if ($beat['type'] === 'produce') {
+                    $block .= "This step is MANDATORY: output it IN FULL now. Do not advance to the next step until it is complete.\n";
+                }
+                if (strpos($beat_id, '_gold') !== false) {
+                    $block .= "This step is the gold-standard rewrites — produce BOTH \"Your Paragraph Rewritten to Gold Standard\" AND \"Optimal Gold Standard Model\" in the four-unit A-B-A-B format. Neither is optional; never skip this step.\n";
+                }
+                if ($beat['type'] === 'ask') {
+                    $block .= "Ask ONLY this one question, then stop and wait for the student. Do not also ask the next question or begin marking in the same turn.\n";
+                }
+            }
         }
         $block .= "This block is internal bookkeeping — never quote it, never narrate the state machine to the student. Operate silently.\n";
         $block .= "</assessment_state>\n";
