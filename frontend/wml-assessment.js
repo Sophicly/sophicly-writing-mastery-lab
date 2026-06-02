@@ -8054,6 +8054,18 @@
             const _deadlineDays = state.task === 'outlining' ? 14 : state.task === 'mastery_codex' ? 7 : 10;
             const deadlineDate = new Date(startDate.getTime() + _deadlineDays * 24 * 60 * 60 * 1000);
 
+            // v7.19.288: Mastery Codex Session timer = single source of truth. Reads the SAME
+            // course deadline window the dashboard sidebar badge uses (server-side
+            // Sophicly_LearnDash_Bridge::get_course_deadline_window, localized as
+            // swmlConfig.courseDeadline). Uses days_left DIRECTLY — never recomputed from
+            // dates — so the panel can no longer drift from the sidebar (the bug: the old
+            // per-browser localStorage first-open + hardcoded 7-day window). Falls back to
+            // the legacy local timer when the window is unavailable (non-G9 codex / bridge off).
+            const _codexCfg = (state.task === 'mastery_codex' && window.swmlConfig && swmlConfig.courseDeadline
+                && swmlConfig.courseDeadline.days_left !== undefined && swmlConfig.courseDeadline.days_left !== null)
+                ? swmlConfig.courseDeadline : null;
+            const _codexStartDate = (_codexCfg && _codexCfg.start_date) ? new Date(_codexCfg.start_date) : startDate;
+
             function formatRelativeTime(date) {
                 const diff = Date.now() - date.getTime();
                 const mins = Math.floor(diff / 60000);
@@ -8068,6 +8080,18 @@
             }
 
             function formatCountdown() {
+                // v7.19.288: Codex reads days_left straight from the deadline engine window —
+                // identical to the sidebar badge, no date recomputation (= no drift).
+                if (_codexCfg) {
+                    const dl = parseInt(_codexCfg.days_left, 10);
+                    const dt = parseInt(_codexCfg.days_total, 10) || 7;
+                    if (isNaN(dl) || dl <= 0) return { text: 'Overdue', pct: 100, colour: '#dc2626', animated: false };
+                    const cpct = Math.min(100, Math.max(0, Math.round(((dt - dl) / dt) * 100)));
+                    const clbl = `${dl} day${dl !== 1 ? 's' : ''} remaining`;
+                    if (dl <= 2) return { text: clbl, pct: cpct, colour: '#E67E22', animated: false };
+                    if (dl <= 5) return { text: clbl, pct: cpct, colour: '#F1C40F', animated: false };
+                    return { text: clbl, pct: cpct, colour: '#51dacf', animated: true };
+                }
                 const remaining = deadlineDate.getTime() - Date.now();
                 if (remaining <= 0) return { text: 'Overdue', pct: 100, colour: '#dc2626', animated: false };
                 const daysLeft = Math.ceil(remaining / (24 * 60 * 60 * 1000));
@@ -8080,7 +8104,7 @@
 
             const timeWrap = el('div', { className: 'swml-canvas-plan-section' });
             timeWrap.appendChild(el('h4', { innerHTML: '<span class="swml-guide-icon" style="color:#51dacf">' + SVG_GUIDE_STOPWATCH + '</span> Session' }));
-            const startedLabel = el('p', { textContent: `Started: ${formatRelativeTime(startDate)}` });
+            const startedLabel = el('p', { textContent: `Started: ${formatRelativeTime(_codexStartDate)}` });
             timeWrap.appendChild(startedLabel);
             const countdown = formatCountdown();
             const deadlineBar = el('div', { className: 'swml-canvas-progress-bar' });

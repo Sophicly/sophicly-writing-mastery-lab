@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.287
+ * Version: 7.19.288
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.287');
+define('SWML_VERSION', '7.19.288');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -366,6 +366,8 @@ class Sophicly_Writing_Mastery_Lab {
             'reviewStudentName' => $review_student_name,
             'viewerMode'       => $embed_review['viewer_mode'],    // v7.15.53: 'edit' | 'comment' | 'readonly'
             'targetUserId'     => $embed_review['target_user_id'], // v7.15.53: student whose canvas is being viewed
+            // v7.19.288: course deadline window (same source as sidebar badge) for the Codex timer.
+            'courseDeadline'   => $this->get_course_deadline_for_config($embed_review['target_user_id'] ?: 0),
             // v7.15.76: Feedback-unlock flags for the target student. Falls back
             // to the current user when not in review mode (student self-view).
             // JS gates on viewerMode==='edit' before applying, so tutor/parent
@@ -780,6 +782,8 @@ class Sophicly_Writing_Mastery_Lab {
                 'courseResumeUrl' => '',
                 // v7.17.36: LD topic permalink for student-data lesson_url stamping.
                 'lessonUrl'      => get_queried_object_id() ? get_permalink(get_queried_object_id()) : '',
+                // v7.19.288: course deadline window (same source as sidebar badge) for the Codex timer.
+                'courseDeadline' => $this->get_course_deadline_for_config($embed_review['target_user_id'] ?: 0),
                 'covers'         => get_option('swml_cover_images', []),
                 'urlParams'      => [
                     'mode' => 'guided', 'board' => '', 'subject' => '', 'text' => '',
@@ -922,6 +926,27 @@ class Sophicly_Writing_Mastery_Lab {
      * not the one the student is currently browsing. This method tries multiple
      * strategies to get the correct current course. (v7.14.91)
      */
+    /**
+     * v7.19.288: Single source of truth for the Mastery Codex Session timer.
+     * Returns the SAME course deadline window the dashboard sidebar badge uses
+     * (Sophicly_LearnDash_Bridge::get_course_deadline_window — enrollment-anchored,
+     * stored in unit_deadlines), so the Codex panel stops diverging from the sidebar.
+     * Was a per-browser localStorage first-open + hardcoded 7-day timer. Returns null
+     * when no course resolves or the bridge is unavailable → JS falls back to the
+     * legacy local timer. $target_uid lets review mode read the STUDENT's window.
+     */
+    private function get_course_deadline_for_config($target_uid = 0) {
+        if (!class_exists('Sophicly_LearnDash_Bridge')) return null;
+        $uid = $target_uid ?: get_current_user_id();
+        if (!$uid) return null;
+        $course_id = $this->resolve_current_course_id(get_queried_object_id());
+        if (!$course_id) return null;
+        $br = Sophicly_LearnDash_Bridge::init();
+        if (!$br || !method_exists($br, 'get_course_deadline_window')) return null;
+        $win = $br->get_course_deadline_window($uid, $course_id);
+        return is_array($win) ? $win : null;
+    }
+
     private function resolve_current_course_id($post_id) {
         $debug = defined('SWML_DEBUG_COURSE_RESOLVE') && SWML_DEBUG_COURSE_RESOLVE;
         if ($debug) error_log("[SWML] resolve_course START: post_id={$post_id} uri=" . ($_SERVER['REQUEST_URI'] ?? 'none'));
