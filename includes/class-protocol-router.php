@@ -3857,14 +3857,13 @@ TEMPLATE;
         $lit_subjects = ['shakespeare', 'modern_text', '19th_century', 'poetry_anthology', 'unseen_poetry'];
         // Question-mode (discrete Q1..Q5) subjects — v7.19.289 Stage 1: AQA
         // Language Paper 2 only. P1 (`language1`) deferred to a later stage.
-        // v7.19.300 ROOT FIX: the runtime subject is 'language_p2' (frontend/bridge
-        // form), NOT the short 'language2' this gate assumed — so the whole question-
-        // mode machine was DORMANT for P2 (no ledger, strip never fired, monolith
-        // loaded every turn). Normalise hyphens + accept every P2 spelling.
-        $sq = strtolower(str_replace('-', '_', (string) $subject));
-        $question_subjects = ['language2', 'language_p2', 'language_paper_2', 'lang_p2'];
+        // v7.19.301: REVERTED to dormant ('language2' only — never matches the live
+        // 'language_p2' subject → question-mode stays OFF → stable monolith). See the
+        // note in assessment_mode(): re-activate only after the advancer writes
+        // current_beat reliably AND derive_segmented_step's no-beat fallback is fixed.
+        $question_subjects = ['language2'];
         return in_array($subject, $lit_subjects, true)
-            || in_array($sq, $question_subjects, true);
+            || in_array($subject, $question_subjects, true);
     }
 
     /**
@@ -3876,12 +3875,17 @@ TEMPLATE;
      */
     public static function assessment_mode($context) {
         $subject = is_array($context) ? ($context['subject'] ?? '') : '';
-        // v7.19.300 ROOT FIX: normalise + accept all AQA Lang P2 subject forms. Runtime
-        // sends 'language_p2', not the short 'language2' the old gate checked — the
-        // mismatch left the question-mode machine dormant for P2. Keep both forms.
-        $s = strtolower(str_replace('-', '_', (string) $subject));
-        $question_subjects = ['language2', 'language_p2', 'language_paper_2', 'lang_p2'];
-        return in_array($s, $question_subjects, true) ? 'questions' : 'paragraphs';
+        // v7.19.301: REVERTED to dormant ('language2' only — never matches the live
+        // 'language_p2' subject, so question-mode stays OFF → stable monolith). The
+        // v7.19.300 activation was correct about the subject mismatch, but exposed a
+        // SECOND bug: the per-reply advancer never writes `current_beat`, so
+        // derive_segmented_step fell back to the frontend step (stuck at 8) and the
+        // strip loaded a 10-line slice → AI freewheeled/hallucinated. Re-activate ONLY
+        // after: (a) the advancer reliably sets current_beat per turn, and (b)
+        // derive_segmented_step returns 0 (no-segment → whole-proc fallback) when no
+        // valid beat — never the frontend step. Then broaden this gate again.
+        $question_subjects = ['language2'];
+        return in_array($subject, $question_subjects, true) ? 'questions' : 'paragraphs';
     }
 
     /**
