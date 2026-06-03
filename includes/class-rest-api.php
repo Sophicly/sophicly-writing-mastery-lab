@@ -1010,6 +1010,17 @@ class SWML_REST_API {
             ];
             if ($assessment_state !== null) {
                 $response_payload['assessmentState'] = $assessment_state;
+                // v7.19.294 (Increment 0): surface the server-derived sidebar step +
+                // group from the held beat pointer so the frontend can highlight the
+                // active step authoritatively. Dormant for non-segmented questions.
+                if (class_exists('SWML_Protocol_Router')
+                    && SWML_Protocol_Router::assessment_mode($prog_context) === 'questions') {
+                    $ptr = SWML_Protocol_Router::instance()->segmented_sidebar_pointer($prog_context, $assessment_state);
+                    if ($ptr) {
+                        $response_payload['assessmentState']['sidebarStep']  = $ptr['step'];
+                        $response_payload['assessmentState']['sidebarGroup'] = $ptr['group'];
+                    }
+                }
             }
             return rest_ensure_response($response_payload);
         }

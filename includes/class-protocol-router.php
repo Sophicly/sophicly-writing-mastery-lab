@@ -713,8 +713,8 @@ class SWML_Protocol_Router {
             }
         }
 
-        $modular_protocol = $this->load_modular_protocol($context);
-        
+        $modular_protocol = $this->load_modular_protocol($context, $user_id);
+
         if ($modular_protocol) {
             // Inject skip instructions at the TOP of the protocol when poem/text is pre-selected
             $skip_block = '';
@@ -979,7 +979,7 @@ class SWML_Protocol_Router {
      * and are referenced from manifests. Board-specific step files live in the
      * board's own directory.
      */
-    private function load_modular_protocol($context) {
+    private function load_modular_protocol($context, $user_id = 0) {
         $board   = self::normalize_board($context['board'] ?? 'aqa');
         $subject = $context['subject'] ?? '';
         $task    = $context['task'] ?? 'planning';
@@ -1316,6 +1316,19 @@ class SWML_Protocol_Router {
                         ? 'modules/exam-question-creator-modern.md'
                         : $f;
                 }, $files);
+            }
+        }
+
+        // v7.19.294 (Increment 0): server-driven beat segmentation for question-mode
+        // assessment. The held ledger beat pointer (the step still OWED at the gate)
+        // overrides the frontend step — but ONLY when the manifest actually defines
+        // that step. While assessment.steps is empty (pre-segmentation) this is inert,
+        // so the whole-protocol path is untouched and partial rollout is always safe:
+        // any question without a step file falls back to the frontend step + always-set.
+        if ($task === 'assessment' && self::assessment_mode($context) === 'questions') {
+            $seg_step = $this->derive_segmented_step($context, $user_id);
+            if ($seg_step > 0 && !empty($task_config['steps'][$seg_step])) {
+                $step = $seg_step;
             }
         }
 
@@ -3989,6 +4002,48 @@ TEMPLATE;
      */
     private function assessment_beat_in_question($beat_id, $qid) {
         return strpos((string) $beat_id, strtolower((string) $qid) . '_') === 0;
+    }
+
+    /**
+     * v7.19.294 (Increment 0): the manifest step the loader should load for a
+     * question-mode assessment turn = the step of the beat the advancer HELD at
+     * the gate last turn (the artefact still owed). Reads `current_beat` from the
+     * ledger; falls back to the frontend `$context['step']` when there is no held
+     * beat (pre-pointer attempt, q_done, or non-segmented question). The loader
+     * gates the result on the manifest actually defining that step, so this is
+     * inert while assessment.steps is empty.
+     */
+    public function derive_segmented_step($context, $user_id = 0) {
+        $fallback = (int) ($context['step'] ?? 1);
+        if (self::assessment_mode($context) !== 'questions') return $fallback;
+        $sig = self::resolve_attempt_signature($context);
+        if (!$sig) return $fallback;
+        list($board, $text, $topic, $suffix, $attempt) = $sig;
+        if (!class_exists('SWML_Session_Manager')) return $fallback;
+        $state = SWML_Session_Manager::get_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt);
+        $beat_id = (string) ($state['current_beat'] ?? '');
+        if ($beat_id === '' || $beat_id === 'q_done') return $fallback;
+        $beat = $this->assessment_beat($beat_id, $context);
+        if (!$beat || empty($beat['step'])) return $fallback;
+        return (int) $beat['step'];
+    }
+
+    /**
+     * v7.19.294 (Increment 0): map the held beat → its manifest step + sidebar
+     * group, for the REST payload so the frontend can highlight the active step
+     * server-side (authoritative) rather than from [STEP_ADVANCE:N]. Returns null
+     * when there is no segmented beat to surface.
+     */
+    public function segmented_sidebar_pointer($context, $state) {
+        if (self::assessment_mode($context) !== 'questions') return null;
+        $beat_id = is_array($state) ? (string) ($state['current_beat'] ?? '') : '';
+        if ($beat_id === '' || $beat_id === 'q_done') return null;
+        $beat = $this->assessment_beat($beat_id, $context);
+        if (!$beat) return null;
+        return [
+            'step'  => (int) ($beat['step'] ?? 0),
+            'group' => (string) ($beat['group'] ?? ''),
+        ];
     }
 
     // ═══════════════════════════════════════════════════════════════════════
