@@ -1339,6 +1339,16 @@ class SWML_Protocol_Router {
             $files = array_merge($files, $step_files);
         }
 
+        // v7.19.300 TEMP DIAG: why is the Q2 strip not firing? capture the gates.
+        if ($task === 'assessment') {
+            error_log('WML SEG DIAG: subject=[' . ($context['subject'] ?? '?') . ']'
+                . ' mode=' . self::assessment_mode($context)
+                . ' frontend_step=' . ((int) ($context['step'] ?? 1))
+                . ' final_step=' . $step
+                . ' is_seg=' . ($is_segmented_q ? '1' : '0')
+                . ' seg_step=' . ($seg_step ?? '-'));
+        }
+
         // v7.19.299 (Increment 1): conditional strip. When the held beat IS segmented
         // (a step file exists for it), remove the whole-procedure files from this turn's
         // context so ONLY the reference set + the one beat file load — the model sees
@@ -3846,11 +3856,15 @@ TEMPLATE;
         // Paragraph-mode (literature essay) subjects — original v7.17.47 pilot.
         $lit_subjects = ['shakespeare', 'modern_text', '19th_century', 'poetry_anthology', 'unseen_poetry'];
         // Question-mode (discrete Q1..Q5) subjects — v7.19.289 Stage 1: AQA
-        // Language Paper 2 only. P1 (`language1`) deferred to a later stage
-        // (Section A multi-Q shape differs). `state.subject` arrives short.
-        $question_subjects = ['language2'];
+        // Language Paper 2 only. P1 (`language1`) deferred to a later stage.
+        // v7.19.300 ROOT FIX: the runtime subject is 'language_p2' (frontend/bridge
+        // form), NOT the short 'language2' this gate assumed — so the whole question-
+        // mode machine was DORMANT for P2 (no ledger, strip never fired, monolith
+        // loaded every turn). Normalise hyphens + accept every P2 spelling.
+        $sq = strtolower(str_replace('-', '_', (string) $subject));
+        $question_subjects = ['language2', 'language_p2', 'language_paper_2', 'lang_p2'];
         return in_array($subject, $lit_subjects, true)
-            || in_array($subject, $question_subjects, true);
+            || in_array($sq, $question_subjects, true);
     }
 
     /**
@@ -3862,8 +3876,12 @@ TEMPLATE;
      */
     public static function assessment_mode($context) {
         $subject = is_array($context) ? ($context['subject'] ?? '') : '';
-        $question_subjects = ['language2'];
-        return in_array($subject, $question_subjects, true) ? 'questions' : 'paragraphs';
+        // v7.19.300 ROOT FIX: normalise + accept all AQA Lang P2 subject forms. Runtime
+        // sends 'language_p2', not the short 'language2' the old gate checked — the
+        // mismatch left the question-mode machine dormant for P2. Keep both forms.
+        $s = strtolower(str_replace('-', '_', (string) $subject));
+        $question_subjects = ['language2', 'language_p2', 'language_paper_2', 'lang_p2'];
+        return in_array($s, $question_subjects, true) ? 'questions' : 'paragraphs';
     }
 
     /**
