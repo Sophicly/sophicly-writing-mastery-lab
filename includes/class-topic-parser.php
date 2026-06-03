@@ -554,6 +554,30 @@ class SWML_Topic_Parser {
                 if (preg_match('/\*\*Text:\*\*\s*(.+)/i', $qcontent, $tm)) $q['text_ref'] = trim($tm[1]);
                 if (preg_match('/\*\*Line Reference:\*\*\s*(.+)/i', $qcontent, $lr)) $q['line_ref'] = trim($lr[1]);
 
+                // v7.19.295: pre-authored multiple-choice statements (Language Q1).
+                // A `### Statements` block of `N. [T]/[F] text` lines is parsed into a
+                // structured set (q['statements'] display order + q['statement_key']
+                // booleans) and STRIPPED from the question content so the [T]/[F] key
+                // never reaches the student-visible prompt. This replaces live
+                // @POPULATE_CHECKLIST generation for Q1 with examiner-set, deterministic
+                // statements (no per-turn dice-roll → no out-of-range / wrong-count bug).
+                if (preg_match('/^###\s*Statements\s*\n(.*?)(?=\n^###|\n^##|\z)/smi', $qcontent, $stm)) {
+                    $stmts = [];
+                    $skey  = [];
+                    foreach (preg_split('/\r?\n/', trim($stm[1])) as $ln) {
+                        if (preg_match('/^\s*\d+\.\s*\[([TF])\]\s*(.+?)\s*$/i', $ln, $lm)) {
+                            $skey[]  = (strtoupper($lm[1]) === 'T');
+                            $stmts[] = trim($lm[2]);
+                        }
+                    }
+                    if (!empty($stmts)) {
+                        $q['statements']    = $stmts;
+                        $q['statement_key'] = $skey;
+                    }
+                    // Strip the block from the content so it never leaks into q['text'].
+                    $qcontent = preg_replace('/^###\s*Statements\s*\n.*?(?=\n^###|\n^##|\z)/smi', '', $qcontent);
+                }
+
                 // Extract within question
                 if (preg_match('/^###\s*Extract\s*\n(.*?)(?=\n^###|\n^##|\z)/smi', $qcontent, $em)) {
                     $q['extract'] = trim($em[1]);

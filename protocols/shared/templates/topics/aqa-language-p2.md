@@ -106,6 +106,16 @@ British climber, Matt Dickinson, together with his team, is attempting to scale 
 
 Read again Source A from lines 1 to 12. Identify four true statements about the approaching storm from this section.
 
+### Statements
+1. [T] Salkeld first saw the approaching storm while at base camp.
+2. [F] Salkeld had often seen storms like this one before.
+3. [T] Salkeld found the approaching storm frightening.
+4. [F] The storm clouds approached base camp from the north.
+5. [T] Salkeld compared the storm's clouds to a tyre dump fire.
+6. [T] The team recognised the storm as a serious threat.
+7. [F] The team ignored the storm and went back to their tents.
+8. [F] The storm clouds moved slowly, barely advancing.
+
 ## Q2
 **Marks:** 8
 **AOs:** AO1
@@ -273,6 +283,16 @@ In 2005, Ben Fogle and James Cracknell set off together in a seven week race acr
 
 Read again Source A from lines 1 to 11. Identify four true statements about the conditions Ben Fogle faced while rowing.
 
+### Statements
+1. [T] The wind was gusting at around 40 knots as Ben rowed.
+2. [F] The sea was calm and the wind had dropped away.
+3. [T] Ben sensed that something dangerous was about to happen.
+4. [F] The boat was old and had struggled badly in earlier seas.
+5. [T] Ben was rowing the shift leading up to sunrise.
+6. [T] Ben was rowing alone at this point in the journey.
+7. [F] Ben felt confident and completely at ease as he rowed.
+8. [F] Ben gave no thought to his family as he rowed.
+
 ## Q2
 **Marks:** 8
 **AOs:** AO1
@@ -433,6 +453,16 @@ For this question, you need to refer to the whole of Source A, together with the
 
 Read again Source A from lines 1 to 15. Identify four true statements about the London riots and the people involved.
 
+### Statements
+1. [T] The rioting occurred mainly in poorer communities.
+2. [F] The riots took place mostly in wealthy central London.
+3. [T] The writer suggests a deep divide between rich and poor lies behind the riots.
+4. [F] Every senior political leader was in Britain when the riots began.
+5. [T] Theresa May cut short a holiday in Switzerland.
+6. [T] The writer is critical of how the political leaders spent their time.
+7. [F] The rioters fled silently and fearfully from the police.
+8. [F] Nick Clegg refused to return from his holiday in France.
+
 ## Q2
 **Marks:** 8
 **AOs:** AO1
@@ -576,6 +606,16 @@ For this question, you need to refer to the whole of Source A, together with the
 **AOs:** AO1
 
 Read again Source A from lines 1 to 14. Identify four true statements about Mitchell's classification of cosmetics.
+
+### Statements
+1. [T] Mitchell argues there are two types of cosmetics.
+2. [F] Mitchell identifies three separate categories of cosmetics.
+3. [T] Mitchell suggests type one cosmetics are designed to deceive.
+4. [F] Mitchell counts fascinators and tiaras as cosmetics.
+5. [T] Mitchell compares his classification to the two types of diabetes.
+6. [T] Mitchell finds the boundary of what counts as a cosmetic hard to fix.
+7. [F] Type one cosmetics are openly admitted to be artificial.
+8. [F] Mitchell bases his classification on types of weather.
 
 ## Q2
 **Marks:** 8
@@ -723,6 +763,16 @@ For this question, you need to refer to the whole of Source A, together with the
 **AOs:** AO1
 
 Read again Source A from lines 1 to 16. Identify four true statements about the limitations of scientific proof.
+
+### Statements
+1. [T] Siegel argues it is impossible to prove anything in science.
+2. [F] Siegel claims the major theories have now been conclusively proven.
+3. [T] Siegel thinks people commonly mistake strong evidence for proof.
+4. [F] Fossils and DNA cannot serve as evidence for evolution.
+5. [T] Our knowledge of time depends on the clock used to measure it.
+6. [T] Better measuring instruments would give more accurate results.
+7. [F] Siegel says human observation and measurement have no limits.
+8. [F] Siegel rejects evolution and the Big Bang as false theories.
 
 ## Q2
 **Marks:** 8

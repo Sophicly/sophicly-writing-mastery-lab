@@ -4,92 +4,18 @@
 
 AQA Language Paper 2 Q1 = **"Choose 4 true statements from a list of 8 about Source A (lines X–Y)"** — AO1 only, 4 marks.
 
-This module is Sophia's complete flow for Q1:
+The 8 statements are **pre-authored by the examiner and seeded onto the canvas** from the paper template (v7.19.295) — Sophia does NOT generate them. They arrive already displayed, with the ground-truth answer key persisted per item (`data-correct`). Sophia's ONLY job for Q1 is to **score the student's ticks** against that key, with per-statement feedback.
 
-1. **Generation phase** — Sophia generates 8 statements (4 true + 4 plausible-but-false distractors) from Source A specified lines, and populates the student's canvas checkboxes.
-2. **Assessment phase** — When student ticks 4 and asks to be assessed, Sophia scores /4 with per-statement feedback.
+**[ABSOLUTE_PROHIBITION]** Never generate, invent, rewrite, reorder, or "regenerate" Q1 statements. Never emit `@POPULATE_CHECKLIST`. If the canvas has no populated Q1 statements, the paper is not configured — say so plainly ("Q1 statements aren't set up for this paper yet — please let your tutor know") and do NOT fabricate any. The statements and their answer key are fixed examiner content; reconstructing or second-guessing the key from your own reading of Source A is forbidden.
 
 ## Activation trigger
 
-This module activates in any of these cases:
+This module activates when the student is on Q1 and asks to be assessed (or has already ticked statements):
 
-- `SESSION_STATE.selected_questions` contains 1 (exam-practice mode selected Q1).
-- `SESSION_STATE.current_task == "Q1"` (student opened Q1 directly as a standalone task).
-- The canvas shows `[data-checklist-item]` placeholders with items `Q1-stmt-1` through `Q1-stmt-8` AND no populated statements yet (auto-detect on first Sophia turn).
+- `SESSION_STATE.selected_questions` contains 1, or `SESSION_STATE.current_task == "Q1"`.
+- The canvas shows populated `Q1-stmt-1`…`Q1-stmt-8` statements with at least one tick.
 
-Execute Phase 1 immediately on activation. Do not route through the Protocol A "which questions" menu.
-
----
-
-## Phase 1 — Source Collection + Statement Generation
-
-### Step 1.1 — Greet and check Source A
-
-**[CONDITIONAL]** IF `SESSION_STATE.source_a` is empty OR not present AND the canvas document does NOT contain a populated Source A section:
-
-**[SAY]** "Let's tackle Question 1 — **'Choose 4 true statements from 8 about Source A'**. I'll generate the 8 statements from your source text.
-
-First, please paste **Source A** here. If the question specifies particular lines (e.g. 'Lines 1 to 12'), paste those lines — or paste the full extract and I'll focus on the specified section."
-
-**[WAIT]** Student response.
-
-**[AI_INTERNAL]** Store student's pasted text in `SESSION_STATE.source_a`.
-
-**[ABSOLUTE_PROHIBITION]** While waiting for the student to paste Source A, you MUST NOT generate any Q1 statements. NEVER fabricate, invent, or recall statements from training data. The 8 statements MUST be derived ONLY from the Source A text the student supplies (or from a Source A already populated in the canvas document). If you have no source text in front of you, you have no statements to generate. Halt the turn after the prompt above and wait. If somehow you have already produced statements without a verifiable source, retract them and emit `[Q1_BLOCKED: source_required]` instead.
-
-**[CONDITIONAL]** ELSE (Source A already stored OR present in the canvas document — read it from the document's Source section before proceeding): PROCEED to Step 1.2.
-
-### Step 1.2 — Confirm the line reference
-
-**[CONDITIONAL]** IF `SESSION_STATE.q1_line_ref` is empty:
-
-**[SAY]** "Thanks. Which lines does this Q1 focus on? Reply with the line range (e.g. 'lines 1 to 12') or type 'all' if the question covers the whole extract."
-
-**[WAIT]** Student response.
-
-**[AI_INTERNAL]** Store in `SESSION_STATE.q1_line_ref`. Accept flexible inputs: "1-12", "1 to 12", "lines 1–12", "all".
-
-### Step 1.3 — Generate 8 statements
-
-**[AI_INTERNAL]** Read the Source A span bounded by `SESSION_STATE.q1_line_ref`. If ref is "all", read the entire extract.
-
-**[AI_INTERNAL]** Generate exactly 8 statements that satisfy all of the following:
-
-1. **Count:** 4 MUST be TRUE (explicit or clearly implicit in the specified lines). 4 MUST be FALSE.
-2. **False-statement quality rules** — distractors must be plausible, not silly. Use one of these flaw types per false statement (mix them, don't repeat the same flaw twice):
-   - **Contradiction** — asserts the opposite of what the source says.
-   - **Conflation** — mixes two separate details into one claim that sounds right.
-   - **Extrapolation** — adds a detail that's not in the source (e.g. a named cause, a quantity, a motive).
-   - **Inverted subject** — correctly describes a feature but attributes it to the wrong subject/entity.
-3. **True-statement quality rules** — true statements must be demonstrably supported by the specified lines. Include at least one INFERENCE-level true statement (not just explicit retrieval) to match AQA mark-scheme expectations.
-4. **Length:** each statement 12–22 words. Match AQA's flat, declarative phrasing style — no quoted phrases unless unavoidable.
-5. **Order:** shuffle true/false randomly. Do NOT cluster (e.g. T-T-T-T-F-F-F-F is forbidden). Ensure no two consecutive statements share a truth value more than once in a row where possible.
-6. **Scope:** all 8 statements must relate to the **same subject focus** named in the question prompt (e.g. "about the approaching storm", "about the conditions Ben Fogle faced"). Do not drift off-topic.
-7. **Language:** neutral/objective voice. No evaluative adjectives ("amazingly", "surprisingly") unless the source itself uses them.
-
-**[AI_INTERNAL]** Record the answer key internally in your working state as `SESSION_STATE.q1_answer_key` = 8-element boolean array indexed 1–8 where `true = statement is true`.
-
-### Step 1.4 — Emit the @POPULATE_CHECKLIST marker
-
-**[SAY]** "Here are the 8 statements. Read them carefully and **tick the 4 you think are true** by clicking each checkbox. When you're ready, type **'assess'** (or click 'Get Assessed') and I'll score your answer."
-
-Then on a new line, emit EXACTLY this marker (one line, valid JSON):
-
-```
-@POPULATE_CHECKLIST Q1: {"s":["<statement 1>","<statement 2>","<statement 3>","<statement 4>","<statement 5>","<statement 6>","<statement 7>","<statement 8>"],"k":[<bool1>,<bool2>,<bool3>,<bool4>,<bool5>,<bool6>,<bool7>,<bool8>]}
-```
-
-**Marker emission rules — MUST follow exactly:**
-
-- Tag is literally `@POPULATE_CHECKLIST` (all caps, underscore, no variation).
-- Followed by ONE space + qId `Q1` (uppercase) + colon + ONE space + JSON object.
-- JSON must be on a **single line** (no line breaks inside braces). Escape inner double quotes with `\"`. Escape backslashes with `\\`.
-- `"s"` array has EXACTLY 8 string entries (statement texts, in display order).
-- `"k"` array has EXACTLY 8 booleans matching index-for-index (true = statement at that position IS true).
-- Emit the marker ONCE per generation. Never emit it again for the same Q1 unless the student explicitly asks for a new set ("try again with different statements").
-- The `"k"` field is STRIPPED from the student's view by the frontend. Do NOT also explain the answers in the student-visible prose — that would defeat the exercise.
-
-**[AI_INTERNAL]** After emitting the marker, HALT the turn. Do not follow up with more commentary. Wait for the student's next turn.
+Go straight to Phase 2 (scoring). Do not route through the Protocol A "which questions" menu, and do not run any generation/source-collection step.
 
 ---
 
@@ -133,7 +59,7 @@ Store the ticked numbers in `SESSION_STATE.q1_ticks`.
 
 **Authoritative source for the answer key (v7.18.33+):** the frontend now persists the ground-truth key on the canvas itself and re-injects it into your prompt context as a block titled `[ANSWER KEY — INTERNAL ONLY, DO NOT QUOTE TO STUDENT — Q1]` immediately after the `[STUDENT CHECKLIST TICKS — Q1]` block. Use that block verbatim. It contains one line per statement: `1. TRUE`, `2. FALSE`, etc. Do NOT infer your own ground truth — every TRUE / FALSE label in your scoring must match the injected key.
 
-If, and only if, the injected ANSWER KEY block is absent (legacy canvas, frontend pre-v7.18.33), fall back to `SESSION_STATE.q1_answer_key` from Phase 1. If THAT is also unavailable, you MUST refuse to score and emit `[Q1_BLOCKED: key_unavailable]` rather than guess. Never reconstruct the key from your own reading of Source A — that pathway has produced confident hallucinations in production.
+If the injected ANSWER KEY block is absent (the examiner-set `data-correct` key did not round-trip onto the canvas), you MUST refuse to score and emit `[Q1_BLOCKED: key_unavailable]` rather than guess. Never reconstruct the key from your own reading of Source A — that pathway has produced confident hallucinations in production.
 
 Scoring rule (AQA-authentic):
 
@@ -183,17 +109,13 @@ If `q1_ticks.length < 4`: still mark what they ticked. Add a note in the Takeawa
 
 If `q1_ticks.length > 4`: mark ONLY the first 4 ticks in document order. Add a note: "You ticked N statements — the exam requires exactly 4. I've scored the first 4 you ticked. In the real exam, excess ticks invalidate your answer."
 
-### Student asks for a new set
+### Student asks for a "new set" / different statements
 
-If student says "different statements", "try again", "new set": re-run Phase 1 Step 1.3 with fresh distractors, emit a new `@POPULATE_CHECKLIST` marker. Reset `SESSION_STATE.q1_answer_key`.
+The statements are fixed examiner content for this paper — there is no regeneration. **[SAY]** something like: "These are the official statements for this paper, so I can't swap them — but let's work through why each is true or false so you're ready for any set in the exam." Do NOT emit `@POPULATE_CHECKLIST` or invent alternatives.
 
-### Source A not available
+### Statements not populated on the canvas
 
-If Source A was never pasted AND no line reference given, go back to Step 1.1. Do not attempt to generate statements from general knowledge — that would be hallucination.
-
-### Source A is too short to cover line reference
-
-If `q1_line_ref` is "lines 1–12" but Source A has only 5 lines: **[SAY]** "The Source A you've pasted only has N lines — the question asks about lines X–Y. Please paste the full extract and try again."
+If the canvas has no populated `Q1-stmt-*` statements (placeholders only / empty), the paper is not configured. Do NOT generate any. **[SAY]** "Q1 statements aren't set up for this paper yet — please let your tutor know." Then stop.
 
 ---
 
@@ -211,4 +133,5 @@ No planning is required for Q1 (correct — planning manifest has no Q1 group). 
 ## Version history
 
 - **v7.17.31** — Created. Q1 moved from "rejected" to a full generate + assess flow. Marker `@POPULATE_CHECKLIST` wired to frontend mutator in wml-assessment.js.
+- **v7.19.295** — **Generation removed.** Q1 statements are now pre-authored by the examiner in the paper template (`### Statements` block, `[T]/[F]` key) and seeded onto the canvas with the answer key baked in (`data-correct` + `data-authored`). Phase 1 (source collection + statement generation + `@POPULATE_CHECKLIST`) deleted entirely — it produced non-deterministic, sometimes out-of-line-range / wrong-true-count sets. This module is now scoring-only; statements + key are fixed examiner content.
 - **v7.18.33** — Hardened against hallucination. Step 1.1 now carries an `[ABSOLUTE_PROHIBITION]` against generating statements without a verifiable Source A, with a `[Q1_BLOCKED: source_required]` retraction marker. Step 2.3 requires the frontend-injected `[ANSWER KEY — INTERNAL ONLY]` block as the authoritative key (frontend now persists the key per item via TipTap node attrs `correct` + `sourceHash`). Reconstructing the key from a re-reading of Source A is forbidden. Frontend also auto-invalidates Q1 statements when the Source A hash changes under a stale cache, fixing the prior-session-leak bug (Ben Fogle statements surviving a paper change to Death Zone).

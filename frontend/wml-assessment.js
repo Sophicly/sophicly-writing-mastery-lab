@@ -1595,6 +1595,9 @@
             if (node.type && node.type.name === 'checklistItem') {
                 const itemId = String(node.attrs && node.attrs.itemId || '');
                 if (!/^[A-Za-z0-9_]+-stmt-\d+$/.test(itemId)) return;
+                // v7.19.295: examiner-seeded statements are fixed to the paper — never
+                // invalidate them on a source-hash mismatch or overlap heuristic.
+                if (node.attrs.authored) return;
                 const text = String(node.textContent || '').trim();
                 const hasText = text.length > 0 && !/^waiting\s+for\s+statement/i.test(text);
                 const hasCorrect = (node.attrs.correct === true || node.attrs.correct === false);
@@ -1649,6 +1652,8 @@
                 const itemId = String(node.attrs && node.attrs.itemId || '');
                 const m = itemId.match(/^([A-Za-z0-9_]+)-stmt-\d+$/);
                 if (!m) return;
+                // v7.19.295: examiner-seeded statements never need generation.
+                if (node.attrs.authored) return;
                 const qId = m[1];
                 const t = (node.textContent || '').trim();
                 const isPlaceholder = !t || /^waiting\s+for\s+statement/i.test(t);
@@ -10497,6 +10502,15 @@
                         parseHTML: el => el.getAttribute('data-source-hash') || '',
                         renderHTML: attrs => attrs.sourceHash ? { 'data-source-hash': attrs.sourceHash } : {},
                     },
+                    // v7.19.295: pre-authored examiner statement (template-seeded, not
+                    // AI-generated). Authored items are EXEMPT from the source-hash
+                    // invalidation + staleness auto-fire — they are fixed to the paper
+                    // and must never be cleared or regenerated.
+                    authored: {
+                        default: false,
+                        parseHTML: el => el.getAttribute('data-authored') === 'true',
+                        renderHTML: attrs => attrs.authored ? { 'data-authored': 'true' } : {},
+                    },
                 };
             },
 
@@ -10525,6 +10539,7 @@
                     if (node.attrs.correct === true)  dom.setAttribute('data-correct', 'true');
                     if (node.attrs.correct === false) dom.setAttribute('data-correct', 'false');
                     if (node.attrs.sourceHash) dom.setAttribute('data-source-hash', node.attrs.sourceHash);
+                    if (node.attrs.authored) dom.setAttribute('data-authored', 'true');
 
                     const checkbox = document.createElement('span');
                     checkbox.classList.add('swml-checklist-box');
@@ -17898,13 +17913,31 @@
             if (qType === 'multiple_choice') {
                 // Checkboxes ARE the response — AI populates statement text via @POPULATE_CHECKLIST
                 const stmtCount = specQ?.description?.match(/(\d+)\s+true/i)?.[1] || 4;
-                const totalCount = specQ?.description?.match(/(\d+)\s+(?:about|from|statement)/i)?.[1] || 8;
+                // v7.19.295: prefer examiner-set statements authored in the template
+                // (q.statements + q.statement_key). Seeds populated, deterministic items
+                // with the answer key baked in \u2014 no @POPULATE_CHECKLIST generation. Falls
+                // back to the legacy placeholder path only when no authored set exists.
+                const authoredStmts = Array.isArray(q.statements) && q.statements.length ? q.statements : null;
+                const authoredKey = Array.isArray(q.statement_key) ? q.statement_key : [];
+                const totalCount = authoredStmts ? authoredStmts.length
+                    : (specQ?.description?.match(/(\d+)\s+(?:about|from|statement)/i)?.[1] || 8);
                 // v7.19.255: divider + response carry _respStageAttrs (stage-reveal=planning
                 // when no plan section was built \u2014 surfaces them in the planning stage).
                 html += dividerHTML(`STATEMENTS \u2014 ${qId}`, _respStageAttrs);
-                let checkboxes = `<p><em>Tick the ${stmtCount} correct statements (Sophia will generate these from the source material):</em></p>`;
-                for (let s = 1; s <= parseInt(totalCount); s++) {
-                    checkboxes += `<div data-checklist-item="true" data-checked="false" data-item-id="${qId}-stmt-${s}" class="swml-checklist-item swml-checklist-placeholder"><em>Waiting for statement ${s}...</em></div>`;
+                let checkboxes;
+                if (authoredStmts) {
+                    checkboxes = `<p><em>Tick the ${stmtCount} statements you think are true.</em></p>`;
+                    authoredStmts.forEach((text, i) => {
+                        const s = i + 1;
+                        const correctAttr = authoredKey[i] === true ? ' data-correct="true"'
+                            : authoredKey[i] === false ? ' data-correct="false"' : '';
+                        checkboxes += `<div data-checklist-item="true" data-checked="false" data-item-id="${qId}-stmt-${s}" data-authored="true"${correctAttr} class="swml-checklist-item"><p>${escapeHTML(text)}</p></div>`;
+                    });
+                } else {
+                    checkboxes = `<p><em>Tick the ${stmtCount} correct statements (Sophia will generate these from the source material):</em></p>`;
+                    for (let s = 1; s <= parseInt(totalCount); s++) {
+                        checkboxes += `<div data-checklist-item="true" data-checked="false" data-item-id="${qId}-stmt-${s}" class="swml-checklist-item swml-checklist-placeholder"><em>Waiting for statement ${s}...</em></div>`;
+                    }
                 }
                 html += sectionHTML('response', `${qId} Statements`, true, null, checkboxes, _respStageAttrs);
 
