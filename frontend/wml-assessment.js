@@ -1817,6 +1817,31 @@
         return healed;
     }
 
+    // v7.19.297: replace the stale "(the AI will generate these from the source
+    // material)" caption baked into pre-v7.19.295 canvases — Q1 statements are now
+    // examiner-set, not AI-generated, so the caption is both wrong and confusing.
+    // Idempotent: no-op once the clean caption is in place. Returns true if changed.
+    function _fixStaleChecklistCaption(editor) {
+        if (!editor || !editor.state) return false;
+        const fixes = [];
+        editor.state.doc.descendants((node, pos) => {
+            if (node.type && node.type.name === 'paragraph'
+                && /AI will generate these from the source material/i.test(node.textContent || '')) {
+                fixes.push({ pos: pos, node: node });
+            }
+        });
+        if (!fixes.length) return false;
+        fixes.sort((a, b) => b.pos - a.pos);
+        let tr = editor.state.tr;
+        fixes.forEach((f) => {
+            const from = f.pos + 1;
+            const to = f.pos + f.node.nodeSize - 1;
+            tr = tr.replaceWith(from, to, editor.schema.text('Tick the 4 statements you think are true.'));
+        });
+        if (tr.docChanged) editor.view.dispatch(tr);
+        return true;
+    }
+
     // Fire a silent API call to generate statements for any stale qIds on
     // this editor's canvas. Runs once per onCreate — if statements are
     // already populated, no-op. Used for diagnostic (no chat UI) + back-fill
@@ -1833,6 +1858,7 @@
             // generated sets). Authored items are then exempt from the invalidation +
             // stale scans below, so no AI generation is attempted for them.
             await _reseedAuthoredChecklists(editor);
+            _fixStaleChecklistCaption(editor);
             // v7.18.33: clear legacy-no-key items + source-mismatch items BEFORE
             // the staleQIds scan so they get re-generated against the current
             // Source A. Without this, prior-session statements (incl. hallucinated
