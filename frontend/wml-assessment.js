@@ -1044,7 +1044,7 @@
     // so Sophia receives the ground-truth key back at score time without
     // depending on chat-history memory. answerKey is optional — null entries
     // leave existing attr untouched.
-    function _populateChecklist(editor, qId, statements, answerKey) {
+    function _populateChecklist(editor, qId, statements, answerKey, authored) {
         if (!editor || !editor.state || !Array.isArray(statements)) return;
         const prefixLc = String(qId || '').toLowerCase() + '-stmt-';
         const matches = [];
@@ -1074,6 +1074,10 @@
             if (Array.isArray(answerKey) && typeof answerKey[m.n - 1] === 'boolean') {
                 newAttrs.correct = answerKey[m.n - 1];
             }
+            // v7.19.296: authored reseed marks the item examiner-fixed (exempt from
+            // invalidation/regeneration) and clears any stale tick — the prior tick
+            // referred to the OLD statement that previously occupied this slot.
+            if (authored) { newAttrs.authored = true; newAttrs.checked = false; }
             tr = tr.setNodeMarkup(m.pos, undefined, newAttrs);
         });
         if (tr.docChanged) {
@@ -1766,6 +1770,53 @@
         return deletions.length;
     }
 
+    // v7.19.296: heal canvases whose Q1 checklist predates the authored-statement
+    // system (v7.19.295), or was produced by the now-removed Phase 1 generator.
+    // Reseeds each qId's items from the examiner-authored set in the topic metadata
+    // (text + answer key + `authored` flag), leaving every essay response untouched.
+    // Idempotent — only acts on qIds with at least one non-authored item, and skips
+    // any qId with no authored set in the metadata. This REPLACES the old AI back-fill:
+    // with Phase 1 deleted, generation can no longer populate Q1, so the authored
+    // template set is the only valid refill source. Returns true if the doc changed.
+    async function _reseedAuthoredChecklists(editor) {
+        if (!editor || !editor.state) return false;
+        const present = {};
+        editor.state.doc.descendants((node) => {
+            if (node.type && node.type.name === 'checklistItem') {
+                const mm = String((node.attrs && node.attrs.itemId) || '').match(/^([A-Za-z0-9_]+)-stmt-\d+$/);
+                if (!mm) return;
+                const qId = mm[1];
+                if (!(qId in present)) present[qId] = false;
+                if (!node.attrs.authored) present[qId] = true; // has a non-authored item → needs reseed
+            }
+        });
+        const qIds = Object.keys(present).filter((q) => present[q]);
+        if (qIds.length === 0) return false;
+        let questions = [];
+        try {
+            const td = await fetchTopicData();
+            const meta = typeof (td && td.metadata) === 'string'
+                ? JSON.parse(td.metadata || '{}') : ((td && td.metadata) || {});
+            questions = meta.questions || [];
+        } catch (e) {
+            console.warn('[WML MSQ] reseed: topic fetch failed', e);
+            return false;
+        }
+        const byId = {};
+        questions.forEach((q) => {
+            if (q && Array.isArray(q.statements) && q.statements.length) byId[String(q.id).toUpperCase()] = q;
+        });
+        let healed = false;
+        qIds.forEach((qId) => {
+            const q = byId[String(qId).toUpperCase()];
+            if (!q) return; // no authored set for this qId — leave as-is (fail-loud handled by protocol)
+            _populateChecklist(editor, qId, q.statements, q.statement_key || [], true);
+            healed = true;
+            console.log('[WML MSQ] reseeded authored statements for', qId, '(' + q.statements.length + ')');
+        });
+        return healed;
+    }
+
     // Fire a silent API call to generate statements for any stale qIds on
     // this editor's canvas. Runs once per onCreate — if statements are
     // already populated, no-op. Used for diagnostic (no chat UI) + back-fill
@@ -1777,6 +1828,11 @@
                 return;
             }
             await new Promise((r) => setTimeout(r, 1500));
+            // v7.19.296: heal first. Reseed any qId that has an examiner-authored set
+            // in the topic metadata (existing pre-v7.19.295 attempts, or legacy
+            // generated sets). Authored items are then exempt from the invalidation +
+            // stale scans below, so no AI generation is attempted for them.
+            await _reseedAuthoredChecklists(editor);
             // v7.18.33: clear legacy-no-key items + source-mismatch items BEFORE
             // the staleQIds scan so they get re-generated against the current
             // Source A. Without this, prior-session statements (incl. hallucinated
