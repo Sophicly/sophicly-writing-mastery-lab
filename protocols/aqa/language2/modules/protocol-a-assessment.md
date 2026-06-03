@@ -396,13 +396,31 @@ Then PROCEED to the existing AI-Led Reminder and per-paragraph walk.
 
 ##### AI-Led Reminder and Self-Assessment (Paragraph 1)
 
-**Internal AI Note:** Before asking for self-assessment, review student's most recent feedback for a weakness relevant to Q2.
+**Internal AI Note:** Before asking for self-assessment, review student's most recent feedback for a weakness relevant to Q2. The reflection is mark-scheme metacognition — it trains the student to read what AO1 rewards. NEVER ask the student to explain or restate the inferences they drew (that is the assessment's job, not theirs).
 
-Say: "Before I assess your first paragraph, let's do a quick, targeted reflection based on the mark scheme."
+**Step 1 — Goal Achievement (Self-Rating).** Ask ONLY this, then wait:
 
-Ask: "Pick one perceptive inference you drew about the difference between the two sources. Which quotation did you anchor it to, and what did that quotation let you infer that a plain summary would miss?
+Say: "Before I assess your first paragraph, a quick reflection on the mark scheme. Q2 is AO1: the marks reward **perceptive inference** about the differences (going beyond what the text literally says), **developed in detail**, with every inference **anchored to a quotation** — not a plain summary.
+
+On a scale of 1-5, how well do you think your first paragraph met those three demands?
+
+1 = Summarised the differences without real inference
+2 = Some inference, but mostly surface-level or unquoted
+3 = Perceptive inference in places; detail or quoting inconsistent
+4 = Consistently perceptive, detailed and quote-anchored, with minor gaps
+5 = Perceptive, detailed, quote-anchored inference throughout
+
+Type your rating (1-5)."
+
+**Internal AI Note:** WAIT for the rating. Then proceed to Step 2.
+
+**Step 2 — Mark-Scheme Targeting.** Ask ONLY this, then wait:
+
+Say: "AO1 rewards three things here — **perceptive inference**, **detailed development**, and **judicious quotation**. As you were writing, which of the three were you aiming for most, and which do you think is your weakest?
 
 Type your response (2-3 sentences)."
+
+**Internal AI Note:** WAIT for the response, then proceed to the mark breakdown. Do not ask the student to reproduce their analysis.
 
 **Internal AI Note:** After student responds, proceed to next step.
 
@@ -614,31 +632,29 @@ Say: "Type **Y** when you're ready to move to Paragraph 2 (Source B)."
 
 ##### AI-Led Self-Assessment (Paragraph 2)
 
-**Internal AI Note:** Before assessing the second paragraph, execute two-question metacognitive reflection.
+**Internal AI Note:** Mark-scheme metacognition before the second paragraph — same two-step shape as Paragraph 1. NEVER ask the student to restate the inferences they drew (that is the assessment's job).
 
-Ask: "Before I assess your second paragraph, please rate yourself on two aspects:
+**Step 1 — Goal Achievement (Self-Rating).** Ask ONLY this, then wait:
 
-**Question 1: Goal Achievement (Self-Rating)**  
-On a scale of 1-5, how well did you achieve the goal of drawing perceptive, detailed inferences about the differences — each anchored to a quotation, alternating Source A and Source B (AO1)?
+Say: "Before I assess your second paragraph, the same quick reflection. On a scale of 1-5, how well did your second paragraph meet AO1's three demands — perceptive inference, detailed development, and a quotation anchoring every inference?
 
-1 \= Didn't achieve \- listed differences without inference  
-2 \= Partially achieved \- some inference but mostly surface-level, or unquoted  
-3 \= Mostly achieved \- perceptive inference in places, detail or quoting inconsistent  
-4 \= Achieved well \- consistently perceptive, detailed, quote-anchored inference, minor gaps  
-5 \= Fully achieved \- perceptive, detailed, quote-anchored inference throughout, fully alternating
+1 = Summarised the differences without real inference
+2 = Some inference, but mostly surface-level or unquoted
+3 = Perceptive inference in places; detail or quoting inconsistent
+4 = Consistently perceptive, detailed and quote-anchored, with minor gaps
+5 = Perceptive, detailed, quote-anchored inference throughout
 
-Type your rating (1-5).
+Type your rating (1-5)."
 
-**Question 2: Assessment Objective Targeting**  
-You were targeting AO1 (infer and interpret differences across two texts). Which did you focus on most — the perceptiveness of the inference, the detail developing it, or anchoring each one to the right quotation?
+**Internal AI Note:** WAIT for the rating. Store in SESSION\_STATE.q2\_para2\_self\_rating. Then Step 2.
 
-Type your response (2-3 sentences explaining your approach)."
+**Step 2 — Mark-Scheme Targeting.** Ask ONLY this, then wait:
 
-**Internal AI Note:** Store self-rating in SESSION\_STATE.q2\_para2\_self\_rating. After student responds to both questions, proceed to assessment.
+Say: "Of the three — perceptive inference, detailed development, judicious quotation — which were you aiming for most this time, and which do you think is your weakest?
 
-Say: "You rated yourself \[X\]/5 and identified that you were focusing on \[student's described approach\]. Let me assess your second paragraph against the mark scheme."
+Type your response (2-3 sentences)."
 
-**Internal AI Note:** Integrate self-assessment into feedback later. Proceed using same four-unit (A-B-A-B) assessment structure as Paragraph 1\.
+**Internal AI Note:** WAIT for the response, then proceed to the mark breakdown using the same four-unit (A-B-A-B) structure as Paragraph 1. Do not ask the student to reproduce their analysis.
 
 Say: "Type **Y** when you've noted your complete Question 2 marks."
 
