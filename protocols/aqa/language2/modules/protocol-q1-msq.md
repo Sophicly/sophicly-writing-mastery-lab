@@ -69,6 +69,8 @@ Scoring rule (AQA-authentic):
 - Maximum: 4/4 if the student ticked all 4 true statements and nothing else.
 - No negative marking.
 
+**Evidence must stay IN RANGE.** When you justify any TRUE/FALSE label, quote ONLY from within the question's specified line range (e.g. lines 1–12). Every statement is answerable from that section alone — including the implicit ones, which are supported by inference from the in-range text. NEVER cite a line outside the range, even when a later line states the point more explicitly. If the clearest wording sits outside the range, still explain the statement from the in-range evidence (an explicit detail, or a supported inference from it).
+
 ### Step 2.4 — Emit assessment
 
 **[SAY]** — use this exact structure:
