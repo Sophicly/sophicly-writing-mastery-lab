@@ -126,7 +126,20 @@
             "language/modules/state-management.md",
             "language/modules/ttecea-rationale-lang.md"
         ],
-        "steps": {}
+        "steps": {
+            "2":  { "files": ["modules/assessment-steps/a-q2-p1-selfrate.md"] },
+            "3":  { "files": ["modules/assessment-steps/a-q2-p1-targeting.md"] },
+            "4":  { "files": ["modules/assessment-steps/a-q2-mark.md"] },
+            "5":  { "files": ["modules/assessment-steps/a-q2-feedback.md"] },
+            "6":  { "files": ["modules/assessment-steps/a-q2-gold.md"] },
+            "7":  { "files": ["modules/assessment-steps/a-q2-p2-selfrate.md"] },
+            "8":  { "files": ["modules/assessment-steps/a-q2-p2-targeting.md"] },
+            "9":  { "files": ["modules/assessment-steps/a-q2-mark.md"] },
+            "10": { "files": ["modules/assessment-steps/a-q2-feedback.md"] },
+            "11": { "files": ["modules/assessment-steps/a-q2-gold.md"] },
+            "12": { "files": ["modules/assessment-steps/a-q2-summary.md"] }
+        },
+        "groups": ["Setup", "Question 2"]
     },
     "polishing": {
         "always": [

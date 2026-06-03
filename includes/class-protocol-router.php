@@ -1325,16 +1325,34 @@ class SWML_Protocol_Router {
         // that step. While assessment.steps is empty (pre-segmentation) this is inert,
         // so the whole-protocol path is untouched and partial rollout is always safe:
         // any question without a step file falls back to the frontend step + always-set.
+        $is_segmented_q = false;
         if ($task === 'assessment' && self::assessment_mode($context) === 'questions') {
             $seg_step = $this->derive_segmented_step($context, $user_id);
             if ($seg_step > 0 && !empty($task_config['steps'][$seg_step])) {
                 $step = $seg_step;
+                $is_segmented_q = true;
             }
         }
 
         if (!empty($task_config['steps'][$step])) {
             $step_files = $task_config['steps'][$step]['files'] ?? [];
             $files = array_merge($files, $step_files);
+        }
+
+        // v7.19.299 (Increment 1): conditional strip. When the held beat IS segmented
+        // (a step file exists for it), remove the whole-procedure files from this turn's
+        // context so ONLY the reference set + the one beat file load — the model sees
+        // just the step it owes and cannot batch later steps it can no longer see. When
+        // NOT segmented (setup / Q1 / Q3 / Q4 / Q5 — no step file yet), the strip does
+        // not run, so the whole procedure stays as the fallback and those questions are
+        // untouched. This is the seam that makes Q2 desegment while the un-built
+        // questions keep working; the final increment removes the procedure from
+        // `always` for good once every question is segmented.
+        if ($is_segmented_q) {
+            $files = array_values(array_filter($files, function ($f) {
+                return strpos($f, 'protocol-a-assessment.md') === false
+                    && strpos($f, 'protocol-q1-msq.md') === false;
+            }));
         }
 
         // v7.14.68: Mastery planning — swap b1-setup.md for canvas-aware version
@@ -3945,18 +3963,24 @@ TEMPLATE;
             // Q2 — 2 paragraphs, each four A-B-A-B inference units. Per-paragraph
             // metacognition is mark-scheme-focused (self-rating vs AO1 demands,
             // then targeting) — NOT "explain your inference" (that IS the assessment).
-            ['id' => 'q2_p1_selfrate', 'step' => 2,  'label' => '¶1 Self-rate', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-selfrate.md',  'type' => 'ask',     'detect' => '/Goal Achievement|scale of 1.?5|met those three demands/i'],
-            ['id' => 'q2_p1_targeting','step' => 3,  'label' => '¶1 Targeting', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-targeting.md', 'type' => 'ask',     'detect' => '/which of the three|aiming for most|which do you think is your weakest/i'],
-            ['id' => 'q2_p1_mark',     'step' => 4,  'label' => '¶1 Mark',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',      'type' => 'produce', 'detect' => '/Unit 1 — Source A|Paragraph 1 \(4 marks/i'],
-            ['id' => 'q2_p1_feedback', 'step' => 5,  'label' => '¶1 Feedback',  'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-feedback.md',  'type' => 'produce', 'detect' => '/How to Improve/i'],
-            ['id' => 'q2_p1_gold',     'step' => 6,  'label' => '¶1 Gold',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',      'type' => 'produce', 'detect' => '/Your Paragraph Rewritten to Gold Standard[\s\S]*Optimal Gold Standard Model/i'],
-            ['id' => 'q2_p1_gate',     'step' => 7,  'label' => '→ ¶2',         'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gate.md',      'type' => 'gate',    'detect' => '/move to Paragraph 2/i'],
-            ['id' => 'q2_p2_selfrate', 'step' => 8,  'label' => '¶2 Self-rate', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-selfrate.md',  'type' => 'ask',     'detect' => '/Goal Achievement|scale of 1.?5|met those three demands/i'],
-            ['id' => 'q2_p2_targeting','step' => 9,  'label' => '¶2 Targeting', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-targeting.md', 'type' => 'ask',     'detect' => '/which of the three|aiming for most|which do you think is your weakest/i'],
-            ['id' => 'q2_p2_mark',     'step' => 10, 'label' => '¶2 Mark',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',      'type' => 'produce', 'detect' => '/Unit 1 — Source A|Paragraph 2 \(4 marks/i'],
-            ['id' => 'q2_p2_feedback', 'step' => 11, 'label' => '¶2 Feedback',  'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-feedback.md',  'type' => 'produce', 'detect' => '/How to Improve/i'],
-            ['id' => 'q2_p2_gold',     'step' => 12, 'label' => '¶2 Gold',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',      'type' => 'produce', 'detect' => '/Your Paragraph Rewritten to Gold Standard[\s\S]*Optimal Gold Standard Model/i'],
-            ['id' => 'q2_summary',     'step' => 13, 'label' => 'Q2 Summary',   'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-summary.md',   'type' => 'produce', 'detect' => '/overall Question 2 score|Q2 Total/i'],
+            // v7.19.299 (Increment 1): per-paragraph self-rate/targeting files (the
+            // monolith's ¶1 + ¶2 wordings differ → verbatim demands separate files).
+            // Mark / feedback / gold are SHARED files, loaded on BOTH paragraphs —
+            // ¶2 reuses ¶1's spans exactly as the monolith said ("same structure as
+            // Paragraph 1"), now made literal so every paragraph gets mark+feedback+
+            // both golds (universal granular rule). Gate beat removed: the ¶1→¶2 hand-off
+            // is the gold file's own "Y to move to Paragraph 2" tail (one student turn).
+            ['id' => 'q2_p1_selfrate', 'step' => 2,  'label' => '¶1 Self-rate', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-p1-selfrate.md', 'type' => 'ask',     'detect' => '/Goal Achievement|scale of 1.?5|met those three demands/i'],
+            ['id' => 'q2_p1_targeting','step' => 3,  'label' => '¶1 Targeting', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-p1-targeting.md','type' => 'ask',     'detect' => '/which of the three|aiming for most|which do you think is your weakest/i'],
+            ['id' => 'q2_p1_mark',     'step' => 4,  'label' => '¶1 Mark',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',        'type' => 'produce', 'detect' => '/Unit 1 — Source A|Paragraph 1 \(4 marks/i'],
+            ['id' => 'q2_p1_feedback', 'step' => 5,  'label' => '¶1 Feedback',  'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-feedback.md',    'type' => 'produce', 'detect' => '/How to Improve/i'],
+            ['id' => 'q2_p1_gold',     'step' => 6,  'label' => '¶1 Gold',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',        'type' => 'produce', 'detect' => '/Your Paragraph Rewritten to Gold Standard[\s\S]*Optimal Gold Standard Model/i'],
+            ['id' => 'q2_p2_selfrate', 'step' => 7,  'label' => '¶2 Self-rate', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-p2-selfrate.md', 'type' => 'ask',     'detect' => '/Goal Achievement|scale of 1.?5|second paragraph meet|met those three demands/i'],
+            ['id' => 'q2_p2_targeting','step' => 8,  'label' => '¶2 Targeting', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-p2-targeting.md','type' => 'ask',     'detect' => '/which of the three|aiming for most|which do you think is your weakest/i'],
+            ['id' => 'q2_p2_mark',     'step' => 9,  'label' => '¶2 Mark',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',        'type' => 'produce', 'detect' => '/Unit 1 — Source A|Paragraph 1 \(4 marks/i'],
+            ['id' => 'q2_p2_feedback', 'step' => 10, 'label' => '¶2 Feedback',  'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-feedback.md',    'type' => 'produce', 'detect' => '/How to Improve/i'],
+            ['id' => 'q2_p2_gold',     'step' => 11, 'label' => '¶2 Gold',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',        'type' => 'produce', 'detect' => '/Your Paragraph Rewritten to Gold Standard[\s\S]*Optimal Gold Standard Model/i'],
+            ['id' => 'q2_summary',     'step' => 12, 'label' => 'Q2 Summary',   'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-summary.md',     'type' => 'produce', 'detect' => '/overall Question 2 score|Q2 Total|Question 2 Final Summary|Total[:\s][^\n]*\/\s*8/i'],
         ];
     }
 
