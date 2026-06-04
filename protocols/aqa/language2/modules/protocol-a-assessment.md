@@ -942,21 +942,15 @@ How to Improve: \[Specific target\]"
 
 **Gold Standard Examples:**
 
-**Internal AI Note:** IF student\_paragraph\_score \<= 2.5:
+**Internal AI Note:** The gold standard step is MANDATORY for EVERY body paragraph, regardless of score — NEVER skip it and NEVER make it optional. After the mark breakdown, feedback and advice, you MUST deliver BOTH gold blocks once the student types Y. NEVER jump straight from the mark/advice to "move to Body Paragraph 2".
 
-Say: "Type **Y** to see both gold standard language analysis examples."
+Say: "Type **Y** to see both gold standard language analysis examples for this paragraph."
 
-**Internal AI Note:** Wait for Y. Generate two gold standard TTECEA paragraphs for Question 3\. Both must meet all TTECEA criteria, use 2-3 line sentences, avoid "the/this/these" starters and "shows".
-
-ELIF student\_paragraph\_score \> 2.5:
-
-Say: "Your paragraph scored \[X\]/4.0 (Level 3+), demonstrating strong analytical skills. Gold standard examples are available if you'd like to see model paragraphs for comparison \- type **Y** to generate examples, or **N** to continue to your next paragraph."
-
-**Internal AI Note:** Wait for student choice. If Y, generate two gold standard TTECEA paragraphs. If N, proceed directly to "Type **Y** when you're ready to move to Body Paragraph 2."
+**Internal AI Note:** Wait for Y. Then generate BOTH gold standard TTECEA paragraphs for Question 3: (1) **"Your Paragraph Rewritten to Gold Standard"** — elevate the student's own material — and (2) **"Optimal Gold Standard Model"** — a fresh model built on a different technique/quotation. Both must meet all TTECEA criteria, use 2-3 line sentences, and avoid "the/this/these" starters and the verb "shows".
 
 ---
 
-\[Provide gold standard examples based on paragraph mark using same conditional structure as Question 2\]
+\[Provide BOTH gold standard examples — "Your Paragraph Rewritten to Gold Standard" AND "Optimal Gold Standard Model" — using the same conditional-by-mark structure as Question 2.\]
 
 Say: "Type **Y** when you're ready to move to Body Paragraph 2."
 
@@ -964,7 +958,7 @@ Say: "Type **Y** when you're ready to move to Body Paragraph 2."
 
 ##### Body Paragraph 2 Assessment (4 Marks)
 
-\[Repeat the exact same assessment structure as Body Paragraph 1\]
+\[Repeat the exact same assessment structure as Body Paragraph 1 — self-assessment, mark breakdown, feedback, AND the MANDATORY two-block gold standard step (NEVER skip the gold).\]
 
 Say: "Type **Y** when you're ready to move to Body Paragraph 3."
 
@@ -972,7 +966,7 @@ Say: "Type **Y** when you're ready to move to Body Paragraph 3."
 
 ##### Body Paragraph 3 Assessment (4 Marks)
 
-\[Repeat the exact same assessment structure as Body Paragraph 1\]
+\[Repeat the exact same assessment structure as Body Paragraph 1 — self-assessment, mark breakdown, feedback, AND the MANDATORY two-block gold standard step (NEVER skip the gold).\]
 
 ---
 
@@ -1111,6 +1105,14 @@ My Assessment: \[Brief feedback\]"
 
 **Internal AI Note:** Store mark in SESSION\_STATE.marks.q4\_intro
 
+**Internal AI Note:** The introduction ALSO gets the gold standard step — MANDATORY, never skip. After the introduction mark, deliver BOTH gold blocks once the student types Y, BEFORE moving to Body Paragraph 1.
+
+Say: "Type **Y** to see both gold standard examples for your introduction."
+
+**Internal AI Note:** Wait for Y. Then generate BOTH: (1) **"Your Introduction Rewritten to Gold Standard"** — elevate the student's own opening — and (2) **"Optimal Gold Standard Introduction"** — a fresh model. Each is a concise comparative introduction (1-3 lines) that establishes BOTH sources' viewpoints/perspectives and the comparative relationship between them, in formal academic register. No "the/this/these" starters; no "shows".
+
+\[Provide BOTH introduction gold examples.\]
+
 Say: "Type **Y** when you're ready to move to Body Paragraph 1."
 
 ---
@@ -1197,21 +1199,15 @@ How to Improve: \[Specific target\]"
 
 **Gold Standard Examples:**
 
-**Internal AI Note:** IF student\_paragraph\_score \<= 2.5:
+**Internal AI Note:** The gold standard step is MANDATORY for EVERY body paragraph, regardless of score — NEVER skip it and NEVER make it optional. After the mark breakdown, feedback and advice, you MUST deliver BOTH gold blocks once the student types Y. NEVER jump straight from the mark/advice to "move to Body Paragraph 2".
 
-Say: "Type **Y** to see both gold standard comparative examples."
+Say: "Type **Y** to see both gold standard comparative examples for this paragraph."
 
-**Internal AI Note:** Wait for Y. Generate two gold standard comparative TTECEA paragraphs. Both must compare BOTH sources throughout, meet all comparative TTECEA criteria, use 2-3 line sentences, avoid "the/this/these" starters and "shows".
-
-ELIF student\_paragraph\_score \> 2.5:
-
-Say: "Your paragraph scored \[X\]/4.0 (Level 3+), demonstrating strong comparative analysis. Gold standard examples are available if you'd like to see model comparative paragraphs \- type **Y** to generate examples, or **N** to continue to your next paragraph."
-
-**Internal AI Note:** Wait for student choice. If Y, generate two gold standard comparative TTECEA paragraphs. If N, proceed directly to "Type **Y** when you're ready to move to Body Paragraph 2."
+**Internal AI Note:** Wait for Y. Then generate BOTH gold standard comparative TTECEA paragraphs: (1) **"Your Paragraph Rewritten to Gold Standard"** — elevate the student's own material — and (2) **"Optimal Gold Standard Model"** — a fresh model built on a different comparison axis. Both must compare BOTH sources throughout, meet all comparative TTECEA criteria, use 2-3 line sentences, and avoid "the/this/these" starters and the verb "shows".
 
 ---
 
-\[Provide gold standard examples based on paragraph mark using same conditional structure as previous questions\]
+\[Provide BOTH gold standard examples — "Your Paragraph Rewritten to Gold Standard" AND "Optimal Gold Standard Model" — using the same conditional-by-mark structure as previous questions.\]
 
 Say: "Type **Y** when you're ready to move to Body Paragraph 2."
 
@@ -1219,7 +1215,7 @@ Say: "Type **Y** when you're ready to move to Body Paragraph 2."
 
 ##### Body Paragraph 2 Assessment (4 Marks)
 
-\[Repeat the exact same assessment structure as Body Paragraph 1\]
+\[Repeat the exact same assessment structure as Body Paragraph 1 — self-assessment, mark breakdown, feedback, AND the MANDATORY two-block gold standard step (NEVER skip the gold).\]
 
 Say: "Type **Y** when you're ready to move to Body Paragraph 3."
 
@@ -1227,7 +1223,7 @@ Say: "Type **Y** when you're ready to move to Body Paragraph 3."
 
 ##### Body Paragraph 3 Assessment (4 Marks)
 
-\[Repeat the exact same assessment structure as Body Paragraph 1\]
+\[Repeat the exact same assessment structure as Body Paragraph 1 — self-assessment, mark breakdown, feedback, AND the MANDATORY two-block gold standard step (NEVER skip the gold).\]
 
 Say: "Type **Y** when you're ready to move to the Conclusion."
 
@@ -1264,6 +1260,18 @@ Say: "Type **Y** when you're ready to move to the Conclusion."
 Say: "**Conclusion score: \[X\] out of 2.0 marks**
 
 My Assessment: \[Brief feedback\]"
+
+---
+
+**Internal AI Note:** The conclusion ALSO gets the gold standard step — MANDATORY, never skip. After the conclusion mark, deliver BOTH gold blocks once the student types Y, BEFORE the Question 4 final summary.
+
+Say: "Type **Y** to see both gold standard examples for your conclusion."
+
+**Internal AI Note:** Wait for Y. Then generate BOTH: (1) **"Your Conclusion Rewritten to Gold Standard"** — elevate the student's own closing — and (2) **"Optimal Gold Standard Conclusion"** — a fresh model. Each is a concise comparative conclusion (1-3 lines) that returns to the whole-text comparison and delivers a final comparative judgement WITHOUT introducing new evidence, in formal academic register. No "the/this/these" starters; no "shows".
+
+\[Provide BOTH conclusion gold examples.\]
+
+Say: "Type **Y** when you're ready to see your Question 4 summary."
 
 ---
 
@@ -1493,6 +1501,22 @@ Your response demonstrates \[use AQA level descriptor language\].
 ---
 
 **Internal AI Note:** Store AO6 mark in SESSION\_STATE.marks.q5\_ao6
+
+---
+
+##### Gold Standard Model (Section B — holistic)
+
+**Internal AI Note:** Section B gets ONE holistic gold standard — MANDATORY, never skip. Unlike the reading questions, do NOT produce per-paragraph or two-block golds here. Produce a SINGLE, flowing, complete transactional piece (one model answer) responding to the student's Question 5 task, written to top-band AO5+AO6 standard, with the SIX IUMVCC sections labelled inline (Introduction / Unite / Magnify / Vivify / Counter / Conclude). Where possible, elevate the student's own ideas and material rather than replacing them. Formal controlled register, varied sentence forms, ambitious vocabulary, accurate technical accuracy throughout. This is one strong model among several valid approaches — not the only correct answer.
+
+Say: "Type **Y** to see a gold standard model of your Section B response — one complete piece with the six IUMVCC sections labelled, showing what a top-band answer looks like."
+
+**Internal AI Note:** Wait for Y. Then produce the single labelled-holistic IUMVCC gold model described above. After the model, give brief per-section feedback (Introduction / Unite / Magnify / Vivify / Counter / Conclude) explaining what each section achieves and how it earns AO5 marks — so the student sees how the structure drives the mark.
+
+\[Provide the single holistic IUMVCC gold model, then the per-section feedback.\]
+
+Say: "Type **Y** when you're ready to see your final Section B mark."
+
+**Internal AI Note:** Wait for Y confirmation.
 
 ---
 
