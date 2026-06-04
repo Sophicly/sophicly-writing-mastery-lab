@@ -352,6 +352,8 @@ Say: "Type **Y** when you've noted your Question 1 mark and you're ready to cont
 
 **Submission Validation — Mode Resolution + Rebucketing (v7.18.34):**
 
+**Internal AI Note (paragraph detection — applies to Q2, Q3 and Q4):** Students frequently do NOT separate paragraphs with blank lines — they press Enter once, or run paragraphs together with no gap. When counting paragraphs for the Structural Diagnosis / auto-detect, DETECT paragraph boundaries by TOPIC/CONCEPT SHIFT (e.g. a move from Source A to Source B, an introductory sentence followed by a developed point, or a shift from one technique/idea to another) — NOT by blank lines alone. Count the concept-paragraphs the student INTENDED. NEVER tell the student they "wrote one continuous block", "one paragraph", or "one block" when distinct concept-paragraphs are present run-together — instead say you have identified their separate paragraphs and mark each one. Only flag genuinely missing structure (e.g. a required paragraph that simply does not exist).
+
 **Internal AI Note:** Resolve assessment mode from `SESSION_STATE.assessment_type` AND `SESSION_STATE.topic_number` (the topic number is supplied in the preamble — e.g. "Topic 1", "Topic 3").
 
 Three modes apply to Question 2:
@@ -902,7 +904,7 @@ Say: "Thank you. The feedback has several parts. I'll guide you through it one s
 **STRENGTHS \- Marks Awarded:**
 
 * Topic sentence establishing core concept (AO2): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\]  
-* Technique identified with embedded evidence (AO2): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\]  
+* Technique + evidence + inference (AO2): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\] — the second sentence names the technique, embeds the evidence, AND draws an inference from it (not technique + evidence alone)  
 * Close analysis of specific words/connotations (AO2): **plus 1 mark** → Awarded **\[X\]** because \[specific reason\]  
 * First effect sentence analyzing reader impact (AO2): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\]  
 * Second effect sentence developing analysis (AO2): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\]  
