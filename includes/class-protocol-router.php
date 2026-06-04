@@ -3857,13 +3857,19 @@ TEMPLATE;
         $lit_subjects = ['shakespeare', 'modern_text', '19th_century', 'poetry_anthology', 'unseen_poetry'];
         // Question-mode (discrete Q1..Q5) subjects — v7.19.289 Stage 1: AQA
         // Language Paper 2 only. P1 (`language1`) deferred to a later stage.
-        // v7.19.301: REVERTED to dormant ('language2' only — never matches the live
-        // 'language_p2' subject → question-mode stays OFF → stable monolith). See the
-        // note in assessment_mode(): re-activate only after the advancer writes
-        // current_beat reliably AND derive_segmented_step's no-beat fallback is fixed.
-        $question_subjects = ['language2'];
+        // v7.19.302: RE-ACTIVATED on the back of FIX B. The v300 freewheel root was a
+        // CASCADE, not an independent advancer bug: derive_segmented_step fell back to
+        // the pinned frontend step 8 → turn-1 strip → proc-less garbage reply → the
+        // advancer's beat-detect regexes matched nothing → current_beat never got a real
+        // value → stuck at 8 every turn. FIX B (derive returns 0 on no-valid-beat) breaks
+        // it: turn 1 → no strip → monolith → good reply → advancer detects beats →
+        // current_beat persists (update_assessment_state MERGES, verified) → turn 2
+        // segments. SEG DIAG retained to CONFIRM seg_step advances on staging. Runtime
+        // subject is 'language_p2', so normalise hyphens + accept every P2 spelling.
+        $sq = strtolower(str_replace('-', '_', (string) $subject));
+        $question_subjects = ['language2', 'language_p2', 'language_paper_2', 'lang_p2'];
         return in_array($subject, $lit_subjects, true)
-            || in_array($subject, $question_subjects, true);
+            || in_array($sq, $question_subjects, true);
     }
 
     /**
@@ -3875,17 +3881,15 @@ TEMPLATE;
      */
     public static function assessment_mode($context) {
         $subject = is_array($context) ? ($context['subject'] ?? '') : '';
-        // v7.19.301: REVERTED to dormant ('language2' only — never matches the live
-        // 'language_p2' subject, so question-mode stays OFF → stable monolith). The
-        // v7.19.300 activation was correct about the subject mismatch, but exposed a
-        // SECOND bug: the per-reply advancer never writes `current_beat`, so
-        // derive_segmented_step fell back to the frontend step (stuck at 8) and the
-        // strip loaded a 10-line slice → AI freewheeled/hallucinated. Re-activate ONLY
-        // after: (a) the advancer reliably sets current_beat per turn, and (b)
-        // derive_segmented_step returns 0 (no-segment → whole-proc fallback) when no
-        // valid beat — never the frontend step. Then broaden this gate again.
-        $question_subjects = ['language2'];
-        return in_array($subject, $question_subjects, true) ? 'questions' : 'paragraphs';
+        // v7.19.302: RE-ACTIVATED for AQA Lang P2 on the back of FIX B (derive returns 0
+        // on any no-valid-beat path → whole-proc monolith, never the pinned frontend step
+        // 8). That breaks the v300 cascade that left current_beat stuck (see the long note
+        // in is_assessment_state_machine_enabled). update_assessment_state MERGES, so the
+        // advancer's current_beat now persists turn-to-turn — confirm via SEG DIAG on
+        // staging. Runtime sends 'language_p2', so normalise hyphens + accept all P2 forms.
+        $s = strtolower(str_replace('-', '_', (string) $subject));
+        $question_subjects = ['language2', 'language_p2', 'language_paper_2', 'lang_p2'];
+        return in_array($s, $question_subjects, true) ? 'questions' : 'paragraphs';
     }
 
     /**
@@ -4060,17 +4064,21 @@ TEMPLATE;
      * inert while assessment.steps is empty.
      */
     public function derive_segmented_step($context, $user_id = 0) {
-        $fallback = (int) ($context['step'] ?? 1);
-        if (self::assessment_mode($context) !== 'questions') return $fallback;
+        // v7.19.302 (FIX B): every no-valid-beat path returns 0, NEVER the frontend
+        // step. The frontend pins $context['step'] at 8 (flat-sidebar last step),
+        // which collides with the populated Q2 manifest step 8 and wrongly strips
+        // the monolith on Setup/Q1/Q3/Q4/Q5 turns (the v300 freewheel). 0 fails the
+        // loader's `$seg_step > 0` guard → whole-protocol monolith (safe fallback).
+        if (self::assessment_mode($context) !== 'questions') return 0;
         $sig = self::resolve_attempt_signature($context);
-        if (!$sig) return $fallback;
+        if (!$sig) return 0;
         list($board, $text, $topic, $suffix, $attempt) = $sig;
-        if (!class_exists('SWML_Session_Manager')) return $fallback;
+        if (!class_exists('SWML_Session_Manager')) return 0;
         $state = SWML_Session_Manager::get_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt);
         $beat_id = (string) ($state['current_beat'] ?? '');
-        if ($beat_id === '' || $beat_id === 'q_done') return $fallback;
+        if ($beat_id === '' || $beat_id === 'q_done') return 0;
         $beat = $this->assessment_beat($beat_id, $context);
-        if (!$beat || empty($beat['step'])) return $fallback;
+        if (!$beat || empty($beat['step'])) return 0;
         return (int) $beat['step'];
     }
 
