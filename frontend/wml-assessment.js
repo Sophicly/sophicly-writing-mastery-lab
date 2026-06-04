@@ -3272,11 +3272,12 @@
                     headers,
                     body: JSON.stringify({
                         prompt: promptText,
-                        // v7.19.303: assessment marking on GPT-5 (bot 'wml' = gpt-5) to test
-                        // instruction-adherence on the monolith — Sonnet 4.6 ('wml-claude')
-                        // was dropping the token-heavy gold-standard step. Revert to
-                        // 'wml-claude' if GPT-5 doesn't reliably deliver gold per paragraph.
-                        botId: 'wml',
+                        // v7.19.304: back to Sonnet 4.6 ('wml-claude'). The v303 GPT-5 test
+                        // proved the P2 gold-skip was a PROTOCOL asymmetry (the P2 section
+                        // lacked the gold gate P1 had), NOT model drift — fixed in
+                        // protocol-a-assessment.md, with NEVER-skip forcing on both gates.
+                        // Sonnet chosen for speed (GPT-5 too slow for the 20-25min flow).
+                        botId: 'wml-claude',
                         chatId: canvasChatId,
                         history: historyToSend,
                         planState: state.plan || {},

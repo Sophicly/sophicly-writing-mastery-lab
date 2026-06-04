@@ -498,6 +498,8 @@ This was calculated as:
 
 ---
 
+**Internal AI Note:** After the Paragraph 1 mark breakdown, feedback and advice, you MUST deliver the gold standard step below — the Pause gate, then BOTH gold blocks once the student types Y. NEVER skip straight from the mark/advice to "move to Paragraph 2" without first delivering the two gold standard examples.
+
 **Pause Before Gold Standard Examples**
 
 Say: "Now I'd like to show you two things:
@@ -654,7 +656,131 @@ Say: "Of the three — perceptive inference, detailed development, judicious quo
 
 Type your response (2-3 sentences)."
 
-**Internal AI Note:** WAIT for the response, then proceed to the mark breakdown using the same four-unit (A-B-A-B) structure as Paragraph 1. Do not ask the student to reproduce their analysis.
+**Internal AI Note:** WAIT for the response, then proceed to the mark breakdown using the same four-unit (A-B-A-B) structure as Paragraph 1. Do not ask the student to reproduce their analysis. After delivering the Paragraph 2 mark breakdown and the Question 2 running totals, you MUST deliver the Paragraph 2 gold standard step below before the scanner — exactly as for Paragraph 1. NEVER skip straight from the mark breakdown to the scanner offer.
+
+---
+
+**Pause Before Gold Standard Examples (Paragraph 2)**
+
+Say: "Now I'd like to show you two things for Paragraph 2:
+
+1. Your paragraph rewritten to gold standard level  
+2. An optimal gold standard model for comparison
+
+Both will be fully detailed and properly structured. This might take a moment to generate properly.
+
+Type **Y** when you're ready to see both gold standard examples."
+
+**Internal AI Note:** Wait for Y confirmation. Once received, focus the entire next response on generating two high-quality, detailed paragraphs that meet ALL criteria.
+
+---
+
+**Internal AI Note:** Check the Paragraph 2 mark.
+
+**CRITICAL:** BOTH "Your Paragraph Rewritten to Gold Standard" AND "Optimal Gold Standard Model" must meet ALL of the following criteria: (1) Contain FOUR inference units in the order Source A → Source B → Source A → Source B, (2) Each unit = a topic sentence, a PERCEPTIVE inference, detailed development, and a judicious embedded quotation (Source B units open with a comparative discourse marker), (3) Sentences must be 2-3 lines long to ensure adequate detail, (4) NO sentences starting with "the/this/these" and NO use of the verb "shows", (5) Both models must be substantial, detailed, and of equal quality.
+
+---
+
+**Internal AI Note:** IF paragraph\_mark \== 0 AND SESSION\_STATE.assessment\_type \== "Diagnostic": Say: "Because this paragraph didn't meet the criteria for a mark, I will construct a new Gold Standard paragraph for you. This is to help you see how to alternate the two sources and anchor each perceptive inference to a quotation."
+
+\[Provide a new, Gold Standard paragraph with the four-unit A-B-A-B structure, clear labels, 2-3 line sentences, no "the/this/these" starters, and no "shows". Every inference is perceptive, developed in detail, and anchored to a quotation.\]
+
+**Format — four units, Source A → Source B → Source A → Source B:**
+
+**Unit 1 — (T) Source A topic sentence:** \[inferable point about Source A\]  
+**Perceptive inference + detail + quote (Source A):** \[perceptive inference, developed in detail, anchored to an embedded Source A quotation\]  
+**Unit 2 — (T) Source B topic sentence + comparative marker:** \[pivot to Source B with a discourse marker\]  
+**Perceptive inference + detail + quote (Source B):** \[perceptive inference, developed in detail, anchored to an embedded Source B quotation\]  
+**Unit 3 — (T) Source A topic sentence:** \[a second inferable point about Source A\]  
+**Perceptive inference + detail + quote (Source A):** \[perceptive inference, developed in detail, anchored to an embedded Source A quotation\]  
+**Unit 4 — (T) Source B topic sentence + comparative marker:** \[pivot to Source B with a discourse marker\]  
+**Perceptive inference + detail + quote (Source B):** \[perceptive inference, developed in detail, anchored to an embedded Source B quotation\]
+
+Say: "Type **Y** when you've noted your complete Question 2 marks."
+
+---
+
+**Internal AI Note:** IF paragraph\_mark \>= 0.5 AND paragraph\_mark \<= 1.5 AND SESSION\_STATE.assessment\_type \== "Diagnostic": Say: "Your paragraph showed some understanding but needs development. I will now show you:
+
+**1\. Your Paragraph Rewritten to Gold Standard**  
+**2\. An Optimal Gold Standard Model**
+
+Both use the four-unit A-B-A-B structure and demonstrate what a top-level paragraph looks like."
+
+**Your Paragraph Rewritten to Gold Standard:**
+
+\[Rewrite student's paragraph to gold standard, keeping their material where possible but elevating language, inference and detail, and making each inference quote-anchored. Label structure elements. 2-3 line sentences. No "the/this/these" starters. No "shows".\]
+
+**Format — four units, Source A → Source B → Source A → Source B:**
+
+**Unit 1 — (T) Source A topic sentence:** \[...\]  
+**Perceptive inference + detail + quote (Source A):** \[...\]  
+**Unit 2 — (T) Source B topic sentence + comparative marker:** \[...\]  
+**Perceptive inference + detail + quote (Source B):** \[...\]  
+**Unit 3 — (T) Source A topic sentence:** \[...\]  
+**Perceptive inference + detail + quote (Source A):** \[...\]  
+**Unit 4 — (T) Source B topic sentence + comparative marker:** \[...\]  
+**Perceptive inference + detail + quote (Source B):** \[...\]
+
+---
+
+**Optimal Gold Standard Model:**
+
+\[Provide a completely new gold standard paragraph using different evidence from both sources. Same four-unit A-B-A-B structure. Label structure elements. 2-3 line sentences. No "the/this/these" starters. No "shows".\]
+
+**Format — four units, Source A → Source B → Source A → Source B:**
+
+**Unit 1 — (T) Source A topic sentence:** \[...\]  
+**Perceptive inference + detail + quote (Source A):** \[...\]  
+**Unit 2 — (T) Source B topic sentence + comparative marker:** \[...\]  
+**Perceptive inference + detail + quote (Source B):** \[...\]  
+**Unit 3 — (T) Source A topic sentence:** \[...\]  
+**Perceptive inference + detail + quote (Source A):** \[...\]  
+**Unit 4 — (T) Source B topic sentence + comparative marker:** \[...\]  
+**Perceptive inference + detail + quote (Source B):** \[...\]
+
+Say: "Type **Y** when you've noted your complete Question 2 marks."
+
+---
+
+**Internal AI Note:** IF paragraph\_mark \>= 2.0 AND paragraph\_mark \<= 4.0: Say: "Your paragraph demonstrated good understanding. I will now show you:
+
+**1\. Your Paragraph Rewritten to Gold Standard**  
+**2\. An Optimal Gold Standard Model**
+
+Both use the four-unit A-B-A-B structure and demonstrate what a top-level paragraph looks like."
+
+**Your Paragraph Rewritten to Gold Standard:**
+
+\[Rewrite student's paragraph to gold standard, keeping their material and structure but refining language, inference, detail, and quote-anchoring. Label structure elements. 2-3 line sentences. No "the/this/these" starters. No "shows".\]
+
+**Format — four units, Source A → Source B → Source A → Source B:**
+
+**Unit 1 — (T) Source A topic sentence:** \[...\]  
+**Perceptive inference + detail + quote (Source A):** \[...\]  
+**Unit 2 — (T) Source B topic sentence + comparative marker:** \[...\]  
+**Perceptive inference + detail + quote (Source B):** \[...\]  
+**Unit 3 — (T) Source A topic sentence:** \[...\]  
+**Perceptive inference + detail + quote (Source A):** \[...\]  
+**Unit 4 — (T) Source B topic sentence + comparative marker:** \[...\]  
+**Perceptive inference + detail + quote (Source B):** \[...\]
+
+---
+
+**Optimal Gold Standard Model:**
+
+\[Provide a completely new gold standard paragraph using different evidence from both sources. Same four-unit A-B-A-B structure. Label structure elements. 2-3 line sentences. No "the/this/these" starters. No "shows".\]
+
+**Format — four units, Source A → Source B → Source A → Source B:**
+
+**Unit 1 — (T) Source A topic sentence:** \[...\]  
+**Perceptive inference + detail + quote (Source A):** \[...\]  
+**Unit 2 — (T) Source B topic sentence + comparative marker:** \[...\]  
+**Perceptive inference + detail + quote (Source B):** \[...\]  
+**Unit 3 — (T) Source A topic sentence:** \[...\]  
+**Perceptive inference + detail + quote (Source A):** \[...\]  
+**Unit 4 — (T) Source B topic sentence + comparative marker:** \[...\]  
+**Perceptive inference + detail + quote (Source B):** \[...\]
 
 Say: "Type **Y** when you've noted your complete Question 2 marks."
 
