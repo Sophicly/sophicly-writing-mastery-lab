@@ -3272,7 +3272,11 @@
                     headers,
                     body: JSON.stringify({
                         prompt: promptText,
-                        botId: 'wml-claude',
+                        // v7.19.303: assessment marking on GPT-5 (bot 'wml' = gpt-5) to test
+                        // instruction-adherence on the monolith — Sonnet 4.6 ('wml-claude')
+                        // was dropping the token-heavy gold-standard step. Revert to
+                        // 'wml-claude' if GPT-5 doesn't reliably deliver gold per paragraph.
+                        botId: 'wml',
                         chatId: canvasChatId,
                         history: historyToSend,
                         planState: state.plan || {},
