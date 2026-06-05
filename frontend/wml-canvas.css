@@ -5644,6 +5644,56 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     background: #1a1a2e;
     color: #fff;
 }
+/* v7.19.314: self-check cloze (g9 TTECEA) — Check-answers button + per-gap ✓/✗ marks */
+.swml-cloze-check {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 10px 0 6px 0;
+    flex-wrap: wrap;
+}
+.swml-cloze-check-btn {
+    appearance: none;
+    border: none;
+    background: #5333ed;
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 9px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+.swml-cloze-check-btn:hover { background: #6346f0; }
+.swml-cloze-check-btn:active { transform: translateY(1px); }
+.swml-cloze-check-summary {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+}
+.swml-cloze-check-summary.swml-cloze-allright {
+    color: #34d399;
+    font-weight: 600;
+}
+.swml-select-field.swml-select-correct {
+    border-color: rgba(52, 211, 153, 0.6);
+    background: rgba(52, 211, 153, 0.08);
+}
+.swml-select-field.swml-select-wrong {
+    border-color: rgba(248, 113, 113, 0.6);
+    background: rgba(248, 113, 113, 0.08);
+}
+.swml-select-field.swml-select-correct::after,
+.swml-select-field.swml-select-wrong::after {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    pointer-events: none;
+}
+.swml-select-field.swml-select-correct::after { content: '✓'; color: #34d399; }
+.swml-select-field.swml-select-wrong::after { content: '✗'; color: #f87171; }
 .swml-select-chips {
     display: flex;
     flex-wrap: wrap;

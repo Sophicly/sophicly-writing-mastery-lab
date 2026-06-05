@@ -10443,6 +10443,15 @@
                         parseHTML: el => el.getAttribute('data-value') || '',
                         renderHTML: attrs => attrs.value ? { 'data-value': attrs.value } : {},
                     },
+                    // v7.19.314: optional ground-truth answer for self-check clozes (g9
+                    // TTECEA gap-fill). When set, a sibling [data-cloze-check] button marks
+                    // this field ✓/✗ by comparing value === correct. Empty = no checking
+                    // (all existing grade/AO selectors are unaffected).
+                    correct: {
+                        default: '',
+                        parseHTML: el => el.getAttribute('data-correct') || '',
+                        renderHTML: attrs => attrs.correct ? { 'data-correct': attrs.correct } : {},
+                    },
                 };
             },
 
@@ -10466,6 +10475,7 @@
                     if (node.attrs.fieldId) dom.setAttribute('data-field-id', node.attrs.fieldId);
                     if (node.attrs.prompt) dom.setAttribute('data-prompt', node.attrs.prompt);
                     if (node.attrs.value) dom.setAttribute('data-value', node.attrs.value);
+                    if (node.attrs.correct) dom.setAttribute('data-correct', node.attrs.correct);
                     dom.setAttribute('contenteditable', 'false');
 
                     if (node.attrs.prompt) {
@@ -10526,12 +10536,78 @@
                         });
                         sel.addEventListener('change', (e) => {
                             e.stopPropagation();
+                            // v7.19.314: clear any prior ✓/✗ mark when the answer changes,
+                            // so the next "Check answers" re-evaluates from a clean state.
+                            dom.classList.remove('swml-select-correct', 'swml-select-wrong');
                             writeValue(sel.value);
                         });
                         sel.addEventListener('mousedown', (e) => e.stopPropagation());
                         dom.appendChild(sel);
                     }
 
+                    return { dom };
+                };
+            },
+        });
+
+        // ── ClozeCheck Node (v7.19.314) ──
+        // A "Check answers" button for a self-check cloze section (g9 TTECEA gap-fill).
+        // On click it scans every SelectField inside the same section block, compares each
+        // field's value against its `correct` attr, and marks it ✓ (swml-select-correct) or
+        // ✗ (swml-select-wrong) — then prints an X/Y summary. Re-checkable: the student fixes
+        // the red gaps and clicks again until all green. Atom; nothing to persist beyond the
+        // SelectField values, which save with the canvas as normal.
+        const ClozeCheck = Node.create({
+            name: 'clozeCheck',
+            group: 'block',
+            atom: true,
+            selectable: false,
+            parseHTML() {
+                return [{ tag: 'div[data-cloze-check]' }];
+            },
+            renderHTML({ HTMLAttributes }) {
+                return ['div', { ...HTMLAttributes, 'data-cloze-check': 'true', class: 'swml-cloze-check' }];
+            },
+            addNodeView() {
+                return () => {
+                    const dom = document.createElement('div');
+                    dom.classList.add('swml-cloze-check');
+                    dom.setAttribute('data-cloze-check', 'true');
+                    dom.setAttribute('contenteditable', 'false');
+
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.classList.add('swml-cloze-check-btn');
+                    btn.textContent = 'Check answers';
+
+                    const summary = document.createElement('span');
+                    summary.classList.add('swml-cloze-check-summary');
+
+                    btn.addEventListener('mousedown', (e) => e.stopPropagation());
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const section = dom.closest('.swml-section-block');
+                        if (!section) return;
+                        const fields = Array.from(section.querySelectorAll('.swml-select-field[data-correct]'));
+                        let right = 0;
+                        const total = fields.length;
+                        fields.forEach(f => {
+                            const want = (f.getAttribute('data-correct') || '').trim();
+                            const selEl = f.querySelector('.swml-select-input');
+                            const got = (selEl ? selEl.value : (f.getAttribute('data-value') || '')).trim();
+                            f.classList.remove('swml-select-correct', 'swml-select-wrong');
+                            if (want && got === want) { f.classList.add('swml-select-correct'); right++; }
+                            else { f.classList.add('swml-select-wrong'); }
+                        });
+                        summary.textContent = total
+                            ? `${right} / ${total} correct` + (right === total ? ' — all right!' : ' — fix the red gaps and check again')
+                            : '';
+                        summary.classList.toggle('swml-cloze-allright', total > 0 && right === total);
+                    });
+
+                    dom.appendChild(btn);
+                    dom.appendChild(summary);
                     return { dom };
                 };
             },
@@ -12070,6 +12146,7 @@
                 OutlineRow,
                 ChecklistItem,
                 SelectField,
+                ClozeCheck,
                 // v7.14.76: PaginationPlus DISABLED — continuous scroll mode.
                 // Eliminates scroll-jump bugs, criteria splitting across page breaks,
                 // and NodeView recreation issues. Pages added no pedagogical value
@@ -12556,7 +12633,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 9, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 10, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -16317,11 +16394,20 @@
     // <select> (single) or chip-toggle row (multi). Student picks manually.
     //   options = [{value, label}, ...]
     //   multi   = true → multi-select chip picker (value persists as comma-separated)
-    function selectHTML(prompt, fieldId, options, multi) {
+    function selectHTML(prompt, fieldId, options, multi, correct) {
         const pid = fieldId ? ` data-field-id="${escapeHTML(fieldId)}"` : '';
         const opts = escapeHTML(JSON.stringify(options || []));
         const mu = multi ? ' data-multi="true"' : '';
-        return `<div data-select-field="true" data-prompt="${escapeHTML(prompt || '')}"${pid} data-options="${opts}"${mu} class="swml-select-field"></div>`;
+        // v7.19.314: optional ground-truth answer → enables the ClozeCheck button to mark ✓/✗.
+        const cr = correct ? ` data-correct="${escapeHTML(correct)}"` : '';
+        return `<div data-select-field="true" data-prompt="${escapeHTML(prompt || '')}"${pid} data-options="${opts}"${mu}${cr} class="swml-select-field"></div>`;
+    }
+
+    // v7.19.314: "Check answers" button for a self-check cloze section. Renders as a
+    // ClozeCheck atom; its click handler marks every answer-keyed SelectField in the same
+    // section ✓/✗. See the ClozeCheck Node definition.
+    function clozeCheckHTML() {
+        return `<div data-cloze-check="true" class="swml-cloze-check"></div>`;
     }
 
     function buildQuestionSection(questionText, extractText, extractLocation, marks, aos, partLabel) {
@@ -18634,26 +18720,42 @@
             inputHTML('Letter 2 — technique found + exact quote + effect on reader.', 'unit-7.madfather-application.2') +
             inputHTML('Letter 3 — technique found + exact quote + effect on reader.', 'unit-7.madfather-application.3')
         );
-        // v7.19.313: TTECEA Application — guided cloze. Each of the 7 sentences of a
-        // model Macbeth paragraph has two words removed; the student picks each missing
-        // word from a dropdown (shared 14-word bank). Reuses selectHTML — the same
-        // bounded-choice atom as the Unit-1 grade pickers. Replaces the old free-write
-        // single field. Field ids are per-sentence/per-gap so the version-merge keeps
-        // any future answers across template bumps.
-        const _ttBank = ['stichomythia', 'regret', 'paternal', 'pity', 'hesitation', 'corrosive', 'psyches', 'comparison', 'nihilism', 'fissures', 'humanity', 'admonition', 'sacrificed', 'foreshadowing'].map(function (w) { return { value: w, label: w }; });
-        const _ttBeat = (label, sentence, id1, id2) =>
+        // v7.19.314: TTECEA Application — guided cloze for beginners. Seven plain-English
+        // sentences from a model Macbeth paragraph, two words missing each. The student
+        // picks each from a 3-option dropdown (1 correct + 2 distractors — Rodriguez 2005:
+        // 3 options optimal). The two answers in any sentence are deliberately NOT
+        // interchangeable. A "Check answers" button (ClozeCheck atom) marks each gap ✓/✗;
+        // the student fixes the red gaps and re-checks until all green. Picks persist with
+        // the canvas (SelectField value attr → /canvas/save).
+        const _opt = arr => arr.map(function (w) { return { value: w, label: w }; });
+        const _ttBeat = (label, sentence, id1, o1, c1, id2, o2, c2) =>
             '<p><strong>' + escapeHTML(label) + '</strong> — ' + escapeHTML(sentence) + '</p>'
-            + selectHTML('Gap 1', id1, _ttBank, false)
-            + selectHTML('Gap 2', id2, _ttBank, false);
+            + selectHTML('Gap 1', id1, _opt(o1), false, c1)
+            + selectHTML('Gap 2', id2, _opt(o2), false, c2);
         html += sectionHTML('plan', 'TTECEA Application — fill the gaps', true, null,
-            '<p>Each sentence below is a model Macbeth paragraph with two words missing. Pick the right word for each gap from the dropdowns.</p>'
-            + _ttBeat('Topic sentence', "Just after Duncan's murder, the Macbeths' shared ______ shows the first signs of the deep ______ that will destroy them both.", 'unit-7.ttecea-application.s1.g1', 'unit-7.ttecea-application.s1.g2')
-            + _ttBeat('Technique + evidence', "Lady Macbeth admits, 'Had he not resembled / My father as he slept, I had done't' (2.2.12-13), making a powerful ______ of Duncan to a ______ figure.", 'unit-7.ttecea-application.s2.g1', 'unit-7.ttecea-application.s2.g2')
-            + _ttBeat('Inference', "By comparing Duncan to her father, she reminds us of the ______ and family bonds they have ______ for their ambition.", 'unit-7.ttecea-application.s3.g1', 'unit-7.ttecea-application.s3.g2')
-            + _ttBeat('Technique + evidence', "Shakespeare's use of ______ — fast, broken dialogue ('Did not you speak?' 'When?' 'Now.') — shows their ______ breaking apart after their terrible act.", 'unit-7.ttecea-application.s4.g1', 'unit-7.ttecea-application.s4.g2')
-            + _ttBeat('Close analysis', "______ the regret that will later overwhelm them, this broken exchange reveals the mental ______ opening up between them.", 'unit-7.ttecea-application.s5.g1', 'unit-7.ttecea-application.s5.g2')
-            + _ttBeat('Effect on reader', "This scene makes the audience feel both ______ and horror, and marks the start of Lady Macbeth's breakdown and Macbeth's slide into ______.", 'unit-7.ttecea-application.s6.g1', 'unit-7.ttecea-application.s6.g2')
-            + _ttBeat("Author's purpose", "Through their shared guilt, Shakespeare gives a powerful ______ about the ______ power of ambition, showing how it destroys even the closest bonds.", 'unit-7.ttecea-application.s7.g1', 'unit-7.ttecea-application.s7.g2')
+            '<p>Each sentence is a model Macbeth paragraph with two words missing. Pick the right word for each gap, then press <strong>Check answers</strong>. Fix any red gaps and check again until they are all green.</p>'
+            + _ttBeat('Topic sentence', "Just after Duncan's murder, the Macbeths' shared ______ shows the first signs of the deep ______ that will destroy them both.",
+                'unit-7.ttecea-application.s1.g1', ['calm', 'doubt', 'joy'], 'doubt',
+                'unit-7.ttecea-application.s1.g2', ['pride', 'regret', 'relief'], 'regret')
+            + _ttBeat('Technique + evidence', "Lady Macbeth cannot kill Duncan because he looks like her sleeping father — a ______ of Duncan to a ______ figure.",
+                'unit-7.ttecea-application.s2.g1', ['contrast', 'comparison', 'list'], 'comparison',
+                'unit-7.ttecea-application.s2.g2', ['kingly', 'fatherly', 'evil'], 'fatherly')
+            + _ttBeat('Inference', "By comparing Duncan to her father, she reminds us of the ______ and family bonds they have ______ for their ambition.",
+                'unit-7.ttecea-application.s3.g1', ['power', 'kindness', 'money'], 'kindness',
+                'unit-7.ttecea-application.s3.g2', ['kept', 'broken', 'saved'], 'broken')
+            + _ttBeat('Technique + evidence', "Shakespeare uses short, broken lines ('Did not you speak?' 'When?' 'Now.') to show their ______ falling apart after their ______ act.",
+                'unit-7.ttecea-application.s4.g1', ['bodies', 'minds', 'plans'], 'minds',
+                'unit-7.ttecea-application.s4.g2', ['brave', 'terrible', 'kind'], 'terrible')
+            + _ttBeat('Close analysis', "This broken talk ______ the regret to come and shows the ______ opening up between them.",
+                'unit-7.ttecea-application.s5.g1', ['hides', 'hints at', 'ends'], 'hints at',
+                'unit-7.ttecea-application.s5.g2', ['love', 'cracks', 'peace'], 'cracks')
+            + _ttBeat('Effect on reader', "This scene makes the audience feel deep ______ for the couple, but also ______ at what they have done.",
+                'unit-7.ttecea-application.s6.g1', ['joy', 'pity', 'boredom'], 'pity',
+                'unit-7.ttecea-application.s6.g2', ['love', 'horror', 'calm'], 'horror')
+            + _ttBeat("Author's purpose", "Shakespeare gives a powerful ______ about how ______ can destroy even the closest bonds.",
+                'unit-7.ttecea-application.s7.g1', ['joke', 'warning', 'story'], 'warning',
+                'unit-7.ttecea-application.s7.g2', ['love', 'ambition', 'kindness'], 'ambition')
+            + clozeCheckHTML()
         );
         // v7.19.313: Essay Structure — one section, grouped (Introduction / Body
         // Paragraph ×3 / Conclusion). First-letter cue + descriptor per element; the
@@ -23304,7 +23406,7 @@ ${html}
                 // v7.17.6: Canonical word-counter (see note above).
                 CharacterCount.configure({ wordCounter: (WML && WML.countWords) ? WML.countWords : undefined }),
                 TextStyle, Color,
-                SectionBlock, InputField, ChecklistItem, SelectField,
+                SectionBlock, InputField, ChecklistItem, SelectField, ClozeCheck,
             ],
             content: savedContent || getExamPrepDocTemplate(state.task),
             editorProps: { attributes: { spellcheck: 'true' } },
