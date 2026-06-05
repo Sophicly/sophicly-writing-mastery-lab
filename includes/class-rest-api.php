@@ -1614,6 +1614,27 @@ class SWML_REST_API {
             // (returns this stage's existing doc, or null when genuinely empty).
         }
 
+        // v7.19.312: Scaffold-canvas reset. reset_scaffold=1 (frontend forwards it
+        // when the page URL carries ?swml_reset=1) hard-resets a course-scaffold
+        // canvas back to its shipped template: delete this user's saved doc and
+        // return the template AS-IF freshly seeded. is_seed=true makes the client
+        // prefer server over its localStorage buffer, so the new template wins even
+        // if a stale autosave exists. Only fires when a template actually ships for
+        // this text — otherwise falls through to the normal load untouched.
+        if (!empty($request->get_param('reset_scaffold'))) {
+            $reset_html = self::course_scaffold_template_html($text);
+            if ($reset_html !== null && $reset_html !== '') {
+                delete_user_meta($user_id, $meta_key);
+                return rest_ensure_response([
+                    'success'      => true,
+                    'doc'          => ['html' => $reset_html],
+                    'attempt'      => $attempt,
+                    'generalNotes' => $general_notes,
+                    'is_seed'      => true,
+                ]);
+            }
+        }
+
         $raw = get_user_meta($user_id, $meta_key, true);
         // v7.17.39: lazy backfill — pre-v7.17.39 CW data landed under the non-project
         // legacy key. On first project-scoped load with a miss, fall back to the legacy

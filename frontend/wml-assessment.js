@@ -19585,14 +19585,28 @@
                 ['planning', 'outlining', 'polishing', 'assessment', 'redraft_assessment'].includes(state.task)
                 || (state.task && state.task.startsWith('cw_'))
             ) ? '&seedFromSiblings=1' : '';
+            // v7.19.312: ?swml_reset=1 on the page URL forces a one-shot reset of a
+            // course-scaffold canvas (g9 Core Skills, Never Let Me Go, …) back to its
+            // shipped template. Server deletes the saved doc + returns the template as a
+            // seed (is_seed wins over the localStorage buffer). Self-serve refresh after
+            // a template ship — no DB clear needed. Scrubbed below so a later reload
+            // doesn't wipe edits.
+            let _resetScaffold = false;
+            try { _resetScaffold = new URLSearchParams(location.search).get('swml_reset') === '1'; } catch (_) {}
             if (state.reviewMode && state.reviewStudentId) {
                 url = `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
             } else {
-                url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${cwScopeQuery()}${_stageSeed}`;
+                url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${cwScopeQuery()}${_stageSeed}${_resetScaffold ? '&reset_scaffold=1' : ''}`;
             }
             // v7.19.136 instrumentation — record the URL we're about to fetch
             try { console.log('[WML load-debug v7.19.136] tryServerLoad fetch', { url: url, task: state.task, phase: state.phase, attempt: state.attempt, suffix: suffix }); } catch (_) {}
             const res = await fetch(url, { headers }).then(r => r.json());
+            // v7.19.312: one-shot — strip ?swml_reset from the address bar after the
+            // reset load so a subsequent reload reads the freshly-saved canvas instead
+            // of resetting again (which would discard any edits made post-reset).
+            if (_resetScaffold) {
+                try { const _u = new URL(location.href); _u.searchParams.delete('swml_reset'); history.replaceState(null, '', _u.toString()); } catch (_) {}
+            }
             // v7.19.136 instrumentation — record server response shape
             try {
                 console.log('[WML load-debug v7.19.136] tryServerLoad response', {
