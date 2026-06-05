@@ -12556,7 +12556,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 8, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 9, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -18634,8 +18634,45 @@
             inputHTML('Letter 2 — technique found + exact quote + effect on reader.', 'unit-7.madfather-application.2') +
             inputHTML('Letter 3 — technique found + exact quote + effect on reader.', 'unit-7.madfather-application.3')
         );
-        html += sectionHTML('plan', 'TTECEA Application', true, null,
-            inputHTML('Write one TTECEA+C paragraph (~7 sentences) on a sentence your tutor supplies.', 'unit-7.ttecea-application')
+        // v7.19.313: TTECEA Application — guided cloze. Each of the 7 sentences of a
+        // model Macbeth paragraph has two words removed; the student picks each missing
+        // word from a dropdown (shared 14-word bank). Reuses selectHTML — the same
+        // bounded-choice atom as the Unit-1 grade pickers. Replaces the old free-write
+        // single field. Field ids are per-sentence/per-gap so the version-merge keeps
+        // any future answers across template bumps.
+        const _ttBank = ['stichomythia', 'regret', 'paternal', 'pity', 'hesitation', 'corrosive', 'psyches', 'comparison', 'nihilism', 'fissures', 'humanity', 'admonition', 'sacrificed', 'foreshadowing'].map(function (w) { return { value: w, label: w }; });
+        const _ttBeat = (label, sentence, id1, id2) =>
+            '<p><strong>' + escapeHTML(label) + '</strong> — ' + escapeHTML(sentence) + '</p>'
+            + selectHTML('Gap 1', id1, _ttBank, false)
+            + selectHTML('Gap 2', id2, _ttBank, false);
+        html += sectionHTML('plan', 'TTECEA Application — fill the gaps', true, null,
+            '<p>Each sentence below is a model Macbeth paragraph with two words missing. Pick the right word for each gap from the dropdowns.</p>'
+            + _ttBeat('Topic sentence', "Just after Duncan's murder, the Macbeths' shared ______ shows the first signs of the deep ______ that will destroy them both.", 'unit-7.ttecea-application.s1.g1', 'unit-7.ttecea-application.s1.g2')
+            + _ttBeat('Technique + evidence', "Lady Macbeth admits, 'Had he not resembled / My father as he slept, I had done't' (2.2.12-13), making a powerful ______ of Duncan to a ______ figure.", 'unit-7.ttecea-application.s2.g1', 'unit-7.ttecea-application.s2.g2')
+            + _ttBeat('Inference', "By comparing Duncan to her father, she reminds us of the ______ and family bonds they have ______ for their ambition.", 'unit-7.ttecea-application.s3.g1', 'unit-7.ttecea-application.s3.g2')
+            + _ttBeat('Technique + evidence', "Shakespeare's use of ______ — fast, broken dialogue ('Did not you speak?' 'When?' 'Now.') — shows their ______ breaking apart after their terrible act.", 'unit-7.ttecea-application.s4.g1', 'unit-7.ttecea-application.s4.g2')
+            + _ttBeat('Close analysis', "______ the regret that will later overwhelm them, this broken exchange reveals the mental ______ opening up between them.", 'unit-7.ttecea-application.s5.g1', 'unit-7.ttecea-application.s5.g2')
+            + _ttBeat('Effect on reader', "This scene makes the audience feel both ______ and horror, and marks the start of Lady Macbeth's breakdown and Macbeth's slide into ______.", 'unit-7.ttecea-application.s6.g1', 'unit-7.ttecea-application.s6.g2')
+            + _ttBeat("Author's purpose", "Through their shared guilt, Shakespeare gives a powerful ______ about the ______ power of ambition, showing how it destroys even the closest bonds.", 'unit-7.ttecea-application.s7.g1', 'unit-7.ttecea-application.s7.g2')
+        );
+        // v7.19.313: Essay Structure — one section, grouped (Introduction / Body
+        // Paragraph ×3 / Conclusion). First-letter cue + descriptor per element; the
+        // CAPS group label rides on each group's first field.
+        html += sectionHTML('plan', 'Essay Structure', true, null,
+            inputHTML('INTRODUCTION (10%) — H… — question / historical context / quote', 'unit-7.essay-structure.intro.1') +
+            inputHTML('B… — context', 'unit-7.essay-structure.intro.2') +
+            inputHTML('T… — three key ideas', 'unit-7.essay-structure.intro.3') +
+            inputHTML('BODY PARAGRAPH ×3 (70%) — T… — key idea', 'unit-7.essay-structure.bp.1') +
+            inputHTML('T… — technique + evidence + inference', 'unit-7.essay-structure.bp.2') +
+            inputHTML('C… — the key word / phrase', 'unit-7.essay-structure.bp.3') +
+            inputHTML('E… — emotion (feel)', 'unit-7.essay-structure.bp.4') +
+            inputHTML('E… — thought / action', 'unit-7.essay-structure.bp.5') +
+            inputHTML('A… — in order to…', 'unit-7.essay-structure.bp.6') +
+            inputHTML('C… — historical / social', 'unit-7.essay-structure.bp.7') +
+            inputHTML('CONCLUSION (20%) — R… — three key ideas', 'unit-7.essay-structure.conclusion.1') +
+            inputHTML('C… — key theme', 'unit-7.essay-structure.conclusion.2') +
+            inputHTML('A… — in order to…', 'unit-7.essay-structure.conclusion.3') +
+            inputHTML('U… — the bigger message', 'unit-7.essay-structure.conclusion.4')
         );
         html += sectionHTML('plan', 'Story-Spine Draft (6 Beats)', true, null,
             inputHTML('Beat 1', 'unit-7.story-spine-draft.1') +
@@ -19585,28 +19622,14 @@
                 ['planning', 'outlining', 'polishing', 'assessment', 'redraft_assessment'].includes(state.task)
                 || (state.task && state.task.startsWith('cw_'))
             ) ? '&seedFromSiblings=1' : '';
-            // v7.19.312: ?swml_reset=1 on the page URL forces a one-shot reset of a
-            // course-scaffold canvas (g9 Core Skills, Never Let Me Go, …) back to its
-            // shipped template. Server deletes the saved doc + returns the template as a
-            // seed (is_seed wins over the localStorage buffer). Self-serve refresh after
-            // a template ship — no DB clear needed. Scrubbed below so a later reload
-            // doesn't wipe edits.
-            let _resetScaffold = false;
-            try { _resetScaffold = new URLSearchParams(location.search).get('swml_reset') === '1'; } catch (_) {}
             if (state.reviewMode && state.reviewStudentId) {
                 url = `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}`;
             } else {
-                url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${cwScopeQuery()}${_stageSeed}${_resetScaffold ? '&reset_scaffold=1' : ''}`;
+                url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${cwScopeQuery()}${_stageSeed}`;
             }
             // v7.19.136 instrumentation — record the URL we're about to fetch
             try { console.log('[WML load-debug v7.19.136] tryServerLoad fetch', { url: url, task: state.task, phase: state.phase, attempt: state.attempt, suffix: suffix }); } catch (_) {}
             const res = await fetch(url, { headers }).then(r => r.json());
-            // v7.19.312: one-shot — strip ?swml_reset from the address bar after the
-            // reset load so a subsequent reload reads the freshly-saved canvas instead
-            // of resetting again (which would discard any edits made post-reset).
-            if (_resetScaffold) {
-                try { const _u = new URL(location.href); _u.searchParams.delete('swml_reset'); history.replaceState(null, '', _u.toString()); } catch (_) {}
-            }
             // v7.19.136 instrumentation — record server response shape
             try {
                 console.log('[WML load-debug v7.19.136] tryServerLoad response', {

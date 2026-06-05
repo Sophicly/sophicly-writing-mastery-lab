@@ -14,8 +14,6 @@ question-bank-*.md
 
 # Misc
 *.html
-# …except bundled canvas scaffold templates — these are source (served by load_canvas)
-!templates/canvas-*.html
 
 # Screenshots (CleanShot auto-saves land here when shared in chat)
 CleanShot*.png

@@ -1614,27 +1614,6 @@ class SWML_REST_API {
             // (returns this stage's existing doc, or null when genuinely empty).
         }
 
-        // v7.19.312: Scaffold-canvas reset. reset_scaffold=1 (frontend forwards it
-        // when the page URL carries ?swml_reset=1) hard-resets a course-scaffold
-        // canvas back to its shipped template: delete this user's saved doc and
-        // return the template AS-IF freshly seeded. is_seed=true makes the client
-        // prefer server over its localStorage buffer, so the new template wins even
-        // if a stale autosave exists. Only fires when a template actually ships for
-        // this text — otherwise falls through to the normal load untouched.
-        if (!empty($request->get_param('reset_scaffold'))) {
-            $reset_html = self::course_scaffold_template_html($text);
-            if ($reset_html !== null && $reset_html !== '') {
-                delete_user_meta($user_id, $meta_key);
-                return rest_ensure_response([
-                    'success'      => true,
-                    'doc'          => ['html' => $reset_html],
-                    'attempt'      => $attempt,
-                    'generalNotes' => $general_notes,
-                    'is_seed'      => true,
-                ]);
-            }
-        }
-
         $raw = get_user_meta($user_id, $meta_key, true);
         // v7.17.39: lazy backfill — pre-v7.17.39 CW data landed under the non-project
         // legacy key. On first project-scoped load with a miss, fall back to the legacy
@@ -1713,24 +1692,6 @@ class SWML_REST_API {
             }
         }
         if (empty($raw)) {
-            // v7.19.308: Course-scaffold canvas seed-on-mount (generalised).
-            // Some courses ship a hand-authored scaffold canvas (g9 Core Skills,
-            // Never Let Me Go, …) that must reach EVERY student, not just the author's
-            // account. Each is version-controlled as templates/canvas-{slug}.html
-            // (slug = text-slug with `_`→`-`). When no saved canvas exists AND a matching
-            // template file ships, serve it AS-IF saved; the first autosave persists it
-            // into user_meta. File-existence is the gate — courses without a template
-            // fall through untouched. Adding a new scaffold course = drop a file, no code.
-            $scaffold_html = self::course_scaffold_template_html($text);
-            if ($scaffold_html !== null && $scaffold_html !== '') {
-                return rest_ensure_response([
-                    'success'      => true,
-                    'doc'          => ['html' => $scaffold_html],
-                    'attempt'      => $attempt,
-                    'generalNotes' => $general_notes,
-                    'is_seed'      => true,
-                ]);
-            }
             // v7.19.19+: Exam Prep Crib seed-on-mount.
             // When suffix='_crib' (task='exam_crib' per manifest) AND no canvas
             // exists for this user, return the bundled crib template for this
@@ -4412,33 +4373,6 @@ class SWML_REST_API {
             }
         }
         return $out;
-    }
-
-    /**
-     * v7.19.308: Serve a bundled course-scaffold canvas template by naming convention.
-     * Maps the canvas text-slug to templates/canvas-{slug}.html, where slug = lowercased
-     * text with `_`→`-` and stripped to [a-z0-9-] (the strip bars path traversal, since
-     * $text originates from the request). Returns the raw HTML string, or null when no
-     * template ships for this course. Cached per-slug per-request.
-     *
-     * Adding a new scaffold course = drop a canvas-{slug}.html into templates/. No code
-     * change. Examples: g9_core_skills → canvas-g9-core-skills.html;
-     * never_let_me_go → canvas-never-let-me-go.html.
-     */
-    private static function course_scaffold_template_html($text) {
-        if (!is_string($text) || $text === '') return null;
-        static $cache = [];
-        $slug = preg_replace('/[^a-z0-9-]/', '', strtolower(str_replace('_', '-', $text)));
-        if ($slug === '') return null;
-        if (array_key_exists($slug, $cache)) return $cache[$slug];
-        $path = SWML_PATH . 'templates/canvas-' . $slug . '.html';
-        if (!is_readable($path)) {
-            $cache[$slug] = null;
-            return null;
-        }
-        $html = file_get_contents($path);
-        $cache[$slug] = ($html === false) ? null : trim($html);
-        return $cache[$slug];
     }
 
     /**
