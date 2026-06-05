@@ -12633,7 +12633,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 10, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 11, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -18720,41 +18720,32 @@
             inputHTML('Letter 2 — technique found + exact quote + effect on reader.', 'unit-7.madfather-application.2') +
             inputHTML('Letter 3 — technique found + exact quote + effect on reader.', 'unit-7.madfather-application.3')
         );
-        // v7.19.314: TTECEA Application — guided cloze for beginners. Seven plain-English
-        // sentences from a model Macbeth paragraph, two words missing each. The student
-        // picks each from a 3-option dropdown (1 correct + 2 distractors — Rodriguez 2005:
-        // 3 options optimal). The two answers in any sentence are deliberately NOT
-        // interchangeable. A "Check answers" button (ClozeCheck atom) marks each gap ✓/✗;
-        // the student fixes the red gaps and re-checks until all green. Picks persist with
-        // the canvas (SelectField value attr → /canvas/save).
-        const _opt = arr => arr.map(function (w) { return { value: w, label: w }; });
-        const _ttBeat = (label, sentence, id1, o1, c1, id2, o2, c2) =>
-            '<p><strong>' + escapeHTML(label) + '</strong> — ' + escapeHTML(sentence) + '</p>'
-            + selectHTML('Gap 1', id1, _opt(o1), false, c1)
-            + selectHTML('Gap 2', id2, _opt(o2), false, c2);
-        html += sectionHTML('plan', 'TTECEA Application — fill the gaps', true, null,
-            '<p>Each sentence is a model Macbeth paragraph with two words missing. Pick the right word for each gap, then press <strong>Check answers</strong>. Fix any red gaps and check again until they are all green.</p>'
-            + _ttBeat('Topic sentence', "Just after Duncan's murder, the Macbeths' shared ______ shows the first signs of the deep ______ that will destroy them both.",
-                'unit-7.ttecea-application.s1.g1', ['calm', 'doubt', 'joy'], 'doubt',
-                'unit-7.ttecea-application.s1.g2', ['pride', 'regret', 'relief'], 'regret')
-            + _ttBeat('Technique + evidence', "Lady Macbeth cannot kill Duncan because he looks like her sleeping father — a ______ of Duncan to a ______ figure.",
-                'unit-7.ttecea-application.s2.g1', ['contrast', 'comparison', 'list'], 'comparison',
-                'unit-7.ttecea-application.s2.g2', ['kingly', 'fatherly', 'evil'], 'fatherly')
-            + _ttBeat('Inference', "By comparing Duncan to her father, she reminds us of the ______ and family bonds they have ______ for their ambition.",
-                'unit-7.ttecea-application.s3.g1', ['power', 'kindness', 'money'], 'kindness',
-                'unit-7.ttecea-application.s3.g2', ['kept', 'broken', 'saved'], 'broken')
-            + _ttBeat('Technique + evidence', "Shakespeare uses short, broken lines ('Did not you speak?' 'When?' 'Now.') to show their ______ falling apart after their ______ act.",
-                'unit-7.ttecea-application.s4.g1', ['bodies', 'minds', 'plans'], 'minds',
-                'unit-7.ttecea-application.s4.g2', ['brave', 'terrible', 'kind'], 'terrible')
-            + _ttBeat('Close analysis', "This broken talk ______ the regret to come and shows the ______ opening up between them.",
-                'unit-7.ttecea-application.s5.g1', ['hides', 'hints at', 'ends'], 'hints at',
-                'unit-7.ttecea-application.s5.g2', ['love', 'cracks', 'peace'], 'cracks')
-            + _ttBeat('Effect on reader', "This scene makes the audience feel deep ______ for the couple, but also ______ at what they have done.",
-                'unit-7.ttecea-application.s6.g1', ['joy', 'pity', 'boredom'], 'pity',
-                'unit-7.ttecea-application.s6.g2', ['love', 'horror', 'calm'], 'horror')
-            + _ttBeat("Author's purpose", "Shakespeare gives a powerful ______ about how ______ can destroy even the closest bonds.",
-                'unit-7.ttecea-application.s7.g1', ['joke', 'warning', 'story'], 'warning',
-                'unit-7.ttecea-application.s7.g2', ['love', 'ambition', 'kindness'], 'ambition')
+        // v7.19.315: TTECEA Application — label the model paragraph. The student reads a
+        // COMPLETE Grade-9 Macbeth paragraph (one sentence per TTECEA+C beat, technique
+        // named) and picks which part of TTECEA each sentence is, from a 3-option dropdown
+        // (Rodriguez 2005: 3 optimal). No word gaps — removes the interchangeable-word
+        // problem — and complements the drag-drop components builder. "Check answers" marks
+        // each ✓/✗; picks persist with the canvas (SelectField value attr → /canvas/save).
+        const _lab = arr => arr.map(function (w) { return { value: w, label: w }; });
+        const _ttRow = (sentence, id, options, correct) =>
+            '<p>' + escapeHTML(sentence) + '</p>'
+            + selectHTML('Which part of TTECEA is this sentence?', id, _lab(options), false, correct);
+        html += sectionHTML('plan', 'TTECEA Application — label the paragraph', true, null,
+            '<p>Below is a complete model Macbeth paragraph. Read each sentence, then choose which part of TTECEA it is. Press <strong>Check answers</strong>, fix any red ones, and check again until they are all green.</p>'
+            + _ttRow("Just after Duncan's murder, the Macbeths' shared guilt shows the first signs of the regret that will destroy them both.",
+                'unit-7.ttecea-application.s1.label', ["Author's purpose", 'Topic sentence', 'Inference'], 'Topic sentence')
+            + _ttRow("Shakespeare uses a simile when Lady Macbeth says Duncan 'resembled / My father as he slept', comparing the king to her own father.",
+                'unit-7.ttecea-application.s2.label', ['Close analysis', 'Technique + evidence', 'Inference'], 'Technique + evidence')
+            + _ttRow("This comparison suggests the Macbeths still feel the family love and loyalty they have betrayed for their ambition.",
+                'unit-7.ttecea-application.s3.label', ['Technique + evidence', 'Inference', 'Effect on reader'], 'Inference')
+            + _ttRow("The word 'father' is powerful because it reminds us that Duncan was not just a king but a kind, protective figure.",
+                'unit-7.ttecea-application.s4.label', ['Technique + evidence', 'Close analysis', 'Context'], 'Close analysis')
+            + _ttRow("This makes the audience feel deep pity for the couple, but also horror at what they have done.",
+                'unit-7.ttecea-application.s5.label', ['Inference', 'Effect on reader', "Author's purpose"], 'Effect on reader')
+            + _ttRow("Shakespeare does this to warn his audience how ambition can destroy even the closest bonds.",
+                'unit-7.ttecea-application.s6.label', ['Effect on reader', "Author's purpose", 'Context'], "Author's purpose")
+            + _ttRow("A Jacobean audience would be especially shocked, because killing a king was seen as the worst possible crime against God's order.",
+                'unit-7.ttecea-application.s7.label', ['Topic sentence', 'Context', "Author's purpose"], 'Context')
             + clozeCheckHTML()
         );
         // v7.19.313: Essay Structure — one section, grouped (Introduction / Body
