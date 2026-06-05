@@ -12633,7 +12633,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 11, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 12, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -18732,17 +18732,17 @@
             + selectHTML('Which part of TTECEA is this sentence?', id, _lab(options), false, correct);
         html += sectionHTML('plan', 'TTECEA Application — label the paragraph', true, null,
             '<p>Below is a complete model Macbeth paragraph. Read each sentence, then choose which part of TTECEA it is. Press <strong>Check answers</strong>, fix any red ones, and check again until they are all green.</p>'
-            + _ttRow("Just after Duncan's murder, the Macbeths' shared guilt shows the first signs of the regret that will destroy them both.",
+            + _ttRow("Just after Duncan's murder, Macbeth's overwhelming guilt shows the first signs of the regret that will destroy him.",
                 'unit-7.ttecea-application.s1.label', ["Author's purpose", 'Topic sentence', 'Inference'], 'Topic sentence')
-            + _ttRow("Shakespeare uses a simile when Lady Macbeth says Duncan 'resembled / My father as he slept', comparing the king to her own father.",
+            + _ttRow("Shakespeare uses hyperbole when Macbeth cries that not even 'all great Neptune's ocean' could 'wash this blood clean' from his hand.",
                 'unit-7.ttecea-application.s2.label', ['Close analysis', 'Technique + evidence', 'Inference'], 'Technique + evidence')
-            + _ttRow("This comparison suggests the Macbeths still feel the family love and loyalty they have betrayed for their ambition.",
+            + _ttRow("This exaggeration suggests his guilt is so huge that nothing could ever make him feel clean again.",
                 'unit-7.ttecea-application.s3.label', ['Technique + evidence', 'Inference', 'Effect on reader'], 'Inference')
-            + _ttRow("The word 'father' is powerful because it reminds us that Duncan was not just a king but a kind, protective figure.",
+            + _ttRow("The word 'blood' stands for his guilt, showing that the murder has stained him forever.",
                 'unit-7.ttecea-application.s4.label', ['Technique + evidence', 'Close analysis', 'Context'], 'Close analysis')
-            + _ttRow("This makes the audience feel deep pity for the couple, but also horror at what they have done.",
+            + _ttRow("This makes the audience feel both pity for Macbeth and horror at what he has done.",
                 'unit-7.ttecea-application.s5.label', ['Inference', 'Effect on reader', "Author's purpose"], 'Effect on reader')
-            + _ttRow("Shakespeare does this to warn his audience how ambition can destroy even the closest bonds.",
+            + _ttRow("Shakespeare does this to warn his audience that terrible guilt always follows a crime committed for power.",
                 'unit-7.ttecea-application.s6.label', ['Effect on reader', "Author's purpose", 'Context'], "Author's purpose")
             + _ttRow("A Jacobean audience would be especially shocked, because killing a king was seen as the worst possible crime against God's order.",
                 'unit-7.ttecea-application.s7.label', ['Topic sentence', 'Context', "Author's purpose"], 'Context')
