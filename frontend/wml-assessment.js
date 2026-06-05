@@ -10583,28 +10583,42 @@
                     const summary = document.createElement('span');
                     summary.classList.add('swml-cloze-check-summary');
 
-                    btn.addEventListener('mousedown', (e) => e.stopPropagation());
-                    btn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
+                    // markEmpty=true (button click): unanswered gaps show ✗ to prompt a pick.
+                    // markEmpty=false (load restore): only mark answered gaps, so a fresh doc
+                    // stays clean while a returning student sees their prior ✓/✗ re-derived
+                    // from the saved answers.
+                    const runCheck = (markEmpty) => {
                         const section = dom.closest('.swml-section-block');
-                        if (!section) return;
+                        if (!section) return 0;
                         const fields = Array.from(section.querySelectorAll('.swml-select-field[data-correct]'));
-                        let right = 0;
+                        let right = 0, answered = 0;
                         const total = fields.length;
                         fields.forEach(f => {
                             const want = (f.getAttribute('data-correct') || '').trim();
                             const selEl = f.querySelector('.swml-select-input');
                             const got = (selEl ? selEl.value : (f.getAttribute('data-value') || '')).trim();
                             f.classList.remove('swml-select-correct', 'swml-select-wrong');
+                            if (got) answered++;
                             if (want && got === want) { f.classList.add('swml-select-correct'); right++; }
-                            else { f.classList.add('swml-select-wrong'); }
+                            else if (got || markEmpty) { f.classList.add('swml-select-wrong'); }
                         });
                         summary.textContent = total
-                            ? `${right} / ${total} correct` + (right === total ? ' — all right!' : ' — fix the red gaps and check again')
+                            ? `${right} / ${total} correct` + (right === total ? ' — all right!' : ' — fix the red answers and check again')
                             : '';
                         summary.classList.toggle('swml-cloze-allright', total > 0 && right === total);
+                        return answered;
+                    };
+
+                    btn.addEventListener('mousedown', (e) => e.stopPropagation());
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        runCheck(true);
                     });
+                    // v7.19.317: restore prior marks on load. The saved canvas keeps each
+                    // SelectField value, so re-deriving ✓/✗ here makes the checked state
+                    // persist across reloads (deferred so sibling selects have rendered).
+                    setTimeout(() => { try { runCheck(false); } catch (_) {} }, 200);
 
                     dom.appendChild(btn);
                     dom.appendChild(summary);
@@ -12633,7 +12647,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 12, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 13, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -18726,26 +18740,38 @@
         // (Rodriguez 2005: 3 optimal). No word gaps — removes the interchangeable-word
         // problem — and complements the drag-drop components builder. "Check answers" marks
         // each ✓/✗; picks persist with the canvas (SelectField value attr → /canvas/save).
+        // v7.19.317: each label carries the Assessment Objective it targets (shown in
+        // brackets), and there are TWO Effect-on-reader sentences (Sophicly's two effect
+        // beats — feel + think). 8 sentences, one per TTECEA+C beat.
+        const _LT = 'Topic sentence (AO1)';
+        const _LTE = 'Technique + evidence (AO1 + AO2)';
+        const _LI = 'Inference (AO1 + AO2)';
+        const _LCA = 'Close analysis (AO2)';
+        const _LE = 'Effect on reader (AO2)';
+        const _LAP = "Author's purpose (AO1 + AO3)";
+        const _LC = 'Context (AO3)';
         const _lab = arr => arr.map(function (w) { return { value: w, label: w }; });
         const _ttRow = (sentence, id, options, correct) =>
             '<p>' + escapeHTML(sentence) + '</p>'
-            + selectHTML('Which part of TTECEA is this sentence?', id, _lab(options), false, correct);
+            + selectHTML('Which part of TTECEA is this sentence? (the bracket shows its Assessment Objective)', id, _lab(options), false, correct);
         html += sectionHTML('plan', 'TTECEA Application — label the paragraph', true, null,
-            '<p>Below is a complete model Macbeth paragraph. Read each sentence, then choose which part of TTECEA it is. Press <strong>Check answers</strong>, fix any red ones, and check again until they are all green.</p>'
+            '<p>Below is a complete model Macbeth paragraph. Read each sentence, then choose which part of TTECEA it is — the bracket after each label shows the Assessment Objective (AO) it targets. Press <strong>Check answers</strong>, fix any red ones, and check again until they are all green.</p>'
             + _ttRow("Just after Duncan's murder, Macbeth's overwhelming guilt shows the first signs of the regret that will destroy him.",
-                'unit-7.ttecea-application.s1.label', ["Author's purpose", 'Topic sentence', 'Inference'], 'Topic sentence')
+                'unit-7.ttecea-application.s1.label', [_LAP, _LT, _LI], _LT)
             + _ttRow("Shakespeare uses hyperbole when Macbeth cries that not even 'all great Neptune's ocean' could 'wash this blood clean' from his hand.",
-                'unit-7.ttecea-application.s2.label', ['Close analysis', 'Technique + evidence', 'Inference'], 'Technique + evidence')
+                'unit-7.ttecea-application.s2.label', [_LCA, _LTE, _LI], _LTE)
             + _ttRow("This exaggeration suggests his guilt is so huge that nothing could ever make him feel clean again.",
-                'unit-7.ttecea-application.s3.label', ['Technique + evidence', 'Inference', 'Effect on reader'], 'Inference')
+                'unit-7.ttecea-application.s3.label', [_LTE, _LI, _LE], _LI)
             + _ttRow("The word 'blood' stands for his guilt, showing that the murder has stained him forever.",
-                'unit-7.ttecea-application.s4.label', ['Technique + evidence', 'Close analysis', 'Context'], 'Close analysis')
+                'unit-7.ttecea-application.s4.label', [_LTE, _LCA, _LC], _LCA)
             + _ttRow("This makes the audience feel both pity for Macbeth and horror at what he has done.",
-                'unit-7.ttecea-application.s5.label', ['Inference', 'Effect on reader', "Author's purpose"], 'Effect on reader')
+                'unit-7.ttecea-application.s5.label', [_LI, _LE, _LAP], _LE)
+            + _ttRow("It also makes the audience think about how a good man can be ruined by his own choices.",
+                'unit-7.ttecea-application.s6.label', [_LAP, _LE, _LC], _LE)
             + _ttRow("Shakespeare does this to warn his audience that terrible guilt always follows a crime committed for power.",
-                'unit-7.ttecea-application.s6.label', ['Effect on reader', "Author's purpose", 'Context'], "Author's purpose")
+                'unit-7.ttecea-application.s7.label', [_LE, _LAP, _LC], _LAP)
             + _ttRow("A Jacobean audience would be especially shocked, because killing a king was seen as the worst possible crime against God's order.",
-                'unit-7.ttecea-application.s7.label', ['Topic sentence', 'Context', "Author's purpose"], 'Context')
+                'unit-7.ttecea-application.s8.label', [_LT, _LC, _LAP], _LC)
             + clozeCheckHTML()
         );
         // v7.19.313: Essay Structure — one section, grouped (Introduction / Body
