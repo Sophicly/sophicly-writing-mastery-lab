@@ -10545,7 +10545,27 @@
                         dom.appendChild(sel);
                     }
 
-                    return { dom };
+                    // v7.19.318: in-place update. Without this, ProseMirror destroyed and
+                    // rebuilt the whole nodeview on every value change, causing a layout
+                    // reflow ("sections jump" when picking). Only the value changes at
+                    // runtime, so sync it onto the existing DOM and keep the node.
+                    return {
+                        dom,
+                        update(updatedNode) {
+                            if (!updatedNode || updatedNode.type.name !== 'selectField') return false;
+                            const newVal = updatedNode.attrs.value || '';
+                            if (newVal) dom.setAttribute('data-value', newVal);
+                            else dom.removeAttribute('data-value');
+                            const single = dom.querySelector('.swml-select-input');
+                            if (single && single.value !== newVal) single.value = newVal;
+                            const chips = dom.querySelectorAll('.swml-select-chip');
+                            if (chips.length) {
+                                const picked = new Set(newVal.split(',').map(s => s.trim()).filter(Boolean));
+                                chips.forEach(c => c.classList.toggle('selected', picked.has(c.dataset.value)));
+                            }
+                            return true;
+                        },
+                    };
                 };
             },
         });
@@ -10615,10 +10635,10 @@
                         e.stopPropagation();
                         runCheck(true);
                     });
-                    // v7.19.317: restore prior marks on load. The saved canvas keeps each
-                    // SelectField value, so re-deriving ✓/✗ here makes the checked state
-                    // persist across reloads (deferred so sibling selects have rendered).
-                    setTimeout(() => { try { runCheck(false); } catch (_) {} }, 200);
+                    // v7.19.318: marks appear ONLY on an explicit "Check answers" click —
+                    // no auto-check on load or on re-render — so the student commits to an
+                    // answer before seeing if it is right. Picked answers still persist with
+                    // the canvas; only the ✓/✗ feedback is deferred to the button.
 
                     dom.appendChild(btn);
                     dom.appendChild(summary);
@@ -12647,7 +12667,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 13, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 14, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
