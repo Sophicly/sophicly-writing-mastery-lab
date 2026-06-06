@@ -140,9 +140,23 @@ class SWML_Quiz_Engine {
             'correct'         => sanitize_text_field($args['correct']         ?? ''),
             'student_answer'  => sanitize_text_field($args['student_answer']  ?? ''),
         ];
-        $accumulator['questions'][] = $entry;
-        $accumulator['score_running'] += $marks_awarded;
-        $accumulator['max_running']   += $max_marks;
+
+        // v7.19.319: IDEMPOTENT upsert keyed by q_num. Re-emits (page reload,
+        // marker repeated in a re-rendered turn) OVERWRITE the same question
+        // instead of appending a duplicate. Running totals are recomputed from
+        // the questions array each time, never blind-accumulated.
+        $replaced = false;
+        foreach ($accumulator['questions'] as $i => $existing) {
+            if ((int) ($existing['q_num'] ?? 0) === $q_num) {
+                $accumulator['questions'][$i] = $entry;
+                $replaced = true;
+                break;
+            }
+        }
+        if (!$replaced) {
+            $accumulator['questions'][] = $entry;
+        }
+        $this->recompute_totals($accumulator);
         $accumulator['current_question'] = min(
             $q_num + 1,
             $accumulator['total_questions']
@@ -155,14 +169,20 @@ class SWML_Quiz_Engine {
 
     /**
      * Finalize and persist. Returns the final summary.
+     *
+     * v7.19.319: grade is now CODE-DERIVED from the actual percentage via
+     * grade_from_percentage() — the model is removed from the storage path.
+     * The $grade_equivalent argument is retained only for the deprecated
+     * record_quiz_score shim signature and is ignored for derivation.
      */
-    public function finalize($user_id, $grade_equivalent) {
+    public function finalize($user_id, $grade_equivalent = 0) {
         $accumulator = $this->get_accumulator($user_id);
         if (!$accumulator) {
             error_log("[WML Quiz Engine] finalize called with no active accumulator (uid={$user_id})");
             return null;
         }
 
+        $this->recompute_totals($accumulator);
         $score = (float) $accumulator['score_running'];
         $max   = (float) $accumulator['max_running'];
         if ($max <= 0) {
@@ -170,7 +190,7 @@ class SWML_Quiz_Engine {
             return null;
         }
         $percentage = (int) round(($score / $max) * 100);
-        $grade      = max(1, min(9, absint($grade_equivalent)));
+        $grade      = $this->grade_from_percentage($percentage);
 
         $summary = [
             'quiz_type'      => $accumulator['quiz_type'],
@@ -197,6 +217,105 @@ class SWML_Quiz_Engine {
         $this->clear_accumulator($user_id);
         error_log("[WML Quiz Engine] finalize uid={$user_id} type={$summary['quiz_type']} score={$score}/{$max} pct={$percentage} grade={$grade}");
         return $summary;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  DETERMINISTIC MARKER CAPTURE (v7.19.319) — replaces the dead
+    //  AI-function-call path. The AI emits hidden markers in its reply; the
+    //  SERVER parses, accumulates, auto-finalises, and strips them. The model
+    //  only judges per-question points; code owns the entire storage path.
+    //
+    //  Marker contract (emitted by mark-scheme-quiz protocol):
+    //    Per marked question:  [[QUIZ q=N of=T pts=P max=M cat=AO2 Language]]
+    //    On the final message: [[QUIZ_DONE]]
+    //
+    //  Called from class-rest-api.php after every AI reply is generated.
+    //  Returns the reply with all quiz markers stripped (safe to echo).
+    // ─────────────────────────────────────────────────────────────────────
+
+    public function capture_from_markers($user_id, $context, $reply) {
+        if (!is_string($reply) || $reply === '') return $reply;
+        $has_q    = (strpos($reply, '[[QUIZ') !== false);
+        $has_done = (stripos($reply, '[[QUIZ_DONE]]') !== false);
+        if (!$has_q && !$has_done) return $reply;
+
+        // Resolve the active session id once (used for the done-guard).
+        $session    = SWML_Session_Manager::get_active_session($user_id);
+        $session_id = $session['session_id'] ?? '';
+        $done_flag  = (string) get_user_meta($user_id, 'wml_quiz_done_' . absint($user_id), true);
+
+        // Parse per-question markers in document order.
+        if (preg_match_all('/\[\[QUIZ\s+([^\]]+?)\]\]/i', $reply, $matches)) {
+            foreach ($matches[1] as $inner) {
+                $q   = $this->marker_int($inner, 'q');
+                $of  = $this->marker_int($inner, 'of');
+                $pts = $this->marker_float($inner, 'pts');
+                $max = $this->marker_float($inner, 'max');
+                $cat = $this->marker_str($inner, 'cat');
+                if ($q <= 0) continue;
+
+                // Guard: if this session was already finalised, a stray re-emit
+                // must NOT lazy-start a fresh accumulator. Skip silently.
+                $accumulator = $this->get_accumulator($user_id);
+                if (!$accumulator) {
+                    if ($session_id !== '' && $done_flag === $session_id) {
+                        continue;
+                    }
+                    // Lazy-start — replaces the disabled quiz_start function.
+                    $accumulator = $this->start(
+                        $user_id,
+                        'mark_scheme',
+                        $of > 0 ? $of : 5,
+                        $context['board'] ?? '',
+                        $context['text']  ?? '',
+                        max(1, absint($context['attempt'] ?? 1))
+                    );
+                }
+                $this->record_question($user_id, [
+                    'q_num'         => $q,
+                    'marks_awarded' => $pts,
+                    'max_marks'     => $max > 0 ? $max : 2,
+                    'category'      => $cat,
+                ]);
+            }
+        }
+
+        // Auto-finalise: [[QUIZ_DONE]] is the authoritative trigger.
+        if ($has_done) {
+            $accumulator = $this->get_accumulator($user_id);
+            if ($accumulator && !($session_id !== '' && $done_flag === $session_id)) {
+                $summary = $this->finalize($user_id);
+                if ($summary && $session_id !== '') {
+                    update_user_meta($user_id, 'wml_quiz_done_' . absint($user_id), $session_id);
+                }
+            }
+        }
+
+        return $this->strip_quiz_markers($reply);
+    }
+
+    /**
+     * Remove all quiz markers from a reply (safe to call even when none exist).
+     */
+    public function strip_quiz_markers($reply) {
+        if (!is_string($reply) || $reply === '') return $reply;
+        // [[QUIZ_DONE]] first, then [[QUIZ ...]]; collapse the blank line left.
+        $reply = preg_replace('/\[\[QUIZ_DONE\]\]/i', '', $reply);
+        $reply = preg_replace('/\[\[QUIZ\s+[^\]]*?\]\]/i', '', $reply);
+        $reply = preg_replace('/\n{3,}/', "\n\n", $reply);
+        return $reply;
+    }
+
+    private function marker_int($inner, $key) {
+        return preg_match('/\b' . preg_quote($key, '/') . '=(-?\d+)/i', $inner, $m) ? (int) $m[1] : 0;
+    }
+    private function marker_float($inner, $key) {
+        return preg_match('/\b' . preg_quote($key, '/') . '=(-?\d+(?:\.\d+)?)/i', $inner, $m) ? (float) $m[1] : 0.0;
+    }
+    private function marker_str($inner, $key) {
+        // cat is free-text (may contain spaces) and is emitted LAST, so capture
+        // to end of the marker inner.
+        return preg_match('/\b' . preg_quote($key, '/') . '=(.+)$/i', $inner, $m) ? trim($m[1]) : '';
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -230,6 +349,22 @@ class SWML_Quiz_Engine {
             '_msu',
             $quiz_extra
         );
+
+        // v7.19.319: write the score INTO the quiz lesson doc (Neil's explicit
+        // ask) — deterministic, code-driven. Dashboard row above is the grade
+        // sink; this makes the result visible in the doc the student opens.
+        if (class_exists('SWML_REST_API')) {
+            SWML_REST_API::instance()->append_quiz_result_to_doc(
+                $user_id,
+                $accumulator['board'],
+                $accumulator['text'],
+                $accumulator['topic_number'],
+                $accumulator['attempt_number'],
+                $summary['score'],
+                $summary['max'],
+                $summary['grade']
+            );
+        }
     }
 
     /**
@@ -337,8 +472,8 @@ class SWML_Quiz_Engine {
         $lines[] = 'AUTHORITATIVE SCORING RULES:';
         $lines[] = '  1. NEVER use any score number not in this block. NEVER compute your own running total.';
         $lines[] = '  2. The "Current score" line you display in chat MUST equal "Score so far" above, formatted as `💯 Current score: X / Y marks`.';
-        $lines[] = '  3. After each question feedback, call `quiz_record_question(q_num, marks_awarded, max_marks, category, correct, student_answer)` SILENTLY. Do not narrate the call.';
-        $lines[] = '  4. At Phase 3 dashboard, the FINAL score, percentage, and category gaps come from this block (after recording Q' . $q_tot . '). Then call `quiz_finalize(grade_equivalent)` SILENTLY — server persists. Do NOT emit any [QUIZ_COMPLETE] marker.';
+        $lines[] = '  3. After each question feedback, emit the hidden marker `[[QUIZ q=N of=' . $q_tot . ' pts=<marks awarded> max=<max> cat=<category>]]` on its own line. The SERVER reads it and updates this block — do NOT compute your own tally. Never mention or quote the marker.';
+        $lines[] = '  4. At Phase 3 dashboard, the FINAL score, percentage, and category gaps come from this block. Emit the hidden marker `[[QUIZ_DONE]]` on its own line — the SERVER finalises, derives the grade from the percentage, and persists. Do NOT compute or send the grade yourself; do NOT emit any [QUIZ_COMPLETE] marker.';
         $lines[] = '  5. Any prior-attempt scores in your session-reminder block are HISTORY only — never frame the current attempt as a "next round / fresh round / five more / second round". This is THIS attempt; numbers above are THIS attempt only.';
         $lines[] = '=== END QUIZ STATE ===';
 
@@ -348,6 +483,39 @@ class SWML_Quiz_Engine {
     // ─────────────────────────────────────────────────────────────────────
     //  HELPERS
     // ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * Recompute running totals from the questions array (single source of
+     * truth). Called after every idempotent record + at finalize so re-emits
+     * never inflate the score. v7.19.319.
+     */
+    private function recompute_totals(&$accumulator) {
+        $score = 0.0;
+        $max   = 0.0;
+        foreach (($accumulator['questions'] ?? []) as $q) {
+            $score += (float) ($q['marks_awarded'] ?? 0);
+            $max   += (float) ($q['max_marks'] ?? 0);
+        }
+        $accumulator['score_running'] = $score;
+        $accumulator['max_running']   = $max;
+    }
+
+    /**
+     * Deterministic percentage → GCSE grade (1-9). Mirrors the band PRINTED
+     * in the mark-scheme-quiz protocol dashboards (Neil-confirmed 2026-06-06):
+     *   90-100 = 9, 75-89 = 8, 60-74 = 7, 50-59 = 6, 40-49 = 5, <40 = 4.
+     * Floor is 4 by design (this is a teaching quiz, not a full-range exam).
+     * v7.19.319.
+     */
+    private function grade_from_percentage($pct) {
+        $pct = (int) $pct;
+        if ($pct >= 90) return 9;
+        if ($pct >= 75) return 8;
+        if ($pct >= 60) return 7;
+        if ($pct >= 50) return 6;
+        if ($pct >= 40) return 5;
+        return 4;
+    }
 
     private function categories_with_errors($accumulator) {
         $errors = [];

@@ -1000,6 +1000,22 @@ class SWML_REST_API {
                 }
             }
 
+            // v7.19.319: deterministic Mark Scheme Quiz score capture. The AI
+            // emits hidden [[QUIZ q=N …]] / [[QUIZ_DONE]] markers; the engine
+            // parses them, accumulates server-side, auto-finalises with a
+            // code-derived grade, and returns the reply with markers stripped.
+            // Gated to mark_scheme_unit (the quiz task) so no other flow pays
+            // the regex. Marker presence is the quiz-turn signal — Forging Your
+            // Weapon (same task, step 2) never emits them.
+            if (($swml_request_context['task'] ?? '') === 'mark_scheme_unit'
+                && class_exists('SWML_Quiz_Engine')) {
+                $reply = SWML_Quiz_Engine::instance()->capture_from_markers(
+                    $user_id,
+                    $swml_request_context,
+                    $reply
+                );
+            }
+
             $response_payload = [
                 'success' => true,
                 'reply' => $reply,
@@ -1785,6 +1801,9 @@ class SWML_REST_API {
         // corpus as users re-save.
         if (is_array($doc) && !empty($doc['html'])) {
             $doc['html'] = preg_replace('/\[QUIZ_COMPLETE[^\]\n]*\][^\n<]*/i', '', $doc['html']);
+            // v7.19.319: also strip stray deterministic-capture markers in case
+            // any leaked into a saved doc before the chat-handler strip ran.
+            $doc['html'] = preg_replace('/\[\[QUIZ_DONE\]\]|\[\[QUIZ\s+[^\]]*?\]\]/i', '', $doc['html']);
         }
 
         // v7.19.84: Crib-template version migration. Compare saved doc's stamped
@@ -3077,6 +3096,45 @@ class SWML_REST_API {
             $key .= '__p' . $cw_project_id;
         }
         return $key;
+    }
+
+    /**
+     * v7.19.319: append a deterministic "Quiz Result" section to the Mark
+     * Scheme Quiz lesson doc (suffix _msu). Called by SWML_Quiz_Engine::
+     * persist_mark_scheme() after the score is finalised server-side, so the
+     * student/tutor see the grade in the doc itself (not only on the dashboard).
+     *
+     * Idempotent: strips any prior quiz-result block before appending, so a
+     * retake overwrites rather than stacks. Returns false when no doc exists
+     * yet (nothing to write into — the dashboard row still carries the score).
+     */
+    public function append_quiz_result_to_doc($user_id, $board, $text, $topic, $attempt, $score, $max, $grade) {
+        $user_id = absint($user_id);
+        if (!$user_id) return false;
+        $attempt  = max(1, (int) $attempt);
+        $meta_key = $this->canvas_meta_key($board, $text, $topic, '_msu', $attempt);
+
+        $raw = get_user_meta($user_id, $meta_key, true);
+        if (empty($raw)) return false;
+        $doc = is_array($raw) ? $raw : self::decode_canvas_json($raw);
+        if (!is_array($doc)) return false;
+
+        $html  = isset($doc['html']) ? (string) $doc['html'] : '';
+        // Strip any prior quiz-result block (idempotent on retake).
+        $html  = preg_replace('#<hr class="swml-quiz-result-sep">.*?</p>#is', '', $html);
+
+        $section = sprintf(
+            '<hr class="swml-quiz-result-sep"><h2 class="swml-quiz-result">Quiz Result</h2><p>Score: %d/%d &middot; Grade: %d &middot; %s</p>',
+            (int) round($score),
+            (int) round($max),
+            (int) $grade,
+            esc_html(date_i18n('j M Y'))
+        );
+
+        $doc['html'] = rtrim($html) . "\n" . $section;
+        update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($doc)));
+        error_log("[WML Quiz Engine] quiz-result section written to doc {$meta_key} (uid={$user_id})");
+        return true;
     }
 
     /**

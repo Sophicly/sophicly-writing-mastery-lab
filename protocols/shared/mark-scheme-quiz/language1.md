@@ -128,6 +128,12 @@ Evaluate answer and provide feedback using the **Emoji System**.
 
 "💯 **Current score: \[score\] / 10 marks**"
 
+**Then emit the hidden per-question capture marker on its own line** — the server reads it to record this question's score, and it is stripped out before the student sees it. Never mention it; never wrap it in quotes or code fences:
+
+`[[QUIZ q=<this question number> of=5 pts=<marks you just awarded> max=2 cat=<the AO/category this question tests>]]`
+
+Emit it after EVERY question's feedback, using the real values for THIS question (example: `[[QUIZ q=3 of=5 pts=1 max=2 cat=Application]]`).
+
 #### **E. Ready Check ⏸️**
 
 **CRITICAL LOGIC for Ready Check Text:**
@@ -158,11 +164,11 @@ Evaluate answer and provide feedback using the **Emoji System**.
    
 
 3. **Persist Score (silent):**
-   Emit the score-capture marker on its own line at the START of the dashboard message (the frontend strips this marker from the rendered chat bubble before showing the student — it is invisible to them, but the canvas autosave reads it and writes the score to the database):
+   Emit the hidden quiz-complete marker on its own line at the START of the dashboard message — the SERVER finalises and stores the score from the per-question `[[QUIZ …]]` markers you already emitted, then strips this marker before display (invisible to the student):
 
-   `[QUIZ_COMPLETE:score=<computed score>,total=10,percentage=<computed percentage>,grade=<computed grade>]`
+   `[[QUIZ_DONE]]`
 
-   Replace each `<computed …>` with the actual integer values from Step 1. Do not narrate this step. Do not surround the marker with quotes or code fences. Place it on its own line before the dashboard heading.
+   Do not narrate this step. Do not wrap the marker in quotes or code fences. The score, percentage, and grade are computed by the server from your per-question marks — do NOT compute or send any numbers in this marker.
 
    
 

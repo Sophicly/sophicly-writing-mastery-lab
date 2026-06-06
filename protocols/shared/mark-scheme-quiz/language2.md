@@ -191,12 +191,17 @@ CRITICAL: Update the progress bar based on current question number:
 - 5.5-6.5 (55-69%): Moderate \- focus on weak areas  
 - Below 5.5: Significant gaps \- revisit materials
 
-**Persist Score (silent):**
-Emit the score-capture marker on its own line at the START of the dashboard message (frontend strips this from display — invisible to student; canvas autosave reads it and persists the score to the database):
+**Persist Score (silent) — hidden markers, server-scored:**
 
-`[QUIZ_COMPLETE:score=<computed score>,total=10,percentage=<computed percentage>,grade=<computed grade>]`
+**During the quiz**, after EVERY question's feedback, emit the hidden per-question capture marker on its own line — the server reads it to record that question's score, then strips it before display (invisible to the student). Use the weighted marks for THIS question:
 
-Replace each `<computed …>` with the actual integer values from Step 1. Do not narrate this step. Do not surround the marker with quotes or code fences. Place it on its own line before the dashboard heading.
+`[[QUIZ q=<question number> of=5 pts=<weighted marks you awarded> max=<weighted max for this question> cat=<AO/category>]]`
+
+**At the dashboard**, on its own line at the START of the final-results message, emit the hidden quiz-complete marker — the server finalises and stores the score from those per-question markers, then strips it before display:
+
+`[[QUIZ_DONE]]`
+
+Never mention these markers; never wrap them in quotes or code fences. The score, percentage, and grade are computed by the SERVER from your per-question marks — do NOT compute or send any numbers.
 
 **End-of-Session Reminder (after Q5 + summary):**
 
