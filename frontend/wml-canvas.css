@@ -4258,6 +4258,49 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     color: rgba(0,0,0,0.65);
 }
 
+/* v7.19.321: Mark Scheme Quiz Result card — readonly, server-derived. Sits
+   directly under the Quiz Notes section. Brand purple→teal, score prominent.
+   Own title (::before section counter suppressed) so it reads as a result,
+   not a numbered step. */
+.swml-section-block.swml-section-quizresult {
+    border-left: 4px solid #51DACF;
+    background: linear-gradient(135deg, rgba(83,51,237,0.18), rgba(81,218,207,0.08));
+    padding: 18px 26px;
+    margin: 22px 0;
+    border-radius: 0 10px 10px 0;
+    counter-increment: none !important;
+    counter-reset: none !important;
+    break-inside: avoid;
+}
+.swml-section-block.swml-section-quizresult::before {
+    content: none !important;
+}
+.swml-section-block.swml-section-quizresult .swml-qr-title {
+    margin: 0 0 10px;
+    font-weight: 700;
+    font-size: 0.78em;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #51DACF;
+}
+.swml-section-block.swml-section-quizresult .swml-qr-line {
+    margin: 0 0 6px;
+    color: rgba(255,255,255,0.92);
+    font-size: 1.08em;
+    line-height: 1.5;
+}
+.swml-section-block.swml-section-quizresult .swml-qr-line:last-child { margin-bottom: 0; }
+.swml-section-block.swml-section-quizresult .swml-qr-line strong {
+    color: #fff;
+    font-weight: 700;
+}
+.swml-canvas-light .swml-section-block.swml-section-quizresult {
+    background: linear-gradient(135deg, rgba(83,51,237,0.10), rgba(81,218,207,0.05));
+}
+.swml-canvas-light .swml-section-block.swml-section-quizresult .swml-qr-title { color: #2c8c84; }
+.swml-canvas-light .swml-section-block.swml-section-quizresult .swml-qr-line { color: #2c003e; }
+.swml-canvas-light .swml-section-block.swml-section-quizresult .swml-qr-line strong { color: #2c003e; }
+
 .swml-section-block {
     position: relative;
     border-left: 3px solid rgba(255,255,255,0.15);

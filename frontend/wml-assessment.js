@@ -3400,6 +3400,14 @@
                             complete: res.assessmentState.completion_emitted,
                         });
                     }
+                    // v7.19.321: the quiz just finalised server-side — render the
+                    // in-doc Quiz Result card live and persist it so it survives a
+                    // reload even before /canvas/load re-projects it.
+                    if (res.quizResult) {
+                        _pendingQuizResult = res.quizResult;
+                        applyQuizResultToEditor();
+                        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                    }
                     const _hasResumeConfirmMarkers = /\[\s*✓\s*Got it\s*—\s*continue\s*\]/i.test(cleanReply)
                         && /\[\s*🤔?\s*Still confused\s*\]/i.test(cleanReply)
                         && /\[\s*💬?\s*Different question\s*\]/i.test(cleanReply)
@@ -5746,6 +5754,7 @@
                         snapshotTemplateBaseline(canvasEditor);
                         // Re-run topic template injection, then rebuild dropdowns
                         tryTopicTemplate().then(() => {
+                            applyQuizResultToEditor();
                             if (dropdownLayer) { dropdownLayer.remove(); dropdownLayer = null; }
                             if (transferLayer) { transferLayer.remove(); transferLayer = null; }
                             setTimeout(() => { buildDropdownOverlays(contentWrap); buildTransferOverlays(contentWrap); }, 200);
@@ -12783,7 +12792,7 @@
             }
         };
 
-        tryServerLoad().then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => spliceGeneralNotesIntoEditor()).catch(err => {
+        tryServerLoad().then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -19736,6 +19745,11 @@
     // content instead of their empty field placeholders.
     let _pendingGeneralNotes = null;
 
+    // v7.19.321: latest persisted Quiz Result (from /canvas/load) for the
+    // in-doc Quiz Result card. Applied to the editor AFTER tryTopicTemplate so
+    // the card survives the MSU template enforcer. Null when no result yet.
+    let _pendingQuizResult = null;
+
     async function tryServerLoad() {
         // v7.17.39: CW canvas doc is now project-scoped server-side (see v7.17.39
         // `/canvas/load` + `cw_project_id` scoping). The pre-v7.17.39 early-exit
@@ -19783,6 +19797,8 @@
             if (res && res.generalNotes) {
                 _pendingGeneralNotes = res.generalNotes;
             }
+            // v7.19.321: capture the persisted Quiz Result for the in-doc card.
+            _pendingQuizResult = (res && res.quizResult) ? res.quizResult : null;
             // v7.19.263: surface the "previous stage updated" dot. False unless the
             // server reports the upstream stage changed since last pull/dismiss.
             _updatePullDot(!!(res && res.pullUpdateAvailable));
@@ -20594,6 +20610,64 @@
             }
         }
         _pendingGeneralNotes = null;
+    }
+
+    // v7.19.321: Mark Scheme Quiz Result card.
+    // The score is captured + graded server-side (SWML_Quiz_Engine); the card is
+    // a server-derived projection rendered into the _msu doc — NOT persisted as
+    // authored content (the canvas autosave would clobber a server-written
+    // section). It re-applies on every load from /canvas/load's quizResult and
+    // live from the chat finalize payload, so it can never drift from the grade.
+    function _fmtQuizNum(n) {
+        const f = parseFloat(n);
+        if (!isFinite(f)) return '0';
+        return (Math.abs(f - Math.round(f)) < 0.001) ? String(Math.round(f)) : String(f);
+    }
+
+    function renderQuizResultSectionHTML(result) {
+        const score = _fmtQuizNum(result.score);
+        const max   = _fmtQuizNum(result.max);
+        const pct   = (result.percentage != null)
+            ? parseInt(result.percentage, 10)
+            : Math.round((parseFloat(result.score) / parseFloat(result.max)) * 100);
+        const grade = parseInt(result.grade, 10);
+        const inner = '<p class="swml-qr-title">Quiz Result</p>'
+                    + '<p class="swml-qr-line"><strong>Score:</strong> ' + score + ' / ' + max + '  &middot;  ' + pct + '%</p>'
+                    + '<p class="swml-qr-line"><strong>GCSE Grade:</strong> ' + grade + '</p>';
+        return sectionHTML('quizresult', 'Quiz Result', false, null, inner);
+    }
+
+    // Upsert the Quiz Result card into the live editor, positioned directly
+    // under the Quiz Notes section (before the Forging Your Weapon divider).
+    // Idempotent: strips any prior card first. Preserves student-typed notes
+    // because getHTML() serialises input-field values.
+    function applyQuizResultToEditor() {
+        const result = _pendingQuizResult;
+        if (!result || !canvasEditor) return;
+        if (state.task !== 'mark_scheme_unit') return;
+        try {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = canvasEditor.getHTML() || '';
+            tmp.querySelectorAll('[data-section-type="quizresult"]').forEach(n => n.remove());
+
+            const wrap = document.createElement('div');
+            wrap.innerHTML = renderQuizResultSectionHTML(result);
+            const card = wrap.firstElementChild;
+            if (!card) return;
+
+            const fyw = Array.from(tmp.querySelectorAll('[data-section-type="divider"]'))
+                .find(d => /FORGING YOUR WEAPON/i.test((d.getAttribute('data-section-label') || '') + ' ' + (d.textContent || '')));
+            if (fyw && fyw.parentNode) fyw.parentNode.insertBefore(card, fyw);
+            else tmp.appendChild(card);
+
+            _migrationActive = true;
+            try { canvasEditor.commands.setContent(tmp.innerHTML, false); }
+            finally { _migrationActive = false; }
+            snapshotTemplateBaseline(canvasEditor);
+            console.log('WML v7.19.321: Quiz Result card applied', result);
+        } catch (e) {
+            console.warn('WML v7.19.321: Quiz Result card apply failed', e);
+        }
     }
 
     /**

@@ -38,6 +38,11 @@ class SWML_Quiz_Engine {
 
     const META_KEY_PREFIX = 'wml_quiz_active_';
 
+    // v7.19.321: summary from the most recent capture_from_markers() finalize,
+    // so the chat handler can surface the live result to the frontend for the
+    // in-doc Quiz Result card. Null when the last capture didn't finalise.
+    private $last_finalize_summary = null;
+
     public static function instance() {
         if (null === self::$instance) {
             self::$instance = new self();
@@ -234,6 +239,7 @@ class SWML_Quiz_Engine {
     // ─────────────────────────────────────────────────────────────────────
 
     public function capture_from_markers($user_id, $context, $reply) {
+        $this->last_finalize_summary = null;
         if (!is_string($reply) || $reply === '') return $reply;
         $has_q    = (strpos($reply, '[[QUIZ') !== false);
         $has_done = (stripos($reply, '[[QUIZ_DONE]]') !== false);
@@ -285,13 +291,60 @@ class SWML_Quiz_Engine {
             $accumulator = $this->get_accumulator($user_id);
             if ($accumulator && !($session_id !== '' && $done_flag === $session_id)) {
                 $summary = $this->finalize($user_id);
-                if ($summary && $session_id !== '') {
-                    update_user_meta($user_id, 'wml_quiz_done_' . absint($user_id), $session_id);
+                if ($summary) {
+                    $this->last_finalize_summary = $summary;
+                    if ($session_id !== '') {
+                        update_user_meta($user_id, 'wml_quiz_done_' . absint($user_id), $session_id);
+                    }
                 }
             }
         }
 
         return $this->strip_quiz_markers($reply);
+    }
+
+    /**
+     * The finalize summary from the most recent capture_from_markers() call,
+     * or null if that call did not finalise. Consumed by the chat handler to
+     * push the live Quiz Result to the frontend card. v7.19.321.
+     */
+    public function get_last_finalize_summary() {
+        return $this->last_finalize_summary;
+    }
+
+    /**
+     * Latest persisted Quiz Result for a doc, read back from session_records so
+     * the frontend card survives a page reload. Returns
+     * ['score','max','percentage','grade'] or null. Mirrors the row the
+     * student-data listener writes from persist_mark_scheme(). v7.19.321.
+     */
+    public function get_persisted_result($user_id, $board, $text, $topic, $attempt = 1) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'sophicly_session_records';
+        // Query by columns (not the reconstructed session_id) so an attempt /
+        // suffix-variant mismatch can't hide a real result. Latest scored
+        // mark_scheme_unit row for this board+text(+topic) wins.
+        $row = $wpdb->get_row($wpdb->prepare(
+            "SELECT total_score, grade FROM {$table}
+             WHERE user_id = %d AND board = %s AND text_slug = %s
+               AND task = 'mark_scheme_unit'
+               AND total_score IS NOT NULL AND total_score <> ''
+               AND ( %d = 0 OR topic_number = %d )
+             ORDER BY updated_at DESC, id DESC LIMIT 1",
+            absint($user_id), sanitize_key($board), sanitize_text_field($text),
+            (int) $topic, (int) $topic
+        ), ARRAY_A);
+        if (!$row || $row['total_score'] === null || $row['total_score'] === '') return null;
+        $parts = explode('/', (string) $row['total_score']);
+        $score = isset($parts[0]) ? (float) $parts[0] : 0;
+        $max   = isset($parts[1]) ? (float) $parts[1] : 0;
+        if ($max <= 0) return null;
+        return [
+            'score'      => $score,
+            'max'        => $max,
+            'percentage' => (int) round(($score / $max) * 100),
+            'grade'      => (int) $row['grade'],
+        ];
     }
 
     /**
@@ -349,22 +402,12 @@ class SWML_Quiz_Engine {
             '_msu',
             $quiz_extra
         );
-
-        // v7.19.319: write the score INTO the quiz lesson doc (Neil's explicit
-        // ask) — deterministic, code-driven. Dashboard row above is the grade
-        // sink; this makes the result visible in the doc the student opens.
-        if (class_exists('SWML_REST_API')) {
-            SWML_REST_API::instance()->append_quiz_result_to_doc(
-                $user_id,
-                $accumulator['board'],
-                $accumulator['text'],
-                $accumulator['topic_number'],
-                $accumulator['attempt_number'],
-                $summary['score'],
-                $summary['max'],
-                $summary['grade']
-            );
-        }
+        // v7.19.321: the in-doc "Quiz Result" card is rendered by the frontend
+        // (the canvas is a schema-locked TipTap editor whose autosave clobbers
+        // any server-written section). The result reaches the frontend two ways:
+        // live via the chat payload (get_last_finalize_summary) and on reload via
+        // load_canvas (get_persisted_result). Persistence sink = the session_records
+        // row written by the sophicly_canvas_saved listener above.
     }
 
     /**

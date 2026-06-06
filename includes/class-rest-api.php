@@ -1007,13 +1007,26 @@ class SWML_REST_API {
             // Gated to mark_scheme_unit (the quiz task) so no other flow pays
             // the regex. Marker presence is the quiz-turn signal — Forging Your
             // Weapon (same task, step 2) never emits them.
+            $quiz_result = null;
             if (($swml_request_context['task'] ?? '') === 'mark_scheme_unit'
                 && class_exists('SWML_Quiz_Engine')) {
-                $reply = SWML_Quiz_Engine::instance()->capture_from_markers(
+                $engine = SWML_Quiz_Engine::instance();
+                $reply  = $engine->capture_from_markers(
                     $user_id,
                     $swml_request_context,
                     $reply
                 );
+                // v7.19.321: if this turn finalised, surface the result so the
+                // frontend renders the in-doc Quiz Result card live.
+                $summary = $engine->get_last_finalize_summary();
+                if ($summary) {
+                    $quiz_result = [
+                        'score'      => $summary['score'],
+                        'max'        => $summary['max'],
+                        'percentage' => $summary['percentage'],
+                        'grade'      => $summary['grade'],
+                    ];
+                }
             }
 
             $response_payload = [
@@ -1024,6 +1037,9 @@ class SWML_REST_API {
                 'model' => $model_label,
                 'modelBot' => $model_used,
             ];
+            if ($quiz_result !== null) {
+                $response_payload['quizResult'] = $quiz_result;
+            }
             if ($assessment_state !== null) {
                 $response_payload['assessmentState'] = $assessment_state;
                 // v7.19.294 (Increment 0): surface the server-derived sidebar step +
@@ -1828,11 +1844,21 @@ class SWML_REST_API {
             }
         }
 
+        // v7.19.321: surface the latest persisted Quiz Result so the frontend
+        // renders the in-doc Quiz Result card on (re)load of the _msu doc.
+        $quiz_result = null;
+        if ($suffix === '_msu' && class_exists('SWML_Quiz_Engine')) {
+            $quiz_result = SWML_Quiz_Engine::instance()->get_persisted_result(
+                $user_id, $board, $text, $topic_number, $attempt
+            );
+        }
+
         return rest_ensure_response([
             'success'             => true,
             'doc'                 => $doc,
             'attempt'             => $attempt,
             'generalNotes'        => $general_notes,
+            'quizResult'          => $quiz_result,
             // v7.19.263: drives the header "previous stage updated" dot.
             'pullUpdateAvailable' => $this->pull_update_available($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id),
         ]);
@@ -3096,59 +3122,6 @@ class SWML_REST_API {
             $key .= '__p' . $cw_project_id;
         }
         return $key;
-    }
-
-    /**
-     * v7.19.319: append a deterministic "Quiz Result" section to the Mark
-     * Scheme Quiz lesson doc (suffix _msu). Called by SWML_Quiz_Engine::
-     * persist_mark_scheme() after the score is finalised server-side, so the
-     * student/tutor see the grade in the doc itself (not only on the dashboard).
-     *
-     * Idempotent: strips any prior quiz-result block before appending, so a
-     * retake overwrites rather than stacks. Returns false when no doc exists
-     * yet (nothing to write into — the dashboard row still carries the score).
-     */
-    public function append_quiz_result_to_doc($user_id, $board, $text, $topic, $attempt, $score, $max, $grade) {
-        $user_id = absint($user_id);
-        if (!$user_id) return false;
-        $attempt  = max(1, (int) $attempt);
-        $meta_key = $this->canvas_meta_key($board, $text, $topic, '_msu', $attempt);
-
-        $raw = get_user_meta($user_id, $meta_key, true);
-        if (empty($raw)) return false;
-        $doc = is_array($raw) ? $raw : self::decode_canvas_json($raw);
-        if (!is_array($doc)) return false;
-
-        $html  = isset($doc['html']) ? (string) $doc['html'] : '';
-        // Strip any prior quiz-result section-blocks (idempotent on retake).
-        $html  = preg_replace('#<div[^>]*swml-quiz-result[^>]*>.*?</div>#is', '', $html);
-
-        // Build a readonly QUIZ RESULT section that matches the doc's existing
-        // divider + response section-block system (so it renders as a styled
-        // card, not raw text).
-        $line  = sprintf(
-            'Score: %d/%d &middot; Grade: %d &middot; %s',
-            (int) round($score),
-            (int) round($max),
-            (int) $grade,
-            esc_html(date_i18n('j M Y'))
-        );
-        $block = '<div data-section-type="divider" data-section-label="QUIZ RESULT" data-editable="false" data-readonly="true" class="swml-section-block swml-section-divider swml-section-readonly swml-quiz-result-divider"><p>QUIZ RESULT</p></div>'
-               . '<div data-section-type="result" data-editable="false" data-readonly="true" class="swml-section-block swml-section-readonly swml-quiz-result-block"><p>' . $line . '</p></div>';
-
-        // Place it UNDER the Quiz Notes section — immediately before the Forging
-        // Your Weapon divider when present; otherwise append at the end.
-        if (preg_match('#<div[^>]*data-section-label="FORGING YOUR WEAPON[^"]*"[^>]*swml-section-divider#i', $html, $mm, PREG_OFFSET_CAPTURE)) {
-            $pos  = $mm[0][1];
-            $html = substr($html, 0, $pos) . $block . substr($html, $pos);
-        } else {
-            $html = rtrim($html) . $block;
-        }
-
-        $doc['html'] = $html;
-        update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($doc)));
-        error_log("[WML Quiz Engine] quiz-result section written to doc {$meta_key} (uid={$user_id})");
-        return true;
     }
 
     /**
