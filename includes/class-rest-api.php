@@ -3120,18 +3120,32 @@ class SWML_REST_API {
         if (!is_array($doc)) return false;
 
         $html  = isset($doc['html']) ? (string) $doc['html'] : '';
-        // Strip any prior quiz-result block (idempotent on retake).
-        $html  = preg_replace('#<hr class="swml-quiz-result-sep">.*?</p>#is', '', $html);
+        // Strip any prior quiz-result section-blocks (idempotent on retake).
+        $html  = preg_replace('#<div[^>]*swml-quiz-result[^>]*>.*?</div>#is', '', $html);
 
-        $section = sprintf(
-            '<hr class="swml-quiz-result-sep"><h2 class="swml-quiz-result">Quiz Result</h2><p>Score: %d/%d &middot; Grade: %d &middot; %s</p>',
+        // Build a readonly QUIZ RESULT section that matches the doc's existing
+        // divider + response section-block system (so it renders as a styled
+        // card, not raw text).
+        $line  = sprintf(
+            'Score: %d/%d &middot; Grade: %d &middot; %s',
             (int) round($score),
             (int) round($max),
             (int) $grade,
             esc_html(date_i18n('j M Y'))
         );
+        $block = '<div data-section-type="divider" data-section-label="QUIZ RESULT" data-editable="false" data-readonly="true" class="swml-section-block swml-section-divider swml-section-readonly swml-quiz-result-divider"><p>QUIZ RESULT</p></div>'
+               . '<div data-section-type="result" data-editable="false" data-readonly="true" class="swml-section-block swml-section-readonly swml-quiz-result-block"><p>' . $line . '</p></div>';
 
-        $doc['html'] = rtrim($html) . "\n" . $section;
+        // Place it UNDER the Quiz Notes section — immediately before the Forging
+        // Your Weapon divider when present; otherwise append at the end.
+        if (preg_match('#<div[^>]*data-section-label="FORGING YOUR WEAPON[^"]*"[^>]*swml-section-divider#i', $html, $mm, PREG_OFFSET_CAPTURE)) {
+            $pos  = $mm[0][1];
+            $html = substr($html, 0, $pos) . $block . substr($html, $pos);
+        } else {
+            $html = rtrim($html) . $block;
+        }
+
+        $doc['html'] = $html;
         update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($doc)));
         error_log("[WML Quiz Engine] quiz-result section written to doc {$meta_key} (uid={$user_id})");
         return true;
