@@ -229,7 +229,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 - **Paper 2 focus:** How writers use language to influence (not just describe)  
 - **Key skill:** Analyzing persuasive/rhetorical techniques, not creative techniques  
 - **Tested in:** Question 2 (8 marks \- summary across two texts), Question 3 (12 marks \- language analysis)  
-- **Critical distinction:** Focus on EFFECT ON READER'S OPINION, not emotional effect
+- **Critical point:** Analyse METHOD → EFFECT ON THE READER, perceptively. In nonfiction the effect usually works by shaping the reader's viewpoint or moving them to act; emotional effect is a legitimate persuasive tool, not a separate skill. Naming techniques without their effect (feature-spotting) is what caps the marks.
 
 **AO3 \- Compare writers' ideas and perspectives**
 
@@ -765,7 +765,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 7. **Type: MCQ \[Tests AO1 vs AO3 Knowledge\]**
    * **Question:** What is the key difference between a 'summary' (Question 2) and a 'comparison' (Question 4)?
-   * **Options:** A) Summary is shorter than comparison, B) Summary synthesises information; comparison analyses differences in attitudes and methods, C) Summary doesn't need quotations; comparison does, D) Summary is about content; comparison is about language.
+   * **Options:** A) Summary is shorter than comparison, B) Summary synthesises information across the texts; comparison analyses how the writers' methods convey differing attitudes and shape the reader, C) Summary doesn't need quotations; comparison does, D) Summary is about content; comparison is about language.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Both use both texts, but summary (Q2) synthesises information across them while comparison (Q4) analyses different perspectives and *how* they're conveyed.
    * **Stretch (unscored):** Why do students confuse these two? Both involve two texts and finding connections — but one combines information, the other analyses differing perspectives.
@@ -798,9 +798,9 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 ---
 
 11. **Type: True/False \[Tests AO2 Knowledge\]**
-    * **Question:** True or False: In AQA Paper 2, Question 3 (language analysis) focuses on how language creates emotional effects, similar to Paper 1.
-    * **Answer:** False
-    * **Feedback:** ✓ Correct. Paper 2 Q3 analyses how language influences *opinion* / shapes viewpoint — rhetorical effect. Paper 1 is the one that rewards atmosphere, mood and emotional engagement. Don't transfer the Paper 1 approach across.
+    * **Question:** True or False: The language-analysis skill in Paper 2 Question 3 is essentially the same as Paper 1 Question 2 — analyse the writer's methods and their effects on the reader.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Same core skill (AO2): the writer's methods and their effects on the reader, analysed perceptively. Paper 2 is nonfiction, so the effects usually work by shaping the reader's viewpoint or moving them to act — and emotional effect is fair game when the writer uses it to persuade. What loses marks on *both* papers is naming techniques without their effects (feature-spotting).
 
 ---
 
@@ -2611,7 +2611,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 - Quick 1-mark checks for testing key distinctions  
 - Format: Statement with True/False options  
-- Example: "True or False: Paper 2 Q3 analyzes emotional effects like Paper 1."  
+- Example: "True or False: Paper 2 Q3 uses the same method-and-effect analysis as Paper 1 Q2." (True — same AO2 skill; only the text type differs)  
 - Tests understanding of crucial differences between similar concepts
 
 **SELECT ALL THAT APPLY \- PARTIAL CREDIT:**
