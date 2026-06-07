@@ -3752,14 +3752,20 @@
         // localStorage sidecar lets a mid-quiz reload resume (single-device).
         // ══════════════════════════════════════════════════════════════════
         const _quizCtl = (function () {
-            let qs = [];        // public, key-stripped questions
-            let idx = 0;        // index of the question awaiting an answer
+            // v7.19.328: MASTERY LOOP + END-OF-ROUND FEEDBACK (locked spec 2026-06-07).
+            // Each round = a fresh random 5; NO feedback mid-round; at the end of the
+            // round reveal every Q (✓/✗ + correct + explanation). 5/5 = mastery →
+            // celebrate + stop. Less than 5/5 → "aim for 100%" → a brand-new round of 5.
+            let qs = [];          // public, key-stripped questions for THIS round
+            let idx = 0;          // index of the question awaiting an answer
             let total = 0;
+            let round = 0;        // 1-based round counter
+            let roundResults = []; // [{ q, res, answer }] for the current round
             let active = false;
             let busy = false;
 
             const lsKey = () => 'swml_msq_' + [state.board, state.subject, state.text, (state.attempt || 1)].join('_');
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total })); } catch (e) {} }
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total, round, roundResults })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function rehydrate() {
                 try {
@@ -3768,12 +3774,18 @@
                     const d = JSON.parse(raw);
                     if (!d || !Array.isArray(d.qs) || !d.qs.length) return false;
                     qs = d.qs; idx = d.idx || 0; total = d.total || d.qs.length;
+                    round = d.round || 1; roundResults = Array.isArray(d.roundResults) ? d.roundResults : [];
                     active = (idx < qs.length);
-                    if (active) console.log('WML MSQ: resumed mid-quiz at Q' + (idx + 1) + '/' + total);
+                    if (active) console.log('WML MSQ: resumed round ' + round + ' at Q' + (idx + 1) + '/' + total);
                     return active;
                 } catch (e) { return false; }
             }
 
+            function resetSend() {
+                busy = false;
+                chatSendBtn.style.opacity = '1';
+                chatSendBtn.style.pointerEvents = 'auto';
+            }
             function aiBubble(plain) {
                 addChatMessage(formatAI(plain), 'ai', plain);
                 canvasChatHistory.push({ role: 'assistant', content: plain });
@@ -3790,9 +3802,9 @@
             }
 
             function renderQ() {
-                if (idx >= qs.length) { finish(); return; }
+                if (idx >= qs.length) { endRound(); return; }
                 const q = qs[idx];
-                let body = `**Question ${q.seq} of ${q.total}**\n\n${q.question}`;
+                let body = `**Round ${round} · Question ${q.seq} of ${q.total}**\n\n${q.question}`;
                 if (q.options && q.options.length) {
                     body += '\n\n' + q.options.map(o => `**${o.letter})** ${o.text}`).join('\n');
                 }
@@ -3831,41 +3843,57 @@
                 chatSendBtn.style.opacity = '0.4';
                 chatSendBtn.style.pointerEvents = 'none';
                 const q = qs[idx];
-                if (!q) { finish(); return; }
+                if (!q) { endRound(); resetSend(); return; }
                 const kind = classify(msg, q.type);
-                if (kind === 'empty') return;
+                if (kind === 'empty') { resetSend(); return; }
                 if (kind === 'question') { await routeHelp(msg, q); return; }
-                await submitAnswer(msg, q);
+                await recordAnswer(msg, q);
             }
 
-            async function submitAnswer(msg, q) {
+            // Score in code, but WITHHOLD feedback until the round ends. Just record
+            // and move straight to the next question.
+            async function recordAnswer(msg, q) {
                 busy = true; showCanvasTyping();
                 try {
                     const res = await apiPost(API.quizAnswer, { id: q.id, answer: msg });
                     removeCanvasTyping();
                     if (!res || !res.success) {
-                        aiBubble("Sorry — I couldn't score that one. Type your answer again (e.g. a letter for multiple choice).");
+                        aiBubble("Sorry — I couldn't record that one. Type your answer again (e.g. a letter for multiple choice).");
                         appendQuickBar('Show the question again', renderQ);
                         return;
                     }
-                    const icon = res.correct ? '✓' : (res.partial ? '⚠️' : '✗');
-                    let fb = `${icon} **${res.marks}/${res.max} marks.**`;
-                    if (!res.correct) fb += `  Correct answer: **${res.correctKey}**.`;
-                    if (res.feedback) fb += `\n\n${res.feedback}`;
-                    if (res.running) fb += `\n\n*Running total: ${res.running.score}/${res.running.max}.*`;
-                    aiBubble(fb);
+                    roundResults.push({ q, res, answer: msg });
                     idx++; persist();
-                    const isLast = idx >= qs.length;
-                    appendQuickBar(isLast ? 'See my results →' : 'Next question →',
-                        () => { if (isLast) finish(); else renderQ(); });
+                    if (idx >= qs.length) endRound();
+                    else renderQ();   // no mid-round feedback — next question
                 } catch (e) {
                     removeCanvasTyping();
-                    aiBubble("Sorry — something went wrong scoring that. Try again in a moment.");
+                    aiBubble("Sorry — something went wrong recording that. Try again in a moment.");
                     appendQuickBar('Show the question again', renderQ);
                 } finally {
-                    busy = false;
-                    chatSendBtn.style.opacity = '1';
-                    chatSendBtn.style.pointerEvents = 'auto';
+                    resetSend();
+                }
+            }
+
+            // End-of-round review: reveal every question, then mastery-or-loop.
+            function endRound() {
+                const n = roundResults.length;
+                const correctN = roundResults.filter(r => r.res && r.res.correct).length;
+                const mastered = (n > 0 && correctN === n);
+                let body = `**Round ${round} review — ${correctN}/${n} correct**\n\n`;
+                roundResults.forEach((r, i) => {
+                    const mark = r.res && r.res.correct ? '✓' : '✗';
+                    body += `**${i + 1}. ${mark}**  Your answer: \`${r.answer}\``;
+                    if (!(r.res && r.res.correct)) body += `  —  correct: **${r.res ? r.res.correctKey : '?'}**`;
+                    body += `\n${(r.res && r.res.feedback) || ''}\n\n`;
+                });
+                aiBubble(body);
+                try { updateProgress(7); } catch (e) {}
+                if (mastered) {
+                    celebrateAndFinish();
+                } else {
+                    aiBubble(`You scored **${correctN}/${n}** this round. **Aim for 100%** — here's a fresh set of ${n}, mixed across the assessment objectives. You've got this.`);
+                    appendQuickBar('Start the next round →', () => { round++; startRound(); });
                 }
             }
 
@@ -3896,14 +3924,12 @@
                     aiBubble("I'm having trouble answering just now — type your answer when you're ready.");
                     appendQuickBar('Back to the question', renderQ);
                 } finally {
-                    busy = false;
-                    chatSendBtn.style.opacity = '1';
-                    chatSendBtn.style.pointerEvents = 'auto';
+                    resetSend();
                 }
             }
 
-            async function start() {
-                if (active) return;
+            // Fetch a fresh round of 5 (resets the per-round state) and render Q1.
+            async function startRound() {
                 busy = true; showCanvasTyping();
                 try {
                     const res = await apiPost(API.quizStart, {
@@ -3912,48 +3938,50 @@
                     });
                     removeCanvasTyping();
                     if (!res || !res.success || !res.questions || !res.questions.length) {
-                        aiBubble("I couldn't load the quiz for this paper just now. Please refresh — and if it keeps happening, let your tutor know.");
+                        aiBubble("I couldn't load the round just now. Please refresh — and if it keeps happening, let your tutor know.");
                         return;
                     }
-                    qs = res.questions; total = res.total || qs.length; idx = 0; active = true;
-                    const board = (state.board || '').toUpperCase().replace(/-/g, ' ');
-                    aiBubble(`Welcome to the **Mark Scheme Quiz**${board ? ' — ' + board : ''}. ${total} quick questions to sharpen how you read the mark scheme. Answer in the chat — and if you're ever unsure, just **ask me** and I'll explain.`);
+                    qs = res.questions; total = res.total || qs.length; idx = 0; roundResults = []; active = true;
                     persist();
                     renderQ();
                 } catch (e) {
                     removeCanvasTyping();
-                    aiBubble("I couldn't load the quiz just now. Please refresh and try again.");
+                    aiBubble("I couldn't load the round just now. Please refresh and try again.");
                 } finally {
-                    busy = false;
-                    chatSendBtn.style.opacity = '1';
-                    chatSendBtn.style.pointerEvents = 'auto';
+                    resetSend();
                 }
             }
 
-            async function finish() {
-                if (!active) return;
+            async function start() {
+                if (active) return;
+                round = 1; roundResults = [];
+                const board = (state.board || '').toUpperCase().replace(/-/g, ' ');
+                aiBubble(`Welcome to the **Mark Scheme Quiz**${board ? ' — ' + board : ''}. Each round is **5 questions**, and I'll give you the full feedback at the *end* of the round. **Aim for 100%** — we'll keep going with fresh sets until you ace a whole round. Stuck on any question? Just **ask me** and I'll explain.`);
+                await startRound();
+            }
+
+            async function celebrateAndFinish() {
                 active = false; busy = true; showCanvasTyping();
+                const roundsTaken = round;
                 try {
-                    const res = await apiPost(API.quizFinish, {});
+                    const res = await apiPost(API.quizFinish, { rounds: roundsTaken });
                     removeCanvasTyping();
                     clearPersist();
+                    const rtxt = roundsTaken === 1 ? 'on your first round' : `in ${roundsTaken} rounds`;
                     if (res && res.success && res.quizResult) {
-                        const r = res.quizResult;
-                        aiBubble(`**Quiz complete!** You scored **${r.score}/${r.max}** (${r.percentage}%) — Grade **${r.grade}**. Your result card is in the document on the left.`);
+                        aiBubble(`🎉 **Mastery!** A perfect **5/5** — ${rtxt}. That's exactly how the mark scheme sticks. Your mastery card is in the document on the left.`);
                         try { updateProgress(7); } catch (e) {}
-                        _pendingQuizResult = r;
+                        _pendingQuizResult = Object.assign({}, res.quizResult, { rounds: roundsTaken, mastery: true });
                         if (typeof applyQuizResultToEditor === 'function') applyQuizResultToEditor();
                         if (typeof saveCanvasContent === 'function') saveCanvasContent();
                     } else {
-                        aiBubble("Quiz complete — but I couldn't finalise your score. Please let your tutor know.");
+                        aiBubble(`🎉 A perfect round, ${rtxt}! (I couldn't finalise the card just now — tell your tutor if it doesn't appear.)`);
                     }
                 } catch (e) {
                     removeCanvasTyping();
-                    aiBubble("Quiz complete — but I couldn't finalise your score just now.");
+                    aiBubble("🎉 A perfect round! (Couldn't finalise the card just now.)");
                 } finally {
-                    busy = false;
-                    chatSendBtn.style.opacity = '1';
-                    chatSendBtn.style.pointerEvents = 'auto';
+                    resetSend();
                 }
             }
 
@@ -20904,10 +20932,22 @@
             ? parseInt(result.percentage, 10)
             : Math.round((parseFloat(result.score) / parseFloat(result.max)) * 100);
         const grade = parseInt(result.grade, 10);
-        const inner = '<p class="swml-qr-title">Quiz Result</p>'
-                    + '<p class="swml-qr-line"><strong>Score:</strong> ' + score + ' / ' + max + '  &middot;  ' + pct + '%</p>'
-                    + '<p class="swml-qr-line"><strong>GCSE Grade:</strong> ' + grade + '</p>';
-        return sectionHTML('quizresult', 'Quiz Result', false, null, inner);
+        // v7.19.328: mastery-loop result — repeat-until-5/5 means the finishing
+        // round is always 100%; the meaningful metric is rounds-to-mastery.
+        const rounds = parseInt(result.rounds, 10);
+        const isMastery = !!result.mastery;
+        const title = isMastery ? 'Mark Scheme Mastery' : 'Quiz Result';
+        let inner = '<p class="swml-qr-title">' + title + '</p>';
+        if (isMastery) {
+            const rtxt = (rounds && rounds > 0)
+                ? (rounds + ' round' + (rounds === 1 ? '' : 's'))
+                : 'a clean round';
+            inner += '<p class="swml-qr-line"><strong>Mastery achieved:</strong> a perfect 5 / 5 in ' + rtxt + '</p>';
+        } else {
+            inner += '<p class="swml-qr-line"><strong>Score:</strong> ' + score + ' / ' + max + '  &middot;  ' + pct + '%</p>'
+                  +  '<p class="swml-qr-line"><strong>GCSE Grade:</strong> ' + grade + '</p>';
+        }
+        return sectionHTML('quizresult', title, false, null, inner);
     }
 
     // Upsert the Quiz Result card into the live editor, positioned directly

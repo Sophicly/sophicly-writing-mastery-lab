@@ -180,7 +180,7 @@ class SWML_Quiz_Engine {
      * The $grade_equivalent argument is retained only for the deprecated
      * record_quiz_score shim signature and is ignored for derivation.
      */
-    public function finalize($user_id, $grade_equivalent = 0) {
+    public function finalize($user_id, $grade_equivalent = 0, $rounds = 0) {
         $accumulator = $this->get_accumulator($user_id);
         if (!$accumulator) {
             error_log("[WML Quiz Engine] finalize called with no active accumulator (uid={$user_id})");
@@ -208,6 +208,7 @@ class SWML_Quiz_Engine {
             'text'           => $accumulator['text'],
             'topic_number'   => $accumulator['topic_number'],
             'categories_with_errors' => $this->categories_with_errors($accumulator),
+            'rounds'         => (int) $rounds,   // v7.19.328: rounds-to-mastery (0 = legacy/AI path)
             'finalized_at'   => current_time('mysql'),
         ];
 
@@ -358,12 +359,25 @@ class SWML_Quiz_Engine {
         $score = isset($parts[0]) ? (float) $parts[0] : 0;
         $max   = isset($parts[1]) ? (float) $parts[1] : 0;
         if ($max <= 0) return null;
-        return [
+        $ret = [
             'score'      => $score,
             'max'        => $max,
             'percentage' => (int) round(($score / $max) * 100),
             'grade'      => (int) $row['grade'],
         ];
+        // v7.19.328: merge the mastery-loop sidecar so the reload card matches the
+        // live card ("Mark Scheme Mastery — 5/5 in N rounds").
+        $mk  = 'swml_msq_mastery_' . sanitize_key($board) . '_' . sanitize_key($text) . '_' . (int) $topic;
+        $raw = get_user_meta($user_id, $mk, true);
+        if (!empty($raw)) {
+            $d = is_array($raw) ? $raw : json_decode($raw, true);
+            if (!is_array($d)) $d = json_decode(wp_unslash($raw), true);
+            if (is_array($d) && !empty($d['mastery'])) {
+                $ret['mastery'] = true;
+                $ret['rounds']  = (int) ($d['rounds'] ?? 0);
+            }
+        }
+        return $ret;
     }
 
     /**
@@ -421,6 +435,17 @@ class SWML_Quiz_Engine {
             '_msu',
             $quiz_extra
         );
+        // v7.19.328: mastery-loop sidecar — session_records has no column for
+        // rounds-to-mastery, so stash it in user_meta keyed by board+text+topic so
+        // the reload card (get_persisted_result) can re-show "Mastery in N rounds".
+        if (!empty($summary['rounds'])) {
+            $mk = 'swml_msq_mastery_' . sanitize_key($accumulator['board']) . '_'
+                . sanitize_key($accumulator['text']) . '_' . (int) $accumulator['topic_number'];
+            update_user_meta($user_id, $mk, wp_slash(wp_json_encode([
+                'rounds'  => (int) $summary['rounds'],
+                'mastery' => true,
+            ])));
+        }
         // v7.19.321: the in-doc "Quiz Result" card is rendered by the frontend
         // (the canvas is a schema-locked TipTap editor whose autosave clobbers
         // any server-written section). The result reaches the frontend two ways:

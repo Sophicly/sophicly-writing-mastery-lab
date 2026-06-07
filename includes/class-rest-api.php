@@ -796,7 +796,9 @@ class SWML_REST_API {
             return rest_ensure_response(['success' => false, 'code' => 'engine_missing']);
         }
         $user_id = get_current_user_id();
-        $summary = SWML_Quiz_Engine::instance()->finalize($user_id);
+        $p       = $request->get_json_params();
+        $rounds  = max(0, absint($p['rounds'] ?? 0)); // v7.19.328: rounds-to-mastery
+        $summary = SWML_Quiz_Engine::instance()->finalize($user_id, 0, $rounds);
         delete_user_meta($user_id, self::QUIZ_BANK_META . $user_id);
 
         if (!$summary) return rest_ensure_response(['success' => false, 'code' => 'finalize_failed']);
@@ -807,6 +809,8 @@ class SWML_REST_API {
                 'max'        => $summary['max'],
                 'percentage' => $summary['percentage'],
                 'grade'      => $summary['grade'],
+                'rounds'     => (int) ($summary['rounds'] ?? 0),
+                'mastery'    => ((int) ($summary['rounds'] ?? 0) > 0),
             ],
             'categoriesWithErrors' => $summary['categories_with_errors'] ?? [],
         ]);
