@@ -110,7 +110,10 @@
       "Bash(sed -n '228,236p' language2.md)",
       "Bash(sed -n '795,810p' language2.md)",
       "Bash(sed -n '2610,2618p' language2.md)",
-      "Bash(php /tmp/wml_parse_validate.php)"
+      "Bash(php /tmp/wml_parse_validate.php)",
+      "Bash(ls HANDOFFS.md)",
+      "Bash(tail -2 HANDOFFS.md)",
+      "Bash(grep -niE \"question 4.{0,30}\\(16|20|24\\) mark|q4.{0,20}\\(16|20\\) mark|comparison.{0,20}\\(16|20\\) mark\" language2.md)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
