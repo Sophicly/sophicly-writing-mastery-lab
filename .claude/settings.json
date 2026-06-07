@@ -106,7 +106,10 @@
       "Bash(scp -i ~/.ssh/sophicly_staging -o StrictHostKeyChecking=no runcloud@18.133.5.229:/tmp/soph_cert_test.pdf /tmp/cert_centered.pdf)",
       "Bash(php -r ' *)",
       "Bash(sed -i '' 's/Version: 7.19.323/Version: 7.19.324/; s/SWML_VERSION'\"'\"', '\"'\"'7.19.323/SWML_VERSION'\"'\"', '\"'\"'7.19.324/' sophicly-writing-mastery-lab.php)",
-      "Bash(php -l includes/class-quiz-bank.php)"
+      "Bash(php -l includes/class-quiz-bank.php)",
+      "Bash(sed -n '228,236p' language2.md)",
+      "Bash(sed -n '795,810p' language2.md)",
+      "Bash(sed -n '2610,2618p' language2.md)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
