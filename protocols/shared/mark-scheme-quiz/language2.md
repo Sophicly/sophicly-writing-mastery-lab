@@ -734,7 +734,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Question:** Which of these is NOT assessed by AO3 in Paper 2?
    * **Options:** A) Writers' different perspectives on issues, B) How writers' methods convey attitudes, C) The effectiveness of writers' arguments, D) Comparison of ideas across texts.
    * **Correct:** C
-   * **Feedback:** ✓ Correct. The effectiveness of an argument is evaluated under AO4, not AO3. AO3 is about comparing perspectives and how writers' methods convey them.
+   * **Feedback:** ✓ Correct. Judging the effectiveness of an argument is evaluation — not what AO3 rewards (and AQA Paper 2 doesn't assess AO4; evaluation lives on Paper 1 Q4). AO3 here is comparing the writers' perspectives and how their methods convey and shape those attitudes for the reader.
 
 ---
 
