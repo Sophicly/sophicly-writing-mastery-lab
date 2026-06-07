@@ -705,7 +705,11 @@ class SWML_Protocol_Router {
         // v7.18.3 SUBTRACTION TEST: gated OFF for mark_scheme_unit while we
         // test whether the bare protocol works without WML wrapping noise.
         // Foundational quiz still uses it (separate test surface).
-        if (class_exists('SWML_Quiz_Engine') && ($context['task'] ?? '') !== 'mark_scheme_unit') {
+        // v7.19.323: also exclude mark_scheme_help — help turns must not carry the
+        // quiz accumulator state (Sophia only explains, never scorekeeps).
+        if (class_exists('SWML_Quiz_Engine')
+            && ($context['task'] ?? '') !== 'mark_scheme_unit'
+            && ($context['task'] ?? '') !== 'mark_scheme_help') {
             $quiz_state_block = SWML_Quiz_Engine::instance()->build_state_block($user_id);
             if (!empty($quiz_state_block)) {
                 $preamble .= "\n\n" . $quiz_state_block;
@@ -993,6 +997,14 @@ class SWML_Protocol_Router {
         // shell is shared with the Phase 1 diagnostic assessment.
         if ($task === 'redraft_assessment') {
             $task = 'assessment';
+        }
+
+        // v7.19.323: mark_scheme_help — a student asked a question DURING the
+        // deterministic mark-scheme quiz. Load NO quiz protocol: Sophia only
+        // explains the concept (the help preamble in build_preamble drives this).
+        // The frontend controller keeps ownership of questions + scoring.
+        if ($task === 'mark_scheme_help') {
+            return null;
         }
 
         // v7.17.62: Defensive subject normalisation. Bridge dispatchers occasionally
@@ -2104,6 +2116,27 @@ TEMPLATE;
             $minimal .= "You are Sophia. Follow the modular protocol below precisely. The protocol's Phase 1-4 instructions are the source of truth — do not improvise around them.\n";
             // v7.18.47 Stage 1: prepend SESSION CONTEXT block (single source of truth).
             return $session_context_block . $minimal;
+        }
+
+        // v7.19.323: mark_scheme_help — the student asked a question mid-quiz.
+        // Sophia is a plain English tutor here: explain the mark-scheme concept so
+        // they can answer it themselves. NO quiz protocol, NO scoring, NO marker
+        // emission, NO presenting a new question — the frontend controller owns all
+        // of that. The current question + the student's question arrive in the prompt.
+        if (($context['task'] ?? '') === 'mark_scheme_help') {
+            $board_label = strtoupper($context['board'] ?? 'AQA');
+            $help  = "## WRITING MASTERY LAB — MARK SCHEME QUIZ (HELP)\n";
+            $help .= "**Student:** {$student_name} (call them {$first_name})\n";
+            $help .= "**Exam Board:** {$board_label}\n\n";
+            $help .= "You are Sophia. {$first_name} is taking a Mark Scheme Quiz and has paused to ask you a question about the CURRENT quiz question (supplied in the message).\n\n";
+            $help .= "Your job: explain the underlying mark-scheme idea clearly and Socratically so they can decide the answer themselves.\n\n";
+            $help .= "HARD RULES:\n";
+            $help .= "- Do NOT reveal or confirm which option is correct, and do NOT score anything — a separate system marks the quiz.\n";
+            $help .= "- Do NOT present a new question, restate all the options as a quiz, or say things like 'Question 1 of 5'.\n";
+            $help .= "- Do NOT emit any markers or score codes.\n";
+            $help .= "- Keep it short, warm and concrete: clarify the concept, give a worked parallel if useful, then invite them to choose.\n";
+            $help .= "- British English. Encouraging, scholarly, never patronising.\n";
+            return $session_context_block . $help;
         }
 
         // Task → Protocol mapping

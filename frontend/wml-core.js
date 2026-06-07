@@ -184,6 +184,10 @@ window.WML = (function() {
         savedQuestions: config.restUrl + 'saved-questions',
         canvasSave:    config.restUrl + 'canvas/save',
         foundationalQuizResult: config.restUrl + 'foundational-quiz/result',
+        // v7.19.323: deterministic code-scored mark-scheme quiz (Bug #1 root fix)
+        quizStart:     config.restUrl + 'quiz/start',
+        quizAnswer:    config.restUrl + 'quiz/answer',
+        quizFinish:    config.restUrl + 'quiz/finish',
         canvasLoad:    config.restUrl + 'canvas/load',
         canvasList:    config.restUrl + 'canvas/list',
         pullDismiss:   config.restUrl + 'canvas/pull-dismiss', // v7.19.263

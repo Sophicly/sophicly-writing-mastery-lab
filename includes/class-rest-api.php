@@ -929,7 +929,12 @@ class SWML_REST_API {
 
         $session = SWML_Session_Manager::get_active_session(get_current_user_id());
 
-        if ($req_board && $req_subject && $req_task) {
+        // v7.19.323: mark_scheme_help is a TRANSIENT help turn during the
+        // deterministic quiz — it must NOT persist its task into the active
+        // session (that would clobber task=mark_scheme_unit and break a later
+        // resume). The request-context global above already carries the help
+        // task to the router for this one turn; the session stays untouched.
+        if ($req_board && $req_subject && $req_task && $req_task !== 'mark_scheme_help') {
             // Frontend sent explicit context — use it and update active session
             if ($session) {
                 $session['context']['board']   = $req_board;

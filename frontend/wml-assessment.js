@@ -47,6 +47,12 @@
     const { stripAIInternals, detectAssessmentStep, formatAI } = WML;
     const { renderLogo, renderBadges } = WML;
 
+    // v7.19.323: KILL SWITCH for the deterministic mark-scheme quiz controller
+    // (Bug #1 root fix — code-scored, AI never scorekeeps). Set false to fall
+    // back to the legacy AI-marker quiz path if marking ever misbehaves on
+    // staging. Strictly gated to mark_scheme_unit step-1; never touches live marking.
+    const QUIZ_CONTROLLER_ON = true;
+
     // ── Late-bound wrappers for planning/chat functions ──
     // These are defined in wml-app.js which registers them on WML.
     // At call-time (user interaction), WML.* is fully populated.
@@ -3071,6 +3077,19 @@
             const msg = chatTextarea.value.trim();
             if (!msg || canvasChatLoading) return;
 
+            // v7.19.323: deterministic mark-scheme quiz controller owns the turn
+            // (code-scored answers + Sophia help routing). STRICTLY gated to the
+            // mark-scheme quiz (mark_scheme_unit step 1) with an active controller —
+            // every other task, including the live assessment/marking flow that
+            // shares this function, falls straight through untouched.
+            if (QUIZ_CONTROLLER_ON
+                && state.task === 'mark_scheme_unit'
+                && (state.step === 1 || state.bridgeStep === 1)
+                && _quizCtl.active) {
+                await _quizCtl.handleTurn(msg);
+                return;
+            }
+
             // v7.19.244: Paragraph-boundary preflight. Runs once per assessment
             // chat (first user turn only) when an essay is present in the canvas.
             // Diagnostic phase = silent diagnosis only (no modal).
@@ -3720,6 +3739,227 @@
             }
         });
 
+        // ══════════════════════════════════════════════════════════════════
+        // v7.19.323: DETERMINISTIC MARK-SCHEME QUIZ CONTROLLER (Bug #1 root fix)
+        // The quiz STAYS a chat (students who don't get the mark scheme can ask).
+        // Only SCOREKEEPING leaves the AI: code classifies each reply, the server
+        // scores against the key, and finalises the grade. Sophia only ever
+        // *explains* (mark_scheme_help) — she never marks the quiz.
+        //   start()      → POST /quiz/start, render Q1
+        //   handleTurn() → classify reply in CODE: answer → /quiz/answer (scored
+        //                  feedback); question → route to Sophia, stay on same Q
+        //   finish()     → POST /quiz/finish → reuse the in-doc Quiz Result card
+        // localStorage sidecar lets a mid-quiz reload resume (single-device).
+        // ══════════════════════════════════════════════════════════════════
+        const _quizCtl = (function () {
+            let qs = [];        // public, key-stripped questions
+            let idx = 0;        // index of the question awaiting an answer
+            let total = 0;
+            let active = false;
+            let busy = false;
+
+            const lsKey = () => 'swml_msq_' + [state.board, state.subject, state.text, (state.attempt || 1)].join('_');
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total })); } catch (e) {} }
+            function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            function rehydrate() {
+                try {
+                    const raw = localStorage.getItem(lsKey());
+                    if (!raw) return false;
+                    const d = JSON.parse(raw);
+                    if (!d || !Array.isArray(d.qs) || !d.qs.length) return false;
+                    qs = d.qs; idx = d.idx || 0; total = d.total || d.qs.length;
+                    active = (idx < qs.length);
+                    if (active) console.log('WML MSQ: resumed mid-quiz at Q' + (idx + 1) + '/' + total);
+                    return active;
+                } catch (e) { return false; }
+            }
+
+            function aiBubble(plain) {
+                addChatMessage(formatAI(plain), 'ai', plain);
+                canvasChatHistory.push({ role: 'assistant', content: plain });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function appendQuickBar(label, onClick) {
+                setTimeout(() => {
+                    const bar = el('div', { className: 'swml-quick-actions' });
+                    bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: label,
+                        onClick: () => { bar.remove(); onClick(); } }));
+                    const last = chatMessages.lastElementChild;
+                    if (last) { const bc = last.querySelector('.swml-bubble-content') || last; bc.appendChild(bar); }
+                }, 50);
+            }
+
+            function renderQ() {
+                if (idx >= qs.length) { finish(); return; }
+                const q = qs[idx];
+                let body = `**Question ${q.seq} of ${q.total}**\n\n${q.question}`;
+                if (q.options && q.options.length) {
+                    body += '\n\n' + q.options.map(o => `**${o.letter})** ${o.text}`).join('\n');
+                }
+                if (q.type === 'select_all')      body += '\n\n*Select all that apply — type the letters, e.g. `A, C`.*';
+                else if (q.type === 'true_false') body += '\n\n*Type `True` or `False`.*';
+                else if (q.type === 'fill_blank') body += '\n\n*Type your answer in a word or short phrase.*';
+                else                              body += '\n\n*Type the letter of your answer, e.g. `B`.*';
+                aiBubble(body);
+                try { updateProgress(Math.min(idx + 2, 7)); } catch (e) {}
+                persist();
+            }
+
+            function classify(raw, type) {
+                const t = (raw || '').trim();
+                if (!t) return 'empty';
+                if (type === 'mcq' || type === 'select_all') {
+                    return /^[A-Ea-e](\s*,\s*[A-Ea-e])*$/.test(t) ? 'answer' : 'question';
+                }
+                if (type === 'true_false') {
+                    return /^(true|false|t|f)$/i.test(t) ? 'answer' : 'question';
+                }
+                // fill_blank: a free-text answer unless it reads like a help request / question.
+                if (/\?\s*$/.test(t)
+                 || /^(what|why|how|when|where|who|explain|help|i\s*(don'?t|do not)\s*(know|understand|get)|not\s+sure|can\s+you|could\s+you|i'?m\s+(stuck|confused|lost))\b/i.test(t)) {
+                    return 'question';
+                }
+                return 'answer';
+            }
+
+            async function handleTurn(msg) {
+                if (busy) { return; }
+                addChatMessage(msg, 'user');
+                canvasChatHistory.push({ role: 'user', content: msg });
+                chatTextarea.value = '';
+                chatTextarea.style.height = '40px';
+                chatSendBtn.style.opacity = '0.4';
+                chatSendBtn.style.pointerEvents = 'none';
+                const q = qs[idx];
+                if (!q) { finish(); return; }
+                const kind = classify(msg, q.type);
+                if (kind === 'empty') return;
+                if (kind === 'question') { await routeHelp(msg, q); return; }
+                await submitAnswer(msg, q);
+            }
+
+            async function submitAnswer(msg, q) {
+                busy = true; showCanvasTyping();
+                try {
+                    const res = await apiPost(API.quizAnswer, { id: q.id, answer: msg });
+                    removeCanvasTyping();
+                    if (!res || !res.success) {
+                        aiBubble("Sorry — I couldn't score that one. Type your answer again (e.g. a letter for multiple choice).");
+                        appendQuickBar('Show the question again', renderQ);
+                        return;
+                    }
+                    const icon = res.correct ? '✓' : (res.partial ? '⚠️' : '✗');
+                    let fb = `${icon} **${res.marks}/${res.max} marks.**`;
+                    if (!res.correct) fb += `  Correct answer: **${res.correctKey}**.`;
+                    if (res.feedback) fb += `\n\n${res.feedback}`;
+                    if (res.running) fb += `\n\n*Running total: ${res.running.score}/${res.running.max}.*`;
+                    aiBubble(fb);
+                    idx++; persist();
+                    const isLast = idx >= qs.length;
+                    appendQuickBar(isLast ? 'See my results →' : 'Next question →',
+                        () => { if (isLast) finish(); else renderQ(); });
+                } catch (e) {
+                    removeCanvasTyping();
+                    aiBubble("Sorry — something went wrong scoring that. Try again in a moment.");
+                    appendQuickBar('Show the question again', renderQ);
+                } finally {
+                    busy = false;
+                    chatSendBtn.style.opacity = '1';
+                    chatSendBtn.style.pointerEvents = 'auto';
+                }
+            }
+
+            async function routeHelp(msg, q) {
+                busy = true; showCanvasTyping();
+                try {
+                    const optLines = (q.options || []).map(o => o.letter + ') ' + o.text).join('\n');
+                    const prompt = `[MARK SCHEME QUIZ — STUDENT NEEDS HELP, NOT MARKING]\n[CURRENT QUESTION]\n${q.question}\n${optLines}\n\n[STUDENT'S QUESTION]\n${msg}\n\nExplain the underlying mark-scheme concept so they can answer it themselves. Do NOT reveal the answer, do NOT score anything, do NOT present a new question.`;
+                    const res = await apiPost(API.chat, {
+                        prompt, botId: 'wml-claude', chatId: canvasChatId,
+                        history: canvasChatHistory.slice(0, -1).slice(-12),
+                        board: state.board, subject: state.subject, text: state.text || '',
+                        task: 'mark_scheme_help', question: q.question,
+                    });
+                    removeCanvasTyping();
+                    if (res && res.success && res.reply) {
+                        const clean = stripAIInternals(res.reply);
+                        addChatMessage(formatAI(clean), 'ai', clean);
+                        canvasChatHistory.push({ role: 'assistant', content: res.reply });
+                        if (res.chatId) canvasChatId = res.chatId;
+                        saveCanvasChat(canvasChatHistory, canvasChatId);
+                    } else {
+                        aiBubble("I'm having trouble answering just now — try rephrasing, or type your answer when you're ready.");
+                    }
+                    appendQuickBar('Back to the question', renderQ);
+                } catch (e) {
+                    removeCanvasTyping();
+                    aiBubble("I'm having trouble answering just now — type your answer when you're ready.");
+                    appendQuickBar('Back to the question', renderQ);
+                } finally {
+                    busy = false;
+                    chatSendBtn.style.opacity = '1';
+                    chatSendBtn.style.pointerEvents = 'auto';
+                }
+            }
+
+            async function start() {
+                if (active) return;
+                busy = true; showCanvasTyping();
+                try {
+                    const res = await apiPost(API.quizStart, {
+                        board: state.board, subject: state.subject, text: state.text || '',
+                        attempt: state.attempt || 1, count: 5,
+                    });
+                    removeCanvasTyping();
+                    if (!res || !res.success || !res.questions || !res.questions.length) {
+                        aiBubble("I couldn't load the quiz for this paper just now. Please refresh — and if it keeps happening, let your tutor know.");
+                        return;
+                    }
+                    qs = res.questions; total = res.total || qs.length; idx = 0; active = true;
+                    const board = (state.board || '').toUpperCase().replace(/-/g, ' ');
+                    aiBubble(`Welcome to the **Mark Scheme Quiz**${board ? ' — ' + board : ''}. ${total} quick questions to sharpen how you read the mark scheme. Answer in the chat — and if you're ever unsure, just **ask me** and I'll explain.`);
+                    persist();
+                    renderQ();
+                } catch (e) {
+                    removeCanvasTyping();
+                    aiBubble("I couldn't load the quiz just now. Please refresh and try again.");
+                } finally {
+                    busy = false;
+                    chatSendBtn.style.opacity = '1';
+                    chatSendBtn.style.pointerEvents = 'auto';
+                }
+            }
+
+            async function finish() {
+                if (!active) return;
+                active = false; busy = true; showCanvasTyping();
+                try {
+                    const res = await apiPost(API.quizFinish, {});
+                    removeCanvasTyping();
+                    clearPersist();
+                    if (res && res.success && res.quizResult) {
+                        const r = res.quizResult;
+                        aiBubble(`**Quiz complete!** You scored **${r.score}/${r.max}** (${r.percentage}%) — Grade **${r.grade}**. Your result card is in the document on the left.`);
+                        try { updateProgress(7); } catch (e) {}
+                        _pendingQuizResult = r;
+                        if (typeof applyQuizResultToEditor === 'function') applyQuizResultToEditor();
+                        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                    } else {
+                        aiBubble("Quiz complete — but I couldn't finalise your score. Please let your tutor know.");
+                    }
+                } catch (e) {
+                    removeCanvasTyping();
+                    aiBubble("Quiz complete — but I couldn't finalise your score just now.");
+                } finally {
+                    busy = false;
+                    chatSendBtn.style.opacity = '1';
+                    chatSendBtn.style.pointerEvents = 'auto';
+                }
+            }
+
+            return { start, handleTurn, tryResume: rehydrate, get active() { return active; } };
+        })();
+
         return {
             protoPanel,
             chatPanel,
@@ -3729,6 +3969,7 @@
             chatSendBtn,
             addChatMessage,
             sendCanvasMessage,
+            quizCtl: _quizCtl,
             canvasChatHistory,
             get canvasChatId() { return canvasChatId; },
             set canvasChatId(v) { canvasChatId = v; },
@@ -7433,6 +7674,15 @@
                     }
                     if (savedChat.chatId) tp.canvasChatId = savedChat.chatId;
 
+                    // v7.19.323: resuming a mark-scheme quiz mid-flow — rehydrate the
+                    // deterministic controller from its localStorage sidecar so the
+                    // student's next typed reply scores against the right question.
+                    // Bubbles are already replayed above; this only restores position.
+                    if (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme_unit'
+                        && (state.step === 1 || state.bridgeStep === 1) && tp.quizCtl) {
+                        tp.quizCtl.tryResume();
+                    }
+
                     // v7.17.59: Hoisted greeting regen + grade buttons UP — was
                     // post-await (3-5s gap during which the un-styled bubble was
                     // visible — Neil flagged 2026-04-25 as the third-greeting-
@@ -7785,6 +8035,16 @@
                     // next), or by typing directly into chat panel until then. Doc IS
                     // the welcome.
                     console.log('WML v7.19.23: Exam Crib — silent default, no auto-greeting');
+                } else if (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme_unit'
+                           && (state.step === 1 || state.bridgeStep === 1) && !state.reviewMode) {
+                    // v7.19.323: Mark Scheme Quiz (step 1) — deterministic controller
+                    // owns it. NO AI greeting / silent-send: start() fetches the
+                    // key-stripped questions and renders Q1 itself. FYW (step 2) is
+                    // excluded here and falls through to the AI silent-send below.
+                    setTimeout(() => {
+                        console.log('WML v7.19.323: MSQ — deterministic controller start');
+                        if (tp.quizCtl) tp.quizCtl.start();
+                    }, 400);
                 } else if (!state.reviewMode) {
                     // All other training-env exercises: silent auto-send (protocol drives greeting)
                     // v7.17.71: ROLLBACK of v7.17.70 _isQuizResume gate. Original always-send
