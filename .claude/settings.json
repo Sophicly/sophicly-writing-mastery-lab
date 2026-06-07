@@ -69,7 +69,20 @@
       "Bash(git -C '/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins' log --oneline -2)",
       "Bash(grep -n \"CANVAS_SAVE_KEY\\\\|canvas_meta_key\\\\|__a\\\\\\\\\\\\${\" \"/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-etchwp-package v2.6/Sophicly Etch Writing Mastery Plugin/sophicly_writing_mastery_lab_v7_12_30/frontend/wml-assessment.js\")",
       "Bash(git -C '/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins' add sophicly-dashboard/src/components/ActivityCalendar.jsx sophicly-dashboard/dist/sdash.js sophicly-dashboard/sophicly-dashboard.php)",
-      "Bash(php -l admin/class-library-resources.php)"
+      "Bash(php -l admin/class-library-resources.php)",
+      "Bash(git checkout *)",
+      "Bash(git reset *)",
+      "Bash(awk 'NR>=3180 && NR<=3305 && \\(/fetch\\\\\\(/ || /API\\\\.chat/ || /API\\\\.canvasChat/ || /response = /\\)' frontend/wml-assessment.js)",
+      "Bash(node --check assets/js/sophicly-notes.js)",
+      "Bash(sed -i '' 's/ \\\\* Version:      2.3.1/ * Version:      2.3.2/' sophicly-notes.php)",
+      "Bash(sed -i '' \"s/define\\( 'SN_VERSION',    '2.3.1' \\)/define\\( 'SN_VERSION',    '2.3.2' \\)/\" sophicly-notes.php)",
+      "Bash(php -l \"sophicly-plugins/sophicly-student-data/includes/class-grade-mapper.php\")",
+      "Bash(php -l \"sophicly-etchwp-package v2.6/Sophicly Etch Writing Mastery Plugin/sophicly_writing_mastery_lab_v7_12_30/includes/class-quiz-engine.php\")",
+      "Bash(sed -i '' 's/2\\\\.30\\\\.87/2.30.88/g' sophicly-plugins/sophicly-student-data/sophicly-student-data.php)",
+      "Bash(sed -i '' 's/3\\\\.9\\\\.11/3.9.12/g' sophicly-plugins/sophicly-components/sophicly-components.php)",
+      "Bash(sed -i '' 's/7\\\\.19\\\\.321/7.19.322/g' \"sophicly-etchwp-package v2.6/Sophicly Etch Writing Mastery Plugin/sophicly_writing_mastery_lab_v7_12_30/sophicly-writing-mastery-lab.php\")",
+      "Bash(php -l sophicly-plugins/sophicly-student-data/sophicly-student-data.php)",
+      "Bash(php -l sophicly-plugins/sophicly-components/sophicly-components.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
