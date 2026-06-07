@@ -109,7 +109,8 @@
       "Bash(php -l includes/class-quiz-bank.php)",
       "Bash(sed -n '228,236p' language2.md)",
       "Bash(sed -n '795,810p' language2.md)",
-      "Bash(sed -n '2610,2618p' language2.md)"
+      "Bash(sed -n '2610,2618p' language2.md)",
+      "Bash(php /tmp/wml_parse_validate.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
