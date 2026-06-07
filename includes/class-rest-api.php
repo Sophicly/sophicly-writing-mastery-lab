@@ -1008,7 +1008,8 @@ class SWML_REST_API {
             // the regex. Marker presence is the quiz-turn signal — Forging Your
             // Weapon (same task, step 2) never emits them.
             $quiz_result = null;
-            if (($swml_request_context['task'] ?? '') === 'mark_scheme_unit'
+            $_quiz_task = $swml_request_context['task'] ?? '';
+            if (($_quiz_task === 'mark_scheme_unit' || $_quiz_task === 'foundational_quiz')
                 && class_exists('SWML_Quiz_Engine')) {
                 $engine = SWML_Quiz_Engine::instance();
                 $reply  = $engine->capture_from_markers(
@@ -1845,11 +1846,13 @@ class SWML_REST_API {
         }
 
         // v7.19.321: surface the latest persisted Quiz Result so the frontend
-        // renders the in-doc Quiz Result card on (re)load of the _msu doc.
+        // renders the in-doc Quiz Result card on (re)load. v7.19.323: also the
+        // Foundational quiz (_fq doc, reads its user_meta source).
         $quiz_result = null;
-        if ($suffix === '_msu' && class_exists('SWML_Quiz_Engine')) {
+        if (class_exists('SWML_Quiz_Engine') && ($suffix === '_msu' || $suffix === '_fq')) {
             $quiz_result = SWML_Quiz_Engine::instance()->get_persisted_result(
-                $user_id, $board, $text, $topic_number, $attempt
+                $user_id, $board, $text, $topic_number, $attempt,
+                $suffix === '_fq' ? 'foundational' : 'mark_scheme'
             );
         }
 

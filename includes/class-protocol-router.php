@@ -5000,6 +5000,22 @@ TEMPLATE;
             $block .= "Place the cue on its own line at the end of the message.\n";
         }
 
+        // v7.19.323: Foundational ('general') quiz — DETERMINISTIC SCORE CAPTURE.
+        // The server (SWML_Quiz_Engine) parses hidden markers, accumulates,
+        // grades on the canonical band, and persists — replacing the old
+        // AI-computes-it [QUIZ_COMPLETE] path. Injected here for ALL boards/texts
+        // (the per-text foundation.md files are not individually edited).
+        if ($task === 'foundational_quiz') {
+            $block .= "\n### SCORE CAPTURE — HIDDEN MARKERS, SERVER-SCORED (CRITICAL)\n";
+            $block .= "After EVERY question's feedback, emit the hidden per-question capture marker on its own line — the server reads it to record this question's score, then strips it before display (invisible to the student). Use the marks you just awarded for THIS question:\n";
+            $block .= "  `[[QUIZ q=<question number> of=<total questions> pts=<marks you awarded> max=<max marks for this question> cat=<topic/category, e.g. Plot, Character, Theme, Context>]]`\n";
+            $block .= "At the final results / dashboard message, emit the hidden completion marker on its own line: `[[QUIZ_DONE]]`\n";
+            $block .= "RULES:\n";
+            $block .= "- Never mention these markers; never wrap them in quotes or code fences.\n";
+            $block .= "- Do NOT emit the old `[QUIZ_COMPLETE:...]` marker — it is deprecated.\n";
+            $block .= "- Do NOT compute or state the final score, percentage, or grade yourself in the marker. The SERVER computes them from your per-question marks and grades on the official Sophicly band. You may still show the student an encouraging results summary, but the authoritative score/grade comes from the server.\n";
+        }
+
         // v7.18.20 / v7.18.27: No over-coaching for the Final Assessment.
         // CLAUDE.md is explicit: this is an assessment, not a coaching session.
         // Default protocol prose drifts into probing follow-ups — break that

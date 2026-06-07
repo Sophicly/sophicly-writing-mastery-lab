@@ -268,9 +268,13 @@ class SWML_Quiz_Engine {
                         continue;
                     }
                     // Lazy-start — replaces the disabled quiz_start function.
+                    // v7.19.323: quiz_type derives from the task so the right
+                    // persist_{type} fires at finalize (foundational vs mark_scheme).
+                    $quiz_type = (($context['task'] ?? '') === 'foundational_quiz')
+                        ? 'foundational' : 'mark_scheme';
                     $accumulator = $this->start(
                         $user_id,
-                        'mark_scheme',
+                        $quiz_type,
                         $of > 0 ? $of : 5,
                         $context['board'] ?? '',
                         $context['text']  ?? '',
@@ -313,12 +317,27 @@ class SWML_Quiz_Engine {
     }
 
     /**
-     * Latest persisted Quiz Result for a doc, read back from session_records so
-     * the frontend card survives a page reload. Returns
-     * ['score','max','percentage','grade'] or null. Mirrors the row the
-     * student-data listener writes from persist_mark_scheme(). v7.19.321.
+     * Latest persisted Quiz Result for a doc, read back so the frontend card
+     * survives a page reload. Returns ['score','max','percentage','grade'] or
+     * null. v7.19.321; v7.19.323 quiz_type-aware (foundational reads its richer
+     * user_meta — the session_records FQ row only stores the bare score, no max).
      */
-    public function get_persisted_result($user_id, $board, $text, $topic, $attempt = 1) {
+    public function get_persisted_result($user_id, $board, $text, $topic, $attempt = 1, $quiz_type = 'mark_scheme') {
+        if ($quiz_type === 'foundational') {
+            $raw = get_user_meta($user_id, 'swml_foundational_quiz_results', true);
+            $all = is_string($raw) ? (json_decode($raw, true) ?: []) : (is_array($raw) ? $raw : []);
+            $r   = $all[sanitize_key($board) . '_' . sanitize_key($text)] ?? null;
+            if (!is_array($r)) return null;
+            $score = (float) ($r['last_score'] ?? 0);
+            $max   = (float) ($r['best_score_max'] ?? 0);
+            if ($max <= 0) return null;
+            return [
+                'score'      => $score,
+                'max'        => $max,
+                'percentage' => isset($r['last_percentage']) ? (int) $r['last_percentage'] : (int) round(($score / $max) * 100),
+                'grade'      => (int) ($r['last_grade'] ?? 0),
+            ];
+        }
         global $wpdb;
         $table = $wpdb->prefix . 'sophicly_session_records';
         // Query by columns (not the reconstructed session_id) so an attempt /
