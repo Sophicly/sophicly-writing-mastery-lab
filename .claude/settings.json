@@ -113,7 +113,9 @@
       "Bash(php /tmp/wml_parse_validate.php)",
       "Bash(ls HANDOFFS.md)",
       "Bash(tail -2 HANDOFFS.md)",
-      "Bash(grep -niE \"question 4.{0,30}\\(16|20|24\\) mark|q4.{0,20}\\(16|20\\) mark|comparison.{0,20}\\(16|20\\) mark\" language2.md)"
+      "Bash(grep -niE \"question 4.{0,30}\\(16|20|24\\) mark|q4.{0,20}\\(16|20\\) mark|comparison.{0,20}\\(16|20\\) mark\" language2.md)",
+      "Bash(sed -n '5035,5060p' includes/class-protocol-router.php)",
+      "Bash(sed -n '386,412p' protocols/shared/mark-scheme/language2.md)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
