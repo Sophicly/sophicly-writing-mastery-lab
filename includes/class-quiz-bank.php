@@ -282,7 +282,10 @@ class SWML_Quiz_Bank {
             'max'        => $max,
             'correct'    => $correct,
             'partial'    => ($marks > 0 && $marks < $max),
-            'feedback'   => $q['feedback'] ?? '',
+            // v7.19.324: strip the authored "✓ Correct." affirmation — the
+            // explanation must read correctly under a WRONG (✗) result too, and
+            // the caller already renders the real ✓/✗ + marks line above it.
+            'feedback'   => self::strip_affirmation($q['feedback'] ?? ''),
             'correctKey' => self::display_key($q),
         ];
     }
@@ -337,5 +340,19 @@ class SWML_Quiz_Bank {
     /** Strip stray markdown emphasis the parser shouldn't keep literally. */
     private static function clean($s) {
         return trim((string) $s);
+    }
+
+    /**
+     * Strip the authored "✓ Correct." (and minor variants) affirmation prefix
+     * from a feedback string. The remaining explanation is outcome-neutral, so it
+     * reads correctly whether the student got the question right or wrong — the
+     * caller renders the actual ✓/✗ + marks line separately. Only a LEADING
+     * affirmation is removed; "correct" appearing mid-sentence is untouched.
+     */
+    private static function strip_affirmation($s) {
+        // Require the leading ✓ so checkmark-less feedback (or a sentence that
+        // happens to start with the word "Correct") is never touched. Strips
+        // "✓ Correct. ", "✓ Correct — ", or a lone leading "✓ ".
+        return trim(preg_replace('/^\s*\x{2713}\s*(?:correct)?[\s.!:\x{2014}\-]*/iu', '', (string) $s));
     }
 }
