@@ -117,6 +117,23 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
+        // Deterministic code-scored quiz (v7.19.323 — Phase 1). Server picks
+        // the questions, holds the keys, and scores in code; the AI is never
+        // the scorekeeper. Frontend renders Qs as chat + routes "ask Sophia"
+        // turns to /chat.
+        register_rest_route($namespace, '/quiz/start', [
+            'methods' => 'POST', 'callback' => [$this, 'handle_quiz_start'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/quiz/answer', [
+            'methods' => 'POST', 'callback' => [$this, 'handle_quiz_answer'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/quiz/finish', [
+            'methods' => 'POST', 'callback' => [$this, 'handle_quiz_finish'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+
         // Session save (auto-save + manual save)
         register_rest_route($namespace, '/session/save', [
             'methods' => 'POST', 'callback' => [$this, 'save_session_data'],
@@ -680,6 +697,130 @@ class SWML_REST_API {
     // ═══════════════════════════════════════════
     //  CHAT ENDPOINT — with fatal error capture
     // ═══════════════════════════════════════════
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  DETERMINISTIC QUIZ ENDPOINTS (v7.19.323 — Phase 1)
+    //  Server picks the questions + holds the keys; SWML_Quiz_Bank scores in
+    //  code; SWML_Quiz_Engine owns the accumulator + finalise + grade + the
+    //  persistence/card pipeline. The AI is never the scorekeeper.
+    // ─────────────────────────────────────────────────────────────────────
+
+    const QUIZ_BANK_META = 'wml_quiz_bank_'; // + user_id → picked session (with keys)
+
+    /** Start a quiz: pick N questions, store keys server-side, return key-stripped Qs. */
+    public function handle_quiz_start($request) {
+        if (!class_exists('SWML_Quiz_Bank') || !class_exists('SWML_Quiz_Engine')) {
+            return rest_ensure_response(['success' => false, 'code' => 'engine_missing']);
+        }
+        $p       = $request->get_json_params();
+        $user_id = get_current_user_id();
+        $board   = sanitize_text_field($p['board']   ?? '');
+        $subject = sanitize_text_field($p['subject'] ?? '');
+        $text    = sanitize_text_field($p['text']    ?? '');
+        $attempt = max(1, absint($p['attempt'] ?? 1));
+        $count   = min(10, max(1, absint($p['count'] ?? 5)));
+
+        $picked = SWML_Quiz_Bank::pick_session($subject, $board, $count);
+        if (empty($picked)) {
+            return rest_ensure_response(['success' => false, 'code' => 'no_questions',
+                'message' => 'No question bank found for this board/subject.']);
+        }
+
+        $engine = SWML_Quiz_Engine::instance();
+        $engine->start($user_id, 'mark_scheme', count($picked), $board, $text, $attempt);
+
+        // Persist the picked set WITH keys server-side; client never sees keys.
+        update_user_meta($user_id, self::QUIZ_BANK_META . $user_id,
+            wp_slash(wp_json_encode(['board' => $board, 'subject' => $subject, 'text' => $text,
+                                     'attempt' => $attempt, 'questions' => $picked])));
+
+        $total  = count($picked);
+        $public = array_map(function ($q) use ($total) {
+            return SWML_Quiz_Bank::public_question($q, $total);
+        }, $picked);
+
+        return rest_ensure_response(['success' => true, 'total' => $total, 'questions' => $public]);
+    }
+
+    /** Score one answer in code against the stored key. */
+    public function handle_quiz_answer($request) {
+        if (!class_exists('SWML_Quiz_Bank') || !class_exists('SWML_Quiz_Engine')) {
+            return rest_ensure_response(['success' => false, 'code' => 'engine_missing']);
+        }
+        $p       = $request->get_json_params();
+        $user_id = get_current_user_id();
+        $q_id    = sanitize_text_field($p['id'] ?? '');
+        $answer  = is_string($p['answer'] ?? null) ? trim($p['answer']) : '';
+
+        $bank = $this->read_quiz_bank($user_id);
+        if (!$bank) return rest_ensure_response(['success' => false, 'code' => 'no_active_quiz']);
+
+        $q = null;
+        foreach ($bank['questions'] as $cand) {
+            if (($cand['id'] ?? '') === $q_id) { $q = $cand; break; }
+        }
+        if (!$q) return rest_ensure_response(['success' => false, 'code' => 'unknown_question']);
+
+        $res    = SWML_Quiz_Bank::score($q, $answer);
+        $engine = SWML_Quiz_Engine::instance();
+        $acc    = $engine->record_question($user_id, [
+            'q_num'         => $q['q_num'],
+            'marks_awarded' => $res['marks'],
+            'max_marks'     => $res['max'],
+            'category'      => $q['category'],
+            'correct'       => $res['correctKey'],
+            'student_answer' => $answer,
+        ]);
+        $running = [
+            'score' => $acc['score_running'] ?? 0,
+            'max'   => $acc['max_running']   ?? 0,
+        ];
+
+        return rest_ensure_response([
+            'success'    => true,
+            'correct'    => $res['correct'],
+            'partial'    => $res['partial'],
+            'marks'      => $res['marks'],
+            'max'        => $res['max'],
+            'feedback'   => $res['feedback'],
+            'correctKey' => $res['correctKey'],
+            'seq'        => $q['seq'],
+            'total'      => count($bank['questions']),
+            'running'    => $running,
+        ]);
+    }
+
+    /** Finalise: code-derived grade, persist, return the card payload. */
+    public function handle_quiz_finish($request) {
+        if (!class_exists('SWML_Quiz_Engine')) {
+            return rest_ensure_response(['success' => false, 'code' => 'engine_missing']);
+        }
+        $user_id = get_current_user_id();
+        $summary = SWML_Quiz_Engine::instance()->finalize($user_id);
+        delete_user_meta($user_id, self::QUIZ_BANK_META . $user_id);
+
+        if (!$summary) return rest_ensure_response(['success' => false, 'code' => 'finalize_failed']);
+        return rest_ensure_response([
+            'success'    => true,
+            'quizResult' => [
+                'score'      => $summary['score'],
+                'max'        => $summary['max'],
+                'percentage' => $summary['percentage'],
+                'grade'      => $summary['grade'],
+            ],
+            'categoriesWithErrors' => $summary['categories_with_errors'] ?? [],
+        ]);
+    }
+
+    /** Decode the stored picked-session meta (with keys). Returns null if none. */
+    private function read_quiz_bank($user_id) {
+        $raw = get_user_meta($user_id, self::QUIZ_BANK_META . $user_id, true);
+        if (empty($raw)) return null;
+        if (is_array($raw)) return $raw;
+        $d = json_decode($raw, true);
+        if (!is_array($d)) $d = json_decode(wp_unslash($raw), true);
+        return is_array($d) ? $d : null;
+    }
 
     public function handle_chat($request) {
         // v7.15.91: reject AI chat writes when viewing another student read-only.

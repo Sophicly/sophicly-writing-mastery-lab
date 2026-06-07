@@ -4191,6 +4191,15 @@
                 canvas.appendChild(dictBubble);
             }
 
+            // Centre the dictation bubble over the editor column, not the viewport.
+            // The right-hand panel shifts the true centre left of viewport-centre. v7.19.323
+            const positionDictBubble = () => {
+                const pane = canvas.querySelector('.swml-canvas-editor') || canvas;
+                const r = pane.getBoundingClientRect();
+                if (r.width) dictBubble.style.left = Math.round(r.left + r.width / 2) + 'px';
+            };
+            const _dictResize = () => { if (dictListening) positionDictBubble(); };
+
             dictRecognition = new SR();
             dictRecognition.continuous = true;
             dictRecognition.interimResults = true;
@@ -4210,11 +4219,14 @@
                 dictLastFinalIdx = 0;
                 dictBubble.style.display = 'flex';
                 dictBubble.innerHTML = '<span class="swml-dict-dot"></span><span class="swml-dict-dot"></span><span class="swml-dict-dot"></span> <span style="color:rgba(255,255,255,0.4);font-size:11px;">Listening...</span>';
+                positionDictBubble();
+                window.addEventListener('resize', _dictResize);
             };
             dictRecognition.onend = () => {
                 dictListening = false;
                 syncDictBtns('is-active', false);
                 syncDictBtns('swml-dictating', false);
+                window.removeEventListener('resize', _dictResize);
                 dictBubble.style.display = 'none';
             };
             dictRecognition.onresult = (ev) => {
@@ -4241,6 +4253,7 @@
                 dictListening = false;
                 syncDictBtns('is-active', false);
                 syncDictBtns('swml-dictating', false);
+                window.removeEventListener('resize', _dictResize);
                 if (document.getElementById('swml-dict-bubble')) document.getElementById('swml-dict-bubble').style.display = 'none';
             };
             dictRecognition.start();

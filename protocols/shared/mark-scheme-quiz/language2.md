@@ -173,16 +173,11 @@ CRITICAL: Update the progress bar based on current question number:
 
 ## SCORING SYSTEM
 
-**Weighted Questions:**
+**Marks:**
 
-- Terminology questions: ×1.5  
-- AO Knowledge questions: ×1.5  
-- Application questions: ×2.0
-
-**Total per session:** \~10 marks
-
-- Core: 8.75 marks  
-- Extensions (2-3): 1.25 marks
+- Every question is worth **2 marks** (1 mark for a partly-correct Select All That Apply).
+- A session = **5 questions = 10 marks**.
+- 'Stretch' prompts are discussion only — they carry **no marks**.
 
 **Score Guide:**
 
@@ -193,9 +188,9 @@ CRITICAL: Update the progress bar based on current question number:
 
 **Persist Score (silent) — hidden markers, server-scored:**
 
-**During the quiz**, after EVERY question's feedback, emit the hidden per-question capture marker on its own line — the server reads it to record that question's score, then strips it before display (invisible to the student). Use the weighted marks for THIS question:
+**During the quiz**, after EVERY question's feedback, emit the hidden per-question capture marker on its own line — the server reads it to record that question's score, then strips it before display (invisible to the student). Each question is out of 2:
 
-`[[QUIZ q=<question number> of=5 pts=<weighted marks you awarded> max=<weighted max for this question> cat=<AO/category>]]`
+`[[QUIZ q=<question number> of=5 pts=<marks awarded, 0-2> max=2 cat=<AO/category>]]`
 
 **At the dashboard**, on its own line at the START of the final-results message, emit the hidden quiz-complete marker — the server finalises and stores the score from those per-question markers, then strips it before display:
 
@@ -296,7 +291,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 #### Board-Specific Features
 
-- **Q2 requires inference from BOTH texts equally** \- imbalanced response caps marks  
+- **Q2 must deal with both texts** \- a candidate has to deal with both texts to reach Level 3 or above; a Level-2 response that deals with only one text is capped at 3 (not 4)  
 - **Q3 focuses on language for effect** \- must analyze how language influences reader opinion  
 - **Q4 needs ideas AND methods** \- comparing only content limits you to Level 2  
 - **Q5 form is specified** \- letter, article, speech, leaflet, essay (must show awareness)  
@@ -719,872 +714,527 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ### Quiz: AQA GCSE English Language Paper 2
 
-**Question 1 (Terminology \- ×1.5 weighting) \[Tests AO3 Knowledge\]**
-
-For Paper 2 Question 4 (comparison), the mark scheme rewards responses that show 'perceptive analysis of \[BLANK\]'.
-
-What completes this descriptor?
-
-*Answer: how methods are used to convey different attitudes*
-
-**Full credit (1.5 marks):** Correctly identifies the complete phrase **Partial credit (0.75 marks):** Identifies "methods" or "attitudes" but not complete phrase **No credit (0 marks):** Incorrect or vague response
+1. **Type: Fill-in-the-Blank \[Tests AO3 Knowledge\]**
+   * **Question:** For Paper 2 Question 4 (comparison), the mark scheme rewards responses that show 'perceptive analysis of \[BLANK\]'. What completes this descriptor?
+   * **Answer:** how methods are used to convey different attitudes
+   * **Feedback:** ✓ Correct. AO3 comparison rewards analysis of *how* writers' methods convey their different attitudes — not just naming what the attitudes are.
 
 ---
 
-**Question 2 (Application \- ×2.0 weighting) \[Tests AO3 Application\]**
-
-A student writes for Question 4: "Text A thinks fox hunting is cruel while Text B thinks it's traditional. Text A uses emotive language like 'barbaric slaughter' while Text B uses positive words like 'heritage'."
-
-This response would likely receive Level 2 marks (5-8 out of 16). Why doesn't it reach Level 3?
-
-A) It doesn't use enough quotations B) It compares ideas but doesn't analyze HOW methods convey attitudes C) It doesn't mention structure D) The texts aren't from different time periods
-
-*Answer: B*
-
-**Metacognitive Extension:** What would a Level 3 version of this comparison look like?
-
-*Extension answer guide:* **Full credit (0.5 marks):** Shows how to connect methods to attitudes analytically. Example: "While Text A uses the visceral imagery of 'barbaric slaughter' to position the reader against hunting through emotional disgust, Text B's choice of 'heritage' appeals to tradition and belonging, creating a defensive, pride-based response." **Partial credit (0.25 marks):** Mentions analyzing effects but doesn't provide clear example **No credit (0 marks):** Doesn't understand the distinction between listing and analyzing
+2. **Type: MCQ \[Tests AO3 Application\]**
+   * **Question:** A student writes for Question 4: "Text A thinks fox hunting is cruel while Text B thinks it's traditional. Text A uses emotive language like 'barbaric slaughter' while Text B uses positive words like 'heritage'." This response would likely receive Level 2 marks (5-8 out of 16). Why doesn't it reach Level 3?
+   * **Options:** A) It doesn't use enough quotations, B) It compares ideas but doesn't analyse HOW methods convey attitudes, C) It doesn't mention structure, D) The texts aren't from different time periods.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Level 3 needs analysis of *how* the methods convey attitudes, not just listing what each text says. The response spots the contrast but never analyses the effect of 'barbaric slaughter' against 'heritage'.
+   * **Stretch (unscored):** What would a Level 3 version look like? e.g. "While Text A's visceral 'barbaric slaughter' positions the reader against hunting through disgust, Text B's 'heritage' appeals to tradition and belonging — a defensive, pride-based response."
 
 ---
 
-**Question 3 (AO Knowledge \- ×1.5 weighting) \[Tests AO3 Knowledge\]**
-
-Which of these is NOT assessed by AO3 in Paper 2?
-
-A) Writers' different perspectives on issues B) How writers' methods convey attitudes C) The effectiveness of writers' arguments D) Comparison of ideas across texts
-
-*Answer: C (effectiveness is AO4, not AO3)*
-
-**Full credit (1.5 marks):** Correctly identifies C **No credit (0 marks):** Any other answer
+3. **Type: MCQ \[Tests AO3 Knowledge\]**
+   * **Question:** Which of these is NOT assessed by AO3 in Paper 2?
+   * **Options:** A) Writers' different perspectives on issues, B) How writers' methods convey attitudes, C) The effectiveness of writers' arguments, D) Comparison of ideas across texts.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. The effectiveness of an argument is evaluated under AO4, not AO3. AO3 is about comparing perspectives and how writers' methods convey them.
 
 ---
 
-**Question 4 (Application \- ×2.0 weighting) \[Tests AO1 Application\]**
-
-A student's Question 2 summary states: "Both texts show concerns about social media. The first text worries about addiction while the second text celebrates connection."
-
-The examiner notes this only addresses one text in detail. What's the maximum level this can achieve?
-
-A) Level 1 (1-2 marks) B) Level 2 (3-4 marks) C) Level 3 (5-6 marks) D) Level 4 (7-8 marks)
-
-*Answer: B*
-
-**Full credit (2.0 marks):** Correctly identifies Level 2 as the cap when texts aren't balanced **Partial credit (1.0 mark):** Close answer showing understanding of the limitation **No credit (0 marks):** Wrong answer showing misunderstanding
+4. **Type: MCQ \[Tests AO1 Application\]**
+   * **Question:** A student's Question 2 summary states: "Both texts show concerns about social media. The first text worries about addiction while the second text celebrates connection." The examiner notes this deals with only one text in detail. What's the maximum level this can achieve?
+   * **Options:** A) Level 1 (1-2 marks), B) Level 2 (3-4 marks), C) Level 3 (5-6 marks), D) Level 4 (7-8 marks).
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. A candidate has to deal with both texts to reach Level 3 or above, so a response that develops only one stays in Level 2 — and a Level-2 response that deals with only one text is capped at 3, not 4.
 
 ---
 
-**Question 5 (Terminology \- ×1.5 weighting) \[Tests AO5 Knowledge\]**
-
-In Paper 2 writing assessment, what does 'compelling' specifically mean at Level 4?
-
-A) Using sophisticated vocabulary B) Writing that powerfully engages and convinces the reader C) Perfect technical accuracy D) Using multiple persuasive techniques
-
-*Answer: B*
-
-**Metacognitive Extension:** Explain why option D might seem right but doesn't capture what 'compelling' means.
-
-*Extension answer guide:* **Full credit (0.5 marks):** Explains that using techniques is the method, but 'compelling' describes the effect \- writing that grabs and holds attention. You could use many techniques badly and not be compelling. **Partial credit (0.25 marks):** Identifies the distinction but doesn't fully explain **No credit (0 marks):** Misunderstands the concept
+5. **Type: MCQ \[Tests AO5 Knowledge\]**
+   * **Question:** In Paper 2 writing assessment, what does 'compelling' specifically mean at Level 4?
+   * **Options:** A) Using sophisticated vocabulary, B) Writing that powerfully engages and convinces the reader, C) Perfect technical accuracy, D) Using multiple persuasive techniques.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. 'Compelling' describes the *effect* on the reader — writing that grabs and holds attention — not the techniques used to get there.
+   * **Stretch (unscored):** Why might option D seem right but miss what 'compelling' means? Techniques are the method; you can use many techniques badly and still not be compelling.
 
 ---
 
-**Question 6 (Application \- ×2.0 weighting) \[Tests AO2 Application\]**
-
-A student analyzing language in Question 3 writes: "The writer uses rhetorical questions to make the reader think about the issue, showing that there are no easy answers to climate change."
-
-This is a clear Level 3 response (7-9 marks out of 12). What would elevate it to Level 4?
-
-A) Adding more quotations B) Mentioning the historical context C) Providing more detailed/perceptive analysis of how the technique shapes reader response D) Comparing it to the other text
-
-*Answer: C*
-
-**Full credit (2.0 marks):** Recognizes that Level 4 needs 'detailed' and 'perceptive' analysis of effects **Partial credit (1.0 mark):** Shows understanding that more depth is needed **No credit (0 marks):** Incorrect answer
+6. **Type: MCQ \[Tests AO2 Application\]**
+   * **Question:** A student analysing language in Question 3 writes: "The writer uses rhetorical questions to make the reader think about the issue, showing that there are no easy answers to climate change." This is a clear Level 3 response (7-9 marks out of 12). What would elevate it to Level 4?
+   * **Options:** A) Adding more quotations, B) Mentioning the historical context, C) Providing more detailed/perceptive analysis of how the technique shapes reader response, D) Comparing it to the other text.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. Level 4 needs *detailed* and *perceptive* analysis of how the method shapes the reader's response — depth of effect, not more quotations.
 
 ---
 
-**Question 7 (AO Knowledge \- ×1.5 weighting) \[Tests AO1 vs AO3 Knowledge\]**
-
-What is the key difference between a 'summary' (Question 2\) and a 'comparison' (Question 4)?
-
-A) Summary is shorter than comparison B) Summary synthesizes information; comparison analyzes differences in attitudes and methods C) Summary doesn't need quotations; comparison does D) Summary is about content; comparison is about language
-
-*Answer: B*
-
-**Metacognitive Extension:** Why do students often confuse these two types of questions?
-
-*Extension answer guide:* **Full credit (0.5 marks):** Explains that both involve two texts and finding connections, but summary combines information while comparison analyzes different perspectives and how they're conveyed **Partial credit (0.25 marks):** Identifies they both use two texts but doesn't explain the distinction clearly **No credit (0 marks):** Shows confusion about the difference
+7. **Type: MCQ \[Tests AO1 vs AO3 Knowledge\]**
+   * **Question:** What is the key difference between a 'summary' (Question 2) and a 'comparison' (Question 4)?
+   * **Options:** A) Summary is shorter than comparison, B) Summary synthesises information; comparison analyses differences in attitudes and methods, C) Summary doesn't need quotations; comparison does, D) Summary is about content; comparison is about language.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Both use both texts, but summary (Q2) synthesises information across them while comparison (Q4) analyses different perspectives and *how* they're conveyed.
+   * **Stretch (unscored):** Why do students confuse these two? Both involve two texts and finding connections — but one combines information, the other analyses differing perspectives.
 
 ---
 
-**Question 8 (Terminology \- ×1.5 weighting) \[Tests AO5 Knowledge\]**
-
-Paper 2's focus on 'writing to present a viewpoint' includes all EXCEPT:
-
-A) Writing to argue B) Writing to describe C) Writing to persuade D) Writing to advise
-
-*Answer: B (describe is Paper 1\)*
-
-**Full credit (1.5 marks):** Correctly identifies B **No credit (0 marks):** Any other answer
+8. **Type: MCQ \[Tests AO5 Knowledge\]**
+   * **Question:** Paper 2's focus on 'writing to present a viewpoint' includes all EXCEPT:
+   * **Options:** A) Writing to argue, B) Writing to describe, C) Writing to persuade, D) Writing to advise.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Writing to describe belongs to Paper 1 (creative/descriptive). Paper 2 is viewpoint writing — argue, persuade, advise.
 
 ---
 
-**Question 9 (Application \- ×2.0 weighting) \[Tests AO5 Application\]**
-
-A student's transactional writing opens: "Dear Editor, I am writing to express my views on school uniforms. I think they are bad."
-
-This would likely score in Level 1 or 2\. Which aspect most limits the marks?
-
-A) The punctuation is incorrect B) The register lacks sophistication and development for the form C) It doesn't include statistics D) The opinion isn't balanced
-
-*Answer: B*
-
-**Metacognitive Extension:** What specific changes would demonstrate Level 3 'clear and consistent' register?
-
-*Extension answer guide:* **Full credit (0.5 marks):** Identifies formal vocabulary, developed reasoning, appropriate tone for newspaper audience \- e.g., "I am writing to express my concern about the current uniform policy which fails to consider..." **Partial credit (0.25 marks):** Mentions being "more formal" without specific examples **No credit (0 marks):** Focuses on unrelated aspects
+9. **Type: MCQ \[Tests AO5 Application\]**
+   * **Question:** A student's transactional writing opens: "Dear Editor, I am writing to express my views on school uniforms. I think they are bad." This would likely score in Level 1 or 2. Which aspect most limits the marks?
+   * **Options:** A) The punctuation is incorrect, B) The register lacks sophistication and development for the form, C) It doesn't include statistics, D) The opinion isn't balanced.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The register is flat and underdeveloped for a newspaper audience. "They are bad" is bald assertion — Level 3+ needs a controlled, developed register.
+   * **Stretch (unscored):** What changes would show a Level 3 'clear and consistent' register? Formal vocabulary, developed reasoning, tone for the audience — e.g. "I am writing to express my concern about the current uniform policy, which fails to consider…"
 
 ---
 
-**Question 10 (Application \- ×2.0 weighting) \[Tests AO3 Application\]**
-
-An examiner is marking Question 4 (comparison). The response thoroughly compares different ideas but only briefly mentions methods. What's the likely level?
-
-A) Level 1 (1-4 marks) B) Level 2 (5-8 marks) C) Level 3 (9-12 marks) D) Level 4 (13-16 marks)
-
-*Answer: B*
-
-**Full credit (2.0 marks):** Recognizes that Level 3 requires clear comparison of ideas AND methods **Partial credit (1.0 mark):** Shows understanding that methods are important **No credit (0 marks):** Incorrect answer
+10. **Type: MCQ \[Tests AO3 Application\]**
+    * **Question:** An examiner is marking Question 4 (comparison). The response thoroughly compares different ideas but only briefly mentions methods. What's the likely level?
+    * **Options:** A) Level 1 (1-4 marks), B) Level 2 (5-8 marks), C) Level 3 (9-12 marks), D) Level 4 (13-16 marks).
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 3 requires clear comparison of ideas AND methods. Strong on ideas but thin on methods keeps it at Level 2.
 
 ---
 
-**Question 11 (AO Knowledge \- ×1.0 weighting) \[Tests AO2 Knowledge\] \- TRUE/FALSE**
-
-True or False: In AQA Paper 2, Question 3 (language analysis) focuses on how language creates emotional effects, similar to Paper 1\.
-
-A) True B) False
-
-*Answer: B (False)*
-
-**Full credit (1.0 mark):** Correctly identifies False \- Paper 2 Q3 analyzes how language influences opinion/shapes viewpoint, NOT emotional effects **No credit (0 marks):** Incorrect answer
-
-**Explanation:** This is a crucial distinction. Paper 1 language analysis looks at how writers create atmosphere, mood, and emotional engagement. Paper 2 language analysis examines how writers use language to persuade, influence, and shape reader OPINION \- it's about rhetorical effect, not emotional effect.
+11. **Type: True/False \[Tests AO2 Knowledge\]**
+    * **Question:** True or False: In AQA Paper 2, Question 3 (language analysis) focuses on how language creates emotional effects, similar to Paper 1.
+    * **Answer:** False
+    * **Feedback:** ✓ Correct. Paper 2 Q3 analyses how language influences *opinion* / shapes viewpoint — rhetorical effect. Paper 1 is the one that rewards atmosphere, mood and emotional engagement. Don't transfer the Paper 1 approach across.
 
 ---
 
-**Question 12 (Application \- ×2.0 weighting) \[Tests AO3 Application\] \- SELECT ALL THAT APPLY**
-
-A comparison response contains these features. Which ones would contribute to achieving Level 3 (9-12 marks)? **Select all that apply.**
-
-□ A) Identifies different perspectives in both texts □ B) Analyzes how language techniques convey those perspectives □ C) Uses long quotations from both texts □ D) Integrates comparison within paragraphs rather than treating texts separately □ E) Mentions the historical context of the 19th century text
-
-*Correct answers: A, B, D*
-
-**Scoring (Partial Credit):**
-
-- Each correct answer: \+0.67 marks (2.0 ÷ 3 correct items)  
-- Each incorrect answer: \-0.67 marks  
-- Minimum score: 0.0 marks
-
-**Example calculations:**
-
-- Student selects A, B, D: \+0.67 \+0.67 \+0.67 \= 2.0 marks (full credit)  
-- Student selects A, B, C: \+0.67 \+0.67 \-0.67 \= 0.67 marks (partial credit)  
-- Student selects A, B: \+0.67 \+0.67 \= 1.34 marks (partial credit \- missed one correct)  
-- Student selects C, E: \-0.67 \-0.67 \= 0.0 marks (minimum)
-
-**Explanation:** Level 3 requires comparing ideas (A), analyzing how methods convey attitudes (B), and integrated comparison (D). Long quotations (C) aren't a requirement and can actually hinder analysis. Historical context (E) can add value but isn't a Level 3 requirement.
+12. **Type: Select All That Apply \[Tests AO3 Application\]**
+    * **Question:** A comparison response contains these features. Which ones would contribute to achieving Level 3 (9-12 marks)? (Select all that apply)
+    * **Options:** A) Identifies different perspectives in both texts, B) Analyses how language techniques convey those perspectives, C) Uses long quotations from both texts, D) Integrates comparison within paragraphs rather than treating texts separately, E) Mentions the historical context of the 19th century text.
+    * **Correct:** A, B, D
+    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
+    * **Feedback:** Level 3 needs comparison of ideas (A), analysis of how methods convey attitudes (B), and integrated comparison (D). Long quotations (C) aren't required and can hinder analysis; historical context (E) can add value but isn't a Level 3 requirement.
 
 ---
 
 ### Quiz: OCR GCSE English Language Paper 2
 
-**Question 1 (Terminology \- ×1.5 weighting) \[Tests AO3 Knowledge\]**
-
-In OCR's six-level system for Paper 2 comparison, Level 6 requires '\[BLANK\] analytical comparison'.
-
-What word completes this highest-level descriptor?
-
-*Answer: perceptive*
-
-**Full credit (1.5 marks):** Correctly identifies "perceptive" **Partial credit (0.75 marks):** Near-miss like "detailed" or "sophisticated" **No credit (0 marks):** Incorrect response
+1. **Type: Fill-in-the-Blank \[Tests AO3 Knowledge\]**
+   * **Question:** In OCR's six-level system for Paper 2 comparison, Level 6 requires '\[BLANK\] analytical comparison'. What word completes this highest-level descriptor?
+   * **Answer:** perceptive
+   * **Feedback:** ✓ Correct. OCR's top band (Level 6) calls for *perceptive* analytical comparison — insight beyond the merely 'detailed' or 'thorough' lower bands.
 
 ---
 
-**Question 2 (AO Knowledge \- ×1.5 weighting) \[Tests AO1 Knowledge\]**
-
-What does Question 2 specifically test that's unique to OCR's Paper 2?
-
-A) Language analysis B) Evaluation of effectiveness C) Synthesis across texts D) Creative writing
-
-*Answer: C*
-
-**Full credit (1.5 marks):** Correctly identifies synthesis as OCR's unique focus **No credit (0 marks):** Any other answer
+2. **Type: MCQ \[Tests AO1 Knowledge\]**
+   * **Question:** What does Question 2 specifically test that's unique to OCR's Paper 2?
+   * **Options:** A) Language analysis, B) Evaluation of effectiveness, C) Synthesis across texts, D) Creative writing.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. Synthesis — drawing the two texts together into a combined understanding — is OCR's distinctive Question 2 focus.
 
 ---
 
-**Question 3 (Application \- ×2.0 weighting) \[Tests AO1 Application\]**
-
-A student's synthesis response lists information from Text A, then lists information from Text B, then writes a conclusion combining them.
-
-Maximum level achievable?
-
-A) Level 2 B) Level 3 C) Level 4 D) Level 5
-
-*Answer: B*
-
-**Metacognitive Extension:** What's the key difference between 'synthesis' and just 'listing information from both texts'?
-
-*Extension answer guide:* **Full credit (0.5 marks):** Synthesis creates new understanding by connecting ideas, not just listing them side by side. It shows how ideas relate and build a bigger picture. **Partial credit (0.25 marks):** Mentions combining but doesn't explain the "new understanding" aspect **No credit (0 marks):** Doesn't understand synthesis
+3. **Type: MCQ \[Tests AO1 Application\]**
+   * **Question:** A student's synthesis response lists information from Text A, then lists information from Text B, then writes a conclusion combining them. Maximum level achievable?
+   * **Options:** A) Level 2, B) Level 3, C) Level 4, D) Level 5.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Listing each text in turn isn't synthesis — it caps the response in the lower bands. Real synthesis connects the ideas as it goes.
+   * **Stretch (unscored):** What's the difference between 'synthesis' and just 'listing information from both texts'? Synthesis builds new understanding by connecting ideas — showing how they relate into a bigger picture — rather than placing them side by side.
 
 ---
 
-**Question 4 (Application \- ×2.0 weighting) \[Tests AO4 Application\]**
-
-For Question 6 (evaluation), a student writes: "I strongly disagree with the writer's argument because I don't think social media is harmful."
-
-Why would this likely score Level 1 or 2?
-
-A) It's too short B) It evaluates personal agreement rather than effectiveness of argument C) It doesn't quote the text D) It only looks at one text
-
-*Answer: B*
-
-**Full credit (2.0 marks):** Recognizes evaluation should judge HOW WELL the argument works, not whether you agree **Partial credit (1.0 mark):** Shows understanding that personal opinion isn't enough **No credit (0 marks):** Misunderstands evaluation
+4. **Type: MCQ \[Tests AO4 Application\]**
+   * **Question:** For Question 6 (evaluation), a student writes: "I strongly disagree with the writer's argument because I don't think social media is harmful." Why would this likely score Level 1 or 2?
+   * **Options:** A) It's too short, B) It evaluates personal agreement rather than effectiveness of argument, C) It doesn't quote the text, D) It only looks at one text.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Evaluation judges *how well* the argument works on the reader, not whether you personally agree with it. Personal opinion alone stays in the lower bands.
 
 ---
 
-**Question 5 (Terminology \- ×1.5 weighting) \[Tests AO General Knowledge\]**
-
-OCR uses a six-level system. What's the key difference between Level 5 'thorough' and Level 6 'sophisticated'?
-
-A) Word count B) Number of quotations C) Sophistication shows exceptional insight and precision D) Level 6 requires comparison of three texts
-
-*Answer: C*
-
-**Metacognitive Extension:** Why is the jump from Level 5 to Level 6 often the hardest for students?
-
-*Extension answer guide:* **Full credit (0.5 marks):** Level 6 requires not just doing everything well (thorough) but showing exceptional insight, subtle understanding, and sophisticated expression \- it's qualitative, not quantitative improvement **Partial credit (0.25 marks):** Mentions it needs "more" without explaining the qualitative jump **No credit (0 marks):** Doesn't understand the distinction
+5. **Type: MCQ \[Tests AO Knowledge\]**
+   * **Question:** OCR uses a six-level system. What's the key difference between Level 5 'thorough' and Level 6 'sophisticated'?
+   * **Options:** A) Word count, B) Number of quotations, C) Sophistication shows exceptional insight and precision, D) Level 6 requires comparison of three texts.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. The jump to Level 6 is *qualitative* — exceptional insight, subtle understanding, precise expression — not just doing more of the same.
+   * **Stretch (unscored):** Why is the Level 5→6 jump often the hardest? Level 5 is doing everything well; Level 6 demands a qualitative leap in insight and sophistication, which can't be reached just by adding 'more'.
 
 ---
 
-**Question 6 (AO Knowledge \- ×1.5 weighting) \[Tests AO4 Knowledge\]**
-
-In OCR Paper 2, AO4 (evaluation) focuses on:
-
-A) How well writers achieve their purpose B) Personal response to texts C) Comparison of ideas D) Technical accuracy
-
-*Answer: A*
-
-**Full credit (1.5 marks):** Correctly identifies A **No credit (0 marks):** Any other answer
+6. **Type: MCQ \[Tests AO4 Knowledge\]**
+   * **Question:** In OCR Paper 2, AO4 (evaluation) focuses on:
+   * **Options:** A) How well writers achieve their purpose, B) Personal response to texts, C) Comparison of ideas, D) Technical accuracy.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. OCR's AO4 evaluates how well the writer achieves their purpose — a judgement about effectiveness, not a personal reaction.
 
 ---
 
-**Question 7 (Application \- ×2.0 weighting) \[Tests AO2 Application\]**
-
-A comparison response discusses both texts in every paragraph, analyzes methods and ideas, but uses basic expression like "Text A says... Text B says..." repeatedly.
-
-Likely level?
-
-A) Level 2-3 B) Level 3-4 C) Level 4-5 D) Level 5-6
-
-*Answer: C*
-
-**Full credit (2.0 marks):** Recognizes good integration and analysis, limited by expression **Partial credit (1.0 mark):** Identifies a limitation **No credit (0 marks):** Incorrect assessment
+7. **Type: MCQ \[Tests AO2 Application\]**
+   * **Question:** A comparison response discusses both texts in every paragraph, analyses methods and ideas, but uses basic expression like "Text A says... Text B says..." repeatedly. Likely level?
+   * **Options:** A) Level 2-3, B) Level 3-4, C) Level 4-5, D) Level 5-6.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. The integration and analysis are strong, but repetitive, basic expression holds it back — strong content, limited by how it's written.
 
 ---
 
-**Question 8 (Terminology \- ×1.5 weighting) \[Tests AO5 Knowledge\]**
-
-What does 'integrated comparison' mean in OCR's mark scheme?
-
-A) Comparing everything about both texts B) Discussing both texts within the same paragraphs C) Using the same quotations from both texts D) Writing equal amounts about each text
-
-*Answer: B*
-
-**Metacognitive Extension:** Why do students often default to non-integrated comparison?
-
-*Extension answer guide:* **Full credit (0.5 marks):** It feels safer/easier to deal with texts separately, but this shows less sophisticated thinking than weaving them together to explore connections **Partial credit (0.25 marks):** Mentions it's easier without explaining why **No credit (0 marks):** Doesn't understand the issue
+8. **Type: MCQ \[Tests AO5 Knowledge\]**
+   * **Question:** What does 'integrated comparison' mean in OCR's mark scheme?
+   * **Options:** A) Comparing everything about both texts, B) Discussing both texts within the same paragraphs, C) Using the same quotations from both texts, D) Writing equal amounts about each text.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Integrated comparison weaves both texts together within the same paragraphs, showing connections as you go — rather than handling each text in a separate block.
+   * **Stretch (unscored):** Why do students default to non-integrated comparison? Handling texts separately feels safer and easier, but it shows less sophisticated thinking than weaving them together to explore connections.
 
 ---
 
-**Question 9 (Application \- ×2.0 weighting) \[Tests AO5 Application\]**
-
-A student evaluating effectiveness writes: "The writer uses statistics effectively because 97% is a big number that sounds convincing."
-
-What's needed to move this from Level 3 to Level 4?
-
-A) More statistics B) Longer quotations C) More developed analysis of HOW/WHY this persuades specific audiences D) Disagreeing with the writer
-
-*Answer: C*
-
-**Full credit (2.0 marks):** Recognizes need for developed exploration of effect **Partial credit (1.0 mark):** Identifies need for "more" without specifying what **No credit (0 marks):** Wrong focus
+9. **Type: MCQ \[Tests AO5 Application\]**
+   * **Question:** A student evaluating effectiveness writes: "The writer uses statistics effectively because 97% is a big number that sounds convincing." What's needed to move this from Level 3 to Level 4?
+   * **Options:** A) More statistics, B) Longer quotations, C) More developed analysis of HOW/WHY this persuades specific audiences, D) Disagreeing with the writer.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. Level 4 needs developed exploration of *how and why* the statistic persuades a particular audience — not just naming it as effective.
 
 ---
 
-**Question 10 (Application \- ×2.0 weighting) \[Tests AO3 Application\]**
-
-For transactional writing, a response shows excellent argument and persuasive techniques but has frequent spelling errors and comma splices.
-
-What would limit this response?
-
-A) Can't get above Level 3 for AO5 (content) B) Would lose marks on AO6 (technical) but AO5 could still score highly C) Would fail completely D) Spelling doesn't matter if argument is good
-
-*Answer: B*
-
-**Full credit (2.0 marks):** Understands AO5 and AO6 marked separately **Partial credit (1.0 mark):** Shows some understanding of separate marking **No credit (0 marks):** Confuses the two AOs
+10. **Type: MCQ \[Tests AO3 Application\]**
+    * **Question:** For transactional writing, a response shows excellent argument and persuasive techniques but has frequent spelling errors and comma splices. What would limit this response?
+    * **Options:** A) Can't get above Level 3 for AO5 (content), B) Would lose marks on AO6 (technical) but AO5 could still score highly, C) Would fail completely, D) Spelling doesn't matter if argument is good.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. AO5 (content/organisation) and AO6 (technical accuracy) are marked separately — strong argument can still score well on AO5 while the errors cost marks on AO6.
 
 ---
 
 ### Quiz: Edexcel GCSE English Language Paper 2
 
-**Question 1 (Terminology \- ×1.5 weighting) \[Tests AO3 Knowledge\]**
-
-For Paper 2 comparison questions, Level 5 requires 'perceptive \[BLANK\] comparison'.
-
-What word completes this descriptor?
-
-*Answer: integrated*
-
-**Full credit (1.5 marks):** Correctly identifies "integrated" **Partial credit (0.75 marks):** Near-miss like "analytical" or "detailed" **No credit (0 marks):** Incorrect response
+1. **Type: Fill-in-the-Blank \[Tests AO3 Knowledge\]**
+   * **Question:** For Paper 2 comparison questions, Level 5 requires 'perceptive \[BLANK\] comparison'. What word completes this descriptor?
+   * **Answer:** integrated
+   * **Feedback:** ✓ Correct. Edexcel's top band rewards *integrated* comparison — texts woven together, not handled in separate blocks.
 
 ---
 
-**Question 2 (Application \- ×2.0 weighting) \[Tests AO1 Application\]**
-
-Question 7(a) asks about comparing ideas. Question 7(b) asks about comparing methods.
-
-A student answers both but discusses the same points in each. What's the main problem?
-
-A) Repetition will bore the examiner B) They're not addressing the different focus of each question C) The answers are too short D) They should only answer one question
-
-*Answer: B*
-
-**Metacognitive Extension:** Why does Edexcel split comparison into two questions unlike other boards?
-
-*Extension answer guide:* **Full credit (0.5 marks):** It allows focused assessment of whether students can distinguish between comparing WHAT writers think (ideas) and HOW they convey it (methods), preventing confusion **Partial credit (0.25 marks):** Mentions separation but doesn't explain the benefit **No credit (0 marks):** Doesn't understand the distinction
+2. **Type: MCQ \[Tests AO1 Application\]**
+   * **Question:** Question 7(a) asks about comparing ideas. Question 7(b) asks about comparing methods. A student answers both but discusses the same points in each. What's the main problem?
+   * **Options:** A) Repetition will bore the examiner, B) They're not addressing the different focus of each question, C) The answers are too short, D) They should only answer one question.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. 7(a) is about *what* the writers think (ideas); 7(b) is about *how* they convey it (methods). Repeating the same points means one of the two focuses isn't being addressed.
+   * **Stretch (unscored):** Why does Edexcel split comparison into two questions? It separately checks whether students can distinguish comparing ideas (what writers think) from comparing methods (how they convey it).
 
 ---
 
-**Question 3 (AO Knowledge \- ×1.5 weighting) \[Tests AO1 Knowledge\]**
-
-In Edexcel Paper 2, Question 4 tests evaluation. What specifically should students evaluate?
-
-A) Whether they agree with the writer B) How successfully the writer achieves their purpose C) Which of two texts is better written D) The historical accuracy of claims
-
-*Answer: B*
-
-**Full credit (1.5 marks):** Correctly identifies B **No credit (0 marks):** Any other answer
+3. **Type: MCQ \[Tests AO1 Knowledge\]**
+   * **Question:** In Edexcel Paper 2, Question 4 tests evaluation. What specifically should students evaluate?
+   * **Options:** A) Whether they agree with the writer, B) How successfully the writer achieves their purpose, C) Which of two texts is better written, D) The historical accuracy of claims.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Evaluation judges how successfully the writer achieves their purpose — a critical judgement about effectiveness, not personal agreement.
 
 ---
 
-**Question 4 (Application \- ×2.0 weighting) \[Tests AO3 Application\]**
-
-A student's transactional writing (article) begins with a rhetorical question, uses statistics, includes expert opinions, and ends with a call to action. However, the tone is very informal throughout ("loads of people reckon...").
-
-What level would this likely achieve for AO5?
-
-A) Level 2 (7-12 marks) B) Level 3 (13-18 marks) C) Level 4 (19-22 marks) D) Level 5 (23-24 marks)
-
-*Answer: A or B*
-
-**Full credit (2.0 marks):** Recognizes register mismatch limits marks despite good structural features **Partial credit (1.0 mark):** Identifies there's a problem with tone **No credit (0 marks):** Focuses only on techniques used
+4. **Type: MCQ \[Tests AO3 Application\]**
+   * **Question:** A student's transactional writing (article) begins with a rhetorical question, uses statistics, includes expert opinions, and ends with a call to action. However, the tone is very informal throughout ("loads of people reckon..."). What is the highest AO5 level this can realistically reach?
+   * **Options:** A) Level 2 (7-12 marks), B) Level 3 (13-18 marks), C) Level 4 (19-22 marks), D) Level 5 (23-24 marks).
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The structural features pull the mark up, but the sustained informal register isn't matched to the article's purpose and audience — that caps it around Level 3 and blocks the top bands, which need register consistently controlled for effect.
 
 ---
 
-**Question 5 (Terminology \- ×1.5 weighting) \[Tests AO5 Knowledge\]**
-
-What does 'sophisticated manipulation of reader' mean in Level 5 transactional writing?
-
-A) Using complicated vocabulary B) Skillfully controlling reader response through careful choices C) Manipulating facts to support argument D) Using every persuasive technique possible
-
-*Answer: B*
-
-**Metacognitive Extension:** Why might students misunderstand 'manipulation' in this context?
-
-*Extension answer guide:* **Full credit (0.5 marks):** 'Manipulation' here means skillful control/influence (positive), not deception (negative). Students might associate it with dishonesty when it actually means sophisticated craft **Partial credit (0.25 marks):** Identifies negative connotation without explaining the actual meaning **No credit (0 marks):** Doesn't understand the distinction
+5. **Type: MCQ \[Tests AO5 Knowledge\]**
+   * **Question:** What does 'sophisticated manipulation of reader' mean in Level 5 transactional writing?
+   * **Options:** A) Using complicated vocabulary, B) Skilfully controlling reader response through careful choices, C) Manipulating facts to support argument, D) Using every persuasive technique possible.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Here 'manipulation' means skilful *control* of the reader's response through deliberate choices — sophisticated craft, not deception.
+   * **Stretch (unscored):** Why do students misread 'manipulation' here? They associate it with dishonesty, when in this context it means positive, controlled influence.
 
 ---
 
-**Question 6 (Application \- ×2.0 weighting) \[Tests AO2 Application\]**
-
-An evaluation response states: "The writer's argument is somewhat effective. The statistics support the point but the emotional appeals feel excessive."
-
-This balanced evaluation suggests which level?
-
-A) Level 1-2 B) Level 2-3 C) Level 3-4 D) Level 4-5
-
-*Answer: C or D*
-
-**Full credit (2.0 marks):** Recognizes balanced evaluation is characteristic of higher levels **Partial credit (1.0 mark):** Identifies it's good but can't pinpoint level **No credit (0 marks):** Undervalues the response
+6. **Type: MCQ \[Tests AO2 Application\]**
+   * **Question:** An evaluation response states: "The writer's argument is somewhat effective. The statistics support the point but the emotional appeals feel excessive." Which level does this balanced evaluation most likely suggest?
+   * **Options:** A) Level 1-2, B) Level 2-3, C) Level 3-4, D) Level 4-5.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. Weighing strengths against weaknesses ("statistics support... but emotional appeals feel excessive") is critical, balanced evaluation — a higher-level trait that places it around Level 3-4.
 
 ---
 
-**Question 7 (AO Knowledge \- ×1.5 weighting) \[Tests AO1 vs AO3 Knowledge\]**
-
-What's the main difference between Paper 1 Question 3 and Paper 2 Question 3 (both analyzing language)?
-
-A) Paper 2 is longer B) Paper 2 focuses on persuasive/influential language rather than creative C) Paper 2 doesn't require quotations D) Paper 2 only looks at modern texts
-
-*Answer: B*
-
-**Full credit (1.5 marks):** Correctly identifies the different focus **No credit (0 marks):** Any other answer
+7. **Type: MCQ \[Tests AO1 vs AO3 Knowledge\]**
+   * **Question:** What's the main difference between Paper 1 Question 3 and Paper 2 Question 3 (both analysing language)?
+   * **Options:** A) Paper 2 is longer, B) Paper 2 focuses on persuasive/influential language rather than creative, C) Paper 2 doesn't require quotations, D) Paper 2 only looks at modern texts.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Paper 2 Q3 examines how language influences and persuades (viewpoint), whereas Paper 1 Q3 looks at creative/descriptive effect.
 
 ---
 
-**Question 8 (Application \- ×2.0 weighting) \[Tests AO5 Knowledge\]**
-
-A student comparing perspectives writes excellently about the 21st century text but only briefly mentions the 19th century text, saying "the old-fashioned language makes it hard to understand."
-
-Maximum possible level?
-
-A) Level 1 B) Level 2 C) Level 3 D) Level 4
-
-*Answer: B*
-
-**Metacognitive Extension:** How should students handle challenging 19th century language?
-
-*Extension answer guide:* **Full credit (0.5 marks):** Focus on what you CAN understand, use context clues, recognize that archaic language itself might be worth commenting on as a method. Don't let difficulty become an excuse for imbalance **Partial credit (0.25 marks):** Mentions trying harder without specific strategies **No credit (0 marks):** Doesn't address the issue
+8. **Type: MCQ \[Tests AO5 Knowledge\]**
+   * **Question:** A student comparing perspectives writes excellently about the 21st century text but only briefly mentions the 19th century text, saying "the old-fashioned language makes it hard to understand." Maximum possible level?
+   * **Options:** A) Level 1, B) Level 2, C) Level 3, D) Level 4.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The response barely engages the second text, so it can't reach the higher comparison bands — a genuine comparison has to deal with both texts. Strong coverage of one alone stays low.
+   * **Stretch (unscored):** How should students handle challenging 19th century language? Focus on what you *can* understand, use context clues, and treat archaic language itself as a method worth commenting on — don't let difficulty become a reason to skip the text.
 
 ---
 
-**Question 9 (Terminology \- ×1.5 weighting) \[Tests AO5 Application\]**
-
-In the five-level system, what's the key progression from Level 3 'clear' to Level 4 'detailed'?
-
-A) Length of response B) Number of techniques identified C) Depth and development of analysis D) Using more complex vocabulary
-
-*Answer: C*
-
-**Full credit (1.5 marks):** Correctly identifies depth/development as key **Partial credit (0.75 marks):** Mentions "more" without specifying what **No credit (0 marks):** Focuses on surface features
+9. **Type: MCQ \[Tests AO5 Application\]**
+   * **Question:** In the five-level system, what's the key progression from Level 3 'clear' to Level 4 'detailed'?
+   * **Options:** A) Length of response, B) Number of techniques identified, C) Depth and development of analysis, D) Using more complex vocabulary.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. The Level 3→4 step is about depth and development of analysis — going further into *how* and *why* an effect works, not just doing more or using bigger words.
 
 ---
 
-**Question 10 (Application \- ×2.0 weighting) \[Tests AO3 Application\]**
-
-A speech written for Question 8/9 has perfect arguments and persuasive techniques but never acknowledges it's a speech (no audience address, no rhetorical devices suited to speaking).
-
-What's the likely impact on marks?
-
-A) No impact if argument is good B) Limited to Level 3 maximum for AO5 C) Would fail completely D) Only loses 1-2 marks
-
-*Answer: B*
-
-**Full credit (2.0 marks):** Recognizes form awareness is crucial for higher levels **Partial credit (1.0 mark):** Identifies there's a problem with form **No credit (0 marks):** Underestimates importance of form
+10. **Type: MCQ \[Tests AO3 Application\]**
+    * **Question:** A speech written for Question 8/9 has perfect arguments and persuasive techniques but never acknowledges it's a speech (no audience address, no rhetorical devices suited to speaking). What's the likely impact on marks?
+    * **Options:** A) No impact if argument is good, B) Limited to Level 3 maximum for AO5, C) Would fail completely, D) Only loses 1-2 marks.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The higher bands reward writing matched to its form. A 'speech' with no audience address or spoken-rhetoric features isn't fully meeting the form, which caps AO5 around Level 3.
 
 ---
 
 ### Quiz: Edexcel IGCSE English Language Spec A Paper 1
 
-**Question 1 (Terminology \- ×1.5 weighting) \[Tests AO2 Knowledge\]**
-
-For the comparison question in Paper 1, Level 5 requires 'perceptive, \[BLANK\] comparison'.
-
-What word completes this descriptor?
-
-*Answer: analytical*
-
-**Full credit (1.5 marks):** Correctly identifies "analytical" **Partial credit (0.75 marks):** Near-miss like "detailed" or "integrated" **No credit (0 marks):** Incorrect response
+1. **Type: Fill-in-the-Blank \[Tests AO2 Knowledge\]**
+   * **Question:** For the comparison question in Paper 1, Level 5 requires 'perceptive, \[BLANK\] comparison'. What word completes this descriptor?
+   * **Answer:** analytical
+   * **Feedback:** ✓ Correct. The top band needs *perceptive, analytical* comparison — close analysis of how the texts differ, not just description of what they say.
 
 ---
 
-**Question 2 (AO Knowledge \- ×1.5 weighting) \[Tests AO1 Application\]**
-
-In IGCSE Spec A, which AO number assesses writing content/organization?
-
-A) AO3 B) AO4 C) AO5 D) AO6
-
-*Answer: B (AO4)*
-
-**Metacognitive Extension:** Why is it important to remember IGCSE numbers AOs differently?
-
-*Extension answer guide:* **Full credit (0.5 marks):** IGCSE AO4 \= what others call AO5 (content), IGCSE AO5 \= what others call AO6 (technical). Confusion could lead to focusing on wrong assessment criteria **Partial credit (0.25 marks):** Mentions they're different without explaining **No credit (0 marks):** Doesn't understand the difference
+2. **Type: MCQ \[Tests AO1 Application\]**
+   * **Question:** In IGCSE Spec A, which AO number assesses writing content/organisation?
+   * **Options:** A) AO3, B) AO4, C) AO5, D) AO6.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. In Spec A, AO4 covers writing content/communication and AO5 covers technical accuracy — different numbers from GCSE, where those are AO5 and AO6.
+   * **Stretch (unscored):** Why remember that IGCSE numbers the AOs differently? Spec A AO4 = what GCSE calls AO5 (content); Spec A AO5 = GCSE's AO6 (technical). Mixing them up means chasing the wrong criteria.
 
 ---
 
-**Question 3 (Application \- ×2.0 weighting) \[Tests AO3 Knowledge\]**
-
-A student analyzing non-fiction writes: "The writer uses statistics about refugee numbers."
-
-According to the progression (Identify→Comment→Explain→Explore→Analyze), what level is this?
-
-A) Level 1 \- Identifies B) Level 2 \- Comments C) Level 3 \- Explains D) Level 4 \- Explores
-
-*Answer: A*
-
-**Full credit (2.0 marks):** Recognizes this merely identifies without commentary **Partial credit (1.0 mark):** Unsure between Level 1 and 2 **No credit (0 marks):** Overvalues the response
+3. **Type: MCQ \[Tests AO3 Knowledge\]**
+   * **Question:** A student analysing non-fiction writes: "The writer uses statistics about refugee numbers." According to the progression (Identify → Comment → Explain → Explore → Analyse), what level is this?
+   * **Options:** A) Level 1 - Identifies, B) Level 2 - Comments, C) Level 3 - Explains, D) Level 4 - Explores.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. This only *identifies* a technique — no comment on effect, no explanation. It sits at the bottom of the progression.
 
 ---
 
-**Question 4 (Terminology \- ×1.5 weighting) \[Tests AO3 Application\]**
-
-What does 'discriminating references' mean in IGCSE Spec A mark schemes?
-
-A) Using lots of quotations B) Choosing quotations that discriminate against others C) Selecting the most precise and powerful evidence D) Only using short quotations
-
-*Answer: C*
-
-**Full credit (1.5 marks):** Correctly identifies C **Partial credit (0.75 marks):** Shows understanding of "selective" or "careful" choice **No credit (0 marks):** Misunderstands completely
+4. **Type: MCQ \[Tests AO3 Application\]**
+   * **Question:** What does 'discriminating references' mean in IGCSE Spec A mark schemes?
+   * **Options:** A) Using lots of quotations, B) Choosing quotations that discriminate against others, C) Selecting the most precise and powerful evidence, D) Only using short quotations.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. 'Discriminating' means well-judged selection — choosing the most precise, powerful evidence, not the most or the shortest.
 
 ---
 
-**Question 5 (Application \- ×2.0 weighting) \[Tests AO5 Knowledge\]**
-
-A student comparing two non-fiction texts writes one paragraph about each technique in Text A, then one paragraph about each technique in Text B, then a conclusion comparing them.
-
-Using the five-level system, maximum achievable level?
-
-A) Level 2 B) Level 3 C) Level 4 D) Level 5
-
-*Answer: B*
-
-**Metacognitive Extension:** What restructuring would move this to Level 4 or 5?
-
-*Extension answer guide:* **Full credit (0.5 marks):** Integrate throughout \- discuss both texts in each paragraph, showing how different techniques create different effects on the same topic. Don't separate texts **Partial credit (0.25 marks):** Mentions integration without explaining how **No credit (0 marks):** Doesn't understand integrated comparison
+5. **Type: MCQ \[Tests AO5 Knowledge\]**
+   * **Question:** A student comparing two non-fiction texts writes one paragraph about each technique in Text A, then one paragraph about each technique in Text B, then a conclusion comparing them. Using the five-level system, maximum achievable level?
+   * **Options:** A) Level 2, B) Level 3, C) Level 4, D) Level 5.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Handling each text in a separate block, with comparison left to the conclusion, keeps it in the middle bands — the higher levels need comparison woven throughout.
+   * **Stretch (unscored):** What restructuring reaches Level 4-5? Integrate throughout — discuss both texts in each paragraph, showing how their different techniques create different effects on the same topic.
 
 ---
 
-**Question 6 (AO Knowledge \- ×1.5 weighting) \[Tests AO2 Application\]**
-
-What type of writing is assessed in Paper 1 Section B?
-
-A) Creative/descriptive writing B) Transactional writing (article, letter, speech, etc.) C) Commentary on the texts D) Personal narrative
-
-*Answer: B*
-
-**Full credit (1.5 marks):** Correctly identifies transactional writing **No credit (0 marks):** Any other answer
+6. **Type: MCQ \[Tests AO2 Application\]**
+   * **Question:** What type of writing is assessed in Paper 1 Section B?
+   * **Options:** A) Creative/descriptive writing, B) Transactional writing (article, letter, speech, etc.), C) Commentary on the texts, D) Personal narrative.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Spec A Paper 1 Section B is transactional writing — article, letter, speech and similar real-world forms.
 
 ---
 
-**Question 7 (Application \- ×2.0 weighting) \[Tests AO3 Knowledge\]**
-
-Using the progression model, improve this sentence: "The writer uses emotive language which makes the reader feel sad."
-
-Which level does this reach and why?
-
-A) Level 1 \- Only identifies B) Level 2 \- Comments on effect C) Level 3 \- Explains clearly D) Level 4 \- Explores thoroughly
-
-*Answer: B*
-
-**Full credit (2.0 marks):** Recognizes this comments on effect but doesn't explain HOW **Partial credit (1.0 mark):** Identifies it's not high level **No credit (0 marks):** Overvalues the response
+7. **Type: MCQ \[Tests AO3 Knowledge\]**
+   * **Question:** "The writer uses emotive language which makes the reader feel sad." Using the progression model, which level does this sentence reach?
+   * **Options:** A) Level 1 - Only identifies, B) Level 2 - Comments on effect, C) Level 3 - Explains clearly, D) Level 4 - Explores thoroughly.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. It names a technique and *comments* on an effect ("feel sad"), but doesn't explain *how* the language produces it — that's Level 2.
 
 ---
 
-**Question 8 (Terminology \- ×1.5 weighting) \[Tests AO5 Knowledge\]**
-
-The analytical progression in IGCSE Spec A goes: Identify → Comment → \[BLANK\] → Explore → Analyze
-
-What's the missing step?
-
-*Answer: Explain*
-
-**Metacognitive Extension:** Why is this progression helpful for students developing their analysis?
-
-*Extension answer guide:* **Full credit (0.5 marks):** It provides clear steps to improvement \- students can identify where they are and what the next step requires. It's a ladder, not a leap **Partial credit (0.25 marks):** Mentions it helps without explaining how **No credit (0 marks):** Doesn't see the value
+8. **Type: Fill-in-the-Blank \[Tests AO5 Knowledge\]**
+   * **Question:** The analytical progression in IGCSE Spec A goes: Identify → Comment → \[BLANK\] → Explore → Analyse. What's the missing step?
+   * **Answer:** Explain
+   * **Feedback:** ✓ Correct. The missing rung is *Explain* — after commenting on an effect you explain *how* it works, before going on to explore and analyse.
+   * **Stretch (unscored):** Why does this progression help? It's a ladder, not a leap — you can see where you are and what the next step requires.
 
 ---
 
-**Question 9 (Application \- ×2.0 weighting) \[Tests AO5 Application\]**
-
-A transactional writing response (formal letter) uses appropriate formal register throughout but makes no reference to the specific scenario given in the question.
-
-Maximum level for AO4 (content)?
-
-A) Level 2 B) Level 3 C) Level 4 D) Level 5
-
-*Answer: B*
-
-**Full credit (2.0 marks):** Recognizes task response limits marks despite good register **Partial credit (1.0 mark):** Identifies there's a limitation **No credit (0 marks):** Overvalues register alone
+9. **Type: MCQ \[Tests AO5 Application\]**
+   * **Question:** A transactional writing response (formal letter) uses appropriate formal register throughout but makes no reference to the specific scenario given in the question. Maximum level for AO4 (content)?
+   * **Options:** A) Level 2, B) Level 3, C) Level 4, D) Level 5.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Good register alone isn't enough — ignoring the set scenario means the task response is incomplete, which caps AO4 around Level 3.
 
 ---
 
-**Question 10 (Application \- ×2.0 weighting) \[Tests AO3 Application\]**
-
-A student's analysis states: "The writer explores how poverty affects children by using the metaphor 'chains of circumstance' which suggests they're trapped by factors beyond their control, linking to the article's wider argument about social mobility."
-
-Using the progression model, what level is this?
-
-A) Level 2 \- Comments B) Level 3 \- Explains C) Level 4 \- Explores D) Level 5 \- Analyzes
-
-*Answer: C or D*
-
-**Full credit (2.0 marks):** Recognizes this explores connections and implications **Partial credit (1.0 mark):** Identifies it's higher level **No credit (0 marks):** Undervalues the response
+10. **Type: MCQ \[Tests AO3 Application\]**
+    * **Question:** A student's analysis states: "The writer explores how poverty affects children by using the metaphor 'chains of circumstance' which suggests they're trapped by factors beyond their control, linking to the article's wider argument about social mobility." Using the progression model, what level is this?
+    * **Options:** A) Level 2 - Comments, B) Level 3 - Explains, C) Level 4 - Explores, D) Level 5 - Analyses.
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. It unpacks the metaphor's implication ('trapped') and links it to the wider argument — that's *exploring* connections and implications, Level 4.
 
 ---
 
 ### Quiz: Edexcel IGCSE English Language Spec B Paper 1
 
-**Question 1 (Terminology \- ×1.5 weighting) \[Tests AO2 Knowledge\]**
-
-In Spec B Paper 1, Level 5 for comparison requires 'perceptive, \[BLANK\] integrated comparison'.
-
-What word completes this?
-
-*Answer: fully*
-
-**Full credit (1.5 marks):** Correctly identifies "fully" **Partial credit (0.75 marks):** Near-miss like "completely" or "thoroughly" **No credit (0 marks):** Incorrect response
+1. **Type: Fill-in-the-Blank \[Tests AO2 Knowledge\]**
+   * **Question:** In Spec B Paper 1, Level 5 for comparison requires 'perceptive, \[BLANK\] integrated comparison'. What word completes this?
+   * **Answer:** fully
+   * **Feedback:** ✓ Correct. The top band asks for *fully* integrated comparison — the texts woven together throughout, not compared only at the end.
 
 ---
 
-**Question 2 (AO Knowledge \- ×1.5 weighting) \[Tests AO1 Application\]**
-
-In IGCSE Spec B, what does AO5 assess?
-
-A) Writing content and organization B) Technical accuracy (SPaG) C) Comparison skills D) Language analysis
-
-*Answer: B*
-
-**Full credit (1.5 marks):** Correctly identifies technical accuracy **No credit (0 marks):** Confuses with standard AO5
+2. **Type: MCQ \[Tests AO1 Application\]**
+   * **Question:** In IGCSE Spec B, what does AO5 assess?
+   * **Options:** A) Writing content and organisation, B) Technical accuracy (SPaG), C) Comparison skills, D) Language analysis.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. In Spec B, AO5 is technical accuracy (spelling, punctuation, grammar) — not the content/organisation that GCSE's AO5 covers.
 
 ---
 
-**Question 3 (Application \- ×2.0 weighting) \[Tests AO3 Knowledge\]**
-
-A student comparing two articles writes: "Both writers discuss climate change. Writer A is worried. Writer B is optimistic."
-
-What's the maximum level this could achieve?
-
-A) Level 1 B) Level 2 C) Level 3 D) Level 4
-
-*Answer: A or B*
-
-**Metacognitive Extension:** What three things would improve this comparison most?
-
-*Extension answer guide:* **Full credit (0.5 marks):** 1\) Evidence/quotations, 2\) HOW attitudes are conveyed (methods), 3\) More developed exploration of the differences in their concerns/optimism **Partial credit (0.25 marks):** Identifies one or two improvements **No credit (0 marks):** Vague suggestions
+3. **Type: MCQ \[Tests AO3 Knowledge\]**
+   * **Question:** A student comparing two articles writes: "Both writers discuss climate change. Writer A is worried. Writer B is optimistic." What's the most likely maximum level this could achieve?
+   * **Options:** A) Level 1, B) Level 2, C) Level 3, D) Level 4.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. It names a basic difference between the two writers but offers no evidence and no analysis of method — that keeps it around Level 2 at best.
+   * **Stretch (unscored):** What three things would improve it most? 1) Evidence/quotations, 2) *how* each attitude is conveyed (methods), 3) developed exploration of the difference between their concern and optimism.
 
 ---
 
-**Question 4 (Application \- ×2.0 weighting) \[Tests AO3 Application\]**
-
-For Paper 1 transactional writing, a student writes an excellent article but includes a bibliography at the end.
-
-What's the main issue?
-
-A) Bibliographies aren't needed in exam conditions B) It shows lack of understanding of article conventions C) It takes up valuable word count D) Nothing \- this shows good practice
-
-*Answer: B*
-
-**Full credit (2.0 marks):** Recognizes this shows misunderstanding of form **Partial credit (1.0 mark):** Identifies it's unnecessary **No credit (0 marks):** Doesn't see the problem
+4. **Type: MCQ \[Tests AO3 Application\]**
+   * **Question:** For Paper 1 transactional writing, a student writes an excellent article but includes a bibliography at the end. What's the main issue?
+   * **Options:** A) Bibliographies aren't needed in exam conditions, B) It shows lack of understanding of article conventions, C) It takes up valuable word count, D) Nothing - this shows good practice.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Articles don't carry bibliographies — adding one signals the writer hasn't grasped the conventions of the form, which the higher bands reward.
 
 ---
 
-**Question 5 (Terminology \- ×1.5 weighting) \[Tests AO5 Knowledge\]**
-
-What's the key difference between Level 4 'thorough' and Level 5 'perceptive' analysis?
-
-A) Word count B) Number of techniques C) Perceptive sees subtle meanings and synthesizes effects D) Level 5 needs comparison
-
-*Answer: C*
-
-**Metacognitive Extension:** Why do students often plateau at Level 4?
-
-*Extension answer guide:* **Full credit (0.5 marks):** Level 4 can be achieved through hard work and thoroughness, but Level 5 requires insight and ability to see what's implicit/subtle \- it's qualitative, not quantitative **Partial credit (0.25 marks):** Mentions difficulty without explaining why **No credit (0 marks):** Doesn't understand the distinction
+5. **Type: MCQ \[Tests AO5 Knowledge\]**
+   * **Question:** What's the key difference between Level 4 'thorough' and Level 5 'perceptive' analysis?
+   * **Options:** A) Word count, B) Number of techniques, C) Perceptive sees subtle meanings and synthesises effects, D) Level 5 needs comparison.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. 'Perceptive' is a qualitative leap — seeing subtle, implicit meaning and synthesising effects — not just doing more of what earns Level 4.
+   * **Stretch (unscored):** Why do students plateau at Level 4? Level 4 comes from thoroughness and hard work; Level 5 needs insight into what's implicit and subtle, which can't be reached by adding more.
 
 ---
 
-**Question 6 (AO Knowledge \- ×1.5 weighting) \[Tests AO2 Application\]**
-
-Paper 1 Section A focuses on what type of texts?
-
-A) Fiction extracts B) Poetry C) Non-fiction texts D) Drama scripts
-
-*Answer: C*
-
-**Full credit (1.5 marks):** Correctly identifies non-fiction **No credit (0 marks):** Any other answer
+6. **Type: MCQ \[Tests AO2 Application\]**
+   * **Question:** Paper 1 Section A focuses on what type of texts?
+   * **Options:** A) Fiction extracts, B) Poetry, C) Non-fiction texts, D) Drama scripts.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. Spec B Paper 1 Section A works with non-fiction texts (articles, reports, accounts and the like).
 
 ---
 
-**Question 7 (Application \- ×2.0 weighting) \[Tests AO3 Knowledge\]**
-
-A student writes: "The writer's use of the metaphor 'avalanche of information' suggests the overwhelming nature of modern media."
-
-Using the five-level progression, what level is this?
-
-A) Level 1 \- Identifies B) Level 2 \- Comments C) Level 3 \- Explains D) Level 4 \- Explores
-
-*Answer: C*
-
-**Full credit (2.0 marks):** Recognizes this explains the effect clearly **Partial credit (1.0 mark):** Correct level, weak reasoning **No credit (0 marks):** Wrong level
+7. **Type: MCQ \[Tests AO3 Knowledge\]**
+   * **Question:** A student writes: "The writer's use of the metaphor 'avalanche of information' suggests the overwhelming nature of modern media." Using the five-level progression, what level is this?
+   * **Options:** A) Level 1 - Identifies, B) Level 2 - Comments, C) Level 3 - Explains, D) Level 4 - Explores.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. It names the metaphor and *explains* its effect ('avalanche' → overwhelming) — clear explanation, Level 3 — though it stops short of exploring wider implications.
 
 ---
 
-**Question 8 (Application \- ×2.0 weighting) \[Tests AO5 Knowledge\]**
-
-A comparison response thoroughly discusses language techniques but never mentions the different perspectives of the writers.
-
-Maximum achievable level?
-
-A) Level 1-2 B) Level 2-3 C) Level 3-4 D) Level 4-5
-
-*Answer: B*
-
-**Metacognitive Extension:** Why must comparison address both ideas AND methods?
-
-*Extension answer guide:* **Full credit (0.5 marks):** Methods without ideas is technical exercise; ideas without methods is summary. True comparison shows how different methods convey different perspectives **Partial credit (0.25 marks):** Mentions both are needed without explaining why **No credit (0 marks):** Doesn't understand the requirement
+8. **Type: MCQ \[Tests AO5 Knowledge\]**
+   * **Question:** A comparison response thoroughly discusses language techniques but never mentions the different perspectives of the writers. Maximum achievable level?
+   * **Options:** A) Level 1-2, B) Level 2-3, C) Level 3-4, D) Level 4-5.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Discussing methods with no reference to the writers' ideas/perspectives is only half the task — that caps it around Level 2-3.
+   * **Stretch (unscored):** Why must comparison address ideas AND methods? Methods without ideas is a technical exercise; ideas without methods is summary. True comparison shows how different methods convey different perspectives.
 
 ---
 
-**Question 9 (Terminology \- ×1.5 weighting) \[Tests AO5 Application\]**
-
-In transactional writing, 'sophisticated manipulation' means:
-
-A) Tricking the reader B) Using complex sentence structures C) Skillfully controlling reader response D) Including subliminal messages
-
-*Answer: C*
-
-**Full credit (1.5 marks):** Correctly identifies C **Partial credit (0.75 marks):** Shows understanding of skill/control **No credit (0 marks):** Misunderstands 'manipulation'
+9. **Type: MCQ \[Tests AO5 Application\]**
+   * **Question:** In transactional writing, 'sophisticated manipulation' means:
+   * **Options:** A) Tricking the reader, B) Using complex sentence structures, C) Skilfully controlling reader response, D) Including subliminal messages.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. 'Manipulation' here is positive — skilful, deliberate control of the reader's response, not trickery or complexity for its own sake.
 
 ---
 
-**Question 10 (Application \- ×2.0 weighting) \[Tests AO3 Application\]**
-
-A speech includes rhetorical questions, direct address, repetition, and a clear three-part structure. However, the vocabulary is often inaccurate and sentences are sometimes unclear.
-
-What happens to the marks?
-
-A) High AO4, lower AO5 B) High AO5, lower AO4 C) Both AOs score low D) Technical errors don't matter if structure is good
-
-*Answer: A*
-
-**Full credit (2.0 marks):** Understands AO4 (content) vs AO5 (technical) in IGCSE numbering **Partial credit (1.0 mark):** Identifies split but confuses which is which **No credit (0 marks):** Doesn't understand separate marking
+10. **Type: MCQ \[Tests AO3 Application\]**
+    * **Question:** A speech includes rhetorical questions, direct address, repetition, and a clear three-part structure. However, the vocabulary is often inaccurate and sentences are sometimes unclear. What happens to the marks?
+    * **Options:** A) High AO4, lower AO5, B) High AO5, lower AO4, C) Both AOs score low, D) Technical errors don't matter if structure is good.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. In Spec B's numbering, strong structure and persuasive features earn well on AO4 (content), while the inaccurate vocabulary and unclear sentences cost marks on AO5 (technical) — they're marked separately.
 
 ---
 
 ### Quiz: Eduqas GCSE English Language Paper 2
 
-**Question 1 (Terminology \- ×1.5 weighting) \[Tests AO3 Knowledge\]**
-
-Eduqas Paper 2 Band 5 for comparison requires 'perceptive and \[BLANK\] comparison'.
-
-What word completes this?
-
-*Answer: analytical*
-
-**Full credit (1.5 marks):** Correctly identifies "analytical" **Partial credit (0.75 marks):** Near-miss like "detailed" or "thoughtful" **No credit (0 marks):** Incorrect response
+1. **Type: Fill-in-the-Blank \[Tests AO3 Knowledge\]**
+   * **Question:** Eduqas Paper 2 Band 5 for comparison requires 'perceptive and \[BLANK\] comparison'. What word completes this?
+   * **Answer:** analytical
+   * **Feedback:** ✓ Correct. Eduqas's top band wants *perceptive and analytical* comparison — insight plus close analysis of how the texts differ.
 
 ---
 
-**Question 2 (AO Knowledge \- ×1.5 weighting) \[Tests AO1 Application\]**
-
-What makes Eduqas Paper 2 Section B unique compared to other boards?
-
-A) It only assesses creative writing B) It requires TWO transactional writing responses C) It doesn't assess technical accuracy D) It combines fiction and non-fiction writing
-
-*Answer: B*
-
-**Metacognitive Extension:** What challenge does this create for time management?
-
-*Extension answer guide:* **Full credit (0.5 marks):** Students must balance time between two pieces requiring different forms/audiences while maintaining quality in both \- can't just focus effort on one strong piece **Partial credit (0.25 marks):** Mentions time pressure without explaining the specific challenge **No credit (0 marks):** Doesn't see the implication
+2. **Type: MCQ \[Tests AO1 Application\]**
+   * **Question:** What makes Eduqas Paper 2 Section B unique compared to other boards?
+   * **Options:** A) It only assesses creative writing, B) It requires TWO transactional writing responses, C) It doesn't assess technical accuracy, D) It combines fiction and non-fiction writing.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Eduqas Section B sets *two* transactional writing tasks, so you must produce two strong pieces in different forms — not one.
+   * **Stretch (unscored):** What challenge does this create for timing? You have to split time between two pieces with different forms and audiences while keeping quality in both — you can't pour all your effort into one strong piece.
 
 ---
 
-**Question 3 (Application \- ×2.0 weighting) \[Tests AO3 Knowledge\]**
-
-A student's response to A3 (analyzing persuasive language) states: "The writer uses lots of techniques to persuade us."
-
-What band would this likely fall into?
-
-A) Band 1 B) Band 2 C) Band 3 D) Band 4
-
-*Answer: A*
-
-**Full credit (2.0 marks):** Recognizes this is limited/minimal identification **Partial credit (1.0 mark):** Identifies it's low but unsure which band **No credit (0 marks):** Overvalues the response
+3. **Type: MCQ \[Tests AO3 Knowledge\]**
+   * **Question:** A student's response to A3 (analysing persuasive language) states: "The writer uses lots of techniques to persuade us." What band would this likely fall into?
+   * **Options:** A) Band 1, B) Band 2, C) Band 3, D) Band 4.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. It names no technique and analyses no effect — vague, minimal identification that sits in Band 1.
 
 ---
 
-**Question 4 (Terminology \- ×1.5 weighting) \[Tests AO4 Knowledge\]**
-
-What does Eduqas mean by 'impressions and observations' in evaluation questions?
-
-A) Personal feelings about the text B) Evaluative judgments about effectiveness C) First impressions only D) Scientific observations
-
-*Answer: B*
-
-**Full credit (1.5 marks):** Correctly identifies this as Eduqas's term for evaluation **Partial credit (0.75 marks):** Shows understanding it's about judgment **No credit (0 marks):** Misunderstands the phrase
+4. **Type: MCQ \[Tests AO4 Knowledge\]**
+   * **Question:** What does Eduqas mean by 'impressions and observations' in evaluation questions?
+   * **Options:** A) Personal feelings about the text, B) Evaluative judgments about effectiveness, C) First impressions only, D) Scientific observations.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. It's Eduqas's phrasing for evaluation — reasoned judgments about how effective the writing is, not personal feelings or fleeting first impressions.
 
 ---
 
-**Question 5 (Application \- ×2.0 weighting) \[Tests AO3 Application\]**
-
-Question A5 asks for comparison of ideas. Question A6 asks for comparison of methods. A student provides excellent analysis in A5 but writes "See my answer to A5" for A6.
-
-What happens?
-
-A) Gets credit in both if A5 is good enough B) Gets zero for A6 as it requires different focus C) Examiner will look for methods points in A5 D) Automatically fails the paper
-
-*Answer: B*
-
-**Full credit (2.0 marks):** Recognizes these assess different skills **Partial credit (1.0 mark):** Understands there's a problem **No credit (0 marks):** Thinks one answer can cover both
+5. **Type: MCQ \[Tests AO3 Application\]**
+   * **Question:** Question A5 asks for comparison of ideas. Question A6 asks for comparison of methods. A student provides excellent analysis in A5 but writes "See my answer to A5" for A6. What happens?
+   * **Options:** A) Gets credit in both if A5 is good enough, B) Gets zero for A6 as it requires different focus, C) Examiner will look for methods points in A5, D) Automatically fails the paper.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. A5 (ideas) and A6 (methods) assess different skills and are marked separately — a cross-reference leaves A6 unanswered, so it scores nothing.
 
 ---
 
-**Question 6 (AO Knowledge \- ×1.5 weighting) \[Tests AO3 Knowledge\]**
-
-For Eduqas Paper 2, which questions assess AO3 (comparison)?
-
-A) A3 and A4 only B) A5 and A6 C) All of Section A D) A2 only
-
-*Answer: B*
-
-**Metacognitive Extension:** Why does Eduqas split comparison into two questions?
-
-*Extension answer guide:* **Full credit (0.5 marks):** Allows separate assessment of comparing WHAT writers think (A5) versus HOW they convey it (A6), preventing students from only doing one type **Partial credit (0.25 marks):** Notes they're different without explaining benefit **No credit (0 marks):** Doesn't understand the split
+6. **Type: MCQ \[Tests AO3 Knowledge\]**
+   * **Question:** For Eduqas Paper 2, which questions assess AO3 (comparison)?
+   * **Options:** A) A3 and A4 only, B) A5 and A6, C) All of Section A, D) A2 only.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. AO3 comparison is tested across A5 (comparing ideas) and A6 (comparing methods).
+   * **Stretch (unscored):** Why split comparison into two questions? It lets the exam assess comparing *what* writers think (A5) separately from *how* they convey it (A6), so students can't skip one type.
 
 ---
 
-**Question 7 (Application \- ×2.0 weighting) \[Tests AO2 Application\]**
-
-A student's persuasive letter includes sophisticated vocabulary and varied sentences but uses a casual, chatty tone throughout ("Hi there\!", "LOL", "Catch you later\!").
-
-What band for AO5 (content/register)?
-
-A) Band 1-2 B) Band 2-3 C) Band 3-4 D) Band 4-5
-
-*Answer: A or B*
-
-**Full credit (2.0 marks):** Recognizes register inappropriateness overrides other qualities **Partial credit (1.0 mark):** Identifies tone problem **No credit (0 marks):** Focuses on positive features only
+7. **Type: MCQ \[Tests AO2 Application\]**
+   * **Question:** A student's persuasive letter includes sophisticated vocabulary and varied sentences but uses a casual, chatty tone throughout ("Hi there!", "LOL", "Catch you later!"). What band is most likely for AO5 (content/register)?
+   * **Options:** A) Band 1-2, B) Band 2-3, C) Band 3-4, D) Band 4-5.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. Register is central to AO5, and a chatty, slangy tone is wholly wrong for a persuasive letter — that mismatch overrides the good vocabulary and sentences, holding it in Band 1-2.
 
 ---
 
-**Question 8 (Terminology \- ×1.5 weighting) \[Tests AO5 Knowledge\]**
-
-What's the difference between Band 4 'thoughtful' and Band 5 'perceptive' in comparison?
-
-A) Length of response B) Perceptive shows deeper insight into subtle differences C) Band 5 needs more quotations D) Thoughtful is about ideas, perceptive about methods
-
-*Answer: B*
-
-**Full credit (1.5 marks):** Correctly identifies the insight distinction **Partial credit (0.75 marks):** Shows some understanding of progression **No credit (0 marks):** Wrong distinction
+8. **Type: MCQ \[Tests AO5 Knowledge\]**
+   * **Question:** What's the difference between Band 4 'thoughtful' and Band 5 'perceptive' in comparison?
+   * **Options:** A) Length of response, B) Perceptive shows deeper insight into subtle differences, C) Band 5 needs more quotations, D) Thoughtful is about ideas, perceptive about methods.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The Band 4→5 step is about insight — perceiving subtle, less obvious differences between the texts — not length or more quotations.
 
 ---
 
-**Question 9 (Application \- ×2.0 weighting) \[Tests AO5 Application\]**
-
-A student analyzing 19th century persuasive writing focuses entirely on explaining difficult vocabulary rather than analyzing techniques.
-
-What's the main issue?
-
-A) Vocabulary doesn't matter B) They're doing language study, not analysis of how writer influences reader C) 19th century texts shouldn't be analyzed D) They need more quotations
-
-*Answer: B*
-
-**Full credit (2.0 marks):** Recognizes focus should be on persuasive effect **Partial credit (1.0 mark):** Identifies wrong focus **No credit (0 marks):** Doesn't see the problem
+9. **Type: MCQ \[Tests AO5 Application\]**
+   * **Question:** A student analysing 19th century persuasive writing focuses entirely on explaining difficult vocabulary rather than analysing techniques. What's the main issue?
+   * **Options:** A) Vocabulary doesn't matter, B) They're doing language study, not analysis of how the writer influences the reader, C) 19th century texts shouldn't be analysed, D) They need more quotations.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Glossing hard words is comprehension, not analysis. The question wants *how* the writer's choices influence the reader — that's where the marks are.
 
 ---
 
-**Question 10 (Application \- ×2.0 weighting) \[Tests AO3 Application\]**
-
-For the TWO transactional writing tasks, a student writes two excellent formal letters (one to a newspaper, one to an MP) when the questions asked for a letter and a speech.
-
-Impact on marks?
-
-A) No impact if writing quality is good B) Loses some marks on the speech task for wrong form C) Both pieces score zero D) Only marked on the better piece
-
-*Answer: B*
-
-**Metacognitive Extension:** What specific features show understanding of speech form versus letter form?
-
-*Extension answer guide:* **Full credit (0.5 marks):** Speech: direct address, rhetorical devices for spoken delivery, awareness of listening audience. Letter: formal salutation/close, paragraphed argument, awareness of reading context **Partial credit (0.25 marks):** Mentions some differences without detail **No credit (0 marks):** Doesn't distinguish forms
+10. **Type: MCQ \[Tests AO3 Application\]**
+    * **Question:** For the TWO transactional writing tasks, a student writes two excellent formal letters (one to a newspaper, one to an MP) when the questions asked for a letter and a speech. Impact on marks?
+    * **Options:** A) No impact if writing quality is good, B) Loses some marks on the speech task for wrong form, C) Both pieces score zero, D) Only marked on the better piece.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The second piece is well written but it's the wrong form — a letter, not a speech — so it loses the marks tied to matching the speech form.
+    * **Stretch (unscored):** What features show speech form vs letter form? Speech: direct address, rhetorical devices for delivery, awareness of a listening audience. Letter: formal salutation/close, paragraphed argument, awareness of a reading context.
 
 ---
 
-## Answer Keys
+## Answer Keys — DEPRECATED, DO NOT USE
+
+> **AI: ignore this entire section.** Every question's answer and feedback now lives inline in the `## Quiz Questions` section above (the `**Correct:**` / `**Answer:**` / `**Feedback:**` lines). This duplicate key block is stale and pending deletion. Mark only from the inline question data.
 
 ### AQA Answer Key
 
@@ -1661,17 +1311,17 @@ A) No impact if writing quality is good B) Loses some marks on the speech task f
 
 **Full credit (2.0 marks):**
 
-- Correctly identifies Level 2 cap for unbalanced summary  
-- Understands both texts must be addressed equally
+- Correctly identifies Level 2 cap when only one text is dealt with  
+- Understands Level 3 or above requires inferences from both texts
 
 **Partial credit (1.0 mark):**
 
 - Identifies limitation but wrong level  
-- Shows understanding that imbalance is problematic
+- Shows understanding that dealing with only one text limits the mark
 
 **No credit (0 marks):**
 
-- Doesn't recognize the imbalance issue  
+- Doesn't recognize the one-text limitation  
 - Significantly over/undervalues the response
 
 ---
@@ -2201,8 +1851,8 @@ A) No impact if writing quality is good B) Loses some marks on the speech task f
 
 **Full credit (2.0 marks):**
 
-- Recognizes imbalance caps marks  
-- Understands both texts need equal treatment
+- Recognizes that dealing with only one text caps marks  
+- Understands Level 3 or above requires both texts
 
 **Extension: Handling challenging 19th century language**
 
