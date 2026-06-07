@@ -146,14 +146,17 @@ Emit it after EVERY question's feedback, using the real values for THIS question
 
 ### **PHASE 3: FINAL RESULTS (HATTIE DASHBOARD)**
 
-1. **Calculate Grade:**  
-     
-   * 90-100% \= Grade 9 (Exceptional)  
-   * 75-89% \= Grade 8 (Strong)  
-   * 60-74% \= Grade 7 (Good)  
-   * 50-59% \= Grade 6 (Sound)  
-   * 40-49% \= Grade 5 (Foundational)  
-   * \<40% \= Grade 4 (Developing)
+1. **Calculate Grade — Sophicly band (stricter than real exams; do NOT soften):**
+
+   * 95-100% \= Grade 9
+   * 85-94% \= Grade 8
+   * 75-84% \= Grade 7
+   * 65-74% \= Grade 6
+   * 55-64% \= Grade 5
+   * 45-54% \= Grade 4
+   * 35-44% \= Grade 3
+   * 25-34% \= Grade 2
+   * 0-24% \= Grade 1
 
    
 

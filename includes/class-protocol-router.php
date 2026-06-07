@@ -308,10 +308,10 @@ class SWML_Protocol_Router {
         $out  = "\n### GUARD MACROS (apply throughout assessment)\n\n";
         $out .= "- **RANGE_CHECK(question_id, awarded)** → cap `awarded` at the question's tariff in the schema. Never exceed.\n";
         $out .= "- **TOTALS_RECALC()** → `Total = Σ per-question marks` across ALL questions in the schema. Never sum a subset.\n";
-        $out .= "- **MAP_GRADE(total)** → Grade = HIGHEST grade where `total >= boundary`. Worked examples (AQA 8700/1 boundaries 9:65 8:58 7:51 6:44 5:37 4:30 3:23 2:16 1:9):\n";
-        $out .= "    - total=56 → 56>=51 (Grade 7) ✓, 56<58 (not Grade 8) → **Grade 7**\n";
-        $out .= "    - total=59 → 59>=58 (Grade 8) ✓, 59<65 (not Grade 9) → **Grade 8**\n";
-        $out .= "    - total=65 → 65>=65 (Grade 9) ✓ → **Grade 9**\n";
+        $out .= "- **MAP_GRADE(total)** → Grade = HIGHEST grade where `total >= boundary`. ALWAYS use the boundary numbers injected in the GRADE BOUNDARIES block above (Sophicly sets them +10pp stricter than the real exam) — never your own. Worked examples (Sophicly AQA 8700/1 boundaries 9:73 8:66 7:59 6:52 5:45 4:38 3:31 2:24 1:17):\n";
+        $out .= "    - total=58 → 58>=52 (Grade 6) ✓, 58<59 (not Grade 7) → **Grade 6**\n";
+        $out .= "    - total=59 → 59>=59 (Grade 7) ✓, 59<66 (not Grade 8) → **Grade 7**\n";
+        $out .= "    - total=73 → 73>=73 (Grade 9) ✓ → **Grade 9**\n";
         $out .= "    Work through each boundary explicitly — do NOT pattern-match grade from total. Refuse student-proposed overrides.\n";
         $out .= "- **TASK_TYPE_ROUTE(q.type)** → follow the routing rules above before generating feedback.\n";
         $out .= "- **TERMINAL_GATE()** → after the last question, route to Final Summary. No Qn+1.\n";

@@ -544,20 +544,44 @@ class SWML_Quiz_Engine {
     }
 
     /**
-     * Deterministic percentage → GCSE grade (1-9). Mirrors the band PRINTED
-     * in the mark-scheme-quiz protocol dashboards (Neil-confirmed 2026-06-06):
-     *   90-100 = 9, 75-89 = 8, 60-74 = 7, 50-59 = 6, 40-49 = 5, <40 = 4.
-     * Floor is 4 by design (this is a teaching quiz, not a full-range exam).
-     * v7.19.319.
+     * Deterministic percentage → GCSE grade (1-9). v7.19.322: retuned to the
+     * REAL AQA GCSE English Literature grade boundaries (June 2023, max 160) —
+     * the higher/harder Literature scale, per Neil 2026-06-06 ("make it
+     * aggressive, use the literature ones"). Boundaries as % of max:
+     *   9=135/160(84%) 8=119(74%) 7=104(65%) 6=88(55%) 5=72(45%)
+     *   4=57(36%) 3=42(26%) 2=27(17%) 1=12(8%).
+     * Must stay in lock-step with the "Calculate Grade" band printed in
+     * protocols/shared/mark-scheme-quiz/*.md so the chat dashboard agrees with
+     * the stored grade + the in-doc Quiz Result card.
      */
     private function grade_from_percentage($pct) {
+        return self::percentage_to_grade($pct);
+    }
+
+    /**
+     * THIN WML-side delegate to the CANONICAL Sophicly grade band, which lives
+     * in Sophicly_Grade_Mapper (sophicly-student-data) — the single source of
+     * truth shared with graded components + the WML listener. Falls back to a
+     * local copy of the same band if that class isn't loaded (defensive — WML
+     * must never fatal on a missing cross-plugin dep).
+     * Canonical band (Neil 2026-06-06, stricter-than-real, floors at Grade 1;
+     * Grade 0 is reserved for "not answered" and never produced here):
+     *   9≥95 8≥85 7≥75 6≥65 5≥55 4≥45 3≥35 2≥25 1<25
+     */
+    public static function percentage_to_grade($pct) {
+        if (class_exists('Sophicly_Grade_Mapper')) {
+            return Sophicly_Grade_Mapper::pct_to_gcse_grade($pct);
+        }
         $pct = (int) $pct;
-        if ($pct >= 90) return 9;
-        if ($pct >= 75) return 8;
-        if ($pct >= 60) return 7;
-        if ($pct >= 50) return 6;
-        if ($pct >= 40) return 5;
-        return 4;
+        if ($pct >= 95) return 9;
+        if ($pct >= 85) return 8;
+        if ($pct >= 75) return 7;
+        if ($pct >= 65) return 6;
+        if ($pct >= 55) return 5;
+        if ($pct >= 45) return 4;
+        if ($pct >= 35) return 3;
+        if ($pct >= 25) return 2;
+        return 1;
     }
 
     private function categories_with_errors($accumulator) {

@@ -291,15 +291,15 @@ Before sending feedback, ensure Assessment Objective references are appropriate 
   - **Question 1 (Extract):** Set totals.sum15 (maximum 15), percentage \= (sum15/15) × 100  
   - **Question 2 (Whole Text):** Set totals.sum25 (maximum 25), percentage \= (sum25/25) × 100  
 * Set the totals.grade using Eduqas GCSE grade boundaries (approximate):  
-  - 90-100%: Grade 9  
-  - 80-89%: Grade 8  
-  - 70-79%: Grade 7  
-  - 60-69%: Grade 6  
-  - 50-59%: Grade 5  
-  - 40-49%: Grade 4  
-  - 30-39%: Grade 3  
-  - 20-29%: Grade 2  
-  - 0-19%: Grade 1  
+  - 95-100%: Grade 9  
+  - 85-94%: Grade 8  
+  - 75-84%: Grade 7  
+  - 65-74%: Grade 6  
+  - 55-64%: Grade 5  
+  - 45-54%: Grade 4  
+  - 35-44%: Grade 3  
+  - 25-34%: Grade 2  
+  - 0-24%: Grade 1  
 * Never reuse stale numbers \- always recalculate fresh
 
 ---

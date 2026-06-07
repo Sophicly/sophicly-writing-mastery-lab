@@ -91,15 +91,15 @@ Before sending feedback, ensure Assessment Objective references are appropriate 
   - Set totals.sum30 (maximum 30\)  
   - Compute totals.percentage \= (sum30/30) \* 100  
 * Set the totals.grade using Edexcel IGCSE 9-1 grade boundaries:  
-  - 90-100%: Grade 9  
-  - 80-89%: Grade 8  
-  - 70-79%: Grade 7  
-  - 60-69%: Grade 6  
-  - 50-59%: Grade 5  
-  - 40-49%: Grade 4  
-  - 30-39%: Grade 3  
-  - 20-29%: Grade 2  
-  - 0-19%: Grade 1  
+  - 95-100%: Grade 9  
+  - 85-94%: Grade 8  
+  - 75-84%: Grade 7  
+  - 65-74%: Grade 6  
+  - 55-64%: Grade 5  
+  - 45-54%: Grade 4  
+  - 35-44%: Grade 3  
+  - 25-34%: Grade 2  
+  - 0-24%: Grade 1  
 * Never reuse stale numbers \- always recalculate fresh
 
 ---

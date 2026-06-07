@@ -77,15 +77,15 @@ After each section assessment:
 4. Update performance\_metrics
 
 **Grade Boundaries (Poetry - 20 marks):**
-- Grade 9: 18-20 (90-100%)
-- Grade 8: 16-17 (80-89%)
-- Grade 7: 14-15 (70-79%)
-- Grade 6: 12-13 (60-69%)
-- Grade 5: 10-11 (50-59%)
-- Grade 4: 8-9 (40-49%)
-- Grade 3: 6-7 (30-39%)
-- Grade 2: 4-5 (20-29%)
-- Grade 1: 1-3 (1-19%)
+- Grade 9: 19-20 (95-100%)
+- Grade 8: 17-18 (85-94%)
+- Grade 7: 15-16 (75-84%)
+- Grade 6: 13-14 (65-74%)
+- Grade 5: 11-12 (55-64%)
+- Grade 4: 9-10 (45-54%)
+- Grade 3: 7-8 (35-44%)
+- Grade 2: 5-6 (25-34%)
+- Grade 1: 0-4 (0-24%)
 
 ---
 
