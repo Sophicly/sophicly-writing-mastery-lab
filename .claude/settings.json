@@ -82,7 +82,27 @@
       "Bash(sed -i '' 's/3\\\\.9\\\\.11/3.9.12/g' sophicly-plugins/sophicly-components/sophicly-components.php)",
       "Bash(sed -i '' 's/7\\\\.19\\\\.321/7.19.322/g' \"sophicly-etchwp-package v2.6/Sophicly Etch Writing Mastery Plugin/sophicly_writing_mastery_lab_v7_12_30/sophicly-writing-mastery-lab.php\")",
       "Bash(php -l sophicly-plugins/sophicly-student-data/sophicly-student-data.php)",
-      "Bash(php -l sophicly-plugins/sophicly-components/sophicly-components.php)"
+      "Bash(php -l sophicly-plugins/sophicly-components/sophicly-components.php)",
+      "Bash(awk 'NR>=4850 && NR<=4995 && \\(/private function|public function|\\\\$task ===|return \\\\$block/\\)' includes/class-protocol-router.php)",
+      "Bash(awk 'NR>=4600 && NR<=4985 && /function /{print NR\": \"$0}' includes/class-protocol-router.php)",
+      "Bash(php -l functions.php)",
+      "Bash(php -l certificate-presentation.php)",
+      "Bash(php /tmp/wml_quiz_parser_test.php)",
+      "Bash(grep -nE '^#{2,3} ' language2.md)",
+      "Bash(php /tmp/wml_lang2_aqa_check.php)",
+      "Bash(awk '/^## Answer Keys/{s=NR} /^## TEACHER/{print NR-s; exit}' language2.md)",
+      "Bash(awk 'NR>=3850 && NR<=3880{print NR\": \"$0}' frontend/wml-assessment.js)",
+      "Bash(awk 'NR<=9052 && /\\(^| \\)function [a-zA-Z]/{last=NR\": \"$0} END{}' frontend/wml-assessment.js)",
+      "Bash(awk -F: '$1<9052')",
+      "Bash(awk 'NR>=7765 && NR<=7795{print NR\": \"$0}' frontend/wml-assessment.js)",
+      "Bash(grep -n \"tp\\\\s*=\\\\|tp\\\\.sendCanvasMessage\\\\s*=\\\\|sendCanvasMessage,\\\\|\\\\.sendCanvasMessage =\\\\|const tp\\\\|let tp\\\\|var tp\\\\|return {\" frontend/wml-assessment.js)",
+      "Bash(awk -F: '$1+0>=2000 && $1+0<=10000')",
+      "Bash(awk -F: '$1+0>=7350 && $1+0<=7810')",
+      "Bash(awk -F: '$1+0>=595 && $1+0<=1060')",
+      "Bash(scp -i ~/.ssh/sophicly_staging -o StrictHostKeyChecking=no /tmp/cert_pdftest.php runcloud@18.133.5.229:/tmp/cert_pdftest.php)",
+      "Bash(grep -nE 'swml_request_context|\\\\$p\\\\['\\\\''task'\\\\''\\\\]|'\\\\''task'\\\\''\\\\s*=>|sanitize.*task|task.*=.*request' includes/class-rest-api.php)",
+      "Bash(scp -i ~/.ssh/sophicly_staging -o StrictHostKeyChecking=no runcloud@18.133.5.229:/tmp/soph_cert_test.pdf /tmp/soph_cert_test.pdf)",
+      "Bash(scp -i ~/.ssh/sophicly_staging -o StrictHostKeyChecking=no runcloud@18.133.5.229:/tmp/soph_cert_test.pdf /tmp/soph_cert_test2.pdf)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
