@@ -239,7 +239,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Imagery and specific word connotations, B) Form (sonnet, dramatic monologue, free verse), C) Structure (volta, stanza breaks, enjambment), D) The poet's biography.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Imagery (A), form (B), and structure (C) are all AO2 targets. Biography (D) is context, not method.
+   * **Feedback:** Imagery (A), form (B), and structure (C) are all AO2 targets. Biography (D) is context, not method. But a method only counts as AO2 analysis once you pair it with its effect on the reader (Focus/Feel/Think/Act) — naming "enjambment" or "sonnet form" alone is feature-spotting and earns low marks; you must say what the method makes the reader focus on, feel, think, or do.
 5. **Type: True/False \[Tests Integrated Comparison\]**
    * **Question:** True or False: For AQA anthology, the ideal paragraph structure compares both poems within every single paragraph.
    * **Answer:** True
@@ -258,7 +258,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Integrated comparison in every paragraph, B) Judicious micro-quotations from both poems, C) Conceptualised interpretation, D) Block treatment of Poem A then Poem B.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Integrated comparison (A), judicious evidence (B), and conceptual interpretation (C) all define Level 6. Block treatment (D) caps you lower.
+   * **Feedback:** Integrated comparison (A), judicious evidence (B), and conceptual interpretation (C) all define Level 6. Block treatment (D) caps you lower. The interwoven structure is only the vehicle — within it you must compare the two poets' METHODS and their DIFFERING effects on the reader (e.g. "where Shelley's irony makes the reader feel power's futility, Browning's controlled tone makes us recoil"); interweaving and connectors alone are not AO2 comparison.
 9. **Type: True/False \[Tests Unseen Adjacent\]**
    * **Question:** True or False: AQA also sets an unseen poetry question (Section B) with single-poem analysis followed by a short dual-poem comparison.
    * **Answer:** True
@@ -267,7 +267,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Question:** Which verb signals Level 6 critical evaluation for AQA poetry?
     * **Options:** A) "Shows", B) "Says", C) "Subtly destabilises" (e.g., "Shelley subtly destabilises imperial confidence through the shattered statue"), D) "Writes about".
     * **Correct:** C
-    * **Feedback:** ✓ Correct. Evaluative verbs ("destabilises", "weaponises", "inverts") convert description into critical judgement — the Level 6 voice.
+    * **Feedback:** ✓ Correct. Evaluative verbs ("destabilises", "weaponises", "inverts") convert description into critical judgement — the Level 6 voice. The word only earns credit when it fronts a judgement about HOW the method affects the reader (e.g. "the shattered statue destabilises imperial confidence, leaving the reader to feel the futility of power"); dropped in alone it is an empty label.
 
 ### **SECTION B: EDEXCEL GCSE (1ET0 — Poetry)**
 
@@ -290,7 +290,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Language (imagery, word choices), B) Form (sonnet, free verse, villanelle), C) Structure (stanza, rhyme scheme, volta), D) The poet's bank balance.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Language (A), Form (B), and Structure (C) are the three AO2 strands. Biography (D) is never a method.
+   * **Feedback:** Language (A), Form (B), and Structure (C) are the three AO2 strands. Biography (D) is never a method. Remember: a method only counts as AO2 analysis once you pair it with its effect on the reader (Focus/Feel/Think/Act) — listing devices alone is feature-spotting and caps you low; always state what the method makes the reader focus on, feel, think, or do.
 5. **Type: True/False \[Tests AO3 Integration\]**
    * **Question:** True or False: Although AO3 is worth only 5 marks on Edexcel GCSE poetry, context should still be integrated into analysis rather than appended as a separate paragraph.
    * **Answer:** True
@@ -309,7 +309,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Evaluative adverbs ("powerfully", "subtly", "ironically"), B) Assured analytical authority, C) Definitive conceptual claims, D) Hedging every sentence.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Evaluative language (A), authority (B), and conceptual claims (C) define the top band. Hedging (D) signals tentativeness.
+   * **Feedback:** Evaluative language (A), authority (B), and conceptual claims (C) define the top band. Hedging (D) signals tentativeness. Note: an adverb like "powerfully" only earns credit when it fronts a judgement about HOW the method affects the reader (e.g. "powerfully unsettles the reader by…"); on its own it is an empty label, not evaluation.
 9. **Type: True/False \[Tests Balanced Coverage\]**
    * **Question:** True or False: For Edexcel GCSE anthology, a response that analyses one poem thoroughly and only briefly mentions the other will still qualify for top marks.
    * **Answer:** False
@@ -354,20 +354,20 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Question:** Which paragraph structure best targets IGCSE Poetry Level 5?
    * **Options:** A) Analyse Poem A fully in the first half, Poem B fully in the second, B) Integrated comparison within each paragraph, connecting both poems via specific methods, C) Only discuss the more famous poem, D) Compare in the conclusion only.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Integrated paragraph-level comparison is the Grade 9 separator. Block treatment risks the single-poem cap.
+   * **Feedback:** ✓ Correct. Integrated paragraph-level comparison is the Grade 9 separator. Block treatment risks the single-poem cap. But the interwoven structure must carry a comparison of the two poets' METHODS and their DIFFERING effects on the reader (e.g. "Heaney's violent lexicon makes us feel besieged, whereas Browning's smooth courtesy makes us uneasy") — interweaving alone, without method+effect, is not enough.
 8. **Type: Select All That Apply \[Tests Evaluative Voice\]**
    * **Question:** Which features build Level 5 "cohesive evaluation" for IGCSE? (Select all that apply)
    * **Options:** A) Evaluative adverbs ("powerfully", "subtly"), B) Sustained conceptual thesis, C) Flowing analytical connections between paragraphs, D) Disconnected bullet-point-style observations.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Evaluative language (A), sustained thesis (B), and flowing connections (C) build cohesion. Disconnected observations (D) don't.
+   * **Feedback:** Evaluative language (A), sustained thesis (B), and flowing connections (C) build cohesion. Disconnected observations (D) don't. Remember: an adverb like "subtly" only earns credit when it fronts a judgement about HOW the method affects the reader (e.g. "subtly destabilises the reader's sympathy"); alone it is an empty label, not evaluation.
 9. **Type: True/False \[Tests Context\]**
    * **Question:** True or False: Edexcel IGCSE Poetry AO3 is primarily about context, not comparison.
    * **Answer:** False
    * **Feedback:** ✓ Correct. On IGCSE (4ET1) Poetry, AO3 assesses comparative handling of the two poems — not context. (AO3/AO4 roles shift across specifications — check your specific paper.)
 10. **Type: MCQ \[Tests Excellent Understanding\]**
     * **Question:** Which sentence best demonstrates Level 5 IGCSE Poetry conceptual voice?
-    * **Options:** A) "The poem is sad", B) "Whereas Heaney's 'Storm on the Island' militarises the natural world through its lexicon of 'bombarded' and 'exploding', Browning's 'My Last Duchess' weaponises courtly civility to expose patriarchal violence as ideologically structural", C) "Both poems have nature", D) "Both use words".
+    * **Options:** A) "The poem is sad", B) "Whereas Heaney's 'Storm on the Island' militarises the natural world through its lexicon of 'bombarded' and 'exploding', Browning's 'My Last Duchess' weaponises courtly civility to expose the violence of a rigid honour culture as ideologically structural", C) "Both poems have nature", D) "Both use words".
     * **Correct:** B
     * **Feedback:** ✓ Correct. Option B integrates comparison, evaluates methods, and drives conceptual argument — all within a single sentence. That's the Level 5 IGCSE voice.
 
@@ -411,7 +411,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Integrated comparison within each paragraph, B) Comparative connectors ("Whereas…", "In contrast…", "Similarly…"), C) Perceptive linking of shared concepts across both poems, D) Block analysis of Poem A then Poem B.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Integrated comparison (A), connectors (B), and perceptive concept-linking (C) all build Band 5. Block treatment (D) caps lower.
+   * **Feedback:** Integrated comparison (A), connectors (B), and perceptive concept-linking (C) all build Band 5. Block treatment (D) caps lower. The interwoven structure and connectors are only the frame — Band 5 needs that frame to carry a comparison of the two poets' METHODS and their DIFFERING effects on the reader; "Whereas… Similarly…" with no method+effect is feature-spotting, not comparison.
 9. **Type: True/False \[Tests AO3 on Poetry\]**
    * **Question:** True or False: Unlike Eduqas Shakespeare (AO1+AO2 only), Eduqas Poetry explicitly assesses AO3 (context).
    * **Answer:** True
@@ -462,7 +462,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Interweaves both poems in every paragraph, B) Sustains conceptual argument across the comparison, C) Uses discerning micro-quotations from both, D) Treats Poem A and Poem B in rigid blocks.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Interwoven comparison (A), sustained argument (B), and discerning evidence (C) define Level 6. Rigid block treatment (D) caps lower.
+   * **Feedback:** Interwoven comparison (A), sustained argument (B), and discerning evidence (C) define Level 6. Rigid block treatment (D) caps lower. The interweaving is only the mechanic — Level 6 needs it to carry a comparison of the two poets' METHODS and their DIFFERING effects on the reader (e.g. "Shelley's irony makes us judge the tyrant; the other poet's pathos makes us pity the victim"); weaving and connectors alone are not AO2 comparison.
 9. **Type: True/False \[Tests AO Distinction\]**
    * **Question:** True or False: OCR Part (a) and Part (b) assess the same AO weightings.
    * **Answer:** False
@@ -494,7 +494,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) "Successfully", B) "Compellingly", C) "Effectively", D) "There is".
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Evaluative adverbs (A, B, C) are judgement words. Plain description ("there is") does not show evaluation.
+   * **Feedback:** Evaluative adverbs (A, B, C) are judgement words. Plain description ("there is") does not show evaluation. But the word only earns credit when it fronts a judgement about HOW the method affects the reader (e.g. "successfully draws the reader into the speaker's grief"); on its own "successfully" or "compellingly" is an empty label, not evaluation.
 5. **Type: True/False \[Tests Commonality Approach\]**
    * **Question:** True or False: For SQA Scottish Text commonality, you should connect the extract to at least one other poem by the same poet, showing shared concerns or techniques.
    * **Answer:** True

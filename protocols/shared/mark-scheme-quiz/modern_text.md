@@ -234,7 +234,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Stage directions (e.g., "pink and intimate" lighting), B) Structural shifts (e.g., from ignorance to knowledge), C) The author's biography, D) Specific word choices (e.g., "anguish").
    * **Correct:** A, B, D
    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
-   * **Feedback:** Methods are the tools the writer uses to build their argument. Biography (C) is usually weak context unless linked to the *ideas*.
+   * **Feedback:** Methods are the tools the writer uses, but a valid AO2 point pairs the method with its specific effect on the audience — what it makes them focus on, feel, think, or do. Naming the method alone (e.g. "uses stage directions") is feature-spotting and scores low. Biography (C) is usually weak context unless linked to the *ideas*.
 4. **Type: MCQ \[Tests AO4 Definition\]**
    * **Question:** What does AO4 assess in the AQA Literature exam?
    * **Options:** A) Evaluation of the writer's success, B) Comparison with other texts, C) Technical Accuracy (Spelling, Punctuation, Grammar), D) Personal Response.
@@ -252,7 +252,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Question:** What differentiates a Level 6 "Perceptive" response from a Level 4 "Clear" response?
    * **Options:** A) Writing more paragraphs, B) Conceptualising the text as a construct/argument rather than just a story, C) Using more complex vocabulary, D) Memorising more quotes.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Top grades go to students who treat the text as a conscious *construct* created to argue an idea.
+   * **Feedback:** ✓ Correct. Top grades go to students who treat the text as a conscious *construct* created to argue an idea — but the concept must be proven through method and its specific effect on the audience (what it makes them focus on, feel, think, or do). Naming a method without its effect, or asserting a concept with no analysis, is feature-spotting and stays at "Clear".
 8. **Type: Select All That Apply \[Tests AO1/AO3 Link\]**
    * **Question:** Which statements show a "Conceptual" link between Text and Context? (Select all that apply)
    * **Options:** A) "Priestley uses Sheila to critique the static arrogance of the 1912 elite.", B) "Priestley wrote *An Inspector Calls* in 1945 but set it in 1912.", C) "Orwell uses Napoleon to mirror the corruption of revolutionary ideals seen in the Soviet Union.", D) "Golding was a schoolteacher."
@@ -425,10 +425,10 @@ Emit it after EVERY question's feedback, using the real values for THIS question
 ### **SECTION E: CAMBRIDGE IGCSE (0475 — Drama)**
 
 1. **Type: MCQ \[Tests AO Definitions\]**
-   * **Question:** According to the Cambridge Decoding Guide, what does AO2 ("Understanding") actually mean?
+   * **Question:** In Sophicly's mapping of the Cambridge skills, what does the "Understanding" skill actually mean?
    * **Options:** A) Knowing the plot, B) The "Deep Meaning" or implications of the text, C) Spotting techniques, D) Personal opinion.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. AO2 is about the *deeper implications* beyond the surface plot.
+   * **Feedback:** ✓ Correct. The "Understanding" skill is about the *deeper implications* beyond the surface plot.
 2. **Type: Fill-in-the-Blank \[Tests AO4 Name\]**
    * **Question:** Unlike UK boards where AO4 is SPaG, in Cambridge IGCSE Literature, AO4 is your \[BLANK\] Response.
    * **Answer:** Personal
@@ -438,7 +438,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Sensitively, B) In considerable detail, C) By listing terms, D) By explaining the effect on the reader.
    * **Correct:** A, B, D
    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
-   * **Feedback:** "Sensitivity" to language (A) and "Detail" (B) are key. Effects (D) are part of the "How". Listing (C) is surface-level.
+   * **Feedback:** The skill being marked is analysis of method and its effect on the reader (D) — that is what earns the marks. "Sensitively" (A) and "in considerable detail" (B) are not separate skills; they are adjectives describing *how well* you do that analysis. Listing terms (C) is surface-level feature-spotting with no effect.
 4. **Type: MCQ \[Tests Context\]**
    * **Question:** Does Cambridge have a separate Assessment Objective for Context (History)?
    * **Options:** A) Yes, AO5, B) No, but context fuels Understanding (AO2) and Personal Response (AO4), C) Yes, it is 50% of the marks, D) No, never mention it.
@@ -466,7 +466,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
 9. **Type: True/False \[Tests Strategy\]**
    * **Question:** True or False: Using PEE (Point, Evidence, Explain) is enough to hit Cambridge top marks.
    * **Answer:** False
-   * **Feedback:** ✓ Correct. Top marks require a developed argument (TTECEA) that explores *concepts*, not just simple explanations.
+   * **Feedback:** ✓ Correct. Top marks need a developed conceptual argument that explores *ideas*, not just simple explanations (at Sophicly we build this with TTECEA).
 10. **Type: MCQ \[Tests Weighting\]**
     * **Question:** The Cambridge mark scheme is "Holistic." What does this mean?
     * **Options:** A) You get separate marks for AO1, AO2, etc., and they are added up, B) The examiner gives one overall mark based on the "best fit" description of your essay, C) You lose marks for every mistake, D) Only the introduction counts.

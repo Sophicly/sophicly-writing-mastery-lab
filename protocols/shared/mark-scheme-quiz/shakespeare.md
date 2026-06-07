@@ -267,7 +267,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Question:** Which verb turns a descriptive AO1 point into an evaluative, Level 6 one?
     * **Options:** A) "Shows", B) "Says", C) "Weaponises" (e.g., "Shakespeare weaponises the storm to externalise Lear's collapse"), D) "Writes".
     * **Correct:** C
-    * **Feedback:** ✓ Correct. Evaluative verbs ("weaponises", "destabilises", "orchestrates") convert observation into critical judgement — the Level 6 voice.
+    * **Feedback:** ✓ Correct. "Weaponises" works here because it names a dramatic method (the storm as a deliberate stagecraft device) AND its effect on the audience — externalising Lear's collapse so we *feel* his disintegration. The lift comes from method→effect-on-audience, not the verb itself. A fancy verb bolted onto a plot statement ("Shakespeare weaponises the plot") stays in the lower bands.
 
 ### **SECTION B: EDEXCEL GCSE (1ET0 — Shakespeare)**
 
@@ -303,7 +303,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Question:** Which sentence best demonstrates Edexcel Level 5 "perceptive critical style"?
    * **Options:** A) "Macbeth is a king who goes bad", B) "Shakespeare presents ambition as fundamentally transgressive against natural order, constructing it as cosmologically destabilising", C) "Macbeth says a lot of speeches", D) "The witches are weird".
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Option B is evaluative, conceptual, and authoritative — definitive claims, sophisticated vocabulary. The Level 5 Edexcel voice.
+   * **Feedback:** ✓ Correct. Option B wins because it names a method (how Shakespeare *constructs* ambition through the play's action) and judges its effect — ambition shown as a violation of the natural order. The marker of quality is method→effect-on-audience plus a definitive argument. Note: the abstract vocabulary ("cosmologically destabilising") alone does NOT lift the band — drop it onto a plot statement and it stays low. Method + effect is what earns Level 5.
 8. **Type: Select All That Apply \[Tests Extract vs Whole Text — Grade 9 separator\]**
    * **Question:** A top-band Edexcel Shakespeare response should: (Select all that apply)
    * **Options:** A) Use the printed extract as an AO2 evidence bank, B) Move to the whole play to demonstrate AO1 argument/arc, C) Integrate context (AO3) throughout, D) Treat the extract in isolation from the rest of the play.
@@ -318,7 +318,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Question:** Which opening sentence signals Edexcel Level 5 "assured" intellectual authority?
     * **Options:** A) "Macbeth might possibly be about ambition", B) "Shakespeare constructs ambition as an epistemologically fragmenting force that corrupts perceptual certainty", C) "Shakespeare writes a play called Macbeth", D) "In this essay I will try to explore ambition".
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Option B makes a definitive, authoritative conceptual claim with precise vocabulary. "Might possibly" (A) and "will try to" (D) signal Level 4 tentativeness.
+    * **Feedback:** ✓ Correct. Option B works because it names how Shakespeare *constructs* ambition (a deliberate method) and judges its effect — corrupting the certainty of what is real, which is what unsettles the audience. The authority comes from method→effect-on-audience, not the long words. "Might possibly" (A) and "will try to" (D) signal Level 4 tentativeness. Precise vocabulary on its own, without a named method and its effect, does NOT lift the band.
 
 ### **SECTION C: EDEXCEL IGCSE (4ET1 — Shakespeare)**
 
@@ -350,7 +350,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Question:** Which sentence best demonstrates Level 5 IGCSE "excellent understanding of context"?
    * **Options:** A) "Shakespeare wrote Macbeth in 1606", B) "Shakespeare weaponises Jacobean anxieties about regicide — particularly post Gunpowder Plot (1605) — to construct Macbeth's ambition as cosmologically transgressive against divine order", C) "Jacobean people believed in kings", D) "This play is old".
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Option B integrates context (1605 Gunpowder Plot, divine order) into the conceptual argument about ambition. Level 5 AO4 (Context) demands this level of integration.
+   * **Feedback:** ✓ Correct. Option B integrates context (1605 Gunpowder Plot, divine order) into the conceptual argument about ambition. Crucially, name the effect on the audience: a Jacobean audience, freshly fearful of regicide, would *feel* Duncan's murder as a violation of the natural and divine order, not merely a crime. Level 5 AO4 (Context) demands this integration of context with audience effect.
 7. **Type: Fill-in-the-Blank \[Tests Sustained to Cohesive\]**
    * **Question:** The Level 4 to Level 5 IGCSE shift is from "sustained analysis" to "\[BLANK\] evaluation" — more integrated, more insightful.
    * **Answer:** Cohesive
@@ -367,9 +367,9 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Feedback:** ✓ Correct. IGCSE Spec A uses AO4 for CONTEXT — there is no separate SPaG AO4 on this specific paper. Don't waste effort chasing phantom SPaG marks.
 10. **Type: MCQ \[Tests Construct-Level Thinking\]**
     * **Question:** Which sentence signals Level 5 IGCSE conceptual thinking?
-    * **Options:** A) "Lady Macbeth tells her husband to kill the king", B) "Shakespeare constructs Lady Macbeth as a vehicle for questioning early-modern gender binaries — her invocation 'unsex me here' exposes masculinity as a social performance", C) "Lady Macbeth is a bad wife", D) "She says 'unsex me here' in the play".
+    * **Options:** A) "Lady Macbeth tells her husband to kill the king", B) "Shakespeare constructs Lady Macbeth's 'unsex me here' as a renunciation of natural restraint and conscience in pursuit of power — an unnatural inversion of the moral order that primes the audience to read the murder as a violation of nature itself", C) "Lady Macbeth is a bad wife", D) "She says 'unsex me here' in the play".
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Option B treats the character as a construct (not a real person), integrates context (gender binaries), and uses a judicious micro-quote to drive conceptual analysis.
+    * **Feedback:** ✓ Correct. Option B treats the line as a deliberate method (the invocation) and judges its effect on the audience — ambition overriding natural restraint and conscience, an inversion of the moral and natural order that makes the coming regicide feel like a violation of nature. It works as conceptual analysis because it names a method and its effect, not because of grand vocabulary.
 
 ### **SECTION D: EDUQAS (C720U — Shakespeare)**
 
@@ -420,7 +420,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Question:** Which topic sentence signals Eduqas Band 5 "sensitive and evaluative" voice?
     * **Options:** A) "Macbeth kills King Duncan", B) "Shakespeare's hallucinatory imagery evaluates ambition as epistemologically destabilising — blurring the boundary between reality and fantasy and exposing moral corruption as a perceptual disintegration", C) "Macbeth is ambitious", D) "This scene has a dagger".
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Option B is evaluative ("evaluates"), layered (reality vs fantasy), and perceptive (moral corruption as perceptual disintegration). The Band 5 Eduqas voice.
+    * **Feedback:** ✓ Correct. Option B names a dramatic method (the hallucinatory imagery / the dagger vision) and judges its effect on the audience — blurring reality and fantasy so we *experience* Macbeth's moral collapse from inside his unravelling mind. The Band 5 lift is method→effect-on-audience, not the abstract vocabulary; the same long words on a plot statement would NOT raise the band.
 
 ### **SECTION E: OCR (J352 — Shakespeare)**
 
@@ -433,7 +433,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Question:** Which opening demonstrates OCR's "sustained critical style in an informed personal response" (Level 6)?
    * **Options:** A) "Othello is Shakespeare's tragic play about jealousy", B) "Shakespeare constructs jealousy as an epistemological pathogen that corrupts perceptual certainty and destabilises rational cognition", C) "In this essay I will examine how Shakespeare presents jealousy", D) "Othello's jealousy destroys his marriage".
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Option B shows conceptual sophistication ("epistemological pathogen", "perceptual certainty") AND informed personal response — original, thoughtful engagement immediately. A and D are plot-level; C is signposting without ideas.
+   * **Feedback:** ✓ Correct. Option B works because it names how Shakespeare *constructs* jealousy in Othello and judges its effect on the audience — corrupting Othello's grip on what is real so we watch his reasoning disintegrate. The Level 6 lift is method→effect-on-audience plus an informed personal response; the abstract phrasing ("epistemological pathogen") alone would NOT raise the band on a plot statement. A and D are plot-level; C is signposting without ideas.
 3. **Type: Fill-in-the-Blank \[Tests Sustained Critical Style\]**
    * **Question:** OCR Level 6 demands a \[BLANK\] critical style in an informed personal response — maintained consistently from intro to conclusion.
    * **Answer:** Sustained

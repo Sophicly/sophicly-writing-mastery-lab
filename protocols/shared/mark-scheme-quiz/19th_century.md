@@ -264,7 +264,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
    * **Feedback:** Topic, Technique, and Evidence are all mandatory. Author's biography (D) is not part of TTECEA+C — context should be integrated into Purpose, not a standalone biography dump.
-10. **Type: True/False \[Tests AO1 Author's Purpose\]**
+10. **Type: True/False \[Tests AO2 Author's Purpose\]**
     * **Question:** True or False: The "A" (Author's Purpose) in TTECEA+C is where you link the micro technique to the macro message of the text.
     * **Answer:** True
     * **Feedback:** ✓ Correct. The "A" answers the "So What?" question, connecting a single detail (a simile) to the big idea (criticism of Victorian society). This is the definition of conceptualised thinking.
@@ -318,7 +318,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Question:** Which word turns a descriptive AO1 point into an evaluative one?
     * **Options:** A) "Shows", B) "Says", C) "Successfully" (e.g., "Dickens successfully weaponises the weather…"), D) "Writes".
     * **Correct:** C
-    * **Feedback:** ✓ Correct. "Successfully", "Powerfully", "Subtly", "Terrifyingly" are evaluative adverbs — they show you are judging the *quality* of the writer's craft, not just observing it exists.
+    * **Feedback:** ✓ Correct. "Successfully", "Powerfully", "Subtly", "Terrifyingly" are evaluative adverbs — but the word only earns credit when it fronts a judgement about HOW the method affects the reader (e.g. "successfully weaponises the weather to make us *dread* Scrooge's isolation"). On its own, "successfully" is an empty label — feature-spotting, not evaluation.
 
 ### **SECTION C: EDEXCEL IGCSE (4ET1)**
 
@@ -361,10 +361,10 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Correct:** A, C
    * **Scoring:** 2 marks for A, C. 1 mark if mostly correct.
    * **Feedback:** Judicious means well-judged and short. Micro-quotes (A, C) let you embed evidence and analyse individual words. Block quotes (B, D) break flow and waste time.
-9. **Type: True/False \[Tests Author's Purpose\]**
-   * **Question:** True or False: Ending every paragraph by zooming out to the author's overall message helps achieve top marks.
+9. **Type: True/False \[Tests Method-to-Meaning\]**
+   * **Question:** True or False: Top marks come from connecting the writer's methods to their effect on the reader and the text's meaning — not from a fixed paragraph-ending formula.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. The "A" in TTECEA+C (Author's Purpose) connects the micro technique to the macro message. This is conceptualised thinking — the Grade 9 habit.
+   * **Feedback:** ✓ Correct. The examiner rewards analysis that links a method to its effect on the reader and the text's bigger meaning — not a mechanical ritual of "zooming out" at the end of every paragraph. Connect method to effect wherever it earns the point; a rote formula on its own is feature-spotting.
 10. **Type: MCQ \[Tests AO3 Context Chain\]**
     * **Question:** Which historical context is most directly relevant to Dickens's critique of Victorian society in *A Christmas Carol*?
     * **Options:** A) The French Revolution, B) The 1834 Poor Law and Malthusian economics, C) The Industrial Revolution's impact on transport, D) The Norman Conquest.
@@ -451,7 +451,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
 6. **Type: Fill-in-the-Blank \[Tests Evaluation Language\]**
    * **Question:** Evaluative adverbs such as "\[BLANK\]", "powerfully", and "subtly" show you are judging the quality of the writer's craft.
    * **Answer:** Successfully
-   * **Feedback:** ✓ Correct. Evaluative adverbs convert description ("shows") into evaluation ("successfully weaponises"). This is Level 6 critical style.
+   * **Feedback:** ✓ Correct. Evaluative adverbs convert description ("shows") into evaluation ("successfully weaponises") — but only when the adverb fronts a judgement about HOW the method affects the reader. The word "successfully" on its own earns nothing; it is an empty label (feature-spotting) unless you then say what effect the writer achieves.
 7. **Type: MCQ \[Tests AO2 Technique\]**
    * **Question:** For OCR AO2, what is the most effective way to analyse a metaphor?
    * **Options:** A) Name it and move on, B) Identify it, zoom in on specific word connotations, and explain the effect on the reader and the author's purpose, C) Write a dictionary definition, D) Compare it to a metaphor in a different novel.
@@ -540,7 +540,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) "Successfully", B) "Compellingly", C) "Effectively", D) "There is".
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Evaluative adverbs (A, B, C) are judgement words — they signal critical thinking. Plain description ("there is") does not.
+   * **Feedback:** Evaluative adverbs (A, B, C) are judgement words — but they only earn credit when they front a judgement about HOW the method affects the reader. Used alone, "successfully" or "effectively" is an empty label (feature-spotting); plain description ("there is") earns nothing either.
 4. **Type: True/False \[Tests Understanding\]**
    * **Question:** True or False: SQA "Understanding" maps most closely to AO1 (the WHAT) in the GCSE AO framework.
    * **Answer:** True
@@ -583,7 +583,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
   * **Dickens:** Anti-Malthusian, pro-social responsibility.
   * **Stevenson:** Duality, anti-repression, evolution anxiety.
   * **Shelley:** Dangers of playing God, nature vs nurture.
-  * **Bronte:** Proto-feminism, social-class critique.
+  * **Bronte:** Critique of women's social and legal vulnerability within the rigid Victorian social order; social-class critique.
 * **Assessment Objectives (What/How/Why framework):**
   * **AO1 — The WHAT:** Argument, concepts, thesis. "Task and Whole Text".
   * **AO2 — The HOW:** Language, form, structure. "Methods".

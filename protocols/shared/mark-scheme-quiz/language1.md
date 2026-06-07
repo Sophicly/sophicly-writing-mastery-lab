@@ -193,7 +193,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    \*\*2. Process Level (The 'How' \- Next Steps):\*\*  
    \* 💡 \*\*Strategy:\*\* You have tested your recall. Now follows the real learning:  
    \* 1\. \*\*Mark Scheme Deep Dive:\*\* Listen to the breakdown, compare paragraphs, and complete the final assessment to understand \*exactly\* what examiners want.  
-   \* 2\. \*\*Analysis Focus:\*\* Unlike Literature, Language is about \*skills\*, not set texts. Write a practice paragraph analyzing a short extract, focusing on the specific skills (e.g., Structure or Evaluation) you missed here.  
+   \* 2\. \*\*Analysis Focus:\*\* Language has no set texts \- it tests one core skill: analyzing the writer's methods and their effect on the reader. Whether the question is about structure or evaluation, it is the same skill applied in a different place. Write a practice paragraph analyzing a short extract, applying that method-and-effect skill to the area you missed here.  
    \* 3\. \*\*Feedback & Redraft:\*\* Trust the process. After self-assessment, follow our explicit redrafting steps to refine your analysis to 100%.  
      
    \---  
@@ -224,7 +224,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Question:** For AQA Question 2 (Language), which of these is the **LEAST** effective method to analyze?  
    * **Options:** A) Sentence forms, B) Words and phrases, C) Structural shifts (e.g., flashbacks), D) Language techniques (e.g., metaphors).  
    * **Correct:** C  
-   * **Feedback:** ✓ Correct. While examiners *can* credit any relevant point, writing about Structure (flashbacks) in Question 2 is a strategic error. It belongs in Question 3\. Focus on words and techniques here to maximize your marks.  
+   * **Feedback:** ✓ Correct. Question 2 focuses on language and Question 3 on structure as a matter of convention, so structural points (flashbacks) are best saved for Q3. It is not a scoring "error", though \- examiners credit any relevant method analyzed for its effect on the reader. Here, putting your focus on words and techniques is simply the most efficient use of the question.  
 2. **Type: Fill-in-the-Blank \[Tests AO2 Structure\]**  
    * **Question:** AQA Question 3 asks: "How has the writer \[BLANK\] the text to interest you as a reader?"  
    * **Answer:** Structured  
@@ -262,7 +262,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
 9. **Type: True/False \[Tests Timing\]**  
    * **Question:** True or False: You should spend the same amount of time on Question 2 (8 marks) as Question 4 (20 marks).  
    * **Answer:** False  
-   * **Feedback:** ✓ Correct. Question 4 is worth 25% of the reading marks. You should spend about 20-25 minutes on it, compared to 10 minutes for Q2.  
+   * **Feedback:** ✓ Correct. Question 4 is worth 50% of the reading marks (25% of the whole paper). You should spend about 20-25 minutes on it, compared to 10 minutes for Q2.  
 10. **Type: Select All That Apply \[Tests AO2 Analysis\]**  
     * **Question:** When analyzing language (Q2), what should you look for? (Select all that apply)  
     * **Options:** A) Specific words (nouns, verbs), B) Sentence forms (simple, complex), C) The opening paragraph of the whole text, D) Language features (similes, personification).  
@@ -414,9 +414,9 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Scoring:** 2 marks for A, C. 1 mark if mostly correct.  
    * **Feedback:** Direct comparison (C) supported by evidence (A) is key.  
 9. **Type: True/False \[Tests Structure\]**  
-   * **Question:** True or False: You should analyze literary techniques (metaphors, etc.) in the Comparison Question 3\.  
-   * **Answer:** False  
-   * **Feedback:** ✓ Correct. 4EB1 Q3 assesses AO3 (ideas and perspectives), not AO2 (writer's methods). Focus on *what* they say, not *how* they say it.  
+   * **Question:** True or False: Analyzing how writers convey their ideas (their methods and effects) can strengthen your answer to the Comparison Question 3\.  
+   * **Answer:** True  
+   * **Feedback:** ✓ Correct. The primary credit in 4EB1 Q3 is for comparing ideas and perspectives (AO3), so the comparison of *what* the writers think must lead. But showing *how* each writer conveys that perspective \- the method and its effect on the reader \- sharpens and supports the comparison rather than wasting time.  
 10. **Type: MCQ \[Tests Timing\]**  
     * **Question:** Section A (Reading) is worth what percentage of the total paper marks?  
     * **Options:** A) 50%, B) 40%, C) 60%, D) 30%.  

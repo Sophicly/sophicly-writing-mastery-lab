@@ -823,10 +823,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 ---
 
 2. **Type: MCQ \[Tests AO1 Knowledge\]**
-   * **Question:** What does Question 2 specifically test that's unique to OCR's Paper 2?
+   * **Question:** What does Question 2 specifically test on OCR's Paper 2?
    * **Options:** A) Language analysis, B) Evaluation of effectiveness, C) Synthesis across texts, D) Creative writing.
    * **Correct:** C
-   * **Feedback:** ✓ Correct. Synthesis — drawing the two texts together into a combined understanding — is OCR's distinctive Question 2 focus.
+   * **Feedback:** ✓ Correct. Synthesis — drawing the two texts together into a combined understanding — is a key OCR Question 2 skill (other boards, such as AQA Paper 2 Q2, also test synthesis/summary across two texts).
 
 ---
 
@@ -848,11 +848,11 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 ---
 
 5. **Type: MCQ \[Tests AO Knowledge\]**
-   * **Question:** OCR uses a six-level system. What's the key difference between Level 5 'thorough' and Level 6 'sophisticated'?
-   * **Options:** A) Word count, B) Number of quotations, C) Sophistication shows exceptional insight and precision, D) Level 6 requires comparison of three texts.
+   * **Question:** OCR uses a six-level system. What's the key difference between Level 5 'thorough' and Level 6 'perceptive'?
+   * **Options:** A) Word count, B) Number of quotations, C) Perceptive analysis shows exceptional insight and precision, D) Level 6 requires comparison of three texts.
    * **Correct:** C
    * **Feedback:** ✓ Correct. The jump to Level 6 is *qualitative* — exceptional insight, subtle understanding, precise expression — not just doing more of the same.
-   * **Stretch (unscored):** Why is the Level 5→6 jump often the hardest? Level 5 is doing everything well; Level 6 demands a qualitative leap in insight and sophistication, which can't be reached just by adding 'more'.
+   * **Stretch (unscored):** Why is the Level 5→6 jump often the hardest? Level 5 is doing everything well; Level 6 demands a qualitative leap in insight and perception, which can't be reached just by adding 'more'.
 
 ---
 
@@ -864,7 +864,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
-7. **Type: MCQ \[Tests AO2 Application\]**
+7. **Type: MCQ \[Tests AO3 Application\]**
    * **Question:** A comparison response discusses both texts in every paragraph, analyses methods and ideas, but uses basic expression like "Text A says... Text B says..." repeatedly. Likely level?
    * **Options:** A) Level 2-3, B) Level 3-4, C) Level 4-5, D) Level 5-6.
    * **Correct:** C
@@ -872,7 +872,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
-8. **Type: MCQ \[Tests AO5 Knowledge\]**
+8. **Type: MCQ \[Tests AO3 Knowledge\]**
    * **Question:** What does 'integrated comparison' mean in OCR's mark scheme?
    * **Options:** A) Comparing everything about both texts, B) Discussing both texts within the same paragraphs, C) Using the same quotations from both texts, D) Writing equal amounts about each text.
    * **Correct:** B
@@ -889,7 +889,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
-10. **Type: MCQ \[Tests AO3 Application\]**
+10. **Type: MCQ \[Tests AO5/AO6 Application\]**
     * **Question:** For transactional writing, a response shows excellent argument and persuasive techniques but has frequent spelling errors and comma splices. What would limit this response?
     * **Options:** A) Can't get above Level 3 for AO5 (content), B) Would lose marks on AO6 (technical) but AO5 could still score highly, C) Would fail completely, D) Spelling doesn't matter if argument is good.
     * **Correct:** B
@@ -940,7 +940,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
-6. **Type: MCQ \[Tests AO2 Application\]**
+6. **Type: MCQ \[Tests AO4 Application\]**
    * **Question:** An evaluation response states: "The writer's argument is somewhat effective. The statistics support the point but the emotional appeals feel excessive." Which level does this balanced evaluation most likely suggest?
    * **Options:** A) Level 1-2, B) Level 2-3, C) Level 3-4, D) Level 4-5.
    * **Correct:** C
@@ -956,7 +956,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
-8. **Type: MCQ \[Tests AO5 Knowledge\]**
+8. **Type: MCQ \[Tests AO3 Knowledge\]**
    * **Question:** A student comparing perspectives writes excellently about the 21st century text but only briefly mentions the 19th century text, saying "the old-fashioned language makes it hard to understand." Maximum possible level?
    * **Options:** A) Level 1, B) Level 2, C) Level 3, D) Level 4.
    * **Correct:** B
@@ -999,8 +999,8 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
-3. **Type: MCQ \[Tests AO3 Knowledge\]**
-   * **Question:** A student analysing non-fiction writes: "The writer uses statistics about refugee numbers." According to the progression (Identify → Comment → Explain → Explore → Analyse), what level is this?
+3. **Type: MCQ \[Tests AO2 Knowledge\]**
+   * **Question:** A student analysing non-fiction writes: "The writer uses statistics about refugee numbers." Thinking about increasing depth as a ladder — Identify → Comment → Explain → Explore → Analyse — what level is this?
    * **Options:** A) Level 1 - Identifies, B) Level 2 - Comments, C) Level 3 - Explains, D) Level 4 - Explores.
    * **Correct:** A
    * **Feedback:** ✓ Correct. This only *identifies* a technique — no comment on effect, no explanation. It sits at the bottom of the progression.
@@ -1033,7 +1033,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 ---
 
 7. **Type: MCQ \[Tests AO3 Knowledge\]**
-   * **Question:** "The writer uses emotive language which makes the reader feel sad." Using the progression model, which level does this sentence reach?
+   * **Question:** "The writer uses emotive language which makes the reader feel sad." Thinking of analytical depth as a ladder (Identify → Comment → Explain → Explore → Analyse), which level does this sentence reach?
    * **Options:** A) Level 1 - Only identifies, B) Level 2 - Comments on effect, C) Level 3 - Explains clearly, D) Level 4 - Explores thoroughly.
    * **Correct:** B
    * **Feedback:** ✓ Correct. It names a technique and *comments* on an effect ("feel sad"), but doesn't explain *how* the language produces it — that's Level 2.
@@ -1041,10 +1041,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 ---
 
 8. **Type: Fill-in-the-Blank \[Tests AO5 Knowledge\]**
-   * **Question:** The analytical progression in IGCSE Spec A goes: Identify → Comment → \[BLANK\] → Explore → Analyse. What's the missing step?
+   * **Question:** At Sophicly we picture analytical depth as a ladder: Identify → Comment → \[BLANK\] → Explore → Analyse. What's the missing step?
    * **Answer:** Explain
-   * **Feedback:** ✓ Correct. The missing rung is *Explain* — after commenting on an effect you explain *how* it works, before going on to explore and analyse.
-   * **Stretch (unscored):** Why does this progression help? It's a ladder, not a leap — you can see where you are and what the next step requires.
+   * **Feedback:** ✓ Correct. The missing rung is *Explain* — after commenting on an effect you explain *how* it works, before going on to explore and analyse. The board doesn't mark this ladder; it rewards the output — perceptive analysis of methods and their effects on the reader.
+   * **Stretch (unscored):** Why does this way of thinking help? It's a ladder, not a leap — you can see where you are and what the next step requires.
 
 ---
 
@@ -1057,7 +1057,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 ---
 
 10. **Type: MCQ \[Tests AO3 Application\]**
-    * **Question:** A student's analysis states: "The writer explores how poverty affects children by using the metaphor 'chains of circumstance' which suggests they're trapped by factors beyond their control, linking to the article's wider argument about social mobility." Using the progression model, what level is this?
+    * **Question:** A student's analysis states: "The writer explores how poverty affects children by using the metaphor 'chains of circumstance' which suggests they're trapped by factors beyond their control, linking to the article's wider argument about social mobility." On the depth ladder (Identify → Comment → Explain → Explore → Analyse), what level is this?
     * **Options:** A) Level 2 - Comments, B) Level 3 - Explains, C) Level 4 - Explores, D) Level 5 - Analyses.
     * **Correct:** C
     * **Feedback:** ✓ Correct. It unpacks the metaphor's implication ('trapped') and links it to the wider argument — that's *exploring* connections and implications, Level 4.
@@ -1081,7 +1081,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
-3. **Type: MCQ \[Tests AO3 Knowledge\]**
+3. **Type: MCQ \[Tests AO2 Knowledge\]**
    * **Question:** A student comparing two articles writes: "Both writers discuss climate change. Writer A is worried. Writer B is optimistic." What's the most likely maximum level this could achieve?
    * **Options:** A) Level 1, B) Level 2, C) Level 3, D) Level 4.
    * **Correct:** B
@@ -1116,14 +1116,14 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 ---
 
 7. **Type: MCQ \[Tests AO3 Knowledge\]**
-   * **Question:** A student writes: "The writer's use of the metaphor 'avalanche of information' suggests the overwhelming nature of modern media." Using the five-level progression, what level is this?
+   * **Question:** A student writes: "The writer's use of the metaphor 'avalanche of information' suggests the overwhelming nature of modern media." On the depth ladder (Identify → Comment → Explain → Explore → Analyse), what level is this?
    * **Options:** A) Level 1 - Identifies, B) Level 2 - Comments, C) Level 3 - Explains, D) Level 4 - Explores.
    * **Correct:** C
    * **Feedback:** ✓ Correct. It names the metaphor and *explains* its effect ('avalanche' → overwhelming) — clear explanation, Level 3 — though it stops short of exploring wider implications.
 
 ---
 
-8. **Type: MCQ \[Tests AO5 Knowledge\]**
+8. **Type: MCQ \[Tests AO3 Knowledge\]**
    * **Question:** A comparison response thoroughly discusses language techniques but never mentions the different perspectives of the writers. Maximum achievable level?
    * **Options:** A) Level 1-2, B) Level 2-3, C) Level 3-4, D) Level 4-5.
    * **Correct:** B
@@ -1199,7 +1199,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
-7. **Type: MCQ \[Tests AO2 Application\]**
+7. **Type: MCQ \[Tests AO5 Application\]**
    * **Question:** A student's persuasive letter includes sophisticated vocabulary and varied sentences but uses a casual, chatty tone throughout ("Hi there!", "LOL", "Catch you later!"). What band is most likely for AO5 (content/register)?
    * **Options:** A) Band 1-2, B) Band 2-3, C) Band 3-4, D) Band 4-5.
    * **Correct:** A
@@ -1207,7 +1207,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
-8. **Type: MCQ \[Tests AO5 Knowledge\]**
+8. **Type: MCQ \[Tests AO3 Knowledge\]**
    * **Question:** What's the difference between Band 4 'thoughtful' and Band 5 'perceptive' in comparison?
    * **Options:** A) Length of response, B) Perceptive shows deeper insight into subtle differences, C) Band 5 needs more quotations, D) Thoughtful is about ideas, perceptive about methods.
    * **Correct:** B
@@ -1223,7 +1223,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
-10. **Type: MCQ \[Tests AO3 Application\]**
+10. **Type: MCQ \[Tests AO5 Application\]**
     * **Question:** For the TWO transactional writing tasks, a student writes two excellent formal letters (one to a newspaper, one to an MP) when the questions asked for a letter and a speech. Impact on marks?
     * **Options:** A) No impact if writing quality is good, B) Loses some marks on the speech task for wrong form, C) Both pieces score zero, D) Only marked on the better piece.
     * **Correct:** B
