@@ -227,6 +227,12 @@ class SWML_REST_API {
             'methods' => 'POST', 'callback' => [$this, 'save_codex'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
+        // v7.19.339: "every Check = an attempt that counts" — each codex dropdown
+        // section's "Check answers" click POSTs its score here as a graded attempt.
+        register_rest_route($namespace, '/codex/check', [
+            'methods' => 'POST', 'callback' => [$this, 'handle_codex_check'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
 
         // v7.14.66: Protocol manifest step labels — for sidebar
         register_rest_route($namespace, '/protocol-steps', [
@@ -5072,6 +5078,107 @@ class SWML_REST_API {
         return rest_ensure_response([
             'success' => true,
             'doc'     => $doc,
+        ]);
+    }
+
+    // ═══════════════════════════════════════════
+    //  CODEX SELF-CHECK ATTEMPT (v7.19.339) — "every Check = an attempt that counts"
+    //  (SETTLED policy, Neil 2026-06-08; memory feedback_everything_counts_toward_grades).
+    //
+    //  Each Mastery Codex dropdown section (Essay Structure / Story-Spine / IUMVCC /
+    //  TTECEA Application…) has its own "Check answers" button. Every click POSTs its
+    //  score here as a graded attempt feeding the Course Grade at the QUIZ weight.
+    //
+    //  Mastery gate (anti-farm): once a section is mastered (100% — all dropdowns
+    //  correct) the server STOPS recording further attempts for that section, so
+    //  replaying / hand-POSTing after mastery cannot inflate the grade. The score
+    //  that feeds the average = BEST attempt per section (dashboard read side) — same
+    //  as the existing foundational quiz; here we just record every PRE-mastery
+    //  attempt as its own session_records row (distinct attempt_number → full
+    //  history, no overwrite).
+    //
+    //  Persistence mirrors SWML_Quiz_Engine::persist_mark_scheme — fires
+    //  sophicly_canvas_saved → student-data listener writes a session_records row.
+    //  Codex is a flat, board/text-less doc, so we use a STABLE synthetic key:
+    //  board='core_skills', text_slug='codex_{section_slug}', task_kind='codex'.
+    // ═══════════════════════════════════════════
+    public function handle_codex_check($request) {
+        $gate = $this->check_viewer_write_allowed($request);
+        if (is_wp_error($gate)) return $gate;
+
+        $current_uid = get_current_user_id();
+        $p = $request->get_json_params();
+
+        $target     = $p['student_id'] ?? $p['studentId'] ?? 0;
+        $target_uid = absint($target) ?: $current_uid;
+
+        $slug  = sanitize_key($p['section_slug'] ?? '');
+        $label = sanitize_text_field($p['section_label'] ?? '');
+        $right = max(0, (int) ($p['right'] ?? 0));
+        $total = max(0, (int) ($p['total'] ?? 0));
+
+        if ($slug === '' || $total <= 0) {
+            return rest_ensure_response(['success' => false, 'code' => 'bad_request']);
+        }
+        if ($right > $total) $right = $total;
+
+        $mastered_key = 'swml_codex_mastered_' . $target_uid . '_' . $slug;
+
+        // Anti-farm gate: already mastered → record nothing, just confirm the lock.
+        if (get_user_meta($target_uid, $mastered_key, true)) {
+            return rest_ensure_response([
+                'success'  => true,
+                'recorded' => false,
+                'mastered' => true,
+            ]);
+        }
+
+        $is_mastery = ($right === $total);
+        $pct        = (int) round(($right / $total) * 100);
+        $grade      = class_exists('SWML_Quiz_Engine')
+            ? (int) SWML_Quiz_Engine::percentage_to_grade($pct) : 0;
+
+        // Per-section attempt counter — each Check = a new attempt number so the
+        // student-data listener writes a DISTINCT session_records row (full history,
+        // no overwrite). Separate board/text key space → assessment attempt
+        // numbering (diagnostic / redraft) is untouched.
+        $attempt_key = 'swml_codex_attempt_' . $target_uid . '_' . $slug;
+        $attempt_n   = (int) get_user_meta($target_uid, $attempt_key, true) + 1;
+        update_user_meta($target_uid, $attempt_key, $attempt_n);
+
+        $extra = [
+            'score_raw'        => $right,
+            'score_max'        => $total,
+            'score_percentage' => $pct,
+            'grade_equivalent' => $grade,
+            'task_kind'        => 'codex',
+            'attempt_number'   => $attempt_n,
+            'section_label'    => $label,
+        ];
+
+        do_action(
+            'sophicly_canvas_saved',
+            $target_uid,
+            'core_skills',
+            'codex_' . $slug,
+            '',
+            0,
+            0,
+            '_codex',
+            $extra
+        );
+
+        if ($is_mastery) {
+            update_user_meta($target_uid, $mastered_key, 1);
+        }
+
+        return rest_ensure_response([
+            'success'        => true,
+            'recorded'       => true,
+            'mastered'       => $is_mastery,
+            'grade'          => $grade,
+            'percentage'     => $pct,
+            'attempt_number' => $attempt_n,
         ]);
     }
 }

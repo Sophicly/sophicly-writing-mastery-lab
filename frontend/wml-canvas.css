@@ -5716,6 +5716,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 .swml-cloze-check-btn:hover { background: #6346f0; }
 .swml-cloze-check-btn:active { transform: translateY(1px); }
+/* v7.19.339: mastered (100%) — button locks, no further graded attempts. */
+.swml-cloze-check-btn.swml-cloze-mastered {
+    background: #1f9d6b;
+    cursor: default;
+    opacity: 0.95;
+}
+.swml-cloze-check-btn.swml-cloze-mastered:hover { background: #1f9d6b; }
 .swml-cloze-check-summary {
     font-size: 13px;
     color: rgba(255,255,255,0.7);

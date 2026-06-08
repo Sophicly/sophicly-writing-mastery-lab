@@ -188,6 +188,8 @@ window.WML = (function() {
         quizStart:     config.restUrl + 'quiz/start',
         quizAnswer:    config.restUrl + 'quiz/answer',
         quizFinish:    config.restUrl + 'quiz/finish',
+        // v7.19.339: codex section "Check answers" → recorded graded attempt
+        codexCheck:    config.restUrl + 'codex/check',
         canvasLoad:    config.restUrl + 'canvas/load',
         canvasList:    config.restUrl + 'canvas/list',
         pullDismiss:   config.restUrl + 'canvas/pull-dismiss', // v7.19.263

@@ -10919,6 +10919,15 @@
                         parseHTML: el => el.getAttribute('data-checked') === 'true',
                         renderHTML: attrs => attrs.checked ? { 'data-checked': 'true' } : {},
                     },
+                    // v7.19.339: once the section hits 100% it is mastered — the
+                    // button locks and the server records no further attempts
+                    // (anti-farm). Persists with the canvas so the lock survives
+                    // reload, exactly like `checked`.
+                    mastered: {
+                        default: false,
+                        parseHTML: el => el.getAttribute('data-mastered') === 'true',
+                        renderHTML: attrs => attrs.mastered ? { 'data-mastered': 'true' } : {},
+                    },
                 };
             },
             parseHTML() {
@@ -10965,7 +10974,67 @@
                             ? `${right} / ${total} correct` + (right === total ? ' — all right!' : ' — fix the red answers and check again')
                             : '';
                         summary.classList.toggle('swml-cloze-allright', total > 0 && right === total);
-                        return answered;
+                        return { answered, right, total };
+                    };
+
+                    // v7.19.339: lock the button once the section is mastered (100%).
+                    // Visual only — the server is the real anti-farm gate.
+                    const lockMastered = (right, total) => {
+                        btn.disabled = true;
+                        btn.classList.add('swml-cloze-mastered');
+                        btn.textContent = 'Mastered ✓ ' + right + ' / ' + total;
+                        btn.style.pointerEvents = 'none';
+                    };
+
+                    // Derive a stable section slug + label from the enclosing section
+                    // block. The label is the section heading ("Essay Structure"); the
+                    // slug is its sanitised form, matched server-side to text_slug
+                    // 'codex_{slug}'. Falls back to the data-section-type if unlabelled.
+                    const codexSectionMeta = () => {
+                        const section = dom.closest('.swml-section-block');
+                        if (!section) return null;
+                        const label = (section.getAttribute('data-section-label') || '').trim();
+                        const typ   = (section.getAttribute('data-section-type') || '').trim();
+                        const slug  = (label || typ)
+                            .toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+                        return slug ? { slug, label: label || typ } : null;
+                    };
+
+                    // v7.19.339: record this Check as a graded attempt (counts toward
+                    // the Course Grade at quiz weight). Skipped once mastered — the
+                    // server also refuses post-mastery records (double-locked).
+                    const recordCodexAttempt = (res) => {
+                        if (!res || !res.total) return;
+                        if (node.attrs.mastered) return;
+                        if (WML.state && WML.state.reviewMode) return; // tutors don't score
+                        const meta = codexSectionMeta();
+                        if (!meta) return;
+                        const body = {
+                            section_slug:  meta.slug,
+                            section_label: meta.label,
+                            right:         res.right,
+                            total:         res.total,
+                        };
+                        if (WML.state && WML.state.reviewStudentId) body.student_id = WML.state.reviewStudentId;
+                        WML.apiPost(API.codexCheck, body).then((r) => {
+                            if (r && r.mastered) {
+                                lockMastered(res.right, res.total);
+                                // persist the mastered flag onto the node (rides canvas save)
+                                if (!node.attrs.mastered && typeof getPos === 'function') {
+                                    const pos = getPos();
+                                    if (typeof pos === 'number') {
+                                        editor.chain().command(({ tr }) => {
+                                            tr.setNodeMarkup(pos, undefined, { ...node.attrs, checked: true, mastered: true });
+                                            return true;
+                                        }).run();
+                                    }
+                                }
+                                // T4: force an immediate canvas save so the lock syncs at once
+                                if (typeof WML.saveCanvasContent === 'function') {
+                                    try { WML.saveCanvasContent(); } catch (_) {}
+                                }
+                            }
+                        }).catch(() => {});
                     };
 
                     btn.addEventListener('mousedown', (e) => e.stopPropagation());
@@ -10995,8 +11064,17 @@
                     btn.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        runCheck(true);
+                        if (node.attrs.mastered) return; // locked — no re-score
+                        const res = runCheck(true);
                         persistChecked();
+                        // v7.19.339: record this check as a graded attempt (counts).
+                        recordCodexAttempt(res);
+                        // T4 (v7.19.339): force an immediate canvas save on every Check
+                        // so the ✓/✗ + checked state sync at once (no loss if a draft
+                        // is cleared before the 2s debounce fires).
+                        if (typeof WML.saveCanvasContent === 'function') {
+                            try { WML.saveCanvasContent(); } catch (_) {}
+                        }
                     });
                     // v7.19.318: marks appear ONLY on an explicit "Check answers" click — no
                     // auto-check on a FRESH (never-checked) section, so the student commits
@@ -11004,7 +11082,11 @@
                     // ✓/✗ on reload so the graded state persists. Deferred two frames so the
                     // sibling SelectFields are mounted and carry their saved values.
                     if (node.attrs.checked) {
-                        requestAnimationFrame(() => requestAnimationFrame(() => runCheck(false)));
+                        requestAnimationFrame(() => requestAnimationFrame(() => {
+                            const res = runCheck(false);
+                            // v7.19.339: restore the mastered lock on reload.
+                            if (node.attrs.mastered && res) lockMastered(res.right, res.total);
+                        }));
                     }
 
                     dom.appendChild(btn);
