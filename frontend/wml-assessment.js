@@ -10909,6 +10909,18 @@
             group: 'block',
             atom: true,
             selectable: false,
+            // v7.19.332: persist whether this self-check has been run, so the ✓/✗ marks
+            // survive a reload / lesson re-entry (the marks themselves are derived DOM
+            // classes, not saved — only this flag + the SelectField values persist).
+            addAttributes() {
+                return {
+                    checked: {
+                        default: false,
+                        parseHTML: el => el.getAttribute('data-checked') === 'true',
+                        renderHTML: attrs => attrs.checked ? { 'data-checked': 'true' } : {},
+                    },
+                };
+            },
             parseHTML() {
                 return [{ tag: 'div[data-cloze-check]' }];
             },
@@ -10916,7 +10928,7 @@
                 return ['div', { ...HTMLAttributes, 'data-cloze-check': 'true', class: 'swml-cloze-check' }];
             },
             addNodeView() {
-                return () => {
+                return ({ node, getPos, editor }) => {
                     const dom = document.createElement('div');
                     dom.classList.add('swml-cloze-check');
                     dom.setAttribute('data-cloze-check', 'true');
@@ -10957,19 +10969,54 @@
                     };
 
                     btn.addEventListener('mousedown', (e) => e.stopPropagation());
+
+                    // v7.19.332: record that the section has been checked (data-checked on
+                    // the node → saves with the canvas). Scroll-preserved like writeValue so
+                    // the dispatch doesn't jump the doc.
+                    const persistChecked = () => {
+                        if (node.attrs.checked) return;
+                        if (typeof getPos !== 'function') return;
+                        const pos = getPos();
+                        if (typeof pos !== 'number') return;
+                        const scroller = (editor.view && editor.view.dom)
+                            ? editor.view.dom.closest('.swml-canvas-content') : null;
+                        const prevTop = scroller ? scroller.scrollTop : 0;
+                        const active = document.activeElement;
+                        if (active && typeof active.blur === 'function') active.blur();
+                        editor.chain().command(({ tr }) => {
+                            tr.setNodeMarkup(pos, undefined, { ...node.attrs, checked: true });
+                            return true;
+                        }).run();
+                        if (scroller) requestAnimationFrame(() => requestAnimationFrame(() => {
+                            if (scroller.scrollTop !== prevTop) scroller.scrollTop = prevTop;
+                        }));
+                    };
+
                     btn.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         runCheck(true);
+                        persistChecked();
                     });
-                    // v7.19.318: marks appear ONLY on an explicit "Check answers" click —
-                    // no auto-check on load or on re-render — so the student commits to an
-                    // answer before seeing if it is right. Picked answers still persist with
-                    // the canvas; only the ✓/✗ feedback is deferred to the button.
+                    // v7.19.318: marks appear ONLY on an explicit "Check answers" click — no
+                    // auto-check on a FRESH (never-checked) section, so the student commits
+                    // first. v7.19.332: but once they HAVE checked, re-derive + restore the
+                    // ✓/✗ on reload so the graded state persists. Deferred two frames so the
+                    // sibling SelectFields are mounted and carry their saved values.
+                    if (node.attrs.checked) {
+                        requestAnimationFrame(() => requestAnimationFrame(() => runCheck(false)));
+                    }
 
                     dom.appendChild(btn);
                     dom.appendChild(summary);
-                    return { dom };
+                    return {
+                        dom,
+                        // Keep the nodeview on a checked-attr change (no rebuild → no flicker
+                        // of the marks the click just drew).
+                        update(updatedNode) {
+                            return !!updatedNode && updatedNode.type.name === 'clozeCheck';
+                        },
+                    };
                 };
             },
         });
