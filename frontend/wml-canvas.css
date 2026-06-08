@@ -259,14 +259,15 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-canvas-content {
     flex: 1;
     overflow-y: auto;
-    overflow-x: hidden;
-    /* v7.19.336: reserve the vertical scrollbar gutter permanently. The doc
-       (.swml-canvas-doc) is a fixed 720px centred with margin:0 auto inside this
-       overflow-y:auto box. When a pick re-renders a nodeView the doc height
-       flickers and the scrollbar toggles, so the centred doc reclaims the
-       scrollbar's ~15px and nudges RIGHT. Reserving the gutter stops the toggle
-       from ever reflowing the centred content. */
-    scrollbar-gutter: stable;
+    /* v7.19.337: `clip`, NOT `hidden`. The doc (.swml-canvas-doc) is a fixed
+       720px centred with margin:0 auto inside this box. A native <select> in the
+       codex is a focusable control; clicking it focuses it and the browser
+       scrolls it into view. `overflow-x:hidden` is STILL a scroll container, so
+       the browser scrolls this box horizontally a few px on that focus, nudging
+       the centred doc RIGHT (only on dropdowns, instant on open — plain text
+       clicks focus the contenteditable and don't trigger it). `overflow-x:clip`
+       is not a scroll container, so it can't be scrolled by focus at all. */
+    overflow-x: clip;
     padding: 32px 0 32px;
     position: relative;
 }
