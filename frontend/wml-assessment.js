@@ -13041,7 +13041,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 14, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 15, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -19171,37 +19171,60 @@
         // v7.19.313: Essay Structure — one section, grouped (Introduction / Body
         // Paragraph ×3 / Conclusion). First-letter cue + descriptor per element; the
         // CAPS group label rides on each group's first field.
+        // v7.19.334: Essay Structure / Story-Spine / IUMVCC — converted from write-in
+        // inputs to label-the-paragraph dropdowns (model passage + 3-option select per
+        // part + Check answers), mirroring TTECEA Application. Students LABEL a model
+        // rather than write it out. Content: An Inspector Calls / Cinderella / ban plastic.
+        const _row = (sentence, id, prompt, options, correct) =>
+            '<p>' + escapeHTML(sentence) + '</p>' + selectHTML(prompt, id, _lab(options), false, correct);
+        const _esP = 'Which part of the essay structure is this?';
+        const _hook = 'Hook', _build = 'Building sentences', _thesis = 'Thesis statement';
+        const _eTop = 'Topic sentence', _eTec = 'Technique', _eEv = 'Evidence', _eCA = 'Close analysis', _eEf = 'Effect', _eAP = "Author's purpose", _eCx = 'Context';
+        const _cRT = 'Restated thesis', _cCC = 'Controlling concept', _cACP = "Author's central purpose", _cMM = 'Ultimate moral message';
         html += sectionHTML('plan', 'Essay Structure', true, null,
-            inputHTML('INTRODUCTION (10%) — H… — question / historical context / quote', 'unit-7.essay-structure.intro.1') +
-            inputHTML('B… — context', 'unit-7.essay-structure.intro.2') +
-            inputHTML('T… — three key ideas', 'unit-7.essay-structure.intro.3') +
-            inputHTML('BODY PARAGRAPH ×3 (70%) — T… — key idea', 'unit-7.essay-structure.bp.1') +
-            inputHTML('T… — technique + evidence + inference', 'unit-7.essay-structure.bp.2') +
-            inputHTML('C… — the key word / phrase', 'unit-7.essay-structure.bp.3') +
-            inputHTML('E… — emotion (feel)', 'unit-7.essay-structure.bp.4') +
-            inputHTML('E… — thought / action', 'unit-7.essay-structure.bp.5') +
-            inputHTML('A… — in order to…', 'unit-7.essay-structure.bp.6') +
-            inputHTML('C… — historical / social', 'unit-7.essay-structure.bp.7') +
-            inputHTML('CONCLUSION (20%) — R… — three key ideas', 'unit-7.essay-structure.conclusion.1') +
-            inputHTML('C… — key theme', 'unit-7.essay-structure.conclusion.2') +
-            inputHTML('A… — in order to…', 'unit-7.essay-structure.conclusion.3') +
-            inputHTML('U… — the bigger message', 'unit-7.essay-structure.conclusion.4')
+            '<p>Below is a model <strong>An Inspector Calls</strong> essay in skeleton form. Label each part of its structure, then press <strong>Check answers</strong>.</p>'
+            + '<p><strong>Introduction</strong></p>'
+            + _row('What we do to others always finds its way back to us.', 'unit-7.essay-structure.s1.label', _esP, [_hook, _build, _thesis], _hook)
+            + _row('In An Inspector Calls, Priestley puts an entire family on trial for how they treated one powerless young woman.', 'unit-7.essay-structure.s2.label', _esP, [_hook, _build, _thesis], _build)
+            + _row('Priestley presents the Inspector as a voice of conscience to argue that society survives only when we accept responsibility for one another.', 'unit-7.essay-structure.s3.label', _esP, [_hook, _build, _thesis], _thesis)
+            + '<p><strong>Body paragraph (TTECEA+C)</strong></p>'
+            + _row('Through the Inspector, Priestley confronts the Birlings with the consequences of their selfishness.', 'unit-7.essay-structure.s4.label', _esP, [_eTop, _eTec, _eAP], _eTop)
+            + _row('Priestley ends the Inspector’s final speech with a foreboding tricolon of suffering…', 'unit-7.essay-structure.s5.label', _esP, [_eTop, _eTec, _eEv], _eTec)
+            + _row('…warning that the selfish will be taught their lesson ‘in fire and blood and anguish’.', 'unit-7.essay-structure.s6.label', _esP, [_eTec, _eEv, _eCA], _eEv)
+            + _row('The mounting triple image makes the punishment feel total and inescapable, like a prophecy.', 'unit-7.essay-structure.s7.label', _esP, [_eEv, _eCA, _eEf], _eCA)
+            + _row('This leaves the audience uneasy — implicated in the Birlings’ guilt and urged to change.', 'unit-7.essay-structure.s8.label', _esP, [_eCA, _eEf, _eAP], _eEf)
+            + _row('Priestley’s purpose is to push his 1945 audience to reject the self-interest he blamed for two world wars.', 'unit-7.essay-structure.s9.label', _esP, [_eEf, _eAP, _eCx], _eAP)
+            + _row('Setting the play in 1912 but writing in 1945, Priestley lets the audience see every catastrophe the Birlings cannot.', 'unit-7.essay-structure.s10.label', _esP, [_eAP, _eCx, _eTop], _eCx)
+            + '<p><strong>Conclusion</strong></p>'
+            + _row('Ultimately, Priestley uses the Inspector to indict a society that values profit over people.', 'unit-7.essay-structure.s11.label', _esP, [_cRT, _cCC, _cACP], _cRT)
+            + _row('The play’s controlling idea is that we are responsible for each other, or we are responsible for nothing.', 'unit-7.essay-structure.s12.label', _esP, [_cRT, _cCC, _cMM], _cCC)
+            + _row('Priestley’s central purpose is to convince his audience that real change must come from collective conscience.', 'unit-7.essay-structure.s13.label', _esP, [_cCC, _cACP, _cMM], _cACP)
+            + _row('The lasting message is that no one can live as if their choices touch no one else.', 'unit-7.essay-structure.s14.label', _esP, [_cACP, _cMM, _cRT], _cMM)
+            + clozeCheckHTML()
         );
+        const _ssP = 'Which Story Spine beat is this?';
+        const _b1 = 'Once upon a time', _b2 = 'Every day', _b3 = 'Until one day', _b4 = 'Because of this', _b6 = 'Until finally';
         html += sectionHTML('plan', 'Story-Spine Draft (6 Beats)', true, null,
-            inputHTML('Beat 1', 'unit-7.story-spine-draft.1') +
-            inputHTML('Beat 2', 'unit-7.story-spine-draft.2') +
-            inputHTML('Beat 3', 'unit-7.story-spine-draft.3') +
-            inputHTML('Beat 4', 'unit-7.story-spine-draft.4') +
-            inputHTML('Beat 5', 'unit-7.story-spine-draft.5') +
-            inputHTML('Beat 6', 'unit-7.story-spine-draft.6')
+            '<p>Below is the story of <strong>Cinderella</strong> told in six beats. Label which Story Spine beat each line is, then press <strong>Check answers</strong>.</p>'
+            + _row('Once upon a time, a kind girl named Cinderella lived with her cruel stepmother and stepsisters.', 'unit-7.story-spine-draft.s1.label', _ssP, [_b1, _b2, _b3], _b1)
+            + _row('Every day, she cooked and cleaned while they treated her as a servant.', 'unit-7.story-spine-draft.s2.label', _ssP, [_b1, _b2, _b3], _b2)
+            + _row('Until one day, an invitation arrived — the prince was holding a royal ball.', 'unit-7.story-spine-draft.s3.label', _ssP, [_b2, _b3, _b4], _b3)
+            + _row('Because of this, her fairy godmother appeared and conjured a gown and carriage.', 'unit-7.story-spine-draft.s4.label', _ssP, [_b3, _b4, _b6], _b4)
+            + _row('Because of this, the prince fell in love with her, but she fled at midnight, leaving a glass slipper.', 'unit-7.story-spine-draft.s5.label', _ssP, [_b4, _b6, _b2], _b4)
+            + _row('Until finally, the slipper fit Cinderella, and they were married.', 'unit-7.story-spine-draft.s6.label', _ssP, [_b4, _b3, _b6], _b6)
+            + clozeCheckHTML()
         );
+        const _iuP = 'Which IUMVCC section is this?';
+        const _i1 = 'Introduction', _i2 = 'Urgency', _i3 = 'Methodology', _i4 = 'Vision', _i5 = 'Counter-argument', _i6 = 'Conclusion';
         html += sectionHTML('plan', 'IUMVCC Draft (6 Beats)', true, null,
-            inputHTML('I — Issue', 'unit-7.iumvcc-draft.1') +
-            inputHTML('U — Urgency', 'unit-7.iumvcc-draft.2') +
-            inputHTML('M — Methodology', 'unit-7.iumvcc-draft.3') +
-            inputHTML('V — Vision', 'unit-7.iumvcc-draft.4') +
-            inputHTML('C — Counter-argument', 'unit-7.iumvcc-draft.5') +
-            inputHTML('C — Conclusion', 'unit-7.iumvcc-draft.6')
+            '<p>Below is a persuasive piece arguing that schools should <strong>ban single-use plastic</strong>, in six IUMVCC sections. Label each one, then press <strong>Check answers</strong>.</p>'
+            + _row('Every year our school throws away thousands of plastic bottles — it is time we stopped.', 'unit-7.iumvcc-draft.s1.label', _iuP, [_i1, _i2, _i6], _i1)
+            + _row('Right now that plastic is choking our oceans and poisoning the wildlife we claim to protect; we cannot wait.', 'unit-7.iumvcc-draft.s2.label', _iuP, [_i1, _i2, _i3], _i2)
+            + _row('We can act today: install water fountains, switch to refillable bottles, and reward every plastic-free class.', 'unit-7.iumvcc-draft.s3.label', _iuP, [_i2, _i3, _i4], _i3)
+            + _row('Imagine a school with empty bins, cleaner corridors, and students leading the community.', 'unit-7.iumvcc-draft.s4.label', _iuP, [_i3, _i4, _i5], _i4)
+            + _row('Some say plastic is cheaper and easier — but convenience today means catastrophe tomorrow.', 'unit-7.iumvcc-draft.s5.label', _iuP, [_i4, _i5, _i6], _i5)
+            + _row('The choice is ours: act now, and we hand the next generation a cleaner world.', 'unit-7.iumvcc-draft.s6.label', _iuP, [_i5, _i6, _i1], _i6)
+            + clozeCheckHTML()
         );
         html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,
             inputHTML('The three weapons — named in your own words.', 'unit-7.exit-ticket.three') +

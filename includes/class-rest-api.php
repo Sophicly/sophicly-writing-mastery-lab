@@ -1732,17 +1732,6 @@ class SWML_REST_API {
     /**
      * Load canvas document content from user_meta.
      */
-    /**
-     * v7.19.333: Read the bundled G9 Core Skills codex template (the hand-built
-     * codex turned into a code template). Served on first entry by load_canvas.
-     */
-    private function resolve_g9_template() {
-        $path = plugin_dir_path(dirname(__FILE__)) . 'templates/canvas-g9-core-skills.html';
-        if (!file_exists($path)) return '';
-        $html = file_get_contents($path);
-        return is_string($html) ? trim($html) : '';
-    }
-
     public function load_canvas($request) {
         $user_id = get_current_user_id();
 
@@ -1902,22 +1891,6 @@ class SWML_REST_API {
                     return rest_ensure_response([
                         'success'      => true,
                         'doc'          => ['html' => $crib_data['html']],
-                        'attempt'      => $attempt,
-                        'generalNotes' => $general_notes,
-                        'is_seed'      => true,
-                    ]);
-                }
-            }
-            // v7.19.333: G9 Core Skills codex — serve the bundled code template on
-            // first entry (no student had started at ship time, so fresh-serve only;
-            // no heal). Returned AS-IF saved; the first autosave persists it under
-            // the student's own key, after which the normal load path takes over.
-            if ($meta_key === 'swml_canvas_all_g9_core_skills') {
-                $g9_tpl = $this->resolve_g9_template();
-                if (!empty($g9_tpl)) {
-                    return rest_ensure_response([
-                        'success'      => true,
-                        'doc'          => ['html' => $g9_tpl],
                         'attempt'      => $attempt,
                         'generalNotes' => $general_notes,
                         'is_seed'      => true,
