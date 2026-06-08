@@ -140,7 +140,11 @@
       "Bash(git --no-pager diff -- frontend/wml-canvas.css)",
       "Bash(sed -n '1300,1365p' sophicly-writing-mastery-lab/includes/class-rest-api.php)",
       "Bash(sed -n '445,505p' sophicly-student-data/includes/class-learndash-bridge.php)",
-      "Bash(awk '/^\\\\.swml-section-block \\\\{/{f=1} f{print NR\": \"$0} /^\\\\}/{if\\(f\\){f=0}}' frontend/wml-canvas.css)"
+      "Bash(awk '/^\\\\.swml-section-block \\\\{/{f=1} f{print NR\": \"$0} /^\\\\}/{if\\(f\\){f=0}}' frontend/wml-canvas.css)",
+      "Bash(awk '/^\\\\.swml-input-field \\\\{/{f=1} f{print NR\": \"$0} f&&/^\\\\}/{exit}' frontend/wml-canvas.css)",
+      "Bash(FORCE_DIRTY_DEPLOY=1 sh -c 'echo y | ./deploy-production.sh')",
+      "Bash(grep -n 'function finalize\\\\|update_user_meta\\\\|update_post_meta\\\\|update_option\\\\|$wpdb\\\\|do_action\\\\|apply_filters\\\\|attempt\\\\|grade\\\\|submission' includes/class-quiz-engine.php)",
+      "Bash(awk '/function saveCanvasContent|saveCanvasContent = function/{f=1} f{print NR\": \"$0; c++} f&&c>45{exit}' frontend/wml-assessment.js)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
