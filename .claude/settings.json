@@ -120,7 +120,12 @@
       "Bash(head -6 HANDOFFS.md)",
       "Bash(rm -f .github/hooks/context-mode.json.bak)",
       "Bash(find /Users/neilwilliams/.claude/handoffs -iname \"dashboard-quizzes-not-in-submissions*\")",
-      "Bash(grep -n \"function TopicGroup\\\\|className=\\\\\"mw-topic\\\\|mw-topic-group\\\\|className={\\\\`mw-topic\" components/MyWork.jsx)"
+      "Bash(grep -n \"function TopicGroup\\\\|className=\\\\\"mw-topic\\\\|mw-topic-group\\\\|className={\\\\`mw-topic\" components/MyWork.jsx)",
+      "Bash(cd ~/.claude/handoffs/../..)",
+      "Bash(find \"/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins\" -name \"class-wml-rest-api.php\" -o -name \"class-learndash-bridge.php\" -o -name \"class-grade-mapper.php\")",
+      "Bash(grep -nA30 \"subject_map\\\\|function.*subject.*file\\\\|resolve_file\\\\|SUBJECT_FILES\" includes/class-quiz-bank.php)",
+      "Bash(grep -nE 'static function instance|static function get_instance|self::\\\\$instance|new self|private \\\\$instance|static \\\\$instance' class-learndash-bridge.php)",
+      "Bash(awk 'NR>=10788 && NR<=10838' frontend/wml-assessment.js)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
