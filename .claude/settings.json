@@ -119,7 +119,8 @@
       "Bash(tail -3 HANDOFFS.md)",
       "Bash(head -6 HANDOFFS.md)",
       "Bash(rm -f .github/hooks/context-mode.json.bak)",
-      "Bash(find /Users/neilwilliams/.claude/handoffs -iname \"dashboard-quizzes-not-in-submissions*\")"
+      "Bash(find /Users/neilwilliams/.claude/handoffs -iname \"dashboard-quizzes-not-in-submissions*\")",
+      "Bash(grep -n \"function TopicGroup\\\\|className=\\\\\"mw-topic\\\\|mw-topic-group\\\\|className={\\\\`mw-topic\" components/MyWork.jsx)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
