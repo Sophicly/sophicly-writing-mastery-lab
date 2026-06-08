@@ -3969,7 +3969,8 @@
                     clearPersist();
                     const rtxt = roundsTaken === 1 ? 'on your first round' : `in ${roundsTaken} rounds`;
                     if (res && res.success && res.quizResult) {
-                        aiBubble(`🎉 **Mastery!** A perfect **5/5** — ${rtxt}. That's exactly how the mark scheme sticks. Your mastery card is in the document on the left.`);
+                        const r = res.quizResult;
+                        aiBubble(`🎉 **Mastery!** A perfect **5/5 (${r.percentage}%) — Grade ${r.grade}**, ${rtxt}. That's exactly how the mark scheme sticks. Your result card is in the document on the left.`);
                         try { updateProgress(7); } catch (e) {}
                         _pendingQuizResult = Object.assign({}, res.quizResult, { rounds: roundsTaken, mastery: true });
                         if (typeof applyQuizResultToEditor === 'function') applyQuizResultToEditor();
@@ -20937,15 +20938,14 @@
         const rounds = parseInt(result.rounds, 10);
         const isMastery = !!result.mastery;
         const title = isMastery ? 'Mark Scheme Mastery' : 'Quiz Result';
-        let inner = '<p class="swml-qr-title">' + title + '</p>';
-        if (isMastery) {
-            const rtxt = (rounds && rounds > 0)
-                ? (rounds + ' round' + (rounds === 1 ? '' : 's'))
-                : 'a clean round';
-            inner += '<p class="swml-qr-line"><strong>Mastery achieved:</strong> a perfect 5 / 5 in ' + rtxt + '</p>';
-        } else {
-            inner += '<p class="swml-qr-line"><strong>Score:</strong> ' + score + ' / ' + max + '  &middot;  ' + pct + '%</p>'
-                  +  '<p class="swml-qr-line"><strong>GCSE Grade:</strong> ' + grade + '</p>';
+        // v7.19.329: ALWAYS show score + % + grade (Neil) — even on a mastery
+        // finish (which is 100% / Grade 9 by construction). Mastery adds a
+        // rounds-to-mastery line so effort is still visible.
+        let inner = '<p class="swml-qr-title">' + title + '</p>'
+                  + '<p class="swml-qr-line"><strong>Score:</strong> ' + score + ' / ' + max + '  &middot;  ' + pct + '%</p>'
+                  + '<p class="swml-qr-line"><strong>GCSE Grade:</strong> ' + grade + '</p>';
+        if (isMastery && rounds && rounds > 0) {
+            inner += '<p class="swml-qr-line"><strong>Mastery:</strong> 5 / 5 in ' + rounds + ' round' + (rounds === 1 ? '' : 's') + '</p>';
         }
         return sectionHTML('quizresult', title, false, null, inner);
     }
