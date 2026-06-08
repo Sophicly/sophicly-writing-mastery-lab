@@ -260,6 +260,13 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
+    /* v7.19.336: reserve the vertical scrollbar gutter permanently. The doc
+       (.swml-canvas-doc) is a fixed 720px centred with margin:0 auto inside this
+       overflow-y:auto box. When a pick re-renders a nodeView the doc height
+       flickers and the scrollbar toggles, so the centred doc reclaims the
+       scrollbar's ~15px and nudges RIGHT. Reserving the gutter stops the toggle
+       from ever reflowing the centred content. */
+    scrollbar-gutter: stable;
     padding: 32px 0 32px;
     position: relative;
 }
