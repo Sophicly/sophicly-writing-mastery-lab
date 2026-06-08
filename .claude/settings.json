@@ -131,7 +131,11 @@
       "Bash(./sophicly-dashboard/deploy-staging.sh)",
       "Bash(grep -rhioE \"TTECEA[^.]{0,140}\" protocols/shared/)",
       "Bash(grep -rhioE \"\\(Topic|Technique|Evidence|Comment|Explain|Effect|Author\\).{0,60}\\(Technique|Evidence|Comment|Explain|Effect|Author|Context\\)\" protocols/shared/modules/)",
-      "Bash(grep -rhioE \"\\(once upon a time|every day|until one day|because of this|until finally|ever since\\)[^<]{0,40}\" protocols/)"
+      "Bash(grep -rhioE \"\\(once upon a time|every day|until one day|because of this|until finally|ever since\\)[^<]{0,40}\" protocols/)",
+      "Bash(grep -nA22 \"function canvas_meta_key\" includes/class-rest-api.php)",
+      "Bash(git rm *)",
+      "Bash(rm -f templates/canvas-g9-core-skills.html)",
+      "Bash(sed -i '' 's/Version: 7.19.333/Version: 7.19.334/; s/SWML_VERSION'\"'\"', '\"'\"'7.19.333/SWML_VERSION'\"'\"', '\"'\"'7.19.334/' sophicly-writing-mastery-lab.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
