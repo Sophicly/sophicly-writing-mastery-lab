@@ -135,7 +135,9 @@
       "Bash(grep -nA22 \"function canvas_meta_key\" includes/class-rest-api.php)",
       "Bash(git rm *)",
       "Bash(rm -f templates/canvas-g9-core-skills.html)",
-      "Bash(sed -i '' 's/Version: 7.19.333/Version: 7.19.334/; s/SWML_VERSION'\"'\"', '\"'\"'7.19.333/SWML_VERSION'\"'\"', '\"'\"'7.19.334/' sophicly-writing-mastery-lab.php)"
+      "Bash(sed -i '' 's/Version: 7.19.333/Version: 7.19.334/; s/SWML_VERSION'\"'\"', '\"'\"'7.19.333/SWML_VERSION'\"'\"', '\"'\"'7.19.334/' sophicly-writing-mastery-lab.php)",
+      "Bash(node --input-type=module -e ' *)",
+      "Bash(git --no-pager diff -- frontend/wml-canvas.css)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
