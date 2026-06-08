@@ -10800,10 +10800,29 @@
                         if (typeof getPos !== 'function') return;
                         const pos = getPos();
                         if (typeof pos !== 'number') return;
+                        // v7.19.331: scroll-preserve guard — the setNodeMarkup dispatch
+                        // (plus the focused <select>) makes ProseMirror scroll its
+                        // selection into view, jumping a long codex doc to the bottom on
+                        // every pick. Mirror the proven _withScrollPreserve pattern used
+                        // by the feedback dropdowns: snapshot the canvas scroll position,
+                        // blur the active control, dispatch, then restore. Covers every
+                        // SelectField (single <select> AND multi-chip — both route here).
+                        const scroller = (editor.view && editor.view.dom)
+                            ? editor.view.dom.closest('.swml-canvas-content') : null;
+                        const prevTop = scroller ? scroller.scrollTop : 0;
+                        const active = document.activeElement;
+                        if (active && typeof active.blur === 'function') active.blur();
                         editor.chain().command(({ tr }) => {
                             tr.setNodeMarkup(pos, undefined, { ...node.attrs, value: newValue });
                             return true;
                         }).run();
+                        if (scroller) {
+                            requestAnimationFrame(() => {
+                                requestAnimationFrame(() => {
+                                    if (scroller.scrollTop !== prevTop) scroller.scrollTop = prevTop;
+                                });
+                            });
+                        }
                     };
 
                     if (node.attrs.multi) {
