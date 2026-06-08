@@ -137,7 +137,10 @@
       "Bash(rm -f templates/canvas-g9-core-skills.html)",
       "Bash(sed -i '' 's/Version: 7.19.333/Version: 7.19.334/; s/SWML_VERSION'\"'\"', '\"'\"'7.19.333/SWML_VERSION'\"'\"', '\"'\"'7.19.334/' sophicly-writing-mastery-lab.php)",
       "Bash(node --input-type=module -e ' *)",
-      "Bash(git --no-pager diff -- frontend/wml-canvas.css)"
+      "Bash(git --no-pager diff -- frontend/wml-canvas.css)",
+      "Bash(sed -n '1300,1365p' sophicly-writing-mastery-lab/includes/class-rest-api.php)",
+      "Bash(sed -n '445,505p' sophicly-student-data/includes/class-learndash-bridge.php)",
+      "Bash(awk '/^\\\\.swml-section-block \\\\{/{f=1} f{print NR\": \"$0} /^\\\\}/{if\\(f\\){f=0}}' frontend/wml-canvas.css)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
