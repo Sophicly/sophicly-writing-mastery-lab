@@ -259,15 +259,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-canvas-content {
     flex: 1;
     overflow-y: auto;
-    /* v7.19.337: `clip`, NOT `hidden`. The doc (.swml-canvas-doc) is a fixed
-       720px centred with margin:0 auto inside this box. A native <select> in the
-       codex is a focusable control; clicking it focuses it and the browser
-       scrolls it into view. `overflow-x:hidden` is STILL a scroll container, so
-       the browser scrolls this box horizontally a few px on that focus, nudging
-       the centred doc RIGHT (only on dropdowns, instant on open — plain text
-       clicks focus the contenteditable and don't trigger it). `overflow-x:clip`
-       is not a scroll container, so it can't be scrolled by focus at all. */
-    overflow-x: clip;
+    overflow-x: hidden;
     padding: 32px 0 32px;
     position: relative;
 }
@@ -5481,7 +5473,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* Focus ring on editable sections — subtle purple tint, not red (v7.15.4) */
 .swml-section-block:not(.swml-section-readonly):focus-within {
     background: rgba(83, 51, 237, 0.06);
-    border-left-width: 4px;
+    /* v7.19.338: brighten the left bar on focus, but DON'T grow its width. The
+       base border-left is 3px (content-box), so the old `border-left-width:4px`
+       pushed the section's content 1px right the instant a focusable control (the
+       codex <select>) gained focus — the dropdown right-shift Neil reported. Text
+       paragraphs aren't focusable so they never triggered it. Same-width colour
+       change = focus cue with zero reflow. */
+    border-left-color: rgba(83, 51, 237, 0.9);
 }
 
 /* ── Light mode overrides ── */
@@ -5680,10 +5678,6 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     font-size: 14px;
     font-family: inherit;
     cursor: pointer;
-    /* v7.19.335: fixed footprint so picking a longer option doesn't auto-widen the
-       <select> and shift the row right. width:100% of the field + border-box. */
-    width: 100%;
-    box-sizing: border-box;
     min-width: 120px;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' fill-opacity='0.6'><path d='M7 10l5 5 5-5z'/></svg>");
     background-repeat: no-repeat;
