@@ -5672,6 +5672,10 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     font-size: 14px;
     font-family: inherit;
     cursor: pointer;
+    /* v7.19.335: fixed footprint so picking a longer option doesn't auto-widen the
+       <select> and shift the row right. width:100% of the field + border-box. */
+    width: 100%;
+    box-sizing: border-box;
     min-width: 120px;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' fill-opacity='0.6'><path d='M7 10l5 5 5-5z'/></svg>");
     background-repeat: no-repeat;
