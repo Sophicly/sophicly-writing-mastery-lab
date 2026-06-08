@@ -126,7 +126,12 @@
       "Bash(grep -nA30 \"subject_map\\\\|function.*subject.*file\\\\|resolve_file\\\\|SUBJECT_FILES\" includes/class-quiz-bank.php)",
       "Bash(grep -nE 'static function instance|static function get_instance|self::\\\\$instance|new self|private \\\\$instance|static \\\\$instance' class-learndash-bridge.php)",
       "Bash(awk 'NR>=10788 && NR<=10838' frontend/wml-assessment.js)",
-      "Bash(php -l class-wml-rest-api.php)"
+      "Bash(php -l class-wml-rest-api.php)",
+      "Bash(./sophicly-student-data/deploy-staging.sh)",
+      "Bash(./sophicly-dashboard/deploy-staging.sh)",
+      "Bash(grep -rhioE \"TTECEA[^.]{0,140}\" protocols/shared/)",
+      "Bash(grep -rhioE \"\\(Topic|Technique|Evidence|Comment|Explain|Effect|Author\\).{0,60}\\(Technique|Evidence|Comment|Explain|Effect|Author|Context\\)\" protocols/shared/modules/)",
+      "Bash(grep -rhioE \"\\(once upon a time|every day|until one day|because of this|until finally|ever since\\)[^<]{0,40}\" protocols/)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
