@@ -782,9 +782,9 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 9. **Type: MCQ \[Tests AO5 Application\]**
    * **Question:** A student's transactional writing opens: "Dear Editor, I am writing to express my views on school uniforms. I think they are bad." This would likely score in Level 1 or 2. Which aspect most limits the marks?
-   * **Options:** A) The punctuation is incorrect, B) The register lacks sophistication and development for the form, C) It doesn't include statistics, D) The opinion isn't balanced.
+   * **Options:** A) The punctuation is incorrect, B) It's bald assertion with no persuasive craft — no compelling viewpoint, crafted devices or inventive structure, C) It doesn't include statistics, D) The opinion isn't balanced.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The register is flat and underdeveloped for a newspaper audience. "They are bad" is bald assertion — Level 3+ needs a controlled, developed register.
+   * **Feedback:** ✓ Correct. "They are bad" just asserts — there's no persuasive craft. Section B viewpoint writing rewards compelling ideas, deliberately crafted linguistic devices, inventive structure, ambitious vocabulary and punctuation/sentences chosen for effect (AO5 + AO6). Note: "crafted" here means persuasive and inventive — NOT stiff or formal. It's creative non-fiction, so a one-sided, passionate case is fine; what's missing is the *craft*, not formality or balance.
    * **Stretch (unscored):** What changes would show a Level 3 'clear and consistent' register? Formal vocabulary, developed reasoning, tone for the audience — e.g. "I am writing to express my concern about the current uniform policy, which fails to consider…"
 
 ---

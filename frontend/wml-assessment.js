@@ -3843,7 +3843,7 @@
                 chatSendBtn.style.opacity = '0.4';
                 chatSendBtn.style.pointerEvents = 'none';
                 const q = qs[idx];
-                if (!q) { endRound(); resetSend(); return; }
+                if (!q) { await endRound(); return; }
                 const kind = classify(msg, q.type);
                 if (kind === 'empty') { resetSend(); return; }
                 if (kind === 'question') { await routeHelp(msg, q); return; }
@@ -3864,7 +3864,7 @@
                     }
                     roundResults.push({ q, res, answer: msg });
                     idx++; persist();
-                    if (idx >= qs.length) endRound();
+                    if (idx >= qs.length) { await endRound(); }
                     else renderQ();   // no mid-round feedback — next question
                 } catch (e) {
                     removeCanvasTyping();
@@ -3875,8 +3875,12 @@
                 }
             }
 
-            // End-of-round review: reveal every question, then mastery-or-loop.
-            function endRound() {
+            // End-of-round review: reveal every question, finalise THIS round so the
+            // in-doc card always reflects the latest round's grade + % (Neil: grade+%
+            // always; the card must not go stale on a sub-100% round), then
+            // mastery-or-loop. Persisting every round also makes the grade honest — a
+            // student who stops at 3/5 counts as that grade; only a 5/5 finish = 100%.
+            async function endRound() {
                 const n = roundResults.length;
                 const correctN = roundResults.filter(r => r.res && r.res.correct).length;
                 const mastered = (n > 0 && correctN === n);
@@ -3889,10 +3893,29 @@
                 });
                 aiBubble(body);
                 try { updateProgress(7); } catch (e) {}
+
+                busy = true; showCanvasTyping();
+                let qr = null;
+                try {
+                    const res = await apiPost(API.quizFinish, { rounds: round, mastered: mastered });
+                    removeCanvasTyping();
+                    if (res && res.success && res.quizResult) {
+                        qr = res.quizResult;
+                        _pendingQuizResult = mastered ? Object.assign({}, qr, { rounds: round, mastery: true }) : qr;
+                        if (typeof applyQuizResultToEditor === 'function') applyQuizResultToEditor();
+                        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                    }
+                } catch (e) { removeCanvasTyping(); }
+                finally { resetSend(); }
+
                 if (mastered) {
-                    celebrateAndFinish();
+                    active = false; clearPersist();
+                    const rtxt = round === 1 ? 'on your first round' : `in ${round} rounds`;
+                    const tail = qr ? ` (${qr.percentage}%) — Grade ${qr.grade}` : '';
+                    aiBubble(`🎉 **Mastery!** A perfect **5/5${tail}**, ${rtxt}. That's exactly how the mark scheme sticks. Your result card is in the document on the left.`);
                 } else {
-                    aiBubble(`You scored **${correctN}/${n}** this round. **Aim for 100%** — here's a fresh set of ${n}, mixed across the assessment objectives. You've got this.`);
+                    const tail = qr ? ` (${qr.percentage}% · Grade ${qr.grade})` : '';
+                    aiBubble(`You scored **${correctN}/${n}**${tail} this round. **Aim for 100%** — here's a fresh set of ${n}, mixed across the assessment objectives. Your result card on the left now shows this round. You've got this.`);
                     appendQuickBar('Start the next round →', () => { round++; startRound(); });
                 }
             }
@@ -3958,32 +3981,6 @@
                 const board = (state.board || '').toUpperCase().replace(/-/g, ' ');
                 aiBubble(`Welcome to the **Mark Scheme Quiz**${board ? ' — ' + board : ''}. Each round is **5 questions**, and I'll give you the full feedback at the *end* of the round. **Aim for 100%** — we'll keep going with fresh sets until you ace a whole round. Stuck on any question? Just **ask me** and I'll explain.`);
                 await startRound();
-            }
-
-            async function celebrateAndFinish() {
-                active = false; busy = true; showCanvasTyping();
-                const roundsTaken = round;
-                try {
-                    const res = await apiPost(API.quizFinish, { rounds: roundsTaken });
-                    removeCanvasTyping();
-                    clearPersist();
-                    const rtxt = roundsTaken === 1 ? 'on your first round' : `in ${roundsTaken} rounds`;
-                    if (res && res.success && res.quizResult) {
-                        const r = res.quizResult;
-                        aiBubble(`🎉 **Mastery!** A perfect **5/5 (${r.percentage}%) — Grade ${r.grade}**, ${rtxt}. That's exactly how the mark scheme sticks. Your result card is in the document on the left.`);
-                        try { updateProgress(7); } catch (e) {}
-                        _pendingQuizResult = Object.assign({}, res.quizResult, { rounds: roundsTaken, mastery: true });
-                        if (typeof applyQuizResultToEditor === 'function') applyQuizResultToEditor();
-                        if (typeof saveCanvasContent === 'function') saveCanvasContent();
-                    } else {
-                        aiBubble(`🎉 A perfect round, ${rtxt}! (I couldn't finalise the card just now — tell your tutor if it doesn't appear.)`);
-                    }
-                } catch (e) {
-                    removeCanvasTyping();
-                    aiBubble("🎉 A perfect round! (Couldn't finalise the card just now.)");
-                } finally {
-                    resetSend();
-                }
             }
 
             return { start, handleTurn, tryResume: rehydrate, get active() { return active; } };

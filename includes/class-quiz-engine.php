@@ -438,13 +438,17 @@ class SWML_Quiz_Engine {
         // v7.19.328: mastery-loop sidecar — session_records has no column for
         // rounds-to-mastery, so stash it in user_meta keyed by board+text+topic so
         // the reload card (get_persisted_result) can re-show "Mastery in N rounds".
+        $mk = 'swml_msq_mastery_' . sanitize_key($accumulator['board']) . '_'
+            . sanitize_key($accumulator['text']) . '_' . (int) $accumulator['topic_number'];
         if (!empty($summary['rounds'])) {
-            $mk = 'swml_msq_mastery_' . sanitize_key($accumulator['board']) . '_'
-                . sanitize_key($accumulator['text']) . '_' . (int) $accumulator['topic_number'];
             update_user_meta($user_id, $mk, wp_slash(wp_json_encode([
                 'rounds'  => (int) $summary['rounds'],
                 'mastery' => true,
             ])));
+        } else {
+            // v7.19.330: non-mastery round persisted — clear any stale mastery flag so
+            // the reload card shows this round's real grade, not a previous 5/5.
+            delete_user_meta($user_id, $mk);
         }
         // v7.19.321: the in-doc "Quiz Result" card is rendered by the frontend
         // (the canvas is a schema-locked TipTap editor whose autosave clobbers
