@@ -144,7 +144,10 @@
       "Bash(awk '/^\\\\.swml-input-field \\\\{/{f=1} f{print NR\": \"$0} f&&/^\\\\}/{exit}' frontend/wml-canvas.css)",
       "Bash(FORCE_DIRTY_DEPLOY=1 sh -c 'echo y | ./deploy-production.sh')",
       "Bash(grep -n 'function finalize\\\\|update_user_meta\\\\|update_post_meta\\\\|update_option\\\\|$wpdb\\\\|do_action\\\\|apply_filters\\\\|attempt\\\\|grade\\\\|submission' includes/class-quiz-engine.php)",
-      "Bash(awk '/function saveCanvasContent|saveCanvasContent = function/{f=1} f{print NR\": \"$0; c++} f&&c>45{exit}' frontend/wml-assessment.js)"
+      "Bash(awk '/function saveCanvasContent|saveCanvasContent = function/{f=1} f{print NR\": \"$0; c++} f&&c>45{exit}' frontend/wml-assessment.js)",
+      "Bash(head -5 HANDOFFS.md)",
+      "Bash(php -l class-wml-listener.php)",
+      "Bash(node --check SubmissionsPanel.jsx)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
