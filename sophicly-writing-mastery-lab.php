@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.344
+ * Version: 7.19.345
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.344');
+define('SWML_VERSION', '7.19.345');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -369,6 +369,11 @@ class Sophicly_Writing_Mastery_Lab {
             'targetUserId'     => $embed_review['target_user_id'], // v7.15.53: student whose canvas is being viewed
             // v7.19.288: course deadline window (same source as sidebar badge) for the Codex timer.
             'courseDeadline'   => $this->get_course_deadline_for_config($embed_review['target_user_id'] ?: 0),
+            // v7.19.345: course + current-lesson ids so the Codex Session timer can read the
+            // SAME lesson-scoped sophicly/v1/deadlines/current the focus-mode sidebar uses
+            // (was drifting because it used the course-WIDE window instead).
+            'courseId'         => $this->resolve_current_course_id(get_queried_object_id()),
+            'lessonId'         => get_queried_object_id(),
             // v7.15.76: Feedback-unlock flags for the target student. Falls back
             // to the current user when not in review mode (student self-view).
             // JS gates on viewerMode==='edit' before applying, so tutor/parent
@@ -785,6 +790,10 @@ class Sophicly_Writing_Mastery_Lab {
                 'lessonUrl'      => get_queried_object_id() ? get_permalink(get_queried_object_id()) : '',
                 // v7.19.288: course deadline window (same source as sidebar badge) for the Codex timer.
                 'courseDeadline' => $this->get_course_deadline_for_config($embed_review['target_user_id'] ?: 0),
+                // v7.19.345: course + current-lesson ids → Codex Session timer reads the SAME
+                // lesson-scoped sophicly/v1/deadlines/current the focus-mode sidebar uses.
+                'courseId'       => $this->resolve_current_course_id(get_queried_object_id()),
+                'lessonId'       => get_queried_object_id(),
                 'covers'         => get_option('swml_cover_images', []),
                 'urlParams'      => [
                     'mode' => 'guided', 'board' => '', 'subject' => '', 'text' => '',

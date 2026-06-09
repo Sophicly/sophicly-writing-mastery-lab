@@ -8529,6 +8529,57 @@
             }));
             rightPanel.appendChild(timeWrap);
 
+            // v7.19.345: Codex Session deadline — LIVE + IDENTICAL to the focus-mode
+            // sidebar. Root cause of the drift (sidebar "1d left" vs codex "2 days"):
+            // the codex read the course-WIDE window (get_course_deadline_window =
+            // MAX(due) across all units) while the sidebar reads the LESSON-SCOPED
+            // sophicly/v1/deadlines/current. Now the codex reads that SAME endpoint
+            // (with course_id + the current lesson_id) and re-polls so it tracks the
+            // sidebar in real time. Falls back to the static render above if the
+            // course/lesson ids or endpoint are unavailable.
+            if (state.task === 'mastery_codex') {
+                const _dCfg = window.swmlConfig || {};
+                if (_dCfg.courseId && _dCfg.wpRestUrl) {
+                    const _dlBase = _dCfg.wpRestUrl + 'sophicly/v1/deadlines/current';
+                    const _dlHeaders = { 'X-WP-Nonce': _dCfg.nonce || '' };
+                    const _applyLiveDeadline = (d) => {
+                        if (!d || d.days_left === undefined || d.days_left === null) return;
+                        const dl = parseInt(d.days_left, 10);
+                        const dt = parseInt(d.days_allowed, 10) || parseInt(d.days_total, 10) || 7;
+                        let text, colour, pct, animated = false;
+                        if (isNaN(dl) || dl < 0) { text = 'Overdue'; pct = 100; colour = '#dc2626'; }
+                        else {
+                            pct = Math.min(100, Math.max(0, Math.round(((dt - dl) / dt) * 100)));
+                            text = dl + ' day' + (dl !== 1 ? 's' : '') + ' remaining';
+                            if (dl <= 2) colour = '#E67E22';
+                            else if (dl <= 5) colour = '#F1C40F';
+                            else { colour = '#51dacf'; animated = true; }
+                        }
+                        deadlineLabel.textContent = text;
+                        if (animated) {
+                            deadlineFill.style.cssText = 'height:100%;border-radius:3px;background:linear-gradient(270deg,#42a1ec,#4d76fd,#7DF9E9,#4d76fd);background-size:800% 800%;animation:swmlProgressShimmer 20s ease infinite;width:' + pct + '%;';
+                        } else {
+                            deadlineFill.style.animation = 'none';
+                            deadlineFill.style.background = colour;
+                            deadlineFill.style.width = pct + '%';
+                        }
+                    };
+                    const _fetchLiveDeadline = () => {
+                        let url = _dlBase + '?course_id=' + encodeURIComponent(_dCfg.courseId);
+                        if (_dCfg.lessonId) url += '&lesson_id=' + encodeURIComponent(_dCfg.lessonId);
+                        // review mode: read the STUDENT's deadline, like the sidebar.
+                        if (_dCfg.reviewStudentId) url += '&user_id=' + encodeURIComponent(_dCfg.reviewStudentId);
+                        fetch(url, { headers: _dlHeaders }).then(r => r.json()).then(_applyLiveDeadline).catch(() => {});
+                    };
+                    _fetchLiveDeadline();
+                    const _dlTimer = setInterval(() => {
+                        // stop once this widget instance is gone (canvas re-render / nav)
+                        if (!document.contains(deadlineFill)) { clearInterval(_dlTimer); return; }
+                        _fetchLiveDeadline();
+                    }, 60000);
+                }
+            }
+
             // Word target progress
             // v7.19.208: Skip the essay word-target panel for mastery_codex.
             // v7.19.285: ...but give the Codex its own SOFT word-count panel (total
