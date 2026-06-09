@@ -151,7 +151,9 @@
       "Bash(grep -rn 'new Sophicly_LearnDash_Bridge\\\\|Sophicly_LearnDash_Bridge::\\\\|sophicly_bridge\\(\\)\\\\|$bridge =' includes/class-learndash-bridge.php sophicly-student-data.php)",
       "Bash(grep -n 'function init\\\\|function instance\\\\|private static $\\\\|self::$instance\\\\|public static function' includes/class-learndash-bridge.php)",
       "Bash(grep -n 'bridge\\\\|Bridge\\\\|sophicly_get_bridge\\\\|instance\\(\\)\\\\|$course_id =' single-sfwd-focus.php)",
-      "Bash(grep -iE \"\\\\.js$|\\\\.php$\")"
+      "Bash(grep -iE \"\\\\.js$|\\\\.php$\")",
+      "Bash(grep -n 'components_binding\\\\|'\\\\''display'\\\\''\\\\s*=>\\\\|\"display\"\\\\|'\\\\''derived'\\\\''\\\\|'\\\\''shared'\\\\''\\\\|function ajax_load\\\\|function get_course_units\\\\|'\\\\''title'\\\\''\\\\s*=>\\\\|'\\\\''wml_task'\\\\''\\\\s*=>\\\\|=> $tm\\\\['\\\\''display'\\\\''\\\\]' admin/class-learndash-bridge-settings.php)",
+      "Bash(grep -n 'memo\\\\[ $topic_id\\\\|memo\\\\[ $key' includes/class-learndash-bridge.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
