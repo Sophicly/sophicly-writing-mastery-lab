@@ -2693,9 +2693,10 @@
                 const _msqMidRound = QUIZ_CONTROLLER_ON && state.task === 'mark_scheme_unit'
                     && (state.step === 1 || state.bridgeStep === 1)
                     && _quizCtl.active && _quizCtl.midRound && _quizCtl.answered > 0;
+                const _proj = _msqMidRound ? _quizCtl.projected : null;
                 showConfirm(
                     _msqMidRound
-                        ? 'You\u2019re mid-round on the Mark Scheme Quiz (' + _quizCtl.answered + ' of 5 answered). Clearing now ENDS this round \u2014 unanswered questions score 0 and the round is recorded as an attempt. You\u2019ll usually score higher by finishing the round first. Clear anyway?'
+                        ? 'You\u2019re mid-round on the Mark Scheme Quiz (' + _quizCtl.answered + ' of 5 answered). Clearing now ENDS this round \u2014 unanswered questions score 0, so this attempt will be recorded as ' + _proj.score + '/' + _proj.max + ' (' + _proj.pct + '% \u00b7 Grade ' + _proj.grade + '). You\u2019ll usually score higher by finishing the round first. Clear anyway?'
                         : 'Clear this assessment chat and start fresh? Your document and essay are preserved \u2014 only the chat messages will be removed.',
                     async () => {
                         if (_msqMidRound) await _quizCtl.abandonRound();
@@ -4042,6 +4043,17 @@
                 get active() { return active; },
                 get midRound() { return active && qs.length > 0 && idx < qs.length; },
                 get answered() { return active ? roundResults.length : 0; },
+                // v7.19.350: what THIS round records if abandoned now (unanswered = 0).
+                // Grade band mirrors the canonical Sophicly_Grade_Mapper /
+                // SWML_Quiz_Engine::percentage_to_grade: 9≥95 8≥85 7≥75 6≥65 5≥55 4≥45 3≥35 2≥25 else 1.
+                get projected() {
+                    const score = roundResults.reduce((s, r) => s + ((r.res && r.res.marks) || 0), 0);
+                    const max = (qs.length || 5) * 2;
+                    const pct = max > 0 ? Math.round((score / max) * 100) : 0;
+                    const grade = pct >= 95 ? 9 : pct >= 85 ? 8 : pct >= 75 ? 7 : pct >= 65 ? 6
+                        : pct >= 55 ? 5 : pct >= 45 ? 4 : pct >= 35 ? 3 : pct >= 25 ? 2 : 1;
+                    return { score, max, pct, grade };
+                },
             };
         })();
 
