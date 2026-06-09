@@ -5099,13 +5099,16 @@ class SWML_REST_API {
     //
     //  Persistence mirrors SWML_Quiz_Engine::persist_mark_scheme — fires
     //  sophicly_canvas_saved → student-data listener writes a session_records row.
-    //  KEY (v7.19.341): session_records has NO suffix column, so each section is its
-    //  own self-describing text_slug 'codex_{section_slug}' (best-per-section =
-    //  max grade per text_slug; attempts distinguished by attempt_number). board='all'
-    //  matches the codex course (bridge: board=all, text=g9_core_skills — wml-core.js
-    //  ~L1348). The DASHBOARD groups all (board='all', text_slug LIKE 'codex_%') rows
-    //  under one "Grade 9 Core Skills" course card so they don't show as separate
-    //  courses (Neil staging feedback). task_kind='codex' (listener must map → task).
+    //  KEY (v7.19.342) — matches the contract student-data v2.30.98 already coded
+    //  against (class-wml-listener.php task_by_suffix + the attempt_number branch):
+    //    board='core_skills', text_slug='codex_{section_slug}', suffix='_codex'.
+    //  suffix '_codex' → task='codex' (task_by_suffix); a NON-empty suffix is REQUIRED
+    //  to hit the scored-quiz branch (empty suffix routes to the assessment
+    //  word-count path). attempt_number in $extra → the listener writes a DISTINCT
+    //  row per Check (no overwrite). section_label/task_kind ride $extra into the
+    //  outcome JSON. Each section = its own text_slug → best-per-section = max grade
+    //  per text_slug. Remaining dashboard work = DISPLAY only: group codex_* under the
+    //  one "Grade 9 Core Skills" course card (not separate chips — Neil feedback).
     // ═══════════════════════════════════════════
     public function handle_codex_check($request) {
         $gate = $this->check_viewer_write_allowed($request);
@@ -5164,12 +5167,12 @@ class SWML_REST_API {
         do_action(
             'sophicly_canvas_saved',
             $target_uid,
-            'all',                  // board — codex is board-agnostic (bridge: board=all)
-            'codex_' . $slug,       // text_slug — self-describing per section (no suffix col)
+            'core_skills',          // board — matches student-data v2.30.98 codex wiring
+            'codex_' . $slug,       // text_slug — per section
             '',
             0,
             0,
-            '',                     // suffix (no column; left blank)
+            '_codex',               // suffix → task_by_suffix maps to task='codex'
             $extra
         );
 
