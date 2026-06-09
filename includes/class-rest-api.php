@@ -5099,8 +5099,12 @@ class SWML_REST_API {
     //
     //  Persistence mirrors SWML_Quiz_Engine::persist_mark_scheme — fires
     //  sophicly_canvas_saved → student-data listener writes a session_records row.
-    //  Codex is a flat, board/text-less doc, so we use a STABLE synthetic key:
-    //  board='core_skills', text_slug='codex_{section_slug}', task_kind='codex'.
+    //  KEY (v7.19.340): match the codex COURSE so attempts NEST under the existing
+    //  "G9_core_skills" Submissions chip instead of spawning a rogue per-section
+    //  chip. The codex doc is keyed board='all', text='g9_core_skills' (bridge —
+    //  see wml-core.js ~L1348). Each section is distinguished by the suffix column
+    //  '_codex_{section_slug}', so the dashboard can break out one line per section
+    //  within that one course chip. task_kind='codex'.
     // ═══════════════════════════════════════════
     public function handle_codex_check($request) {
         $gate = $this->check_viewer_write_allowed($request);
@@ -5159,12 +5163,12 @@ class SWML_REST_API {
         do_action(
             'sophicly_canvas_saved',
             $target_uid,
-            'core_skills',
-            'codex_' . $slug,
+            'all',                  // board — codex is board-agnostic (bridge: board=all)
+            'g9_core_skills',       // text_slug — nests under the G9 Core Skills chip
             '',
             0,
             0,
-            '_codex',
+            '_codex_' . $slug,      // suffix — per-section breakout within the chip
             $extra
         );
 
