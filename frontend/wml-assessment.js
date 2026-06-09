@@ -13123,7 +13123,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 15, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 16, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -19288,12 +19288,17 @@
         const _b1 = 'Once upon a time', _b2 = 'Every day', _b3 = 'Until one day', _b4 = 'Because of this', _b6 = 'Until finally';
         html += sectionHTML('plan', 'Story-Spine Draft (6 Beats)', true, null,
             '<p>Below is the story of <strong>Cinderella</strong> told in six beats. Label which Story Spine beat each line is, then press <strong>Check answers</strong>.</p>'
-            + _row('Once upon a time, a kind girl named Cinderella lived with her cruel stepmother and stepsisters.', 'unit-7.story-spine-draft.s1.label', _ssP, [_b1, _b2, _b3], _b1)
-            + _row('Every day, she cooked and cleaned while they treated her as a servant.', 'unit-7.story-spine-draft.s2.label', _ssP, [_b1, _b2, _b3], _b2)
-            + _row('Until one day, an invitation arrived — the prince was holding a royal ball.', 'unit-7.story-spine-draft.s3.label', _ssP, [_b2, _b3, _b4], _b3)
-            + _row('Because of this, her fairy godmother appeared and conjured a gown and carriage.', 'unit-7.story-spine-draft.s4.label', _ssP, [_b3, _b4, _b6], _b4)
-            + _row('Because of this, the prince fell in love with her, but she fled at midnight, leaving a glass slipper.', 'unit-7.story-spine-draft.s5.label', _ssP, [_b4, _b6, _b2], _b4)
-            + _row('Until finally, the slipper fit Cinderella, and they were married.', 'unit-7.story-spine-draft.s6.label', _ssP, [_b4, _b3, _b6], _b6)
+            // v7.19.343: sentences no longer START with the beat connective — that
+            // gave the dropdown answer away (Neil). Student must now infer the beat
+            // from the narrative FUNCTION (setup / routine / inciting / consequence /
+            // resolution), which is the actual skill. Field ids + correct answers
+            // unchanged; only the displayed prose changed.
+            + _row('A kind girl named Cinderella lived with her cruel stepmother and stepsisters.', 'unit-7.story-spine-draft.s1.label', _ssP, [_b1, _b2, _b3], _b1)
+            + _row('She cooked and cleaned for them, treated as a servant in her own home.', 'unit-7.story-spine-draft.s2.label', _ssP, [_b1, _b2, _b3], _b2)
+            + _row('An invitation arrived — the prince was holding a royal ball.', 'unit-7.story-spine-draft.s3.label', _ssP, [_b2, _b3, _b4], _b3)
+            + _row('Her fairy godmother appeared and conjured a gown and carriage.', 'unit-7.story-spine-draft.s4.label', _ssP, [_b3, _b4, _b6], _b4)
+            + _row('The prince fell in love with her, but she fled at midnight, leaving a glass slipper.', 'unit-7.story-spine-draft.s5.label', _ssP, [_b4, _b6, _b2], _b4)
+            + _row('The slipper fit Cinderella, and they were married, and they lived happily ever after.', 'unit-7.story-spine-draft.s6.label', _ssP, [_b4, _b3, _b6], _b6)
             + clozeCheckHTML()
         );
         const _iuP = 'Which IUMVCC section is this?';
