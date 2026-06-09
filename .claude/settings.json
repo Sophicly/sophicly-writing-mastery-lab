@@ -195,7 +195,14 @@
       "Bash(pdftotext '/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-etchwp-package v2.6/Sophicly Etch Mark Scheme Resources/SQA English National 5 Critical Reading/SQA English National 5 mi_N5_English_Critical-Reading_2025.pdf' /tmp/sqa_mi.txt)",
       "Bash(php /tmp/wml-quiz-validate.php \"/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-etchwp-package v2.6/Sophicly Etch Writing Mastery Plugin/sophicly_writing_mastery_lab_v7_12_30/protocols/shared/mark-scheme-quiz/language1.md\")",
       "Bash(grep -n -i 'thorough\\\\|cohesive' '__TRACKED_VAR__/SQA English National 5 Critical Reading/SQA English National 5 N5_English_Critical-Reading_2025.md')",
-      "Bash(awk '/2[0-5]\\\\. \\\\*\\\\*Type/,0')"
+      "Bash(awk '/2[0-5]\\\\. \\\\*\\\\*Type/,0')",
+      "Bash(sed -n '7700,7720p' frontend/wml-assessment.js)",
+      "Bash(sed -n '8060,8085p' frontend/wml-assessment.js)",
+      "Bash(node /Users/neilwilliams/.claude/skills/impeccable/scripts/load-context.mjs)",
+      "Bash(sed -n '50,58p' frontend/wml-assessment.js)",
+      "Bash(awk 'NR>=2000 && NR<=3800 && /^    \\(function|const|let\\) [A-Za-z_]+.*\\\\{|^    \\\\}/' frontend/wml-assessment.js)",
+      "Bash(awk 'NR>=2200 && NR<=2690 && /function [A-Za-z_]+\\\\\\(/ {print NR\": \"$0}' frontend/wml-assessment.js)",
+      "Bash(awk 'NR>=2090 && NR<=2220 && /function [A-Za-z_]+\\\\\\(/ {print NR\": \"$0}' frontend/wml-assessment.js)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
