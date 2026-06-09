@@ -8485,7 +8485,11 @@
                 if (_codexCfg) {
                     const dl = parseInt(_codexCfg.days_left, 10);
                     const dt = parseInt(_codexCfg.days_total, 10) || 7;
-                    if (isNaN(dl) || dl <= 0) return { text: 'Overdue', pct: 100, colour: '#dc2626', animated: false };
+                    if (isNaN(dl) || dl <= 0) {
+                        const _od = isNaN(dl) ? 0 : Math.abs(dl);
+                        const _ot = _od > 0 ? `Overdue by ${_od} day${_od !== 1 ? 's' : ''}` : 'Overdue';
+                        return { text: _ot, pct: 100, colour: '#dc2626', animated: false };
+                    }
                     const cpct = Math.min(100, Math.max(0, Math.round(((dt - dl) / dt) * 100)));
                     const clbl = `${dl} day${dl !== 1 ? 's' : ''} remaining`;
                     if (dl <= 2) return { text: clbl, pct: cpct, colour: '#E67E22', animated: false };
@@ -8493,7 +8497,11 @@
                     return { text: clbl, pct: cpct, colour: '#51dacf', animated: true };
                 }
                 const remaining = deadlineDate.getTime() - Date.now();
-                if (remaining <= 0) return { text: 'Overdue', pct: 100, colour: '#dc2626', animated: false };
+                if (remaining <= 0) {
+                    const _od = Math.ceil(Math.abs(remaining) / (24 * 60 * 60 * 1000));
+                    const _ot = _od > 0 ? `Overdue by ${_od} day${_od !== 1 ? 's' : ''}` : 'Overdue';
+                    return { text: _ot, pct: 100, colour: '#dc2626', animated: false };
+                }
                 const daysLeft = Math.ceil(remaining / (24 * 60 * 60 * 1000));
                 const pct = Math.min(100, Math.round(((_deadlineDays - daysLeft) / _deadlineDays) * 100));
                 // 6+ days: animated teal/blue, 3-5: yellow, 1-2: orange, overdue: red
@@ -8547,7 +8555,12 @@
                         const dl = parseInt(d.days_left, 10);
                         const dt = parseInt(d.days_allowed, 10) || parseInt(d.days_total, 10) || 7;
                         let text, colour, pct, animated = false;
-                        if (isNaN(dl) || dl < 0) { text = 'Overdue'; pct = 100; colour = '#dc2626'; }
+                        if (isNaN(dl)) { text = 'Overdue'; pct = 100; colour = '#dc2626'; }
+                        else if (dl < 0) {
+                            const _od = Math.abs(dl);
+                            text = 'Overdue by ' + _od + ' day' + (_od !== 1 ? 's' : '');
+                            pct = 100; colour = '#dc2626';
+                        }
                         else {
                             pct = Math.min(100, Math.max(0, Math.round(((dt - dl) / dt) * 100)));
                             text = dl + ' day' + (dl !== 1 ? 's' : '') + ' remaining';
