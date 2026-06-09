@@ -218,7 +218,9 @@
       "Bash(sed -n '424,430p' sophicly-exercise.js)",
       "Bash(grep -q \"wml-neil-task-batch-2026-06-09\" ~/.claude/handoffs/HANDOFFS.md || echo \"| 2026-06-09 | wml-neil-task-batch-2026-06-09.md | wml+dashboard | open | high | Neil's 9-item batch: WML fixes \\(comments refresh, Q1 checklist, Reeham saves, AQA P2 wording\\) + goals/process-score/year features |\" >> ~/.claude/handoffs/HANDOFFS.md; tail -2 ~/.claude/handoffs/HANDOFFS.md)",
       "Bash(sed -n '1866,1900p' frontend/wml-canvas.css)",
-      "Bash(sed -n '2127,2140p' frontend/wml-canvas.css)"
+      "Bash(sed -n '2127,2140p' frontend/wml-canvas.css)",
+      "Bash(sed -n '3402,3470p' src/styles/prototype.css)",
+      "Bash(sed -n '1110,1125p' src/styles/prototype.css)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
