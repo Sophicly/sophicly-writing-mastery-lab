@@ -2740,6 +2740,17 @@
                                 renderCanvasWorkspace();
                             }
                         }, 200);
+                        } else if (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme_unit'
+                                   && (state.step === 1 || state.bridgeStep === 1)) {
+                        // v7.19.348: MSQ step 1 is owned by the deterministic controller
+                        // (v7.19.323) — but this chat-clear branch predated it (v7.18.46)
+                        // and still silent-sent "Let's begin!" to the AI, so Sophia re-ran
+                        // the LEGACY protocol-driven quiz (mid-question feedback, no code
+                        // scoring, no recording). Mirror the boot gate (search:
+                        // "MSQ — deterministic controller start"): reset the controller
+                        // sidecar + start a fresh round 1. FYW (step 2) and mark_scheme
+                        // final assessment fall through to the AI silent-send below.
+                        setTimeout(() => { _quizCtl.reset(); _quizCtl.start(); }, 200);
                         } else if (state.task === 'mark_scheme_unit' || state.task === 'mark_scheme') {
                         // v7.18.46: mark-scheme-* tasks get a fresh protocol-driven start
                         // (same pattern as exam_prep at L2232). Pre-v7.18.46 fell through to
@@ -3988,7 +3999,14 @@
                 await startRound();
             }
 
-            return { start, handleTurn, tryResume: rehydrate, get active() { return active; } };
+            // v7.19.348: full reset for chat-clear — deactivate + wipe the localStorage
+            // sidecar so a subsequent start() begins a fresh round 1 (not a stale mid-round).
+            function reset() {
+                active = false; round = 1; roundResults = []; idx = 0; qs = [];
+                clearPersist();
+            }
+
+            return { start, reset, handleTurn, tryResume: rehydrate, get active() { return active; } };
         })();
 
         return {
