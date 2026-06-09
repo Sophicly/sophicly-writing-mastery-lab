@@ -13168,6 +13168,32 @@
                         el.innerHTML = old.value;
                     }
                 });
+                // v7.19.344: also preserve each section's ClozeCheck ✓/✗ state across a
+                // template-version upgrade. The [data-cloze-check] node has no field-id,
+                // so key it by its section's field-id prefix (one ClozeCheck per section,
+                // e.g. 'unit-7.story-spine-draft'). Without this, every codex version
+                // bump wiped the checked/mastered marks (Neil, hard-refresh after .343).
+                const _clozeSectionKey = (cc) => {
+                    const sec = cc.closest('.swml-section-block') || cc.parentElement;
+                    const f = sec && sec.querySelector('[data-field-id]');
+                    const fid = f ? (f.getAttribute('data-field-id') || '') : '';
+                    return fid.replace(/\.[^.]*\.[^.]*$/, ''); // strip ".sN.label"
+                };
+                const clozeMap = {};
+                oldDoc.querySelectorAll('[data-cloze-check]').forEach(cc => {
+                    const key = _clozeSectionKey(cc);
+                    if (!key) return;
+                    clozeMap[key] = {
+                        checked:  cc.getAttribute('data-checked') === 'true',
+                        mastered: cc.getAttribute('data-mastered') === 'true',
+                    };
+                });
+                newDoc.querySelectorAll('[data-cloze-check]').forEach(cc => {
+                    const st = clozeMap[_clozeSectionKey(cc)];
+                    if (!st) return;
+                    if (st.checked)  cc.setAttribute('data-checked', 'true');
+                    if (st.mastered) cc.setAttribute('data-mastered', 'true');
+                });
                 const root = newDoc.getElementById('wml-merge-root');
                 return root ? root.innerHTML : newHTML;
             } catch (e) {
