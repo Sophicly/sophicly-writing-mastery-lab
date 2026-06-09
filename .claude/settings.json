@@ -202,7 +202,16 @@
       "Bash(sed -n '50,58p' frontend/wml-assessment.js)",
       "Bash(awk 'NR>=2000 && NR<=3800 && /^    \\(function|const|let\\) [A-Za-z_]+.*\\\\{|^    \\\\}/' frontend/wml-assessment.js)",
       "Bash(awk 'NR>=2200 && NR<=2690 && /function [A-Za-z_]+\\\\\\(/ {print NR\": \"$0}' frontend/wml-assessment.js)",
-      "Bash(awk 'NR>=2090 && NR<=2220 && /function [A-Za-z_]+\\\\\\(/ {print NR\": \"$0}' frontend/wml-assessment.js)"
+      "Bash(awk 'NR>=2090 && NR<=2220 && /function [A-Za-z_]+\\\\\\(/ {print NR\": \"$0}' frontend/wml-assessment.js)",
+      "Bash(sed -n '120,145p' sophicly-components/includes/class-shortcode-exercise.php)",
+      "Bash(sed -n '195,215p' sophicly-components/includes/class-shortcode-exercise.php)",
+      "Bash(sed -n '395,425p' sophicly-components/frontend/sophicly-exercise.js)",
+      "Bash(awk -F: '$1>22300 && $1<22700')",
+      "Bash(sed -n '350,375p' sophicly-decoder.js)",
+      "Bash(sed -n '240,265p' sophicly-matching.js)",
+      "Bash(sed -n '282,305p' sophicly-scenario.js)",
+      "Bash(sed -n '436,452p' sophicly-decoder.js)",
+      "Bash(sed -n '378,410p' sophicly-matching.js)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
