@@ -5099,12 +5099,13 @@ class SWML_REST_API {
     //
     //  Persistence mirrors SWML_Quiz_Engine::persist_mark_scheme — fires
     //  sophicly_canvas_saved → student-data listener writes a session_records row.
-    //  KEY (v7.19.340): match the codex COURSE so attempts NEST under the existing
-    //  "G9_core_skills" Submissions chip instead of spawning a rogue per-section
-    //  chip. The codex doc is keyed board='all', text='g9_core_skills' (bridge —
-    //  see wml-core.js ~L1348). Each section is distinguished by the suffix column
-    //  '_codex_{section_slug}', so the dashboard can break out one line per section
-    //  within that one course chip. task_kind='codex'.
+    //  KEY (v7.19.341): session_records has NO suffix column, so each section is its
+    //  own self-describing text_slug 'codex_{section_slug}' (best-per-section =
+    //  max grade per text_slug; attempts distinguished by attempt_number). board='all'
+    //  matches the codex course (bridge: board=all, text=g9_core_skills — wml-core.js
+    //  ~L1348). The DASHBOARD groups all (board='all', text_slug LIKE 'codex_%') rows
+    //  under one "Grade 9 Core Skills" course card so they don't show as separate
+    //  courses (Neil staging feedback). task_kind='codex' (listener must map → task).
     // ═══════════════════════════════════════════
     public function handle_codex_check($request) {
         $gate = $this->check_viewer_write_allowed($request);
@@ -5164,11 +5165,11 @@ class SWML_REST_API {
             'sophicly_canvas_saved',
             $target_uid,
             'all',                  // board — codex is board-agnostic (bridge: board=all)
-            'g9_core_skills',       // text_slug — nests under the G9 Core Skills chip
+            'codex_' . $slug,       // text_slug — self-describing per section (no suffix col)
             '',
             0,
             0,
-            '_codex_' . $slug,      // suffix — per-section breakout within the chip
+            '',                     // suffix (no column; left blank)
             $extra
         );
 
