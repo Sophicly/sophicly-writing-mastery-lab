@@ -2686,9 +2686,19 @@
             title: 'Clear chat and start fresh',
             innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
             onClick: () => {
+                // v7.19.349: mid-round Mark Scheme Quiz clear is NOT a free restart \u2014
+                // the round is finalised first (unanswered = 0) so every attempt counts.
+                // Tell the student before they confirm; finishing the round is always
+                // the better play. Zero-answers-so-far clears stay penalty-free.
+                const _msqMidRound = QUIZ_CONTROLLER_ON && state.task === 'mark_scheme_unit'
+                    && (state.step === 1 || state.bridgeStep === 1)
+                    && _quizCtl.active && _quizCtl.midRound && _quizCtl.answered > 0;
                 showConfirm(
-                    'Clear this assessment chat and start fresh? Your document and essay are preserved \u2014 only the chat messages will be removed.',
-                    () => {
+                    _msqMidRound
+                        ? 'You\u2019re mid-round on the Mark Scheme Quiz (' + _quizCtl.answered + ' of 5 answered). Clearing now ENDS this round \u2014 unanswered questions score 0 and the round is recorded as an attempt. You\u2019ll usually score higher by finishing the round first. Clear anyway?'
+                        : 'Clear this assessment chat and start fresh? Your document and essay are preserved \u2014 only the chat messages will be removed.',
+                    async () => {
+                        if (_msqMidRound) await _quizCtl.abandonRound();
                         clearCanvasChat();
                         canvasChatHistory.length = 0;
                         canvasChatId = '';
@@ -4006,7 +4016,33 @@
                 clearPersist();
             }
 
-            return { start, reset, handleTurn, tryResume: rehydrate, get active() { return active; } };
+            // v7.19.349: abandon a mid-round quiz on chat-clear — every started round
+            // counts (anti-farm: refresh/close already resumes via the sidecar, so
+            // chat-clear was the only escape hatch from a bad round). Unanswered
+            // questions are scored as blank (0 marks), then the round is finalised so
+            // the result card + dashboard record the attempt honestly.
+            async function abandonRound() {
+                if (!active) return;
+                try {
+                    for (let i = idx; i < qs.length; i++) {
+                        try { await apiPost(API.quizAnswer, { id: qs[i].id, answer: '' }); } catch (e) {}
+                    }
+                    const res = await apiPost(API.quizFinish, { rounds: round, mastered: false });
+                    if (res && res.success && res.quizResult) {
+                        _pendingQuizResult = res.quizResult;
+                        if (typeof applyQuizResultToEditor === 'function') applyQuizResultToEditor();
+                        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                    }
+                } catch (e) {}
+                reset();
+            }
+
+            return {
+                start, reset, abandonRound, handleTurn, tryResume: rehydrate,
+                get active() { return active; },
+                get midRound() { return active && qs.length > 0 && idx < qs.length; },
+                get answered() { return active ? roundResults.length : 0; },
+            };
         })();
 
         return {
@@ -22676,9 +22712,22 @@
             });
             const target = matches[occurrence || 0] || matches[0];
             if (target) {
-                const cwRect = cw.getBoundingClientRect();
+                // v7.19.349: scroll the target's REAL scrollable ancestor. The old code
+                // always scrolled .swml-canvas-content — if the layout scrolls a different
+                // wrapper, scrollTo() on a non-scroller is a silent no-op (Neil hit this
+                // clicking "Mark Scheme Mastery" in the MSQ doc TOC).
+                let sc = target.parentElement;
+                while (sc && sc !== document.body) {
+                    const oy = getComputedStyle(sc).overflowY;
+                    if ((oy === 'auto' || oy === 'scroll') && sc.scrollHeight > sc.clientHeight + 4) break;
+                    sc = sc.parentElement;
+                }
+                const scroller = (sc && sc !== document.body) ? sc : cw;
+                const sRect = scroller.getBoundingClientRect();
                 const tRect = target.getBoundingClientRect();
-                cw.scrollTo({ top: cw.scrollTop + (tRect.top - cwRect.top) - (cwRect.height / 3), behavior: 'smooth' });
+                scroller.scrollTo({ top: scroller.scrollTop + (tRect.top - sRect.top) - (sRect.height / 3), behavior: 'smooth' });
+            } else {
+                console.warn('WML TOC: no section in document matches label', label);
             }
         }
 
