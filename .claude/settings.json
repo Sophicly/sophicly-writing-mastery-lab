@@ -147,7 +147,10 @@
       "Bash(awk '/function saveCanvasContent|saveCanvasContent = function/{f=1} f{print NR\": \"$0; c++} f&&c>45{exit}' frontend/wml-assessment.js)",
       "Bash(head -5 HANDOFFS.md)",
       "Bash(php -l class-wml-listener.php)",
-      "Bash(node --check SubmissionsPanel.jsx)"
+      "Bash(node --check SubmissionsPanel.jsx)",
+      "Bash(grep -rn 'new Sophicly_LearnDash_Bridge\\\\|Sophicly_LearnDash_Bridge::\\\\|sophicly_bridge\\(\\)\\\\|$bridge =' includes/class-learndash-bridge.php sophicly-student-data.php)",
+      "Bash(grep -n 'function init\\\\|function instance\\\\|private static $\\\\|self::$instance\\\\|public static function' includes/class-learndash-bridge.php)",
+      "Bash(grep -n 'bridge\\\\|Bridge\\\\|sophicly_get_bridge\\\\|instance\\(\\)\\\\|$course_id =' single-sfwd-focus.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open"
