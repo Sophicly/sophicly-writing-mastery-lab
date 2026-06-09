@@ -1870,7 +1870,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     clear: left;
     width: 220px;
     max-height: calc(100vh - 140px);
-    margin: -30px -220px 0 8px; /* Pull up to overlap hidden button, float over content */
+    margin: -30px -220px 0 12px; /* Pull up to overlap hidden button, float over content; left 12px = .swml-outline-btn-column's so the panel's left edge aligns with the outline button */
     border-radius: 10px;
     background: #28292b; /* v7.14.47: match document alt colour — no backdrop-filter (Chrome flickers) */
     border: 1px solid rgba(255,255,255,0.08);
