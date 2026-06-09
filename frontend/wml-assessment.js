@@ -3889,7 +3889,12 @@
                     const mark = r.res && r.res.correct ? '✓' : '✗';
                     body += `**${i + 1}. ${mark}**  Your answer: \`${r.answer}\``;
                     if (!(r.res && r.res.correct)) body += `  —  correct: **${r.res ? r.res.correctKey : '?'}**`;
-                    body += `\n${(r.res && r.res.feedback) || ''}\n\n`;
+                    body += `\n${(r.res && r.res.feedback) || ''}\n`;
+                    // Blake-Harvard why-wrong glosses: on a wrong answer, explain why
+                    // each distractor is wrong (server sends them only when wrong).
+                    const why = (r.res && Array.isArray(r.res.whyWrong)) ? r.res.whyWrong : [];
+                    if (why.length) body += why.map(w => `- ${w}`).join('\n') + '\n';
+                    body += '\n';
                 });
                 aiBubble(body);
                 try { updateProgress(7); } catch (e) {}

@@ -790,6 +790,7 @@ class SWML_REST_API {
             'max'        => $res['max'],
             'feedback'   => $res['feedback'],
             'correctKey' => $res['correctKey'],
+            'whyWrong'   => $res['whyWrong'] ?? [],
             'seq'        => $q['seq'],
             'total'      => count($bank['questions']),
             'running'    => $running,

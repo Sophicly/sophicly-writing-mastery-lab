@@ -107,6 +107,9 @@ class SWML_Quiz_Bank {
                     'correct'   => [],   // MCQ / Select-All letters
                     'answer'    => '',   // Fill / True-False
                     'feedback'  => '',
+                    'ao'        => '',   // explicit AO tag (Phase 2), e.g. "AO2"
+                    'why'       => [],   // per-distractor why-wrong glosses, letter => gloss
+                    'why_generic' => '', // why-wrong gloss for fill/true-false
                     'max_marks' => 2,
                 ];
                 continue;
@@ -128,6 +131,9 @@ class SWML_Quiz_Bank {
             }
             if (preg_match('/^\s*\*\s*\*\*Answer:\*\*\s*(.+)$/i', $ln, $m)) { $q['answer'] = self::clean($m[1]); continue; }
             if (preg_match('/^\s*\*\s*\*\*Feedback:\*\*\s*(.+)$/i', $ln, $m)) { $q['feedback'] = self::clean($m[1]); continue; }
+            if (preg_match('/^\s*\*\s*\*\*AO:\*\*\s*(.+)$/i', $ln, $m)) { $q['ao'] = self::clean($m[1]); continue; }
+            if (preg_match('/^\s*\*\s*\*\*Why\s+([A-E]):\*\*\s*(.+)$/i', $ln, $m)) { $q['why'][strtoupper($m[1])] = self::clean($m[2]); continue; }
+            if (preg_match('/^\s*\*\s*\*\*WhyWrong:\*\*\s*(.+)$/i', $ln, $m)) { $q['why_generic'] = self::clean($m[1]); continue; }
             // Scoring + Stretch lines are intentionally ignored by the scorer.
         }
         $flush();
@@ -188,10 +194,12 @@ class SWML_Quiz_Bank {
         if (empty($pool)) return [];
         $n = max(1, min($n, count($pool)));
 
-        // Group by category for a spread, then round-robin.
+        // Group by AO (Phase 2 stratification — each round samples across AOs);
+        // fall back to the legacy [Tests …] category, then round-robin.
         $by_cat = [];
         foreach ($pool as $q) {
-            $by_cat[$q['category'] ?: '_'][] = $q;
+            $key = ($q['ao'] ?? '') !== '' ? $q['ao'] : ($q['category'] ?: '_');
+            $by_cat[$key][] = $q;
         }
         foreach ($by_cat as &$g) { shuffle($g); }
         unset($g);
@@ -277,11 +285,28 @@ class SWML_Quiz_Bank {
                 break;
         }
         $correct = ($marks >= $max);
+        // Blake-Harvard why-wrong glosses (Phase 2): on a wrong answer, return the
+        // gloss for EVERY distractor (not just the one picked) so the end-of-round
+        // review can explain why each wrong option is wrong. Empty when correct or
+        // when the bank has no glosses yet (graceful pre-content behaviour).
+        $why = [];
+        if (!$correct) {
+            if (in_array($q['type'], ['mcq', 'select_all'], true) && !empty($q['why'])) {
+                foreach ($q['why'] as $letter => $gloss) {
+                    if (!in_array($letter, $q['correct'], true) && $gloss !== '') {
+                        $why[] = $letter . ') ' . $gloss;
+                    }
+                }
+            } elseif (($q['why_generic'] ?? '') !== '') {
+                $why[] = $q['why_generic'];
+            }
+        }
         return [
             'marks'      => $marks,
             'max'        => $max,
             'correct'    => $correct,
             'partial'    => ($marks > 0 && $marks < $max),
+            'whyWrong'   => $why,
             // v7.19.324: strip the authored "✓ Correct." affirmation — the
             // explanation must read correctly under a WRONG (✗) result too, and
             // the caller already renders the real ✓/✗ + marks line above it.

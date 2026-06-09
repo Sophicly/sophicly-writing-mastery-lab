@@ -718,6 +718,8 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Question:** For Paper 2 Question 4 (comparison), the mark scheme rewards responses that show 'perceptive analysis of \[BLANK\]'. What completes this descriptor?
    * **Answer:** how methods are used to convey different attitudes
    * **Feedback:** ✓ Correct. AO3 comparison rewards analysis of *how* writers' methods convey their different attitudes — not just naming what the attitudes are.
+   * **AO:** AO3
+   * **WhyWrong:** Answers like 'ideas' or 'language' name only half the skill — the descriptor joins methods to attitudes: analysing how the writers' choices convey what each writer feels.
 
 ---
 
@@ -726,6 +728,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) It doesn't use enough quotations, B) It compares ideas but doesn't analyse HOW methods convey attitudes, C) It doesn't mention structure, D) The texts aren't from different time periods.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Level 3 needs analysis of *how* the methods convey attitudes, not just listing what each text says. The response spots the contrast but never analyses the effect of 'barbaric slaughter' against 'heritage'.
+   * **AO:** AO3
+   * **Why A:** It feels like more quotations would help, but the response already quotes both texts — what is missing is analysis of what those quotations do, not more of them.
+   * **Why C:** Structure can be discussed in comparison, but it is not what blocks Level 3 here — the gap is that no method's effect on the reader is ever analysed.
+   * **Why D:** The time periods of the texts are set by the paper, not the student — the mark depends on the quality of the comparison, not on which texts were chosen.
    * **Stretch (unscored):** What would a Level 3 version look like? e.g. "While Text A's visceral 'barbaric slaughter' positions the reader against hunting through disgust, Text B's 'heritage' appeals to tradition and belonging — a defensive, pride-based response."
 
 ---
@@ -735,6 +741,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Writers' different perspectives on issues, B) How writers' methods convey attitudes, C) The effectiveness of writers' arguments, D) Comparison of ideas across texts.
    * **Correct:** C
    * **Feedback:** ✓ Correct. Judging the effectiveness of an argument is evaluation — not what AO3 rewards (and AQA Paper 2 doesn't assess AO4; evaluation lives on Paper 1 Q4). AO3 here is comparing the writers' perspectives and how their methods convey and shape those attitudes for the reader.
+   * **AO:** AO3
+   * **Why A:** Different perspectives are exactly what AO3 compares — choosing this means missing that the question asks for what AO3 does NOT assess.
+   * **Why B:** How methods convey attitudes is the heart of AO3 comparison, so it cannot be the odd one out here.
+   * **Why D:** Comparing ideas across texts is core AO3 territory — tempting only if you skim past the word NOT in the question stem.
 
 ---
 
@@ -743,6 +753,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Level 1 (1-2 marks), B) Level 2 (3-4 marks), C) Level 3 (5-6 marks), D) Level 4 (7-8 marks).
    * **Correct:** B
    * **Feedback:** ✓ Correct. A candidate has to deal with both texts to reach Level 3 or above, so a response that develops only one stays in Level 2 — and a Level-2 response that deals with only one text is capped at 3, not 4.
+   * **AO:** AO1
+   * **Why A:** It is tempting to punish the one-text problem harshly, but the response still shows some interpretation, so it sits in Level 2 rather than dropping to 'simple, limited' Level 1.
+   * **Why C:** Level 3 looks reachable because the writing sounds clear, but the mark scheme requires dealing with both texts before Level 3 is even available.
+   * **Why D:** Level 4 demands perceptive inferences from BOTH texts — a response that develops only one text cannot approach the top band however fluent it sounds.
 
 ---
 
@@ -751,6 +765,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Using sophisticated vocabulary, B) Writing that powerfully engages and convinces the reader, C) Perfect technical accuracy, D) Using multiple persuasive techniques.
    * **Correct:** B
    * **Feedback:** ✓ Correct. 'Compelling' describes the *effect* on the reader — writing that grabs and holds attention — not the techniques used to get there.
+   * **AO:** AO5
+   * **Why A:** Ambitious vocabulary appears in the Level 4 descriptors, but it is one ingredient of compelling writing, not what the word 'compelling' itself means.
+   * **Why C:** Technical accuracy belongs to AO6, marked separately — perfect spelling and punctuation cannot make dull writing compelling.
+   * **Why D:** This confuses means with effect — you can stack rhetorical techniques and still bore the reader; 'compelling' names the impact, not the toolkit.
    * **Stretch (unscored):** Why might option D seem right but miss what 'compelling' means? Techniques are the method; you can use many techniques badly and still not be compelling.
 
 ---
@@ -760,6 +778,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Adding more quotations, B) Mentioning the historical context, C) Providing more detailed/perceptive analysis of how the technique shapes reader response, D) Comparing it to the other text.
    * **Correct:** C
    * **Feedback:** ✓ Correct. Level 4 needs *detailed* and *perceptive* analysis of how the method shapes the reader's response — depth of effect, not more quotations.
+   * **AO:** AO2
+   * **Why A:** More quotations is the classic surface fix — but the level boundaries measure quality of analysis, so extra evidence without deeper effect-analysis changes nothing.
+   * **Why B:** Historical context is not rewarded in this language-analysis question — the marks come from analysing how the language works on the reader.
+   * **Why D:** Comparing texts belongs to the comparison question, not the language-analysis question — importing comparison here earns no extra credit.
 
 ---
 
@@ -768,6 +790,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Summary is shorter than comparison, B) Summary synthesises information across the texts; comparison analyses how the writers' methods convey differing attitudes and shape the reader, C) Summary doesn't need quotations; comparison does, D) Summary is about content; comparison is about language.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Both use both texts, but summary (Q2) synthesises information across them while comparison (Q4) analyses different perspectives and *how* they're conveyed.
+   * **AO:** AO1
+   * **Why A:** Length is a side-effect of the mark tariff, not the defining difference — the two questions reward fundamentally different skills, not different word counts.
+   * **Why C:** Both questions need textual references — believing summary is quote-free leads to unsupported statements that stall in the lower levels.
+   * **Why D:** Summary does work with content, but comparison is not simply 'about language' — it compares perspectives AND the methods that convey them.
    * **Stretch (unscored):** Why do students confuse these two? Both involve two texts and finding connections — but one combines information, the other analyses differing perspectives.
 
 ---
@@ -777,6 +803,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Writing to argue, B) Writing to describe, C) Writing to persuade, D) Writing to advise.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Writing to describe belongs to Paper 1 (creative/descriptive). Paper 2 is viewpoint writing — argue, persuade, advise.
+   * **AO:** AO5
+   * **Why A:** Arguing IS viewpoint writing — choosing this means missing the EXCEPT in the question and the core purpose of Paper 2 Section B.
+   * **Why C:** Persuasion is central to presenting a viewpoint, so it belongs firmly inside Paper 2's writing purposes rather than outside them.
+   * **Why D:** Advising still presents a viewpoint (what the reader should do), so it sits within Paper 2's argue/persuade/advise family, not outside it.
 
 ---
 
@@ -785,6 +815,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) The punctuation is incorrect, B) It's bald assertion with no persuasive craft — no compelling viewpoint, crafted devices or inventive structure, C) It doesn't include statistics, D) The opinion isn't balanced.
    * **Correct:** B
    * **Feedback:** ✓ Correct. "They are bad" just asserts — there's no persuasive craft. Section B viewpoint writing rewards compelling ideas, deliberately crafted linguistic devices, inventive structure, ambitious vocabulary and punctuation/sentences chosen for effect (AO5 + AO6). Note: "crafted" here means persuasive and inventive — NOT stiff or formal. It's creative non-fiction, so a one-sided, passionate case is fine; what's missing is the *craft*, not formality or balance.
+   * **AO:** AO5
+   * **Why A:** The punctuation in the extract is actually accurate — and accuracy is AO6 anyway; the content marks (AO5) are what the bald assertion limits.
+   * **Why C:** Statistics are one optional device among many — their absence is not the fault; plenty of top-band writing persuades without a single number.
+   * **Why D:** Viewpoint writing does not have to be balanced — a one-sided, passionate case can reach the top band; the problem is missing craft, not missing counter-arguments.
    * **Stretch (unscored):** What changes would show a Level 3 'clear and consistent' register? Formal vocabulary, developed reasoning, tone for the audience — e.g. "I am writing to express my concern about the current uniform policy, which fails to consider…"
 
 ---
@@ -794,6 +828,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
     * **Options:** A) Level 1 (1-4 marks), B) Level 2 (5-8 marks), C) Level 3 (9-12 marks), D) Level 4 (13-16 marks).
     * **Correct:** B
     * **Feedback:** ✓ Correct. Level 3 requires clear comparison of ideas AND methods. Strong on ideas but thin on methods keeps it at Level 2.
+    * **AO:** AO3
+    * **Why A:** Level 1 undervalues the response — thorough comparison of ideas is genuine work; it is the missing methods analysis that stops it, not a lack of comparison altogether.
+    * **Why C:** The thorough ideas work makes Level 3 look earned, but Level 3 explicitly requires clear comparison of methods as well — a brief mention is not enough.
+    * **Why D:** Level 4 demands perceptive analysis of how methods convey attitudes — a response that barely touches methods is two whole levels away from that.
 
 ---
 
@@ -801,6 +839,8 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
     * **Question:** True or False: The language-analysis skill in Paper 2 Question 3 is essentially the same as Paper 1 Question 2 — analyse the writer's methods and their effects on the reader.
     * **Answer:** True
     * **Feedback:** ✓ Correct. Same core skill (AO2): the writer's methods and their effects on the reader, analysed perceptively. Paper 2 is nonfiction, so the effects usually work by shaping the reader's viewpoint or moving them to act — and emotional effect is fair game when the writer uses it to persuade. What loses marks on *both* papers is naming techniques without their effects (feature-spotting).
+    * **AO:** AO2
+    * **WhyWrong:** Answering False usually comes from thinking the papers test separate skills — but both assess AO2 method-and-effect analysis; only the text type changes (fiction on Paper 1, non-fiction on Paper 2).
 
 ---
 
@@ -810,6 +850,150 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
     * **Correct:** A, B, D
     * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
     * **Feedback:** Level 3 needs comparison of ideas (A), analysis of how methods convey attitudes (B), and integrated comparison (D). Long quotations (C) aren't required and can hinder analysis; historical context (E) can add value but isn't a Level 3 requirement.
+    * **AO:** AO3
+    * **Why C:** Long quotations feel like strong evidence, but the levels reward well-chosen references — copying out chunks crowds the page and often replaces the analysis that earns marks.
+    * **Why E:** Context seems scholarly, yet AO3 here rewards comparing perspectives and methods — historical background is never named as a requirement in the comparison levels.
+
+---
+
+13. **Type: Fill-in-the-Blank \[Tests AO1 Knowledge\]**
+    * **Question:** AQA Paper 2 Question 2 assesses the AO1 skill: 'select and \[BLANK\] evidence from different texts'. What word completes this?
+    * **Answer:** synthesise
+    * **Feedback:** ✓ Correct. Question 2 asks you to select and *synthesise* — draw evidence from both sources together into a connected summary with inferences, not list each text separately.
+    * **AO:** AO1
+    * **WhyWrong:** Answers like 'summarise' or 'compare' are close neighbours, but the AO1 bullet says SYNTHESISE — combining evidence from both texts; comparing methods belongs to Question 4.
+
+---
+
+14. **Type: MCQ \[Tests AO1 Knowledge\]**
+    * **Question:** On Question 2, what is the key difference between a Level 1 'simple, limited' summary and a Level 3 'clear, relevant' summary?
+    * **Options:** A) Level 3 paraphrases both texts more fully, B) Level 3 makes clear inferences from both texts rather than offering paraphrase, C) Level 3 uses longer quotations, D) Level 3 analyses the writers' language techniques.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The Level 1 descriptor says 'offers paraphrase rather than inference'; Level 3 makes clear inferences from both texts with relevant references. The step up is inference — reading what's implied, not repeating what's said.
+    * **AO:** AO1
+    * **Why A:** Fuller paraphrase is just more Level 1 — paraphrase is exactly what the Level 1 descriptor names as the limitation, so doing it more thoroughly cannot raise the level.
+    * **Why C:** Quotation length never features in the levels — references must be relevant and well-chosen, and clear inference matters far more than how much you quote.
+    * **Why D:** Language analysis is Question 3's skill — bringing technique analysis into the summary earns nothing here, because Question 2 rewards inference and synthesis.
+
+---
+
+15. **Type: True/False \[Tests AO1 Application\]**
+    * **Question:** True or False: On Question 2, a response must address the specific focus given in the question — not just summarise any differences between the texts — to reach Level 3 or above.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The mark scheme states a candidate has to deal with both texts AND address the correct focus of the question to achieve Level 3 or above. If the question asks about the places the writers work in, inferences about something else drift off-focus and cap the mark.
+    * **AO:** AO1
+    * **WhyWrong:** It is tempting to think any sensible differences earn credit, but the mark scheme ties Level 3 and above to the precise focus the question sets — off-focus inferences stay in the lower levels.
+
+---
+
+16. **Type: MCQ \[Tests AO2 Knowledge\]**
+    * **Question:** Question 3 asks how the writer uses language. Which of these is NOT part of what Question 3 assesses?
+    * **Options:** A) Words and phrases, B) Language features and techniques, C) Sentence forms, D) Whole-text structure such as the order of paragraphs.
+    * **Correct:** D
+    * **Feedback:** ✓ Correct. The mark scheme states Question 3 assesses Language — words/phrases, language features, language techniques and sentence forms. Whole-text structural choices are not the focus of this question.
+    * **AO:** AO2
+    * **Why A:** Words and phrases are the first items the mark scheme lists under Language — analysing individual word choices is core Question 3 business.
+    * **Why B:** Language features and techniques sit squarely inside the question's remit — the trap is skim-reading the NOT in the stem.
+    * **Why C:** Sentence forms are explicitly named in the mark scheme's definition of Language for this question — varying sentence shapes for effect is fair game.
+
+---
+
+17. **Type: Fill-in-the-Blank \[Tests AO2 Knowledge\]**
+    * **Question:** The Question 3 Level 4 descriptor (10-12 marks) requires 'sophisticated and accurate use of subject \[BLANK\]'. What word completes it?
+    * **Answer:** terminology
+    * **Feedback:** ✓ Correct. Level 4 pairs analysis of the effects of the writer's choices with judicious textual detail and sophisticated, accurate subject *terminology* — naming methods precisely while analysing what they do to the reader.
+    * **AO:** AO2
+    * **WhyWrong:** Guesses like 'vocabulary' or 'techniques' muddle the descriptor — it is subject TERMINOLOGY: the precise naming of methods (metaphor, juxtaposition, triplet) used accurately in your analysis.
+
+---
+
+18. **Type: MCQ \[Tests AO2 Application\]**
+    * **Question:** A student answers Question 3 with the correct focus but analyses language from outside the given line range. According to the mark scheme note, what happens?
+    * **Options:** A) The response scores zero, B) The response is capped at Level 1, C) It is levelled on its quality but placed at the bottom of that level, D) Nothing — the line range is only a suggestion.
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. The mark scheme note says a response using language outside the given lines (or from the wrong source) but with the correct focus is placed in the appropriate level according to the quality of what is written — but at the bottom of that level.
+    * **AO:** AO2
+    * **Why A:** Zero is reserved for nothing of relevance — analysis with the correct focus still demonstrates the AO2 skill, so it keeps a quality-based level.
+    * **Why B:** A Level 1 cap is too blunt — the mark scheme preserves the level the quality deserves and only pushes the response to the bottom of it.
+    * **Why D:** Treating the line range as optional risks real marks — bottom-of-level placement can cost two or three marks, so the boundaries are worth respecting.
+
+---
+
+19. **Type: Select All That Apply \[Tests AO3 Knowledge\]**
+    * **Question:** Which of these are named in the Level 4 (13-16 marks) skills descriptors for Question 4 (comparison)? (Select all that apply)
+    * **Options:** A) Analyses how writers' methods are used, B) Selects a range of judicious supporting detail from both texts, C) Shows detailed and perceptive understanding of the different ideas and perspectives in both texts, D) Evaluates which writer argues more convincingly, E) Comments on the historical context of the 19th-century source.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** Level 4 names analysis of how methods are used (A), judicious supporting detail from both texts (B), and detailed, perceptive understanding of the different ideas and perspectives (C). Judging which writer is more convincing (D) is evaluation, not AO3 comparison; historical context (E) is not a descriptor requirement.
+    * **AO:** AO3
+    * **Why D:** Ranking the writers feels comparative, but it is an evaluative judgement — AO3 compares perspectives and methods without declaring a winner.
+    * **Why E:** Context sounds like sophistication, yet the comparison descriptors never ask for historical background — marks come from the texts' perspectives and methods.
+
+---
+
+20. **Type: MCQ \[Tests AO3 Knowledge\]**
+    * **Question:** AO3 rewards comparing writers' 'ideas and perspectives'. What is the difference between the two?
+    * **Options:** A) Ideas are what the writers discuss; perspectives are their attitudes toward those ideas, B) Ideas are facts and perspectives are the reader's opinions, C) Ideas belong to the modern text and perspectives to the 19th-century text, D) There is no difference — the terms are interchangeable.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. Ideas are WHAT the writers think and discuss; perspectives are their ATTITUDES toward those ideas. Question 4 rewards comparing both — and analysing how each writer's methods convey them.
+    * **AO:** AO3
+    * **Why B:** Bringing in the reader's opinions confuses whose viewpoint matters — both terms describe the WRITERS' thinking, not the reader's response.
+    * **Why C:** Tying each term to a text invents a split that does not exist — both texts contain ideas and perspectives, and both must be compared.
+    * **Why D:** Treating them as interchangeable flattens the skill — a response can state shared ideas yet miss the differing attitudes, which is where higher-band comparison lives.
+
+---
+
+21. **Type: MCQ \[Tests AO5 Knowledge\]**
+    * **Question:** How are the 40 marks for Question 5 divided?
+    * **Options:** A) 20 marks content and organisation plus 20 marks technical accuracy, B) 24 marks content and organisation plus 16 marks technical accuracy, C) 16 marks content and organisation plus 24 marks technical accuracy, D) 30 marks content and organisation plus 10 marks technical accuracy.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Question 5 carries 24 marks for content and organisation (AO5) and 16 marks for technical accuracy (AO6) — 40 in total. The substance and shaping of your writing carries more weight than accuracy alone.
+    * **AO:** AO5
+    * **Why A:** An even split feels fair but is wrong — AQA weights content and organisation more heavily than technical accuracy on this question.
+    * **Why C:** This reverses the real split — believing accuracy outweighs content leads students to polish commas while neglecting ideas, structure and register.
+    * **Why D:** A 30/10 split exaggerates the imbalance — technical accuracy is worth a substantial 16 marks, too many to treat as an afterthought.
+
+---
+
+22. **Type: MCQ \[Tests AO5 Knowledge\]**
+    * **Question:** AO5 is marked through two strands: Content and Organisation. Which of these belongs to the Organisation strand?
+    * **Options:** A) Extensive and ambitious vocabulary, B) Tone, style and register matched to purpose and audience, C) Fluently linked paragraphs with integrated discourse markers, D) Accurate spelling of ambitious words.
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. Organisation covers structural features, linked paragraphs and integrated discourse markers. Vocabulary and register sit in the Content strand, and spelling belongs to AO6.
+    * **AO:** AO5
+    * **Why A:** Ambitious vocabulary is a Content descriptor — it shapes what the writing says and how it sounds, not how the piece is structured.
+    * **Why B:** Matching tone and register to audience is the heart of the Content strand — it governs the voice of the writing, not its architecture.
+    * **Why D:** Spelling is not part of AO5 at all — it is assessed on the separate AO6 technical-accuracy scale.
+
+---
+
+23. **Type: True/False \[Tests AO5 Knowledge\]**
+    * **Question:** True or False: In Question 5, marks for paragraphing and discourse markers are awarded under AO6 (technical accuracy).
+    * **Answer:** False
+    * **Feedback:** ✓ Correct. Paragraphing, structural features and discourse markers sit in the Organisation strand of AO5. AO6 covers sentence demarcation, punctuation, sentence forms, Standard English and spelling.
+    * **AO:** AO5
+    * **WhyWrong:** Paragraphs feel 'technical', which is the trap — the mark scheme treats them as the organisation of ideas (AO5), while AO6 deals with sentence-level accuracy.
+
+---
+
+24. **Type: MCQ \[Tests AO6 Knowledge\]**
+    * **Question:** Which list best describes what AO6 rewards in Question 5?
+    * **Options:** A) Accurate spelling only, B) Sentence demarcation, a range of punctuation, varied sentence forms, Standard English and accurate spelling, C) Neat handwriting and clear presentation, D) Persuasive devices and a strong structure.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The AO6 descriptors cover sentence demarcation, range of punctuation, a range of sentence forms used for effect, Standard English with controlled grammar, and accurate spelling including ambitious vocabulary.
+    * **AO:** AO6
+    * **Why A:** Reducing AO6 to spelling misses most of its 16 marks — punctuation range, sentence variety and grammatical control all sit on the same scale.
+    * **Why C:** Presentation is not an assessment objective — untidy handwriting costs nothing as long as the writing is legible and the sentences are controlled.
+    * **Why D:** Persuasive devices and structure are AO5 territory — crediting them under AO6 doubles-counts content and ignores what the technical scale actually measures.
+
+---
+
+25. **Type: Fill-in-the-Blank \[Tests AO6 Knowledge\]**
+    * **Question:** The AO6 Level 4 descriptor (13-16 marks) rewards a '\[BLANK\] range of punctuation used with a high level of accuracy'. What word completes it?
+    * **Answer:** wide
+    * **Feedback:** ✓ Correct. Level 4 asks for a *wide* range of punctuation used with a high level of accuracy — varied punctuation deployed correctly and for effect, not the occasional ambitious semicolon.
+    * **AO:** AO6
+    * **WhyWrong:** Near-misses like 'full' or 'complete' borrow from elsewhere in the level — 'full range' describes sentence forms in the same descriptor, while punctuation is a WIDE range used with high accuracy.
 
 ---
 
@@ -819,6 +1003,8 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Question:** In OCR's six-level system for Paper 2 comparison, Level 6 requires '\[BLANK\] analytical comparison'. What word completes this highest-level descriptor?
    * **Answer:** perceptive
    * **Feedback:** ✓ Correct. OCR's top band (Level 6) calls for *perceptive* analytical comparison — insight beyond the merely 'detailed' or 'thorough' lower bands.
+   * **AO:** AO3
+   * **WhyWrong:** Words like 'thorough' or 'detailed' are tempting because they sound top-band, but they describe the levels below — 'perceptive' marks the qualitative leap into Level 6 insight.
 
 ---
 
@@ -827,6 +1013,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Language analysis, B) Evaluation of effectiveness, C) Synthesis across texts, D) Creative writing.
    * **Correct:** C
    * **Feedback:** ✓ Correct. Synthesis — drawing the two texts together into a combined understanding — is a key OCR Question 2 skill (other boards, such as AQA Paper 2 Q2, also test synthesis/summary across two texts).
+   * **AO:** AO1
+   * **Why A:** Language analysis is a later question's job — Question 2 asks you to combine information from the texts, not analyse how the writers use language.
+   * **Why B:** Evaluating effectiveness comes in OCR's evaluation question — Question 2 only asks you to draw the two texts' information together.
+   * **Why D:** Creative writing belongs to the writing section, not the reading questions — mixing the two means revising the wrong skill for Question 2.
 
 ---
 
@@ -835,6 +1025,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Level 2, B) Level 3, C) Level 4, D) Level 5.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Listing each text in turn isn't synthesis — it caps the response in the lower bands. Real synthesis connects the ideas as it goes.
+   * **AO:** AO1
+   * **Why A:** Level 2 is too harsh — the response does cover both texts and combines them at the end, which lifts it above mere copying, just not into the higher bands.
+   * **Why C:** The closing combination makes Level 4 look possible, but 'developed synthesis' means connecting ideas throughout, not bolting a comparison onto two separate lists.
+   * **Why D:** Level 5 requires perceptive connections woven across the whole response — a list-then-conclude structure is the opposite of that sustained linking.
    * **Stretch (unscored):** What's the difference between 'synthesis' and just 'listing information from both texts'? Synthesis builds new understanding by connecting ideas — showing how they relate into a bigger picture — rather than placing them side by side.
 
 ---
@@ -844,6 +1038,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) It's too short, B) It evaluates personal agreement rather than effectiveness of argument, C) It doesn't quote the text, D) It only looks at one text.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Evaluation judges *how well* the argument works on the reader, not whether you personally agree with it. Personal opinion alone stays in the lower bands.
+   * **AO:** AO4
+   * **Why A:** Length is rarely the real fault — a short response can still evaluate well; this one fails because it offers opinion instead of judging how the argument works.
+   * **Why C:** Missing quotations is a symptom here, not the disease — even with quotations added, agreeing or disagreeing personally still is not evaluation of effectiveness.
+   * **Why D:** This evaluation question is about one text, so covering only one is not the problem — the problem is substituting personal agreement for critical judgement.
 
 ---
 
@@ -852,6 +1050,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Word count, B) Number of quotations, C) Perceptive analysis shows exceptional insight and precision, D) Level 6 requires comparison of three texts.
    * **Correct:** C
    * **Feedback:** ✓ Correct. The jump to Level 6 is *qualitative* — exceptional insight, subtle understanding, precise expression — not just doing more of the same.
+   * **AO:** AO3
+   * **Why A:** Word count never appears in the level descriptors — assuming longer means better leads to padded responses that stay in the same band.
+   * **Why B:** Counting quotations confuses quantity of evidence with quality of thought — Level 6 rewards what you see in the evidence, not how much you cite.
+   * **Why D:** No comparison question asks for three texts — this distractor invents a structural requirement instead of recognising the qualitative leap in insight.
    * **Stretch (unscored):** Why is the Level 5→6 jump often the hardest? Level 5 is doing everything well; Level 6 demands a qualitative leap in insight and perception, which can't be reached just by adding 'more'.
 
 ---
@@ -861,6 +1063,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) How well writers achieve their purpose, B) Personal response to texts, C) Comparison of ideas, D) Technical accuracy.
    * **Correct:** A
    * **Feedback:** ✓ Correct. OCR's AO4 evaluates how well the writer achieves their purpose — a judgement about effectiveness, not a personal reaction.
+   * **AO:** AO4
+   * **Why B:** 'How do you feel about it?' is the everyday meaning of evaluating, but the exam skill is judging the writing's effectiveness, not recording your reaction.
+   * **Why C:** Comparing ideas belongs to the comparison question (AO3) — evaluation judges a text's success, which is a different operation from comparing two texts.
+   * **Why D:** Technical accuracy is a writing AO marked on your own work — it has nothing to do with judging how well a writer achieves their purpose.
 
 ---
 
@@ -869,6 +1075,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Level 2-3, B) Level 3-4, C) Level 4-5, D) Level 5-6.
    * **Correct:** C
    * **Feedback:** ✓ Correct. The integration and analysis are strong, but repetitive, basic expression holds it back — strong content, limited by how it's written.
+   * **AO:** AO3
+   * **Why A:** Level 2-3 punishes the response for its expression alone and ignores that the integration and method-and-ideas analysis are genuinely strong higher-band features.
+   * **Why B:** Level 3-4 still undervalues it — full integration with analysis of both methods and ideas is doing what the upper bands describe; only the expression drags.
+   * **Why D:** The top band looks tempting because the structure is right, but Level 6 'perceptive' work needs precise, varied expression — repetitive 'Text A says' phrasing falls short of that.
 
 ---
 
@@ -877,6 +1087,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Comparing everything about both texts, B) Discussing both texts within the same paragraphs, C) Using the same quotations from both texts, D) Writing equal amounts about each text.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Integrated comparison weaves both texts together within the same paragraphs, showing connections as you go — rather than handling each text in a separate block.
+   * **AO:** AO3
+   * **Why A:** 'Comparing everything' confuses breadth with structure — integration is about HOW you organise the comparison, not how many points you cover.
+   * **Why C:** Using identical quotations from both texts is neither possible nor required — the word 'integrated' describes paragraph structure, not matching evidence.
+   * **Why D:** Equal coverage feels fair, but balance of word count is not the point — you can write equally about each text in separate blocks and still not integrate.
    * **Stretch (unscored):** Why do students default to non-integrated comparison? Handling texts separately feels safer and easier, but it shows less sophisticated thinking than weaving them together to explore connections.
 
 ---
@@ -886,6 +1100,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) More statistics, B) Longer quotations, C) More developed analysis of HOW/WHY this persuades specific audiences, D) Disagreeing with the writer.
    * **Correct:** C
    * **Feedback:** ✓ Correct. Level 4 needs developed exploration of *how and why* the statistic persuades a particular audience — not just naming it as effective.
+   * **AO:** AO4
+   * **Why A:** Citing more statistics adds evidence, not evaluation — the marks come from judging how this statistic works on the reader, not from collecting more of them.
+   * **Why B:** Longer quotations bulk out the response without deepening the judgement — the level boundary measures developed analysis, not the length of the evidence.
+   * **Why D:** Evaluation does not require disagreement — judging effectiveness can find the writing successful; manufactured disagreement adds opinion, not analysis.
 
 ---
 
@@ -894,6 +1112,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
     * **Options:** A) Can't get above Level 3 for AO5 (content), B) Would lose marks on AO6 (technical) but AO5 could still score highly, C) Would fail completely, D) Spelling doesn't matter if argument is good.
     * **Correct:** B
     * **Feedback:** ✓ Correct. AO5 (content/organisation) and AO6 (technical accuracy) are marked separately — strong argument can still score well on AO5 while the errors cost marks on AO6.
+    * **AO:** AO6
+    * **Why A:** This wrongly lets spelling errors bleed into the content mark — AO5 and AO6 are separate scales, so technical faults do not cap the content level.
+    * **Why C:** 'Fails completely' is catastrophising — frequent errors lower the technical-accuracy mark, but the strong argument still earns its content marks.
+    * **Why D:** Wishing spelling away ignores that technical accuracy has its own dedicated marks — errors always cost something on the AO6 scale, however good the argument.
 
 ---
 
@@ -903,6 +1125,8 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Question:** For Paper 2 comparison questions, Level 5 requires 'perceptive \[BLANK\] comparison'. What word completes this descriptor?
    * **Answer:** integrated
    * **Feedback:** ✓ Correct. Edexcel's top band rewards *integrated* comparison — texts woven together, not handled in separate blocks.
+   * **AO:** AO3
+   * **WhyWrong:** Answers like 'detailed' or 'analytical' sound right because they describe good work, but the Level 5 descriptor specifically rewards INTEGRATED comparison — texts woven together throughout.
 
 ---
 
@@ -911,6 +1135,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Repetition will bore the examiner, B) They're not addressing the different focus of each question, C) The answers are too short, D) They should only answer one question.
    * **Correct:** B
    * **Feedback:** ✓ Correct. 7(a) is about *what* the writers think (ideas); 7(b) is about *how* they convey it (methods). Repeating the same points means one of the two focuses isn't being addressed.
+   * **AO:** AO3
+   * **Why A:** Boring the examiner is not a marking criterion — the real cost is that identical points cannot satisfy two questions with different focuses (ideas versus methods).
+   * **Why C:** Length is not the issue — even two full answers fail if they both discuss ideas while 7(b) is asking about the writers' methods.
+   * **Why D:** Both parts carry their own marks, so skipping one throws marks away — the fix is to give each part its proper focus, not to answer only one.
    * **Stretch (unscored):** Why does Edexcel split comparison into two questions? It separately checks whether students can distinguish comparing ideas (what writers think) from comparing methods (how they convey it).
 
 ---
@@ -920,6 +1148,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Whether they agree with the writer, B) How successfully the writer achieves their purpose, C) Which of two texts is better written, D) The historical accuracy of claims.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Evaluation judges how successfully the writer achieves their purpose — a critical judgement about effectiveness, not personal agreement.
+   * **AO:** AO4
+   * **Why A:** Agreement is the everyday sense of 'what do you think?' — but the exam skill is judging the writing's success, which works whether you agree with the writer or not.
+   * **Why C:** Ranking two texts against each other is comparison territory — this evaluation question judges one writer's success at their own purpose.
+   * **Why D:** Fact-checking the writer's claims is research, not evaluation — the question asks how effectively the writing persuades, not whether its claims are historically true.
 
 ---
 
@@ -928,6 +1160,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Level 2 (7-12 marks), B) Level 3 (13-18 marks), C) Level 4 (19-22 marks), D) Level 5 (23-24 marks).
    * **Correct:** B
    * **Feedback:** ✓ Correct. The structural features pull the mark up, but the sustained informal register isn't matched to the article's purpose and audience — that caps it around Level 3 and blocks the top bands, which need register consistently controlled for effect.
+   * **AO:** AO5
+   * **Why A:** Level 2 ignores the genuine strengths — rhetorical opening, statistics, expert views and a call to action are real structural craft that lifts the piece above 'some awareness'.
+   * **Why C:** The device list makes Level 4 look earned, but 'convincing voice' requires register controlled for purpose and audience — sustained slang like 'loads of people reckon' breaks that.
+   * **Why D:** Level 5 'sophisticated manipulation' demands assured control of tone throughout — an article that never finds the right register cannot sit in the top band.
 
 ---
 
@@ -936,6 +1172,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Using complicated vocabulary, B) Skilfully controlling reader response through careful choices, C) Manipulating facts to support argument, D) Using every persuasive technique possible.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Here 'manipulation' means skilful *control* of the reader's response through deliberate choices — sophisticated craft, not deception.
+   * **AO:** AO5
+   * **Why A:** Complicated vocabulary confuses difficulty with sophistication — ambitious word choices help, but the descriptor is about controlling the reader's response, not showing off words.
+   * **Why C:** This reads 'manipulation' in its negative everyday sense — twisting facts is dishonesty, whereas the mark scheme means skilful influence through deliberate craft.
+   * **Why D:** Piling up every technique is scattergun writing — sophistication lies in selecting and controlling devices for effect, not in using all of them.
    * **Stretch (unscored):** Why do students misread 'manipulation' here? They associate it with dishonesty, when in this context it means positive, controlled influence.
 
 ---
@@ -945,6 +1185,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Level 1-2, B) Level 2-3, C) Level 3-4, D) Level 4-5.
    * **Correct:** C
    * **Feedback:** ✓ Correct. Weighing strengths against weaknesses ("statistics support... but emotional appeals feel excessive") is critical, balanced evaluation — a higher-level trait that places it around Level 3-4.
+   * **AO:** AO4
+   * **Why A:** Level 1-2 mistakes brevity for weakness — the response already weighs strengths against weaknesses, which is beyond simple identification.
+   * **Why B:** Level 2-3 undervalues the balance — 'somewhat effective... but' is exactly the critical weighing that the middle-to-upper bands describe.
+   * **Why D:** Level 4-5 overshoots — the judgement is balanced but still thin on textual support and development, so it is not yet perceptive, sustained evaluation.
 
 ---
 
@@ -953,6 +1197,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Paper 2 is longer, B) Paper 2 focuses on persuasive/influential language rather than creative, C) Paper 2 doesn't require quotations, D) Paper 2 only looks at modern texts.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Paper 2 Q3 examines how language influences and persuades (viewpoint), whereas Paper 1 Q3 looks at creative/descriptive effect.
+   * **AO:** AO2
+   * **Why A:** Length feels like the obvious difference between papers, but the real distinction is the kind of language analysed — persuasive non-fiction versus creative fiction.
+   * **Why C:** Every language-analysis question needs textual evidence — assuming Paper 2 is quote-free produces unsupported claims that stall in the lower levels.
+   * **Why D:** Paper 2 pairs a 19th-century text with a modern one, so 'only modern texts' is factually wrong as well as missing the persuasive-versus-creative distinction.
 
 ---
 
@@ -961,6 +1209,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Level 1, B) Level 2, C) Level 3, D) Level 4.
    * **Correct:** B
    * **Feedback:** ✓ Correct. The response barely engages the second text, so it can't reach the higher comparison bands — a genuine comparison has to deal with both texts. Strong coverage of one alone stays low.
+   * **AO:** AO3
+   * **Why A:** Level 1 is too harsh — the excellent work on the modern text shows real comparative potential; the one-text imbalance caps it rather than erasing it.
+   * **Why C:** The strong writing on one text makes Level 3 look possible, but clear comparison requires genuine engagement with BOTH texts, and the 19th-century text is dismissed in a sentence.
+   * **Why D:** Level 4 needs perceptive, developed comparison drawing on both texts — a response that calls one text 'hard to understand' and moves on cannot approach it.
    * **Stretch (unscored):** How should students handle challenging 19th century language? Focus on what you *can* understand, use context clues, and treat archaic language itself as a method worth commenting on — don't let difficulty become a reason to skip the text.
 
 ---
@@ -970,6 +1222,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Length of response, B) Number of techniques identified, C) Depth and development of analysis, D) Using more complex vocabulary.
    * **Correct:** C
    * **Feedback:** ✓ Correct. The Level 3→4 step is about depth and development of analysis — going further into *how* and *why* an effect works, not just doing more or using bigger words.
+   * **AO:** AO2
+   * **Why A:** Writing more is the instinctive fix, but the descriptors measure quality of analysis — a longer response at the same depth stays at the same level.
+   * **Why B:** Spotting extra techniques is breadth, not depth — naming five devices superficially scores below analysing two of them in developed detail.
+   * **Why D:** Fancier vocabulary in YOUR answer does not deepen the analysis of the WRITER'S choices — the step up is analytical development, not lexical decoration.
 
 ---
 
@@ -978,6 +1234,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
     * **Options:** A) No impact if argument is good, B) Limited to Level 3 maximum for AO5, C) Would fail completely, D) Only loses 1-2 marks.
     * **Correct:** B
     * **Feedback:** ✓ Correct. The higher bands reward writing matched to its form. A 'speech' with no audience address or spoken-rhetoric features isn't fully meeting the form, which caps AO5 around Level 3.
+    * **AO:** AO5
+    * **Why A:** Hoping argument quality covers everything ignores that form is built into the writing criteria — a speech that never sounds like a speech cannot fully meet the task.
+    * **Why C:** Complete failure is too extreme — strong argument and persuasive technique still earn solid content marks; the missing form caps rather than destroys the score.
+    * **Why D:** Treating form as a 1-2 mark detail underestimates it — matching form, purpose and audience runs through every level of the writing criteria, so the cost is a band, not a mark.
 
 ---
 
@@ -987,6 +1247,8 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Question:** For the comparison question in Paper 1, Level 5 requires 'perceptive, \[BLANK\] comparison'. What word completes this descriptor?
    * **Answer:** analytical
    * **Feedback:** ✓ Correct. The top band needs *perceptive, analytical* comparison — close analysis of how the texts differ, not just description of what they say.
+   * **AO:** AO3
+   * **WhyWrong:** Near-misses like 'detailed' or 'integrated' describe lower bands or other boards — Spec A's Level 5 pairing is 'perceptive, ANALYTICAL': insight delivered through close analysis.
 
 ---
 
@@ -995,6 +1257,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) AO3, B) AO4, C) AO5, D) AO6.
    * **Correct:** B
    * **Feedback:** ✓ Correct. In Spec A, AO4 covers writing content/communication and AO5 covers technical accuracy — different numbers from GCSE, where those are AO5 and AO6.
+   * **AO:** AO5
+   * **Why A:** AO3 is the comparison objective in Spec A — picking it confuses the reading AOs with the writing AOs.
+   * **Why C:** AO5 is the GCSE habit answer — but in Spec A's numbering, AO5 is technical accuracy, and the content/organisation marks sit under AO4.
+   * **Why D:** Spec A has no AO6 at all — carrying the GCSE label across specs means chasing criteria that do not exist on this paper.
    * **Stretch (unscored):** Why remember that IGCSE numbers the AOs differently? Spec A AO4 = what GCSE calls AO5 (content); Spec A AO5 = GCSE's AO6 (technical). Mixing them up means chasing the wrong criteria.
 
 ---
@@ -1004,6 +1270,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Level 1 - Identifies, B) Level 2 - Comments, C) Level 3 - Explains, D) Level 4 - Explores.
    * **Correct:** A
    * **Feedback:** ✓ Correct. This only *identifies* a technique — no comment on effect, no explanation. It sits at the bottom of the progression.
+   * **AO:** AO2
+   * **Why B:** Commenting requires saying something about the effect — this sentence names the statistics but never tells us what they do to the reader, so it has not yet commented.
+   * **Why C:** Explaining means showing HOW the technique works — a bare statement that statistics exist is two rungs below that.
+   * **Why D:** Exploring develops implications and connections — mistaking identification for exploration shows how easily naming a device feels like analysis when no analysis has happened.
 
 ---
 
@@ -1012,6 +1282,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Using lots of quotations, B) Choosing quotations that discriminate against others, C) Selecting the most precise and powerful evidence, D) Only using short quotations.
    * **Correct:** C
    * **Feedback:** ✓ Correct. 'Discriminating' means well-judged selection — choosing the most precise, powerful evidence, not the most or the shortest.
+   * **AO:** AO1
+   * **Why A:** Quantity is the classic misreading — 'discriminating' praises the JUDGEMENT behind each choice of reference, and piles of quotations usually show the opposite.
+   * **Why B:** This takes 'discriminating' in its everyday negative sense — in mark schemes it is a compliment meaning carefully selective, nothing to do with unfairness.
+   * **Why D:** Short quotations are often a good habit, but length is not the criterion — a well-judged longer reference can still be discriminating if it is the most telling evidence.
 
 ---
 
@@ -1020,6 +1294,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Level 2, B) Level 3, C) Level 4, D) Level 5.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Handling each text in a separate block, with comparison left to the conclusion, keeps it in the middle bands — the higher levels need comparison woven throughout.
+   * **AO:** AO3
+   * **Why A:** Level 2 undervalues the response — covering both texts with a comparative conclusion is more than 'straightforward' points, even if the structure limits it.
+   * **Why C:** The comparative conclusion makes Level 4 look close, but 'thorough, integrated' means weaving the texts together throughout, not saving the comparison for the end.
+   * **Why D:** Level 5 demands perceptive, analytical comparison sustained across the response — block-by-block treatment is structurally the opposite of that.
    * **Stretch (unscored):** What restructuring reaches Level 4-5? Integrate throughout — discuss both texts in each paragraph, showing how their different techniques create different effects on the same topic.
 
 ---
@@ -1029,6 +1307,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Creative/descriptive writing, B) Transactional writing (article, letter, speech, etc.), C) Commentary on the texts, D) Personal narrative.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Spec A Paper 1 Section B is transactional writing — article, letter, speech and similar real-world forms.
+   * **AO:** AO5
+   * **Why A:** Creative/descriptive writing is Spec A's PAPER 2 writing task — putting it on Paper 1 swaps the two papers round and revises the wrong skills.
+   * **Why C:** Commenting on the texts is a reading skill assessed in Section A — Section B asks you to produce your own piece of writing.
+   * **Why D:** Personal narrative is imaginative writing, which belongs to Paper 2 — Paper 1's Section B wants real-world transactional forms.
 
 ---
 
@@ -1037,6 +1319,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Level 1 - Only identifies, B) Level 2 - Comments on effect, C) Level 3 - Explains clearly, D) Level 4 - Explores thoroughly.
    * **Correct:** B
    * **Feedback:** ✓ Correct. It names a technique and *comments* on an effect ("feel sad"), but doesn't explain *how* the language produces it — that's Level 2.
+   * **AO:** AO2
+   * **Why A:** The sentence does more than identify — 'makes the reader feel sad' is a comment on effect, however thin, which lifts it one rung above bare naming.
+   * **Why C:** Explaining requires showing HOW the emotive language creates the sadness — this sentence asserts the effect without unpacking the mechanism.
+   * **Why D:** Exploring develops implications across the text — a single vague emotion with no analysis is two rungs short of thorough exploration.
 
 ---
 
@@ -1044,6 +1330,8 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Question:** At Sophicly we picture analytical depth as a ladder: Identify → Comment → \[BLANK\] → Explore → Analyse. What's the missing step?
    * **Answer:** Explain
    * **Feedback:** ✓ Correct. The missing rung is *Explain* — after commenting on an effect you explain *how* it works, before going on to explore and analyse. The board doesn't mark this ladder; it rewards the output — perceptive analysis of methods and their effects on the reader.
+   * **AO:** AO2
+   * **WhyWrong:** Guesses like 'describe' or 'evaluate' miss the logic of the ladder — between commenting on an effect and exploring it, you must EXPLAIN how the language produces that effect.
    * **Stretch (unscored):** Why does this way of thinking help? It's a ladder, not a leap — you can see where you are and what the next step requires.
 
 ---
@@ -1053,6 +1341,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Level 2, B) Level 3, C) Level 4, D) Level 5.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Good register alone isn't enough — ignoring the set scenario means the task response is incomplete, which caps AO4 around Level 3.
+   * **AO:** AO5
+   * **Why A:** Level 2 is too low — sustained, appropriate formal register is real craft that keeps the response above 'some adaptation', even with the scenario missing.
+   * **Why C:** The polished register makes Level 4 tempting, but 'secure, well-adapted' writing must engage the actual task — a letter that ignores its scenario is not adapted to it.
+   * **Why D:** The top band requires sophisticated control of content AND purpose — drifting away from the set scenario rules out sophistication at the task level.
 
 ---
 
@@ -1061,6 +1353,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
     * **Options:** A) Level 2 - Comments, B) Level 3 - Explains, C) Level 4 - Explores, D) Level 5 - Analyses.
     * **Correct:** C
     * **Feedback:** ✓ Correct. It unpacks the metaphor's implication ('trapped') and links it to the wider argument — that's *exploring* connections and implications, Level 4.
+    * **AO:** AO2
+    * **Why A:** Commenting would stop at naming an effect — this sentence goes much further, unpacking the implication and linking it to the article's wider argument.
+    * **Why B:** It does explain, but it does not stop there — the link to the social-mobility argument pushes it beyond clear explanation into exploration of connections.
+    * **Why D:** Calling it Level 5 overshoots — perceptive analysis sustains subtle insight across a response; one strong exploratory sentence is not yet that.
 
 ---
 
@@ -1070,6 +1366,8 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Question:** In Spec B Paper 1, Level 5 for comparison requires 'perceptive, \[BLANK\] integrated comparison'. What word completes this?
    * **Answer:** fully
    * **Feedback:** ✓ Correct. The top band asks for *fully* integrated comparison — the texts woven together throughout, not compared only at the end.
+   * **AO:** AO3
+   * **WhyWrong:** Guesses like 'mostly' or 'partly' actually describe Level 4 ('thorough, mostly integrated') — the Level 5 leap is FULLY integrated: both texts woven together in every paragraph.
 
 ---
 
@@ -1078,6 +1376,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Writing content and organisation, B) Technical accuracy (SPaG), C) Comparison skills, D) Language analysis.
    * **Correct:** B
    * **Feedback:** ✓ Correct. In Spec B, AO5 is technical accuracy (spelling, punctuation, grammar) — not the content/organisation that GCSE's AO5 covers.
+   * **AO:** AO6
+   * **Why A:** Content and organisation is the GCSE habit answer — in Spec B's numbering that work sits under AO4, while AO5 is the technical-accuracy scale.
+   * **Why C:** Comparison is AO3 — a reading objective; AO5 belongs to the writing side of the paper.
+   * **Why D:** Language analysis is AO2 — another reading objective; picking it confuses the reading AOs with the writing AOs entirely.
 
 ---
 
@@ -1086,6 +1388,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Level 1, B) Level 2, C) Level 3, D) Level 4.
    * **Correct:** B
    * **Feedback:** ✓ Correct. It names a basic difference between the two writers but offers no evidence and no analysis of method — that keeps it around Level 2 at best.
+   * **AO:** AO3
+   * **Why A:** Level 1 is slightly too harsh — the response does identify a genuine difference in the writers' attitudes, which is a straightforward point of comparison.
+   * **Why C:** Level 3 'developed' needs evidence and some sense of how each attitude is conveyed — three bald sentences with no quotation cannot reach it.
+   * **Why D:** Level 4 requires thorough, mostly integrated comparison with method analysis — this response is a skeleton of a comparison, not a developed one.
    * **Stretch (unscored):** What three things would improve it most? 1) Evidence/quotations, 2) *how* each attitude is conveyed (methods), 3) developed exploration of the difference between their concern and optimism.
 
 ---
@@ -1095,6 +1401,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Bibliographies aren't needed in exam conditions, B) It shows lack of understanding of article conventions, C) It takes up valuable word count, D) Nothing - this shows good practice.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Articles don't carry bibliographies — adding one signals the writer hasn't grasped the conventions of the form, which the higher bands reward.
+   * **AO:** AO5
+   * **Why A:** Exam conditions are not the real issue — even with unlimited time, a magazine article would not carry a bibliography; the fault is misunderstanding the form.
+   * **Why C:** Word count is a practical worry, not a marking one — the mark scheme penalises the misjudged convention, not the minutes spent writing it.
+   * **Why D:** A bibliography looks academic and responsible, which is exactly the trap — it belongs to essays and reports, and importing it shows the article's conventions are not secure.
 
 ---
 
@@ -1103,6 +1413,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Word count, B) Number of techniques, C) Perceptive sees subtle meanings and synthesises effects, D) Level 5 needs comparison.
    * **Correct:** C
    * **Feedback:** ✓ Correct. 'Perceptive' is a qualitative leap — seeing subtle, implicit meaning and synthesising effects — not just doing more of what earns Level 4.
+   * **AO:** AO2
+   * **Why A:** Word count never features in the descriptors — equating length with quality produces longer Level 4 responses, not Level 5 ones.
+   * **Why B:** Spotting more techniques is breadth — the Level 5 leap is depth of insight into implicit meaning, which two devices analysed perceptively can show better than six listed.
+   * **Why D:** Comparison is a different question's skill — inventing a comparison requirement here confuses the analysis levels with the comparison levels.
    * **Stretch (unscored):** Why do students plateau at Level 4? Level 4 comes from thoroughness and hard work; Level 5 needs insight into what's implicit and subtle, which can't be reached by adding more.
 
 ---
@@ -1112,6 +1426,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Fiction extracts, B) Poetry, C) Non-fiction texts, D) Drama scripts.
    * **Correct:** C
    * **Feedback:** ✓ Correct. Spec B Paper 1 Section A works with non-fiction texts (articles, reports, accounts and the like).
+   * **AO:** AO1
+   * **Why A:** Fiction extracts are the staple of other boards' Paper 1, which makes this tempting — but Spec B's Paper 1 reading section is entirely non-fiction.
+   * **Why B:** Poetry belongs to Literature courses, not this Language paper — Section A reads real-world non-fiction.
+   * **Why D:** Drama scripts are a Literature text type — Spec B's reading section sticks to articles, reports and similar non-fiction forms.
 
 ---
 
@@ -1120,6 +1438,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Level 1 - Identifies, B) Level 2 - Comments, C) Level 3 - Explains, D) Level 4 - Explores.
    * **Correct:** C
    * **Feedback:** ✓ Correct. It names the metaphor and *explains* its effect ('avalanche' → overwhelming) — clear explanation, Level 3 — though it stops short of exploring wider implications.
+   * **AO:** AO2
+   * **Why A:** It does more than identify — the sentence tells us what the metaphor suggests, so it has moved beyond simply naming the device.
+   * **Why B:** A comment would just gesture at an effect — this sentence explains the link between 'avalanche' and feeling overwhelmed, which is the explaining rung.
+   * **Why D:** Exploring would develop implications further — connecting the metaphor to the writer's wider argument or other choices; this stops at one clear explanation.
 
 ---
 
@@ -1128,6 +1450,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Level 1-2, B) Level 2-3, C) Level 3-4, D) Level 4-5.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Discussing methods with no reference to the writers' ideas/perspectives is only half the task — that caps it around Level 2-3.
+   * **AO:** AO3
+   * **Why A:** Level 1-2 underrates the thorough technical work — analysing methods across both texts is more than 'simple' listing, even with perspectives missing.
+   * **Why C:** The thoroughness makes Level 3-4 tempting, but developed comparison must connect methods to the writers' perspectives — pure technique analysis is half a comparison.
+   * **Why D:** Level 4-5 needs integrated comparison of perspectives AND the methods that convey them — a response that never mentions perspectives cannot approach the top bands.
    * **Stretch (unscored):** Why must comparison address ideas AND methods? Methods without ideas is a technical exercise; ideas without methods is summary. True comparison shows how different methods convey different perspectives.
 
 ---
@@ -1137,6 +1463,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Tricking the reader, B) Using complex sentence structures, C) Skilfully controlling reader response, D) Including subliminal messages.
    * **Correct:** C
    * **Feedback:** ✓ Correct. 'Manipulation' here is positive — skilful, deliberate control of the reader's response, not trickery or complexity for its own sake.
+   * **AO:** AO5
+   * **Why A:** This reads 'manipulation' in its everyday negative sense — in mark-scheme language it praises skilful influence, not deceit.
+   * **Why B:** Complex sentences are a technical-accuracy matter — sentence structure alone does not control how the reader responds to the argument.
+   * **Why D:** 'Subliminal messages' turns a craft term into a conspiracy — the descriptor rewards open, deliberate rhetorical control, not hidden persuasion.
 
 ---
 
@@ -1145,6 +1475,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
     * **Options:** A) High AO4, lower AO5, B) High AO5, lower AO4, C) Both AOs score low, D) Technical errors don't matter if structure is good.
     * **Correct:** A
     * **Feedback:** ✓ Correct. In Spec B's numbering, strong structure and persuasive features earn well on AO4 (content), while the inaccurate vocabulary and unclear sentences cost marks on AO5 (technical) — they're marked separately.
+    * **AO:** AO6
+    * **Why B:** This reverses Spec B's numbering — AO4 is the content/communication objective and AO5 the technical one, so the strong rhetoric scores on AO4, not AO5.
+    * **Why C:** Both scoring low ignores the separation of the two scales — the genuine rhetorical craft still earns its content marks despite the technical faults.
+    * **Why D:** Wishing errors away forgets that technical accuracy has its own dedicated mark scale — unclear sentences always cost marks there, however good the structure.
 
 ---
 
@@ -1154,6 +1488,8 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Question:** Eduqas Paper 2 Band 5 for comparison requires 'perceptive and \[BLANK\] comparison'. What word completes this?
    * **Answer:** analytical
    * **Feedback:** ✓ Correct. Eduqas's top band wants *perceptive and analytical* comparison — insight plus close analysis of how the texts differ.
+   * **AO:** AO3
+   * **WhyWrong:** Words like 'thoughtful' or 'detailed' belong to Band 4 — Band 5 pairs 'perceptive' with ANALYTICAL: subtle insight delivered through close analysis, not just careful consideration.
 
 ---
 
@@ -1162,6 +1498,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) It only assesses creative writing, B) It requires TWO transactional writing responses, C) It doesn't assess technical accuracy, D) It combines fiction and non-fiction writing.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Eduqas Section B sets *two* transactional writing tasks, so you must produce two strong pieces in different forms — not one.
+   * **AO:** AO5
+   * **Why A:** Creative writing is the Paper 1 task — Eduqas Paper 2's Section B is transactional throughout; the distinctive feature is that there are TWO such tasks.
+   * **Why C:** Every board assesses technical accuracy in writing — imagining Eduqas skips it would mean ignoring a whole strand of the writing marks.
+   * **Why D:** Both Section B tasks are non-fiction transactional forms — no fiction is mixed in; the uniqueness is the number of tasks, not their genre.
    * **Stretch (unscored):** What challenge does this create for timing? You have to split time between two pieces with different forms and audiences while keeping quality in both — you can't pour all your effort into one strong piece.
 
 ---
@@ -1171,6 +1511,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Band 1, B) Band 2, C) Band 3, D) Band 4.
    * **Correct:** A
    * **Feedback:** ✓ Correct. It names no technique and analyses no effect — vague, minimal identification that sits in Band 1.
+   * **AO:** AO2
+   * **Why B:** Band 2 needs SOME understanding of specific techniques — 'lots of techniques' names nothing, so there is no understanding to credit yet.
+   * **Why C:** Band 3 requires clear explanation of effects — this sentence offers no technique and no effect, two whole bands short of clear explanation.
+   * **Why D:** Band 4 is detailed analysis of how language influences the reader — an empty generalisation is the furthest thing from detailed analysis.
 
 ---
 
@@ -1179,6 +1523,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Personal feelings about the text, B) Evaluative judgments about effectiveness, C) First impressions only, D) Scientific observations.
    * **Correct:** B
    * **Feedback:** ✓ Correct. It's Eduqas's phrasing for evaluation — reasoned judgments about how effective the writing is, not personal feelings or fleeting first impressions.
+   * **AO:** AO4
+   * **Why A:** 'Impressions' sounds like feelings, which is the trap — the phrase asks for reasoned judgements about the writing's effect, supported from the text.
+   * **Why C:** Reading 'impressions' as first reactions stops at the surface — the question wants considered judgements developed through the whole text.
+   * **Why D:** 'Observations' borrows scientific language but means textual observations — points you notice and judge in the writing, not laboratory-style neutrality.
 
 ---
 
@@ -1187,6 +1535,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Gets credit in both if A5 is good enough, B) Gets zero for A6 as it requires different focus, C) Examiner will look for methods points in A5, D) Automatically fails the paper.
    * **Correct:** B
    * **Feedback:** ✓ Correct. A5 (ideas) and A6 (methods) assess different skills and are marked separately — a cross-reference leaves A6 unanswered, so it scores nothing.
+   * **AO:** AO3
+   * **Why A:** Hoping one brilliant answer covers two questions misunderstands marking — each answer is marked on what is written under that question, so credit cannot migrate between answers.
+   * **Why C:** Examiners credit what is written in the space for each question — a cross-reference leaves that space effectively blank, however strong the earlier answer.
+   * **Why D:** 'Fails the paper' is catastrophising — the cost is the marks for A6 alone; everything else, including the excellent A5, still counts.
 
 ---
 
@@ -1195,6 +1547,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) A3 and A4 only, B) A5 and A6, C) All of Section A, D) A2 only.
    * **Correct:** B
    * **Feedback:** ✓ Correct. AO3 comparison is tested across A5 (comparing ideas) and A6 (comparing methods).
+   * **AO:** AO3
+   * **Why A:** Analysing language within a single text is easy to mistake for comparison because both demand close reading, but comparison is a separate cross-text skill that single-text questions never ask for.
+   * **Why C:** 'All of Section A' overgeneralises — most Section A questions test single-text skills like retrieval, inference and analysis, and hunting for cross-text links there wastes time where none are rewarded.
+   * **Why D:** Drawing material from both texts into one overview can feel like comparison, but synthesising content is a different skill from AO3 comparison of writers' ideas and methods.
    * **Stretch (unscored):** Why split comparison into two questions? It lets the exam assess comparing *what* writers think (A5) separately from *how* they convey it (A6), so students can't skip one type.
 
 ---
@@ -1204,6 +1560,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Band 1-2, B) Band 2-3, C) Band 3-4, D) Band 4-5.
    * **Correct:** A
    * **Feedback:** ✓ Correct. Register is central to AO5, and a chatty, slangy tone is wholly wrong for a persuasive letter — that mismatch overrides the good vocabulary and sentences, holding it in Band 1-2.
+   * **AO:** AO5
+   * **Why B:** Band 2-3 credits the vocabulary too generously — register runs through every AO5 band, and 'LOL' in a persuasive letter signals the form is not understood at all.
+   * **Why C:** Band 3-4 assumes good vocabulary can carry a response — but 'clear, appropriate register' is the Band 3 gatekeeper, and this letter never finds an appropriate register.
+   * **Why D:** The sophisticated vocabulary makes the top bands look possible, but Band 4-5 writing is 'effective' and 'well-matched' to audience — a chatty tone is the direct opposite.
 
 ---
 
@@ -1212,6 +1572,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Length of response, B) Perceptive shows deeper insight into subtle differences, C) Band 5 needs more quotations, D) Thoughtful is about ideas, perceptive about methods.
    * **Correct:** B
    * **Feedback:** ✓ Correct. The Band 4→5 step is about insight — perceiving subtle, less obvious differences between the texts — not length or more quotations.
+   * **AO:** AO3
+   * **Why A:** Length never appears in the band descriptors — a longer thoughtful response is still Band 4; insight, not stamina, makes the difference.
+   * **Why C:** Quotation-counting confuses evidence quantity with quality of perception — Band 5 rewards what you SEE in the texts, not how often you cite them.
+   * **Why D:** Splitting 'thoughtful = ideas' and 'perceptive = methods' invents a division that does not exist — both bands address ideas and methods; the difference is depth of insight.
 
 ---
 
@@ -1220,6 +1584,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Options:** A) Vocabulary doesn't matter, B) They're doing language study, not analysis of how the writer influences the reader, C) 19th century texts shouldn't be analysed, D) They need more quotations.
    * **Correct:** B
    * **Feedback:** ✓ Correct. Glossing hard words is comprehension, not analysis. The question wants *how* the writer's choices influence the reader — that's where the marks are.
+   * **AO:** AO2
+   * **Why A:** Vocabulary does matter — but as a route into the writer's choices and their effects, not as a translation exercise that replaces analysis.
+   * **Why C:** Avoiding 19th-century texts is not an option — they are a fixed part of the paper, and archaic language can itself be analysed as a persuasive method.
+   * **Why D:** More quotations will not rescue a response that glosses instead of analyses — the missing ingredient is effect-analysis, not extra evidence.
 
 ---
 
@@ -1228,6 +1596,10 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
     * **Options:** A) No impact if writing quality is good, B) Loses some marks on the speech task for wrong form, C) Both pieces score zero, D) Only marked on the better piece.
     * **Correct:** B
     * **Feedback:** ✓ Correct. The second piece is well written but it's the wrong form — a letter, not a speech — so it loses the marks tied to matching the speech form.
+    * **AO:** AO5
+    * **Why A:** Quality cannot substitute for form — matching form, purpose and audience is built into the writing bands, so a beautiful letter still fails the speech task's form requirement.
+    * **Why C:** Zero for both is far too severe — the correct letter is unaffected, and even the mis-formed piece earns credit for its content and accuracy.
+    * **Why D:** Both tasks are compulsory and both are marked — there is no best-piece rule, so ignoring one task's form costs real marks rather than being quietly dropped.
     * **Stretch (unscored):** What features show speech form vs letter form? Speech: direct address, rhetorical devices for delivery, awareness of a listening audience. Letter: formal salutation/close, paragraphed argument, awareness of a reading context.
 
 ---
