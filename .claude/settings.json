@@ -220,7 +220,11 @@
       "Bash(sed -n '1866,1900p' frontend/wml-canvas.css)",
       "Bash(sed -n '2127,2140p' frontend/wml-canvas.css)",
       "Bash(sed -n '3402,3470p' src/styles/prototype.css)",
-      "Bash(sed -n '1110,1125p' src/styles/prototype.css)"
+      "Bash(sed -n '1110,1125p' src/styles/prototype.css)",
+      "Bash(echo \"| 2026-06-09 | wml-reeham-lang-p1-diagnostic-redraft-not-saving-2026-06-09.md | wml | open | HIGH | Reeham \\(uid 1352\\) AQA Lang P1 diagnostic+redraft not saving on prod — investigation map + session state v7.19.347-351 |\" >> ~/.claude/handoffs/HANDOFFS.md && tail -1 ~/.claude/handoffs/HANDOFFS.md)",
+      "Bash(\"/usr/local/bin/node\" \"/Users/neilwilliams/.claude/plugins/cache/context-mode/context-mode/1.0.153/cli.bundle.mjs\" upgrade --platform claude-code)",
+      "Bash(sed -n '145,165p' src/styles/wp-overrides.css)",
+      "Bash(sed -n '700,750p' src/styles/wp-overrides.css)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
