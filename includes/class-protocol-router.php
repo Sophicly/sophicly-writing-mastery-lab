@@ -4144,12 +4144,17 @@ TEMPLATE;
             // comparison") — negative lookaheads stop the gate satisfying the
             // pair detect; optional ¶ digit accepts the live "Your Paragraph 1
             // Rewritten to Gold Standard" heading form.
-            ['id' => 'q2_p1_mark',     'step' => 4,  'label' => '¶1 Mark',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',        'type' => 'produce', 'detect' => '/Unit 1 — Source A|Paragraph 1 \(4 marks|Paragraph 1[^\n]{0,20}(?:sub)?total[^\n]{0,20}\d|Paragraph 1[^\n]{0,15}Mark Breakdown|Marks?:\s*Paragraph 1|Paragraph 1 (?:raw |final )?score[:\s]/i'],
+            // v7.19.367: 'Paragraph N … Mark Breakdown' prose alternation REMOVED —
+            // the gate cue "Type Y to see your Paragraph 1 mark breakdown" fired it
+            // (run-4 corpus ai#4), advancing the mark beat before any marking.
+            // 'Your/Final paragraph score:' added — the slice's own mandated closing
+            // line, which the old detect never matched.
+            ['id' => 'q2_p1_mark',     'step' => 4,  'label' => '¶1 Mark',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',        'type' => 'produce', 'detect' => '/Unit 1 — (?:\(T\)\s*)?Source A|Paragraph 1 \(4 marks|Paragraph 1[^\n]{0,20}(?:sub)?total[^\n]{0,20}\d|Marks?:\s*Paragraph 1|Paragraph 1 (?:raw |final )?score[:\s]|(?:Your|Final) paragraph score[:\s]/i'],
             ['id' => 'q2_p1_feedback', 'step' => 5,  'label' => '¶1 Feedback',  'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-feedback.md',    'type' => 'produce', 'detect' => '/How to Improve|Where marks were lost|What you did well|Feedback, Advice/i'],
             ['id' => 'q2_p1_gold',     'step' => 6,  'label' => '¶1 Gold',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',        'type' => 'produce', 'detect' => '/Your Paragraph (?:[12]\s+)?Rewritten to Gold Standard(?!\s*level)[\s\S]*Optimal Gold Standard Model(?!\s+for comparison)|Optimal Gold Standard Model(?!\s+for comparison)[\s\S]*Your Paragraph (?:[12]\s+)?Rewritten to Gold Standard(?!\s*level)/i'],
             ['id' => 'q2_p2_selfrate', 'step' => 7,  'label' => '¶2 Self-rate', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-p2-selfrate.md', 'type' => 'ask',     'detect' => '/Goal Achievement|scale of 1.?5|second paragraph meet|met those three demands/i'],
             ['id' => 'q2_p2_targeting','step' => 8,  'label' => '¶2 Targeting', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-p2-targeting.md','type' => 'ask',     'detect' => '/which of the three|aiming for most|which do you think is your weakest/i'],
-            ['id' => 'q2_p2_mark',     'step' => 9,  'label' => '¶2 Mark',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',        'type' => 'produce', 'detect' => '/Unit 1 — Source A|Paragraph 2 \(4 marks|Paragraph 2[^\n]{0,20}(?:sub)?total[^\n]{0,20}\d|Paragraph 2[^\n]{0,15}Mark Breakdown|Marks?:\s*Paragraph 2|Paragraph 2 (?:raw |final )?score[:\s]/i'],
+            ['id' => 'q2_p2_mark',     'step' => 9,  'label' => '¶2 Mark',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',        'type' => 'produce', 'detect' => '/Unit 1 — (?:\(T\)\s*)?Source A|Paragraph 2 \(4 marks|Paragraph 2[^\n]{0,20}(?:sub)?total[^\n]{0,20}\d|Marks?:\s*Paragraph 2|Paragraph 2 (?:raw |final )?score[:\s]|(?:Your|Final) paragraph score[:\s]/i'],
             ['id' => 'q2_p2_feedback', 'step' => 10, 'label' => '¶2 Feedback',  'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-feedback.md',    'type' => 'produce', 'detect' => '/How to Improve|Where marks were lost|What you did well|Feedback, Advice/i'],
             ['id' => 'q2_p2_gold',     'step' => 11, 'label' => '¶2 Gold',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',        'type' => 'produce', 'detect' => '/Your Paragraph (?:[12]\s+)?Rewritten to Gold Standard(?!\s*level)[\s\S]*Optimal Gold Standard Model(?!\s+for comparison)|Optimal Gold Standard Model(?!\s+for comparison)[\s\S]*Your Paragraph (?:[12]\s+)?Rewritten to Gold Standard(?!\s*level)/i'],
             ['id' => 'q2_summary',     'step' => 12, 'label' => 'Q2 Summary',   'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-summary.md',     'type' => 'produce', 'detect' => '/overall Question 2 score|Question 2 Final Summary|Q2 Final|Total Q2/i'],
@@ -4515,8 +4520,15 @@ TEMPLATE;
             // v7.19.366 (FIX J): Total+Grade dual signal also completes — the
             // model skips the marker (run 4); the headline result can't be faked
             // mid-flight (Total is gated on the paper max).
+            // v7.19.367: and on position — all but the last question must
+            // already be in the walk's scored/pending set.
+            $abl = true;
+            for ($qi = 0; $qi < count($order) - 1; $qi++) {
+                $oid = $order[$qi]['id'];
+                if (empty($scored[$oid]['mark']) && empty($pending[$oid]['mark'])) { $abl = false; break; }
+            }
             if (preg_match('/\[ASSESSMENT_COMPLETE\]/i', $content)
-                || ($max_total_all > 0
+                || ($max_total_all > 0 && $abl
                     && preg_match('/\bTotal[:\s\*]+\d+(?:\.\d+)?\s*\/\s*' . $max_total_all . '\b/i', $content)
                     && preg_match('/\bGrade[:\s\*]+\d\b/i', $content))) {
                 $complete = true;
@@ -4597,8 +4609,15 @@ TEMPLATE;
         // stops depending on it.
         $max_total_all = 0;
         foreach ($order as $q) $max_total_all += (int) ($q['marks'] ?? 0);
+        // v7.19.367: dual signal gated on position — every question except the
+        // LAST must already be marked. A mid-run "running total /80 + Grade"
+        // habit must never complete the paper from Q2.
+        $all_but_last = true;
+        for ($qi = 0; $qi < count($order) - 1; $qi++) {
+            if (empty($scored[$order[$qi]['id']]['mark'])) { $all_but_last = false; break; }
+        }
         $terminal = preg_match('/\[ASSESSMENT_COMPLETE\]/i', (string) $reply)
-            || ($max_total_all > 0
+            || ($max_total_all > 0 && $all_but_last
                 && preg_match('/\bTotal[:\s\*]+\d+(?:\.\d+)?\s*\/\s*' . $max_total_all . '\b/i', (string) $reply)
                 && preg_match('/\bGrade[:\s\*]+\d\b/i', (string) $reply));
         if ($terminal) {

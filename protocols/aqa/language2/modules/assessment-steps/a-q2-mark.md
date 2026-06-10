@@ -61,3 +61,7 @@ This was calculated as:
 * Penalties deducted: **minus \[X\] marks**  
 * **Final paragraph score: \[X\] marks**"
 
+
+---
+
+**Internal AI Note (v7.19.367 — closing cue):** END THIS TURN here. Say: "Type **Y** for your feedback and improvement advice." Wait for Y — the feedback step comes next; do not begin it in this message, and do not offer "move to Paragraph 2" or any other next step.
