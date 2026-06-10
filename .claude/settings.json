@@ -237,7 +237,10 @@
       "Bash(sed -n '2525,2540p' sophicly-student-data/includes/class-wml-rest-api.php)",
       "Bash(sed -n '2392,2420p' sophicly-student-data/includes/class-wml-rest-api.php)",
       "Bash(sed -n '6145,6175p' frontend/wml-assessment.js)",
-      "Bash(sed -n '8890,8930p' frontend/wml-assessment.js)"
+      "Bash(sed -n '8890,8930p' frontend/wml-assessment.js)",
+      "Bash(awk 'NR>=180 && NR<=300 && /private function|public function/' includes/class-protocol-router.php)",
+      "Bash(php /tmp/wml-fixg-bench.php)",
+      "Bash(php -d display_errors=1 -d error_reporting=E_ALL /tmp/wml-fixg-bench.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
