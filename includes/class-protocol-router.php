@@ -4319,10 +4319,19 @@ TEMPLATE;
             // THIS question; the per-question maxima (4/8/12/16/40, unique per
             // paper) are the second guard. 'subtotal' can't leak in: \b blocks
             // a mid-word 'total' match.
+            // v7.19.365 (FIX I): hyphenated 'sub-total' DOES leak through \b
+            // (hyphen is a boundary) — run 4 harvested '¶1 sub-total: 4.5 / 8'
+            // as Q2's mark while the real combined mark printed '5 / 8'.
+            // Lookbehind blocks any -total/word-total; 'QN Mark: X/M' (the live
+            // combined form) joins the prefix alternation and, being listed
+            // first, wins when both appear in one message... (first match in
+            // string order wins, so the lookbehind exclusion is the real fix;
+            // the QN-Mark form just broadens coverage.)
             $hdr_re = $is_section_b
                 ? '/📌[^\n]*?Section\s*B/iu'
                 : '/📌[^\n]*?Question\s*' . $n . '\b/u';
-            $forms = '/(?:\bScore|\bTotal|\bFinal)[^\n]{0,40}?(\d+(?:\.\d+)?)\s*\/\s*' . max(1, $marks) . '\b/i';
+            $qmark_alt = $is_section_b ? '' : '|\bQ(?:uestion\s*)?' . $n . '\s*(?:Final\s*)?Mark\b';
+            $forms = '/(?:\bScore|(?<![\w-])Total|\bFinal' . $qmark_alt . ')[^\n]{0,40}?(\d+(?:\.\d+)?)\s*\/\s*' . max(1, $marks) . '\b/i';
             if (preg_match($hdr_re, $content) && preg_match($forms, $content, $lm)) {
                 $sm = $lm;
                 $harvested = true;
