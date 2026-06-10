@@ -19834,7 +19834,11 @@
                 html += buildPlanSection(null, marks);
                 html += dividerHTML('OUTLINE');
                 // v7.14.78: Route to correct outline type
-                if (state.subject === 'creative_writing' || /^(?:creative writing|narrative writing|descriptive writing|write a story|write a description)/i.test(topicData.question_text || '')) {
+                // v7.19.352: gate on SUBJECT only — the question-text keyword fallback
+                // leaked the CW multi-stage archetype outline into Language docs
+                // (settled rule: Language fiction = Scene Structure only; the stages
+                // outline belongs to the standalone Creative Writing course).
+                if (state.subject === 'creative_writing') {
                     html += buildCWPlotOutlineSection();
                 } else {
                     html += buildOutlineSection(topicData.aos, null, marks);

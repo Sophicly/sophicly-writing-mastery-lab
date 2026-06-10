@@ -1914,6 +1914,10 @@ class SWML_REST_API {
             if (!empty($request->get_param('seedFromSiblings'))) {
                 $seed_html = $this->seed_from_sibling_stage($user_id, $board, $text, $topic_number, $meta_key);
                 if (!empty($seed_html)) {
+                    // v7.19.352: clean stale CW-outline sections out of the seed too.
+                    if (strpos($text, 'lang_paper') !== false) {
+                        $seed_html = self::strip_stale_cw_outline_sections($seed_html);
+                    }
                     // v7.19.263: stamp the "update dot" baseline at auto-seed time
                     // (first-pass forward fill), so a LATER edit to the upstream
                     // stage correctly advances past it and lights the dot. Without
@@ -1981,6 +1985,17 @@ class SWML_REST_API {
             // v7.19.319: also strip stray deterministic-capture markers in case
             // any leaked into a saved doc before the chat-handler strip ran.
             $doc['html'] = preg_replace('/\[\[QUIZ_DONE\]\]|\[\[QUIZ\s+[^\]]*?\]\]/i', '', $doc['html']);
+        }
+
+        // v7.19.352: strip stale CW plot-archetype outline sections (Hero's Journey
+        // "Stage I-VI" beats) baked into LANGUAGE-paper docs by pre-v7.15.108
+        // templates. Current template gates the CW multi-stage outline on the
+        // standalone CW course; Language fiction (P1 Q5) gets the 7-element Scene
+        // Structure plan only. Strips ONLY when every cell in the run is empty and
+        // unticked — any student content aborts. Not persisted: the doc cleans on
+        // next autosave (same gradual-clean pattern as the QUIZ_COMPLETE strip).
+        if (strpos($text, 'lang_paper') !== false && is_array($doc) && !empty($doc['html'])) {
+            $doc['html'] = self::strip_stale_cw_outline_sections($doc['html']);
         }
 
         // v7.19.84: Crib-template version migration. Compare saved doc's stamped
@@ -2125,12 +2140,31 @@ class SWML_REST_API {
             }
         }
         if (empty($raw)) {
+            // v7.19.352: Pre-Model-B stage rescue for TUTOR review. When a per-stage
+            // Phase 2 doc (_planning/_outlining/_polishing/_reassessment) doesn't
+            // exist yet — the student's Phase 2 work predates the v7.19.249 per-stage
+            // split and lives in the legacy shared _redraft doc — the STUDENT load
+            // seeds from the sibling stage (seedFromSiblings), but this path returned
+            // null, so the tutor saw a BLANK doc while the student saw their own work
+            // (Reeham, 2026-06-09). Mirror the seed READ-ONLY: no write-forward, no
+            // pull-stamp; is_seed flags it for the frontend.
+            if (in_array($suffix, self::phase2_stage_order(), true)) {
+                $seed_html = $this->seed_from_sibling_stage($student_id, $board, $text, $topic_number, $meta_key);
+                if (!empty($seed_html)) {
+                    if (strpos($text, 'lang_paper') !== false) {
+                        $seed_html = self::strip_stale_cw_outline_sections($seed_html);
+                    }
+                    return rest_ensure_response(['success' => true, 'doc' => ['html' => $seed_html], 'attempt' => $attempt, 'is_seed' => true]);
+                }
+            }
             return rest_ensure_response(['success' => true, 'doc' => null, 'attempt' => $attempt]);
         }
-        if (is_array($raw)) {
-            return rest_ensure_response(['success' => true, 'doc' => $raw, 'attempt' => $attempt]);
+        $doc = is_array($raw) ? $raw : self::decode_canvas_json($raw);
+        // v7.19.352: same stale CW-outline strip as load_canvas — tutor sees the
+        // cleaned doc too.
+        if (strpos($text, 'lang_paper') !== false && is_array($doc) && !empty($doc['html'])) {
+            $doc['html'] = self::strip_stale_cw_outline_sections($doc['html']);
         }
-        $doc = self::decode_canvas_json($raw);
         return rest_ensure_response(['success' => true, 'doc' => $doc, 'attempt' => $attempt]);
     }
 
@@ -3346,6 +3380,66 @@ class SWML_REST_API {
         $i = array_search($suffix, $order, true);
         if ($i === false || $i === 0) return null;
         return $order[$i - 1];
+    }
+
+    /**
+     * v7.19.352: Remove stale CW plot-archetype outline sections (e.g. "Outline:
+     * Stage I: Setup - The Ordinary World" Hero's Journey beats) that pre-v7.15.108
+     * templates baked into LANGUAGE-paper canvas docs. The current template gives
+     * Language fiction (P1 Q5) the 7-element Scene Structure plan only; the CW
+     * multi-stage outline belongs to the standalone Creative Writing course.
+     *
+     * Safety: the contiguous run of "Outline: Stage ..." sections (plus the
+     * immediately-preceding "OUTLINE — Qn" divider section, when adjacent) is
+     * removed ONLY when the run contains outline-cw- field ids, no ticked checkbox,
+     * and no student-typed text outside the template furniture (criterion labels /
+     * plot markers / turning points). Any content → html returned unchanged.
+     * String-positional surgery on section boundaries — no DOM round-trip, so the
+     * rest of the doc stays byte-identical.
+     */
+    private static function strip_stale_cw_outline_sections($html) {
+        if (empty($html) || !is_string($html)) return $html;
+        if (strpos($html, 'outline-cw-') === false) return $html;
+        if (!preg_match_all('/data-section-label="([^"]*)"/', $html, $m, PREG_OFFSET_CAPTURE)) return $html;
+        $labels = $m[1];
+        $first = null;
+        $last  = null;
+        foreach ($labels as $i => $lab) {
+            if (strpos($lab[0], 'Outline: Stage ') === 0) {
+                if ($first === null) $first = $i;
+                $last = $i;
+            } elseif ($first !== null) {
+                break; // run ended at the first non-Stage label
+            }
+        }
+        if ($first === null) return $html;
+        // Extend the slice to the preceding "OUTLINE ..." divider section when adjacent.
+        $start_label_idx = ($first > 0 && strpos($labels[$first - 1][0], 'OUTLINE') === 0)
+            ? $first - 1 : $first;
+        // A section label sits inside its section's opening <div tag, so the nearest
+        // '<div' before the attribute offset is that section's opening tag.
+        $slice_start = strrpos(substr($html, 0, $labels[$start_label_idx][1]), '<div');
+        if ($slice_start === false) return $html;
+        if (isset($labels[$last + 1])) {
+            $slice_end = strrpos(substr($html, 0, $labels[$last + 1][1]), '<div');
+            if ($slice_end === false || $slice_end <= $slice_start) return $html;
+        } else {
+            $slice_end = strlen($html);
+        }
+        $slice = substr($html, $slice_start, $slice_end - $slice_start);
+        if (strpos($slice, 'outline-cw-') === false) return $html;
+        if (strpos($slice, ' checked') !== false) return $html;
+        // Probe the STAGE sections only — the OUTLINE divider's own heading text is
+        // template furniture, not student content (it isn't student-editable).
+        $stage_start = strrpos(substr($html, 0, $labels[$first][1]), '<div');
+        if ($stage_start === false || $stage_start < $slice_start) $stage_start = $slice_start;
+        $probe = substr($html, $stage_start, $slice_end - $stage_start);
+        // Remove template furniture, then any remaining text = student content → abort.
+        $probe = preg_replace('/<span class="swml-outline-criterion-label">.*?<\/span>/s', '', $probe);
+        $probe = preg_replace('/<div class="swml-plot-(?:turning-point|marker)">.*?<\/div>/s', '', $probe);
+        $probe = preg_replace('/<(p|h[1-6])>\s*<strong>.*?<\/strong>\s*<\/\1>/s', '', $probe);
+        if (trim(strip_tags($probe)) !== '') return $html;
+        return substr($html, 0, $slice_start) . substr($html, $slice_end);
     }
 
     /**
