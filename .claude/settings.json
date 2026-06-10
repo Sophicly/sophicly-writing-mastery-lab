@@ -245,7 +245,8 @@
       "Bash(awk 'NR>195 && /var\\\\\\(--/' src/components/ExamCountdown.jsx)",
       "Bash(grep -n \"do_action\\($\" includes/class-rest-api.php)",
       "Bash(sed -n '11145,11175p' frontend/wml-assessment.js)",
-      "Bash(sed -n '16380,16405p' frontend/wml-assessment.js)"
+      "Bash(sed -n '16380,16405p' frontend/wml-assessment.js)",
+      "Bash(scp -i ~/.ssh/sophicly_staging /tmp/wml-wc-backfill-dryrun.php runcloud@18.133.5.229:/tmp/)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

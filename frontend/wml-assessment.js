@@ -13266,7 +13266,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 16, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 17, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -19402,9 +19402,21 @@
         const _LAP = "Author's purpose (AO1 + AO3)";
         const _LC = 'Context (AO3)';
         const _lab = arr => arr.map(function (w) { return { value: w, label: w }; });
+        // v7.19.364: options are SHUFFLED per build. Canonical-order dropdowns let
+        // students pattern-match position (intro row 1 = first option = Hook) without
+        // reading the sentence — Neil, 10 Jun. Check-answers marks by value, and the
+        // codex merge preserves picks by value, so order is free to vary.
+        const _shuf = arr => {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        };
         const _ttRow = (sentence, id, options, correct) =>
             '<p>' + escapeHTML(sentence) + '</p>'
-            + selectHTML('Which part of TTECEA is this sentence? (the bracket shows its Assessment Objective)', id, _lab(options), false, correct);
+            + selectHTML('Which part of TTECEA is this sentence? (the bracket shows its Assessment Objective)', id, _lab(_shuf(options)), false, correct);
         html += sectionHTML('plan', 'TTECEA Application — label the paragraph', true, null,
             '<p>Below is a complete model Macbeth paragraph. Read each sentence, then choose which part of TTECEA it is — the bracket after each label shows the Assessment Objective (AO) it targets. Press <strong>Check answers</strong>, fix any red ones, and check again until they are all green.</p>'
             + _ttRow("Just after Duncan's murder, Macbeth's overwhelming guilt shows the first signs of the regret that will destroy him.",
@@ -19433,7 +19445,7 @@
         // part + Check answers), mirroring TTECEA Application. Students LABEL a model
         // rather than write it out. Content: An Inspector Calls / Cinderella / ban plastic.
         const _row = (sentence, id, prompt, options, correct) =>
-            '<p>' + escapeHTML(sentence) + '</p>' + selectHTML(prompt, id, _lab(options), false, correct);
+            '<p>' + escapeHTML(sentence) + '</p>' + selectHTML(prompt, id, _lab(_shuf(options)), false, correct);
         const _esP = 'Which part of the essay structure is this?';
         const _hook = 'Hook', _build = 'Building sentences', _thesis = 'Thesis statement';
         const _eTop = 'Topic sentence', _eTec = 'Technique', _eEv = 'Evidence', _eCA = 'Close analysis', _eEf = 'Effect', _eAP = "Author's purpose", _eCx = 'Context';
@@ -19441,9 +19453,15 @@
         html += sectionHTML('plan', 'Essay Structure', true, null,
             '<p>Below is a model <strong>An Inspector Calls</strong> essay in skeleton form. Label each part of its structure, then press <strong>Check answers</strong>.</p>'
             + '<p><strong>Introduction</strong></p>'
-            + _row('What we do to others always finds its way back to us.', 'unit-7.essay-structure.s1.label', _esP, [_hook, _build, _thesis], _hook)
-            + _row('In An Inspector Calls, Priestley puts an entire family on trial for how they treated one powerless young woman.', 'unit-7.essay-structure.s2.label', _esP, [_hook, _build, _thesis], _build)
-            + _row('Priestley presents the Inspector as a voice of conscience to argue that society survives only when we accept responsibility for one another.', 'unit-7.essay-structure.s3.label', _esP, [_hook, _build, _thesis], _thesis)
+            // v7.19.364 (Neil, 10 Jun): intro models follow the taught shape — hook =
+            // question or historical fact (here: question), building sentence =
+            // historical fact. Old hook was an aphorism, old building sentence a
+            // text-intro. Distractor sets also cross sections now (thesis vs topic
+            // sentence, building vs context — the REAL confusions); the old sets were
+            // exactly {hook, building, thesis} in order, so the pattern answered itself.
+            + _row('What do we really owe the strangers whose lives our choices touch?', 'unit-7.essay-structure.s1.label', _esP, [_hook, _thesis, _eTop], _hook)
+            + _row('In 1912, when the play is set, Edwardian Britain ran on a rigid class system that left workers entirely at the mercy of employers like the Birlings.', 'unit-7.essay-structure.s2.label', _esP, [_build, _eCx, _hook], _build)
+            + _row('Priestley presents the Inspector as a voice of conscience to argue that society survives only when we accept responsibility for one another.', 'unit-7.essay-structure.s3.label', _esP, [_thesis, _cRT, _eTop], _thesis)
             + '<p><strong>Body paragraph (TTECEA+C)</strong></p>'
             + _row('Through the Inspector, Priestley confronts the Birlings with the consequences of their selfishness.', 'unit-7.essay-structure.s4.label', _esP, [_eTop, _eTec, _eAP], _eTop)
             + _row('Priestley ends the Inspector’s final speech with a foreboding tricolon of suffering…', 'unit-7.essay-structure.s5.label', _esP, [_eTop, _eTec, _eEv], _eTec)
