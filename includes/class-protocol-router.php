@@ -4423,6 +4423,35 @@ TEMPLATE;
      * pointer self-corrects against chat truth, mirroring the paragraph path).
      * Returns ['scored' => [id => ['mark','strength','target']], 'complete' => bool].
      */
+    /**
+     * v7.19.361 (FIX G): server-truth result once every question carries a
+     * harvested mark. Returns ['total'=>'55/80','grade'=>'7','sum','max','g']
+     * or null while any mark is missing.
+     */
+    private static function compute_final_result($order, $scored) {
+        $max = 0;
+        $sum = 0.0;
+        $all = !empty($order);
+        foreach ($order as $q) {
+            $max += (int) ($q['marks'] ?? 0);
+            $m = $scored[$q['id']]['mark'] ?? null;
+            if ($m && preg_match('/^(\d+(?:\.\d+)?)\s*\//', (string) $m, $mm)) {
+                $sum += (float) $mm[1];
+            } else {
+                $all = false;
+            }
+        }
+        if (!$all || $max <= 0) return null;
+        $g = self::grade_from_total($sum, $max);
+        return [
+            'total' => rtrim(rtrim(number_format($sum, 1, '.', ''), '0'), '.') . '/' . $max,
+            'grade' => $g > 0 ? (string) $g : 'U',
+            'sum'   => $sum,
+            'max'   => $max,
+            'g'     => $g,
+        ];
+    }
+
     private static function derive_questions_scored_from_history($chat_history, $order) {
         $scored = [];
         $pending = []; // v7.19.353: harvest-only fields held until the question completes
@@ -4463,7 +4492,24 @@ TEMPLATE;
             // Whole-paper completion = BARE [ASSESSMENT_COMPLETE] (Part E). The
             // distinct [ASSESSMENT_COMPLETE Q1] marker has chars before `]`, so
             // this strict pattern never false-triggers on it.
-            if (preg_match('/\[ASSESSMENT_COMPLETE\]/i', $content)) $complete = true;
+            if (preg_match('/\[ASSESSMENT_COMPLETE\]/i', $content)) {
+                $complete = true;
+                // v7.19.361 (FIX G): terminal marker — the paper is over. Seat
+                // any still-open question whose mark was harvested mid-loop
+                // (Section B's close anchor rarely fires, so the LAST question's
+                // mark only ever exists as pending; run 3's ledger lost Q5 this
+                // way and the total could never be computed).
+                foreach ($order as $q) {
+                    $id = $q['id'];
+                    if (!isset($scored[$id]) && !empty($pending[$id]['mark'])) {
+                        $scored[$id] = [
+                            'mark'     => $pending[$id]['mark'],
+                            'strength' => $pending[$id]['strength'] ?? null,
+                            'target'   => $pending[$id]['target']   ?? null,
+                        ];
+                    }
+                }
+            }
         }
         return ['scored' => $scored, 'complete' => $complete];
     }
@@ -4520,32 +4566,37 @@ TEMPLATE;
         if (preg_match('/\[ASSESSMENT_COMPLETE\]/i', (string) $reply)) {
             $patch['completion_emitted'] = true;
             $patch['current_question']   = 'done';
+            // v7.19.361 (FIX G): terminal marker — seat any still-open question
+            // whose mark is harvestable from THIS reply. Harvest-only results
+            // never complete a question by design, but Section B's close anchor
+            // rarely fires, so the last question's mark typically rides the
+            // completion message itself (run 3's ledger lost Q5 this way).
+            foreach ($order as $q) {
+                if (isset($scored[$q['id']])) continue;
+                $res = self::extract_question_result_from_message($reply, $q);
+                if ($res !== null && !empty($res['mark'])) {
+                    $scored[$q['id']] = [
+                        'mark'     => $res['mark'],
+                        'strength' => $res['strength'] ?? null,
+                        'target'   => $res['target']   ?? null,
+                    ];
+                    $patch['questions_scored'] = $scored;
+                }
+            }
             // v7.19.361 (FIX G): server-truth result at completion. When every
             // question's mark was harvested, compute the deterministic grade,
             // persist it in the state (rest-api copies it into the attempt
             // index + the doc heals from the ledger on load), and warn when
             // Sophia's printed grade disagrees — the 10 Jun two-grade swing
             // (8 → 6 on near-identical totals) was conversion, not marking.
-            $max_total = 0;
-            $sum = 0.0;
-            $all = true;
-            foreach ($order as $q) {
-                $max_total += (int) ($q['marks'] ?? 0);
-                $m = $scored[$q['id']]['mark'] ?? null;
-                if ($m && preg_match('/^(\d+(?:\.\d+)?)\s*\//', (string) $m, $mm)) {
-                    $sum += (float) $mm[1];
-                } else {
-                    $all = false;
-                }
-            }
-            if ($all && $max_total > 0 && !empty($order)) {
-                $g = self::grade_from_total($sum, $max_total);
-                $patch['final_total'] = rtrim(rtrim(number_format($sum, 1, '.', ''), '0'), '.') . '/' . $max_total;
-                $patch['final_grade'] = $g > 0 ? (string) $g : 'U';
+            $final = self::compute_final_result($order, $scored);
+            if ($final) {
+                $patch['final_total'] = $final['total'];
+                $patch['final_grade'] = $final['grade'];
                 $printed = html_entity_decode((string) $reply, ENT_QUOTES, 'UTF-8');
-                if (preg_match('/\bGrade[:\s\*]+(\d)\b/i', $printed, $pg) && (int) $pg[1] !== $g) {
-                    error_log('WML GRADE DRIFT: printed=' . $pg[1] . ' server=' . $g
-                        . ' total=' . $sum . '/' . $max_total . ' user=' . (int) $user_id);
+                if (preg_match('/\bGrade[:\s\*]+(\d)\b/i', $printed, $pg) && (int) $pg[1] !== $final['g']) {
+                    error_log('WML GRADE DRIFT: printed=' . $pg[1] . ' server=' . $final['g']
+                        . ' total=' . $final['total'] . ' user=' . (int) $user_id);
                 }
             }
         }
@@ -4711,6 +4762,17 @@ TEMPLATE;
                     // totals into the attempt index.
                     $patch['final_total'] = '';
                     $patch['final_grade'] = '';
+                }
+                // v7.19.361 (FIX G): completed run whose result fields are
+                // empty (e.g. the last mark only became derivable via the
+                // terminal flush in derive) — fill them from chat truth so the
+                // ledger heal + attempt-index persistence see the result.
+                if (!empty($derived['complete']) && (string) ($state['final_total'] ?? '') === '') {
+                    $final = self::compute_final_result($order, $derived['scored']);
+                    if ($final) {
+                        $patch['final_total'] = $final['total'];
+                        $patch['final_grade'] = $final['grade'];
+                    }
                 }
                 $state = SWML_Session_Manager::update_assessment_state(
                     $user_id, $board, $text, $topic, $suffix, $attempt, $patch

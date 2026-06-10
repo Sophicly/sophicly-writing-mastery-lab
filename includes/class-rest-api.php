@@ -1157,14 +1157,17 @@ class SWML_REST_API {
                         $reply,
                         $prompt
                     );
-                    // v7.19.361 (FIX G): on the completion turn, copy the
-                    // server-computed Total/Grade into the attempt index —
+                    // v7.19.361 (FIX G): copy the server-computed Total/Grade
+                    // into the attempt index once the state carries one —
                     // grade/score sat null after three completed runs, so the
                     // dashboard grade feed never saw finished assessments.
+                    // Not gated on the completion marker: auto-repair can fill
+                    // the result a turn later; record_attempt_result no-ops
+                    // when the index already matches.
                     if (is_array($assessment_state)
                         && !empty($assessment_state['final_grade'])
                         && !empty($assessment_state['final_total'])
-                        && preg_match('/\[ASSESSMENT_COMPLETE\]/i', (string) $reply)) {
+                        && !empty($assessment_state['completion_emitted'])) {
                         $this->record_attempt_result($user_id, $prog_context, $assessment_state);
                     }
                 }
