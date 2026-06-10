@@ -4442,10 +4442,15 @@ TEMPLATE;
                     // keep walking, so the next slice matches reality. Produce
                     // beats (mark/feedback/GOLD) are never skipped this way —
                     // they hold until delivered or the stall fallback fires.
+                    // v7.19.357: probe only as far as the NEXT produce beat. A
+                    // wider scan false-resyncs: a lingering match from an earlier
+                    // artefact (e.g. ¶1's gold heading satisfying ¶2's gold
+                    // detect) raced the pointer past ¶2's self-rate/targeting.
                     $later = false;
                     $probe = $this->assessment_next_beat($cur_beat, $context);
                     while ($probe && $this->assessment_beat_in_question($probe['id'], $cur_q)) {
                         if (@preg_match($probe['detect'], (string) $reply)) { $later = true; break; }
+                        if ($probe['type'] === 'produce') break;
                         $probe = $this->assessment_next_beat($probe['id'], $context);
                     }
                     if (!$later) break;
