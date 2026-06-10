@@ -1437,16 +1437,6 @@ class SWML_Protocol_Router {
             $files = array_merge($files, $step_files);
         }
 
-        // v7.19.300 TEMP DIAG: why is the Q2 strip not firing? capture the gates.
-        if ($task === 'assessment') {
-            error_log('WML SEG DIAG: subject=[' . ($context['subject'] ?? '?') . ']'
-                . ' mode=' . self::assessment_mode($context)
-                . ' frontend_step=' . ((int) ($context['step'] ?? 1))
-                . ' final_step=' . $step
-                . ' is_seg=' . ($is_segmented_q ? '1' : '0')
-                . ' seg_step=' . ($seg_step ?? '-'));
-        }
-
         // v7.19.299 (Increment 1): conditional strip. When the held beat IS segmented
         // (a step file exists for it), remove the whole-procedure files from this turn's
         // context so ONLY the reference set + the one beat file load — the model sees
