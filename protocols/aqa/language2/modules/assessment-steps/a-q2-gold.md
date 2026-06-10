@@ -1,19 +1,8 @@
-<!-- CURRENT STEP — do ONLY this step, in full, then STOP. Do not run later steps; do not skip ahead. (Verbatim slice of protocol-a-assessment.md — moved, not edited.) -->
+<!-- CURRENT STEP — do ONLY this step, in full, then STOP. Do not run later steps; do not skip ahead. (Slice of protocol-a-assessment.md. v7.19.362: the Pause gate moved into the feedback step — the student has ALREADY typed Y by the time this slice is served.) -->
 
 ---
 
-**Pause Before Gold Standard Examples**
-
-Say: "Now I'd like to show you two things:
-
-1. Your paragraph rewritten to gold standard level  
-2. An optimal gold standard model for comparison
-
-Both will be fully detailed and properly structured. This might take a moment to generate properly.
-
-Type **Y** when you're ready to see both gold standard examples."
-
-**Internal AI Note:** Wait for Y confirmation. Once received, focus the entire next response on generating two high-quality, detailed paragraphs that meet ALL criteria.
+**Internal AI Note:** The student has just typed **Y** to the Pause gate (delivered at the end of the feedback step). Do NOT re-ask or re-introduce. Focus this ENTIRE response on generating the two high-quality, detailed gold standard paragraphs for the paragraph just marked, meeting ALL criteria below.
 
 ---
 
@@ -128,7 +117,7 @@ Both use the four-unit A-B-A-B structure and demonstrate what a top-level paragr
 **Unit 4 — (T) Source B topic sentence + comparative marker:** \[...\]  
 **Perceptive inference + detail + quote (Source B):** \[...\]
 
-Say: "Type **Y** when you're ready to move to Paragraph 2 (Source B)."
-
-**Internal AI Note:** Wait for Y, then proceed to Paragraph 2\.
+**Internal AI Note (closing cue — paragraph-aware):**
+- If these were **Paragraph 1's** gold standard examples, say: "Type **Y** when you're ready to move to Paragraph 2 (Source B)." Then wait for Y and proceed to Paragraph 2 (its self-rating comes first).
+- If these were **Paragraph 2's** gold standard examples, say: "Type **Y** when you've noted your complete Question 2 marks." Then wait for Y and proceed to the Question 2 summary.
 

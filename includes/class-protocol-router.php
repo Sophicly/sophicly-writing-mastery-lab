@@ -4136,14 +4136,22 @@ TEMPLATE;
             // mark needs a colon/heading/score-figure (never bare "mark
             // Paragraph N" prose); gold needs BOTH canonical labels (either
             // order) — one gold is an unfinished beat, the slice re-serves.
+            // v7.19.362 (FIX H): the Pause gate moved into the feedback slice
+            // (run 4: no cue in the feedback slice → Sophia offered "move to
+            // Paragraph 2" herself and bulldozed the held gold beat to a
+            // 2-stall fallback). The gate's menu text contains both gold
+            // labels ("…rewritten to gold standard level" / "…model for
+            // comparison") — negative lookaheads stop the gate satisfying the
+            // pair detect; optional ¶ digit accepts the live "Your Paragraph 1
+            // Rewritten to Gold Standard" heading form.
             ['id' => 'q2_p1_mark',     'step' => 4,  'label' => '¶1 Mark',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',        'type' => 'produce', 'detect' => '/Unit 1 — Source A|Paragraph 1 \(4 marks|Paragraph 1[^\n]{0,20}(?:sub)?total[^\n]{0,20}\d|Paragraph 1[^\n]{0,15}Mark Breakdown|Marks?:\s*Paragraph 1|Paragraph 1 (?:raw |final )?score[:\s]/i'],
             ['id' => 'q2_p1_feedback', 'step' => 5,  'label' => '¶1 Feedback',  'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-feedback.md',    'type' => 'produce', 'detect' => '/How to Improve|Where marks were lost|What you did well|Feedback, Advice/i'],
-            ['id' => 'q2_p1_gold',     'step' => 6,  'label' => '¶1 Gold',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',        'type' => 'produce', 'detect' => '/Your Paragraph Rewritten to Gold Standard[\s\S]*Optimal Gold Standard Model|Optimal Gold Standard Model[\s\S]*Your Paragraph Rewritten to Gold Standard/i'],
+            ['id' => 'q2_p1_gold',     'step' => 6,  'label' => '¶1 Gold',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',        'type' => 'produce', 'detect' => '/Your Paragraph (?:[12]\s+)?Rewritten to Gold Standard(?!\s*level)[\s\S]*Optimal Gold Standard Model(?!\s+for comparison)|Optimal Gold Standard Model(?!\s+for comparison)[\s\S]*Your Paragraph (?:[12]\s+)?Rewritten to Gold Standard(?!\s*level)/i'],
             ['id' => 'q2_p2_selfrate', 'step' => 7,  'label' => '¶2 Self-rate', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-p2-selfrate.md', 'type' => 'ask',     'detect' => '/Goal Achievement|scale of 1.?5|second paragraph meet|met those three demands/i'],
             ['id' => 'q2_p2_targeting','step' => 8,  'label' => '¶2 Targeting', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-p2-targeting.md','type' => 'ask',     'detect' => '/which of the three|aiming for most|which do you think is your weakest/i'],
             ['id' => 'q2_p2_mark',     'step' => 9,  'label' => '¶2 Mark',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',        'type' => 'produce', 'detect' => '/Unit 1 — Source A|Paragraph 2 \(4 marks|Paragraph 2[^\n]{0,20}(?:sub)?total[^\n]{0,20}\d|Paragraph 2[^\n]{0,15}Mark Breakdown|Marks?:\s*Paragraph 2|Paragraph 2 (?:raw |final )?score[:\s]/i'],
             ['id' => 'q2_p2_feedback', 'step' => 10, 'label' => '¶2 Feedback',  'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-feedback.md',    'type' => 'produce', 'detect' => '/How to Improve|Where marks were lost|What you did well|Feedback, Advice/i'],
-            ['id' => 'q2_p2_gold',     'step' => 11, 'label' => '¶2 Gold',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',        'type' => 'produce', 'detect' => '/Your Paragraph Rewritten to Gold Standard[\s\S]*Optimal Gold Standard Model|Optimal Gold Standard Model[\s\S]*Your Paragraph Rewritten to Gold Standard/i'],
+            ['id' => 'q2_p2_gold',     'step' => 11, 'label' => '¶2 Gold',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',        'type' => 'produce', 'detect' => '/Your Paragraph (?:[12]\s+)?Rewritten to Gold Standard(?!\s*level)[\s\S]*Optimal Gold Standard Model(?!\s+for comparison)|Optimal Gold Standard Model(?!\s+for comparison)[\s\S]*Your Paragraph (?:[12]\s+)?Rewritten to Gold Standard(?!\s*level)/i'],
             ['id' => 'q2_summary',     'step' => 12, 'label' => 'Q2 Summary',   'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-summary.md',     'type' => 'produce', 'detect' => '/overall Question 2 score|Question 2 Final Summary|Q2 Final|Total Q2/i'],
         ];
     }

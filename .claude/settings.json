@@ -240,7 +240,9 @@
       "Bash(sed -n '8890,8930p' frontend/wml-assessment.js)",
       "Bash(awk 'NR>=180 && NR<=300 && /private function|public function/' includes/class-protocol-router.php)",
       "Bash(php /tmp/wml-fixg-bench.php)",
-      "Bash(php -d display_errors=1 -d error_reporting=E_ALL /tmp/wml-fixg-bench.php)"
+      "Bash(php -d display_errors=1 -d error_reporting=E_ALL /tmp/wml-fixg-bench.php)",
+      "Bash(sed -n '195,230p' src/components/ExamCountdown.jsx)",
+      "Bash(awk 'NR>195 && /var\\\\\\(--/' src/components/ExamCountdown.jsx)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
