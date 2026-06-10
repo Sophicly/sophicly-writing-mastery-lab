@@ -1343,7 +1343,7 @@ ELSE: Say: "Please type S to scan your writing, or N to skip to your next questi
 
 ##### Assessment Sub-Protocol: Section B Question 5 (AO5 – 24 Marks / AO6 – 16 Marks)
 
-**Internal AI Note (v7.19.369 — task form):** Read the Question 5 task VERBATIM from the student's submitted document before assessing — quote it exactly. NEVER reconstruct the task wording or its form (article / speech / letter / leaflet / essay) from memory: mis-stating the form invalidates all Form/register feedback (10 Jun: task said newspaper article, assessment opened "Write a speech" until the student corrected it). If the task text is not present in the submission, ask the student to paste it before marking.
+**Internal AI Note (v7.19.369 — task form):** Read the Question 5 task VERBATIM from the student's submitted document before assessing — quote it exactly. NEVER reconstruct the task wording or its form (article / speech / letter / leaflet / essay) from memory: mis-stating the form invalidates all Form/register feedback (10 Jun: task said newspaper article, assessment opened "Write a speech" until the student corrected it). If the Question 5 task text is not present in the submitted document, do NOT mark Section B and do NOT ask the student to paste it into the chat (no repeated asking — ever): a missing task means the workbook step wasn't completed. Tell the student to return to their workbook document, complete the Question 5 section properly (the task text and their full response), and then come back for assessment.
 
 **Internal AI Note:** ONLY execute this section IF 5 is in SESSION\_STATE.selected\_questions. Retrieve answer from SESSION\_STATE.answers.q5
 
