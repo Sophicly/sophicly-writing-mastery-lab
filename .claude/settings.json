@@ -226,11 +226,13 @@
       "Bash(sed -n '145,165p' src/styles/wp-overrides.css)",
       "Bash(sed -n '700,750p' src/styles/wp-overrides.css)",
       "Bash(ssh -o ConnectTimeout=15 -i ~/.ssh/sophicly_staging runcloud@18.133.5.229 'cd /home/runcloud/webapps/SophiclyMain && /usr/local/lsws/lsphp82/bin/php8.2 /usr/local/bin/wp eval \"file_put_contents\\(\\\\\"/tmp/wml-test-docs.json\\\\\", wp_json_encode\\(array\\( \\\\\"t1\\\\\" => get_user_meta\\(1352, \\\\\"swml_canvas_aqa_aqa_lang_paper_1_t1\\\\\", true\\), \\\\\"redraft\\\\\" => get_user_meta\\(1352, \\\\\"swml_canvas_aqa_aqa_lang_paper_1_t1_redraft\\\\\", true\\), \\\\\"att_redraft\\\\\" => get_user_meta\\(1352, \\\\\"swml_attempts_aqa_aqa_lang_paper_1_t1_redraft\\\\\", true\\) \\)\\)\\); echo \\\\\"dumped \\\\\".filesize\\(\\\\\"/tmp/wml-test-docs.json\\\\\"\\).\\\\\" bytes\\\\\";\"')",
-      "Bash(rm \"$HOME/.claude/handoffs/open/wml-reeham-lang-p1-diagnostic-redraft-not-saving-2026-06-09.md\" *)"
+      "Bash(rm \"$HOME/.claude/handoffs/open/wml-reeham-lang-p1-diagnostic-redraft-not-saving-2026-06-09.md\" *)",
+      "Bash(cat >> *)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
-      "/Users/neilwilliams/.claude/handoffs"
+      "/Users/neilwilliams/.claude/handoffs",
+      "/Users/neilwilliams/.claude/handoffs/in-progress"
     ]
   }
 }
