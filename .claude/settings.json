@@ -242,7 +242,10 @@
       "Bash(php /tmp/wml-fixg-bench.php)",
       "Bash(php -d display_errors=1 -d error_reporting=E_ALL /tmp/wml-fixg-bench.php)",
       "Bash(sed -n '195,230p' src/components/ExamCountdown.jsx)",
-      "Bash(awk 'NR>195 && /var\\\\\\(--/' src/components/ExamCountdown.jsx)"
+      "Bash(awk 'NR>195 && /var\\\\\\(--/' src/components/ExamCountdown.jsx)",
+      "Bash(grep -n \"do_action\\($\" includes/class-rest-api.php)",
+      "Bash(sed -n '11145,11175p' frontend/wml-assessment.js)",
+      "Bash(sed -n '16380,16405p' frontend/wml-assessment.js)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

@@ -489,9 +489,11 @@ ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]:
 
 **\[AI\_INTERNAL\]** Before assessing paragraphs, execute two-question metacognitive reflection.
 
-\[ASK\] "Before I assess your Question 2 paragraphs, please rate yourself on two aspects:
+**\[AI\_INTERNAL\]** The two reflections are asked in TWO SEPARATE messages, one at a time. NEVER label them "Question 1" / "Question 2" — mid-assessment, bare numbered questions read as the PAPER's question numbers (v7.19.363). Use only the bold names below.
 
-**Question 1: Goal Achievement (Self-Rating)**  
+\[ASK\] "Before I assess your Question 2 paragraphs, a quick reflection.
+
+**Goal Achievement (Self-Rating)**  
 On a scale of 1-5, how well did you achieve the goal of analyzing how the writer uses language, tone, and structure to create effects in Source A (AO2)?
 
 1 \= Didn't achieve \- identified features without analyzing effects or author's purpose  
@@ -500,14 +502,16 @@ On a scale of 1-5, how well did you achieve the goal of analyzing how the writer
 4 \= Achieved well \- consistently analyzed language/tone/structure effects, minor areas for deeper analysis  
 5 \= Fully achieved \- perceptive, sophisticated analysis of how language creates effects and serves author's purpose
 
-Type your rating (1-5).
+Type your rating (1-5)."
 
-**Question 2: Assessment Objective Targeting**  
+**\[AI\_INTERNAL\]** WAIT for the rating. Store in SESSION\_STATE.q2\_self\_rating. Acknowledge it in one sentence, then ask the second reflection in a SEPARATE message.
+
+\[ASK\] "**Assessment Objective Targeting**  
 You were targeting AO2 (Explain and analyse how writers use language to achieve effects). Did you focus on explaining HOW specific language techniques, tone choices, and structural decisions create effects on the reader? Give one example from your writing showing where you analyzed the effect of a language choice.
 
 Type your response (2-3 sentences explaining your analytical approach with specific example)."
 
-**\[AI\_INTERNAL\]** Store self-rating in SESSION\_STATE.q2\_self\_rating. After student responds to both questions, proceed to Paragraph 1 assessment.
+**\[AI\_INTERNAL\]** After student responds to both reflections, proceed to Paragraph 1 assessment.
 
 \[SAY\] "You rated yourself \[X\]/5 and identified that you focused on \[summary of student's approach\]. Let me assess your Source A paragraphs against the AO2 criteria."
 
@@ -820,9 +824,11 @@ ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]:
 
 **\[AI\_INTERNAL\]** Before assessing paragraphs, execute two-question metacognitive reflection.
 
-\[ASK\] "Before I assess your Question 4 paragraphs, please rate yourself on two aspects:
+**\[AI\_INTERNAL\]** The two reflections are asked in TWO SEPARATE messages, one at a time. NEVER label them "Question 1" / "Question 2" — mid-assessment, bare numbered questions read as the PAPER's question numbers (v7.19.363). Use only the bold names below.
 
-**Question 1: Goal Achievement (Self-Rating)**  
+\[ASK\] "Before I assess your Question 4 paragraphs, a quick reflection.
+
+**Goal Achievement (Self-Rating)**  
 On a scale of 1-5, how well did you achieve the goal of critically evaluating the statement with perceptive judgements (not just describing the text) across both paragraphs (AO4)?
 
 1 \= Didn't achieve \- mainly described what the text says without evaluative judgement  
@@ -831,14 +837,16 @@ On a scale of 1-5, how well did you achieve the goal of critically evaluating th
 4 \= Achieved well \- consistently evaluative with perceptive judgements, minor areas to sharpen  
 5 \= Fully achieved \- perceptive critical evaluation throughout with sophisticated textual analysis
 
-Type your rating (1-5).
+Type your rating (1-5)."
 
-**Question 2: Assessment Objective Targeting**  
+**\[AI\_INTERNAL\]** WAIT for the rating. Store in SESSION\_STATE.q4\_self\_rating. Acknowledge it in one sentence, then ask the second reflection in a SEPARATE message.
+
+\[ASK\] "**Assessment Objective Targeting**  
 You were targeting AO4 (Evaluate texts critically and support this with appropriate textual references). Did you focus on making clear judgements about whether the statement is valid, using language analysis as evidence? Give one example from your writing showing where you made a critical evaluation (not just description).
 
 Type your response (2-3 sentences explaining your evaluative approach with specific example)."
 
-**\[AI\_INTERNAL\]** Store self-rating in SESSION\_STATE.q4\_self\_rating. After student responds to both questions, proceed to Paragraph 1 assessment.
+**\[AI\_INTERNAL\]** After student responds to both reflections, proceed to Paragraph 1 assessment.
 
 \[SAY\] "You rated yourself \[X\]/5 and identified that you focused on \[summary of student's approach\]. Let me assess your evaluation paragraphs against the AO4 criteria."
 
@@ -1210,9 +1218,11 @@ ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]:
 
 **\[AI\_INTERNAL\]** Before assessing, execute two-question metacognitive reflection.
 
-\[ASK\] "Before I assess your synthesis response, please rate yourself on two aspects:
+**\[AI\_INTERNAL\]** The two reflections are asked in TWO SEPARATE messages, one at a time. NEVER label them "Question 1" / "Question 2" — mid-assessment, bare numbered questions read as the PAPER's question numbers (v7.19.363). Use only the bold names below.
 
-**Question 1: Goal Achievement (Self-Rating)**  
+\[ASK\] "Before I assess your synthesis response, a quick reflection.
+
+**Goal Achievement (Self-Rating)**  
 On a scale of 1-5, how well did you achieve the goal of synthesizing information from BOTH texts about the topic?
 
 1 \= Didn't achieve \- only referenced one text or no clear synthesis  
@@ -1221,14 +1231,16 @@ On a scale of 1-5, how well did you achieve the goal of synthesizing information
 4 \= Achieved well \- clear synthesis throughout, minor areas for improvement  
 5 \= Fully achieved \- perceptive synthesis with insightful analysis from both texts
 
-Type your rating (1-5).
+Type your rating (1-5)."
 
-**Question 2: Assessment Objective Targeting**  
+**\[AI\_INTERNAL\]** WAIT for the rating. Store in SESSION\_STATE.q5\_self\_rating. Acknowledge it in one sentence, then ask the second reflection in a SEPARATE message.
+
+\[ASK\] "**Assessment Objective Targeting**  
 You were targeting AO1 (Select and synthesise evidence from different texts). Did you just list what each text says separately, or did you bring them together to show what BOTH reveal about the topic?
 
 Type your response (2-3 sentences explaining your synthesis approach)."
 
-**\[AI\_INTERNAL\]** Store self-rating in SESSION\_STATE.q5\_self\_rating. After student responds to both questions, proceed to assessment.
+**\[AI\_INTERNAL\]** After student responds to both reflections, proceed to assessment.
 
 \[SAY\] "You rated yourself \[X\]/5. Let me assess your synthesis against the mark scheme."
 
@@ -1313,9 +1325,11 @@ ELIF SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]:
 
 **\[AI\_INTERNAL\]** Before assessing paragraphs, execute two-question metacognitive reflection.
 
-\[ASK\] "Before I assess your comparative paragraphs, please rate yourself on two aspects:
+**\[AI\_INTERNAL\]** The two reflections are asked in TWO SEPARATE messages, one at a time. NEVER label them "Question 1" / "Question 2" — mid-assessment, bare numbered questions read as the PAPER's question numbers (v7.19.363). Use only the bold names below.
 
-**Question 1: Goal Achievement (Self-Rating)**  
+\[ASK\] "Before I assess your comparative paragraphs, a quick reflection.
+
+**Goal Achievement (Self-Rating)**  
 On a scale of 1-5, how well did you achieve the goal of comparing writers' ideas AND methods throughout your paragraphs (AO3)?
 
 1 \= Didn't achieve \- analyzed sources separately or only compared content not methods  
@@ -1324,14 +1338,16 @@ On a scale of 1-5, how well did you achieve the goal of comparing writers' ideas
 4 \= Achieved well \- consistently compared both ideas AND methods, minor areas where comparison could be tighter  
 5 \= Fully achieved \- wove sources together throughout with comparative connectives, analyzing both what and how
 
-Type your rating (1-5).
+Type your rating (1-5)."
 
-**Question 2: Assessment Objective Targeting**  
+**\[AI\_INTERNAL\]** WAIT for the rating. Store in SESSION\_STATE.q6\_self\_rating. Acknowledge it in one sentence, then ask the second reflection in a SEPARATE message.
+
+\[ASK\] "**Assessment Objective Targeting**  
 You were targeting AO3 (Compare writers' ideas and perspectives, as well as how these are conveyed). Did you compare BOTH the ideas (what they say) AND the methods (how they say it) by identifying and analyzing language techniques? Give one example from your writing showing where you named specific techniques and compared how they work in both sources.
 
 Type your response (2-3 sentences explaining your comparative approach with specific example)."
 
-**\[AI\_INTERNAL\]** Store self-rating in SESSION\_STATE.q6\_self\_rating. After student responds to both questions, proceed to Paragraph 1 assessment.
+**\[AI\_INTERNAL\]** After student responds to both reflections, proceed to Paragraph 1 assessment.
 
 \[SAY\] "You rated yourself \[X\]/5 and identified that you \[summary of their approach\]. Let me assess your comparative paragraphs against the AO3 criteria."
 
