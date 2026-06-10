@@ -4555,6 +4555,14 @@ TEMPLATE;
                     || !$this->assessment_beat_in_question($stale_beat, $patch['current_question']))) {
                     $patch['current_beat'] = '';
                 }
+                // v7.19.358 (FIX E): truly-fresh restart (nothing derivable from
+                // the new chat) = full revival — also re-enable segmentation, or
+                // a prior run's stall fallback / stall counter leaks into the
+                // new attempt and Q2 silently stays monolith-only.
+                if (empty($derived['scored']) && empty($derived['complete'])) {
+                    $patch['beats_disabled_for'] = '';
+                    $patch['beat_stall_count']   = 0;
+                }
                 $state = SWML_Session_Manager::update_assessment_state(
                     $user_id, $board, $text, $topic, $suffix, $attempt, $patch
                 );
@@ -4713,14 +4721,21 @@ TEMPLATE;
         list($board, $text, $topic, $suffix, $attempt) = $sig;
 
         $state = SWML_Session_Manager::get_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt);
-        if (!empty($state['completion_emitted'])) {
-            return '';
-        }
 
-        // v7.19.289: question-mode (AQA Language P2) uses its own sticky note —
-        // the paragraph machinery below NEVER runs for question-mode contexts.
+        // v7.19.358 (FIX E): question-mode delegates BEFORE the completion
+        // short-circuit. build_questions_state_block runs its auto-repair
+        // first, so a fresh restart on a completed attempt sig revives the
+        // machine (Neil's 10 Jun 10:21 run: completion_emitted=true from the
+        // morning run left the WHOLE machine dormant — no advancer, no mark
+        // harvest, no wrap-up mandate, beats never exercised). Genuine
+        // re-entry with restored chat stays silently completed: derived state
+        // matches stored, no repair fires, and the post-repair completion
+        // check inside build_questions_state_block returns ''.
         if (self::assessment_mode($context) === 'questions') {
             return $this->build_questions_state_block($context, $user_id, $sig, $state);
+        }
+        if (!empty($state['completion_emitted'])) {
+            return '';
         }
 
         // v7.17.58: state auto-repair. Re-derive paragraphs_scored from chat
