@@ -1,6 +1,18 @@
 {
-  "_version": "1.0.0",
+  "_version": "1.1.0",
   "_description": "Verified language paper exam structures per board. NEVER estimate — all data from actual exam papers or official specifications.",
+  "_grade_band_percent": {
+    "source": "Sophicly canonical assessment band, ratified by Neil 2026-06-10. ~10pp above the real exam (real Grade 9 ≈ 75%). Uniform 10pp steps. Per-paper boundary marks derive as ceil(pct × total / 100); a paper-level grade_boundaries key overrides this band for that paper only. Quizzes use SWML_Quiz_Engine::percentage_to_grade — a separate canonical, do not merge.",
+    "9": 85,
+    "8": 75,
+    "7": 65,
+    "6": 55,
+    "5": 45,
+    "4": 35,
+    "3": 25,
+    "2": 15,
+    "1": 1
+  },
   "_question_types": {
     "multiple_choice": "Student selects correct answers from a list (e.g., AQA P2 Q1: choose 4 true from 8)",
     "retrieval": "Short factual answer, 1-2 marks, single sentence",
@@ -43,21 +55,7 @@
             { "id": "Q5", "marks": 40, "aos": ["AO5", "AO6"], "type": "extended_writing", "content_marks": 24, "spag_marks": 16, "description": "Descriptive or narrative writing (choice of 2 tasks)" }
           ]
         }
-      ],
-      "grade_boundaries": {
-        "source": "AQA 8700/1 June 2023, +10pp stricter than real (Sophicly 2026-06-06)",
-        "verified": true,
-        "real_source_note": "Real AQA 8700/1 June 2023 raw boundaries were 9:65 8:58 7:51 6:44 5:37 4:30 3:23 2:16 1:9 out of 80; Sophicly adds 10 percentage-points (+8 marks) to each to grade harder than the live exam.",
-        "9": 73,
-        "8": 66,
-        "7": 59,
-        "6": 52,
-        "5": 45,
-        "4": 38,
-        "3": 31,
-        "2": 24,
-        "1": 17
-      }
+      ]
     },
     "language_p2": {
       "verified": true,

@@ -1157,6 +1157,16 @@ class SWML_REST_API {
                         $reply,
                         $prompt
                     );
+                    // v7.19.361 (FIX G): on the completion turn, copy the
+                    // server-computed Total/Grade into the attempt index —
+                    // grade/score sat null after three completed runs, so the
+                    // dashboard grade feed never saw finished assessments.
+                    if (is_array($assessment_state)
+                        && !empty($assessment_state['final_grade'])
+                        && !empty($assessment_state['final_total'])
+                        && preg_match('/\[ASSESSMENT_COMPLETE\]/i', (string) $reply)) {
+                        $this->record_attempt_result($user_id, $prog_context, $assessment_state);
+                    }
                 }
             }
 
@@ -2006,6 +2016,19 @@ class SWML_REST_API {
             $doc['html'] = self::strip_stale_cw_outline_sections($doc['html']);
         }
 
+        // v7.19.361 (FIX G): heal-on-load — backfill unset per-question feedback
+        // labels from the assessment ledger's harvested marks (the Score Summary
+        // derives client-side FROM those labels, so this is what makes the doc's
+        // Total/Grade reflect the actual run), and rewrite any stale printed
+        // Grade Boundaries table to the canonical band. Not persisted: cleans on
+        // next autosave (same gradual-clean pattern as the strips above).
+        if (is_array($doc) && !empty($doc['html'])) {
+            $doc['html'] = $this->heal_feedback_labels_from_ledger(
+                $doc['html'], $user_id, $board, $text, (int) $topic_number, (string) $suffix, max(1, (int) $attempt)
+            );
+            $doc['html'] = self::heal_score_summary_boundaries($doc['html']);
+        }
+
         // v7.19.84: Crib-template version migration. Compare saved doc's stamped
         // template_version vs current crib JSON's template_version. If saved is
         // older, reseed from new template, preserving any student-typed responses.
@@ -2172,6 +2195,14 @@ class SWML_REST_API {
         // cleaned doc too.
         if (strpos($text, 'lang_paper') !== false && is_array($doc) && !empty($doc['html'])) {
             $doc['html'] = self::strip_stale_cw_outline_sections($doc['html']);
+        }
+        // v7.19.361 (FIX G): same ledger heal as load_canvas — tutor sees the
+        // server-harvested marks and the canonical boundaries band too.
+        if (is_array($doc) && !empty($doc['html'])) {
+            $doc['html'] = $this->heal_feedback_labels_from_ledger(
+                $doc['html'], $student_id, $board, $text, (int) $topic_number, (string) $suffix, max(1, (int) $attempt)
+            );
+            $doc['html'] = self::heal_score_summary_boundaries($doc['html']);
         }
         return rest_ensure_response(['success' => true, 'doc' => $doc, 'attempt' => $attempt]);
     }
@@ -3451,6 +3482,57 @@ class SWML_REST_API {
     }
 
     /**
+     * v7.19.361 (FIX G): backfill UNSET per-question feedback labels
+     * ("Feedback: Q1 (— / 4)") from the assessment ledger's harvested marks.
+     * The Score Summary's Total/Percentage/Grade derive client-side from these
+     * labels (recalculateScoreSummary), so this is the persistence that makes
+     * the doc reflect the run. Fills only the "—" slot — a mark already set
+     * (incl. tutor pill edits) is never touched. No-ops silently when the
+     * ledger is empty (e.g. pre-state-machine papers).
+     */
+    private function heal_feedback_labels_from_ledger($html, $owner_id, $board, $text, $topic, $suffix, $attempt) {
+        if (empty($html) || !is_string($html)) return $html;
+        if (strpos($html, 'data-section-type="feedback"') === false) return $html;
+        if (!class_exists('SWML_Session_Manager')) return $html;
+        $state = SWML_Session_Manager::get_assessment_state($owner_id, $board, $text, $topic, $suffix, $attempt);
+        if (empty($state['questions_scored']) || !is_array($state['questions_scored'])) return $html;
+        foreach ($state['questions_scored'] as $qid => $res) {
+            $mark = is_array($res) ? ($res['mark'] ?? null) : null;
+            if (!$mark || !preg_match('#^(\d+(?:\.\d+)?)\s*/\s*(\d+)$#', (string) $mark, $m)) continue;
+            $pattern = '/(data-section-label="Feedback:\s*' . preg_quote((string) $qid, '/')
+                . '\s*\()(?:—|&#8212;|&mdash;)(\s*\/\s*' . preg_quote($m[2], '/') . '\))/u';
+            $html = preg_replace($pattern, '${1}' . $m[1] . '${2}', $html, 1);
+        }
+        return $html;
+    }
+
+    /**
+     * v7.19.361 (FIX G): rewrite a doc's printed Grade Boundaries table to the
+     * canonical band (band ratified 2026-06-10; saved docs carry the old
+     * 84/74/64% template lines). Recomputes every "Grade N: X–Y marks (A–B%)"
+     * line from the paper max in the table heading; styling spans untouched.
+     */
+    private static function heal_score_summary_boundaries($html) {
+        if (empty($html) || !is_string($html)) return $html;
+        if (!preg_match('/Grade Boundaries \(\/(\d+)\)/u', $html, $hm)) return $html;
+        if (!class_exists('SWML_Protocol_Router')) return $html;
+        $max = (int) $hm[1];
+        if ($max <= 0) return $html;
+        $bm = SWML_Protocol_Router::grade_boundary_marks($max);
+        // Percent edges mirror buildScoresSection: lower = band pct, upper = next band's pct − 1.
+        $pcts = SWML_Protocol_Router::grade_band_percent();
+        return preg_replace_callback('/Grade (\d): \d+–\d+ marks \(\d+–\d+%\)/u', function ($m) use ($bm, $pcts, $max) {
+            $g = (int) $m[1];
+            if (!isset($bm[$g])) return $m[0];
+            $min  = $bm[$g];
+            $maxm = $g === 9 ? $max : $bm[$g + 1] - 1;
+            $pmin = $pcts[$g];
+            $pmax = $g === 9 ? 100 : $pcts[$g + 1] - 1;
+            return "Grade {$g}: {$min}–{$maxm} marks ({$pmin}–{$pmax}%)";
+        }, $html);
+    }
+
+    /**
      * v7.19.263: Decoded doc of the immediately-upstream redraft stage for the
      * SAME board/text/topic/attempt/project, or null when there is no upstream
      * stage / it holds no content. Direction-safe: only ever reads the ONE stage
@@ -3603,6 +3685,34 @@ class SWML_REST_API {
     private function save_attempt_index($user_id, $board, $text, $topic, $suffix, $idx) {
         $idx_key = $this->attempt_index_key($board, $text, $topic, $suffix);
         update_user_meta($user_id, $idx_key, wp_slash(wp_json_encode($idx)));
+    }
+
+    /**
+     * v7.19.361 (FIX G): stamp the server-computed assessment result onto the
+     * attempt index entry at completion. Latest completed run wins (Neil
+     * re-runs the same attempt; FIX E revives it) — overwrite, don't gate on
+     * empty. Tutor grade overrides live in the canvas doc, not here.
+     */
+    private function record_attempt_result($user_id, $ctx, $state) {
+        $board   = (string) ($ctx['board'] ?? '');
+        $text    = (string) ($ctx['text'] ?? '');
+        $topic   = (int) ($ctx['topic_number'] ?? 0);
+        $suffix  = (string) ($ctx['suffix'] ?? '');
+        $attempt = max(1, (int) ($ctx['attempt'] ?? 1));
+        if ($board === '' || $text === '') return;
+        $idx = $this->get_attempt_index($user_id, $board, $text, $topic, $suffix);
+        if (empty($idx['attempts']) || !is_array($idx['attempts'])) return;
+        $changed = false;
+        foreach ($idx['attempts'] as &$a) {
+            if ((int) ($a['num'] ?? 0) !== $attempt) continue;
+            if (($a['score'] ?? null) !== $state['final_total'] || ($a['grade'] ?? null) !== $state['final_grade']) {
+                $a['score'] = $state['final_total'];
+                $a['grade'] = $state['final_grade'];
+                $changed    = true;
+            }
+        }
+        unset($a);
+        if ($changed) $this->save_attempt_index($user_id, $board, $text, $topic, $suffix, $idx);
     }
 
     public function save_canvas_chat($request) {

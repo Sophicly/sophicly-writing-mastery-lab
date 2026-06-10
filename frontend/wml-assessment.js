@@ -13543,8 +13543,12 @@
         // Positioned OUTSIDE ProseMirror DOM — overlays on contentWrap.
         // Each dropdown tracks its section via data-section-index.
 
+        // v7.19.361 (FIX G): Sophicly canonical band (ratified 2026-06-10) —
+        // mirrors _grade_band_percent in language-paper-specs.json and the
+        // server's SWML_Protocol_Router::grade_band_percent(). Quizzes use
+        // percentage_to_grade (9≥95) — a separate canonical.
         const GRADE_BOUNDARIES = [
-            { g: '9', pct: 84 }, { g: '8', pct: 74 }, { g: '7', pct: 64 },
+            { g: '9', pct: 85 }, { g: '8', pct: 75 }, { g: '7', pct: 65 },
             { g: '6', pct: 55 }, { g: '5', pct: 45 }, { g: '4', pct: 35 },
             { g: '3', pct: 25 }, { g: '2', pct: 15 }, { g: '1', pct: 1 },
         ];
@@ -18816,9 +18820,11 @@
         // Date Started / Date Completed / Days Elapsed from real data (server-stamped
         // startedAt + tutor signoff timestamp) on every load.
         // Grade boundaries with colour coding (purple → blue → green → yellow → orange → red)
+        // v7.19.361 (FIX G): canonical band (85/75/65…), ceil so a boundary mark
+        // actually REACHES its percentage — mirrors grade_boundary_marks() on the server.
         const grades = [
-            { g: '9', pct: 84, color: '#7c3aed' }, { g: '8', pct: 74, color: '#5333ed' },
-            { g: '7', pct: 64, color: '#4D76FD' }, { g: '6', pct: 55, color: '#42A1EC' },
+            { g: '9', pct: 85, color: '#7c3aed' }, { g: '8', pct: 75, color: '#5333ed' },
+            { g: '7', pct: 65, color: '#4D76FD' }, { g: '6', pct: 55, color: '#42A1EC' },
             { g: '5', pct: 45, color: '#1CD991' }, { g: '4', pct: 35, color: '#51dacf' },
             { g: '3', pct: 25, color: '#ffb432' }, { g: '2', pct: 15, color: '#ff8c32' },
             { g: '1', pct: 1, color: '#ff6b6b' },
@@ -18826,8 +18832,8 @@
         let gradeRef = `<h3>Grade Boundaries (/${marks})</h3>`;
         grades.forEach((b, i) => {
             const nextPct = i > 0 ? grades[i - 1].pct - 1 : 100;
-            const minMark = Math.round(marks * b.pct / 100);
-            const maxMark = i === 0 ? marks : Math.round(marks * nextPct / 100);
+            const minMark = Math.ceil(marks * b.pct / 100);
+            const maxMark = i === 0 ? marks : Math.ceil(marks * grades[i - 1].pct / 100) - 1;
             gradeRef += `<p><em style="color:${b.color};opacity:0.85">Grade ${b.g}: ${minMark}–${maxMark} marks (${b.pct}–${nextPct}%)</em></p>`;
         });
         const inner =
