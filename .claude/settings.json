@@ -224,7 +224,9 @@
       "Bash(echo \"| 2026-06-09 | wml-reeham-lang-p1-diagnostic-redraft-not-saving-2026-06-09.md | wml | open | HIGH | Reeham \\(uid 1352\\) AQA Lang P1 diagnostic+redraft not saving on prod — investigation map + session state v7.19.347-351 |\" >> ~/.claude/handoffs/HANDOFFS.md && tail -1 ~/.claude/handoffs/HANDOFFS.md)",
       "Bash(\"/usr/local/bin/node\" \"/Users/neilwilliams/.claude/plugins/cache/context-mode/context-mode/1.0.153/cli.bundle.mjs\" upgrade --platform claude-code)",
       "Bash(sed -n '145,165p' src/styles/wp-overrides.css)",
-      "Bash(sed -n '700,750p' src/styles/wp-overrides.css)"
+      "Bash(sed -n '700,750p' src/styles/wp-overrides.css)",
+      "Bash(ssh -o ConnectTimeout=15 -i ~/.ssh/sophicly_staging runcloud@18.133.5.229 'cd /home/runcloud/webapps/SophiclyMain && /usr/local/lsws/lsphp82/bin/php8.2 /usr/local/bin/wp eval \"file_put_contents\\(\\\\\"/tmp/wml-test-docs.json\\\\\", wp_json_encode\\(array\\( \\\\\"t1\\\\\" => get_user_meta\\(1352, \\\\\"swml_canvas_aqa_aqa_lang_paper_1_t1\\\\\", true\\), \\\\\"redraft\\\\\" => get_user_meta\\(1352, \\\\\"swml_canvas_aqa_aqa_lang_paper_1_t1_redraft\\\\\", true\\), \\\\\"att_redraft\\\\\" => get_user_meta\\(1352, \\\\\"swml_attempts_aqa_aqa_lang_paper_1_t1_redraft\\\\\", true\\) \\)\\)\\); echo \\\\\"dumped \\\\\".filesize\\(\\\\\"/tmp/wml-test-docs.json\\\\\"\\).\\\\\" bytes\\\\\";\"')",
+      "Bash(rm \"$HOME/.claude/handoffs/open/wml-reeham-lang-p1-diagnostic-redraft-not-saving-2026-06-09.md\" *)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
