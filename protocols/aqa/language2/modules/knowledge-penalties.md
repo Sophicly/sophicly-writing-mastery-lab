@@ -2,6 +2,15 @@
 
 **\[AI\_INTERNAL\]** Apply these penalty codes consistently throughout all assessment workflows. Each penalty code represents a specific error type with a standardized deduction.
 
+### **GLOBAL PENALTY RULES (v7.19.372 — apply to EVERY penalty decision, all questions)**
+
+1. **Once per paragraph.** Each code may be deducted at most ONCE per paragraph. Further instances of the same fault in that paragraph are listed as additional issues, not deducted.
+2. **Same paragraph only.** A penalty is deducted in the paragraph where the fault occurs. NEVER dock one paragraph for a fault that sits in another paragraph.
+3. **Written material only.** A unit/element that scored 0 because content is missing is ALREADY the full cost of that absence — never also deduct a penalty (structural or otherwise) for the same missing material.
+4. **Canonical analytical verbs are never penalised.** depicts, portrays, emphasizes, highlights, reveals, suggests, illustrates, conveys, evokes, underscores, reinforces, critiques, challenges, exposes, examines, establishes, crafts, constructs, demonstrates — a sentence using any of these never triggers F1 or T1 for that verb.
+5. **One code per fault.** When two codes could price the same fault, apply the more specific one only: F1 for the "shows" family; T1 for other imprecise verbs (uses/has/goes/gets/says/makes); never both on the same verb. (W1 is RETIRED — if any older text mentions W1, read it as T1.)
+6. **Every deduction shows its fix.** Quote the student's offending phrase AND give a one-line worked rewrite of that exact phrase. Never name a fault without an example fix.
+
 ### **COMPLETE PENALTY CODES REFERENCE**
 
 **General Writing Penalties (Apply to all analytical writing):**
@@ -32,12 +41,13 @@
 
 **Question-Specific Analytical Penalties (Q3 and Q4):**
 
-* **F1** – Feature spotting: "shows/showing/shown" usage (-0.5 per instance)  
+* **F1** – Feature spotting: "shows/showing/shown" usage (-0.5, once per paragraph; further instances = noted issues)  
   Detection: Using "shows" for analysis instead of precise analytical verbs  
+  Never apply: to any verb on the canonical analytical verbs list (Global Rule 4), or to faults T1 already covers  
   Upgrade: depicts, portrays, emphasizes, highlights, reveals, suggests, illustrates, conveys, evokes, underscores, reinforces, critiques, challenges, exposes, examines  
     
 * **S1** – Weak sentence starters (the/this/these) (-0.5)  
-  Detection: Repetitive or unsophisticated openings  
+  Detection: TWO or more sentences in the same paragraph opening with the/this/these. A single weak starter = noted issue only, no deduction  
   Upgrade: Use discourse markers, prepositional phrases, varied structures  
     
 * **S2** – Underdeveloped sentences (less than 2 lines) (-0.5)  
@@ -49,7 +59,8 @@
   Fix: Embed quotes with analytical integration and explicit effect explanation  
     
 * **T1** – Imprecise analytical verbs (-0.5)  
-  Detection: Using vague verbs like "uses/has/goes" instead of precise analytical language  
+  Detection: Using vague verbs like "uses/has/goes/gets/says/makes" instead of precise analytical language  
+  Never apply: to any verb on the canonical analytical verbs list (Global Rule 4) — e.g. "conveys" is an UPGRADE verb, never a T1 fault. Never apply T1 and F1 to the same verb  
   Upgrade: evokes, establishes, conveys, crafts, constructs, demonstrates  
     
 * **L1** – Missing causal link between evidence and effect (-0.5)  
@@ -86,11 +97,21 @@
     
 * **STR1** – Failure to follow required structure (-0.5)  
   Detection: Missing TTECEA components (Q3/Q4 body paragraphs) or TECEA elements (Q2) Fix: Include all required elements  
-  **Note:** This was previously labeled F1 but changed to STR1 to avoid confusion with F1 (Feature spotting)  
+  **Note:** This was previously labeled F1 but changed to STR1 to avoid confusion with F1 (Feature spotting). Never apply STR1 to material that is entirely missing — an empty element scores 0 and is already priced (Global Rule 3)  
+    
+* **STR2** – Paragraph-count deviation from the teaching shape (Mode B / Redraft only) (-0.5 on Q2/Q3 total; -1.0 on Q4 total)  
+  Detection: Q2 ≠ 2 paragraphs; Q3 ≠ 3 body paragraphs; Q4 ≠ 5 sections (Intro + 3 BP + Conclusion)  
+  Applied ONCE at the question total — outside the per-paragraph penalty cap, never per paragraph, never in Mode A / diagnostic  
+  Fix: Restate the expected shape ("one paragraph per 4 marks") and mark what exists  
     
 * **E2** – Underdeveloped effect on reader (-0.5) (Body paragraphs only)  
   Detection: Reader effect less than 2 sentences  
-  Fix: Expand emotional/intellectual impact analysis
+  Fix: Expand emotional/intellectual impact analysis  
+    
+* **M1** – Retelling/describing instead of analysis (-0.5)  
+  Detection: Describing source events or content without analyzing methods or making inferences  
+  Fix: "The doctor is very busy" → "Through the extended metaphor of 'sailing the ship alone', the writer conveys the doctor's overwhelming isolation"  
+  **Applies to:** Q3 (describing instead of analyzing language), Q4 (retelling instead of comparing methods)
 
 **Literature-Specific Penalties (NOT applicable to AQA Paper 2, listed for reference only):**
 
@@ -100,11 +121,7 @@
     
 * **X1** – Irrelevant/unexplained context (-0.5)  
   Detection: Context doesn't support argument  
-  Fix: Ensure context drives interpretation causally  
-    
-* **M1** – Plot retelling instead of analysis (-0.5)  
-  Detection: Describing events not analyzing methods  
-  Fix: "Napoleon becomes cruel" → "Through imperative verbs, Orwell depicts Napoleon's transformation"
+  Fix: Ensure context drives interpretation causally
 
 **Question 4 Specific Penalty:**
 

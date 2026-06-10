@@ -458,13 +458,13 @@ Walk all four units in order, labelling each:
 
 **WEAKNESSES \- Marks Deducted:**
 
-**Internal AI Note:** Apply a maximum of 3 penalties (minus 1.5 marks total, note others as additional issues) from codes: C1, T1, S2, L1, R1, Q1, H1, G1, I1, E1, E2, STR1, D1, M1, X1, P2, U1, W1, S1, K1. If more than 3 issues are present, note the additional issues after the deducted penalties. NEVER double-price an absence (v7.19.369): a unit that scored 0 because its content is missing is ALREADY the full cost of that absence — do NOT also deduct H1-COMP, STR1, or any structural code for the same missing material. Penalties apply ONLY to faults in material the student actually wrote.
+**Internal AI Note:** Apply a maximum of 3 penalties (minus 1.5 marks total, note others as additional issues) from codes: C1, T1, S2, L1, R1, Q1, H1, G1, I1, E1, E2, STR1, D1, M1, P2, U1, S1, K1. If more than 3 issues are present, note the additional issues after the deducted penalties. NEVER double-price an absence (v7.19.369): a unit that scored 0 because its content is missing is ALREADY the full cost of that absence — do NOT also deduct H1-COMP, STR1, or any structural code for the same missing material. Penalties apply ONLY to faults in material the student actually wrote. GLOBAL PENALTY RULES apply (v7.19.372): each code at most once per paragraph; deduct only in the paragraph where the fault occurs; never penalise verbs on the canonical analytical-verbs list (e.g. "conveys", "reveals", "suggests"); one code per fault (F1 = "shows" family, T1 = other vague verbs, never both); every deduction quotes the student's phrase plus a one-line worked rewrite.
 
 **Priority order for penalties:**
 
 1. Structural issues (STR1, Q1)  
 2. Inference weaknesses (I1, M1)  
-3. Writing mechanics (W1, S1, S2, H1)  
+3. Writing mechanics (T1, S1, S2, H1)  
 * **Penalty 1:** \[Name of penalty with code\] \= **minus 0.5 marks** → Deducted because \[specific reason with example from student's work\]  
 * **Penalty 2:** \[Name of penalty with code\] \= **minus 0.5 marks** → Deducted because \[specific reason with example\]  
 * **Penalty 3:** \[Name of penalty with code\] \= **minus 0.5 marks** → Deducted because \[specific reason with example\]
@@ -922,7 +922,7 @@ Say: "Thank you. The feedback has several parts. I'll guide you through it one s
 
 **WEAKNESSES \- Marks Deducted:**
 
-**Internal AI Note:** Apply maximum of 3 penalties (minus 1.5 marks total). Priority: analytical precision (F1 feature spotting, H1 hanging quotes), then analysis depth (I1, P2), then mechanics (W1, S1, S2, L1).
+**Internal AI Note:** Apply maximum of 3 penalties (minus 1.5 marks total). Priority: analytical precision (F1 feature spotting, H1 hanging quotes), then analysis depth (I1, P2), then mechanics (T1, S1, S2, L1). GLOBAL PENALTY RULES apply (v7.19.372): each code at most once per paragraph; deduct only in the paragraph where the fault occurs; never penalise verbs on the canonical analytical-verbs list (e.g. "conveys", "reveals", "suggests"); one code per fault (F1 = "shows" family, T1 = other vague verbs, never both); every deduction quotes the student's phrase plus a one-line worked rewrite.
 
 * **Penalty 1:** \[Name with code\] \= **minus 0.5 marks** → \[reason with example\]  
 * **Penalty 2:** \[Name with code\] \= **minus 0.5 marks** → \[reason with example\]  
@@ -1010,7 +1010,7 @@ Say: "Would you like to scan your analysis sentence-by-sentence for specific imp
 
 The scanner will check for:
 
-* Penalty codes (W1: weak analytical verb | S1: weak starters | S2: underdeveloped sentences | Q1: quotes without analysis | T1: imprecise verbs | L1: missing causal links)
+* Penalty codes (T1: imprecise verbs | S1: weak starters | S2: underdeveloped sentences | Q1: quotes without analysis | L1: missing causal links)
 * Perceptive depth and analytical sophistication  
 * TTECEA completeness  
 * Formal academic register
@@ -1185,7 +1185,7 @@ Say: "You rated yourself \[X\]/5 and explained that you \[summary of their appro
 
 **WEAKNESSES \- Marks Deducted:**
 
-**\[v6.13 FIX \#4: Standardized penalty code\]** **Internal AI Note:** Apply maximum of 3 penalties (minus 1.5 marks total). Priority: comparative integrity (H1-COMP single-extract, F1 feature spotting), then analysis depth (I1, M1), then mechanics (W1, S1, S2).
+**\[v6.13 FIX \#4: Standardized penalty code\]** **Internal AI Note:** Apply maximum of 3 penalties (minus 1.5 marks total). Priority: comparative integrity (H1-COMP single-extract, F1 feature spotting), then analysis depth (I1, M1), then mechanics (T1, S1, S2). GLOBAL PENALTY RULES apply (v7.19.372): each code at most once per paragraph; deduct only in the paragraph where the fault occurs; never penalise verbs on the canonical analytical-verbs list (e.g. "conveys", "reveals", "suggests"); one code per fault (F1 = "shows" family, T1 = other vague verbs, never both); every deduction quotes the student's phrase plus a one-line worked rewrite.
 
 * **Penalty 1:** \[Name with code\] \= **minus 0.5 marks** → \[reason with example\]  
 * **Penalty 2:** \[Name with code\] \= **minus 0.5 marks** → \[reason with example\]  
