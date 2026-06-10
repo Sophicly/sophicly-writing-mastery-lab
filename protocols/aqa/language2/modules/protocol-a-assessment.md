@@ -954,7 +954,7 @@ How to Improve: \[Specific target\]"
 
 Say: "Type **Y** to see both gold standard language analysis examples for this paragraph."
 
-**Internal AI Note:** Wait for Y. Then generate BOTH gold standard TTECEA paragraphs for Question 3: (1) **"Your Paragraph Rewritten to Gold Standard"** — elevate the student's own material — and (2) **"Optimal Gold Standard Model"** — a fresh model built on a different technique/quotation. Both must meet all TTECEA criteria, use 2-3 line sentences, and avoid "the/this/these" starters and the verb "shows".
+**Internal AI Note:** Wait for Y. Then generate BOTH gold standard TTECEA paragraphs for Question 3: (1) **"Your Paragraph Rewritten to Gold Standard"** — elevate the student's own material — and (2) **"Optimal Gold Standard Model"** — a fresh model built on a different technique/quotation. Both must meet all TTECEA criteria, use 2-3 line sentences, and avoid "the/this/these" starters and the verb "shows". This step is MANDATORY even at full marks — NEVER say the answer is "already gold standard" and skip the rewrite. At full marks, still produce BOTH blocks: elevate the student's version further (precision, economy, control), and write the Optimal model from scratch to this protocol's standards. (Neil ruling, 2026-06-10.)
 
 ---
 
@@ -1117,7 +1117,7 @@ My Assessment: \[Brief feedback\]"
 
 Say: "Type **Y** to see both gold standard examples for your introduction."
 
-**Internal AI Note:** Wait for Y. Then generate BOTH: (1) **"Your Introduction Rewritten to Gold Standard"** — elevate the student's own opening — and (2) **"Optimal Gold Standard Introduction"** — a fresh model. Each is a concise comparative introduction (1-3 lines) that establishes BOTH sources' viewpoints/perspectives and the comparative relationship between them, in formal academic register. No "the/this/these" starters; no "shows".
+**Internal AI Note:** Wait for Y. Then generate BOTH: (1) **"Your Introduction Rewritten to Gold Standard"** — elevate the student's own opening — and (2) **"Optimal Gold Standard Introduction"** — a fresh model. Each is a concise comparative introduction (1-3 lines) that establishes BOTH sources' viewpoints/perspectives and the comparative relationship between them, in formal academic register. No "the/this/these" starters; no "shows". This step is MANDATORY even at full marks — NEVER say the answer is "already gold standard" and skip the rewrite. At full marks, still produce BOTH blocks: elevate the student's version further (precision, economy, control), and write the Optimal model from scratch to this protocol's standards. (Neil ruling, 2026-06-10.)
 
 \[Provide BOTH introduction gold examples.\]
 
@@ -1217,7 +1217,7 @@ How to Improve: \[Specific target\]"
 
 Say: "Type **Y** to see both gold standard comparative examples for this paragraph."
 
-**Internal AI Note:** Wait for Y. Then generate BOTH gold standard comparative TTECEA paragraphs: (1) **"Your Paragraph Rewritten to Gold Standard"** — elevate the student's own material — and (2) **"Optimal Gold Standard Model"** — a fresh model built on a different comparison axis. Both must compare BOTH sources throughout, meet all comparative TTECEA criteria, use 2-3 line sentences, and avoid "the/this/these" starters and the verb "shows".
+**Internal AI Note:** Wait for Y. Then generate BOTH gold standard comparative TTECEA paragraphs: (1) **"Your Paragraph Rewritten to Gold Standard"** — elevate the student's own material — and (2) **"Optimal Gold Standard Model"** — a fresh model built on a different comparison axis. Both must compare BOTH sources throughout, meet all comparative TTECEA criteria, use 2-3 line sentences, and avoid "the/this/these" starters and the verb "shows". This step is MANDATORY even at full marks — NEVER say the answer is "already gold standard" and skip the rewrite. At full marks, still produce BOTH blocks: elevate the student's version further (precision, economy, control), and write the Optimal model from scratch to this protocol's standards. (Neil ruling, 2026-06-10.)
 
 ---
 
@@ -1281,7 +1281,7 @@ My Assessment: \[Brief feedback\]"
 
 Say: "Type **Y** to see both gold standard examples for your conclusion."
 
-**Internal AI Note:** Wait for Y. Then generate BOTH: (1) **"Your Conclusion Rewritten to Gold Standard"** — elevate the student's own closing — and (2) **"Optimal Gold Standard Conclusion"** — a fresh model. Each is a concise comparative conclusion (1-3 lines) that returns to the whole-text comparison and delivers a final comparative judgement WITHOUT introducing new evidence, in formal academic register. No "the/this/these" starters; no "shows".
+**Internal AI Note:** Wait for Y. Then generate BOTH: (1) **"Your Conclusion Rewritten to Gold Standard"** — elevate the student's own closing — and (2) **"Optimal Gold Standard Conclusion"** — a fresh model. Each is a concise comparative conclusion (1-3 lines) that returns to the whole-text comparison and delivers a final comparative judgement WITHOUT introducing new evidence, in formal academic register. No "the/this/these" starters; no "shows". This step is MANDATORY even at full marks — NEVER say the answer is "already gold standard" and skip the rewrite. At full marks, still produce BOTH blocks: elevate the student's version further (precision, economy, control), and write the Optimal model from scratch to this protocol's standards. (Neil ruling, 2026-06-10.)
 
 \[Provide BOTH conclusion gold examples.\]
 

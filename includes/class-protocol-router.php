@@ -4474,6 +4474,9 @@ TEMPLATE;
         $pending = []; // v7.19.353: harvest-only fields held until the question completes
         $complete = false;
         if (!is_array($chat_history) || empty($order)) return ['scored' => [], 'complete' => false];
+        // v7.19.366 (FIX J): paper max for the Total+Grade dual-signal completion.
+        $max_total_all = 0;
+        foreach ($order as $q) $max_total_all += (int) ($q['marks'] ?? 0);
         foreach ($chat_history as $msg) {
             if (($msg['role'] ?? '') !== 'assistant') continue;
             $content = (string) ($msg['content'] ?? '');
@@ -4509,7 +4512,13 @@ TEMPLATE;
             // Whole-paper completion = BARE [ASSESSMENT_COMPLETE] (Part E). The
             // distinct [ASSESSMENT_COMPLETE Q1] marker has chars before `]`, so
             // this strict pattern never false-triggers on it.
-            if (preg_match('/\[ASSESSMENT_COMPLETE\]/i', $content)) {
+            // v7.19.366 (FIX J): Total+Grade dual signal also completes — the
+            // model skips the marker (run 4); the headline result can't be faked
+            // mid-flight (Total is gated on the paper max).
+            if (preg_match('/\[ASSESSMENT_COMPLETE\]/i', $content)
+                || ($max_total_all > 0
+                    && preg_match('/\bTotal[:\s\*]+\d+(?:\.\d+)?\s*\/\s*' . $max_total_all . '\b/i', $content)
+                    && preg_match('/\bGrade[:\s\*]+\d\b/i', $content))) {
                 $complete = true;
                 // v7.19.361 (FIX G): terminal marker — the paper is over. Seat
                 // any still-open question whose mark was harvested mid-loop
@@ -4580,7 +4589,19 @@ TEMPLATE;
         $offered = self::extract_offered_actions($reply);
         if (!empty($offered)) $patch['last_offered_actions'] = $offered;
 
-        if (preg_match('/\[ASSESSMENT_COMPLETE\]/i', (string) $reply)) {
+        // v7.19.366 (FIX J): completion ALSO fires on the Total+Grade dual
+        // signal — the frontend's own completion test. Run 4 ended with
+        // **Total: 59/80** + **Grade: 7** but NO [ASSESSMENT_COMPLETE] marker:
+        // completion never registered, Q5's terminal seat never fired, nothing
+        // persisted. The protocol still mandates the marker; the machine just
+        // stops depending on it.
+        $max_total_all = 0;
+        foreach ($order as $q) $max_total_all += (int) ($q['marks'] ?? 0);
+        $terminal = preg_match('/\[ASSESSMENT_COMPLETE\]/i', (string) $reply)
+            || ($max_total_all > 0
+                && preg_match('/\bTotal[:\s\*]+\d+(?:\.\d+)?\s*\/\s*' . $max_total_all . '\b/i', (string) $reply)
+                && preg_match('/\bGrade[:\s\*]+\d\b/i', (string) $reply));
+        if ($terminal) {
             $patch['completion_emitted'] = true;
             $patch['current_question']   = 'done';
             // v7.19.361 (FIX G): terminal marker — seat any still-open question
@@ -4598,6 +4619,27 @@ TEMPLATE;
                         'target'   => $res['target']   ?? null,
                     ];
                     $patch['questions_scored'] = $scored;
+                }
+            }
+            // v7.19.366 (FIX J): a mark living in an EARLIER message (run 4:
+            // Section B's 32/40 was one turn before the summary) is out of this
+            // reply's reach — and the student's next click is Mark Complete,
+            // not another chat turn, so "auto-repair next turn" never comes.
+            // Sweep the full history for any question still unmarked.
+            $still_open = [];
+            foreach ($order as $q) {
+                if (empty($scored[$q['id']]['mark'])) $still_open[] = $q['id'];
+            }
+            if ($still_open) {
+                global $swml_chat_history;
+                $hist = is_array($swml_chat_history) ? $swml_chat_history : [];
+                $hist[] = ['role' => 'assistant', 'content' => (string) $reply];
+                $derived_t = self::derive_questions_scored_from_history($hist, $order);
+                foreach ($still_open as $qid) {
+                    if (!empty($derived_t['scored'][$qid]['mark'])) {
+                        $scored[$qid] = $derived_t['scored'][$qid];
+                        $patch['questions_scored'] = $scored;
+                    }
                 }
             }
             // v7.19.361 (FIX G): server-truth result at completion. When every
