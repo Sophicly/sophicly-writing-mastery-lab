@@ -4168,7 +4168,10 @@ TEMPLATE;
      * line additionally yields the numeric mark.
      */
     private static function extract_question_result_from_message($content, $q) {
-        $content = (string) $content;
+        // v7.19.353 (FIX C): entity-decode first — stored chat history (the
+        // auto-repair / migration path) is HTML-entity-encoded ("&gt;"), so a
+        // message must parse identically raw (advancer) and stored (derive).
+        $content = html_entity_decode((string) $content, ENT_QUOTES, 'UTF-8');
         $id = (string) ($q['id'] ?? '');
         if ($id === '' || !preg_match('/(\d+)/', $id, $m)) return null;
         $n       = $m[1];
@@ -4187,9 +4190,23 @@ TEMPLATE;
 
         $closed    = (bool) preg_match($close_re, $content);
         $has_score = (bool) preg_match($score_re, $content, $sm);
-        if (!$closed && !$has_score) return null;
+        // v7.19.353 (FIX C): Q1's live protocol (protocol-q1-msq.md) mandates a
+        // bare `**Score: N/4**` — the legacy score_re ("Question 1 score: X out
+        // of 4") is the superseded monolith wording and missed every live Q1
+        // mark. Accept the MSQ form only when the breadcrumb header locates
+        // THIS question, and treat it as mark-harvest ONLY (closed stays false:
+        // the MSQ score lands mid-loop, before the scan step — completion comes
+        // from the close anchor or a later question's header, see the callers).
+        $harvested = false;
+        if (!$has_score && !$is_section_b
+            && preg_match('/📌[^\n]*?Question\s*' . $n . '\b/u', $content)
+            && preg_match('/\bScore[:\s\*]+(\d+(?:\.\d+)?)\s*\/\s*' . max(1, $marks) . '\b/i', $content, $lm)) {
+            $sm = $lm;
+            $harvested = true;
+        }
+        if (!$closed && !$has_score && !$harvested) return null;
 
-        $mark = $has_score ? ($sm[1] . '/' . $marks) : null;
+        $mark = ($has_score || $harvested) ? ($sm[1] . '/' . $marks) : null;
         $strength = null;
         $target   = null;
         if (preg_match('/Key strength[:\s\*]+(.+)/i', $content, $ks)) {
@@ -4198,7 +4215,47 @@ TEMPLATE;
         if (preg_match('/Key target[:\s\*]+(.+)/i', $content, $kt)) {
             $target = self::trim_phrase(preg_replace('/[\*\]\\\\]+\s*$/', '', trim($kt[1])));
         }
-        return ['mark' => $mark, 'strength' => $strength, 'target' => $target];
+        return ['closed' => ($closed || $has_score), 'mark' => $mark, 'strength' => $strength, 'target' => $target];
+    }
+
+    /**
+     * v7.19.353 (FIX C): parse the protocol's mandated breadcrumb header
+     * (`📌 Assessment Protocol > Question N > Step X of Y`, knowledge-progress.md
+     * L75) into the question id it locates. The header is the one per-turn
+     * signal Sophia emits verbatim in live output (proven on staging), so a
+     * header on a LATER question is paraphrase-proof evidence every earlier
+     * question is complete. Tolerates `&gt;` (stored history is entity-encoded)
+     * and markdown-escaped `\>`; maps `Section B` to the extended-writing
+     * question (Section B label / >= 40 marks). Returns an id from $order or null.
+     */
+    private static function extract_header_question($content, $order) {
+        $c = html_entity_decode((string) $content, ENT_QUOTES, 'UTF-8');
+        $c = str_replace('\\', '', $c);
+        if (!preg_match('/📌[^\n]*?Assessment Protocol\s*>\s*([^>\n]+?)\s*>/u', $c, $m)) return null;
+        $loc = trim($m[1]);
+        if (preg_match('/Section\s*B/i', $loc)) {
+            foreach ($order as $q) {
+                $marks = isset($q['marks']) ? (int) $q['marks'] : 0;
+                if ((stripos((string) ($q['section'] ?? ''), 'Section B') !== false) || $marks >= 40) return $q['id'];
+            }
+            return null;
+        }
+        if (preg_match('/Question\s*(\d+)/i', $loc, $qm)) {
+            foreach ($order as $q) {
+                if (preg_match('/(\d+)/', (string) $q['id'], $im) && $im[1] === $qm[1]) return $q['id'];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * v7.19.353 (FIX C): index of a question id within $order, or null.
+     */
+    private static function question_order_pos($qid, $order) {
+        foreach ($order as $i => $q) {
+            if (($q['id'] ?? null) === $qid) return $i;
+        }
+        return null;
     }
 
     /**
@@ -4227,18 +4284,35 @@ TEMPLATE;
      */
     private static function derive_questions_scored_from_history($chat_history, $order) {
         $scored = [];
+        $pending = []; // v7.19.353: harvest-only fields held until the question completes
         $complete = false;
         if (!is_array($chat_history) || empty($order)) return ['scored' => [], 'complete' => false];
         foreach ($chat_history as $msg) {
             if (($msg['role'] ?? '') !== 'assistant') continue;
             $content = (string) ($msg['content'] ?? '');
             if ($content === '') continue;
-            foreach ($order as $q) {
-                $res = self::extract_question_result_from_message($content, $q);
-                if ($res === null) continue;
+            // v7.19.353 (FIX C): a breadcrumb header on a later question proves
+            // every earlier question complete — paraphrase-proof completion.
+            $hdr_pos = self::question_order_pos(self::extract_header_question($content, $order), $order);
+            foreach ($order as $qi => $q) {
+                $res  = self::extract_question_result_from_message($content, $q);
+                $done = ($res !== null && !empty($res['closed']))
+                     || ($hdr_pos !== null && $qi < $hdr_pos);
                 $id = $q['id'];
+                if (!$done) {
+                    if ($res !== null && !isset($scored[$id])) {
+                        foreach (['mark', 'strength', 'target'] as $f) {
+                            if (!empty($res[$f]) && empty($pending[$id][$f])) $pending[$id][$f] = $res[$f];
+                        }
+                    }
+                    continue;
+                }
                 if (!isset($scored[$id])) {
-                    $scored[$id] = ['mark' => $res['mark'], 'strength' => $res['strength'], 'target' => $res['target']];
+                    $scored[$id] = [
+                        'mark'     => ($res['mark']     ?? null) ?: ($pending[$id]['mark']     ?? null),
+                        'strength' => ($res['strength'] ?? null) ?: ($pending[$id]['strength'] ?? null),
+                        'target'   => ($res['target']   ?? null) ?: ($pending[$id]['target']   ?? null),
+                    ];
                 } else {
                     foreach (['mark', 'strength', 'target'] as $f) {
                         if (empty($scored[$id][$f]) && !empty($res[$f])) $scored[$id][$f] = $res[$f];
@@ -4266,18 +4340,33 @@ TEMPLATE;
         $patch  = [];
         $changed = false;
 
-        foreach ($order as $q) {
-            $res = self::extract_question_result_from_message($reply, $q);
-            if ($res === null) continue;
+        // v7.19.353 (FIX C): completion = the question's own close anchor /
+        // overall-score line, OR a breadcrumb header locating a LATER question
+        // (paraphrase-proof: if Sophia's header says Question 3, Q1+Q2 are
+        // done whatever wording their closes used). Harvest-only results
+        // (e.g. Q1's mid-loop MSQ `Score: N/4`) backfill an existing entry but
+        // never complete a question by themselves.
+        $hdr_pos = self::question_order_pos(self::extract_header_question($reply, $order), $order);
+        foreach ($order as $qi => $q) {
+            $res  = self::extract_question_result_from_message($reply, $q);
+            $done = ($res !== null && !empty($res['closed']))
+                 || ($hdr_pos !== null && $qi < $hdr_pos);
             $id = $q['id'];
-            if (!isset($scored[$id])) {
-                $scored[$id] = ['mark' => $res['mark'], 'strength' => $res['strength'], 'target' => $res['target']];
-                $changed = true;
-            } else {
-                foreach (['mark', 'strength', 'target'] as $f) {
-                    if (empty($scored[$id][$f]) && !empty($res[$f])) { $scored[$id][$f] = $res[$f]; $changed = true; }
+            if (isset($scored[$id])) {
+                if ($res !== null) {
+                    foreach (['mark', 'strength', 'target'] as $f) {
+                        if (empty($scored[$id][$f]) && !empty($res[$f])) { $scored[$id][$f] = $res[$f]; $changed = true; }
+                    }
                 }
+                continue;
             }
+            if (!$done) continue;
+            $scored[$id] = [
+                'mark'     => $res['mark']     ?? null,
+                'strength' => $res['strength'] ?? null,
+                'target'   => $res['target']   ?? null,
+            ];
+            $changed = true;
         }
         if ($changed) {
             $patch['questions_scored'] = $scored;
@@ -4380,6 +4469,17 @@ TEMPLATE;
                                             : ($this->assessment_next_question($derived_ids, $context) ?: 'Q1'),
                     'completion_emitted' => !empty($derived['complete']),
                 ];
+                // v7.19.353 (FIX C): a corrected scored-set can orphan the beat
+                // pointer (fresh restart reuses the attempt sig: history resets
+                // but the ledger keeps last run's beat) — the loader would then
+                // segment to a Q2 slice while the conversation is elsewhere.
+                // Clear the pointer unless it belongs to the corrected current
+                // question; the advancer re-seats it after the next reply.
+                $stale_beat = (string) ($state['current_beat'] ?? '');
+                if ($stale_beat !== '' && ($patch['current_question'] === 'done'
+                    || !$this->assessment_beat_in_question($stale_beat, $patch['current_question']))) {
+                    $patch['current_beat'] = '';
+                }
                 $state = SWML_Session_Manager::update_assessment_state(
                     $user_id, $board, $text, $topic, $suffix, $attempt, $patch
                 );
