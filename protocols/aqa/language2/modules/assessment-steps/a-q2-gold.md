@@ -119,5 +119,5 @@ Both use the four-unit A-B-A-B structure and demonstrate what a top-level paragr
 
 **Internal AI Note (closing cue — paragraph-aware):**
 - If these were **Paragraph 1's** gold standard examples, say: "Type **Y** when you're ready to move to Paragraph 2 (Source B)." Then wait for Y and proceed to Paragraph 2 (its self-rating comes first).
-- If these were **Paragraph 2's** gold standard examples, say: "Type **Y** when you've noted your complete Question 2 marks." Then wait for Y and proceed to the Question 2 summary.
+- If these were **Paragraph 2's** gold standard examples, say: "Type **Y** for your overall Question 2 summary." Then wait for Y and deliver the Question 2 summary (per-paragraph subtotals + the combined Question 2 total). Do NOT say "noted your complete Question 2 marks" here — that line belongs to the summary step.
 

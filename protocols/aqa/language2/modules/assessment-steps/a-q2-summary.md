@@ -1,5 +1,6 @@
-<!-- CURRENT STEP — do ONLY this step, in full, then STOP. Do not run later steps; do not skip ahead. (Verbatim slice of protocol-a-assessment.md — moved, not edited.) -->
+<!-- CURRENT STEP — do ONLY this step, in full, then STOP. Do not run later steps; do not skip ahead. (Slice of protocol-a-assessment.md.) -->
 
+**Internal AI Note (v7.19.368):** Deliver the **Question 2 Final Summary** NOW, before anything else: per-paragraph Inference / Detail subtotals, any holistic top-up or structural penalty, and then the combined result on its own line in EXACTLY this form — "**Your overall Question 2 score: \[X\] out of 8 marks**". The server harvests that line; never replace it with a table-only total.
 
 Say: "Type **Y** when you've noted your complete Question 2 marks."
 
