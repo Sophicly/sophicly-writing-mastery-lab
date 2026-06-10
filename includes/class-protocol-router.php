@@ -4431,7 +4431,27 @@ TEMPLATE;
             }
             $guard = 0;
             $beat  = $this->assessment_beat($cur_beat, $context);
-            while ($beat && $guard++ < 30 && @preg_match($beat['detect'], (string) $reply)) {
+            while ($beat && $guard++ < 30) {
+                $matched = (bool) @preg_match($beat['detect'], (string) $reply);
+                if (!$matched && $beat['type'] === 'ask') {
+                    // v7.19.356 (FIX D): ask-beats are SKIPPABLE when the model
+                    // bulldozed past them — Neil's 10 Jun run held ¶1 Targeting
+                    // while Sophia marched into marking, and the pointer never
+                    // resynced. If a LATER beat of this question fired in this
+                    // reply, the conversation has moved on: skip the ask and
+                    // keep walking, so the next slice matches reality. Produce
+                    // beats (mark/feedback/GOLD) are never skipped this way —
+                    // they hold until delivered or the stall fallback fires.
+                    $later = false;
+                    $probe = $this->assessment_next_beat($cur_beat, $context);
+                    while ($probe && $this->assessment_beat_in_question($probe['id'], $cur_q)) {
+                        if (@preg_match($probe['detect'], (string) $reply)) { $later = true; break; }
+                        $probe = $this->assessment_next_beat($probe['id'], $context);
+                    }
+                    if (!$later) break;
+                    $matched = true; // ask was skipped by the model; advance past it
+                }
+                if (!$matched) break;
                 $nb = $this->assessment_next_beat($cur_beat, $context);
                 if ($nb && $this->assessment_beat_in_question($nb['id'], $cur_q)) {
                     $cur_beat = $nb['id'];
