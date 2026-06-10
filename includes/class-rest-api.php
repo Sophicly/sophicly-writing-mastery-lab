@@ -1229,10 +1229,18 @@ class SWML_REST_API {
                 // active step authoritatively. Dormant for non-segmented questions.
                 if (class_exists('SWML_Protocol_Router')
                     && SWML_Protocol_Router::assessment_mode($prog_context) === 'questions') {
-                    $ptr = SWML_Protocol_Router::instance()->segmented_sidebar_pointer($prog_context, $assessment_state);
+                    $router = SWML_Protocol_Router::instance();
+                    $ptr = $router->segmented_sidebar_pointer($prog_context, $assessment_state);
                     if ($ptr) {
                         $response_payload['assessmentState']['sidebarStep']  = $ptr['step'];
                         $response_payload['assessmentState']['sidebarGroup'] = $ptr['group'];
+                    }
+                    // v7.19.373: full sidebar model (steps + groups + current pointer)
+                    // derived from the ledger + beat table. Frontend renders verbatim;
+                    // the model's [STEP_ADVANCE:N] markers are ignored while this rides.
+                    $sb = $router->assessment_sidebar_model($prog_context, $assessment_state);
+                    if ($sb) {
+                        $response_payload['assessmentState']['sidebar'] = $sb;
                     }
                 }
             }

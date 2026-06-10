@@ -211,6 +211,32 @@
         });
     }
 
+    // v7.19.373: server-driven sidebar (question-mode assessment). The REST chat
+    // response carries assessmentState.sidebar = { steps: [{step,label,group}],
+    // current: N } derived from the ledger + beat table (router
+    // assessment_sidebar_model). Rebuild the step list when the structure
+    // changes (first reply of the session / a segmentation increment), then
+    // move the pointer. The server is authoritative — while a server model is
+    // live, the AI's own [STEP_ADVANCE:N] markers are ignored (its "Step X of Y"
+    // progress bar stalls across turns; the 10 Jun runs proved it unreliable).
+    function _applyServerSidebar(sidebar) {
+        if (!sidebar || !Array.isArray(sidebar.steps) || !sidebar.steps.length) return;
+        const container = document.getElementById('swml-progress-steps');
+        if (!container) return;
+        const sig = JSON.stringify(sidebar.steps.map(s => [s.label, s.group || '']));
+        if (state._serverSidebarSig !== sig) {
+            container.innerHTML = '';
+            _renderSidebarSteps(container, sidebar.steps);
+            state._serverSidebarSig = sig;
+        }
+        state._serverSidebar = sidebar;
+        const cur = parseInt(sidebar.current, 10) || 1;
+        updateProgress(cur);
+        const ind = document.getElementById('swml-step-indicator');
+        const info = sidebar.steps.find(s => s.step === cur);
+        if (ind && info) ind.textContent = `Section ${cur} of ${sidebar.steps.length} · ${info.label}`;
+    }
+
     // v7.15.56: entry modal shown once per (user, student, post) combo so tutors
     // landing on a lesson in review mode see the context before they start reviewing.
     function maybeShowReviewEntryModal() {
@@ -3446,6 +3472,11 @@
                             pending: res.assessmentState.pending_resume_confirm,
                             complete: res.assessmentState.completion_emitted,
                         });
+                        // v7.19.373: server-driven sidebar for question-mode assessment.
+                        if (res.assessmentState.sidebar) {
+                            try { _applyServerSidebar(res.assessmentState.sidebar); }
+                            catch (_e) { console.warn('WML Canvas: server sidebar error', _e); }
+                        }
                     }
                     // v7.19.321: the quiz just finalised server-side — render the
                     // in-doc Quiz Result card live and persist it so it survives a
@@ -3578,7 +3609,10 @@
                         // routes. Validated against getSteps().length so a runaway N
                         // can't jump past the last step.
                         try {
-                            const _stepMarker = res.reply && res.reply.match(/\[(?:STEP_ADVANCE|PROGRESS):\s*(\d+)\]/i);
+                            // v7.19.373: while a server sidebar model is live, the AI's own
+                            // step markers are ignored — the server beat pointer drives.
+                            const _stepMarker = !state._serverSidebar
+                                && res.reply && res.reply.match(/\[(?:STEP_ADVANCE|PROGRESS):\s*(\d+)\]/i);
                             if (_stepMarker) {
                                 const _n = parseInt(_stepMarker[1], 10);
                                 const _maxStep = (typeof getSteps === 'function' ? (getSteps() || []).length : 0) || 0;

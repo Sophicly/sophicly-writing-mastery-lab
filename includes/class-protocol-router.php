@@ -4244,6 +4244,58 @@ TEMPLATE;
         ];
     }
 
+    /**
+     * v7.19.373: full server-derived sidebar model for question-mode assessment.
+     * Steps = Setup, then one entry per question (the question's beat labels when
+     * it is segmented, a single step otherwise), then Total & Grade. `current`
+     * follows the ledger: the held beat inside a segmented question, otherwise
+     * the current question's own step; the last step once completion_emitted.
+     * The frontend renders this verbatim (Neil's granular-sidebar ask) — when a
+     * later increment segments Q1/Q3/Q4/Q5, the sidebar gains their beat rows
+     * with NO frontend change. The model's own "Step X of Y" headers stall
+     * across turns and must never drive this.
+     */
+    public function assessment_sidebar_model($context, $state) {
+        if (self::assessment_mode($context) !== 'questions') return null;
+        $order = $this->assessment_question_order($context);
+        if (empty($order)) return null;
+        $beats = $this->assessment_beat_sequence($context);
+        $state = is_array($state) ? $state : [];
+
+        $cur_q    = (string) ($state['current_question'] ?? '');
+        $cur_beat = (string) ($state['current_beat'] ?? '');
+        $steps    = [];
+        $n        = 0;
+        $current  = 1;
+        $steps[]  = ['step' => ++$n, 'label' => 'Setup & Goals', 'group' => null];
+        foreach ($order as $q) {
+            $qid = (string) $q['id'];
+            $is_section_b = (stripos((string) ($q['section'] ?? ''), 'Section B') !== false)
+                || ((int) ($q['marks'] ?? 0) >= 40);
+            $qlabel = $is_section_b ? 'Section B' : ('Question ' . preg_replace('/\D+/', '', $qid));
+            $qbeats = array_values(array_filter($beats, function ($b) use ($qid) {
+                return $this->assessment_beat_in_question($b['id'], $qid);
+            }));
+            if (count($qbeats) > 1) {
+                $first_in_q = $n + 1;
+                foreach ($qbeats as $b) {
+                    $steps[] = ['step' => ++$n, 'label' => (string) $b['label'], 'group' => $qlabel];
+                    if ($cur_beat !== '' && $b['id'] === $cur_beat) $current = $n;
+                }
+                if ($cur_q === $qid) {
+                    if ($cur_beat === 'q_done') $current = $n;          // transient end-of-question
+                    elseif ($current < $first_in_q) $current = $first_in_q; // beat not yet seated / fallback
+                }
+            } else {
+                $steps[] = ['step' => ++$n, 'label' => $qlabel . ' — Mark, Feedback & Golds', 'group' => null];
+                if ($cur_q === $qid) $current = $n;
+            }
+        }
+        $steps[] = ['step' => ++$n, 'label' => 'Total & Grade', 'group' => null];
+        if (!empty($state['completion_emitted']) || $cur_q === 'done') $current = $n;
+        return ['steps' => $steps, 'current' => $current];
+    }
+
     // ═══════════════════════════════════════════════════════════════════════
     //  QUESTION-MODE STATE MACHINE (v7.19.289, Stage 1 — AQA Language Paper 2)
     //  Mirrors the protocol's own SESSION_STATE.selected_questions / marks.qN

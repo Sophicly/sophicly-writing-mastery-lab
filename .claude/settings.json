@@ -254,7 +254,11 @@
       "Bash(sed -n '260,290p' src/components/PlanPanel.jsx)",
       "Bash(sed -n '58,78p' src/components/HelpPanel.jsx)",
       "Bash(sed -n '228,245p' src/components/AchievementsPanel.jsx)",
-      "Bash(sed -n '250,280p' src/components/WorklogPanel.jsx)"
+      "Bash(sed -n '250,280p' src/components/WorklogPanel.jsx)",
+      "Bash(sed -n '318,340p' ../sophicly-dashboard/src/api/client.js)",
+      "Bash(sed -n '495,520p' ../sophicly-dashboard/sophicly-dashboard.php)",
+      "Bash(sed -n '575,595p' ../sophicly-dashboard/sophicly-dashboard.php)",
+      "Bash(php -l includes/class-exam-dates.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
