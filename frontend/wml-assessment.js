@@ -2309,7 +2309,13 @@
         assessBtn.style.display = 'none';
         assessBtn.classList.add('swml-assess-complete-btn');
         assessCompleteBtnRef.value = assessBtn;
-        protoSpacer.appendChild(assessBtn);
+        // v7.19.359: don't mount in the embedded LearnDash env (except CW SI,
+        // where this button IS the step-completion path). LD owns lesson
+        // completion there; v7.19.245 gated the chat-driven reveals but
+        // initAssessmentState's restore path could still surface it from stale
+        // completed-phase data. Unmounted = reveal paths toggle a detached
+        // node, zero UI.
+        if (!WML.isEmbedded || isCwSi) protoSpacer.appendChild(assessBtn);
 
         // Save button
         const saveBtn = iconBtn(SVG_SAVE, 'Save Progress', () => {
@@ -8918,7 +8924,9 @@
                         assessBtn.style.display = 'none';
                         assessBtn.classList.add('swml-assess-complete-btn');
                         assessCompleteBtn = assessBtn;
-                        protoSpacer.appendChild(assessBtn);
+                        // v7.19.359: same embedded-env unmount as the training-panel
+                        // instance — LD owns completion; CW SI keeps its button.
+                        if (!WML.isEmbedded || isCwSi) protoSpacer.appendChild(assessBtn);
 
                         // Save button
                         const saveBtn = iconBtn(SVG_SAVE, 'Save Progress', () => {
