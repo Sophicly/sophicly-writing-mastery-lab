@@ -246,7 +246,15 @@
       "Bash(grep -n \"do_action\\($\" includes/class-rest-api.php)",
       "Bash(sed -n '11145,11175p' frontend/wml-assessment.js)",
       "Bash(sed -n '16380,16405p' frontend/wml-assessment.js)",
-      "Bash(scp -i ~/.ssh/sophicly_staging /tmp/wml-wc-backfill-dryrun.php runcloud@18.133.5.229:/tmp/)"
+      "Bash(scp -i ~/.ssh/sophicly_staging /tmp/wml-wc-backfill-dryrun.php runcloud@18.133.5.229:/tmp/)",
+      "Bash(sed -n '5,50p' src/components/ConnectionsPanel.jsx)",
+      "Bash(sed -n '375,395p' src/components/ConnectionsPanel.jsx)",
+      "Bash(sed -n '418,435p' src/components/ConnectionsPanel.jsx)",
+      "Bash(sed -n '50,80p' src/components/PlanPanel.jsx)",
+      "Bash(sed -n '260,290p' src/components/PlanPanel.jsx)",
+      "Bash(sed -n '58,78p' src/components/HelpPanel.jsx)",
+      "Bash(sed -n '228,245p' src/components/AchievementsPanel.jsx)",
+      "Bash(sed -n '250,280p' src/components/WorklogPanel.jsx)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

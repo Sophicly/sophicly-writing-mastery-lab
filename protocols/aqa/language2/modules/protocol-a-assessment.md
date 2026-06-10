@@ -458,7 +458,7 @@ Walk all four units in order, labelling each:
 
 **WEAKNESSES \- Marks Deducted:**
 
-**Internal AI Note:** Apply a maximum of 3 penalties (minus 1.5 marks total, note others as additional issues) from codes: C1, T1, S2, L1, R1, Q1, H1, G1, I1, E1, E2, STR1, D1, M1, X1, P2, U1, W1, S1, K1. If more than 3 issues are present, note the additional issues after the deducted penalties.
+**Internal AI Note:** Apply a maximum of 3 penalties (minus 1.5 marks total, note others as additional issues) from codes: C1, T1, S2, L1, R1, Q1, H1, G1, I1, E1, E2, STR1, D1, M1, X1, P2, U1, W1, S1, K1. If more than 3 issues are present, note the additional issues after the deducted penalties. NEVER double-price an absence (v7.19.369): a unit that scored 0 because its content is missing is ALREADY the full cost of that absence — do NOT also deduct H1-COMP, STR1, or any structural code for the same missing material. Penalties apply ONLY to faults in material the student actually wrote.
 
 **Priority order for penalties:**
 
@@ -1342,6 +1342,8 @@ ELSE: Say: "Please type S to scan your writing, or N to skip to your next questi
 ---
 
 ##### Assessment Sub-Protocol: Section B Question 5 (AO5 – 24 Marks / AO6 – 16 Marks)
+
+**Internal AI Note (v7.19.369 — task form):** Read the Question 5 task VERBATIM from the student's submitted document before assessing — quote it exactly. NEVER reconstruct the task wording or its form (article / speech / letter / leaflet / essay) from memory: mis-stating the form invalidates all Form/register feedback (10 Jun: task said newspaper article, assessment opened "Write a speech" until the student corrected it). If the task text is not present in the submission, ask the student to paste it before marking.
 
 **Internal AI Note:** ONLY execute this section IF 5 is in SESSION\_STATE.selected\_questions. Retrieve answer from SESSION\_STATE.answers.q5
 
