@@ -227,7 +227,15 @@
       "Bash(sed -n '700,750p' src/styles/wp-overrides.css)",
       "Bash(ssh -o ConnectTimeout=15 -i ~/.ssh/sophicly_staging runcloud@18.133.5.229 'cd /home/runcloud/webapps/SophiclyMain && /usr/local/lsws/lsphp82/bin/php8.2 /usr/local/bin/wp eval \"file_put_contents\\(\\\\\"/tmp/wml-test-docs.json\\\\\", wp_json_encode\\(array\\( \\\\\"t1\\\\\" => get_user_meta\\(1352, \\\\\"swml_canvas_aqa_aqa_lang_paper_1_t1\\\\\", true\\), \\\\\"redraft\\\\\" => get_user_meta\\(1352, \\\\\"swml_canvas_aqa_aqa_lang_paper_1_t1_redraft\\\\\", true\\), \\\\\"att_redraft\\\\\" => get_user_meta\\(1352, \\\\\"swml_attempts_aqa_aqa_lang_paper_1_t1_redraft\\\\\", true\\) \\)\\)\\); echo \\\\\"dumped \\\\\".filesize\\(\\\\\"/tmp/wml-test-docs.json\\\\\"\\).\\\\\" bytes\\\\\";\"')",
       "Bash(rm \"$HOME/.claude/handoffs/open/wml-reeham-lang-p1-diagnostic-redraft-not-saving-2026-06-09.md\" *)",
-      "Bash(cat >> *)"
+      "Bash(cat >> *)",
+      "Bash(sed -n '2600,2640p' sophicly-student-data/includes/class-wml-rest-api.php)",
+      "Bash(sed -n '780,800p' sophicly-student-data/includes/class-wml-listener.php)",
+      "Bash(awk 'NR>=2540 && NR<=2600 && /register_rest_route|=> *array|function /' sophicly-student-data/includes/class-wml-rest-api.php)",
+      "Bash(awk -F: '$1 < 2660')",
+      "Bash(awk 'NR<2560' sophicly-student-data/includes/class-wml-rest-api.php)",
+      "Bash(awk 'NR>=2392 && NR<=2660' sophicly-student-data/includes/class-wml-rest-api.php)",
+      "Bash(sed -n '2525,2540p' sophicly-student-data/includes/class-wml-rest-api.php)",
+      "Bash(sed -n '2392,2420p' sophicly-student-data/includes/class-wml-rest-api.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
