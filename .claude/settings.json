@@ -235,7 +235,9 @@
       "Bash(awk 'NR<2560' sophicly-student-data/includes/class-wml-rest-api.php)",
       "Bash(awk 'NR>=2392 && NR<=2660' sophicly-student-data/includes/class-wml-rest-api.php)",
       "Bash(sed -n '2525,2540p' sophicly-student-data/includes/class-wml-rest-api.php)",
-      "Bash(sed -n '2392,2420p' sophicly-student-data/includes/class-wml-rest-api.php)"
+      "Bash(sed -n '2392,2420p' sophicly-student-data/includes/class-wml-rest-api.php)",
+      "Bash(sed -n '6145,6175p' frontend/wml-assessment.js)",
+      "Bash(sed -n '8890,8930p' frontend/wml-assessment.js)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
