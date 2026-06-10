@@ -1338,15 +1338,24 @@ class SWML_Protocol_Router {
         // so the whole-protocol path is untouched and partial rollout is always safe:
         // any question without a step file falls back to the frontend step + always-set.
         $is_segmented_q = false;
+        $suppress_step_files = false;
         if ($task === 'assessment' && self::assessment_mode($context) === 'questions') {
             $seg_step = $this->derive_segmented_step($context, $user_id);
             if ($seg_step > 0 && !empty($task_config['steps'][$seg_step])) {
                 $step = $seg_step;
                 $is_segmented_q = true;
+            } else {
+                // v7.19.354 (FIX D): question-mode assessment steps are OWNED by
+                // the beat machine. When not segmented, the frontend step (pinned
+                // at 8) must not drag a "CURRENT STEP — do ONLY this" slice in
+                // beside the whole protocol — Neil's 10 Jun run carried
+                // a-q2-p2-targeting.md on 20+ monolith turns through Q3/Q4
+                // because manifest step 8 happens to exist.
+                $suppress_step_files = true;
             }
         }
 
-        if (!empty($task_config['steps'][$step])) {
+        if (!$suppress_step_files && !empty($task_config['steps'][$step])) {
             $step_files = $task_config['steps'][$step]['files'] ?? [];
             $files = array_merge($files, $step_files);
         }
@@ -4031,14 +4040,20 @@ TEMPLATE;
             // is the gold file's own "Y to move to Paragraph 2" tail (one student turn).
             ['id' => 'q2_p1_selfrate', 'step' => 2,  'label' => '¶1 Self-rate', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-p1-selfrate.md', 'type' => 'ask',     'detect' => '/Goal Achievement|scale of 1.?5|met those three demands/i'],
             ['id' => 'q2_p1_targeting','step' => 3,  'label' => '¶1 Targeting', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-p1-targeting.md','type' => 'ask',     'detect' => '/which of the three|aiming for most|which do you think is your weakest/i'],
-            ['id' => 'q2_p1_mark',     'step' => 4,  'label' => '¶1 Mark',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',        'type' => 'produce', 'detect' => '/Unit 1 — Source A|Paragraph 1 \(4 marks/i'],
-            ['id' => 'q2_p1_feedback', 'step' => 5,  'label' => '¶1 Feedback',  'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-feedback.md',    'type' => 'produce', 'detect' => '/How to Improve/i'],
-            ['id' => 'q2_p1_gold',     'step' => 6,  'label' => '¶1 Gold',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',        'type' => 'produce', 'detect' => '/Your Paragraph Rewritten to Gold Standard[\s\S]*Optimal Gold Standard Model/i'],
+            // v7.19.354 (FIX D): detects broadened to LIVE output shapes. The
+            // original regexes were written from the monolith's mandated wording
+            // (same disease FIX C cured at question level) and matched nothing
+            // Sophia actually wrote on 10 Jun ("Marks: Paragraph 1", "Paragraph 1
+            // subtotal", "Where marks were lost") — so the pointer stuck at
+            // targeting for 4 turns while the strip hid the marking instructions.
+            ['id' => 'q2_p1_mark',     'step' => 4,  'label' => '¶1 Mark',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',        'type' => 'produce', 'detect' => '/Unit 1 — Source A|Paragraph 1 \(4 marks|Paragraph 1(?:[^\n]{0,30})?(?:sub)?total|Marks?[:\s\*]+Paragraph 1|paragraph(?: raw| final)? score[:\s\*]+\d/i'],
+            ['id' => 'q2_p1_feedback', 'step' => 5,  'label' => '¶1 Feedback',  'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-feedback.md',    'type' => 'produce', 'detect' => '/How to Improve|Where marks were lost|What you did well|Feedback, Advice/i'],
+            ['id' => 'q2_p1_gold',     'step' => 6,  'label' => '¶1 Gold',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',        'type' => 'produce', 'detect' => '/Your Paragraph Rewritten to Gold Standard[\s\S]*Optimal Gold Standard Model|Gold Standard (?:Rewrite|Response|Model|Examples)/i'],
             ['id' => 'q2_p2_selfrate', 'step' => 7,  'label' => '¶2 Self-rate', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-p2-selfrate.md', 'type' => 'ask',     'detect' => '/Goal Achievement|scale of 1.?5|second paragraph meet|met those three demands/i'],
             ['id' => 'q2_p2_targeting','step' => 8,  'label' => '¶2 Targeting', 'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-p2-targeting.md','type' => 'ask',     'detect' => '/which of the three|aiming for most|which do you think is your weakest/i'],
-            ['id' => 'q2_p2_mark',     'step' => 9,  'label' => '¶2 Mark',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',        'type' => 'produce', 'detect' => '/Unit 1 — Source A|Paragraph 1 \(4 marks/i'],
-            ['id' => 'q2_p2_feedback', 'step' => 10, 'label' => '¶2 Feedback',  'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-feedback.md',    'type' => 'produce', 'detect' => '/How to Improve/i'],
-            ['id' => 'q2_p2_gold',     'step' => 11, 'label' => '¶2 Gold',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',        'type' => 'produce', 'detect' => '/Your Paragraph Rewritten to Gold Standard[\s\S]*Optimal Gold Standard Model/i'],
+            ['id' => 'q2_p2_mark',     'step' => 9,  'label' => '¶2 Mark',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-mark.md',        'type' => 'produce', 'detect' => '/Unit 1 — Source A|Paragraph 2 \(4 marks|Paragraph 2(?:[^\n]{0,30})?(?:sub)?total|Marks?[:\s\*]+Paragraph 2|paragraph(?: raw| final)? score[:\s\*]+\d/i'],
+            ['id' => 'q2_p2_feedback', 'step' => 10, 'label' => '¶2 Feedback',  'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-feedback.md',    'type' => 'produce', 'detect' => '/How to Improve|Where marks were lost|What you did well|Feedback, Advice/i'],
+            ['id' => 'q2_p2_gold',     'step' => 11, 'label' => '¶2 Gold',      'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-gold.md',        'type' => 'produce', 'detect' => '/Your Paragraph Rewritten to Gold Standard[\s\S]*Optimal Gold Standard Model|Gold Standard (?:Rewrite|Response|Model|Examples)/i'],
             ['id' => 'q2_summary',     'step' => 12, 'label' => 'Q2 Summary',   'group' => 'Question 2', 'file' => 'modules/assessment-steps/a-q2-summary.md',     'type' => 'produce', 'detect' => '/overall Question 2 score|Q2 Total|Question 2 Final Summary|Total[:\s][^\n]*\/\s*8/i'],
         ];
     }
@@ -4393,6 +4408,11 @@ TEMPLATE;
         $first_beat = $this->assessment_first_beat_for_question($cur_q, $context);
         if ($first_beat === null) {
             if (($state['current_beat'] ?? '') !== '') $patch['current_beat'] = '';
+            if ((int) ($state['beat_stall_count'] ?? 0) !== 0) $patch['beat_stall_count'] = 0;
+        } elseif (($state['beats_disabled_for'] ?? '') === $cur_q) {
+            // v7.19.354 (FIX D): segmentation already fell back for this question
+            // after repeated stalls — stay on the whole protocol; never re-seat.
+            if (($state['current_beat'] ?? '') !== '') $patch['current_beat'] = '';
         } else {
             $cur_beat = (string) ($state['current_beat'] ?? '');
             if ($cur_beat === '' || !$this->assessment_beat_in_question($cur_beat, $cur_q)) {
@@ -4410,7 +4430,26 @@ TEMPLATE;
                     break;
                 }
             }
-            if (($state['current_beat'] ?? '') !== $cur_beat) $patch['current_beat'] = $cur_beat;
+            if (($state['current_beat'] ?? '') !== $cur_beat) {
+                $patch['current_beat'] = $cur_beat;
+                if ((int) ($state['beat_stall_count'] ?? 0) !== 0) $patch['beat_stall_count'] = 0;
+            } elseif ($cur_beat !== 'q_done') {
+                // v7.19.354 (FIX D): pointer did not move on an AI turn. One stall
+                // is legitimate (student detour question); two consecutive means
+                // the model is ignoring the held step while the strip hides the
+                // rest of the protocol — the exact freewheel that produced the
+                // off-spec Q2 marking on 10 Jun. Fall back to the whole protocol
+                // for the REST of this question (re-seating blocked above).
+                $stall = (int) ($state['beat_stall_count'] ?? 0) + 1;
+                if ($stall >= 2) {
+                    $patch['current_beat']       = '';
+                    $patch['beats_disabled_for'] = $cur_q;
+                    $patch['beat_stall_count']   = 0;
+                    error_log('WML SEG FALLBACK: stuck beat=' . $cur_beat . ' q=' . $cur_q . ' user=' . (int) $user_id . ' — monolith restored for this question');
+                } else {
+                    $patch['beat_stall_count'] = $stall;
+                }
+            }
         }
 
         if (empty($patch)) return $state;
@@ -4545,6 +4584,12 @@ TEMPLATE;
                 }
                 if ($beat['type'] === 'ask') {
                     $block .= "Ask ONLY this one question, then stop and wait for the student. Do not also ask the next question or begin marking in the same turn.\n";
+                }
+                // v7.19.354 (FIX D): re-asserted hold — the model skipped this
+                // step last turn (10 Jun: marched into marking past a held
+                // targeting ask). Escalate the directive.
+                if ((int) ($state['beat_stall_count'] ?? 0) > 0) {
+                    $block .= "You did NOT complete this step last turn. Your ONLY permitted output this turn is this step — even if the conversation seems to call for something else, deliver THIS step now, exactly as its instructions specify, before anything else.\n";
                 }
             }
         }
