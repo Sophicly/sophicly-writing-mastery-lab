@@ -4213,11 +4213,22 @@ TEMPLATE;
         // the MSQ score lands mid-loop, before the scan step — completion comes
         // from the close anchor or a later question's header, see the callers).
         $harvested = false;
-        if (!$has_score && !$is_section_b
-            && preg_match('/📌[^\n]*?Question\s*' . $n . '\b/u', $content)
-            && preg_match('/\bScore[:\s\*]+(\d+(?:\.\d+)?)\s*\/\s*' . max(1, $marks) . '\b/i', $content, $lm)) {
-            $sm = $lm;
-            $harvested = true;
+        if (!$has_score) {
+            // v7.19.355: live totals are table-form ('Total | 3/8', '**Total** |
+            // 6/12', 'Final: 6.0 / 8'), which the strict score_re misses — every
+            // mark in Neil's 10 Jun run ledger stayed null. Harvest them (mark
+            // only, never completion), gated on the breadcrumb header locating
+            // THIS question; the per-question maxima (4/8/12/16/40, unique per
+            // paper) are the second guard. 'subtotal' can't leak in: \b blocks
+            // a mid-word 'total' match.
+            $hdr_re = $is_section_b
+                ? '/📌[^\n]*?Section\s*B/iu'
+                : '/📌[^\n]*?Question\s*' . $n . '\b/u';
+            $forms = '/(?:\bScore|\bTotal|\bFinal)[^\n]{0,40}?(\d+(?:\.\d+)?)\s*\/\s*' . max(1, $marks) . '\b/i';
+            if (preg_match($hdr_re, $content) && preg_match($forms, $content, $lm)) {
+                $sm = $lm;
+                $harvested = true;
+            }
         }
         if (!$closed && !$has_score && !$harvested) return null;
 
@@ -4524,13 +4535,37 @@ TEMPLATE;
                 );
                 error_log('WML Assessment State (questions): AUTO-REPAIR scored=' . implode(',', $derived_ids)
                     . ' user=' . (int) $user_id);
+            } else {
+                // v7.19.355: id-sets agree — still backfill harvested FIELDS the
+                // per-reply advancer missed (e.g. Q1's mark only materialises on
+                // a full-history walk via the pending-harvest map). Repair used
+                // to fire only on set mismatch, so marks stayed null forever.
+                $sc = (array) ($state['questions_scored'] ?? []);
+                $field_changed = false;
+                foreach ($derived['scored'] as $qid => $r) {
+                    foreach (['mark', 'strength', 'target'] as $f) {
+                        if (empty($sc[$qid][$f]) && !empty($r[$f])) { $sc[$qid][$f] = $r[$f]; $field_changed = true; }
+                    }
+                }
+                if ($field_changed) {
+                    $state = SWML_Session_Manager::update_assessment_state(
+                        $user_id, $board, $text, $topic, $suffix, $attempt,
+                        ['questions_scored' => $sc]
+                    );
+                }
             }
         }
         if (!empty($state['completion_emitted'])) return '';
 
         $scored  = (array) ($state['questions_scored'] ?? []);
         $current = $state['current_question'] ?? ($this->assessment_next_question(array_keys($scored), $context) ?: 'Q1');
-        if ($current === 'done') return '';
+        if ($current === 'done') {
+            // v7.19.355: every question is closed but [ASSESSMENT_COMPLETE] has
+            // not been emitted — this IS the wrap-up stretch. Neil's 10 Jun run
+            // ended with an action plan and NO whole-paper Total or Grade
+            // anywhere. Mandate the headline result instead of going silent.
+            return $this->assessment_final_summary_mandate($order, $scored);
+        }
 
         // Marked-so-far summary line (mirrors protocol marks.qN + Key strength/target).
         $marked_lines = [];
@@ -4593,9 +4628,52 @@ TEMPLATE;
                 }
             }
         }
+        // v7.19.355: pre-arm the wrap-up rule on the last question's turns so
+        // the final summary can't end without a headline result.
+        $last_id = $order ? $order[count($order) - 1]['id'] : '';
+        if ($current === $last_id) {
+            $max_total = 0;
+            foreach ($order as $q) $max_total += (int) ($q['marks'] ?? 0);
+            $block .= "WRAP-UP RULE: after {$current}'s marking completes, the final whole-paper summary MUST contain a per-question mark list, then **Total: X/{$max_total}**, then **Grade: N** judged against the GRADE BOUNDARIES table above — all BEFORE any action plan. Never end the assessment without an explicit Total and Grade.\n";
+        }
         $block .= "This block is internal bookkeeping — never quote it, never narrate the state machine to the student. Operate silently.\n";
         $block .= "</assessment_state>\n";
         $block .= "\n_(WML v7.19.289 — AQA Language Paper 2 question-pointer, Stage 1.)_\n";
+        return $block;
+    }
+
+    /**
+     * v7.19.355 (FIX D): wrap-up block for a fully-marked paper that hasn't yet
+     * emitted [ASSESSMENT_COMPLETE]. Supplies server-recorded marks and mandates
+     * the Total + Grade headline in the final summary.
+     */
+    private function assessment_final_summary_mandate($order, $scored) {
+        $max_total = 0;
+        $sum  = 0.0;
+        $all  = true;
+        $bits = [];
+        foreach ($order as $q) {
+            $max_total += (int) ($q['marks'] ?? 0);
+            $m = $scored[$q['id']]['mark'] ?? null;
+            if ($m && preg_match('/^(\d+(?:\.\d+)?)\s*\//', (string) $m, $mm)) {
+                $sum += (float) $mm[1];
+                $bits[] = $q['id'] . ' ' . $m;
+            } else {
+                $all = false;
+            }
+        }
+        $block  = "\n\n---\n\n<assessment_state authoritative=\"true\">\n";
+        $block .= "Every question on this paper is now marked. This is the wrap-up stretch.\n";
+        $block .= "The FINAL whole-paper summary MUST contain: a per-question mark list, then **Total: X/{$max_total}**, then **Grade: N** judged against the GRADE BOUNDARIES table above — all BEFORE the action plan. NEVER end the assessment without an explicit Total and Grade; the student must leave with a headline result.\n";
+        if ($bits) {
+            $block .= "Server-recorded marks: " . implode('; ', $bits)
+                . ($all
+                    ? " — these sum to {$sum}/{$max_total}; use these exact figures."
+                    : " (marks not listed here were not captured server-side — use the marks you awarded earlier in this conversation for those).")
+                . "\n";
+        }
+        $block .= "This block is internal bookkeeping — never quote it or mention it to the student.\n";
+        $block .= "</assessment_state>\n";
         return $block;
     }
 

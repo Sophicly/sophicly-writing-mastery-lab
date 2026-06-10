@@ -1190,6 +1190,14 @@ class SWML_REST_API {
                 }
             }
 
+            // v7.19.355: machine markers must NEVER reach the student. The quiz
+            // engine strips them for quiz tasks after capture, but Neil's 10 Jun
+            // assessment run showed Sophia emitting contaminated [[QUIZ …]]
+            // markers (wrong values, visible in chat) on the assessment Q1 turn.
+            // Scrub every reply; idempotent for quiz tasks.
+            $reply = preg_replace('/[ \t]*\[\[QUIZ[^\]]*\]\][ \t]*\r?\n?/i', '', $reply);
+            $reply = preg_replace('/\[QUIZ_COMPLETE[^\]\n]*\][^\n<]*/i', '', $reply);
+
             $response_payload = [
                 'success' => true,
                 'reply' => $reply,
