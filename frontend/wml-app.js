@@ -4597,7 +4597,11 @@
         //  ("would you like" → "Yes / No, explain more"), which is wrong for
         //  copy-confirmation gates. Emit single Y button when only Type Y, or
         //  Y/C pair when both Type Y and Type C clarify appear.
-        const inlineTypeY = /\btype\s+\*{0,2}Y\*{0,2}\s+(?:when|once|to)\b/i.test(text);
+        // v7.19.388: preposition set widened — live runs phrase the gate as
+        // "Type Y for your overall Question 3 summary" / "Type Y if you're
+        // ready" / "Type Y and I'll…", all of which missed (when|once|to)
+        // and rendered no button (Neil, 11 Jun — intermittent missing Y).
+        const inlineTypeY = /\btype\s+\*{0,2}Y\*{0,2}\s+(?:when|once|to|for|if|and)\b/i.test(text);
         const inlineTypeC = /\btype\s+\*{0,2}C\*{0,2}\s+(?:to\s+(?:request\s+)?clarif|for\s+clarif)/i.test(text);
         if (inlineTypeY && inlineTypeC) {
             return [

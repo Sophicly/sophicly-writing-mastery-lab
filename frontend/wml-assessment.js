@@ -2319,7 +2319,7 @@
             // v7.19.379: long accordions (Q3/Q4 hold 16 steps) overflow the panel —
             // the step list scrolls within the sidebar column; the active step is
             // auto-scrolled into view on every server-sidebar advance.
-            const protoSteps = el('div', { id: 'swml-progress-steps', style: { overflowY: 'auto', flex: '1 1 auto', minHeight: '0' } });
+            const protoSteps = el('div', { id: 'swml-progress-steps', style: { overflowY: 'auto', overflowX: 'hidden', flex: '1 1 auto', minHeight: '0' } });
             // v7.18.25: universal step-array resolution. Drop the isExamPrep
             // gate (and the v7.18.24 mark_scheme_unit gate) — getSteps() is now
             // ALWAYS consulted when the manifest doesn't provide an explicit
@@ -8971,7 +8971,7 @@
                             // v7.19.379: long accordions (Q3/Q4 hold 16 steps) overflow the panel —
             // the step list scrolls within the sidebar column; the active step is
             // auto-scrolled into view on every server-sidebar advance.
-            const protoSteps = el('div', { id: 'swml-progress-steps', style: { overflowY: 'auto', flex: '1 1 auto', minHeight: '0' } });
+            const protoSteps = el('div', { id: 'swml-progress-steps', style: { overflowY: 'auto', overflowX: 'hidden', flex: '1 1 auto', minHeight: '0' } });
                             // v7.13.97: Use task-specific steps for exam prep, manifest sidebarSteps for assessment, fallback to defaults
                             const assessSteps = canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
                                 { step: 1, label: 'Setup & Details' },
