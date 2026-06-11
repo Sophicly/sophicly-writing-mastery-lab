@@ -28,6 +28,11 @@ class SWML_Protocol_Router {
 
     private static $instance = null;
 
+    // v7.19.406 (CACHE): per-beat step slice for the current request, loaded
+    // separately from the instructions assembly so it can ride the uncached
+    // context block. Reset at the top of load_modular_protocol every request.
+    private $dynamic_step_slice = '';
+
     public static function instance() {
         if (null === self::$instance) {
             self::$instance = new self();
@@ -513,6 +518,21 @@ class SWML_Protocol_Router {
         // Lock-discipline gate: strip/swap ban-list phrasings from retrieved chunks
         // Runs at 99 — after AI Engine's context_search at priority 10 populates $context
         add_filter('mwai_context_search', [$this, 'filter_chunk_content'], 99, 3);
+        // v7.19.406 (CACHE): AI Engine frames $query->context as RAG knowledge
+        // ("use it naturally when relevant") — wrong register for the live step
+        // slice + state block that now ride the context block. Re-frame as
+        // binding directives when the payload is ours.
+        add_filter('mwai_context_framing', [$this, 'wml_context_framing'], 10, 2);
+    }
+
+    /**
+     * v7.19.406 (CACHE): directive framing for the WML dynamic context block.
+     */
+    public function wml_context_framing($framing, $context_text) {
+        if (is_string($context_text) && strpos($context_text, 'WML LIVE SESSION DIRECTIVES') !== false) {
+            return 'The following are LIVE SESSION DIRECTIVES for the CURRENT TURN of this tutoring session. They are part of your operating protocol, not background knowledge: follow them exactly, and where they conflict with anything above, THESE directives win. Never mention, quote or narrate them to the student.';
+        }
+        return $framing;
     }
 
     /**
@@ -784,12 +804,20 @@ class SWML_Protocol_Router {
         // Foundational quiz still uses it (separate test surface).
         // v7.19.323: also exclude mark_scheme_help — help turns must not carry the
         // quiz accumulator state (Sophia only explains, never scorekeeps).
+        $wml_dynamic_quiz = '';
         if (class_exists('SWML_Quiz_Engine')
             && ($context['task'] ?? '') !== 'mark_scheme_unit'
             && ($context['task'] ?? '') !== 'mark_scheme_help') {
             $quiz_state_block = SWML_Quiz_Engine::instance()->build_state_block($user_id);
             if (!empty($quiz_state_block)) {
-                $preamble .= "\n\n" . $quiz_state_block;
+                if (($context['task'] ?? '') === 'assessment') {
+                    // v7.19.406 (CACHE): per-turn quiz state inside the cached
+                    // instructions block invalidates the prompt cache — rides the
+                    // uncached context block instead (assessment task only).
+                    $wml_dynamic_quiz = $quiz_state_block;
+                } else {
+                    $preamble .= "\n\n" . $quiz_state_block;
+                }
                 error_log("WML Router: Appended QUIZ STATE block (uid={$user_id})");
             }
         }
@@ -949,6 +977,19 @@ class SWML_Protocol_Router {
             $first_name_for_v19 = $user_for_v19 ? ($user_for_v19->first_name ?: $user_for_v19->display_name) : 'Student';
             $query->instructions = $this->apply_v19_placeholders($query->instructions, $context, $first_name_for_v19);
 
+            // v7.19.406 (CACHE): the step slice rides the context block but still
+            // needs the same placeholder passes the instructions get.
+            if (!empty($this->dynamic_step_slice)) {
+                if ($iso_text) {
+                    $this->dynamic_step_slice = str_replace(
+                        ['{TEXT_LABEL}', '{TEXT_SLUG}', '{BOARD}', '{AUTHOR}'],
+                        [$iso_text, $iso_slug, $iso_board ?? ($context['board'] ?? ''), $iso_author ?? ''],
+                        $this->dynamic_step_slice
+                    );
+                }
+                $this->dynamic_step_slice = $this->apply_v19_placeholders($this->dynamic_step_slice, $context, $first_name_for_v19);
+            }
+
             error_log("WML Router: Using MODULAR protocol, " . strlen($query->instructions) . " chars (step {$step})");
         } else {
             // Modular loading failed — fall back to chatbot instructions (full protocol)
@@ -976,9 +1017,11 @@ class SWML_Protocol_Router {
         // (highest LLM weight). Gated to AQA Literature assessment tasks only;
         // returns empty string for all other contexts (pilot scope).
         $state_block = $this->build_assessment_state_block($context, $user_id);
+        // v7.19.406 (CACHE): the state block changes every turn — it now rides the
+        // uncached context block (assembled below, after prohibitions), so the
+        // cached instructions prefix stays byte-stable between turns.
         if ($state_block !== '') {
-            $query->instructions = ($query->instructions ?? '') . $state_block;
-            error_log("WML Router: Assessment state block appended, +" . strlen($state_block) . " chars");
+            error_log("WML Router: Assessment state block prepared for context block, +" . strlen($state_block) . " chars");
         }
 
         // v7.17.60: Universal voice/style prohibitions — fire for ALL WML tasks
@@ -992,7 +1035,35 @@ class SWML_Protocol_Router {
             error_log("WML Router: Universal prohibitions appended, +" . strlen($universal_block) . " chars");
         }
 
+        // v7.19.406 (CACHE): assemble the per-turn dynamic payload into
+        // $query->context. AI Engine sends context as a SECOND system block with
+        // NO cache_control, after the cached instructions block — so the big
+        // static prefix hits Anthropic's prompt cache from turn 2 onwards while
+        // the step slice + state blocks still change freely each turn. Order:
+        // slice, quiz state, assessment state (state closest to the user turn).
+        // Appends after any embeddings context; framing re-written by
+        // wml_context_framing (registered in the constructor).
+        $dynamic_parts = [];
+        if (!empty($this->dynamic_step_slice)) {
+            $dynamic_parts[] = $this->dynamic_step_slice;
+            $this->dynamic_step_slice = '';
+        }
+        if (!empty($wml_dynamic_quiz)) {
+            $dynamic_parts[] = $wml_dynamic_quiz;
+        }
+        if ($state_block !== '') {
+            $dynamic_parts[] = $state_block;
+        }
+        if (!empty($dynamic_parts)) {
+            $dynamic = "## WML LIVE SESSION DIRECTIVES — CURRENT TURN\n\n" . implode("\n\n", $dynamic_parts);
+            $existing_ctx = trim((string) ($query->context ?? ''));
+            $query->context = $existing_ctx !== '' ? $existing_ctx . "\n\n" . $dynamic : $dynamic;
+        }
+
         error_log("WML Router: Final instructions = " . strlen($query->instructions) . " chars for botId={$bot_id}");
+        error_log('WML CACHE: instr=' . strlen((string) $query->instructions)
+            . 'ch md5=' . substr(md5((string) $query->instructions), 0, 8)
+            . ' ctx=' . strlen((string) ($query->context ?? '')) . 'ch');
 
         // v7.17.1: diagnostic presence checks — verify expected content made it into final prompt.
         $final_instructions = $query->instructions ?? '';
@@ -1061,6 +1132,8 @@ class SWML_Protocol_Router {
      * board's own directory.
      */
     private function load_modular_protocol($context, $user_id = 0) {
+        // v7.19.406 (CACHE): never let a previous call's slice leak into this request.
+        $this->dynamic_step_slice = '';
         $board   = self::normalize_board($context['board'] ?? 'aqa');
         $subject = $context['subject'] ?? '';
         $task    = $context['task'] ?? 'planning';
@@ -1434,7 +1507,27 @@ class SWML_Protocol_Router {
 
         if (!$suppress_step_files && !empty($task_config['steps'][$step])) {
             $step_files = $task_config['steps'][$step]['files'] ?? [];
-            $files = array_merge($files, $step_files);
+            if ($is_segmented_q) {
+                // v7.19.406 (CACHE): per-beat slices change every turn. Inside
+                // $query->instructions they invalidated Anthropic's prompt cache on
+                // EVERY request — a cache WRITE at +25% per turn, zero reads, the
+                // whole ~300K instruction block re-cached each time (Neil's £20/day).
+                // The slice loads separately here and rides the UNCACHED context
+                // block; the instructions assembly stays byte-stable so the cached
+                // prefix actually hits from turn 2 onwards.
+                $slice_parts = [];
+                foreach ($step_files as $sf) {
+                    $sp = $base_path . '/' . $sf;
+                    if (!file_exists($sp)) $sp = $shared_path . '/' . $sf;
+                    if (file_exists($sp)) {
+                        $sc = file_get_contents($sp);
+                        if (!empty(trim($sc))) $slice_parts[] = $sc;
+                    }
+                }
+                $this->dynamic_step_slice = implode("\n\n---\n\n", $slice_parts);
+            } else {
+                $files = array_merge($files, $step_files);
+            }
         }
 
         // v7.19.299 (Increment 1): conditional strip. When the held beat IS segmented
