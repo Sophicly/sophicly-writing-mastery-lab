@@ -9945,3 +9945,56 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 }
 
 /* Reassessment: shows all — no hide rules (full marking view). */
+
+/* ── v7.19.386: sidebar entrance + accordion step cascade (Neil, 11 Jun) ──
+   Staggered top-to-bottom fade on panel mount (head → badges → label → steps
+   → buttons), then a quick per-step cascade whenever an accordion opens or
+   the step list is (re)built/revealed (server sidebar repaint included —
+   CSS animations start on insertion/display, so no JS needed).
+   fill-mode is BACKWARDS everywhere, never forwards/both: a forwards fill
+   would pin opacity:1 on elements the collapsed-sidebar rules need to fade
+   to 0 (badges/labels) — backwards only covers the stagger delay, then the
+   normal cascade resumes. */
+@keyframes swmlSidebarIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+}
+.swml-canvas-proto .swml-sidebar-head                    { animation: swmlSidebarIn .32s ease .04s backwards; }
+.swml-canvas-proto .swml-sidebar-body > *:nth-child(1)   { animation: swmlSidebarIn .32s ease .10s backwards; }
+.swml-canvas-proto .swml-sidebar-body > *:nth-child(2)   { animation: swmlSidebarIn .32s ease .16s backwards; }
+.swml-canvas-proto .swml-sidebar-body > *:nth-child(3)   { animation: swmlSidebarIn .32s ease .22s backwards; }
+.swml-canvas-proto .swml-sidebar-body > *:nth-child(4)   { animation: swmlSidebarIn .32s ease .28s backwards; }
+.swml-canvas-proto .swml-sidebar-body > *:nth-child(n+5) { animation: swmlSidebarIn .32s ease .34s backwards; }
+
+/* Step list build / reveal: groups + loose steps cascade top-to-bottom. */
+.swml-canvas-proto #swml-progress-steps > *               { animation: swmlSidebarIn .28s ease backwards; }
+.swml-canvas-proto #swml-progress-steps > *:nth-child(1)  { animation-delay: .05s; }
+.swml-canvas-proto #swml-progress-steps > *:nth-child(2)  { animation-delay: .09s; }
+.swml-canvas-proto #swml-progress-steps > *:nth-child(3)  { animation-delay: .13s; }
+.swml-canvas-proto #swml-progress-steps > *:nth-child(4)  { animation-delay: .17s; }
+.swml-canvas-proto #swml-progress-steps > *:nth-child(5)  { animation-delay: .21s; }
+.swml-canvas-proto #swml-progress-steps > *:nth-child(6)  { animation-delay: .25s; }
+.swml-canvas-proto #swml-progress-steps > *:nth-child(7)  { animation-delay: .29s; }
+.swml-canvas-proto #swml-progress-steps > *:nth-child(n+8){ animation-delay: .33s; }
+
+/* Accordion open: the revealed sub-steps fade in one by one, fast. The rule
+   only matches while the header is .open, so every reopen re-triggers. */
+.swml-step-group-header.open + .swml-step-group-body .swml-step                { animation: swmlSidebarIn .2s ease backwards; }
+.swml-step-group-header.open + .swml-step-group-body .swml-step:nth-child(1)  { animation-delay: .02s; }
+.swml-step-group-header.open + .swml-step-group-body .swml-step:nth-child(2)  { animation-delay: .05s; }
+.swml-step-group-header.open + .swml-step-group-body .swml-step:nth-child(3)  { animation-delay: .08s; }
+.swml-step-group-header.open + .swml-step-group-body .swml-step:nth-child(4)  { animation-delay: .11s; }
+.swml-step-group-header.open + .swml-step-group-body .swml-step:nth-child(5)  { animation-delay: .14s; }
+.swml-step-group-header.open + .swml-step-group-body .swml-step:nth-child(6)  { animation-delay: .17s; }
+.swml-step-group-header.open + .swml-step-group-body .swml-step:nth-child(7)  { animation-delay: .20s; }
+.swml-step-group-header.open + .swml-step-group-body .swml-step:nth-child(8)  { animation-delay: .23s; }
+.swml-step-group-header.open + .swml-step-group-body .swml-step:nth-child(9)  { animation-delay: .26s; }
+.swml-step-group-header.open + .swml-step-group-body .swml-step:nth-child(10) { animation-delay: .29s; }
+.swml-step-group-header.open + .swml-step-group-body .swml-step:nth-child(n+11){ animation-delay: .31s; }
+
+@media (prefers-reduced-motion: reduce) {
+    .swml-canvas-proto .swml-sidebar-head,
+    .swml-canvas-proto .swml-sidebar-body > *,
+    .swml-canvas-proto #swml-progress-steps > *,
+    .swml-step-group-header.open + .swml-step-group-body .swml-step { animation: none; }
+}
