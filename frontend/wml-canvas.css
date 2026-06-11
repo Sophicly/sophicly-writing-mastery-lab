@@ -2969,6 +2969,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     overflow: hidden;
     will-change: opacity, transform;
 }
+/* v7.19.384: Q3/Q4 accordions (16 steps) overflow the viewport. The panel is
+   overflow:hidden, so #swml-progress-steps must scroll internally (v379 gave it
+   overflow-y:auto) — but the body between them defaulted to min-height:auto,
+   growing to content height so the steps list never overflowed its own box and
+   its scrollbar never engaged. min-height:0 clamps the body to the panel. */
+.swml-canvas-proto .swml-sidebar-body { min-height: 0; }
 .swml-canvas-proto .swml-sidebar-badges,
 .swml-canvas-proto .swml-sidebar-section-label,
 .swml-canvas-proto .swml-step-label {
