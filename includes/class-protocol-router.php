@@ -4649,6 +4649,39 @@ TEMPLATE;
         ];
     }
 
+    /**
+     * v7.19.402 (FIX P): the quotations Sophia credited in the ¶1 mark walk.
+     * Three consecutive runs (9b/10/11) re-credited ¶1's material in ¶2 despite
+     * escalating prompt rules — the model has no reliable memory of its own
+     * allocation across turns. The server carries that memory instead: extract
+     * the quoted anchors from the ¶1 mark message so every ¶2 turn can enumerate
+     * exactly what is forbidden. Takes the LAST matching message so a fresh
+     * restart in the same chat wins over stale turns.
+     */
+    private static function q2_p1_credited_anchors($chat_history) {
+        if (!is_array($chat_history)) return [];
+        $mark_msg = '';
+        foreach ($chat_history as $msg) {
+            if (($msg['role'] ?? '') !== 'assistant') continue;
+            $c = html_entity_decode((string) ($msg['content'] ?? ''), ENT_QUOTES, 'UTF-8');
+            if ($c === '' || stripos($c, 'Unit 1') === false) continue;
+            if (preg_match('/Paragraph 1 \(4 marks|Mark Breakdown[^\n]{0,30}Paragraph 1|Paragraph 1 Mark Breakdown|Paragraph 1 (?:raw |final )?score[:\s]|(?:Your|Final) paragraph score[:\s]/i', $c)) {
+                $mark_msg = $c;
+            }
+        }
+        if ($mark_msg === '') return [];
+        $anchors = [];
+        if (preg_match_all('/[“"]([^”"\n]{4,80})[”"]/u', $mark_msg, $m)) {
+            foreach ($m[1] as $q) {
+                $q = trim($q);
+                if ($q === '' || isset($anchors[$q])) continue;
+                $anchors[$q] = true;
+                if (count($anchors) >= 20) break;
+            }
+        }
+        return array_keys($anchors);
+    }
+
     private static function derive_questions_scored_from_history($chat_history, $order) {
         $scored = [];
         $pending = []; // v7.19.353: harvest-only fields held until the question completes
@@ -5251,6 +5284,26 @@ TEMPLATE;
                 // targeting ask). Escalate the directive.
                 if ((int) ($state['beat_stall_count'] ?? 0) > 0) {
                     $block .= "You did NOT complete this step last turn. Your ONLY permitted output this turn is this step — even if the conversation seems to call for something else, deliver THIS step now, exactly as its instructions specify, before anything else.\n";
+                }
+                // v7.19.402 (FIX P): the Q2 opener kept dropping the diagnosis +
+                // bucket map (runs 9b/10/11) when it lived only in the step file.
+                // Repeat the demand here, adjacent to the user turn.
+                if ($beat_id === 'q2_p1_selfrate') {
+                    $block .= "THIS TURN MUST OPEN with the structural diagnosis + bucket map (teaching rule, the student's paragraph count, which material = Paragraph 1, which = Paragraph 2, and that the buckets never overlap) BEFORE the 1-5 rating ask — all in ONE message, exactly per the step file. Omitting the bucket map caused double-marked paragraphs in past runs.\n";
+                }
+                // v7.19.402 (FIX P): Q2 ¶2 turns carry the server's record of what
+                // ¶1 already credited. Runs 9b/10/11 each re-marked ¶1's material
+                // as ¶2 (collapsed walk → bucket overlap → identical duplicate
+                // walk) despite escalating prompt rules — the model cannot be
+                // trusted to remember its own allocation, so the engine enumerates
+                // the forbidden anchors itself. Concrete lists hold where abstract
+                // rules drift.
+                if (strpos($beat_id, 'q2_p2_') === 0) {
+                    $p1_anchors = self::q2_p1_credited_anchors(!empty($swml_chat_history) && is_array($swml_chat_history) ? $swml_chat_history : null);
+                    if ($p1_anchors) {
+                        $block .= "PARAGRAPH 1 ALREADY CREDITED (server record): " . implode(' · ', array_map(static function ($a) { return '"' . $a . '"'; }, $p1_anchors)) . "\n";
+                        $block .= "Paragraph 2 may use NONE of those quotations or inference phrasings — each earns marks ONCE across Q2. Paragraph 2 covers ONLY the student's remaining material. If no remaining material exists, this paragraph's steps collapse to the exact line: \"**Paragraph 2 score: 0/4 — not present in your submission.**\" plus one mode-appropriate framing line; any extra quality routes through the holistic top-up at the Q2 summary, never through a second walk over credited material.\n";
+                    }
                 }
             }
         }
