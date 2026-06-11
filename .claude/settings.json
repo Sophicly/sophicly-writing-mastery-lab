@@ -270,7 +270,13 @@
       "Bash(sed -n '22,52p' includes/class-deadline-engine.php)",
       "Bash(php -l sophicly-attendance-tracker/includes/class-rest-api.php)",
       "Bash(php -r \"require 'includes/class-exam-dates.php'; var_dump\\(array_keys\\(Sophicly_Exam_Dates::CATALOGUES\\)\\); var_dump\\(Sophicly_Exam_Dates::CATALOGUES[2027]['aqa']['lang_p2']['date'], count\\(Sophicly_Exam_Dates::CATALOGUES[2027], COUNT_RECURSIVE\\) === count\\(Sophicly_Exam_Dates::CATALOGUES[2026], COUNT_RECURSIVE\\)\\);\")",
-      "Bash(php -r 'define\\('\\\\''ABSPATH'\\\\'','\\\\''/tmp/'\\\\''\\); require '\\\\''includes/class-exam-dates.php'\\\\''; $c = Sophicly_Exam_Dates::CATALOGUES; echo '\\\\''years: '\\\\'', implode\\('\\\\'','\\\\'', array_keys\\($c\\)\\), PHP_EOL; foreach \\($c[2027] as $b => $papers\\) { echo $b, '\\\\'': '\\\\''; foreach \\($papers as $k => $p\\) echo $k, '\\\\''='\\\\'', substr\\($p['\\\\''date'\\\\''],0,10\\), '\\\\'' '\\\\''; echo PHP_EOL; }')"
+      "Bash(php -r 'define\\('\\\\''ABSPATH'\\\\'','\\\\''/tmp/'\\\\''\\); require '\\\\''includes/class-exam-dates.php'\\\\''; $c = Sophicly_Exam_Dates::CATALOGUES; echo '\\\\''years: '\\\\'', implode\\('\\\\'','\\\\'', array_keys\\($c\\)\\), PHP_EOL; foreach \\($c[2027] as $b => $papers\\) { echo $b, '\\\\'': '\\\\''; foreach \\($papers as $k => $p\\) echo $k, '\\\\''='\\\\'', substr\\($p['\\\\''date'\\\\''],0,10\\), '\\\\'' '\\\\''; echo PHP_EOL; }')",
+      "Bash(sed -n '338,350p' includes/class-deadline-engine.php)",
+      "Bash(sed -n '438,450p' includes/class-deadline-engine.php)",
+      "Bash(sed -n '1,35p' src/styles/wp-overrides.css)",
+      "Bash(sed -n '125,150p' src/styles/wp-overrides.css)",
+      "Bash(sed -n '283,295p' src/styles/wp-overrides.css)",
+      "Bash(sed -n '340,380p' src/styles/wp-overrides.css)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
