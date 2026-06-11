@@ -3813,9 +3813,32 @@ class SWML_REST_API {
         }
         $data = $raw ? json_decode($raw, true) : null;
 
+        // v7.19.374: re-entry sidebar. The server sidebar model otherwise rides
+        // only chat replies, so a page refresh painted the stale flat-8 until the
+        // next message (Neil, 11 Jun). When the client identifies a question-mode
+        // assessment context, attach the model here too. Display heal: a
+        // completed ledger with a fresh chat (≤1 msg) is a restart pending FIX E
+        // revival — present the fresh walk, not "Total & Grade done".
+        $sidebar = null;
+        $sb_subject = sanitize_text_field($request->get_param('subject') ?? '');
+        $sb_task    = sanitize_text_field($request->get_param('task') ?? '');
+        if ($sb_subject !== '' && in_array($sb_task, ['assessment', 'redraft_assessment'], true)
+            && class_exists('SWML_Protocol_Router') && class_exists('SWML_Session_Manager')) {
+            $sctx = ['board' => $board, 'subject' => $sb_subject, 'task' => $sb_task];
+            if (SWML_Protocol_Router::assessment_mode($sctx) === 'questions') {
+                $st = SWML_Session_Manager::get_assessment_state($user_id, $board, $text, $topic, $suffix, $attempt);
+                $hist = is_array($data) ? (array) ($data['history'] ?? []) : [];
+                if (!empty($st['completion_emitted']) && count($hist) < 2) {
+                    $st = [];
+                }
+                $sidebar = SWML_Protocol_Router::instance()->assessment_sidebar_model($sctx, $st);
+            }
+        }
+
         return rest_ensure_response([
             'success' => !empty($data),
             'chat'    => $data,
+            'sidebar' => $sidebar,
         ]);
     }
 

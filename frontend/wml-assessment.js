@@ -7477,18 +7477,27 @@
                 let savedChat = state.reviewMode ? null : loadCanvasChat();
                 // v7.17.39: CW chat is now project-scoped server-side — remove the pre-v7.17.39
                 // skip so CW also rehydrates chat from server on fresh device / cleared localStorage.
-                if (!savedChat || !savedChat.history || savedChat.history.length === 0) {
+                // v7.19.374: assessment ALWAYS fetches — the server returns the sidebar
+                // model on this endpoint so a refresh paints the granular sidebar
+                // immediately (chat field still only used when localStorage was empty).
+                const _needChat = !savedChat || !savedChat.history || savedChat.history.length === 0;
+                const _wantSidebar = !state.reviewMode && (state.task === 'assessment' || state.task === 'redraft_assessment');
+                if (_needChat || _wantSidebar) {
                     try {
                         const _chatSuffix = _chatStorageSuffix();
                         // Tutor review: load student's chat via review endpoint (v7.15.2)
                         const _chatAtt = state.attempt || 1;
                         const chatUrl = state.reviewMode && state.reviewStudentId
                             ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt}`
-                            : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt}${cwScopeQuery()}`;
+                            : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt}${cwScopeQuery()}${_wantSidebar ? `&subject=${encodeURIComponent(state.subject || '')}&task=${encodeURIComponent(state.task || '')}` : ''}`;
                         const serverChat = await fetch(chatUrl, { headers }).then(r => r.json());
-                        if (serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
+                        if (_needChat && serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
                             savedChat = serverChat.chat;
                             console.log(state.reviewMode ? 'WML Review: Student chat loaded from server' : 'WML Training: Chat loaded from server (localStorage empty)');
+                        }
+                        if (serverChat.sidebar) {
+                            try { _applyServerSidebar(serverChat.sidebar); }
+                            catch (_e) { console.warn('WML Training: boot sidebar error', _e); }
                         }
                     } catch (e) { console.log('WML Training: Server chat load unavailable'); }
                 }
@@ -9845,18 +9854,26 @@
                                         let savedChat = state.reviewMode ? null : loadCanvasChat();
                                         // Server fallback if localStorage is empty (v7.14.4: suffix now isolates each exercise type)
                                         // v7.17.39: CW chat is now project-scoped server-side — drop the pre-v7.17.39 skip
-                                        if (!savedChat || !savedChat.history || savedChat.history.length === 0) {
+                                        // v7.19.374: assessment ALWAYS fetches — server returns the sidebar model
+                                        // so a refresh paints the granular sidebar immediately.
+                                        const _needChat2 = !savedChat || !savedChat.history || savedChat.history.length === 0;
+                                        const _wantSidebar2 = !state.reviewMode && (state.task === 'assessment' || state.task === 'redraft_assessment');
+                                        if (_needChat2 || _wantSidebar2) {
                                             try {
                                                 const _chatSuffix = _chatStorageSuffix();
                                                 const _chatAtt2 = state.attempt || 1;
                                                 // Tutor review: load student's chat via review endpoint (v7.15.2)
                                                 const chatUrl = state.reviewMode && state.reviewStudentId
                                                     ? `${API.reviewChat}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt2}`
-                                                    : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt2}${cwScopeQuery()}`;
+                                                    : `${API.chatLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topicNumber=${state.topicNumber || ''}&suffix=${encodeURIComponent(_chatSuffix)}&attempt=${_chatAtt2}${cwScopeQuery()}${_wantSidebar2 ? `&subject=${encodeURIComponent(state.subject || '')}&task=${encodeURIComponent(state.task || '')}` : ''}`;
                                                 const serverChat = await fetch(chatUrl, { headers }).then(r => r.json());
-                                                if (serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
+                                                if (_needChat2 && serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
                                                     savedChat = serverChat.chat;
                                                     console.log(state.reviewMode ? 'WML Review: Student chat loaded from server' : 'WML Canvas: Chat loaded from server (localStorage empty)');
+                                                }
+                                                if (serverChat.sidebar) {
+                                                    try { _applyServerSidebar(serverChat.sidebar); }
+                                                    catch (_e) { console.warn('WML Canvas: boot sidebar error', _e); }
                                                 }
                                             } catch (e) { console.log('WML Canvas: Server chat load unavailable'); }
                                         }
