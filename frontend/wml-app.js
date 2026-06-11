@@ -4843,6 +4843,18 @@
                     }
                     return scaleOptions;
                 }
+                // v7.19.394: paraphrased self-rate fallback. Sophia sometimes
+                // compresses the prompt ("On a scale of 1 to 5, how well do you
+                // feel… Type your rating.") and drops the "1 = …" descriptor
+                // lines — the labelled gate above then starves ALL buttons
+                // (Neil, 11 Jun, post-chat-clear). When the range came with an
+                // explicit rating ask, emit bare digit buttons instead of none.
+                const isRatingAsk = /type your rating|how (?:well|much|confident|strongly)|rate (?:yourself|your)\b|self.?rat/i.test(text);
+                if (isRatingAsk) {
+                    const bare = [];
+                    for (let n = lo; n <= hi; n++) bare.push({ label: String(n), value: String(n) });
+                    return bare;
+                }
             }
         }
 
