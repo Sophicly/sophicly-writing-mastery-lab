@@ -13376,7 +13376,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 17, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 18, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -19627,7 +19627,10 @@
         html += dividerHTML('UNIT 8 — CROSSING THE THRESHOLD');
         // v7.19.243: sync to slide deck — 8 specific recall Qs (one per prior unit
         // plus a cross-unit Four Traps question).
-        html += sectionHTML('plan', 'Launch Retrieval', true, null,
+        // v7.19.391: hypothesis field added — slide 3 of the Unit 8 deck poses the
+        // hook question but the codex had nowhere to answer it (every other unit
+        // has its unit-N.hook-hypothesis slot; Unit 8 was the gap).
+        html += sectionHTML('plan', 'Launch Retrieval & Hypothesis', true, null,
             inputHTML('Unit 1. What is the percentage of students who reach Grade 7–9?', 'unit-8.launch.retrieval-u1') +
             inputHTML('Unit 2. Where do you find every link and schedule?', 'unit-8.launch.retrieval-u2') +
             inputHTML('Unit 3. Name the three Pillars of Success.', 'unit-8.launch.retrieval-u3') +
@@ -19635,7 +19638,8 @@
             inputHTML('Unit 5. Name the three cognitive secrets.', 'unit-8.launch.retrieval-u5') +
             inputHTML('Unit 6. Name the analytical toolkit.', 'unit-8.launch.retrieval-u6') +
             inputHTML('Unit 7. Name the four steps to mastery.', 'unit-8.launch.retrieval-u7') +
-            inputHTML('Across Units 4–7. Name the Four Traps.', 'unit-8.launch.retrieval-four-traps')
+            inputHTML('Across Units 4–7. Name the Four Traps.', 'unit-8.launch.retrieval-four-traps') +
+            inputHTML('Hypothesis — what separates the student who signs the pledge and forgets it from the one who lives by it? Write your guess before this final unit answers it.', 'unit-8.hook-hypothesis')
         );
         html += sectionHTML('plan', 'Four Traps Reflection', true, null,
             inputHTML('Name one trap you recognise in your own work + how you will counter it.', 'unit-8.traps-reflection')

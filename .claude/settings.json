@@ -268,7 +268,8 @@
       "Bash(sed -n '1,60p' includes/class-deadline-engine.php)",
       "Bash(sed -n '994,1044p' includes/class-deadline-engine.php)",
       "Bash(sed -n '22,52p' includes/class-deadline-engine.php)",
-      "Bash(php -l sophicly-attendance-tracker/includes/class-rest-api.php)"
+      "Bash(php -l sophicly-attendance-tracker/includes/class-rest-api.php)",
+      "Bash(php -r \"require 'includes/class-exam-dates.php'; var_dump\\(array_keys\\(Sophicly_Exam_Dates::CATALOGUES\\)\\); var_dump\\(Sophicly_Exam_Dates::CATALOGUES[2027]['aqa']['lang_p2']['date'], count\\(Sophicly_Exam_Dates::CATALOGUES[2027], COUNT_RECURSIVE\\) === count\\(Sophicly_Exam_Dates::CATALOGUES[2026], COUNT_RECURSIVE\\)\\);\")"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
