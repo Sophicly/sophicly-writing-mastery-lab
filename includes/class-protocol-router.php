@@ -4928,11 +4928,30 @@ TEMPLATE;
                 // off-spec Q2 marking on 10 Jun. Fall back to the whole protocol
                 // for the REST of this question (re-seating blocked above).
                 $stall = (int) ($state['beat_stall_count'] ?? 0) + 1;
-                if ($stall >= 2) {
+                // v7.19.387 (FIX K): bulldoze tripwire. Held at an ASK beat while
+                // the reply already carries a MARK for the current question = the
+                // model marked the whole question on a thin ask-slice (11 Jun:
+                // targeting held, Sophia emitted "Q2 Mark: 5/8" with an improvised
+                // 2/2/2/2 rubric + optional golds in ONE turn — no detect matched,
+                // so the 2-stall fallback restored the monolith one turn too
+                // late, leaving the off-spec gold turn ungoverned). Fall back NOW
+                // so the monolith governs the question's remainder from the very
+                // next turn. Ask beats only: a mark under a held PRODUCE beat is
+                // a detect-precision question (FIX F), not proof of bulldozing.
+                $bulldozed = false;
+                if ($beat && $beat['type'] === 'ask') {
+                    foreach ($order as $qd) {
+                        if ($qd['id'] !== $cur_q) continue;
+                        $bres = self::extract_question_result_from_message($reply, $qd);
+                        $bulldozed = ($bres !== null && !empty($bres['mark']));
+                        break;
+                    }
+                }
+                if ($stall >= 2 || $bulldozed) {
                     $patch['current_beat']       = '';
                     $patch['beats_disabled_for'] = $cur_q;
                     $patch['beat_stall_count']   = 0;
-                    error_log('WML SEG FALLBACK: stuck beat=' . $cur_beat . ' q=' . $cur_q . ' user=' . (int) $user_id . ' — monolith restored for this question');
+                    error_log('WML SEG ' . ($bulldozed ? 'BULLDOZE' : 'FALLBACK') . ': stuck beat=' . $cur_beat . ' q=' . $cur_q . ' user=' . (int) $user_id . ' — monolith restored for this question');
                 } else {
                     $patch['beat_stall_count'] = $stall;
                 }
@@ -5119,7 +5138,13 @@ TEMPLATE;
                     $block .= "This step is the gold-standard rewrites — produce BOTH \"Your Paragraph Rewritten to Gold Standard\" AND \"Optimal Gold Standard Model\" in the four-unit A-B-A-B format. Neither is optional; never skip this step.\n";
                 }
                 if ($beat['type'] === 'ask') {
+                    // v7.19.387 (FIX K): the bare "ask only" line was bulldozed
+                    // on 11 Jun (full Q2 marking with an improvised rubric on the
+                    // held targeting turn). Name the consequence: the marking
+                    // instructions are NOT in context on an ask turn, so any
+                    // marking produced now is improvisation by definition.
                     $block .= "Ask ONLY this one question, then stop and wait for the student. Do not also ask the next question or begin marking in the same turn.\n";
+                    $block .= "IMPORTANT: this question's marking instructions and mark scheme are NOT loaded on this turn — they arrive with the marking step. Any mark, mark table, feedback or rewrite you produce now would be improvised against the wrong criteria and would force a confusing re-mark later. Output the one question above and nothing else.\n";
                 }
                 // v7.19.354 (FIX D): re-asserted hold — the model skipped this
                 // step last turn (10 Jun: marched into marking past a held
