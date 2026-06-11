@@ -5386,6 +5386,23 @@
                     }
                     // Refresh progress so final step turns green (v7.12.53)
                     updateProgress(state.step);
+                    // v7.19.383: rotation nudge — redraft completion ends a topic
+                    // cycle, the moment to switch texts (spaced practice). The
+                    // dashboard banner + bell already exist server-side (student-
+                    // data 2.31.10); this is the in-canvas surface for students
+                    // who won't see the dashboard until later. G9 Core Skills is
+                    // linear — no rotation, no toast.
+                    const isCoreSkills = state.board === 'core_skills'
+                        || /core_skills/.test(state.text || '');
+                    if (payload.phase === 'redraft' && !isCoreSkills) {
+                        const dashUrl = (WML.cfg && WML.cfg.dashboardUrl) || '/my-dashboard/';
+                        showToast(
+                            '🔄 <strong>Topic ' + (state.topicNumber || 1) + ' cycle complete.</strong> '
+                            + 'Time to switch texts — open <a href="' + dashUrl + '">your dashboard</a>’s '
+                            + 'My Courses and start a different course. You’ll circle back here for the next topic.',
+                            12000, true
+                        );
+                    }
                 } else {
                     state._phaseMarkedComplete = false; // Reset so user can retry (v7.12.53)
                     if (assessCompleteBtn) { assessCompleteBtn.disabled = false; assessCompleteBtn.style.pointerEvents = ''; }
