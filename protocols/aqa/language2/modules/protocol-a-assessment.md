@@ -439,21 +439,23 @@ Say: "Thank you. The feedback has several parts. I'll guide you through it one s
 
 **Mark Breakdown — Paragraph 1 (4 marks): four inference units in the order Source A → Source B → Source A → Source B.**
 
-**Internal AI Note:** Score each of the four units on TWO criteria worth 0.5 each (1.0 per unit, 4.0 per paragraph). The topic sentence (opening each unit) and the comparative discourse marker (opening each Source B unit) are REQUIRED structure — they gate the unit but are not separately scored; if a unit's inference is not anchored to a quotation, the Detail mark for that unit is 0.
+**Internal AI Note (v7.19.403 — quarter-mark ladder, ratified by Neil 11 Jun):** Score each of the four units on FOUR near-binary criteria worth 0.25 each (1.0 per unit, 4.0 per paragraph). Apply each criterion as a yes/no check against its descriptor — never estimate a unit holistically and back-fill the quarters. Most descriptive topic sentences earn Claim but NOT Perceptive — that distinction is the point of the ladder. The comparative discourse marker (opening each Source B unit) remains REQUIRED structure — it gates the unit but is not separately scored.
 
 **STRENGTHS \- Marks Awarded (per unit):**
 
-* **Perceptive inference (AO1): plus 0.5 marks** → the interpretation goes beyond the literal, reading what the detail *reveals* about the difference between the sources. Awarded **\[X\]** out of 0.5 because \[specific reason\].  
-* **Detailed development, quote-anchored (AO1): plus 0.5 marks** → the perceptive inference is developed in specific detail and anchored to a judicious quotation. Awarded **\[X\]** out of 0.5 because \[specific reason\].
+* **Claim made (AO1): plus 0.25 marks** → the unit's topic sentence states an INFERENTIAL claim about a difference — what the writer presents or implies — not plain description or retelling. Zero-example: "Source A is about a storm on Everest" = 0. Awarded **\[X\]** out of 0.25 because \[specific reason\].  
+* **Claim perceptive (AO1): plus 0.25 marks** → the claim is subtle or insightful, beyond the obvious surface reading. Zero-example: "the storm is presented as destructive" = 0 (the storm is literally destructive — that is the surface); "the storm is presented as a force that erases human ambition" earns it. Awarded **\[X\]** out of 0.25 because \[specific reason\].  
+* **Developed in detail (AO1): plus 0.25 marks** → the claim is unpacked: the writing explains what the chosen detail REVEALS, rather than restating the claim or stacking quotes. Zero-example: a quote followed by "this shows the storm was dangerous" = 0. Awarded **\[X\]** out of 0.25 because \[specific reason\].  
+* **Quote-anchored (AO1): plus 0.25 marks** → a judicious quotation is embedded in the development. Paraphrase without quotation = 0 for this criterion only (a detailed but unquoted development keeps its Detail quarter). Awarded **\[X\]** out of 0.25 because \[specific reason\].
 
 Walk all four units in order, labelling each:
 
-* **Unit 1 — Source A:** Perceptive inference \[X\]/0.5 · Detail + quote \[X\]/0.5 → \[reason\]  
-* **Unit 2 — Source B (comparative marker):** Perceptive inference \[X\]/0.5 · Detail + quote \[X\]/0.5 → \[reason\]  
-* **Unit 3 — Source A:** Perceptive inference \[X\]/0.5 · Detail + quote \[X\]/0.5 → \[reason\]  
-* **Unit 4 — Source B (comparative marker):** Perceptive inference \[X\]/0.5 · Detail + quote \[X\]/0.5 → \[reason\]
+* **Unit 1 — Source A:** Claim \[X\]/0.25 · Perceptive \[X\]/0.25 · Detail \[X\]/0.25 · Quote \[X\]/0.25 → \[name the lost quarters and why\]  
+* **Unit 2 — Source B (comparative marker):** Claim \[X\]/0.25 · Perceptive \[X\]/0.25 · Detail \[X\]/0.25 · Quote \[X\]/0.25 → \[name the lost quarters and why\]  
+* **Unit 3 — Source A:** Claim \[X\]/0.25 · Perceptive \[X\]/0.25 · Detail \[X\]/0.25 · Quote \[X\]/0.25 → \[name the lost quarters and why\]  
+* **Unit 4 — Source B (comparative marker):** Claim \[X\]/0.25 · Perceptive \[X\]/0.25 · Detail \[X\]/0.25 · Quote \[X\]/0.25 → \[name the lost quarters and why\]
 
-**Potential marks per paragraph: 4.0 marks** (Inference 2.0 + Detail 2.0)
+**Potential marks per paragraph: 4.0 marks** (Claim 1.0 + Perceptive 1.0 + Detail 1.0 + Quote 1.0)
 
 ---
 
@@ -813,7 +815,7 @@ ELIF student\_input \== "N": Say: "No problem \- let's move on." Check SESSION\_
 
 ELSE: Say: "Please type S to scan your writing, or N to skip to your next question." REPEAT offer
 
-**Internal AI Note (v7.18.34; v7.19.290 restructure):** Calculate total Question 2 mark = Paragraph 1 (four A-B-A-B units, Inference 2.0 + Detail 2.0) + Paragraph 2 (four A-B-A-B units, Inference 2.0 + Detail 2.0) + Holistic content top-up (if Mode A or Mode B) − STR2 penalty (if Mode B and paragraph count ≠ 2). Cap final total at 8.0. Store in SESSION\_STATE.marks.q2. Surface the components in the Q2 final summary (per-paragraph Inference / Detail subtotals) so the student can see how the units + top-up affected the total. Check SESSION\_STATE.selected\_questions for next question in array. If more questions exist, proceed to next sub-protocol. If Q2 was the last question, proceed to Part E.
+**Internal AI Note (v7.18.34; v7.19.290 restructure):** Calculate total Question 2 mark = Paragraph 1 (four A-B-A-B units, Claim 1.0 + Perceptive 1.0 + Detail 1.0 + Quote 1.0) + Paragraph 2 (same four-quarter units) + Holistic content top-up (if Mode A or Mode B) − STR2 penalty (if Mode B and paragraph count ≠ 2). Cap final total at 8.0. Store in SESSION\_STATE.marks.q2. Surface the components in the Q2 final summary (per-paragraph Claim / Perceptive / Detail / Quote subtotals) so the student can see how the units + top-up affected the total. Check SESSION\_STATE.selected\_questions for next question in array. If more questions exist, proceed to next sub-protocol. If Q2 was the last question, proceed to Part E.
 
 ---
 
