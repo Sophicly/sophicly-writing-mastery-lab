@@ -364,6 +364,7 @@ Three modes apply to Question 2:
   - ¶1: the student's first paragraph — up to four units (two on Source A, two on Source B), each a perceptive inference anchored to a quote.
   - ¶2: the student's second paragraph — the same four-unit A-B-A-B shape.
   - If the student wrote source-separated material or fewer units, allocate what they wrote to the matching units by idea; mark what is present, missing units score 0.
+  - BUCKETS ARE DISJOINT (v7.19.400): every sentence of the student's answer belongs to AT MOST ONE paragraph bucket. Material allocated to ¶1's units must NEVER be re-used or re-marked as ¶2 — the same inference earns marks ONCE across Q2. If allocating by idea consumes the whole answer inside ¶1's four units, ¶2 is 'not present' (its units score 0; route any extra comparative quality through the holistic top-up instead, never through a second walk over the same material).
 - Then walk the per-paragraph mark scheme ONCE per paragraph (¶1 walk, then ¶2 walk — exactly as written below). Each paragraph alternates both sources; every inference must be perceptive and anchored to quotation.
 - HOLISTIC TOP-UP: if the student's submission includes material that does not fit cleanly into either slot but demonstrates band-relevant comparative quality (perceptive inference / integrated synthesis / sophisticated argument across both sources), award up to +1.0 marks at the end of the Q2 final summary as "Holistic content top-up". Cap Q2 total at 8.0 regardless.
 - NO STR2 penalty.
