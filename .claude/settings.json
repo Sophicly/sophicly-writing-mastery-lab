@@ -261,7 +261,11 @@
       "Bash(php -l includes/class-exam-dates.php)",
       "Bash(grep -n 'get_the_title\\( $cid \\)' includes/class-wml-rest-api.php)",
       "Bash(sed -i '' '3105s/get_the_title\\( $cid \\)/html_entity_decode\\( wp_strip_all_tags\\( get_the_title\\( $cid \\) \\), ENT_QUOTES \\)/; 3150s/get_the_title\\( $cid \\)/html_entity_decode\\( wp_strip_all_tags\\( get_the_title\\( $cid \\) \\), ENT_QUOTES \\)/' includes/class-wml-rest-api.php)",
-      "Bash(sed -n '3104,3106p;3149,3151p' includes/class-wml-rest-api.php)"
+      "Bash(sed -n '3104,3106p;3149,3151p' includes/class-wml-rest-api.php)",
+      "Bash(sed -n '355,385p' includes/class-deadline-engine.php)",
+      "Bash(sed -n '440,465p' includes/class-deadline-engine.php)",
+      "Bash(sed -n '860,905p' includes/class-deadline-engine.php)",
+      "Bash(sed -n '1,60p' includes/class-deadline-engine.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

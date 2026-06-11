@@ -4443,9 +4443,32 @@ TEMPLATE;
                 : '/📌[^\n]*?Question\s*' . $n . '\b|^#{0,4}\s*Q(?:uestion\s*)?' . $n . '\s+Assessment\b/mu';
             $qmark_alt = $is_section_b ? '' : '|\bQ(?:uestion\s*)?' . $n . '\s*(?:Final\s*)?Mark\b';
             $forms = '/(?:\bScore|(?<![\w-])Total|\bFinal' . $qmark_alt . ')[^\n]{0,40}?(\d+(?:\.\d+)?)\s*\/\s*' . max(1, $marks) . '\b/i';
-            if (preg_match($hdr_re, $content) && preg_match($forms, $content, $lm)) {
-                $sm = $lm;
-                $harvested = true;
+            // v7.19.380: PRIORITY form — an explicit adjusted/final Section B
+            // mark line beats every generic form in the same message. Run 6,
+            // msg 105: "29/40" appeared before "**Adjusted Section B score:
+            // 27 / 40**" and generic first-match took 29; 27 was the result.
+            if ($is_section_b
+                && preg_match('/(?:Adjusted|Final)\s+Section\s*B\s+(?:score|mark)[:\s\*]+(\d+(?:\.\d+)?)\s*(?:out of|\/)\s*40\b|Section\s*B\s+Final\s+Mark[:\s\*]+(?:\*\*\s*)?(\d+(?:\.\d+)?)\s*(?:out of|\/)\s*40\b/i', $content, $pm)) {
+                $pv = ($pm[1] !== '') ? $pm[1] : ($pm[2] ?? '');
+                if ($pv !== '') { $sm = [0 => $pm[0], 1 => $pv]; $harvested = true; }
+            }
+            if (!$harvested && preg_match($hdr_re, $content) && preg_match_all($forms, $content, $fall, PREG_OFFSET_CAPTURE)) {
+                // v7.19.380: skip aspirational/ceiling lines — run 6 harvested
+                // "Your maximum achievable score for this submission is 38/40"
+                // as Q5's mark (and pending-map first-wins froze it). Reject any
+                // match whose LINE describes what the student COULD score, not
+                // what they DID score; take the first clean match.
+                foreach ($fall[1] as $k => $cap) {
+                    $off  = $fall[0][$k][1];
+                    $ls   = strrpos(substr($content, 0, $off), "\n");
+                    $ls   = ($ls === false) ? 0 : $ls + 1;
+                    $le   = strpos($content, "\n", $off);
+                    $line = substr($content, $ls, ($le === false ? strlen($content) : $le) - $ls);
+                    if (preg_match('/maximum|achievable|possible|aim(?:ing)? for|could have|ceiling|target(?:ing)? score/i', $line)) continue;
+                    $sm = [0 => $fall[0][$k][0], 1 => $cap[0]];
+                    $harvested = true;
+                    break;
+                }
             }
             // v7.19.361 (FIX G): run 3's ledger missed Q5 entirely — Section B
             // totals land as a markdown table row ("Total Section B | 40 | 30",
