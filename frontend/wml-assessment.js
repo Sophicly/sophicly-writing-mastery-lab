@@ -226,10 +226,31 @@
     // move the pointer. The server is authoritative — while a server model is
     // live, the AI's own [STEP_ADVANCE:N] markers are ignored (its "Step X of Y"
     // progress bar stalls across turns; the 10 Jun runs proved it unreliable).
+    // v7.19.376: do we expect a server sidebar model for this context? When yes,
+    // the initial default paint stays HIDDEN until the model applies (Neil saw
+    // the old flat-8 flash before the server layout painted over it). Mirrors
+    // the server gate: AQA question-mode assessment only.
+    function _expectServerSidebar() {
+        if (state.reviewMode) return false;
+        if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return false;
+        if ((state.board || '').toLowerCase() !== 'aqa') return false;
+        const s = (state.subject || '').toLowerCase().replace(/-/g, '_');
+        return ['language2', 'language_p2', 'language_paper_2', 'lang_p2'].includes(s);
+    }
+
+    // Reveal the (hidden) default sidebar when the server model never arrived —
+    // fetch failure fallback so the panel is never left empty.
+    function _revealDefaultSidebar() {
+        if (state._serverSidebar) return;
+        const c = document.getElementById('swml-progress-steps');
+        if (c) c.style.display = '';
+    }
+
     function _applyServerSidebar(sidebar) {
         if (!sidebar || !Array.isArray(sidebar.steps) || !sidebar.steps.length) return;
         const container = document.getElementById('swml-progress-steps');
         if (!container) return;
+        container.style.display = '';
         const sig = JSON.stringify(sidebar.steps.map(s => [s.label, s.group || '']));
         if (state._serverSidebarSig !== sig) {
             container.innerHTML = '';
@@ -2306,6 +2327,10 @@
                 { step: 8, label: 'Summary & Action Plan' },
             ]);
             _renderSidebarSteps(protoSteps, assessSteps);
+            // v7.19.376: server-driven contexts keep the default paint hidden
+            // until the model applies (kills the old-layout flash); the
+            // chat-load fetch reveals it as a fallback if no model arrives.
+            if (_expectServerSidebar()) protoSteps.style.display = 'none';
             protoBody.appendChild(protoSteps);
         }
 
@@ -7508,6 +7533,7 @@
                         }
                     } catch (e) { console.log('WML Training: Server chat load unavailable'); }
                 }
+                _revealDefaultSidebar();
                 // Discard stale chats
                 if (savedChat && savedChat.task && savedChat.task !== state.task) {
                     console.log('WML Training: Discarding stale chat — saved task:', savedChat.task, 'current task:', state.task);
@@ -9884,6 +9910,7 @@
                                                 }
                                             } catch (e) { console.log('WML Canvas: Server chat load unavailable'); }
                                         }
+                                        _revealDefaultSidebar();
                                         // v7.14.1: Discard stale chat if task type doesn't match (e.g. assessment chat saved under exam prep key)
                                         if (savedChat && savedChat.task && savedChat.task !== state.task) {
                                             console.log('WML Canvas: Discarding stale chat — saved task:', savedChat.task, 'current task:', state.task);
