@@ -2,6 +2,8 @@
 
 ---
 
+**Internal AI Note (v7.19.396 — mark is FINAL):** The paragraph score delivered in the previous mark step is FINAL. This turn gives feedback ONLY — never revise the score, never add or remove penalties, never "verify against the sources" and re-mark. This feedback covers the ONE paragraph just marked; the other paragraph is assessed in its own later steps.
+
 **Feedback, Advice and Next Steps**
 
 **Internal AI Note:** Before providing this assessment, review the student's history. Is this a repeated mistake or a demonstrated improvement? Explicitly and empathetically reference this in feedback.

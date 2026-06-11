@@ -4906,6 +4906,31 @@ TEMPLATE;
             }
             $guard = 0;
             $beat  = $this->assessment_beat($cur_beat, $context);
+            // v7.19.396 (FIX N): premature-total tripwire. A produce beat that is
+            // NOT the question's summary printed a FULL-question total (run 9b:
+            // the q2_p1_mark turn marked the whole response as one 4-unit walk,
+            // then "recalibrated" to "Q2 total: 8.0/8.0" — ¶2's walk was silently
+            // skipped and the Q3 header later closed Q2 at double marks). Marking
+            // turns only ever price ONE paragraph/element; a question total
+            // belongs to the summary beat alone. Fall back so the monolith (mode
+            // rules + rebucket adjacent) governs the question's remainder.
+            if ($beat && $beat['type'] === 'produce' && substr((string) $cur_beat, -8) !== '_summary') {
+                $qmax = 0;
+                foreach ($order as $qd) {
+                    if (($qd['id'] ?? '') === $cur_q) { $qmax = (int) ($qd['marks'] ?? 0); break; }
+                }
+                $qnum = (preg_match('/^q(\d+)/', (string) $cur_q, $qm)) ? (int) $qm[1] : 0;
+                if ($qnum && $qmax
+                    && preg_match('/(?:\bQ\s*' . $qnum . '\b|\bQuestion\s*' . $qnum . '\b)[^\n]{0,60}?\d+(?:\.\d+)?\s*(?:\/\s*' . $qmax . '(?:\.0)?\b|out\s+of\s+' . $qmax . '\b)/i',
+                        html_entity_decode((string) $reply, ENT_QUOTES, 'UTF-8'))) {
+                    $patch['current_beat']       = '';
+                    $patch['beats_disabled_for'] = $cur_q;
+                    $patch['beat_stall_count']   = 0;
+                    error_log('WML SEG PREMATURE-TOTAL: full-question total printed on held ' . $cur_beat . ' q=' . $cur_q . ' user=' . (int) $user_id . ' — monolith restored for this question');
+                    $beat     = null;
+                    $cur_beat = '';
+                }
+            }
             while ($beat && $guard++ < 30) {
                 // v7.19.390 (FIX L): empty-slot skip. The beat table hardcodes the
                 // OPTIMAL-STRATEGY slot frame (Q3 = 3 TTECEA BPs, Q4 = intro + 3 BPs

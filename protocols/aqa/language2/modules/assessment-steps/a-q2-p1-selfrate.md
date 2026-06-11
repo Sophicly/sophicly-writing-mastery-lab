@@ -42,9 +42,15 @@ Three modes apply to Question 2:
 
 **Structural Diagnosis Lead (Mode A + Mode B only) — v7.18.36 simplified copy:**
 
+**Internal AI Note (v7.19.396 — MUST, never skip):** Open THIS turn with the Structural Diagnosis Lead below — including the bucket map — BEFORE the Step 1 self-rating ask. The later marking turns do NOT see these rebucketing rules; the bucket map you declare here is the marking turns' contract. Skipping it causes the whole response to be marked as one paragraph — a protocol failure.
+
 Before the per-paragraph mark walk, Say:
 
 "Our teaching rule is one paragraph per 4 marks. For Q2 (8 marks), expected **2 paragraphs**, each alternating Source A → Source B → Source A → Source B, with every perceptive inference anchored to a quotation. You wrote **[count]**. I'll mark what you have. \[Mode B only: append 'You have already been taught this in your Topic 1 redraft — for redraft this time, stick to 2 alternating paragraphs to avoid a structural penalty.'\]"
+
+Then declare the bucket map verbatim, so the later marking steps can follow it:
+
+"**Bucket map:** Paragraph 1 = \[which of the student's material fills the first 4-mark paragraph — e.g. 'your opening + Source A material'\]. Paragraph 2 = \[which material fills the second — or 'no second paragraph found: Paragraph 2's units will score 0, with any extra comparative material credited through the holistic top-up'\]. Each paragraph is marked separately out of 4.0, one at a time."
 
 Then PROCEED to the existing AI-Led Reminder and per-paragraph walk.
 
