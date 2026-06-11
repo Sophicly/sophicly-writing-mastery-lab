@@ -1695,7 +1695,7 @@ ELIF word\_count \>= 300: PROCEED: to assessment
 
 1. Which form did you write in (article/letter/speech/essay)?  
 2. What is your main argument or viewpoint?  
-3. Looking at your IUMVCC structure, which section (Introduction/Unite/Magnify/Vivify/Counter/Conclude) felt most developed and persuasive? Which section could be stronger?"
+3. Looking at your IUMVCC structure, which section (Introduction/Urgency/Methodology/Vision/Counter-argument/Conclusion) felt most developed and persuasive? Which section could be stronger?"
 
 **\[AI\_INTERNAL\]** After student responds, note their answers and proceed to assessment.
 

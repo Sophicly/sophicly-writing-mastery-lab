@@ -4196,6 +4196,28 @@ TEMPLATE;
             ['id' => 'q4_concl_mark',  'step' => 42, 'label' => 'Conclusion Mark','group' => 'Question 4', 'file' => 'modules/assessment-steps/a-q4-concl.md',      'type' => 'produce', 'detect' => '/Conclusion score[:\s\*]|Conclusion[^\n]{0,20}\(2 marks/i'],
             ['id' => 'q4_concl_gold',  'step' => 43, 'label' => 'Conclusion Gold','group' => 'Question 4', 'file' => 'modules/assessment-steps/a-q4-concl-gold.md', 'type' => 'produce', 'detect' => '/Your Conclusion Rewritten to Gold Standard[\s\S]*Optimal Gold Standard Conclusion|Optimal Gold Standard Conclusion[\s\S]*Your Conclusion Rewritten to Gold Standard/i'],
             ['id' => 'q4_summary',     'step' => 44, 'label' => 'Q4 Summary',     'group' => 'Question 4', 'file' => 'modules/assessment-steps/a-q4-summary.md',    'type' => 'produce', 'detect' => '/overall Question 4 score|Question 4 Complete Assessment|Question 4 Final Summary/i'],
+            // Section B / Q5 — HOLISTIC by settled spec (v7.19.381, Increment 4):
+            // whole-piece AO5 + AO6 marks, per-IUMVCC-section feedback riding the
+            // gold step, ONE labelled-holistic gold model — never per-paragraph
+            // marks or two-block golds. Slice discipline as Q2-Q4 (intake +
+            // word-count validation ride the self-rate slice; every produce slice
+            // ends with the next step's Y gate; gold is produce-now). Detects are
+            // digit-anchored where a slice TAIL names the next artefact ("ready
+            // to see your final Section B mark" must not advance the summary
+            // beat; "AO6 (Technical Accuracy) worth 16 marks" in the AO5 intro
+            // must not advance the AO6 beat). The summary's "Total Section B
+            // score: X out of 40" line doubles as the existing server harvest +
+            // close anchor — and always shows the POST-WC-penalty total (the raw
+            // figure printed first is what v380's priority form had to outrank).
+            // Q1 deliberately NOT segmented: its scoring rides the SAME reply as
+            // Part C's "Let's begin the assessment" confirmation — there is no
+            // turn boundary to slice at, and seating a Q1 beat earlier would
+            // strip the monolith during setup/source collection (Parts A-C).
+            ['id' => 'q5_selfrate', 'step' => 45, 'label' => 'Self-rate',      'group' => 'Section B', 'file' => 'modules/assessment-steps/a-q5-selfrate.md', 'type' => 'ask',     'detect' => '/Which form did you write in|main argument or viewpoint|felt most developed and persuasive/i'],
+            ['id' => 'q5_ao5',      'step' => 46, 'label' => 'AO5 Mark',       'group' => 'Section B', 'file' => 'modules/assessment-steps/a-q5-ao5.md',      'type' => 'produce', 'detect' => '/AO5 \(Content & Organisation\) Assessment[:\s\*]|Your AO5 mark[:\s\*]+\d/i'],
+            ['id' => 'q5_ao6',      'step' => 47, 'label' => 'AO6 Mark',       'group' => 'Section B', 'file' => 'modules/assessment-steps/a-q5-ao6.md',      'type' => 'produce', 'detect' => '/AO6 \(Technical Accuracy\) Assessment[:\s\*]|Your AO6 mark[:\s\*]+\d/i'],
+            ['id' => 'q5_gold',     'step' => 48, 'label' => 'Gold Model',     'group' => 'Section B', 'file' => 'modules/assessment-steps/a-q5-gold.md',     'type' => 'produce', 'detect' => '/Your Section B Gold Standard Model/iu'],
+            ['id' => 'q5_summary',  'step' => 49, 'label' => 'Section B Mark', 'group' => 'Section B', 'file' => 'modules/assessment-steps/a-q5-summary.md',  'type' => 'produce', 'detect' => '/Total Section B score[:\s\*]+(?:\*\*\s*)?\d|(?:Adjusted|Final)\s+Section\s*B\s+(?:score|mark)[:\s\*]+(?:\*\*\s*)?\d/i'],
         ];
     }
 

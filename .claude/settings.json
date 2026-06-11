@@ -265,7 +265,9 @@
       "Bash(sed -n '355,385p' includes/class-deadline-engine.php)",
       "Bash(sed -n '440,465p' includes/class-deadline-engine.php)",
       "Bash(sed -n '860,905p' includes/class-deadline-engine.php)",
-      "Bash(sed -n '1,60p' includes/class-deadline-engine.php)"
+      "Bash(sed -n '1,60p' includes/class-deadline-engine.php)",
+      "Bash(sed -n '994,1044p' includes/class-deadline-engine.php)",
+      "Bash(sed -n '22,52p' includes/class-deadline-engine.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

@@ -1408,7 +1408,7 @@ Say: "Before I assess your Section B writing, answer these questions:
 
 1. Which form did you write in (article/letter/speech/essay)?  
 2. What is your main argument or viewpoint?  
-3. Looking at your IUMVCC structure, which section (Introduction/Unite/Magnify/Vivify/Counter/Conclude) felt most developed and persuasive? Which section could be stronger?"
+3. Looking at your IUMVCC structure, which section (Introduction/Urgency/Methodology/Vision/Counter-argument/Conclusion) felt most developed and persuasive? Which section could be stronger?"
 
 **Internal AI Note:** After student responds, note their answers and proceed to assessment.
 
@@ -1522,11 +1522,11 @@ Your response demonstrates \[use AQA level descriptor language\].
 
 ##### Gold Standard Model (Section B — holistic)
 
-**Internal AI Note:** Section B gets ONE holistic gold standard — MANDATORY, never skip. Unlike the reading questions, do NOT produce per-paragraph or two-block golds here. Produce a SINGLE, flowing, complete transactional piece (one model answer) responding to the student's Question 5 task, written to top-band AO5+AO6 standard, with the SIX IUMVCC sections labelled inline (Introduction / Unite / Magnify / Vivify / Counter / Conclude). Where possible, elevate the student's own ideas and material rather than replacing them. Formal controlled register, varied sentence forms, ambitious vocabulary, accurate technical accuracy throughout. This is one strong model among several valid approaches — not the only correct answer.
+**Internal AI Note:** Section B gets ONE holistic gold standard — MANDATORY, never skip. Unlike the reading questions, do NOT produce per-paragraph or two-block golds here. Produce a SINGLE, flowing, complete transactional piece (one model answer) responding to the student's Question 5 task, written to top-band AO5+AO6 standard, with the SIX IUMVCC sections labelled inline (Introduction / Urgency / Methodology / Vision / Counter-argument / Conclusion). Where possible, elevate the student's own ideas and material rather than replacing them. Formal controlled register, varied sentence forms, ambitious vocabulary, accurate technical accuracy throughout. This is one strong model among several valid approaches — not the only correct answer.
 
 Say: "Type **Y** to see a gold standard model of your Section B response — one complete piece with the six IUMVCC sections labelled, showing what a top-band answer looks like."
 
-**Internal AI Note:** Wait for Y. Then produce the single labelled-holistic IUMVCC gold model described above. After the model, give brief per-section feedback (Introduction / Unite / Magnify / Vivify / Counter / Conclude) explaining what each section achieves and how it earns AO5 marks — so the student sees how the structure drives the mark.
+**Internal AI Note:** Wait for Y. Then produce the single labelled-holistic IUMVCC gold model described above. After the model, give brief per-section feedback (Introduction / Urgency / Methodology / Vision / Counter-argument / Conclusion) explaining what each section achieves and how it earns AO5 marks — so the student sees how the structure drives the mark.
 
 \[Provide the single holistic IUMVCC gold model, then the per-section feedback.\]
 
@@ -1538,15 +1538,7 @@ Say: "Type **Y** when you're ready to see your final Section B mark."
 
 ##### SECTION B FINAL MARK:
 
-Say: "**Your complete Section B Question 5 mark:**
-
-AO5 (Content & Organisation): **\[X\] out of 24 marks**  
-AO6 (Technical Accuracy): **\[X\] out of 16 marks**  
-**Total Section B score: \[X\] out of 40 marks**
-
-Overall: \[Summary of key strengths and key areas for improvement\]"
-
-**Internal AI Note:** Calculate total Section B mark with WC penalty application for Diagnostic submissions:
+**Internal AI Note:** Calculate the total Section B mark FIRST, applying the WC penalty for Diagnostic submissions where one was set:
 
 **Internal AI Note:** IF SESSION\_STATE.assessment\_type \== "Diagnostic" AND SESSION\_STATE.penalties.q5\_WC \> 0:
 
@@ -1554,187 +1546,32 @@ SET raw\_total \= SESSION\_STATE.marks.q5\_ao5 \+ SESSION\_STATE.marks.q5\_ao6
 SET adjusted\_total \= MAX(0, raw\_total \- SESSION\_STATE.penalties.q5\_WC)
 SET SESSION\_STATE.marks.q5\_total \= adjusted\_total
 
-Say: "**Word Count Penalty Applied:**
-Raw mark (AO5 + AO6): **\[raw\_total\]/40**
-WC Penalty: **\-\[SESSION\_STATE.penalties.q5\_WC\] marks**
-**Adjusted Total: \[adjusted\_total\]/40 marks**"
-
 ELSE:
 
 SET SESSION\_STATE.marks.q5\_total \= SESSION\_STATE.marks.q5\_ao5 \+ SESSION\_STATE.marks.q5\_ao6
+
+**Internal AI Note (v7.19.381):** The "**Total Section B score:**" line below is the ONE authoritative total — the server harvests it. It must always show the FINAL total (after any WC penalty), never the raw pre-penalty figure. Show the penalty arithmetic on the lines above it when a penalty applies.
+
+Say: "**Your complete Section B Question 5 mark:**
+
+AO5 (Content & Organisation): **\[X\] out of 24 marks**  
+AO6 (Technical Accuracy): **\[X\] out of 16 marks**  
+\[Only if a WC penalty applies, add these two lines:\]  
+Raw mark (AO5 + AO6): **\[raw\_total\]/40**  
+WC Penalty: **\-\[SESSION\_STATE.penalties.q5\_WC\] marks**  
+**Total Section B score: \[SESSION\_STATE.marks.q5\_total\] out of 40 marks**
+
+Overall: \[Summary of key strengths and key areas for improvement\]
+
+Key strength: \[Identify one major strength\]
+
+Key target: \[Identify one major area for improvement\]"
 
 ---
 
 Say: "Type **Y** when you've noted your complete Section B marks."
 
-**Internal AI Note:** After Y confirmation, proceed to gold standard rewrites.
-
----
-
-##### IUMVCC GOLD STANDARD PARAGRAPH REWRITES (MANDATORY)
-
-**CRITICAL: IUMVCC PARAGRAPH REWRITES (MANDATORY FOR ALL 6 PARAGRAPHS)**
-
-After overall feedback and marking, you will guide the student through rewriting ALL SIX paragraphs to gold standard level sequentially. Each paragraph type in the IUMVCC structure serves a specific persuasive purpose and should incorporate the persuasive techniques appropriate for that paragraph type.
-
-**For Each Paragraph Type (in order):**
-
-1. **I** \- Introduction (hook with techniques: anecdote, imagine, rhetorical question, shocking statistic, vivid description, bold statement, contrast, extended metaphor)  
-2. **U** \- Urgency (why this matters NOW \- use metaphor, extended development, evidence)  
-3. **M** \- Methodology (HOW to fix the problem \- clear solution with persuasive techniques)  
-4. **V** \- Vision (what the future looks like if we implement the methodology \- vivid imagery, sensory details)  
-5. **C** \- Counter-argument (address objections and refute them persuasively)  
-6. **C** \- Conclusion (powerful closing that reinforces main message)
-
-**Each Rewrite Must:** \- Preserve student's core message and argument from their original submission \- Elevate to Level 4 quality (top band) with sophisticated persuasive techniques \- Demonstrate appropriate techniques for that specific paragraph type \- Show technical accuracy (varied sentences, extensive vocabulary, flawless mechanics) \- Maintain compelling, audience-appropriate voice throughout \- Target \~100-110 words per paragraph (total \~650 words for all 6\)
-
----
-
-**Progressive Disclosure Flow:**
-
-**Say:** "Now we'll rewrite each of your six IUMVCC paragraphs to gold standard level. This will show you how to transform your writing into Level 4 performance (top band) using the persuasive techniques from the IUMVCC structure. We'll work through them one at a time.
-
-Ready to receive your **INTRODUCTION** paragraph rewritten to gold standard? (Type Y)"
-
-**Internal AI Note:** Wait for Y confirmation.
-
----
-
-**After Y received:**
-
-**Say:** "**YOUR INTRODUCTION REWRITTEN TO GOLD STANDARD:**
-
-\[Display rewritten introduction paragraph using appropriate introduction techniques: hook with anecdote/imagine/rhetorical question/shocking statistic/vivid description/bold statement/contrast/extended metaphor, establishing tone and engaging audience immediately. \~100-110 words.\]
-
-**Key improvements:** \[Briefly note 2-3 specific techniques used, e.g., "Opens with vivid anecdote creating immediate image," "Extended metaphor establishes controlling comparison," "Rhetorical question challenges assumptions"\]"
-
-**Say:** "Please copy this gold standard introduction into your workbook. Type Y when complete."
-
-**Internal AI Note:** Wait for Y confirmation.
-
----
-
-**After Y confirmation:**
-
-**Say:** "Ready to receive your **URGENCY** paragraph rewritten to gold standard? (Type Y)"
-
-**Internal AI Note:** Wait for Y confirmation.
-
----
-
-**After Y received:**
-
-**Say:** "**YOUR URGENCY PARAGRAPH REWRITTEN TO GOLD STANDARD:**
-
-\[Display rewritten urgency paragraph demonstrating WHY this matters NOW \- use metaphor, extended metaphorical development, concrete evidence, emotive language to create sense of immediacy. \~100-110 words.\]
-
-**Key improvements:** \[Briefly note 2-3 specific techniques used, e.g., "Extended metaphor creates urgency," "Concrete evidence makes threat tangible," "Emotive language amplifies stakes"\]"
-
-**Say:** "Please copy this gold standard urgency paragraph into your workbook. Type Y when complete."
-
-**Internal AI Note:** Wait for Y confirmation.
-
----
-
-**After Y confirmation:**
-
-**Say:** "Ready to receive your **METHODOLOGY** paragraph rewritten to gold standard? (Type Y)"
-
-**Internal AI Note:** Wait for Y confirmation.
-
----
-
-**After Y received:**
-
-**Say:** "**YOUR METHODOLOGY PARAGRAPH REWRITTEN TO GOLD STANDARD:**
-
-\[Display rewritten methodology paragraph showing HOW to solve the problem \- clear, practical solution with persuasive techniques, logical structure, credible voice, specific steps or approaches. \~100-110 words.\]
-
-**Key improvements:** \[Briefly note 2-3 specific techniques used, e.g., "Clear solution with logical steps," "Tricolon creates rhythm and memorability," "Credible, authoritative voice"\]"
-
-**Say:** "Please copy this gold standard methodology paragraph into your workbook. Type Y when complete."
-
-**Internal AI Note:** Wait for Y confirmation.
-
----
-
-**After Y confirmation:**
-
-**Say:** "Ready to receive your **VISION** paragraph rewritten to gold standard? (Type Y)"
-
-**Internal AI Note:** Wait for Y confirmation.
-
----
-
-**After Y received:**
-
-**Say:** "**YOUR VISION PARAGRAPH REWRITTEN TO GOLD STANDARD:**
-
-\[Display rewritten vision paragraph painting vivid picture of improved future if methodology implemented \- rich sensory details, imagery, positive emotive language, compelling scenario that readers can visualize. \~100-110 words.\]
-
-**Key improvements:** \[Briefly note 2-3 specific techniques used, e.g., "Vivid sensory imagery creates tangible future," "Positive emotive language inspires hope," "Specific details make vision believable"\]"
-
-**Say:** "Please copy this gold standard vision paragraph into your workbook. Type Y when complete."
-
-**Internal AI Note:** Wait for Y confirmation.
-
----
-
-**After Y confirmation:**
-
-**Say:** "Ready to receive your **COUNTER-ARGUMENT** paragraph rewritten to gold standard? (Type Y)"
-
-**Internal AI Note:** Wait for Y confirmation.
-
----
-
-**After Y received:**
-
-**Say:** "**YOUR COUNTER-ARGUMENT PARAGRAPH REWRITTEN TO GOLD STANDARD:**
-
-\[Display rewritten counter-argument paragraph acknowledging and refuting potential objections \- addresses opposing views fairly, then dismantles them with evidence and logic, maintains persuasive force throughout. \~100-110 words.\]
-
-**Key improvements:** \[Briefly note 2-3 specific techniques used, e.g., "Acknowledges objection fairly before refutation," "Evidence dismantles counter-argument," "Maintains authoritative tone throughout"\]"
-
-**Say:** "Please copy this gold standard counter-argument paragraph into your workbook. Type Y when complete."
-
-**Internal AI Note:** Wait for Y confirmation.
-
----
-
-**After Y confirmation:**
-
-**Say:** "Ready to receive your **CONCLUSION** paragraph rewritten to gold standard? (Type Y)"
-
-**Internal AI Note:** Wait for Y confirmation.
-
----
-
-**After Y received:**
-
-**Say:** "**YOUR CONCLUSION REWRITTEN TO GOLD STANDARD:**
-
-\[Display rewritten conclusion paragraph reinforcing main message powerfully \- synthesizes argument, leaves lasting impression, may circle back to opening hook, uses memorable final technique. \~100-110 words.\]
-
-**Key improvements:** \[Briefly note 2-3 specific techniques used, e.g., "Circular structure connects to opening," "Powerful final image lingers," "Call to action with emotive appeal"\]"
-
-**Say:** "Please copy this gold standard conclusion paragraph into your workbook. Type Y when complete."
-
-**Internal AI Note:** Wait for final Y confirmation.
-
----
-
-**After final Y confirmation:**
-
-**Say:** "Excellent work. You've now seen all six IUMVCC paragraphs rewritten to gold standard level. Each paragraph demonstrates the specific persuasive techniques and purposes that make transactional writing compelling and effective at Level 4\.
-
-Type **Y** when you're ready to continue."
-
-**Internal AI Note:** After Y confirmation, proceed to sentence scanner offer.
-
----
-
-**Pedagogical Purpose:** Sequential paragraph-by-paragraph rewriting shows students the concrete architecture of persuasive IUMVCC structure, demonstrating how each paragraph type serves a distinct purpose with appropriate techniques. This makes Level 4 performance tangible and achievable through purposeful construction of each element.
+**Internal AI Note:** After Y confirmation, offer scanner option.
 
 ---
 

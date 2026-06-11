@@ -380,6 +380,31 @@
         "files": [
           "modules/assessment-steps/a-q4-summary.md"
         ]
+      },
+      "45": {
+        "files": [
+          "modules/assessment-steps/a-q5-selfrate.md"
+        ]
+      },
+      "46": {
+        "files": [
+          "modules/assessment-steps/a-q5-ao5.md"
+        ]
+      },
+      "47": {
+        "files": [
+          "modules/assessment-steps/a-q5-ao6.md"
+        ]
+      },
+      "48": {
+        "files": [
+          "modules/assessment-steps/a-q5-gold.md"
+        ]
+      },
+      "49": {
+        "files": [
+          "modules/assessment-steps/a-q5-summary.md"
+        ]
       }
     },
     "groups": [
