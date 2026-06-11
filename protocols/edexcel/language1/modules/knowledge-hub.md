@@ -520,7 +520,7 @@ You must use the following criteria to guide your Socratic questioning during th
 
 **W1 – Weak analytical verb** *Cue:* using vague verbs like "shows," "tells us," "is about" for analysis. *Upgrade:* Replace with precise analytical verbs: conveys, constructs, positions, depicts, portrays, emphasizes, highlights, reveals, suggests, illustrates, evokes, underscores, reinforces, critiques, challenges, exposes, examines.
 
-**S1 – Weak/repetitive sentence starters** *Cue:* repetitive openings with "The," "This," "These," or starting multiple sentences the same way. *Upgrade:* Use discourse markers (Furthermore, Consequently, Specifically), prepositional phrases, adverbial openers, or varied clause structures. Example: `The writer uses metaphor.` → `Through metaphor, the writer...` or `Employing metaphor, the writer...`
+**S1 – Weak/repetitive sentence starters** *Cue:* the SAME starter word ("The", "This" or "These") opening two or more sentences in one paragraph, or multiple sentences starting the same way (one "The" + one "This" + one "These" per paragraph is permitted — never penalise the first instance of each word). *Upgrade:* Use discourse markers (Furthermore, Consequently, Specifically), prepositional phrases, adverbial openers, or varied clause structures. Example: `The writer uses metaphor.` → `Through metaphor, the writer...` or `Employing metaphor, the writer...`
 
 **S2 – Underdeveloped sentences (less than 2 lines)** *Cue:* sentences under 2 lines that lack adequate detail. *Upgrade:* Expand with additional analysis, specific examples, or more developed explanation to reach 2-3 lines per sentence.
 

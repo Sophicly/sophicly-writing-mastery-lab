@@ -612,7 +612,7 @@ Check for:
 
 * **H1-COMP penalty:** Single-source sentence in body paragraph \- not comparing throughout (-0.5 marks)  
 * **F1 penalty:** "shows" terminology (-0.5 marks)  
-* **S1 penalty:** Weak sentence starters the/this/these (-0.5 marks)  
+* **S1 penalty:** Weak sentence starters the/this/these (-0.5 marks; only when the SAME word opens 2+ sentences in one paragraph — one "The" + one "This" + one "These" per paragraph is permitted)  
 * **S2 penalty:** Short sentences under 2 lines (-0.5 marks)  
 * **Q1 penalty:** Quotation without analysis (-0.5 marks)  
 * **T1 penalty:** Imprecise analytical verbs (-0.5 marks)  

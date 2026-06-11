@@ -38,7 +38,7 @@
   **Applies to:** Q3 (language/structure analysis), Q6 (evaluation), Q7b (comparison)  
     
 * **S1** – Weak sentence starters (the/this/these) (-0.5)  
-  Detection: Repetitive or unsophisticated openings  
+  Detection: the SAME starter word (the/this/these) opening TWO or more sentences in the same paragraph. Allowance: one sentence starting with "The", one with "This" and one with "These" per paragraph is permitted — never penalise the first instance of each word; deduct only when the SAME word opens a second sentence in that paragraph.  
   Upgrade: Use discourse markers, prepositional phrases, varied structures  
   **Applies to:** Q3, Q6, Q7b  
     

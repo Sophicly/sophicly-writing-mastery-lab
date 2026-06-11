@@ -3271,7 +3271,7 @@ T1 – Lacks transitional phrases/discourse markers (-0.5) Detection: Missing co
 
 S1 – Imprecise verb "shows" (-0.5 per instance) Detection: Using "shows" for analysis Upgrade: depicts, portrays, emphasizes, highlights, reveals, suggests, illustrates, conveys, evokes, underscores, reinforces, critiques, challenges, exposes, examines
 
-S2 – Unsophisticated sentence starters (the/this/these) (-0.5) Detection: Repetitive or weak openings Upgrade: Use discourse markers, prepositional phrases, varied structures
+S2 – Unsophisticated sentence starters (the/this/these) (-0.5) Detection: the SAME starter word opening two or more sentences in one paragraph (one "The" + one "This" + one "These" per paragraph is permitted) Upgrade: Use discourse markers, prepositional phrases, varied structures
 
 L1 – Underdeveloped sentences (less than 2 lines) (-0.5) Detection: Sentences lacking detail (except hooks/topic sentences) Fix: Expand with analysis, examples, developed explanation
 

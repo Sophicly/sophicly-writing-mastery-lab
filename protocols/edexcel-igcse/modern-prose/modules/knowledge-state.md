@@ -75,7 +75,7 @@ Detection: Using vague verbs like "shows," "tells us," "is about" for analysis
 Upgrade: conveys, constructs, positions, depicts, portrays, emphasises, highlights, reveals, suggests, illustrates, evokes, underscores, reinforces, critiques, challenges, exposes, examines
 
 **S1** — Weak/repetitive sentence starters (-0.5 per instance)
-Detection: Repetitive openings with "The," "This," "These," or starting multiple sentences the same way
+Detection: the SAME starter word ("The", "This" or "These") opening two or more sentences in one paragraph, or multiple sentences starting the same way. Allowance: one sentence starting with "The", one with "This" and one with "These" per paragraph is permitted — never penalise the first instance of each word; deduct only when the SAME word opens a second sentence in that paragraph.
 Upgrade: Use discourse markers, prepositional phrases, adverbial openers, varied structures
 
 **S2** — Underdeveloped sentences (less than 2 lines) (-0.5)

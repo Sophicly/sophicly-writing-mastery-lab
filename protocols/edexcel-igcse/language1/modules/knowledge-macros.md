@@ -374,7 +374,7 @@ Check for:
 
 * **H1 penalty:** Single-source sentence in body paragraph \- not comparing throughout (-1 mark)  
 * **F1 penalty:** "shows" terminology (-1 mark)  
-* **S1 penalty:** Weak sentence starters the/this/these (-1 mark)  
+* **S1 penalty:** Weak sentence starters the/this/these (-1 mark; only when the SAME word opens 2+ sentences in one paragraph — one "The" + one "This" + one "These" per paragraph is permitted)  
 * **S2 penalty:** Short sentences under 2 lines (-1 mark)  
 * **Q1 penalty:** Quote without analysis (-1 mark)  
 * **T1 penalty:** Imprecise analytical verbs (-1 mark)  

@@ -222,7 +222,7 @@ You must use the following criteria to guide your Socratic questioning during th
 *Upgrade:* Replace with precise analytical verbs: conveys, constructs, positions, depicts, portrays, emphasizes, highlights, reveals, suggests, illustrates, evokes, underscores, reinforces, critiques, challenges, exposes, examines. **See Sophicly Toolkit section "Verbs for Replacing Shows":** [https://sophicly.b-cdn.net/Documents/Sophicly%20Analysis%20Toolkit/Sophicly%20GCSE%20English%20Mastery%20Toolkit%20v8.9.pdf](https://sophicly.b-cdn.net/Documents/Sophicly%20Analysis%20Toolkit/Sophicly%20GCSE%20English%20Mastery%20Toolkit%20v8.9.pdf)
 
 **S1 – Weak/repetitive sentence starters**
-*Cue:* repetitive openings with "The," "This," "These," or starting multiple sentences the same way.
+*Cue:* the SAME starter word ("The", "This" or "These") opening two or more sentences in one paragraph, or multiple sentences starting the same way (one "The" + one "This" + one "These" per paragraph is permitted — never penalise the first instance of each word).
 *Upgrade:* Use discourse markers (Furthermore, Consequently, Specifically), prepositional phrases, adverbial openers, varied structures. Example: `The writer uses metaphor.` → `Through metaphor, the writer...` or `Employing metaphor, the writer...`
 
 **S2 – Underdeveloped sentences (less than 2 lines)**

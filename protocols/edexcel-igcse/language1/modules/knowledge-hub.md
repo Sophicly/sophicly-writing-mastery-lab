@@ -242,7 +242,7 @@ In conclusion, both writers masterfully craft engaging narratives about unconven
 *Upgrade:* Replace with precise analytical verbs: conveys, constructs, positions, depicts, portrays, emphasizes, highlights, reveals, suggests, illustrates, evokes, underscores, reinforces, critiques, challenges, exposes, examines.
 
 **S1 – Weak/repetitive sentence starters**
-*Cue:* repetitive openings with "The," "This," "These," or starting multiple sentences the same way.
+*Cue:* the SAME starter word ("The", "This" or "These") opening two or more sentences in one paragraph, or multiple sentences starting the same way (one "The" + one "This" + one "These" per paragraph is permitted — never penalise the first instance of each word).
 *Upgrade:* Use discourse markers (Furthermore, Consequently, Specifically), prepositional phrases, adverbial openers, varied structures. Example: `The writer uses metaphor.` → `Through metaphor, the writer...` or `Employing metaphor, the writer...`
 
 **S2 – Underdeveloped sentences (less than 2 lines)**

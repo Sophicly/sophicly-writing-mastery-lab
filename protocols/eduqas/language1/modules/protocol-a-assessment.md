@@ -289,7 +289,7 @@ We'll refer back to this throughout the assessment."
 
 **S1 – Weak/repetitive sentence starters**
 
-*Cue:* repetitive openings with "The," "This," "These," or starting multiple sentences the same way.
+*Cue:* the SAME starter word ("The", "This" or "These") opening two or more sentences in one paragraph, or multiple sentences starting the same way (one "The" + one "This" + one "These" per paragraph is permitted — never penalise the first instance of each word).
 
 *Upgrade:* Use discourse markers (Furthermore, Consequently, Specifically), prepositional phrases, adverbial openers, or varied clause structures. Example: `The writer uses metaphor.` → `Through metaphor, the writer...` or `Employing metaphor, the writer...`
 

@@ -313,7 +313,7 @@ WAIT for response
 **BAND 5 SOPHISTICATION CHECKS:**
 
 - [ ] Simple sentence structure (under 15 words / less than 2 lines)  
-- [ ] Weak sentence starter ("The," "This," "These")  
+- [ ] Weak sentence starter (same word — "The"/"This"/"These" — opening 2+ sentences in one paragraph; one of each permitted)  
 - [ ] Missing evaluative language ("subtly," "perceptively," "crucially")  
 - [ ] Imprecise analytical verbs ("uses," "has," "goes")  
 - [ ] Lacks conceptual sophistication (focuses on plot not ideas)  
