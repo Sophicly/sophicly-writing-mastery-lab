@@ -4940,11 +4940,17 @@ TEMPLATE;
                 // a detect-precision question (FIX F), not proof of bulldozing.
                 $bulldozed = false;
                 if ($beat && $beat['type'] === 'ask') {
+                    // v7.19.389: scan ALL questions, not just cur_q — run 8
+                    // (11 Jun) stalled at q3_bp3_selfrate while Sophia marked
+                    // Q5 (33/40) in the freewheel window; a cur_q-only check
+                    // never fired. Any question-level mark on a held ask turn
+                    // is off-protocol output. Skip already-scored questions:
+                    // transition turns legitimately RESTATE an earlier mark
+                    // ("Q2 is locked in at 5/8") and must not trip the wire.
                     foreach ($order as $qd) {
-                        if ($qd['id'] !== $cur_q) continue;
+                        if (isset($scored[$qd['id']])) continue;
                         $bres = self::extract_question_result_from_message($reply, $qd);
-                        $bulldozed = ($bres !== null && !empty($bres['mark']));
-                        break;
+                        if ($bres !== null && !empty($bres['mark'])) { $bulldozed = true; break; }
                     }
                 }
                 if ($stall >= 2 || $bulldozed) {
