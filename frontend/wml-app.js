@@ -4123,7 +4123,9 @@
             // Mark current step as complete too when phase is marked complete (v7.12.53)
             const c = s < step ? 'complete' : s === step ? (state._phaseMarkedComplete ? 'complete' : 'active') : '';
             el.className = `swml-step ${c}`; circle.className = `swml-step-circle ${c}`;
-            circle.textContent = (s < step || (s === step && state._phaseMarkedComplete)) ? '✓' : s;
+            // v7.19.375: server-driven sidebars carry a per-group display number
+            // in data-display — never repaint the global ordinal over it.
+            circle.textContent = (s < step || (s === step && state._phaseMarkedComplete)) ? '✓' : (el.dataset.display || s);
         });
         // v7.14.68: Accordion group state — open the group containing the active step, update group headers
         $$('.swml-step-group').forEach(group => {

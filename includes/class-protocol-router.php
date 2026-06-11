@@ -4267,7 +4267,11 @@ TEMPLATE;
         $steps    = [];
         $n        = 0;
         $current  = 1;
-        $steps[]  = ['step' => ++$n, 'label' => 'Setup & Goals', 'group' => null];
+        // `step` stays a GLOBAL ordinal (drives complete/active numeric compare);
+        // `display` is what the circle SHOWS — per-question numbering, so a
+        // collapsed accordion never exposes 1, 2, 14, 15 jumps (Neil, 11 Jun;
+        // planning sidebar is the reference shape).
+        $steps[]  = ['step' => ++$n, 'label' => 'Setup & Goals', 'group' => null, 'display' => '1'];
         foreach ($order as $q) {
             $qid = (string) $q['id'];
             $is_section_b = (stripos((string) ($q['section'] ?? ''), 'Section B') !== false)
@@ -4278,8 +4282,9 @@ TEMPLATE;
             }));
             if (count($qbeats) > 1) {
                 $first_in_q = $n + 1;
+                $i = 0;
                 foreach ($qbeats as $b) {
-                    $steps[] = ['step' => ++$n, 'label' => (string) $b['label'], 'group' => $qlabel];
+                    $steps[] = ['step' => ++$n, 'label' => (string) $b['label'], 'group' => $qlabel, 'display' => (string) (++$i)];
                     if ($cur_beat !== '' && $b['id'] === $cur_beat) $current = $n;
                 }
                 if ($cur_q === $qid) {
@@ -4287,11 +4292,13 @@ TEMPLATE;
                     elseif ($current < $first_in_q) $current = $first_in_q; // beat not yet seated / fallback
                 }
             } else {
-                $steps[] = ['step' => ++$n, 'label' => $qlabel . ' — Mark, Feedback & Golds', 'group' => null];
+                // Unsegmented question: still a collapsible group (one step inside)
+                // so every question reads as an accordion like planning.
+                $steps[] = ['step' => ++$n, 'label' => 'Mark, Feedback & Golds', 'group' => $qlabel, 'display' => '1'];
                 if ($cur_q === $qid) $current = $n;
             }
         }
-        $steps[] = ['step' => ++$n, 'label' => 'Total & Grade', 'group' => null];
+        $steps[] = ['step' => ++$n, 'label' => 'Total & Grade', 'group' => null, 'display' => '★'];
         if (!empty($state['completion_emitted']) || $cur_q === 'done') $current = $n;
         return ['steps' => $steps, 'current' => $current];
     }

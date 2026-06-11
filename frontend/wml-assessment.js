@@ -148,8 +148,15 @@
     // sidebar shape). Steps without `group` render standalone. Active class
     // is set on step 1 at initial paint; updateProgress() in wml-app.js
     // re-applies active/complete classes on every advance.
-    function _renderSidebarSteps(container, steps) {
+    function _renderSidebarSteps(container, steps, opts) {
         if (!steps || !steps.length) return;
+        // v7.19.375: opts.alwaysGroup — every labelled group renders as a
+        // collapsible accordion even with a single step (server-driven
+        // assessment sidebar: Q1/Q3/Q4/Q5 are one-step groups until their
+        // segmentation increments land). `display` shows per-group numbering
+        // in the circle while `step` stays the global ordinal that drives
+        // active/complete state.
+        const alwaysGroup = !!(opts && opts.alwaysGroup);
         const groups = [];
         let currentGroup = null;
         steps.forEach((s, i) => {
@@ -165,11 +172,11 @@
             }
         });
         groups.forEach(group => {
-            if (!group.label || group.steps.length <= 1) {
+            if (!group.label || (!alwaysGroup && group.steps.length <= 1)) {
                 group.steps.forEach(s => {
                     const cls = s.step === 1 ? 'active' : '';
-                    container.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step }, [
-                        el('div', { className: `swml-step-circle ${cls}`, textContent: s.step }),
+                    container.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step, 'data-display': s.display || '' }, [
+                        el('div', { className: `swml-step-circle ${cls}`, textContent: s.display || s.step }),
                         el('span', { className: 'swml-step-label', textContent: s.label }),
                     ]));
                 });
@@ -191,7 +198,7 @@
                     }
                 }, [
                     el('span', { className: 'swml-step-group-title', textContent: group.label }),
-                    el('span', { className: 'swml-step-group-count', textContent: `${group.steps.length} steps` }),
+                    el('span', { className: 'swml-step-group-count', textContent: `${group.steps.length} step${group.steps.length === 1 ? '' : 's'}` }),
                     el('span', { className: 'swml-step-group-icon', textContent: '+' }),
                 ]);
                 groupEl.appendChild(headerEl);
@@ -200,8 +207,8 @@
                     style: { maxHeight: isFirstGroup ? '500px' : '0', overflow: 'hidden', transition: 'max-height 0.3s ease' }
                 });
                 group.steps.forEach(s => {
-                    bodyEl.appendChild(el('div', { className: 'swml-step', 'data-step': s.step }, [
-                        el('div', { className: 'swml-step-circle', textContent: s.step }),
+                    bodyEl.appendChild(el('div', { className: 'swml-step', 'data-step': s.step, 'data-display': s.display || '' }, [
+                        el('div', { className: 'swml-step-circle', textContent: s.display || s.step }),
                         el('span', { className: 'swml-step-label', textContent: s.label }),
                     ]));
                 });
@@ -226,7 +233,7 @@
         const sig = JSON.stringify(sidebar.steps.map(s => [s.label, s.group || '']));
         if (state._serverSidebarSig !== sig) {
             container.innerHTML = '';
-            _renderSidebarSteps(container, sidebar.steps);
+            _renderSidebarSteps(container, sidebar.steps, { alwaysGroup: true });
             state._serverSidebarSig = sig;
         }
         state._serverSidebar = sidebar;

@@ -38,4 +38,10 @@ rsync -avz --delete \
   "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH"
 
 echo ""
+# v7.19.375: purge LiteSpeed page cache so cached HTML stops referencing the
+# previous asset ?ver (students saw the old sidebar until a hard refresh).
+ssh -i "$SSH_KEY" "$REMOTE_USER@$REMOTE_HOST" \
+  "cd ${REMOTE_PATH%wp-content/plugins/sophicly-writing-mastery-lab/} && /usr/local/lsws/lsphp82/bin/php8.2 /usr/local/bin/wp eval 'do_action(\"litespeed_purge_all\");' 2>/dev/null" \
+  && echo "LiteSpeed cache purged." || echo "WARN: cache purge failed — students may need a hard refresh."
+
 echo "Production deploy complete!"
