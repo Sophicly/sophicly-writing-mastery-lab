@@ -1,160 +1,326 @@
 {
-    "board": "aqa",
-    "group": "language2",
-    "version": "1.0.0",
-    "base_path": "protocols/aqa/language2",
-    "planning": {
-        "always": [
-            "modules/foundation-lang2.md",
-            "language/modules/knowledge-algorithm-planning.md",
-            "language/modules/communication-standards.md",
-            "language/modules/graceful-degradation.md",
-            "language/modules/anti-hallucination.md",
-            "language/modules/state-management.md",
-            "language/modules/ttecea-rationale-lang.md"
-        ],
-        "groups": [
-            { "id": "setup", "label": "Setup", "steps": [1] },
-            { "id": "q2", "label": "Q2", "steps": [2, 3] },
-            { "id": "q3", "label": "Q3", "steps": [4, 5, 6] },
-            { "id": "q4", "label": "Q4", "steps": [7, 8, 9] },
-            { "id": "q5", "label": "Q5", "steps": [10, 11, 12, 13, 14] }
-        ],
-        "steps": {
-            "1": {
-                "label": "Setup & Goals",
-                "files": [
-                    "planning/b-intro.md",
-                    "planning/b1-setup.md",
-                    "planning/b2-goals.md"
-                ]
-            },
-            "2": {
-                "label": "Q2: Evidence Selection",
-                "files": [
-                    "planning/b3-q2q3-planning.md"
-                ]
-            },
-            "3": {
-                "label": "Q2: Paragraph Planning",
-                "files": [
-                    "planning/b3-q2q3-planning.md"
-                ]
-            },
-            "4": {
-                "label": "Q3: Anchor Quotes",
-                "files": [
-                    "planning/b3-q2q3-planning.md"
-                ]
-            },
-            "5": {
-                "label": "Q3: Body Paragraphs 1-3",
-                "files": [
-                    "planning/b3-q2q3-planning.md"
-                ]
-            },
-            "6": {
-                "label": "Q3: Final Plan",
-                "files": [
-                    "planning/b4-q2q3-final.md"
-                ]
-            },
-            "7": {
-                "label": "Q4: Aspects & Anchor Quotes",
-                "files": [
-                    "planning/b5-q4-comparative.md"
-                ]
-            },
-            "8": {
-                "label": "Q4: Body Paragraphs 1-3",
-                "files": [
-                    "planning/b5-q4-comparative.md"
-                ]
-            },
-            "9": {
-                "label": "Q4: Intro, Conclusion & Plan",
-                "files": [
-                    "planning/b5-q4-comparative.md"
-                ]
-            },
-            "10": {
-                "label": "Q5: Help Menu & Techniques",
-                "files": [
-                    "language/modules/help-menu-devices.md"
-                ]
-            },
-            "11": {
-                "label": "Q5: Task Analysis & Introduction",
-                "files": [
-                    "planning/b7-q5-iumvcc.md"
-                ]
-            },
-            "12": {
-                "label": "Q5: Urgency & Methodology",
-                "files": [
-                    "planning/b7-q5-iumvcc.md"
-                ]
-            },
-            "13": {
-                "label": "Q5: Vision & Counter-argument",
-                "files": [
-                    "planning/b7-q5-iumvcc.md"
-                ]
-            },
-            "14": {
-                "label": "Q5: Conclusion & Final Plan",
-                "files": [
-                    "planning/b7-q5-iumvcc.md"
-                ]
-            }
-        }
-    },
-    "assessment": {
-        "always": [
-            "modules/foundation-lang2.md",
-            "modules/knowledge-algorithm.md",
-            "modules/knowledge-progress.md",
-            "modules/knowledge-operations.md",
-            "modules/knowledge-penalties.md",
-            "modules/knowledge-mark-scheme.md",
-            "modules/protocol-a-assessment.md",
-            "modules/protocol-q1-msq.md",
-            "modules/knowledge-safeguarding.md",
-            "language/modules/communication-standards.md",
-            "language/modules/graceful-degradation.md",
-            "language/modules/anti-hallucination.md",
-            "language/modules/state-management.md",
-            "language/modules/ttecea-rationale-lang.md"
-        ],
-        "steps": {
-            "2":  { "files": ["modules/assessment-steps/a-q2-p1-selfrate.md"] },
-            "3":  { "files": ["modules/assessment-steps/a-q2-p1-targeting.md"] },
-            "4":  { "files": ["modules/assessment-steps/a-q2-mark.md"] },
-            "5":  { "files": ["modules/assessment-steps/a-q2-feedback.md"] },
-            "6":  { "files": ["modules/assessment-steps/a-q2-gold.md"] },
-            "7":  { "files": ["modules/assessment-steps/a-q2-p2-selfrate.md"] },
-            "8":  { "files": ["modules/assessment-steps/a-q2-p2-targeting.md"] },
-            "9":  { "files": ["modules/assessment-steps/a-q2-mark.md"] },
-            "10": { "files": ["modules/assessment-steps/a-q2-feedback.md"] },
-            "11": { "files": ["modules/assessment-steps/a-q2-gold.md"] },
-            "12": { "files": ["modules/assessment-steps/a-q2-summary.md"] }
-        },
-        "groups": ["Setup", "Question 2"]
-    },
-    "polishing": {
-        "always": [
-            "modules/foundation-lang2.md",
-            "modules/knowledge-algorithm.md",
-            "modules/knowledge-operations.md",
-            "modules/knowledge-penalties.md",
-            "modules/knowledge-mark-scheme.md",
-            "modules/protocol-c-polishing.md",
-            "language/modules/communication-standards.md",
-            "language/modules/graceful-degradation.md",
-            "language/modules/anti-hallucination.md",
-            "language/modules/state-management.md",
-            "language/modules/ttecea-rationale-lang.md"
-        ],
-        "steps": {}
+  "board": "aqa",
+  "group": "language2",
+  "version": "1.0.0",
+  "base_path": "protocols/aqa/language2",
+  "planning": {
+    "always": [
+      "modules/foundation-lang2.md",
+      "language/modules/knowledge-algorithm-planning.md",
+      "language/modules/communication-standards.md",
+      "language/modules/graceful-degradation.md",
+      "language/modules/anti-hallucination.md",
+      "language/modules/state-management.md",
+      "language/modules/ttecea-rationale-lang.md"
+    ],
+    "groups": [
+      {
+        "id": "setup",
+        "label": "Setup",
+        "steps": [
+          1
+        ]
+      },
+      {
+        "id": "q2",
+        "label": "Q2",
+        "steps": [
+          2,
+          3
+        ]
+      },
+      {
+        "id": "q3",
+        "label": "Q3",
+        "steps": [
+          4,
+          5,
+          6
+        ]
+      },
+      {
+        "id": "q4",
+        "label": "Q4",
+        "steps": [
+          7,
+          8,
+          9
+        ]
+      },
+      {
+        "id": "q5",
+        "label": "Q5",
+        "steps": [
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      }
+    ],
+    "steps": {
+      "1": {
+        "label": "Setup & Goals",
+        "files": [
+          "planning/b-intro.md",
+          "planning/b1-setup.md",
+          "planning/b2-goals.md"
+        ]
+      },
+      "2": {
+        "label": "Q2: Evidence Selection",
+        "files": [
+          "planning/b3-q2q3-planning.md"
+        ]
+      },
+      "3": {
+        "label": "Q2: Paragraph Planning",
+        "files": [
+          "planning/b3-q2q3-planning.md"
+        ]
+      },
+      "4": {
+        "label": "Q3: Anchor Quotes",
+        "files": [
+          "planning/b3-q2q3-planning.md"
+        ]
+      },
+      "5": {
+        "label": "Q3: Body Paragraphs 1-3",
+        "files": [
+          "planning/b3-q2q3-planning.md"
+        ]
+      },
+      "6": {
+        "label": "Q3: Final Plan",
+        "files": [
+          "planning/b4-q2q3-final.md"
+        ]
+      },
+      "7": {
+        "label": "Q4: Aspects & Anchor Quotes",
+        "files": [
+          "planning/b5-q4-comparative.md"
+        ]
+      },
+      "8": {
+        "label": "Q4: Body Paragraphs 1-3",
+        "files": [
+          "planning/b5-q4-comparative.md"
+        ]
+      },
+      "9": {
+        "label": "Q4: Intro, Conclusion & Plan",
+        "files": [
+          "planning/b5-q4-comparative.md"
+        ]
+      },
+      "10": {
+        "label": "Q5: Help Menu & Techniques",
+        "files": [
+          "language/modules/help-menu-devices.md"
+        ]
+      },
+      "11": {
+        "label": "Q5: Task Analysis & Introduction",
+        "files": [
+          "planning/b7-q5-iumvcc.md"
+        ]
+      },
+      "12": {
+        "label": "Q5: Urgency & Methodology",
+        "files": [
+          "planning/b7-q5-iumvcc.md"
+        ]
+      },
+      "13": {
+        "label": "Q5: Vision & Counter-argument",
+        "files": [
+          "planning/b7-q5-iumvcc.md"
+        ]
+      },
+      "14": {
+        "label": "Q5: Conclusion & Final Plan",
+        "files": [
+          "planning/b7-q5-iumvcc.md"
+        ]
+      }
     }
+  },
+  "assessment": {
+    "always": [
+      "modules/foundation-lang2.md",
+      "modules/knowledge-algorithm.md",
+      "modules/knowledge-progress.md",
+      "modules/knowledge-operations.md",
+      "modules/knowledge-penalties.md",
+      "modules/knowledge-mark-scheme.md",
+      "modules/protocol-a-assessment.md",
+      "modules/protocol-q1-msq.md",
+      "modules/knowledge-safeguarding.md",
+      "language/modules/communication-standards.md",
+      "language/modules/graceful-degradation.md",
+      "language/modules/anti-hallucination.md",
+      "language/modules/state-management.md",
+      "language/modules/ttecea-rationale-lang.md"
+    ],
+    "steps": {
+      "2": {
+        "files": [
+          "modules/assessment-steps/a-q2-p1-selfrate.md"
+        ]
+      },
+      "3": {
+        "files": [
+          "modules/assessment-steps/a-q2-p1-targeting.md"
+        ]
+      },
+      "4": {
+        "files": [
+          "modules/assessment-steps/a-q2-mark.md"
+        ]
+      },
+      "5": {
+        "files": [
+          "modules/assessment-steps/a-q2-feedback.md"
+        ]
+      },
+      "6": {
+        "files": [
+          "modules/assessment-steps/a-q2-gold.md"
+        ]
+      },
+      "7": {
+        "files": [
+          "modules/assessment-steps/a-q2-p2-selfrate.md"
+        ]
+      },
+      "8": {
+        "files": [
+          "modules/assessment-steps/a-q2-p2-targeting.md"
+        ]
+      },
+      "9": {
+        "files": [
+          "modules/assessment-steps/a-q2-mark.md"
+        ]
+      },
+      "10": {
+        "files": [
+          "modules/assessment-steps/a-q2-feedback.md"
+        ]
+      },
+      "11": {
+        "files": [
+          "modules/assessment-steps/a-q2-gold.md"
+        ]
+      },
+      "12": {
+        "files": [
+          "modules/assessment-steps/a-q2-summary.md"
+        ]
+      },
+      "13": {
+        "files": [
+          "modules/assessment-steps/a-q3-bp1-selfrate.md"
+        ]
+      },
+      "14": {
+        "files": [
+          "modules/assessment-steps/a-q3-targeting.md"
+        ]
+      },
+      "15": {
+        "files": [
+          "modules/assessment-steps/a-q3-mark.md"
+        ]
+      },
+      "16": {
+        "files": [
+          "modules/assessment-steps/a-q3-feedback.md"
+        ]
+      },
+      "17": {
+        "files": [
+          "modules/assessment-steps/a-q3-gold.md"
+        ]
+      },
+      "18": {
+        "files": [
+          "modules/assessment-steps/a-q3-bpn-selfrate.md"
+        ]
+      },
+      "19": {
+        "files": [
+          "modules/assessment-steps/a-q3-targeting.md"
+        ]
+      },
+      "20": {
+        "files": [
+          "modules/assessment-steps/a-q3-mark.md"
+        ]
+      },
+      "21": {
+        "files": [
+          "modules/assessment-steps/a-q3-feedback.md"
+        ]
+      },
+      "22": {
+        "files": [
+          "modules/assessment-steps/a-q3-gold.md"
+        ]
+      },
+      "23": {
+        "files": [
+          "modules/assessment-steps/a-q3-bpn-selfrate.md"
+        ]
+      },
+      "24": {
+        "files": [
+          "modules/assessment-steps/a-q3-targeting.md"
+        ]
+      },
+      "25": {
+        "files": [
+          "modules/assessment-steps/a-q3-mark.md"
+        ]
+      },
+      "26": {
+        "files": [
+          "modules/assessment-steps/a-q3-feedback.md"
+        ]
+      },
+      "27": {
+        "files": [
+          "modules/assessment-steps/a-q3-gold.md"
+        ]
+      },
+      "28": {
+        "files": [
+          "modules/assessment-steps/a-q3-summary.md"
+        ]
+      }
+    },
+    "groups": [
+      "Setup",
+      "Question 2"
+    ]
+  },
+  "polishing": {
+    "always": [
+      "modules/foundation-lang2.md",
+      "modules/knowledge-algorithm.md",
+      "modules/knowledge-operations.md",
+      "modules/knowledge-penalties.md",
+      "modules/knowledge-mark-scheme.md",
+      "modules/protocol-c-polishing.md",
+      "language/modules/communication-standards.md",
+      "language/modules/graceful-degradation.md",
+      "language/modules/anti-hallucination.md",
+      "language/modules/state-management.md",
+      "language/modules/ttecea-rationale-lang.md"
+    ],
+    "steps": {}
+  }
 }

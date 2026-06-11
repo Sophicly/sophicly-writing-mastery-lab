@@ -258,7 +258,10 @@
       "Bash(sed -n '318,340p' ../sophicly-dashboard/src/api/client.js)",
       "Bash(sed -n '495,520p' ../sophicly-dashboard/sophicly-dashboard.php)",
       "Bash(sed -n '575,595p' ../sophicly-dashboard/sophicly-dashboard.php)",
-      "Bash(php -l includes/class-exam-dates.php)"
+      "Bash(php -l includes/class-exam-dates.php)",
+      "Bash(grep -n 'get_the_title\\( $cid \\)' includes/class-wml-rest-api.php)",
+      "Bash(sed -i '' '3105s/get_the_title\\( $cid \\)/html_entity_decode\\( wp_strip_all_tags\\( get_the_title\\( $cid \\) \\), ENT_QUOTES \\)/; 3150s/get_the_title\\( $cid \\)/html_entity_decode\\( wp_strip_all_tags\\( get_the_title\\( $cid \\) \\), ENT_QUOTES \\)/' includes/class-wml-rest-api.php)",
+      "Bash(sed -n '3104,3106p;3149,3151p' includes/class-wml-rest-api.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
