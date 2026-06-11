@@ -4396,9 +4396,14 @@ TEMPLATE;
         // not "Question N". Detect it by section label or 40-mark weight.
         $is_section_b = (stripos($section, 'Section B') !== false) || ($marks >= 40);
 
+        // v7.19.379: protocol-q1-msq.md mandates a distinct per-question marker
+        // ([ASSESSMENT_COMPLETE Q1]) — detection ignored it, so Q1 only ever
+        // completed via a later question's header and its mark stayed null
+        // (Neil's 11 Jun run: null Q1 blocked the Total+Grade completion gate
+        // for the whole paper). The marker is now a close anchor.
         $close_re = $is_section_b
             ? '/noted your\s+(?:complete\s+)?Section\s*B\b/i'
-            : '/noted your\s+(?:complete\s+)?Question\s*' . $n . '\b/i';
+            : '/noted your\s+(?:complete\s+)?Question\s*' . $n . '\b|\[ASSESSMENT_COMPLETE\s+Q' . $n . '\]/i';
         $score_re = $is_section_b
             ? '/Total Section B score[:\s\*]+(\d+(?:\.\d+)?)\s*(?:out of|\/)\s*40\b/i'
             : '/(?:overall\s+)?Question\s*' . $n . '\s*score[:\s\*]+(\d+(?:\.\d+)?)\s*(?:out of|\/)\s*' . max(1, $marks) . '\b/i';
@@ -4429,9 +4434,13 @@ TEMPLATE;
             // first, wins when both appear in one message... (first match in
             // string order wins, so the lookbehind exclusion is the real fix;
             // the QN-Mark form just broadens coverage.)
+            // v7.19.379: protocol-q1-msq.md's mandated output opens with the
+            // heading "## Q1 Assessment" — NOT the 📌 breadcrumb — so the
+            // header gate rejected every live Q1 score. Accept the protocol's
+            // own heading form as the gate alongside the breadcrumb.
             $hdr_re = $is_section_b
                 ? '/📌[^\n]*?Section\s*B/iu'
-                : '/📌[^\n]*?Question\s*' . $n . '\b/u';
+                : '/📌[^\n]*?Question\s*' . $n . '\b|^#{0,4}\s*Q(?:uestion\s*)?' . $n . '\s+Assessment\b/mu';
             $qmark_alt = $is_section_b ? '' : '|\bQ(?:uestion\s*)?' . $n . '\s*(?:Final\s*)?Mark\b';
             $forms = '/(?:\bScore|(?<![\w-])Total|\bFinal' . $qmark_alt . ')[^\n]{0,40}?(\d+(?:\.\d+)?)\s*\/\s*' . max(1, $marks) . '\b/i';
             if (preg_match($hdr_re, $content) && preg_match($forms, $content, $lm)) {
@@ -4709,14 +4718,42 @@ TEMPLATE;
         // v7.19.367: dual signal gated on position — every question except the
         // LAST must already be marked. A mid-run "running total /80 + Grade"
         // habit must never complete the paper from Q2.
-        $all_but_last = true;
-        for ($qi = 0; $qi < count($order) - 1; $qi++) {
-            if (empty($scored[$order[$qi]['id']]['mark'])) { $all_but_last = false; break; }
+        $abl = function () use (&$scored, $order) {
+            for ($qi = 0; $qi < count($order) - 1; $qi++) {
+                if (empty($scored[$order[$qi]['id']]['mark'])) return false;
+            }
+            return true;
+        };
+        $all_but_last = $abl();
+        $tg_signal = ($max_total_all > 0
+            && preg_match('/\bTotal[:\s\*]+\d+(?:\.\d+)?\s*\/\s*' . $max_total_all . '\b/i', (string) $reply)
+            && preg_match('/\bGrade[:\s\*]+\d\b/i', (string) $reply));
+        $marker = (bool) preg_match('/\[ASSESSMENT_COMPLETE\]/i', (string) $reply);
+        // v7.19.379: the Total+Grade signal swept the history AFTER the position
+        // gate, so one null mark on an already-completed question (Neil's 11 Jun
+        // run: Q1's heading-form score was rejected by the old header gate)
+        // blocked completion for the whole paper. When the terminal signal is
+        // present but the gate fails, backfill marks from the FULL history
+        // first, then re-test the gate.
+        if (($marker || $tg_signal) && !$all_but_last) {
+            global $swml_chat_history;
+            $hist = is_array($swml_chat_history) ? $swml_chat_history : [];
+            $hist[] = ['role' => 'assistant', 'content' => (string) $reply];
+            $derived_pre = self::derive_questions_scored_from_history($hist, $order);
+            foreach ($order as $q) {
+                $qid2 = $q['id'];
+                if (empty($scored[$qid2]['mark']) && !empty($derived_pre['scored'][$qid2]['mark'])) {
+                    if (!isset($scored[$qid2])) $scored[$qid2] = ['mark' => null, 'strength' => null, 'target' => null];
+                    $scored[$qid2]['mark'] = $derived_pre['scored'][$qid2]['mark'];
+                    foreach (['strength', 'target'] as $f) {
+                        if (empty($scored[$qid2][$f]) && !empty($derived_pre['scored'][$qid2][$f])) $scored[$qid2][$f] = $derived_pre['scored'][$qid2][$f];
+                    }
+                    $patch['questions_scored'] = $scored;
+                }
+            }
+            $all_but_last = $abl();
         }
-        $terminal = preg_match('/\[ASSESSMENT_COMPLETE\]/i', (string) $reply)
-            || ($max_total_all > 0 && $all_but_last
-                && preg_match('/\bTotal[:\s\*]+\d+(?:\.\d+)?\s*\/\s*' . $max_total_all . '\b/i', (string) $reply)
-                && preg_match('/\bGrade[:\s\*]+\d\b/i', (string) $reply));
+        $terminal = $marker || ($tg_signal && $all_but_last);
         if ($terminal) {
             $patch['completion_emitted'] = true;
             $patch['current_question']   = 'done';

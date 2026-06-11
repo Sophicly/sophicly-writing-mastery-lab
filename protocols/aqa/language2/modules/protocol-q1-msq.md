@@ -76,6 +76,8 @@ Scoring rule (AQA-authentic):
 **[SAY]** — use this exact structure:
 
 ```markdown
+📌 Assessment Protocol > Question 1 > Step 1 of 1
+
 ## Q1 Assessment
 
 **Score: N/4**
@@ -92,8 +94,12 @@ Scoring rule (AQA-authentic):
 ### Takeaway
 [One short sentence: what the student did well + one specific thing to practice. Max 25 words.]
 
+Type **Y** to move to your next question.
+
 [ASSESSMENT_COMPLETE Q1]
 ```
+
+**[AI_INTERNAL] (v7.19.379):** The closing cue line ("Type **Y** to move to your next question") is MANDATORY — the assessment must never end without telling the student how to continue (Neil's 11 Jun run stalled here; the student had to guess). The 📌 breadcrumb line and the `[ASSESSMENT_COMPLETE Q1]` marker are also mandatory — the server's progress tracking reads them.
 
 **[AI_INTERNAL]** Store `SESSION_STATE.q1_score = N` where N is the integer 0–4.
 

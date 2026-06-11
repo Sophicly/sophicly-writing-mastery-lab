@@ -21,7 +21,7 @@
 
 **WEAKNESSES \- Marks Deducted:**
 
-**Internal AI Note:** Apply maximum of 2 penalties (minus 1.0 marks total). GLOBAL PENALTY RULES apply (v7.19.372); penalties only on written material (v7.19.369).
+**Internal AI Note:** Apply maximum of 2 penalties (minus 1.0 marks total). GLOBAL PENALTY RULES apply (v7.19.372); penalties only on written material (v7.19.369); never re-price a gap an element mark already priced (v7.19.379).
 
 * **Penalty 1:** \[Name with code\] \= **minus 0.5 marks** → \[reason\]  
 * **Penalty 2:** \[Name with code\] \= **minus 0.5 marks** → \[reason\]

@@ -263,6 +263,14 @@
         const ind = document.getElementById('swml-step-indicator');
         const info = sidebar.steps.find(s => s.step === cur);
         if (ind && info) ind.textContent = `Section ${cur} of ${sidebar.steps.length} · ${info.label}`;
+        // v7.19.379: keep the active step visible — long accordions (Q3/Q4)
+        // overflow the panel; the list scrolls, so follow the pointer.
+        setTimeout(() => {
+            try {
+                const act = container.querySelector('.swml-step.active');
+                if (act && typeof act.scrollIntoView === 'function') act.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            } catch (_e) { /* non-fatal */ }
+        }, 350); // after the accordion max-height transition
     }
 
     // v7.15.56: entry modal shown once per (user, student, post) combo so tutors
@@ -2303,7 +2311,10 @@
 
             // Steps — manifest-driven. v7.18.17: render via shared helper that
             // honours `group` field for accordion grouping (used by mark_scheme).
-            const protoSteps = el('div', { id: 'swml-progress-steps' });
+            // v7.19.379: long accordions (Q3/Q4 hold 16 steps) overflow the panel —
+            // the step list scrolls within the sidebar column; the active step is
+            // auto-scrolled into view on every server-sidebar advance.
+            const protoSteps = el('div', { id: 'swml-progress-steps', style: { overflowY: 'auto', flex: '1 1 auto', minHeight: '0' } });
             // v7.18.25: universal step-array resolution. Drop the isExamPrep
             // gate (and the v7.18.24 mark_scheme_unit gate) — getSteps() is now
             // ALWAYS consulted when the manifest doesn't provide an explicit
@@ -8950,7 +8961,10 @@
                             // Steps — manifest-driven (v7.13.11, replaces hardcoded if/else)
                             // v7.18.17: render via shared helper that honours `group`
                             // field for accordion grouping (used by mark_scheme).
-                            const protoSteps = el('div', { id: 'swml-progress-steps' });
+                            // v7.19.379: long accordions (Q3/Q4 hold 16 steps) overflow the panel —
+            // the step list scrolls within the sidebar column; the active step is
+            // auto-scrolled into view on every server-sidebar advance.
+            const protoSteps = el('div', { id: 'swml-progress-steps', style: { overflowY: 'auto', flex: '1 1 auto', minHeight: '0' } });
                             // v7.13.97: Use task-specific steps for exam prep, manifest sidebarSteps for assessment, fallback to defaults
                             const assessSteps = canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
                                 { step: 1, label: 'Setup & Details' },
