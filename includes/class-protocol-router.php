@@ -4955,6 +4955,25 @@ TEMPLATE;
                         $probe = $this->assessment_next_beat($probe['id'], $context);
                     }
                     if (!$later) break;
+                    // v7.19.395 (FIX K2): when the fired later beat is a MARKING
+                    // beat, do NOT resync — fall back. Marking on a held ask turn
+                    // means the marks were produced on a thin ask slice with NO
+                    // mark scheme in context (run 9: ¶1 marked with an invented
+                    // 3-criterion /3 rubric on the targeting slice; ¶2 then
+                    // copied the bad rubric for consistency even WITH the real
+                    // mark slice served). Resync would bless the off-spec rubric
+                    // and keep slicing; the monolith restores the real scheme
+                    // for the question's remainder. Non-marking later beats
+                    // (feedback/gold) keep the resync — that path exists for the
+                    // run-3 deadlocks and carries no rubric risk.
+                    if (preg_match('/_(mark|ao5|ao6)$/', (string) $probe['id'])) {
+                        $patch['current_beat']       = '';
+                        $patch['beats_disabled_for'] = $cur_q;
+                        $patch['beat_stall_count']   = 0;
+                        error_log('WML SEG BULLDOZE: ' . $probe['id'] . ' fired on held ask ' . $cur_beat . ' q=' . $cur_q . ' user=' . (int) $user_id . ' — monolith restored for this question');
+                        $cur_beat = '';
+                        break;
+                    }
                     $matched = true; // ask was skipped by the model; advance past it
                 }
                 if (!$matched) break;
