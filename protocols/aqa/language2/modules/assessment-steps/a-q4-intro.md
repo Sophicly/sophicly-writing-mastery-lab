@@ -6,6 +6,8 @@
 
 ---
 
+**Internal AI Note (v7.19.390 — empty slot):** If the submission has NO introduction, do not mark one. Say EXACTLY: "**Introduction score: 0/2 — not present in your submission.**" plus one mode-appropriate framing line (Topic 1 diagnostic: no penalty — this slot simply scores 0), skip the introduction gold step, and proceed to the reflection before the body paragraphs. The server reads that exact line to skip the introduction steps.
+
 **Submission Validation — Mode Resolution + Rebucketing (v7.18.34):**
 
 **Internal AI Note:** Resolve assessment mode from `SESSION_STATE.assessment_type` AND `SESSION_STATE.topic_number`.

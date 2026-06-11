@@ -4266,6 +4266,30 @@ TEMPLATE;
     }
 
     /**
+     * v7.19.390 (FIX L): regex matching the slices' mandated empty-slot
+     * declaration for a beat slot ('q3_bp3' → "Body Paragraph 3 … not present
+     * in your submission"). Deliberately narrow: requires the label FIRST and
+     * an explicit absence phrase within 40 chars, so feedback prose like
+     * "your conclusion does not present a clear position" can never match,
+     * and a genuinely written paragraph scored 0 keeps its full sub-loop
+     * (per-paragraph rule applies to written material).
+     */
+    private static function assessment_slot_absent_regex($slot) {
+        $label = '';
+        if (preg_match('/_bp(\d+)$/', (string) $slot, $m)) {
+            $label = 'Body Paragraph ' . $m[1];
+        } elseif (preg_match('/_p(\d+)$/', (string) $slot, $m)) {
+            $label = 'Paragraph ' . $m[1];
+        } elseif (substr((string) $slot, -6) === '_intro') {
+            $label = 'Introduction';
+        } elseif (substr((string) $slot, -6) === '_concl') {
+            $label = 'Conclusion';
+        }
+        if ($label === '') return '';
+        return '/\b' . $label . '\b[^\n]{0,40}(?:not present in your submission|not written|missing from your submission)/i';
+    }
+
+    /**
      * v7.19.294 (Increment 0): the manifest step the loader should load for a
      * question-mode assessment turn = the step of the beat the advancer HELD at
      * the gate last turn (the artefact still owed). Reads `current_beat` from the
@@ -4883,6 +4907,32 @@ TEMPLATE;
             $guard = 0;
             $beat  = $this->assessment_beat($cur_beat, $context);
             while ($beat && $guard++ < 30) {
+                // v7.19.390 (FIX L): empty-slot skip. The beat table hardcodes the
+                // OPTIMAL-STRATEGY slot frame (Q3 = 3 TTECEA BPs, Q4 = intro + 3 BPs
+                // + conclusion) — correct for marking (Mode A rebuckets and empty
+                // slots score 0), but real submissions vary: run 8 wrote 2 BPs and
+                // the pointer demanded q3_bp3_selfrate for a paragraph that doesn't
+                // exist, deadlocking into the freewheel. The slices now mandate an
+                // exact absence line ("Body Paragraph 3 score: 0/4 — not present in
+                // your submission."); when the reply declares the held beat's slot
+                // absent, skip ALL of that slot's remaining beats. Sophia makes the
+                // rebucket call (grouping is judgment); the engine follows it.
+                if (preg_match('/^(q\d+_(?:bp\d+|p\d+|intro|concl))_/', (string) $cur_beat, $slot_m)) {
+                    $absent_re = self::assessment_slot_absent_regex($slot_m[1]);
+                    if ($absent_re && preg_match($absent_re, html_entity_decode((string) $reply, ENT_QUOTES, 'UTF-8'))) {
+                        $nb = $this->assessment_next_beat($cur_beat, $context);
+                        while ($nb && strpos($nb['id'], $slot_m[1] . '_') === 0) {
+                            $nb = $this->assessment_next_beat($nb['id'], $context);
+                        }
+                        if ($nb && $this->assessment_beat_in_question($nb['id'], $cur_q)) {
+                            $cur_beat = $nb['id'];
+                            $beat     = $this->assessment_beat($cur_beat, $context);
+                            continue;
+                        }
+                        $cur_beat = 'q_done';
+                        break;
+                    }
+                }
                 $matched = (bool) @preg_match($beat['detect'], (string) $reply);
                 if (!$matched && $beat['type'] === 'ask') {
                     // v7.19.356 (FIX D): ask-beats are SKIPPABLE when the model

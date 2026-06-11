@@ -4,6 +4,8 @@
 
 **Internal AI Note:** The student has typed Y to move to the Conclusion. Deliver the conclusion mark breakdown now.
 
+**Internal AI Note (v7.19.390 — empty slot):** If the submission has NO conclusion, do not mark one. Say EXACTLY: "**Conclusion score: 0/2 — not present in your submission.**" plus one mode-appropriate framing line (Topic 1 diagnostic: no penalty — this slot simply scores 0), skip the conclusion gold step, and move straight to the Question 4 Final Summary. The server reads that exact line to skip the conclusion steps.
+
 ---
 
 **Mark Breakdown:**
