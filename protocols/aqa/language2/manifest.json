@@ -300,6 +300,86 @@
         "files": [
           "modules/assessment-steps/a-q3-summary.md"
         ]
+      },
+      "29": {
+        "files": [
+          "modules/assessment-steps/a-q4-intro.md"
+        ]
+      },
+      "30": {
+        "files": [
+          "modules/assessment-steps/a-q4-intro-gold.md"
+        ]
+      },
+      "31": {
+        "files": [
+          "modules/assessment-steps/a-q4-selfrate.md"
+        ]
+      },
+      "32": {
+        "files": [
+          "modules/assessment-steps/a-q4-targeting.md"
+        ]
+      },
+      "33": {
+        "files": [
+          "modules/assessment-steps/a-q4-mark.md"
+        ]
+      },
+      "34": {
+        "files": [
+          "modules/assessment-steps/a-q4-feedback.md"
+        ]
+      },
+      "35": {
+        "files": [
+          "modules/assessment-steps/a-q4-gold.md"
+        ]
+      },
+      "36": {
+        "files": [
+          "modules/assessment-steps/a-q4-mark.md"
+        ]
+      },
+      "37": {
+        "files": [
+          "modules/assessment-steps/a-q4-feedback.md"
+        ]
+      },
+      "38": {
+        "files": [
+          "modules/assessment-steps/a-q4-gold.md"
+        ]
+      },
+      "39": {
+        "files": [
+          "modules/assessment-steps/a-q4-mark.md"
+        ]
+      },
+      "40": {
+        "files": [
+          "modules/assessment-steps/a-q4-feedback.md"
+        ]
+      },
+      "41": {
+        "files": [
+          "modules/assessment-steps/a-q4-gold.md"
+        ]
+      },
+      "42": {
+        "files": [
+          "modules/assessment-steps/a-q4-concl.md"
+        ]
+      },
+      "43": {
+        "files": [
+          "modules/assessment-steps/a-q4-concl-gold.md"
+        ]
+      },
+      "44": {
+        "files": [
+          "modules/assessment-steps/a-q4-summary.md"
+        ]
       }
     },
     "groups": [
