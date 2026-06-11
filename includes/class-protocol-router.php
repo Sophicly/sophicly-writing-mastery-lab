@@ -4675,6 +4675,9 @@ TEMPLATE;
             foreach ($m[1] as $q) {
                 $q = trim($q);
                 if ($q === '' || isset($anchors[$q])) continue;
+                // bare comparative discourse markers are legitimate ¶2 openers,
+                // not credited content — forbidding them would block a valid walk
+                if (preg_match('/^(?:by contrast|in contrast|unlike|whereas|however|similarly)[,.]?$/i', $q)) continue;
                 $anchors[$q] = true;
                 if (count($anchors) >= 20) break;
             }
