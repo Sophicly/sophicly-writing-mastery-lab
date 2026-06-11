@@ -13376,7 +13376,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 18, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 19, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -19643,6 +19643,11 @@
         );
         html += sectionHTML('plan', 'Four Traps Reflection', true, null,
             inputHTML('Name one trap you recognise in your own work + how you will counter it.', 'unit-8.traps-reflection')
+        );
+        // v7.19.392: slide 13 (The Measurable Promise) had no codex slot.
+        html += sectionHTML('plan', 'The Measurable Promise', true, null,
+            inputHTML('Write the promise in your own words: two completed pieces of writing every month, minimum — diagnostic + redraft + feedback, the full loop.', 'unit-8.measurable-promise.in-own-words') +
+            inputHTML('Output is the only proof of practice — name the two pieces you will complete this month.', 'unit-8.measurable-promise.first-two-pieces')
         );
         html += sectionHTML('plan', 'First Quest Log Entry', true, null,
             inputHTML('Skill you will work on first.', 'unit-8.first-quest-log.skill') +
