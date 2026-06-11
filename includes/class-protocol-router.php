@@ -3307,7 +3307,11 @@ TEMPLATE;
             // (schema block + hard gates + metacog mandate + gold-standard mandate). Without
             // this branch, Phase 2 redraft sessions skipped every behavioural guardrail and
             // produced freestyle mark-scheme output (catastrophic AO + tariff failures).
-            $schema_block = $this->build_assessment_schema_block($board, $subject);
+            // v7.19.407: $board/$subject were never assigned in this scope (PHP
+            // warning on every assessment turn since March) — the builder only
+            // worked because it defaults to AQA. Source from $context so
+            // non-AQA boards get THEIR schema, not AQA's.
+            $schema_block = $this->build_assessment_schema_block($context['board'] ?? '', $context['subject'] ?? '');
             if ($schema_block) {
                 // v7.17.5: Pattern-based structure ban + universal gold-standard DELIVERY mandate.
                 // v7.17.3 introduced an exact-match FORBIDDEN A/B GATES list; AI paraphrased
