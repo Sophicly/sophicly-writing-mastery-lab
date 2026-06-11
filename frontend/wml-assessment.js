@@ -11256,6 +11256,10 @@
                             section_label: meta.label,
                             right:         res.right,
                             total:         res.total,
+                            // v7.19.382: whole-journal student-typed words — feeds the
+                            // dashboard Words Written tile (student-data collapses codex
+                            // rows to one document, so repeats dedupe to MAX).
+                            word_count:    getCodexWordCount(editor),
                         };
                         if (WML.state && WML.state.reviewStudentId) body.student_id = WML.state.reviewStudentId;
                         WML.apiPost(API.codexCheck, body).then((r) => {

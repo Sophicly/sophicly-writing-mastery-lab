@@ -5371,6 +5371,12 @@ class SWML_REST_API {
         $label = sanitize_text_field($p['section_label'] ?? '');
         $right = max(0, (int) ($p['right'] ?? 0));
         $total = max(0, (int) ($p['total'] ?? 0));
+        // v7.19.382: whole-journal student-typed word count (frontend
+        // getCodexWordCount) — stamped on every Check so the dashboard
+        // Words Written tile counts codex writing. student-data v2.31.7
+        // collapses codex rows into one document group, so the repeated
+        // whole-journal stamp dedupes to MAX, never multiplies.
+        $words = max(0, (int) ($p['word_count'] ?? 0));
 
         if ($slug === '' || $total <= 0) {
             return rest_ensure_response(['success' => false, 'code' => 'bad_request']);
@@ -5417,7 +5423,7 @@ class SWML_REST_API {
             'core_skills',          // board — matches student-data v2.30.98 codex wiring
             'codex_' . $slug,       // text_slug — per section
             '',
-            0,
+            $words,                 // v7.19.382: whole-journal word count (was hardcoded 0)
             0,
             '_codex',               // suffix → task_by_suffix maps to task='codex'
             $extra
