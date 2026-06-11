@@ -189,11 +189,14 @@
                         const parent = e.currentTarget.parentElement;
                         const wasOpen = e.currentTarget.classList.contains('open');
                         container.querySelectorAll('.swml-step-group-header').forEach(h => h.classList.remove('open'));
-                        container.querySelectorAll('.swml-step-group-body').forEach(b => { b.style.maxHeight = '0'; });
+                        container.querySelectorAll('.swml-step-group-body').forEach(b => { b.style.maxHeight = '0'; b.style.overflowY = 'hidden'; });
                         if (!wasOpen) {
                             e.currentTarget.classList.add('open');
                             const body = parent.querySelector('.swml-step-group-body');
-                            if (body) body.style.maxHeight = body.scrollHeight + 'px';
+                            // v7.19.385: cap the OPEN body and scroll inside it —
+                            // collapsed group headers stay visible (Neil, 11 Jun);
+                            // never grow the whole list past the viewport.
+                            if (body) { body.style.maxHeight = 'min(42vh, 480px)'; body.style.overflowY = 'auto'; }
                         }
                     }
                 }, [
@@ -204,7 +207,9 @@
                 groupEl.appendChild(headerEl);
                 const bodyEl = el('div', {
                     className: 'swml-step-group-body',
-                    style: { maxHeight: isFirstGroup ? '500px' : '0', overflow: 'hidden', transition: 'max-height 0.3s ease' }
+                    // v7.19.385: open body is height-capped and scrolls internally
+                    // so collapsed group headers stay visible below it.
+                    style: { maxHeight: isFirstGroup ? 'min(42vh, 480px)' : '0', overflowY: isFirstGroup ? 'auto' : 'hidden', overflowX: 'hidden', transition: 'max-height 0.3s ease' }
                 });
                 group.steps.forEach(s => {
                     bodyEl.appendChild(el('div', { className: 'swml-step', 'data-step': s.step, 'data-display': s.display || '' }, [
@@ -6365,11 +6370,12 @@
                                     const parent = e.currentTarget.parentElement;
                                     const wasOpen = e.currentTarget.classList.contains('open');
                                     container.querySelectorAll('.swml-step-group-header').forEach(h => h.classList.remove('open'));
-                                    container.querySelectorAll('.swml-step-group-body').forEach(b => { b.style.maxHeight = '0'; });
+                                    container.querySelectorAll('.swml-step-group-body').forEach(b => { b.style.maxHeight = '0'; b.style.overflowY = 'hidden'; });
                                     if (!wasOpen) {
                                         e.currentTarget.classList.add('open');
                                         const body = parent.querySelector('.swml-step-group-body');
-                                        if (body) body.style.maxHeight = body.scrollHeight + 'px';
+                                        // v7.19.385: capped open body, scrolls internally
+                                        if (body) { body.style.maxHeight = 'min(42vh, 480px)'; body.style.overflowY = 'auto'; }
                                     }
                                 }
                             }, [
@@ -6381,7 +6387,8 @@
 
                             const bodyEl = el('div', {
                                 className: 'swml-step-group-body',
-                                style: { maxHeight: isFirstGroup ? '500px' : '0', overflow: 'hidden', transition: 'max-height 0.3s ease' }
+                                // v7.19.385: capped open body, scrolls internally
+                                style: { maxHeight: isFirstGroup ? 'min(42vh, 480px)' : '0', overflowY: isFirstGroup ? 'auto' : 'hidden', overflowX: 'hidden', transition: 'max-height 0.3s ease' }
                             });
                             group.steps.forEach(s => {
                                 // Strip Q-prefix or redundant group label from sub-step labels

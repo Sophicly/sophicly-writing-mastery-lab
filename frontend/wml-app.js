@@ -4150,9 +4150,13 @@
             // Auto-open the active group, close others
             if (hasActive && !header.classList.contains('open')) {
                 $$('.swml-step-group-header').forEach(h => h.classList.remove('open'));
-                $$('.swml-step-group-body').forEach(b => { b.style.maxHeight = '0'; });
+                $$('.swml-step-group-body').forEach(b => { b.style.maxHeight = '0'; b.style.overflowY = 'hidden'; });
                 header.classList.add('open');
-                body.style.maxHeight = body.scrollHeight + 'px';
+                // v7.19.385: cap the open body and scroll inside it — collapsed
+                // group headers stay visible; auto-follow (v379 scrollIntoView,
+                // block:'nearest') scrolls this inner box to the active step.
+                body.style.maxHeight = 'min(42vh, 480px)';
+                body.style.overflowY = 'auto';
             }
         });
         // Check for video hints when step changes
