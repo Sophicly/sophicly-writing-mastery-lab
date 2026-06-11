@@ -3568,36 +3568,12 @@
                             }
                         }, 50);
                     }
-                    // v7.17.54: Self-rating 1-5 quick-action row. Sister of the 4-button
-                    // resume-confirm above. Fires when AI emits the protocol-mandated
-                    // Part C STEP 1 self-rating prompt ("On a scale of 1-5, how well..."),
-                    // renders [1][2][3][4][5] using the same swml-quick-actions/swml-quick-btn
-                    // pattern as the Grade buttons in the greeting (~L5604). State-machine
-                    // wiring to capture + persist the rating lands in v7.17.55.
-                    const _hasSelfRatingPrompt = /on a scale of 1[\s\-—]?5\b/i.test(cleanReply)
-                        && /how (?:well|much|confident|strongly)/i.test(cleanReply);
-                    if (_hasSelfRatingPrompt) {
-                        setTimeout(() => {
-                            const ratingBar = el('div', { className: 'swml-quick-actions' });
-                            [1, 2, 3, 4, 5].forEach(num => {
-                                ratingBar.appendChild(el('button', {
-                                    className: 'swml-quick-btn',
-                                    textContent: String(num),
-                                    onClick: () => {
-                                        ratingBar.remove();
-                                        canvasSilentSend = false;
-                                        chatTextarea.value = String(num);
-                                        sendCanvasMessage();
-                                    }
-                                }));
-                            });
-                            const greetBubble = chatMessages.lastElementChild;
-                            if (greetBubble) {
-                                const bc = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
-                                bc.appendChild(ratingBar);
-                            }
-                        }, 50);
-                    }
+                    // v7.19.393: legacy v7.17.54 bare [1][2][3][4][5] rating bar REMOVED.
+                    // Since v7.19.196 hoisted the SCALE branch in detectQuickActions,
+                    // every self-rate prompt rendered BOTH that branch's labelled
+                    // buttons ("3 — Perceptive inference in places…") AND this bare
+                    // digit bar — ten buttons for one 1-5 choice (Neil, 11 Jun).
+                    // The labelled set supersedes: same values, descriptors included.
                     // v7.15.67: Essay-plan / model-answer "Save it?" trigger — when the
                     // student confirms the final-save prompt (clicks "A — Yes, save it"
                     // or types "yes"), find the most recent AI message that proposed a
