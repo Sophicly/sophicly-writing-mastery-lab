@@ -4910,7 +4910,7 @@
                     if (head.length >= 2 && head.length <= 50) rawLabel = head;
                 }
                 let label = rawLabel.length > 50 ? rawLabel.substring(0, 47) + '...' : rawLabel;
-                numberedOptions.push({ label: `${m[1]}. ${label}`, value: m[1], rawLen: rawLabel.length });
+                numberedOptions.push({ label: `${m[1]}. ${label}`, value: m[1], rawLen: rawLabel.length, isQ: /\?/.test(line) });
             }
         }
         if (numberedOptions.length >= 2 && numberedOptions.length <= 6) {
@@ -4927,7 +4927,19 @@
                 && /\[\s*🤔.*Still confused\s*\]/i.test(text)
                 && /\[\s*💬.*Different question\s*\]/i.test(text)
                 && /\[\s*⏸.*Pause here\s*\]/i.test(text);
-            if (_allHeadings || _has4ButtonRow) {
+            // v7.19.399: free-answer question lists are NOT choice menus. The Q5
+            // intake ("Before I assess your Section B writing, answer these three
+            // questions: 1. Which form did you write in... 2. What is your main
+            // argument... 3. Looking at your IUMVCC structure...") rendered as
+            // three quick-action buttons — clicking one submits a fragment when
+            // ALL items need free-text answers. Suppress when the stem asks the
+            // student to ANSWER the numbered items, or when every numbered line
+            // is itself a question (paraphrase-proof net). Letter options, the
+            // 1-5 rating SCALE branch and Type-Y gates are separate detectors
+            // and unaffected.
+            const _asksToAnswer = /answer\s+(?:these|all|the\s+following|both|each)\s*(?:two|three|four|five|\d+)?\s*questions/i.test(text);
+            const _allInterrogative = numberedOptions.every(o => o.isQ);
+            if (_allHeadings || _has4ButtonRow || _asksToAnswer || _allInterrogative) {
                 // Drop through — let downstream detectors handle (e.g. 4-button gate
                 // renders elsewhere via wml-assessment.js:2292+).
             } else {
