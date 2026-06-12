@@ -3616,7 +3616,11 @@ TEMPLATE;
         global $swml_plan_state, $swml_current_step;
         if (!empty($swml_plan_state) && is_array($swml_plan_state)) {
             $preamble .= "\n### ESTABLISHED SESSION STATE (already confirmed — do not re-ask)\n";
-            $preamble .= "**Current section:** " . ($swml_current_step ?: 1) . " of 8\n";
+            // v7.19.409: per-turn step numbers must not enter the cached block on
+            // question-mode assessment (cache churn — see session-context block note).
+            if (!in_array($task, ['assessment', 'redraft_assessment'], true)) {
+                $preamble .= "**Current section:** " . ($swml_current_step ?: 1) . " of 8\n";
+            }
 
             $labels = [
                 'question_text' => 'Essay Question',
@@ -3760,7 +3764,15 @@ TEMPLATE;
             $block .= "scored_visibly:        " . ($contract['scored_visibly'] ? 'true' : 'false') . "\n";
         }
         if (!empty($contract['q_count'])) $block .= "q_count:               {$contract['q_count']}\n";
-        $block .= "step:                  {$fields['step']}\n";
+        // v7.19.409: on question-mode assessment the beat machine owns the step;
+        // the frontend step number changing every turn was the LAST varying byte
+        // inside the cached instructions block (single-digit swaps = same length,
+        // new md5 = cache write every segmented turn — run 15's churn).
+        if (in_array($fields['task'], ['assessment', 'redraft_assessment'], true)) {
+            $block .= "step:                  (server-managed — follow the LIVE SESSION DIRECTIVES block)\n";
+        } else {
+            $block .= "step:                  {$fields['step']}\n";
+        }
         if ($fields['task'] === 'mark_scheme_unit' && $fields['bridge_step']) {
             $block .= "bridge_step:           {$fields['bridge_step']}\n";
         }
