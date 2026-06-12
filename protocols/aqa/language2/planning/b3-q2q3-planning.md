@@ -6,160 +6,127 @@
 
 ##### Question 2 Planning Sub-Protocol (Inference \- AO1)
 
-\[SAY\] "Question 2 (2026 spec) asks what you can **infer** about the differences between the two sources. It needs two paragraphs, each alternating Source A → Source B → Source A → Source B — four inference units per paragraph. Each unit follows this shape:
+\[SAY\] "Question 2 (2026 spec) asks what you can **infer** about the differences between the two sources. It needs two paragraphs, and each paragraph weaves BOTH sources together — four inferences alternating Source A → Source B → Source A → Source B. Never write one paragraph about Source A and a second paragraph about Source B.
 
-* **Topic sentence** \- the inferable point you're making  
-* **Perceptive inference** \- what the detail *reveals* about the difference, beyond the literal  
-* **Detail + quotation** \- develop the inference in detail, anchored to a judicious embedded quote  
-* Source B units open with a **comparative discourse marker** ('whereas', 'by contrast', 'similarly')
+Each inference is worth 1 mark, built from four 0.25 checks — this is exactly how your answer will be marked:
 
-Every inference must carry a quotation. Before we plan, let's identify the key passages you'll infer from."
+**Source A inferences (1st and 3rd in each paragraph):**
+
+* **Claim made** \- your topic sentence states an inferential claim (what the writer implies), not a description of what happens
+* **Claim perceptive** \- the claim goes beyond the obvious surface reading
+* **Developed in detail** \- you explain what the chosen detail *reveals*, rather than restating the claim
+* **Quote-anchored** \- a judicious embedded quotation, with the claim built FROM the quoted words
+
+**Source B inferences (2nd and 4th in each paragraph):**
+
+* **Comparative link** \- the inference OPENS with a comparative discourse marker ('However', 'In contrast', 'Whereas', 'Unlike') AND states a difference against the Source A inference before it
+* **Difference perceptive** \- the difference is subtle, not 'A is violent, B is calm'
+* **Developed in detail** and **Quote-anchored** \- same as above
+
+Every inference must carry its own quotation. We'll plan all eight inferences, then assemble your paragraph plans."
 
 ---
 
 ### **Part A: Evidence Selection**
 
-**Step 1: Evidence Selection (Source A)**
+**Step 1: Question Focus & Overall Difference**
 
-\[ASK\] "First, identify a substantial passage in Source A that you'll paraphrase for your analysis. This should be a section rich in detail that allows for perceptive synthesis.
+\[ASK\] "First, let's anchor the whole answer.
 
-Please provide:
+1. What is the question's focus \- what are you being asked to infer about?
+2. In one sentence, what is the biggest difference between the two sources on that focus?"
 
-1. The specific section/passage from Source A (you can paste the original text for now)  
-2. Why you've chosen this section \- what key aspect does it reveal?"
-
-**\[AI\_INTERNAL\]** Wait for student response. Store the passage location for validation.
+**\[AI\_INTERNAL\]** Wait for student response. Validate the difference is PERCEPTIVE, not surface: 'Source A is violent, Source B is calm' \= surface. 'The danger in Source A strikes in minutes while Source B's hardship grinds across years' \= perceptive. If surface, nudge ONCE with a Socratic question ("What does each writer want you to understand about HOW that difference works \- its pace, its victims, its distance?") before accepting their answer.
 
 ---
 
-### **Part B: Evidence Validation**
+**Step 2: Two Aspects \- One Per Paragraph**
 
-**Step 2: Evidence Validation (Source A)**
+\[ASK\] "Now split that difference into TWO distinct aspects \- one for each paragraph. For example: the *pace* of the danger for Paragraph 1, and *who suffers and how* for Paragraph 2.
 
-**\[AI\_INTERNAL\]** Execute Section 0.10 validation on the selected passage:
+What will your two aspects be?"
 
-1. Locate the passage in SESSION\_STATE.source\_a\_content  
-2. Check if the passage is substantial enough to synthesize:  
-   * Does it contain enough concrete details for analysis?  
-   * Does it capture a complete idea/perspective rather than a fragment?  
-   * Is there enough material for close reading and effect analysis?
-
-**\[CONDITIONAL\]** IF passage could be improved:
-
-\[ASK\] "I notice your selected passage \[describe what it captures\], but looking at the surrounding text, there are \[description of additional details that would enrich synthesis\]. Would you like to see a slightly expanded selection that captures more detail?"
-
-**\[AI\_INTERNAL\]** Wait for student response.
-
-**\[CONDITIONAL\]** IF student wants to see expanded version:
-
-\[SAY\] "Here's a fuller selection: \[show expanded passage\]. This gives you \[explain what additional details enable\]. Would you like to use this fuller selection? Type Y for yes or N to keep your original."
-
-**\[AI\_INTERNAL\]** Wait for student decision. Respect their final choice.
+**\[AI\_INTERNAL\]** Wait for response. Check the two aspects are genuinely distinct \- every piece of evidence will belong to exactly ONE paragraph (the paragraphs are disjoint), so overlapping aspects cause evidence double-use later. If they overlap, guide the student Socratically to sharpen the split.
 
 ---
 
-**Step 3: Evidence Selection (Source B)**
+**Step 3: Evidence for Paragraph 1**
 
-\[ASK\] "Now identify a substantial passage in Source B that you'll paraphrase. This should reveal a different aspect or perspective compared to Source A.
+\[ASK\] "For your first aspect, select your evidence: TWO short quotations from Source A and TWO from Source B \- a few words each, not whole sentences. These four quotations anchor your four inferences for Paragraph 1.
 
-Please provide:
+List them as: A1, B1, A2, B2."
 
-1. The specific section/passage from Source B  
-2. How this contrasts with or differs from Source A"
+**\[AI\_INTERNAL\]** Wait for response. Validate EACH quotation:
 
-**\[AI\_INTERNAL\]** Wait for student response. Store the passage location for validation.
+1. Relevant to the question's focus and this paragraph's aspect
+2. Short and specific enough to embed inside the student's own sentence
+3. Inferable \- the quoted words can carry a claim beyond the obvious. Judicious means the claim will be built FROM these exact words, not placed near them.
+
+**\[CONDITIONAL\]** IF a quotation is weak or off-focus: point at the issue and offer a Socratic prompt toward a stronger candidate passage \- never simply supply the quotation. Respect the student's final choice.
 
 ---
 
-**Step 4: Evidence Validation (Source B)**
+**Step 4: Evidence for Paragraph 2**
 
-**\[AI\_INTERNAL\]** Execute Section 0.10 validation on the selected passage using the same process as Step 2\.
+\[ASK\] "Now the same for your second aspect: TWO short quotations from Source A and TWO from Source B \- and all four must be NEW. Nothing from Paragraph 1 can appear again; each piece of evidence earns marks ONCE.
 
-**\[CONDITIONAL\]** Apply same Socratic guidance if passage could be improved.
+List them as: A1, B1, A2, B2."
+
+**\[AI\_INTERNAL\]** Wait for response. Apply the same validation as Step 3, PLUS check that no quotation repeats or overlaps Paragraph 1's evidence.
 
 ---
 
 **Step 5: Evidence Confirmed**
 
-\[SAY\] "Excellent. You've identified substantial passages from both sources that will allow for perceptive synthesis. Now let's plan how you'll structure each paragraph around this evidence."
+\[SAY\] "Excellent. You have eight anchored quotations \- four per paragraph, alternating between the sources. Now let's build the inference plan for each paragraph."
+
+---
+
+### **Part B: Evidence Validation**
+
+**\[AI\_INTERNAL\]** Validation runs INLINE at Steps 3 and 4 above (focus-relevant, embeddable, inferable, disjoint across paragraphs). If the student returns to revise evidence at any later point, re-run those checks before accepting the change.
 
 ---
 
 ### **Part C: Paragraph Structure Planning**
 
-**Paragraph 1 Planning (Source A):**
+**\[AI\_INTERNAL\] CRITICAL PROGRESSION RULE:** Plan the four inferences ONE AT A TIME, in order, for Paragraph 1 and then Paragraph 2\. After each question below, WAIT for the student's complete response before moving on. Never combine inference questions into one message.
 
-\[ASK\] "**Topic Sentence:** What key aspect of Source A will you focus on? (One sentence describing what you'll analyze)"
+**Paragraph 1 Planning:**
 
-**\[AI\_INTERNAL\]** Wait for response. Provide brief feedback: "Good. That gives a clear focus."
+\[ASK\] "**Inference 1 (Source A):** Using your first Source A quotation, what does the writer imply here \- beyond the obvious? Give me:
 
----
+1. Your claim (one phrase \- what the writer *implies*, not what happens)
+2. What the quoted words *reveal* that makes the claim true"
 
-\[SAY\] "**Evidence:** You've already identified your passage from Source A. When you write your paragraph, embed a short quotation from it and build your perceptive inference on that quote."
-
----
-
-\[ASK\] "**Close Reading:** What do those details reveal about the place/situation/perspective?"
-
-**\[AI\_INTERNAL\]** Wait for response. Encourage depth: "Good start. Could you push that interpretation further?"
+**\[AI\_INTERNAL\]** Wait for response. Check: the claim is inferential, not descriptive ('the storm is destructive' \= surface; 'the storm erases human ambition' \= perceptive); the reveal-statement explains rather than restates the claim. One Socratic push if surface: "What does the writer want you to understand that isn't stated outright?"
 
 ---
 
-\[ASK\] "**Effect:** What impression does this create?"
+\[ASK\] "**Inference 2 (Source B \- difference):** This one OPENS with a comparative discourse marker and states a difference against Inference 1\. Give me:
 
-**\[AI\_INTERNAL\]** Wait for response.
+1. Your marker \+ difference claim ('However, …' \- subtle, not just the opposite of Inference 1)
+2. Your first Source B quotation and what it reveals"
 
----
-
-\[ASK\] "**Writer's Perspective:** How does the writer present this subject?"
-
-**\[AI\_INTERNAL\]** Wait for response.
+**\[AI\_INTERNAL\]** Wait for response. Check: marker at the FRONT; the difference is stated against Inference 1 specifically; the difference is subtle (pace, victims, distance \- not 'A is X, B is the opposite'); the reveal is built FROM the quoted words.
 
 ---
 
-\[SAY\] "Excellent. Here's your complete Paragraph 1 plan:
+\[ASK\] "**Inference 3 (Source A):** Your second Source A quotation \- a NEW claim on new material. Same shape: claim \+ what the quoted words reveal."
 
-**Paragraph 1 (Source A):**
-
-* **Topic:** \[student's response\]  
-* **Evidence:** \[Reference to validated passage \- short quotation to embed and infer from\]  
-* **Close Reading:** \[student's response\]  
-* **Effect:** \[student's response\]  
-* **Writer's Perspective:** \[student's response\]
-
-Type **Y** when you're ready to plan Paragraph 2 (Source B)."
+**\[AI\_INTERNAL\]** Wait for response. Same checks as Inference 1\. Confirm it does not repeat Inference 1's idea.
 
 ---
 
-**Paragraph 2 Planning (Source B):**
+\[ASK\] "**Inference 4 (Source B \- difference):** Marker \+ difference against Inference 3, your second Source B quotation, and what it reveals."
 
-\[SAY\] "Now let's plan your Source B paragraph. This needs to show how Source B differs from Source A."
-
-\[ASK\] "**Comparative Topic Sentence:** How does Source B differ from Source A? Start with a comparative connective like 'In contrast,' or 'However,'"
-
-**\[AI\_INTERNAL\]** Wait for response. Check that student is using comparative language.
+**\[AI\_INTERNAL\]** Wait for response. Same checks as Inference 2\.
 
 ---
 
-\[SAY\] "**Evidence:** You've already identified your passage from Source B. Embed a short quotation from it to anchor your perceptive inference about the contrast."
+\[SAY\] "Paragraph 1 is fully planned. Type **Y** to plan Paragraph 2 the same way."
 
----
-
-\[ASK\] "**Close Reading:** What do those details reveal about the place/situation/perspective in Source B?"
-
-**\[AI\_INTERNAL\]** Wait for response.
-
----
-
-\[ASK\] "**Effect:** What impression does Source B create?"
-
-**\[AI\_INTERNAL\]** Wait for response.
-
----
-
-\[ASK\] "**Writer's Perspective:** How does the Source B writer present this subject?"
-
-**\[AI\_INTERNAL\]** Wait for response.
+**\[AI\_INTERNAL\]** Wait for Y. Then repeat the four inference questions above for Paragraph 2, using the second aspect and its four quotations. Apply identical validation. The two paragraphs stay DISJOINT \- never let Paragraph 2 reuse Paragraph 1's evidence or claims.
 
 ---
 
@@ -200,25 +167,24 @@ B) Standard Mode (key phrases)"
 
 **Question 2 Plan (Advanced Mode \- Keywords Only):**
 
-**Paragraph 1 (Source A):**  
-**Topic:** \[2-4 concept keywords from student's response\]  
-**Evidence \+ Inference:** \[key passage reference\] \+ \[2-3 inference keywords\]  
-**Close Analysis:** \[1-2 word feature\]  
-**Effect:** \[3-5 effect keywords\]  
-**Author's Purpose:** \[2-4 purpose keywords\]
+**Paragraph 1 \- \[aspect 1 keywords\]:**
+**Inference 1 (Source A):** \[2-4 claim keywords\] \+ "\[quotation A1\]" \+ \[2-3 reveal keywords\]
+**Inference 2 (Source B \- difference):** \[marker\] \+ \[2-4 difference keywords\] \+ "\[quotation B1\]" \+ \[2-3 reveal keywords\]
+**Inference 3 (Source A):** \[2-4 claim keywords\] \+ "\[quotation A2\]" \+ \[2-3 reveal keywords\]
+**Inference 4 (Source B \- difference):** \[marker\] \+ \[2-4 difference keywords\] \+ "\[quotation B2\]" \+ \[2-3 reveal keywords\]
 
-**Paragraph 2 (Source B):**  
-**Topic (comparative):** \[2-4 comparative concept keywords\]  
-**Evidence \+ Inference:** \[key passage reference\] \+ \[2-3 inference keywords\]  
-**Close Analysis:** \[1-2 word feature\]  
-**Effect:** \[3-5 effect keywords\]  
-**Author's Purpose:** \[2-4 purpose keywords\]
+**Paragraph 2 \- \[aspect 2 keywords\]:**
+**Inference 1 (Source A):** \[2-4 claim keywords\] \+ "\[quotation A1\]" \+ \[2-3 reveal keywords\]
+**Inference 2 (Source B \- difference):** \[marker\] \+ \[2-4 difference keywords\] \+ "\[quotation B1\]" \+ \[2-3 reveal keywords\]
+**Inference 3 (Source A):** \[2-4 claim keywords\] \+ "\[quotation A2\]" \+ \[2-3 reveal keywords\]
+**Inference 4 (Source B \- difference):** \[marker\] \+ \[2-4 difference keywords\] \+ "\[quotation B2\]" \+ \[2-3 reveal keywords\]
 
 **Writing Reminders:**
 
-- Use your own words throughout (no direct quotes)  
-- Each sentence should be 2-3 lines of developed analysis  
-- Make the differences between sources explicit"
+- Open every Source B inference with a comparative discourse marker  
+- Build each claim FROM its quoted words \- embed the quotation inside your own sentence  
+- Develop what the detail *reveals* \- never 'this shows' \+ a restated claim  
+- Keep the paragraphs disjoint \- each quotation and claim appears exactly once"
 
 **\[AI\_INTERNAL\]** Store SESSION\_STATE.q2\_planning\_mode \= "advanced"
 
@@ -228,25 +194,24 @@ ELIF STUDENT CHOSE B (STANDARD MODE):
 
 **Question 2 Plan (Standard Mode \- Key Phrases):**
 
-**Paragraph 1 (Source A):**  
-**Topic Sentence (conceptual):** \[student's topic sentence introducing the concept based on Source A\]  
-**Evidence \+ Inference:** \[student's evidence paraphrased with inference \- combined in one sentence\]  
-**Close Analysis:** \[student's close analysis\]  
-**Effect:** \[student's effect\]  
-**Author's Purpose:** \[student's author's purpose\]
+**Paragraph 1 \- \[student's aspect 1\]:**
+**Inference 1 (Source A):** \[student's inferential claim\] \+ "\[quotation A1\]" \+ \[what the quoted words reveal\]
+**Inference 2 (Source B \- difference):** \[student's marker \+ difference claim against Inference 1\] \+ "\[quotation B1\]" \+ \[what the quoted words reveal\]
+**Inference 3 (Source A):** \[student's inferential claim\] \+ "\[quotation A2\]" \+ \[what the quoted words reveal\]
+**Inference 4 (Source B \- difference):** \[student's marker \+ difference claim against Inference 3\] \+ "\[quotation B2\]" \+ \[what the quoted words reveal\]
 
-**Paragraph 2 (Source B):**  
-**Topic Sentence (conceptual, comparative):** \[student's topic sentence introducing how Source B differs\]  
-**Evidence \+ Inference:** \[student's evidence paraphrased with inference \- combined in one sentence\]  
-**Close Analysis:** \[student's close analysis\]  
-**Effect:** \[student's effect\]  
-**Author's Purpose:** \[student's author's purpose\]
+**Paragraph 2 \- \[student's aspect 2\]:**
+**Inference 1 (Source A):** \[student's inferential claim\] \+ "\[quotation A1\]" \+ \[what the quoted words reveal\]
+**Inference 2 (Source B \- difference):** \[student's marker \+ difference claim against Inference 1\] \+ "\[quotation B1\]" \+ \[what the quoted words reveal\]
+**Inference 3 (Source A):** \[student's inferential claim\] \+ "\[quotation A2\]" \+ \[what the quoted words reveal\]
+**Inference 4 (Source B \- difference):** \[student's marker \+ difference claim against Inference 3\] \+ "\[quotation B2\]" \+ \[what the quoted words reveal\]
 
 **Writing Reminders:**
 
-- Use your own words throughout (no direct quotes)  
-- Each sentence should be 2-3 lines of developed analysis  
-- Make the differences between sources explicit"
+- Open every Source B inference with a comparative discourse marker  
+- Build each claim FROM its quoted words \- embed the quotation inside your own sentence  
+- Develop what the detail *reveals* \- never 'this shows' \+ a restated claim  
+- Keep the paragraphs disjoint \- each quotation and claim appears exactly once"
 
 **\[AI\_INTERNAL\]** Store SESSION\_STATE.q2\_planning\_mode \= "standard"
 

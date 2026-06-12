@@ -18,7 +18,7 @@ If Y: \[SAY\] "Excellent. Your complete Question 3 plan is ready. When you write
 
 **Writing Reminders:**
 - Each sentence should be 2-3 lines long
-- NO sentences starting with 'the,' 'this,' or 'these'
+- Sentence openers: 'the', 'this' and 'these' may each open at most ONE sentence per paragraph — never two sentences in the same paragraph with the same opener
 - NO use of the verb 'shows'
 - Embed quotations smoothly"
 
