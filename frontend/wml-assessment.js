@@ -3269,7 +3269,16 @@
                                     const type = section.getAttribute('data-section-type') || '';
                                     const label = section.getAttribute('data-section-label') || '';
                                     const text = section.textContent?.trim() || '';
-                                    if (!text || type === 'divider') return;
+                                    if (type === 'divider') return;
+                                    if (!text) {
+                                        // v7.19.421: same empty-marker rule as getDocumentText —
+                                        // never let empty student sections vanish from the payload.
+                                        if (['response', 'plan', 'outline', 'notes'].includes(type)) {
+                                            const heading = label ? `=== ${label.toUpperCase()} [${type}] ===` : `=== ${type.toUpperCase()} ===`;
+                                            parts.push(`${heading}\n(EMPTY — the student has not written anything in this section yet)`);
+                                        }
+                                        return;
+                                    }
                                     const heading = label ? `=== ${label.toUpperCase()} [${type}] ===` : `=== ${type.toUpperCase()} ===`;
                                     parts.push(`${heading}\n${text}`);
                                 });
@@ -16563,7 +16572,20 @@
             const type = section.getAttribute('data-section-type') || '';
             const label = section.getAttribute('data-section-label') || '';
             const text = section.textContent?.trim() || '';
-            if (!text || type === 'divider') return;
+            if (type === 'divider') return;
+            if (!text) {
+                // v7.19.421: empty sections used to be silently DROPPED from the AI
+                // payload. In redraft planning that vacuum + the (REDRAFT) context tag
+                // made Sophia fabricate "your previous response" — claiming and even
+                // quoting answers the student never wrote. Emit an explicit EMPTY
+                // marker for student-input sections so the model KNOWS nothing is
+                // written there. Non-input furniture stays dropped.
+                if (['response', 'plan', 'outline', 'notes'].includes(type)) {
+                    const heading = label ? `=== ${label.toUpperCase()} [${type}] ===` : `=== ${type.toUpperCase()} ===`;
+                    parts.push(`${heading}\n(EMPTY — the student has not written anything in this section yet)`);
+                }
+                return;
+            }
             const heading = label ? `=== ${label.toUpperCase()} [${type}] ===` : `=== ${type.toUpperCase()} ===`;
             parts.push(`${heading}\n${text}`);
         });
