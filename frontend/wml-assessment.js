@@ -20519,6 +20519,31 @@
         });
     }
 
+    // v7.19.422: client-side mirror of the server heal (class-rest-api
+    // heal_q2_inference_stems, v7.19.419). The editor inits from the
+    // localStorage draft whenever one exists — the server-healed doc only
+    // reaches the view on a cleared cache / new device — so old-spec AQA P2
+    // Q2 stems survived in every active student's local copy. Healing the
+    // local read closes that gap; the healed text persists on next autosave.
+    const _Q2_STEM_HEAL_MAP = [
+        ['Use details from both sources. Write a summary of the differences between the way extreme weather is experienced in Source A and Source B.',
+         'The writers in Source A and Source B are both experiencing extreme weather. What can you infer about the differences between the two experiences of extreme weather?'],
+        ['Use details from both sources. Write a summary of the similarities between the dangers faced by the writers during their sea voyages.',
+         'The writers in Source A and Source B both face danger during sea voyages. What can you infer about the differences between the dangers the two writers face?'],
+        ['Use details from both sources. Write a summary of the differences between how each writer presents the treatment of disadvantaged people.',
+         'The writers in Source A and Source B both describe the treatment of disadvantaged people. What can you infer about the differences between the treatment of disadvantaged people in the two sources?'],
+        ['Use details from both sources. Write a summary of the differences between how each writer views the cosmetics industry.',
+         'The writers in Source A and Source B are both writing about the cosmetics industry. What can you infer about the differences between the two writers\' views of the cosmetics industry?'],
+        ['Use details from both sources. Write a summary of the similarities between how each writer views the role of observation and experience in gaining knowledge.',
+         'The writers in Source A and Source B both consider how people gain knowledge. What can you infer about the differences between the two writers\' views on gaining knowledge?'],
+    ];
+    function healQ2InferenceStemsLocal(html) {
+        if (!html || (state.board !== 'aqa') || String(state.text || '').indexOf('lang_paper_2') === -1) return html;
+        let out = html;
+        _Q2_STEM_HEAL_MAP.forEach(([oldS, newS]) => { out = out.split(oldS).join(newS); });
+        return out;
+    }
+
     function loadCanvasContent() {
         // Synchronous: return localStorage for instant editor init
         try {
@@ -20526,7 +20551,7 @@
             const _val = localStorage.getItem(_key) || '';
             // v7.19.136 instrumentation — every localStorage read for the canvas doc
             try { console.log('[WML load-debug v7.19.136] localStorage read', { key: _key, size: _val.length }); } catch (_) {}
-            return _val;
+            return healQ2InferenceStemsLocal(_val);
         } catch (e) { return ''; }
     }
 
