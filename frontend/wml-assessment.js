@@ -12833,6 +12833,12 @@
             tr.setMeta('addToHistory', false);
             tr.setMeta('preventUpdate', true);
             editor.view.dispatch(tr);
+            // v7.19.420: visibility just changed — rebuild the in-doc TOC so it
+            // only lists sections visible in the current stage view. rAF lets the
+            // NodeView re-render + CSS hide apply first.
+            requestAnimationFrame(() => {
+                try { buildTableOfContents(); } catch (e) { /* TOC absent in this view */ }
+            });
         }
 
         canvasEditor = new Editor({
@@ -22750,7 +22756,25 @@
             }
         });
 
-        if (sections.length < 3) return; // Not enough sections for a TOC
+        // v7.19.420: TOC mirrors visibility. Stage-reveal (v7.19.255) hides response
+        // sections + their dividers in planning view (display:none via CSS); they
+        // stay in the DOM, so their TOC links computed scroll against zero-geometry
+        // elements — click did nothing, no warning (Neil, Plan Redraft). Skip any
+        // section whose DOM element is currently hidden. Occurrence indices are
+        // computed on the FULL list above so scrollToLabel's DOM lookup stays
+        // aligned for the entries that remain.
+        const _domLabelMap = {};
+        editorEl.querySelectorAll('[data-section-label]').forEach(el => {
+            const l = el.getAttribute('data-section-label');
+            (_domLabelMap[l] = _domLabelMap[l] || []).push(el);
+        });
+        const visibleSections = sections.filter(s => {
+            const els = _domLabelMap[s.label] || [];
+            const el = els[s.occurrence] || els[0];
+            return el ? el.offsetParent !== null : true; // not yet rendered → keep
+        });
+
+        if (visibleSections.length < 3) return; // Not enough sections for a TOC
 
         // v7.14.30: Group using dividers as boundaries first, then prefix fallback.
         // Dividers create accordion groups — all sections after a divider become its children.
@@ -22764,7 +22788,7 @@
         const groupPrefixes = ['Feedback', 'Plan', 'Outline'];
         const groupMap = {};
 
-        sections.forEach(s => {
+        visibleSections.forEach(s => {
             // section-header — open super-group; flush divider context
             if (s.type === 'section-header') {
                 currentSuperGroup = {
@@ -22853,7 +22877,13 @@
             editor.querySelectorAll('[data-section-label]').forEach(el => {
                 if (el.getAttribute('data-section-label') === label) matches.push(el);
             });
-            const target = matches[occurrence || 0] || matches[0];
+            // v7.19.420: prefer a VISIBLE match — hidden sections (stage-reveal)
+            // have zero geometry and produce a no-op scroll.
+            let target = matches[occurrence || 0] || matches[0];
+            if (target && target.offsetParent === null) {
+                const vis = matches.find(el => el.offsetParent !== null);
+                if (vis) target = vis;
+            }
             if (target) {
                 // v7.19.349: scroll the target's REAL scrollable ancestor. The old code
                 // always scrolled .swml-canvas-content — if the layout scrolls a different
