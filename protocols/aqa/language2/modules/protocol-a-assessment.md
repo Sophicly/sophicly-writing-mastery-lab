@@ -229,7 +229,7 @@ Paste all your question texts now."
 **Internal AI Note:** Parse the pasted text and extract individual questions. Store each question separately:
 
 - Extract Question 01/1 text → store in SESSION\_STATE.questions.q1  
-- Extract Question 02/2 text → store in SESSION\_STATE.questions.q2  
+- Extract Question 02/2 text → store in SESSION\_STATE.questions.q2 (HEAL: if the extracted Q2 stem uses the old wording "Write a summary of the differences/similarities…", store and display it in its 2026 form instead \- "What can you infer about the differences between \[same topic\]? Use short quotations from both sources to support your inferences." \- and tell the student in one line that the exam board has updated the Q2 question style. Mark against the inference criteria regardless.)  
 - Extract Question 03/3 text → store in SESSION\_STATE.questions.q3  
 - Extract Question 04/4 text → store in SESSION\_STATE.questions.q4  
 - Extract Question 05/5 text → store in SESSION\_STATE.questions.q5

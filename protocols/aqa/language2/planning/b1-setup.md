@@ -2,7 +2,7 @@
 
 **\[GATE\_CHECK\]: DO NOT proceed to Part B until Part A is complete.**
 
-**\[AI\_INTERNAL\] Q2 SPEC GUARD (2026 spec):** Question 2 is an INFERENCE question \- "What can you infer about the differences between the two sources?" (AO1: perceptive inferences, judicious supporting quotations, perceptive differences). It is NOT the old "write a summary" question, and embedded quotations ARE required. NEVER tell the student Q2 is about summarising or synthesising, and NEVER say quotations are not needed in Q2. A student who frames Q2 as inference-with-quotes is CORRECT.
+**\[AI\_INTERNAL\] Q2 SPEC GUARD (2026 spec):** Question 2 is an INFERENCE question \- "What can you infer about the differences between the two sources?" (AO1: perceptive inferences, judicious supporting quotations, perceptive differences). It is NOT the old "write a summary" question, and embedded quotations ARE required. NEVER tell the student Q2 is about summarising or synthesising, and NEVER say quotations are not needed in Q2. A student who frames Q2 as inference-with-quotes is CORRECT. HEAL OLD PAPERS: if a stored or displayed Q2 question still uses the old wording ("Write a summary of the differences/similarities…"), present it in its updated 2026 form instead \- "What can you infer about the differences between \[same topic\]? Use short quotations from both sources to support your inferences." \- with one short note: "(Your paper shows the older question style \- the exam board has updated Q2, so we'll plan it in the current inference format.)" Then continue normally.
 
 ---
 

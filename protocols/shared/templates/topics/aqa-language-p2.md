@@ -120,7 +120,7 @@ Read again Source A from lines 1 to 12. Identify four true statements about the 
 **Marks:** 8
 **AOs:** AO1
 
-You need to refer to Source A and Source B for this question. Use details from both sources. Write a summary of the differences between the way extreme weather is experienced in Source A and Source B.
+You need to refer to Source A and Source B for this question. What can you infer about the differences between the way extreme weather is experienced in Source A and Source B? Use short quotations from both sources to support your inferences.
 
 ## Q3
 **Marks:** 12
@@ -144,7 +144,7 @@ For this question, you need to refer to the whole of Source A, together with the
 
 # Topic 2: Conceptual Notes
 **Type:** conceptual-notes
-**Teaching Point:** Key concepts for AQA Language Paper 2 — non-fiction reading skills (identifying true statements, synthesis and summary, language analysis, comparing writers' perspectives) and transactional writing skills (articles, speeches, letters, leaflets using IUMVCC structure). These notes support both Phase 1 (first draft) and Phase 2 (redraft) across all practice papers.
+**Teaching Point:** Key concepts for AQA Language Paper 2 — non-fiction reading skills (identifying true statements, inference about differences between sources, language analysis, comparing writers' perspectives) and transactional writing skills (articles, speeches, letters, leaflets using IUMVCC structure). These notes support both Phase 1 (first draft) and Phase 2 (redraft) across all practice papers.
 **Marks:** 0
 **AOs:** none
 
@@ -297,7 +297,7 @@ Read again Source A from lines 1 to 11. Identify four true statements about the 
 **Marks:** 8
 **AOs:** AO1
 
-You need to refer to Source A and Source B for this question. Use details from both sources. Write a summary of the similarities between the dangers faced by the writers during their sea voyages.
+You need to refer to Source A and Source B for this question. What can you infer about the differences between the dangers faced by the writers during their sea voyages? Use short quotations from both sources to support your inferences.
 
 ## Q3
 **Marks:** 12
@@ -467,7 +467,7 @@ Read again Source A from lines 1 to 15. Identify four true statements about the 
 **Marks:** 8
 **AOs:** AO1
 
-You need to refer to Source A and Source B for this question. Use details from both sources. Write a summary of the differences between how each writer presents the treatment of disadvantaged people.
+You need to refer to Source A and Source B for this question. What can you infer about the differences between how each writer presents the treatment of disadvantaged people? Use short quotations from both sources to support your inferences.
 
 ## Q3
 **Marks:** 12
@@ -621,7 +621,7 @@ Read again Source A from lines 1 to 14. Identify four true statements about Mitc
 **Marks:** 8
 **AOs:** AO1
 
-You need to refer to Source A and Source B for this question. Use details from both sources. Write a summary of the differences between how each writer views the cosmetics industry.
+You need to refer to Source A and Source B for this question. What can you infer about the differences between how each writer views the cosmetics industry? Use short quotations from both sources to support your inferences.
 
 ## Q3
 **Marks:** 12
@@ -778,7 +778,7 @@ Read again Source A from lines 1 to 16. Identify four true statements about the 
 **Marks:** 8
 **AOs:** AO1
 
-You need to refer to Source A and Source B for this question. Use details from both sources. Write a summary of the similarities between how each writer views the role of observation and experience in gaining knowledge.
+You need to refer to Source A and Source B for this question. What can you infer about the differences between how each writer views the role of observation and experience in gaining knowledge? Use short quotations from both sources to support your inferences.
 
 ## Q3
 **Marks:** 12
