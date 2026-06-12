@@ -2038,6 +2038,14 @@ class SWML_REST_API {
                 $doc['html'], $user_id, $board, $text, (int) $topic_number, (string) $suffix, max(1, (int) $attempt)
             );
             $doc['html'] = self::heal_score_summary_boundaries($doc['html']);
+            // v7.19.419: heal-on-load — swap pre-2026 AQA Language P2 Q2 stems
+            // ("Write a summary of the differences/similarities…") for the updated
+            // inference wording. Exact-match on the five known template stems;
+            // student plans/responses untouched. Not persisted: cleans on next
+            // autosave (same gradual-clean pattern as the strips above).
+            if ($board === 'aqa' && strpos($text, 'lang_paper_2') !== false) {
+                $doc['html'] = self::heal_q2_inference_stems($doc['html']);
+            }
         }
 
         // v7.19.84: Crib-template version migration. Compare saved doc's stamped
@@ -2088,6 +2096,29 @@ class SWML_REST_API {
      * Tutor review: load a student's canvas document (v7.15.2).
      * Requires tutor auth + LearnDash group overlap (or admin).
      */
+    /**
+     * v7.19.419: Replace pre-2026 AQA Language P2 Q2 stems with the updated
+     * inference wording (authentic three-sentence AQA shape: refer line stays,
+     * "Use details… Write a summary…" becomes context sentence + "What can you
+     * infer…?"). Exact-match swap of the five known template stems — any
+     * student-edited question text is left alone.
+     */
+    private static function heal_q2_inference_stems($html) {
+        $map = [
+            'Use details from both sources. Write a summary of the differences between the way extreme weather is experienced in Source A and Source B.'
+                => 'The writers in Source A and Source B are both experiencing extreme weather. What can you infer about the differences between the two experiences of extreme weather?',
+            'Use details from both sources. Write a summary of the similarities between the dangers faced by the writers during their sea voyages.'
+                => 'The writers in Source A and Source B both face danger during sea voyages. What can you infer about the differences between the dangers the two writers face?',
+            'Use details from both sources. Write a summary of the differences between how each writer presents the treatment of disadvantaged people.'
+                => 'The writers in Source A and Source B both describe the treatment of disadvantaged people. What can you infer about the differences between the treatment of disadvantaged people in the two sources?',
+            'Use details from both sources. Write a summary of the differences between how each writer views the cosmetics industry.'
+                => 'The writers in Source A and Source B are both writing about the cosmetics industry. What can you infer about the differences between the two writers\' views of the cosmetics industry?',
+            'Use details from both sources. Write a summary of the similarities between how each writer views the role of observation and experience in gaining knowledge.'
+                => 'The writers in Source A and Source B both consider how people gain knowledge. What can you infer about the differences between the two writers\' views on gaining knowledge?',
+        ];
+        return str_replace(array_keys($map), array_values($map), $html);
+    }
+
     public function tutor_load_canvas($request) {
         $student_id = absint($request->get_param('student_id') ?? 0);
         if (!$student_id) {
@@ -2214,6 +2245,11 @@ class SWML_REST_API {
                 $doc['html'], $student_id, $board, $text, (int) $topic_number, (string) $suffix, max(1, (int) $attempt)
             );
             $doc['html'] = self::heal_score_summary_boundaries($doc['html']);
+            // v7.19.419: same Q2 stem heal as load_canvas — tutor sees the updated
+            // inference wording too.
+            if ($board === 'aqa' && strpos($text, 'lang_paper_2') !== false) {
+                $doc['html'] = self::heal_q2_inference_stems($doc['html']);
+            }
         }
         return rest_ensure_response(['success' => true, 'doc' => $doc, 'attempt' => $attempt]);
     }
