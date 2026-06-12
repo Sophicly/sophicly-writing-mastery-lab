@@ -6,31 +6,28 @@
 
 ---
 
-### **Question 2 (AO1) – Gold Standard TECEA Paragraph (Source A Analysis)**
+### **Question 2 (AO1) – Gold Standard Paired-Inference Paragraph (2026 spec)**
 
-**TECEA Gold Standard (Question 2 \- Single Source Analysis):**
+**Paired-Inference Gold Standard (Question 2 \- each paragraph weaves BOTH sources):**
 
 **Structure Requirements:**
 
-* **(T) Topic:** Clear topic sentence establishing what is being analyzed about the source  
-* **(E) Evidence & (I) Inference:** Paraphrased evidence from source with inference (NO direct quotes)  
-* **(C) Close Reading:** Deeper interpretation of what the paraphrased details reveal  
-* **(Eff) Effect:** What impression this creates about the place/situation/perspective  
-* **(A) Writer's Perspective:** Comment on how the writer presents the subject
+* **Inference 1 (Source A):** Inferential topic-sentence claim (what the writer implies, beyond the obvious), developed in detail, anchored to a short judicious embedded quotation \- the claim built FROM the quoted words  
+* **Inference 2 (Source B \- difference):** OPENS with a comparative discourse marker ("However," "In contrast," "Whereas," "Unlike"), states a perceptive difference against Inference 1, developed in detail, anchored to its own embedded Source B quotation
 
 **Sentence-Level Rules:**
 
 * Each sentence must be 2-3 lines of developed interpretation  
-* NO direct quotations \- must paraphrase in own words  
+* Every inference carries its own short embedded quotation \- direct quotations are REQUIRED (the old no-quotes summary rule no longer applies)  
+* NO technique-spotting \- Q2 is AO1: infer from the words, never name devices  
 * Sentences must not start with "the," "this," or "these"  
-* NO use of the verb "shows"  
-* Use discourse markers to connect ideas smoothly
+* NO use of the verb "shows"
 
 ---
 
-**Example Question 2 Gold Standard Paragraph (Source A):**
+**Example Question 2 Gold Standard Paragraph (Inference 1 Source A → Inference 2 Source B):**
 
-Fogle's account conveys overwhelming psychological pressure through surreal imagery and dark humor. In his description, the hospital environment feels like an enormous ship on fire with him sailing alone, suggesting an institution spiraling into catastrophic failure with him as the sole inadequate responder. Zooming into this comparison reveals how medical professionals experience their workload—not simply as difficult but as actively life-threatening chaos where containment seems impossible. Readers understand that healthcare workers don't just face busy shifts but operate in conditions of genuine psychological crisis, where responsibility vastly exceeds capacity. Fogle perhaps reveals how medical professionals cope by transforming trauma into metaphor, making horror communicable through exaggeration and humor.
+Fogle's account presents medical work as psychological crisis rather than mere busyness: likening the hospital to "an enormous ship on fire" that he sails alone implies an institution spiralling beyond any one person's control, where responsibility vastly exceeds capacity. However, where Fogle's danger arrives as engulfing catastrophe, the Source B writer presents hardship as slow erosion \- her admission that ward life "wears one down by inches" implies suffering measured in months rather than moments, a grinding depletion the writer endures rather than fights.
 
 ---
 

@@ -280,7 +280,10 @@
       "Bash(awk 'NR>=3300 && NR<=3360 && \\(/private function|public function/ || NR==3352\\)' includes/class-protocol-router.php)",
       "Bash(awk '/function /{f=$0; l=NR} NR==3352{print l\": \"f} NR==3565{print l2\": \"f2} /function /{f2=$0; l2=NR}' includes/class-protocol-router.php)",
       "Bash(awk 'NR<=3352 && /private function|public function/{f=$0; l=NR} END{}' includes/class-protocol-router.php)",
-      "Bash(awk '/private function|public function/{if \\(NR<=3352\\) {f=$0; l=NR}} END {print l \": \" f}' includes/class-protocol-router.php)"
+      "Bash(awk '/private function|public function/{if \\(NR<=3352\\) {f=$0; l=NR}} END {print l \": \" f}' includes/class-protocol-router.php)",
+      "Bash(grep -n ' \\\\$\\\\| $')",
+      "Bash(grep -c '  $')",
+      "Bash(awk 'NR>=9 && NR<=230 && / +$/{print NR}' b3-q2q3-planning.md)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

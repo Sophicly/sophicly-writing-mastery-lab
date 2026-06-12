@@ -11,33 +11,31 @@ Say: "Thank you. The feedback has several parts. I'll guide you through it one s
 
 ---
 
-**Mark Breakdown — Paragraph 1 (4 marks): four inference units in the order Source A → Source B → Source A → Source B.**
+**Mark Breakdown — Paragraph 1 (4 marks): two inference units — Source A, then Source B (the difference-statement).**
 
-**Internal AI Note (v7.19.403/405 — quarter-mark ladder, ratified by Neil 11 Jun):** Score each of the four units on FOUR near-binary criteria worth 0.25 each (1.0 per unit, 4.0 per paragraph). Apply each criterion as a yes/no check against its descriptor — never estimate a unit holistically and back-fill the quarters. Most descriptive topic sentences earn Claim but NOT Perceptive — that distinction is the point of the ladder. Source A units and Source B units use DIFFERENT first-two quarters (below): B units are the difference-statements (AQA: "statements show perceptive differences") and their comparative discourse marker is SCORED, not just required.
+**Internal AI Note (v7.19.403/405 quarter ladder; v7.19.413 re-shaped to TWO half-mark-check units per paragraph, ratified by Neil 12 Jun):** Score each of the two units on FOUR near-binary criteria worth 0.5 each (2.0 per unit, 4.0 per paragraph). Apply each criterion as a yes/no check against its descriptor — never estimate a unit holistically and back-fill the checks. Most descriptive topic sentences earn Claim but NOT Perceptive — that distinction is the point of the ladder. The Source A unit and the Source B unit use DIFFERENT first-two checks (below): the B unit is the difference-statement (AQA: "statements show perceptive differences") and its comparative discourse marker is SCORED, not just required. In student-facing output, label the units "Inference 1 (Source A)" and "Inference 2 (Source B — difference)" — NEVER the word "Unit" (it collides with course Units).
 
-**STRENGTHS \- Marks Awarded (per unit):**
+**STRENGTHS \- Marks Awarded (per inference):**
 
-**Source A units (Units 1 and 3) — first two quarters:**
+**Inference 1 (Source A) — first two checks:**
 
-* **Claim made (AO1): plus 0.25 marks** → the unit's topic sentence states an INFERENTIAL claim — what the writer presents or implies — not plain description or retelling. Zero-example: "Source A is about a storm on Everest" = 0. Awarded **\[X\]** out of 0.25 because \[specific reason\].  
-* **Claim perceptive (AO1): plus 0.25 marks** → the claim is subtle or insightful, beyond the obvious surface reading. Zero-example: "the storm is presented as destructive" = 0 (the storm is literally destructive — that is the surface); "the storm is presented as a force that erases human ambition" earns it. Awarded **\[X\]** out of 0.25 because \[specific reason\].
+* **Claim made (AO1): plus 0.5 marks** → the inference's topic sentence states an INFERENTIAL claim — what the writer presents or implies — not plain description or retelling. Zero-example: "Source A is about a storm on Everest" = 0. Awarded **\[X\]** out of 0.5 because \[specific reason\].  
+* **Claim perceptive (AO1): plus 0.5 marks** → the claim is subtle or insightful, beyond the obvious surface reading. Zero-example: "the storm is presented as destructive" = 0 (the storm is literally destructive — that is the surface); "the storm is presented as a force that erases human ambition" earns it. Awarded **\[X\]** out of 0.5 because \[specific reason\].
 
-**Source B units (Units 2 and 4) — first two quarters (the difference-statements — AQA: "statements show perceptive differences"):**
+**Inference 2 (Source B) — first two checks (the difference-statement — AQA: "statements show perceptive differences"):**
 
-* **Comparative link (AO1): plus 0.25 marks** → the unit OPENS with a comparative discourse marker (However / In contrast / Unlike / Whereas / On the other hand…) AND states a difference-claim against the preceding Source A unit. Zero-examples: no discourse marker = 0; a Source B point with no stated difference = 0. Awarded **\[X\]** out of 0.25 because \[specific reason\].  
-* **Difference perceptive (AO1): plus 0.25 marks** → the stated difference is subtle or insightful beyond the obvious (the pace of the danger, who suffers, the writer's distance — not "A is violent, B is calm"). Awarded **\[X\]** out of 0.25 because \[specific reason\].
+* **Comparative link (AO1): plus 0.5 marks** → the inference OPENS with a comparative discourse marker (However / In contrast / Unlike / Whereas / On the other hand…) AND states a difference-claim against the preceding Source A inference. Zero-examples: no discourse marker = 0; a Source B point with no stated difference = 0. Awarded **\[X\]** out of 0.5 because \[specific reason\].  
+* **Difference perceptive (AO1): plus 0.5 marks** → the stated difference is subtle or insightful beyond the obvious (the pace of the danger, who suffers, the writer's distance — not "A is violent, B is calm"). Awarded **\[X\]** out of 0.5 because \[specific reason\].
 
-**All four units — last two quarters:**
+**Both inferences — last two checks:**
 
-* **Developed in detail (AO1): plus 0.25 marks** → the claim is unpacked: the writing explains what the chosen detail REVEALS, rather than restating the claim or stacking quotes. Zero-example: a quote followed by "this shows the storm was dangerous" = 0. Awarded **\[X\]** out of 0.25 because \[specific reason\].  
-* **Quote-anchored (AO1): plus 0.25 marks** → a JUDICIOUS quotation, relevant to the question's focus, is embedded in the development — judicious means the unit's claim and detail are built FROM the quoted words, not merely placed near them. Zero-examples: a quote dropped in while the surrounding argument discusses a different idea = 0 (a quote was chosen, but nothing perceptive is said THROUGH it); a well-chosen quote about something the question did not ask = 0. Paraphrase without quotation = 0 for this criterion only (a detailed but unquoted development keeps its Detail quarter). Awarded **\[X\]** out of 0.25 because \[specific reason\].
+* **Developed in detail (AO1): plus 0.5 marks** → the claim is unpacked: the writing explains what the chosen detail REVEALS, rather than restating the claim or stacking quotes. Zero-example: a quote followed by "this shows the storm was dangerous" = 0. Awarded **\[X\]** out of 0.5 because \[specific reason\].  
+* **Quote-anchored (AO1): plus 0.5 marks** → a JUDICIOUS quotation, relevant to the question's focus, is embedded in the development — judicious means the inference's claim and detail are built FROM the quoted words, not merely placed near them. Zero-examples: a quote dropped in while the surrounding argument discusses a different idea = 0 (a quote was chosen, but nothing perceptive is said THROUGH it); a well-chosen quote about something the question did not ask = 0. Paraphrase without quotation = 0 for this criterion only (a detailed but unquoted development keeps its Detail check). Awarded **\[X\]** out of 0.5 because \[specific reason\].
 
-Walk all four units in order, labelling each:
+Walk both inferences in order, labelling each:
 
-* **Unit 1 — Source A:** Claim \[X\]/0.25 · Perceptive \[X\]/0.25 · Detail \[X\]/0.25 · Quote \[X\]/0.25 → \[name the lost quarters and why\]  
-* **Unit 2 — Source B:** Link \[X\]/0.25 · Perceptive difference \[X\]/0.25 · Detail \[X\]/0.25 · Quote \[X\]/0.25 → \[name the lost quarters and why\]  
-* **Unit 3 — Source A:** Claim \[X\]/0.25 · Perceptive \[X\]/0.25 · Detail \[X\]/0.25 · Quote \[X\]/0.25 → \[name the lost quarters and why\]  
-* **Unit 4 — Source B:** Link \[X\]/0.25 · Perceptive difference \[X\]/0.25 · Detail \[X\]/0.25 · Quote \[X\]/0.25 → \[name the lost quarters and why\]
+* **Inference 1 (Source A):** Claim \[X\]/0.5 · Perceptive \[X\]/0.5 · Detail \[X\]/0.5 · Quote \[X\]/0.5 → \[name the lost checks and why\]  
+* **Inference 2 (Source B — difference):** Link \[X\]/0.5 · Perceptive difference \[X\]/0.5 · Detail \[X\]/0.5 · Quote \[X\]/0.5 → \[name the lost checks and why\]
 
 **Potential marks per paragraph: 4.0 marks** (Claim/Link 1.0 + Perceptive 1.0 + Detail 1.0 + Quote 1.0)
 

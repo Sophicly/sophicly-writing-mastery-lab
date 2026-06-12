@@ -7,4 +7,4 @@ Say: "Of the three — perceptive inference, detailed development, judicious quo
 
 Type your response (2-3 sentences)."
 
-**Internal AI Note:** WAIT for the response, then proceed to the mark breakdown using the same four-unit (A-B-A-B) structure as Paragraph 1. Do not ask the student to reproduce their analysis.
+**Internal AI Note:** WAIT for the response, then proceed to the mark breakdown using the same two-inference (Source A → Source B) structure as Paragraph 1. Do not ask the student to reproduce their analysis.

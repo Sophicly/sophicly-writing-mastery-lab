@@ -76,7 +76,7 @@
 * **I1** – Imprecise/underdeveloped interpretation (-0.5)  
   Detection: Surface-level or vague analysis  
   Fix: Deepen with specific source evidence and precise interpretation  
-  **Applies to:** Q2 (vague synthesis), Q3 (surface-level language analysis), Q4 (shallow comparison)  
+  **Applies to:** Q2 (vague inference), Q3 (surface-level language analysis), Q4 (shallow comparison)  
     
 * **P2** – Lacks perceptive insight (-0.5)  
   Detection: Missing deeper analytical layer  
@@ -89,7 +89,7 @@
 * **U1** – Unsophisticated/informal vocabulary (-0.5)  
   Detection: Colloquial language in formal analytical essay  
   Fix: Elevate to academic register  
-  **Applies to:** Q2 (informal synthesis), Q3 (casual analysis), Q4 (informal comparison)  
+  **Applies to:** Q2 (informal register), Q3 (casual analysis), Q4 (informal comparison)  
     
 * **K1** – Conflated/underdeveloped conceptual links (-0.5)  
   Detection: Weak connections between ideas  
@@ -141,27 +141,21 @@
 
 **Response Criteria by Question**
 
-**Important:** Question 1 requires selection only. Question 2 requires synthesis in own words. Question 3 requires language analysis with embedded quotations. Question 4 requires comparative analysis across both sources. Section B Question 5 requires extended transactional writing.
+**Important:** Question 1 requires selection only. Question 2 requires perceptive inference about the differences, every inference anchored to an embedded quotation (2026 spec). Question 3 requires language analysis with embedded quotations. Question 4 requires comparative analysis across both sources. Section B Question 5 requires extended transactional writing.
 
 **Question 1 – AO1 (4 marks) – True/False Selection**
 
 Students must select four true statements from a list of eight options based on the specified lines of Source A. They should shade the circles for four statements only. No explanation or justification is required. The task simply requires students to identify which statements accurately reflect explicit and implicit information from the source.
 
-**Question 2 – AO1 (8 marks) – Summary Using Own Words**
+**Question 2 – AO1 (8 marks) – Inference: Differences Between the Sources (2026 spec)**
 
-Students must write a summary comparing what they understand about the differences between the two sources. They must refer to both Source A and Source B. Students should write two separate analytical paragraphs: one analyzing Source A, one analyzing Source B. The critical requirement is that students use their own words throughout and do not use direct quotations from the sources.
+Students must answer "What can you infer about the differences between the two sources?" in two paragraphs. Each paragraph weaves BOTH sources together — a Source A inference followed by a Source B difference-inference. NEVER one paragraph analysing Source A and a second analysing Source B. Every inference must be anchored to a short, judicious embedded quotation, with the claim built FROM the quoted words. Direct quotations are REQUIRED — the old "summary in your own words, no quotations" specification no longer applies and must never be taught or enforced.
 
-Students should use the following paragraph structure (TECEA):
+**\[FRAMEWORK NOTE\]** Question 2 (2026 spec) uses the paired-inference structure, not TECEA/TTECEA. Per paragraph: **Inference 1 (Source A)** — an inferential topic-sentence claim (what the writer implies, beyond the obvious), perceptive, developed in detail, quote-anchored; **Inference 2 (Source B — difference)** — OPENS with a comparative discourse marker ("However," "In contrast," "Whereas," "Unlike"), states a perceptive difference against Inference 1, developed in detail, quote-anchored. Q2 is AO1: technique identification earns nothing in Q2 (that is Q3/Q4 territory) — never penalise its absence. Questions 3 and 4 use **TTECEA** (6 elements: adds "Technique" identification with embedded quotations), which requires explicit naming of language/structural techniques.
 
-**\[FRAMEWORK NOTE\]** Question 2 uses **TECEA** (5 elements: Topic, Evidence, Close analysis, Effects, Author's purpose) because students must synthesize using their own words without quotations or technical terminology. Questions 3 and 4 use **TTECEA** (6 elements: adds "Technique" identification with embedded quotations), which requires explicit naming of language/structural techniques. TECEA is a simplified analytical framework appropriate for synthesis tasks.
+Paragraph 1 covers the first aspect of difference; Paragraph 2 covers a second, distinct aspect with entirely new evidence. The paragraphs stay disjoint — each quotation and claim earns marks once.
 
-For Paragraph 1 on Source A, begin with a topic sentence introducing the key aspect being summarized about Source A. Include evidence by paraphrasing details from the source and explain what they suggest through inference. Provide close analysis explaining what these details reveal about the place, situation, or perspective. Discuss the effects or impression this creates. Consider the writer's purpose or perspective and what this shows about their viewpoint.
-
-For Paragraph 2 on Source B, begin with a topic sentence introducing how Source B differs, using comparative language such as "In contrast," "However," or "Whereas." Include evidence by paraphrasing details from the source and explain what they suggest through inference. Provide close analysis explaining what these details reveal about the place, situation, or perspective. Discuss the effects or impression this creates. Consider the writer's purpose or perspective and what this shows about their viewpoint.
-
-Students must make explicit statements showing they understand the differences between the sources. These differences should be clear through the separate analysis of each source in each paragraph.
-
-The key assessment criteria are synthesis and interpretation from both sources, clear understanding of differences between the sources, use of own words through paraphrasing rather than quoting, and perceptive inferences at higher levels. A typical response length is 150 to 200 words covering both sources with clear differences identified through the two-paragraph structure.
+The key assessment criteria are perceptive inferences (beyond what the text literally says), perceptive differences stated through comparative discourse markers, detailed development of what each quoted detail reveals, and judicious embedded quotations. Marking: each inference = 2 marks (0.5 Claim/Link + 0.5 Perceptive + 0.5 Detail + 0.5 Quote-anchored); two inferences per paragraph (4.0); 8.0 total. A typical response length is 150 to 200 words covering both sources.
 
 **Question 3 – AO2 (12 marks) – Language Analysis**
 
