@@ -2046,6 +2046,12 @@ class SWML_REST_API {
             if ($board === 'aqa' && strpos($text, 'lang_paper_2') !== false) {
                 $doc['html'] = self::heal_q2_inference_stems($doc['html']);
             }
+            // v7.19.424: heal-on-load — planning docs already poisoned by the
+            // sibling seed (Phase 1 answers inside _planning docs) lose their
+            // response prose on every load until the next autosave persists it.
+            if ($suffix === '_planning') {
+                $doc['html'] = self::strip_responses_for_planning($doc['html']);
+            }
         }
 
         // v7.19.84: Crib-template version migration. Compare saved doc's stamped
@@ -2249,6 +2255,10 @@ class SWML_REST_API {
             // inference wording too.
             if ($board === 'aqa' && strpos($text, 'lang_paper_2') !== false) {
                 $doc['html'] = self::heal_q2_inference_stems($doc['html']);
+            }
+            // v7.19.424: same planning response strip as load_canvas.
+            if ($suffix === '_planning') {
+                $doc['html'] = self::strip_responses_for_planning($doc['html']);
             }
         }
         return rest_ensure_response(['success' => true, 'doc' => $doc, 'attempt' => $attempt]);
@@ -3415,6 +3425,33 @@ class SWML_REST_API {
      * students migrate forward. Topic-scoped (null when no topic). Read-only — does not
      * write; caller returns the html as a seed and the first autosave persists it.
      */
+    /**
+     * v7.19.424: Planning-stage docs must NOT carry response prose. The sibling
+     * seed below clones the most recently saved same-topic doc wholesale — for
+     * t1_planning's first load that is the Phase 1 diagnostic doc, so the
+     * student's Phase 1 answers landed inside the Phase 2 planning doc.
+     * Stage-reveal hides those sections in the planning VIEW while the AI
+     * document payload still carries them — the student sees an empty doc,
+     * Sophia sees full answers and references "what you wrote" (Neil 12 Jun).
+     * Phase 2 is a fresh start by design: sources/questions/scaffolding seed
+     * forward, student prose does not. Empties response sections whose label
+     * contains "Response" (Q1 Statements scaffolding is template furniture and
+     * stays). Response sections are not editable in the planning view, so any
+     * content found there is a seeding artefact — safe to strip on every load.
+     */
+    private static function strip_responses_for_planning($html) {
+        if (empty($html) || strpos($html, 'data-section-type="response"') === false) return $html;
+        return preg_replace_callback(
+            '/(<div[^>]*data-section-type="response"[^>]*>)(.*?)(<\/div>)/s',
+            function ($m) {
+                if (!preg_match('/data-section-label="[^"]*Response[^"]*"/i', $m[1])) return $m[0];
+                if (stripos($m[2], '<div') !== false) return $m[0]; // nested structure — leave untouched
+                return $m[1] . '<p></p>' . $m[3];
+            },
+            $html
+        );
+    }
+
     private function seed_from_sibling_stage($user_id, $board, $text, $topic_number, $exclude_key) {
         if ($topic_number === null || (int) $topic_number <= 0) return null;
         global $wpdb;
@@ -3441,6 +3478,11 @@ class SWML_REST_API {
                 $best_html = $d['html'];
                 $best_time = $t;
             }
+        }
+        // v7.19.424: planning is a fresh start — never seed sibling response prose
+        // into a planning-stage doc (Phase 1 answers were riding into t1_planning).
+        if ($best_html !== null && strpos($exclude_key, '_planning') !== false) {
+            $best_html = self::strip_responses_for_planning($best_html);
         }
         return $best_html;
     }

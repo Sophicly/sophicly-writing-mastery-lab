@@ -20618,6 +20618,27 @@
         return out;
     }
 
+    // v7.19.424: client mirror of strip_responses_for_planning (class-rest-api).
+    // The sibling seed cloned Phase 1 answers into _planning docs; localStorage
+    // drafts of those docs keep the poisoned copy even after the server heal.
+    // Planning is a fresh start — response prose never belongs in its doc.
+    function stripResponsesForPlanningLocal(html) {
+        if (!html || state.task !== 'planning' || html.indexOf('data-section-type="response"') === -1) return html;
+        try {
+            const w = document.createElement('div');
+            w.innerHTML = html;
+            let changed = false;
+            w.querySelectorAll('[data-section-type="response"]').forEach(sec => {
+                const label = sec.getAttribute('data-section-label') || '';
+                if (/Response/i.test(label) && (sec.textContent || '').trim()) {
+                    sec.innerHTML = '<p></p>';
+                    changed = true;
+                }
+            });
+            return changed ? w.innerHTML : html;
+        } catch (e) { return html; }
+    }
+
     function loadCanvasContent() {
         // Synchronous: return localStorage for instant editor init
         try {
@@ -20625,7 +20646,7 @@
             const _val = localStorage.getItem(_key) || '';
             // v7.19.136 instrumentation — every localStorage read for the canvas doc
             try { console.log('[WML load-debug v7.19.136] localStorage read', { key: _key, size: _val.length }); } catch (_) {}
-            return healQ2InferenceStemsLocal(_val);
+            return stripResponsesForPlanningLocal(healQ2InferenceStemsLocal(_val));
         } catch (e) { return ''; }
     }
 
