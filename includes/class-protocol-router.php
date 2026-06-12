@@ -1522,9 +1522,15 @@ class SWML_Protocol_Router {
 
         // v7.14.68: Mastery planning — swap b1-setup.md for canvas-aware version
         // (computed here since v7.19.411 so the slice path below can apply it too).
+        // v7.19.416: scoped to language subjects. The swap target is the LANGUAGE
+        // canvas file (language/planning/b1-setup-canvas.md — Source A/B + "starting
+        // with Question 2" framing); literature subjects also ship planning/b1-setup.md
+        // step files, and the unscoped flag would swap a Macbeth planning session's
+        // setup for the language one whenever phase+topic_number ride the context.
         $is_mastery_planning = ($task === 'planning')
             && !empty($context['phase'])
-            && !empty($context['topic_number']);
+            && !empty($context['topic_number'])
+            && strpos((string) ($context['subject'] ?? ''), 'language') === 0;
 
         if (!$suppress_step_files && !empty($task_config['steps'][$step])) {
             $step_files = $task_config['steps'][$step]['files'] ?? [];
