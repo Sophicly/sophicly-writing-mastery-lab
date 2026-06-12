@@ -10523,7 +10523,7 @@
 
         // Draggable floating word count widget
         const wcWidget = el('div', { className: 'swml-wc-widget', id: 'swml-wc-widget' });
-        const wcWidgetLabel = el('span', { id: 'swml-wc-widget-label', textContent: `0 / ${canvasWordTarget}` });
+        const wcWidgetLabel = el('span', { id: 'swml-wc-widget-label', textContent: state.task === 'planning' ? '0 words' : `0 / ${canvasWordTarget}` });
         const wcWidgetClose = el('button', {
             className: 'swml-wc-widget-close',
             textContent: '×',
@@ -13017,7 +13017,9 @@
                 // re-render — keystrokes were updating orphan nodes while the
                 // visible DOM stayed at "0 / 650". Diag refs stay closure-bound
                 // (diagnostic mode rebuilds its own scope when re-rendered).
-                const wc = getResponseWordCount(editor);
+                // v7.19.423: planning lessons count student plan words; others
+                // keep the response count. The pill paints via the shared helper.
+                const wc = (state.task === 'planning') ? getPlanningWordCount(editor) : getResponseWordCount(editor);
                 const _liveFooterWc = document.getElementById('swml-footer-wc');
                 if (_liveFooterWc) _liveFooterWc.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
 
@@ -13030,8 +13032,7 @@
                 if (diagWcLabel) diagWcLabel.textContent = getWordCountLabel(wc);
                 if (diagCompleteBtn) diagCompleteBtn.style.display = wc >= canvasWordMinimum ? 'block' : 'none';
                 // Floating widget
-                const _liveWcWidget = document.getElementById('swml-wc-widget-label');
-                if (_liveWcWidget) _liveWcWidget.textContent = `${wc} / ${canvasWordTarget}`;
+                _paintWcWidgetLabel(editor);
                 // v7.19.285: Mastery Codex soft word-count panel (input-field totals).
                 if (state.task === 'mastery_codex') _paintCodexWc(editor);
 
@@ -16081,6 +16082,79 @@
         if (wc >= canvasWordTarget) return `${wc} / ${canvasWordTarget} words ✓ Target reached`;
         if (wc >= canvasWordMinimum) return `${wc} / ${canvasWordTarget} words — Minimum reached`;
         return `${wc} / ${canvasWordTarget} words`;
+    }
+
+    // v7.19.423: Neil's per-question response word targets (12 Jun). Whole-paper
+    // multi-Q docs sum the targets of the response sections VISIBLE in the current
+    // stage view (stage-reveal hides future-stage sections); single-essay docs keep
+    // the marks-table path below. Q1 20 (statement ticks) / Q2 200 (2×~100 paired
+    // inferences) / Q3 450 (3×150 TTECEA) / Q4 550 (intro 50 + 3×150 + concl 50) /
+    // Q5 650 (Section B — settled).
+    const MULTIQ_RESPONSE_TARGETS = {
+        'aqa|lang_paper_2': { Q1: 20, Q2: 200, Q3: 450, Q4: 550, Q5: 650 },
+    };
+    function _multiqTargetKey() {
+        if (state.board !== 'aqa') return null;
+        return String(state.text || '').indexOf('lang_paper_2') !== -1 ? 'aqa|lang_paper_2' : null;
+    }
+    // v7.19.423: planning lessons count STUDENT words only — text typed into the
+    // input fields of VISIBLE plan/outline sections. Section labels, placeholders,
+    // sources, questions and stage-hidden sections never count (the old widget
+    // showed 1669/650 on an untouched planning doc because it counted the whole
+    // document against Section B's response target).
+    function getPlanningWordCount(editor) {
+        const editorEl = (editor && editor.options && editor.options.element)
+            || document.getElementById('swml-tiptap-editor');
+        if (!editorEl) return 0;
+        let total = 0;
+        editorEl.querySelectorAll('[data-section-type="plan"], [data-section-type="outline"]').forEach(sec => {
+            if (sec.offsetParent === null) return; // stage-hidden
+            sec.querySelectorAll('.swml-input-field').forEach(f => {
+                const t = (f.textContent || '').trim();
+                if (t) total += t.split(/\s+/).filter(w => w.length > 0).length;
+            });
+        });
+        return total;
+    }
+    // Sum of per-question targets for response sections visible in the current
+    // stage view. Returns null when this doc isn't a known multi-Q paper.
+    function _visibleMultiqTarget(editor) {
+        const key = _multiqTargetKey();
+        if (!key) return null;
+        const map = MULTIQ_RESPONSE_TARGETS[key];
+        const editorEl = (editor && editor.options && editor.options.element)
+            || document.getElementById('swml-tiptap-editor');
+        if (!editorEl) return null;
+        let sum = 0, labelled = 0;
+        editorEl.querySelectorAll('[data-section-type="response"]').forEach(sec => {
+            const m = (sec.getAttribute('data-section-label') || '').match(/\bQ(\d+)\b/i);
+            if (!m) return;
+            labelled++;
+            if (sec.offsetParent === null) return; // stage-hidden — not in this lesson's scope
+            sum += map['Q' + m[1]] || 0;
+        });
+        return labelled >= 2 ? sum : null;
+    }
+    // v7.19.423: single source of truth for the floating word-count pill.
+    // Planning → "X words" (plans are keyword-based; no invented target).
+    // Multi-Q paper → "X / [sum of visible per-question targets]".
+    // Single essay → "X / [marks-table target]" (unchanged).
+    function _paintWcWidgetLabel(editor) {
+        const widget = document.getElementById('swml-wc-widget-label');
+        if (!widget) return;
+        if (state.task === 'planning') {
+            const wc = getPlanningWordCount(editor);
+            widget.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
+            return;
+        }
+        const wc = getResponseWordCount(editor);
+        const mq = _visibleMultiqTarget(editor);
+        if (mq && mq > 0) {
+            canvasWordTarget = mq;
+            canvasWordMinimum = Math.round(mq * 0.7);
+            canvasWordIdeal = Math.round(mq * 1.25);
+        }
+        widget.textContent = `${wc} / ${canvasWordTarget}`;
     }
 
     // Literature essay word count targets (by total marks)
@@ -20651,7 +20725,7 @@
                             const _f = document.getElementById('swml-footer-wc'); if (_f) _f.textContent = `${_wc} word${_wc !== 1 ? 's' : ''}`;
                             const _pf = document.getElementById('swml-canvas-progress-fill'); if (_pf) { _pf.style.width = Math.min(100, Math.round((_wc / canvasWordTarget) * 100)) + '%'; _pf.style.background = getWordCountColour(_wc); }
                             const _pl = document.getElementById('swml-canvas-wc-label'); if (_pl) _pl.textContent = getWordCountLabel(_wc);
-                            const _wid = document.getElementById('swml-wc-widget-label'); if (_wid) _wid.textContent = `${_wc} / ${canvasWordTarget}`;
+                            _paintWcWidgetLabel(canvasEditor);
                         } catch (_) {}
                     }, 0);
                 }
@@ -21899,9 +21973,8 @@
         // Update label
         const label = document.getElementById('swml-canvas-wc-label');
         if (label) label.textContent = getWordCountLabel(wc);
-        // Update floating widget
-        const widget = document.getElementById('swml-wc-widget-label');
-        if (widget) widget.textContent = `${wc} / ${canvasWordTarget}`;
+        // Update floating widget (v7.19.423: shared helper — planning/multi-Q aware)
+        _paintWcWidgetLabel(canvasEditor);
         // Update mark complete visibility
         const btn = document.getElementById('swml-canvas-complete-btn');
         if (btn) btn.style.display = wc >= canvasWordMinimum ? 'block' : 'none';

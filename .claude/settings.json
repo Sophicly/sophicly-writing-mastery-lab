@@ -287,7 +287,9 @@
       "Bash(awk 'NR>=1916 && NR<=2090 && \\(/return rest_ensure_response/ || /\\\\$doc =/ || /decode_canvas/ || /success.*true/ || /'\\\\''doc'\\\\''/\\)' includes/class-rest-api.php)",
       "Bash(awk -F: '$1>1771 && $1<2095')",
       "Bash(awk 'NR>=22724 && NR<=23150 && /\\\\bsections\\\\b/ {print NR\": \"$0}' frontend/wml-assessment.js)",
-      "Bash(awk '/function buildTableOfContents/,/Generate Table of Contents/ {if \\(/\\\\bsections\\\\./ || /\\\\bsections\\\\b\\\\\\)/ || / sections;/\\) print NR\": \"$0}' frontend/wml-assessment.js)"
+      "Bash(awk '/function buildTableOfContents/,/Generate Table of Contents/ {if \\(/\\\\bsections\\\\./ || /\\\\bsections\\\\b\\\\\\)/ || / sections;/\\) print NR\": \"$0}' frontend/wml-assessment.js)",
+      "Bash(sed -n '20650,20657p' frontend/wml-assessment.js)",
+      "Bash(sed -n '21898,21910p' frontend/wml-assessment.js)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

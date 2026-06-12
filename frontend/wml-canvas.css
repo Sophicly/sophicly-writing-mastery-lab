@@ -2726,7 +2726,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     display: flex; align-items: center; gap: 6px;
     padding: 6px 12px;
     background: rgba(20,20,40,0.9);
-    border: 1px solid rgba(81,218,207,0.2);
+    border: 1px solid rgba(83,51,237,0.35); /* brand purple, not teal (v7.19.423) */
     border-radius: 8px;
     backdrop-filter: blur(8px);
     z-index: 50;
@@ -2734,14 +2734,14 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     user-select: none;
     font-size: 12px;
     font-weight: 600;
-    color: #51dacf;
+    color: rgba(255,255,255,0.92);
     font-variant-numeric: tabular-nums;
     box-shadow: 0 2px 12px rgba(0,0,0,0.3);
 }
 .swml-canvas-light .swml-wc-widget {
     background: rgba(255,255,255,0.92);
-    border-color: rgba(66,161,236,0.2);
-    color: #2a6cb6;
+    border-color: rgba(83,51,237,0.25);
+    color: #2c003e;
 }
 .swml-wc-widget-close {
     background: none; border: none; cursor: pointer;
