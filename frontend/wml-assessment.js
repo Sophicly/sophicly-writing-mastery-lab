@@ -22866,9 +22866,26 @@
                     sc = sc.parentElement;
                 }
                 const scroller = (sc && sc !== document.body) ? sc : cw;
+                // v7.19.417: account for the auto-fit zoom. .swml-canvas-doc is
+                // transform-scaled; the scroller's scrollTop space is layout space
+                // while rects are visual, so without dividing by the rendered scale
+                // every click scrolls short whenever zoom < 1 (fitted-width screens)
+                // — Neil's "TOC click doesn't scroll to the area". Mirrors
+                // scrollContentTo() (v7.13.74), which lives in a different closure
+                // and cannot be called from here; the scale is read from the DOM
+                // because canvasZoom is also out of scope.
+                let zoom = 1;
+                const docEl = target.closest('.swml-canvas-doc');
+                if (docEl) {
+                    const t = getComputedStyle(docEl).transform;
+                    if (t && t !== 'none') {
+                        const m = t.match(/matrix\(([-0-9.]+)/);
+                        if (m && parseFloat(m[1])) zoom = parseFloat(m[1]);
+                    }
+                }
                 const sRect = scroller.getBoundingClientRect();
                 const tRect = target.getBoundingClientRect();
-                scroller.scrollTo({ top: scroller.scrollTop + (tRect.top - sRect.top) - (sRect.height / 3), behavior: 'smooth' });
+                scroller.scrollTo({ top: scroller.scrollTop + ((tRect.top - sRect.top) / zoom) - (sRect.height / 3), behavior: 'smooth' });
             } else {
                 console.warn('WML TOC: no section in document matches label', label);
             }
