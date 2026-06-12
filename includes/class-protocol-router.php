@@ -1064,6 +1064,14 @@ class SWML_Protocol_Router {
         error_log('WML CACHE: instr=' . strlen((string) $query->instructions)
             . 'ch md5=' . substr(md5((string) $query->instructions), 0, 8)
             . ' ctx=' . strlen((string) ($query->context ?? '')) . 'ch');
+        // v7.19.408: cache-debug dump — diff two dumps to find what varies inside
+        // the supposedly-stable cached block. Gated on a wp-config define; off in
+        // normal operation.
+        if (defined('WML_CACHE_DEBUG') && WML_CACHE_DEBUG) {
+            @file_put_contents(WP_CONTENT_DIR . '/wml-cache-debug-' . gmdate('His')
+                . '-' . substr(md5((string) $query->instructions), 0, 8) . '.txt',
+                (string) $query->instructions);
+        }
 
         // v7.17.1: diagnostic presence checks — verify expected content made it into final prompt.
         $final_instructions = $query->instructions ?? '';
