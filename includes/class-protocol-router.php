@@ -32,6 +32,7 @@ class SWML_Protocol_Router {
     // separately from the instructions assembly so it can ride the uncached
     // context block. Reset at the top of load_modular_protocol every request.
     private $dynamic_step_slice = '';
+    private $dynamic_plan_state = '';
 
     public static function instance() {
         if (null === self::$instance) {
@@ -1048,6 +1049,12 @@ class SWML_Protocol_Router {
             $dynamic_parts[] = $this->dynamic_step_slice;
             $this->dynamic_step_slice = '';
         }
+        // v7.19.411: planning's ESTABLISHED SESSION STATE rides here (uncached) —
+        // it grows on every confirmed element and was invalidating the cached prefix.
+        if (!empty($this->dynamic_plan_state)) {
+            $dynamic_parts[] = $this->dynamic_plan_state;
+            $this->dynamic_plan_state = '';
+        }
         if (!empty($wml_dynamic_quiz)) {
             $dynamic_parts[] = $wml_dynamic_quiz;
         }
@@ -1513,9 +1520,15 @@ class SWML_Protocol_Router {
             }
         }
 
+        // v7.14.68: Mastery planning — swap b1-setup.md for canvas-aware version
+        // (computed here since v7.19.411 so the slice path below can apply it too).
+        $is_mastery_planning = ($task === 'planning')
+            && !empty($context['phase'])
+            && !empty($context['topic_number']);
+
         if (!$suppress_step_files && !empty($task_config['steps'][$step])) {
             $step_files = $task_config['steps'][$step]['files'] ?? [];
-            if ($is_segmented_q) {
+            if ($is_segmented_q || $task === 'planning') {
                 // v7.19.406 (CACHE): per-beat slices change every turn. Inside
                 // $query->instructions they invalidated Anthropic's prompt cache on
                 // EVERY request — a cache WRITE at +25% per turn, zero reads, the
@@ -1523,6 +1536,17 @@ class SWML_Protocol_Router {
                 // The slice loads separately here and rides the UNCACHED context
                 // block; the instructions assembly stays byte-stable so the cached
                 // prefix actually hits from turn 2 onwards.
+                // v7.19.411: planning gets the same treatment — its step files used
+                // to swap inside the cached instructions on every sidebar-step
+                // change (~14 invalidations per session). Planning's slice carries a
+                // CURRENT PLANNING STEP header because one file spans several steps.
+                if ($is_mastery_planning) {
+                    $step_files = array_map(function($f) {
+                        return (strpos($f, 'b1-setup') !== false && strpos($f, 'b1-setup-canvas') === false)
+                            ? 'language/planning/b1-setup-canvas.md'
+                            : $f;
+                    }, $step_files);
+                }
                 $slice_parts = [];
                 foreach ($step_files as $sf) {
                     $sp = $base_path . '/' . $sf;
@@ -1532,7 +1556,14 @@ class SWML_Protocol_Router {
                         if (!empty(trim($sc))) $slice_parts[] = $sc;
                     }
                 }
-                $this->dynamic_step_slice = implode("\n\n---\n\n", $slice_parts);
+                $slice = implode("\n\n---\n\n", $slice_parts);
+                if ($task === 'planning' && $slice !== '') {
+                    $step_label = $task_config['steps'][$step]['label'] ?? '';
+                    $slice = "## CURRENT PLANNING STEP: {$step}" . ($step_label !== '' ? " — {$step_label}" : '') . "\n"
+                        . "The protocol below may span several sidebar steps. Execute ONLY the part belonging to the current step, in order; earlier steps are already complete — do not re-run them.\n\n"
+                        . $slice;
+                }
+                $this->dynamic_step_slice = $slice;
             } else {
                 $files = array_merge($files, $step_files);
             }
@@ -1558,9 +1589,8 @@ class SWML_Protocol_Router {
         // The original b1-setup.md asks students to paste questions/sources (chat-only workflow).
         // On the canvas, the document already has everything loaded. The canvas setup file
         // tells the AI to read from the document sections instead.
-        $is_mastery_planning = ($task === 'planning')
-            && !empty($context['phase'])
-            && !empty($context['topic_number']);
+        // ($is_mastery_planning computed above the step-files block since v7.19.411;
+        // this $files map stays as a safety net should planning files ever merge again.)
         if ($is_mastery_planning) {
             $files = array_map(function($f) {
                 return (strpos($f, 'b1-setup') !== false && strpos($f, 'b1-setup-canvas') === false)
@@ -3615,11 +3645,13 @@ TEMPLATE;
         // This ensures the AI knows what's been confirmed even if older messages are trimmed
         global $swml_plan_state, $swml_current_step;
         if (!empty($swml_plan_state) && is_array($swml_plan_state)) {
-            $preamble .= "\n### ESTABLISHED SESSION STATE (already confirmed — do not re-ask)\n";
+            $ps = "\n### ESTABLISHED SESSION STATE (already confirmed — do not re-ask)\n";
             // v7.19.409: per-turn step numbers must not enter the cached block on
             // question-mode assessment (cache churn — see session-context block note).
+            // v7.19.411: planning's copy rides the uncached context block (assigned
+            // below), so its step number is safe to keep.
             if (!in_array($task, ['assessment', 'redraft_assessment'], true)) {
-                $preamble .= "**Current section:** " . ($swml_current_step ?: 1) . " of 8\n";
+                $ps .= "**Current section:** " . ($swml_current_step ?: 1) . " of 8\n";
             }
 
             $labels = [
@@ -3647,19 +3679,29 @@ TEMPLATE;
             $has_state = false;
             foreach ($labels as $key => $label) {
                 if (!empty($swml_plan_state[$key])) {
-                    $content = is_array($swml_plan_state[$key]) 
+                    $content = is_array($swml_plan_state[$key])
                         ? ($swml_plan_state[$key]['content'] ?? json_encode($swml_plan_state[$key]))
                         : $swml_plan_state[$key];
                     if ($content) {
                         $safe = sanitize_text_field(substr($content, 0, 500));
-                        $preamble .= "- **{$label}:** {$safe}\n";
+                        $ps .= "- **{$label}:** {$safe}\n";
                         $has_state = true;
                     }
                 }
             }
 
             if (!$has_state) {
-                $preamble .= "- No plan elements established yet.\n";
+                $ps .= "- No plan elements established yet.\n";
+            }
+
+            // v7.19.411 (CACHE): plan state grows on every confirmed element — inside
+            // the cached instructions it invalidated the prefix on each confirm. For
+            // planning it rides the uncached context block instead (consumed in
+            // inject_session_context's dynamic assembly). Other tasks unchanged.
+            if ($task === 'planning') {
+                $this->dynamic_plan_state = $ps;
+            } else {
+                $preamble .= $ps;
             }
         }
 
@@ -3770,6 +3812,10 @@ TEMPLATE;
         // new md5 = cache write every segmented turn — run 15's churn).
         if (in_array($fields['task'], ['assessment', 'redraft_assessment'], true)) {
             $block .= "step:                  (server-managed — follow the LIVE SESSION DIRECTIVES block)\n";
+        } elseif ($fields['task'] === 'planning') {
+            // v7.19.411: planning's step number rides the uncached context block
+            // (CURRENT PLANNING STEP header) — keep it out of the cached prefix.
+            $block .= "step:                  (see the CURRENT PLANNING STEP header in the LIVE SESSION DIRECTIVES block)\n";
         } else {
             $block .= "step:                  {$fields['step']}\n";
         }
