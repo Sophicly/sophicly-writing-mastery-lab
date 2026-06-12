@@ -20623,15 +20623,15 @@
     // drafts of those docs keep the poisoned copy even after the server heal.
     // Planning is a fresh start — response prose never belongs in its doc.
     function stripResponsesForPlanningLocal(html) {
-        if (!html || state.task !== 'planning' || html.indexOf('data-section-type="response"') === -1) return html;
+        if (!html || state.task !== 'planning' || html.indexOf('-response"') === -1) return html;
         try {
             const w = document.createElement('div');
             w.innerHTML = html;
             let changed = false;
-            w.querySelectorAll('[data-section-type="response"]').forEach(sec => {
-                const label = sec.getAttribute('data-section-label') || '';
-                if (/Response/i.test(label) && (sec.textContent || '').trim()) {
-                    sec.innerHTML = '<p></p>';
+            w.querySelectorAll('[data-input-field="true"]').forEach(f => {
+                const id = f.getAttribute('data-field-id') || '';
+                if (/^Q\d+-response$/.test(id) && (f.textContent || '').trim()) {
+                    f.innerHTML = '';
                     changed = true;
                 }
             });

@@ -3440,13 +3440,19 @@ class SWML_REST_API {
      * content found there is a seeding artefact — safe to strip on every load.
      */
     private static function strip_responses_for_planning($html) {
-        if (empty($html) || strpos($html, 'data-section-type="response"') === false) return $html;
+        if (empty($html) || strpos($html, '-response"') === false) return $html;
+        // Response prose lives in the input-field INSIDE the response section:
+        // <div data-prompt="…" data-field-id="QN-response" data-input-field="true"
+        //      class="swml-input-field">PROSE</div>
+        // Emptying the field's inner HTML reproduces the untouched-template state
+        // exactly (empty fields serialise as <div …></div>; the data-prompt
+        // placeholder shows again in the editor).
         return preg_replace_callback(
-            '/(<div[^>]*data-section-type="response"[^>]*>)(.*?)(<\/div>)/s',
+            '/(<div[^>]*data-field-id="Q\d+-response"[^>]*>)(.*?)(<\/div>)/s',
             function ($m) {
-                if (!preg_match('/data-section-label="[^"]*Response[^"]*"/i', $m[1])) return $m[0];
-                if (stripos($m[2], '<div') !== false) return $m[0]; // nested structure — leave untouched
-                return $m[1] . '<p></p>' . $m[3];
+                if (trim($m[2]) === '') return $m[0];
+                if (stripos($m[2], '<div') !== false) return $m[0]; // unexpected nesting — leave untouched
+                return $m[1] . $m[3];
             },
             $html
         );
