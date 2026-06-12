@@ -120,7 +120,7 @@ Read again Source A from lines 1 to 12. Identify four true statements about the 
 **Marks:** 8
 **AOs:** AO1
 
-You need to refer to Source A and Source B for this question. What can you infer about the differences between the way extreme weather is experienced in Source A and Source B? Use short quotations from both sources to support your inferences.
+You need to refer to Source A and Source B for this question. The writers in Source A and Source B are both experiencing extreme weather. What can you infer about the differences between the two experiences of extreme weather?
 
 ## Q3
 **Marks:** 12
@@ -297,7 +297,7 @@ Read again Source A from lines 1 to 11. Identify four true statements about the 
 **Marks:** 8
 **AOs:** AO1
 
-You need to refer to Source A and Source B for this question. What can you infer about the differences between the dangers faced by the writers during their sea voyages? Use short quotations from both sources to support your inferences.
+You need to refer to Source A and Source B for this question. The writers in Source A and Source B both face danger during sea voyages. What can you infer about the differences between the dangers the two writers face?
 
 ## Q3
 **Marks:** 12
@@ -467,7 +467,7 @@ Read again Source A from lines 1 to 15. Identify four true statements about the 
 **Marks:** 8
 **AOs:** AO1
 
-You need to refer to Source A and Source B for this question. What can you infer about the differences between how each writer presents the treatment of disadvantaged people? Use short quotations from both sources to support your inferences.
+You need to refer to Source A and Source B for this question. The writers in Source A and Source B both describe the treatment of disadvantaged people. What can you infer about the differences between the treatment of disadvantaged people in the two sources?
 
 ## Q3
 **Marks:** 12
@@ -621,7 +621,7 @@ Read again Source A from lines 1 to 14. Identify four true statements about Mitc
 **Marks:** 8
 **AOs:** AO1
 
-You need to refer to Source A and Source B for this question. What can you infer about the differences between how each writer views the cosmetics industry? Use short quotations from both sources to support your inferences.
+You need to refer to Source A and Source B for this question. The writers in Source A and Source B are both writing about the cosmetics industry. What can you infer about the differences between the two writers' views of the cosmetics industry?
 
 ## Q3
 **Marks:** 12
@@ -778,7 +778,7 @@ Read again Source A from lines 1 to 16. Identify four true statements about the 
 **Marks:** 8
 **AOs:** AO1
 
-You need to refer to Source A and Source B for this question. What can you infer about the differences between how each writer views the role of observation and experience in gaining knowledge? Use short quotations from both sources to support your inferences.
+You need to refer to Source A and Source B for this question. The writers in Source A and Source B both consider how people gain knowledge. What can you infer about the differences between the two writers' views on gaining knowledge?
 
 ## Q3
 **Marks:** 12
