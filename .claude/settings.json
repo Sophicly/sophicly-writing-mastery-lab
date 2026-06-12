@@ -276,7 +276,11 @@
       "Bash(sed -n '1,35p' src/styles/wp-overrides.css)",
       "Bash(sed -n '125,150p' src/styles/wp-overrides.css)",
       "Bash(sed -n '283,295p' src/styles/wp-overrides.css)",
-      "Bash(sed -n '340,380p' src/styles/wp-overrides.css)"
+      "Bash(sed -n '340,380p' src/styles/wp-overrides.css)",
+      "Bash(awk 'NR>=3300 && NR<=3360 && \\(/private function|public function/ || NR==3352\\)' includes/class-protocol-router.php)",
+      "Bash(awk '/function /{f=$0; l=NR} NR==3352{print l\": \"f} NR==3565{print l2\": \"f2} /function /{f2=$0; l2=NR}' includes/class-protocol-router.php)",
+      "Bash(awk 'NR<=3352 && /private function|public function/{f=$0; l=NR} END{}' includes/class-protocol-router.php)",
+      "Bash(awk '/private function|public function/{if \\(NR<=3352\\) {f=$0; l=NR}} END {print l \": \" f}' includes/class-protocol-router.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

@@ -627,22 +627,22 @@ RETURN scanner\_mode, target\_register, success\_criteria
 
 **CLASSIFY\_SENTENCE\_ISSUES(sentence, question\_type):** Question-aware sentence analysis.
 
-**FOR QUESTION 2 (Summary/Synthesis) \- ANALYTICAL MODE:**
+**FOR QUESTION 2 (Inference \- Differences) \- ANALYTICAL MODE:**
 
-**\[v6.14 REVISION: Q2, Q3, Q4 all penalize informal language and vague interpretation\]**
+**\[v7.19.412 REVISION: 2026 spec \- Q2 is inference-led ("What can you infer about the differences…"), every inference anchored to an embedded quotation. NOT the old summary question \- quotations are REQUIRED, not forbidden.\]**
 
 Check for:
 
-* **Quotation marks present:** Instant flag \- forbidden in Q2  
+* **Missing quotation:** Inference with no embedded quotation \- every inference must be anchored to a judicious quote built FROM the quoted words  
 * **First person pronouns:** I/we/my/our (should be third person)  
-* **List structure without synthesis:** Also/another/additionally without comparative integration  
-* **Missing comparative language:** No differences highlighted  
+* **Missing comparative language:** Source B inferences must OPEN with a comparative discourse marker (However/In contrast/Whereas/Unlike) and state a difference  
+* **Surface-level claims:** Restating what the text literally says instead of a perceptive inference beyond the obvious  
 * **Imprecise vocabulary:** Vague terms, generic words  
 * **U1 penalty: Informal language/register** (-0.5) \- Contractions, casual phrases, unsophisticated vocabulary  
-* **I1 penalty: Vague interpretation** (-0.5) \- Surface-level description rather than nuanced, perceptive synthesis  
+* **I1 penalty: Vague interpretation** (-0.5) \- Surface-level description rather than nuanced, perceptive inference  
 * **Technical accuracy (AO6):** SPaG errors
 
-**\[FRAMEWORK NOTE\]** Q2 uses **TECEA** (Topic, Evidence, Close analysis, Effects, Author's purpose) \- students analyze word choices and language WITHOUT identifying specific techniques or using quotations. Q3 and Q4 use **TTECEA** (adds "Technique" identification with embedded quotations).
+**\[FRAMEWORK NOTE\]** Q2 (2026 spec) uses a paired-inference structure \- each paragraph pairs a Source A inference with a Source B difference-inference, every inference anchored to an embedded quotation. Q2 is AO1: technique identification is NOT rewarded \- never flag missing technique names in Q2. Q3 and Q4 use **TTECEA** (adds "Technique" identification with embedded quotations).
 
 **FOR QUESTION 3 (Language Analysis) \- ANALYTICAL MODE:**
 

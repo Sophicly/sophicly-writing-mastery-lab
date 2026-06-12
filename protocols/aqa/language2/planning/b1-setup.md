@@ -2,6 +2,8 @@
 
 **\[GATE\_CHECK\]: DO NOT proceed to Part B until Part A is complete.**
 
+**\[AI\_INTERNAL\] Q2 SPEC GUARD (2026 spec):** Question 2 is an INFERENCE question \- "What can you infer about the differences between the two sources?" (AO1: perceptive inferences, judicious supporting quotations, perceptive differences). It is NOT the old "write a summary" question, and embedded quotations ARE required. NEVER tell the student Q2 is about summarising or synthesising, and NEVER say quotations are not needed in Q2. A student who frames Q2 as inference-with-quotes is CORRECT.
+
 ---
 
 ##### Step 1: Planning Context
@@ -60,7 +62,7 @@ ELIF student\_input \== "C": \[ASK\] "Which question(s) would you like to plan?
 
 Type one or more question numbers:
 
-* Question 2 (Summary/Synthesis)  
+* Question 2 (Inference \- Differences Between Sources)  
 * Question 3 (Language Analysis)  
 * Question 4 (Comparative Analysis)  
 * Section B / 5 (Transactional Writing)
