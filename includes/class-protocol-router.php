@@ -524,6 +524,61 @@ class SWML_Protocol_Router {
         // slice + state block that now ride the context block. Re-frame as
         // binding directives when the payload is ours.
         add_filter('mwai_context_framing', [$this, 'wml_context_framing'], 10, 2);
+        // v7.19.428 (CACHE): AI Engine hard-codes the 5-minute ephemeral cache TTL
+        // on the system/instructions block (classes/engines/anthropic.php) with no
+        // hook to change it. Sophicly's 2-hour writing sessions include a ~15-minute
+        // break that exceeds 5 minutes, so the cached protocol prefix expires during
+        // the break and the first turn back pays a full cache WRITE again (~the whole
+        // protocol re-cached). Upgrade ephemeral cache_control to a 1-hour TTL at the
+        // WordPress HTTP layer — update-safe (never edits the AI Engine plugin), and
+        // fires for both streaming (http_api_curl runs AFTER http_request_args) and
+        // non-streaming chat. Scoped to Anthropic's /v1/messages endpoint only.
+        add_filter('http_request_args', [$this, 'extend_anthropic_cache_ttl'], 10, 2);
+    }
+
+    /**
+     * v7.19.428 (CACHE): rewrite ephemeral cache_control → 1-hour TTL on outbound
+     * Anthropic /v1/messages requests. 1h TTL is GA (no extra beta header needed).
+     * Only touches blocks AI Engine already marked ephemeral; leaves everything else
+     * untouched. Bails fast on non-Anthropic / non-message / non-cached requests so
+     * it adds no measurable cost to other HTTP traffic on the site.
+     */
+    public function extend_anthropic_cache_ttl($args, $url) {
+        if (!is_string($url) || strpos($url, 'api.anthropic.com') === false) return $args;
+        if (strpos($url, '/v1/messages') === false) return $args; // chat only — not files/models/batches
+        if (empty($args['body']) || !is_string($args['body'])) return $args;
+        if (strpos($args['body'], '"cache_control"') === false) return $args; // nothing cached → nothing to do
+
+        $payload = json_decode($args['body'], true);
+        if (!is_array($payload) || empty($payload['system']) || !is_array($payload['system'])) return $args;
+
+        $changed = false;
+        foreach ($payload['system'] as &$block) {
+            if (is_array($block)
+                && isset($block['cache_control']['type'])
+                && $block['cache_control']['type'] === 'ephemeral'
+                && empty($block['cache_control']['ttl'])) {
+                $block['cache_control']['ttl'] = '1h';
+                $changed = true;
+            }
+        }
+        unset($block);
+        if (!$changed) return $args;
+
+        $reencoded = wp_json_encode($payload);
+        if (is_string($reencoded) && $reencoded !== '') {
+            $args['body'] = $reencoded;
+            // wp_remote_* recomputes Content-Length from the body, but if AI Engine
+            // pinned one in the args, refresh it so the longer body isn't truncated.
+            if (isset($args['headers']) && is_array($args['headers'])) {
+                foreach (array_keys($args['headers']) as $hk) {
+                    if (strcasecmp($hk, 'content-length') === 0) {
+                        $args['headers'][$hk] = strlen($reencoded);
+                    }
+                }
+            }
+        }
+        return $args;
     }
 
     /**
