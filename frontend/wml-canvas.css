@@ -2585,7 +2585,11 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 
 /* ── Dictation Preview Bubble ── */
 .swml-dict-bubble {
-    position: fixed;
+    /* v7.19.432: absolute (relative to the canvas region), not fixed. A transformed
+       ancestor re-anchors position:fixed, so the JS-set viewport `left` double-counted
+       the canvas offset and pushed the pill right of centre. Absolute + canvas-relative
+       left (set in JS) keeps the maths and the anchor frame in the same coordinate space. */
+    position: absolute;
     bottom: 60px;
     left: 50%;
     transform: translateX(-50%);

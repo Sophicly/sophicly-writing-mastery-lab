@@ -4674,11 +4674,16 @@
             }
 
             // Centre the dictation bubble over the editor column, not the viewport.
-            // The right-hand panel shifts the true centre left of viewport-centre. v7.19.323
+            // v7.19.432: the bubble is position:absolute relative to `canvas`, so its
+            // left must be the editor-centre expressed as an offset WITHIN canvas
+            // (editorCentreX - canvasLeft) — not a raw viewport coordinate, which a
+            // transformed ancestor would re-anchor and push the pill off-centre.
             const positionDictBubble = () => {
+                if (getComputedStyle(canvas).position === 'static') canvas.style.position = 'relative';
                 const pane = canvas.querySelector('.swml-canvas-editor') || canvas;
                 const r = pane.getBoundingClientRect();
-                if (r.width) dictBubble.style.left = Math.round(r.left + r.width / 2) + 'px';
+                const c = canvas.getBoundingClientRect();
+                if (r.width) dictBubble.style.left = Math.round(r.left + r.width / 2 - c.left) + 'px';
             };
             const _dictResize = () => { if (dictListening) positionDictBubble(); };
 
