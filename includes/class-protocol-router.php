@@ -6016,14 +6016,15 @@ TEMPLATE;
         $block .= "Reframe using: \"honour culture\" / \"dynastic marriage\" / \"paternal authority\" / \"Elizabethan social order\" / \"family honour\" / \"social hierarchy\". The critique of arranged marriage, family honour, and dynastic obligation stays — only the loaded vocabulary changes. Hard rule across ALL Sophicly content.\n";
         $block .= "Also avoid \"shows\" as an analytical verb — substitute precise verbs (illustrates / portrays / demonstrates / emphasises / highlights / reveals / exposes / presents / conveys / enacts / signals / mirrors).\n";
 
-        // Authoritative word count — only when response_wc supplied AND task is assessment.
-        $response_wc = isset($context['response_wc']) && is_numeric($context['response_wc'])
-            ? (int) $context['response_wc']
-            : null;
-        if ($response_wc !== null && $task === 'assessment') {
-            $block .= "\n### AUTHORITATIVE WORD COUNT — DO NOT SECOND-GUESS\n";
-            $block .= "Student's response: **{$response_wc} words**. The frontend has counted authoritatively from the canvas; this is the truth. DO NOT estimate, recount, or approximate. Use {$response_wc} as the count whenever you reference the student's response length or apply word-count penalties.\n";
-        }
+        // v7.19.435 (CACHE): Authoritative word-count surface REMOVED from here.
+        // It used to inject "Student's response: **{N} words**" into this block,
+        // which is appended to $query->instructions (the CACHED prefix). The live
+        // word count is re-sent every assessment turn (frontend recount), so any
+        // canvas change shifted N and busted the whole prompt-cache prefix on the
+        // heaviest task. The count is already delivered — with target + deficit +
+        // the same "DO NOT recount" directive — by build_assessment_state_block,
+        // which rides $query->context (UNCACHED). This was a redundant duplicate;
+        // removing it leaves the cached prefix stable within a step. No info lost.
 
         // v7.17.63: Mark Scheme Quiz anti-retry guard — gated to quiz tasks only.
         // Student-flagged regression 2026-04-25: Sophia gave a hint clue on a wrong
