@@ -366,12 +366,6 @@
     // (graceful degradation: worst case is blank, never wrong words). Protocol-agnostic: any
     // protocol adopts it by listing field ids + telling the AI when to emit. Runs in BOTH chat
     // pipelines (called beside applyCwSubstepProgress at each AI-response handler).
-    // v7.19.430: field-ids WE filled from chat this session. Lets us overwrite our
-    // own prior fill (a student revising their chat answer) while NEVER clobbering
-    // text the STUDENT typed directly into a field. Resets on project switch (full
-    // page reload), which is correct — each project's doc starts fresh.
-    const _cwChatFilledFields = new Set();
-
     function applyFieldCommits(aiReply, studentMsg) {
         try {
             if (!aiReply || !canvasEditor) return;
@@ -401,22 +395,30 @@
                     console.warn('WML FieldFill: no outlineRow for field', fid, '(left empty — student can type it)');
                     return;
                 }
-                // v7.19.430: non-destructive. Write only when the field is empty OR we
-                // filled it ourselves before (a chat-answer revision). If the student
-                // TYPED into it directly, preserve their words — never clobber.
-                const existing = (targetNode.textContent || '').trim();
-                if (existing && !_cwChatFilledFields.has(fid)) {
-                    console.log('WML FieldFill: preserved student-typed content in', fid, '— chat answer not written over it');
-                    return;
-                }
-                // Replace the row's inline content with the verbatim answer.
+                // v7.19.431: NEVER destroy existing content. Empty field → write the
+                // answer. Field that already has content (the student typed it, OR an
+                // earlier/different chat answer) → APPEND — the two may be different or
+                // evolved ideas and losing either is unrecoverable (Neil; ed-research:
+                // ownership + loss-aversion). Exact-duplicate re-fires are skipped so
+                // reprocessing the same reply can't duplicate text.
+                const existing = (targetNode.textContent || '');
                 const from = targetPos + 1;
                 const to = targetPos + targetNode.nodeSize - 1;
-                const tr = canvasEditor.state.tr.replaceWith(from, to, canvasEditor.schema.text(verbatim));
-                canvasEditor.view.dispatch(tr);
-                _cwChatFilledFields.add(fid);
+                if (!existing.trim()) {
+                    canvasEditor.commands.insertContentAt({ from: from, to: to }, { type: 'text', text: verbatim });
+                    console.log('WML FieldFill: wrote', verbatim.length, 'chars →', fid);
+                } else if (existing.indexOf(verbatim) !== -1) {
+                    console.log('WML FieldFill: skip — field', fid, 'already contains this answer (re-fire)');
+                    return;
+                } else {
+                    const content = [];
+                    const hasBr = !!(canvasEditor.schema.nodes && canvasEditor.schema.nodes.hardBreak);
+                    if (hasBr) { content.push({ type: 'hardBreak' }, { type: 'hardBreak' }); }
+                    content.push({ type: 'text', text: (hasBr ? '' : '\n\n') + verbatim });
+                    canvasEditor.commands.insertContentAt(to, content);
+                    console.log('WML FieldFill: appended', verbatim.length, 'chars →', fid, '(preserved prior content)');
+                }
                 wrote = true;
-                console.log('WML FieldFill: wrote', verbatim.length, 'chars →', fid);
             });
             if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
         } catch (e) {
