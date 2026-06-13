@@ -21097,7 +21097,10 @@
             if (onCancel) {
                 skipBtn = document.createElement('button');
                 skipBtn.className = 'swml-cw-project-overlay__skip-btn';
-                skipBtn.textContent = 'Skip — use default name';
+                // v7.19.427: was 'Skip — use default name' — a lie. It never created a
+                // default-named project; it called onCancel (back to switcher). Relabel
+                // to what it actually does. Save is the only create path now.
+                skipBtn.textContent = 'Cancel';
                 btnRow.appendChild(skipBtn);
             }
             card.appendChild(btnRow);
@@ -21161,7 +21164,7 @@
     // Switcher overlay. projects = array of index entries; picks most-recent
     // as default (Enter = 1-tap continue). onLoad(id, name) called when student
     // picks an existing project. "Start new" opens the naming input in-place.
-    function _showCWProjectSwitcherOverlay({ projects, onLoad, onNew }) {
+    function _showCWProjectSwitcherOverlay({ projects, onLoad, onNew, dismissable }) {
         return new Promise((resolve) => {
             const overlay = _cwMountOverlay();
             // v7.17.29: class-driven (see wml-canvas.css). Theme-aware via .swml-canvas-light.
@@ -21169,6 +21172,24 @@
             card.className = 'swml-cw-project-overlay__frame';
             card.setAttribute('draggable', 'false');
             card.addEventListener('dragstart', (e) => { e.preventDefault(); e.stopPropagation(); });
+
+            // v7.19.427: dismissable switcher (opened from the "My Projects" button while
+            // already inside a project) gets a ✕ Close + Esc so the student can back out
+            // and stay on their current project. The ENTRY switcher (cw_step_1 resolve)
+            // is NOT dismissable — a project must be chosen to load the workspace.
+            const _cancel = () => { overlay.remove(); resolve({ cancelled: true }); };
+            if (dismissable) {
+                const closeBtn = document.createElement('button');
+                closeBtn.type = 'button';
+                closeBtn.className = 'swml-cw-project-overlay__close-btn';
+                closeBtn.setAttribute('aria-label', 'Close and keep current project');
+                closeBtn.innerHTML = '&times;';
+                closeBtn.addEventListener('click', _cancel);
+                card.appendChild(closeBtn);
+                overlay.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') { e.preventDefault(); _cancel(); }
+                });
+            }
 
             const title = document.createElement('h2');
             title.id = 'swml-cwp-title';
@@ -21245,8 +21266,8 @@
                     mode: 'additional',
                     onSave: async (name) => { await onNew(name); },
                     onCancel: () => {
-                        // Cancel → re-show the switcher
-                        _showCWProjectSwitcherOverlay({ projects, onLoad, onNew }).then(resolve);
+                        // Cancel → re-show the switcher (preserve dismissability)
+                        _showCWProjectSwitcherOverlay({ projects, onLoad, onNew, dismissable }).then(resolve);
                     },
                 });
                 if (r && r.saved) resolve({ created: true, name: r.name });
@@ -21319,6 +21340,9 @@
             }
             await _showCWProjectSwitcherOverlay({
                 projects: projects,
+                // v7.19.427: opened from the "My Projects" button while already inside a
+                // project → dismissable, so ✕/Esc returns to the current project unchanged.
+                dismissable: true,
                 onLoad: async (id /*, name */) => {
                     const p = projects.find(x => x && x.id === id);
                     const target = (p && p.last_lesson_url) || _step1UrlFromCurrent();

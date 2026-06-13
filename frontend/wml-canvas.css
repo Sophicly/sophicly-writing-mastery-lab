@@ -2797,7 +2797,13 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     padding: 28px 26px;
     max-width: 480px; width: 92%;
     max-height: 80vh;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.45);
+    /* v7.19.427: Sophia-style glow bloom behind the card (box-shadow renders
+       outside overflow:hidden, so the bloom is unclipped while sparkles inside
+       stay clipped). Teal + purple halo, slow pulse. */
+    box-shadow: 0 24px 64px rgba(0,0,0,0.45),
+                0 0 60px rgba(81,218,207,0.30),
+                0 0 130px rgba(83,51,237,0.28);
+    animation: swmlCwpFrameGlow 5.5s ease-in-out infinite;
     display: flex; flex-direction: column; gap: 16px;
     overflow: hidden;
     font-family: 'Proxima Soft Complete', system-ui, sans-serif;
@@ -2806,6 +2812,29 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     background: linear-gradient(180deg, #ffffff 0%, #f5f0fb 100%);
     color: #2c003e;
     border-color: rgba(83,51,237,0.25);
+    box-shadow: 0 24px 64px rgba(44,0,62,0.20),
+                0 0 50px rgba(81,218,207,0.22),
+                0 0 120px rgba(83,51,237,0.22);
+    animation: swmlCwpFrameGlowLight 5.5s ease-in-out infinite;
+}
+@keyframes swmlCwpFrameGlowLight {
+    0%, 100% { box-shadow: 0 24px 64px rgba(44,0,62,0.20),
+                           0 0 44px rgba(81,218,207,0.18),
+                           0 0 100px rgba(83,51,237,0.18); }
+    50%      { box-shadow: 0 24px 64px rgba(44,0,62,0.20),
+                           0 0 66px rgba(81,218,207,0.30),
+                           0 0 140px rgba(83,51,237,0.30); }
+}
+@keyframes swmlCwpFrameGlow {
+    0%, 100% { box-shadow: 0 24px 64px rgba(0,0,0,0.45),
+                           0 0 50px rgba(81,218,207,0.24),
+                           0 0 110px rgba(83,51,237,0.22); }
+    50%      { box-shadow: 0 24px 64px rgba(0,0,0,0.45),
+                           0 0 72px rgba(81,218,207,0.38),
+                           0 0 150px rgba(83,51,237,0.34); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .swml-cw-project-overlay__frame { animation: none; }
 }
 .swml-cw-project-overlay__title {
     margin: 0;
@@ -2813,6 +2842,8 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     color: inherit;
     font-family: 'Playfair Display Complete', Georgia, serif;
     font-style: italic;
+    /* v7.19.427: reserve space for the ✕ close button on the switcher. */
+    padding-right: 36px;
 }
 .swml-cw-project-overlay__hint {
     margin: 0;
@@ -3020,6 +3051,42 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     font-family: inherit;
 }
 .swml-canvas-light .swml-cw-project-overlay__skip-btn { color: rgba(44,0,62,0.65); }
+
+/* v7.19.427: switcher ✕ Close — only rendered for the dismissable (My Projects)
+   switcher; returns the student to their current project unchanged. */
+.swml-cw-project-overlay__close-btn {
+    position: absolute; top: 14px; right: 16px;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; line-height: 1;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.75);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 50%;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
+    z-index: 3;
+}
+.swml-cw-project-overlay__close-btn:hover,
+.swml-cw-project-overlay__close-btn:focus-visible {
+    background: rgba(81,218,207,0.18);
+    color: #fff;
+    border-color: #51dacf;
+    transform: scale(1.06);
+    outline: none;
+}
+.swml-canvas-light .swml-cw-project-overlay__close-btn {
+    background: rgba(83,51,237,0.06);
+    color: rgba(44,0,62,0.6);
+    border-color: rgba(83,51,237,0.2);
+}
+.swml-canvas-light .swml-cw-project-overlay__close-btn:hover,
+.swml-canvas-light .swml-cw-project-overlay__close-btn:focus-visible {
+    background: rgba(83,51,237,0.12);
+    color: #2c003e;
+    border-color: #5333ed;
+}
 
 /* Page breaks removed — canvas grows naturally */
 
