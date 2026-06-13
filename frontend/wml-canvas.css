@@ -2901,6 +2901,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     font-family: inherit;
     box-sizing: border-box;
     transition: border-color 0.15s;
+    /* v7.19.425: the parent .swml-cw-project-overlay sets user-select:none
+       (v7.17.38 ProseMirror grab-hand guard); it cascades into this input and
+       blocks typing/caret on WebKit. Re-enable text selection so the name
+       field is editable. */
+    user-select: text;
+    -webkit-user-select: text;
 }
 .swml-cw-project-overlay__input::placeholder { color: rgba(255,255,255,0.4); }
 .swml-cw-project-overlay__input:focus { border-color: #51dacf; }
