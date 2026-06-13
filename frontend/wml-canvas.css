@@ -2590,7 +2590,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
        the canvas offset and pushed the pill right of centre. Absolute + canvas-relative
        left (set in JS) keeps the maths and the anchor frame in the same coordinate space. */
     position: absolute;
-    bottom: 60px;
+    bottom: 116px; /* v7.19.433: clear the scroll-to-top arrow (sits ~60px up) — pill rides just above it */
     left: 50%;
     transform: translateX(-50%);
     display: none;

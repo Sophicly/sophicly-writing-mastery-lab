@@ -4722,7 +4722,18 @@
                     if (ev.results[i].isFinal) {
                         const text = ev.results[i][0].transcript;
                         if (text && canvasEditor) {
-                            canvasEditor.chain().focus().insertContent(text + ' ').run();
+                            // v7.19.433: insert at the cursor WITHOUT yanking the scroll
+                            // position. The default .focus() scrolls the selection into
+                            // view; the trailing final result fired as dictation stops was
+                            // jumping the page to the doc end. Pin the pane scroll across
+                            // the insert (sync + next frame, since PM may scroll on update).
+                            const _pane = canvas.querySelector('.swml-canvas-editor');
+                            const _keepTop = _pane ? _pane.scrollTop : null;
+                            canvasEditor.chain().focus(undefined, { scrollIntoView: false }).insertContent(text + ' ').run();
+                            if (_pane && _keepTop !== null) {
+                                _pane.scrollTop = _keepTop;
+                                requestAnimationFrame(() => { _pane.scrollTop = _keepTop; });
+                            }
                         }
                         dictLastFinalIdx = i + 1;
                     } else {
