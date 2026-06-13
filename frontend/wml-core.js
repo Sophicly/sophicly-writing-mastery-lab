@@ -2313,6 +2313,8 @@ window.WML = (function() {
         text = text.replace(/\[(?:STEP_ADVANCE|PROGRESS):\s*\d+\]/gi, '').trim();
         // v7.14.69: Strip [SUBSTEP_COMPLETE: step_N, substep_N, "Name"] markers (CW sub-step tracking)
         text = text.replace(/\[SUBSTEP_COMPLETE:\s*[^\]]*\]/g, '').trim();
+        // v7.19.429: Strip @FIELD_COMMIT{...} chat→canvas field-fill signals (never shown to the student)
+        text = text.replace(/@FIELD_COMMIT\s*\{[^}]*\}/g, '').trim();
         // Strip LaTeX $$ blocks
         text = text.replace(/\$\$[^$]*?\$\$/g, '').trim();
         // Strip Python-style function calls

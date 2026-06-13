@@ -356,6 +356,59 @@
         console.log('WML CW: Sub-step complete →', detected.name, `(step_${detected.stepNum}, substep_${detected.substepNum})`);
     }
 
+    // v7.19.429: GENERIC chat→canvas field-fill primitive (Phase 1 — first consumer: CW Step 1).
+    // The AI emits a tiny judgment-only signal @FIELD_COMMIT{ "field": "<id>" } the moment it
+    // judges the student has answered the current question. CODE then writes the student's
+    // VERBATIM chat message (the message this AI reply is responding to) into the matching
+    // outlineRow field. The answer text never round-trips through the LLM — per CLAUDE.md §6
+    // the deterministic transfer is code's job — so it cannot be paraphrased, dropped, or
+    // malformed. The marker carries NO text, so a missed/garbled signal leaves the field EMPTY
+    // (graceful degradation: worst case is blank, never wrong words). Protocol-agnostic: any
+    // protocol adopts it by listing field ids + telling the AI when to emit. Runs in BOTH chat
+    // pipelines (called beside applyCwSubstepProgress at each AI-response handler).
+    function applyFieldCommits(aiReply, studentMsg) {
+        try {
+            if (!aiReply || !canvasEditor) return;
+            const verbatim = (studentMsg || '').trim();
+            if (!verbatim) return;
+            const re = /@FIELD_COMMIT\s*(\{[^}]*\})/g;
+            const fields = [];
+            let m;
+            while ((m = re.exec(aiReply)) !== null) {
+                let payload = null;
+                try { payload = JSON.parse(m[1]); } catch (_) { continue; }
+                const fid = (payload && typeof payload.field === 'string') ? payload.field.trim() : '';
+                if (fid && fields.indexOf(fid) === -1) fields.push(fid);
+            }
+            if (!fields.length) return;
+            let wrote = false;
+            fields.forEach(fid => {
+                let targetPos = null, targetNode = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (targetPos !== null) return false;
+                    if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === fid) {
+                        targetPos = pos; targetNode = node; return false;
+                    }
+                    return true;
+                });
+                if (targetPos === null || !targetNode) {
+                    console.warn('WML FieldFill: no outlineRow for field', fid, '(left empty — student can type it)');
+                    return;
+                }
+                // Replace the row's inline content with the verbatim answer.
+                const from = targetPos + 1;
+                const to = targetPos + targetNode.nodeSize - 1;
+                const tr = canvasEditor.state.tr.replaceWith(from, to, canvasEditor.schema.text(verbatim));
+                canvasEditor.view.dispatch(tr);
+                wrote = true;
+                console.log('WML FieldFill: wrote', verbatim.length, 'chars →', fid);
+            });
+            if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
+        } catch (e) {
+            console.warn('WML FieldFill: error (non-fatal)', e && e.message);
+        }
+    }
+
     // v7.15.49: state.mode is set once at boot from embedConfig and never updates on
     // LD soft nav — so after navigating between embedded lessons it goes stale. Use
     // the structural fields (topicNumber + phase) that the bridge re-populates on
@@ -3670,6 +3723,7 @@
                         // v7.14.69: CW sub-step progress tracking
                         if (state.task && state.task.startsWith('cw_')) {
                             applyCwSubstepProgress(detectCwSubstep(res.reply));
+                            applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                         }
 
                         // v7.15.12: Exam prep step detection via [PROGRESS: N] markers
@@ -9730,6 +9784,7 @@
                                         // v7.14.69: CW sub-step progress tracking (training-env pipeline)
                                         if (state.task && state.task.startsWith('cw_')) {
                                             applyCwSubstepProgress(detectCwSubstep(res.reply));
+                            applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                                         }
 
                                         // ── Assessment step + completion detection + Mark Complete (v7.12.35) ──
