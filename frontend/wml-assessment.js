@@ -426,6 +426,100 @@
         }
     }
 
+    // v7.19.434: Minimal markdown → DOCUMENT-html converter for section fills.
+    // NOT WML.formatAI — that is a chat-bubble renderer (### → <strong class="swml-chat-h5">,
+    // "- " → <br><span class="swml-bullet">, newlines → <br>, plus chat-only classes), which
+    // maps badly onto the canvas TipTap schema (headings collapse to inline bold, bullet spans
+    // get dropped, paragraphs merge, chat junk leaks into the saved doc). This emits real block
+    // HTML the canvas schema understands: <h3> (StarterKit levels 2-3), <ul><li>, <p>, <strong>,
+    // <em>. Defensive: unknown line → paragraph, so no content is ever lost.
+    function cwMarkdownToDocHtml(md) {
+        const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const inline = s => esc(s)
+            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+            .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+            .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+        const lines = String(md || '').split('\n');
+        let html = '', listOpen = false;
+        const closeList = () => { if (listOpen) { html += '</ul>'; listOpen = false; } };
+        for (const raw of lines) {
+            const line = raw.trim();
+            if (!line) { closeList(); continue; }
+            if (/^[-*_]{3,}$/.test(line)) { closeList(); continue; } // horizontal rule → skip
+            const h = line.match(/^#{1,6}\s+(.+)$/);
+            if (h) { closeList(); html += '<h3>' + inline(h[1]) + '</h3>'; continue; }
+            const b = line.match(/^[-*•]\s+(.+)$/);
+            if (b) { if (!listOpen) { html += '<ul>'; listOpen = true; } html += '<li>' + inline(b[1]) + '</li>'; continue; }
+            closeList();
+            html += '<p>' + inline(line) + '</p>';
+        }
+        closeList();
+        return html || '<p></p>';
+    }
+
+    // v7.19.434: Phase 2 of the chat→canvas primitive — SECTION fills for AI-authored
+    // SYNTHESIS (not verbatim student words). At CW Step 1 sub-step 5 ("Review and Save")
+    // Sophia synthesises the Writer's Profile + 3 seed loglines FROM the student's 15
+    // answers; the student approves via a quick-action button; then Sophia re-emits the
+    // approved text wrapped in:
+    //     @SECTION_BEGIN{ "section": "Writer's Profile" }
+    //     ...markdown...
+    //     @SECTION_END
+    // and CODE writes it into the matching sectionBlock (resolved by its label attr).
+    // Unlike @FIELD_COMMIT (verbatim student words → APPEND, never destroy), this is
+    // Sophia's draft OF the student into a placeholder section the student has already
+    // approved, so it REPLACES the section's inner content. The synthesis is a legitimate
+    // judgment task (CLAUDE.md §6: drafting/summarising), so here the marker DOES carry
+    // the value. Malformed/missing marker → section keeps its placeholder (graceful).
+    // Protocol-agnostic: any protocol adopts it by labelling a section + emitting the block.
+    function applySectionFills(aiReply) {
+        try {
+            if (!aiReply || !canvasEditor) return;
+            const re = /@SECTION_BEGIN\s*\{[^}]*?"section"\s*:\s*"([^"]+)"[^}]*\}([\s\S]*?)@SECTION_END/g;
+            const blocks = [];
+            let m;
+            while ((m = re.exec(aiReply)) !== null) {
+                const label = (m[1] || '').trim();
+                const body = (m[2] || '').trim();
+                if (label && body) blocks.push({ label: label, body: body });
+            }
+            if (!blocks.length) return;
+            // Punctuation-insensitive label key — the doc label "Writer's Profile" uses a
+            // curly apostrophe (U+2019); the AI may emit a straight one. Collapse to
+            // alphanumerics so "Writer's Profile" / "Writers Profile" / "writer’s profile"
+            // all resolve to the same section.
+            const normLabel = s => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+            let wrote = false;
+            blocks.forEach(blk => {
+                const wantKey = normLabel(blk.label);
+                let targetPos = null, targetNode = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (targetPos !== null) return false;
+                    if (node.type.name === 'sectionBlock' && node.attrs &&
+                        normLabel(node.attrs.label) === wantKey) {
+                        targetPos = pos; targetNode = node; return false;
+                    }
+                    return true;
+                });
+                if (targetPos === null || !targetNode) {
+                    console.warn('WML SectionFill: no sectionBlock labelled', JSON.stringify(blk.label), '(left as placeholder)');
+                    return;
+                }
+                // AI-authored synthesis into an approved placeholder → REPLACE inner content.
+                // (Contrast @FIELD_COMMIT which appends to protect the student's own words.)
+                const html = cwMarkdownToDocHtml(blk.body);
+                const from = targetPos + 1;
+                const to = targetPos + targetNode.nodeSize - 1;
+                canvasEditor.commands.insertContentAt({ from: from, to: to }, html);
+                console.log('WML SectionFill: wrote', blk.body.length, 'chars →', JSON.stringify(blk.label));
+                wrote = true;
+            });
+            if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
+        } catch (e) {
+            console.warn('WML SectionFill: error (non-fatal)', e && e.message);
+        }
+    }
+
     // v7.15.49: state.mode is set once at boot from embedConfig and never updates on
     // LD soft nav — so after navigating between embedded lessons it goes stale. Use
     // the structural fields (topicNumber + phase) that the bridge re-populates on
@@ -3741,6 +3835,7 @@
                         if (state.task && state.task.startsWith('cw_')) {
                             applyCwSubstepProgress(detectCwSubstep(res.reply));
                             applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
+                            applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
                         }
 
                         // v7.15.12: Exam prep step detection via [PROGRESS: N] markers
@@ -9818,6 +9913,7 @@
                                         if (state.task && state.task.startsWith('cw_')) {
                                             applyCwSubstepProgress(detectCwSubstep(res.reply));
                             applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
+                            applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
                                         }
 
                                         // ── Assessment step + completion detection + Mark Complete (v7.12.35) ──
