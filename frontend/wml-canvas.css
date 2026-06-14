@@ -2275,35 +2275,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     opacity: 0;
     pointer-events: none;
 }
-/* v7.19.448: styled tooltips on the outline + resources triggers — appear to the
-   right of the button (buttons sit on the left edge). */
-.swml-outline-btn[data-tooltip]::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    left: calc(100% + 8px);
-    top: 50%;
-    transform: translateY(-50%);
-    white-space: nowrap;
-    background: #1c1d1f;
-    color: rgba(255,255,255,0.92);
-    font-size: 11px;
-    font-weight: 500;
-    padding: 4px 8px;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.45);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.15s ease;
-    z-index: 30;
-}
-.swml-outline-btn[data-tooltip]:hover::after {
-    opacity: 1;
-}
-.swml-canvas-light .swml-outline-btn[data-tooltip]::after {
-    background: #1a1a1e;
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
+/* v7.19.449: NO local ::after tooltip here — WML already has a global JS tooltip
+   system (wml-core.js ~124) that renders `data-tooltip` as a styled pill. A CSS
+   ::after would be a SECOND tooltip on top of it (the double-tooltip Neil saw). The
+   buttons carry data-tooltip; the global system styles + positions it. */
 
 /* ── Detachable Outline Panel (v7.12.40) ── */
 
@@ -2449,12 +2424,19 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     opacity: 0;
     pointer-events: none;
     transform: translateX(-12px);
-    /* v7.19.448: the panel inherits .swml-outline-panel's float:left + clear:left, so it
-       was stacking BELOW the outline panel's full (hidden) height — dropping ~a screen
-       down. Don't clear; align its top with the resources trigger (one button + gap = 36px
-       below the outline button, i.e. the outline panel's -30px pull-up + 36px = 6px). */
-    clear: none;
-    margin-top: 6px;
+    /* v7.19.449: keep clear:left (inherited) so the panel sits FLUSH-LEFT, exactly like
+       the outline panel — same left margin (12px) as the button column. The vertical drop
+       it used to suffer is fixed by collapsing the CLOSED outline panel's height (rule
+       below), so this panel no longer stacks below a screen-tall hidden outline. Small
+       margin-top nudges it just under the buttons. */
+    clear: left;
+    margin-top: 8px;
+}
+/* v7.19.449: collapse the document-outline panel's flow height while it's CLOSED, so the
+   resources panel (which clears left below it) isn't pushed ~a screen down. Open + detached
+   states keep their full height. */
+.swml-outline-panel:not(.swml-resources-panel):not(.swml-outline-open):not(.swml-outline-detached) {
+    max-height: 0;
 }
 .swml-resources-panel.swml-resources-open {
     opacity: 1;
