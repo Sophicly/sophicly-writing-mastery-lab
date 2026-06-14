@@ -6357,6 +6357,49 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 
 /* ══════════════════════════════════════════
+ *  v7.19.437: PLAN-SECTION FIELD ACCENTS — brand purple, not outline-blue
+ *  OutlineRow was built for essay OUTLINE sections (blue #42A1EC). It is reused
+ *  in CW Step 1 + planning, which are PLAN sections (brand purple #5333ed) — so
+ *  the blue label chips + blue focus clashed with their own purple section.
+ *  Scope the accent to .swml-section-plan so plan fields follow brand purple while
+ *  real outline sections keep their blue. Monochromatic: low-chroma tint at rest,
+ *  fuller #5333ed when active. Green stays the "answered" signal; selection stays purple.
+ * ══════════════════════════════════════════ */
+.swml-section-plan .swml-outline-criteria {
+    background: rgba(83, 51, 237, 0.07);
+    color: rgba(255,255,255,0.6);
+}
+.swml-section-plan .swml-outline-ao {
+    background: rgba(83, 51, 237, 0.18);
+    color: #a78bfa;
+}
+.swml-section-plan .swml-outline-check input[type="checkbox"] {
+    border-color: rgba(83, 51, 237, 0.4);
+    background: rgba(83, 51, 237, 0.08);
+}
+.swml-section-plan .swml-outline-select {
+    background: rgba(83, 51, 237, 0.1);
+    border-color: rgba(83, 51, 237, 0.25);
+}
+.swml-section-plan .swml-outline-input:focus-within {
+    border-color: rgba(83, 51, 237, 0.5);
+    box-shadow: 0 0 0 2px rgba(83, 51, 237, 0.08);
+}
+/* Light theme */
+[data-swml-theme="light"] .swml-section-plan .swml-outline-criteria {
+    background: rgba(83, 51, 237, 0.06);
+    color: rgba(0,0,0,0.6);
+}
+[data-swml-theme="light"] .swml-section-plan .swml-outline-ao {
+    background: rgba(83, 51, 237, 0.12);
+    color: #5333ed;
+}
+[data-swml-theme="light"] .swml-section-plan .swml-outline-input:focus-within {
+    border-color: rgba(83, 51, 237, 0.4);
+    box-shadow: 0 0 0 2px rgba(83, 51, 237, 0.07);
+}
+
+/* ══════════════════════════════════════════
  *  CHECKLIST ITEMS (v7.14.60)
  * ══════════════════════════════════════════ */
 
