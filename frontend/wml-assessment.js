@@ -15769,7 +15769,8 @@
                 '<h2>Step 6: Plot Outline Workshop</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials \u2014 detailed mapping through all six stages of your story.</p>' +
                 '<p>This is where your story starts to take shape. We\u2019re going to build a detailed, beat-by-beat outline for your entire story, from Stage I all the way through to Stage VI.</p>' +
-                '<p>This is your <strong>master plot outline</strong> \u2014 a living document. You will return to it and update it <strong>six more times</strong> as you develop your story. Each update adds a new layer of depth: character goals, archetypes, empathy, theme, genre, and structural elements.</p>'
+                '<p>This is your <strong>master plot outline</strong> \u2014 a living document. You will return to it and update it <strong>six more times</strong> as you develop your story. Each update adds a new layer of depth: character goals, archetypes, empathy, theme, genre, and structural elements.</p>' +
+                '<p><strong>Why the Hero\u2019s Journey?</strong> This whole course is built on the Hero\u2019s Journey \u2014 the universal pattern beneath almost every great story. Each of the eight plot structures uses the same six Hero\u2019s Journey stages as its backbone, then layers its own kind of transformation on top (Rebirth, Tragedy, the Quest, and so on). So the stage names below are shared by every structure; the beats inside them are tuned to the one you chose in Step 5.</p>'
             );
             // Placeholder — replaced by buildCWPlotOutlineSection() in canvas init (v7.15.4)
             html += '<p><em>Loading your plot structure\u2026</em></p>';
@@ -19070,37 +19071,28 @@
         // student can see which one loaded (the stage labels are shared across all eight).
         const meta = CW_PLOT_ARCHETYPE_META[key] || CW_PLOT_ARCHETYPE_META['heros-journey'];
         const archLabel = archetype.label || 'Hero’s Journey';
-        const _chips = (str) => String(str || '')
-            .replace(/\.$/, '')
-            .split(',')
-            .map(e => e.trim())
-            .filter(Boolean)
-            .map(e => `<span class="swml-cw-plot-chip">${escapeHTML(e)}</span>`)
-            .join('');
-        const exampleChips = _chips(meta.examples);
-        const themeChips = _chips(meta.themes);
+        // NOTE: canvas content must use only TipTap-schema nodes (headings, paragraphs,
+        // strong/em, bullet lists). Custom <div>/<span class> are stripped on parse — that
+        // collapsed the v440 "card" into run-together text (Neil). So render semantically.
         const fx = meta.effects || {};
         const effectsHtml = (fx.focus || fx.feel || fx.think || fx.act)
-            ? `<ul class="swml-cw-plot-effects">` +
-                (fx.focus ? `<li><span class="swml-cw-plot-effect-lbl">Focus</span> ${escapeHTML(fx.focus)}</li>` : '') +
-                (fx.feel ? `<li><span class="swml-cw-plot-effect-lbl">Feel</span> ${escapeHTML(fx.feel)}</li>` : '') +
-                (fx.think ? `<li><span class="swml-cw-plot-effect-lbl">Think</span> ${escapeHTML(fx.think)}</li>` : '') +
-                (fx.act ? `<li><span class="swml-cw-plot-effect-lbl">Act</span> ${escapeHTML(fx.act)}</li>` : '') +
+            ? `<p><strong>Effects on the reader</strong></p><ul>` +
+                (fx.focus ? `<li><strong>Focus</strong> — ${escapeHTML(fx.focus)}</li>` : '') +
+                (fx.feel ? `<li><strong>Feel</strong> — ${escapeHTML(fx.feel)}</li>` : '') +
+                (fx.think ? `<li><strong>Think</strong> — ${escapeHTML(fx.think)}</li>` : '') +
+                (fx.act ? `<li><strong>Act</strong> — ${escapeHTML(fx.act)}</li>` : '') +
               `</ul>`
             : '';
         html += dividerHTML('YOUR PLOT STRUCTURE');
         html += sectionHTML('question', `Plot Structure: ${archLabel}`, false, null,
-            `<div class="swml-cw-plot-card">` +
-                `<div class="swml-cw-plot-card__eyebrow">Your Plot Structure</div>` +
-                `<div class="swml-cw-plot-card__name">${escapeHTML(archLabel)}</div>` +
-                `<p class="swml-cw-plot-card__what">${escapeHTML(meta.what)}</p>` +
-                (meta.themes ? `<div class="swml-cw-plot-card__row"><span class="swml-cw-plot-card__lbl">Themes it explores</span><span class="swml-cw-plot-card__chips">${themeChips}</span></div>` : '') +
-                `<div class="swml-cw-plot-card__row"><span class="swml-cw-plot-card__lbl">Best suits</span><span class="swml-cw-plot-card__val">${escapeHTML(meta.suits)}</span></div>` +
-                (effectsHtml ? `<div class="swml-cw-plot-card__block"><span class="swml-cw-plot-card__lbl">Effects on the reader</span>${effectsHtml}</div>` : '') +
-                (meta.purpose ? `<div class="swml-cw-plot-card__row"><span class="swml-cw-plot-card__lbl">Author’s purpose</span><span class="swml-cw-plot-card__val">${escapeHTML(meta.purpose)}</span></div>` : '') +
-                `<div class="swml-cw-plot-card__row"><span class="swml-cw-plot-card__lbl">Famous examples</span><span class="swml-cw-plot-card__chips">${exampleChips}</span></div>` +
-                `<p class="swml-cw-plot-card__note">All eight structures share the Hero’s Journey stages — each layers a different kind of transformation on top. The beats below are tuned for ${escapeHTML(archLabel)}.</p>` +
-            `</div>`
+            `<h3>${escapeHTML(archLabel)}</h3>` +
+            `<p>${escapeHTML(meta.what)}</p>` +
+            (meta.themes ? `<p><strong>Themes it explores:</strong> ${escapeHTML(meta.themes)}</p>` : '') +
+            `<p><strong>Best suits:</strong> ${escapeHTML(meta.suits)}</p>` +
+            effectsHtml +
+            (meta.purpose ? `<p><strong>Author’s purpose:</strong> ${escapeHTML(meta.purpose)}</p>` : '') +
+            (meta.examples ? `<p><strong>Famous examples:</strong> ${escapeHTML(meta.examples)}</p>` : '') +
+            `<p><em>All eight structures share the Hero’s Journey stages — each layers a different kind of transformation on top. The beats below are tuned for ${escapeHTML(archLabel)}.</em></p>`
         );
         archetype.sections.forEach(sec => {
             let rows = '';

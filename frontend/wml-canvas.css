@@ -6277,8 +6277,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-outline-select {
     display: block;
     width: 100%;
+    box-sizing: border-box;
     margin-top: 4px;
-    padding: 4px 6px;
+    padding: 4px 24px 4px 6px; /* v7.19.442: right pad clears the native chevron — long archetype labels were overlapping the arrow (Neil) */
     font-size: 11px;
     line-height: 1.4;
     color: rgba(255,255,255,0.7);
@@ -6287,6 +6288,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     border-radius: 4px;
     cursor: pointer;
     appearance: auto;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 .swml-outline-select:focus {
     border-color: rgba(66, 161, 236, 0.45);
