@@ -13474,14 +13474,18 @@
             const editorText = canvasEditor.getText();
             if (!editorText.includes('Loading your plot structure')) return; // Already has real content
 
-            // Determine which plot structure to load from student's Step 5 choice
-            let structureSlug = 'heros-journey'; // default
+            // Determine which plot structure to load from this project's Step 5 choice.
+            // v7.19.438: resolve to the EXACT archetype key (was slugifying the wrong value
+            // → every option fell back to Hero's Journey). Per-project: artifact is scoped
+            // to state.cwProjectId, so each project loads its own chosen structure.
+            let structureSlug = 'heros-journey'; // default if no choice saved yet
             if (state.cwProjectId) {
                 try {
                     const choiceArtifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'plot_structure_choice');
                     if (choiceArtifact?.success && choiceArtifact.value) {
-                        const val = typeof choiceArtifact.value === 'string' ? choiceArtifact.value : (choiceArtifact.value?.structure || choiceArtifact.value?.primary || '');
-                        if (val) structureSlug = val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        const resolved = resolvePlotStructureSlug(choiceArtifact.value);
+                        if (resolved) structureSlug = resolved;
+                        console.log('WML CW: Step 6 plot structure resolved →', structureSlug);
                     }
                 } catch (e) { console.log('WML CW: No plot structure choice found, using default Hero\'s Journey'); }
             }
@@ -18847,6 +18851,51 @@
      * Build CW plot outline with two-column criteria layout (v7.15.4: archetype-specific).
      * @param {string} archetypeKey - e.g. 'heros-journey', 'tragedy', 'coming-of-age'
      */
+    // v7.19.438: Resolve the student's Step 5 archetype choice → the EXACT
+    // buildCWPlotOutlineSection key (one of the 8 in OUTLINE_CRITERIA.cwPlotArchetypes).
+    // The choice persists in the Step 5 doc HTML as the cw-step-5-primary-archetype
+    // OutlineRow's data-check-state {"selected":"<dropdown label>"}. The old code
+    // slugified the whole artifact value, so labels like "Rebirth / Redemption + Hero's
+    // Journey" became "rebirth-redemption-hero-s-journey" (≠ key "rebirth-redemption")
+    // and EVERY non-default option silently fell back to Hero's Journey. Match by the
+    // distinctive word so punctuation / apostrophe / "+ Hero's Journey" suffix all resolve.
+    // Order matters: the specific archetypes are tested before the generic "hero" fallback,
+    // because every label ends in "+ Hero's Journey".
+    function resolvePlotStructureSlug(artifactValue) {
+        let label = '';
+        try {
+            const raw = typeof artifactValue === 'string'
+                ? artifactValue
+                : (artifactValue && (artifactValue.structure || artifactValue.primary || artifactValue.selected)) || '';
+            if (raw && /<[a-z][\s\S]*>/i.test(raw)) {
+                // Artifact is the Step 5 doc HTML — read the dropdown's saved selection.
+                const tmp = document.createElement('div');
+                tmp.innerHTML = raw;
+                let row = null;
+                tmp.querySelectorAll('[data-outline-row]').forEach(r => {
+                    if (!row && r.getAttribute('data-field-id') === 'cw-step-5-primary-archetype') row = r;
+                });
+                if (row) {
+                    try { label = (JSON.parse(row.getAttribute('data-check-state') || '{}').selected) || ''; } catch (_) {}
+                }
+            } else {
+                // Artifact is already a bare key/label (e.g. saved by the Change Structure button).
+                label = String(raw || '');
+            }
+        } catch (_) {}
+        const t = label.toLowerCase();
+        if (!t) return null;
+        if (t.includes('rebirth') || t.includes('redemption')) return 'rebirth-redemption';
+        if (t.includes('tragedy')) return 'tragedy';
+        if (t.includes('rags')) return 'rags-to-riches';
+        if (t.includes('quest')) return 'the-quest';
+        if (t.includes('overcoming') || t.includes('monster')) return 'overcoming-the-monster';
+        if (t.includes('voyage')) return 'voyage-and-return';
+        if (t.includes('coming of age') || t.includes('coming-of-age')) return 'coming-of-age';
+        if (t.includes('hero')) return 'heros-journey';
+        return null;
+    }
+
     function buildCWPlotOutlineSection(archetypeKey) {
         const key = archetypeKey || 'heros-journey';
         const archetype = OUTLINE_CRITERIA.cwPlotArchetypes[key]
