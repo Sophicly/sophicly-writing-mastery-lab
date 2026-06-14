@@ -5303,6 +5303,7 @@
         const outlineBtn = el('button', {
             className: 'swml-outline-btn',
             'data-tooltip': 'Document Outline',
+            'data-tooltip-pos': 'right',
             'aria-label': 'Document Outline',
             innerHTML: SVG_OUTLINE,
             onClick: (e) => { e.stopPropagation(); toggleOutlinePanel(); }
@@ -5382,6 +5383,7 @@
             const resTrigger = el('button', {
                 className: 'swml-outline-btn swml-resources-trigger',
                 'data-tooltip': 'Resources',
+                'data-tooltip-pos': 'right',
                 'aria-label': 'Resources',
                 innerHTML: SVG_LINK,
                 onClick: (e) => {

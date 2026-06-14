@@ -3025,6 +3025,13 @@ body.swml-page {
     top: 100%;
     border-top-color: hsla(252deg 25% 16% / 95%);
 }
+/* v7.19.450: right placement — caret on the pill's left edge, pointing left. */
+.swml-tooltip[data-placement="right"]::after {
+    left: 0;
+    top: 50%;
+    transform: translate(-100%, -50%);
+    border-right-color: hsla(252deg 25% 16% / 95%);
+}
 
 /* Light-mode variant — flips to brand blue when the canvas/light theme is active.
    We can't easily detect "light mode" from a body-level tooltip, so we mirror the
@@ -3043,4 +3050,7 @@ html[data-theme="light"] .swml-tooltip[data-placement="below"]::after {
 }
 html[data-theme="light"] .swml-tooltip[data-placement="above"]::after {
     border-top-color: hsla(226deg 15% 92% / 98%);
+}
+html[data-theme="light"] .swml-tooltip[data-placement="right"]::after {
+    border-right-color: hsla(226deg 15% 92% / 98%);
 }

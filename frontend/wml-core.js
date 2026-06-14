@@ -79,17 +79,26 @@
             tooltip.classList.add('visible');
             const rect = el.getBoundingClientRect();
             const tipRect = tooltip.getBoundingClientRect();
-            // Default: below the element
-            let top = rect.bottom + 8;
-            let placement = 'below';
-            // Flip above if no room below
-            if (top + tipRect.height > window.innerHeight - 4) {
-                top = rect.top - tipRect.height - 8;
-                placement = 'above';
+            let top, left, placement;
+            // v7.19.450: opt-in right placement (data-tooltip-pos="right"). Used by the
+            // stacked outline/resources buttons, whose below-tooltips overlapped the panel.
+            if ((el.dataset && el.dataset.tooltipPos) === 'right') {
+                left = rect.right + 8;
+                top = rect.top + rect.height / 2 - tipRect.height / 2;
+                top = Math.max(4, Math.min(top, window.innerHeight - tipRect.height - 4));
+                placement = 'right';
+            } else {
+                // Default: below the element; flip above if no room below
+                top = rect.bottom + 8;
+                placement = 'below';
+                if (top + tipRect.height > window.innerHeight - 4) {
+                    top = rect.top - tipRect.height - 8;
+                    placement = 'above';
+                }
+                left = rect.left + rect.width / 2 - tipRect.width / 2;
+                // Clamp horizontally within viewport
+                left = Math.max(4, Math.min(left, window.innerWidth - tipRect.width - 4));
             }
-            let left = rect.left + rect.width / 2 - tipRect.width / 2;
-            // Clamp horizontally within viewport
-            left = Math.max(4, Math.min(left, window.innerWidth - tipRect.width - 4));
             tooltip.style.left = left + 'px';
             tooltip.style.top = top + 'px';
             tooltip.dataset.placement = placement;
