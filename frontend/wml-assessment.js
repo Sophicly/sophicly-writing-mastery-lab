@@ -5302,7 +5302,8 @@
         // Floating trigger on left edge of content area
         const outlineBtn = el('button', {
             className: 'swml-outline-btn',
-            title: 'Document Outline',
+            'data-tooltip': 'Document Outline',
+            'aria-label': 'Document Outline',
             innerHTML: SVG_OUTLINE,
             onClick: (e) => { e.stopPropagation(); toggleOutlinePanel(); }
         });
@@ -5348,10 +5349,13 @@
 
         // ── CW Resources Panel (v7.13.49) ──
         // Collapsible panel like Document Outline, for step-specific resource links
+        // v7.19.448: universal CW resources shown on EVERY creative-writing step
+        // (Neil) — the reference guide is relevant throughout the course. Step-specific
+        // links below are appended underneath these.
+        const CW_UNIVERSAL_RESOURCES = [
+            { label: 'Creative Writing Reference Guide', url: 'https://www.sophicly.com/library/resources/creative-writing-reference-guide/' },
+        ];
         const CW_PANEL_RESOURCES = {
-            1: [
-                { label: 'Reference: Writer’s Profile & Why Authors Write', url: 'https://www.sophicly.com/library/resources/creative-writing-reference-guide/' },
-            ],
             2: [
                 { label: 'Explore Story Ideas Course', url: 'https://www.sophicly.com/courses/creative-writing-masterclass/units/3-how-to-come-up-with-compelling-story-ideas/lessons/3-step-2-explore-more-story-ideas/' },
                 { label: 'Read: When I Was 9 Years Old', url: 'https://docs.google.com/document/d/16qbgkyyz8pKyPb4udJa5DNlvbDKIalSwu8y5B8qHczU/copy' },
@@ -5363,7 +5367,10 @@
         const _isCw = state.task && state.task.startsWith('cw_');
         const _cwDef = _isCw ? WML.getCwStepDef(state.task) : null;
         const cwStepForRes = _isCw ? (_cwDef?.step || null) : null;
-        const cwPanelRes = CW_PANEL_RESOURCES[cwStepForRes];
+        // v7.19.448: every CW step gets the universal resources + any step-specific ones.
+        const cwPanelRes = _isCw
+            ? [...CW_UNIVERSAL_RESOURCES, ...(CW_PANEL_RESOURCES[cwStepForRes] || [])]
+            : null;
         let resPanel = null;
         let resDetachBtn = null; // hoisted for floatRes/dockRes access
         if (cwPanelRes && cwPanelRes.length > 0) {
@@ -5374,7 +5381,8 @@
             // Toggle button — inside btnColumn below outline button
             const resTrigger = el('button', {
                 className: 'swml-outline-btn swml-resources-trigger',
-                title: 'Resources',
+                'data-tooltip': 'Resources',
+                'aria-label': 'Resources',
                 innerHTML: SVG_LINK,
                 onClick: (e) => {
                     e.stopPropagation();

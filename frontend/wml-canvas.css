@@ -2135,25 +2135,29 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     margin: 0 -30px 0 12px;
     width: 30px;
 }
-/* Outline trigger — inside btn-column (v7.14.43: solid background, not see-through) */
+/* Outline trigger — inside btn-column (v7.14.43: solid background, not see-through)
+   v7.19.448: no outline border (brand: no thin outline borders on default buttons).
+   Raised filled shade off Dark Base #1c1d1f + soft shadow so it reads as a button. */
 .swml-outline-btn {
-    background: #2a2b2d;
-    border: 1px solid rgba(255,255,255,0.1);
-    color: rgba(255,255,255,0.5);
+    background: #26272a;
+    border: none;
+    color: rgba(255,255,255,0.55);
     cursor: pointer;
     padding: 6px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.2s, background 0.2s, border-color 0.2s, opacity 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+    transition: color 0.2s, background 0.2s, box-shadow 0.2s, opacity 0.2s;
     width: 30px;
     height: 30px;
+    position: relative; /* tooltip anchor */
 }
 .swml-outline-btn:hover {
     color: #fff;
-    background: rgba(255,255,255,0.08);
-    border-color: rgba(255,255,255,0.12);
+    background: #303133;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 .swml-outline-btn.is-active {
     opacity: 0;
@@ -2254,19 +2258,51 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 [data-swml-theme="light"] .swml-outline-group-title:hover {
     color: #4D76FD;
 }
+/* v7.19.448: light theme — BRAND Light Surface raised grey, no outline (brand §light
+   surfaces: a darker grey reads as raised without relying on a border). */
 .swml-canvas-light .swml-outline-btn {
-    background: #fff;
-    border-color: rgba(0,0,0,0.06);
-    color: rgba(0,0,0,0.4);
+    background: #e7e7ed;
+    border: none;
+    color: rgba(0,0,0,0.5);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
 }
 .swml-canvas-light .swml-outline-btn:hover {
     color: #4D76FD;
-    background: #fff;
-    border-color: rgba(77,118,253,0.15);
+    background: #dddde1;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 .swml-canvas-light .swml-outline-btn.is-active {
     opacity: 0;
     pointer-events: none;
+}
+/* v7.19.448: styled tooltips on the outline + resources triggers — appear to the
+   right of the button (buttons sit on the left edge). */
+.swml-outline-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    background: #1c1d1f;
+    color: rgba(255,255,255,0.92);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 30;
+}
+.swml-outline-btn[data-tooltip]:hover::after {
+    opacity: 1;
+}
+.swml-canvas-light .swml-outline-btn[data-tooltip]::after {
+    background: #1a1a1e;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 /* ── Detachable Outline Panel (v7.12.40) ── */
@@ -2413,6 +2449,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     opacity: 0;
     pointer-events: none;
     transform: translateX(-12px);
+    /* v7.19.448: the panel inherits .swml-outline-panel's float:left + clear:left, so it
+       was stacking BELOW the outline panel's full (hidden) height — dropping ~a screen
+       down. Don't clear; align its top with the resources trigger (one button + gap = 36px
+       below the outline button, i.e. the outline panel's -30px pull-up + 36px = 6px). */
+    clear: none;
+    margin-top: 6px;
 }
 .swml-resources-panel.swml-resources-open {
     opacity: 1;
