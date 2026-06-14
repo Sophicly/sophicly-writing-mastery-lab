@@ -18851,6 +18851,54 @@
      * Build CW plot outline with two-column criteria layout (v7.15.4: archetype-specific).
      * @param {string} archetypeKey - e.g. 'heros-journey', 'tragedy', 'coming-of-age'
      */
+    // v7.19.439: Per-structure identity copy shown at the top of the Step 6 outline so the
+    // student can see WHICH structure loaded (all eight share the Hero's Journey stage labels
+    // by design — each is "Hero's Journey + [variation]" — so the beats alone don't announce it)
+    // and understand what it is, what stories it suits, and famous examples. Keys match
+    // OUTLINE_CRITERIA.cwPlotArchetypes exactly. Copy is a first draft — easily editable.
+    const CW_PLOT_ARCHETYPE_META = {
+        'heros-journey': {
+            what: 'The universal story pattern (Joseph Campbell’s monomyth). An ordinary protagonist is called to adventure, crosses into an unfamiliar world, faces trials and a supreme ordeal, and returns transformed. Every other structure here is a variation of it.',
+            suits: 'Epic adventures, fantasy, and any story built on a protagonist’s transformation.',
+            examples: 'Star Wars, The Lord of the Rings, The Lion King, Harry Potter.',
+        },
+        'rebirth-redemption': {
+            what: 'A flawed, often unlikeable protagonist is gradually transformed for the better and earns redemption by the end. The emotional core is moral change and the second chance.',
+            suits: 'Character-driven stories about people who change — redemption arcs and tales of conscience.',
+            examples: 'A Christmas Carol, Beauty and the Beast, Groundhog Day, Despicable Me.',
+        },
+        'tragedy': {
+            what: 'A protagonist makes a fatal error of judgement (their hamartia) that drives them, step by step, towards their downfall. The emotional core is the painful gap between what might have been and what is.',
+            suits: 'Serious, cautionary stories about ambition, pride, or desire pushed too far.',
+            examples: 'Macbeth, Romeo and Juliet, The Great Gatsby, Of Mice and Men.',
+        },
+        'rags-to-riches': {
+            what: 'An overlooked or impoverished protagonist rises to success, often loses it, and regains it wiser — discovering that true worth lies within, not in wealth or status.',
+            suits: 'Aspirational journeys of growth and self-worth.',
+            examples: 'Cinderella, Aladdin, Great Expectations, Slumdog Millionaire.',
+        },
+        'the-quest': {
+            what: 'A protagonist and their companions set out towards a distant goal, overcoming a series of trials and temptations along the way. The journey itself forges them.',
+            suits: 'Adventures and ensemble journeys with a clear objective.',
+            examples: 'The Lord of the Rings, The Odyssey, Raiders of the Lost Ark, Finding Nemo.',
+        },
+        'overcoming-the-monster': {
+            what: 'A protagonist confronts and ultimately defeats a powerful, threatening force — a villain, beast, or system — that endangers their world. The emotional core is courage against overwhelming odds.',
+            suits: 'Thrillers and hero-versus-villain stories.',
+            examples: 'Beowulf, Dracula, Jaws, Star Wars.',
+        },
+        'voyage-and-return': {
+            what: 'A protagonist travels into a strange, disorientating world, survives its dangers, and returns home changed and wiser. The emotional core is what they bring back.',
+            suits: 'Fish-out-of-water and portal stories.',
+            examples: 'Alice in Wonderland, The Wizard of Oz, The Hobbit, Gulliver’s Travels.',
+        },
+        'coming-of-age': {
+            what: 'A young protagonist moves from innocence to experience, losing illusions but gaining maturity and self-knowledge. The emotional core is growing up.',
+            suits: 'Coming-of-age stories (the bildungsroman) and tales of adolescence and first understanding.',
+            examples: 'To Kill a Mockingbird, Jane Eyre, Stand By Me, Lady Bird.',
+        },
+    };
+
     // v7.19.438: Resolve the student's Step 5 archetype choice → the EXACT
     // buildCWPlotOutlineSection key (one of the 8 in OUTLINE_CRITERIA.cwPlotArchetypes).
     // The choice persists in the Step 5 doc HTML as the cw-step-5-primary-archetype
@@ -18901,6 +18949,18 @@
         const archetype = OUTLINE_CRITERIA.cwPlotArchetypes[key]
             || OUTLINE_CRITERIA.cwPlotArchetypes['heros-journey'];
         let html = '';
+        // v7.19.439: identity header — names the chosen structure + explains it so the
+        // student can see which one loaded (the stage labels are shared across all eight).
+        const meta = CW_PLOT_ARCHETYPE_META[key] || CW_PLOT_ARCHETYPE_META['heros-journey'];
+        const archLabel = archetype.label || 'Hero’s Journey';
+        html += dividerHTML('YOUR PLOT STRUCTURE');
+        html += sectionHTML('question', `Plot Structure: ${archLabel}`, false, null,
+            `<h3>Your Plot Structure: ${escapeHTML(archLabel)}</h3>` +
+            `<p>${escapeHTML(meta.what)}</p>` +
+            `<p><strong>Best suits:</strong> ${escapeHTML(meta.suits)}</p>` +
+            `<p><strong>Famous examples:</strong> ${escapeHTML(meta.examples)}</p>` +
+            `<p><em>All eight structures share the Hero’s Journey stages — each one layers a different kind of transformation on top. The beats below are tuned for ${escapeHTML(archLabel)}.</em></p>`
+        );
         archetype.sections.forEach(sec => {
             let rows = '';
             sec.criteria.forEach(c => {
