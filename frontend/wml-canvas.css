@@ -2398,6 +2398,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-outline-panel.swml-outline-open:not(.swml-outline-detached) .swml-outline-rh-e,
 .swml-outline-panel.swml-outline-open:not(.swml-outline-detached) .swml-outline-rh-ne,
 .swml-outline-panel.swml-outline-open:not(.swml-outline-detached) .swml-outline-rh-se { display: block; }
+/* v7.19.453: resources panel docked width-resize handles — parity with the outline panel. */
+.swml-resources-panel.swml-resources-open:not(.swml-outline-detached) .swml-outline-rh-e,
+.swml-resources-panel.swml-resources-open:not(.swml-outline-detached) .swml-outline-rh-ne,
+.swml-resources-panel.swml-resources-open:not(.swml-outline-detached) .swml-outline-rh-se { display: block; }
 .swml-outline-rh-edge.swml-outline-rh-n { top: 0; left: 20px; right: 20px; height: 6px; cursor: n-resize; }
 .swml-outline-rh-edge.swml-outline-rh-s { bottom: 0; left: 20px; right: 20px; height: 6px; cursor: s-resize; }
 .swml-outline-rh-edge.swml-outline-rh-w { left: 0; top: 20px; bottom: 20px; width: 6px; cursor: w-resize; }

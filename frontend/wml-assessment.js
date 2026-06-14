@@ -5704,18 +5704,26 @@
                 });
             }
             // Resize handles for resources panel — v7.14.96: CSS values, not getBoundingClientRect
+            // v7.19.453: parity with the outline panel — east edge + ne/se corners resize WIDTH
+            // while docked (height/top/left fight the sticky margin); all directions when detached.
+            let _resJustResized = false;
             let rsResizing = false, rsDir = '', rsSX = 0, rsSY = 0, rsSW = 0, rsSH = 0, rsSL = 0, rsST = 0;
             resPanel.querySelectorAll('.swml-outline-rh').forEach(h => {
                 h.addEventListener('mousedown', (e) => {
-                    if (!resFloating || e.button !== 0) return;
+                    if (e.button !== 0) return;
+                    const dirOnly = h.dataset.dir;
+                    const dockedOk = dirOnly === 'e' || dirOnly === 'ne' || dirOnly === 'se';
+                    if (!resFloating && !dockedOk) return;
                     e.preventDefault(); e.stopPropagation();
                     rsResizing = true;
-                    rsDir = h.dataset.dir;
+                    rsDir = dirOnly;
                     rsSX = e.clientX; rsSY = e.clientY;
-                    rsSW = parseFloat(resPanel.style.width);
-                    rsSH = parseFloat(resPanel.style.height);
-                    rsSL = parseFloat(resPanel.style.left);
-                    rsST = parseFloat(resPanel.style.top);
+                    const rectW = resPanel.getBoundingClientRect().width;
+                    const rectH = resPanel.getBoundingClientRect().height;
+                    rsSW = parseFloat(resPanel.style.width) || rectW;
+                    rsSH = parseFloat(resPanel.style.height) || rectH;
+                    rsSL = parseFloat(resPanel.style.left) || 0;
+                    rsST = parseFloat(resPanel.style.top) || 0;
                 });
             });
             document.addEventListener('mousemove', (e) => {
@@ -5726,9 +5734,28 @@
                 if (rsDir.includes('w')) { w = Math.max(180, rsSW - dx); l = rsSL + (rsSW - w); }
                 if (rsDir.includes('s')) h = Math.max(200, rsSH + dy);
                 if (rsDir.includes('n')) { h = Math.max(200, rsSH - dy); t = rsST + (rsSH - h); }
-                Object.assign(resPanel.style, { width: w+'px', height: h+'px', left: l+'px', top: t+'px' });
+                if (!resFloating) {
+                    // Docked: width only; sync the negative right margin (float-over math).
+                    resPanel.style.width = w + 'px';
+                    resPanel.style.marginRight = (-w) + 'px';
+                } else {
+                    Object.assign(resPanel.style, { width: w+'px', height: h+'px', left: l+'px', top: t+'px' });
+                }
             });
-            document.addEventListener('mouseup', () => { rsResizing = false; });
+            document.addEventListener('mouseup', () => {
+                if (rsResizing) { _resJustResized = true; setTimeout(() => { _resJustResized = false; }, 50); }
+                rsResizing = false;
+            });
+            // v7.19.453: close the resources panel when clicking outside it (parity with the
+            // outline panel). Skips detached mode + the synthetic click after a resize-drag.
+            contentWrap.addEventListener('click', (e) => {
+                if (!resPanel.classList.contains('swml-resources-open')) return;
+                if (resFloating || _resJustResized) return;
+                if (resPanel.contains(e.target) || resTrigger.contains(e.target)) return;
+                if (e.target.closest('.swml-dropdown-overlay, .swml-dropdown-select')) return;
+                resPanel.classList.remove('swml-resources-open');
+                resTrigger.classList.remove('is-active');
+            });
         }
 
         // v7.13.74: Unified scroll helper — used by outline panel and in-document TOC.
