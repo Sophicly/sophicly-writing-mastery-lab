@@ -14709,9 +14709,15 @@
                     disclaimerLabel.htmlFor = 'swml-signoff-confirm';
                     disclaimerLabel.className = 'swml-signoff-disclaimer-text';
                     const isDiagnosticT1 = state.topicNumber === 1 && state.draftType === 'diagnostic';
-                    disclaimerLabel.textContent = isDiagnosticT1
-                        ? 'I confirm the student has completed all sections of this document. Essay plan is not required for the first diagnostic.'
-                        : 'I confirm the student has completed all sections of this document, including the essay plan.';
+                    // v7.19.452: CW exploration steps (cw_step_*) get optional, step-appropriate
+                    // wording — the old "...including the essay plan" is assessment language and made
+                    // no sense on an exploration step (Neil). Trials (cw_trial_*) keep the strict text.
+                    const isCwExplorationStep = state.task && state.task.startsWith('cw_step_');
+                    disclaimerLabel.textContent = isCwExplorationStep
+                        ? 'Optional — tick to confirm you have reviewed this step with the student.'
+                        : isDiagnosticT1
+                            ? 'I confirm the student has completed all sections of this document. Essay plan is not required for the first diagnostic.'
+                            : 'I confirm the student has completed all sections of this document, including the essay plan.';
                     disclaimerRow.appendChild(checkbox);
                     disclaimerRow.appendChild(disclaimerLabel);
                     wrapper.appendChild(disclaimerRow);
