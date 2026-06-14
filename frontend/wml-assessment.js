@@ -5349,6 +5349,9 @@
         // ── CW Resources Panel (v7.13.49) ──
         // Collapsible panel like Document Outline, for step-specific resource links
         const CW_PANEL_RESOURCES = {
+            1: [
+                { label: 'Reference: Writer’s Profile & Why Authors Write', url: 'https://www.sophicly.com/library/resources/creative-writing-reference-guide/' },
+            ],
             2: [
                 { label: 'Explore Story Ideas Course', url: 'https://www.sophicly.com/courses/creative-writing-masterclass/units/3-how-to-come-up-with-compelling-story-ideas/lessons/3-step-2-explore-more-story-ideas/' },
                 { label: 'Read: When I Was 9 Years Old', url: 'https://docs.google.com/document/d/16qbgkyyz8pKyPb4udJa5DNlvbDKIalSwu8y5B8qHczU/copy' },
