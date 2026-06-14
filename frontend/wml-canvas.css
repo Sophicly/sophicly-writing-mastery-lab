@@ -5732,7 +5732,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-input-field {
     position: relative;
     background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid transparent; /* v7.19.436: resting border off — AI form tell. Returns on focus/answered. */
     border-radius: 6px;
     padding: 10px 14px;
     margin: 6px 0 14px 0;
@@ -6118,7 +6118,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* Light theme */
 [data-swml-theme="light"] .swml-input-field {
     background: rgba(0,0,0,0.02);
-    border-color: rgba(0,0,0,0.1);
+    border-color: transparent; /* v7.19.436: resting border off (light) */
 }
 [data-swml-theme="light"] .swml-input-field[data-prompt]::before {
     color: rgba(0,0,0,0.3);
@@ -6171,7 +6171,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* The contentDOM — plain block, splittable across pages */
 .swml-outline-input {
     background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid transparent; /* v7.19.436: resting border off — the grey outline read as an AI form tell. Border returns only on focus/answered (below). */
     border-radius: 6px;
     padding: 10px 14px;
     min-height: 36px;
@@ -6194,7 +6194,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 [data-swml-theme="light"] .swml-outline-input {
     background: rgba(0,0,0,0.02);
-    border-color: rgba(0,0,0,0.1);
+    border-color: transparent; /* v7.19.436: resting border off (light) */
 }
 [data-swml-theme="light"] .swml-outline-input[data-prompt]::before {
     color: rgba(0,0,0,0.3);
@@ -6215,7 +6215,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     z-index: 3;
     padding: 8px 10px;
     background: rgba(66, 161, 236, 0.06);
-    border: 1px solid rgba(66, 161, 236, 0.12);
+    border: 1px solid transparent; /* v7.19.436: label-cell outline off — soft tint chip reads as a label, not a boxed form field */
     border-radius: 6px;
     font-size: 11.5px;
     line-height: 1.5;
@@ -6301,7 +6301,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* Light theme */
 [data-swml-theme="light"] .swml-outline-criteria {
     background: rgba(66, 161, 236, 0.05);
-    border-color: rgba(66, 161, 236, 0.12);
+    border-color: transparent; /* v7.19.436: label-cell outline off (light) */
     color: rgba(0,0,0,0.55);
 }
 [data-swml-theme="light"] .swml-outline-ao {
@@ -6332,12 +6332,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     border-color: rgba(28, 217, 145, 0.45);
     background: rgba(28, 217, 145, 0.06);
 }
-/* Input area has text */
+/* Input area has text — v7.19.436: signal "answered" with a soft fill tint, not a
+   resting border (a border here would re-introduce the boxed-form look once filled). */
 .swml-outline-input.swml-input-filled {
-    border-color: rgba(28, 217, 145, 0.3);
+    background: rgba(28, 217, 145, 0.07);
 }
 [data-swml-theme="light"] .swml-outline-input.swml-input-filled {
-    border-color: rgba(28, 217, 145, 0.35);
+    background: rgba(28, 217, 145, 0.08);
 }
 /* Row complete: both criteria AND input filled — unified green border around entire row */
 .swml-outline-row.swml-row-complete {
@@ -6347,12 +6348,12 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 [data-swml-theme="light"] .swml-outline-row.swml-row-complete {
     box-shadow: 0 0 0 1px rgba(28, 217, 145, 0.3);
 }
-/* Plan/response InputField has text */
+/* Plan/response InputField has text — v7.19.436: fill tint, not a resting border */
 .swml-input-field.swml-input-filled {
-    border-color: rgba(28, 217, 145, 0.3);
+    background: rgba(28, 217, 145, 0.07);
 }
 [data-swml-theme="light"] .swml-input-field.swml-input-filled {
-    border-color: rgba(28, 217, 145, 0.35);
+    background: rgba(28, 217, 145, 0.08);
 }
 
 /* ══════════════════════════════════════════
