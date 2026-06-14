@@ -6437,7 +6437,20 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     margin: 13px 0 0 0; font-size: 12px; font-style: italic; line-height: 1.5;
     color: rgba(255,255,255,0.45); max-width: 68ch;
 }
+.swml-cw-plot-card__block { margin-bottom: 9px; }
+.swml-cw-plot-effects {
+    list-style: none; margin: 6px 0 0 0; padding: 0;
+    display: flex; flex-direction: column; gap: 5px;
+}
+.swml-cw-plot-effects li {
+    font-size: 13.5px; line-height: 1.55; color: rgba(255,255,255,0.72); max-width: 64ch;
+}
+.swml-cw-plot-effect-lbl {
+    display: inline-block; min-width: 50px; font-weight: 700; color: #a78bfa;
+}
 /* Light theme */
+[data-swml-theme="light"] .swml-cw-plot-effects li { color: rgba(0,0,0,0.66); }
+[data-swml-theme="light"] .swml-cw-plot-effect-lbl { color: #5333ed; }
 [data-swml-theme="light"] .swml-cw-plot-card__name { color: #2c003e; }
 [data-swml-theme="light"] .swml-cw-plot-card__eyebrow,
 [data-swml-theme="light"] .swml-cw-plot-card__lbl { color: #5333ed; }

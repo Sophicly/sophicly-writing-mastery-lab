@@ -13470,10 +13470,8 @@
             const stepNum = cwStepDef?.step;
             // Only Step 6 gets structured plot outline templates (v7.15.4)
             if (stepNum !== 6) return;
-            // Check if the document still has the placeholder text (TipTap strips data attributes)
-            const editorText = canvasEditor.getText();
-            if (!editorText.includes('Loading your plot structure')) return; // Already has real content
-
+            // v7.19.441: no longer early-return when the placeholder is gone — we now also
+            // rebuild when the Step 5 choice changed after Step 6 was first generated.
             // Determine which plot structure to load from this project's Step 5 choice.
             // v7.19.438: resolve to the EXACT archetype key (was slugifying the wrong value
             // → every option fell back to Hero's Journey). Per-project: artifact is scoped
@@ -13503,7 +13501,32 @@
                 if (wcWidgetLabel) wcWidgetLabel.textContent = `${wcAfter} / ${canvasWordTarget}`;
                 console.log('WML CW: Built structured plot outline for:', slug, '- wc:', wcAfter);
             };
-            _injectPlotOutline(structureSlug);
+            // v7.19.441: rebuild the whole doc from the fresh template when the structure
+            // changed after the doc was already generated. Persists so it sticks next mount.
+            const _rebuildPlotDoc = (slug) => {
+                const rebuilt = getCwDocTemplate(cwStepDef).replace(/<p><em>Loading your plot structure[….]*<\/em><\/p>/, buildCWPlotOutlineSection(slug));
+                canvasEditor.commands.setContent(rebuilt, false);
+                snapshotTemplateBaseline(canvasEditor);
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                const wcAfter = getResponseWordCount(canvasEditor);
+                if (wcDisplay) wcDisplay.textContent = `${wcAfter} word${wcAfter !== 1 ? 's' : ''}`;
+                if (wcWidgetLabel) wcWidgetLabel.textContent = `${wcAfter} / ${canvasWordTarget}`;
+                console.log('WML CW: Step 6 rebuilt to match Step 5 choice →', slug);
+            };
+            // Decide: first-fill (placeholder), already-correct (no-op), or rebuild-on-mismatch.
+            const _hasPlaceholder = canvasEditor.getText().includes('Loading your plot structure');
+            const _builtSlug = detectBuiltPlotSlug(canvasEditor);
+            console.log('WML CW: Step 6 structure — desired:', structureSlug, '| built:', _builtSlug, '| placeholder:', _hasPlaceholder);
+            if (_hasPlaceholder) {
+                _injectPlotOutline(structureSlug);
+            } else if (_builtSlug !== structureSlug) {
+                if (outlineHasStudentInput(canvasEditor)) {
+                    console.log('WML CW: Step 6 structure changed (' + _builtSlug + ' → ' + structureSlug + ') but the outline has student work — not auto-rebuilding. Use Change Plot Structure to switch.');
+                } else {
+                    _rebuildPlotDoc(structureSlug);
+                }
+            }
+            // else: already showing the correct structure — leave it.
 
             // Add "Change Structure" button in the header area (v7.15.4)
             const headerRight = canvasEditor.options.element?.closest('.swml-canvas')?.querySelector('.swml-canvas-header-right');
@@ -18858,44 +18881,100 @@
     // OUTLINE_CRITERIA.cwPlotArchetypes exactly. Copy is a first draft — easily editable.
     const CW_PLOT_ARCHETYPE_META = {
         'heros-journey': {
-            what: 'The universal story pattern (Joseph Campbell’s monomyth). An ordinary protagonist is called to adventure, crosses into an unfamiliar world, faces trials and a supreme ordeal, and returns transformed. Every other structure here is a variation of it.',
-            suits: 'Epic adventures, fantasy, and any story built on a protagonist’s transformation.',
-            examples: 'Star Wars, The Lord of the Rings, The Lion King, Harry Potter.',
+            what: 'The universal story pattern (Joseph Campbell’s monomyth). An ordinary protagonist is called to adventure, crosses into an unfamiliar world, faces trials and a supreme ordeal, and returns transformed — changed from passive and unaware into capable and self-possessed.',
+            suits: 'Epic adventures, fantasy, and any story built on a protagonist growing into their full potential.',
+            themes: 'Courage, self-discovery, destiny, belonging, sacrifice, good versus evil.',
+            effects: {
+                focus: 'on the protagonist’s transformation — we watch an ordinary person become extraordinary.',
+                feel: 'excitement, hope, and a vicarious sense of triumph; empathy for the hero’s fear before each trial.',
+                think: 'about what we would risk to become who we are meant to be.',
+                act: 'to answer our own “call to adventure” rather than stay safe and unchanged.',
+            },
+            purpose: 'To show that ordinary people can rise to extraordinary challenges, and are transformed by facing them.',
         },
         'rebirth-redemption': {
-            what: 'A flawed, often unlikeable protagonist is gradually transformed for the better and earns redemption by the end. The emotional core is moral change and the second chance.',
-            suits: 'Character-driven stories about people who change — redemption arcs and tales of conscience.',
-            examples: 'A Christmas Carol, Beauty and the Beast, Groundhog Day, Despicable Me.',
+            what: 'A flawed, often unlikeable protagonist is gradually transformed for the better and earns redemption by the end. The change is moral: from selfishness, coldness or denial towards conscience, warmth and responsibility.',
+            suits: 'Character-driven stories about people who change morally — redemption arcs and tales of conscience.',
+            themes: 'Redemption, forgiveness, conscience, guilt, second chances, whether people can truly change.',
+            effects: {
+                focus: 'on the protagonist’s moral choices and the slow thaw of their character.',
+                feel: 'disapproval that softens into sympathy and hope as the protagonist changes.',
+                think: 'about whether anyone is beyond redemption, and what it takes to truly change.',
+                act: 'to extend forgiveness, and to examine our own faults honestly.',
+            },
+            purpose: 'To argue that people are not fixed — that even the deeply flawed can change — and to move the reader towards compassion.',
         },
         'tragedy': {
-            what: 'A protagonist makes a fatal error of judgement (their hamartia) that drives them, step by step, towards their downfall. The emotional core is the painful gap between what might have been and what is.',
+            what: 'A protagonist makes a fatal error of judgement (their hamartia) that drives them, step by step, towards their downfall. The change is a descent: from greatness or promise into ruin.',
             suits: 'Serious, cautionary stories about ambition, pride, or desire pushed too far.',
-            examples: 'Macbeth, Romeo and Juliet, The Great Gatsby, Of Mice and Men.',
+            themes: 'Ambition, pride (hubris), fate versus free will, guilt, the corruption of power, consequence.',
+            effects: {
+                focus: 'on the fatal choice and the chain of consequences it sets in motion.',
+                feel: 'pity and fear (catharsis), and the ache of wasted potential.',
+                think: 'about where it went wrong — and what our own fatal error of judgement might be.',
+                act: 'to heed the warning and check our own ambition before it overreaches.',
+            },
+            purpose: 'A cautionary purpose: to warn the reader, through the protagonist’s downfall, where a flaw or error of judgement ultimately leads.',
         },
         'rags-to-riches': {
-            what: 'An overlooked or impoverished protagonist rises to success, often loses it, and regains it wiser — discovering that true worth lies within, not in wealth or status.',
-            suits: 'Aspirational journeys of growth and self-worth.',
-            examples: 'Cinderella, Aladdin, Great Expectations, Slumdog Millionaire.',
+            what: 'An overlooked or impoverished protagonist rises to success, often loses it, and regains it wiser — changing from someone who measures worth by status into someone who finds it within.',
+            suits: 'Aspirational journeys about growth, identity and true self-worth.',
+            themes: 'Aspiration, identity, true versus false worth, social mobility, humility, belonging.',
+            effects: {
+                focus: 'on the gap between the protagonist’s circumstances and their real potential.',
+                feel: 'hope and satisfaction, sometimes unease at what success costs.',
+                think: 'about what success is really worth, and where true value lies.',
+                act: 'to value character over wealth or status.',
+            },
+            purpose: 'To explore what genuine worth means, and to show that outward success is empty without inner growth.',
         },
         'the-quest': {
-            what: 'A protagonist and their companions set out towards a distant goal, overcoming a series of trials and temptations along the way. The journey itself forges them.',
-            suits: 'Adventures and ensemble journeys with a clear objective.',
-            examples: 'The Lord of the Rings, The Odyssey, Raiders of the Lost Ark, Finding Nemo.',
+            what: 'A protagonist and their companions set out towards a distant goal, overcoming trials and temptations along the way. They change through the journey — tested, deepened, and bonded by it.',
+            suits: 'Adventures and ensemble journeys with a clear, hard-won objective.',
+            themes: 'Perseverance, fellowship and loyalty, sacrifice, temptation, the journey versus the destination.',
+            effects: {
+                focus: 'on the goal and the obstacles standing between the heroes and it.',
+                feel: 'anticipation, camaraderie, and mounting tension.',
+                think: 'about whether the prize is worth the cost, and who we become along the way.',
+                act: 'to commit to a worthy goal despite hardship.',
+            },
+            purpose: 'To show that the journey transforms the traveller as much as the destination rewards them.',
         },
         'overcoming-the-monster': {
-            what: 'A protagonist confronts and ultimately defeats a powerful, threatening force — a villain, beast, or system — that endangers their world. The emotional core is courage against overwhelming odds.',
+            what: 'A protagonist confronts and ultimately defeats a powerful, threatening force — a villain, beast, or oppressive system — that endangers their world. They change from endangered to empowered through the act of facing it.',
             suits: 'Thrillers and hero-versus-villain stories.',
-            examples: 'Beowulf, Dracula, Jaws, Star Wars.',
+            themes: 'Good versus evil, courage, the abuse of power, protecting the community, fear.',
+            effects: {
+                focus: 'on the threat and the protagonist’s growing resolve to face it.',
+                feel: 'fear and suspense, then relief and triumph.',
+                think: 'about what “monsters” — literal or social — we ourselves must confront.',
+                act: 'to stand against what threatens others.',
+            },
+            purpose: 'To dramatise courage against overwhelming danger, and the triumph of good over a destructive force.',
         },
         'voyage-and-return': {
-            what: 'A protagonist travels into a strange, disorientating world, survives its dangers, and returns home changed and wiser. The emotional core is what they bring back.',
+            what: 'A protagonist travels into a strange, disorientating world, survives its dangers, and returns home changed and wiser. The change is in perception: they see home, and themselves, with new eyes.',
             suits: 'Fish-out-of-water and portal stories.',
-            examples: 'Alice in Wonderland, The Wizard of Oz, The Hobbit, Gulliver’s Travels.',
+            themes: 'Growth through experience, innocence versus experience, home, perspective, the danger of the unknown.',
+            effects: {
+                focus: 'on the strange new world and how the protagonist adapts to it.',
+                feel: 'wonder and disorientation, then relief on returning home.',
+                think: 'about how leaving home changes the way we understand it.',
+                act: 'to bring back what we have learned and use it.',
+            },
+            purpose: 'To show how venturing beyond the familiar changes the way we understand ourselves and home.',
         },
         'coming-of-age': {
-            what: 'A young protagonist moves from innocence to experience, losing illusions but gaining maturity and self-knowledge. The emotional core is growing up.',
+            what: 'A young protagonist moves from innocence to experience, losing illusions but gaining maturity and self-knowledge. The change is the passage from childhood understanding to adult selfhood.',
             suits: 'Coming-of-age stories (the bildungsroman) and tales of adolescence and first understanding.',
-            examples: 'To Kill a Mockingbird, Jane Eyre, Stand By Me, Lady Bird.',
+            themes: 'Innocence and experience, identity, belonging, first love and loss, disillusionment, responsibility.',
+            effects: {
+                focus: 'on the protagonist’s shifting understanding of the world.',
+                feel: 'tenderness, nostalgia, and the bittersweetness of growing up.',
+                think: 'about what we gain and what we lose as we mature.',
+                act: 'to reflect on our own growth and the moments that shaped us.',
+            },
+            purpose: 'To capture the universal, bittersweet passage from childhood understanding to adult self-knowledge.',
         },
     };
 
@@ -18944,6 +19023,44 @@
         return null;
     }
 
+    // v7.19.441: which plot structure is the Step 6 doc currently built for? The outline
+    // field ids encode it: outline-cw-<key>-<section>-<beat>. Returns the matching archetype
+    // key (no archetype key is a prefix of another, so startsWith is safe), or null.
+    function detectBuiltPlotSlug(editor) {
+        if (!editor) return null;
+        const keys = Object.keys(OUTLINE_CRITERIA.cwPlotArchetypes || {});
+        let found = null;
+        editor.state.doc.descendants(node => {
+            if (found) return false;
+            if (node.type && node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId) {
+                const fid = node.attrs.fieldId;
+                for (const k of keys) { if (fid.indexOf('outline-cw-' + k + '-') === 0) { found = k; break; } }
+            }
+            return true;
+        });
+        return found;
+    }
+
+    // v7.19.441: has the student written anything into the Step 6 outline? (typed answer text
+    // in any row, OR a ticked beat / chosen dropdown). Used to avoid clobbering their work when
+    // the plot structure changes — only an untouched outline is safe to auto-rebuild.
+    function outlineHasStudentInput(editor) {
+        if (!editor) return false;
+        let has = false;
+        editor.state.doc.descendants(node => {
+            if (has) return false;
+            if (node.type && node.type.name === 'outlineRow') {
+                if ((node.textContent || '').trim()) { has = true; return false; }
+                try {
+                    const cs = JSON.parse((node.attrs && node.attrs.checkState) || '{}');
+                    if ((Array.isArray(cs.checked) && cs.checked.length) || cs.selected) { has = true; return false; }
+                } catch (_) {}
+            }
+            return true;
+        });
+        return has;
+    }
+
     function buildCWPlotOutlineSection(archetypeKey) {
         const key = archetypeKey || 'heros-journey';
         const archetype = OUTLINE_CRITERIA.cwPlotArchetypes[key]
@@ -18953,20 +19070,34 @@
         // student can see which one loaded (the stage labels are shared across all eight).
         const meta = CW_PLOT_ARCHETYPE_META[key] || CW_PLOT_ARCHETYPE_META['heros-journey'];
         const archLabel = archetype.label || 'Hero’s Journey';
-        const exampleChips = String(meta.examples || '')
+        const _chips = (str) => String(str || '')
             .replace(/\.$/, '')
             .split(',')
             .map(e => e.trim())
             .filter(Boolean)
             .map(e => `<span class="swml-cw-plot-chip">${escapeHTML(e)}</span>`)
             .join('');
+        const exampleChips = _chips(meta.examples);
+        const themeChips = _chips(meta.themes);
+        const fx = meta.effects || {};
+        const effectsHtml = (fx.focus || fx.feel || fx.think || fx.act)
+            ? `<ul class="swml-cw-plot-effects">` +
+                (fx.focus ? `<li><span class="swml-cw-plot-effect-lbl">Focus</span> ${escapeHTML(fx.focus)}</li>` : '') +
+                (fx.feel ? `<li><span class="swml-cw-plot-effect-lbl">Feel</span> ${escapeHTML(fx.feel)}</li>` : '') +
+                (fx.think ? `<li><span class="swml-cw-plot-effect-lbl">Think</span> ${escapeHTML(fx.think)}</li>` : '') +
+                (fx.act ? `<li><span class="swml-cw-plot-effect-lbl">Act</span> ${escapeHTML(fx.act)}</li>` : '') +
+              `</ul>`
+            : '';
         html += dividerHTML('YOUR PLOT STRUCTURE');
         html += sectionHTML('question', `Plot Structure: ${archLabel}`, false, null,
             `<div class="swml-cw-plot-card">` +
                 `<div class="swml-cw-plot-card__eyebrow">Your Plot Structure</div>` +
                 `<div class="swml-cw-plot-card__name">${escapeHTML(archLabel)}</div>` +
                 `<p class="swml-cw-plot-card__what">${escapeHTML(meta.what)}</p>` +
+                (meta.themes ? `<div class="swml-cw-plot-card__row"><span class="swml-cw-plot-card__lbl">Themes it explores</span><span class="swml-cw-plot-card__chips">${themeChips}</span></div>` : '') +
                 `<div class="swml-cw-plot-card__row"><span class="swml-cw-plot-card__lbl">Best suits</span><span class="swml-cw-plot-card__val">${escapeHTML(meta.suits)}</span></div>` +
+                (effectsHtml ? `<div class="swml-cw-plot-card__block"><span class="swml-cw-plot-card__lbl">Effects on the reader</span>${effectsHtml}</div>` : '') +
+                (meta.purpose ? `<div class="swml-cw-plot-card__row"><span class="swml-cw-plot-card__lbl">Author’s purpose</span><span class="swml-cw-plot-card__val">${escapeHTML(meta.purpose)}</span></div>` : '') +
                 `<div class="swml-cw-plot-card__row"><span class="swml-cw-plot-card__lbl">Famous examples</span><span class="swml-cw-plot-card__chips">${exampleChips}</span></div>` +
                 `<p class="swml-cw-plot-card__note">All eight structures share the Hero’s Journey stages — each layers a different kind of transformation on top. The beats below are tuned for ${escapeHTML(archLabel)}.</p>` +
             `</div>`
