@@ -5356,15 +5356,10 @@
         const CW_UNIVERSAL_RESOURCES = [
             { label: 'Creative Writing Reference Guide', url: 'https://www.sophicly.com/library/resources/creative-writing-reference-guide/' },
         ];
-        const CW_PANEL_RESOURCES = {
-            2: [
-                { label: 'Explore Story Ideas Course', url: 'https://www.sophicly.com/courses/creative-writing-masterclass/units/3-how-to-come-up-with-compelling-story-ideas/lessons/3-step-2-explore-more-story-ideas/' },
-                { label: 'Read: When I Was 9 Years Old', url: 'https://docs.google.com/document/d/16qbgkyyz8pKyPb4udJa5DNlvbDKIalSwu8y5B8qHczU/copy' },
-                { label: 'Read: George Pickering', url: 'https://docs.google.com/document/d/101fH2I4oNmZeJSC2TQNZSs7Mme5zveXleqvqTvLhn6Y/copy' },
-                { label: 'Read: Juliane Diller', url: 'https://docs.google.com/document/d/1Lcbpwr_Ce4TH1BKUEexs1kctX3N9fVe3-T_MonAp6Xs/copy' },
-                { label: 'Grade 9 Stories', url: 'https://www.sophicly.com/category/grade-9-stories/' },
-            ],
-        };
+        // v7.19.454: the old Step-2 Google-Doc reading links + course/category links were
+        // replaced by the single Creative Writing Reference Guide (its Story Sparks section now
+        // folds in those readings + example ideas). Panel shows only the universal guide (Neil).
+        const CW_PANEL_RESOURCES = {};
         const _isCw = state.task && state.task.startsWith('cw_');
         const _cwDef = _isCw ? WML.getCwStepDef(state.task) : null;
         const cwStepForRes = _isCw ? (_cwDef?.step || null) : null;
@@ -5444,7 +5439,10 @@
                 h.dataset.dir = dir;
                 resPanel.appendChild(h);
             });
-            contentWrap.appendChild(resPanel);
+            // v7.19.454: anchor the panel inside the sticky button column so it sits tight
+            // (small gap) and flush under the resources button, tracking it on scroll, instead
+            // of clearing below the outline panel's residual height. CSS positions it absolute.
+            btnColumn.appendChild(resPanel);
 
             // v7.13.50: Glow the resources button when the Resources section scrolls into view
             setTimeout(() => {
@@ -5735,9 +5733,8 @@
                 if (rsDir.includes('s')) h = Math.max(200, rsSH + dy);
                 if (rsDir.includes('n')) { h = Math.max(200, rsSH - dy); t = rsST + (rsSH - h); }
                 if (!resFloating) {
-                    // Docked: width only; sync the negative right margin (float-over math).
+                    // Docked: width only (panel is absolutely positioned in the button column).
                     resPanel.style.width = w + 'px';
-                    resPanel.style.marginRight = (-w) + 'px';
                 } else {
                     Object.assign(resPanel.style, { width: w+'px', height: h+'px', left: l+'px', top: t+'px' });
                 }
@@ -5748,13 +5745,17 @@
             });
             // v7.19.453: close the resources panel when clicking outside it (parity with the
             // outline panel). Skips detached mode + the synthetic click after a resize-drag.
+            // v7.19.454: resolve the trigger from the DOM (resTrigger is const-scoped to the
+            // panel-build block and is out of scope here — referencing it threw and the close
+            // never ran, which is why click-outside didn't work).
             contentWrap.addEventListener('click', (e) => {
                 if (!resPanel.classList.contains('swml-resources-open')) return;
                 if (resFloating || _resJustResized) return;
-                if (resPanel.contains(e.target) || resTrigger.contains(e.target)) return;
+                if (resPanel.contains(e.target) || e.target.closest('.swml-resources-trigger')) return;
                 if (e.target.closest('.swml-dropdown-overlay, .swml-dropdown-select')) return;
                 resPanel.classList.remove('swml-resources-open');
-                resTrigger.classList.remove('is-active');
+                const _rt = (contentWrap.querySelector && contentWrap.querySelector('.swml-resources-trigger'));
+                if (_rt) _rt.classList.remove('is-active');
             });
         }
 

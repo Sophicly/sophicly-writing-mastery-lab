@@ -2437,13 +2437,16 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     pointer-events: none !important;
     visibility: hidden;
     transform: translateX(-12px);
-    /* v7.19.449: keep clear:left (inherited) so the panel sits FLUSH-LEFT, exactly like
-       the outline panel — same left margin (12px) as the button column. The vertical drop
-       it used to suffer is fixed by collapsing the CLOSED outline panel's height (rule
-       below), so this panel no longer stacks below a screen-tall hidden outline. Small
-       margin-top nudges it just under the buttons. */
-    clear: left;
-    margin-top: 8px;
+    /* v7.19.454: anchored ABSOLUTELY inside the sticky button column (resPanel is a child of
+       .swml-outline-btn-column). top:100% puts it right under the resources button (tight, small
+       gap); left:0 = flush with the button. No float/clear stacking below the outline panel
+       (that was the big gap). Tracks the sticky column on scroll. Detach (fixed) overrides this. */
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    margin: 0;
+    clear: none;
+    float: none;
 }
 /* v7.19.449: collapse the document-outline panel's flow height while it's CLOSED, so the
    resources panel (which clears left below it) isn't pushed ~a screen down. Open + detached
