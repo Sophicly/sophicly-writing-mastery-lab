@@ -6400,6 +6400,53 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 
 /* ══════════════════════════════════════════
+ *  v7.19.440: CW PLOT-STRUCTURE IDENTITY CARD (Step 6 header)
+ *  Student-facing: names + explains the chosen structure. Brand-purple shades,
+ *  no harsh outline (matches the de-AI field pass). Dark + light.
+ * ══════════════════════════════════════════ */
+.swml-cw-plot-card { padding: 2px 0; }
+.swml-cw-plot-card__eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #a78bfa; margin-bottom: 5px;
+}
+.swml-cw-plot-card__name {
+    font-size: 24px; font-weight: 750; line-height: 1.15; letter-spacing: -0.01em;
+    color: #fff; margin-bottom: 11px;
+}
+.swml-cw-plot-card__what {
+    font-size: 14px; line-height: 1.65; color: rgba(255,255,255,0.78);
+    margin: 0 0 14px 0; max-width: 68ch;
+}
+.swml-cw-plot-card__row {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin-bottom: 9px;
+}
+.swml-cw-plot-card__lbl {
+    flex: 0 0 auto; min-width: 108px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: #a78bfa; padding-top: 3px;
+}
+.swml-cw-plot-card__val {
+    font-size: 13.5px; line-height: 1.55; color: rgba(255,255,255,0.72); max-width: 60ch;
+}
+.swml-cw-plot-card__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.swml-cw-plot-chip {
+    display: inline-block; padding: 3px 11px; font-size: 12px; font-weight: 500;
+    color: #c9b8ff; background: rgba(83, 51, 237, 0.16); border-radius: 999px;
+}
+.swml-cw-plot-card__note {
+    margin: 13px 0 0 0; font-size: 12px; font-style: italic; line-height: 1.5;
+    color: rgba(255,255,255,0.45); max-width: 68ch;
+}
+/* Light theme */
+[data-swml-theme="light"] .swml-cw-plot-card__name { color: #2c003e; }
+[data-swml-theme="light"] .swml-cw-plot-card__eyebrow,
+[data-swml-theme="light"] .swml-cw-plot-card__lbl { color: #5333ed; }
+[data-swml-theme="light"] .swml-cw-plot-card__what { color: rgba(0,0,0,0.74); }
+[data-swml-theme="light"] .swml-cw-plot-card__val { color: rgba(0,0,0,0.66); }
+[data-swml-theme="light"] .swml-cw-plot-chip { color: #4a2fb8; background: rgba(83, 51, 237, 0.1); }
+[data-swml-theme="light"] .swml-cw-plot-card__note { color: rgba(0,0,0,0.45); }
+
+/* ══════════════════════════════════════════
  *  CHECKLIST ITEMS (v7.14.60)
  * ══════════════════════════════════════════ */
 

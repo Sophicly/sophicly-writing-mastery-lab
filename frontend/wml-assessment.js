@@ -18953,13 +18953,23 @@
         // student can see which one loaded (the stage labels are shared across all eight).
         const meta = CW_PLOT_ARCHETYPE_META[key] || CW_PLOT_ARCHETYPE_META['heros-journey'];
         const archLabel = archetype.label || 'Hero’s Journey';
+        const exampleChips = String(meta.examples || '')
+            .replace(/\.$/, '')
+            .split(',')
+            .map(e => e.trim())
+            .filter(Boolean)
+            .map(e => `<span class="swml-cw-plot-chip">${escapeHTML(e)}</span>`)
+            .join('');
         html += dividerHTML('YOUR PLOT STRUCTURE');
         html += sectionHTML('question', `Plot Structure: ${archLabel}`, false, null,
-            `<h3>Your Plot Structure: ${escapeHTML(archLabel)}</h3>` +
-            `<p>${escapeHTML(meta.what)}</p>` +
-            `<p><strong>Best suits:</strong> ${escapeHTML(meta.suits)}</p>` +
-            `<p><strong>Famous examples:</strong> ${escapeHTML(meta.examples)}</p>` +
-            `<p><em>All eight structures share the Hero’s Journey stages — each one layers a different kind of transformation on top. The beats below are tuned for ${escapeHTML(archLabel)}.</em></p>`
+            `<div class="swml-cw-plot-card">` +
+                `<div class="swml-cw-plot-card__eyebrow">Your Plot Structure</div>` +
+                `<div class="swml-cw-plot-card__name">${escapeHTML(archLabel)}</div>` +
+                `<p class="swml-cw-plot-card__what">${escapeHTML(meta.what)}</p>` +
+                `<div class="swml-cw-plot-card__row"><span class="swml-cw-plot-card__lbl">Best suits</span><span class="swml-cw-plot-card__val">${escapeHTML(meta.suits)}</span></div>` +
+                `<div class="swml-cw-plot-card__row"><span class="swml-cw-plot-card__lbl">Famous examples</span><span class="swml-cw-plot-card__chips">${exampleChips}</span></div>` +
+                `<p class="swml-cw-plot-card__note">All eight structures share the Hero’s Journey stages — each layers a different kind of transformation on top. The beats below are tuned for ${escapeHTML(archLabel)}.</p>` +
+            `</div>`
         );
         archetype.sections.forEach(sec => {
             let rows = '';
