@@ -1870,7 +1870,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     clear: left;
     width: 220px;
     max-height: calc(100vh - 140px);
-    margin: -30px -220px 0 12px; /* Pull up to overlap hidden button, float over content; left 12px = .swml-outline-btn-column's so the panel's left edge aligns with the outline button */
+    margin: 8px -220px 0 12px; /* v7.19.451: sit just BELOW the buttons (was -30px pull-up over the now-hidden button). Both triggers stay visible now, so the panel must not cover them. left 12px = button column left edge (flush). */
     border-radius: 10px;
     background: #28292b; /* v7.14.47: match document alt colour — no backdrop-filter (Chrome flickers) */
     border: 1px solid rgba(255,255,255,0.08);
@@ -2159,9 +2159,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     background: #303133;
     box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
 }
+/* v7.19.451: active outline trigger STAYS visible + highlights in its blue accent
+   (was opacity:0 / hidden). Consistent with the resources trigger, which stays + goes
+   teal. The teal override (.swml-resources-trigger.is-active) still wins for resources. */
 .swml-outline-btn.is-active {
-    opacity: 0;
-    pointer-events: none;
+    color: #42A1EC;
+    background: rgba(66,161,236,0.14);
 }
 /* ── Light mode — Outline ── */
 .swml-canvas-light .swml-outline-panel {
@@ -2272,8 +2275,8 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 .swml-canvas-light .swml-outline-btn.is-active {
-    opacity: 0;
-    pointer-events: none;
+    color: #42A1EC;
+    background: rgba(66,161,236,0.1);
 }
 /* v7.19.449: NO local ::after tooltip here — WML already has a global JS tooltip
    system (wml-core.js ~124) that renders `data-tooltip` as a styled pill. A CSS
@@ -2422,7 +2425,13 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 /* Override inherited .swml-outline-panel opacity/pointer-events/transform */
 .swml-resources-panel {
     opacity: 0;
-    pointer-events: none;
+    /* v7.19.451: CLICK-STEAL FIX. opacity:0 stays hit-testable, so the invisible closed
+       panel was catching clicks meant for the in-document Table of Contents underneath it
+       (worse when narrow, where the panel overlaps the doc). pointer-events:none !important
+       (Etch force-overrides visibility/opacity on divs, but NOT pointer-events) + visibility
+       removes it from hit-testing reliably. */
+    pointer-events: none !important;
+    visibility: hidden;
     transform: translateX(-12px);
     /* v7.19.449: keep clear:left (inherited) so the panel sits FLUSH-LEFT, exactly like
        the outline panel — same left margin (12px) as the button column. The vertical drop
@@ -2440,7 +2449,8 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 .swml-resources-panel.swml-resources-open {
     opacity: 1;
-    pointer-events: auto;
+    pointer-events: auto !important;
+    visibility: visible;
     transform: translateX(0);
 }
 /* Glow animation when Resources section is in view */
