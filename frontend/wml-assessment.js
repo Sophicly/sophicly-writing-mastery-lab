@@ -13522,13 +13522,25 @@
                 } catch (e) { console.log('WML CW: No plot structure choice found, using default Hero\'s Journey'); }
             }
 
+            // v7.19.445: plot-structure setContent MUST run under _migrationActive. The
+            // onTransaction section-guard (~line 13305) reverts any transaction that lowers
+            // the section count — and switching to an archetype with fewer Outline sections
+            // (e.g. the-quest 113 vs overcoming-the-monster 114) does exactly that. Without
+            // the flag the guard undo()'d the rebuild, restoring the stale structure. This
+            // was the real propagation bug (memory carry already made `desired` correct).
+            const _setContentMigrating = (html) => {
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(html, false); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+            };
             // Build structured outline with archetype-specific beats (v7.15.4)
             const _injectPlotOutline = (slug) => {
                 const outlineHtml = buildCWPlotOutlineSection(slug);
                 const currentHtml = canvasEditor.getHTML();
                 // Replace placeholder or existing outline sections
                 let newHtml = currentHtml.replace(/<p><em>Loading your plot structure[\u2026.]*<\/em><\/p>/, outlineHtml);
-                canvasEditor.commands.setContent(newHtml, false);
+                _setContentMigrating(newHtml);
                 snapshotTemplateBaseline(canvasEditor);
                 const wcAfter = getResponseWordCount(canvasEditor);
                 if (wcDisplay) wcDisplay.textContent = `${wcAfter} word${wcAfter !== 1 ? 's' : ''}`;
@@ -13539,7 +13551,7 @@
             // changed after the doc was already generated. Persists so it sticks next mount.
             const _rebuildPlotDoc = (slug) => {
                 const rebuilt = getCwDocTemplate(cwStepDef).replace(/<p><em>Loading your plot structure[….]*<\/em><\/p>/, buildCWPlotOutlineSection(slug));
-                canvasEditor.commands.setContent(rebuilt, false);
+                _setContentMigrating(rebuilt);
                 snapshotTemplateBaseline(canvasEditor);
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
                 const wcAfter = getResponseWordCount(canvasEditor);
@@ -13555,16 +13567,23 @@
                 _injectPlotOutline(structureSlug);
             } else if (_builtSlug !== structureSlug) {
                 if (outlineHasStudentInput(canvasEditor)) {
-                    console.log('WML CW: Step 6 structure changed (' + _builtSlug + ' → ' + structureSlug + ') but the outline has student work — not auto-rebuilding. Use Change Plot Structure to switch.');
+                    console.log('WML CW: Step 6 structure changed (' + _builtSlug + ' → ' + structureSlug + ') but the outline has student work — not auto-rebuilding. To switch, return to Step 5 and re-choose (this outline will then rebuild).');
                 } else {
                     _rebuildPlotDoc(structureSlug);
                 }
             }
             // else: already showing the correct structure — leave it.
 
-            // Add "Change Structure" button in the header area (v7.15.4)
+            // v7.19.445: Change Plot Structure button REMOVED from Step 6. The plot
+            // structure is chosen in Step 5 — after the student does the concept/technique
+            // reflection, explains WHY this structure fits, the thematic message + moral,
+            // the effect on the reader, and how it tests the protagonist's flaw and drives
+            // their transformation. Step 6 builds on that decision; it must not let the
+            // student silently override it here. To change structure they return to Step 5
+            // (the in-card note from buildCWPlotOutlineSection tells them so). Disabled, not
+            // deleted, to keep the diff small + reversible.
             const headerRight = canvasEditor.options.element?.closest('.swml-canvas')?.querySelector('.swml-canvas-header-right');
-            if (headerRight && !headerRight.querySelector('.swml-change-structure-btn')) {
+            if (false && headerRight && !headerRight.querySelector('.swml-change-structure-btn')) {
                 const changeBtn = el('button', {
                     className: 'swml-change-structure-btn',
                     textContent: 'Change Plot Structure',
@@ -15780,6 +15799,7 @@
             // v7.15.5: Dropdown for archetype selection + outline row layout
             html += sectionHTML('plan', 'Primary Choice', true, null,
                 '<h3>Your Primary Archetype</h3>' +
+                '<p><em>Take this decision seriously. The plot structure you choose here shapes everything downstream \u2014 your Step 6 outline, your scenes, your draft and your redrafts all build on it. You can change it later, but only by returning to this step and re-choosing, which rebuilds the work that follows. So choose the shape that genuinely carries your concept, your theme and your protagonist\u2019s transformation.</em></p>' +
                 outlineRowHTML({ id: 'archetype', label: 'Your Primary Archetype', type: 'dropdown', items: ['Hero\u2019s Journey (Original)', 'Tragedy + Hero\u2019s Journey', 'Rags to Riches + Hero\u2019s Journey', 'Rebirth / Redemption + Hero\u2019s Journey', 'The Quest + Hero\u2019s Journey', 'Overcoming the Monster + Hero\u2019s Journey', 'Voyage and Return + Hero\u2019s Journey', 'Coming of Age + Hero\u2019s Journey'], prompt: 'Which plot structure best fits your story?' }, 'cw-step-5-primary-archetype') +
                 outlineRowHTML({ id: 'why-fits', label: 'Why This Structure Fits', prompt: 'Explain why this archetype best suits your story concept' }, 'cw-step-5-why-fits')
             );
@@ -19130,7 +19150,8 @@
             effectsHtml +
             (meta.purpose ? `<p><strong>Author’s purpose:</strong> ${escapeHTML(meta.purpose)}</p>` : '') +
             (meta.examples ? `<p><strong>Famous examples:</strong> ${escapeHTML(meta.examples)}</p>` : '') +
-            `<p><em>All eight structures share the Hero’s Journey stages — each layers a different kind of transformation on top. The beats below are tuned for ${escapeHTML(archLabel)}.</em></p>`
+            `<p><em>All eight structures share the Hero’s Journey stages — each layers a different kind of transformation on top. The beats below are tuned for ${escapeHTML(archLabel)}.</em></p>` +
+            `<p><em>This structure comes from your Step 5 choice, where you decided which shape best carries your concept, theme and your protagonist’s transformation. Everything in this step builds on it — so to change your plot structure, go back to Step 5 and re-choose. This outline will then rebuild to match.</em></p>`
         );
         archetype.sections.forEach(sec => {
             let rows = '';
