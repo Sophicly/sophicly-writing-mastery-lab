@@ -11904,8 +11904,17 @@
                             if (fieldId === 'cw-step-5-primary-archetype' && sel.value && state.cwProjectId && window.WML && WML.cwProject) {
                                 const slug = resolvePlotStructureSlug(sel.value);
                                 if (slug) {
+                                    // v7.19.444: SYNCHRONOUS in-session carry. The fire-and-forget
+                                    // artifact PUT below races the Step-6 GET on fast navigation (it
+                                    // may not land, or the GET reads a cached/prior value) — that was
+                                    // the stale-structure bug. A window-scoped, project-keyed value
+                                    // set the instant the student picks cannot be stale within a
+                                    // session; Step 6 reads it first (window survives SPA nav; only a
+                                    // hard reload clears it, which falls back to the artifact copy).
+                                    window._wmlCwPlotStructure = window._wmlCwPlotStructure || {};
+                                    window._wmlCwPlotStructure[state.cwProjectId] = slug;
                                     WML.cwProject.saveArtifact(state.cwProjectId, 'plot_structure_key', slug).catch(() => {});
-                                    console.log('WML CW: Step 5 plot structure saved →', slug);
+                                    console.log('WML CW: Step 5 plot structure saved →', slug, '(in-memory + artifact)');
                                 }
                             }
                         });
@@ -13491,17 +13500,25 @@
             let structureSlug = 'heros-journey'; // default if no choice saved yet
             if (state.cwProjectId) {
                 try {
-                    // v7.19.443: prefer the dedicated key artifact (saved immediately on the Step 5
-                    // dropdown change — survives fast navigation, the bug). Fall back to parsing the
-                    // Step 5 doc HTML for older projects that pre-date plot_structure_key.
-                    const keyArtifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'plot_structure_key');
-                    let resolved = (keyArtifact?.success && keyArtifact.value) ? resolvePlotStructureSlug(keyArtifact.value) : null;
+                    // v7.19.444: read order — (1) in-session memory, (2) dedicated key artifact,
+                    // (3) Step 5 doc HTML. The in-memory value (set synchronously on the Step 5
+                    // pick) is authoritative within a session and removes the PUT/GET race that
+                    // made Step 6 show a previous pick. The artifacts are the durable backstop
+                    // for hard-refresh / cross-device / older projects.
+                    const memSlug = (window._wmlCwPlotStructure && window._wmlCwPlotStructure[state.cwProjectId]) || null;
+                    let resolved = memSlug ? resolvePlotStructureSlug(memSlug) : null;
+                    let _src = resolved ? 'memory' : null;
+                    if (!resolved) {
+                        const keyArtifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'plot_structure_key');
+                        resolved = (keyArtifact?.success && keyArtifact.value) ? resolvePlotStructureSlug(keyArtifact.value) : null;
+                        if (resolved) _src = 'plot_structure_key';
+                    }
                     if (!resolved) {
                         const choiceArtifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'plot_structure_choice');
-                        if (choiceArtifact?.success && choiceArtifact.value) resolved = resolvePlotStructureSlug(choiceArtifact.value);
+                        if (choiceArtifact?.success && choiceArtifact.value) { resolved = resolvePlotStructureSlug(choiceArtifact.value); if (resolved) _src = 'plot_structure_choice'; }
                     }
                     if (resolved) structureSlug = resolved;
-                    console.log('WML CW: Step 6 plot structure resolved →', structureSlug);
+                    console.log('WML CW: Step 6 plot structure resolved →', structureSlug, '(via ' + (_src || 'default') + ')');
                 } catch (e) { console.log('WML CW: No plot structure choice found, using default Hero\'s Journey'); }
             }
 
@@ -13570,6 +13587,10 @@
                                     snapshotTemplateBaseline(canvasEditor);
                                     // Save choice to project
                                     if (state.cwProjectId) {
+                                        // v7.19.444: in-memory carry must match, else a stale memory
+                                        // value from an earlier Step-5 pick would shadow this switch.
+                                        window._wmlCwPlotStructure = window._wmlCwPlotStructure || {};
+                                        window._wmlCwPlotStructure[state.cwProjectId] = a.key;
                                         WML.cwProject.saveArtifact(state.cwProjectId, 'plot_structure_key', a.key).catch(() => {}); // v7.19.443: authoritative key artifact
                                     }
                                     overlay.remove();
