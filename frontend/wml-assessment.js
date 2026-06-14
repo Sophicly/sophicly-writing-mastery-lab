@@ -13813,6 +13813,33 @@
             // pre-date v7.15.89. Non-destructive — existing 7 concept sections
             // and any saved content are left untouched.
             _migrateStep('migrateGeneralNotesSection', migrateGeneralNotesSection);
+            // v7.19.446: backfill the Step-5 "this decision drives everything downstream"
+            // emphasis note into existing CW projects whose Step-5 doc predates v445.
+            // Heal-on-load (no admin step): gated to cw_step_5, marker-guarded so it runs
+            // once, inserts the note before the primary-archetype row, persists. Under
+            // _migrationActive so the section guard leaves the (count-unchanged) edit alone.
+            _migrateStep('migrateStep5EmphasisNote', () => {
+                if (!canvasEditor || state.task !== 'cw_step_5') return;
+                const html = canvasEditor.getHTML();
+                if (html.indexOf('Take this decision seriously') !== -1) return; // already present
+                const tmp = document.createElement('div');
+                tmp.innerHTML = html;
+                let row = null;
+                tmp.querySelectorAll('[data-outline-row]').forEach(r => {
+                    if (!row && r.getAttribute('data-field-id') === 'cw-step-5-primary-archetype') row = r;
+                });
+                if (!row || !row.parentNode) return; // not the expected Step 5 doc
+                const NOTE = '<p><em>Take this decision seriously. The plot structure you choose here shapes everything downstream — your Step 6 outline, your scenes, your draft and your redrafts all build on it. You can change it later, but only by returning to this step and re-choosing, which rebuilds the work that follows. So choose the shape that genuinely carries your concept, your theme and your protagonist’s transformation.</em></p>';
+                const holder = document.createElement('div');
+                holder.innerHTML = NOTE;
+                row.parentNode.insertBefore(holder.firstChild, row);
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(tmp.innerHTML, false); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 5 emphasis note backfilled (migration)');
+            });
             // v7.19.136 instrumentation — final migrate-chain doc size
             try { console.log('[WML load-debug v7.19.136] migrate chain END', { docSize: canvasEditor.getHTML().length, delta: canvasEditor.getHTML().length - _preMigrateSize }); } catch (_) {}
             // Inject cover image if missing from loaded document
