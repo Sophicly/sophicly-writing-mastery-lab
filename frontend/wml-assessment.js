@@ -11896,6 +11896,18 @@
                             persistState({ selected: sel.value });
                             sel.classList.toggle('swml-select-filled', !!sel.value); // v7.15.0
                             checkRowComplete();
+                            // v7.19.443: the CW Step 5 plot-structure choice must reach Step 6
+                            // reliably. persistState only does a 2s debounced doc-save, which is
+                            // lost if the student navigates to Step 6 quickly — so Step 6 read a
+                            // stale choice and never rebuilt. Save the resolved structure key to a
+                            // dedicated, project-scoped artifact IMMEDIATELY on change.
+                            if (fieldId === 'cw-step-5-primary-archetype' && sel.value && state.cwProjectId && window.WML && WML.cwProject) {
+                                const slug = resolvePlotStructureSlug(sel.value);
+                                if (slug) {
+                                    WML.cwProject.saveArtifact(state.cwProjectId, 'plot_structure_key', slug).catch(() => {});
+                                    console.log('WML CW: Step 5 plot structure saved →', slug);
+                                }
+                            }
                         });
                         if (savedState.selected) sel.classList.add('swml-select-filled'); // v7.15.0: restore on load
                         criteriaEl.appendChild(sel);
@@ -13479,12 +13491,17 @@
             let structureSlug = 'heros-journey'; // default if no choice saved yet
             if (state.cwProjectId) {
                 try {
-                    const choiceArtifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'plot_structure_choice');
-                    if (choiceArtifact?.success && choiceArtifact.value) {
-                        const resolved = resolvePlotStructureSlug(choiceArtifact.value);
-                        if (resolved) structureSlug = resolved;
-                        console.log('WML CW: Step 6 plot structure resolved →', structureSlug);
+                    // v7.19.443: prefer the dedicated key artifact (saved immediately on the Step 5
+                    // dropdown change — survives fast navigation, the bug). Fall back to parsing the
+                    // Step 5 doc HTML for older projects that pre-date plot_structure_key.
+                    const keyArtifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'plot_structure_key');
+                    let resolved = (keyArtifact?.success && keyArtifact.value) ? resolvePlotStructureSlug(keyArtifact.value) : null;
+                    if (!resolved) {
+                        const choiceArtifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'plot_structure_choice');
+                        if (choiceArtifact?.success && choiceArtifact.value) resolved = resolvePlotStructureSlug(choiceArtifact.value);
                     }
+                    if (resolved) structureSlug = resolved;
+                    console.log('WML CW: Step 6 plot structure resolved →', structureSlug);
                 } catch (e) { console.log('WML CW: No plot structure choice found, using default Hero\'s Journey'); }
             }
 
@@ -13553,7 +13570,7 @@
                                     snapshotTemplateBaseline(canvasEditor);
                                     // Save choice to project
                                     if (state.cwProjectId) {
-                                        WML.cwProject.saveArtifact(state.cwProjectId, 'plot_structure_choice', a.key).catch(() => {});
+                                        WML.cwProject.saveArtifact(state.cwProjectId, 'plot_structure_key', a.key).catch(() => {}); // v7.19.443: authoritative key artifact
                                     }
                                     overlay.remove();
                                     console.log('WML CW: Switched plot structure to:', a.key);
