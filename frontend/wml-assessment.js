@@ -4500,6 +4500,32 @@
     }
     // ══════════════════════════════════════════════════════════════════
 
+    // v7.19.471: scaffold-lock helpers — a node is locked if it carries the `locked`
+    // attribute (template scaffold: section titles + instruction text). User input inside
+    // a locked node is blocked by the editorProps handlers; programmatic writes are unaffected.
+    function _swmlNodeLocked(node) {
+        return !!(node && node.attrs && (node.attrs.locked === true || node.attrs.locked === 'true'));
+    }
+    function _swmlPosLocked(state, pos) {
+        try {
+            const $p = state.doc.resolve(Math.max(0, Math.min(pos, state.doc.content.size)));
+            for (let d = $p.depth; d > 0; d--) { if (_swmlNodeLocked($p.node(d))) return true; }
+            return false;
+        } catch (_) { return false; }
+    }
+    function _swmlRangeLocked(state, from, to) {
+        if (_swmlPosLocked(state, from)) return true;
+        let hit = false;
+        try {
+            state.doc.nodesBetween(Math.min(from, to), Math.max(from, to), (node) => {
+                if (hit) return false;
+                if (_swmlNodeLocked(node)) { hit = true; return false; }
+                return true;
+            });
+        } catch (_) {}
+        return hit;
+    }
+
     let _canvasGuard = false; // Prevents double-render of canvas workspace (v7.12.61)
     function renderCanvasWorkspace() {
         if (_canvasGuard) return;
@@ -13200,6 +13226,27 @@
                 StarterKit.configure({
                     heading: { levels: [2, 3] },
                 }),
+                // v7.19.471: scaffold-lock — adds a `locked` attribute to headings + paragraphs.
+                // Template scaffold (section titles, instruction text) is marked data-locked="true";
+                // the editorProps input handlers below block USER typing/deletion/paste inside a
+                // locked node, while programmatic AI fills + student free-prose stay fully editable.
+                // Student-created headings/paragraphs default locked:false, so formatting your own
+                // text is never frozen.
+                Extension.create({
+                    name: 'swmlLockedAttr',
+                    addGlobalAttributes() {
+                        return [{
+                            types: ['heading', 'paragraph'],
+                            attributes: {
+                                locked: {
+                                    default: false,
+                                    parseHTML: el => el.getAttribute('data-locked') === 'true',
+                                    renderHTML: attrs => attrs.locked ? { 'data-locked': 'true' } : {},
+                                },
+                            },
+                        }];
+                    },
+                }),
                 Placeholder.configure({
                     placeholder: 'Start writing your essay here...',
                 }),
@@ -13286,6 +13333,8 @@
                 // v7.14.68: Keep multi-paragraph paste inside InputField nodes
                 // InputField uses content:'inline*' so block paste escapes. Convert blocks to inline.
                 handlePaste(view, event) {
+                    // v7.19.471: never paste into locked scaffold (titles/instructions)
+                    if (_swmlRangeLocked(view.state, view.state.selection.from, view.state.selection.to)) return true;
                     const { $from } = view.state.selection;
                     let insideInputField = false;
                     for (let d = $from.depth; d >= 0; d--) {
@@ -13336,6 +13385,32 @@
                         canvasEditor.chain().focus().insertContent(inlineHtml).run();
                     }
                     return true; // prevent default paste
+                },
+                // v7.19.471: scaffold-lock — block USER edits inside locked template nodes
+                // (section titles + instruction text marked data-locked). These fire only on
+                // real user input, so Sophia's programmatic fills + student free-prose are
+                // untouched. Declared before the reviewMode spread so review mode (stricter)
+                // still wins.
+                handleTextInput(view, from, to) {
+                    return _swmlRangeLocked(view.state, from, to);
+                },
+                handleKeyDown(view, event) {
+                    const k = event.key;
+                    if (k !== 'Backspace' && k !== 'Delete' && k !== 'Enter') return false;
+                    const sel = view.state.selection;
+                    if (!sel.empty) return _swmlRangeLocked(view.state, sel.from, sel.to);
+                    if (_swmlPosLocked(view.state, sel.from)) return true;
+                    // block boundary merges that would pull content into an adjacent locked node
+                    if (k === 'Backspace' && sel.$from.parentOffset === 0 && _swmlPosLocked(view.state, sel.from - 1)) return true;
+                    if (k === 'Delete' && sel.$from.parentOffset === sel.$from.parent.content.size && _swmlPosLocked(view.state, sel.from + 1)) return true;
+                    return false;
+                },
+                handleDrop(view, event) {
+                    try {
+                        const p = view.posAtCoords({ left: event.clientX, top: event.clientY });
+                        if (p && _swmlPosLocked(view.state, p.pos)) return true;
+                    } catch (_) {}
+                    return false;
                 },
                 // v7.15.53: in review mode, swallow every user-input path so the
                 // tutor can only add comment marks (applied programmatically) but
@@ -15816,14 +15891,14 @@
             // Writer's Profile (synthesised by AI — green response section for distinct colour)
             html += dividerHTML('YOUR WRITER\u2019S PROFILE');
             html += sectionHTML('response', 'Writer\u2019s Profile', true, null,
-                '<h3>Your Writer\u2019s Profile</h3>' +
-                '<p><em>Once you\u2019ve answered all the questions above, Sophia will compile your responses into a synthesised Writer\u2019s Profile here \u2014 a summary of your key themes, passions, and conflicts from all three wells.</em></p><p></p>'
+                '<h3 data-locked="true">Your Writer\u2019s Profile</h3>' +
+                '<p data-locked="true"><em>Once you\u2019ve answered all the questions above, Sophia will compile your responses into a synthesised Writer\u2019s Profile here \u2014 a summary of your key themes, passions, and conflicts from all three wells.</em></p><p></p>'
             );
             // Seed Loglines
             html += dividerHTML('SEED LOGLINES');
             html += sectionHTML('response', 'Seed Loglines', true, null,
-                '<h3>Seed Loglines</h3>' +
-                '<p><em>Three story ideas inspired by your profile will be generated here after your Writer\u2019s Profile is complete.</em></p><p></p>'
+                '<h3 data-locked="true">Seed Loglines</h3>' +
+                '<p data-locked="true"><em>Three story ideas inspired by your profile will be generated here after your Writer\u2019s Profile is complete.</em></p><p></p>'
             );
             return html;
         }
@@ -15858,8 +15933,8 @@
             );
             html += dividerHTML('YOUR STORY IDEAS');
             html += sectionHTML('plan', 'Story Ideas', true, null,
-                '<h3>Your Story Ideas</h3>' +
-                '<p>Note down 3 story ideas you might explore. Then, when you\u2019re ready, <strong>tick the box beside the one</strong> you most want to develop \u2014 that becomes your chosen idea, and it carries into Step 3 where you\u2019ll shape it into a logline. You can change your choice any time before you move on.</p>' +
+                '<h3 data-locked="true">Your Story Ideas</h3>' +
+                '<p data-locked="true">Note down 3 story ideas you might explore. Then, when you\u2019re ready, <strong>tick the box beside the one</strong> you most want to develop \u2014 that becomes your chosen idea, and it carries into Step 3 where you\u2019ll shape it into a logline. You can change your choice any time before you move on.</p>' +
                 outlineRowHTML({ id: 'idea1', label: 'Idea 1', prompt: 'Your first story idea', type: 'checkbox' }, 'cw-step-2-idea1') +
                 outlineRowHTML({ id: 'idea2', label: 'Idea 2', prompt: 'Your second story idea', type: 'checkbox' }, 'cw-step-2-idea2') +
                 outlineRowHTML({ id: 'idea3', label: 'Idea 3', prompt: 'Your third story idea', type: 'checkbox' }, 'cw-step-2-idea3')
