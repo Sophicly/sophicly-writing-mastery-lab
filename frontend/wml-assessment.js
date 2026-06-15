@@ -5592,18 +5592,39 @@
                 }
             };
             wpPanel = el('div', { className: 'swml-outline-panel swml-resources-panel swml-wp-panel' });
+            const wpGrip = el('div', { className: 'swml-outline-grip' });
+            wpGrip.innerHTML = '<span class="swml-outline-grip-dots">⠷</span>';
+            wpPanel.appendChild(wpGrip);
             const wpHeader = el('div', { className: 'swml-outline-header' });
             wpHeader.innerHTML = SVG_PROFILE.replace('width="16"', 'width="12"').replace('height="16"', 'height="12"').replace('stroke-width="2"', 'stroke-width="2" style="opacity:0.5"') + '<span>Writer’s Profile</span>';
+            const wpDetachBtn = el('button', {
+                className: 'swml-outline-detach-btn', title: 'Detach panel', innerHTML: SVG_DETACH,
+                onClick: (e) => { e.stopPropagation(); toggleWpFloat(); }
+            });
+            wpHeader.appendChild(wpDetachBtn);
             const wpClose = el('button', {
                 className: 'swml-outline-close', innerHTML: '✕',
-                onClick: () => { wpPanel.classList.remove('swml-resources-open'); wpTrigger.classList.remove('is-active'); }
+                onClick: () => {
+                    wpPanel.classList.remove('swml-resources-open');
+                    wpTrigger.classList.remove('is-active');
+                    if (wpFloating) { wpPanel.style.opacity = '0'; wpPanel.style.transform = 'translateX(-12px)'; setTimeout(() => { dockWp(); wpPanel.style.opacity = ''; wpPanel.style.transform = ''; }, 250); }
+                }
             });
             wpHeader.appendChild(wpClose);
             wpPanel.appendChild(wpHeader);
+            // Persistent reminder + link to the real Step-1 lesson (prod URL)
+            const wpNote = el('div', { className: 'swml-wp-note' });
+            wpNote.innerHTML = 'Built in <a href="https://www.sophicly.com/courses/creative-writing-masterclass/units/3-how-to-come-up-with-compelling-story-ideas/lessons/2-step-1-questions-for-story-ideas/" target="_blank" rel="noopener">Step 1</a>. To change it, return to Step 1 and update it there.';
+            wpPanel.appendChild(wpNote);
             const wpBody = el('div', { className: 'swml-outline-list swml-wp-body' });
             wpBody.innerHTML = '<p class="swml-wp-empty">Loading your Writer’s Profile…</p>';
             wpBody.addEventListener('wheel', (e) => { e.stopPropagation(); }, { passive: true });
             wpPanel.appendChild(wpBody);
+            ['n','s','e','w','nw','ne','sw','se'].forEach(dir => {
+                const h = el('div', { className: `swml-outline-rh swml-outline-rh-${dir.length > 1 ? 'corner' : 'edge'} swml-outline-rh-${dir}` });
+                h.dataset.dir = dir;
+                wpPanel.appendChild(h);
+            });
             btnColumn.appendChild(wpPanel);
 
             wpTrigger = el('button', {
@@ -5615,12 +5636,84 @@
                     const open = wpPanel.classList.toggle('swml-resources-open');
                     wpTrigger.classList.toggle('is-active', open);
                     if (open) {
+                        // mutually exclusive with the other two rail panels
                         if (resPanel) { resPanel.classList.remove('swml-resources-open'); if (resTrigger) resTrigger.classList.remove('is-active'); }
+                        try { toggleOutlinePanel(false); } catch (_) {}
                         if (!wpPanel._loaded) { wpPanel._loaded = true; _loadWriterProfilePanel(wpBody); }
                     }
                 }
             });
             btnColumn.appendChild(wpTrigger);
+
+            // ── float / dock / drag / resize / click-outside (mirror of the resources panel) ──
+            let wpFloating = false;
+            function toggleWpFloat() { wpFloating ? dockWp() : floatWp(); }
+            function floatWp() {
+                const rect = wpPanel.getBoundingClientRect();
+                wpFloating = true;
+                wpPanel.classList.add('swml-outline-detached');
+                wpPanel.style.position = 'fixed';
+                const origin = getFixedOriginOffset(wpPanel);
+                wpPanel.style.left = (rect.left - origin.x) + 'px';
+                wpPanel.style.top = (rect.top - 24 - origin.y) + 'px';
+                wpPanel.style.width = rect.width + 'px';
+                wpPanel.style.height = (rect.height + 24) + 'px';
+                wpDetachBtn.innerHTML = SVG_DOCK; wpDetachBtn.title = 'Dock panel';
+            }
+            function dockWp() {
+                wpFloating = false;
+                wpPanel.classList.remove('swml-outline-detached');
+                wpPanel.style.cssText = '';
+                wpDetachBtn.innerHTML = SVG_DETACH; wpDetachBtn.title = 'Detach panel';
+            }
+            let wpDragging = false, wpLastX = 0, wpLastY = 0;
+            wpGrip.addEventListener('mousedown', (e) => {
+                if (!wpFloating || e.button !== 0) return;
+                e.preventDefault(); e.stopPropagation();
+                wpDragging = true; wpLastX = e.clientX; wpLastY = e.clientY; wpGrip.style.cursor = 'grabbing';
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!wpDragging) return;
+                wpPanel.style.left = (parseFloat(wpPanel.style.left) + e.clientX - wpLastX) + 'px';
+                wpPanel.style.top = (parseFloat(wpPanel.style.top) + e.clientY - wpLastY) + 'px';
+                wpLastX = e.clientX; wpLastY = e.clientY;
+            });
+            document.addEventListener('mouseup', () => { if (wpDragging) { wpDragging = false; wpGrip.style.cursor = ''; } });
+            let _wpJustResized = false;
+            let wpR = false, wpRDir = '', wpRSX = 0, wpRSY = 0, wpRSW = 0, wpRSH = 0, wpRSL = 0, wpRST = 0;
+            wpPanel.querySelectorAll('.swml-outline-rh').forEach(h => {
+                h.addEventListener('mousedown', (e) => {
+                    if (e.button !== 0) return;
+                    const dirOnly = h.dataset.dir;
+                    const dockedOk = dirOnly === 'e' || dirOnly === 'ne' || dirOnly === 'se';
+                    if (!wpFloating && !dockedOk) return;
+                    e.preventDefault(); e.stopPropagation();
+                    wpR = true; wpRDir = dirOnly; wpRSX = e.clientX; wpRSY = e.clientY;
+                    wpRSW = parseFloat(wpPanel.style.width) || wpPanel.getBoundingClientRect().width;
+                    wpRSH = parseFloat(wpPanel.style.height) || wpPanel.getBoundingClientRect().height;
+                    wpRSL = parseFloat(wpPanel.style.left) || 0; wpRST = parseFloat(wpPanel.style.top) || 0;
+                });
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!wpR) return;
+                const dx = e.clientX - wpRSX, dy = e.clientY - wpRSY;
+                let w = wpRSW, h = wpRSH, l = wpRSL, t = wpRST;
+                if (wpRDir.includes('e')) w = Math.max(180, wpRSW + dx);
+                if (wpRDir.includes('w')) { w = Math.max(180, wpRSW - dx); l = wpRSL + (wpRSW - w); }
+                if (wpRDir.includes('s')) h = Math.max(200, wpRSH + dy);
+                if (wpRDir.includes('n')) { h = Math.max(200, wpRSH - dy); t = wpRST + (wpRSH - h); }
+                if (!wpFloating) { wpPanel.style.width = w + 'px'; }
+                else { Object.assign(wpPanel.style, { width: w + 'px', height: h + 'px', left: l + 'px', top: t + 'px' }); }
+            });
+            document.addEventListener('mouseup', () => { if (wpR) { _wpJustResized = true; setTimeout(() => { _wpJustResized = false; }, 50); } wpR = false; });
+            contentWrap.addEventListener('click', (e) => {
+                if (!wpPanel.classList.contains('swml-resources-open')) return;
+                if (wpFloating || _wpJustResized) return;
+                if (wpPanel.contains(e.target) || e.target.closest('.swml-wp-trigger')) return;
+                if (e.target.closest('.swml-dropdown-overlay, .swml-dropdown-select')) return;
+                wpPanel.classList.remove('swml-resources-open');
+                wpTrigger.classList.remove('is-active');
+            });
         }
 
         contentWrap.appendChild(docWrap);
@@ -5652,6 +5745,9 @@
             outlinePanel.classList.toggle('swml-outline-open', outlineOpen);
             outlineBtn.classList.toggle('is-active', outlineOpen);
             if (outlineOpen) {
+                // v7.19.476: mutually exclusive with the resources + Writer's Profile panels
+                if (resPanel) { resPanel.classList.remove('swml-resources-open'); if (resTrigger) resTrigger.classList.remove('is-active'); }
+                if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); }
                 updateOutline();
                 requestAnimationFrame(updateScrollSpy);
             }
