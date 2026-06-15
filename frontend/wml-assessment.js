@@ -15633,8 +15633,8 @@
             html += sectionHTML('plan', 'Imagination Well', true, null,
                 '<h3>Big Question &amp; Imagination Well</h3>' +
                 outlineRowHTML({ id: 'q7', label: '7. Big Question', prompt: 'What\u2019s something about the world, life, or the future that you genuinely wonder about?' }, 'cw-step-1-q7') +
-                outlineRowHTML({ id: 'q8', label: '8. Save What You Love', prompt: 'What if you had to save the thing you love most (your answer to Q1) from a powerful threat? Picture the story that would create.' }, 'cw-step-1-q8') +
-                outlineRowHTML({ id: 'q9', label: '9. Face Your Fear', prompt: 'What if a character had to walk straight into your greatest fear (your answer to Q2) just to get the one thing they desperately wanted?' }, 'cw-step-1-q9') +
+                outlineRowHTML({ id: 'q8', label: '8. Save What You Love', prompt: 'What if the thing you love most (your answer to Q1) suddenly came under threat — and you were the only one who could save it? Who is the hero, what stands in their way, and what would they have to risk to win?' }, 'cw-step-1-q8') +
+                outlineRowHTML({ id: 'q9', label: '9. Face Your Fear', prompt: 'What if a character wanted something so desperately they’d do almost anything to get it — but the only way to reach it ran straight through your greatest fear (your answer to Q2)? What do they want that badly, and what does facing the fear cost them?' }, 'cw-step-1-q9') +
                 outlineRowHTML({ id: 'q10', label: '10. Right the Wrong', prompt: 'What if one person could finally put right the unfairness you described in Q4 \u2014 but only at a terrible cost? What would they have to give up?' }, 'cw-step-1-q10')
             );
             // External Sources Well (2 questions)

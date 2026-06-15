@@ -117,8 +117,8 @@ Introduction: "Now let's move to the **Imagination Well**. This is where we play
 
 Ask one at a time. Each 'what if' is built directly from one of their earlier answers — say so as you ask, so they see their own material turning into story:
 
-8. "Thinking about your passions, **what if** you had to save the very thing you love most from a powerful threat? What might that look like?"
-9. "Now, thinking about your greatest fear, **what if** a character had to face that exact fear in order to achieve something they desperately wanted?"
+8. "Thinking about what you love most, **what if** it suddenly came under threat — and your hero was the only one who could save it? Who is that hero, what stands in their way, and what would they have to risk to win?"
+9. "Now, thinking about your greatest fear, **what if** a character wanted something so desperately they'd do almost anything for it — but the only way to reach it ran straight through that exact fear? What do they want that badly, and what does facing the fear cost them?"
 10. "And thinking about that unfairness you named, **what if** one person could finally put it right — but only at a terrible cost? What would they have to give up?"
 
 _Completion: When the Big Question and all three Imagination Well 'what if' questions are answered, emit:_ `[SUBSTEP_COMPLETE: step_1, substep_3, "Imagination Well"]`
