@@ -12043,6 +12043,7 @@
                             // clears go into _outlineCheckState; patchCheckStateIntoHTML bakes
                             // them into the saved doc, so the radio survives reload.
                             if (cb.checked && fieldId.indexOf('cw-step-2-idea') === 0) {
+                                // Radio behaviour: clear the other two idea rows.
                                 try {
                                     document.querySelectorAll('[data-outline-row]').forEach(row => {
                                         const rfid = row.getAttribute('data-field-id') || '';
@@ -12053,11 +12054,10 @@
                                         }
                                     });
                                 } catch (e2) {}
-                                const ideaText = (contentDOM.textContent || '').trim();
-                                if (ideaText && state.cwProjectId && window.WML && WML.cwProject) {
-                                    WML.cwProject.saveArtifact(state.cwProjectId, 'chosen_idea', ideaText).catch(() => {});
-                                    console.log('WML CW: Step 2 chosen idea saved →', fieldId);
-                                }
+                                // v7.19.468: the chosen_idea artifact is no longer saved here
+                                // (unreliable on re-ticks). persistState() above already scheduled
+                                // saveCanvasContent, which derives chosen_idea from the ticked row
+                                // via _syncCwStep2ChosenIdea — the single source of truth.
                             }
                         });
                         checkboxes.push(cb);
@@ -13982,7 +13982,7 @@
                 console.warn('WML CW: healed polluted Step-2 doc (carried Step-3 content) — restored from ' + source);
             } catch (e) { console.log('WML CW: Step-2 heal skipped —', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -21107,6 +21107,42 @@
 
     let canvasSaveToServerTimer = null;
     let _extractDocumentData = null; // Assigned inside canvas builder, used by saveCanvasContent
+    // v7.19.468: CW Step-2 chosen-idea sync. SINGLE SOURCE OF TRUTH = the ticked idea
+    // checkbox in the Step-2 doc. The old click-time saveArtifact was unreliable on
+    // re-ticks (confirmed in DB: doc had idea3 checked but `chosen_idea` artifact was still
+    // idea1). Instead we derive it from the doc on every Step-2 save (persistState already
+    // calls saveCanvasContent on each tick) AND once on Step-2 load — so the artifact always
+    // reflects the actual choice, and Step-3's tryFillChosenIdea reads a correct value.
+    let _lastSyncedChosenIdeaSig = null;
+    function _syncCwStep2ChosenIdea() {
+        try {
+            if (state.task !== 'cw_step_2' || !state.cwProjectId || !canvasEditor) return;
+            let chosenText = '';
+            canvasEditor.state.doc.descendants((node) => {
+                if (chosenText) return false;
+                if (node.type && node.type.name === 'outlineRow' && node.attrs
+                    && typeof node.attrs.fieldId === 'string'
+                    && node.attrs.fieldId.indexOf('cw-step-2-idea') === 0) {
+                    const fid = node.attrs.fieldId;
+                    // live tick state (Map) wins; fall back to the baked attr on fresh load
+                    let cs = _outlineCheckState.has(fid) ? _outlineCheckState.get(fid) : null;
+                    if (!cs) { try { cs = JSON.parse(node.attrs.checkState || '{}'); } catch (_) { cs = {}; } }
+                    if (cs && Array.isArray(cs.checked) && cs.checked.includes(0)) {
+                        chosenText = (node.textContent || '').trim();
+                    }
+                }
+                return true;
+            });
+            if (!chosenText) return; // none ticked — don't clobber a prior choice
+            const sig = state.cwProjectId + '|' + chosenText;
+            if (sig === _lastSyncedChosenIdeaSig) return; // unchanged — no write
+            _lastSyncedChosenIdeaSig = sig;
+            if (window.WML && WML.cwProject) {
+                WML.cwProject.saveArtifact(state.cwProjectId, 'chosen_idea', chosenText).catch(() => {});
+                console.log('WML CW: chosen_idea synced from Step-2 doc →', chosenText.slice(0, 40));
+            }
+        } catch (_) { /* never throw out of save */ }
+    }
     // v7.19.247: hoisted recalc ref — assigned inside canvas builder, called from
     // tryServerLoad so real Score-Summary dates paint after an async server load.
     let _recalcScoreSummaryRef = null;
@@ -21147,6 +21183,8 @@
             try { console.warn('WML save: skipped — editor mounted in post ' + _builtForPost + ' but current lesson is post ' + _currentPost + ' (SPA-nav race; stale editor)'); } catch (_) {}
             return;
         }
+        // v7.19.468: keep the CW Step-2 chosen-idea artifact in sync with the ticked box.
+        _syncCwStep2ChosenIdea();
         let html = canvasEditor.getHTML();
         html = patchCheckStateIntoHTML(html);
         const wc = getResponseWordCount(canvasEditor);
