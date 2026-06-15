@@ -21429,12 +21429,28 @@
                         });
                     } catch (_) {}
                     if (_preferServer) {
-                        canvasEditor.commands.setContent(res.doc.html, false);
-                        console.log(isCwTaskHydrate
-                            ? 'WML v7.17.44: CW canvas loaded from server (project-authoritative on mount)'
-                            : (isCribHydrate
-                                ? 'WML v7.19.132: exam_crib canvas loaded from server (template-migration-authoritative on mount)'
-                                : 'WML: Canvas loaded from server (no local content found)'));
+                        // v7.19.465: ROOT FIX for the visible "loads twice" flash on CW/crib
+                        // mount. The editor was just mounted from localStorage; the server doc
+                        // is the SAME content saved through the same pipeline but re-serialised
+                        // by wp_kses (attr order / entities / whitespace), so a byte compare
+                        // ALWAYS differs and forced a 2nd setContent (the second paint). Skip
+                        // the re-paint when the server doc shows the same VISIBLE TEXT as what's
+                        // already mounted (same project, synced). A genuine change — cross-project
+                        // switch, server seed, crib migration, cross-device edit — alters the
+                        // text, so setContent still fires and stays authoritative. Seeds always
+                        // re-paint (never skip). Text compare (not byte) ignores cosmetic markup.
+                        const _normText = (h) => { try { const d = document.createElement('div'); d.innerHTML = h || ''; return (d.textContent || '').replace(/\s+/g, ' ').trim(); } catch (_) { return ''; } };
+                        const _curHtml = canvasEditor.getHTML();
+                        if (!_isSeed && _curHtml.length > 20 && _normText(_curHtml) === _normText(res.doc.html)) {
+                            console.log('WML v7.19.465: mounted content already matches server doc (text-equal) — skipping redundant re-paint to avoid the load-twice flicker');
+                        } else {
+                            canvasEditor.commands.setContent(res.doc.html, false);
+                            console.log(isCwTaskHydrate
+                                ? 'WML v7.17.44: CW canvas loaded from server (project-authoritative on mount)'
+                                : (isCribHydrate
+                                    ? 'WML v7.19.132: exam_crib canvas loaded from server (template-migration-authoritative on mount)'
+                                    : 'WML: Canvas loaded from server (no local content found)'));
+                        }
                     } else {
                         console.log('WML: Local canvas content exists, server backup available');
                     }
