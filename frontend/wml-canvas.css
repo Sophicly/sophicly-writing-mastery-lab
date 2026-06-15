@@ -2475,6 +2475,35 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     background: rgba(45,122,120,0.08);
     border-color: rgba(45,122,120,0.2);
 }
+/* ── Writer's Profile panel (v7.19.474) — reuses .swml-resources-panel positioning +
+   .swml-resources-open transition. Brand-purple active state to distinguish from the
+   teal resources trigger. ── */
+.swml-wp-trigger.is-active {
+    opacity: 1;
+    pointer-events: auto;
+    color: #b9a7ff;
+    background: rgba(83,51,237,0.16);
+    border-color: rgba(83,51,237,0.4);
+}
+.swml-canvas-light .swml-wp-trigger.is-active {
+    color: #5333ed;
+    background: rgba(83,51,237,0.08);
+    border-color: rgba(83,51,237,0.25);
+}
+.swml-wp-body {
+    padding: 12px 14px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    max-height: 60vh;
+    font-size: 13px;
+    line-height: 1.55;
+}
+.swml-wp-body h3 { font-size: 13px; margin: 12px 0 5px; font-weight: 600; }
+.swml-wp-body h3:first-child { margin-top: 0; }
+.swml-wp-body p { margin: 0 0 8px; }
+.swml-wp-empty { opacity: 0.65; font-style: italic; }
+.swml-wp-divider { border-top: 1px solid rgba(255,255,255,0.12); margin: 14px 0; }
+.swml-canvas-light .swml-wp-divider { border-top-color: rgba(0,0,0,0.12); }
 /* ── Neumorphic resource link buttons inside panel (v7.13.52) ── */
 .swml-resources-panel .swml-cw-resource-btn {
     display: flex !important;

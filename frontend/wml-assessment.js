@@ -5464,13 +5464,14 @@
             : null;
         let resPanel = null;
         let resDetachBtn = null; // hoisted for floatRes/dockRes access
+        let wpPanel = null, wpTrigger = null, resTrigger = null; // v7.19.474: Writer's Profile panel (forward refs for mutual-exclusivity)
         if (cwPanelRes && cwPanelRes.length > 0) {
             const SVG_LINK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
 
             const SVG_ARROW_DASH = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12h.5m3 0h1.5m3 0h6"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/></svg>';
 
             // Toggle button — inside btnColumn below outline button
-            const resTrigger = el('button', {
+            resTrigger = el('button', {
                 className: 'swml-outline-btn swml-resources-trigger',
                 'data-tooltip': 'Resources',
                 'data-tooltip-pos': 'right',
@@ -5480,6 +5481,8 @@
                     e.stopPropagation();
                     const isOpen = resPanel.classList.toggle('swml-resources-open');
                     resTrigger.classList.toggle('is-active', isOpen);
+                    // v7.19.474: mutually exclusive with the Writer's Profile panel
+                    if (isOpen && wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); }
                 }
             });
             btnColumn.appendChild(resTrigger);
@@ -5551,6 +5554,71 @@
                     observer.observe(resSec);
                 }
             }, 1000);
+        }
+
+        // ── Writer's Profile panel (v7.19.474) — CW only ──────────────────────────────
+        // Third rail button. The Writer's Profile (built in Step 1) underpins every step,
+        // so this shows it READ-ONLY on any CW step without navigating back. Reads the
+        // `writer_profile` project artifact (the saved Step-1 doc HTML) and extracts the
+        // Writer's Profile + Seed Loglines sections. Mirrors the resources panel (same
+        // absolute-in-rail positioning + open transition); mutually exclusive with it.
+        if (isCwTask && state.cwProjectId) {
+            const SVG_PROFILE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>';
+            const _loadWriterProfilePanel = async (bodyEl) => {
+                try {
+                    const art = await WML.cwProject.loadArtifact(state.cwProjectId, 'writer_profile');
+                    const raw = (art && art.success && typeof art.value === 'string') ? art.value : '';
+                    if (!raw) { bodyEl.innerHTML = '<p class="swml-wp-empty">Complete Step 1 to build your Writer’s Profile — it’ll appear here, ready to guide every step.</p>'; return; }
+                    const tmp = document.createElement('div');
+                    tmp.innerHTML = raw;
+                    const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+                    const pick = (key) => {
+                        let out = '';
+                        tmp.querySelectorAll('[data-section-label]').forEach(sec => {
+                            if (!out && norm(sec.getAttribute('data-section-label')) === key) out = sec.innerHTML;
+                        });
+                        return out;
+                    };
+                    const prof = pick('writersprofile');
+                    const seeds = pick('seedloglines');
+                    let html = prof || '';
+                    if (seeds) html += '<div class="swml-wp-divider"></div>' + seeds;
+                    bodyEl.innerHTML = html || '<p class="swml-wp-empty">Your Writer’s Profile will appear here once you’ve completed Step 1.</p>';
+                    bodyEl.querySelectorAll('[contenteditable]').forEach(e => e.setAttribute('contenteditable', 'false'));
+                } catch (e) {
+                    bodyEl.innerHTML = '<p class="swml-wp-empty">Couldn’t load your Writer’s Profile right now.</p>';
+                }
+            };
+            wpPanel = el('div', { className: 'swml-outline-panel swml-resources-panel swml-wp-panel' });
+            const wpHeader = el('div', { className: 'swml-outline-header' });
+            wpHeader.innerHTML = SVG_PROFILE.replace('width="16"', 'width="12"').replace('height="16"', 'height="12"').replace('stroke-width="2"', 'stroke-width="2" style="opacity:0.5"') + '<span>Writer’s Profile</span>';
+            const wpClose = el('button', {
+                className: 'swml-outline-close', innerHTML: '✕',
+                onClick: () => { wpPanel.classList.remove('swml-resources-open'); wpTrigger.classList.remove('is-active'); }
+            });
+            wpHeader.appendChild(wpClose);
+            wpPanel.appendChild(wpHeader);
+            const wpBody = el('div', { className: 'swml-outline-list swml-wp-body' });
+            wpBody.innerHTML = '<p class="swml-wp-empty">Loading your Writer’s Profile…</p>';
+            wpBody.addEventListener('wheel', (e) => { e.stopPropagation(); }, { passive: true });
+            wpPanel.appendChild(wpBody);
+            btnColumn.appendChild(wpPanel);
+
+            wpTrigger = el('button', {
+                className: 'swml-outline-btn swml-wp-trigger',
+                'data-tooltip': 'Writer’s Profile', 'data-tooltip-pos': 'right',
+                'aria-label': 'Writer’s Profile', innerHTML: SVG_PROFILE,
+                onClick: (e) => {
+                    e.stopPropagation();
+                    const open = wpPanel.classList.toggle('swml-resources-open');
+                    wpTrigger.classList.toggle('is-active', open);
+                    if (open) {
+                        if (resPanel) { resPanel.classList.remove('swml-resources-open'); if (resTrigger) resTrigger.classList.remove('is-active'); }
+                        if (!wpPanel._loaded) { wpPanel._loaded = true; _loadWriterProfilePanel(wpBody); }
+                    }
+                }
+            });
+            btnColumn.appendChild(wpTrigger);
         }
 
         contentWrap.appendChild(docWrap);
