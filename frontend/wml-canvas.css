@@ -2512,25 +2512,63 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     color: rgba(255,255,255,0.55);
     margin-bottom: 8px;
 }
+/* Neumorphic push button (brand purple) — matches the resource-button discipline,
+   no outline border (the AI tell). v7.19.478. */
 .swml-wp-step1-btn {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 5px 12px;
+    gap: 5px;
+    padding: 8px 14px;
+    border-radius: 8px;
     font-size: 12px;
     font-weight: 600;
-    color: #d8ccff;
-    background: rgba(83,51,237,0.18);
-    border: 1px solid rgba(83,51,237,0.4);
-    border-radius: 7px;
+    font-family: 'Proxima Soft Complete', 'Proxima Soft', sans-serif;
+    color: #c9bbff;
     text-decoration: none;
-    transition: background 0.15s ease, border-color 0.15s ease;
+    cursor: pointer;
+    --btn-inner: hsla(252deg 30% 22% / 60%);
+    --btn-outer: hsla(252deg 30% 15% / 50%);
+    --btn-glow: hsla(252deg 80% 65% / 0%);
+    background: radial-gradient(ellipse at 50% 10%, var(--btn-glow), transparent),
+                radial-gradient(var(--btn-inner), var(--btn-outer));
+    border: none;
+    box-shadow:
+        inset 0 2px 1px -1px rgba(255,255,255,0.12),
+        inset 0 2px 3px rgba(0,0,0,0.10),
+        0 1px 0 1px rgba(0,0,0,0.35),
+        0 1px 0 2px rgba(83,51,237,0.08);
+    transition: --btn-glow 200ms, --btn-inner 200ms, --btn-outer 300ms, box-shadow 200ms, transform 200ms, color 200ms;
 }
-.swml-wp-step1-btn:hover { background: rgba(83,51,237,0.3); border-color: rgba(83,51,237,0.6); }
+.swml-wp-step1-btn:hover {
+    --btn-glow: hsla(252deg 80% 65% / 18%);
+    --btn-inner: hsla(252deg 55% 42% / 100%);
+    --btn-outer: hsla(252deg 60% 34% / 100%);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 -1px 2px rgba(255,255,255,0.2),
+        inset 0 0 10px rgba(83,51,237,0.18),
+        0 1px 0 1px rgba(83,51,237,0.5),
+        0 2px 8px rgba(83,51,237,0.25);
+}
+.swml-wp-step1-btn:active { transform: translateY(1px); }
 .swml-canvas-light .swml-wp-note { border-bottom-color: rgba(0,0,0,0.08); }
 .swml-canvas-light .swml-wp-note-text { color: rgba(0,0,0,0.55); }
-.swml-canvas-light .swml-wp-step1-btn { color: #5333ed; background: rgba(83,51,237,0.08); border-color: rgba(83,51,237,0.3); }
-.swml-canvas-light .swml-wp-step1-btn:hover { background: rgba(83,51,237,0.16); }
+.swml-canvas-light .swml-wp-step1-btn {
+    color: #5333ed;
+    --btn-inner: hsla(252deg 40% 97% / 100%);
+    --btn-outer: hsla(252deg 30% 91% / 100%);
+    box-shadow:
+        inset 0 2px 1px -1px rgba(255,255,255,0.6),
+        inset 0 2px 3px rgba(0,0,0,0.04),
+        0 1px 0 1px rgba(0,0,0,0.08),
+        0 1px 0 2px rgba(83,51,237,0.05);
+}
+.swml-canvas-light .swml-wp-step1-btn:hover {
+    --btn-inner: hsla(252deg 55% 50% / 100%);
+    --btn-outer: hsla(252deg 50% 42% / 100%);
+    color: #fff;
+}
 .swml-wp-empty { opacity: 0.65; font-style: italic; }
 .swml-wp-divider { border-top: 1px solid rgba(255,255,255,0.12); margin: 14px 0; }
 .swml-canvas-light .swml-wp-divider { border-top-color: rgba(0,0,0,0.12); }

@@ -5615,7 +5615,7 @@
             // Persistent reminder + link to the real Step-1 lesson (prod URL)
             const wpNote = el('div', { className: 'swml-wp-note' });
             wpNote.innerHTML = '<span class="swml-wp-note-text">Your Writer’s Profile is built in Step 1 — to change it, edit it there.</span>' +
-                '<a class="swml-wp-step1-btn" href="https://www.sophicly.com/courses/creative-writing-masterclass/units/3-how-to-come-up-with-compelling-story-ideas/lessons/2-step-1-questions-for-story-ideas/" target="_blank" rel="noopener">Open Step 1 →</a>';
+                '<a class="swml-wp-step1-btn" href="https://www.sophicly.com/courses/creative-writing-masterclass/units/3-how-to-come-up-with-compelling-story-ideas/lessons/2-step-1-questions-for-story-ideas/">Open Step 1 →</a>';
             wpPanel.appendChild(wpNote);
             const wpBody = el('div', { className: 'swml-outline-list swml-wp-body' });
             wpBody.innerHTML = '<p class="swml-wp-empty">Loading your Writer’s Profile…</p>';
