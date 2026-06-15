@@ -14061,6 +14061,42 @@
                 console.warn('WML CW: healed polluted Step-2 doc (carried Step-3 content) — restored from ' + source);
             } catch (e) { console.log('WML CW: Step-2 heal skipped —', e && e.message); }
         };
+        // v7.19.473: scaffold-lock phase 2 — lock instruction PARAGRAPHS that are template
+        // scaffold. Structural rule: in a CW section that contains input rows (outlineRow/
+        // inputField), the loose paragraphs are always scaffold (answers live in the rows), so
+        // lock them. Sections with NO input rows (free-prose Draft, AI-filled Profile) are left
+        // alone — drafts stay editable; row-less AI sections are marked explicitly in the
+        // template. Headings already lock structurally. Auto-covers every CW step + existing
+        // docs with no per-template marking; persists via the data-locked attr (now whitelisted).
+        const _lockCwScaffoldParagraphs = () => {
+            if (!isCwTask || !canvasEditor) return;
+            try {
+                const state = canvasEditor.state;
+                const tr = state.tr;
+                let changed = false;
+                state.doc.descendants((node, pos) => {
+                    if (node.type.name !== 'sectionBlock') return true;
+                    let hasInput = false;
+                    node.descendants((c) => {
+                        if (c.type.name === 'inputField' || c.type.name === 'outlineRow') { hasInput = true; return false; }
+                        return true;
+                    });
+                    if (!hasInput) return false; // free-prose / AI-fill section — leave editable
+                    node.forEach((child, offset) => {
+                        if (child.type.name === 'paragraph' && child.attrs.locked !== true && child.attrs.locked !== 'true') {
+                            tr.setNodeMarkup(pos + 1 + offset, undefined, { ...child.attrs, locked: true });
+                            changed = true;
+                        }
+                    });
+                    return false; // direct children handled — don't descend
+                });
+                if (changed) {
+                    tr.setMeta('addToHistory', false);
+                    _migrationActive = true;
+                    try { canvasEditor.view.dispatch(tr); } finally { _migrationActive = false; }
+                }
+            } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
+        };
         tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
@@ -14132,6 +14168,9 @@
             try { console.log('[WML load-debug v7.19.136] migrate chain END', { docSize: canvasEditor.getHTML().length, delta: canvasEditor.getHTML().length - _preMigrateSize }); } catch (_) {}
             // Inject cover image if missing from loaded document
             tryInjectCover();
+            // v7.19.473: lock scaffold paragraphs AFTER migrations settle (a migration that
+            // rebuilds the doc would otherwise drop the locks).
+            _lockCwScaffoldParagraphs();
             // Build table of contents (after cover + migration)
             buildTableOfContents();
             // v7.14.34: Assign group colours after DOM settles (universal — works for all doc types)
