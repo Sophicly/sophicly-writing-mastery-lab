@@ -2327,6 +2327,9 @@ window.WML = (function() {
         // v7.19.434: Strip @SECTION_BEGIN{...}...@SECTION_END synthesis blocks (Phase 2 — the
         // wrapped profile/loglines are written into the canvas section, not echoed in the bubble).
         text = text.replace(/@SECTION_BEGIN\s*\{[^}]*\}[\s\S]*?@SECTION_END/g, '').trim();
+        // v7.19.466: Strip @FIELD_SET{...} AI-authored row-fill signals (Phase 3 — CW Step 3
+        // loglines are written into the canvas rows, not echoed in the bubble).
+        text = text.replace(/@FIELD_SET\s*\{[^}]*\}/g, '').trim();
         // Strip LaTeX $$ blocks
         text = text.replace(/\$\$[^$]*?\$\$/g, '').trim();
         // Strip Python-style function calls

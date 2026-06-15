@@ -520,6 +520,60 @@
         }
     }
 
+    // v7.19.466: Phase 3 of the chat→canvas primitive — AI-authored value → outlineROW.
+    // The third shape the other two don't cover:
+    //   @FIELD_COMMIT  — verbatim STUDENT words  → outlineRow (APPEND, never destroy)
+    //   @SECTION_BEGIN — AI-authored SYNTHESIS   → sectionBlock by label (REPLACE)
+    //   @FIELD_SET     — AI-authored value       → outlineRow by fieldId (REPLACE)  ← this
+    // First consumer: CW Step 3, where Sophia GENERATES the three loglines from the
+    // student's components and writes each into its own logline row (the rows must stay
+    // rows because Stage 3 puts a pick-checkbox on each). Author is the AI, so the marker
+    // carries the value (legitimate drafting per CLAUDE.md §6). REPLACE because it's a
+    // draft into an empty placeholder the AI owns — re-generation should overwrite, not
+    // pile up. Malformed/missing marker → row stays empty (graceful, same as the others).
+    // Protocol-agnostic: any protocol adopts it by listing row ids + when to emit.
+    function applyFieldSets(aiReply) {
+        try {
+            if (!aiReply || !canvasEditor) return;
+            const re = /@FIELD_SET\s*(\{[^}]*\})/g;
+            const sets = [];
+            let m;
+            while ((m = re.exec(aiReply)) !== null) {
+                let payload = null;
+                try { payload = JSON.parse(m[1]); } catch (_) { continue; }
+                const fid = (payload && typeof payload.field === 'string') ? payload.field.trim() : '';
+                const val = (payload && typeof payload.value === 'string') ? payload.value.trim() : '';
+                if (fid && val) sets.push({ field: fid, value: val });
+            }
+            if (!sets.length) return;
+            let wrote = false;
+            sets.forEach(s => {
+                let targetPos = null, targetNode = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (targetPos !== null) return false;
+                    if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === s.field) {
+                        targetPos = pos; targetNode = node; return false;
+                    }
+                    return true;
+                });
+                if (targetPos === null || !targetNode) {
+                    console.warn('WML FieldSet: no outlineRow for field', s.field, '(left empty)');
+                    return;
+                }
+                const existing = (targetNode.textContent || '').trim();
+                if (existing === s.value) return; // identical re-fire — skip
+                const from = targetPos + 1;
+                const to = targetPos + targetNode.nodeSize - 1;
+                canvasEditor.commands.insertContentAt({ from: from, to: to }, { type: 'text', text: s.value });
+                console.log('WML FieldSet: wrote', s.value.length, 'chars →', s.field);
+                wrote = true;
+            });
+            if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
+        } catch (e) {
+            console.warn('WML FieldSet: error (non-fatal)', e && e.message);
+        }
+    }
+
     // v7.15.49: state.mode is set once at boot from embedConfig and never updates on
     // LD soft nav — so after navigating between embedded lessons it goes stale. Use
     // the structural fields (topicNumber + phase) that the bridge re-populates on
@@ -3836,6 +3890,7 @@
                             applyCwSubstepProgress(detectCwSubstep(res.reply));
                             applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                             applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
+                            applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored row-fill (Phase 3 — CW Step 3 loglines)
                         }
 
                         // v7.15.12: Exam prep step detection via [PROGRESS: N] markers
@@ -9956,6 +10011,7 @@
                                             applyCwSubstepProgress(detectCwSubstep(res.reply));
                             applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                             applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
+                            applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored row-fill (Phase 3 — CW Step 3 loglines)
                                         }
 
                                         // ── Assessment step + completion detection + Mark Complete (v7.12.35) ──
