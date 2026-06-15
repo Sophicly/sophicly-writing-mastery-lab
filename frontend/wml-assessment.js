@@ -5562,7 +5562,9 @@
         // `writer_profile` project artifact (the saved Step-1 doc HTML) and extracts the
         // Writer's Profile + Seed Loglines sections. Mirrors the resources panel (same
         // absolute-in-rail positioning + open transition); mutually exclusive with it.
-        if (isCwTask && state.cwProjectId) {
+        // NB: isCwTask const isn't initialised this early in renderCanvasWorkspace (TDZ) —
+        // use the inline task check.
+        if (state.task && state.task.indexOf('cw_') === 0 && state.cwProjectId) {
             const SVG_PROFILE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>';
             const _loadWriterProfilePanel = async (bodyEl) => {
                 try {
