@@ -4502,9 +4502,7 @@
 
     let _canvasGuard = false; // Prevents double-render of canvas workspace (v7.12.61)
     function renderCanvasWorkspace() {
-        // v7.19.464 [WML-DIAG] temporary nav/render tracing — staging only. Remove after diagnosis.
-        try { console.log('[WML-DIAG] renderCanvasWorkspace CALL — task=' + state.task + ' project=' + (state.cwProjectId || '-') + ' guard=' + _canvasGuard + '\n  caller:' + (new Error().stack || '').split('\n').slice(2, 5).join('\n  ')); } catch (_) {}
-        if (_canvasGuard) { try { console.log('[WML-DIAG] renderCanvasWorkspace BLOCKED by 500ms guard'); } catch (_) {} return; }
+        if (_canvasGuard) return;
         _canvasGuard = true;
         setTimeout(() => { _canvasGuard = false; }, 500);
 
@@ -23844,7 +23842,6 @@
      * Clickable in canvas, static in Word export.
      */
     function buildTableOfContents() {
-        try { console.log('[WML-DIAG] buildTableOfContents firing'); } catch (_) {}
         if (!canvasEditor) return;
         const docWrap = document.querySelector('.swml-canvas-doc');
         const editorEl = document.getElementById('swml-tiptap-editor');
