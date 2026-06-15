@@ -14190,6 +14190,9 @@
             if (state.task === 'exam_crib') return;
             // v7.19.224: Codex has no Response section — Transfer-to-Response buttons irrelevant.
             if (state.task === 'mastery_codex') return;
+            // v7.19.463: CW steps have plan sections (Story Components, Story Ideas, Chosen
+            // Idea) but NO Response section — Transfer-to-Response buttons are dead/confusing.
+            if (state.task && state.task.startsWith('cw_')) return;
             var editor = document.getElementById('swml-tiptap-editor');
             if (!editor) return;
             if (transferLayer) transferLayer.remove();
