@@ -2609,14 +2609,7 @@
         // node, zero UI.
         if (!WML.isEmbedded || isCwSi) protoSpacer.appendChild(assessBtn);
 
-        // Save button
-        const saveBtn = iconBtn(SVG_SAVE, 'Save Progress', () => {
-            if (canvasEditor) saveCanvasContent();
-            saveBtn.querySelector('.swml-btn-text').textContent = '\u2713 Saved';
-            setTimeout(() => { saveBtn.querySelector('.swml-btn-text').innerHTML = SVG_SAVE + ' Save Progress'; }, 2000);
-        });
-        saveBtn.classList.add('swml-save-btn');
-        protoSpacer.appendChild(saveBtn);
+        // v7.19.479: Save Progress button removed \u2014 autosave handles it (debounce + 30s periodic + onBlur; saved status shown).
 
         // Past Work — v7.14.50: hidden in embedded mode (LD handles navigation)
         if (!WML.isEmbedded) {
@@ -2633,29 +2626,16 @@
             }));
         }
 
-        // Dashboard
-        protoSpacer.appendChild(iconBtn(SVG_DASHBOARD, 'My Dashboard', () => window.open('/dashboard/', '_blank')));
+        // v7.19.479: My Dashboard button removed — duplicated in top-right profile menu.
 
-        // v7.17.43: CW My Projects button — opens switcher overlay from any CW step
-        if (isCwTask) {
+        // v7.17.43: CW My Projects button — opens switcher overlay.
+        // v7.19.479: gated to Step 1 only (project switcher entry point); other steps use top nav.
+        if (state.task === 'cw_step_1') {
             const SVG_PROJECTS = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>';
             protoSpacer.appendChild(iconBtn(SVG_PROJECTS, 'My Projects', () => { _openCWProjectSwitcher(); }));
         }
 
-        // CW: Back to Steps
-        if (isCwTask) {
-            protoSpacer.appendChild(iconBtn(SVG_BACK, 'Back to Steps', () => {
-                if (canvasEditor) saveCanvasContent();
-                const artifactKey = WML.CW_ARTIFACT_MAP[cwStepDef?.step];
-                if (artifactKey && state.cwProjectId && canvasEditor) {
-                    const content = canvasEditor.getHTML();
-                    WML.cwProject.saveArtifact(state.cwProjectId, artifactKey, content).catch(() => {});
-                }
-                if (WML.renderCreativeWritingDashboard) {
-                    WML.renderCreativeWritingDashboard();
-                }
-            }));
-        }
+        // v7.19.479: Back to Steps button removed — redundant (top nav arrows + Previous/Next + LD left nav).
         protoBody.appendChild(protoSpacer);
         protoPanel.appendChild(protoBody);
 
@@ -9494,14 +9474,7 @@
                         // instance — LD owns completion; CW SI keeps its button.
                         if (!WML.isEmbedded || isCwSi) protoSpacer.appendChild(assessBtn);
 
-                        // Save button
-                        const saveBtn = iconBtn(SVG_SAVE, 'Save Progress', () => {
-                            if (canvasEditor) saveCanvasContent();
-                            saveBtn.querySelector('.swml-btn-text').textContent = '✓ Saved';
-                            setTimeout(() => { saveBtn.querySelector('.swml-btn-text').innerHTML = SVG_SAVE + ' Save Progress'; }, 2000);
-                        });
-                        saveBtn.classList.add('swml-save-btn');
-                        protoSpacer.appendChild(saveBtn);
+                        // v7.19.479: Save Progress button removed — autosave handles it (debounce + 30s periodic + onBlur; saved status shown).
 
                         // Past Work
                         protoSpacer.appendChild(iconBtn(SVG_FOLDER, 'Past Work', () => { closeCanvasOverlay(); showPortfolio(); }));
@@ -9515,32 +9488,16 @@
                             }));
                         }
 
-                        // Dashboard
-                        protoSpacer.appendChild(iconBtn(SVG_DASHBOARD, 'My Dashboard', () => window.open('/dashboard/', '_blank')));
+                        // v7.19.479: My Dashboard button removed — duplicated in top-right profile menu.
 
-                        // v7.17.43: CW My Projects button — opens switcher overlay from any CW step
-                        if (isCwTask) {
+                        // v7.17.43: CW My Projects button — opens switcher overlay.
+                        // v7.19.479: gated to Step 1 only (project switcher entry point); other steps use top nav.
+                        if (state.task === 'cw_step_1') {
                             const SVG_PROJECTS = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>';
                             protoSpacer.appendChild(iconBtn(SVG_PROJECTS, 'My Projects', () => { _openCWProjectSwitcher(); }));
                         }
 
-                        // v7.14.41: CW exercises keep "Back to Steps" for CW dashboard navigation
-                        // All other exercises are standalone — no "Back to Diagnostic" transition (LD handles sequencing)
-                        if (isCwTask) {
-                            protoSpacer.appendChild(iconBtn(SVG_BACK, 'Back to Steps', () => {
-                                if (canvasEditor) saveCanvasContent();
-                                const artifactKey = WML.CW_ARTIFACT_MAP[cwStepDef?.step];
-                                if (artifactKey && state.cwProjectId && canvasEditor) {
-                                    const content = canvasEditor.getHTML();
-                                    WML.cwProject.saveArtifact(state.cwProjectId, artifactKey, content).catch(() => {});
-                                }
-                                if (typeof renderCreativeWritingDashboard === 'function') {
-                                    renderCreativeWritingDashboard();
-                                } else if (WML.renderCreativeWritingDashboard) {
-                                    WML.renderCreativeWritingDashboard();
-                                }
-                            }));
-                        }
+                        // v7.19.479: Back to Steps button removed — redundant (top nav arrows + Previous/Next + LD left nav).
                         protoBody.appendChild(protoSpacer);
                         protoPanel.appendChild(protoBody);
 
