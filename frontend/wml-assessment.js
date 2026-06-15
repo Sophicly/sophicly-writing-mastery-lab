@@ -13881,6 +13881,11 @@
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
                 console.log('WML CW: Step 5 emphasis note backfilled (migration)');
             });
+            // v7.19.459: Heal-on-load for CW Step 1 question rows — re-sync a saved doc to
+            // the current question template without losing the student's typed answers, so
+            // prompt/label edits (and the 15→12 restructure) reach existing projects without
+            // starting a new one. See migrateCwStep1Questions for the two cases.
+            _migrateStep('migrateCwStep1Questions', () => migrateCwStep1Questions(cwStepDef));
             // v7.19.136 instrumentation — final migrate-chain doc size
             try { console.log('[WML load-debug v7.19.136] migrate chain END', { docSize: canvasEditor.getHTML().length, delta: canvasEditor.getHTML().length - _preMigrateSize }); } catch (_) {}
             // Inject cover image if missing from loaded document
@@ -23166,6 +23171,103 @@
             canvasEditor.commands.setContent(tmp.innerHTML, false);
             console.log('WML Migration: Outline sections upgraded to criteria layout');
         }
+    }
+
+    // v7.19.459: Heal-on-load for CW Step 1 question rows.
+    // Existing CW projects keep their saved canvas doc, so a template change (a reworded
+    // prompt, or the 15→12 restructure) would otherwise leave them on stale questions
+    // until a brand-new project is started. This re-syncs the saved doc to the current
+    // template WITHOUT losing the student's typed answers. Two cases:
+    //   1. Same field-id set, prompts/labels changed → refresh prompts in place, keep
+    //      every answer (covers all future prompt tweaks — no new project needed).
+    //   2. Field-id set differs (structural, e.g. a legacy 15-question doc) → rebuild the
+    //      four question sections from the template and stash the student's old answers
+    //      into an "Earlier Answers" notes block so nothing is silently lost. The
+    //      synthesised Writer's Profile + Seed Loglines sections are never touched.
+    // Runs under _migrationActive so the section-deletion guard leaves the rebuild alone.
+    function migrateCwStep1Questions(stepDef) {
+        if (!canvasEditor || state.task !== 'cw_step_1') return;
+        const html = canvasEditor.getHTML();
+        if (html.indexOf('cw-step-1-q') === -1) return; // not a Step-1 question doc
+
+        // Current template rows, keyed by field-id.
+        let tmplHtml;
+        try { tmplHtml = getCwDocTemplate(stepDef || { step: 1 }); } catch (e) { return; }
+        const tdiv = document.createElement('div');
+        tdiv.innerHTML = tmplHtml;
+        const tmplRow = {}; const tmplIds = [];
+        tdiv.querySelectorAll('[data-outline-row]').forEach(r => {
+            const fid = r.getAttribute('data-field-id') || '';
+            if (fid.indexOf('cw-step-1-q') !== 0) return;
+            tmplRow[fid] = { prompt: r.getAttribute('data-prompt') || '', criteria: r.getAttribute('data-criteria') || '{}' };
+            tmplIds.push(fid);
+        });
+        if (!tmplIds.length) return;
+
+        // Existing doc rows.
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        const docRows = {};
+        div.querySelectorAll('[data-outline-row]').forEach(r => {
+            const fid = r.getAttribute('data-field-id') || '';
+            if (fid.indexOf('cw-step-1-q') === 0) docRows[fid] = r;
+        });
+        const docIds = Object.keys(docRows);
+        if (!docIds.length) return;
+
+        const sameSet = tmplIds.length === docIds.length && tmplIds.every(f => docRows[f]);
+        let changed = false;
+
+        if (sameSet) {
+            // CASE 1 — same questions, prompts/labels may have changed. Refresh, keep answers.
+            tmplIds.forEach(fid => {
+                const ex = docRows[fid];
+                if ((ex.getAttribute('data-prompt') || '') !== tmplRow[fid].prompt ||
+                    (ex.getAttribute('data-criteria') || '{}') !== tmplRow[fid].criteria) {
+                    ex.setAttribute('data-prompt', tmplRow[fid].prompt);
+                    ex.setAttribute('data-criteria', tmplRow[fid].criteria);
+                    changed = true;
+                }
+            });
+            if (!changed) return;
+        } else {
+            // CASE 2 — structural change. Stash old answers, rebuild question sections only.
+            const stash = [];
+            docIds.forEach(fid => {
+                const el = docRows[fid];
+                const text = (el.textContent || '').trim();
+                if (!text) return;
+                let lbl = fid;
+                try { const c = JSON.parse(el.getAttribute('data-criteria') || '{}'); lbl = c.label || fid; } catch (e) {}
+                stash.push({ label: lbl, text });
+            });
+            const QSECTIONS = ['Inner World', 'Moral Compass', 'Imagination Well', 'External Sources'];
+            QSECTIONS.forEach(secLabel => {
+                let tSec = null, dSec = null;
+                tdiv.querySelectorAll('[data-section-label]').forEach(s => { if (!tSec && s.getAttribute('data-section-label') === secLabel) tSec = s; });
+                div.querySelectorAll('[data-section-label]').forEach(s => { if (!dSec && s.getAttribute('data-section-label') === secLabel) dSec = s; });
+                if (tSec && dSec) { dSec.innerHTML = tSec.innerHTML; changed = true; }
+            });
+            if (!changed) return; // not the expected Step-1 shape — bail safely
+            if (stash.length) {
+                let listHtml = '<p><strong>Earlier answers (from the previous version of this step).</strong> Move anything you want to keep into the questions above, then delete this note:</p><ul>';
+                stash.forEach(s => { listHtml += '<li><strong>' + escapeHTML(s.label) + ':</strong> ' + escapeHTML(s.text) + '</li>'; });
+                listHtml += '</ul>';
+                const holder = document.createElement('div');
+                holder.innerHTML = sectionHTML('notes', 'Earlier Answers', true, null, listHtml);
+                let wp = null;
+                div.querySelectorAll('[data-section-label]').forEach(s => { if (!wp && /writer.?s profile/i.test(s.getAttribute('data-section-label') || '')) wp = s; });
+                if (wp && wp.parentNode && holder.firstChild) wp.parentNode.insertBefore(holder.firstChild, wp);
+                else if (holder.firstChild) div.appendChild(holder.firstChild);
+            }
+        }
+
+        _migrationActive = true;
+        try { canvasEditor.commands.setContent(div.innerHTML, false); }
+        finally { _migrationActive = false; }
+        try { _sectionCount = countSections(canvasEditor.state.doc); } catch (e) {}
+        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+        console.log('WML CW: Step-1 questions healed to current template (' + (sameSet ? 'prompt refresh' : 'structural rebuild + stash') + ')');
     }
 
     /**
