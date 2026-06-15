@@ -5345,6 +5345,14 @@
             : '';
         const docWrap = el('div', { className: 'swml-canvas-doc' + (_isCodexDoc ? ' swml-codex-doc' : '') + _stageCls });
         const editorEl = el('div', { id: 'swml-tiptap-editor' });
+        // v7.19.467: stamp the editor with the LESSON (post id) it was mounted in.
+        // saveCanvasContent refuses to persist this editor's content once the user has
+        // navigated to a DIFFERENT lesson — closing the SPA-nav race where state.task
+        // flips to the incoming lesson before the editor is rebuilt and a save lands the
+        // OLD doc under the NEW key (CW Step-3 logline doc → _cw_2). We key on post id, not
+        // state.task, because task is legitimately coerced in-place within a single render
+        // (diagnostic/''→'assessment') — those must still save (same lesson, same post id).
+        editorEl._swmlBuiltForPost = (window.swmlEmbedConfig && window.swmlEmbedConfig.postId) || 0;
         const gutterWrap = el('div', { className: 'swml-comment-gutter' });
         docWrap.appendChild(editorEl);
         docWrap.appendChild(gutterWrap);
@@ -12063,6 +12071,14 @@
                     const contentDOM = document.createElement('div');
                     contentDOM.classList.add('swml-outline-input');
                     if (node.attrs.prompt) contentDOM.setAttribute('data-prompt', node.attrs.prompt);
+                    // v7.19.467: locked rows (e.g. Step-3 "Your Chosen Story Idea", carried
+                    // from Step 2) are read-only to the student — they change it only by
+                    // re-picking in Step 2. contentEditable=false blocks USER typing but not
+                    // the programmatic fill (tryFillChosenIdea uses insertContentAt, a command).
+                    if (crit.locked) {
+                        contentDOM.setAttribute('contenteditable', 'false');
+                        contentDOM.classList.add('swml-outline-locked');
+                    }
                     dom.appendChild(contentDOM);
 
                     // ── v7.15.0: Row completion — criteria check only (text check via global onUpdate) ──
@@ -13936,7 +13952,37 @@
                 console.log('WML CW: Step 3 chosen-idea filled from Step-2 artifact');
             } catch (e) { console.log('WML CW: no chosen_idea artifact to fill —', e && e.message); }
         };
-        tryServerLoad().then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).catch(err => {
+        // v7.19.467: HEAL Step-2 docs polluted by the pre-fix SPA-nav save race — the
+        // Step-3 logline document had been written under the _cw_2 key (confirmed in the
+        // DB: _cw_2 byte-identical to _cw_3). Detect a cw_step_2 doc carrying Step-3 field
+        // rows (`cw-step-3-`); restore the genuine Step-2 doc from the `story_ideas`
+        // artifact if it holds a clean copy (preserves the student's 3 ideas + choice),
+        // else regenerate the Step-2 template. Runs under _migrationActive so the section
+        // guard leaves the swap alone; the save then re-keys it correctly (editor stamp =
+        // cw_step_2 = state.task). Fixes existing projects from our end — no admin step.
+        const tryHealCwStep2 = async () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 2) return;
+            try {
+                const html = canvasEditor.getHTML();
+                if (html.indexOf('cw-step-3-') === -1) return; // not polluted — Step-2 doc is correct
+                let healed = null, source = 'fresh template';
+                if (state.cwProjectId) {
+                    const art = await WML.cwProject.loadArtifact(state.cwProjectId, 'story_ideas');
+                    const cand = (art?.success && typeof art.value === 'string') ? art.value : '';
+                    if (cand && cand.indexOf('cw-step-2-idea') !== -1 && cand.indexOf('cw-step-3-') === -1) {
+                        healed = cand; source = 'story_ideas artifact';
+                    }
+                }
+                if (!healed) healed = getCwDocTemplate(cwStepDef);
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(healed, false); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.warn('WML CW: healed polluted Step-2 doc (carried Step-3 content) — restored from ' + source);
+            } catch (e) { console.log('WML CW: Step-2 heal skipped —', e && e.message); }
+        };
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -15864,7 +15910,7 @@
             html += sectionHTML('response', 'Your Chosen Story Idea', true, null,
                 '<h3>Your Chosen Story Idea</h3>' +
                 '<p><em>This is the idea you chose in Step 2 — the foundation for your logline. To change it, go back to Step 2 and tick a different idea; your new choice will appear here.</em></p>' +
-                outlineRowHTML({ id: 'chosen-idea', label: 'From Step 2', prompt: 'Your chosen story idea' }, 'cw-step-3-chosen-idea')
+                outlineRowHTML({ id: 'chosen-idea', label: 'From Step 2', prompt: 'Your chosen story idea', locked: true }, 'cw-step-3-chosen-idea')
             );
             // Story Components (student fills in via chat)
             html += dividerHTML('YOUR STORY COMPONENTS');
@@ -21086,6 +21132,21 @@
         if (!canvasEditor) return;
         // Tutor review mode: never save — read-only view of student's work (v7.15.2)
         if (state.reviewMode) return;
+        // v7.19.467: cross-LESSON save guard. During SPA navigation, state + embedConfig
+        // flip to the incoming lesson BEFORE renderCanvasWorkspace rebuilds the editor. A
+        // save firing in that window would persist the OUTGOING editor's content under the
+        // INCOMING lesson's key — exactly how the CW Step-3 logline doc got written to the
+        // _cw_2 key. The editor is stamped with the post id it was mounted in; if the user
+        // has since navigated to a different lesson, this editor is stale (mid-teardown) —
+        // skip the save. Keyed on post id (not state.task) so in-place task coercion within
+        // one render still saves. Non-embedded use: both sides are 0 → always allowed.
+        const _builtForPost = canvasEditor.options && canvasEditor.options.element
+            && canvasEditor.options.element._swmlBuiltForPost;
+        const _currentPost = (window.swmlEmbedConfig && window.swmlEmbedConfig.postId) || 0;
+        if (typeof _builtForPost === 'number' && _builtForPost !== _currentPost) {
+            try { console.warn('WML save: skipped — editor mounted in post ' + _builtForPost + ' but current lesson is post ' + _currentPost + ' (SPA-nav race; stale editor)'); } catch (_) {}
+            return;
+        }
         let html = canvasEditor.getHTML();
         html = patchCheckStateIntoHTML(html);
         const wc = getResponseWordCount(canvasEditor);

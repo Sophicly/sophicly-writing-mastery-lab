@@ -6233,6 +6233,27 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     background: rgba(255,255,255,0.05);
     box-shadow: 0 0 0 2px rgba(66, 161, 236, 0.06);
 }
+/* v7.19.467: locked outline row (read-only — e.g. Step-3 chosen idea carried from Step 2).
+   No focus ring, default cursor, faint lock cue so the student sees it's set elsewhere. */
+.swml-outline-input.swml-outline-locked {
+    cursor: default;
+    background: rgba(255,255,255,0.015);
+}
+.swml-outline-input.swml-outline-locked:focus-within {
+    border-color: transparent;
+    background: rgba(255,255,255,0.015);
+    box-shadow: none;
+}
+.swml-outline-input.swml-outline-locked::after {
+    content: "🔒 set in Step 2";
+    display: block;
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    margin-top: 4px;
+    pointer-events: none;
+}
+[data-swml-theme="light"] .swml-outline-input.swml-outline-locked { background: rgba(0,0,0,0.015); }
+[data-swml-theme="light"] .swml-outline-input.swml-outline-locked::after { color: rgba(0,0,0,0.35); }
 [data-swml-theme="light"] .swml-outline-input {
     background: rgba(0,0,0,0.02);
     border-color: transparent; /* v7.19.436: resting border off (light) */
