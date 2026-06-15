@@ -15612,40 +15612,37 @@
                 '<p>The best story ideas come from within the author. Great writers draw from three wells of inspiration: <strong>Memory</strong> (life experience), <strong>Imagination</strong> (creative play), and <strong>External Sources</strong> (knowledge of stories).</p>' +
                 '<p>Answer the questions in the chat in a good amount of detail. Your answers will be compiled into your Writer\u2019s Profile below.</p>'
             );
-            // Memory Well — Inner World (5 questions)
+            // Memory Well — Inner World (3 questions)
             html += dividerHTML('MEMORY WELL \u2014 INNER WORLD');
             html += sectionHTML('plan', 'Inner World', true, null,
                 '<h3>Your Inner World (Passions &amp; Fears)</h3>' +
-                outlineRowHTML({ id: 'q1', label: '1. Excitement', prompt: 'What excites you or makes you feel truly alive?' }, 'cw-step-1-q1') +
-                outlineRowHTML({ id: 'q2', label: '2. Passion', prompt: 'What are you most passionate about in life?' }, 'cw-step-1-q2') +
-                outlineRowHTML({ id: 'q3', label: '3. Fear', prompt: 'What do you fear the most?' }, 'cw-step-1-q3') +
-                outlineRowHTML({ id: 'q4', label: '4. Happiness', prompt: 'What makes you genuinely happy?' }, 'cw-step-1-q4') +
-                outlineRowHTML({ id: 'q5', label: '5. Regret', prompt: 'Is there something you regret, or a failure that stayed with you?' }, 'cw-step-1-q5')
+                outlineRowHTML({ id: 'q1', label: '1. Passion', prompt: 'What’s something you genuinely love or care about — something you could talk about for hours?' }, 'cw-step-1-q1') +
+                outlineRowHTML({ id: 'q2', label: '2. Fear', prompt: 'What frightens you — and can you remember a moment you felt it?' }, 'cw-step-1-q2') +
+                outlineRowHTML({ id: 'q3', label: '3. Regret', prompt: 'Is there a regret or setback that stayed with you? (Nothing painful needed — even a small one works.)' }, 'cw-step-1-q3')
             );
-            // Memory Well — Moral Compass (5 questions)
+            // Memory Well — Moral Compass (3 questions)
             html += dividerHTML('MEMORY WELL \u2014 MORAL COMPASS');
             html += sectionHTML('plan', 'Moral Compass', true, null,
                 '<h3>Your Moral Compass (Values &amp; Beliefs)</h3>' +
-                outlineRowHTML({ id: 'q6', label: '6. Values', prompt: 'What do you value most in people?' }, 'cw-step-1-q6') +
-                outlineRowHTML({ id: 'q7', label: '7. Injustice', prompt: 'What outrages you or makes you feel a sense of injustice?' }, 'cw-step-1-q7') +
-                outlineRowHTML({ id: 'q8', label: '8. Social Problem', prompt: 'What is one social problem \u2014 past, present, or future \u2014 that you think about often?' }, 'cw-step-1-q8') +
-                outlineRowHTML({ id: 'q9', label: '9. Life Event', prompt: 'What event or discovery has made a huge difference in your life?' }, 'cw-step-1-q9') +
-                outlineRowHTML({ id: 'q10', label: '10. Inspiration', prompt: 'Who or what inspires you?' }, 'cw-step-1-q10')
+                outlineRowHTML({ id: 'q4', label: '4. Injustice', prompt: 'Think of a time something struck you as deeply unfair \u2014 what was it?' }, 'cw-step-1-q4') +
+                outlineRowHTML({ id: 'q5', label: '5. Admiration', prompt: 'Think of someone you admire \u2014 what\u2019s one thing they did that stuck with you?' }, 'cw-step-1-q5') +
+                outlineRowHTML({ id: 'q6', label: '6. Social Problem', prompt: 'What\u2019s one problem in the world \u2014 past, present, or future \u2014 that you find yourself thinking about?' }, 'cw-step-1-q6')
             );
-            // Big Questions + Imagination Well (3 questions)
+            // Big Question + Imagination Well (4 questions)
             html += dividerHTML('IMAGINATION WELL');
             html += sectionHTML('plan', 'Imagination Well', true, null,
-                '<h3>Your Imagination Well (Core Scenarios)</h3>' +
-                outlineRowHTML({ id: 'q11', label: '11. Big Questions', prompt: 'What questions do you have about the world, life, or the future?' }, 'cw-step-1-q11') +
-                outlineRowHTML({ id: 'q12', label: '12. Save Your Passion', prompt: 'What if you had to save the thing you\u2019re most passionate about from a powerful threat?' }, 'cw-step-1-q12') +
-                outlineRowHTML({ id: 'q13', label: '13. Face Your Fear', prompt: 'What if a character had to face your greatest fear to achieve something they desperately wanted?' }, 'cw-step-1-q13')
+                '<h3>Big Question &amp; Imagination Well</h3>' +
+                outlineRowHTML({ id: 'q7', label: '7. Big Question', prompt: 'What\u2019s something about the world, life, or the future that you genuinely wonder about?' }, 'cw-step-1-q7') +
+                outlineRowHTML({ id: 'q8', label: '8. Save What You Love', prompt: 'What if you had to save the thing you love most from a powerful threat \u2014 what might that look like?' }, 'cw-step-1-q8') +
+                outlineRowHTML({ id: 'q9', label: '9. Face Your Fear', prompt: 'What if a character had to face your greatest fear to get something they desperately wanted?' }, 'cw-step-1-q9') +
+                outlineRowHTML({ id: 'q10', label: '10. Right the Wrong', prompt: 'What if one person could put right that unfairness you named \u2014 but only at a terrible cost?' }, 'cw-step-1-q10')
             );
             // External Sources Well (2 questions)
             html += dividerHTML('EXTERNAL SOURCES WELL');
             html += sectionHTML('plan', 'External Sources', true, null,
                 '<h3>Your External Sources Well (Preferred Narrative Space)</h3>' +
-                outlineRowHTML({ id: 'q14', label: '14. Favourite Stories', prompt: 'What are your favourite stories of all time? (books, films, TV, games)' }, 'cw-step-1-q14') +
-                outlineRowHTML({ id: 'q15', label: '15. Favourite Genres', prompt: 'What are your favourite genres?' }, 'cw-step-1-q15')
+                outlineRowHTML({ id: 'q11', label: '11. Stories You Love', prompt: 'What are one or two stories you love — and what is it about them that grips you?' }, 'cw-step-1-q11') +
+                outlineRowHTML({ id: 'q12', label: '12. Favourite Genres', prompt: 'What are your favourite genres? (fantasy, sci-fi, mystery, thriller, horror, comedy, adventure, drama…)' }, 'cw-step-1-q12')
             );
             // Writer's Profile (synthesised by AI — green response section for distinct colour)
             html += dividerHTML('YOUR WRITER\u2019S PROFILE');
