@@ -4504,7 +4504,13 @@
     // attribute (template scaffold: section titles + instruction text). User input inside
     // a locked node is blocked by the editorProps handlers; programmatic writes are unaffected.
     function _swmlNodeLocked(node) {
-        return !!(node && node.attrs && (node.attrs.locked === true || node.attrs.locked === 'true'));
+        if (!node || !node.type) return false;
+        // Headings are ALWAYS scaffold (section titles) — locked structurally so the rule
+        // works on existing + new docs and survives the wp_kses round-trip with no attr.
+        // (Students fill rows / write free-prose; they don't author headings in these docs.)
+        if (node.type.name === 'heading') return true;
+        // Instruction paragraphs opt in via the persisted data-locked attribute.
+        return !!(node.attrs && (node.attrs.locked === true || node.attrs.locked === 'true'));
     }
     function _swmlPosLocked(state, pos) {
         try {

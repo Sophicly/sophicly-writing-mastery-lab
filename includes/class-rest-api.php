@@ -1528,6 +1528,7 @@ class SWML_REST_API {
             'data-section-type', 'data-section-label', 'data-section-complete',
             'data-comment-id',
             'data-cw-stage', 'data-step', 'data-part', 'data-group', 'data-label',
+            'data-locked', // v7.19.472: scaffold-lock attr must survive the wp_kses round-trip
         ];
         foreach ($tiptap_tags as $tag) {
             if (!isset($allowed_canvas_tags[$tag])) $allowed_canvas_tags[$tag] = [];
