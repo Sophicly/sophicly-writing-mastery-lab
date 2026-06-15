@@ -8462,14 +8462,12 @@
                     }, 400);
                 }
 
-                // v7.15.1: Only scroll to top on fresh entry, not when resuming saved chat
+                // v7.15.1: Only scroll to top on fresh entry, not when resuming saved chat.
+                // v7.19.466: cancellable — arm the interaction guard synchronously so a
+                // TOC click / scroll during the settle window isn't yanked back to top.
                 if (!hasSavedChat) {
-                    setTimeout(() => {
-                        const editor = document.getElementById('swml-tiptap-editor');
-                        const scrollContainer = editor?.closest('.swml-canvas-content');
-                        try { console.log('[WML-DIAG] fresh-entry scroll-to-top firing (600ms) — current scrollTop=' + (scrollContainer ? scrollContainer.scrollTop : 'n/a')); } catch (_) {}
-                        if (scrollContainer) scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
-                    }, 600);
+                    const editor = document.getElementById('swml-tiptap-editor');
+                    freshEntryScrollTop(editor?.closest('.swml-canvas-content'));
                 }
             };
 
@@ -10555,11 +10553,9 @@
                                         // v7.15.1: Only scroll document to top on FRESH assessment entry, not when resuming saved chat.
                                         // Resuming a saved chat means the user had the document at a specific scroll position — preserve it.
                                         if (!hasSavedChat) {
-                                            setTimeout(() => {
-                                                const editor = document.getElementById('swml-tiptap-editor');
-                                                const scrollContainer = editor?.closest('.swml-canvas-content');
-                                                if (scrollContainer) scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
-                                            }, 600);
+                                            // v7.19.466: cancellable fresh-entry scroll-to-top (see freshEntryScrollTop)
+                                            const editor = document.getElementById('swml-tiptap-editor');
+                                            freshEntryScrollTop(editor?.closest('.swml-canvas-content'));
                                         }
                                         })(); // end chat persistence IIFE
                                     }, 400);
@@ -13525,6 +13521,13 @@
                 updateCommentCount();
                 // Initial outline + section badges
                 updateOutline();
+                // v7.19.466: build the in-doc TOC at FIRST paint (not at the end of the
+                // async server-load+migrate chain) so it appears with the body instead of
+                // lagging behind it. Deferred one frame because canvasEditor isn't assigned
+                // yet inside the constructor's onCreate. The end-of-chain rebuild (after
+                // migrations/server doc) still runs and refreshes it — buildTableOfContents
+                // is idempotent (already called from multiple sites).
+                requestAnimationFrame(() => { try { buildTableOfContents(); } catch (_) {} });
                 // Inject section controls (for resumed documents that already have sections)
                 setTimeout(() => { buildDropdownOverlays(contentWrap); buildTransferOverlays(contentWrap); }, 250);
                 // v7.14.34: Colorise section groups after DOM render
@@ -23648,6 +23651,39 @@
     }
 
     /**
+     * v7.19.466: Fresh-entry scroll-to-top, but cancellable.
+     * On fresh entry (no saved chat) the doc settles to top after 600ms. If the
+     * student scrolls or clicks a TOC link inside that window, the scroll-to-top
+     * was yanking them back. We now arm interaction listeners synchronously at
+     * render and skip the scroll if the student has already navigated. The flag
+     * lives on the .swml-canvas-content element so scrollToLabel() (TOC clicks,
+     * different closure) can set it too.
+     */
+    function freshEntryScrollTop(scrollContainer) {
+        if (!scrollContainer) {
+            // editor may mount a frame later — retry once
+            requestAnimationFrame(() => {
+                const sc = document.getElementById('swml-tiptap-editor')?.closest('.swml-canvas-content');
+                if (sc) freshEntryScrollTop(sc);
+            });
+            return;
+        }
+        scrollContainer._wmlUserNav = false;
+        const arm = () => { scrollContainer._wmlUserNav = true; };
+        scrollContainer.addEventListener('wheel', arm, { passive: true, once: true });
+        scrollContainer.addEventListener('touchstart', arm, { passive: true, once: true });
+        scrollContainer.addEventListener('keydown', arm, { once: true });
+        setTimeout(() => {
+            scrollContainer.removeEventListener('wheel', arm);
+            scrollContainer.removeEventListener('touchstart', arm);
+            scrollContainer.removeEventListener('keydown', arm);
+            // skip if the student navigated (flag) or already scrolled away from top
+            if (scrollContainer._wmlUserNav || scrollContainer.scrollTop > 8) return;
+            scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 600);
+    }
+
+    /**
      * Table of Contents — DOM element between cover/gap and editor.
      * Reads section labels from TipTap document model, renders as styled list.
      * Clickable in canvas, static in Word export.
@@ -23799,6 +23835,7 @@
             const editor = document.getElementById('swml-tiptap-editor');
             const cw = document.querySelector('.swml-canvas-content');
             if (!editor || !cw) return;
+            cw._wmlUserNav = true; // v7.19.466: cancel any pending fresh-entry scroll-to-top
             const matches = [];
             editor.querySelectorAll('[data-section-label]').forEach(el => {
                 if (el.getAttribute('data-section-label') === label) matches.push(el);
