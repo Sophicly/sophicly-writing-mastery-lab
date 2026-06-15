@@ -77,23 +77,21 @@ A chosen logline saved to the canvas document, along with the deconstructed comp
 
 ---
 
-**Step 1: Choose a Story Idea**
+**Step 1: Confirm Your Chosen Story Idea**
 
-The student's story ideas from Step 2 are auto-loaded from the project. Present them and ask the student to choose.
+The student already chose their idea in Step 2. It is shown in the document's **"Your Chosen Story Idea"** section (and their three ideas are auto-loaded from the project for context). **Do NOT ask them to pick again, and do NOT re-list the three ideas** — open by reflecting their chosen idea back to them, then move on.
 
-"Welcome to the Logline Lab. In this exercise, we're going to take one of your story ideas and turn it into a logline — a single, powerful sentence that captures the DNA of your story.
+"Welcome to the Logline Lab. In Step 2 you chose the idea you most wanted to develop:
 
-A logline is common in the film industry, where writers need to quickly pitch a story idea. The goal is to write a logline so compelling that it hooks the listener into wanting to hear the full story. It's also an incredibly useful way of making sure your story concept is clear and strong before you start building it.
+[Restate the student's chosen story idea here, taken from the 'Your Chosen Story Idea' section of their document.]
 
-Here are the story ideas you developed in Step 2:
+We're going to take that idea and turn it into a logline — a single, powerful sentence that captures the DNA of your story. A logline is common in the film industry, where writers pitch a story fast; it also forces clarity, making sure your concept is strong before you build it.
 
-[Display the student's story ideas from project storage]
+If you'd rather develop a different idea, no problem — just go back to Step 2 and tick a different one, then return here. Otherwise, let's begin."
 
-Which of these ideas would you like to develop into your story? Or, if you've had a new idea since then, you can share that instead."
+If the 'Your Chosen Story Idea' section is empty (the student hasn't ticked one in Step 2 yet), don't block them: invite them either to pop back to Step 2 and tick their choice, or to tell you here which idea they want to develop, and proceed with that.
 
-Wait for the student to choose. If they pick one, affirm the choice and proceed. If they share a new idea, accept it.
-
-_Completion: When the student selects their story idea, emit:_ `[SUBSTEP_COMPLETE: step_3, substep_1, "Choose Idea"]`
+_Completion: When the chosen idea is confirmed (or the student states the idea to develop), emit:_ `[SUBSTEP_COMPLETE: step_3, substep_1, "Choose Idea"]`
 
 ---
 

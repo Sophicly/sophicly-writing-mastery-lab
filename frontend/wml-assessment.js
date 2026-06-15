@@ -11972,6 +11972,30 @@
                             e.stopPropagation();
                             persistState({ checked: cb.checked ? [0] : [] });
                             checkRowComplete(); // v7.15.0
+                            // v7.19.461: CW Step 2 — the "choose this idea" checkbox is a
+                            // SINGLE-SELECT across the three idea rows. On tick: clear the other
+                            // two (radio behaviour) and save the chosen idea's TEXT to a
+                            // project-scoped artifact so Step 3 can display it deterministically
+                            // (mirrors the Step-5 plot-choice → Step-6 pattern). The sibling
+                            // clears go into _outlineCheckState; patchCheckStateIntoHTML bakes
+                            // them into the saved doc, so the radio survives reload.
+                            if (cb.checked && fieldId.indexOf('cw-step-2-idea') === 0) {
+                                try {
+                                    document.querySelectorAll('[data-outline-row]').forEach(row => {
+                                        const rfid = row.getAttribute('data-field-id') || '';
+                                        if (rfid.indexOf('cw-step-2-idea') === 0 && rfid !== fieldId) {
+                                            const sib = row.querySelector('input[type="checkbox"]');
+                                            if (sib) sib.checked = false;
+                                            _outlineCheckState.set(rfid, { checked: [] });
+                                        }
+                                    });
+                                } catch (e2) {}
+                                const ideaText = (contentDOM.textContent || '').trim();
+                                if (ideaText && state.cwProjectId && window.WML && WML.cwProject) {
+                                    WML.cwProject.saveArtifact(state.cwProjectId, 'chosen_idea', ideaText).catch(() => {});
+                                    console.log('WML CW: Step 2 chosen idea saved →', fieldId);
+                                }
+                            }
                         });
                         checkboxes.push(cb);
                         lbl.appendChild(cb);
@@ -13819,7 +13843,38 @@
             }
         };
 
-        tryServerLoad().then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).catch(err => {
+        // v7.19.461: CW Step 3 — fill the "Your Chosen Story Idea" row from the Step-2
+        // choice. The student ticks an idea in Step 2 → its text is saved to the project's
+        // `chosen_idea` artifact. Here we read it and write it into the locked chosen-idea
+        // row, refreshing on every Step-3 load so it always reflects the current Step-2
+        // choice (single source of truth = Step 2). Deterministic (code, not the LLM).
+        const tryFillChosenIdea = async () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 3 || !state.cwProjectId) return;
+            try {
+                const artifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'chosen_idea');
+                const ideaText = (artifact?.success && typeof artifact.value === 'string') ? artifact.value.trim() : '';
+                if (!ideaText) return;
+                let targetPos = null, targetNode = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (targetPos !== null) return false;
+                    if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === 'cw-step-3-chosen-idea') {
+                        targetPos = pos; targetNode = node; return false;
+                    }
+                    return true;
+                });
+                if (targetPos === null || !targetNode) return; // older Step-3 doc without the row
+                if ((targetNode.textContent || '').trim() === ideaText) return; // already current
+                const from = targetPos + 1;
+                const to = targetPos + targetNode.nodeSize - 1;
+                _migrationActive = true;
+                try { canvasEditor.commands.insertContentAt({ from: from, to: to }, { type: 'text', text: ideaText }); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 3 chosen-idea filled from Step-2 artifact');
+            } catch (e) { console.log('WML CW: no chosen_idea artifact to fill —', e && e.message); }
+        };
+        tryServerLoad().then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -15695,10 +15750,10 @@
             html += dividerHTML('YOUR STORY IDEAS');
             html += sectionHTML('plan', 'Story Ideas', true, null,
                 '<h3>Your Story Ideas</h3>' +
-                '<p>Now, make a note of 3 story ideas that you might want to explore. Don\u2019t worry, you are not tied to these ideas. You will have more chances to settle on an idea before we start adding layers of depth to it.</p>' +
-                outlineRowHTML({ id: 'idea1', label: 'Idea 1', prompt: 'Your first story idea' }, 'cw-step-2-idea1') +
-                outlineRowHTML({ id: 'idea2', label: 'Idea 2', prompt: 'Your second story idea' }, 'cw-step-2-idea2') +
-                outlineRowHTML({ id: 'idea3', label: 'Idea 3', prompt: 'Your third story idea' }, 'cw-step-2-idea3')
+                '<p>Note down 3 story ideas you might explore. Then, when you\u2019re ready, <strong>tick the box beside the one</strong> you most want to develop \u2014 that becomes your chosen idea, and it carries into Step 3 where you\u2019ll shape it into a logline. You can change your choice any time before you move on.</p>' +
+                outlineRowHTML({ id: 'idea1', label: 'Idea 1', prompt: 'Your first story idea', type: 'checkbox' }, 'cw-step-2-idea1') +
+                outlineRowHTML({ id: 'idea2', label: 'Idea 2', prompt: 'Your second story idea', type: 'checkbox' }, 'cw-step-2-idea2') +
+                outlineRowHTML({ id: 'idea3', label: 'Idea 3', prompt: 'Your third story idea', type: 'checkbox' }, 'cw-step-2-idea3')
             );
             return html;
         }
@@ -15738,6 +15793,13 @@
                 '<p><strong>Formula 3 \u2014 Character-Arc Oriented:</strong> PROTAGONIST has an opportunity to DO SOMETHING LIFE CHANGING but must learn to CHANGE THEIR PERSONAL FLAW so they can find a solution TO THE PROBLEM</p>' +
                 '<p><em>Example: \u201cAn old, greedy capitalist called Scrooge has an opportunity to improve the lives of those around him but he must learn to let go of his fear of human relationships so he can become more generous and find a solution to his and others\u2019 unhappiness.\u201d \u2014 A Christmas Carol</em></p>' +
                 '<p><em>Example: \u201cA young daughter of a capitalist family called Sheila has an opportunity to improve the lives of those around her but she must learn to recognise the injustices that she and her family commit so she can become more selfless and help find a solution to her society\u2019s inequalities.\u201d \u2014 An Inspector Calls</em></p>'
+            );
+            // Chosen story idea — carried from Step 2 (pre-populated by tryFillChosenIdea; treat as locked)
+            html += dividerHTML('YOUR CHOSEN STORY IDEA');
+            html += sectionHTML('response', 'Your Chosen Story Idea', true, null,
+                '<h3>Your Chosen Story Idea</h3>' +
+                '<p><em>This is the idea you chose in Step 2 — the foundation for your logline. To change it, go back to Step 2 and tick a different idea; your new choice will appear here.</em></p>' +
+                outlineRowHTML({ id: 'chosen-idea', label: 'From Step 2', prompt: 'Your chosen story idea' }, 'cw-step-3-chosen-idea')
             );
             // Story Components (student fills in via chat)
             html += dividerHTML('YOUR STORY COMPONENTS');
