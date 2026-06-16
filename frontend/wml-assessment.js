@@ -2379,6 +2379,9 @@
             _renderProgressCardBody(card, editor);
         } catch (_) { /* never throw */ }
     }
+    // Exposed so the progress section's nodeView (wml-section-block.js, separate
+    // IIFE) can fill the card immediately on mount — no empty-box flash (v7.19.498).
+    try { window.WML = window.WML || {}; window.WML.updateProgressSummary = _updateProgressSummary; } catch (_) {}
 
     let canvasSignoffData = null;
     let canvasTimerInterval = null; // Module-scope declaration (was inside renderCanvasWorkspace — bug fix v7.12.62)

@@ -149,6 +149,15 @@
                 contentDOM.className = 'swml-progress-content-hole';
                 dom.appendChild(card);
                 dom.appendChild(contentDOM);
+                // Fill on mount (next frame, after sibling section nodeViews have set
+                // their data-section-complete attrs) — kills the empty-box flash.
+                requestAnimationFrame(() => {
+                    try {
+                        if (window.WML && typeof window.WML.updateProgressSummary === 'function') {
+                            window.WML.updateProgressSummary();
+                        }
+                    } catch (_) { /* ignore */ }
+                });
                 return {
                     dom,
                     contentDOM,

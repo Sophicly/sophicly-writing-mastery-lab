@@ -7374,15 +7374,20 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 [data-swml-theme="light"] .swml-signoff-date { color: rgba(0,0,0,0.3); }
 
 /* CW Progress Summary (v7.19.497) — a REAL doc section above the sign-off.
-   Readonly + server-derived, like the quiz-result card: suppress the section
-   number counter + ::before, hide the schema content hole. */
+   v7.19.498: the section is a transparent wrapper; the inner card is the ONLY
+   visible panel (no box-in-box). Strip the section's own chrome: no left border,
+   no background, no readonly diagonal stripe, no number/lock ::before. */
 .swml-section-block.swml-section-progress {
-    border-left: 4px solid #5333ed;
+    border-left: none;
+    background: none;
     counter-increment: none !important;
     counter-reset: none !important;
     break-inside: avoid;
+    padding: 4px 0;
+    margin: 18px 0;
 }
 .swml-section-block.swml-section-progress::before { content: none !important; }
+.swml-section-block.swml-section-progress::after { display: none !important; }
 .swml-progress-content-hole { display: none; }
 
 .swml-progress-card {
