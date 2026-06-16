@@ -7421,12 +7421,24 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-progress-pct {
     flex-shrink: 0;
     font-size: 34px; font-weight: 800; line-height: 1;
-    letter-spacing: -0.02em; color: #8b73ff;
+    letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
+    /* brand in-progress gradient, clipped to the digits (BRAND.md) */
+    background: linear-gradient(90deg, #5333ed, #4D76FD, #42A1EC);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
-.swml-progress-pct-sign { font-size: 16px; font-weight: 700; margin-left: 1px; }
-.swml-progress-pct.is-check { color: #1CD991; font-size: 30px; }
-.is-complete .swml-progress-pct { color: #1CD991; }
+.swml-progress-pct-sign {
+    font-size: 16px; font-weight: 700; margin-left: 1px;
+    -webkit-text-fill-color: #42A1EC; /* gradient end-stop — keeps the % visible */
+}
+/* complete: house-check badge (green circle + white check), matches the section tick */
+.swml-progress-pct.is-check {
+    width: 34px; height: 34px; border-radius: 50%;
+    -webkit-text-fill-color: initial;
+    background: #1CD991 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 18px 18px no-repeat;
+    box-shadow: 0 2px 8px rgba(28,217,145,0.35);
+}
 
 .swml-progress-bar {
     height: 8px; border-radius: 999px; overflow: hidden;
@@ -7434,11 +7446,12 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 .swml-progress-bar-fill {
     height: 100%; border-radius: 999px;
-    background: linear-gradient(90deg, #5333ed 0%, #8b73ff 100%);
+    /* brand in-progress gradient (BRAND.md status bar) */
+    background: linear-gradient(90deg, #5333ed, #4D76FD, #42A1EC);
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .swml-progress-bar-fill.is-complete {
-    background: linear-gradient(90deg, #17b57a 0%, #1CD991 100%);
+    background: #1CD991; /* complete = solid success green, not a gradient (BRAND.md) */
 }
 .swml-progress-todo-wrap { margin-top: 14px; }
 .swml-progress-todo-label {
@@ -7449,9 +7462,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-progress-chips { display: flex; flex-wrap: wrap; gap: 7px; }
 .swml-progress-chip {
     font: inherit; font-size: 12px; font-weight: 600;
-    color: #cabfff; cursor: pointer;
-    background: rgba(83, 51, 237, 0.14);
-    border: 1px solid rgba(83, 51, 237, 0.38);
+    color: rgba(255,255,255,0.88); cursor: pointer;
+    background: rgba(83, 51, 237, 0.16);
+    border: 1px solid rgba(83, 51, 237, 0.40);
     border-radius: 999px; padding: 5px 12px;
     transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
 }
@@ -7474,9 +7487,6 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 [data-swml-theme="light"] .swml-progress-card-title { color: #2c003e; }
 [data-swml-theme="light"] .swml-progress-count { color: rgba(0,0,0,0.50); }
-[data-swml-theme="light"] .swml-progress-pct { color: #5333ed; }
-[data-swml-theme="light"] .is-complete .swml-progress-pct,
-[data-swml-theme="light"] .swml-progress-pct.is-check { color: #17b57a; }
 [data-swml-theme="light"] .swml-progress-bar { background: rgba(0,0,0,0.08); }
 [data-swml-theme="light"] .swml-progress-todo-label { color: rgba(0,0,0,0.40); }
 [data-swml-theme="light"] .swml-progress-chip {

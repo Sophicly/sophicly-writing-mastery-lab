@@ -2243,6 +2243,12 @@
     // v7.15.0: Check if all outline rows in a section are complete, update section header.
     function checkSectionComplete(sectionEl) {
         if (!sectionEl) return;
+        // v7.19.500: read-only sections are instruction/scaffold, never "completable".
+        // Strip any stale completion attr so the tick badge + progress count drop them.
+        if (sectionEl.getAttribute('data-readonly') === 'true' || sectionEl.getAttribute('data-editable') === 'false') {
+            sectionEl.removeAttribute('data-section-complete');
+            return;
+        }
         const rows = sectionEl.querySelectorAll('.swml-outline-row');
         if (rows.length === 0) {
             // v7.19.495: free-prose section (no rows) — trackable if it has a non-locked
@@ -2353,8 +2359,10 @@
         const pctEl = document.createElement('div');
         pctEl.className = 'swml-progress-pct';
         if (allDone) {
+            // House-check badge (green circle + white check) drawn in CSS — matches the
+            // section completion tick, not a bare ✓ glyph (v7.19.500).
             pctEl.classList.add('is-check');
-            pctEl.textContent = '✓';
+            pctEl.textContent = '';
         } else {
             pctEl.textContent = pct;
             const sign = document.createElement('span');
@@ -6292,7 +6300,8 @@
                 // ✓ on empty sections). Set data-section-complete HERE so the main-doc tick
                 // badge and the outline-panel check agree, on every call path (top-level or
                 // child — the caller only set it for top-level sections before).
-                if (s.type === 'plan' || s.type === 'response' || s.type === 'outline' || s.type === 'improvement') {
+                const _isRO = domSection.getAttribute('data-readonly') === 'true' || domSection.getAttribute('data-editable') === 'false';
+                if (!_isRO && (s.type === 'plan' || s.type === 'response' || s.type === 'outline' || s.type === 'improvement')) {
                     // v7.19.492/495: single source of truth — checkSectionComplete (pick-group
                     // aware, rows AND free-prose) sets data-section-complete; the outline check
                     // reads it so the panel + main-doc tick always agree. Falls through to the

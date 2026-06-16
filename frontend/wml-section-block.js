@@ -91,7 +91,13 @@
             // tick agrees with the outline panel. (Radio logline drafts can't all tick, so
             // that section stays un-ticked — the Chosen Logline carries the tick instead.)
             try {
-                if (type === 'plan' || type === 'response' || type === 'outline' || type === 'improvement') {
+                // v7.19.500: NEVER track completion on read-only sections — they're
+                // instruction/scaffold (e.g. CW "Resources to Explore"), not something the
+                // student fills, so a tick on them is wrong (Neil). Their body text was
+                // tripping the free-prose branch into data-section-complete="true".
+                const _secRO = node.attrs && (node.attrs.editable === false || node.attrs.editable === 'false'
+                    || node.attrs.readonly === 'true' || node.attrs.readonly === true);
+                if (!_secRO && (type === 'plan' || type === 'response' || type === 'outline' || type === 'improvement')) {
                     let rowCount = 0, filled = 0, checkboxRows = 0, anyChecked = false;
                     node.forEach((child) => {
                         if (!child.type || child.type.name !== 'outlineRow') return;
