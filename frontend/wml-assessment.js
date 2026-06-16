@@ -6224,9 +6224,11 @@
                     if (studentText.length > 5) return ' ✓';
                     return '';
                 }
-                // Question & Extract: always considered complete (read-only, pre-populated)
+                // v7.19.487: Question & Extract are read-only info sections — the student
+                // doesn't "complete" them, so they no longer auto-tick. Completion ticks now
+                // mean "the student did this" (editable sections only). Universal change.
                 if (s.type === 'question') {
-                    return ' ✓';
+                    return '';
                 }
                 // Improvement Plan: check for student text beyond prompts
                 if (s.type === 'improvement') {
@@ -13665,7 +13667,11 @@
                         if (row._checkRowComplete) row._checkRowComplete();
                     });
                     // Section completion (batch after all rows checked)
-                    editorEl.querySelectorAll('.swml-section-block[data-section-type="outline"]').forEach(sec => {
+                    // v7.19.487: include plan/response/improvement (not just outline) so the
+                    // top-right completion tick appears live on row-based editable sections
+                    // (e.g. CW Story Components, Story Spine). checkSectionComplete early-returns
+                    // for sections with no outline rows, so free-prose sections are untouched.
+                    editorEl.querySelectorAll('.swml-section-block[data-section-type="outline"], .swml-section-block[data-section-type="plan"], .swml-section-block[data-section-type="response"], .swml-section-block[data-section-type="improvement"]').forEach(sec => {
                         checkSectionComplete(sec);
                     });
                     // v7.19.255: re-tag stage-reveal (idempotent — also runs in onTransaction)
