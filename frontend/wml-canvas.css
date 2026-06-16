@@ -2514,8 +2514,11 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 /* Neumorphic push button (brand purple) — matches the resource-button discipline,
    no outline border (the AI tell). v7.19.478. */
-/* v7.19.481: black neumorphic — mirrors the detach button (was a light/bland purple). */
-.swml-wp-step1-btn {
+/* v7.19.481: black neumorphic — mirrors the detach button (was a light/bland purple).
+   v7.19.482: scope under .swml-wp-panel so the white text beats the theme's global
+   link colour in dark mode (the unscoped rule lost to it; light mode already won via
+   its own .swml-canvas-light prefix). */
+.swml-wp-panel .swml-wp-step1-btn {
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -2524,7 +2527,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     font-size: 12px;
     font-weight: 600;
     font-family: 'Proxima Soft Complete', 'Proxima Soft', sans-serif;
-    color: rgba(255,255,255,0.82);
+    color: #fff;
     text-decoration: none;
     cursor: pointer;
     border: none;
@@ -2538,7 +2541,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
         0 2px 0 4px rgba(255,255,255,0.04);
     transition: transform 0.15s, box-shadow 0.2s, background 0.2s, color 0.2s;
 }
-.swml-wp-step1-btn:hover {
+.swml-wp-panel .swml-wp-step1-btn:hover {
     background: radial-gradient(ellipse at 50% 10%, hsla(252 83% 100% / 20%), transparent),
                 radial-gradient(hsla(252 50% 55% / 100%), hsla(252 83% 56% / 100%));
     color: #fff;
@@ -2550,7 +2553,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
         0 2px 16px rgba(255,255,255,0.15),
         0 4px 32px 2px rgba(83,51,237,0.35);
 }
-.swml-wp-step1-btn:active { transform: translateY(1px); }
+.swml-wp-panel .swml-wp-step1-btn:active { transform: translateY(1px); }
 .swml-canvas-light .swml-wp-note { border-bottom-color: rgba(0,0,0,0.08); }
 .swml-canvas-light .swml-wp-note-text { color: rgba(0,0,0,0.55); }
 /* v7.19.481: light-mode Step-1 button — mirror the detach button's light neumorphic. */

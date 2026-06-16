@@ -15338,7 +15338,15 @@
             }
 
             // Position overlays
+            // v7.19.482: run again across the next frames + a short settle delay. On a
+            // freshly-rendered CW doc the section rects can still be unsettled on the
+            // first pass (section-block nodeViews / fonts / zoom mount after this call),
+            // which dropped the sign-off overlay to the doc top — it floated over the
+            // content above its section (seen intermittently on Step 2). Re-running after
+            // layout settles anchors it correctly. Cheap + idempotent.
             positionDropdownOverlays();
+            requestAnimationFrame(() => { requestAnimationFrame(() => positionDropdownOverlays()); });
+            setTimeout(() => positionDropdownOverlays(), 300);
             // Reposition on scroll + resize (v7.19.168 — resize listener added to fix
             // drift bug where dropdowns lost position when window resized)
             container.addEventListener('scroll', () => {
