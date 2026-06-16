@@ -5045,22 +5045,16 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-section-response[data-section-complete="true"]::after,
 .swml-section-outline[data-section-complete="true"]::after,
 .swml-section-improvement[data-section-complete="true"]::after {
-    content: '✓';
+    content: '';
     position: absolute;
     top: 10px;
     right: 12px;
     z-index: 3;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background: #1CD991;
-    color: #0b1f17;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1;
+    /* house check stroke (polyline 20 6 9 17 4 12), white on house green */
+    background: #1CD991 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
     box-shadow: 0 2px 6px rgba(28,217,145,0.35);
     pointer-events: none;
 }
