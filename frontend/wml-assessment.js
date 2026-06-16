@@ -14215,6 +14215,33 @@
                 console.log('WML CW: Step 3 chosen-idea filled from Step-2 artifact');
             } catch (e) { console.log('WML CW: no chosen_idea artifact to fill —', e && e.message); }
         };
+        // v7.19.484: HEAL existing Step-3 docs created before the Wound row was added to
+        // the template — inject a `cw-step-3-wound` row immediately after the flaw row so
+        // in-progress projects gain it with no admin step (new docs get it from the
+        // template). Idempotent: skips if the wound row already exists. Runs under
+        // _migrationActive so the section-count guard leaves the insert alone, then saves.
+        const tryHealCwStep3Wound = async () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 3) return;
+            try {
+                let hasWound = false, flawPos = null, flawNode = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (node.type.name === 'outlineRow' && node.attrs && typeof node.attrs.fieldId === 'string') {
+                        if (node.attrs.fieldId === 'cw-step-3-wound') { hasWound = true; return false; }
+                        if (node.attrs.fieldId === 'cw-step-3-flaw') { flawPos = pos; flawNode = node; }
+                    }
+                    return true;
+                });
+                if (hasWound || flawPos === null || !flawNode) return; // already present, or no flaw row to anchor to
+                const insertAt = flawPos + flawNode.nodeSize; // right after the flaw row, same section
+                const woundHTML = outlineRowHTML({ id: 'wound', label: 'Wound', prompt: 'What deeper hurt or fear is the flaw covering?' }, 'cw-step-3-wound');
+                _migrationActive = true;
+                try { canvasEditor.commands.insertContentAt(insertAt, woundHTML); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 3 wound row healed into existing doc');
+            } catch (e) { console.log('WML CW: wound heal skipped —', e && e.message); }
+        };
         // v7.19.467: HEAL Step-2 docs polluted by the pre-fix SPA-nav save race — the
         // Step-3 logline document had been written under the _cw_2 key (confirmed in the
         // DB: _cw_2 byte-identical to _cw_3). Detect a cw_step_2 doc carrying Step-3 field
@@ -14281,7 +14308,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep3Wound()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
