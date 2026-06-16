@@ -2325,6 +2325,20 @@
         });
         return { total, done, incomplete, pct: total ? Math.round(done / total * 100) : 0 };
     }
+    // v7.19.501: house percentage ramp (Neil's 8 bands). Hexes from the dashboard
+    // grade ladder (sophicly-dashboard/src/utils/grade.js + WORD_COUNT_LADDER) — no
+    // invented colours. 90–100 = lighter→darker purple gradient; then light purple,
+    // blue, green, yellow, orange, red; below 30 = deep red.
+    function _progressBand(pct) {
+        if (pct >= 90) return { fill: 'linear-gradient(90deg, #a78bfa 0%, #5333ed 100%)', text: '#a78bfa', grad: true };
+        if (pct >= 80) return { fill: '#a78bfa', text: '#a78bfa' };
+        if (pct >= 70) return { fill: '#4D76FD', text: '#4D76FD' };
+        if (pct >= 60) return { fill: '#1CD991', text: '#1CD991' };
+        if (pct >= 50) return { fill: '#F1C40F', text: '#F1C40F' };
+        if (pct >= 40) return { fill: '#E67E22', text: '#E67E22' };
+        if (pct >= 30) return { fill: '#ff5470', text: '#ff5470' };
+        return { fill: '#d63638', text: '#d63638' };
+    }
     function _jumpToProgressSection(editor, label) {
         // Loop-based lookup — never CSS.escape attribute selectors (WML rule).
         let target = null;
@@ -2356,6 +2370,7 @@
         count.textContent = allDone ? 'All sections complete' : `${done} of ${total} sections complete`;
         headText.appendChild(title);
         headText.appendChild(count);
+        const band = _progressBand(pct);
         const pctEl = document.createElement('div');
         pctEl.className = 'swml-progress-pct';
         if (allDone) {
@@ -2369,6 +2384,19 @@
             sign.className = 'swml-progress-pct-sign';
             sign.textContent = '%';
             pctEl.appendChild(sign);
+            // Band colour (v7.19.501). Gradient bands clip to the digits; solid bands
+            // colour the number + the % sign.
+            if (band.grad) {
+                pctEl.style.background = band.fill;
+                pctEl.style.webkitBackgroundClip = 'text';
+                pctEl.style.backgroundClip = 'text';
+                pctEl.style.webkitTextFillColor = 'transparent';
+                sign.style.webkitTextFillColor = '#5333ed';
+            } else {
+                pctEl.style.webkitTextFillColor = band.text;
+                pctEl.style.color = band.text;
+                sign.style.webkitTextFillColor = band.text;
+            }
         }
         head.appendChild(headText);
         head.appendChild(pctEl);
@@ -2377,8 +2405,9 @@
         const bar = document.createElement('div');
         bar.className = 'swml-progress-bar';
         const fill = document.createElement('div');
-        fill.className = 'swml-progress-bar-fill' + (allDone ? ' is-complete' : '');
+        fill.className = 'swml-progress-bar-fill';
         fill.style.width = pct + '%';
+        fill.style.background = band.fill; // band colour drives the bar (v7.19.501)
         bar.appendChild(fill);
         card.appendChild(bar);
 
