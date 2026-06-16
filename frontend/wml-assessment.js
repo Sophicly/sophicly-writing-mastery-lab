@@ -5563,10 +5563,19 @@
                 // Only show the loading line on a cold open — keep existing content
                 // visible while refreshing so re-opens don't flash a wipe.
                 if (!bodyEl._wpHasContent) _setWpBody(bodyEl, '<p class="swml-wp-empty">Loading your Writer’s Profile…</p>');
+                const emptyState = '<p class="swml-wp-empty">Once you’ve answered the questions in Step 1, your Writer’s Profile will appear here — ready to guide every step.</p>';
                 try {
-                    const art = await WML.cwProject.loadArtifact(state.cwProjectId, 'writer_profile');
-                    const raw = (art && art.success && typeof art.value === 'string') ? art.value : '';
-                    if (!raw) { _setWpBody(bodyEl, '<p class="swml-wp-empty">Complete Step 1 to build your Writer’s Profile — it’ll appear here, ready to guide every step.</p>'); bodyEl._wpHasContent = false; return; }
+                    // v7.19.481: on Step 1 the profile lives in the open editor — read it
+                    // live so just-typed answers show immediately (the saved artifact lags
+                    // behind until autosave). On later steps, read the saved artifact.
+                    let raw = '';
+                    if (state.task === 'cw_step_1' && canvasEditor) {
+                        raw = canvasEditor.getHTML();
+                    } else {
+                        const art = await WML.cwProject.loadArtifact(state.cwProjectId, 'writer_profile');
+                        raw = (art && art.success && typeof art.value === 'string') ? art.value : '';
+                    }
+                    if (!raw) { _setWpBody(bodyEl, emptyState); bodyEl._wpHasContent = false; return; }
                     const tmp = document.createElement('div');
                     tmp.innerHTML = raw;
                     const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
@@ -5577,9 +5586,23 @@
                         });
                         return out;
                     };
-                    const prof = pick('writersprofile');
-                    _setWpBody(bodyEl, prof || '<p class="swml-wp-empty">Your Writer’s Profile will appear here once you’ve completed Step 1.</p>');
-                    bodyEl._wpHasContent = !!prof;
+                    // v7.19.481: strip the locked scaffold (the heading + the italic
+                    // placeholder instruction, both data-locked) so the panel shows ONLY
+                    // the student/AI-authored profile — and falls back to a contextual
+                    // empty state when nothing real is there yet (was echoing "once you've
+                    // answered all the questions above", which reads out of context on
+                    // later steps).
+                    const profTmp = document.createElement('div');
+                    profTmp.innerHTML = pick('writersprofile') || '';
+                    profTmp.querySelectorAll('[data-locked="true"]').forEach(n => n.remove());
+                    const profText = (profTmp.textContent || '').replace(/ /g, ' ').trim();
+                    if (profText.length) {
+                        _setWpBody(bodyEl, profTmp.innerHTML);
+                        bodyEl._wpHasContent = true;
+                    } else {
+                        _setWpBody(bodyEl, emptyState);
+                        bodyEl._wpHasContent = false;
+                    }
                 } catch (e) {
                     _setWpBody(bodyEl, '<p class="swml-wp-empty">Couldn’t load your Writer’s Profile right now.</p>');
                 }
@@ -5643,22 +5666,40 @@
             // ── float / dock / drag / resize / click-outside (mirror of the resources panel) ──
             let wpFloating = false;
             function toggleWpFloat() { wpFloating ? dockWp() : floatWp(); }
+            // v7.19.481: float moves the panel to document.body so position:fixed
+            // escapes the LD focus-mode wrapper's stacking context. A transformed
+            // ancestor traps the fixed panel behind the course sidebar — high z-index
+            // alone can't beat it (mirrors the outline panel's v7.19.91 fix).
+            let wpOriginalParent = null, wpOriginalNextSibling = null;
             function floatWp() {
                 const rect = wpPanel.getBoundingClientRect();
                 wpFloating = true;
                 wpPanel.classList.add('swml-outline-detached');
                 wpPanel.style.position = 'fixed';
-                const origin = getFixedOriginOffset(wpPanel);
-                wpPanel.style.left = (rect.left - origin.x) + 'px';
-                wpPanel.style.top = (rect.top - 24 - origin.y) + 'px';
+                // Viewport-relative rect captured before the move (fixed is viewport-anchored).
+                wpPanel.style.left = rect.left + 'px';
+                wpPanel.style.top = (rect.top - 24) + 'px';
                 wpPanel.style.width = rect.width + 'px';
                 wpPanel.style.height = (rect.height + 24) + 'px';
+                if (wpPanel.parentNode && wpPanel.parentNode !== document.body) {
+                    wpOriginalParent = wpPanel.parentNode;
+                    wpOriginalNextSibling = wpPanel.nextSibling;
+                    document.body.appendChild(wpPanel);
+                }
                 wpDetachBtn.innerHTML = SVG_DOCK; wpDetachBtn.title = 'Dock panel';
             }
             function dockWp() {
                 wpFloating = false;
                 wpPanel.classList.remove('swml-outline-detached');
                 wpPanel.style.cssText = '';
+                if (wpOriginalParent) {
+                    if (wpOriginalNextSibling && wpOriginalNextSibling.parentNode === wpOriginalParent) {
+                        wpOriginalParent.insertBefore(wpPanel, wpOriginalNextSibling);
+                    } else {
+                        wpOriginalParent.appendChild(wpPanel);
+                    }
+                    wpOriginalParent = null; wpOriginalNextSibling = null;
+                }
                 wpDetachBtn.innerHTML = SVG_DETACH; wpDetachBtn.title = 'Detach panel';
             }
             let wpDragging = false, wpLastX = 0, wpLastY = 0;

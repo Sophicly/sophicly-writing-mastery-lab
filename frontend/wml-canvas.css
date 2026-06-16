@@ -2514,6 +2514,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 /* Neumorphic push button (brand purple) — matches the resource-button discipline,
    no outline border (the AI tell). v7.19.478. */
+/* v7.19.481: black neumorphic — mirrors the detach button (was a light/bland purple). */
 .swml-wp-step1-btn {
     display: inline-flex;
     align-items: center;
@@ -2523,51 +2524,91 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     font-size: 12px;
     font-weight: 600;
     font-family: 'Proxima Soft Complete', 'Proxima Soft', sans-serif;
-    color: #c9bbff;
+    color: rgba(255,255,255,0.82);
     text-decoration: none;
     cursor: pointer;
-    --btn-inner: hsla(252deg 30% 22% / 60%);
-    --btn-outer: hsla(252deg 30% 15% / 50%);
-    --btn-glow: hsla(252deg 80% 65% / 0%);
-    background: radial-gradient(ellipse at 50% 10%, var(--btn-glow), transparent),
-                radial-gradient(var(--btn-inner), var(--btn-outer));
     border: none;
+    background: radial-gradient(ellipse at 50% 10%, hsla(252 83% 100% / 0%), transparent),
+                radial-gradient(hsla(252 10% 25% / 90%), hsla(252 10% 17% / 90%));
     box-shadow:
-        inset 0 2px 1px -1px rgba(255,255,255,0.12),
-        inset 0 2px 3px rgba(0,0,0,0.10),
-        0 1px 0 1px rgba(0,0,0,0.35),
-        0 1px 0 2px rgba(83,51,237,0.08);
-    transition: --btn-glow 200ms, --btn-inner 200ms, --btn-outer 300ms, box-shadow 200ms, transform 200ms, color 200ms;
+        inset 0 4px 1px -3px rgba(255,255,255,0.1),
+        inset 0 4px 8px 5px rgba(9,11,10,0.16),
+        0 2px 0 1px #1a1e1c,
+        0 2px 0 3px rgba(0,0,0,0.9),
+        0 2px 0 4px rgba(255,255,255,0.04);
+    transition: transform 0.15s, box-shadow 0.2s, background 0.2s, color 0.2s;
 }
 .swml-wp-step1-btn:hover {
-    --btn-glow: hsla(252deg 80% 65% / 18%);
-    --btn-inner: hsla(252deg 55% 42% / 100%);
-    --btn-outer: hsla(252deg 60% 34% / 100%);
+    background: radial-gradient(ellipse at 50% 10%, hsla(252 83% 100% / 20%), transparent),
+                radial-gradient(hsla(252 50% 55% / 100%), hsla(252 83% 56% / 100%));
     color: #fff;
     transform: translateY(-1px);
     box-shadow:
-        inset 0 -1px 2px rgba(255,255,255,0.2),
-        inset 0 0 10px rgba(83,51,237,0.18),
-        0 1px 0 1px rgba(83,51,237,0.5),
-        0 2px 8px rgba(83,51,237,0.25);
+        inset 0 -1px 2px 1px rgba(255,255,255,0.3),
+        inset 0 0 24px rgba(44,0,62,0.3),
+        0 3px 0 1px rgba(83,51,237,0.7),
+        0 2px 16px rgba(255,255,255,0.15),
+        0 4px 32px 2px rgba(83,51,237,0.35);
 }
 .swml-wp-step1-btn:active { transform: translateY(1px); }
 .swml-canvas-light .swml-wp-note { border-bottom-color: rgba(0,0,0,0.08); }
 .swml-canvas-light .swml-wp-note-text { color: rgba(0,0,0,0.55); }
+/* v7.19.481: light-mode Step-1 button — mirror the detach button's light neumorphic. */
 .swml-canvas-light .swml-wp-step1-btn {
-    color: #5333ed;
-    --btn-inner: hsla(252deg 40% 97% / 100%);
-    --btn-outer: hsla(252deg 30% 91% / 100%);
+    color: #4D76FD;
+    background: radial-gradient(ellipse at 50% 10%, rgba(77,118,253,0), transparent),
+                radial-gradient(#ECF3FF, #e0ebff);
     box-shadow:
-        inset 0 2px 1px -1px rgba(255,255,255,0.6),
-        inset 0 2px 3px rgba(0,0,0,0.04),
-        0 1px 0 1px rgba(0,0,0,0.08),
-        0 1px 0 2px rgba(83,51,237,0.05);
+        inset 0 3px 1px -2px rgba(255,255,255,0.8),
+        inset 0 3px 6px 4px rgba(77,118,253,0.08),
+        0 2px 0 1px #c8d4f0,
+        0 2px 0 2px rgba(77,118,253,0.15),
+        0 2px 0 3px rgba(255,255,255,0.4);
 }
 .swml-canvas-light .swml-wp-step1-btn:hover {
-    --btn-inner: hsla(252deg 55% 50% / 100%);
-    --btn-outer: hsla(252deg 50% 42% / 100%);
+    background: radial-gradient(ellipse at 50% 10%, rgba(255,255,255,0.2), transparent),
+                radial-gradient(#42A1EC, #4D76FD);
     color: #fff;
+}
+/* v7.19.481: WP-panel close button — match the black neumorphic detach button
+   (scoped to the Writer's Profile panel; outline/resources closes unchanged). */
+.swml-wp-panel .swml-outline-close {
+    color: rgba(255,255,255,0.7);
+    background: radial-gradient(ellipse at 50% 10%, hsla(252 83% 100% / 0%), transparent),
+                radial-gradient(hsla(252 10% 25% / 90%), hsla(252 10% 17% / 90%));
+    box-shadow:
+        inset 0 4px 1px -3px rgba(255,255,255,0.1),
+        inset 0 4px 8px 5px rgba(9,11,10,0.16),
+        0 2px 0 1px #1a1e1c,
+        0 2px 0 3px rgba(0,0,0,0.9),
+        0 2px 0 4px rgba(255,255,255,0.04);
+}
+.swml-wp-panel .swml-outline-close:hover {
+    color: #fff;
+    background: radial-gradient(ellipse at 50% 10%, hsla(252 83% 100% / 20%), transparent),
+                radial-gradient(hsla(252 50% 55% / 100%), hsla(252 83% 56% / 100%));
+    box-shadow:
+        inset 0 -1px 2px 1px rgba(255,255,255,0.3),
+        inset 0 0 24px rgba(44,0,62,0.3),
+        0 3px 0 1px rgba(83,51,237,0.7),
+        0 2px 16px rgba(255,255,255,0.15),
+        0 4px 32px 2px rgba(83,51,237,0.35);
+}
+.swml-canvas-light .swml-wp-panel .swml-outline-close {
+    color: #4D76FD;
+    background: radial-gradient(ellipse at 50% 10%, rgba(77,118,253,0), transparent),
+                radial-gradient(#ECF3FF, #e0ebff);
+    box-shadow:
+        inset 0 3px 1px -2px rgba(255,255,255,0.8),
+        inset 0 3px 6px 4px rgba(77,118,253,0.08),
+        0 2px 0 1px #c8d4f0,
+        0 2px 0 2px rgba(77,118,253,0.15),
+        0 2px 0 3px rgba(255,255,255,0.4);
+}
+.swml-canvas-light .swml-wp-panel .swml-outline-close:hover {
+    color: #fff;
+    background: radial-gradient(ellipse at 50% 10%, rgba(255,255,255,0.2), transparent),
+                radial-gradient(#42A1EC, #4D76FD);
 }
 .swml-wp-empty { opacity: 0.65; font-style: italic; }
 .swml-wp-divider { border-top: 1px solid rgba(255,255,255,0.12); margin: 14px 0; }
