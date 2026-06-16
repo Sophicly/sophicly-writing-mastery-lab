@@ -2330,8 +2330,10 @@
     // invented colours. 90–100 = lighter→darker purple gradient; then light purple,
     // blue, green, yellow, orange, red; below 30 = deep red.
     function _progressBand(pct) {
-        if (pct >= 90) return { fill: 'linear-gradient(90deg, #a78bfa 0%, #5333ed 100%)', text: '#a78bfa', grad: true };
-        if (pct >= 80) return { fill: '#a78bfa', text: '#a78bfa' };
+        // Brand purples only: #5333ed (brand) + #2c003e (deep). Top band = the
+        // canonical brand gradient; 80s = solid brand purple. Then the house ramp.
+        if (pct >= 90) return { fill: 'linear-gradient(90deg, #5333ed 0%, #2c003e 100%)', text: '#5333ed' };
+        if (pct >= 80) return { fill: '#5333ed', text: '#5333ed' };
         if (pct >= 70) return { fill: '#4D76FD', text: '#4D76FD' };
         if (pct >= 60) return { fill: '#1CD991', text: '#1CD991' };
         if (pct >= 50) return { fill: '#F1C40F', text: '#F1C40F' };
@@ -2384,19 +2386,9 @@
             sign.className = 'swml-progress-pct-sign';
             sign.textContent = '%';
             pctEl.appendChild(sign);
-            // Band colour (v7.19.501). Gradient bands clip to the digits; solid bands
-            // colour the number + the % sign.
-            if (band.grad) {
-                pctEl.style.background = band.fill;
-                pctEl.style.webkitBackgroundClip = 'text';
-                pctEl.style.backgroundClip = 'text';
-                pctEl.style.webkitTextFillColor = 'transparent';
-                sign.style.webkitTextFillColor = '#5333ed';
-            } else {
-                pctEl.style.webkitTextFillColor = band.text;
-                pctEl.style.color = band.text;
-                sign.style.webkitTextFillColor = band.text;
-            }
+            // Solid band colour on the number + the % sign (v7.19.502).
+            pctEl.style.color = band.text;
+            sign.style.color = band.text;
         }
         head.appendChild(headText);
         head.appendChild(pctEl);
