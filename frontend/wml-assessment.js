@@ -6135,6 +6135,21 @@
                 }
                 if (!domSection) return '';
 
+                // v7.19.489: ROW-BASED sections (plan/response/outline/improvement that
+                // contain outline rows) — completion = ALL rows filled. Reuse the canonical
+                // per-row check (_checkRowComplete handles text + checkbox/dropdown) instead
+                // of the old text heuristic (which counted instruction/label text → false
+                // ✓ on empty sections). Set data-section-complete HERE so the main-doc tick
+                // badge and the outline-panel check agree, on every call path (top-level or
+                // child — the caller only set it for top-level sections before).
+                const _rows = domSection.querySelectorAll('.swml-outline-row');
+                if (_rows.length && (s.type === 'plan' || s.type === 'response' || s.type === 'outline' || s.type === 'improvement')) {
+                    _rows.forEach(r => { if (r._checkRowComplete) r._checkRowComplete(); });
+                    const allDone = Array.from(_rows).every(r => r.classList.contains('swml-row-complete'));
+                    domSection.setAttribute('data-section-complete', allDone ? 'true' : 'false');
+                    return allDone ? ' ✓' : '';
+                }
+
                 // Feedback sections: check if marks have been set (— means unset)
                 if (s.type === 'feedback') {
                     const match = s.label.match(/\((\S+)\s*\/\s*(\d+)\)$/);

@@ -2229,6 +2229,69 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-light .swml-outline-empty {
     color: rgba(0,0,0,0.25);
 }
+/* v7.19.489: panel CONTAINER light-theme — keyed off root [data-swml-theme="light"]
+   (the embedded LD theme signal). The .swml-canvas-light versions above only fire when
+   the canvas carries that class; embedded mode + detached (body-parented) panels don't,
+   so the Outline / Writer's Profile / Resources panels rendered dark on a light page.
+   Covers all three (they share .swml-outline-panel) + their header/body/buttons. */
+[data-swml-theme="light"] .swml-outline-panel {
+    background: #ffffff;
+    border-color: rgba(0,0,0,0.08);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+[data-swml-theme="light"] .swml-outline-header {
+    color: rgba(0,0,0,0.45);
+    border-bottom-color: rgba(0,0,0,0.06);
+}
+[data-swml-theme="light"] .swml-outline-grip-dots { color: rgba(0,0,0,0.3); }
+[data-swml-theme="light"] .swml-outline-chevron { color: rgba(0,0,0,0.45); }
+[data-swml-theme="light"] .swml-outline-chevron:hover { color: #4D76FD; }
+[data-swml-theme="light"] .swml-outline-empty { color: rgba(0,0,0,0.25); }
+[data-swml-theme="light"] .swml-wp-body { color: rgba(0,0,0,0.75); }
+[data-swml-theme="light"] .swml-wp-body h3 { color: rgba(0,0,0,0.85); }
+[data-swml-theme="light"] .swml-wp-empty { color: rgba(0,0,0,0.5); }
+[data-swml-theme="light"] .swml-wp-note { border-bottom-color: rgba(0,0,0,0.08); }
+[data-swml-theme="light"] .swml-wp-note-text { color: rgba(0,0,0,0.55); }
+[data-swml-theme="light"] .swml-wp-divider { border-top-color: rgba(0,0,0,0.12); }
+[data-swml-theme="light"] .swml-outline-close {
+    color: rgba(0,0,0,0.4);
+    background: radial-gradient(ellipse at 50% 10%, rgba(77,118,253,0), transparent),
+                radial-gradient(#ECF3FF, #e0ebff);
+    box-shadow:
+        inset 0 3px 1px -2px rgba(255,255,255,0.8),
+        inset 0 3px 6px 4px rgba(77,118,253,0.08),
+        0 2px 0 1px #c8d4f0,
+        0 2px 0 2px rgba(77,118,253,0.15),
+        0 2px 0 3px rgba(255,255,255,0.4);
+}
+[data-swml-theme="light"] .swml-outline-close:hover { color: #fff; }
+[data-swml-theme="light"] .swml-outline-detach-btn {
+    background: radial-gradient(ellipse at 50% 10%, rgba(77,118,253,0), transparent),
+                radial-gradient(#ECF3FF, #e0ebff);
+    color: #4D76FD;
+    box-shadow:
+        inset 0 3px 1px -2px rgba(255,255,255,0.8),
+        inset 0 3px 6px 4px rgba(77,118,253,0.08),
+        0 2px 0 1px #c8d4f0,
+        0 2px 0 2px rgba(77,118,253,0.15),
+        0 2px 0 3px rgba(255,255,255,0.4);
+}
+[data-swml-theme="light"] .swml-wp-step1-btn {
+    color: #4D76FD;
+    background: radial-gradient(ellipse at 50% 10%, rgba(77,118,253,0), transparent),
+                radial-gradient(#ECF3FF, #e0ebff);
+    box-shadow:
+        inset 0 3px 1px -2px rgba(255,255,255,0.8),
+        inset 0 3px 6px 4px rgba(77,118,253,0.08),
+        0 2px 0 1px #c8d4f0,
+        0 2px 0 2px rgba(77,118,253,0.15),
+        0 2px 0 3px rgba(255,255,255,0.4);
+}
+[data-swml-theme="light"] .swml-wp-step1-btn:hover {
+    background: radial-gradient(ellipse at 50% 10%, rgba(255,255,255,0.2), transparent),
+                radial-gradient(#42A1EC, #4D76FD);
+    color: #fff;
+}
 /* v7.17.74: light-mode fallbacks keyed off the root [data-swml-theme="light"]
    attribute. The .swml-canvas-light class is toggled on the canvas element only,
    so when the outline panel reparents (e.g. detach mode pulls it out of the
