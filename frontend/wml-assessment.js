@@ -2266,6 +2266,15 @@
             editorEl.querySelectorAll('.swml-section-block[data-section-type="outline"], .swml-section-block[data-section-type="plan"], .swml-section-block[data-section-type="response"], .swml-section-block[data-section-type="improvement"]').forEach(sec => checkSectionComplete(sec));
         } catch (_) { /* never throw */ }
     }
+    // v7.19.490: the section nodeView re-applies a fixed attr set on every render
+    // (computeDomAttrs has no data-section-complete), and pagination/late row mounts
+    // can wipe or pre-empt the load pass — so re-run completion (debounced) after any
+    // transaction. Cheap: only setAttribute/class toggles, dispatches nothing → no loop.
+    let _completionRecomputeTimer = null;
+    function _scheduleCompletionRecompute() {
+        if (_completionRecomputeTimer) return;
+        _completionRecomputeTimer = setTimeout(() => { _completionRecomputeTimer = null; _recomputeAllCompletion(); }, 150);
+    }
 
     let canvasSignoffData = null;
     let canvasTimerInterval = null; // Module-scope declaration (was inside renderCanvasWorkspace — bug fix v7.12.62)
@@ -13764,6 +13773,9 @@
                 // _scheduleStageRevealTag debounces via rAF + re-entry guard so
                 // dispatching the tag transaction here doesn't loop.
                 if (transaction.docChanged) _scheduleStageRevealTag();
+                // v7.19.490: re-apply completion ticks after the nodeView re-render that
+                // this transaction triggers (computeDomAttrs would otherwise wipe them).
+                _scheduleCompletionRecompute();
             },
             onBlur: ({ editor, event }) => {
                 // v7.19.146 safeguard #3: force save when any editable field loses
@@ -14446,7 +14458,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
