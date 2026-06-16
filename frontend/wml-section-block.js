@@ -92,21 +92,29 @@
             // that section stays un-ticked — the Chosen Logline carries the tick instead.)
             try {
                 if (type === 'plan' || type === 'response' || type === 'outline' || type === 'improvement') {
-                    let rowCount = 0, filled = 0;
+                    let rowCount = 0, filled = 0, checkboxRows = 0, anyChecked = false;
                     node.forEach((child) => {
                         if (!child.type || child.type.name !== 'outlineRow') return;
                         rowCount++;
                         const hasText = (child.textContent || '').trim().length > 0;
-                        let critOk = true;
+                        let rowOk = hasText;
                         try {
                             const crit = JSON.parse((child.attrs && child.attrs.criteria) || '{}');
                             const cs = JSON.parse((child.attrs && child.attrs.checkState) || '{}');
-                            if (crit.type === 'checkbox') critOk = Array.isArray(cs.checked) && cs.checked.length > 0;
-                            else if (crit.type === 'dropdown') critOk = !!cs.selected;
-                        } catch (_) { /* default critOk = true */ }
-                        if (hasText && critOk) filled++;
+                            if (crit.type === 'checkbox') {
+                                // Single-select pick group (e.g. logline drafts): the TICK is
+                                // tracked at section level (anyChecked); a row just needs text.
+                                checkboxRows++;
+                                if (Array.isArray(cs.checked) && cs.checked.length > 0) anyChecked = true;
+                            } else if (crit.type === 'dropdown') {
+                                rowOk = hasText && !!cs.selected;
+                            }
+                        } catch (_) { /* default rowOk = hasText */ }
+                        if (rowOk) filled++;
                     });
-                    if (rowCount > 0) dom.setAttribute('data-section-complete', filled === rowCount ? 'true' : 'false');
+                    // Complete = every row present AND (if a pick group) one chosen.
+                    const complete = rowCount > 0 && filled === rowCount && (checkboxRows === 0 || anyChecked);
+                    if (rowCount > 0) dom.setAttribute('data-section-complete', complete ? 'true' : 'false');
                 }
             } catch (_) { /* never block render */ }
 

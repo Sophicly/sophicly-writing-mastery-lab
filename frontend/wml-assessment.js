@@ -2245,8 +2245,20 @@
         if (!sectionEl) return;
         const rows = sectionEl.querySelectorAll('.swml-outline-row');
         if (rows.length === 0) return; // Not an outline section
-        const allComplete = Array.from(rows).every(r => r.classList.contains('swml-row-complete'));
-        sectionEl.setAttribute('data-section-complete', allComplete ? 'true' : '');
+        // v7.19.492: pick-group aware (mirrors the section nodeView). Complete = every row
+        // has text AND, if the section is a single-select pick group (checkbox rows, e.g.
+        // logline drafts), at least one is chosen; dropdown rows need a selection.
+        let allFilled = true, hasCheckboxRow = false, anyChecked = false;
+        rows.forEach(r => {
+            const input = r.querySelector('.swml-outline-input') || r;
+            if ((input.textContent || '').trim().length === 0) allFilled = false;
+            const cb = r.querySelector('input[type="checkbox"]');
+            if (cb) { hasCheckboxRow = true; if (cb.checked) anyChecked = true; }
+            const sel = r.querySelector('.swml-outline-select');
+            if (sel && !sel.value) allFilled = false;
+        });
+        const complete = allFilled && (!hasCheckboxRow || anyChecked);
+        sectionEl.setAttribute('data-section-complete', complete ? 'true' : 'false');
     }
 
     // v7.19.488: recompute ALL completion indicators once (rows + section ticks). The
@@ -6153,10 +6165,12 @@
                 // child — the caller only set it for top-level sections before).
                 const _rows = domSection.querySelectorAll('.swml-outline-row');
                 if (_rows.length && (s.type === 'plan' || s.type === 'response' || s.type === 'outline' || s.type === 'improvement')) {
+                    // v7.19.492: single source of truth — checkSectionComplete (pick-group
+                    // aware) sets data-section-complete; the outline check just reads it, so
+                    // the panel and the main-doc tick always agree.
                     _rows.forEach(r => { if (r._checkRowComplete) r._checkRowComplete(); });
-                    const allDone = Array.from(_rows).every(r => r.classList.contains('swml-row-complete'));
-                    domSection.setAttribute('data-section-complete', allDone ? 'true' : 'false');
-                    return allDone ? ' ✓' : '';
+                    checkSectionComplete(domSection);
+                    return domSection.getAttribute('data-section-complete') === 'true' ? ' ✓' : '';
                 }
 
                 // Feedback sections: check if marks have been set (— means unset)
