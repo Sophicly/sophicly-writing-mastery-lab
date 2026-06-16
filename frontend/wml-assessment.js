@@ -14281,6 +14281,66 @@
                 console.log('WML CW: Step 4 chosen-logline filled from artifact');
             } catch (e) { console.log('WML CW: no chosen_logline artifact to fill —', e && e.message); }
         };
+        // v7.19.486: HEAL existing Step-3 docs whose logline-draft rows predate the
+        // checkbox change — flip each cw-step-3-logline-* row's `criteria` to type:checkbox
+        // (attr-only setNodeMarkup; content + any text preserved). Idempotent. Lets in-progress
+        // projects use the tick→Chosen-Logline flow without starting fresh.
+        const tryHealCwStep3LoglineCheckboxes = () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 3) return;
+            try {
+                const updates = [];
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (node.type.name === 'outlineRow' && node.attrs && typeof node.attrs.fieldId === 'string'
+                        && node.attrs.fieldId.indexOf('cw-step-3-logline-') === 0) {
+                        let crit = {};
+                        try { crit = JSON.parse(node.attrs.criteria || '{}'); } catch (_) { crit = {}; }
+                        if (crit.type !== 'checkbox') {
+                            crit.type = 'checkbox';
+                            updates.push({ pos: pos, attrs: { ...node.attrs, criteria: JSON.stringify(crit) } });
+                        }
+                    }
+                    return true;
+                });
+                if (!updates.length) return;
+                _migrationActive = true;
+                try {
+                    let tr = canvasEditor.state.tr; // attr-only changes don't shift positions
+                    updates.forEach(u => { tr = tr.setNodeMarkup(u.pos, undefined, u.attrs); });
+                    canvasEditor.view.dispatch(tr);
+                } finally { _migrationActive = false; }
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 3 logline rows healed to checkboxes (' + updates.length + ')');
+            } catch (e) { console.log('WML CW: logline checkbox heal skipped —', e && e.message); }
+        };
+        // v7.19.486: HEAL existing Step-4 docs that predate the "Your Chosen Logline" carry
+        // section — insert it just before the Story Spine divider so the chosen logline shows
+        // there. tryFillStep4ChosenLogline (run after this) then fills it from the artifact.
+        const tryHealCwStep4ChosenLoglineSection = () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 4) return;
+            try {
+                let hasCarry = false, spineDividerPos = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === 'cw-step-4-chosen-logline') { hasCarry = true; return false; }
+                    if (spineDividerPos === null && node.type.name === 'sectionBlock' && node.attrs
+                        && (node.attrs.type || '') === 'divider' && /story spine/i.test(node.attrs.label || '')) {
+                        spineDividerPos = pos;
+                    }
+                    return true;
+                });
+                if (hasCarry || spineDividerPos === null) return;
+                const carryHTML = dividerHTML('YOUR CHOSEN LOGLINE') +
+                    sectionHTML('response', 'Your Chosen Logline', true, null,
+                        '<h3>Your Chosen Logline</h3>' +
+                        '<p><em>The logline you chose in Step 3 — the DNA of the story you’re about to outline. To change it, go back to Step 3.</em></p>' +
+                        outlineRowHTML({ id: 'chosen-logline', label: 'From Step 3', prompt: 'Your chosen logline', locked: true }, 'cw-step-4-chosen-logline'));
+                _migrationActive = true;
+                try { canvasEditor.commands.insertContentAt(spineDividerPos, carryHTML); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 4 chosen-logline carry section healed in');
+            } catch (e) { console.log('WML CW: step4 carry heal skipped —', e && e.message); }
+        };
         // v7.19.467: HEAL Step-2 docs polluted by the pre-fix SPA-nav save race — the
         // Step-3 logline document had been written under the _cw_2 key (confirmed in the
         // DB: _cw_2 byte-identical to _cw_3). Detect a cw_step_2 doc carrying Step-3 field
@@ -14347,7 +14407,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep3Wound()).then(() => tryFillStep4ChosenLogline()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
