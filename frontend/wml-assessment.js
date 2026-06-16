@@ -574,6 +574,38 @@
         }
     }
 
+    // v7.19.504: Step-1 seed-logline self-heal. The 3 loglines are seeded into rows by
+    // @FIELD_SET markers the AI emits on save-approval — an LLM can omit/mangle them.
+    // After the approval turn, if the rows are still empty, fire ONE silent repair turn
+    // asking Sophia to re-emit just the markers. Fires at most once per doc load (no loop).
+    let _cwStep1RepairFired = false;
+    function _cwStep1LoglineRowsEmpty() {
+        if (!canvasEditor) return false;
+        const ids = ['cw-step-1-logline-1', 'cw-step-1-logline-2', 'cw-step-1-logline-3'];
+        const filled = {};
+        canvasEditor.state.doc.descendants((node) => {
+            if (node.type.name === 'outlineRow' && node.attrs && ids.indexOf(node.attrs.fieldId) !== -1) {
+                if ((node.textContent || '').trim().length > 0) filled[node.attrs.fieldId] = true;
+            }
+            return true;
+        });
+        // "empty" = at least one logline row is still blank (partial emission counts too)
+        return ids.some(id => !filled[id]);
+    }
+    function _maybeRepairCwStep1Loglines(reply) {
+        try {
+            if (state.task !== 'cw_step_1' || _cwStep1RepairFired) return;
+            // Only on the save/approval turn (substep 5 = Review and Save).
+            if (!/\[SUBSTEP_COMPLETE:\s*step_1,\s*substep_5/.test(reply || '')) return;
+            if (!_cwStep1LoglineRowsEmpty()) return; // markers landed — nothing to do
+            _cwStep1RepairFired = true;
+            console.warn('WML CW: Step-1 loglines missing after approval — firing silent repair turn');
+            canvasSilentSend = true;
+            chatTextarea.value = 'SYSTEM (not from the student): the three seed loglines were NOT saved to the document. Re-emit them now — output exactly three @FIELD_SET markers on their own lines for cw-step-1-logline-1, cw-step-1-logline-2 and cw-step-1-logline-3, each value the full logline sentence you just presented, valid JSON with straight double quotes, then add one short visible line confirming they are saved. Do not show the markers to the student.';
+            sendCanvasMessage();
+        } catch (e) { console.warn('WML CW: step-1 logline repair skipped —', e && e.message); }
+    }
+
     // v7.15.49: state.mode is set once at boot from embedConfig and never updates on
     // LD soft nav — so after navigating between embedded lessons it goes stale. Use
     // the structural fields (topicNumber + phase) that the bridge re-populates on
@@ -4068,6 +4100,12 @@
                             applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                             applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
                             applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored row-fill (Phase 3 — CW Step 3 loglines)
+                            // v7.19.504: Step-1 seed-logline self-heal — after the turn settles
+                            // (loading cleared), re-emit markers if the rows didn't fill.
+                            if (state.task === 'cw_step_1') {
+                                const _r = res.reply;
+                                setTimeout(() => _maybeRepairCwStep1Loglines(_r), 1000);
+                            }
                         }
 
                         // v7.15.12: Exam prep step detection via [PROGRESS: N] markers
@@ -14574,6 +14612,7 @@
         // the student can re-run the chat to seed into the rows).
         const tryHealCwStep1SeedLoglines = () => {
             if (!isCwTask || !canvasEditor || cwStepDef?.step !== 1) return;
+            _cwStep1RepairFired = false; // fresh doc load → allow one repair this session
             try {
                 let secPos = null, secNode = null, hasRows = false, hasText = false;
                 canvasEditor.state.doc.descendants((node, pos) => {
