@@ -7373,6 +7373,61 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 [data-swml-theme="light"] .swml-signoff-name { color: #17b57a; }
 [data-swml-theme="light"] .swml-signoff-date { color: rgba(0,0,0,0.3); }
 
+/* CW Progress Summary card (v7.19.496) — inside the sign-off overlay, above the disclaimer */
+.swml-progress-card {
+    width: 260px; max-width: 320px; margin-bottom: 12px;
+    background: rgba(83, 51, 237, 0.10);
+    border: 1px solid rgba(83, 51, 237, 0.30);
+    border-radius: 8px; padding: 10px 12px;
+}
+.swml-progress-card-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+    color: rgba(255,255,255,0.85); margin-bottom: 7px;
+}
+.swml-progress-bar {
+    height: 6px; border-radius: 999px; overflow: hidden;
+    background: rgba(255,255,255,0.12); margin-bottom: 6px;
+}
+.swml-progress-bar-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, #5333ed 0%, #6f54ff 100%);
+    transition: width 0.35s ease;
+}
+.swml-progress-bar-fill.is-complete {
+    background: linear-gradient(90deg, #17b57a 0%, #1CD991 100%);
+}
+.swml-progress-count {
+    font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.6);
+}
+.swml-progress-todo-label {
+    font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5);
+    margin-top: 8px; margin-bottom: 3px;
+}
+.swml-progress-todo {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: 2px;
+}
+.swml-progress-todo li { font-size: 10px; line-height: 1.4; }
+.swml-progress-todo a {
+    color: #9b86ff; text-decoration: none; cursor: pointer;
+    border-bottom: 1px dotted rgba(155, 134, 255, 0.4);
+}
+.swml-progress-todo a:hover { color: #b9aaff; }
+
+/* Light mode */
+[data-swml-theme="light"] .swml-progress-card {
+    background: rgba(83, 51, 237, 0.06);
+    border-color: rgba(83, 51, 237, 0.22);
+}
+[data-swml-theme="light"] .swml-progress-card-title { color: rgba(0,0,0,0.75); }
+[data-swml-theme="light"] .swml-progress-bar { background: rgba(0,0,0,0.10); }
+[data-swml-theme="light"] .swml-progress-count { color: rgba(0,0,0,0.55); }
+[data-swml-theme="light"] .swml-progress-todo-label { color: rgba(0,0,0,0.45); }
+[data-swml-theme="light"] .swml-progress-todo a {
+    color: #5333ed; border-bottom-color: rgba(83, 51, 237, 0.35);
+}
+[data-swml-theme="light"] .swml-progress-todo a:hover { color: #2c003e; }
+
 /* Signed state — badge centered in overlay, text fields left-aligned */
 .swml-section-signed { min-height: 36px; }
 .swml-signoff-complete .swml-signoff-signed {

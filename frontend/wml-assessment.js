@@ -2291,6 +2291,7 @@
             });
             editorEl.querySelectorAll('.swml-outline-row').forEach(row => { if (row._checkRowComplete) row._checkRowComplete(); });
             editorEl.querySelectorAll('.swml-section-block[data-section-type="outline"], .swml-section-block[data-section-type="plan"], .swml-section-block[data-section-type="response"], .swml-section-block[data-section-type="improvement"]').forEach(sec => checkSectionComplete(sec));
+            _updateProgressSummary(); // v7.19.496: refresh CW progress card after completion recompute
         } catch (_) { /* never throw */ }
     }
     // v7.19.490: the section nodeView re-applies a fixed attr set on every render
@@ -2301,6 +2302,86 @@
     function _scheduleCompletionRecompute() {
         if (_completionRecomputeTimer) return;
         _completionRecomputeTimer = setTimeout(() => { _completionRecomputeTimer = null; _recomputeAllCompletion(); }, 150);
+    }
+
+    // ── CW Progress Summary (v7.19.496) ──
+    // Lives INSIDE the Tutor Sign-off overlay (a derived UI card, NOT a doc node →
+    // no template change, no heal, no ProseMirror conflict). Reads the same
+    // data-section-complete attrs the tick badge uses. Soft-nudge only (Neil):
+    // surfaces % + jump-links to incomplete sections; never blocks sign-off.
+    function _computeCwProgress(editor) {
+        const secs = editor.querySelectorAll('.swml-section-block[data-section-complete]');
+        let total = 0, done = 0; const incomplete = [];
+        secs.forEach(s => {
+            total++;
+            if (s.getAttribute('data-section-complete') === 'true') done++;
+            else incomplete.push(s.getAttribute('data-section-label') || 'Section');
+        });
+        return { total, done, incomplete, pct: total ? Math.round(done / total * 100) : 0 };
+    }
+    function _jumpToProgressSection(editor, label) {
+        // Loop-based lookup — never CSS.escape attribute selectors (WML rule).
+        let target = null;
+        editor.querySelectorAll('.swml-section-block[data-section-label]').forEach(s => {
+            if (!target && s.getAttribute('data-section-label') === label) target = s;
+        });
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    function _renderProgressCardBody(card, editor) {
+        const { total, done, incomplete, pct } = _computeCwProgress(editor);
+        card.textContent = '';
+        if (!total) { card.style.display = 'none'; return; }
+        card.style.display = '';
+        const allDone = done === total;
+        const title = document.createElement('div');
+        title.className = 'swml-progress-card-title';
+        title.textContent = 'Your Progress';
+        card.appendChild(title);
+        const bar = document.createElement('div');
+        bar.className = 'swml-progress-bar';
+        const fill = document.createElement('div');
+        fill.className = 'swml-progress-bar-fill' + (allDone ? ' is-complete' : '');
+        fill.style.width = pct + '%';
+        bar.appendChild(fill);
+        card.appendChild(bar);
+        const count = document.createElement('div');
+        count.className = 'swml-progress-count';
+        count.textContent = allDone ? 'All sections complete' : `${done} of ${total} sections complete · ${pct}%`;
+        card.appendChild(count);
+        if (!allDone && incomplete.length) {
+            const lbl = document.createElement('div');
+            lbl.className = 'swml-progress-todo-label';
+            lbl.textContent = 'Still to do:';
+            card.appendChild(lbl);
+            const ul = document.createElement('ul');
+            ul.className = 'swml-progress-todo';
+            incomplete.forEach(name => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = '#';
+                a.textContent = name;
+                a.addEventListener('click', (e) => { e.preventDefault(); _jumpToProgressSection(editor, name); });
+                li.appendChild(a);
+                ul.appendChild(li);
+            });
+            card.appendChild(ul);
+        }
+    }
+    function _buildProgressCard(editor) {
+        const card = document.createElement('div');
+        card.className = 'swml-progress-card';
+        _renderProgressCardBody(card, editor);
+        return card;
+    }
+    // Module-scope (dropdownLayer is render-scoped) → query the live DOM.
+    function _updateProgressSummary() {
+        try {
+            const card = document.querySelector('.swml-dropdown-layer .swml-progress-card');
+            if (!card) return;
+            const editor = document.getElementById('swml-tiptap-editor');
+            if (!editor) return;
+            _renderProgressCardBody(card, editor);
+        } catch (_) { /* never throw */ }
     }
 
     let canvasSignoffData = null;
@@ -15407,6 +15488,12 @@
                 wrapper.className = 'swml-dropdown-overlay swml-dropdown-overlay-signoff';
                 wrapper.style.pointerEvents = 'auto';
 
+                // v7.19.496: CW progress summary, inside the sign-off overlay (above
+                // the disclaimer/button). Shown to student + tutor. Soft-nudge only.
+                if (state.task && state.task.startsWith('cw_')) {
+                    wrapper.appendChild(_buildProgressCard(editor));
+                }
+
                 if (config.canSignOff) {
                     // Checkbox disclaimer — tutor must confirm before signing off
                     const disclaimerRow = document.createElement('div');
@@ -15424,7 +15511,7 @@
                     // no sense on an exploration step (Neil). Trials (cw_trial_*) keep the strict text.
                     const isCwExplorationStep = state.task && state.task.startsWith('cw_step_');
                     disclaimerLabel.textContent = isCwExplorationStep
-                        ? 'Optional — tick to confirm you have reviewed this step with the student.'
+                        ? "Tick to confirm you've reviewed this step together and agreed the next focus."
                         : isDiagnosticT1
                             ? 'I confirm the student has completed all sections of this document. Essay plan is not required for the first diagnostic.'
                             : 'I confirm the student has completed all sections of this document, including the essay plan.';
@@ -15510,7 +15597,16 @@
                             });
                         } else {
                             signBtn.dataset.confirming = 'true';
-                            signBtn.textContent = '✓ Confirm Sign Off';
+                            // v7.19.496: soft-nudge — if CW doc is under 100%, surface the
+                            // incomplete count in the confirm label but still ALLOW sign-off.
+                            let _confirmLabel = '✓ Confirm Sign Off';
+                            if (state.task && state.task.startsWith('cw_')) {
+                                const _p = _computeCwProgress(editor);
+                                if (_p.total && _p.done < _p.total) {
+                                    _confirmLabel = `✓ Sign off anyway (${_p.done}/${_p.total})`;
+                                }
+                            }
+                            signBtn.textContent = _confirmLabel;
                             signBtn.style.background = 'linear-gradient(135deg, #17b57a 0%, #1CD991 100%)';
                             // Reset after 4 seconds if not confirmed
                             setTimeout(() => {
