@@ -2381,6 +2381,49 @@
         });
         if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    // Shared head + bar for both the CW (per-section) and Codex (per-unit) cards.
+    // countText e.g. "3 of 6 sections complete" / "2 of 9 units complete". pct drives
+    // the band colour; allDone swaps the % readout for the house-check badge.
+    function _buildProgressHead(card, countText, pct, allDone) {
+        const band = _progressBand(pct);
+        const head = document.createElement('div');
+        head.className = 'swml-progress-head';
+        const headText = document.createElement('div');
+        headText.className = 'swml-progress-head-text';
+        const title = document.createElement('div');
+        title.className = 'swml-progress-card-title';
+        title.textContent = 'Your Progress';
+        const count = document.createElement('div');
+        count.className = 'swml-progress-count';
+        count.textContent = countText;
+        headText.appendChild(title);
+        headText.appendChild(count);
+        const pctEl = document.createElement('div');
+        pctEl.className = 'swml-progress-pct';
+        if (allDone) {
+            pctEl.classList.add('is-check');
+            pctEl.textContent = '';
+        } else {
+            pctEl.textContent = pct;
+            const sign = document.createElement('span');
+            sign.className = 'swml-progress-pct-sign';
+            sign.textContent = '%';
+            pctEl.appendChild(sign);
+            pctEl.style.color = band.text;
+            sign.style.color = band.text;
+        }
+        head.appendChild(headText);
+        head.appendChild(pctEl);
+        card.appendChild(head);
+        const bar = document.createElement('div');
+        bar.className = 'swml-progress-bar';
+        const fill = document.createElement('div');
+        fill.className = 'swml-progress-bar-fill';
+        fill.style.width = pct + '%';
+        fill.style.background = band.fill;
+        bar.appendChild(fill);
+        card.appendChild(bar);
+    }
     function _renderProgressCardBody(card, editor) {
         const { total, done, incomplete, pct } = _computeCwProgress(editor);
         // v7.19.499: total=0 is transient on first mount (sibling completion attrs
@@ -2391,49 +2434,7 @@
         const allDone = done === total;
         card.textContent = '';
         card.classList.toggle('is-complete', allDone);
-
-        const head = document.createElement('div');
-        head.className = 'swml-progress-head';
-        const headText = document.createElement('div');
-        headText.className = 'swml-progress-head-text';
-        const title = document.createElement('div');
-        title.className = 'swml-progress-card-title';
-        title.textContent = 'Your Progress';
-        const count = document.createElement('div');
-        count.className = 'swml-progress-count';
-        count.textContent = allDone ? 'All sections complete' : `${done} of ${total} sections complete`;
-        headText.appendChild(title);
-        headText.appendChild(count);
-        const band = _progressBand(pct);
-        const pctEl = document.createElement('div');
-        pctEl.className = 'swml-progress-pct';
-        if (allDone) {
-            // House-check badge (green circle + white check) drawn in CSS — matches the
-            // section completion tick, not a bare ✓ glyph (v7.19.500).
-            pctEl.classList.add('is-check');
-            pctEl.textContent = '';
-        } else {
-            pctEl.textContent = pct;
-            const sign = document.createElement('span');
-            sign.className = 'swml-progress-pct-sign';
-            sign.textContent = '%';
-            pctEl.appendChild(sign);
-            // Solid band colour on the number + the % sign (v7.19.502).
-            pctEl.style.color = band.text;
-            sign.style.color = band.text;
-        }
-        head.appendChild(headText);
-        head.appendChild(pctEl);
-        card.appendChild(head);
-
-        const bar = document.createElement('div');
-        bar.className = 'swml-progress-bar';
-        const fill = document.createElement('div');
-        fill.className = 'swml-progress-bar-fill';
-        fill.style.width = pct + '%';
-        fill.style.background = band.fill; // band colour drives the bar (v7.19.501)
-        bar.appendChild(fill);
-        card.appendChild(bar);
+        _buildProgressHead(card, allDone ? 'All sections complete' : `${done} of ${total} sections complete`, pct, allDone);
 
         if (!allDone && incomplete.length) {
             const wrap = document.createElement('div');
@@ -2462,6 +2463,73 @@
             card.appendChild(wrap);
         }
     }
+    // ── Mastery Codex per-unit progress (v7.19.505) ──
+    // Codex sections use InputField/SelectField nodes whose data-field-id is prefixed
+    // `unit-N.` — so unit membership + completion derive straight from the fields (no
+    // shared-completion changes). A unit is complete when every one of its fields holds
+    // a value: InputField → textContent, SelectField → data-value.
+    function _computeCodexProgress(editor) {
+        const units = {};
+        editor.querySelectorAll('.swml-input-field[data-field-id], .swml-select-field[data-field-id]').forEach(el => {
+            const m = (el.getAttribute('data-field-id') || '').match(/^unit-(\d+)\./);
+            if (!m) return;
+            const n = parseInt(m[1], 10);
+            if (!units[n]) units[n] = { total: 0, filled: 0 };
+            units[n].total++;
+            const isSelect = el.classList.contains('swml-select-field');
+            const filled = isSelect
+                ? (el.getAttribute('data-value') || '').trim().length > 0
+                : (el.textContent || '').trim().length > 0;
+            if (filled) units[n].filled++;
+        });
+        const list = Object.keys(units).map(Number).sort((a, b) => a - b)
+            .map(n => ({ n, complete: units[n].total > 0 && units[n].filled === units[n].total }));
+        const done = list.filter(u => u.complete).length;
+        const total = list.length;
+        return { list, done, total, pct: total ? Math.round(done / total * 100) : 0 };
+    }
+    function _jumpToCodexUnit(editor, n) {
+        // Scroll to the first field of unit N (loop-based — no attribute selectors).
+        let target = null;
+        editor.querySelectorAll('[data-field-id]').forEach(el => {
+            if (target) return;
+            if ((el.getAttribute('data-field-id') || '').indexOf('unit-' + n + '.') === 0) {
+                target = el.closest('.swml-section-block') || el;
+            }
+        });
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    function _renderCodexProgressCardBody(card, editor) {
+        const { list, done, total, pct } = _computeCodexProgress(editor);
+        if (!total) return; // transient — fields not mounted yet
+        const allDone = done === total;
+        card.textContent = '';
+        card.classList.toggle('is-complete', allDone);
+        _buildProgressHead(card, allDone ? 'All units complete' : `${done} of ${total} units complete`, pct, allDone);
+        // One pill per unit — green/done when complete, clickable to jump when not.
+        const wrap = document.createElement('div');
+        wrap.className = 'swml-progress-todo-wrap';
+        const lbl = document.createElement('div');
+        lbl.className = 'swml-progress-todo-label';
+        lbl.textContent = 'Units';
+        wrap.appendChild(lbl);
+        const chips = document.createElement('div');
+        chips.className = 'swml-progress-chips';
+        list.forEach(u => {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'swml-progress-chip' + (u.complete ? ' is-done' : '');
+            chip.textContent = 'Unit ' + u.n;
+            chip.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                _jumpToCodexUnit(editor, u.n);
+            });
+            chips.appendChild(chip);
+        });
+        wrap.appendChild(chips);
+        card.appendChild(wrap);
+    }
     // Module-scope → query the live DOM. The card is a nodeView-rendered child of
     // the "progress" section node inside the editor (v7.19.497); fill it from the
     // current completion state after each recompute.
@@ -2471,7 +2539,9 @@
             if (!editor) return;
             const card = editor.querySelector('.swml-progress-card');
             if (!card) return;
-            _renderProgressCardBody(card, editor);
+            // v7.19.505: Codex = per-unit card; everything else = per-section.
+            if (state.task === 'mastery_codex') _renderCodexProgressCardBody(card, editor);
+            else _renderProgressCardBody(card, editor);
         } catch (_) { /* never throw */ }
     }
     // Exposed so the progress section's nodeView (wml-section-block.js, separate
@@ -14316,7 +14386,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 19, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 20, // bump on EVERY buildMasteryCodexTemplate change
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -21270,6 +21340,8 @@
             inputHTML('Type "I re-affirm" — final affirmation of your Mastery Pledge.', 'unit-8.pledge-reaffirm')
         );
 
+        // v7.19.505: per-unit progress summary, then Tutor Sign-off at the end.
+        html += buildProgressSection();
         // v7.19.213: Tutor Sign-off section at end (matches other doc templates).
         html += buildSignoffSection();
 
