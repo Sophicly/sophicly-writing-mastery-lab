@@ -2138,29 +2138,38 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 /* Outline trigger — inside btn-column (v7.14.43: solid background, not see-through)
    v7.19.448: no outline border (brand: no thin outline borders on default buttons).
    Raised filled shade off Dark Base #1c1d1f + soft shadow so it reads as a button. */
-/* v7.19.490: white rail triggers with a gentle right/bottom drop shadow (was a flat
-   grey that read as muddy). Shared by the Outline / Resources / Writer's Profile
-   triggers; the .is-active accents below still win when a panel is open. */
 .swml-outline-btn {
-    background: #ffffff;
+    background: #26272a;
     border: none;
-    color: rgba(0,0,0,0.55);
+    color: rgba(255,255,255,0.55);
     cursor: pointer;
     padding: 6px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 2px 3px 8px rgba(0,0,0,0.28), 0 1px 2px rgba(0,0,0,0.16);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
     transition: color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s;
     width: 30px;
     height: 30px;
     position: relative; /* tooltip anchor */
 }
 .swml-outline-btn:hover {
+    color: #fff;
+    background: #303133;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+/* v7.19.491: LIGHT theme only — white triggers with a gentle right/bottom drop shadow
+   (dark theme keeps the dark style above). Keyed off the root attr so it works embedded. */
+[data-swml-theme="light"] .swml-outline-btn {
+    background: #ffffff;
+    color: rgba(0,0,0,0.55);
+    box-shadow: 2px 3px 8px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.12);
+}
+[data-swml-theme="light"] .swml-outline-btn:hover {
     color: rgba(0,0,0,0.8);
     background: #ffffff;
-    box-shadow: 3px 4px 12px rgba(0,0,0,0.32), 0 1px 2px rgba(0,0,0,0.18);
+    box-shadow: 3px 4px 12px rgba(0,0,0,0.26), 0 1px 2px rgba(0,0,0,0.14);
     transform: translateY(-1px);
 }
 /* v7.19.451: active outline trigger STAYS visible + highlights in its blue accent

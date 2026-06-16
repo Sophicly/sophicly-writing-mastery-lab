@@ -83,6 +83,33 @@
                 try { dom.setAttribute(key, String(val)); } catch (_) { /* skip bad attrs */ }
             }
 
+            // v7.19.491: completion tick computed FROM THE NODE MODEL at render time, so
+            // it survives every re-render/pagination (computeDomAttrs above carries no
+            // completion state, and JS-set attributes were getting wiped on rebuild). A
+            // section with outline rows is complete when every row is filled — text present,
+            // and for checkbox rows the box ticked. Mirrors checkRowComplete so the main-doc
+            // tick agrees with the outline panel. (Radio logline drafts can't all tick, so
+            // that section stays un-ticked — the Chosen Logline carries the tick instead.)
+            try {
+                if (type === 'plan' || type === 'response' || type === 'outline' || type === 'improvement') {
+                    let rowCount = 0, filled = 0;
+                    node.forEach((child) => {
+                        if (!child.type || child.type.name !== 'outlineRow') return;
+                        rowCount++;
+                        const hasText = (child.textContent || '').trim().length > 0;
+                        let critOk = true;
+                        try {
+                            const crit = JSON.parse((child.attrs && child.attrs.criteria) || '{}');
+                            const cs = JSON.parse((child.attrs && child.attrs.checkState) || '{}');
+                            if (crit.type === 'checkbox') critOk = Array.isArray(cs.checked) && cs.checked.length > 0;
+                            else if (crit.type === 'dropdown') critOk = !!cs.selected;
+                        } catch (_) { /* default critOk = true */ }
+                        if (hasText && critOk) filled++;
+                    });
+                    if (rowCount > 0) dom.setAttribute('data-section-complete', filled === rowCount ? 'true' : 'false');
+                }
+            } catch (_) { /* never block render */ }
+
             const st = getStateRef();
             const showChip = !!st
                 && st.task === 'exam_crib'
