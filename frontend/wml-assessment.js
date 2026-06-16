@@ -12256,22 +12256,31 @@
                             // (mirrors the Step-5 plot-choice → Step-6 pattern). The sibling
                             // clears go into _outlineCheckState; patchCheckStateIntoHTML bakes
                             // them into the saved doc, so the radio survives reload.
-                            if (cb.checked && fieldId.indexOf('cw-step-2-idea') === 0) {
-                                // Radio behaviour: clear the other two idea rows.
+                            // v7.19.485: single-select radio groups — Step-2 idea rows AND
+                            // Step-3 logline-draft rows. Pick the group prefix from the fieldId.
+                            const radioPrefix = (cb.checked && fieldId.indexOf('cw-step-2-idea') === 0) ? 'cw-step-2-idea'
+                                : (cb.checked && fieldId.indexOf('cw-step-3-logline-') === 0) ? 'cw-step-3-logline-'
+                                : null;
+                            if (radioPrefix) {
+                                // Radio behaviour: clear the other rows in the same group.
                                 try {
                                     document.querySelectorAll('[data-outline-row]').forEach(row => {
                                         const rfid = row.getAttribute('data-field-id') || '';
-                                        if (rfid.indexOf('cw-step-2-idea') === 0 && rfid !== fieldId) {
+                                        if (rfid.indexOf(radioPrefix) === 0 && rfid !== fieldId) {
                                             const sib = row.querySelector('input[type="checkbox"]');
                                             if (sib) sib.checked = false;
                                             _outlineCheckState.set(rfid, { checked: [] });
                                         }
                                     });
                                 } catch (e2) {}
-                                // v7.19.468: the chosen_idea artifact is no longer saved here
-                                // (unreliable on re-ticks). persistState() above already scheduled
-                                // saveCanvasContent, which derives chosen_idea from the ticked row
-                                // via _syncCwStep2ChosenIdea — the single source of truth.
+                                // Step 2: persistState() above already scheduled saveCanvasContent,
+                                // which derives chosen_idea from the ticked row via
+                                // _syncCwStep2ChosenIdea (single source of truth).
+                                // Step 3: ticking a logline transfers its text into the Chosen
+                                // Logline row (then the student may refine it).
+                                if (radioPrefix === 'cw-step-3-logline-' && typeof _transferChosenLogline === 'function') {
+                                    _transferChosenLogline(fieldId);
+                                }
                             }
                         });
                         checkboxes.push(cb);
@@ -14242,6 +14251,36 @@
                 console.log('WML CW: Step 3 wound row healed into existing doc');
             } catch (e) { console.log('WML CW: wound heal skipped —', e && e.message); }
         };
+        // v7.19.485: CW Step 4 — fill the "Your Chosen Logline" carry row from the Step-3
+        // choice (the `chosen_logline` artifact, kept in sync with the Step-3 Chosen Logline
+        // row). Refreshes on every Step-4 load so it tracks the current Step-3 logline.
+        // Deterministic (code, not the LLM). Mirrors tryFillChosenIdea.
+        const tryFillStep4ChosenLogline = async () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 4 || !state.cwProjectId) return;
+            try {
+                const artifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'chosen_logline');
+                const text = (artifact?.success && typeof artifact.value === 'string') ? artifact.value.trim() : '';
+                if (!text) return;
+                let targetPos = null, targetNode = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (targetPos !== null) return false;
+                    if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === 'cw-step-4-chosen-logline') {
+                        targetPos = pos; targetNode = node; return false;
+                    }
+                    return true;
+                });
+                if (targetPos === null || !targetNode) return; // older Step-4 doc without the row
+                if ((targetNode.textContent || '').trim() === text) return; // already current
+                const from = targetPos + 1;
+                const to = targetPos + targetNode.nodeSize - 1;
+                _migrationActive = true;
+                try { canvasEditor.commands.insertContentAt({ from: from, to: to }, { type: 'text', text: text }); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 4 chosen-logline filled from artifact');
+            } catch (e) { console.log('WML CW: no chosen_logline artifact to fill —', e && e.message); }
+        };
         // v7.19.467: HEAL Step-2 docs polluted by the pre-fix SPA-nav save race — the
         // Step-3 logline document had been written under the _cw_2 key (confirmed in the
         // DB: _cw_2 byte-identical to _cw_3). Detect a cw_step_2 doc carrying Step-3 field
@@ -14308,7 +14347,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep3Wound()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep3Wound()).then(() => tryFillStep4ChosenLogline()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -16267,9 +16306,9 @@
             html += sectionHTML('plan', 'Logline Drafts', true, null,
                 '<h3>Your Logline Drafts</h3>' +
                 '<p><em>Three loglines will be generated here using the formulas above, based on your story components.</em></p>' +
-                outlineRowHTML({ id: 'logline-1', label: 'Logline 1 (Action-Oriented)', prompt: 'Inciting Incident + Protagonist + Action + Antagonist' }, 'cw-step-3-logline-1') +
-                outlineRowHTML({ id: 'logline-2', label: 'Logline 2 (Goal-Oriented)', prompt: 'Protagonist + Action + Antagonist + Goal + Stake' }, 'cw-step-3-logline-2') +
-                outlineRowHTML({ id: 'logline-3', label: 'Logline 3 (Character-Arc)', prompt: 'Protagonist + Opportunity + Flaw + Solution' }, 'cw-step-3-logline-3')
+                outlineRowHTML({ id: 'logline-1', label: 'Logline 1 (Action-Oriented)', prompt: 'Inciting Incident + Protagonist + Action + Antagonist', type: 'checkbox' }, 'cw-step-3-logline-1') +
+                outlineRowHTML({ id: 'logline-2', label: 'Logline 2 (Goal-Oriented)', prompt: 'Protagonist + Action + Antagonist + Goal + Stake', type: 'checkbox' }, 'cw-step-3-logline-2') +
+                outlineRowHTML({ id: 'logline-3', label: 'Logline 3 (Character-Arc)', prompt: 'Protagonist + Opportunity + Flaw + Solution', type: 'checkbox' }, 'cw-step-3-logline-3')
             );
             // Chosen logline
             html += dividerHTML('YOUR CHOSEN LOGLINE');
@@ -16287,6 +16326,14 @@
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> The Road of Trials begins \u2014 mapping the ordinary world, inciting incident, and initial consequences.</p>' +
                 '<p>You\u2019ve got a strong logline \u2014 now it\u2019s time to give your story a skeleton. We\u2019re going to use a simple but powerful tool called the <strong>Story Spine</strong>, famously used by the storytellers at Pixar to make sure their plots are strong.</p>' +
                 '<p>The idea is straightforward: every great story is a chain of cause and effect. Each event <em>causes</em> the next. By answering six simple prompts, you\u2019ll map out your entire story from beginning to end.</p>'
+            );
+            // v7.19.485: carry the chosen logline from Step 3 (filled by tryFillStep4ChosenLogline
+            // from the `chosen_logline` artifact; treat as locked \u2014 refine it back in Step 3).
+            html += dividerHTML('YOUR CHOSEN LOGLINE');
+            html += sectionHTML('response', 'Your Chosen Logline', true, null,
+                '<h3>Your Chosen Logline</h3>' +
+                '<p><em>The logline you chose in Step 3 \u2014 the DNA of the story you\u2019re about to outline. To change it, go back to Step 3.</em></p>' +
+                outlineRowHTML({ id: 'chosen-logline', label: 'From Step 3', prompt: 'Your chosen logline', locked: true }, 'cw-step-4-chosen-logline')
             );
             html += dividerHTML('STORY SPINE');
             html += sectionHTML('plan', 'Story Spine', true, null,
@@ -21481,6 +21528,56 @@
             }
         } catch (_) { /* never throw out of save */ }
     }
+    // v7.19.485: Step-3 — ticking a logline draft transfers its text into the Chosen
+    // Logline row (a ONE-TIME copy on tick; the student then refines it freely — we do
+    // NOT re-derive on every save, which would clobber their refinements). Mirrors the
+    // proven tryFillChosenIdea row-write (insertContentAt under _migrationActive).
+    function _transferChosenLogline(loglineFieldId) {
+        try {
+            if (!canvasEditor) return;
+            let srcText = '', destPos = null, destNode = null;
+            canvasEditor.state.doc.descendants((node, pos) => {
+                if (node.type && node.type.name === 'outlineRow' && node.attrs && typeof node.attrs.fieldId === 'string') {
+                    if (node.attrs.fieldId === loglineFieldId) srcText = (node.textContent || '').trim();
+                    if (node.attrs.fieldId === 'cw-step-3-chosen') { destPos = pos; destNode = node; }
+                }
+                return true;
+            });
+            if (!srcText || destPos === null || !destNode) return;
+            const from = destPos + 1, to = destPos + destNode.nodeSize - 1;
+            _migrationActive = true;
+            try { canvasEditor.commands.insertContentAt({ from: from, to: to }, { type: 'text', text: srcText }); }
+            finally { _migrationActive = false; }
+            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+            console.log('WML CW: chosen logline transferred from', loglineFieldId, '→', srcText.slice(0, 40));
+        } catch (_) { /* never throw out of a click handler */ }
+    }
+    // v7.19.485: keep the project's `chosen_logline` artifact in sync with the FINAL
+    // Chosen Logline row (captures the student's refinements, not just the ticked draft)
+    // so Step 4 can display it. Derives from cw-step-3-chosen on Step-3 saves.
+    let _lastSyncedChosenLoglineSig = null;
+    function _syncCwStep3ChosenLogline() {
+        try {
+            if (state.task !== 'cw_step_3' || !state.cwProjectId || !canvasEditor) return;
+            let chosenText = '';
+            canvasEditor.state.doc.descendants((node) => {
+                if (chosenText) return false;
+                if (node.type && node.type.name === 'outlineRow' && node.attrs
+                    && node.attrs.fieldId === 'cw-step-3-chosen') {
+                    chosenText = (node.textContent || '').trim();
+                }
+                return true;
+            });
+            if (!chosenText) return; // empty — don't clobber a prior choice
+            const sig = state.cwProjectId + '|' + chosenText;
+            if (sig === _lastSyncedChosenLoglineSig) return; // unchanged — no write
+            _lastSyncedChosenLoglineSig = sig;
+            if (window.WML && WML.cwProject) {
+                WML.cwProject.saveArtifact(state.cwProjectId, 'chosen_logline', chosenText).catch(() => {});
+                console.log('WML CW: chosen_logline synced from Step-3 doc →', chosenText.slice(0, 40));
+            }
+        } catch (_) { /* never throw out of save */ }
+    }
     // v7.19.247: hoisted recalc ref — assigned inside canvas builder, called from
     // tryServerLoad so real Score-Summary dates paint after an async server load.
     let _recalcScoreSummaryRef = null;
@@ -21523,6 +21620,8 @@
         }
         // v7.19.468: keep the CW Step-2 chosen-idea artifact in sync with the ticked box.
         _syncCwStep2ChosenIdea();
+        // v7.19.485: keep the CW Step-3 chosen-logline artifact in sync for Step-4 carry.
+        _syncCwStep3ChosenLogline();
         let html = canvasEditor.getHTML();
         html = patchCheckStateIntoHTML(html);
         const wc = getResponseWordCount(canvasEditor);
