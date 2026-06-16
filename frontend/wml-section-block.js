@@ -114,7 +114,24 @@
                     });
                     // Complete = every row present AND (if a pick group) one chosen.
                     const complete = rowCount > 0 && filled === rowCount && (checkboxRows === 0 || anyChecked);
-                    if (rowCount > 0) dom.setAttribute('data-section-complete', complete ? 'true' : 'false');
+                    if (rowCount > 0) {
+                        dom.setAttribute('data-section-complete', complete ? 'true' : 'false');
+                    } else {
+                        // v7.19.495: free-prose section (no rows, e.g. Step-1 Writer's Profile /
+                        // Seed Loglines) — trackable if it has a NON-LOCKED block to write in;
+                        // complete when that block has text. (Locked scaffold = heading +
+                        // placeholder; student/AI text lives in the unlocked paragraphs.)
+                        let trackable = false, hasText = false;
+                        node.forEach((child) => {
+                            if (!child.type) return;
+                            if (child.type.name !== 'paragraph' && child.type.name !== 'heading') return;
+                            const locked = child.attrs && (child.attrs.locked === true || child.attrs.locked === 'true');
+                            if (locked) return;
+                            trackable = true;
+                            if ((child.textContent || '').trim().length > 0) hasText = true;
+                        });
+                        if (trackable) dom.setAttribute('data-section-complete', hasText ? 'true' : 'false');
+                    }
                 }
             } catch (_) { /* never block render */ }
 

@@ -2244,7 +2244,22 @@
     function checkSectionComplete(sectionEl) {
         if (!sectionEl) return;
         const rows = sectionEl.querySelectorAll('.swml-outline-row');
-        if (rows.length === 0) return; // Not an outline section
+        if (rows.length === 0) {
+            // v7.19.495: free-prose section (no rows) — trackable if it has a non-locked
+            // block; complete when that block has text. Mirrors the nodeView so free-prose
+            // sections (Step-1 Writer's Profile / Seed Loglines) tick live too.
+            const type = sectionEl.getAttribute('data-section-type') || '';
+            if (type !== 'plan' && type !== 'response' && type !== 'outline' && type !== 'improvement') return;
+            let trackable = false, hasText = false;
+            sectionEl.querySelectorAll('p, h2, h3, h4').forEach(b => {
+                if (b.getAttribute('data-locked') === 'true') return;
+                if (b.closest('.swml-outline-row')) return; // belongs to a row, not free-prose
+                trackable = true;
+                if ((b.textContent || '').trim().length > 0) hasText = true;
+            });
+            if (trackable) sectionEl.setAttribute('data-section-complete', hasText ? 'true' : 'false');
+            return;
+        }
         // v7.19.492: pick-group aware (mirrors the section nodeView). Complete = every row
         // has text AND, if the section is a single-select pick group (checkbox rows, e.g.
         // logline drafts), at least one is chosen; dropdown rows need a selection.
@@ -6163,14 +6178,17 @@
                 // ✓ on empty sections). Set data-section-complete HERE so the main-doc tick
                 // badge and the outline-panel check agree, on every call path (top-level or
                 // child — the caller only set it for top-level sections before).
-                const _rows = domSection.querySelectorAll('.swml-outline-row');
-                if (_rows.length && (s.type === 'plan' || s.type === 'response' || s.type === 'outline' || s.type === 'improvement')) {
-                    // v7.19.492: single source of truth — checkSectionComplete (pick-group
-                    // aware) sets data-section-complete; the outline check just reads it, so
-                    // the panel and the main-doc tick always agree.
-                    _rows.forEach(r => { if (r._checkRowComplete) r._checkRowComplete(); });
+                if (s.type === 'plan' || s.type === 'response' || s.type === 'outline' || s.type === 'improvement') {
+                    // v7.19.492/495: single source of truth — checkSectionComplete (pick-group
+                    // aware, rows AND free-prose) sets data-section-complete; the outline check
+                    // reads it so the panel + main-doc tick always agree. Falls through to the
+                    // legacy text heuristics only for non-trackable sections (no rows, no
+                    // non-locked block — i.e. nothing the student can complete).
+                    domSection.querySelectorAll('.swml-outline-row').forEach(r => { if (r._checkRowComplete) r._checkRowComplete(); });
                     checkSectionComplete(domSection);
-                    return domSection.getAttribute('data-section-complete') === 'true' ? ' ✓' : '';
+                    if (domSection.hasAttribute('data-section-complete')) {
+                        return domSection.getAttribute('data-section-complete') === 'true' ? ' ✓' : '';
+                    }
                 }
 
                 // Feedback sections: check if marks have been set (— means unset)
