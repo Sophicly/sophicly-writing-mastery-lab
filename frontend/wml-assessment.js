@@ -14568,6 +14568,44 @@
                 console.log('WML CW: Step 4 chosen-logline carry section healed in');
             } catch (e) { console.log('WML CW: step4 carry heal skipped —', e && e.message); }
         };
+        // v7.19.503: HEAL — upgrade the old free-prose "Seed Loglines" section to 3 rows
+        // (cw-step-1-logline-1/2/3) for existing Step-1 docs. Skips if the rows already
+        // exist OR if the section already holds seeded prose text (don't destroy content —
+        // the student can re-run the chat to seed into the rows).
+        const tryHealCwStep1SeedLoglines = () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 1) return;
+            try {
+                let secPos = null, secNode = null, hasRows = false, hasText = false;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.label === 'Seed Loglines') {
+                        secPos = pos; secNode = node;
+                        node.descendants((c) => {
+                            if (c.type.name === 'outlineRow' && c.attrs && typeof c.attrs.fieldId === 'string'
+                                && c.attrs.fieldId.indexOf('cw-step-1-logline-') === 0) hasRows = true;
+                            // non-locked block with text = already-seeded prose → preserve it
+                            if ((c.type.name === 'paragraph' || c.type.name === 'heading')
+                                && !(c.attrs && (c.attrs.locked === true || c.attrs.locked === 'true'))
+                                && (c.textContent || '').trim().length > 0) hasText = true;
+                        });
+                        return false;
+                    }
+                    return true;
+                });
+                if (!secNode || hasRows || hasText) return;
+                const newSection = sectionHTML('response', 'Seed Loglines', true, null,
+                    '<h3 data-locked="true">Seed Loglines</h3>' +
+                    '<p data-locked="true"><em>Three story ideas inspired by your profile, seeded from your Step 1 chat. They’re starting points — edit any of them.</em></p>' +
+                    outlineRowHTML({ id: 'logline-1', label: 'Logline 1', prompt: 'Action-oriented: inciting incident + protagonist + action + antagonist.' }, 'cw-step-1-logline-1') +
+                    outlineRowHTML({ id: 'logline-2', label: 'Logline 2', prompt: 'Character-flaw oriented: a protagonist must change a personal flaw to solve the problem.' }, 'cw-step-1-logline-2') +
+                    outlineRowHTML({ id: 'logline-3', label: 'Logline 3', prompt: 'Genre-focused: your preferred genre blended with your core fear or passion.' }, 'cw-step-1-logline-3'));
+                _migrationActive = true;
+                try { canvasEditor.commands.insertContentAt({ from: secPos, to: secPos + secNode.nodeSize }, newSection); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step-1 Seed Loglines upgraded to 3 rows');
+            } catch (e) { console.log('WML CW: Step-1 seed-logline heal skipped —', e && e.message); }
+        };
         // v7.19.497: HEAL — insert the "Your Progress" section before Tutor Sign-off
         // for existing CW docs (Neil doesn't restart projects). Derived/readonly, so a
         // missing one is purely cosmetic to recover. Idempotent: skips if present.
@@ -14657,7 +14695,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -16516,11 +16554,16 @@
                 '<h3 data-locked="true">Your Writer\u2019s Profile</h3>' +
                 '<p data-locked="true"><em>Once you\u2019ve answered all the questions above, Sophia will compile your responses into a synthesised Writer\u2019s Profile here \u2014 a summary of your key themes, passions, and conflicts from all three wells.</em></p><p></p>'
             );
-            // Seed Loglines
+            // Seed Loglines \u2014 three separate rows, seeded by the Step-1 chat via
+            // @FIELD_SET (cw-step-1-logline-1/2/3). v7.19.503: was free-prose; rows give
+            // each logline its own slot + row-based completion tick (Neil).
             html += dividerHTML('SEED LOGLINES');
             html += sectionHTML('response', 'Seed Loglines', true, null,
                 '<h3 data-locked="true">Seed Loglines</h3>' +
-                '<p data-locked="true"><em>Three story ideas inspired by your profile will be generated here after your Writer\u2019s Profile is complete.</em></p><p></p>'
+                '<p data-locked="true"><em>Three story ideas inspired by your profile, seeded from your Step 1 chat. They\u2019re starting points \u2014 edit any of them.</em></p>' +
+                outlineRowHTML({ id: 'logline-1', label: 'Logline 1', prompt: 'Action-oriented: inciting incident + protagonist + action + antagonist.' }, 'cw-step-1-logline-1') +
+                outlineRowHTML({ id: 'logline-2', label: 'Logline 2', prompt: 'Character-flaw oriented: a protagonist must change a personal flaw to solve the problem.' }, 'cw-step-1-logline-2') +
+                outlineRowHTML({ id: 'logline-3', label: 'Logline 3', prompt: 'Genre-focused: your preferred genre blended with your core fear or passion.' }, 'cw-step-1-logline-3')
             );
             return html;
         }

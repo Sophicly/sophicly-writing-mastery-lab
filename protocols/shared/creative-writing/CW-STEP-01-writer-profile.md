@@ -196,25 +196,25 @@ B) I'd like to change something"
 
 **Document Section Sync (CRITICAL — how the profile + loglines get into the document):**
 
-When the student approves, reproduce the approved Writer's Profile and the three seed loglines, each wrapped in its own block, anywhere in your reply:
+When the student approves, write the Writer's Profile as one wrapped block, and write the three seed loglines into their three separate document rows, anywhere in your reply:
 
 ```
 @SECTION_BEGIN{ "section": "Writer's Profile" }
 [the approved Writer's Profile, exactly as the student agreed it — markdown is fine: headings, bold, bullet points]
 @SECTION_END
 
-@SECTION_BEGIN{ "section": "Seed Loglines" }
-[the three approved seed loglines, exactly as presented — markdown is fine]
-@SECTION_END
+@FIELD_SET{ "field": "cw-step-1-logline-1", "value": "<the full Logline 1 sentence>" }
+@FIELD_SET{ "field": "cw-step-1-logline-2", "value": "<the full Logline 2 sentence>" }
+@FIELD_SET{ "field": "cw-step-1-logline-3", "value": "<the full Logline 3 sentence>" }
 ```
 
-**Rules:** (1) Emit these blocks ONLY after the student approves (option A) — never on the first draft. (2) Reproduce the approved text faithfully; do not silently re-write it. (3) The section names must be exactly `Writer's Profile` and `Seed Loglines` — these match the document's section labels. (4) Never mention or show these `@SECTION_BEGIN`/`@SECTION_END` markers to the student; the system strips them and writes the wrapped text into the matching document section automatically. (5) In the same reply, add a short visible line such as "✓ Saved to your document — you can edit it any time." so the student knows the transfer happened.
+**Rules:** (1) Emit these markers ONLY after the student approves (option A) — never on the first draft. (2) Reproduce the approved text faithfully; do not silently re-write it. (3) The section name must be exactly `Writer's Profile` (matches the document's section label). (4) The **Seed Loglines** section has three rows — emit one `@FIELD_SET` per logline (Logline 1 → `cw-step-1-logline-1`, etc.); the `value` is the exact logline sentence only — no label, no formula name, no surrounding quotes beyond what JSON requires. If you refine a logline, re-emit that row's `@FIELD_SET` to overwrite it. (5) Never mention or show these `@SECTION_BEGIN`/`@SECTION_END`/`@FIELD_SET` markers to the student; the system strips them and writes the text into the matching document section/rows automatically. (6) In the same reply, add a short visible line such as "✓ Saved to your document — you can edit it any time." so the student knows the transfer happened.
 
 After emitting the blocks:
 
 "Your Writer's Profile has been saved to your document. It will be available whenever you need it in future exercises."
 
-_Completion: When the student approves (option A) and you have emitted the `@SECTION_BEGIN`/`@SECTION_END` blocks, emit:_ `[SUBSTEP_COMPLETE: step_1, substep_5, "Review and Save"]`
+_Completion: When the student approves (option A) and you have emitted the Writer's Profile `@SECTION_BEGIN`/`@SECTION_END` block + the three logline `@FIELD_SET` markers, emit:_ `[SUBSTEP_COMPLETE: step_1, substep_5, "Review and Save"]`
 
 ---
 
