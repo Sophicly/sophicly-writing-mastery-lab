@@ -5540,17 +5540,33 @@
         // Third rail button. The Writer's Profile (built in Step 1) underpins every step,
         // so this shows it READ-ONLY on any CW step without navigating back. Reads the
         // `writer_profile` project artifact (the saved Step-1 doc HTML) and extracts the
-        // Writer's Profile + Seed Loglines sections. Mirrors the resources panel (same
-        // absolute-in-rail positioning + open transition); mutually exclusive with it.
+        // Writer's Profile section. Mirrors the resources panel (same absolute-in-rail
+        // positioning + open transition); mutually exclusive with it.
+        // v7.19.480: loglines removed (they have their own step); re-fetches on every
+        // open so Step-1 edits show; content fades in (no first-open pop/stage).
         // NB: isCwTask const isn't initialised this early in renderCanvasWorkspace (TDZ) —
         // use the inline task check.
         if (state.task && state.task.indexOf('cw_') === 0 && state.cwProjectId) {
             const SVG_PROFILE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>';
+            // Swap content with a short opacity fade-in so async loads + refreshes settle
+            // smoothly rather than popping in.
+            const _setWpBody = (bodyEl, html) => {
+                bodyEl.innerHTML = html;
+                bodyEl.querySelectorAll('[contenteditable]').forEach(e => e.setAttribute('contenteditable', 'false'));
+                bodyEl.style.transition = 'none';
+                bodyEl.style.opacity = '0';
+                void bodyEl.offsetWidth; // commit opacity:0 before transitioning back
+                bodyEl.style.transition = 'opacity 280ms ease';
+                bodyEl.style.opacity = '1';
+            };
             const _loadWriterProfilePanel = async (bodyEl) => {
+                // Only show the loading line on a cold open — keep existing content
+                // visible while refreshing so re-opens don't flash a wipe.
+                if (!bodyEl._wpHasContent) _setWpBody(bodyEl, '<p class="swml-wp-empty">Loading your Writer’s Profile…</p>');
                 try {
                     const art = await WML.cwProject.loadArtifact(state.cwProjectId, 'writer_profile');
                     const raw = (art && art.success && typeof art.value === 'string') ? art.value : '';
-                    if (!raw) { bodyEl.innerHTML = '<p class="swml-wp-empty">Complete Step 1 to build your Writer’s Profile — it’ll appear here, ready to guide every step.</p>'; return; }
+                    if (!raw) { _setWpBody(bodyEl, '<p class="swml-wp-empty">Complete Step 1 to build your Writer’s Profile — it’ll appear here, ready to guide every step.</p>'); bodyEl._wpHasContent = false; return; }
                     const tmp = document.createElement('div');
                     tmp.innerHTML = raw;
                     const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
@@ -5562,13 +5578,10 @@
                         return out;
                     };
                     const prof = pick('writersprofile');
-                    const seeds = pick('seedloglines');
-                    let html = prof || '';
-                    if (seeds) html += '<div class="swml-wp-divider"></div>' + seeds;
-                    bodyEl.innerHTML = html || '<p class="swml-wp-empty">Your Writer’s Profile will appear here once you’ve completed Step 1.</p>';
-                    bodyEl.querySelectorAll('[contenteditable]').forEach(e => e.setAttribute('contenteditable', 'false'));
+                    _setWpBody(bodyEl, prof || '<p class="swml-wp-empty">Your Writer’s Profile will appear here once you’ve completed Step 1.</p>');
+                    bodyEl._wpHasContent = !!prof;
                 } catch (e) {
-                    bodyEl.innerHTML = '<p class="swml-wp-empty">Couldn’t load your Writer’s Profile right now.</p>';
+                    _setWpBody(bodyEl, '<p class="swml-wp-empty">Couldn’t load your Writer’s Profile right now.</p>');
                 }
             };
             wpPanel = el('div', { className: 'swml-outline-panel swml-resources-panel swml-wp-panel' });
@@ -5620,7 +5633,8 @@
                         // mutually exclusive with the other two rail panels
                         if (resPanel) { resPanel.classList.remove('swml-resources-open'); if (resTrigger) resTrigger.classList.remove('is-active'); }
                         try { toggleOutlinePanel(false); } catch (_) {}
-                        if (!wpPanel._loaded) { wpPanel._loaded = true; _loadWriterProfilePanel(wpBody); }
+                        // v7.19.480: refresh on every open so Step-1 edits show (was load-once).
+                        _loadWriterProfilePanel(wpBody);
                     }
                 }
             });
