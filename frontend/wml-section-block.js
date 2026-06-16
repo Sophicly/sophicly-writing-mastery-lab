@@ -149,15 +149,20 @@
                 contentDOM.className = 'swml-progress-content-hole';
                 dom.appendChild(card);
                 dom.appendChild(contentDOM);
-                // Fill on mount (next frame, after sibling section nodeViews have set
-                // their data-section-complete attrs) — kills the empty-box flash.
-                requestAnimationFrame(() => {
+                // Fill on mount, after sibling section nodeViews have set their
+                // data-section-complete attrs — kills the empty-box flash and the
+                // stuck-collapsed state. A few staggered retries cover late attr
+                // timing / pagination remounts (v7.19.499).
+                const _fill = () => {
                     try {
                         if (window.WML && typeof window.WML.updateProgressSummary === 'function') {
                             window.WML.updateProgressSummary();
                         }
                     } catch (_) { /* ignore */ }
-                });
+                };
+                requestAnimationFrame(_fill);
+                setTimeout(_fill, 250);
+                setTimeout(_fill, 800);
                 return {
                     dom,
                     contentDOM,

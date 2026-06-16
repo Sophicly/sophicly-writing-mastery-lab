@@ -2304,11 +2304,11 @@
         _completionRecomputeTimer = setTimeout(() => { _completionRecomputeTimer = null; _recomputeAllCompletion(); }, 150);
     }
 
-    // ── CW Progress Summary (v7.19.496) ──
-    // Lives INSIDE the Tutor Sign-off overlay (a derived UI card, NOT a doc node →
-    // no template change, no heal, no ProseMirror conflict). Reads the same
-    // data-section-complete attrs the tick badge uses. Soft-nudge only (Neil):
-    // surfaces % + jump-links to incomplete sections; never blocks sign-off.
+    // ── CW Progress Summary (v7.19.497+) ──
+    // Rendered into the "progress" section node's nodeView (a real doc node above the
+    // sign-off — see wml-section-block.js). Reads the same data-section-complete attrs
+    // the tick badge uses. Soft-nudge only (Neil): surfaces % + jump-chips to incomplete
+    // sections; never blocks sign-off.
     function _computeCwProgress(editor) {
         const secs = editor.querySelectorAll('.swml-section-block[data-section-complete]');
         let total = 0, done = 0; const incomplete = [];
@@ -2329,14 +2329,43 @@
     }
     function _renderProgressCardBody(card, editor) {
         const { total, done, incomplete, pct } = _computeCwProgress(editor);
-        card.textContent = '';
-        if (!total) { card.style.display = 'none'; return; }
-        card.style.display = '';
+        // v7.19.499: total=0 is transient on first mount (sibling completion attrs
+        // not set yet). NEVER hide/blank — that left the card stuck-collapsed until a
+        // user click triggered a recompute. Just keep the current paint and wait for
+        // the next fill (nodeView retries + recompute passes guarantee one shortly).
+        if (!total) return;
         const allDone = done === total;
+        card.textContent = '';
+        card.classList.toggle('is-complete', allDone);
+
+        const head = document.createElement('div');
+        head.className = 'swml-progress-head';
+        const headText = document.createElement('div');
+        headText.className = 'swml-progress-head-text';
         const title = document.createElement('div');
         title.className = 'swml-progress-card-title';
         title.textContent = 'Your Progress';
-        card.appendChild(title);
+        const count = document.createElement('div');
+        count.className = 'swml-progress-count';
+        count.textContent = allDone ? 'All sections complete' : `${done} of ${total} sections complete`;
+        headText.appendChild(title);
+        headText.appendChild(count);
+        const pctEl = document.createElement('div');
+        pctEl.className = 'swml-progress-pct';
+        if (allDone) {
+            pctEl.classList.add('is-check');
+            pctEl.textContent = '✓';
+        } else {
+            pctEl.textContent = pct;
+            const sign = document.createElement('span');
+            sign.className = 'swml-progress-pct-sign';
+            sign.textContent = '%';
+            pctEl.appendChild(sign);
+        }
+        head.appendChild(headText);
+        head.appendChild(pctEl);
+        card.appendChild(head);
+
         const bar = document.createElement('div');
         bar.className = 'swml-progress-bar';
         const fill = document.createElement('div');
@@ -2344,27 +2373,32 @@
         fill.style.width = pct + '%';
         bar.appendChild(fill);
         card.appendChild(bar);
-        const count = document.createElement('div');
-        count.className = 'swml-progress-count';
-        count.textContent = allDone ? 'All sections complete' : `${done} of ${total} sections complete · ${pct}%`;
-        card.appendChild(count);
+
         if (!allDone && incomplete.length) {
+            const wrap = document.createElement('div');
+            wrap.className = 'swml-progress-todo-wrap';
             const lbl = document.createElement('div');
             lbl.className = 'swml-progress-todo-label';
-            lbl.textContent = 'Still to do:';
-            card.appendChild(lbl);
-            const ul = document.createElement('ul');
-            ul.className = 'swml-progress-todo';
+            lbl.textContent = 'Still to do';
+            wrap.appendChild(lbl);
+            const chips = document.createElement('div');
+            chips.className = 'swml-progress-chips';
             incomplete.forEach(name => {
-                const li = document.createElement('li');
-                const a = document.createElement('a');
-                a.href = '#';
-                a.textContent = name;
-                a.addEventListener('click', (e) => { e.preventDefault(); _jumpToProgressSection(editor, name); });
-                li.appendChild(a);
-                ul.appendChild(li);
+                // Plain <button>, never <a href="#"> — the embedded LearnDash SPA
+                // router intercepts hash links and navigates away (v7.19.499).
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'swml-progress-chip';
+                chip.textContent = name;
+                chip.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    _jumpToProgressSection(editor, name);
+                });
+                chips.appendChild(chip);
             });
-            card.appendChild(ul);
+            wrap.appendChild(chips);
+            card.appendChild(wrap);
         }
     }
     // Module-scope → query the live DOM. The card is a nodeView-rendered child of
