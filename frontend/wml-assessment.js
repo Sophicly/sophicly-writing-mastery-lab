@@ -5461,8 +5461,13 @@
                     e.stopPropagation();
                     const isOpen = resPanel.classList.toggle('swml-resources-open');
                     resTrigger.classList.toggle('is-active', isOpen);
-                    // v7.19.474: mutually exclusive with the Writer's Profile panel
-                    if (isOpen && wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); }
+                    // v7.19.483: mutually exclusive with BOTH the outline + Writer's Profile
+                    // panels (was only closing WP — opening Resources left the outline open,
+                    // so they overlapped in the shared dock slot).
+                    if (isOpen) {
+                        try { toggleOutlinePanel(false); } catch (_) {}
+                        if (wpPanel) { wpPanel.classList.remove('swml-resources-open'); if (wpTrigger) wpTrigger.classList.remove('is-active'); }
+                    }
                 }
             });
             btnColumn.appendChild(resTrigger);
@@ -16224,6 +16229,7 @@
                 '<p><em>These components will be filled in as you work through the exercise in the chat. Sophia will guide you through each one step by step.</em></p>' +
                 outlineRowHTML({ id: 'protagonist', label: 'Protagonist', prompt: 'Who is your main character?' }, 'cw-step-3-protagonist') +
                 outlineRowHTML({ id: 'flaw', label: 'Flaw (Emotional Shield)', prompt: 'What visible behaviour protects a deeper vulnerability?' }, 'cw-step-3-flaw') +
+                outlineRowHTML({ id: 'wound', label: 'Wound', prompt: 'What deeper hurt or fear is the flaw covering?' }, 'cw-step-3-wound') +
                 outlineRowHTML({ id: 'incident', label: 'Inciting Incident', prompt: 'The event that shatters their normal life' }, 'cw-step-3-incident') +
                 outlineRowHTML({ id: 'goal', label: 'Goal (External / Internal)', prompt: 'What they\u2019re fighting for \u2014 and what they really need underneath' }, 'cw-step-3-goal') +
                 outlineRowHTML({ id: 'obstacle', label: 'Obstacle', prompt: 'The formidable force standing in their way' }, 'cw-step-3-obstacle') +
