@@ -7373,12 +7373,22 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 [data-swml-theme="light"] .swml-signoff-name { color: #17b57a; }
 [data-swml-theme="light"] .swml-signoff-date { color: rgba(0,0,0,0.3); }
 
-/* CW Progress Summary card (v7.19.496) — inside the sign-off overlay, above the disclaimer */
+/* CW Progress Summary (v7.19.497) — a REAL doc section above the sign-off.
+   Readonly + server-derived, like the quiz-result card: suppress the section
+   number counter + ::before, hide the schema content hole. */
+.swml-section-block.swml-section-progress {
+    border-left: 4px solid #5333ed;
+    counter-increment: none !important;
+    counter-reset: none !important;
+    break-inside: avoid;
+}
+.swml-section-block.swml-section-progress::before { content: none !important; }
+.swml-progress-content-hole { display: none; }
+
 .swml-progress-card {
-    width: 260px; max-width: 320px; margin-bottom: 12px;
     background: rgba(83, 51, 237, 0.10);
     border: 1px solid rgba(83, 51, 237, 0.30);
-    border-radius: 8px; padding: 10px 12px;
+    border-radius: 8px; padding: 12px 14px;
 }
 .swml-progress-card-title {
     font-size: 11px; font-weight: 700; letter-spacing: 0.02em;

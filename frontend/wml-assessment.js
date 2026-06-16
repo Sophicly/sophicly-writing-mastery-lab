@@ -2367,19 +2367,15 @@
             card.appendChild(ul);
         }
     }
-    function _buildProgressCard(editor) {
-        const card = document.createElement('div');
-        card.className = 'swml-progress-card';
-        _renderProgressCardBody(card, editor);
-        return card;
-    }
-    // Module-scope (dropdownLayer is render-scoped) → query the live DOM.
+    // Module-scope → query the live DOM. The card is a nodeView-rendered child of
+    // the "progress" section node inside the editor (v7.19.497); fill it from the
+    // current completion state after each recompute.
     function _updateProgressSummary() {
         try {
-            const card = document.querySelector('.swml-dropdown-layer .swml-progress-card');
-            if (!card) return;
             const editor = document.getElementById('swml-tiptap-editor');
             if (!editor) return;
+            const card = editor.querySelector('.swml-progress-card');
+            if (!card) return;
             _renderProgressCardBody(card, editor);
         } catch (_) { /* never throw */ }
     }
@@ -14505,6 +14501,29 @@
                 console.log('WML CW: Step 4 chosen-logline carry section healed in');
             } catch (e) { console.log('WML CW: step4 carry heal skipped —', e && e.message); }
         };
+        // v7.19.497: HEAL — insert the "Your Progress" section before Tutor Sign-off
+        // for existing CW docs (Neil doesn't restart projects). Derived/readonly, so a
+        // missing one is purely cosmetic to recover. Idempotent: skips if present.
+        const tryHealCwProgressSection = () => {
+            if (!isCwTask || !canvasEditor) return;
+            try {
+                let hasProgress = false, signoffPos = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (node.type.name !== 'sectionBlock') return true;
+                    const st = node.attrs.sectionType || node.attrs.type || '';
+                    if (st === 'progress') hasProgress = true;
+                    if (signoffPos === null && st === 'signoff') signoffPos = pos;
+                    return true;
+                });
+                if (hasProgress || signoffPos === null) return;
+                _migrationActive = true;
+                try { canvasEditor.commands.insertContentAt(signoffPos, buildProgressSection()); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: progress summary section healed in');
+            } catch (e) { console.log('WML CW: progress heal skipped —', e && e.message); }
+        };
         // v7.19.467: HEAL Step-2 docs polluted by the pre-fix SPA-nav save race — the
         // Step-3 logline document had been written under the _cw_2 key (confirmed in the
         // DB: _cw_2 byte-identical to _cw_3). Detect a cw_step_2 doc carrying Step-3 field
@@ -14571,7 +14590,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -15488,12 +15507,6 @@
                 wrapper.className = 'swml-dropdown-overlay swml-dropdown-overlay-signoff';
                 wrapper.style.pointerEvents = 'auto';
 
-                // v7.19.496: CW progress summary, inside the sign-off overlay (above
-                // the disclaimer/button). Shown to student + tutor. Soft-nudge only.
-                if (state.task && state.task.startsWith('cw_')) {
-                    wrapper.appendChild(_buildProgressCard(editor));
-                }
-
                 if (config.canSignOff) {
                     // Checkbox disclaimer — tutor must confirm before signing off
                     const disclaimerRow = document.createElement('div');
@@ -16381,7 +16394,7 @@
     function getCwDocTemplate(stepDef) {
         const inner = _cwDocTemplateInner(stepDef);
         if (!inner || inner === '<p></p>') return inner;
-        return inner + buildSignoffSection();
+        return inner + buildProgressSection() + buildSignoffSection();
     }
     function _cwDocTemplateInner(stepDef) {
         if (!stepDef) return '<p></p>';
@@ -20502,6 +20515,13 @@
             `<p><em>Tutor:</em> —</p>` +
             `<p><em>Date:</em> —</p>`;
         return sectionHTML('signoff', 'Tutor Sign-off', false, null, inner);
+    }
+
+    // v7.19.497: derived progress-summary section (real doc node, renders above the
+    // sign-off). Readonly; the nodeView renders the live card from completion state.
+    // Empty placeholder paragraph = the hidden content hole the schema needs.
+    function buildProgressSection() {
+        return sectionHTML('progress', 'Your Progress', false, null, '<p></p>');
     }
 
     // ══════════════════════════════════════════

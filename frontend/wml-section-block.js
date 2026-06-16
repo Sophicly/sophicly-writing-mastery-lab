@@ -135,6 +135,30 @@
                 }
             } catch (_) { /* never block render */ }
 
+            // v7.19.497: Progress-summary section — a REAL doc node (reserves layout
+            // space, sits cleanly above the sign-off, unlike the prior floating overlay).
+            // Renders a non-editable derived card; the live %/links are filled by
+            // wml-assessment._updateProgressSummary after each completion recompute.
+            // A hidden content hole satisfies the sectionBlock schema; ignoreMutation
+            // firewalls the external card writes from ProseMirror's observer.
+            if (type === 'progress') {
+                const card = document.createElement('div');
+                card.className = 'swml-progress-card';
+                card.setAttribute('contenteditable', 'false');
+                const contentDOM = document.createElement('div');
+                contentDOM.className = 'swml-progress-content-hole';
+                dom.appendChild(card);
+                dom.appendChild(contentDOM);
+                return {
+                    dom,
+                    contentDOM,
+                    ignoreMutation: (mutation) => {
+                        if (!mutation || !mutation.target) return false;
+                        return card === mutation.target || card.contains(mutation.target);
+                    },
+                };
+            }
+
             const st = getStateRef();
             const showChip = !!st
                 && st.task === 'exam_crib'
