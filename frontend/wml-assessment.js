@@ -2249,6 +2249,24 @@
         sectionEl.setAttribute('data-section-complete', allComplete ? 'true' : '');
     }
 
+    // v7.19.488: recompute ALL completion indicators once (rows + section ticks). The
+    // onUpdate loop only fires on edits, so an already-filled doc shows no completion
+    // ticks until the student types. Call this on load (after content + nodeViews mount)
+    // so the top-right section ✓ badges paint immediately. Mirrors the onUpdate loop.
+    function _recomputeAllCompletion() {
+        try {
+            if (!canvasEditor) return;
+            const editorEl = canvasEditor.options && canvasEditor.options.element;
+            if (!editorEl) return;
+            editorEl.querySelectorAll('.swml-input-field').forEach(field => {
+                if (field.closest('.swml-outline-row')) return;
+                field.classList.toggle('swml-input-filled', (field.textContent || '').trim().length > 0);
+            });
+            editorEl.querySelectorAll('.swml-outline-row').forEach(row => { if (row._checkRowComplete) row._checkRowComplete(); });
+            editorEl.querySelectorAll('.swml-section-block[data-section-type="outline"], .swml-section-block[data-section-type="plan"], .swml-section-block[data-section-type="response"], .swml-section-block[data-section-type="improvement"]').forEach(sec => checkSectionComplete(sec));
+        } catch (_) { /* never throw */ }
+    }
+
     let canvasSignoffData = null;
     let canvasTimerInterval = null; // Module-scope declaration (was inside renderCanvasWorkspace — bug fix v7.12.62)
     let _examTimerMode = null; // v7.15.14: Module-scope timer mode — 'exam' or 'practice', set by timer controls, read by mic handler
@@ -14413,7 +14431,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
