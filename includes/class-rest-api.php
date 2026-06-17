@@ -2775,6 +2775,12 @@ class SWML_REST_API {
         $tutor    = wp_get_current_user();
         $params   = $request->get_json_params();
 
+        // TEMP DEBUG (v7.19.530) — capture exactly what the browser sends; remove after.
+        @file_put_contents('/tmp/swml-signoff-debug.log', date('c') . ' | uid=' . $tutor_id
+            . ' | json=' . wp_json_encode($params)
+            . ' | rawbody=' . substr((string) $request->get_body(), 0, 500)
+            . ' | ct=' . $request->get_header('content-type') . "\n", FILE_APPEND);
+
         $board        = sanitize_text_field($params['board'] ?? '');
         $text         = sanitize_text_field($params['text'] ?? '');
         $topic_number = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
