@@ -7387,18 +7387,26 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     box-shadow: 0 5px 16px rgba(28, 217, 145, 0.38);
 }
 .swml-signoff-btn:active { transform: translateY(0); }
-/* v7.19.527: "armed" confirm state — pulsing ring + pop so the second click reads as
-   clickable (was the same green as resting, so it didn't look actionable). */
-@keyframes swml-armed-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(28,217,145,0.55), 0 5px 16px rgba(28,217,145,0.4); }
-    50%      { box-shadow: 0 0 0 7px rgba(28,217,145,0), 0 5px 16px rgba(28,217,145,0.5); }
+/* v7.19.527/528: "armed" confirm — an explicit, clearly-pressable CTA (a one-shot pop
+   on appear, then a raised ringed button labelled "Click again to confirm →"). The old
+   infinite pulse didn't read as "click me". */
+@keyframes swml-armed-pop {
+    0%   { transform: scale(0.94); }
+    60%  { transform: scale(1.10); }
+    100% { transform: scale(1.05); }
 }
 .swml-signoff-btn.swml-signoff-btn-armed {
-    background: #14c07e;
-    transform: scale(1.06);
-    animation: swml-armed-pulse 1s ease-in-out infinite;
+    background: #16cd86;
+    color: #04140d;
+    padding: 9px 22px;
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px rgba(28,217,145,0.35), 0 8px 20px rgba(28,217,145,0.5);
+    animation: swml-armed-pop 0.34s ease-out;
 }
-.swml-signoff-btn.swml-signoff-btn-armed:hover { background: #11ab6f; transform: scale(1.06); }
+.swml-signoff-btn.swml-signoff-btn-armed:hover {
+    background: #12b876;
+    transform: scale(1.08) translateY(-1px);
+}
 
 .swml-signoff-pending {
     font-size: 10px; color: rgba(255,255,255,0.35);

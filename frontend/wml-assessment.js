@@ -6173,7 +6173,7 @@
                 cur.items.push(s);
             });
             groups.forEach(g => {
-                const groupWrap = el('div', { className: 'swml-scroll-index-group' });
+                const groupWrap = el('div', { className: 'swml-scroll-index-group swml-scroll-index-collapsed' });
                 const head = el('button', { className: 'swml-scroll-index-group-head', tabIndex: -1 });
                 head.innerHTML = '<svg class="swml-scroll-index-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
                 head.appendChild(el('span', { className: 'swml-scroll-index-group-label', textContent: _siGroupLabel(g.unit) }));
@@ -6256,6 +6256,17 @@
         function updateIndexActive() {
             const activeIdx = computeActiveIdx();
             indexPositions.forEach((hp, i) => hp.itemEl.classList.toggle('swml-scroll-index-active', i === activeIdx));
+            // accordion: only the active unit's group is open (default-closed). Runs on
+            // doc scroll (panel closed, behind the backdrop) so it never fights a manual
+            // expand while the panel is open.
+            const activeGroup = activeIdx >= 0 ? indexPositions[activeIdx].groupWrap : null;
+            const seenGroups = new Set();
+            indexPositions.forEach(hp => {
+                if (hp.groupWrap && !seenGroups.has(hp.groupWrap)) {
+                    seenGroups.add(hp.groupWrap);
+                    hp.groupWrap.classList.toggle('swml-scroll-index-collapsed', hp.groupWrap !== activeGroup);
+                }
+            });
             // before any section crosses the line (i.e. at the very top) → Table of Contents
             if (activeIdx < 0 || contentWrap.scrollTop < 12) {
                 setSiTitle('Table of Contents');
@@ -16075,11 +16086,11 @@
                             signBtn.dataset.confirming = 'true';
                             // v7.19.496: soft-nudge — if CW doc is under 100%, surface the
                             // incomplete count in the confirm label but still ALLOW sign-off.
-                            let _confirmLabel = '✓ Confirm Sign Off';
+                            let _confirmLabel = 'Click again to confirm →';
                             if (state.task && state.task.startsWith('cw_')) {
                                 const _p = _computeCwProgress(editor);
                                 if (_p.total && _p.done < _p.total) {
-                                    _confirmLabel = `✓ Sign off anyway (${_p.done}/${_p.total})`;
+                                    _confirmLabel = `Click again to confirm (${_p.done}/${_p.total}) →`;
                                 }
                             }
                             signBtn.textContent = _confirmLabel;
