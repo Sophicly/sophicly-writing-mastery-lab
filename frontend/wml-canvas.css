@@ -4735,9 +4735,19 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     border-left: none;
     background: rgba(255,255,255,0.03);
     border-radius: 12px;
-    padding: 20px 22px 18px;
+    padding: 20px 22px 74px; /* reserve bottom space for the footer overlay row */
 }
 .swml-section-block.swml-section-signoff::after { display: none !important; }
+/* v7.19.513: pending sign-off = a clean footer row (disclaimer left, button right),
+   not a box floating over the status text */
+.swml-dropdown-overlay-signoff:not(.swml-signoff-complete) {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+}
+.swml-dropdown-overlay-signoff:not(.swml-signoff-complete) .swml-signoff-disclaimer {
+    margin-bottom: 0; flex: 1 1 260px;
+}
+.swml-dropdown-overlay-signoff:not(.swml-signoff-complete) .swml-signoff-btn { flex: 0 0 auto; }
 [data-swml-theme="light"] .swml-section-block.swml-section-signoff { background: rgba(0,0,0,0.025); }
 /* First grouped section in a run: also increment major (v7.12.56, v7.12.58 divider-aware) */
 .swml-section-question + .swml-section-plan,

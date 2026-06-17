@@ -16109,8 +16109,14 @@
                         const sWidth = soRect.width / z;
                         signoffOverlay.style.cssText = `position:absolute;top:${top + 16}px;left:${left}px;width:${sWidth}px;display:flex;justify-content:center;pointer-events:auto;z-index:5;`;
                     } else {
-                        const right = (dwRect.right - soRect.right) / z + 24;
-                        signoffOverlay.style.cssText = `position:absolute;top:${top}px;right:${right}px;pointer-events:auto;z-index:5;`;
+                        // v7.19.513: full-width footer row at the BOTTOM of the panel — was
+                        // floating top-right ON TOP of the Status/Tutor/Date text (poor
+                        // composition, Neil). The section reserves padding-bottom for it;
+                        // CSS lays disclaimer (left) + Sign-Off button (right) in a row.
+                        const left = (soRect.left - dwRect.left) / z + 22;
+                        const width = (soRect.width / z) - 44;
+                        const footTop = (soRect.bottom - dwRect.top) / z - 58;
+                        signoffOverlay.style.cssText = `position:absolute;top:${footTop}px;left:${left}px;width:${width}px;pointer-events:auto;z-index:5;`;
                     }
                 }
             }
