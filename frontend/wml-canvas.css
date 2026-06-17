@@ -4729,6 +4729,16 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     counter-increment: swml-major;
     counter-reset: swml-minor;
 }
+/* v7.19.512: integrated brand panel — was a striped read-only box that read as a
+   floating afterthought (Neil). Clean rounded panel, no left accent, no readonly stripe. */
+.swml-section-block.swml-section-signoff {
+    border-left: none;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    padding: 20px 22px 18px;
+}
+.swml-section-block.swml-section-signoff::after { display: none !important; }
+[data-swml-theme="light"] .swml-section-block.swml-section-signoff { background: rgba(0,0,0,0.025); }
 /* First grouped section in a run: also increment major (v7.12.56, v7.12.58 divider-aware) */
 .swml-section-question + .swml-section-plan,
 .swml-section-response + .swml-section-feedback,
@@ -7333,12 +7343,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-grade-text-1.swml-grade-value { background: #E53935; color: #fff; }
 
 /* ── Tutor Sign-off ── */
+/* v7.19.512: borderless disclaimer (no AI hairline) */
 .swml-signoff-disclaimer {
     display: flex; align-items: flex-start; gap: 8px;
     margin-bottom: 10px; padding: 8px 10px;
-    background: rgba(255,255,255,0.03); border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.06);
-    max-width: 320px;
+    background: rgba(255,255,255,0.04); border-radius: 8px;
+    border: none;
+    max-width: 340px;
 }
 .swml-signoff-checkbox {
     width: 16px; height: 16px; margin-top: 1px; cursor: pointer;
@@ -7348,17 +7359,19 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     font-size: 10px; color: rgba(255,255,255,0.5); line-height: 1.5;
     cursor: pointer; user-select: none;
 }
+/* v7.19.512: solid brand-green pill, slim, no gradient (brand button rule) */
 .swml-signoff-btn {
-    background: linear-gradient(135deg, #1CD991 0%, #17b57a 100%);
-    color: #fff; border: none; border-radius: 6px;
-    padding: 6px 14px; font-size: 11px; font-weight: 700;
-    cursor: pointer; transition: all 0.2s;
-    box-shadow: 0 2px 8px rgba(28, 217, 145, 0.3);
+    background: #1CD991;
+    color: #fff; border: none; border-radius: 999px;
+    padding: 6px 16px; font-size: 11px; font-weight: 700;
+    cursor: pointer; transition: background 0.2s ease, transform 0.12s ease, box-shadow 0.2s ease;
+    box-shadow: 0 3px 10px rgba(28, 217, 145, 0.28);
     letter-spacing: 0.02em;
 }
 .swml-signoff-btn:hover {
+    background: #17b57a;
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(28, 217, 145, 0.4);
+    box-shadow: 0 5px 16px rgba(28, 217, 145, 0.38);
 }
 .swml-signoff-btn:active { transform: translateY(0); }
 

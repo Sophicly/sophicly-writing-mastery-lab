@@ -15870,7 +15870,7 @@
                                 }
                             }
                             signBtn.textContent = _confirmLabel;
-                            signBtn.style.background = 'linear-gradient(135deg, #17b57a 0%, #1CD991 100%)';
+                            signBtn.style.background = '#17b57a'; // v7.19.512: solid, no gradient (brand button rule)
                             // Reset after 4 seconds if not confirmed
                             setTimeout(() => {
                                 if (signBtn.dataset.confirming === 'true') {
