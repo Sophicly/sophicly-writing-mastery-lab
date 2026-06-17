@@ -289,7 +289,11 @@
       "Bash(awk 'NR>=22724 && NR<=23150 && /\\\\bsections\\\\b/ {print NR\": \"$0}' frontend/wml-assessment.js)",
       "Bash(awk '/function buildTableOfContents/,/Generate Table of Contents/ {if \\(/\\\\bsections\\\\./ || /\\\\bsections\\\\b\\\\\\)/ || / sections;/\\) print NR\": \"$0}' frontend/wml-assessment.js)",
       "Bash(sed -n '20650,20657p' frontend/wml-assessment.js)",
-      "Bash(sed -n '21898,21910p' frontend/wml-assessment.js)"
+      "Bash(sed -n '21898,21910p' frontend/wml-assessment.js)",
+      "Bash(node --check frontend/sophicly-gap-fill.js)",
+      "Bash(php -l includes/class-shortcode-gap-fill.php)",
+      "Bash(sed -i '' 's/ \\\\* Version:     3.10.11/ * Version:     3.10.12/' sophicly-components.php)",
+      "Bash(sed -i '' \"s/define\\( 'SC_VERSION', '3.10.11' \\)/define\\( 'SC_VERSION', '3.10.12' \\)/\" sophicly-components.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
