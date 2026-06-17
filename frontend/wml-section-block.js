@@ -123,20 +123,41 @@
                     if (rowCount > 0) {
                         dom.setAttribute('data-section-complete', complete ? 'true' : 'false');
                     } else {
-                        // v7.19.495: free-prose section (no rows, e.g. Step-1 Writer's Profile /
-                        // Seed Loglines) — trackable if it has a NON-LOCKED block to write in;
-                        // complete when that block has text. (Locked scaffold = heading +
-                        // placeholder; student/AI text lives in the unlocked paragraphs.)
-                        let trackable = false, hasText = false;
-                        node.forEach((child) => {
-                            if (!child.type) return;
-                            if (child.type.name !== 'paragraph' && child.type.name !== 'heading') return;
-                            const locked = child.attrs && (child.attrs.locked === true || child.attrs.locked === 'true');
-                            if (locked) return;
-                            trackable = true;
-                            if ((child.textContent || '').trim().length > 0) hasText = true;
+                        // v7.19.506: InputField/SelectField sections (Codex reflections +
+                        // quizzes). Complete = every input has text + every plain select has a
+                        // value; for QUIZ sections (selects carrying a `correct` answer) every
+                        // gradable select must be CORRECT (100%) — not merely answered (Neil).
+                        let inputs = 0, inputsFilled = 0, gradable = 0, gradableOk = 0, plainSel = 0, plainSelFilled = 0;
+                        node.descendants((c) => {
+                            if (!c.type) return;
+                            if (c.type.name === 'inputField') {
+                                inputs++; if ((c.textContent || '').trim().length > 0) inputsFilled++;
+                            } else if (c.type.name === 'selectField') {
+                                const v = ((c.attrs && c.attrs.value) || '').trim();
+                                const cor = ((c.attrs && c.attrs.correct) || '').trim();
+                                if (cor) { gradable++; if (v && v === cor) gradableOk++; }
+                                else { plainSel++; if (v) plainSelFilled++; }
+                            }
                         });
-                        if (trackable) dom.setAttribute('data-section-complete', hasText ? 'true' : 'false');
+                        if (inputs + gradable + plainSel > 0) {
+                            const fComplete = (gradable === 0 || gradableOk === gradable)
+                                && inputsFilled === inputs && plainSelFilled === plainSel;
+                            dom.setAttribute('data-section-complete', fComplete ? 'true' : 'false');
+                        } else {
+                            // v7.19.495: free-prose section (no rows/fields, e.g. Step-1 Writer's
+                            // Profile / Seed Loglines) — trackable if it has a NON-LOCKED block;
+                            // complete when that block has text.
+                            let trackable = false, hasText = false;
+                            node.forEach((child) => {
+                                if (!child.type) return;
+                                if (child.type.name !== 'paragraph' && child.type.name !== 'heading') return;
+                                const locked = child.attrs && (child.attrs.locked === true || child.attrs.locked === 'true');
+                                if (locked) return;
+                                trackable = true;
+                                if ((child.textContent || '').trim().length > 0) hasText = true;
+                            });
+                            if (trackable) dom.setAttribute('data-section-complete', hasText ? 'true' : 'false');
+                        }
                     }
                 }
             } catch (_) { /* never block render */ }

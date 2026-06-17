@@ -2288,6 +2288,25 @@
             // sections (Step-1 Writer's Profile / Seed Loglines) tick live too.
             const type = sectionEl.getAttribute('data-section-type') || '';
             if (type !== 'plan' && type !== 'response' && type !== 'outline' && type !== 'improvement') return;
+            // v7.19.506: InputField/SelectField sections (Codex reflections + quizzes).
+            // Mirror the nodeView: all inputs filled + all plain selects chosen; quiz
+            // selects (with data-correct) must be CORRECT, not merely answered.
+            const inputs = sectionEl.querySelectorAll('.swml-input-field');
+            const selects = sectionEl.querySelectorAll('.swml-select-field');
+            if (inputs.length + selects.length > 0) {
+                let inputsFilled = 0, gradable = 0, gradableOk = 0, plainSel = 0, plainSelFilled = 0;
+                inputs.forEach(f => { if ((f.textContent || '').trim().length > 0) inputsFilled++; });
+                selects.forEach(s => {
+                    const v = (s.getAttribute('data-value') || '').trim();
+                    const cor = (s.getAttribute('data-correct') || '').trim();
+                    if (cor) { gradable++; if (v && v === cor) gradableOk++; }
+                    else { plainSel++; if (v) plainSelFilled++; }
+                });
+                const fComplete = (gradable === 0 || gradableOk === gradable)
+                    && inputsFilled === inputs.length && plainSelFilled === plainSel;
+                sectionEl.setAttribute('data-section-complete', fComplete ? 'true' : 'false');
+                return;
+            }
             let trackable = false, hasText = false;
             sectionEl.querySelectorAll('p, h2, h3, h4').forEach(b => {
                 if (b.getAttribute('data-locked') === 'true') return;
@@ -2477,9 +2496,16 @@
             if (!units[n]) units[n] = { total: 0, filled: 0 };
             units[n].total++;
             const isSelect = el.classList.contains('swml-select-field');
-            const filled = isSelect
-                ? (el.getAttribute('data-value') || '').trim().length > 0
-                : (el.textContent || '').trim().length > 0;
+            let filled;
+            if (isSelect) {
+                const v = (el.getAttribute('data-value') || '').trim();
+                const cor = (el.getAttribute('data-correct') || '').trim();
+                // quiz select (has a correct answer) counts only when CORRECT (v7.19.506);
+                // plain select counts when chosen.
+                filled = cor ? (v.length > 0 && v === cor) : (v.length > 0);
+            } else {
+                filled = (el.textContent || '').trim().length > 0;
+            }
             if (filled) units[n].filled++;
         });
         const list = Object.keys(units).map(Number).sort((a, b) => a - b)
