@@ -2769,8 +2769,11 @@ class SWML_REST_API {
         $attempt      = absint($params['attempt'] ?? 0);
         $student_id   = absint($params['studentId'] ?? get_current_user_id());
 
-        // Security: prevent tutor from signing off their own work (v7.15.2)
-        if ($student_id === $tutor_id) {
+        // Security: prevent tutor from signing off their own work (v7.15.2).
+        // v7.19.524: admins (manage_options) MAY self-sign-off — for testing/demo.
+        // The rule guards tutors rubber-stamping their own graded work; admins
+        // aren't graded students, so the exception carries no integrity risk.
+        if ($student_id === $tutor_id && !current_user_can('manage_options')) {
             return new WP_Error('self_signoff', 'Cannot sign off your own work.', ['status' => 403]);
         }
 

@@ -7503,7 +7503,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     color: rgba(255,255,255,0.90); cursor: pointer;
     background: rgba(83, 51, 237, 0.24);
     border: none;
-    border-radius: 999px; padding: 6px 13px;
+    border-radius: 999px; padding: 4px 13px;
     transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
 }
 .swml-progress-chip:hover {
