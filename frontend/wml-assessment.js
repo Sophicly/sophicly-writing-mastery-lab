@@ -12166,6 +12166,10 @@
                         if (node.attrs.mastered) return; // locked — no re-score
                         const res = runCheck(true);
                         persistChecked();
+                        // v7.19.510: settle into the Mastered ✓ state as soon as the section
+                        // is 100% — don't wait for the server round-trip (Neil). The server
+                        // still records the attempt + governs the persistent mastery flag.
+                        if (res && res.total && res.right === res.total) lockMastered(res.right, res.total);
                         // v7.19.339: record this check as a graded attempt (counts).
                         recordCodexAttempt(res);
                         // T4 (v7.19.339): force an immediate canvas save on every Check
@@ -12183,8 +12187,9 @@
                     if (node.attrs.checked) {
                         requestAnimationFrame(() => requestAnimationFrame(() => {
                             const res = runCheck(false);
-                            // v7.19.339: restore the mastered lock on reload.
-                            if (node.attrs.mastered && res) lockMastered(res.right, res.total);
+                            // v7.19.339/510: restore the mastered lock on reload — when the
+                            // persistent flag is set OR the restored answers are 100% correct.
+                            if (res && res.total && (node.attrs.mastered || res.right === res.total)) lockMastered(res.right, res.total);
                         }));
                     }
 
