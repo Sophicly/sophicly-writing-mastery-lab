@@ -6151,31 +6151,32 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     margin: 10px 0 6px 0;
     flex-wrap: wrap;
 }
-/* v7.19.509: brand push-button gradient pill — disciplined, not a flat AI rectangle */
+/* v7.19.511: SOLID brand fill, no gradient/border — per BRAND.md default buttons are
+   solid fill (gradients reserved for special push buttons; gradient-as-default reads AI). */
 .swml-cloze-check-btn {
     appearance: none;
     border: none;
-    background: linear-gradient(135deg, #5333ed 0%, #4D76FD 100%);
+    background: #5333ed;
     color: #fff;
     font-family: inherit;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.01em;
-    padding: 10px 22px;
+    padding: 6px 16px; /* slim — tall/fat buttons read as AI (Neil) */
     border-radius: 999px;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(83, 51, 237, 0.35);
-    transition: transform 0.12s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    box-shadow: 0 3px 10px rgba(83, 51, 237, 0.28);
+    transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
-.swml-cloze-check-btn:hover { filter: brightness(1.08); box-shadow: 0 6px 20px rgba(83, 51, 237, 0.45); transform: translateY(-1px); }
+.swml-cloze-check-btn:hover { background: #6346f0; box-shadow: 0 5px 16px rgba(83, 51, 237, 0.38); transform: translateY(-1px); }
 .swml-cloze-check-btn:active { transform: translateY(0); }
-/* v7.19.339: mastered (100%) — button locks; brand success-green gradient. */
+/* v7.19.339: mastered (100%) — button locks; solid brand success green. */
 .swml-cloze-check-btn.swml-cloze-mastered {
-    background: linear-gradient(135deg, #17b57a 0%, #1CD991 100%);
-    box-shadow: 0 4px 14px rgba(28, 217, 145, 0.35);
+    background: #1CD991;
+    box-shadow: 0 3px 10px rgba(28, 217, 145, 0.28);
     cursor: default;
 }
-.swml-cloze-check-btn.swml-cloze-mastered:hover { filter: none; transform: none; }
+.swml-cloze-check-btn.swml-cloze-mastered:hover { background: #1CD991; transform: none; }
 .swml-cloze-check-summary {
     font-size: 13px;
     color: rgba(255,255,255,0.7);
