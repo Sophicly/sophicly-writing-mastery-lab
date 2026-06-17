@@ -6152,10 +6152,11 @@
                 return;
             }
             rows.forEach((s, i) => {
-                // completion = the canonical data-section-complete attr (source of truth)
-                let dom = null;
-                if (editor) editor.querySelectorAll('[data-section-label]').forEach(elm => { if (elm.getAttribute('data-section-label') === s.label) dom = elm; });
-                const complete = !!dom && dom.getAttribute('data-section-complete') === 'true';
+                // completion = the canonical data-section-complete attr. Resolve the
+                // section by POSITION (nodeDOM), NOT label — labels repeat across units
+                // ("Mastery Pledge" etc), so a label lookup collapses to the last copy.
+                let dom = _siNodeDom(s.pos);
+                const complete = !!dom && dom.getAttribute && dom.getAttribute('data-section-complete') === 'true';
                 const item = el('button', { className: 'swml-scroll-index-item', tabIndex: -1,
                     onClick: () => { closeIndexPanel(); scrollToPos(s.pos); } });
                 item.appendChild(el('span', { className: 'swml-scroll-index-num', textContent: String(i + 1) }));
@@ -6183,21 +6184,26 @@
             return pre ? pre + ' · ' + p.label : p.label;
         }
 
+        // resolve a section's rendered DOM element BY POSITION (unique), not label
+        // (labels repeat across units). nodeDOM returns the element node for the
+        // block at that doc position — works through nodeView cards too.
+        function _siNodeDom(pos) {
+            if (!canvasEditor) return null;
+            let dom = null;
+            try { dom = canvasEditor.view.nodeDOM(pos); } catch (e) { /* stale pos */ }
+            if (dom && dom.nodeType !== 1) dom = dom.parentElement;
+            return dom || null;
+        }
+
         // active section = last section scrolled past the 30% line; drives the row
-        // highlight AND the island's live breadcrumb. Re-resolves the real DOM section
-        // each call via a label→el map — robust to nodeView re-renders (a stale/detached
-        // ref reports top:0, which made the old domAtPos version stick on the last section).
+        // highlight AND the island's live breadcrumb.
         function computeActiveIdx() {
-            if (indexPositions.length === 0) return -1;
-            const editor = document.getElementById('swml-tiptap-editor');
-            if (!editor) return -1;
+            if (indexPositions.length === 0 || !canvasEditor) return -1;
             const cRect = contentWrap.getBoundingClientRect();
             const threshold = cRect.top + cRect.height * 0.30;
-            const map = {};
-            editor.querySelectorAll('[data-section-label]').forEach(elm => { map[elm.getAttribute('data-section-label')] = elm; });
             let activeIdx = -1;
             for (let i = 0; i < indexPositions.length; i++) {
-                const dom = map[indexPositions[i].label];
+                const dom = _siNodeDom(indexPositions[i].pos);
                 if (dom && dom.getBoundingClientRect().top <= threshold) activeIdx = i;
             }
             return activeIdx;
