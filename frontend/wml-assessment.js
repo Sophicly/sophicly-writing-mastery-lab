@@ -16018,6 +16018,7 @@
                                     // v7.15.112: sign-off stamps the canvas doc
                                     suffix: WML.resolveCanvasSuffix(state.task, state.phase) || '',
                                     studentId: targetStudentId,
+                                    task: state.task, // v7.19.525: flat-doc routing (Mastery Codex)
                                 })
                             }).then(r => r.json()).then(res => {
                                 console.log('WML: Sign-off response:', res);
@@ -16080,7 +16081,7 @@
                 // Load existing sign-off data
                 // v7.15.84: pass studentId so tutor review sees the student's signoff
                 const loadTargetId = config.targetUserId || config.reviewStudentId || config.userId;
-                fetch(config.restUrl + `canvas/load-signoff?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(WML.resolveCanvasSuffix(state.task, state.phase) || '')}&studentId=${encodeURIComponent(loadTargetId)}`, { headers })
+                fetch(config.restUrl + `canvas/load-signoff?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(WML.resolveCanvasSuffix(state.task, state.phase) || '')}&studentId=${encodeURIComponent(loadTargetId)}&task=${encodeURIComponent(state.task || '')}`, { headers })
                     .then(r => r.ok ? r.json() : null)
                     .then(res => {
                         if (res && res.success && res.signoff && !res.signoff.revoked) {

@@ -2757,6 +2757,19 @@ class SWML_REST_API {
      * Tutor sign-off — stores tutor details on a canvas document.
      * Role-restricted via check_tutor_auth.
      */
+    /**
+     * v7.19.525: course-level docs (e.g. Mastery Codex) are stored flat — not
+     * board/text/topic scoped — so their sign-off lives at a flat meta key beside
+     * the doc, bypassing the board/text requirement. Returns the flat signoff key
+     * for such a task, or null for normal board/text-scoped canvases.
+     */
+    private function flat_signoff_key($task) {
+        $map = [
+            'mastery_codex' => 'swml_canvas_mastery_codex_signoff',
+        ];
+        return $map[$task] ?? null;
+    }
+
     public function tutor_signoff($request) {
         $tutor_id = get_current_user_id();
         $tutor    = wp_get_current_user();
@@ -2783,18 +2796,24 @@ class SWML_REST_API {
         $auth = $this->verify_tutor_student_access($student_id);
         if (is_wp_error($auth)) return $auth;
 
-        if (empty($board) || empty($text)) {
-            return new WP_Error('missing_data', 'Missing board or text', ['status' => 400]);
+        // v7.19.525: flat (course-level) docs like Mastery Codex sign off at a flat key.
+        $task     = sanitize_text_field($params['task'] ?? '');
+        $flat_key = $this->flat_signoff_key($task);
+        if ($flat_key !== null) {
+            $signoff_key = $flat_key;
+            $attempt = 0;
+        } else {
+            if (empty($board) || empty($text)) {
+                return new WP_Error('missing_data', 'Missing board or text', ['status' => 400]);
+            }
+            // v7.15.44: Resolve the student's current attempt if not supplied so signoff lands on the right document
+            if ($attempt < 1) {
+                $idx = $this->get_attempt_index($student_id, $board, $text, $topic_number, $suffix);
+                $attempt = $idx['current'] ?? 1;
+            }
+            $meta_key    = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
+            $signoff_key = $meta_key . '_signoff';
         }
-
-        // v7.15.44: Resolve the student's current attempt if not supplied so signoff lands on the right document
-        if ($attempt < 1) {
-            $idx = $this->get_attempt_index($student_id, $board, $text, $topic_number, $suffix);
-            $attempt = $idx['current'] ?? 1;
-        }
-
-        $meta_key    = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
-        $signoff_key = $meta_key . '_signoff';
 
         $signoff_data = [
             'tutor_id'     => $tutor_id,
@@ -2829,8 +2848,11 @@ class SWML_REST_API {
         $topic_number = ($topic_number !== null && $topic_number !== '') ? absint($topic_number) : null;
         $suffix       = sanitize_text_field($request->get_param('suffix') ?? '');
         $attempt      = absint($request->get_param('attempt') ?? 0);
+        $task         = sanitize_text_field($request->get_param('task') ?? '');
 
-        if (empty($board) || empty($text)) {
+        // v7.19.525: flat (course-level) docs like Mastery Codex aren't board/text scoped.
+        $flat_key = $this->flat_signoff_key($task);
+        if ($flat_key === null && (empty($board) || empty($text))) {
             return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
         }
 
@@ -2842,14 +2864,17 @@ class SWML_REST_API {
             if (is_wp_error($auth)) return $auth;
         }
 
-        // v7.15.44: Resolve current attempt if not supplied
-        if ($attempt < 1) {
-            $idx = $this->get_attempt_index($student_id, $board, $text, $topic_number, $suffix);
-            $attempt = $idx['current'] ?? 1;
+        if ($flat_key !== null) {
+            $signoff_key = $flat_key;
+        } else {
+            // v7.15.44: Resolve current attempt if not supplied
+            if ($attempt < 1) {
+                $idx = $this->get_attempt_index($student_id, $board, $text, $topic_number, $suffix);
+                $attempt = $idx['current'] ?? 1;
+            }
+            $meta_key    = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
+            $signoff_key = $meta_key . '_signoff';
         }
-
-        $meta_key    = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
-        $signoff_key = $meta_key . '_signoff';
 
         $raw = get_user_meta($student_id, $signoff_key, true);
         if (empty($raw)) {
