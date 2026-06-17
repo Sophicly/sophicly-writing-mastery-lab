@@ -6194,6 +6194,9 @@
             siOpen = true;
             scrollIndex.classList.add('is-open');
             siBackdrop.classList.add('is-open');
+            // JS-measured height = buttery morph (scrollHeight reports full content
+            // even while collapsed, so the spring tracks real height, not an empty cap).
+            siNav.style.maxHeight = Math.min(window.innerHeight * 0.52, siNav.scrollHeight) + 'px';
             updateIndexActive();
             // land the active row in view inside the list (not page-scroll)
             requestAnimationFrame(() => {
@@ -6205,6 +6208,7 @@
             siOpen = false;
             scrollIndex.classList.remove('is-open');
             siBackdrop.classList.remove('is-open');
+            siNav.style.maxHeight = '0px';
         }
         siHead.addEventListener('click', () => { siOpen ? closeIndexPanel() : openIndexPanel(); });
         siBackdrop.addEventListener('click', () => { if (siOpen) closeIndexPanel(); });
