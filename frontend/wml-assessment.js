@@ -6149,16 +6149,17 @@
             const editor = document.getElementById('swml-tiptap-editor');
             const rows = [];
             let currentUnit = '';
+            let currentUnitPos = null;
             canvasEditor.state.doc.descendants((node, pos) => {
                 if (node.type.name !== 'sectionBlock') return;
                 const type = node.attrs.sectionType || 'response';
                 const label = (node.attrs.label || '').trim();
-                // dividers set the current UNIT context for the breadcrumb (not listed)
-                if (type === 'divider') { currentUnit = label; return; }
+                // dividers set the current UNIT context (label + pos, for the header jump)
+                if (type === 'divider') { currentUnit = label; currentUnitPos = pos; return; }
                 // mirror updateOutline's diagnostic-hidden guard
                 if (canvas.classList.contains('swml-canvas-diagnostic') && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) return false;
                 if (!label) return;
-                rows.push({ type, label, pos, unit: currentUnit });
+                rows.push({ type, label, pos, unit: currentUnit, unitPos: currentUnitPos });
             });
             if (rows.length === 0) {
                 siList.appendChild(el('div', { className: 'swml-scroll-index-empty', textContent: 'No sections yet' }));
@@ -6169,15 +6170,21 @@
             const groups = [];
             let cur = null;
             rows.forEach(s => {
-                if (!cur || cur.unit !== s.unit) { cur = { unit: s.unit, items: [] }; groups.push(cur); }
+                if (!cur || cur.unit !== s.unit) { cur = { unit: s.unit, unitPos: s.unitPos, items: [] }; groups.push(cur); }
                 cur.items.push(s);
             });
             groups.forEach(g => {
                 const groupWrap = el('div', { className: 'swml-scroll-index-group swml-scroll-index-collapsed' });
-                const head = el('button', { className: 'swml-scroll-index-group-head', tabIndex: -1 });
-                head.innerHTML = '<svg class="swml-scroll-index-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
-                head.appendChild(el('span', { className: 'swml-scroll-index-group-label', textContent: _siGroupLabel(g.unit) }));
-                head.addEventListener('click', (e) => { e.stopPropagation(); groupWrap.classList.toggle('swml-scroll-index-collapsed'); });
+                // header = chevron (toggle open/close) + label (jump to the unit's start)
+                const head = el('div', { className: 'swml-scroll-index-group-head' });
+                const chevBtn = el('button', { className: 'swml-scroll-index-chev-btn', tabIndex: -1,
+                    onClick: () => { groupWrap.classList.toggle('swml-scroll-index-collapsed'); } });
+                chevBtn.innerHTML = '<svg class="swml-scroll-index-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
+                const _jumpPos = (typeof g.unitPos === 'number') ? g.unitPos : (g.items[0] ? g.items[0].pos : null);
+                const labelBtn = el('button', { className: 'swml-scroll-index-group-label', tabIndex: -1, textContent: _siGroupLabel(g.unit),
+                    onClick: () => { if (_jumpPos != null) { closeIndexPanel(); scrollToPos(_jumpPos); } } });
+                head.appendChild(chevBtn);
+                head.appendChild(labelBtn);
                 const itemsWrap = el('div', { className: 'swml-scroll-index-group-items' });
                 g.items.forEach(s => {
                     // completion = data-section-complete; resolve by POSITION (nodeDOM), NOT

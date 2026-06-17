@@ -7978,21 +7978,32 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     flex-direction: column;
     gap: 1px;
 }
-/* unit groups (collapsible) — so each section shows WHICH unit it belongs to */
+/* unit groups (collapsible) — header = chevron (toggle) + label (jump to unit) */
 .swml-scroll-index-group { display: flex; flex-direction: column; }
 .swml-scroll-index-group-head {
-    display: flex; align-items: center; gap: 7px;
-    width: 100%; padding: 9px 10px 5px;
-    background: transparent; border: none; cursor: pointer; text-align: left;
+    display: flex; align-items: center; gap: 5px;
+    width: 100%; padding: 9px 6px 5px 8px;
     color: rgba(255,255,255,0.5);
     font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
 }
-.swml-scroll-index-group-head:hover { color: rgba(255,255,255,0.8); }
 .swml-canvas-light .swml-scroll-index-group-head { color: rgba(20,18,30,0.5); }
-.swml-canvas-light .swml-scroll-index-group-head:hover { color: rgba(20,18,30,0.8); }
-.swml-scroll-index-chev { flex: 0 0 auto; transition: transform 0.15s ease; transform: rotate(90deg); }
+.swml-scroll-index-chev-btn {
+    flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+    background: transparent; border: none; cursor: pointer; padding: 3px; border-radius: 5px; color: inherit;
+}
+.swml-scroll-index-chev-btn:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.85); }
+.swml-canvas-light .swml-scroll-index-chev-btn:hover { background: rgba(20,18,30,0.07); color: rgba(20,18,30,0.85); }
+.swml-scroll-index-chev { transition: transform 0.15s ease; transform: rotate(90deg); }
 .swml-scroll-index-group.swml-scroll-index-collapsed .swml-scroll-index-chev { transform: rotate(0deg); }
-.swml-scroll-index-group-label { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.swml-scroll-index-group-label {
+    flex: 1 1 auto; min-width: 0;
+    background: transparent; border: none; cursor: pointer; text-align: left;
+    color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit;
+    padding: 2px 5px; border-radius: 5px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.swml-scroll-index-group-label:hover { color: rgba(255,255,255,0.92); background: rgba(255,255,255,0.07); }
+.swml-canvas-light .swml-scroll-index-group-label:hover { color: rgba(20,18,30,0.92); background: rgba(20,18,30,0.06); }
 .swml-scroll-index-group-items { display: flex; flex-direction: column; gap: 1px; }
 .swml-scroll-index-group.swml-scroll-index-collapsed .swml-scroll-index-group-items { display: none; }
 .swml-scroll-index-group-items .swml-scroll-index-item { padding-left: 26px; }
