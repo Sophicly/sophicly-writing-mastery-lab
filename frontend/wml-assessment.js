@@ -6202,14 +6202,24 @@
             }
             return activeIdx;
         }
+        // crossfade the breadcrumb: fade out → swap text → fade in (CSS handles the
+        // opacity easing). Debounced so fast scroll lands on the latest label.
+        let _siTitleText = null;
+        function setSiTitle(txt) {
+            if (txt === _siTitleText) return;
+            _siTitleText = txt;
+            siTitle.style.opacity = '0';
+            clearTimeout(siTitle._fadeT);
+            siTitle._fadeT = setTimeout(() => { siTitle.textContent = txt; siTitle.style.opacity = '1'; }, 130);
+        }
         function updateIndexActive() {
             const activeIdx = computeActiveIdx();
             indexPositions.forEach((hp, i) => hp.itemEl.classList.toggle('swml-scroll-index-active', i === activeIdx));
             // before any section crosses the line (i.e. at the very top) → Table of Contents
             if (activeIdx < 0 || contentWrap.scrollTop < 12) {
-                siTitle.textContent = 'Table of Contents';
+                setSiTitle('Table of Contents');
             } else {
-                siTitle.textContent = _siBreadcrumb(indexPositions[activeIdx]);
+                setSiTitle(_siBreadcrumb(indexPositions[activeIdx]));
             }
         }
 

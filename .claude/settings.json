@@ -402,7 +402,9 @@
       "Bash(sed -i '' \"s/define\\( 'SC_VERSION', '3.10.18' \\)/define\\( 'SC_VERSION', '3.10.19' \\)/\" sophicly-components.php)",
       "Bash(php -l includes/class-shortcode-gap-fill.php)",
       "Bash(sed -i '' 's/ \\\\* Version:     3.10.19/ * Version:     3.10.20/' sophicly-components.php)",
-      "Bash(sed -i '' \"s/define\\( 'SC_VERSION', '3.10.19' \\)/define\\( 'SC_VERSION', '3.10.20' \\)/\" sophicly-components.php)"
+      "Bash(sed -i '' \"s/define\\( 'SC_VERSION', '3.10.19' \\)/define\\( 'SC_VERSION', '3.10.20' \\)/\" sophicly-components.php)",
+      "Bash(sed -i '' 's/ \\\\* Version:     3.10.21/ * Version:     3.10.22/' sophicly-components.php)",
+      "Bash(sed -i '' \"s/define\\( 'SC_VERSION', '3.10.21' \\)/define\\( 'SC_VERSION', '3.10.22' \\)/\" sophicly-components.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
