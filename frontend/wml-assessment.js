@@ -6164,24 +6164,46 @@
                 siList.appendChild(el('div', { className: 'swml-scroll-index-empty', textContent: 'No sections yet' }));
                 return;
             }
-            rows.forEach((s, i) => {
-                // completion = the canonical data-section-complete attr. Resolve the
-                // section by POSITION (nodeDOM), NOT label — labels repeat across units
-                // ("Mastery Pledge" etc), so a label lookup collapses to the last copy.
-                let dom = _siNodeDom(s.pos);
-                const complete = !!dom && dom.getAttribute && dom.getAttribute('data-section-complete') === 'true';
-                const item = el('button', { className: 'swml-scroll-index-item', tabIndex: -1,
-                    onClick: () => { closeIndexPanel(); scrollToPos(s.pos); } });
-                item.appendChild(el('span', { className: 'swml-scroll-index-num', textContent: String(i + 1) }));
-                item.appendChild(el('span', { className: 'swml-scroll-index-itemlabel', textContent: s.label }));
-                if (complete) {
-                    const chk = el('span', { className: 'swml-scroll-index-check' });
-                    chk.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="4" fill="#1CD991"/><path d="M7.5 12.5l3 3 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
-                    item.appendChild(chk);
-                }
-                siList.appendChild(item);
-                indexPositions.push({ pos: s.pos, itemEl: item, label: s.label, unit: s.unit });
+            // group rows by unit (document order) → collapsible unit groups, so the
+            // student sees WHICH unit each section is in (was a flat, unlabelled 1–38).
+            const groups = [];
+            let cur = null;
+            rows.forEach(s => {
+                if (!cur || cur.unit !== s.unit) { cur = { unit: s.unit, items: [] }; groups.push(cur); }
+                cur.items.push(s);
             });
+            groups.forEach(g => {
+                const groupWrap = el('div', { className: 'swml-scroll-index-group' });
+                const head = el('button', { className: 'swml-scroll-index-group-head', tabIndex: -1 });
+                head.innerHTML = '<svg class="swml-scroll-index-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
+                head.appendChild(el('span', { className: 'swml-scroll-index-group-label', textContent: _siGroupLabel(g.unit) }));
+                head.addEventListener('click', (e) => { e.stopPropagation(); groupWrap.classList.toggle('swml-scroll-index-collapsed'); });
+                const itemsWrap = el('div', { className: 'swml-scroll-index-group-items' });
+                g.items.forEach(s => {
+                    // completion = data-section-complete; resolve by POSITION (nodeDOM), NOT
+                    // label — labels repeat across units, a label lookup collapses to last copy.
+                    let dom = _siNodeDom(s.pos);
+                    const complete = !!dom && dom.getAttribute && dom.getAttribute('data-section-complete') === 'true';
+                    const item = el('button', { className: 'swml-scroll-index-item', tabIndex: -1,
+                        onClick: () => { closeIndexPanel(); scrollToPos(s.pos); } });
+                    item.appendChild(el('span', { className: 'swml-scroll-index-itemlabel', textContent: s.label }));
+                    if (complete) {
+                        const chk = el('span', { className: 'swml-scroll-index-check' });
+                        chk.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="4" fill="#1CD991"/><path d="M7.5 12.5l3 3 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
+                        item.appendChild(chk);
+                    }
+                    itemsWrap.appendChild(item);
+                    indexPositions.push({ pos: s.pos, itemEl: item, label: s.label, unit: s.unit, groupWrap });
+                });
+                groupWrap.appendChild(head);
+                groupWrap.appendChild(itemsWrap);
+                siList.appendChild(groupWrap);
+            });
+        }
+        // group header label: "UNIT 4 — FORGING A HERO'S MINDSET" stays as-is; pre-unit
+        // sections (before the first divider) group under "Overview".
+        function _siGroupLabel(unit) {
+            return unit ? unit : 'Overview';
         }
 
         // short "Unit N" (or pre-dash divider word) prefix for the breadcrumb
@@ -6251,10 +6273,14 @@
             // even while collapsed, so the spring tracks real height, not an empty cap).
             siNav.style.maxHeight = Math.min(window.innerHeight * 0.52, siNav.scrollHeight) + 'px';
             updateIndexActive();
-            // land the active row in view inside the list (not page-scroll)
+            // land the active row in view inside the list (rect-based — robust to the
+            // nested group structure where offsetTop is relative to the group, not the list)
             requestAnimationFrame(() => {
                 const active = siList.querySelector('.swml-scroll-index-active');
-                if (active) siList.scrollTop = Math.max(0, active.offsetTop - siList.clientHeight / 2 + active.clientHeight / 2);
+                if (active) {
+                    const lr = siList.getBoundingClientRect(), ar = active.getBoundingClientRect();
+                    siList.scrollTop = Math.max(0, siList.scrollTop + (ar.top - lr.top) - siList.clientHeight / 2 + ar.height / 2);
+                }
             });
         }
         function closeIndexPanel() {
@@ -16007,6 +16033,7 @@
                         if (signBtn.dataset.confirming === 'true') {
                             signBtn.textContent = '⏳ Signing…';
                             signBtn.disabled = true;
+                            signBtn.classList.remove('swml-signoff-btn-armed');
                             // v7.15.84: when tutor reviews a student, send targetUserId (the student),
                             // not the tutor's own userId — REST rejects self-signoff otherwise.
                             const targetStudentId = config.targetUserId || config.reviewStudentId || config.userId;
@@ -16056,13 +16083,16 @@
                                 }
                             }
                             signBtn.textContent = _confirmLabel;
-                            signBtn.style.background = '#17b57a'; // v7.19.512: solid, no gradient (brand button rule)
+                            // v7.19.527: distinct "armed" state (brighter + pulse + ring) so the
+                            // confirm reads as a second, clickable action — it used to be the same
+                            // green as the resting button, which is why it didn't look clickable.
+                            signBtn.classList.add('swml-signoff-btn-armed');
                             // Reset after 4 seconds if not confirmed
                             setTimeout(() => {
                                 if (signBtn.dataset.confirming === 'true') {
                                     signBtn.dataset.confirming = 'false';
                                     signBtn.textContent = '✍ Sign Off';
-                                    signBtn.style.background = '';
+                                    signBtn.classList.remove('swml-signoff-btn-armed');
                                 }
                             }, 4000);
                         }
