@@ -404,7 +404,8 @@
       "Bash(sed -i '' 's/ \\\\* Version:     3.10.19/ * Version:     3.10.20/' sophicly-components.php)",
       "Bash(sed -i '' \"s/define\\( 'SC_VERSION', '3.10.19' \\)/define\\( 'SC_VERSION', '3.10.20' \\)/\" sophicly-components.php)",
       "Bash(sed -i '' 's/ \\\\* Version:     3.10.21/ * Version:     3.10.22/' sophicly-components.php)",
-      "Bash(sed -i '' \"s/define\\( 'SC_VERSION', '3.10.21' \\)/define\\( 'SC_VERSION', '3.10.22' \\)/\" sophicly-components.php)"
+      "Bash(sed -i '' \"s/define\\( 'SC_VERSION', '3.10.21' \\)/define\\( 'SC_VERSION', '3.10.22' \\)/\" sophicly-components.php)",
+      "Bash(grep -nE 'surecart/|function.*surecart|function get_subscription|function change_plan|function get_plan_info|SureCart\\\\\\\\|\\\\\\\\SureCart|sc_|api_token|surecart_api|\\\\$client->|Models\\\\\\\\' includes/class-rest-api.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

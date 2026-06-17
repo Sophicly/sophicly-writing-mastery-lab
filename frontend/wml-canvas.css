@@ -7393,22 +7393,27 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     font-weight: 600; letter-spacing: 0.02em;
 }
 
+/* v7.19.526: enriched signed-off card — avatar + "Signed off by X" + confirm + date */
 .swml-signoff-signed {
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; gap: 11px;
     background: rgba(28, 217, 145, 0.1);
     border: 1px solid rgba(28, 217, 145, 0.25);
-    border-radius: 6px; padding: 4px 10px;
+    border-radius: 10px; padding: 10px 16px;
 }
 .swml-signoff-avatar {
-    width: 20px; height: 20px; border-radius: 50%;
-    object-fit: cover; border: 1px solid rgba(28, 217, 145, 0.3);
+    width: 38px; height: 38px; border-radius: 50%;
+    object-fit: cover; border: 1px solid rgba(28, 217, 145, 0.35);
+    flex: 0 0 auto;
 }
-.swml-signoff-name {
-    font-size: 10px; font-weight: 700; color: #1CD991;
-}
-.swml-signoff-date {
-    font-size: 9px; color: rgba(255,255,255,0.35);
-}
+.swml-signoff-meta { display: flex; flex-direction: column; gap: 1px; line-height: 1.35; }
+.swml-signoff-name { font-size: 12.5px; font-weight: 700; color: #fff; }
+.swml-signoff-confirm { font-size: 11px; font-weight: 600; color: #1CD991; }
+.swml-signoff-date { font-size: 10.5px; color: rgba(255,255,255,0.4); }
+
+/* When signed, the placeholder Status/Tutor/Date <p>s (inside the PM node) are hidden
+   via a class on the NON-PM docWrap — survives PM re-render; the badge is the display. */
+.swml-canvas-doc.swml-signoff-done [data-section-type="signoff"] > p { display: none; }
+.swml-canvas-doc.swml-signoff-done .swml-section-signoff { border-color: rgba(28,217,145,0.4) !important; padding-bottom: 18px; }
 
 /* Light mode */
 [data-swml-theme="light"] .swml-signoff-pending { color: rgba(0,0,0,0.3); }
@@ -7417,8 +7422,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     background: rgba(28, 217, 145, 0.08);
     border-color: rgba(28, 217, 145, 0.2);
 }
-[data-swml-theme="light"] .swml-signoff-name { color: #17b57a; }
-[data-swml-theme="light"] .swml-signoff-date { color: rgba(0,0,0,0.3); }
+[data-swml-theme="light"] .swml-signoff-name { color: #1a1a1e; }
+[data-swml-theme="light"] .swml-signoff-confirm { color: #17b57a; }
+[data-swml-theme="light"] .swml-signoff-date { color: rgba(0,0,0,0.4); }
 
 /* CW Progress Summary (v7.19.497) — a REAL doc section above the sign-off.
    v7.19.498: the section is a transparent wrapper; the inner card is the ONLY
@@ -7555,14 +7561,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 [data-swml-theme="light"] .swml-progress-chip.is-done:hover { background: rgba(28,217,145,0.20); color: #17b57a; }
 
-/* Signed state — badge centered in overlay, text fields left-aligned */
+/* Signed state — enriched card centred in the overlay (v7.19.526: base card styling
+   applies in the complete state; the old size-shrink overrides were removed). */
 .swml-section-signed { min-height: 36px; }
-.swml-signoff-complete .swml-signoff-signed {
-    padding: 6px 16px; gap: 8px;
-}
-.swml-signoff-complete .swml-signoff-avatar { width: 24px; height: 24px; }
-.swml-signoff-complete .swml-signoff-name { font-size: 11px; }
-.swml-signoff-complete .swml-signoff-date { font-size: 10px; }
 
 /* ── Question Section Pulse Highlight ── */
 .swml-question-pulse {

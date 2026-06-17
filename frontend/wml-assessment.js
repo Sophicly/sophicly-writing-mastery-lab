@@ -16336,25 +16336,13 @@
         function applySignoffToSection(section, signoff) {
             if (!section) return;
             canvasSignoffData = signoff; // Store for export
-            section.classList.add('swml-section-signed');
-            section.querySelectorAll('p').forEach(p => {
-                const text = p.textContent || '';
-                if (text.includes('Status:')) {
-                    p.innerHTML = `<em>Status:</em> <span style="color:#1CD991;font-weight:700">✓ Signed off</span>`;
-                    p.style.display = 'none'; // Hidden on screen, badge shows status instead
-                } else if (text.includes('Tutor:')) {
-                    p.innerHTML = `<em>Tutor:</em> ${signoff.display_name}`;
-                    p.style.textAlign = 'left';
-                } else if (text.includes('Date:')) {
-                    const d = new Date(signoff.timestamp);
-                    p.innerHTML = `<em>Date:</em> ${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} at ${d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
-                    p.style.textAlign = 'left';
-                } else if (text.trim()) {
-                    // Hide stray paragraphs from old templates (e.g. hardcoded names)
-                    p.style.display = 'none';
-                }
-            });
-            section.style.borderColor = 'rgba(28, 217, 145, 0.4)';
+            // v7.19.526: the Status/Tutor/Date <p>s live inside the ProseMirror node —
+            // editing them here is reverted on PM's next render (the old bug: badge showed
+            // but Status stayed "Awaiting"). Instead flag a NON-PM ancestor (docWrap) so
+            // CSS hides the placeholder lines + greens the border reliably; the overlay
+            // badge (outside PM) is the sole signed display.
+            const docWrap = document.querySelector('.swml-canvas-doc');
+            if (docWrap) docWrap.classList.add('swml-signoff-done');
         }
 
         function buildSignedBadge(signoff) {
@@ -16362,8 +16350,12 @@
             badge.className = 'swml-signoff-signed';
             const avatar = signoff.avatar_url ? `<img src="${signoff.avatar_url}" class="swml-signoff-avatar" alt="">` : '';
             const d = new Date(signoff.timestamp);
-            const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-            badge.innerHTML = `${avatar}<span class="swml-signoff-name">✓ ${signoff.display_name}</span><span class="swml-signoff-date">${dateStr}</span>`;
+            const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+            badge.innerHTML = `${avatar}<span class="swml-signoff-meta">`
+                + `<span class="swml-signoff-name">Signed off by ${signoff.display_name}</span>`
+                + `<span class="swml-signoff-confirm">✓ Reviewed &amp; confirmed</span>`
+                + `<span class="swml-signoff-date">${dateStr}</span>`
+                + `</span>`;
             return badge;
         }
 
