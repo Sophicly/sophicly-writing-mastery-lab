@@ -6091,34 +6091,42 @@
         contentWrap.appendChild(docWrap);
         editorPane.appendChild(contentWrap);
 
-        // ── Scroll-index pill (v7.19.514) — replaces the old scroll-to-top arrow.
-        // Floating bottom-centre pill: live scroll-% + tap-to-open section index.
+        // ── Scroll-index dynamic island (v7.19.515) — replaces the old scroll-to-top arrow.
+        // Dark-glass island bottom-centre: circular teal progress ring + live current-section
+        // title + scroll-%. Tap → morphs open UPWARD into the section index (jump + ticks +
+        // active-row), with a blurred backdrop over the doc. Modelled on Nextbricks' island.
         // Reuses scrollToPos (zoom-aware) + the sectionBlock walk + data-section-complete.
-        // Panel is absolute inside editorPane (mirrors the outline-panel lifecycle) — NOT a
-        // native top-layer popover, which would mis-anchor under the canvas-zoom transform
-        // and orphan in document.body on SPA teardown.
+        // Absolute inside editorPane (outline-panel lifecycle) — NOT a native top-layer popover,
+        // which would mis-anchor under the canvas-zoom transform + orphan on SPA teardown.
+        const siBackdrop = el('div', { className: 'swml-scroll-index-backdrop' });
         const scrollIndex = el('div', { className: 'swml-scroll-index' });
-        const siFill = el('span', { className: 'swml-scroll-index-fill' });
-        const siIcon = el('span', { className: 'swml-scroll-index-icon',
-            innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>' });
-        const siLabel = el('span', { className: 'swml-scroll-index-label', textContent: 'Index' });
-        const siPct = el('span', { className: 'swml-scroll-index-pct', textContent: '0%' });
-        scrollIndex.appendChild(siFill);
-        scrollIndex.appendChild(siIcon);
-        scrollIndex.appendChild(siLabel);
-        scrollIndex.appendChild(siPct);
 
-        const siPanel = el('div', { className: 'swml-scroll-index-panel' });
+        // nav (top — expands on open)
+        const siNav = el('div', { className: 'swml-scroll-index-nav' });
         const siPanelHead = el('div', { className: 'swml-scroll-index-panel-head', textContent: 'Jump to section' });
         const siList = el('div', { className: 'swml-scroll-index-list' });
-        siPanel.appendChild(siPanelHead);
-        siPanel.appendChild(siList);
+        siNav.appendChild(siPanelHead);
+        siNav.appendChild(siList);
 
-        editorPane.appendChild(siPanel);
+        // head (bottom — always visible): ring + current-section title + %
+        const siHead = el('div', { className: 'swml-scroll-index-head' });
+        const siRing = el('span', { className: 'swml-scroll-index-ring' });
+        // r=15.9155 → circumference ≈ 100, so dashoffset = 100 - pct
+        siRing.innerHTML = '<svg viewBox="0 0 36 36"><circle class="swml-scroll-index-ring-bg" cx="18" cy="18" r="15.9155"/><circle class="swml-scroll-index-ring-bar" cx="18" cy="18" r="15.9155" stroke-dasharray="100" stroke-dashoffset="100"/></svg>';
+        const siRingBar = siRing.querySelector('.swml-scroll-index-ring-bar');
+        const siTitle = el('span', { className: 'swml-scroll-index-title', textContent: 'Contents' });
+        const siPct = el('span', { className: 'swml-scroll-index-pct', textContent: '0%' });
+        siHead.appendChild(siRing);
+        siHead.appendChild(siTitle);
+        siHead.appendChild(siPct);
+
+        scrollIndex.appendChild(siNav);
+        scrollIndex.appendChild(siHead);
+        editorPane.appendChild(siBackdrop);
         editorPane.appendChild(scrollIndex);
 
         let siOpen = false;
-        let indexPositions = []; // [{pos, itemEl}]
+        let indexPositions = []; // [{pos, itemEl, label}]
 
         function buildIndexList() {
             siList.innerHTML = '';
@@ -6155,12 +6163,14 @@
                     item.appendChild(chk);
                 }
                 siList.appendChild(item);
-                indexPositions.push({ pos: s.pos, itemEl: item });
+                indexPositions.push({ pos: s.pos, itemEl: item, label: s.label });
             });
         }
 
-        function updateIndexActive() {
-            if (!siOpen || indexPositions.length === 0 || !canvasEditor) return;
+        // active section = last heading scrolled past the 35% line; drives the row
+        // highlight AND the island's live title.
+        function computeActiveIdx() {
+            if (indexPositions.length === 0 || !canvasEditor) return -1;
             const containerRect = contentWrap.getBoundingClientRect();
             const threshold = containerRect.top + containerRect.height * 0.35;
             let activeIdx = 0;
@@ -6171,28 +6181,33 @@
                     if (secEl && secEl.getBoundingClientRect().top <= threshold) activeIdx = i;
                 } catch (e) { /* stale pos */ }
             }
+            return activeIdx;
+        }
+        function updateIndexActive() {
+            const activeIdx = computeActiveIdx();
             indexPositions.forEach((hp, i) => hp.itemEl.classList.toggle('swml-scroll-index-active', i === activeIdx));
+            if (activeIdx >= 0 && indexPositions[activeIdx]) siTitle.textContent = indexPositions[activeIdx].label;
         }
 
         function openIndexPanel() {
             buildIndexList();
             siOpen = true;
-            siPanel.classList.add('swml-scroll-index-panel-open');
-            scrollIndex.classList.add('is-active');
-            requestAnimationFrame(updateIndexActive);
+            scrollIndex.classList.add('is-open');
+            siBackdrop.classList.add('is-open');
+            updateIndexActive();
+            // land the active row in view inside the list (not page-scroll)
+            requestAnimationFrame(() => {
+                const active = siList.querySelector('.swml-scroll-index-active');
+                if (active) siList.scrollTop = Math.max(0, active.offsetTop - siList.clientHeight / 2 + active.clientHeight / 2);
+            });
         }
         function closeIndexPanel() {
             siOpen = false;
-            siPanel.classList.remove('swml-scroll-index-panel-open');
-            scrollIndex.classList.remove('is-active');
+            scrollIndex.classList.remove('is-open');
+            siBackdrop.classList.remove('is-open');
         }
-        scrollIndex.addEventListener('click', () => { siOpen ? closeIndexPanel() : openIndexPanel(); });
-        // outside-click + ESC close (panel itself + the pill are exempt)
-        contentWrap.addEventListener('click', (e) => {
-            if (!siOpen) return;
-            if (siPanel.contains(e.target) || scrollIndex.contains(e.target)) return;
-            closeIndexPanel();
-        });
+        siHead.addEventListener('click', () => { siOpen ? closeIndexPanel() : openIndexPanel(); });
+        siBackdrop.addEventListener('click', () => { if (siOpen) closeIndexPanel(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && siOpen) closeIndexPanel(); });
 
         let siScrollRaf = null;
@@ -6200,13 +6215,14 @@
             const max = contentWrap.scrollHeight - contentWrap.clientHeight;
             const pct = max > 8 ? Math.min(100, Math.max(0, Math.round(contentWrap.scrollTop / max * 100))) : 0;
             siPct.textContent = pct + '%';
-            siFill.style.width = pct + '%';
+            if (siRingBar) siRingBar.style.strokeDashoffset = String(100 - pct);
         }
         contentWrap.addEventListener('scroll', () => {
             if (siScrollRaf) cancelAnimationFrame(siScrollRaf);
             siScrollRaf = requestAnimationFrame(() => { updateIndexProgress(); updateIndexActive(); });
         }, { passive: true });
-        requestAnimationFrame(updateIndexProgress);
+        // initial paint — build list once so the title shows the current section even when closed
+        requestAnimationFrame(() => { buildIndexList(); updateIndexProgress(); updateIndexActive(); });
 
         let outlineOpen = false;
         function toggleOutlinePanel(force) {

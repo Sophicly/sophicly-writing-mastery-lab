@@ -7788,89 +7788,129 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-/* ── Scroll-index pill + section panel (v7.19.514) — replaces scroll-to-top arrow ── */
+/* ── Scroll-index dynamic island (v7.19.515) — replaces scroll-to-top arrow ──
+   Dark-glass island: circular teal ring + live section title + %. Morphs open
+   upward into the section index, over a blurred backdrop. */
+
+/* blurred backdrop over the doc pane while open */
+.swml-scroll-index-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 19;
+    background: rgba(10,8,16,0.28);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 0.28s ease, visibility 0.28s;
+}
+.swml-scroll-index-backdrop.is-open { opacity: 1; pointer-events: auto; visibility: visible; }
+.swml-canvas-light .swml-scroll-index-backdrop { background: rgba(240,238,248,0.4); }
+
+/* the island */
 .swml-scroll-index {
     position: absolute;
     bottom: 56px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 20;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    height: 34px;
-    padding: 0 14px;
-    border-radius: 9999px;
-    background: #5333ed;
-    color: #fff;
-    font-size: 12.5px;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    cursor: pointer;
-    user-select: none;
-    overflow: hidden;
-    box-shadow: 0 6px 16px rgba(44,0,62,0.32);
-    transition: box-shadow 0.2s ease, transform 0.15s ease;
-}
-.swml-scroll-index:hover { box-shadow: 0 8px 22px rgba(44,0,62,0.42); }
-.swml-scroll-index.is-active { transform: translateX(-50%) translateY(-1px); }
-/* live scroll-progress fill — sits behind the label as a darker band */
-.swml-scroll-index-fill {
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 0%;
-    background: rgba(44,0,62,0.55);
-    pointer-events: none;
-    transition: width 0.12s linear;
-}
-.swml-scroll-index-icon,
-.swml-scroll-index-label,
-.swml-scroll-index-pct { position: relative; z-index: 1; display: inline-flex; align-items: center; }
-.swml-scroll-index-icon { opacity: 0.95; }
-.swml-scroll-index-pct {
-    min-width: 30px;
-    justify-content: flex-end;
-    font-variant-numeric: tabular-nums;
-    opacity: 0.85;
-}
-
-/* section panel — absolute, opens above the pill */
-.swml-scroll-index-panel {
-    position: absolute;
-    bottom: 100px;
-    left: 50%;
-    transform: translateX(-50%) translateY(8px) scale(0.97);
-    transform-origin: bottom center;
     z-index: 21;
-    width: min(340px, calc(100% - 48px));
-    max-height: min(52vh, 460px);
     display: flex;
     flex-direction: column;
-    background: #1b1726;
-    border-radius: 16px;
-    box-shadow: 0 18px 48px rgba(0,0,0,0.45);
-    opacity: 0;
-    pointer-events: none;
-    visibility: hidden;
-    transition: opacity 0.18s ease, transform 0.18s cubic-bezier(0.2,0.8,0.2,1), visibility 0.18s;
+    width: 268px;
+    max-width: calc(100% - 48px);
+    background: rgba(20,18,30,0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 9999px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    overflow: hidden;
+    transition: border-radius 0.4s cubic-bezier(0.34,1.18,0.42,1), box-shadow 0.3s ease;
 }
-.swml-scroll-index-panel-open {
+.swml-scroll-index.is-open {
+    border-radius: 22px;
+    box-shadow: 0 18px 48px rgba(0,0,0,0.5);
+}
+.swml-canvas-light .swml-scroll-index {
+    background: rgba(255,255,255,0.9);
+    box-shadow: 0 8px 30px rgba(44,0,62,0.16);
+}
+.swml-canvas-light .swml-scroll-index.is-open { box-shadow: 0 18px 48px rgba(44,0,62,0.22); }
+
+/* always-visible head: ring + title + % (the toggle handle) */
+.swml-scroll-index-head {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    height: 44px;
+    padding: 0 16px;
+    cursor: pointer;
+    user-select: none;
+    color: #fff;
+}
+.swml-canvas-light .swml-scroll-index-head { color: #1b1726; }
+.swml-scroll-index.is-open .swml-scroll-index-head { border-top: 1px solid rgba(255,255,255,0.08); }
+.swml-canvas-light .swml-scroll-index.is-open .swml-scroll-index-head { border-top-color: rgba(20,18,30,0.08); }
+.swml-scroll-index-title {
+    flex: 1 1 auto;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.swml-scroll-index-pct {
+    flex: 0 0 auto;
+    min-width: 34px;
+    text-align: right;
+    font-size: 12.5px;
+    font-weight: 600;
+    opacity: 0.7;
+    font-variant-numeric: tabular-nums;
+}
+
+/* circular progress ring (r=15.9155 → circumference ≈ 100) */
+.swml-scroll-index-ring { flex: 0 0 auto; display: inline-flex; }
+.swml-scroll-index-ring svg { width: 22px; height: 22px; transform: rotate(-90deg); }
+.swml-scroll-index-ring-bg { fill: none; stroke: rgba(255,255,255,0.18); stroke-width: 3.5; }
+.swml-canvas-light .swml-scroll-index-ring-bg { stroke: rgba(20,18,30,0.14); }
+.swml-scroll-index-ring-bar {
+    fill: none;
+    stroke: #1CD991;
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.22s ease;
+}
+
+/* nav — expands upward on open (dynamic-island morph) */
+.swml-scroll-index-nav {
+    flex: 0 1 auto;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateY(8px);
+    transition: max-height 0.4s cubic-bezier(0.34,1.1,0.42,1), opacity 0.26s ease, transform 0.4s cubic-bezier(0.34,1.1,0.42,1);
+}
+.swml-scroll-index.is-open .swml-scroll-index-nav {
+    max-height: min(52vh, 440px);
     opacity: 1;
-    pointer-events: auto;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0) scale(1);
+    transform: none;
 }
 .swml-scroll-index-panel-head {
-    padding: 13px 16px 9px;
-    font-size: 11px;
+    padding: 13px 16px 7px;
+    font-size: 10.5px;
     font-weight: 700;
     letter-spacing: 0.07em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.5);
+    color: rgba(255,255,255,0.45);
 }
+.swml-canvas-light .swml-scroll-index-panel-head { color: rgba(20,18,30,0.45); }
 .swml-scroll-index-list {
     overflow-y: auto;
     overscroll-behavior: contain; /* scroll isolation — no chaining to the doc */
+    max-height: min(46vh, 380px);
     padding: 2px 8px 10px;
     display: flex;
     flex-direction: column;
@@ -7890,9 +7930,14 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     cursor: pointer;
     transition: background 0.12s ease;
 }
+.swml-canvas-light .swml-scroll-index-item { color: rgba(20,18,30,0.82); }
 .swml-scroll-index-item:hover { background: rgba(255,255,255,0.07); }
-.swml-scroll-index-active { background: rgba(83,51,237,0.28); }
-.swml-scroll-index-active:hover { background: rgba(83,51,237,0.36); }
+.swml-canvas-light .swml-scroll-index-item:hover { background: rgba(20,18,30,0.05); }
+.swml-scroll-index-active { background: rgba(28,217,145,0.16); }
+.swml-scroll-index-active:hover { background: rgba(28,217,145,0.22); }
+.swml-canvas-light .swml-scroll-index-active { background: rgba(28,217,145,0.15); }
+.swml-scroll-index-active .swml-scroll-index-itemlabel { color: #fff; }
+.swml-canvas-light .swml-scroll-index-active .swml-scroll-index-itemlabel { color: #1b1726; }
 .swml-scroll-index-num {
     flex: 0 0 auto;
     width: 20px;
@@ -7901,19 +7946,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     color: rgba(255,255,255,0.4);
     font-variant-numeric: tabular-nums;
 }
-.swml-scroll-index-active .swml-scroll-index-num { color: #b9a7ff; }
+.swml-canvas-light .swml-scroll-index-num { color: rgba(20,18,30,0.4); }
+.swml-scroll-index-active .swml-scroll-index-num { color: #1CD991; }
+.swml-canvas-light .swml-scroll-index-active .swml-scroll-index-num { color: #13b87a; }
 .swml-scroll-index-itemlabel { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .swml-scroll-index-check { flex: 0 0 auto; display: inline-flex; }
 .swml-scroll-index-empty { padding: 8px 14px 14px; color: rgba(255,255,255,0.45); font-size: 12.5px; }
-
-/* light theme */
-.swml-canvas-light .swml-scroll-index-panel { background: #fff; box-shadow: 0 18px 48px rgba(44,0,62,0.18); }
-.swml-canvas-light .swml-scroll-index-panel-head { color: rgba(44,0,62,0.5); }
-.swml-canvas-light .swml-scroll-index-item { color: rgba(20,18,30,0.82); }
-.swml-canvas-light .swml-scroll-index-item:hover { background: rgba(83,51,237,0.08); }
-.swml-canvas-light .swml-scroll-index-active { background: rgba(83,51,237,0.12); }
-.swml-canvas-light .swml-scroll-index-num { color: rgba(20,18,30,0.4); }
-.swml-canvas-light .swml-scroll-index-active .swml-scroll-index-num { color: #5333ed; }
+.swml-canvas-light .swml-scroll-index-empty { color: rgba(20,18,30,0.45); }
 
 /* ── U1: Back-to-top of message button (v7.13.52 neumorphic) ── */
 .swml-msg-top-btn {
