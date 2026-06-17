@@ -6091,17 +6091,122 @@
         contentWrap.appendChild(docWrap);
         editorPane.appendChild(contentWrap);
 
-        // Document scroll-to-top button — positioned inside editorPane (v7.12.53)
-        const docScrollUpBtn = el('div', { className: 'swml-doc-scroll-up-btn',
-            innerHTML: '<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 17a.5.5 0 0 1-.5-.5V4.707L5.354 8.854a.5.5 0 1 1-.708-.708l5-5a.5.5 0 0 1 .708 0l5 5a.5.5 0 0 1-.708.708L10.5 4.707V16.5a.5.5 0 0 1-.5.5"/></svg>',
-            title: 'Scroll to top of document',
-            onClick: () => { contentWrap.scrollTo({ top: 0, behavior: 'smooth' }); }
+        // ── Scroll-index pill (v7.19.514) — replaces the old scroll-to-top arrow.
+        // Floating bottom-centre pill: live scroll-% + tap-to-open section index.
+        // Reuses scrollToPos (zoom-aware) + the sectionBlock walk + data-section-complete.
+        // Panel is absolute inside editorPane (mirrors the outline-panel lifecycle) — NOT a
+        // native top-layer popover, which would mis-anchor under the canvas-zoom transform
+        // and orphan in document.body on SPA teardown.
+        const scrollIndex = el('div', { className: 'swml-scroll-index' });
+        const siFill = el('span', { className: 'swml-scroll-index-fill' });
+        const siIcon = el('span', { className: 'swml-scroll-index-icon',
+            innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>' });
+        const siLabel = el('span', { className: 'swml-scroll-index-label', textContent: 'Index' });
+        const siPct = el('span', { className: 'swml-scroll-index-pct', textContent: '0%' });
+        scrollIndex.appendChild(siFill);
+        scrollIndex.appendChild(siIcon);
+        scrollIndex.appendChild(siLabel);
+        scrollIndex.appendChild(siPct);
+
+        const siPanel = el('div', { className: 'swml-scroll-index-panel' });
+        const siPanelHead = el('div', { className: 'swml-scroll-index-panel-head', textContent: 'Jump to section' });
+        const siList = el('div', { className: 'swml-scroll-index-list' });
+        siPanel.appendChild(siPanelHead);
+        siPanel.appendChild(siList);
+
+        editorPane.appendChild(siPanel);
+        editorPane.appendChild(scrollIndex);
+
+        let siOpen = false;
+        let indexPositions = []; // [{pos, itemEl}]
+
+        function buildIndexList() {
+            siList.innerHTML = '';
+            indexPositions = [];
+            if (!canvasEditor) return;
+            const editor = document.getElementById('swml-tiptap-editor');
+            const rows = [];
+            canvasEditor.state.doc.descendants((node, pos) => {
+                if (node.type.name !== 'sectionBlock') return;
+                const type = node.attrs.sectionType || 'response';
+                if (type === 'divider') return;
+                // mirror updateOutline's diagnostic-hidden guard
+                if (canvas.classList.contains('swml-canvas-diagnostic') && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) return false;
+                const label = (node.attrs.label || '').trim();
+                if (!label) return;
+                rows.push({ type, label, pos });
+            });
+            if (rows.length === 0) {
+                siList.appendChild(el('div', { className: 'swml-scroll-index-empty', textContent: 'No sections yet' }));
+                return;
+            }
+            rows.forEach((s, i) => {
+                // completion = the canonical data-section-complete attr (source of truth)
+                let dom = null;
+                if (editor) editor.querySelectorAll('[data-section-label]').forEach(elm => { if (elm.getAttribute('data-section-label') === s.label) dom = elm; });
+                const complete = !!dom && dom.getAttribute('data-section-complete') === 'true';
+                const item = el('button', { className: 'swml-scroll-index-item', tabIndex: -1,
+                    onClick: () => { closeIndexPanel(); scrollToPos(s.pos); } });
+                item.appendChild(el('span', { className: 'swml-scroll-index-num', textContent: String(i + 1) }));
+                item.appendChild(el('span', { className: 'swml-scroll-index-itemlabel', textContent: s.label }));
+                if (complete) {
+                    const chk = el('span', { className: 'swml-scroll-index-check' });
+                    chk.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="4" fill="#1CD991"/><path d="M7.5 12.5l3 3 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
+                    item.appendChild(chk);
+                }
+                siList.appendChild(item);
+                indexPositions.push({ pos: s.pos, itemEl: item });
+            });
+        }
+
+        function updateIndexActive() {
+            if (!siOpen || indexPositions.length === 0 || !canvasEditor) return;
+            const containerRect = contentWrap.getBoundingClientRect();
+            const threshold = containerRect.top + containerRect.height * 0.35;
+            let activeIdx = 0;
+            for (let i = 0; i < indexPositions.length; i++) {
+                try {
+                    const domNode = canvasEditor.view.domAtPos(indexPositions[i].pos + 1)?.node;
+                    const secEl = domNode?.nodeType === 1 ? domNode : domNode?.parentElement?.closest('[data-section-type], h2, h3') || domNode?.parentElement;
+                    if (secEl && secEl.getBoundingClientRect().top <= threshold) activeIdx = i;
+                } catch (e) { /* stale pos */ }
+            }
+            indexPositions.forEach((hp, i) => hp.itemEl.classList.toggle('swml-scroll-index-active', i === activeIdx));
+        }
+
+        function openIndexPanel() {
+            buildIndexList();
+            siOpen = true;
+            siPanel.classList.add('swml-scroll-index-panel-open');
+            scrollIndex.classList.add('is-active');
+            requestAnimationFrame(updateIndexActive);
+        }
+        function closeIndexPanel() {
+            siOpen = false;
+            siPanel.classList.remove('swml-scroll-index-panel-open');
+            scrollIndex.classList.remove('is-active');
+        }
+        scrollIndex.addEventListener('click', () => { siOpen ? closeIndexPanel() : openIndexPanel(); });
+        // outside-click + ESC close (panel itself + the pill are exempt)
+        contentWrap.addEventListener('click', (e) => {
+            if (!siOpen) return;
+            if (siPanel.contains(e.target) || scrollIndex.contains(e.target)) return;
+            closeIndexPanel();
         });
-        docScrollUpBtn.style.display = 'none';
-        editorPane.appendChild(docScrollUpBtn);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && siOpen) closeIndexPanel(); });
+
+        let siScrollRaf = null;
+        function updateIndexProgress() {
+            const max = contentWrap.scrollHeight - contentWrap.clientHeight;
+            const pct = max > 8 ? Math.min(100, Math.max(0, Math.round(contentWrap.scrollTop / max * 100))) : 0;
+            siPct.textContent = pct + '%';
+            siFill.style.width = pct + '%';
+        }
         contentWrap.addEventListener('scroll', () => {
-            docScrollUpBtn.style.display = contentWrap.scrollTop > 300 ? 'flex' : 'none';
+            if (siScrollRaf) cancelAnimationFrame(siScrollRaf);
+            siScrollRaf = requestAnimationFrame(() => { updateIndexProgress(); updateIndexActive(); });
         }, { passive: true });
+        requestAnimationFrame(updateIndexProgress);
 
         let outlineOpen = false;
         function toggleOutlinePanel(force) {
