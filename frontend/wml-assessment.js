@@ -12054,7 +12054,12 @@
                         fields.forEach(f => {
                             const want = (f.getAttribute('data-correct') || '').trim();
                             const selEl = f.querySelector('.swml-select-input');
-                            const got = (selEl ? selEl.value : (f.getAttribute('data-value') || '')).trim();
+                            // v7.19.507: read the PERSISTED answer (data-value) first — the
+                            // native <select>'s .value isn't reliably restored at mount, so on
+                            // reload the prior ✓/✗ marks didn't reappear even though the answer
+                            // was saved. data-value is the same source the section tick reads,
+                            // so marks + tick now agree. Falls back to the live native value.
+                            const got = ((f.getAttribute('data-value') || '') || (selEl ? selEl.value : '')).trim();
                             f.classList.remove('swml-select-correct', 'swml-select-wrong');
                             if (got) answered++;
                             if (want && got === want) { f.classList.add('swml-select-correct'); right++; }
