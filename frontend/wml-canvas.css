@@ -286,7 +286,13 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     content: attr(data-codex-num) attr(data-section-label) !important;
 }
 .swml-codex-doc .swml-section-block:not(.swml-section-divider)[data-section-complete="true"]::before {
-    content: '✓ ' attr(data-codex-num) attr(data-section-label) !important;
+    content: attr(data-codex-num) attr(data-section-label) !important;
+    /* v7.19.509: house badge (green circle + white check) instead of a plain ✓ glyph */
+    padding-left: 24px !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%231CD991'/%3E%3Cpolyline points='17 9 10.5 15.5 7 12' fill='none' stroke='%23ffffff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: 6px center !important;
+    background-size: 13px 13px !important;
 }
 .swml-canvas-light .swml-canvas-doc {
     background: #fff;
@@ -6097,12 +6103,12 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* ── v7.19.11: SelectField (bounded-choice picker) ── */
 .swml-select-field {
     position: relative;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 6px;
+    background: rgba(255,255,255,0.04);
+    border: none; /* v7.19.509: no outline box — borders read as AI styling (Neil) */
+    border-radius: 10px;
     padding: 10px 14px;
     margin: 6px 0 14px 0;
-    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 .swml-select-prompt {
     font-size: 11px;
@@ -6145,55 +6151,69 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     margin: 10px 0 6px 0;
     flex-wrap: wrap;
 }
+/* v7.19.509: brand push-button gradient pill — disciplined, not a flat AI rectangle */
 .swml-cloze-check-btn {
     appearance: none;
     border: none;
-    background: #5333ed;
+    background: linear-gradient(135deg, #5333ed 0%, #4D76FD 100%);
     color: #fff;
     font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
-    padding: 9px 20px;
-    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    padding: 10px 22px;
+    border-radius: 999px;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 4px 14px rgba(83, 51, 237, 0.35);
+    transition: transform 0.12s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
-.swml-cloze-check-btn:hover { background: #6346f0; }
-.swml-cloze-check-btn:active { transform: translateY(1px); }
-/* v7.19.339: mastered (100%) — button locks, no further graded attempts. */
+.swml-cloze-check-btn:hover { filter: brightness(1.08); box-shadow: 0 6px 20px rgba(83, 51, 237, 0.45); transform: translateY(-1px); }
+.swml-cloze-check-btn:active { transform: translateY(0); }
+/* v7.19.339: mastered (100%) — button locks; brand success-green gradient. */
 .swml-cloze-check-btn.swml-cloze-mastered {
-    background: #1f9d6b;
+    background: linear-gradient(135deg, #17b57a 0%, #1CD991 100%);
+    box-shadow: 0 4px 14px rgba(28, 217, 145, 0.35);
     cursor: default;
-    opacity: 0.95;
 }
-.swml-cloze-check-btn.swml-cloze-mastered:hover { background: #1f9d6b; }
+.swml-cloze-check-btn.swml-cloze-mastered:hover { filter: none; transform: none; }
 .swml-cloze-check-summary {
     font-size: 13px;
     color: rgba(255,255,255,0.7);
 }
 .swml-cloze-check-summary.swml-cloze-allright {
-    color: #34d399;
-    font-weight: 600;
+    color: #1CD991;
+    font-weight: 700;
 }
+/* v7.19.509: result shown by a brand-colour fill + a house badge, no border */
 .swml-select-field.swml-select-correct {
-    border-color: rgba(52, 211, 153, 0.6);
-    background: rgba(52, 211, 153, 0.08);
+    background: rgba(28, 217, 145, 0.12);
 }
 .swml-select-field.swml-select-wrong {
-    border-color: rgba(248, 113, 113, 0.6);
-    background: rgba(248, 113, 113, 0.08);
+    background: rgba(255, 84, 112, 0.12);
 }
 .swml-select-field.swml-select-correct::after,
 .swml-select-field.swml-select-wrong::after {
+    content: '';
     position: absolute;
-    top: 8px;
+    top: 10px;
     right: 12px;
-    font-size: 15px;
-    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
     pointer-events: none;
 }
-.swml-select-field.swml-select-correct::after { content: '✓'; color: #34d399; }
-.swml-select-field.swml-select-wrong::after { content: '✗'; color: #f87171; }
+.swml-select-field.swml-select-correct::after {
+    background-color: #1CD991;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+}
+.swml-select-field.swml-select-wrong::after {
+    background-color: #ff5470;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E");
+}
 .swml-select-chips {
     display: flex;
     flex-wrap: wrap;
