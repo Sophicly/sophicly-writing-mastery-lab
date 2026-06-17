@@ -6115,10 +6115,11 @@
         siRing.innerHTML = '<svg viewBox="0 0 36 36"><circle class="swml-scroll-index-ring-bg" cx="18" cy="18" r="15.9155"/><circle class="swml-scroll-index-ring-bar" cx="18" cy="18" r="15.9155" stroke-dasharray="100" stroke-dashoffset="100"/></svg>';
         const siRingBar = siRing.querySelector('.swml-scroll-index-ring-bar');
         const siTitle = el('span', { className: 'swml-scroll-index-title', textContent: 'Contents' });
-        const siPct = el('span', { className: 'swml-scroll-index-pct', textContent: '0%' });
+        // No numeric % on the pill — it read as course/lesson progress. The ring is
+        // the quiet scroll-position guide; the title shows the live section name.
+        const siPct = el('span', { className: 'swml-scroll-index-pct' }); // detached: still updated, just not shown
         siHead.appendChild(siRing);
         siHead.appendChild(siTitle);
-        siHead.appendChild(siPct);
 
         scrollIndex.appendChild(siNav);
         scrollIndex.appendChild(siHead);
