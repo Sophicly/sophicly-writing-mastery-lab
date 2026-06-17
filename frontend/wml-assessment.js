@@ -16543,7 +16543,7 @@
             title: 'Type a zoom percentage (e.g. 75)',
             value: '100%',
         });
-        zoomInput.style.cssText = 'width:42px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:inherit;font-size:11px;text-align:center;padding:2px 4px;font-family:inherit;outline:none;';
+        zoomInput.style.cssText = 'width:42px;background:rgba(255,255,255,0.08);border:none;border-radius:4px;color:inherit;font-size:11px;text-align:center;padding:2px 4px;font-family:inherit;outline:none;';
         zoomInput.addEventListener('focus', () => { zoomInput.value = Math.round(canvasZoom * 100).toString(); zoomInput.select(); });
         zoomInput.addEventListener('blur', () => { zoomInput.value = Math.round(canvasZoom * 100) + '%'; });
         zoomInput.addEventListener('keydown', (e) => {

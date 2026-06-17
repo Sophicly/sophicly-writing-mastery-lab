@@ -4188,6 +4188,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     font-size: 11px;
     color: rgba(255,255,255,0.35);
     flex-shrink: 0;
+    position: relative; /* anchor for the absolutely-centred nav cluster */
 }
 .swml-canvas-status .swml-wc {
     font-variant-numeric: tabular-nums;
@@ -4206,23 +4207,26 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-light .swml-status-btn:hover { color: rgba(0,0,0,0.7); }
 .swml-canvas-light .swml-status-btn.swml-status-reset { color: rgba(0,0,0,0.3); }
 .swml-canvas-light .swml-status-btn.swml-status-reset:hover { color: rgba(0,0,0,0.55); }
-/* v7.14.23: LD navigation proxy in status bar (embedded mode) */
-.swml-ld-nav { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+/* v7.14.23: LD navigation proxy in status bar (embedded mode)
+   v7.19.522: absolutely centred in the bar so the Prev · Mark Complete · Next
+   cluster sits dead-centre (= doc-pane centre = under the scroll-index island),
+   independent of the zoom control / Ready status in the same row. */
+.swml-ld-nav { display: flex; align-items: center; gap: 8px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
 .swml-ld-prev, .swml-ld-next { display: flex; align-items: center; gap: 4px; }
 .swml-ld-prev svg, .swml-ld-next svg { flex-shrink: 0; }
 .swml-ld-complete {
     display: flex; align-items: center; gap: 4px;
     font-size: 11px; font-weight: 600;
     color: #51dacf; padding: 3px 10px;
-    border: 1px solid rgba(81,218,207,0.25); border-radius: 5px;
-    background: rgba(81,218,207,0.08); transition: all 0.2s;
+    border: none; border-radius: 5px;
+    background: rgba(81,218,207,0.12); transition: all 0.2s;
 }
-.swml-ld-complete:hover { background: rgba(81,218,207,0.15); border-color: rgba(81,218,207,0.4); }
+.swml-ld-complete:hover { background: rgba(81,218,207,0.2); }
 .swml-ld-complete:disabled { opacity: 0.5; cursor: default; }
 .swml-canvas-light .swml-ld-complete {
-    color: #4D76FD; border-color: rgba(77,118,253,0.2); background: rgba(77,118,253,0.06);
+    color: #4D76FD; background: rgba(77,118,253,0.1);
 }
-.swml-canvas-light .swml-ld-complete:hover { background: rgba(77,118,253,0.12); }
+.swml-canvas-light .swml-ld-complete:hover { background: rgba(77,118,253,0.16); }
 /* Comment count in status bar */
 .swml-comment-count {
     font-size: 11px;
@@ -4252,28 +4256,27 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-status .swml-save-status.saving {
     color: var(--swml-teal, #51dacf);
 }
-/* Zoom reset button */
+/* Zoom control — sits on the LEFT of the status bar (away from the centred nav) */
+.swml-zoom-control { order: -2; }
+/* Zoom reset button — borderless tint pill (no AI outline) */
 .swml-zoom-reset {
-    background: none; border: 1px solid rgba(81,218,207,0.25);
+    background: rgba(81,218,207,0.12); border: none;
     color: #51dacf; cursor: pointer; font-family: inherit;
     font-size: 10px; font-weight: 600; padding: 2px 8px;
     border-radius: 4px; white-space: nowrap;
     font-variant-numeric: tabular-nums;
-    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    transition: background 0.2s, color 0.2s;
 }
 .swml-zoom-reset:hover {
-    background: rgba(81,218,207,0.12);
-    border-color: rgba(81,218,207,0.5);
+    background: rgba(81,218,207,0.2);
     color: #7DF9E9;
 }
 .swml-canvas-light .swml-zoom-reset {
-    border-color: rgba(60,60,80,0.25);
     color: #4a4a5a;
-    background: rgba(60,60,80,0.06);
+    background: rgba(60,60,80,0.08);
 }
 .swml-canvas-light .swml-zoom-reset:hover {
-    background: rgba(77,118,253,0.1);
-    border-color: rgba(77,118,253,0.5);
+    background: rgba(77,118,253,0.12);
     color: #4D76FD;
 }
 /* Page count + countdown in status bar */
