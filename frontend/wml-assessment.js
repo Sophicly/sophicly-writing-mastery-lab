@@ -6135,15 +6135,17 @@
             if (!canvasEditor) return;
             const editor = document.getElementById('swml-tiptap-editor');
             const rows = [];
+            let currentUnit = '';
             canvasEditor.state.doc.descendants((node, pos) => {
                 if (node.type.name !== 'sectionBlock') return;
                 const type = node.attrs.sectionType || 'response';
-                if (type === 'divider') return;
+                const label = (node.attrs.label || '').trim();
+                // dividers set the current UNIT context for the breadcrumb (not listed)
+                if (type === 'divider') { currentUnit = label; return; }
                 // mirror updateOutline's diagnostic-hidden guard
                 if (canvas.classList.contains('swml-canvas-diagnostic') && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) return false;
-                const label = (node.attrs.label || '').trim();
                 if (!label) return;
-                rows.push({ type, label, pos });
+                rows.push({ type, label, pos, unit: currentUnit });
             });
             if (rows.length === 0) {
                 siList.appendChild(el('div', { className: 'swml-scroll-index-empty', textContent: 'No sections yet' }));
@@ -6164,30 +6166,51 @@
                     item.appendChild(chk);
                 }
                 siList.appendChild(item);
-                indexPositions.push({ pos: s.pos, itemEl: item, label: s.label });
+                indexPositions.push({ pos: s.pos, itemEl: item, label: s.label, unit: s.unit });
             });
         }
 
-        // active section = last heading scrolled past the 35% line; drives the row
-        // highlight AND the island's live title.
+        // short "Unit N" (or pre-dash divider word) prefix for the breadcrumb
+        function _siUnitPrefix(unitLabel) {
+            if (!unitLabel) return '';
+            const m = unitLabel.match(/unit\s*(\d+)/i);
+            if (m) return 'Unit ' + m[1];
+            return unitLabel.replace(/\s*[—–-].*$/, '').trim();
+        }
+        function _siBreadcrumb(p) {
+            if (!p) return 'Contents';
+            const pre = _siUnitPrefix(p.unit);
+            return pre ? pre + ' · ' + p.label : p.label;
+        }
+
+        // active section = last section scrolled past the 30% line; drives the row
+        // highlight AND the island's live breadcrumb. Re-resolves the real DOM section
+        // each call via a label→el map — robust to nodeView re-renders (a stale/detached
+        // ref reports top:0, which made the old domAtPos version stick on the last section).
         function computeActiveIdx() {
-            if (indexPositions.length === 0 || !canvasEditor) return -1;
-            const containerRect = contentWrap.getBoundingClientRect();
-            const threshold = containerRect.top + containerRect.height * 0.35;
-            let activeIdx = 0;
+            if (indexPositions.length === 0) return -1;
+            const editor = document.getElementById('swml-tiptap-editor');
+            if (!editor) return -1;
+            const cRect = contentWrap.getBoundingClientRect();
+            const threshold = cRect.top + cRect.height * 0.30;
+            const map = {};
+            editor.querySelectorAll('[data-section-label]').forEach(elm => { map[elm.getAttribute('data-section-label')] = elm; });
+            let activeIdx = -1;
             for (let i = 0; i < indexPositions.length; i++) {
-                try {
-                    const domNode = canvasEditor.view.domAtPos(indexPositions[i].pos + 1)?.node;
-                    const secEl = domNode?.nodeType === 1 ? domNode : domNode?.parentElement?.closest('[data-section-type], h2, h3') || domNode?.parentElement;
-                    if (secEl && secEl.getBoundingClientRect().top <= threshold) activeIdx = i;
-                } catch (e) { /* stale pos */ }
+                const dom = map[indexPositions[i].label];
+                if (dom && dom.getBoundingClientRect().top <= threshold) activeIdx = i;
             }
             return activeIdx;
         }
         function updateIndexActive() {
             const activeIdx = computeActiveIdx();
             indexPositions.forEach((hp, i) => hp.itemEl.classList.toggle('swml-scroll-index-active', i === activeIdx));
-            if (activeIdx >= 0 && indexPositions[activeIdx]) siTitle.textContent = indexPositions[activeIdx].label;
+            // before any section crosses the line (i.e. at the very top) → Table of Contents
+            if (activeIdx < 0 || contentWrap.scrollTop < 12) {
+                siTitle.textContent = 'Table of Contents';
+            } else {
+                siTitle.textContent = _siBreadcrumb(indexPositions[activeIdx]);
+            }
         }
 
         function openIndexPanel() {
