@@ -7466,12 +7466,14 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* completed unit pill (Codex) — green tint + house check (v7.19.505) */
 .swml-progress-chip.is-done {
     color: #1CD991; background: rgba(28,217,145,0.16);
-    position: relative; padding-left: 27px;
+    position: relative; padding-left: 31px;
 }
+/* house badge — green rounded circle + white check (matches the section tick) */
 .swml-progress-chip.is-done::before {
-    content: ''; position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
-    width: 13px; height: 13px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%231CD991' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 13px 13px no-repeat;
+    content: ''; position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+    width: 17px; height: 17px; border-radius: 50%;
+    background: #1CD991 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 11px 11px no-repeat;
+    box-shadow: 0 1px 3px rgba(28,217,145,0.4);
 }
 .swml-progress-chip.is-done:hover { background: rgba(28,217,145,0.28); color: #1CD991; }
 
@@ -7502,7 +7504,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     color: #17b57a; background: rgba(28,217,145,0.12);
 }
 [data-swml-theme="light"] .swml-progress-chip.is-done::before {
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%2317b57a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 13px 13px no-repeat;
+    background: #1CD991 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 11px 11px no-repeat;
 }
 [data-swml-theme="light"] .swml-progress-chip.is-done:hover { background: rgba(28,217,145,0.20); color: #17b57a; }
 
