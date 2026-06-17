@@ -7893,6 +7893,25 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     opacity: 0.7;
     font-variant-numeric: tabular-nums;
 }
+/* adaptive jump-to-top/bottom arrow (left of the ring) */
+.swml-scroll-index-jump {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 7px;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.swml-scroll-index-jump:hover { background: rgba(255,255,255,0.16); }
+.swml-canvas-light .swml-scroll-index-jump { background: rgba(20,18,30,0.06); color: #1a1a1e; }
+.swml-canvas-light .swml-scroll-index-jump:hover { background: rgba(20,18,30,0.12); }
 
 /* circular progress ring (r=15.9155 → circumference ≈ 100) — white in both themes */
 .swml-scroll-index-ring { flex: 0 0 auto; display: inline-flex; }

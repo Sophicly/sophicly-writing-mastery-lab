@@ -6115,11 +6115,24 @@
         siRing.innerHTML = '<svg viewBox="0 0 36 36"><circle class="swml-scroll-index-ring-bg" cx="18" cy="18" r="15.9155"/><circle class="swml-scroll-index-ring-bar" cx="18" cy="18" r="15.9155" stroke-dasharray="100" stroke-dashoffset="100"/></svg>';
         const siRingBar = siRing.querySelector('.swml-scroll-index-ring-bar');
         const siTitle = el('span', { className: 'swml-scroll-index-title', textContent: 'Contents' });
-        // Pill = ring + live section name (breadcrumb of where you are) + scroll-%.
+        // Pill = jump-arrow + ring + live section name (breadcrumb) + scroll-%.
         const siPct = el('span', { className: 'swml-scroll-index-pct', textContent: '0%' });
+        // Adaptive jump arrow: ↑ scroll-to-top (default), flips to ↓ scroll-to-bottom
+        // when already at the top. Replaces the old standalone scroll-to-top button.
+        const _SI_UP = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>';
+        const _SI_DOWN = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+        const siJump = el('button', { className: 'swml-scroll-index-jump', title: 'Scroll to top' });
+        siJump.innerHTML = _SI_UP;
+        siJump.addEventListener('click', (e) => {
+            e.stopPropagation(); // don't toggle the panel
+            const atTop = contentWrap.scrollTop < 12;
+            contentWrap.scrollTo({ top: atTop ? contentWrap.scrollHeight : 0, behavior: 'smooth' });
+        });
+        siHead.appendChild(siJump);
         siHead.appendChild(siRing);
         siHead.appendChild(siTitle);
         siHead.appendChild(siPct);
+        let _siJumpAtTop = null;
 
         scrollIndex.appendChild(siNav);
         scrollIndex.appendChild(siHead);
@@ -6260,6 +6273,13 @@
             const pct = max > 8 ? Math.min(100, Math.max(0, Math.round(contentWrap.scrollTop / max * 100))) : 0;
             siPct.textContent = pct + '%';
             if (siRingBar) siRingBar.style.strokeDashoffset = String(100 - pct);
+            // flip the jump arrow: at the very top → offer scroll-to-bottom, else top
+            const atTop = contentWrap.scrollTop < 12;
+            if (atTop !== _siJumpAtTop) {
+                _siJumpAtTop = atTop;
+                siJump.innerHTML = atTop ? _SI_DOWN : _SI_UP;
+                siJump.title = atTop ? 'Scroll to bottom' : 'Scroll to top';
+            }
         }
         contentWrap.addEventListener('scroll', () => {
             if (siScrollRaf) cancelAnimationFrame(siScrollRaf);
