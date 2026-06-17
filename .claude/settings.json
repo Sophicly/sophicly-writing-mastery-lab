@@ -409,7 +409,8 @@
       "Bash(sed -i '' 's/ \\\\* Version:     3.10.23/ * Version:     3.10.24/' sophicly-components.php)",
       "Bash(sed -i '' \"s/define\\( 'SC_VERSION', '3.10.23' \\)/define\\( 'SC_VERSION', '3.10.24' \\)/\" sophicly-components.php)",
       "Bash(awk '/function get_defined_steps/,/}/' includes/class-rest-api.php)",
-      "Bash(awk 'NR>=700 && NR<=755 && /get_user_meta/' sophicly-onboarding.php)"
+      "Bash(awk 'NR>=700 && NR<=755 && /get_user_meta/' sophicly-onboarding.php)",
+      "Bash(awk '/function CompleteStep/,/^}/' frontend/onboarding-app.js)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

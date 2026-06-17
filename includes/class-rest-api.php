@@ -2775,18 +2775,16 @@ class SWML_REST_API {
         $tutor    = wp_get_current_user();
         $params   = $request->get_json_params();
 
-        // TEMP DEBUG (v7.19.530) — capture exactly what the browser sends; remove after.
-        @file_put_contents('/tmp/swml-signoff-debug.log', date('c') . ' | uid=' . $tutor_id
-            . ' | json=' . wp_json_encode($params)
-            . ' | rawbody=' . substr((string) $request->get_body(), 0, 500)
-            . ' | ct=' . $request->get_header('content-type') . "\n", FILE_APPEND);
-
         $board        = sanitize_text_field($params['board'] ?? '');
         $text         = sanitize_text_field($params['text'] ?? '');
         $topic_number = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
         $suffix       = sanitize_text_field($params['suffix'] ?? '');
         $attempt      = absint($params['attempt'] ?? 0);
-        $student_id   = absint($params['studentId'] ?? get_current_user_id());
+        // v7.19.531: studentId can arrive as "0" (truthy string from a review-param
+        // default), which absint()→0. Coerce 0/empty to the current user (self sign-off),
+        // never user 0. Review mode passes a real student id, so it's unaffected.
+        $student_id   = absint($params['studentId'] ?? 0);
+        if (!$student_id) $student_id = get_current_user_id();
 
         // Security: prevent tutor from signing off their own work (v7.15.2).
         // v7.19.524: admins (manage_options) MAY self-sign-off — for testing/demo.
@@ -2847,7 +2845,8 @@ class SWML_REST_API {
         // student's signoff rather than the tutor's own meta. Falls back to
         // the current user for self-view. Permission still enforced below.
         $student_id_param = $request->get_param('studentId');
-        $student_id   = ($student_id_param !== null && $student_id_param !== '') ? absint($student_id_param) : $viewer_id;
+        $student_id   = absint($student_id_param);
+        if (!$student_id) $student_id = $viewer_id; // v7.19.531: "0"/empty → viewer (self)
         $board        = sanitize_text_field($request->get_param('board') ?? '');
         $text         = sanitize_text_field($request->get_param('text') ?? '');
         $topic_number = $request->get_param('topicNumber');
