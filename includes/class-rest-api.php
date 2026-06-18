@@ -4157,6 +4157,16 @@ class SWML_REST_API {
      */
     public function load_cw_project($request) {
         $user_id = get_current_user_id();
+        // v7.19.535: review-mode — a tutor/specialist/admin (global) or a linked parent may
+        // view ANOTHER user's CW projects so the focus sidebar can scope its per-project
+        // override to the reviewed student, not the viewer. Accept student_id (existing
+        // review-mode convention) or user_id; gate via the canonical verify_viewer_access.
+        $target_id = absint($request->get_param('student_id') ?: $request->get_param('user_id') ?: 0);
+        if ($target_id && $target_id !== $user_id) {
+            $auth = $this->verify_viewer_access($target_id);
+            if (is_wp_error($auth)) return $auth;
+            $user_id = $target_id;
+        }
         $project_id = sanitize_key($request->get_param('project_id') ?? '');
 
         if (empty($project_id)) {
