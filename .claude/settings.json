@@ -460,7 +460,8 @@
       "Bash(sed -i '' 's/\\\\* Version: 2.31.34/* Version: 2.31.35/' sophicly-student-data/sophicly-student-data.php)",
       "Bash(sed -i '' \"s/define\\( 'SOPHICLY_VERSION', '2.31.34' \\);/define\\( 'SOPHICLY_VERSION', '2.31.35' \\);/\" sophicly-student-data/sophicly-student-data.php)",
       "Bash(sed -i '' 's/\\\\* Version: 2.30.194/* Version: 2.30.195/' sophicly-dashboard/sophicly-dashboard.php)",
-      "Bash(sed -i '' \"s/define\\( 'SDASH_VERSION', '2.30.194' \\);/define\\( 'SDASH_VERSION', '2.30.195' \\);/\" sophicly-dashboard/sophicly-dashboard.php)"
+      "Bash(sed -i '' \"s/define\\( 'SDASH_VERSION', '2.30.194' \\);/define\\( 'SDASH_VERSION', '2.30.195' \\);/\" sophicly-dashboard/sophicly-dashboard.php)",
+      "Bash(grep -nE \"img *\\\\{|img,|[^-]img[^a-z-]|height: *auto|max-width: *100%\" frontend/wml-canvas.css)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
