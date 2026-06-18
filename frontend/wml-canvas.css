@@ -379,7 +379,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 }
 .swml-comment-bubble {
     position: absolute;
-    left: 6px;
+    left: 1px; /* v7.19.540: flush against the document edge (TipTap-style) */
     pointer-events: auto;
     width: 30px;
 }
@@ -426,8 +426,9 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     height: 6px;
     color: #1e1e34;
     margin-top: 0;
-    transform: scaleX(-1);
+    /* v7.19.540: no flip — tail point faces the document (was scaleX(-1), pointing away) */
 }
+.swml-canvas-light .swml-bubble-pointer { color: #fff; }
 /* Light mode bubbles */
 .swml-canvas-light .swml-comment-bubble-avatar {
     box-shadow: 0 0 0 2.5px #fff, 0 2px 8px rgba(0,0,0,0.1);
@@ -9815,6 +9816,17 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
 }
 .swml-tutor-view-pill svg {
     flex-shrink: 0;
+}
+/* v7.19.540: light theme — the translucent gradient let the page show THROUGH the
+   pill (see-through, looked broken). Use an opaque brand deep-purple base so it
+   reads as a solid chip; light-teal text/border keep the tutor-view identity. */
+.swml-canvas-light .swml-tutor-view-pill {
+    background: #2c003e;
+    border-color: rgba(125, 249, 233, 0.45);
+    color: #7DF9E9;
+}
+.swml-canvas-light .swml-tutor-view-pill:hover {
+    border-color: rgba(125, 249, 233, 0.7);
 }
 
 /* Tutor-view modal. */
