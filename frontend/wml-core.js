@@ -2027,10 +2027,11 @@ window.WML = (function() {
         loadArtifact(projectId, key) {
             return apiGet(API.cwArtifact + '?project_id=' + encodeURIComponent(projectId) + '&key=' + encodeURIComponent(key));
         },
-        /** Save a trial assessment result. */
-        saveTrial(projectId, trialData) {
+        /** Save a trial assessment result. Pass trialNumber (1..6, e.g. state.cwTrial) so
+         *  completion keys per-project — see load_cw_project -> trial_completion (v7.19.536). */
+        saveTrial(projectId, trialData, trialNumber) {
             return _cwBroadcast(
-                apiPost(API.cwTrial, { project_id: projectId, trial: trialData, lesson_url: _lu() }),
+                apiPost(API.cwTrial, { project_id: projectId, trial: trialData, trial_number: trialNumber || null, lesson_url: _lu() }),
                 { event: 'trial_save', project_id: projectId }
             );
         },

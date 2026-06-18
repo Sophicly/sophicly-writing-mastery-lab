@@ -4184,6 +4184,20 @@ class SWML_REST_API {
             return rest_ensure_response(['success' => false, 'message' => 'Project not found']);
         }
 
+        // v7.19.536: per-project trial-completion map (Ask 1 of cw-project-signals handoff).
+        // Lets the focus sidebar tick cw_trial_N rows for THIS project (not globally).
+        // complete = >=1 saved result stamped with that trial number. Keys 1..6 (CW has
+        // six trials — see CW_STEPS in wml-core.js). In-memory only; not persisted.
+        $trials = (isset($project['trials']) && is_array($project['trials'])) ? $project['trials'] : [];
+        $trial_completion = [];
+        for ($n = 1; $n <= 6; $n++) { $trial_completion[$n] = false; }
+        foreach ($trials as $t) {
+            if (!is_array($t)) { continue; }
+            $tn = absint($t['trial'] ?? $t['trial_number'] ?? 0);
+            if ($tn >= 1 && $tn <= 6) { $trial_completion[$tn] = true; }
+        }
+        $project['trial_completion'] = $trial_completion;
+
         return rest_ensure_response([
             'success' => true,
             'project' => $project,
@@ -4263,6 +4277,15 @@ class SWML_REST_API {
 
         if (empty($project_id) || empty($trial_data)) {
             return rest_ensure_response(['success' => false, 'message' => 'Missing project_id or trial data']);
+        }
+
+        // v7.19.536: stamp the trial number (1..6) onto the saved entry so completion can be
+        // keyed per-project (consumed by load_cw_project -> trial_completion). Client passes
+        // trial_number (state.cwTrial); fall back to a number already inside the payload.
+        // Without a number the trial still saves — it just won't key into trial_completion.
+        if (is_array($trial_data)) {
+            $trial_number = absint($params['trial_number'] ?? $trial_data['trial'] ?? $trial_data['trial_number'] ?? 0);
+            if ($trial_number >= 1 && $trial_number <= 6) { $trial_data['trial'] = $trial_number; }
         }
 
         $result = SWML_Session_Manager::save_trial_result($user_id, $project_id, $trial_data);
