@@ -379,7 +379,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 }
 .swml-comment-bubble {
     position: absolute;
-    left: 1px; /* v7.19.540: flush against the document edge (TipTap-style) */
+    left: 4px; /* v7.19.541: thin 1-2px gap from the doc edge (not dead-flush), TipTap-style */
     pointer-events: auto;
     width: 30px;
 }
@@ -422,8 +422,8 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 }
 .swml-bubble-pointer {
     display: block;
-    width: 12px;
-    height: 6px;
+    width: 16px;  /* v7.19.541: bigger tail to match TipTap (was 12x6) */
+    height: 7px;
     color: #1e1e34;
     margin-top: 0;
     /* v7.19.540: no flip — tail point faces the document (was scaleX(-1), pointing away) */
