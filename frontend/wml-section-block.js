@@ -154,7 +154,17 @@
                                 const locked = child.attrs && (child.attrs.locked === true || child.attrs.locked === 'true');
                                 if (locked) return;
                                 trackable = true;
-                                if ((child.textContent || '').trim().length > 0) hasText = true;
+                                // v7.19.532: ignore all-italic text — it's placeholder/instruction
+                                // (older free-prose docs seeded the AI-output placeholder UNLOCKED,
+                                // e.g. Step-1 Writer's Profile / Seed Loglines), so an untouched
+                                // placeholder must not tick the section complete. Mirrors the em-strip
+                                // used by the DOM completion check + the older getSectionIndicator.
+                                if ((child.textContent || '').trim().length === 0) return;
+                                let allItalic = true;
+                                child.forEach((inline) => {
+                                    if (inline.isText && !((inline.marks || []).some(m => m.type && m.type.name === 'italic'))) allItalic = false;
+                                });
+                                if (!allItalic) hasText = true;
                             });
                             if (trackable) dom.setAttribute('data-section-complete', hasText ? 'true' : 'false');
                         }

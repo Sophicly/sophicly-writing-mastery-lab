@@ -2312,7 +2312,12 @@
                 if (b.getAttribute('data-locked') === 'true') return;
                 if (b.closest('.swml-outline-row')) return; // belongs to a row, not free-prose
                 trackable = true;
-                if ((b.textContent || '').trim().length > 0) hasText = true;
+                // v7.19.532: strip italic placeholder text before measuring — older free-prose
+                // docs persisted the AI-output placeholder UNLOCKED (Step-1 Writer's Profile /
+                // Seed Loglines), and an untouched all-italic placeholder must not tick complete.
+                const clone = b.cloneNode(true);
+                clone.querySelectorAll('em, i').forEach(e => e.remove());
+                if ((clone.textContent || '').trim().length > 0) hasText = true;
             });
             if (trackable) sectionEl.setAttribute('data-section-complete', hasText ? 'true' : 'false');
             return;
