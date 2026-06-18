@@ -379,7 +379,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 }
 .swml-comment-bubble {
     position: absolute;
-    left: 4px; /* v7.19.541: thin 1-2px gap from the doc edge (not dead-flush), TipTap-style */
+    left: 3px; /* v7.19.546: 1px closer to the doc edge (Neil) */
     pointer-events: auto;
     width: 30px;
 }
