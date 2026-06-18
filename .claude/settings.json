@@ -431,7 +431,9 @@
       "Bash(curl -s -m 20 \"https://sophicly.com/\")",
       "Bash(grep -i \"assess\\\\|submission\\\\|=> \\\\$\\\\|'grade'\\\\|course\")",
       "Bash(grep -n ''\\\\''course_id'\\\\''\\\\|'\\\\''name'\\\\''\\\\|'\\\\''slug'\\\\''\\\\|'\\\\''title'\\\\''\\\\|course_slug\\\\|=> $course' sophicly-student-data/includes/class-rest-api.php)",
-      "Bash(grep -n 'records_table\\\\s*=\\\\|session_records\\\\|$records_table =' sophicly-student-data/includes/class-rest-api.php)"
+      "Bash(grep -n 'records_table\\\\s*=\\\\|session_records\\\\|$records_table =' sophicly-student-data/includes/class-rest-api.php)",
+      "Bash(sed -i '' 's/Version: 2.30.183/Version: 2.30.184/; s/SDASH_VERSION'\"'\"', '\"'\"'2.30.183/SDASH_VERSION'\"'\"', '\"'\"'2.30.184/' sophicly-dashboard/sophicly-dashboard.php)",
+      "Bash(sed -i '' 's/Version: 2.31.28/Version: 2.31.29/; s/SOPHICLY_VERSION'\"'\"', '\"'\"'2.31.28/SOPHICLY_VERSION'\"'\"', '\"'\"'2.31.29/' sophicly-student-data/sophicly-student-data.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
