@@ -440,9 +440,9 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     /* v7.19.548: bigger + sharper tail (taller viewBox stretch = pointier tip), overlapping
        the card edge so it reads seamless. Neil's offsets: bottom -10, left -1. */
     bottom: -10px;
-    left: -1px;
-    width: 20px;
-    height: 13px;
+    left: 0px;
+    width: 22px;
+    height: 16px;            /* v7.19.549: taller so it overlaps up into the card (closes the gap) */
     color: #2d2d2f;          /* dark card — matches card fill */
 }
 /* Light canvas — white card (TipTap light), subtle dark border, soft elevated shadow. */
