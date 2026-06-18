@@ -399,8 +399,9 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     transform: scale(1.12);
 }
 .swml-comment-bubble-avatar {
-    width: 30px;
-    height: 30px;
+    width: 30px !important;
+    height: 30px !important;
+    aspect-ratio: 1 / 1;
     border-radius: 8px;
     object-fit: cover;
     display: block;
@@ -629,8 +630,11 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     margin-bottom: 3px;
 }
 /* v7.14.61: Avatar in comment thread */
+/* v7.19.539: !important + aspect-ratio defeat the theme's global `img { height:auto }`
+   reset, which was stretching the avatar into an oblong. */
 .swml-comment-msg-avatar {
-    width: 18px; height: 18px; border-radius: 50%;
+    width: 18px !important; height: 18px !important; aspect-ratio: 1 / 1;
+    border-radius: 50%;
     object-fit: cover; flex-shrink: 0;
 }
 .swml-comment-msg-initials {
