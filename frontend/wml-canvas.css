@@ -401,7 +401,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     height: 34px;            /* SQUARE — fixed so it can't drift rectangular */
     padding: 0;
     background: #2d2d2f;     /* dark canvas (default) — TipTap tt-gray-dark-200 */
-    border: 1px solid rgba(255,255,255,0.12);
+    border: none;            /* v7.19.548: no stroke/frame border (Neil) */
     border-radius: 10px;     /* square with rounded corners */
     box-shadow: 0 8px 24px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.35);
     cursor: pointer;
@@ -412,8 +412,8 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     transform: scale(1.1);
 }
 .swml-comment-bubble-avatar {
-    width: 24px !important;
-    height: 24px !important;
+    width: 22px !important;  /* v7.19.548: smaller avatar = thicker white frame (Neil) */
+    height: 22px !important;
     aspect-ratio: 1 / 1;
     border-radius: 50%; /* circular inside the card */
     object-fit: cover;
@@ -437,17 +437,18 @@ body.swml-fullscreen-active { overflow: hidden !important; }
    matches the card colour per theme so card + tail read as one shape. */
 .swml-bubble-pointer {
     position: absolute;
-    bottom: -8px;            /* v7.19.547: bigger, more prominent tail (TipTap-like) */
-    left: 4px;
+    /* v7.19.548: bigger + sharper tail (taller viewBox stretch = pointier tip), overlapping
+       the card edge so it reads seamless. Neil's offsets: bottom -10, left -1. */
+    bottom: -10px;
+    left: -1px;
     width: 20px;
-    height: 10px;
+    height: 13px;
     color: #2d2d2f;          /* dark card — matches card fill */
 }
 /* Light canvas — white card (TipTap light), subtle dark border, soft elevated shadow. */
 .swml-canvas-light .swml-comment-bubble-btn {
     background: #fff;
-    border-color: rgba(15,22,36,0.10);
-    box-shadow: 0px 6px 8px rgba(17,24,39,0.05), 0px 2px 3px rgba(17,24,39,0.05);
+    box-shadow: 0px 6px 14px rgba(17,24,39,0.14), 0px 2px 4px rgba(17,24,39,0.10);
 }
 .swml-canvas-light .swml-comment-bubble-initials {
     background: linear-gradient(135deg, #f0c030, #d4a017);
