@@ -11756,35 +11756,42 @@
         let comments = {};
         try { comments = JSON.parse(localStorage.getItem(commentKey)) || {}; } catch(e) {}
 
+        // v7.19.537: POST the current tutor-comment map to the server NOW. Extracted from
+        // the old 2000ms-debounced inline save — that window meant a refresh right after
+        // adding a comment lost it (it never POSTed). keepalive lets a page-close flush
+        // still land. v7.15.112: tutor comments attach to the canvas doc (shared redraft).
+        function _postTutorComments(keepalive) {
+            if (!(state.reviewMode && state.reviewStudentId)) return;
+            const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
+            try {
+                fetch(API.base + 'canvas/tutor-comment', {
+                    method: 'POST', headers, keepalive: !!keepalive,
+                    body: JSON.stringify({
+                        student_id: state.reviewStudentId,
+                        board: state.board,
+                        text: state.text,
+                        topicNumber: state.topicNumber || null,
+                        suffix: suffix,
+                        attempt: state.attempt || 1,
+                        comments: comments,
+                        html: canvasEditor ? canvasEditor.getHTML() : '',
+                    })
+                }).then(r => r.json()).then(res => {
+                    if (!res || !res.success) console.warn('WML Review: Tutor comment save failed', res);
+                }).catch(e => console.warn('WML Review: Tutor comment save error', e && e.message));
+            } catch (e) { /* ignore */ }
+        }
         function saveComments() {
             if (!state.reviewMode) {
                 try { localStorage.setItem(commentKey, JSON.stringify(comments)); } catch(e) {}
             }
             if (typeof updateCommentGutter === 'function') requestAnimationFrame(updateCommentGutter);
             if (typeof updateCommentCount === 'function') updateCommentCount();
-            // v7.15.30: In review mode, persist tutor comments to server
+            // v7.19.537: persist near-immediately (200ms coalesce) instead of the old
+            // 2000ms debounce, so a quick refresh can't drop a just-added comment.
             if (state.reviewMode && state.reviewStudentId) {
                 clearTimeout(window._swmlTutorCommentTimer);
-                window._swmlTutorCommentTimer = setTimeout(() => {
-                    // v7.15.112: tutor comments attach to the canvas doc (shared redraft)
-                    const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
-                    fetch(API.base + 'canvas/tutor-comment', {
-                        method: 'POST', headers,
-                        body: JSON.stringify({
-                            student_id: state.reviewStudentId,
-                            board: state.board,
-                            text: state.text,
-                            topicNumber: state.topicNumber || null,
-                            suffix: suffix,
-                            attempt: state.attempt || 1,
-                            comments: comments,
-                            html: canvasEditor ? canvasEditor.getHTML() : '',
-                        })
-                    }).then(r => r.json()).then(res => {
-                        if (res.success) console.log('WML Review: Tutor comments saved');
-                        else console.warn('WML Review: Tutor comment save failed', res);
-                    }).catch(e => console.warn('WML Review: Tutor comment save error', e.message));
-                }, 2000);
+                window._swmlTutorCommentTimer = setTimeout(() => _postTutorComments(false), 200);
             }
         }
 

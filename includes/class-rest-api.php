@@ -1597,8 +1597,17 @@ class SWML_REST_API {
             'board'      => $board,
             'text'       => $text,
         ];
-        if ($comments !== null) {
+        // v7.19.537: a canvas save that doesn't carry comments must NOT wipe comments
+        // already on the server. save_canvas rebuilds $doc from scratch each call, so a
+        // normal autosave (student writing — no comment map) was obliterating tutor
+        // comments every 2s (root cause of disappearing comments). Only replace when the
+        // incoming map has data; otherwise preserve whatever is already saved.
+        if ($comments !== null && (!is_array($comments) || !empty($comments))) {
             $doc['comments'] = $comments;
+        } else {
+            $existing_raw = get_user_meta($user_id, $meta_key, true);
+            $existing = is_array($existing_raw) ? $existing_raw : (self::decode_canvas_json($existing_raw) ?: []);
+            if (!empty($existing['comments'])) $doc['comments'] = $existing['comments'];
         }
         if ($topic_number !== null) {
             $doc['topicNumber'] = $topic_number;
@@ -2337,9 +2346,15 @@ class SWML_REST_API {
             $doc = is_array($raw) ? $raw : (self::decode_canvas_json($raw) ?: []);
         }
 
-        // Merge tutor comments into student's canvas doc
+        // Merge tutor comments into student's canvas doc.
+        // v7.19.537: never let an empty/stale client map wipe comments already saved
+        // (belt-and-braces with the save_canvas preserve above). Replace only when the
+        // incoming map has data, or when there's nothing to lose.
         if ($new_comments !== null) {
-            $doc['comments'] = $new_comments;
+            $incoming = is_array($new_comments) ? $new_comments : [];
+            if (!empty($incoming) || empty($doc['comments'])) {
+                $doc['comments'] = $incoming;
+            }
         }
         // Update HTML with comment marks
         if (!empty($html)) {
