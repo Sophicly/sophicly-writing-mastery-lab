@@ -192,6 +192,7 @@ window.WML = (function() {
         deleteSession: config.restUrl + 'session/delete',
         savedQuestions: config.restUrl + 'saved-questions',
         canvasSave:    config.restUrl + 'canvas/save',
+        tutorComment:  config.restUrl + 'canvas/tutor-comment', // v7.19.538: was API.base (undefined) → 404
         foundationalQuizResult: config.restUrl + 'foundational-quiz/result',
         // v7.19.323: deterministic code-scored mark-scheme quiz (Bug #1 root fix)
         quizStart:     config.restUrl + 'quiz/start',

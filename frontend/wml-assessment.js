@@ -11764,7 +11764,7 @@
             if (!(state.reviewMode && state.reviewStudentId)) return;
             const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
             try {
-                fetch(API.base + 'canvas/tutor-comment', {
+                fetch(API.tutorComment, {
                     method: 'POST', headers, keepalive: !!keepalive,
                     body: JSON.stringify({
                         student_id: state.reviewStudentId,
