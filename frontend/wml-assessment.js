@@ -13789,7 +13789,8 @@
         });
 
         // ── Comment Gutter Indicators (TipTap-style bubbles) ──
-        const BUBBLE_POINTER_SVG = '<svg width="16" height="7" viewBox="0 0 16 7" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="swml-bubble-pointer"><path d="M0 0H16H12.8062C10.9897 0 9.22719 0.618246 7.80869 1.75305L2.43704 6.05036C1.4549 6.83608 0 6.13682 0 4.87906V0Z"></path></svg>';
+        // v7.19.550: sharp-tipped tail (straight lines → pointy tip, not the old rounded TipTap curve).
+        const BUBBLE_POINTER_SVG = '<svg viewBox="0 0 20 18" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="swml-bubble-pointer"><path d="M0 0 L20 0 L20 4 L2 18 L0 6 Z"></path></svg>';
         const avatarUrl = config.userAvatar || '';
 
         function updateCommentGutter() {
