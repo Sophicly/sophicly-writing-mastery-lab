@@ -437,10 +437,10 @@ body.swml-fullscreen-active { overflow: hidden !important; }
    matches the card colour per theme so card + tail read as one shape. */
 .swml-bubble-pointer {
     position: absolute;
-    bottom: -5px;            /* v7.19.545: overlap the card edge so card+tail merge (no seam) */
-    left: 5px;
-    width: 16px;
-    height: 7px;
+    bottom: -8px;            /* v7.19.547: bigger, more prominent tail (TipTap-like) */
+    left: 4px;
+    width: 20px;
+    height: 10px;
     color: #2d2d2f;          /* dark card — matches card fill */
 }
 /* Light canvas — white card (TipTap light), subtle dark border, soft elevated shadow. */
