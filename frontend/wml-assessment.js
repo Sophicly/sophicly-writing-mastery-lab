@@ -6183,7 +6183,12 @@
                 // header = chevron (toggle open/close) + label (jump to the unit's start)
                 const head = el('div', { className: 'swml-scroll-index-group-head' });
                 const chevBtn = el('button', { className: 'swml-scroll-index-chev-btn', tabIndex: -1,
-                    onClick: () => { groupWrap.classList.toggle('swml-scroll-index-collapsed'); } });
+                    onClick: () => {
+                        groupWrap.classList.toggle('swml-scroll-index-collapsed');
+                        // v7.19.533: re-fit the nav so expanding a group grows the panel
+                        // (until the list hits its own cap + scrolls) instead of clipping.
+                        if (siOpen) siNav.style.maxHeight = siNav.scrollHeight + 'px';
+                    } });
                 chevBtn.innerHTML = '<svg class="swml-scroll-index-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
                 const _jumpPos = (typeof g.unitPos === 'number') ? g.unitPos : (g.items[0] ? g.items[0].pos : null);
                 const labelBtn = el('button', { className: 'swml-scroll-index-group-label', tabIndex: -1, textContent: _siGroupLabel(g.unit),
@@ -6294,7 +6299,12 @@
             siBackdrop.classList.add('is-open');
             // JS-measured height = buttery morph (scrollHeight reports full content
             // even while collapsed, so the spring tracks real height, not an empty cap).
-            siNav.style.maxHeight = Math.min(window.innerHeight * 0.52, siNav.scrollHeight) + 'px';
+            // v7.19.533: nav fits its content (no competing viewport clamp). The inner
+            // list owns scrolling via its own max-height: min(46vh,380px) cap, so the
+            // island stays viewport-safe; a separate innerHeight*0.52 clamp here landed
+            // BELOW the list box on short/windowed viewports and clipped the last unit
+            // (overflow:hidden hid it permanently — unreachable by scrolling the list).
+            siNav.style.maxHeight = siNav.scrollHeight + 'px';
             updateIndexActive();
             // land the active row in view inside the list (rect-based — robust to the
             // nested group structure where offsetTop is relative to the group, not the list)
