@@ -13789,8 +13789,10 @@
         });
 
         // ── Comment Gutter Indicators (TipTap-style bubbles) ──
-        // v7.19.551: taller + sharper tail — longer straight-line point (viewBox 20x24).
-        const BUBBLE_POINTER_SVG = '<svg viewBox="0 0 20 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="swml-bubble-pointer"><path d="M0 0 L20 0 L20 4 L3 24 L0 7 Z"></path></svg>';
+        // v7.19.552: it's a TRIANGLE, not a literal tail (Neil) — straight VERTICAL left edge
+        // (continues the card's left side), horizontal top, hypotenuse top-right → bottom-left
+        // point. Joined under the card the triangle reads as a speech tail.
+        const BUBBLE_POINTER_SVG = '<svg viewBox="0 0 20 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="swml-bubble-pointer"><path d="M0 0 L20 0 L0 24 Z"></path></svg>';
         const avatarUrl = config.userAvatar || '';
 
         function updateCommentGutter() {
