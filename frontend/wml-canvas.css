@@ -388,20 +388,25 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 }
 /* v7.19.542: TipTap-style bubble — the button IS a white rounded-square CARD that
    frames a CIRCULAR avatar, with a bigger white tail floated at the bottom-left. */
-/* v7.19.543: faithful copy of TipTap's comment bubble — white card (light border +
-   soft elevated shadow), circular avatar, 16x7 white tail flush at the bottom-left. */
+/* v7.19.544: TipTap comment bubble — FIXED SQUARE card (equal w/h so it can never go
+   rectangular), circular avatar centred inside, 16x7 tail flush bottom-left with fill
+   matching the card. Theme-aware: dark card on dark canvas, white on light (mirrors
+   TipTap's --comment-bubble-bg-color flipping by theme). */
 .swml-comment-bubble-btn {
     position: relative;
-    display: block;
-    background: #fff;
-    border: 1px solid rgba(15,22,36,0.08);
-    padding: 3px;
-    border-radius: 12px;
-    box-shadow: 0 6px 8px rgba(17,24,39,0.06), 0 2px 3px rgba(17,24,39,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;            /* SQUARE — fixed so it can't drift rectangular */
+    padding: 0;
+    background: #2d2d2f;     /* dark canvas (default) — TipTap tt-gray-dark-200 */
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;     /* square with rounded corners */
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.35);
     cursor: pointer;
     transition: transform 0.15s;
-    width: auto;
-    line-height: 0; /* kill inline-img descender gap */
+    line-height: 0;
 }
 .swml-comment-bubble-btn:hover {
     transform: scale(1.1);
@@ -428,23 +433,28 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     background: linear-gradient(135deg, #ffc107, #e6a800);
     box-shadow: none;
 }
-/* Tail: 16x7 white (matches the card), flush against the card's bottom-left, point
-   facing down toward the document. ~1px overlap so it reads as one shape. */
+/* Tail: 16x7, flush at the card's bottom-left, point facing the document. Fill
+   matches the card colour per theme so card + tail read as one shape. */
 .swml-bubble-pointer {
     position: absolute;
     bottom: -6px;
-    left: 5px;
+    left: 6px;
     width: 16px;
     height: 7px;
-    color: #fff;
-    filter: drop-shadow(0 2px 1px rgba(17,24,39,0.06));
+    color: #2d2d2f;          /* dark card */
+}
+/* Light canvas — white card (TipTap light), subtle dark border, soft elevated shadow. */
+.swml-canvas-light .swml-comment-bubble-btn {
+    background: #fff;
+    border-color: rgba(15,22,36,0.10);
+    box-shadow: 0px 6px 8px rgba(17,24,39,0.05), 0px 2px 3px rgba(17,24,39,0.05);
 }
 .swml-canvas-light .swml-comment-bubble-initials {
     background: linear-gradient(135deg, #f0c030, #d4a017);
-    box-shadow: none; /* v7.19.542: card frames it now */
+    box-shadow: none;
 }
 .swml-canvas-light .swml-bubble-pointer {
-    color: #fff;
+    color: #fff;             /* white tail to match the white card */
 }
 
 /* Comment popover */
