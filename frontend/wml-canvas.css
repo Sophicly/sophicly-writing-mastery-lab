@@ -386,31 +386,37 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-comment-bubble-resolved {
     opacity: 0.35;
 }
+/* v7.19.542: TipTap-style bubble — the button IS a white rounded-square CARD that
+   frames a CIRCULAR avatar, with a bigger white tail floated at the bottom-left. */
 .swml-comment-bubble-btn {
+    position: relative;
     display: block;
-    background: none;
+    background: #fff;
     border: none;
-    padding: 0;
+    padding: 4px;
+    border-radius: 11px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.30);
     cursor: pointer;
     transition: transform 0.15s;
-    width: 32px;
+    width: auto;
+    line-height: 0; /* kill inline-img descender gap */
 }
 .swml-comment-bubble-btn:hover {
-    transform: scale(1.12);
+    transform: scale(1.1);
 }
 .swml-comment-bubble-avatar {
-    width: 30px !important;
-    height: 30px !important;
+    width: 28px !important;
+    height: 28px !important;
     aspect-ratio: 1 / 1;
-    border-radius: 8px;
+    border-radius: 50%; /* circular inside the card */
     object-fit: cover;
     display: block;
-    box-shadow: 0 0 0 2.5px #1e1e34, 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: none;
 }
 .swml-comment-bubble-initials {
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -418,24 +424,22 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     font-weight: 700;
     color: #fff;
     background: linear-gradient(135deg, #ffc107, #e6a800);
-    box-shadow: 0 0 0 2.5px #1e1e34, 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: none;
 }
+/* Tail: white (matches the card), bigger, hanging from the card's bottom-left,
+   point facing down toward the document. */
 .swml-bubble-pointer {
-    display: block;
-    width: 16px;  /* v7.19.541: bigger tail to match TipTap (was 12x6) */
-    height: 7px;
-    color: #1e1e34;
-    margin-top: 0;
-    /* v7.19.540: no flip — tail point faces the document (was scaleX(-1), pointing away) */
-}
-.swml-canvas-light .swml-bubble-pointer { color: #fff; }
-/* Light mode bubbles */
-.swml-canvas-light .swml-comment-bubble-avatar {
-    box-shadow: 0 0 0 2.5px #fff, 0 2px 8px rgba(0,0,0,0.1);
+    position: absolute;
+    bottom: -6px;
+    left: 6px;
+    width: 18px;
+    height: 9px;
+    color: #fff;
+    filter: drop-shadow(0 3px 3px rgba(0,0,0,0.12));
 }
 .swml-canvas-light .swml-comment-bubble-initials {
     background: linear-gradient(135deg, #f0c030, #d4a017);
-    box-shadow: 0 0 0 2.5px #fff, 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: none; /* v7.19.542: card frames it now */
 }
 .swml-canvas-light .swml-bubble-pointer {
     color: #fff;
