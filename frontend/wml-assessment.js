@@ -6190,7 +6190,12 @@
                         if (siOpen) siNav.style.maxHeight = siNav.scrollHeight + 'px';
                     } });
                 chevBtn.innerHTML = '<svg class="swml-scroll-index-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
-                const _jumpPos = (typeof g.unitPos === 'number') ? g.unitPos : (g.items[0] ? g.items[0].pos : null);
+                // v7.19.534: jump to the unit's FIRST SECTION (a detectable indexPosition),
+                // not the divider. The divider isn't in indexPositions, so landing on it left
+                // the unit's first section below the active-detection line and the breadcrumb
+                // showed the PREVIOUS unit's last section. The divider banner stays visible
+                // just above the landed section. Fall back to the divider pos if no items.
+                const _jumpPos = (g.items[0] ? g.items[0].pos : (typeof g.unitPos === 'number' ? g.unitPos : null));
                 const labelBtn = el('button', { className: 'swml-scroll-index-group-label', tabIndex: -1, textContent: _siGroupLabel(g.unit),
                     onClick: () => { if (_jumpPos != null) { closeIndexPanel(); scrollToPos(_jumpPos); } } });
                 head.appendChild(chevBtn);
@@ -6247,12 +6252,15 @@
             return dom || null;
         }
 
-        // active section = last section scrolled past the 30% line; drives the row
+        // active section = last section scrolled past the detection line; drives the row
         // highlight AND the island's live breadcrumb.
+        // v7.19.534: line at 35% sits just BELOW where a jump lands the target (height/3
+        // ≈ 33.3%), so a section you jumped to registers as active immediately instead of
+        // the previous section staying selected (off-by-one breadcrumb on unit jumps).
         function computeActiveIdx() {
             if (indexPositions.length === 0 || !canvasEditor) return -1;
             const cRect = contentWrap.getBoundingClientRect();
-            const threshold = cRect.top + cRect.height * 0.30;
+            const threshold = cRect.top + cRect.height * 0.35;
             let activeIdx = -1;
             for (let i = 0; i < indexPositions.length; i++) {
                 const dom = _siNodeDom(indexPositions[i].pos);
