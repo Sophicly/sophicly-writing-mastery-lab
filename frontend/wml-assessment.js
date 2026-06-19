@@ -11781,9 +11781,35 @@
                 }).catch(e => console.warn('WML Review: Tutor comment save error', e && e.message));
             } catch (e) { /* ignore */ }
         }
+        // v7.19.559: the STUDENT persists their feedback responses (Got it / Actioned +
+        // replies) to their OWN canvas doc. Server merges so the tutor sees them on review-
+        // load. Mirror of _postTutorComments; no student_id (server uses current_user_id).
+        function _postStudentComments(keepalive) {
+            if (state.reviewMode) return;
+            const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
+            try {
+                fetch(API.studentComment, {
+                    method: 'POST', headers, keepalive: !!keepalive,
+                    body: JSON.stringify({
+                        board: state.board,
+                        text: state.text,
+                        topicNumber: state.topicNumber || null,
+                        suffix: suffix,
+                        attempt: state.attempt || 1,
+                        comments: comments,
+                    })
+                }).then(r => r.json()).then(res => {
+                    if (!res || !res.success) console.warn('WML: student comment save failed', res);
+                }).catch(e => console.warn('WML: student comment save error', e && e.message));
+            } catch (e) { /* ignore */ }
+        }
         function saveComments() {
             if (!state.reviewMode) {
                 try { localStorage.setItem(commentKey, JSON.stringify(comments)); } catch(e) {}
+                // v7.19.559: also persist to the server so tutor feedback responses survive
+                // a refresh AND reach the tutor (was localStorage-only → tutor never saw them).
+                clearTimeout(window._swmlStudentCommentTimer);
+                window._swmlStudentCommentTimer = setTimeout(() => _postStudentComments(false), 200);
             }
             if (typeof updateCommentGutter === 'function') requestAnimationFrame(updateCommentGutter);
             if (typeof updateCommentCount === 'function') updateCommentCount();
@@ -23787,7 +23813,10 @@
      */
     function maybeShowDiagnosticTimerPicker() {
         if (state.reviewMode) return;
-        if (state.task !== 'assessment') return;
+        // v7.19.559: timer belongs to the DIAGNOSTIC WRITE (task 'diagnostic', the blank-page
+        // exam-style write), NOT the assessment. The old gate ('assessment') made it pop over
+        // the assessment canvas — wrong. '' covers the legacy diagnostic-entry task.
+        if (state.task !== 'diagnostic' && state.task !== '') return;
         if (state.phase === 'redraft') return;
         // Skip if a timer is already running for some other reason
         if (canvasTimerInterval) return;

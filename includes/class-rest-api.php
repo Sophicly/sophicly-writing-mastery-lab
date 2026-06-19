@@ -286,6 +286,13 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_tutor_auth'],
         ]);
 
+        // Student comment response — student persists their feedback responses
+        // (acknowledge / actioned / replies) to their OWN canvas doc (v7.19.559).
+        register_rest_route($namespace, '/canvas/student-comment', [
+            'methods' => 'POST', 'callback' => [$this, 'student_save_comments'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+
         // Load sign-off data for a canvas document
         register_rest_route($namespace, '/canvas/load-signoff', [
             'methods' => 'GET', 'callback' => [$this, 'load_signoff'],
@@ -2347,13 +2354,14 @@ class SWML_REST_API {
         }
 
         // Merge tutor comments into student's canvas doc.
-        // v7.19.537: never let an empty/stale client map wipe comments already saved
-        // (belt-and-braces with the save_canvas preserve above). Replace only when the
-        // incoming map has data, or when there's nothing to lose.
+        // v7.19.537: never let an empty/stale client map wipe comments already saved.
+        // v7.19.559: merge (not replace) so the tutor write can't clobber the student's
+        // own response fields / thread messages — the tutor is authoritative only for
+        // tutor-owned content. See self::merge_comments().
         if ($new_comments !== null) {
             $incoming = is_array($new_comments) ? $new_comments : [];
             if (!empty($incoming) || empty($doc['comments'])) {
-                $doc['comments'] = $incoming;
+                $doc['comments'] = self::merge_comments($doc['comments'] ?? [], $incoming, true);
             }
         }
         // Update HTML with comment marks
@@ -2381,6 +2389,138 @@ class SWML_REST_API {
             'key'     => $meta_key,
             'savedAt' => $doc['savedAt'],
         ]);
+    }
+
+    /**
+     * Student persists their own feedback responses (acknowledge / actioned / replies)
+     * to their OWN canvas doc (v7.19.559). The student is the doc owner, so this writes
+     * to current_user_id's meta. The server merge guarantees the student can only mutate
+     * student-owned fields + their own thread messages — never tutor content, never the
+     * resolved flag, never delete a tutor comment. Symmetric with tutor_save_comments.
+     */
+    public function student_save_comments($request) {
+        // Block "view as student" admins / parents from writing as someone else.
+        $gate = $this->check_viewer_write_allowed($request);
+        if (is_wp_error($gate)) return $gate;
+
+        $user_id = get_current_user_id();
+        $params  = $request->get_json_params();
+
+        $board        = sanitize_text_field($params['board'] ?? '');
+        $text         = sanitize_text_field($params['text'] ?? '');
+        $topic_number = isset($params['topicNumber']) ? absint($params['topicNumber']) : null;
+        $suffix       = sanitize_text_field($params['suffix'] ?? '');
+        $attempt      = absint($params['attempt'] ?? 1);
+        $incoming     = $params['comments'] ?? null;
+
+        if (empty($board) || empty($text)) {
+            return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
+        }
+        if ($attempt < 1) {
+            $idx = $this->get_attempt_index($user_id, $board, $text, $topic_number, $suffix);
+            $attempt = $idx['current'] ?? 1;
+        }
+
+        $meta_key = $this->canvas_meta_key($board, $text, $topic_number, $suffix, $attempt);
+        $raw = get_user_meta($user_id, $meta_key, true);
+        $doc = [];
+        if (!empty($raw)) {
+            $doc = is_array($raw) ? $raw : (self::decode_canvas_json($raw) ?: []);
+        }
+
+        if ($incoming !== null) {
+            $inc = is_array($incoming) ? $incoming : [];
+            $doc['comments'] = self::merge_comments($doc['comments'] ?? [], $inc, false);
+            $doc['savedAt'] = current_time('c');
+            $result = update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($doc)));
+            return rest_ensure_response([
+                'success' => $result !== false,
+                'key'     => $meta_key,
+                'savedAt' => $doc['savedAt'],
+            ]);
+        }
+
+        return rest_ensure_response(['success' => true, 'key' => $meta_key, 'noop' => true]);
+    }
+
+    /**
+     * Merge an incoming comment map into the server's authoritative map (v7.19.559).
+     *
+     * Principle of least privilege — each actor owns only their fields:
+     *   - $is_tutor=true : tutor owns the set of comments + all tutor-authored fields
+     *     (message, resolved, range, tutor thread messages). Student fields
+     *     (studentStatus / acknowledgedAt / actionNote) + student thread messages are
+     *     preserved from the server. The tutor MAY add/remove comment threads.
+     *   - $is_tutor=false: student owns ONLY studentStatus / acknowledgedAt / actionNote
+     *     and their own ('Student') thread messages. Tutor comments + tutor thread
+     *     messages are preserved from the server; the student cannot create or delete
+     *     a comment thread.
+     */
+    private static function merge_comments($server, $incoming, $is_tutor) {
+        $server   = is_array($server) ? $server : [];
+        $incoming = is_array($incoming) ? $incoming : [];
+        $student_fields = ['studentStatus', 'acknowledgedAt', 'actionNote'];
+
+        if ($is_tutor) {
+            $out = [];
+            foreach ($incoming as $id => $c) {
+                $c  = (array) $c;
+                $sv = isset($server[$id]) ? (array) $server[$id] : [];
+                // Preserve student-owned fields from the server.
+                foreach ($student_fields as $f) {
+                    if (array_key_exists($f, $sv)) $c[$f] = $sv[$f];
+                    elseif (array_key_exists($f, $c)) unset($c[$f]); // tutor can't set them
+                }
+                // tutor thread from incoming; student thread from server.
+                $c['thread'] = self::merge_thread($c['thread'] ?? [], $sv['thread'] ?? []);
+                $out[$id] = $c;
+            }
+            return $out;
+        }
+
+        // Student actor: start from server (keeps every tutor comment + id), overlay only
+        // the student's own fields / thread messages onto comments that already exist.
+        $out = $server;
+        foreach ($incoming as $id => $ic) {
+            if (!isset($out[$id])) continue; // student cannot create new comment threads
+            $ic   = (array) $ic;
+            $base = (array) $out[$id];
+            foreach ($student_fields as $f) {
+                if (array_key_exists($f, $ic)) {
+                    $base[$f] = ($f === 'actionNote')
+                        ? sanitize_textarea_field($ic[$f])
+                        : $ic[$f];
+                }
+            }
+            // tutor thread from server (authoritative); student thread from incoming.
+            $base['thread'] = self::merge_thread($base['thread'] ?? [], $ic['thread'] ?? []);
+            $out[$id] = $base;
+        }
+        return $out;
+    }
+
+    /**
+     * Recombine a comment thread (v7.19.559): tutor-authored messages come from
+     * $tutor_src, 'Student'-authored from $student_src, re-sorted chronologically.
+     * Student message text is sanitised (plain text — strip markup).
+     */
+    private static function merge_thread($tutor_src, $student_src) {
+        $out = [];
+        foreach ((array) $tutor_src as $m) {
+            $m = (array) $m;
+            if (($m['author'] ?? '') !== 'Student') $out[] = $m;
+        }
+        foreach ((array) $student_src as $m) {
+            $m = (array) $m;
+            if (($m['author'] ?? '') === 'Student') {
+                if (isset($m['message'])) $m['message'] = sanitize_textarea_field($m['message']);
+                $out[] = $m;
+            }
+        }
+        usort($out, function ($x, $y) {
+            return ((int) ($x['timestamp'] ?? 0)) <=> ((int) ($y['timestamp'] ?? 0));
+        });
+        return array_values($out);
     }
 
     /**
