@@ -73,6 +73,25 @@
     let previewAsStudent = false;
     let _reopenCommentPopover = null;
 
+    // v7.19.562: single source of truth for the preview toggle so every entry point
+    // (sidebar pill + the focus-template top banner via window.WML.toggleViewAsStudent)
+    // stays in sync.
+    function applyViewAsStudent() {
+        document.querySelectorAll('.swml-view-as-student-toggle').forEach(btn => {
+            btn.classList.toggle('active', previewAsStudent);
+            const lbl = btn.querySelector('.swml-vas-label');
+            if (lbl) lbl.textContent = previewAsStudent ? 'Back to tutor' : 'View as student';
+        });
+        if (document.querySelector('.swml-comment-popover') && _reopenCommentPopover) _reopenCommentPopover();
+        try { document.dispatchEvent(new CustomEvent('swml:view-as-student', { detail: { on: previewAsStudent } })); } catch (e) {}
+    }
+    function toggleViewAsStudent() {
+        if (!state.reviewMode) return;
+        previewAsStudent = !previewAsStudent;
+        applyViewAsStudent();
+    }
+    if (window.WML) window.WML.toggleViewAsStudent = toggleViewAsStudent;
+
     // v7.15.54: replaces the chat input area with a slim "Chat read-only" note in
     // review mode. Tutors still see the student's transcript above but cannot send.
     function appendChatReadonlyNote(panel) {
@@ -103,18 +122,9 @@
         wrap.appendChild(pill);
         const studentIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>';
         const toggle = el('button', { className: 'swml-view-as-student-toggle', title: 'Preview what the student sees' });
-        const setLabel = () => {
-            toggle.innerHTML = studentIcon + '<span>' + (previewAsStudent ? 'Back to tutor' : 'View as student') + '</span>';
-            toggle.classList.toggle('active', previewAsStudent);
-        };
-        toggle.onclick = (ev) => {
-            ev.stopPropagation();
-            previewAsStudent = !previewAsStudent;
-            setLabel();
-            // Re-render an open comment popover in the new mode (visual-only).
-            if (document.querySelector('.swml-comment-popover') && _reopenCommentPopover) _reopenCommentPopover();
-        };
-        setLabel();
+        toggle.innerHTML = studentIcon + '<span class="swml-vas-label">' + (previewAsStudent ? 'Back to tutor' : 'View as student') + '</span>';
+        toggle.classList.toggle('active', previewAsStudent);
+        toggle.onclick = (ev) => { ev.stopPropagation(); toggleViewAsStudent(); };
         wrap.appendChild(toggle);
         return wrap;
     }
