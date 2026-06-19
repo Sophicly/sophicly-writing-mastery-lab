@@ -293,6 +293,15 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
+        // Unread tutor comments for the CURRENT student (v7.19.564) — read-only digest
+        // consumed by the toast plugin to notify a student that tutor feedback is waiting.
+        // Scans every canvas doc; "unread" = a non-resolved comment the student hasn't
+        // opened yet OR a tutor reply newer than the student's last engagement.
+        register_rest_route($namespace, '/student/unread-comments', [
+            'methods' => 'GET', 'callback' => [$this, 'student_unread_comments'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+
         // Load sign-off data for a canvas document
         register_rest_route($namespace, '/canvas/load-signoff', [
             'methods' => 'GET', 'callback' => [$this, 'load_signoff'],
@@ -2441,6 +2450,113 @@ class SWML_REST_API {
         }
 
         return rest_ensure_response(['success' => true, 'key' => $meta_key, 'noop' => true]);
+    }
+
+    /**
+     * Unread tutor-comment digest for the current student (v7.19.564).
+     *
+     * Read-only. Scans every `swml_canvas_*` doc the user owns and counts comments
+     * that still need the student's attention. A comment "needs attention" when it is
+     * NOT resolved AND either:
+     *   - the student has never opened it (studentStatus missing or 'open'), OR
+     *   - a tutor thread reply is newer than the student's last engagement
+     *     (acknowledgedAt) — i.e. the tutor replied after the student last looked.
+     * Resolved comments and the student's own replies never count.
+     *
+     * Returns a per-doc digest so the toast plugin can render one notification per
+     * piece with a deep-link. Timestamps are JS-epoch ms (acknowledgedAt / thread
+     * timestamps are written client-side with Date.now()).
+     */
+    public function student_unread_comments($request) {
+        $user_id = get_current_user_id();
+        if ($user_id <= 0) {
+            return rest_ensure_response(['success' => false, 'totalUnread' => 0, 'items' => []]);
+        }
+
+        global $wpdb;
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT meta_key, meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key LIKE %s",
+            $user_id,
+            $wpdb->esc_like('swml_canvas_') . '%'
+        ));
+
+        $items = [];
+        $total = 0;
+
+        foreach ((array) $rows as $row) {
+            $doc = self::decode_canvas_json($row->meta_value);
+            if (!is_array($doc) || empty($doc['comments']) || !is_array($doc['comments'])) continue;
+
+            $unread = 0;
+            $latest = 0.0; // newest tutor signal time across this doc's unread comments
+
+            foreach ($doc['comments'] as $c) {
+                $c = (array) $c;
+                if (!empty($c['resolved'])) continue;
+
+                $status = isset($c['studentStatus']) ? (string) $c['studentStatus'] : 'open';
+                $ack    = isset($c['acknowledgedAt']) ? (float) $c['acknowledgedAt'] : 0.0;
+                $thread = (isset($c['thread']) && is_array($c['thread'])) ? $c['thread'] : [];
+
+                // Newest tutor-authored message time on this comment.
+                $tutor_latest = 0.0;
+                foreach ($thread as $m) {
+                    $m = (array) $m;
+                    if (($m['author'] ?? '') === 'Student') continue;
+                    $ts = isset($m['timestamp']) ? (float) $m['timestamp'] : 0.0;
+                    if ($ts > $tutor_latest) $tutor_latest = $ts;
+                }
+
+                $needs = false;
+                if ($status === '' || $status === 'open') {
+                    $needs = true; // never opened
+                } elseif ($tutor_latest > $ack) {
+                    $needs = true; // tutor replied after the student last engaged
+                }
+
+                if ($needs) {
+                    $unread++;
+                    if ($tutor_latest > $latest) $latest = $tutor_latest;
+                }
+            }
+
+            if ($unread > 0) {
+                $items[] = [
+                    'unreadCount' => $unread,
+                    'docTitle'    => $this->humanize_canvas_title($doc, $row->meta_key),
+                    'deepLink'    => isset($doc['lessonUrl']) ? (string) $doc['lessonUrl'] : '',
+                    'latestAt'    => $latest,
+                    'metaKey'     => $row->meta_key,
+                ];
+                $total += $unread;
+            }
+        }
+
+        // Newest tutor signal first.
+        usort($items, function ($a, $b) { return $b['latestAt'] <=> $a['latestAt']; });
+
+        return rest_ensure_response([
+            'success'     => true,
+            'totalUnread' => $total,
+            'items'       => $items,
+        ]);
+    }
+
+    /**
+     * Human-readable label for a canvas doc (v7.19.564) — best-effort, for toast copy.
+     * Prefers the stored `text` slug; falls back to parsing the meta key.
+     */
+    private function humanize_canvas_title($doc, $key) {
+        $text = isset($doc['text']) ? (string) $doc['text'] : '';
+        if ($text === '') {
+            $text = preg_replace('/^swml_canvas_[a-z0-9]+_/', '', (string) $key);
+            $text = preg_replace('/_t\d+.*$/', '', $text);
+            $text = preg_replace('/__.*$/', '', $text);
+        }
+        $label = trim(ucwords(str_replace('_', ' ', $text)));
+        $topic = isset($doc['topicNumber']) ? (int) $doc['topicNumber'] : 0;
+        if ($topic > 0) $label .= ' — Topic ' . $topic;
+        return $label !== '' ? $label : 'Your writing';
     }
 
     /**
