@@ -691,6 +691,42 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     background: rgba(255,100,100,0.15);
     color: #ff6b6b;
 }
+/* v7.19.556: edit button (mirrors delete; sits left of it on replies) */
+.swml-comment-msg-edit {
+    position: absolute;
+    top: 6px;
+    width: 18px; height: 18px;
+    border: none; border-radius: 4px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.3);
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+.swml-comment-msg:hover .swml-comment-msg-edit {
+    display: flex;
+}
+.swml-comment-msg-edit:hover {
+    background: rgba(83,51,237,0.18);
+    color: #8b78ff;
+}
+.swml-comment-edit-input {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 48px;
+    resize: vertical;
+    font: inherit;
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.9);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(83,51,237,0.5);
+    border-radius: 6px;
+    padding: 6px 8px;
+    outline: none;
+}
 /* Light mode adjustments */
 .swml-canvas-light .swml-comment-msg {
     background: rgba(0,0,0,0.02);
@@ -708,6 +744,19 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-canvas-light .swml-comment-msg-delete:hover {
     background: rgba(220,38,38,0.08);
     color: #dc2626;
+}
+.swml-canvas-light .swml-comment-msg-edit {
+    background: rgba(0,0,0,0.04);
+    color: rgba(0,0,0,0.3);
+}
+.swml-canvas-light .swml-comment-msg-edit:hover {
+    background: rgba(83,51,237,0.1);
+    color: #5333ed;
+}
+.swml-canvas-light .swml-comment-edit-input {
+    color: rgba(0,0,0,0.85);
+    background: #fff;
+    border-color: rgba(83,51,237,0.45);
 }
 
 /* Reply input */

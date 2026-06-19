@@ -13184,10 +13184,15 @@
                 onClick: () => {
                     const { from, to } = findCommentRange(commentId);
                     if (from !== null) {
-                        canvasEditor.chain().focus()
-                            .setTextSelection({ from, to })
-                            .unsetMark('comment')
-                            .run();
+                        // v7.19.556: strip the mark via a bare transaction — NOT
+                        // chain().focus().setTextSelection(), which scrolled the editor
+                        // to the caret and jumped the page to the bottom on delete.
+                        const markType = canvasEditor.state.schema.marks.comment;
+                        if (markType) {
+                            canvasEditor.view.dispatch(
+                                canvasEditor.state.tr.removeMark(from, to, markType)
+                            );
+                        }
                     }
                     delete comments[commentId];
                     saveComments();
@@ -13225,9 +13230,41 @@
                     } else {
                         authorRow.appendChild(el('span', { className: 'swml-comment-msg-initials', textContent: (msg.author || 'T')[0].toUpperCase() }));
                     }
-                    authorRow.appendChild(el('span', { textContent: msg.author + ' · ' + formatTimeAgo(msg.timestamp) }));
+                    authorRow.appendChild(el('span', { textContent: msg.author + ' · ' + formatTimeAgo(msg.timestamp) + (msg.edited ? ' · edited' : '') }));
                     bubble.appendChild(authorRow);
-                    bubble.appendChild(el('div', { className: 'swml-comment-msg-text', textContent: msg.message }));
+                    const textEl = el('div', { className: 'swml-comment-msg-text', textContent: msg.message });
+                    bubble.appendChild(textEl);
+                    // v7.19.556: inline edit on every message (original + replies)
+                    const editBtn = el('button', {
+                        className: 'swml-comment-msg-edit',
+                        innerHTML: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
+                        title: 'Edit',
+                        style: { right: (idx > 0 ? '28px' : '6px') },
+                        onClick: (e) => {
+                            e.stopPropagation();
+                            const ta = el('textarea', { className: 'swml-comment-edit-input' });
+                            ta.value = msg.message;
+                            textEl.replaceWith(ta);
+                            editBtn.style.display = 'none';
+                            ta.focus();
+                            ta.setSelectionRange(ta.value.length, ta.value.length);
+                            let done = false;
+                            const commit = (save) => {
+                                if (done) return; done = true;
+                                if (save) {
+                                    const v = ta.value.trim();
+                                    if (v && v !== msg.message) { msg.message = v; msg.edited = true; saveComments(); }
+                                }
+                                renderThreadMessages();
+                            };
+                            ta.addEventListener('keydown', (ev) => {
+                                if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); commit(true); }
+                                else if (ev.key === 'Escape') { ev.preventDefault(); commit(false); }
+                            });
+                            ta.addEventListener('blur', () => commit(true));
+                        }
+                    });
+                    bubble.appendChild(editBtn);
                     // Delete button on replies (not the original comment)
                     if (idx > 0) {
                         const delBtn = el('button', {
