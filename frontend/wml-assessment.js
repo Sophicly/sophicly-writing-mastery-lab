@@ -23841,10 +23841,15 @@
             if (!card) return;
 
             if (state.task === 'foundational_quiz') {
-                // v7.19.565: the FQ doc has no "Forging Your Weapon" divider — surface
-                // the grade card at the very top of the doc (next to General Notes,
-                // where Neil wants the result visible). Parity with the MSU card.
-                if (tmp.firstChild) tmp.insertBefore(card, tmp.firstChild);
+                // v7.19.566: place the grade card directly UNDER the General Notes
+                // section (Neil) — i.e. before the divider that follows General Notes.
+                // FQ doc has no "Forging Your Weapon" anchor; fall back to top of doc
+                // if the General Notes divider can't be located.
+                const _divs = Array.from(tmp.querySelectorAll('[data-section-type="divider"]'));
+                const _gn = _divs.findIndex(d => /GENERAL\s*NOTES/i.test((d.getAttribute('data-section-label') || '') + ' ' + (d.textContent || '')));
+                const _next = (_gn >= 0) ? _divs[_gn + 1] : null;
+                if (_next && _next.parentNode) _next.parentNode.insertBefore(card, _next);
+                else if (tmp.firstChild) tmp.insertBefore(card, tmp.firstChild);
                 else tmp.appendChild(card);
             } else {
                 const fyw = Array.from(tmp.querySelectorAll('[data-section-type="divider"]'))
