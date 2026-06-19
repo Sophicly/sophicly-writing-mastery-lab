@@ -727,6 +727,80 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     padding: 6px 8px;
     outline: none;
 }
+/* v7.19.558: feedback-response ladder */
+.swml-comment-status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+.swml-comment-status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.swml-comment-respond {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+.swml-comment-respond-btn {
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.08);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.swml-comment-respond-btn:hover {
+    background: rgba(255,255,255,0.14);
+}
+.swml-comment-respond-action {
+    background: #5333ed;
+    color: #fff;
+}
+.swml-comment-respond-action:hover {
+    background: #6347f0;
+}
+.swml-comment-respond-ack {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1CD991;
+}
+.swml-comment-action-note {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+.swml-comment-action-note .swml-comment-respond-action {
+    align-self: flex-end;
+}
+.swml-comment-tutor-nudge {
+    padding: 8px 14px;
+    font-size: 11px;
+    line-height: 1.45;
+    color: #4D76FD;
+    background: rgba(77,118,253,0.08);
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+.swml-canvas-light .swml-comment-respond { border-top-color: rgba(0,0,0,0.06); }
+.swml-canvas-light .swml-comment-respond-btn {
+    color: rgba(0,0,0,0.8);
+    background: rgba(0,0,0,0.05);
+}
+.swml-canvas-light .swml-comment-respond-btn:hover { background: rgba(0,0,0,0.09); }
+.swml-canvas-light .swml-comment-respond-action { color: #fff; background: #5333ed; }
+.swml-canvas-light .swml-comment-tutor-nudge { border-top-color: rgba(0,0,0,0.06); }
 /* Light mode adjustments */
 .swml-canvas-light .swml-comment-msg {
     background: rgba(0,0,0,0.02);

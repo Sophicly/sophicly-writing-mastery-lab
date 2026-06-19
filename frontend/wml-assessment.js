@@ -13117,11 +13117,31 @@
             const c = comments[commentId];
             if (!c) return;
 
+            // v7.19.558: viewer role — tutor authors + resolves; student responds; parent read-only.
+            const isReadonly = state.viewerMode === 'readonly' || state.reviewRole === 'parent';
+            const isTutor = !!state.reviewMode && !isReadonly;
+            const isStudent = !state.reviewMode && !isReadonly;
+            const replyAuthor = isStudent ? 'Student' : 'Tutor';
+            if (!c.studentStatus) c.studentStatus = 'open';
+            const STATUS_INFO = c.resolved
+                ? { label: 'Resolved', color: '#1CD991' }
+                : c.studentStatus === 'actioned'
+                    ? { label: 'Actioned', color: '#4D76FD' }
+                    : c.studentStatus === 'acknowledged'
+                        ? { label: 'Acknowledged', color: '#F1C40F' }
+                        : { label: 'Open', color: '#ff5470' };
+
             const pop = el('div', { className: 'swml-comment-popover' });
 
             // Header — TipTap style: Title | resolve | ⋯ menu | ✕ close
             const header = el('div', { className: 'swml-comment-header' });
-            header.appendChild(el('span', { className: 'swml-comment-title', textContent: 'Thread' }));
+            const headerLeft = el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } });
+            headerLeft.appendChild(el('span', { className: 'swml-comment-title', textContent: 'Thread' }));
+            const statusChip = el('span', { className: 'swml-comment-status-chip' });
+            statusChip.style.color = STATUS_INFO.color;
+            statusChip.innerHTML = '<span class="swml-comment-status-dot" style="background:' + STATUS_INFO.color + '"></span>' + STATUS_INFO.label;
+            headerLeft.appendChild(statusChip);
+            header.appendChild(headerLeft);
             const headerRight = el('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } });
 
             // Resolve icon button (checkmark circle)
@@ -13139,7 +13159,7 @@
                     showCommentPopover(commentId, anchorEl, popoverContainer);
                 }
             });
-            headerRight.appendChild(resolveIcon);
+            if (isTutor) headerRight.appendChild(resolveIcon);
 
             // Three-dot menu button
             const dotsWrap = el('div', { style: { position: 'relative' } });
@@ -13201,7 +13221,7 @@
             }));
             dotsWrap.appendChild(dotsBtn);
             dotsWrap.appendChild(dotsMenu);
-            headerRight.appendChild(dotsWrap);
+            if (isTutor) headerRight.appendChild(dotsWrap);
 
             // Close button
             headerRight.appendChild(el('button', {
@@ -13264,9 +13284,10 @@
                             ta.addEventListener('blur', () => commit(true));
                         }
                     });
-                    bubble.appendChild(editBtn);
-                    // Delete button on replies (not the original comment)
-                    if (idx > 0) {
+                    // v7.19.558: can only edit own messages (tutor may edit any)
+                    if (isTutor || msg.author === 'Student') bubble.appendChild(editBtn);
+                    // Delete button on replies (not the original comment); own messages only
+                    if (idx > 0 && (isTutor || msg.author === 'Student')) {
                         const delBtn = el('button', {
                             className: 'swml-comment-msg-delete',
                             innerHTML: '×',
@@ -13288,6 +13309,65 @@
             renderThreadMessages();
             pop.appendChild(threadWrap);
 
+            // v7.19.558: student feedback-response ladder — Got it (acknowledge) -> Mark
+            // actioned (requires a 'what I changed' line). Research: a bare ack closes no loop;
+            // a typed action forces the reflection that drives uptake (Carless & Boud 2018).
+            if (isStudent && !c.resolved) {
+                const respondRow = el('div', { className: 'swml-comment-respond' });
+                if (c.studentStatus === 'actioned') {
+                    respondRow.appendChild(el('span', { className: 'swml-comment-respond-ack', textContent: '✓ Actioned — awaiting tutor' }));
+                } else {
+                    if (c.studentStatus === 'open') {
+                        respondRow.appendChild(el('button', {
+                            className: 'swml-comment-respond-btn',
+                            innerHTML: '👍 Got it',
+                            title: 'Acknowledge you have read this',
+                            onClick: () => {
+                                c.studentStatus = 'acknowledged';
+                                c.acknowledgedAt = Date.now();
+                                saveComments();
+                                showCommentPopover(commentId, anchorEl, popoverContainer);
+                            }
+                        }));
+                    } else {
+                        respondRow.appendChild(el('span', { className: 'swml-comment-respond-ack', textContent: '✓ Acknowledged' }));
+                    }
+                    const actionBtn = el('button', {
+                        className: 'swml-comment-respond-btn swml-comment-respond-action',
+                        textContent: 'Mark actioned',
+                        title: 'Tell your tutor what you changed',
+                        onClick: () => {
+                            actionBtn.style.display = 'none';
+                            const noteWrap = el('div', { className: 'swml-comment-action-note' });
+                            const ta = el('textarea', { className: 'swml-comment-edit-input', placeholder: 'What did you change? (required)' });
+                            const submit = el('button', { className: 'swml-comment-respond-btn swml-comment-respond-action', textContent: 'Submit' });
+                            const doSubmit = () => {
+                                const v = ta.value.trim();
+                                if (!v) { ta.focus(); return; }
+                                c.studentStatus = 'actioned';
+                                c.actionNote = v;
+                                c.thread = c.thread || [];
+                                c.thread.push({ author: 'Student', avatar: config.userAvatar || '', message: 'Actioned: ' + v, timestamp: Date.now() });
+                                saveComments();
+                                showCommentPopover(commentId, anchorEl, popoverContainer);
+                            };
+                            submit.onclick = doSubmit;
+                            ta.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); doSubmit(); } });
+                            noteWrap.appendChild(ta);
+                            noteWrap.appendChild(submit);
+                            respondRow.appendChild(noteWrap);
+                            ta.focus();
+                        }
+                    });
+                    respondRow.appendChild(actionBtn);
+                }
+                pop.appendChild(respondRow);
+            }
+            // Tutor: once the student has actioned, nudge to verify the change then resolve.
+            if (isTutor && c.studentStatus === 'actioned' && !c.resolved) {
+                pop.appendChild(el('div', { className: 'swml-comment-tutor-nudge', textContent: 'Student marked this actioned — check the change, then Resolve.' }));
+            }
+
             // Reply input — inline add without popover refresh (v7.12.69)
             const replyWrap = el('div', { className: 'swml-comment-reply' });
             const replyInput = el('input', {
@@ -13296,7 +13376,7 @@
                 onKeydown: (e) => {
                     if (e.key === 'Enter' && replyInput.value.trim()) {
                         e.preventDefault();
-                        c.thread.push({ author: 'Tutor', avatar: config.userAvatar || '', message: replyInput.value.trim(), timestamp: Date.now() });
+                        c.thread.push({ author: replyAuthor, avatar: config.userAvatar || '', message: replyInput.value.trim(), timestamp: Date.now() });
                         saveComments();
                         renderThreadMessages();
                         replyInput.value = '';
@@ -13308,7 +13388,7 @@
                 textContent: '→',
                 onClick: () => {
                     if (!replyInput.value.trim()) return;
-                    c.thread.push({ author: 'Tutor', avatar: config.userAvatar || '', message: replyInput.value.trim(), timestamp: Date.now() });
+                    c.thread.push({ author: replyAuthor, avatar: config.userAvatar || '', message: replyInput.value.trim(), timestamp: Date.now() });
                     saveComments();
                     renderThreadMessages();
                     replyInput.value = '';
@@ -13317,7 +13397,7 @@
             });
             replyWrap.appendChild(replyInput);
             replyWrap.appendChild(replyBtn);
-            pop.appendChild(replyWrap);
+            if (!isReadonly) pop.appendChild(replyWrap); // v7.19.558: parents are read-only
 
             // Prevent TipTap editor from stealing focus when interacting with the popover (v7.12.68)
             pop.addEventListener('mousedown', (e) => {
