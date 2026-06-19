@@ -10012,12 +10012,17 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     margin-bottom: 2px;
 }
 .swml-canvas-light .swml-view-as-student-toggle {
-    background: rgba(83, 51, 237, 0.08);
-    border-color: rgba(83, 51, 237, 0.4);
+    background: #fff;
+    border-color: #5333ed;
     color: #5333ed;
+}
+.swml-canvas-light .swml-view-as-student-toggle:hover {
+    background: #f1edff;
+    border-color: #5333ed;
 }
 .swml-canvas-light .swml-view-as-student-toggle.active {
     background: #5333ed;
+    border-color: #5333ed;
     color: #fff;
 }
 .swml-canvas-light .swml-comment-preview-note { color: #5333ed; }
