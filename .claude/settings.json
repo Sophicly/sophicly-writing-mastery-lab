@@ -461,7 +461,21 @@
       "Bash(sed -i '' \"s/define\\( 'SOPHICLY_VERSION', '2.31.34' \\);/define\\( 'SOPHICLY_VERSION', '2.31.35' \\);/\" sophicly-student-data/sophicly-student-data.php)",
       "Bash(sed -i '' 's/\\\\* Version: 2.30.194/* Version: 2.30.195/' sophicly-dashboard/sophicly-dashboard.php)",
       "Bash(sed -i '' \"s/define\\( 'SDASH_VERSION', '2.30.194' \\);/define\\( 'SDASH_VERSION', '2.30.195' \\);/\" sophicly-dashboard/sophicly-dashboard.php)",
-      "Bash(grep -nE \"img *\\\\{|img,|[^-]img[^a-z-]|height: *auto|max-width: *100%\" frontend/wml-canvas.css)"
+      "Bash(grep -nE \"img *\\\\{|img,|[^-]img[^a-z-]|height: *auto|max-width: *100%\" frontend/wml-canvas.css)",
+      "Bash(cat > *)",
+      "Bash(FORCE_DIRTY_DEPLOY=1 bash -c 'echo y | ./deploy-production.sh')",
+      "Bash(sed -i '' 's/7\\\\.19\\\\.548/7.19.549/g' sophicly-writing-mastery-lab.php)",
+      "Bash(sed -i '' 's/7\\\\.19\\\\.550/7.19.551/g' sophicly-writing-mastery-lab.php)",
+      "Bash(sed -i '' 's/7\\\\.19\\\\.551/7.19.552/g' sophicly-writing-mastery-lab.php)",
+      "Bash(grep -n 'meta_key\\\\|update_user_meta\\\\|timestamp\\\\|chat_meta\\\\|function\\\\|\\\\$key')",
+      "Bash(scp -i /Users/neilwilliams/.ssh/sophicly_staging -o StrictHostKeyChecking=no /tmp/reeham_chat.php runcloud@18.133.5.229:/tmp/reeham_chat.php)",
+      "Bash(cd \"/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins/sophicly-components\")",
+      "Bash(node --check frontend/sophicly-final-retrieval.js)",
+      "Bash(echo \"FR OK\")",
+      "Bash(grep -oE \"SC_VERSION', '3\\\\.10\\\\.[0-9]+'\" sophicly-components.php)",
+      "Bash(ls deploy*.sh)",
+      "Bash(ls ../deploy*.sh)",
+      "Bash(find . -maxdepth 2 -name 'deploy-staging.sh')"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
