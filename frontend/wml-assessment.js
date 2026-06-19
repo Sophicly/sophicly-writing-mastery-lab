@@ -13189,6 +13189,14 @@
             const isStudent = isPreview || (!state.reviewMode && !isReadonly);
             const replyAuthor = isStudent ? 'Student' : 'Tutor';
             if (!c.studentStatus) c.studentStatus = 'open';
+            // v7.19.563: auto-acknowledge on open — opening the thread proves the student
+            // read it. Research (Carless/Boud feedback literacy): a bare "Got it" click is
+            // acknowledgement-theatre; capture "seen" passively, keep ONE deliberate action.
+            if (isStudent && !isPreview && c.studentStatus === 'open') {
+                c.studentStatus = 'acknowledged';
+                c.acknowledgedAt = Date.now();
+                saveComments();
+            }
             const STATUS_INFO = c.resolved
                 ? { label: 'Resolved', color: '#1CD991' }
                 : c.studentStatus === 'actioned'
@@ -13384,21 +13392,6 @@
                 if (c.studentStatus === 'actioned') {
                     respondRow.appendChild(el('span', { className: 'swml-comment-respond-ack', textContent: '✓ Actioned — awaiting tutor' }));
                 } else {
-                    if (c.studentStatus === 'open') {
-                        respondRow.appendChild(el('button', {
-                            className: 'swml-comment-respond-btn',
-                            innerHTML: '👍 Got it',
-                            title: 'Acknowledge you have read this',
-                            onClick: () => {
-                                c.studentStatus = 'acknowledged';
-                                c.acknowledgedAt = Date.now();
-                                saveComments();
-                                showCommentPopover(commentId, anchorEl, popoverContainer);
-                            }
-                        }));
-                    } else {
-                        respondRow.appendChild(el('span', { className: 'swml-comment-respond-ack', textContent: '✓ Acknowledged' }));
-                    }
                     const actionBtn = el('button', {
                         className: 'swml-comment-respond-btn swml-comment-respond-action',
                         textContent: 'Mark actioned',
