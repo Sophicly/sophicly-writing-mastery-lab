@@ -463,7 +463,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
 .swml-comment-popover {
     position: absolute;
     width: 300px;
-    background: #28292b;
+    background: #1c1d1f;     /* v7.19.557: primary dark-theme brand colour (Neil) */
     border: 1px solid oklch(0.38 0.01 270);
     border-radius: 12px;
     box-shadow: 0 12px 40px rgba(0,0,0,0.5);
