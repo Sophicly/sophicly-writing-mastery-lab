@@ -2718,7 +2718,12 @@
         return null;
     }
 
-    function clearCanvasChat() {
+    // v7.19.568: async + awaited so callers can guarantee the server-side chat
+    // meta is actually deleted BEFORE they silent-send a restart. The FQ clear
+    // button fired this un-awaited then sent "Let's begin!" 200ms later — the
+    // delete often hadn't committed, so the restart read the stale Q1–Q5 history
+    // and the AI resumed at Q5 instead of starting fresh.
+    async function clearCanvasChat() {
         try { localStorage.removeItem(CHAT_SAVE_KEY()); } catch (e) {}
         // v7.18.45: chat-clear suffix MUST match save + load (`_chatStorageSuffix()`),
         // NOT base `WML.resolveStorageSuffix()`. For mark_scheme_unit, save writes to
@@ -2726,7 +2731,7 @@
         // `_msu` — a different server key. Chat-clear button + stale-detection discard
         // paths both silently failed to nuke server chat. Fixed by using the same
         // suffix resolver as save/load.
-        fetch(API.chatClear, {
+        await fetch(API.chatClear, {
             method: 'POST', headers,
             // v7.17.39: include cw_project_id for project-scoped clear
             body: JSON.stringify(Object.assign({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: _chatStorageSuffix(), attempt: state.attempt || 1 }, cwScopeBody()))
@@ -3345,7 +3350,7 @@
                         : 'Clear this assessment chat and start fresh? Your document and essay are preserved \u2014 only the chat messages will be removed.',
                     async () => {
                         if (_msqMidRound) await _quizCtl.abandonRound();
-                        clearCanvasChat();
+                        await clearCanvasChat(); // v7.19.568: await so the stale chat is gone before any restart silent-send
                         canvasChatHistory.length = 0;
                         canvasChatId = '';
                         chatMessages.innerHTML = '';
