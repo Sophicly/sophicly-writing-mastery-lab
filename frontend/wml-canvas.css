@@ -403,6 +403,7 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     background: #2d2d2f;     /* dark canvas (default) — TipTap tt-gray-dark-200 */
     border: none;            /* v7.19.548: no stroke/frame border (Neil) */
     border-radius: 10px;     /* square with rounded corners */
+    border-bottom-left-radius: 0; /* v7.19.553: square this corner so the tail emerges flush (kills gap) */
     box-shadow: 0 8px 24px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.35);
     cursor: pointer;
     transition: transform 0.15s;
@@ -439,10 +440,10 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     position: absolute;
     /* v7.19.548: bigger + sharper tail (taller viewBox stretch = pointier tip), overlapping
        the card edge so it reads seamless. Neil's offsets: bottom -10, left -1. */
-    bottom: -13px;           /* v7.19.551: taller tail + ~11px overlap up into the card (closes gap) */
+    bottom: -17px;           /* v7.19.553: smaller overlap so tail stops below the avatar (Neil) */
     left: 0px;
-    width: 20px;             /* matches sharp-tail viewBox 20x24 (no distortion) */
-    height: 24px;
+    width: 16px;             /* v7.19.553: smaller tail; matches viewBox 16x20 (no distortion) */
+    height: 20px;
     color: #2d2d2f;          /* dark card — matches card fill */
 }
 /* Light canvas — white card (TipTap light), subtle dark border, soft elevated shadow. */
