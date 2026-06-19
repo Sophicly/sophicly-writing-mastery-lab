@@ -4056,6 +4056,17 @@
                             if (res && res.success) console.log('WML v7.18.11: FQ result persisted', res.result);
                             else console.warn('WML v7.18.11: FQ persist FAILED', res);
                         }).catch(e => console.warn('WML v7.18.11: FQ persist error', e));
+                        // v7.19.565: surface the result as an in-doc grade card (parity
+                        // with the mark-scheme quiz). Baked into the FQ canvas doc + saved
+                        // so it survives reload via the normal /canvas/load path.
+                        _pendingQuizResult = {
+                            score: parseFloat(_quizMatch[1]),
+                            max: parseInt(_quizMatch[2], 10),
+                            percentage: parseInt(_quizMatch[3], 10),
+                            grade: parseInt(_quizMatch[4], 10),
+                        };
+                        applyQuizResultToEditor();
+                        if (typeof saveCanvasContent === 'function') saveCanvasContent();
                     }
 
                     // v7.18.12: Quiz step tracking for sidebar progress (MSQ + FQ).
@@ -23818,7 +23829,7 @@
     function applyQuizResultToEditor() {
         const result = _pendingQuizResult;
         if (!result || !canvasEditor) return;
-        if (state.task !== 'mark_scheme_unit') return;
+        if (state.task !== 'mark_scheme_unit' && state.task !== 'foundational_quiz') return;
         try {
             const tmp = document.createElement('div');
             tmp.innerHTML = canvasEditor.getHTML() || '';
@@ -23829,10 +23840,18 @@
             const card = wrap.firstElementChild;
             if (!card) return;
 
-            const fyw = Array.from(tmp.querySelectorAll('[data-section-type="divider"]'))
-                .find(d => /FORGING YOUR WEAPON/i.test((d.getAttribute('data-section-label') || '') + ' ' + (d.textContent || '')));
-            if (fyw && fyw.parentNode) fyw.parentNode.insertBefore(card, fyw);
-            else tmp.appendChild(card);
+            if (state.task === 'foundational_quiz') {
+                // v7.19.565: the FQ doc has no "Forging Your Weapon" divider — surface
+                // the grade card at the very top of the doc (next to General Notes,
+                // where Neil wants the result visible). Parity with the MSU card.
+                if (tmp.firstChild) tmp.insertBefore(card, tmp.firstChild);
+                else tmp.appendChild(card);
+            } else {
+                const fyw = Array.from(tmp.querySelectorAll('[data-section-type="divider"]'))
+                    .find(d => /FORGING YOUR WEAPON/i.test((d.getAttribute('data-section-label') || '') + ' ' + (d.textContent || '')));
+                if (fyw && fyw.parentNode) fyw.parentNode.insertBefore(card, fyw);
+                else tmp.appendChild(card);
+            }
 
             _migrationActive = true;
             try { canvasEditor.commands.setContent(tmp.innerHTML, false); }
