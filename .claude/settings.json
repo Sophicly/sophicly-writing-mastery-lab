@@ -475,7 +475,8 @@
       "Bash(grep -oE \"SC_VERSION', '3\\\\.10\\\\.[0-9]+'\" sophicly-components.php)",
       "Bash(ls deploy*.sh)",
       "Bash(ls ../deploy*.sh)",
-      "Bash(find . -maxdepth 2 -name 'deploy-staging.sh')"
+      "Bash(find . -maxdepth 2 -name 'deploy-staging.sh')",
+      "Bash(scp -i /Users/neilwilliams/.ssh/sophicly_staging /tmp/wml_unread_test.php runcloud@18.133.5.229:/tmp/wml_unread_test.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
