@@ -9586,7 +9586,12 @@
                             const isGuidedPhase = ['initial', 'redraft', 'preliminary'].includes(state.phase);
                             const diagnosticInTopic = isDiagnosticEntryTask && isGuidedPhase;
                             console.log('WML Attempt: completed=', completedAttempts.length, 'total=', (idx.attempts || []).length, 'fromUrl=', attemptFromUrl, 'preview=', previewOverlay, 'examPrep=', isExamPrepTask, 'diagnosticEntry=', isDiagnosticEntryTask, 'topicFlowSuppress=', topicFlowSuppress, 'diagnosticInTopic=', diagnosticInTopic);
-                            if ((completedAttempts.length > 0 || previewOverlay || (isExamPrepTask && hasAnyAttempt) || (isDiagnosticEntryTask && hasAnyAttempt)) && !state.reviewMode && !attemptFromUrl && !topicFlowSuppress && !diagnosticInTopic) {
+                            // v7.19.567: foundational_quiz is single-attempt like a normal
+                            // lesson — never show the "Previous Attempts / Start Attempt N"
+                            // selector (Neil). It always resumes its one doc; redoing the quiz
+                            // updates the same result rather than spawning attempt 2.
+                            const isFoundationalQuiz = state.task === 'foundational_quiz';
+                            if ((completedAttempts.length > 0 || previewOverlay || (isExamPrepTask && hasAnyAttempt) || (isDiagnosticEntryTask && hasAnyAttempt)) && !state.reviewMode && !attemptFromUrl && !topicFlowSuppress && !diagnosticInTopic && !isFoundationalQuiz) {
                                 const shown = await _showAttemptSelector(idx, suffix);
                                 if (shown) return; // selector handles mode + chat init
                                 attemptSelectorShown = false;
@@ -24367,7 +24372,13 @@
         // no Score Summary / Self-Assessment / Analytics / Action Plan. Without this skip,
         // migrateDocument injects all four (visible after diagnostic-class exclusion in v7.19.230).
         // Tutor Sign-off is already appended inside the Codex template itself.
-        if (['conceptual_notes', 'memory_practice', 'exam_question', 'exam_crib', 'mastery_codex'].includes(state.task)) { console.log('WML Migration: Skipping — non-assessment exercise'); return; }
+        // v7.19.567: foundational_quiz is a deterministic quiz on a conceptual-notes-style
+        // doc — NOT an essay assessment. Without this skip, migrateDocument injected Score
+        // Summary / Self-Assessment / Analytics / Action Plan / Tutor Sign-off into the FQ
+        // doc; the Self-Assessment section spawned orphan "Hook" skill dropdowns floating at
+        // the bottom of the page. A quiz gets none of these (its result shows via the Quiz
+        // Result card instead).
+        if (['conceptual_notes', 'memory_practice', 'exam_question', 'exam_crib', 'mastery_codex', 'foundational_quiz'].includes(state.task)) { console.log('WML Migration: Skipping — non-assessment exercise'); return; }
         const currentHTML = canvasEditor.getHTML();
         // Only run on documents that have section blocks (i.e. structured templates)
         if (!currentHTML.includes('data-section-type')) return;
