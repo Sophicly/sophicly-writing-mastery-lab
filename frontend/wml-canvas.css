@@ -440,10 +440,10 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     position: absolute;
     /* v7.19.548: bigger + sharper tail (taller viewBox stretch = pointier tip), overlapping
        the card edge so it reads seamless. Neil's offsets: bottom -10, left -1. */
-    bottom: -19px;           /* v7.19.554: pushed down; top edge flush at card bottom (height==offset) */
+    bottom: -16px;           /* v7.19.555: shorter tail; top edge stays flush at card bottom (height==offset) */
     left: 0px;
-    width: 14px;             /* v7.19.554: narrower tail (smaller look); matches viewBox 14x19 */
-    height: 19px;
+    width: 14px;             /* v7.19.555: narrower + shorter tail; matches viewBox 14x16 */
+    height: 16px;
     color: #2d2d2f;          /* dark card — matches card fill */
 }
 /* Light canvas — white card (TipTap light), subtle dark border, soft elevated shadow. */
