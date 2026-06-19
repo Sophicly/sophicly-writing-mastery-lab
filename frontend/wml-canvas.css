@@ -9969,6 +9969,58 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
 .swml-canvas-light .swml-tutor-view-pill:hover {
     border-color: rgba(125, 249, 233, 0.7);
 }
+/* v7.19.560: "View as student" preview toggle — sits beside the tutor-view pill. */
+.swml-tutor-view-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-self: flex-start;
+}
+.swml-view-as-student-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(83, 51, 237, 0.15);
+    border: 1px solid rgba(83, 51, 237, 0.45);
+    color: #b9acff;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.swml-view-as-student-toggle svg { flex-shrink: 0; }
+.swml-view-as-student-toggle:hover {
+    background: rgba(83, 51, 237, 0.28);
+    border-color: rgba(83, 51, 237, 0.7);
+}
+.swml-view-as-student-toggle.active {
+    background: #5333ed;
+    border-color: #5333ed;
+    color: #fff;
+}
+.swml-comment-preview-note {
+    width: 100%;
+    font-size: 11px;
+    font-weight: 600;
+    color: #b9acff;
+    margin-bottom: 2px;
+}
+.swml-canvas-light .swml-view-as-student-toggle {
+    background: rgba(83, 51, 237, 0.08);
+    border-color: rgba(83, 51, 237, 0.4);
+    color: #5333ed;
+}
+.swml-canvas-light .swml-view-as-student-toggle.active {
+    background: #5333ed;
+    color: #fff;
+}
+.swml-canvas-light .swml-comment-preview-note { color: #5333ed; }
 
 /* Tutor-view modal. */
 .swml-review-modal-overlay {

@@ -66,6 +66,13 @@
     const extractAndSavePlan = (...args) => window.WML.extractAndSavePlan(...args);
     const refreshPlan = (...args) => window.WML.refreshPlan(...args);
 
+    // v7.19.560: tutor "View as student" preview — visual-only flip of the comment
+    // popover to the student-facing layout. NEVER persists (tutor is still the logged-in
+    // user). `_reopenCommentPopover` is set by showCommentPopover so the toggle can
+    // re-render an open popover in the new mode.
+    let previewAsStudent = false;
+    let _reopenCommentPopover = null;
+
     // v7.15.54: replaces the chat input area with a slim "Chat read-only" note in
     // review mode. Tutors still see the student's transcript above but cannot send.
     function appendChatReadonlyNote(panel) {
@@ -89,7 +96,27 @@
             onClick: (ev) => { ev.stopPropagation(); showTutorViewModal(); }
         });
         pill.innerHTML = icon + '<span>' + viewLabel + '</span>';
-        return pill;
+
+        // v7.19.560: tutors get a "View as student" preview toggle (visual-only).
+        if (isParent) return pill;
+        const wrap = el('div', { className: 'swml-tutor-view-wrap' });
+        wrap.appendChild(pill);
+        const studentIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>';
+        const toggle = el('button', { className: 'swml-view-as-student-toggle', title: 'Preview what the student sees' });
+        const setLabel = () => {
+            toggle.innerHTML = studentIcon + '<span>' + (previewAsStudent ? 'Back to tutor' : 'View as student') + '</span>';
+            toggle.classList.toggle('active', previewAsStudent);
+        };
+        toggle.onclick = (ev) => {
+            ev.stopPropagation();
+            previewAsStudent = !previewAsStudent;
+            setLabel();
+            // Re-render an open comment popover in the new mode (visual-only).
+            if (document.querySelector('.swml-comment-popover') && _reopenCommentPopover) _reopenCommentPopover();
+        };
+        setLabel();
+        wrap.appendChild(toggle);
+        return wrap;
     }
 
     // v7.15.56: modal describing the viewer-mode context and capabilities.
@@ -13144,9 +13171,12 @@
             if (!c) return;
 
             // v7.19.558: viewer role — tutor authors + resolves; student responds; parent read-only.
+            // v7.19.560: isPreview = tutor using "View as student" — render the student layout
+            // but VISUAL-ONLY (controls disabled, nothing persists).
             const isReadonly = state.viewerMode === 'readonly' || state.reviewRole === 'parent';
-            const isTutor = !!state.reviewMode && !isReadonly;
-            const isStudent = !state.reviewMode && !isReadonly;
+            const isPreview = !!state.reviewMode && !isReadonly && !!previewAsStudent;
+            const isTutor = !!state.reviewMode && !isReadonly && !isPreview;
+            const isStudent = isPreview || (!state.reviewMode && !isReadonly);
             const replyAuthor = isStudent ? 'Student' : 'Tutor';
             if (!c.studentStatus) c.studentStatus = 'open';
             const STATUS_INFO = c.resolved
@@ -13311,9 +13341,10 @@
                         }
                     });
                     // v7.19.558: can only edit own messages (tutor may edit any)
-                    if (isTutor || msg.author === 'Student') bubble.appendChild(editBtn);
+                    // v7.19.560: no interactive controls in preview (visual-only)
+                    if (!isPreview && (isTutor || msg.author === 'Student')) bubble.appendChild(editBtn);
                     // Delete button on replies (not the original comment); own messages only
-                    if (idx > 0 && (isTutor || msg.author === 'Student')) {
+                    if (!isPreview && idx > 0 && (isTutor || msg.author === 'Student')) {
                         const delBtn = el('button', {
                             className: 'swml-comment-msg-delete',
                             innerHTML: '×',
@@ -13387,6 +13418,11 @@
                     });
                     respondRow.appendChild(actionBtn);
                 }
+                // v7.19.560: visual-only in tutor preview — disable the controls, label it.
+                if (isPreview) {
+                    respondRow.querySelectorAll('button').forEach(b => { b.disabled = true; });
+                    respondRow.prepend(el('div', { className: 'swml-comment-preview-note', textContent: '👁 Preview — this is the student’s view' }));
+                }
                 pop.appendChild(respondRow);
             }
             // Tutor: once the student has actioned, nudge to verify the change then resolve.
@@ -13423,6 +13459,7 @@
             });
             replyWrap.appendChild(replyInput);
             replyWrap.appendChild(replyBtn);
+            if (isPreview) { replyInput.disabled = true; replyBtn.disabled = true; } // v7.19.560: visual-only
             if (!isReadonly) pop.appendChild(replyWrap); // v7.19.558: parents are read-only
 
             // Prevent TipTap editor from stealing focus when interacting with the popover (v7.12.68)
@@ -13442,6 +13479,8 @@
             targetContainer.appendChild(pop);
             activePopover = pop;
             pop._anchorCid = commentId;
+            // v7.19.560: let the "View as student" toggle re-render this popover in-place.
+            _reopenCommentPopover = () => { if (document.body.contains(anchorEl)) showCommentPopover(commentId, anchorEl, popoverContainer); };
         }
 
         function findCommentRange(commentId) {
