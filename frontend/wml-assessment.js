@@ -13792,7 +13792,7 @@
         // v7.19.552: it's a TRIANGLE, not a literal tail (Neil) — straight VERTICAL left edge
         // (continues the card's left side), horizontal top, hypotenuse top-right → bottom-left
         // point. Joined under the card the triangle reads as a speech tail.
-        const BUBBLE_POINTER_SVG = '<svg viewBox="0 0 16 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="swml-bubble-pointer"><path d="M0 0 L16 0 L0 20 Z"></path></svg>';
+        const BUBBLE_POINTER_SVG = '<svg viewBox="0 0 14 19" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="swml-bubble-pointer"><path d="M0 0 L14 0 L0 19 Z"></path></svg>';
         const avatarUrl = config.userAvatar || '';
 
         function updateCommentGutter() {
