@@ -508,7 +508,12 @@
       "Bash(mv open/dashboard-confirm-next-step-trio-live-prod-2026-06-20.md done/)",
       "Bash(mv open/dashboard-promote-course-contract-2026-06-20.md done/)",
       "Bash(grep -n ''\\\\''task'\\\\''\\\\]\\\\|$task\\\\b\\\\|task.*sanitize\\\\|allowed.*task\\\\|in_array.*task' includes/class-rest-api.php)",
-      "Bash(grep -nE 'word|count|doc\\\\[|\\\\$doc =|update_user_meta|sections|html')"
+      "Bash(grep -nE 'word|count|doc\\\\[|\\\\$doc =|update_user_meta|sections|html')",
+      "Bash(awk 'NR<=2636 && /public function |private function /{ln=NR; name=$0} END{}' class-wml-rest-api.php)",
+      "Bash(awk 'NR>=2400 && NR<=2640 && /\\(public|private\\) function /{print NR\": \"$0}' class-wml-rest-api.php)",
+      "Bash(grep -n 'texts_summary\\\\|'\\\\''callback'\\\\''.*=> array\\( $this' class-wml-rest-api.php)",
+      "Bash(awk 'NR<=2400 && /public function /{fn=$0; ln=NR} /texts_summary/{print \"fn line \"ln\": \"fn; exit}' class-wml-rest-api.php)",
+      "Bash(awk 'NR>=2390 && NR<=2417 && /function /{print NR\": \"$0}' class-wml-rest-api.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
