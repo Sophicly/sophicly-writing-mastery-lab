@@ -1042,6 +1042,12 @@ window.WML = (function() {
             // _reassessment canvas doc, matching the redraft_assessment manifest. Phase 1
             // assessment (any other phase) keeps the legacy '' suffix, unchanged.
             canvasStorageSuffixForPhase: function (phase) { return phase === 'redraft' ? '_reassessment' : ''; },
+            // v7.19.582: the CHAT suffix MUST track the canvas suffix per phase, else the
+            // Phase 1 (diagnostic) and Phase 2 (reassessment) assessment chats COLLIDE on
+            // the same '' key (Phase 2 overwrote Phase 1) AND the tutor review view — which
+            // loads the doc by the _reassessment suffix — finds no chat there (chat was at '').
+            // Mirror canvasStorageSuffixForPhase so chat + canvas live under the same suffix.
+            storageSuffixForPhase: function (phase) { return phase === 'redraft' ? '_reassessment' : ''; },
             chatHeaderLabel: 'Essay Assessment',
             sidebarSteps: [
                 { step: 1, label: 'Setup & Details' },
