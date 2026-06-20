@@ -493,7 +493,10 @@
       "Bash(sed -i '' 's/^status: open/status: done/' open/components-next-step-event-detail-course-id-2026-06-20.md)",
       "Bash(mv open/components-next-step-event-detail-course-id-2026-06-20.md done/)",
       "Bash(IMPECCABLE_CONTEXT_DIR=\"/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins\" node scripts/load-context.mjs)",
-      "Bash(perl -pi -e 's/onClick:/onclick:/g' frontend/sophicly-next-step.js)"
+      "Bash(perl -pi -e 's/onClick:/onclick:/g' frontend/sophicly-next-step.js)",
+      "Bash(grep -niE ''\\\\''grade'\\\\''|'\\\\''completed_at'\\\\''|'\\\\''updated_at'\\\\''|'\\\\''graded_at'\\\\''|'\\\\''date'\\\\''|=> \\\\$row|push|\\\\$out\\\\[\\\\]|return rest_ensure')",
+      "Bash(grep -nE ''\\\\''\\(grade|completed_at|updated_at|graded_at|total_score|date|task|text_name\\)'\\\\''|=>|\\\\$out|\\\\$rows\\\\[\\\\]|return rest')",
+      "Bash(awk 'NR>=2825 && NR<=3034' class-wml-rest-api.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
