@@ -90,6 +90,15 @@ class SWML_Quiz_Engine {
         delete_user_meta($user_id, $this->meta_key($user_id));
     }
 
+    /**
+     * v7.19.577: public reset — wipes the active quiz accumulator so the next turn
+     * carries NO "QUIZ STATE" block (the AI starts the quiz fresh). Called by the
+     * chat-clear endpoint so clearing the chat is a genuine fresh start for quizzes.
+     */
+    public function reset_user($user_id) {
+        $this->clear_accumulator($user_id);
+    }
+
     // ─────────────────────────────────────────────────────────────────────
     //  PUBLIC API — called by function-handlers
     // ─────────────────────────────────────────────────────────────────────

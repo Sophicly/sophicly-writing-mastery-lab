@@ -4255,6 +4255,17 @@ class SWML_REST_API {
         $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix, $attempt, $cw_project_id);
         delete_user_meta($user_id, $meta_key);
 
+        // v7.19.577: ROOT FIX for "clear chat resumes mid-quiz". The quiz progress lives
+        // in the per-user SWML_Quiz_Engine accumulator (wml_quiz_active_{uid}), which the
+        // Protocol Router injects as a "QUIZ STATE (server truth)" block EVERY turn —
+        // literally telling the AI "you are at Question N, do NOT re-emit Phase 1". Clearing
+        // only the chat meta left that accumulator intact, so the AI kept resuming mid-quiz
+        // regardless of chatId/history (the real root — not the chat layer). Reset it so a
+        // clear is a genuine fresh start.
+        if (class_exists('SWML_Quiz_Engine')) {
+            SWML_Quiz_Engine::instance()->reset_user($user_id);
+        }
+
         return rest_ensure_response(['success' => true, 'key' => $meta_key]);
     }
 
