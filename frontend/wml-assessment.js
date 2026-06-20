@@ -2453,7 +2453,10 @@
         headText.className = 'swml-progress-head-text';
         const title = document.createElement('div');
         title.className = 'swml-progress-card-title';
-        title.textContent = 'Your Progress';
+        // v7.19.574: "Document Progress" not "Your Progress" — next to the course/unit
+        // trophy rings, "Your Progress" read as course progress. This tracks completion
+        // of THIS document only.
+        title.textContent = 'Document Progress';
         const count = document.createElement('div');
         count.className = 'swml-progress-count';
         count.textContent = countText;
@@ -21296,7 +21299,7 @@
     // sign-off). Readonly; the nodeView renders the live card from completion state.
     // Empty placeholder paragraph = the hidden content hole the schema needs.
     function buildProgressSection() {
-        return sectionHTML('progress', 'Your Progress', false, null, '<p></p>');
+        return sectionHTML('progress', 'Document Progress', false, null, '<p></p>'); // v7.19.574: was 'Your Progress' (read as course progress)
     }
 
     // ══════════════════════════════════════════
