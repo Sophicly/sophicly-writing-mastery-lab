@@ -302,6 +302,15 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
+        // v7.19.581: SINGLE SOURCE OF TRUTH — words the student has written INTO the
+        // documents of a course, read LIVE from canvas meta (never session_records).
+        // Consumed by the focus cert-recap "Words written" tile + the dashboard hero so
+        // every surface matches the codex card. self / tutor / specialist / admin / parent.
+        register_rest_route($namespace, '/words-written', [
+            'methods' => 'GET', 'callback' => [$this, 'get_words_written'],
+            'permission_callback' => [$this, 'check_words_written_auth'],
+        ]);
+
         // Load sign-off data for a canvas document
         register_rest_route($namespace, '/canvas/load-signoff', [
             'methods' => 'GET', 'callback' => [$this, 'load_signoff'],
@@ -2739,6 +2748,139 @@ class SWML_REST_API {
         ));
         if ($row) return true;
         return new WP_Error('unauthorized', 'You are not linked to this student.', ['status' => 403]);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  WORDS WRITTEN — single source of truth (v7.19.581)
+    //  "Current words the student has written INTO the documents of a course",
+    //  read LIVE from canvas meta (NEVER session_records). Matches the codex card
+    //  by construction. Consumed by focus cert-recap + dashboard hero.
+    // ─────────────────────────────────────────────────────────────────────
+
+    /** G9 Core Skills = the single Mastery Codex doc. course_id confirmed staging+prod. */
+    const CORE_SKILLS_COURSE_ID = 45624;
+    // The codex canvas doc is keyed board='all', text='g9_core_skills' (verified in live
+    // data — NOT the legacy swml_canvas_mastery_codex key). Its words live in
+    // `.swml-input-field` elements (getCodexWordCount), NOT its stored `wordCount` field
+    // (which holds a response-style 5,297 — the wrong number the recap was showing).
+    const CODEX_CANVAS_KEY = 'swml_canvas_all_g9_core_skills';
+
+    /** Permission: self, OR a viewer (tutor/specialist/admin/linked-parent). */
+    public function check_words_written_auth($request) {
+        if (!is_user_logged_in()) return false;
+        $target = absint($request->get_param('user_id'));
+        if (!$target || $target === get_current_user_id()) return true;
+        return $this->verify_viewer_access($target) === true;
+    }
+
+    /**
+     * Replicate the frontend getCodexWordCount: sum words in every `.swml-input-field`
+     * element's text. Same tokeniser (split on whitespace, drop empties).
+     */
+    private function codex_word_count($html) {
+        if (!is_string($html) || $html === '') return 0;
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML('<?xml encoding="UTF-8">' . $html, LIBXML_NOERROR | LIBXML_NOWARNING);
+        libxml_clear_errors();
+        $xp = new DOMXPath($dom);
+        $nodes = $xp->query("//*[contains(concat(' ', normalize-space(@class), ' '), ' swml-input-field ')]");
+        $total = 0;
+        if ($nodes) {
+            foreach ($nodes as $node) {
+                $text = trim($node->textContent);
+                if ($text === '') continue;
+                $total += count(preg_split('/\s+/', $text, -1, PREG_SPLIT_NO_EMPTY));
+            }
+        }
+        return $total;
+    }
+
+    /** Reverse the student-data course map: course_id → ['text'=>slug,'board'=>board] or null. */
+    private function resolve_course_to_text_board($course_id) {
+        if (!function_exists('sophicly_get_course_map')) return null;
+        $map = sophicly_get_course_map();
+        if (!is_array($map)) return null;
+        foreach ($map as $text => $boards) {
+            if (!is_array($boards)) continue;
+            foreach ($boards as $board => $cid) {
+                if ((int) $cid === (int) $course_id) return ['text' => $text, 'board' => $board];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * GET /words-written?course_id=X[&user_id=Y]
+     * → { success, course_id, words, documents:[{label,words}], source }
+     */
+    public function get_words_written($request) {
+        $course_id = absint($request->get_param('course_id'));
+        if ($course_id <= 0) {
+            return rest_ensure_response(['success' => false, 'code' => 'bad_request']);
+        }
+        $target = absint($request->get_param('user_id')) ?: get_current_user_id();
+
+        // ── Codex / Core Skills: ONE doc, count `.swml-input-field` words (getCodexWordCount).
+        if ($course_id === self::CORE_SKILLS_COURSE_ID) {
+            $raw  = get_user_meta($target, self::CODEX_CANVAS_KEY, true);
+            $doc  = is_array($raw) ? $raw : self::decode_canvas_json($raw);
+            $html = (is_array($doc) && isset($doc['html'])) ? $doc['html'] : '';
+            $words = $this->codex_word_count($html);
+            return rest_ensure_response([
+                'success'   => true,
+                'course_id' => $course_id,
+                'words'     => $words,
+                'documents' => [['label' => 'Mastery Codex', 'words' => $words]],
+                'source'    => 'codex',
+            ]);
+        }
+
+        // ── Multi-doc course: sum the LATEST attempt per logical doc.
+        $resolved = $this->resolve_course_to_text_board($course_id);
+        if (!$resolved) {
+            return rest_ensure_response([
+                'success' => true, 'course_id' => $course_id, 'words' => 0,
+                'documents' => [], 'source' => 'unmapped',
+            ]);
+        }
+
+        global $wpdb;
+        $like = 'swml_canvas_' . $resolved['board'] . '_' . $resolved['text'] . '%';
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT meta_key, meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key LIKE %s",
+            $target, $like
+        ), ARRAY_A);
+
+        // Group by logical doc (strip the __a{N} attempt suffix); keep the highest attempt.
+        $groups = [];
+        foreach (($rows ?: []) as $r) {
+            $key = $r['meta_key'];
+            $logical = $key; $attempt = 1;
+            if (preg_match('/^(.*)__a(\d+)(.*)$/', $key, $m)) { $logical = $m[1] . $m[3]; $attempt = (int) $m[2]; }
+            $doc = self::decode_canvas_json($r['meta_value']);
+            $w   = (is_array($doc) && isset($doc['wordCount'])) ? (int) $doc['wordCount'] : 0;
+            if (!isset($groups[$logical]) || $attempt >= $groups[$logical]['attempt']) {
+                $groups[$logical] = ['attempt' => $attempt, 'words' => $w, 'key' => $logical];
+            }
+        }
+
+        $total = 0; $documents = [];
+        $prefix = 'swml_canvas_' . $resolved['board'] . '_' . $resolved['text'];
+        foreach ($groups as $logical => $g) {
+            if ($g['words'] <= 0) continue;  // only docs the student actually wrote into
+            $total += $g['words'];
+            $tail = trim(str_replace($prefix, '', $logical), '_');
+            $documents[] = ['label' => ($tail === '' ? 'Main document' : $tail), 'words' => $g['words']];
+        }
+
+        return rest_ensure_response([
+            'success'   => true,
+            'course_id' => $course_id,
+            'words'     => $total,
+            'documents' => $documents,
+            'source'    => 'canvas',
+        ]);
     }
 
     /**
