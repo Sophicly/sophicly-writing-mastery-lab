@@ -64,7 +64,24 @@ class SWML_Quiz_Bank {
     public static function parse_sections($subject) {
         $file = self::file_for_subject($subject);
         if (!$file) return [];
-        $path = self::dir() . $file;
+        return self::parse_file(self::dir() . $file);
+    }
+
+    /**
+     * Foundational-quiz banks (v7.19.578): text-keyed, board-agnostic. One file
+     * per text at protocols/shared/foundational-quiz/banks/{text}.md with a single
+     * "### Quiz: <Text>" section. Reuses the SAME parser + scorer as the MSQ banks.
+     */
+    private static function fq_dir() {
+        return plugin_dir_path(dirname(__FILE__)) . 'protocols/shared/foundational-quiz/banks/';
+    }
+
+    public static function parse_sections_fq($text) {
+        return self::parse_file(self::fq_dir() . sanitize_file_name((string) $text) . '.md');
+    }
+
+    /** Parse a bank markdown file at $path into [ section_label => [questions] ]. */
+    public static function parse_file($path) {
         if (!file_exists($path)) return [];
         $lines = preg_split('/\r\n|\r|\n/', (string) file_get_contents($path));
 
@@ -192,10 +209,29 @@ class SWML_Quiz_Bank {
     public static function pick_session($subject, $board, $n = 5) {
         $pool = self::questions_for($subject, $board);
         if (empty($pool)) return [];
+        return self::pick_from_pool($pool, sanitize_key($subject) . ':' . sanitize_key($board), $n);
+    }
+
+    /** FQ: text-keyed, single-section pool (board-agnostic). */
+    public static function questions_for_fq($text) {
+        $sections = self::parse_sections_fq($text);
+        return empty($sections) ? [] : reset($sections);
+    }
+
+    public static function pick_session_fq($text, $n = 5) {
+        $pool = self::questions_for_fq($text);
+        if (empty($pool)) return [];
+        return self::pick_from_pool($pool, 'fq:' . sanitize_key((string) $text), $n);
+    }
+
+    /**
+     * Spread N picks across category groups (AO, else [Tests …] category), then
+     * fill round-robin. Returns FULL question objects (keys + feedback) — the
+     * caller MUST strip keys before sending to the client. Shared by MSQ + FQ.
+     */
+    private static function pick_from_pool($pool, $id_prefix, $n = 5) {
         $n = max(1, min($n, count($pool)));
 
-        // Group by AO (Phase 2 stratification — each round samples across AOs);
-        // fall back to the legacy [Tests …] category, then round-robin.
         $by_cat = [];
         foreach ($pool as $q) {
             $key = ($q['ao'] ?? '') !== '' ? $q['ao'] : ($q['category'] ?: '_');
@@ -222,7 +258,7 @@ class SWML_Quiz_Bank {
         // Stamp a stable id + sequential session position.
         $out = [];
         foreach (array_values($picked) as $i => $q) {
-            $q['id']     = sanitize_key($subject) . ':' . sanitize_key($board) . ':' . $q['q_num'];
+            $q['id']     = $id_prefix . ':' . $q['q_num'];
             $q['seq']    = $i + 1;
             $out[]       = $q;
         }

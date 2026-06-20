@@ -741,15 +741,23 @@ class SWML_REST_API {
         $text    = sanitize_text_field($p['text']    ?? '');
         $attempt = max(1, absint($p['attempt'] ?? 1));
         $count   = min(10, max(1, absint($p['count'] ?? 5)));
+        // v7.19.578: quiz_type selects the bank + the engine's persist dispatch.
+        // 'foundational' → text-keyed FQ bank + persist_foundational; default MSQ.
+        $quiz_type = sanitize_key($p['quiz_type'] ?? 'mark_scheme');
+        $is_fq     = ($quiz_type === 'foundational');
 
-        $picked = SWML_Quiz_Bank::pick_session($subject, $board, $count);
+        $picked = $is_fq
+            ? SWML_Quiz_Bank::pick_session_fq($text, $count)
+            : SWML_Quiz_Bank::pick_session($subject, $board, $count);
         if (empty($picked)) {
             return rest_ensure_response(['success' => false, 'code' => 'no_questions',
-                'message' => 'No question bank found for this board/subject.']);
+                'message' => $is_fq
+                    ? 'No foundational question bank found for this text.'
+                    : 'No question bank found for this board/subject.']);
         }
 
         $engine = SWML_Quiz_Engine::instance();
-        $engine->start($user_id, 'mark_scheme', count($picked), $board, $text, $attempt);
+        $engine->start($user_id, $is_fq ? 'foundational' : 'mark_scheme', count($picked), $board, $text, $attempt);
 
         // Persist the picked set WITH keys server-side; client never sees keys.
         update_user_meta($user_id, self::QUIZ_BANK_META . $user_id,
