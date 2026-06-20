@@ -2955,6 +2955,20 @@
             if (state._phaseMarkedComplete) return;
             if (isCwSi && state.cwProjectId) {
                 state._phaseMarkedComplete = true;
+                // v7.19.571: CW TRIAL lessons persist their result here so the project's
+                // trial_completion[N] flips true (unblocks the focus sidebar cw_trial_N
+                // ticks — handoff wml-cw-trial-saving-caller-wiring). Trials have
+                // cwStepDef.trial (no .step); steps fall through to the artifact path below.
+                // saveTrial was defined (wml-core.js:2034) but had no caller until now.
+                if (cwStepDef?.trial && state.cwTrial) {
+                    try {
+                        await WML.cwProject.saveTrial(
+                            state.cwProjectId,
+                            { trial: state.cwTrial, content: canvasEditor ? canvasEditor.getHTML() : '', timestamp: new Date().toISOString() },
+                            state.cwTrial
+                        );
+                    } catch (e) { console.warn('WML v7.19.571: CW saveTrial failed', e && e.message); }
+                }
                 const artifactKey = WML.CW_ARTIFACT_MAP[cwStepDef?.step];
                 if (artifactKey && canvasEditor) {
                     await WML.cwProject.saveArtifact(state.cwProjectId, artifactKey, canvasEditor.getHTML());
