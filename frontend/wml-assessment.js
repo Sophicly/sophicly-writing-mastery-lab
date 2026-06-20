@@ -3792,8 +3792,8 @@
             // send an empty chatId so the AI Engine starts brand-new (it won't resume the
             // stale conversation it still holds under the old chatId).
             if (_consumeFreshChatFlag()) {
-                canvasChatId = '';
-                console.log('WML v7.19.575: post-clear — forcing fresh AI Engine conversation (empty chatId)');
+                canvasChatId = _freshChatId();
+                console.log('WML v7.19.576: post-clear — new AI Engine conversation', canvasChatId);
             }
 
             // v7.19.323: deterministic mark-scheme quiz controller owns the turn
@@ -10781,8 +10781,8 @@
                             // an empty chatId so the AI Engine begins brand-new (won't resume the
                             // stale conversation it still holds under the old chatId).
                             if (_consumeFreshChatFlag()) {
-                                canvasChatId = '';
-                                console.log('WML v7.19.575: post-clear — forcing fresh AI Engine conversation (empty chatId)');
+                                canvasChatId = _freshChatId();
+                                console.log('WML v7.19.576: post-clear — new AI Engine conversation', canvasChatId);
                             }
 
                             canvasChatLoading = true;
@@ -22952,6 +22952,14 @@
             try { sessionStorage.removeItem('swml_force_fresh_chat'); } catch (e) {}
         }
         return fresh;
+    }
+    // v7.19.576: a chatId the AI Engine has NEVER seen. v575 sent an EMPTY chatId to force a
+    // fresh conversation, but the console proved MeowApps does NOT treat empty as fresh — it
+    // falls back to a session/user-default conversation that still holds the old turns (the FQ
+    // clear kept resuming Q3). A brand-new UNIQUE chatId forces MeowApps to mint a genuinely
+    // new conversation with no history.
+    function _freshChatId() {
+        return 'swml-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
     }
     // v7.19.570: is the Foundational Quiz mid-round right now? DERIVED from chat history
     // (robust across reload/resume — a flag would reset on reload, letting a student
