@@ -3384,6 +3384,11 @@
                         await clearCanvasChat(); // v7.19.568: await so the stale chat is gone before any restart silent-send
                         canvasChatHistory.length = 0;
                         canvasChatId = '';
+                        // v7.19.573: the post-clear restart must NOT reuse the AI Engine's
+                        // conversation (it survives the WML chat-clear). Flag the next send to
+                        // go out with an empty chatId → fresh conversation at Q1. Module-scoped
+                        // so it outlives the re-mount that restores canvasChatId.
+                        if (state.task === 'foundational_quiz') _fqForceFreshChat = true;
                         chatMessages.innerHTML = '';
                         state.plan = {};
                         state._phaseMarkedComplete = false;
@@ -3779,6 +3784,19 @@
         async function sendCanvasMessage() {
             const msg = chatTextarea.value.trim();
             if (!msg || canvasChatLoading) return;
+
+            // v7.19.573: after an FQ chat-clear, force a BRAND-NEW AI Engine conversation.
+            // Clearing only nuked WML's chat meta — the MeowApps AI Engine keeps its OWN
+            // conversation keyed by chatId, so reusing the old chatId resumed the quiz
+            // mid-round (Q3/Q5). Sending an empty chatId makes the server omit it (PHP
+            // `if (!empty($chat_id))`), so the AI Engine starts a fresh conversation at Q1.
+            // The flag is module-scoped so it survives the post-clear canvas re-mount
+            // (canvasChatId is closure-scoped + gets restored from the reload path).
+            if (_fqForceFreshChat && state.task === 'foundational_quiz') {
+                canvasChatId = '';
+                _fqForceFreshChat = false;
+                console.log('WML v7.19.573: FQ post-clear — forcing fresh AI Engine conversation (empty chatId)');
+            }
 
             // v7.19.323: deterministic mark-scheme quiz controller owns the turn
             // (code-scored answers + Sophia help routing). STRICTLY gated to the
@@ -22906,6 +22924,10 @@
     // in-doc Quiz Result card. Applied to the editor AFTER tryTopicTemplate so
     // the card survives the MSU template enforcer. Null when no result yet.
     let _pendingQuizResult = null;
+    // v7.19.573: set true on an FQ chat-clear; consumed by the next sendCanvasMessage to
+    // force a fresh AI Engine conversation (empty chatId). Module-scoped so it survives the
+    // post-clear canvas re-mount. See sendCanvasMessage + the clear handler.
+    let _fqForceFreshChat = false;
     // v7.19.570: is the Foundational Quiz mid-round right now? DERIVED from chat history
     // (robust across reload/resume — a flag would reset on reload, letting a student
     // reload→clear to escape). Scans newest→oldest: mid-round iff the most recent quiz
