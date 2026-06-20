@@ -497,7 +497,17 @@
       "Bash(grep -niE ''\\\\''grade'\\\\''|'\\\\''completed_at'\\\\''|'\\\\''updated_at'\\\\''|'\\\\''graded_at'\\\\''|'\\\\''date'\\\\''|=> \\\\$row|push|\\\\$out\\\\[\\\\]|return rest_ensure')",
       "Bash(grep -nE ''\\\\''\\(grade|completed_at|updated_at|graded_at|total_score|date|task|text_name\\)'\\\\''|=>|\\\\$out|\\\\$rows\\\\[\\\\]|return rest')",
       "Bash(awk 'NR>=2825 && NR<=3034' class-wml-rest-api.php)",
-      "Bash(cat)"
+      "Bash(cat)",
+      "Bash(perl -0pi -e \"s/'1\\\\.8\\\\.2'/'1.8.3'/\" functions.php)",
+      "Bash(grep -n \"Border: 1px solid \\\\`#c3c4c7\\\\`\" BRAND.md DESIGN.md)",
+      "Bash(find . -iname \"fq-foundation.md\")",
+      "Bash(find . -iname \"class-quiz-engine.php\")",
+      "Bash(find . -iname \"class-topic-questions.php\")",
+      "Bash(perl -0pi -e \"s/'1\\\\.8\\\\.4'/'1.8.5'/\" functions.php)",
+      "Bash(sed -i '' 's/^status: open/status: done/' open/dashboard-confirm-next-step-trio-live-prod-2026-06-20.md open/dashboard-promote-course-contract-2026-06-20.md)",
+      "Bash(mv open/dashboard-confirm-next-step-trio-live-prod-2026-06-20.md done/)",
+      "Bash(mv open/dashboard-promote-course-contract-2026-06-20.md done/)",
+      "Bash(grep -n ''\\\\''task'\\\\''\\\\]\\\\|$task\\\\b\\\\|task.*sanitize\\\\|allowed.*task\\\\|in_array.*task' includes/class-rest-api.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
