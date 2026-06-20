@@ -863,7 +863,8 @@ class SWML_Protocol_Router {
         $wml_dynamic_quiz = '';
         if (class_exists('SWML_Quiz_Engine')
             && ($context['task'] ?? '') !== 'mark_scheme_unit'
-            && ($context['task'] ?? '') !== 'mark_scheme_help') {
+            && ($context['task'] ?? '') !== 'mark_scheme_help'
+            && ($context['task'] ?? '') !== 'foundational_help') {  // v7.19.579: FQ help turn = pure tutoring, no quiz-state
             $quiz_state_block = SWML_Quiz_Engine::instance()->build_state_block($user_id);
             if (!empty($quiz_state_block)) {
                 if (($context['task'] ?? '') === 'assessment') {
@@ -1223,7 +1224,7 @@ class SWML_Protocol_Router {
         // deterministic mark-scheme quiz. Load NO quiz protocol: Sophia only
         // explains the concept (the help preamble in build_preamble drives this).
         // The frontend controller keeps ownership of questions + scoring.
-        if ($task === 'mark_scheme_help') {
+        if ($task === 'mark_scheme_help' || $task === 'foundational_help') {  // v7.19.579: FQ help twin
             return null;
         }
 
@@ -2391,13 +2392,21 @@ TEMPLATE;
         // they can answer it themselves. NO quiz protocol, NO scoring, NO marker
         // emission, NO presenting a new question — the frontend controller owns all
         // of that. The current question + the student's question arrive in the prompt.
-        if (($context['task'] ?? '') === 'mark_scheme_help') {
+        // v7.19.579: foundational_help is the FQ twin of mark_scheme_help — same hard
+        // rules (no reveal / no scoring / no new question / no markers), but the concept
+        // explained is the underlying idea about the TEXT, not the mark scheme.
+        $_help_task = $context['task'] ?? '';
+        if ($_help_task === 'mark_scheme_help' || $_help_task === 'foundational_help') {
+            $is_fq_help  = ($_help_task === 'foundational_help');
             $board_label = strtoupper($context['board'] ?? 'AQA');
-            $help  = "## WRITING MASTERY LAB — MARK SCHEME QUIZ (HELP)\n";
+            $quiz_label  = $is_fq_help ? 'FOUNDATIONAL QUIZ' : 'MARK SCHEME QUIZ';
+            $quiz_name   = $is_fq_help ? 'Foundational Quiz' : 'Mark Scheme Quiz';
+            $idea        = $is_fq_help ? 'underlying idea about the text' : 'underlying mark-scheme idea';
+            $help  = "## WRITING MASTERY LAB — {$quiz_label} (HELP)\n";
             $help .= "**Student:** {$student_name} (call them {$first_name})\n";
             $help .= "**Exam Board:** {$board_label}\n\n";
-            $help .= "You are Sophia. {$first_name} is taking a Mark Scheme Quiz and has paused to ask you a question about the CURRENT quiz question (supplied in the message).\n\n";
-            $help .= "Your job: explain the underlying mark-scheme idea clearly and Socratically so they can decide the answer themselves.\n\n";
+            $help .= "You are Sophia. {$first_name} is taking a {$quiz_name} and has paused to ask you a question about the CURRENT quiz question (supplied in the message).\n\n";
+            $help .= "Your job: explain the {$idea} clearly and Socratically so they can decide the answer themselves.\n\n";
             $help .= "HARD RULES:\n";
             $help .= "- Do NOT reveal or confirm which option is correct, and do NOT score anything — a separate system marks the quiz.\n";
             $help .= "- Do NOT present a new question, restate all the options as a quiz, or say things like 'Question 1 of 5'.\n";

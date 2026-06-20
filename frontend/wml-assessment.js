@@ -53,6 +53,17 @@
     // staging. Strictly gated to mark_scheme_unit step-1; never touches live marking.
     const QUIZ_CONTROLLER_ON = true;
 
+    // v7.19.579: Foundational Quiz runs on the SAME deterministic controller as MSQ,
+    // but ONLY for texts that have an authored question bank
+    // (protocols/shared/foundational-quiz/banks/{text}.md). Other texts stay on the
+    // legacy AI path until their bank is authored — incremental, no no_questions break.
+    // Add a text slug here the moment its bank ships.
+    const FQ_BANK_TEXTS = ['romeo_and_juliet'];
+    function _fqDeterministic() {
+        return QUIZ_CONTROLLER_ON && state.task === 'foundational_quiz'
+            && FQ_BANK_TEXTS.indexOf((state.text || '').toLowerCase()) !== -1;
+    }
+
     // ── Late-bound wrappers for planning/chat functions ──
     // These are defined in wml-app.js which registers them on WML.
     // At call-time (user interaction), WML.* is fully populated.
@@ -3357,21 +3368,25 @@
                 // the round is finalised first (unanswered = 0) so every attempt counts.
                 // Tell the student before they confirm; finishing the round is always
                 // the better play. Zero-answers-so-far clears stay penalty-free.
-                const _msqMidRound = QUIZ_CONTROLLER_ON && state.task === 'mark_scheme_unit'
-                    && (state.step === 1 || state.bridgeStep === 1)
-                    && _quizCtl.active && _quizCtl.midRound && _quizCtl.answered > 0;
-                const _proj = _msqMidRound ? _quizCtl.projected : null;
+                // v7.19.579: controller-owned mid-round covers MSQ AND banked FQ (both run
+                // on _quizCtl) \u2014 projected-score warning + finalise THROUGH the controller
+                // (/quiz/finish \u2192 persist_foundational). The legacy System-A FQ branches below
+                // are gated !_fqDeterministic() so a banked FQ never double-records.
+                const _ctlMidRound = QUIZ_CONTROLLER_ON && _quizCtl.active && _quizCtl.midRound && _quizCtl.answered > 0
+                    && ((state.task === 'mark_scheme_unit' && (state.step === 1 || state.bridgeStep === 1)) || _fqDeterministic());
+                const _proj = _ctlMidRound ? _quizCtl.projected : null;
+                const _ctlLabel = _fqDeterministic() ? 'Foundational Quiz' : 'Mark Scheme Quiz';
                 showConfirm(
-                    _msqMidRound
-                        ? 'You\u2019re mid-round on the Mark Scheme Quiz (' + _quizCtl.answered + ' of 5 answered). Clearing now ENDS this round \u2014 unanswered questions score 0, so this attempt will be recorded as ' + _proj.score + '/' + _proj.max + ' (' + _proj.pct + '% \u00b7 Grade ' + _proj.grade + '). You\u2019ll usually score higher by finishing the round first. Clear anyway?'
-                        : (state.task === 'foundational_quiz' && _fqIsMidRound(canvasChatHistory))
+                    _ctlMidRound
+                        ? 'You\u2019re mid-round on the ' + _ctlLabel + ' (' + _quizCtl.answered + ' of 5 answered). Clearing now ENDS this round \u2014 unanswered questions score 0, so this attempt will be recorded as ' + _proj.score + '/' + _proj.max + ' (' + _proj.pct + '% \u00b7 Grade ' + _proj.grade + '). You\u2019ll usually score higher by finishing the round first. Clear anyway?'
+                        : (state.task === 'foundational_quiz' && !_fqDeterministic() && _fqIsMidRound(canvasChatHistory))
                             ? 'You\u2019re mid-round on this quiz. Clearing now ENDS the round and records it as incomplete (0 marks) \u2014 and it still counts toward your grade. You\u2019ll score far higher by finishing: answer all 5, see your feedback, then run another round if you want 100%. (In the real exam there are no restarts.) Clear anyway?'
-                        : state.task === 'foundational_quiz'
+                        : (state.task === 'foundational_quiz' && !_fqDeterministic())
                             ? 'Heads up \u2014 clearing the chat ends this quiz round. Finishing it and learning from your results beats restarting to chase a better start; in the real exam there are no restarts, so it\u2019s worth building that discipline now. You can always run another fresh round afterwards \u2014 the goal is 100%. Clear anyway?'
                             : 'Clear this assessment chat and start fresh? Your document and essay are preserved \u2014 only the chat messages will be removed.',
                     async () => {
-                        if (_msqMidRound) await _quizCtl.abandonRound();
-                        if (state.task === 'foundational_quiz' && _fqIsMidRound(canvasChatHistory)) {
+                        if (_ctlMidRound) await _quizCtl.abandonRound();
+                        if (state.task === 'foundational_quiz' && !_fqDeterministic() && _fqIsMidRound(canvasChatHistory)) {
                             // v7.19.570: bailed mid-round \u2014 record it as incomplete (0) so
                             // every started round counts (anti-cheat: a started round can't be
                             // escaped by clearing). End-of-round feedback means the client has
@@ -3407,7 +3422,12 @@
                         updateProgress(1);
                         const fn = (config.userName || '').split(' ')[0] || 'there';
 
-                        if (isCwTask && cwStepDef) {
+                        if (_fqDeterministic()) {
+                            // v7.19.579: banked FQ restart — deterministic controller, fresh
+                            // round 1 (mirrors the MSQ chat-clear branch + the boot gate). NO
+                            // silent-send to the AI (that would re-run the legacy protocol quiz).
+                            setTimeout(() => { _quizCtl.reset(); _quizCtl.start({ quizType: 'foundational' }); }, 200);
+                        } else if (isCwTask && cwStepDef) {
                             const stepLabel = cwStepDef.label || 'this step';
                             const stepNum = cwStepDef.step || cwStepDef.trial || '';
                             const gt = `Welcome back to Step ${stepNum}: **${stepLabel}**\n\nLet\u2019s continue working on this step. When you\u2019re ready, hit the button below.`;
@@ -3808,6 +3828,11 @@
                 await _quizCtl.handleTurn(msg);
                 return;
             }
+            // v7.19.579: FQ (banked text) — same deterministic controller owns the turn.
+            if (_fqDeterministic() && _quizCtl.active) {
+                await _quizCtl.handleTurn(msg);
+                return;
+            }
 
             // v7.19.244: Paragraph-boundary preflight. Runs once per assessment
             // chat (first user turn only) when an essay is present in the canvas.
@@ -4089,8 +4114,11 @@
                         };
                         console.log('WML v7.18.19: ' + state.task + ' score extracted', state.lastQuizScore);
                         if (typeof saveCanvasContent === 'function') saveCanvasContent();
-                    } else if (_quizMatch && state.task === 'foundational_quiz') {
-                        // v7.18.11: FQ path. POST directly to /foundational-quiz/result —
+                    } else if (_quizMatch && state.task === 'foundational_quiz' && !_fqDeterministic()) {
+                        // v7.18.11: FQ System-A path (non-banked texts). v7.19.579: banked FQ
+                        // uses the deterministic controller (persist_foundational via /quiz/finish),
+                        // so this legacy marker-POST is gated off to prevent DOUBLE-persisting.
+                        // POST directly to /foundational-quiz/result —
                         // server writes swml_foundational_quiz_results user_meta + fires
                         // sophicly_foundational_quiz_complete (student-data listener
                         // dual-writes to session_records via existing v2.22.5+ hook).
@@ -4495,11 +4523,14 @@
             let roundResults = []; // [{ q, res, answer }] for the current round
             let active = false;
             let busy = false;
+            let quizType = 'mark_scheme';  // v7.19.579: 'mark_scheme' | 'foundational' — same engine, different bank + copy
 
-            const lsKey = () => 'swml_msq_' + [state.board, state.subject, state.text, (state.attempt || 1)].join('_');
+            // FQ keeps its OWN sidecar key so MSQ resume is byte-identical (no collision).
+            const lsKey = () => (quizType === 'foundational' ? 'swml_fq_' : 'swml_msq_') + [state.board, state.subject, state.text, (state.attempt || 1)].join('_');
             function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total, round, roundResults })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
-            function rehydrate() {
+            function rehydrate(opts) {
+                if (opts && opts.quizType) quizType = (opts.quizType === 'foundational') ? 'foundational' : 'mark_scheme';
                 try {
                     const raw = localStorage.getItem(lsKey());
                     if (!raw) return false;
@@ -4645,14 +4676,17 @@
                 } catch (e) { removeCanvasTyping(); }
                 finally { resetSend(); }
 
+                const isFq = (quizType === 'foundational');
                 if (mastered) {
                     active = false; clearPersist();
                     const rtxt = round === 1 ? 'on your first round' : `in ${round} rounds`;
                     const tail = qr ? ` (${qr.percentage}%) — Grade ${qr.grade}` : '';
-                    aiBubble(`🎉 **Mastery!** A perfect **5/5${tail}**, ${rtxt}. That's exactly how the mark scheme sticks. Your result card is in the document on the left.`);
+                    const how = isFq ? "That's foundations locked in." : "That's exactly how the mark scheme sticks.";
+                    aiBubble(`🎉 **Mastery!** A perfect **5/5${tail}**, ${rtxt}. ${how} Your result card is in the document on the left.`);
                 } else {
                     const tail = qr ? ` (${qr.percentage}% · Grade ${qr.grade})` : '';
-                    aiBubble(`You scored **${correctN}/${n}**${tail} this round. **Aim for 100%** — here's a fresh set of ${n}, mixed across the assessment objectives. Your result card on the left now shows this round. You've got this.`);
+                    const mix = isFq ? 'mixed across the key areas of the text' : 'mixed across the assessment objectives';
+                    aiBubble(`You scored **${correctN}/${n}**${tail} this round. **Aim for 100%** — here's a fresh set of ${n}, ${mix}. Your result card on the left now shows this round. You've got this.`);
                     appendQuickBar('Start the next round →', () => { round++; startRound(); });
                 }
             }
@@ -4661,12 +4695,16 @@
                 busy = true; showCanvasTyping();
                 try {
                     const optLines = (q.options || []).map(o => o.letter + ') ' + o.text).join('\n');
-                    const prompt = `[MARK SCHEME QUIZ — STUDENT NEEDS HELP, NOT MARKING]\n[CURRENT QUESTION]\n${q.question}\n${optLines}\n\n[STUDENT'S QUESTION]\n${msg}\n\nExplain the underlying mark-scheme concept so they can answer it themselves. Do NOT reveal the answer, do NOT score anything, do NOT present a new question.`;
+                    const isFq    = (quizType === 'foundational');
+                    const hLabel  = isFq ? 'FOUNDATIONAL QUIZ' : 'MARK SCHEME QUIZ';
+                    const hTask   = isFq ? 'foundational_help' : 'mark_scheme_help';
+                    const hConcept = isFq ? 'underlying idea about the text' : 'underlying mark-scheme concept';
+                    const prompt = `[${hLabel} — STUDENT NEEDS HELP, NOT MARKING]\n[CURRENT QUESTION]\n${q.question}\n${optLines}\n\n[STUDENT'S QUESTION]\n${msg}\n\nExplain the ${hConcept} so they can answer it themselves. Do NOT reveal the answer, do NOT score anything, do NOT present a new question.`;
                     const res = await apiPost(API.chat, {
                         prompt, botId: 'wml-claude', chatId: canvasChatId,
                         history: canvasChatHistory.slice(0, -1).slice(-12),
                         board: state.board, subject: state.subject, text: state.text || '',
-                        task: 'mark_scheme_help', question: q.question,
+                        task: hTask, question: q.question,
                     });
                     removeCanvasTyping();
                     if (res && res.success && res.reply) {
@@ -4694,7 +4732,7 @@
                 try {
                     const res = await apiPost(API.quizStart, {
                         board: state.board, subject: state.subject, text: state.text || '',
-                        attempt: state.attempt || 1, count: 5,
+                        attempt: state.attempt || 1, count: 5, quiz_type: quizType,
                     });
                     removeCanvasTyping();
                     if (!res || !res.success || !res.questions || !res.questions.length) {
@@ -4712,11 +4750,17 @@
                 }
             }
 
-            async function start() {
+            async function start(opts) {
                 if (active) return;
+                quizType = (opts && opts.quizType === 'foundational') ? 'foundational' : 'mark_scheme';
                 round = 1; roundResults = [];
-                const board = (state.board || '').toUpperCase().replace(/-/g, ' ');
-                aiBubble(`Welcome to the **Mark Scheme Quiz**${board ? ' — ' + board : ''}. Each round is **5 questions**, and I'll give you the full feedback at the *end* of the round. **Aim for 100%** — we'll keep going with fresh sets until you ace a whole round. Stuck on any question? Just **ask me** and I'll explain.`);
+                if (quizType === 'foundational') {
+                    const tname = (state.textLabel || state.text || '').replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    aiBubble(`Welcome to your **Foundational Quiz**${tname ? ' — ' + tname : ''}. 👋 Five quick questions to check your overall understanding now you've read the text. I'll hold all the feedback to the **end of the round** — that's how the real exam works, and how it sticks. 🧠\n\n🎯 **Every round you complete counts toward your grade**, so give each one your best. **Aim for 100%** — if you miss any, just take a fresh set of 5 until you ace a whole round. Jot anything worth keeping into **General Notes**. Stuck on a question? Just **ask me** and I'll help you think it through.`);
+                } else {
+                    const board = (state.board || '').toUpperCase().replace(/-/g, ' ');
+                    aiBubble(`Welcome to the **Mark Scheme Quiz**${board ? ' — ' + board : ''}. Each round is **5 questions**, and I'll give you the full feedback at the *end* of the round. **Aim for 100%** — we'll keep going with fresh sets until you ace a whole round. Stuck on any question? Just **ask me** and I'll explain.`);
+                }
                 await startRound();
             }
 
@@ -9095,6 +9139,10 @@
                         && (state.step === 1 || state.bridgeStep === 1) && tp.quizCtl) {
                         tp.quizCtl.tryResume();
                     }
+                    // v7.19.579: FQ (banked text) resumes its deterministic round the same way.
+                    if (_fqDeterministic() && tp.quizCtl) {
+                        tp.quizCtl.tryResume({ quizType: 'foundational' });
+                    }
 
                     // v7.17.59: Hoisted greeting regen + grade buttons UP — was
                     // post-await (3-5s gap during which the un-styled bubble was
@@ -9457,6 +9505,14 @@
                     setTimeout(() => {
                         console.log('WML v7.19.323: MSQ — deterministic controller start');
                         if (tp.quizCtl) tp.quizCtl.start();
+                    }, 400);
+                } else if (_fqDeterministic() && !state.reviewMode) {
+                    // v7.19.579: Foundational Quiz (banked text) — same deterministic
+                    // controller as MSQ. No AI greeting / silent-send: start() renders
+                    // the welcome + fetches the code-scored questions itself.
+                    setTimeout(() => {
+                        console.log('WML v7.19.579: FQ — deterministic controller start');
+                        if (tp.quizCtl) tp.quizCtl.start({ quizType: 'foundational' });
                     }, 400);
                 } else if (!state.reviewMode) {
                     // All other training-env exercises: silent auto-send (protocol drives greeting)
