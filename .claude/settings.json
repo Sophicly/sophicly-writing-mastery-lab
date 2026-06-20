@@ -484,7 +484,8 @@
       "Bash(rm -f sophicly-components.php.bak)",
       "Bash(sed -i.bak \"s/ \\\\* Version: 3.14.1/ * Version: 3.14.2/; s/define\\( 'SC_VERSION', '3.14.1' \\)/define\\( 'SC_VERSION', '3.14.2' \\)/\" sophicly-components.php)",
       "Bash(cd \"/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins/sophicly-student-data\")",
-      "Bash(grep -o '{' includes/class-wml-listener.php)"
+      "Bash(grep -o '{' includes/class-wml-listener.php)",
+      "Bash(cd /Users/neilwilliams/.claude/handoffs *)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
