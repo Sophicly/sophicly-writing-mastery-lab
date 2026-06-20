@@ -486,7 +486,9 @@
       "Bash(cd \"/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins/sophicly-student-data\")",
       "Bash(grep -o '{' includes/class-wml-listener.php)",
       "Bash(cd /Users/neilwilliams/.claude/handoffs *)",
-      "Bash(grep -viE \"node_modules|\\\\.min\\\\.|\\\\.map$|\\\\.json$\")"
+      "Bash(grep -viE \"node_modules|\\\\.min\\\\.|\\\\.map$|\\\\.json$\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://sophicly.com/wp-json/sophicly-wml/v1/student/unread-comments\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://sophicly.com/wp-json/sophicly-wml/v1\")"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
