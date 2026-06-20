@@ -9976,13 +9976,13 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
    in both themes (no see-through). */
 .swml-review-banner-bar {
     position: sticky;
-    top: 10px;
-    z-index: 40;
+    top: 8px;
+    z-index: 100;                /* float above the A4 document page (was hidden behind it) */
     width: 100%;
     display: flex;
     justify-content: center;
     pointer-events: none;        /* don't block document clicks */
-    margin-bottom: -34px;        /* overlay the doc top; pill floats, no layout push */
+    padding: 0 12px 8px;
 }
 .swml-review-banner {
     pointer-events: auto;

@@ -527,7 +527,16 @@
       "Bash(scp -i ~/.ssh/sophicly_staging -o StrictHostKeyChecking=no /tmp/prod_verify.php runcloud@18.133.5.229:/tmp/prod_verify.php)",
       "Bash(grep -vE 'Deprecated|Notice|_load_textdomain|Debugging|^$')",
       "Bash(sed -i '' 's/^status: open/status: done/' open/dashboard-unit-scoped-process-and-grade-helpers-2026-06-20.md)",
-      "Bash(mv open/dashboard-unit-scoped-process-and-grade-helpers-2026-06-20.md done/)"
+      "Bash(mv open/dashboard-unit-scoped-process-and-grade-helpers-2026-06-20.md done/)",
+      "Bash(find . -name \"sophicly-certificate.css\")",
+      "Bash(find . -name \"certificate-presentation.php\")",
+      "Bash(find ~/.claude/handoffs -name \"dashboard-to-components-unit-recap-helpers-ready-2026-06-20.md\")",
+      "Bash(grep -n \"documents\\\\[\\\\]\\\\|'topic'\\\\|'kind'\\\\|'is_essay'\\\\|'words'\\\\|word_count\\\\|'wordCount'\\\\|'count'\\\\|=> \\\\$\" sophicly-plugins/sophicly-writing-mastery-lab/includes/class-rest-api.php)",
+      "Bash(grep -n 'words-written\\\\|words_written\\\\|'\\\\''documents'\\\\''\\\\|=> $doc\\\\|'\\\\''topic'\\\\''\\\\|'\\\\''kind'\\\\''\\\\|'\\\\''is_essay'\\\\''\\\\|'\\\\''words'\\\\''\\\\|wordCount\\\\|word_count' class-rest-api.php)",
+      "Bash(grep -n 'function get_topic_context\\\\|'\\\\''wml_topic'\\\\''\\\\|\"wml_topic\"\\\\|wml_topic\\\\|'\\\\''topic_number'\\\\''\\\\|=> $' '/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins/sophicly-student-data/includes/class-learndash-bridge.php')",
+      "Bash(awk '/private function resolve_user_id|function resolve_user_id/{f=1} f{print NR\": \"$0} f&&/^    }/{c++; if\\(c>=1\\)exit}' '/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins/sophicly-student-data/includes/class-wml-rest-api.php')",
+      "Bash(awk 'NR>=4900 && NR<=27000 && /function [a-zA-Z_]+\\\\\\(|=> \\\\{|const [a-zA-Z_]+ = function|window\\\\.WML\\\\.[a-zA-Z]+ =/ {last=NR\": \"$0} NR==5875{print \"5875 in: \"last} NR==6295{print \"6295 docWrap in: \"last} NR==26891{print \"26891 docWrap in: \"last}' frontend/wml-assessment.js)",
+      "Bash(awk '/\\\\.swml-canvas-content \\\\{/{f=1} f{print NR\": \"$0} f&&/\\\\}/{c++; if\\(c>=1\\){f=0}}' frontend/wml-canvas.css)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
