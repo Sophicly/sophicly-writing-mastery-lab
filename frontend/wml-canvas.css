@@ -10035,6 +10035,22 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     color: #2c003e;
     border-color: #fff;
 }
+/* v7.19.590: Exit review is an <a> — out-specify the theme's purple link colour so
+   the text is accessible (white) on the dark end of the pill. Kept a touch lighter
+   than "View as student" (brighter border, fainter fill) so the two stay distinct. */
+.swml-tutor-banner a.swml-tutor-banner-exit,
+.swml-tutor-banner a.swml-tutor-banner-exit:link,
+.swml-tutor-banner a.swml-tutor-banner-exit:visited {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.swml-tutor-banner a.swml-tutor-banner-exit:hover,
+.swml-tutor-banner a.swml-tutor-banner-exit:focus {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.22);
+    border-color: #fff;
+}
 
 .swml-tutor-view-wrap {
     display: inline-flex;
