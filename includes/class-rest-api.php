@@ -2811,8 +2811,43 @@ class SWML_REST_API {
     }
 
     /**
+     * v7.19.583: classify a canvas doc by its suffix so consumers can pick the
+     * gradeable ESSAY docs without regex-guessing labels (dashboard per-essay stats).
+     * Returns ['kind'=>slug, 'topic'=>int, 'is_essay'=>bool]. Suffix scheme mirrors
+     * pull_source_map() + wml-core storageSuffix declarations. Essay = the gradeable
+     * response doc per topic: the bare per-topic doc (diagnostic) + the redraft/reassessment.
+     */
+    private function classify_canvas_doc($logical_key, $prefix) {
+        $rest  = substr($logical_key, strlen($prefix));
+        $topic = 0;
+        if (preg_match('/^_t(\d+)/', $rest, $m)) { $topic = (int) $m[1]; }
+        $rest = preg_replace('/^_t\d+/', '', $rest);
+        $rest = preg_replace('/__p[a-zA-Z0-9_-]+$/', '', $rest); // defensive (attempt stripped upstream)
+        $kind_map = [
+            ''              => 'essay',            // bare per-topic response (diagnostic essay)
+            '_reassessment' => 'essay',            // phase-2 redraft essay (graded)
+            '_redraft'      => 'essay',
+            '_planning'     => 'planning',
+            '_outlining'    => 'outlining',
+            '_polishing'    => 'polishing',
+            '_ep'           => 'essay_plan',
+            '_ma'           => 'model_answer',
+            '_cn'           => 'conceptual_notes',
+            '_eq'           => 'exam_question',
+            '_fq'           => 'foundational_quiz',
+            '_ms'           => 'mark_scheme',
+            '_msu'          => 'mark_scheme_unit',
+            '_crib'         => 'exam_crib',
+        ];
+        if (isset($kind_map[$rest]))            $kind = $kind_map[$rest];
+        elseif (strpos($rest, '_cw') === 0)     $kind = 'creative_writing';
+        else                                    $kind = 'other';
+        return ['kind' => $kind, 'topic' => $topic, 'is_essay' => ($kind === 'essay')];
+    }
+
+    /**
      * GET /words-written?course_id=X[&user_id=Y]
-     * → { success, course_id, words, documents:[{label,words}], source }
+     * → { success, course_id, words, documents:[{label,words,kind,topic,is_essay}], source }
      */
     public function get_words_written($request) {
         $course_id = absint($request->get_param('course_id'));
@@ -2831,7 +2866,7 @@ class SWML_REST_API {
                 'success'   => true,
                 'course_id' => $course_id,
                 'words'     => $words,
-                'documents' => [['label' => 'Mastery Codex', 'words' => $words]],
+                'documents' => [['label' => 'Mastery Codex', 'words' => $words, 'kind' => 'codex', 'topic' => 0, 'is_essay' => false]],
                 'source'    => 'codex',
             ]);
         }
@@ -2871,7 +2906,14 @@ class SWML_REST_API {
             if ($g['words'] <= 0) continue;  // only docs the student actually wrote into
             $total += $g['words'];
             $tail = trim(str_replace($prefix, '', $logical), '_');
-            $documents[] = ['label' => ($tail === '' ? 'Main document' : $tail), 'words' => $g['words']];
+            $cls  = $this->classify_canvas_doc($logical, $prefix);
+            $documents[] = [
+                'label'    => ($tail === '' ? 'Main document' : $tail),
+                'words'    => $g['words'],
+                'kind'     => $cls['kind'],
+                'topic'    => $cls['topic'],
+                'is_essay' => $cls['is_essay'],
+            ];
         }
 
         return rest_ensure_response([
