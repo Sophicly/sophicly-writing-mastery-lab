@@ -3387,11 +3387,11 @@
                         await clearCanvasChat(); // v7.19.568: await so the stale chat is gone before any restart silent-send
                         canvasChatHistory.length = 0;
                         canvasChatId = '';
-                        // v7.19.573: the post-clear restart must NOT reuse the AI Engine's
-                        // conversation (it survives the WML chat-clear). Flag the next send to
-                        // go out with an empty chatId → fresh conversation at Q1. Module-scoped
-                        // so it outlives the re-mount that restores canvasChatId.
-                        if (state.task === 'foundational_quiz') _fqForceFreshChat = true;
+                        // v7.19.575: the post-clear restart must NOT reuse the AI Engine's
+                        // conversation (it survives the WML chat-clear). Mark the next send to
+                        // go out with an empty chatId → fresh conversation. UNIVERSAL — every
+                        // task, not just FQ. sessionStorage-backed so it outlives the re-mount.
+                        _markFreshChat();
                         chatMessages.innerHTML = '';
                         state.plan = {};
                         state._phaseMarkedComplete = false;
@@ -3788,17 +3788,12 @@
             const msg = chatTextarea.value.trim();
             if (!msg || canvasChatLoading) return;
 
-            // v7.19.573: after an FQ chat-clear, force a BRAND-NEW AI Engine conversation.
-            // Clearing only nuked WML's chat meta — the MeowApps AI Engine keeps its OWN
-            // conversation keyed by chatId, so reusing the old chatId resumed the quiz
-            // mid-round (Q3/Q5). Sending an empty chatId makes the server omit it (PHP
-            // `if (!empty($chat_id))`), so the AI Engine starts a fresh conversation at Q1.
-            // The flag is module-scoped so it survives the post-clear canvas re-mount
-            // (canvasChatId is closure-scoped + gets restored from the reload path).
-            if (_fqForceFreshChat && state.task === 'foundational_quiz') {
+            // v7.19.575: UNIVERSAL — if a clear (any task) marked a fresh conversation,
+            // send an empty chatId so the AI Engine starts brand-new (it won't resume the
+            // stale conversation it still holds under the old chatId).
+            if (_consumeFreshChatFlag()) {
                 canvasChatId = '';
-                _fqForceFreshChat = false;
-                console.log('WML v7.19.573: FQ post-clear — forcing fresh AI Engine conversation (empty chatId)');
+                console.log('WML v7.19.575: post-clear — forcing fresh AI Engine conversation (empty chatId)');
             }
 
             // v7.19.323: deterministic mark-scheme quiz controller owns the turn
@@ -10292,10 +10287,11 @@
                             onClick: () => {
                                 showConfirm(
                                     'Clear this assessment chat and start fresh? Your document and essay are preserved — only the chat messages will be removed.',
-                                    () => {
-                                        clearCanvasChat();
+                                    async () => {
+                                        await clearCanvasChat(); // v7.19.575: await so the stale server chat is gone before any restart send
                                         canvasChatHistory.length = 0;
                                         canvasChatId = '';
+                                        _markFreshChat(); // v7.19.575: fresh AI Engine conversation on clear (universal)
                                         chatMessages.innerHTML = '';
                                         state.plan = {};
                                         state._phaseMarkedComplete = false;
@@ -10780,6 +10776,15 @@
                         async function sendCanvasMessage() {
                             const msg = chatTextarea.value.trim();
                             if (!msg || canvasChatLoading) return;
+
+                            // v7.19.575: UNIVERSAL — if a clear marked a fresh conversation, send
+                            // an empty chatId so the AI Engine begins brand-new (won't resume the
+                            // stale conversation it still holds under the old chatId).
+                            if (_consumeFreshChatFlag()) {
+                                canvasChatId = '';
+                                console.log('WML v7.19.575: post-clear — forcing fresh AI Engine conversation (empty chatId)');
+                            }
+
                             canvasChatLoading = true;
 
                             // Stop mic if recording
@@ -22927,10 +22932,27 @@
     // in-doc Quiz Result card. Applied to the editor AFTER tryTopicTemplate so
     // the card survives the MSU template enforcer. Null when no result yet.
     let _pendingQuizResult = null;
-    // v7.19.573: set true on an FQ chat-clear; consumed by the next sendCanvasMessage to
-    // force a fresh AI Engine conversation (empty chatId). Module-scoped so it survives the
-    // post-clear canvas re-mount. See sendCanvasMessage + the clear handler.
-    let _fqForceFreshChat = false;
+    // v7.19.575: UNIVERSAL fresh-conversation lever (was FQ-only in v573). The MeowApps AI
+    // Engine is the authoritative conversation keeper (keyed by chatId); clearing WML's
+    // history/meta does NOT reset it, so reusing the old chatId silently resumes the stale
+    // conversation. Any "start fresh" (clear-chat, for ANY task) marks the next send to go
+    // out with an empty chatId → the AI Engine begins a brand-new conversation. Module flag
+    // + sessionStorage backup so the lever survives the post-clear re-mount AND a reload
+    // between the clear and the restart send.
+    let _forceFreshChat = false;
+    function _markFreshChat() {
+        _forceFreshChat = true;
+        try { sessionStorage.setItem('swml_force_fresh_chat', '1'); } catch (e) {}
+    }
+    function _consumeFreshChatFlag() {
+        let fresh = _forceFreshChat;
+        try { if (sessionStorage.getItem('swml_force_fresh_chat') === '1') fresh = true; } catch (e) {}
+        if (fresh) {
+            _forceFreshChat = false;
+            try { sessionStorage.removeItem('swml_force_fresh_chat'); } catch (e) {}
+        }
+        return fresh;
+    }
     // v7.19.570: is the Foundational Quiz mid-round right now? DERIVED from chat history
     // (robust across reload/resume — a flag would reset on reload, letting a student
     // reload→clear to escape). Scans newest→oldest: mid-round iff the most recent quiz
