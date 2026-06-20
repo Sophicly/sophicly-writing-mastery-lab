@@ -513,7 +513,12 @@
       "Bash(awk 'NR>=2400 && NR<=2640 && /\\(public|private\\) function /{print NR\": \"$0}' class-wml-rest-api.php)",
       "Bash(grep -n 'texts_summary\\\\|'\\\\''callback'\\\\''.*=> array\\( $this' class-wml-rest-api.php)",
       "Bash(awk 'NR<=2400 && /public function /{fn=$0; ln=NR} /texts_summary/{print \"fn line \"ln\": \"fn; exit}' class-wml-rest-api.php)",
-      "Bash(awk 'NR>=2390 && NR<=2417 && /function /{print NR\": \"$0}' class-wml-rest-api.php)"
+      "Bash(awk 'NR>=2390 && NR<=2417 && /function /{print NR\": \"$0}' class-wml-rest-api.php)",
+      "Bash(ssh runcloud@18.133.5.229 'rm -rf /home/runcloud/webapps/SophiclyMain/wp-content/cache/* /home/runcloud/webapps/SophiclyMain/wp-content/litespeed/* 2>/dev/null; echo done')",
+      "Bash(awk '/function sophicly_cert_recap_stats/,/^}/' functions.php)",
+      "Bash(php -l sophicly-student-data/admin/class-learndash-bridge-settings.php)",
+      "Bash(sed -i '' 's/\\\\* Version: 2.31.40/* Version: 2.31.41/; s/SOPHICLY_VERSION'\\\\'', '\\\\''2.31.40'\\\\''/SOPHICLY_VERSION'\\\\'', '\\\\''2.31.41'\\\\''/' sophicly-student-data/sophicly-student-data.php)",
+      "Bash(grep -n '$table = \\\\|session_records'\\\\''\\\\|sophicly_table\\(' class-wml-rest-api.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

@@ -1170,10 +1170,17 @@ window.WML = (function() {
             protocolSource: 'board',
             protocolTask: 'assessment',
             completionType: 'assessment_detect',
-            storageSuffix: '_redraft',
-            // v7.19.249 (Model B): reassessment is its own frozen stage — marks the
-            // polished essay copied forward from polishing. Distinct from Phase 1
-            // assessment (suffix '') so the two phases never collide.
+            // v7.19.584 ROOT FIX: chat+state suffix aligned to '_reassessment' (was
+            // '_redraft'). The phase-2 marking lives under ONE canonical key: the
+            // `assessment` task (storageSuffixForPhase redraft → _reassessment), this
+            // task's own canvas doc, AND tutor review (defaults task=assessment) all
+            // read '_reassessment'. While redraft_assessment wrote chat to '_redraft',
+            // every NEW reassessment conversation was invisible to all three. '_redraft'
+            // belongs to the redraft WRITING task — a separate conversation that was
+            // wrongly colliding with the marking chat.
+            storageSuffix: '_reassessment',
+            // v7.19.249 (Model B): reassessment marks the polished essay copied forward
+            // from polishing — its own frozen doc, distinct from Phase 1 (suffix '').
             canvasStorageSuffix: '_reassessment',
             chatHeaderLabel: 'Essay Assessment',
             sidebarSteps: [
