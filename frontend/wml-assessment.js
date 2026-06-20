@@ -4524,6 +4524,8 @@
             let active = false;
             let busy = false;
             let quizType = 'mark_scheme';  // v7.19.579: 'mark_scheme' | 'foundational' — same engine, different bank + copy
+            let betweenRounds = false;     // v7.19.580 (FQ): round finished, awaiting Next / Ask / Finish — controller still owns the turn
+            let lastMastered = false;      // v7.19.580: was the just-finished round a 5/5 (labels the menu)
 
             // FQ keeps its OWN sidecar key so MSQ resume is byte-identical (no collision).
             const lsKey = () => (quizType === 'foundational' ? 'swml_fq_' : 'swml_msq_') + [state.board, state.subject, state.text, (state.attempt || 1)].join('_');
@@ -4563,6 +4565,31 @@
                     if (last) { const bc = last.querySelector('.swml-bubble-content') || last; bc.appendChild(bar); }
                 }, 50);
             }
+            // v7.19.580: multi-button quick-action bar. Each opt = {label, value?, onClick?}.
+            // Default action submits `value` as a typed answer via handleTurn (used for the
+            // True/False buttons + the end-of-round Next/Ask/Finish menu).
+            function appendQuickButtons(opts) {
+                setTimeout(() => {
+                    const bar = el('div', { className: 'swml-quick-actions' });
+                    opts.forEach(o => {
+                        bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: o.label,
+                            onClick: () => { bar.remove(); if (o.onClick) o.onClick(); else handleTurn(o.value); } }));
+                    });
+                    const last = chatMessages.lastElementChild;
+                    if (last) { const bc = last.querySelector('.swml-bubble-content') || last; bc.appendChild(bar); }
+                }, 50);
+            }
+            // v7.19.580 (FQ): the post-round menu — Next/Another round, Ask a question, Finish.
+            function showRoundMenu() {
+                const nextLabel = lastMastered ? 'Try another round' : 'Start the next round →';
+                appendQuickButtons([
+                    { label: nextLabel, onClick: () => { betweenRounds = false; round++; startRound(); } },
+                    { label: 'Ask a question', onClick: () => { aiBubble('Of course — type your question about any of those 5 and I’ll talk it through. 😊'); } },
+                    // Finish stays controller-owned (betweenRounds true) so any later typing routes to
+                    // clarify, NOT the legacy LLM quiz. The server round is already finalised.
+                    { label: 'Finish', onClick: () => { aiBubble('Well done today — every round you finish builds your foundations. Keep going! 👋'); } },
+                ]);
+            }
 
             function renderQ() {
                 if (idx >= qs.length) { endRound(); return; }
@@ -4572,10 +4599,15 @@
                     body += '\n\n' + q.options.map(o => `**${o.letter})** ${o.text}`).join('\n');
                 }
                 if (q.type === 'select_all')      body += '\n\n*Select all that apply — type the letters, e.g. `A, C`.*';
-                else if (q.type === 'true_false') body += '\n\n*Type `True` or `False`.*';
+                else if (q.type === 'true_false') body += '\n\n*Choose True or False below — or just type it.*';
                 else if (q.type === 'fill_blank') body += '\n\n*Type your answer in a word or short phrase.*';
                 else                              body += '\n\n*Type the letter of your answer, e.g. `B`.*';
                 aiBubble(body);
+                // v7.19.580: True/False has no options array → no auto-buttons. Add explicit
+                // True / False quick-action buttons (parity with the MCQ option buttons).
+                if (q.type === 'true_false') {
+                    appendQuickButtons([{ label: 'True', value: 'True' }, { label: 'False', value: 'False' }]);
+                }
                 try { updateProgress(Math.min(idx + 2, 7)); } catch (e) {}
                 persist();
             }
@@ -4605,6 +4637,10 @@
                 chatTextarea.style.height = '40px';
                 chatSendBtn.style.opacity = '0.4';
                 chatSendBtn.style.pointerEvents = 'none';
+                // v7.19.580 (FQ): round finished — any typed message is a clarification about
+                // the round just done (controller still owns the turn so it never leaks to the
+                // legacy LLM quiz). The menu buttons handle Next/Finish.
+                if (betweenRounds) { await routeHelp(msg, null); return; }
                 const q = qs[idx];
                 if (!q) { await endRound(); return; }
                 const kind = classify(msg, q.type);
@@ -4677,34 +4713,50 @@
                 finally { resetSend(); }
 
                 const isFq = (quizType === 'foundational');
+                lastMastered = mastered;
                 if (mastered) {
-                    active = false; clearPersist();
+                    clearPersist();
                     const rtxt = round === 1 ? 'on your first round' : `in ${round} rounds`;
                     const tail = qr ? ` (${qr.percentage}%) — Grade ${qr.grade}` : '';
                     const how = isFq ? "That's foundations locked in." : "That's exactly how the mark scheme sticks.";
                     aiBubble(`🎉 **Mastery!** A perfect **5/5${tail}**, ${rtxt}. ${how} Your result card is in the document on the left.`);
+                    // v7.19.580 (FQ): offer Ask / Finish (+ another round) instead of dead-ending.
+                    // active stays TRUE so post-round typing routes to clarify, never the legacy LLM quiz.
+                    if (isFq) { betweenRounds = true; showRoundMenu(); }
+                    else { active = false; }
                 } else {
                     const tail = qr ? ` (${qr.percentage}% · Grade ${qr.grade})` : '';
                     const mix = isFq ? 'mixed across the key areas of the text' : 'mixed across the assessment objectives';
                     aiBubble(`You scored **${correctN}/${n}**${tail} this round. **Aim for 100%** — here's a fresh set of ${n}, ${mix}. Your result card on the left now shows this round. You've got this.`);
-                    appendQuickBar('Start the next round →', () => { round++; startRound(); });
+                    if (isFq) { betweenRounds = true; showRoundMenu(); }
+                    else { appendQuickBar('Start the next round →', () => { round++; startRound(); }); }
                 }
             }
 
             async function routeHelp(msg, q) {
                 busy = true; showCanvasTyping();
                 try {
-                    const optLines = (q.options || []).map(o => o.letter + ') ' + o.text).join('\n');
                     const isFq    = (quizType === 'foundational');
                     const hLabel  = isFq ? 'FOUNDATIONAL QUIZ' : 'MARK SCHEME QUIZ';
                     const hTask   = isFq ? 'foundational_help' : 'mark_scheme_help';
                     const hConcept = isFq ? 'underlying idea about the text' : 'underlying mark-scheme concept';
-                    const prompt = `[${hLabel} — STUDENT NEEDS HELP, NOT MARKING]\n[CURRENT QUESTION]\n${q.question}\n${optLines}\n\n[STUDENT'S QUESTION]\n${msg}\n\nExplain the ${hConcept} so they can answer it themselves. Do NOT reveal the answer, do NOT score anything, do NOT present a new question.`;
+                    let prompt;
+                    if (q) {
+                        // Mid-question help — explain the concept, never reveal the answer.
+                        const optLines = (q.options || []).map(o => o.letter + ') ' + o.text).join('\n');
+                        prompt = `[${hLabel} — STUDENT NEEDS HELP, NOT MARKING]\n[CURRENT QUESTION]\n${q.question}\n${optLines}\n\n[STUDENT'S QUESTION]\n${msg}\n\nExplain the ${hConcept} so they can answer it themselves. Do NOT reveal the answer, do NOT score anything, do NOT present a new question.`;
+                    } else {
+                        // v7.19.580: POST-ROUND clarification — the round is over and the student
+                        // has seen their results, so correct answers MAY now be discussed.
+                        const roundLines = roundResults.map((r, i) =>
+                            `${i + 1}. ${r.q.question}  (correct: ${r.res ? r.res.correctKey : '?'})`).join('\n');
+                        prompt = `[${hLabel} — POST-ROUND CLARIFICATION]\n[THE 5 QUESTIONS JUST COMPLETED]\n${roundLines}\n\n[STUDENT'S QUESTION]\n${msg}\n\nThe round is finished and the student has already seen their results, so you MAY discuss the correct answers here. Explain clearly and warmly. Do NOT present a new quiz question and do NOT emit any markers or scores.`;
+                    }
                     const res = await apiPost(API.chat, {
                         prompt, botId: 'wml-claude', chatId: canvasChatId,
                         history: canvasChatHistory.slice(0, -1).slice(-12),
                         board: state.board, subject: state.subject, text: state.text || '',
-                        task: hTask, question: q.question,
+                        task: hTask, question: q ? q.question : '',
                     });
                     removeCanvasTyping();
                     if (res && res.success && res.reply) {
@@ -4716,11 +4768,13 @@
                     } else {
                         aiBubble("I'm having trouble answering just now — try rephrasing, or type your answer when you're ready.");
                     }
-                    appendQuickBar('Back to the question', renderQ);
+                    if (betweenRounds) showRoundMenu();
+                    else appendQuickBar('Back to the question', renderQ);
                 } catch (e) {
                     removeCanvasTyping();
                     aiBubble("I'm having trouble answering just now — type your answer when you're ready.");
-                    appendQuickBar('Back to the question', renderQ);
+                    if (betweenRounds) showRoundMenu();
+                    else appendQuickBar('Back to the question', renderQ);
                 } finally {
                     resetSend();
                 }
@@ -4768,6 +4822,7 @@
             // sidecar so a subsequent start() begins a fresh round 1 (not a stale mid-round).
             function reset() {
                 active = false; round = 1; roundResults = []; idx = 0; qs = [];
+                betweenRounds = false; lastMastered = false;
                 clearPersist();
             }
 
