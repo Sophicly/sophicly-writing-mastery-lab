@@ -496,7 +496,8 @@
       "Bash(perl -pi -e 's/onClick:/onclick:/g' frontend/sophicly-next-step.js)",
       "Bash(grep -niE ''\\\\''grade'\\\\''|'\\\\''completed_at'\\\\''|'\\\\''updated_at'\\\\''|'\\\\''graded_at'\\\\''|'\\\\''date'\\\\''|=> \\\\$row|push|\\\\$out\\\\[\\\\]|return rest_ensure')",
       "Bash(grep -nE ''\\\\''\\(grade|completed_at|updated_at|graded_at|total_score|date|task|text_name\\)'\\\\''|=>|\\\\$out|\\\\$rows\\\\[\\\\]|return rest')",
-      "Bash(awk 'NR>=2825 && NR<=3034' class-wml-rest-api.php)"
+      "Bash(awk 'NR>=2825 && NR<=3034' class-wml-rest-api.php)",
+      "Bash(cat)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
