@@ -488,7 +488,10 @@
       "Bash(cd /Users/neilwilliams/.claude/handoffs *)",
       "Bash(grep -viE \"node_modules|\\\\.min\\\\.|\\\\.map$|\\\\.json$\")",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://sophicly.com/wp-json/sophicly-wml/v1/student/unread-comments\")",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://sophicly.com/wp-json/sophicly-wml/v1\")"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://sophicly.com/wp-json/sophicly-wml/v1\")",
+      "Bash(grep -niE \"'grade'|'score'|'date|'completed|'phase|'text|push|=> \\\\\\\\\\\\$|return rest\")",
+      "Bash(sed -i '' 's/^status: open/status: done/' open/components-next-step-event-detail-course-id-2026-06-20.md)",
+      "Bash(mv open/components-next-step-event-detail-course-id-2026-06-20.md done/)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
