@@ -9974,17 +9974,20 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
    The full-width sticky BAR tracks the column (collapse/resize for free, like the ToC
    island); the PILL is centred inside it. Solid purple→aubergine reads high-contrast
    in both themes (no see-through). */
-.swml-review-banner-bar {
+/* v7.19.587: classes renamed swml-review-banner* → swml-tutor-banner* — the old name
+   collided with a legacy `.swml-review-banner { display:none !important }` (v7.15.86),
+   which silently hid this whole banner. */
+.swml-tutor-banner-bar {
     position: sticky;
     top: 8px;
-    z-index: 100;                /* float above the A4 document page (was hidden behind it) */
+    z-index: 100;                /* float above the A4 document page */
     width: 100%;
     display: flex;
     justify-content: center;
     pointer-events: none;        /* don't block document clicks */
     padding: 0 12px 8px;
 }
-.swml-review-banner {
+.swml-tutor-banner {
     pointer-events: auto;
     display: inline-flex;
     align-items: center;
@@ -10001,10 +10004,10 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     border: 1px solid rgba(255, 255, 255, 0.16);
     max-width: calc(100% - 24px);
 }
-.swml-review-banner-text { display: inline-flex; align-items: center; gap: 6px; }
-.swml-review-banner-text strong { font-weight: 700; }
-.swml-review-banner .swml-view-as-student-toggle,
-.swml-review-banner-exit {
+.swml-tutor-banner-text { display: inline-flex; align-items: center; gap: 6px; }
+.swml-tutor-banner-text strong { font-weight: 700; }
+.swml-tutor-banner .swml-view-as-student-toggle,
+.swml-tutor-banner-exit {
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -10020,12 +10023,12 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     white-space: nowrap;
     transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 }
-.swml-review-banner .swml-view-as-student-toggle:hover,
-.swml-review-banner-exit:hover {
+.swml-tutor-banner .swml-view-as-student-toggle:hover,
+.swml-tutor-banner-exit:hover {
     background: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.6);
 }
-.swml-review-banner .swml-view-as-student-toggle.active {
+.swml-tutor-banner .swml-view-as-student-toggle.active {
     background: #fff;
     color: #2c003e;
     border-color: #fff;
