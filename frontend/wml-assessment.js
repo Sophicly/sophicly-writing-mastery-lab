@@ -3347,7 +3347,9 @@
                 showConfirm(
                     _msqMidRound
                         ? 'You\u2019re mid-round on the Mark Scheme Quiz (' + _quizCtl.answered + ' of 5 answered). Clearing now ENDS this round \u2014 unanswered questions score 0, so this attempt will be recorded as ' + _proj.score + '/' + _proj.max + ' (' + _proj.pct + '% \u00b7 Grade ' + _proj.grade + '). You\u2019ll usually score higher by finishing the round first. Clear anyway?'
-                        : 'Clear this assessment chat and start fresh? Your document and essay are preserved \u2014 only the chat messages will be removed.',
+                        : state.task === 'foundational_quiz'
+                            ? 'Heads up \u2014 clearing the chat ends this quiz round. Finishing it and learning from your results beats restarting to chase a better start; in the real exam there are no restarts, so it\u2019s worth building that discipline now. You can always run another fresh round afterwards \u2014 the goal is 100%. Clear anyway?'
+                            : 'Clear this assessment chat and start fresh? Your document and essay are preserved \u2014 only the chat messages will be removed.',
                     async () => {
                         if (_msqMidRound) await _quizCtl.abandonRound();
                         await clearCanvasChat(); // v7.19.568: await so the stale chat is gone before any restart silent-send
