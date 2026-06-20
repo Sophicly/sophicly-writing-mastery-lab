@@ -9970,6 +9970,67 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     border-color: rgba(125, 249, 233, 0.7);
 }
 /* v7.19.560: "View as student" preview toggle — sits beside the tutor-view pill. */
+/* v7.19.585: review banner — lives inside .swml-canvas-content (the doc column).
+   The full-width sticky BAR tracks the column (collapse/resize for free, like the ToC
+   island); the PILL is centred inside it. Solid purple→aubergine reads high-contrast
+   in both themes (no see-through). */
+.swml-review-banner-bar {
+    position: sticky;
+    top: 10px;
+    z-index: 40;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;        /* don't block document clicks */
+    margin-bottom: -34px;        /* overlay the doc top; pill floats, no layout push */
+}
+.swml-review-banner {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px 6px 14px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #5333ed, #2c003e);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    box-shadow: 0 6px 18px rgba(44, 0, 62, 0.32);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    max-width: calc(100% - 24px);
+}
+.swml-review-banner-text { display: inline-flex; align-items: center; gap: 6px; }
+.swml-review-banner-text strong { font-weight: 700; }
+.swml-review-banner .swml-view-as-student-toggle,
+.swml-review-banner-exit {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 11px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.34);
+    background: rgba(255, 255, 255, 0.10);
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.swml-review-banner .swml-view-as-student-toggle:hover,
+.swml-review-banner-exit:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+.swml-review-banner .swml-view-as-student-toggle.active {
+    background: #fff;
+    color: #2c003e;
+    border-color: #fff;
+}
+
 .swml-tutor-view-wrap {
     display: inline-flex;
     align-items: center;

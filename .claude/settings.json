@@ -518,7 +518,16 @@
       "Bash(awk '/function sophicly_cert_recap_stats/,/^}/' functions.php)",
       "Bash(php -l sophicly-student-data/admin/class-learndash-bridge-settings.php)",
       "Bash(sed -i '' 's/\\\\* Version: 2.31.40/* Version: 2.31.41/; s/SOPHICLY_VERSION'\\\\'', '\\\\''2.31.40'\\\\''/SOPHICLY_VERSION'\\\\'', '\\\\''2.31.41'\\\\''/' sophicly-student-data/sophicly-student-data.php)",
-      "Bash(grep -n '$table = \\\\|session_records'\\\\''\\\\|sophicly_table\\(' class-wml-rest-api.php)"
+      "Bash(grep -n '$table = \\\\|session_records'\\\\''\\\\|sophicly_table\\(' class-wml-rest-api.php)",
+      "Bash(awk '/\\\\.spl-review-banner \\\\{/,/^\\\\}/')",
+      "Bash(grep -rln \"function calculate_process_score\" .)",
+      "Bash(grep -rln \"function calculate_grades_average\" .)",
+      "Bash(grep -rln \"function get_topic_unit_map\" .)",
+      "Bash(php -l class-deadline-engine.php)",
+      "Bash(scp -i ~/.ssh/sophicly_staging -o StrictHostKeyChecking=no /tmp/prod_verify.php runcloud@18.133.5.229:/tmp/prod_verify.php)",
+      "Bash(grep -vE 'Deprecated|Notice|_load_textdomain|Debugging|^$')",
+      "Bash(sed -i '' 's/^status: open/status: done/' open/dashboard-unit-scoped-process-and-grade-helpers-2026-06-20.md)",
+      "Bash(mv open/dashboard-unit-scoped-process-and-grade-helpers-2026-06-20.md done/)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

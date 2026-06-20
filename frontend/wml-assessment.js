@@ -5955,6 +5955,33 @@
             h.dataset.dir = dir;
             outlinePanel.appendChild(h);
         });
+        // v7.19.585: review banner lives INSIDE the canvas doc column (sticky top),
+        // so it tracks the column on sidebar-collapse / chat-resize for free — exactly
+        // like the ToC island. Replaces the focus-template floating banner, which lived
+        // outside the embed and could never see the collapsible sidebar / resizable chat.
+        if (state.reviewMode) {
+            const rbBar = el('div', { className: 'swml-review-banner-bar' });
+            const rb = el('div', { className: 'swml-review-banner' });
+            const _eye = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+            const _rbName = (state.reviewStudentName || 'this student').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+            const _rbText = el('span', { className: 'swml-review-banner-text' });
+            _rbText.innerHTML = _eye + ' Reviewing <strong>' + _rbName + '</strong>’s progress';
+            rb.appendChild(_rbText);
+            const _rbParent = state.viewerMode === 'readonly' || state.reviewRole === 'parent';
+            if (!_rbParent) {
+                const _sIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>';
+                const _vas = el('button', { className: 'swml-view-as-student-toggle swml-review-banner-vas', title: 'Preview what the student sees' });
+                _vas.innerHTML = _sIcon + '<span class="swml-vas-label">' + (previewAsStudent ? 'Back to tutor' : 'View as student') + '</span>';
+                _vas.classList.toggle('active', previewAsStudent);
+                _vas.onclick = (ev) => { ev.stopPropagation(); toggleViewAsStudent(); };
+                rb.appendChild(_vas);
+            }
+            let _exitUrl = '#';
+            try { const _u = new URL(window.location.href); _u.searchParams.delete('student_id'); _exitUrl = _u.pathname + _u.search + _u.hash; } catch (e) {}
+            rb.appendChild(el('a', { className: 'swml-review-banner-exit', href: _exitUrl, textContent: 'Exit review' }));
+            rbBar.appendChild(rb);
+            contentWrap.appendChild(rbBar);
+        }
         contentWrap.appendChild(btnColumn); // sticky button column (outline + resources triggers)
         contentWrap.appendChild(outlinePanel);
 
