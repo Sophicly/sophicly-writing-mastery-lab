@@ -9982,10 +9982,11 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     top: 8px;
     z-index: 100;                /* float above the A4 document page */
     width: 100%;
+    height: 0;                   /* take no vertical space — pill floats, doc not pushed down */
+    overflow: visible;
     display: flex;
     justify-content: center;
     pointer-events: none;        /* don't block document clicks */
-    padding: 0 12px 8px;
 }
 .swml-tutor-banner {
     pointer-events: auto;
