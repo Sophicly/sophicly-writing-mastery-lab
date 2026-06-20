@@ -491,7 +491,9 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://sophicly.com/wp-json/sophicly-wml/v1\")",
       "Bash(grep -niE \"'grade'|'score'|'date|'completed|'phase|'text|push|=> \\\\\\\\\\\\$|return rest\")",
       "Bash(sed -i '' 's/^status: open/status: done/' open/components-next-step-event-detail-course-id-2026-06-20.md)",
-      "Bash(mv open/components-next-step-event-detail-course-id-2026-06-20.md done/)"
+      "Bash(mv open/components-next-step-event-detail-course-id-2026-06-20.md done/)",
+      "Bash(IMPECCABLE_CONTEXT_DIR=\"/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/Etch for Sophicly/Etch for Sophicly Walkthrough/Etch for Sophicly Walkthrough by Claude/sophicly-plugins\" node scripts/load-context.mjs)",
+      "Bash(perl -pi -e 's/onClick:/onclick:/g' frontend/sophicly-next-step.js)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
