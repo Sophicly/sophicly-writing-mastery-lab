@@ -9986,6 +9986,7 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover {
     overflow: visible;
     display: flex;
     justify-content: center;
+    align-items: flex-start;     /* don't stretch the pill to the 0-height bar (distorted it) */
     pointer-events: none;        /* don't block document clicks */
 }
 .swml-tutor-banner {

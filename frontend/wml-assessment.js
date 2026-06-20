@@ -5963,7 +5963,7 @@
             const rbBar = el('div', { className: 'swml-tutor-banner-bar' });
             const rb = el('div', { className: 'swml-tutor-banner' });
             const _eye = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-            const _rbName = (state.reviewStudentName || 'this student').trim().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+            const _rbName = (state.reviewStudentName || 'this student').replace(/[\s ]+/g, ' ').trim().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
             const _rbText = el('span', { className: 'swml-tutor-banner-text' });
             _rbText.innerHTML = _eye + ' Reviewing <strong>' + _rbName + '</strong>’s progress';
             rb.appendChild(_rbText);
