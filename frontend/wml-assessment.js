@@ -589,32 +589,62 @@
         return out;
     }
 
+    // v7.19.599: content-fallback feedback parse when the model omits @FB markers
+    // entirely. The marking turn is recognisable (a per-paragraph total + the two gold
+    // models). We file the whole assessment block into the box for the Question the
+    // message is marking. extractAssessmentContent already isolates the gradable block
+    // for the Copy button — reuse it; fall back to the stripped reply if it returns null.
+    function _detectFeedbackCard(aiReply) {
+        const t = String(aiReply || '');
+        // must look like a marking delivery, not a gate/reflection/summary
+        const isMarking = /(Rewritten to Gold Standard|Optimal Gold Standard|Mark Breakdown|STRENGTHS|Total for (?:this )?(?:paragraph|introduction|conclusion)|Paragraph\s*\d\s*Total)/i.test(t);
+        if (!isMarking) return null;
+        const qm = t.match(/Q(?:uestion)?\s*([1-5])\b/i);
+        if (!qm) return null;
+        let title = '';
+        const pm = t.match(/\b(Introduction|Conclusion|Creative Writing|(?:Body )?Paragraph\s*\d)\b/i);
+        if (pm) title = pm[1].replace(/\s+/g, ' ').replace(/\bparagraph\b/i, 'Paragraph');
+        // slice the markdown from the first marking heading to before the Y/C gate
+        let body = _stripFeedbackMarkers(t);
+        const startM = body.search(/(?:Mark Breakdown|STRENGTHS|(?:Q\d|Question\s*\d|Paragraph\s*\d)[^\n]{0,40}Assessment)/i);
+        if (startM > 0) body = body.slice(startM);
+        body = body.replace(/\n\s*[^\n]*\bType\s+\*{0,2}[CY]\*{0,2}\b[\s\S]*$/i, '').trim();
+        return body ? [{ q: 'Q' + qm[1], title: title, body: body, _detected: true }] : null;
+    }
+
     function applyAssessmentFeedback(aiReply) {
         try {
             if (!aiReply || !canvasEditor) return;
-            const re = /@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)@FB_END/g;
-            const cards = [];
+            // Tolerant: capture body up to @FB_END, OR the next @FB_BEGIN, OR end of message
+            // (the model often drops the closing @FB_END — a begin-only marker must still file).
+            const re = /@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)(?=@FB_END|@FB_BEGIN|$)/g;
+            let cards = [];
             let m;
             while ((m = re.exec(aiReply)) !== null) {
                 let meta = null;
                 try { meta = JSON.parse(m[1]); } catch (_) { continue; }
                 const q = meta && meta.q ? String(meta.q).trim() : '';
                 const title = meta && meta.title ? String(meta.title).trim() : '';
-                const body = (m[2] || '').trim();
+                const body = (m[2] || '')
+                    .replace(/@FB_END[\s\S]*$/, '')
+                    .replace(/\n\s*[^\n]*\bType\s+\*{0,2}[CY]\*{0,2}\b[\s\S]*$/i, '') // drop trailing Y/C gate if @FB_END missing
+                    .trim();
                 if (q && body) cards.push({ q: q, title: title, body: body });
             }
+            // Fallback: no usable markers → detect the marking block from natural output.
+            if (!cards.length) { cards = _detectFeedbackCard(aiReply) || []; }
             if (!cards.length) return;
-            const normLabel = s => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+            const numOf = s => { const x = String(s || '').match(/\d+/); return x ? x[0] : ''; };
             let wrote = false;
             cards.forEach(card => {
-                const wantPrefix = 'feedback' + normLabel(card.q); // e.g. "feedbackq2"
+                const cardNum = numOf(card.q); // "Q2" → "2"  (format-proof)
                 let targetPos = null, targetNode = null;
                 canvasEditor.state.doc.descendants((node, pos) => {
                     if (targetPos !== null) return false;
-                    if (node.type.name === 'sectionBlock' && node.attrs &&
-                        node.attrs.sectionType === 'feedback' &&
-                        normLabel(node.attrs.label).startsWith(wantPrefix)) {
-                        targetPos = pos; targetNode = node; return false;
+                    if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'feedback') {
+                        const lbl = String(node.attrs.label || '');
+                        const lblNum = (lbl.match(/feedback\D*(\d+)/i) || [])[1] || '';
+                        if (cardNum && lblNum === cardNum) { targetPos = pos; targetNode = node; return false; }
                     }
                     return true;
                 });
@@ -1621,6 +1651,27 @@
         out = out.replace(/<p>\s*@REFLECT_GATE\s*\{[\s\S]*?\}\s*<\/p>/gi, '');
         out = out.replace(/@REFLECT_GATE\s*\{[\s\S]*?\}\s*/g, '');
         return out;
+    }
+
+    // v7.19.599: content-detection fallback — the model frequently DOESN'T emit the
+    // @REFLECT_GATE marker (it reverts to natural prose + splits into two turns). Detect
+    // a 1–5 self-rating reflection ask from the natural output and render the panel anyway;
+    // the combined submit pre-answers the AO too, so the model's separate AO turn is moot.
+    function _detectReflectAsk(plain) {
+        if (!plain) return null;
+        const t = String(plain).replace(/<[^>]+>/g, ' ');
+        const hasScale = /\b1\s*[=:\-–].{0,80}?\b5\s*[=:\-–]/s.test(t) || /scale of\s*1\s*[-–to ]+\s*5/i.test(t);
+        const isReflect = /reflect|self-?rat|how well (?:do|did) you|rate yourself|before i (?:assess|mark|give)/i.test(t);
+        if (!hasScale || !isReflect) return null;
+        let skill = 'achieve the goal for this paragraph';
+        const sm = t.match(/how well (?:do|did) you(?:\s+think you(?:['’]ve)?)?\s+([^?]{6,160})\?/i);
+        if (sm) skill = sm[1].replace(/\s+/g, ' ').trim();
+        let q = '';
+        const qm = t.match(/\bQ(?:uestion)?\s*([1-5])\b/i);
+        if (qm) q = 'Q' + qm[1];
+        let ao = ['AO1', 'AO2', 'AO3', 'AO4'];
+        if (/\bAO5\b|\bAO6\b|creative writing/i.test(t)) ao = ['AO5', 'AO6'];
+        return { q: q, para: '', skill: skill, ao: ao, _detected: true };
     }
 
     // Self-contained mic for the panel's own textarea (the doc-editor dictation at
@@ -3357,7 +3408,7 @@
                 text = _stripMatchMarker(text);
 
                 // v7.19.596: @REFLECT_GATE composite reflection panel — parse before strip.
-                const _reflectData = _parseReflectGate(text);
+                const _reflectData = _parseReflectGate(text) || _detectReflectAsk(rawText || text);
                 text = _stripReflectGate(text);
                 // v7.19.598: strip @FB_BEGIN/@FB_END (auto-filed to feedback boxes); keep inner text in chat.
                 text = _stripFeedbackMarkers(text);
@@ -10931,7 +10982,7 @@
                                 const _matchData2 = _parseMatchMarker(text);
                                 text = _stripMatchMarker(text);
                                 // v7.19.596: @REFLECT_GATE composite reflection panel — parse before strip.
-                                const _reflectData2 = _parseReflectGate(text);
+                                const _reflectData2 = _parseReflectGate(text) || _detectReflectAsk(rawText || text);
                                 text = _stripReflectGate(text);
                                 // v7.19.598: strip @FB markers; feedback auto-files to per-Q boxes, text stays in chat.
                                 text = _stripFeedbackMarkers(text);
