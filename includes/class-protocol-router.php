@@ -34,6 +34,12 @@ class SWML_Protocol_Router {
     private $dynamic_step_slice = '';
     private $dynamic_plan_state = '';
 
+    // v7.19.593 (CACHE): set true once inject_session_context confirms a WML query,
+    // so the outbound http_request_args filter knows it owns this Anthropic request
+    // and may relocate the dynamic context block + add a rolling history cache
+    // breakpoint. Left untouched for non-WML Anthropic traffic on the site.
+    private $is_wml_outbound = false;
+
     public static function instance() {
         if (null === self::$instance) {
             self::$instance = new self();
@@ -563,6 +569,66 @@ class SWML_Protocol_Router {
             }
         }
         unset($block);
+
+        // v7.19.593 (CACHE): on WML-owned requests, make the CONVERSATION HISTORY
+        // cacheable too. AI Engine only marks the instructions system block, so the
+        // (growing) history is re-sent at full input price every turn — the real
+        // cost driver on long assessment flows ($5+/assessment). Two moves:
+        //   1. RELOCATE the per-turn dynamic context (AI Engine's 2nd system block,
+        //      NO cache_control — our "LIVE SESSION DIRECTIVES") out from between the
+        //      cached instructions and the messages, into the CURRENT user turn
+        //      (which is fresh every turn anyway). A changing block sitting before
+        //      the history defeats any prefix cache over the history (cache wall).
+        //   2. Add a rolling ephemeral 1h cache_control breakpoint on the LAST
+        //      message. Anthropic then caches instructions + the entire history;
+        //      each turn reads the prior cache and only the new turn is fresh.
+        // Update-safe (never edits AI Engine); scoped to WML + Anthropic /v1/messages.
+        if ($this->is_wml_outbound && !empty($payload['messages']) && is_array($payload['messages'])) {
+            // 1. Pull our dynamic context out of the system array (detected by the
+            //    framing marker so we never touch the instructions or code-exec hint).
+            $relocated_ctx = '';
+            if (!empty($payload['system']) && is_array($payload['system'])) {
+                $kept = [];
+                foreach ($payload['system'] as $sblk) {
+                    $is_ctx = is_array($sblk)
+                        && ($sblk['type'] ?? '') === 'text'
+                        && empty($sblk['cache_control'])
+                        && isset($sblk['text'])
+                        && strpos($sblk['text'], 'LIVE SESSION DIRECTIVES') !== false;
+                    if ($is_ctx && $relocated_ctx === '') {
+                        $relocated_ctx = (string) $sblk['text'];
+                        $changed = true;
+                        continue; // drop from system
+                    }
+                    $kept[] = $sblk;
+                }
+                $payload['system'] = array_values($kept);
+            }
+
+            // 2. Normalise the LAST message content to block-array form, prepend the
+            //    relocated context (if any), and stamp the rolling cache breakpoint.
+            $last_i = count($payload['messages']) - 1;
+            $last_msg = $payload['messages'][$last_i];
+            if (is_array($last_msg) && isset($last_msg['content'])) {
+                $content = $last_msg['content'];
+                if (is_string($content)) {
+                    $content = [['type' => 'text', 'text' => $content]];
+                }
+                if (is_array($content)) {
+                    if ($relocated_ctx !== '') {
+                        array_unshift($content, ['type' => 'text', 'text' => $relocated_ctx . "\n\n"]);
+                    }
+                    // cache_control rides the FINAL content block of the message.
+                    $end = count($content) - 1;
+                    if ($end >= 0 && is_array($content[$end]) && empty($content[$end]['cache_control'])) {
+                        $content[$end]['cache_control'] = ['type' => 'ephemeral', 'ttl' => '1h'];
+                        $changed = true;
+                    }
+                    $payload['messages'][$last_i]['content'] = $content;
+                }
+            }
+        }
+
         if (!$changed) return $args;
 
         $reencoded = wp_json_encode($payload);
@@ -768,6 +834,11 @@ class SWML_Protocol_Router {
 
         $user_id = get_current_user_id();
         if (!$user_id) return $query;
+
+        // v7.19.593 (CACHE): mark this as a WML-owned outbound request so the
+        // Anthropic http_request_args filter may relocate the dynamic context
+        // and add a rolling history cache breakpoint (see extend_anthropic_cache_ttl).
+        $this->is_wml_outbound = true;
 
         // ── Inject conversation history into query messages if available ──
         global $swml_chat_history;
