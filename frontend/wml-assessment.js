@@ -568,6 +568,83 @@
         }
     }
 
+    // v7.19.598: Phase 4 — auto-insert assessment feedback into the per-question
+    // Feedback box (kills the legacy copy-paste step). The AI wraps each paragraph's
+    // mark breakdown + feedback + both gold models in:
+    //     @FB_BEGIN{ "q":"Q2", "para":"1", "title":"Paragraph 1" }
+    //     ...markdown (bold-label bullets, never a table — the converter has no tables)...
+    //     @FB_END
+    // CODE files each card into the sectionBlock whose sectionType==='feedback' and whose
+    // label starts with "Feedback Q<n>" (the label "Feedback: Q2 (— / 8)" → "feedbackq2…").
+    // Placeholder still present → REPLACE; else APPEND the card. Dedup by card title so a
+    // re-fired turn (or Path-C re-entry) never double-inserts. The feedback ALSO stays in
+    // chat (markers stripped) — so a missed/garbled marker degrades gracefully to chat-only.
+    function _stripFeedbackMarkers(text) {
+        if (!text) return text;
+        let out = String(text);
+        out = out.replace(/<p>\s*@FB_BEGIN\s*\{[\s\S]*?\}\s*<\/p>/gi, '');
+        out = out.replace(/@FB_BEGIN\s*\{[\s\S]*?\}\s*/g, '');
+        out = out.replace(/<p>\s*@FB_END\s*<\/p>/gi, '');
+        out = out.replace(/@FB_END/g, '');
+        return out;
+    }
+
+    function applyAssessmentFeedback(aiReply) {
+        try {
+            if (!aiReply || !canvasEditor) return;
+            const re = /@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)@FB_END/g;
+            const cards = [];
+            let m;
+            while ((m = re.exec(aiReply)) !== null) {
+                let meta = null;
+                try { meta = JSON.parse(m[1]); } catch (_) { continue; }
+                const q = meta && meta.q ? String(meta.q).trim() : '';
+                const title = meta && meta.title ? String(meta.title).trim() : '';
+                const body = (m[2] || '').trim();
+                if (q && body) cards.push({ q: q, title: title, body: body });
+            }
+            if (!cards.length) return;
+            const normLabel = s => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+            let wrote = false;
+            cards.forEach(card => {
+                const wantPrefix = 'feedback' + normLabel(card.q); // e.g. "feedbackq2"
+                let targetPos = null, targetNode = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (targetPos !== null) return false;
+                    if (node.type.name === 'sectionBlock' && node.attrs &&
+                        node.attrs.sectionType === 'feedback' &&
+                        normLabel(node.attrs.label).startsWith(wantPrefix)) {
+                        targetPos = pos; targetNode = node; return false;
+                    }
+                    return true;
+                });
+                if (targetPos === null || !targetNode) {
+                    console.warn('WML Feedback: no feedback box for', card.q, '(shown in chat only)');
+                    return;
+                }
+                const existingText = targetNode.textContent || '';
+                // dedup: this card already filed (re-fire / Path-C re-entry)
+                if (card.title && existingText.indexOf(card.title) !== -1) return;
+                const html = cwMarkdownToDocHtml((card.title ? '### ' + card.title + '\n\n' : '') + card.body);
+                const isPlaceholder = existingText.trim() === '' || /will appear after assessment|will be assessed here|appear here after/i.test(existingText);
+                if (isPlaceholder) {
+                    const from = targetPos + 1;
+                    const to = targetPos + targetNode.nodeSize - 1;
+                    canvasEditor.commands.insertContentAt({ from: from, to: to }, html);
+                } else {
+                    // append at the section's end (inside the block)
+                    const endPos = targetPos + targetNode.nodeSize - 1;
+                    canvasEditor.commands.insertContentAt(endPos, html);
+                }
+                console.log('WML Feedback: filed card', JSON.stringify(card.title || card.q), '→', card.q);
+                wrote = true;
+            });
+            if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
+        } catch (e) {
+            console.warn('WML Feedback: error (non-fatal)', e && e.message);
+        }
+    }
+
     // v7.19.466: Phase 3 of the chat→canvas primitive — AI-authored value → outlineROW.
     // The third shape the other two don't cover:
     //   @FIELD_COMMIT  — verbatim STUDENT words  → outlineRow (APPEND, never destroy)
@@ -3282,6 +3359,8 @@
                 // v7.19.596: @REFLECT_GATE composite reflection panel — parse before strip.
                 const _reflectData = _parseReflectGate(text);
                 text = _stripReflectGate(text);
+                // v7.19.598: strip @FB_BEGIN/@FB_END (auto-filed to feedback boxes); keep inner text in chat.
+                text = _stripFeedbackMarkers(text);
 
                 const body = el('div', { className: 'swml-bubble-body' });
                 body.innerHTML = text;
@@ -3442,16 +3521,16 @@
                         });
                         bar.appendChild(rankSubmitBtn);
                     } else {
-                        // v7.17.6: Y/C copy-feedback gate — prepend hint pointing students
-                        // to the Copy Feedback button at the top of the message. Without
-                        // this, students don't know the button exists and ask AI to repeat.
+                        // v7.19.598: Y/C feedback gate — feedback now auto-files into the
+                        // per-question Feedback box (Phase 4), so reassure rather than telling
+                        // the student to copy anything.
                         const hasY = actions.some(a => a.value === 'Y');
                         const hasC = actions.some(a => a.value === 'C');
-                        const isCopyFeedbackGate = hasY && hasC && /copied|clarify/i.test(detectText);
-                        if (isCopyFeedbackGate) {
+                        const isFeedbackGate = hasY && hasC && /clarif/i.test(detectText);
+                        if (isFeedbackGate) {
                             const hint = el('div', { className: 'swml-quick-hint' });
                             hint.style.cssText = 'font-size:11px;opacity:0.7;margin-bottom:6px;display:flex;align-items:center;gap:4px;';
-                            hint.innerHTML = '↑ Click <strong>Copy Feedback</strong> at the top of this message to save it to your workbook.';
+                            hint.innerHTML = '✓ This feedback has been saved to your <strong>Feedback</strong> box automatically.';
                             bar.appendChild(hint);
                         }
                         actions.forEach(action => {
@@ -4548,6 +4627,7 @@
                             applyCwSubstepProgress(detectCwSubstep(res.reply));
                             applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                             applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
+                            applyAssessmentFeedback(res.reply); // v7.19.598: Phase 4 — auto-file feedback into per-Q boxes
                             applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored row-fill (Phase 3 — CW Step 3 loglines)
                             // v7.19.504: Step-1 seed-logline self-heal — after the turn settles
                             // (loading cleared), re-emit markers if the rows didn't fill.
@@ -10853,6 +10933,8 @@
                                 // v7.19.596: @REFLECT_GATE composite reflection panel — parse before strip.
                                 const _reflectData2 = _parseReflectGate(text);
                                 text = _stripReflectGate(text);
+                                // v7.19.598: strip @FB markers; feedback auto-files to per-Q boxes, text stays in chat.
+                                text = _stripFeedbackMarkers(text);
                                 const body = el('div', { className: 'swml-bubble-body' });
                                 body.innerHTML = text;
                                 content.appendChild(body);
@@ -11339,6 +11421,7 @@
                                             applyCwSubstepProgress(detectCwSubstep(res.reply));
                             applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                             applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
+                            applyAssessmentFeedback(res.reply); // v7.19.598: Phase 4 — auto-file feedback into per-Q boxes
                             applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored row-fill (Phase 3 — CW Step 3 loglines)
                                         }
 

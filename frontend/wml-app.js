@@ -4605,7 +4605,7 @@
         const inlineTypeC = /\btype\s+\*{0,2}C\*{0,2}\s+(?:to\s+(?:request\s+)?clarif|for\s+clarif)/i.test(text);
         if (inlineTypeY && inlineTypeC) {
             return [
-                { label: 'Y — copied, continue', value: 'Y' },
+                { label: 'Y — continue', value: 'Y' },
                 { label: 'C — clarify feedback', value: 'C' },
             ];
         }
