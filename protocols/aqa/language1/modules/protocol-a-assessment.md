@@ -61,6 +61,8 @@ We'll refer back to this throughout the assessment."
 
    **Internal AI Note — CLARIFICATION-GATE RULE (applies to EVERY paragraph gate below):** Offer the Y/C gate exactly ONCE per paragraph. If the student types **Y** (or any "ready/next/continue" answer), advance IMMEDIATELY to the next step — NEVER re-emit the gate. If the student types **C**, give the clarifications, then ask only "Anything else to clarify? Type **Y** to continue." Do not re-offer the original Y/C choice after a Y. This prevents the gate firing twice in a row.
 
+   **Internal AI Note — REFLECTION PANEL RULE (`@REFLECT_GATE`):** Each per-paragraph reflection step below tells you to emit a `@REFLECT_GATE{...}` marker. To do so: write a ONE-LINE lead-in sentence, then on the NEXT line output the marker EXACTLY as given — no code block, no backticks, nothing after it. Do NOT also type out the 1–5 scale or the AO list as prose; the marker renders an interactive panel (1–5 rating buttons + AO chips + a dictation box) and the student answers there in one go. After the marker, WAIT for the student's single combined reply (it arrives as "Self-rating: N/5. AO targeting: …"), store their rating and AO, then proceed to assessment.
+
 ##### **Assessment Sub-Protocol: Question 1 (AO1 \- 4 Marks)**
 
 1. Ask: "Let's start with Question 1\. Please submit your **complete answer for Question 1**."  
@@ -113,12 +115,9 @@ We'll refer back to this throughout the assessment."
      
 4. **Metacognitive Reflection (Paragraph 1 \- MANDATORY, ONE step):**  
      
-   * **Internal AI Note:** Ask BOTH reflection parts in a SINGLE message and wait for ONE combined reply. Do not split into two turns.  
+   * Say a one-line lead-in (e.g. "Before I assess your first paragraph, a quick reflection:"), then emit the reflection panel marker on its own line per the REFLECTION PANEL RULE:  
        
-   * Ask: "Before I assess your first paragraph, a quick reflection — answer both in one message:  
-       
-     1. **Self-rating (1–5):** how well did you analyse how the writer uses language to create meaning in this paragraph? (1 = not at all … 5 = comprehensively and effectively)  
-     2. **AO targeting:** which AO(s) were you targeting, and what were you trying to show? (e.g. AO2 — analysing language techniques and their effects)"  
+     @REFLECT_GATE{"q":"Q2","para":"1","skill":"analyse how the writer uses language to create meaning in this paragraph","ao":["AO1","AO2","AO3","AO4"]}  
        
    * **Internal AI Note:** WAIT for the combined reply. Store the rating as \[STUDENT\_RATING\_Q2\_P1\] and the AO explanation as \[STUDENT\_AO\_Q2\_P1\]. Then proceed to assessment, integrating both into feedback.
 
@@ -352,12 +351,9 @@ We'll refer back to this throughout the assessment."
 
 2. **Metacognitive Reflection (Paragraph 2 \- MANDATORY, ONE step):**  
      
-   * **Internal AI Note:** Ask BOTH reflection parts in a SINGLE message and wait for ONE combined reply.  
+   * Say a one-line lead-in (e.g. "Now your second paragraph — a quick reflection:"), then emit the reflection panel marker on its own line per the REFLECTION PANEL RULE:  
        
-   * Ask: "Now your second paragraph — a quick reflection first, answer both in one message:  
-       
-     1. **Self-rating (1–5):** how well did you analyse how the writer uses language to create meaning in this second paragraph? (1 = not at all … 5 = comprehensively and effectively)  
-     2. **AO targeting:** which AO(s) were you targeting, and what were you trying to show?"  
+     @REFLECT_GATE{"q":"Q2","para":"2","skill":"analyse how the writer uses language to create meaning in this second paragraph","ao":["AO1","AO2","AO3","AO4"]}  
        
    * **Internal AI Note:** WAIT for the combined reply. Store the rating as \[STUDENT\_RATING\_Q2\_P2\] and the AO explanation as \[STUDENT\_AO\_Q2\_P2\].
 
@@ -416,10 +412,9 @@ Tick one **before** writing:
      
    * **Internal AI Note:** Ask BOTH reflection parts in a SINGLE message and wait for ONE combined reply.  
        
-   * Ask: "Before I assess your first paragraph, a quick reflection — answer both in one message:  
+   * Say a one-line lead-in (e.g. "Before I assess your first paragraph, a quick reflection:"), then emit the reflection panel marker on its own line per the REFLECTION PANEL RULE:  
        
-     1. **Self-rating (1–5):** how well did you analyse how the writer uses structural features for effect in this paragraph? (1 = not at all … 5 = comprehensively and effectively)  
-     2. **AO targeting:** which AO(s) were you targeting, and what were you trying to show? (e.g. AO2 — analysing structural techniques and their effects)"  
+     @REFLECT_GATE{"q":"Q3","para":"1","skill":"analyse how the writer uses structural features for effect in this paragraph","ao":["AO1","AO2","AO3","AO4"]}  
        
    * **Internal AI Note:** WAIT for the combined reply. Store the rating as \[STUDENT\_RATING\_Q3\_P1\] and the AO explanation as \[STUDENT\_AO\_Q3\_P1\]. Then proceed to assessment, integrating both into feedback.
 
@@ -437,10 +432,9 @@ Tick one **before** writing:
      
    * **Internal AI Note:** Ask BOTH reflection parts in a SINGLE message and wait for ONE combined reply.  
        
-   * Ask: "Now your second paragraph — a quick reflection first, answer both in one message:  
+   * Say a one-line lead-in (e.g. "Now your second paragraph — a quick reflection:"), then emit the reflection panel marker on its own line per the REFLECTION PANEL RULE:  
        
-     1. **Self-rating (1–5):** how well did you analyse how the writer uses structural features for effect in this second paragraph? (1 = not at all … 5 = comprehensively and effectively)  
-     2. **AO targeting:** which AO(s) were you targeting, and what were you trying to show?"  
+     @REFLECT_GATE{"q":"Q3","para":"2","skill":"analyse how the writer uses structural features for effect in this second paragraph","ao":["AO1","AO2","AO3","AO4"]}  
        
    * **Internal AI Note:** WAIT for the combined reply. Store the rating as \[STUDENT\_RATING\_Q3\_P2\] and the AO explanation as \[STUDENT\_AO\_Q3\_P2\].
 
@@ -566,10 +560,9 @@ Tick one **before** writing:
     
   * **Internal AI Note:** Complete this BEFORE assessing each body paragraph. Ask BOTH parts in a SINGLE message and wait for ONE combined reply. Repeat for BP1, then BP2, then BP3.  
       
-  * Ask: "Before I assess your \[first/second/third\] body paragraph, a quick reflection — answer both in one message:  
+  * Say a one-line lead-in (e.g. "Before I assess your \[first/second/third\] body paragraph, a quick reflection:"), then emit the reflection panel marker on its own line per the REFLECTION PANEL RULE:  
       
-    1. **Self-rating (1–5):** how well did you critically evaluate the writer's perspective with detailed evidence in this \[first/second/third\] body paragraph? (1 = not at all … 5 = comprehensively and effectively)  
-    2. **AO targeting:** which AO(s) were you targeting, and what were you trying to show? (e.g. AO4 — evaluating the writer's success critically)"  
+    @REFLECT_GATE{"q":"Q4","para":"BP","skill":"critically evaluate the writer's perspective with detailed evidence in this body paragraph","ao":["AO1","AO2","AO3","AO4"]}  
       
   * **Internal AI Note:** WAIT for the combined reply. Store the rating as \[STUDENT\_RATING\_Q4\_BP1\], \[STUDENT\_RATING\_Q4\_BP2\], or \[STUDENT\_RATING\_Q4\_BP3\] and the AO explanation as \[STUDENT\_AO\_Q4\_BP1/BP2/BP3\] depending on which paragraph. Then proceed to assessment, integrating both into feedback.
 
@@ -781,10 +774,9 @@ Tick one **before** writing:
      
    * **Internal AI Note:** Q5 reflection is AT START ONLY for the entire piece, NOT per paragraph. Ask BOTH parts in a SINGLE message and wait for ONE combined reply.  
        
-   * Ask: "Before I assess your creative writing, a quick reflection on the whole piece — answer both in one message:  
+   * Say a one-line lead-in (e.g. "Before I assess your creative writing, a quick reflection on the whole piece:"), then emit the reflection panel marker on its own line per the REFLECTION PANEL RULE:  
        
-     1. **Self-rating (1–5):** how well did you create an engaging, controlled, coherent piece? (1 = not at all … 5 = comprehensively and effectively)  
-     2. **AO targeting:** which AO(s) were you targeting, and what were you trying to show? (e.g. AO5 — communicating imaginatively; AO6 — accurate spelling, punctuation, grammar)"  
+     @REFLECT_GATE{"q":"Q5","para":"whole","skill":"create an engaging, controlled, coherent piece of creative writing","ao":["AO5","AO6"]}  
        
    * **Internal AI Note:** WAIT for the combined reply. Store the rating as \[STUDENT\_RATING\_Q5\] and the AO explanation as \[STUDENT\_AO\_Q5\].  
        

@@ -1510,6 +1510,168 @@
         return out;
     }
 
+    // ── v7.19.596: @REFLECT_GATE composite reflection panel (Phase 3, items E+O) ──
+    // Folds the two per-paragraph reflection asks (self-rating 1–5 + AO targeting)
+    // into ONE gated widget: segmented 1–5 (house colour ladder) + AO chips +
+    // free-text with mic. Single submit, DISABLED until a rating is picked AND an
+    // AO is given (chip or text). Posts one combined message via sendCanvasMessage.
+    // Marker format: @REFLECT_GATE{"q":"Q2","para":"1","skill":"...","ao":["AO1","AO2"]}
+    const _REFLECT_LADDER = { 1: '#ff5470', 2: '#F1C40F', 3: '#1CD991', 4: '#4D76FD', 5: '#5333ed' };
+
+    function _parseReflectGate(text) {
+        if (!text) return null;
+        const plain = String(text).replace(/<[^>]+>/g, ' ');
+        const m = /@REFLECT_GATE\s*(\{[\s\S]*?\})/.exec(plain);
+        if (!m) return null;
+        try {
+            const d = JSON.parse(m[1]);
+            const ao = Array.isArray(d.ao) && d.ao.length ? d.ao.map(String) : ['AO1', 'AO2', 'AO3', 'AO4'];
+            return {
+                q: d.q ? String(d.q) : '',
+                para: d.para != null ? String(d.para) : '',
+                skill: d.skill ? String(d.skill) : 'achieve the goal for this paragraph',
+                ao,
+            };
+        } catch (err) {
+            console.warn('WML @REFLECT_GATE: JSON parse failed', err);
+            return null;
+        }
+    }
+
+    function _stripReflectGate(text) {
+        if (!text) return text;
+        let out = String(text);
+        out = out.replace(/<p>\s*@REFLECT_GATE\s*\{[\s\S]*?\}\s*<\/p>/gi, '');
+        out = out.replace(/@REFLECT_GATE\s*\{[\s\S]*?\}\s*/g, '');
+        return out;
+    }
+
+    // Self-contained mic for the panel's own textarea (the doc-editor dictation at
+    // toggleDictation targets the canvas, not this field — keep them independent).
+    function _attachPanelMic(textarea, micBtn, onChange) {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { micBtn.style.display = 'none'; return; }
+        let rec = null, listening = false;
+        micBtn.addEventListener('click', () => {
+            if (listening && rec) { rec.stop(); return; }
+            rec = new SR();
+            rec.continuous = true; rec.interimResults = false; rec.lang = 'en-GB';
+            rec.onstart = () => { listening = true; micBtn.style.background = 'rgba(255,84,112,0.25)'; micBtn.style.borderColor = '#ff5470'; };
+            const reset = () => { listening = false; micBtn.style.background = 'rgba(255,255,255,0.05)'; micBtn.style.borderColor = 'rgba(255,255,255,0.15)'; };
+            rec.onend = reset; rec.onerror = reset;
+            rec.onresult = (ev) => {
+                let add = '';
+                for (let i = ev.resultIndex; i < ev.results.length; i++) {
+                    if (ev.results[i].isFinal) add += ev.results[i][0].transcript;
+                }
+                if (add) { textarea.value = (textarea.value ? textarea.value.trim() + ' ' : '') + add.trim(); if (onChange) onChange(); }
+            };
+            rec.start();
+        });
+    }
+
+    function _renderReflectPanel(parsed, onSubmit) {
+        const wrap = el('div', { className: 'swml-reflect-panel' });
+        wrap.style.cssText = 'margin-top:12px;padding:14px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:14px;';
+
+        let rating = null;
+        const selectedAO = new Set();
+
+        const refreshSubmit = () => {
+            const ok = rating != null && (selectedAO.size > 0 || ta.value.trim().length > 0);
+            submit.style.opacity = ok ? '1' : '0.4';
+            submit.style.pointerEvents = ok ? 'auto' : 'none';
+        };
+
+        // 1. Self-rating 1–5 (house colour ladder, single-select)
+        const rateWrap = el('div', {});
+        rateWrap.style.cssText = 'display:flex;flex-direction:column;gap:7px;';
+        const rateLabel = el('div', {});
+        rateLabel.style.cssText = 'font-size:13px;line-height:1.4;';
+        rateLabel.appendChild(el('strong', { textContent: '1. Self-rating' }));
+        rateLabel.appendChild(document.createTextNode(' — how well did you ' + parsed.skill + '?'));
+        const rateRow = el('div', {});
+        rateRow.style.cssText = 'display:flex;gap:6px;';
+        const rateBtns = [];
+        for (let n = 1; n <= 5; n++) {
+            const c = _REFLECT_LADDER[n];
+            const b = el('button', { textContent: String(n) });
+            b.type = 'button';
+            b.style.cssText = `flex:1;padding:10px 0;border-radius:9px;border:1px solid ${c};background:transparent;color:${c};font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;`;
+            b.addEventListener('click', () => {
+                rating = n;
+                rateBtns.forEach((bb, i) => {
+                    const cc = _REFLECT_LADDER[i + 1];
+                    if (i + 1 === n) { bb.style.background = cc; bb.style.color = '#fff'; }
+                    else { bb.style.background = 'transparent'; bb.style.color = cc; }
+                });
+                refreshSubmit();
+            });
+            rateBtns.push(b);
+            rateRow.appendChild(b);
+        }
+        const rateScale = el('div', { textContent: '1 = not at all   ·   5 = comprehensively' });
+        rateScale.style.cssText = 'font-size:11px;opacity:0.55;';
+        rateWrap.appendChild(rateLabel); rateWrap.appendChild(rateRow); rateWrap.appendChild(rateScale);
+
+        // 2. AO targeting — chips (multi) + free-text with mic
+        const aoWrap = el('div', {});
+        aoWrap.style.cssText = 'display:flex;flex-direction:column;gap:7px;';
+        const aoLabel = el('div', {});
+        aoLabel.style.cssText = 'font-size:13px;line-height:1.4;';
+        aoLabel.appendChild(el('strong', { textContent: '2. AO targeting' }));
+        aoLabel.appendChild(document.createTextNode(' — which did you aim for, and what were you trying to show?'));
+        const chipRow = el('div', {});
+        chipRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
+        parsed.ao.forEach(code => {
+            const chip = el('button', { textContent: code });
+            chip.type = 'button';
+            chip.style.cssText = 'padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.75);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;';
+            chip.addEventListener('click', () => {
+                if (selectedAO.has(code)) {
+                    selectedAO.delete(code);
+                    chip.style.background = 'rgba(255,255,255,0.05)'; chip.style.color = 'rgba(255,255,255,0.75)'; chip.style.borderColor = 'rgba(255,255,255,0.2)';
+                } else {
+                    selectedAO.add(code);
+                    chip.style.background = 'rgba(83,51,237,0.25)'; chip.style.color = '#fff'; chip.style.borderColor = '#5333ed';
+                }
+                refreshSubmit();
+            });
+            chipRow.appendChild(chip);
+        });
+        const taRow = el('div', {});
+        taRow.style.cssText = 'display:flex;gap:6px;align-items:flex-end;';
+        const ta = el('textarea', {});
+        ta.rows = 2;
+        ta.placeholder = 'What were you trying to show? (type or use the mic)';
+        ta.style.cssText = 'flex:1;resize:vertical;min-height:42px;padding:8px 10px;border-radius:9px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.25);color:#fff;font-size:13px;font-family:inherit;';
+        ta.addEventListener('input', refreshSubmit);
+        const mic = el('button', { innerHTML: SVG_MIC, title: 'Dictate' });
+        mic.type = 'button';
+        mic.style.cssText = 'flex:0 0 auto;width:42px;height:42px;border-radius:9px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+        _attachPanelMic(ta, mic, refreshSubmit);
+        taRow.appendChild(ta); taRow.appendChild(mic);
+        aoWrap.appendChild(aoLabel); aoWrap.appendChild(chipRow); aoWrap.appendChild(taRow);
+
+        // Single gated submit
+        const submit = el('button', { textContent: 'Submit reflection →' });
+        submit.type = 'button';
+        submit.style.cssText = 'align-self:flex-end;padding:9px 18px;border-radius:9px;border:none;background:#5333ed;color:#fff;font-size:13px;font-weight:600;cursor:pointer;opacity:0.4;pointer-events:none;transition:opacity .15s;';
+        submit.addEventListener('click', () => {
+            if (rating == null) return;
+            const aoStr = Array.from(selectedAO).join(', ');
+            const detail = ta.value.trim();
+            let msg = `Self-rating: ${rating}/5.`;
+            if (aoStr) msg += ` AO targeting: ${aoStr}.`;
+            if (detail) msg += ` ${detail}`;
+            wrap.style.opacity = '0.5'; wrap.style.pointerEvents = 'none';
+            onSubmit(msg);
+        });
+
+        wrap.appendChild(rateWrap); wrap.appendChild(aoWrap); wrap.appendChild(submit);
+        return wrap;
+    }
+
     // ── v7.19.14: MSF doc migration v7.19.12 → v7.19.14 (Hattie redesign) ──
     // v7.19.12 used per-Q decomposition (10 confidence + 10 BBB + 10 distractor +
     // 10 score). v7.19.14 collapses to 5 reflection boxes per Hattie's model.
@@ -3091,6 +3253,10 @@
                 const _matchData = _parseMatchMarker(text);
                 text = _stripMatchMarker(text);
 
+                // v7.19.596: @REFLECT_GATE composite reflection panel — parse before strip.
+                const _reflectData = _parseReflectGate(text);
+                text = _stripReflectGate(text);
+
                 const body = el('div', { className: 'swml-bubble-body' });
                 body.innerHTML = text;
                 content.appendChild(body);
@@ -3104,6 +3270,20 @@
                         });
                         body.appendChild(widget);
                     } catch (err) { console.warn('WML @MATCH render failed', err); }
+                }
+
+                // v7.19.596: render the composite reflection panel after body.
+                if (_reflectData) {
+                    try {
+                        const widget = _renderReflectPanel(_reflectData, (answer) => {
+                            if (chatTextarea) { chatTextarea.value = answer; }
+                            sendCanvasMessage();
+                        });
+                        body.appendChild(widget);
+                    } catch (err) {
+                        console.warn('WML @REFLECT_GATE render failed', err);
+                        body.appendChild(el('div', { className: 'swml-reflect-fallback', textContent: 'Please type your 1–5 self-rating and which AO(s) you were targeting.' }));
+                    }
                 }
 
                 // v7.15.101: Fill-in-the-blank submit wiring for canvas chat.
@@ -3147,7 +3327,7 @@
                 const detectText = rawText || text.replace(/<[^>]+>/g, '');
                 const canvasAssessDone = state.task === 'assessment' && state.plan.total_score && state.plan.grade;
                 const isHattieQuestion = /(?:Where\s+am\s+I\s+going|How\s+am\s+I\s+going|Where\s+to\s+next|transfer.*skills|how\s+will\s+you.*apply|Session\s+Complete)/i.test(detectText);
-                const actions = (canvasAssessDone || isHattieQuestion) ? [] : detectQuickActions(detectText);
+                const actions = (canvasAssessDone || isHattieQuestion || _reflectData) ? [] : detectQuickActions(detectText);
                 if (actions.length > 0) {
                     const isMulti = /(?:pick|choose|select|commit to)\s*(?:(?:up to|between|at least)?\s*)?(\d)\s*[-\u2013to]+\s*(\d)/i.test(detectText)
                         || /(?:pick|choose|select)\s+(?:multiple|several|a few|some)\b/i.test(detectText)
@@ -10644,6 +10824,9 @@
                                 // v7.19.12: @MATCH:qId={...} interactive matching widget — parse before strip.
                                 const _matchData2 = _parseMatchMarker(text);
                                 text = _stripMatchMarker(text);
+                                // v7.19.596: @REFLECT_GATE composite reflection panel — parse before strip.
+                                const _reflectData2 = _parseReflectGate(text);
+                                text = _stripReflectGate(text);
                                 const body = el('div', { className: 'swml-bubble-body' });
                                 body.innerHTML = text;
                                 content.appendChild(body);
@@ -10656,6 +10839,18 @@
                                         body.appendChild(widget);
                                     } catch (err) { console.warn('WML @MATCH render failed', err); }
                                 }
+                                if (_reflectData2) {
+                                    try {
+                                        const widget = _renderReflectPanel(_reflectData2, (answer) => {
+                                            if (chatTextarea) { chatTextarea.value = answer; }
+                                            sendCanvasMessage();
+                                        });
+                                        body.appendChild(widget);
+                                    } catch (err) {
+                                        console.warn('WML @REFLECT_GATE render failed', err);
+                                        body.appendChild(el('div', { className: 'swml-reflect-fallback', textContent: 'Please type your 1–5 self-rating and which AO(s) you were targeting.' }));
+                                    }
+                                }
 
                                 // Quick action buttons — detect from raw (unformatted) text
                                 const detectText = rawText || text.replace(/<[^>]+>/g, '');
@@ -10663,7 +10858,7 @@
                                 const canvasAssessDone = state.task === 'assessment' && state.plan.total_score && state.plan.grade;
                                 // Suppress quick actions on Hattie reflective questions (v7.12.34)
                                 const isHattieQuestion = /(?:Where\s+am\s+I\s+going|How\s+am\s+I\s+going|Where\s+to\s+next|transfer.*skills|how\s+will\s+you.*apply|Session\s+Complete)/i.test(detectText);
-                                const actions = (canvasAssessDone || isHattieQuestion) ? [] : detectQuickActions(detectText);
+                                const actions = (canvasAssessDone || isHattieQuestion || _reflectData2) ? [] : detectQuickActions(detectText);
                                 if (actions.length > 0) {
                                     // Multi-select detection (AO selection, "select all that apply")
                                     const isMulti = /(?:pick|choose|select|commit to)\s*(?:(?:up to|between|at least)?\s*)?(\d)\s*[-–to]+\s*(\d)/i.test(detectText)
