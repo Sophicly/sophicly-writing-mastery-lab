@@ -21393,12 +21393,28 @@
             inner += `<p>Academic Writing: \u2014 / 5</p>`;
             return sectionHTML('action', 'Self-Assessment', true, null, inner);
         }
-        const skills = [
+        let skills = [
             { cat: 'Introduction', items: ['Hook', 'Building Sentences', 'Thesis'] },
             { cat: 'Body Paragraphs', items: ['Topic Sentence', 'Technical Terms', 'Evidence', 'Close Analysis', 'Effects on Reader', "Author's Purpose", 'Context'] },
             { cat: 'Conclusion', items: ['Restated Thesis', 'Controlling Concept', 'Central Purpose', 'Universal Message'] },
             { cat: 'Academic Writing', items: ['Language Sophistication', 'Vocabulary Precision', 'Sentence Structure', 'Discourse Markers'] },
         ];
+        // v7.19.592: self-assessment skills are board/paper-aware. The generic list is
+        // essay/Literature-shaped (Hook, Thesis, Controlling Concept, Central Purpose,
+        // Universal Message) and carries Context — a Literature-ONLY beat (+C rule;
+        // Language analysis runs on TTECEA without a Context beat). Asking a Lang P1
+        // student to self-rate skills their paper never assesses is wrong (Neil). Filter
+        // to the applicable set per paper. NOTE: only AQA Lang P1 tuned so far — the kept
+        // set + other papers' sets still need a content review before tuning them too.
+        const _saSubj = String((typeof state !== 'undefined' && state && state.subject) || '')
+            .toLowerCase().replace(/[^a-z0-9]/g, '');
+        const _isLangP1 = ['language1', 'languagep1', 'languagepaper1', 'langp1'].indexOf(_saSubj) !== -1;
+        if (_isLangP1) {
+            const _removeLangP1 = ['Hook', 'Building Sentences', 'Context', 'Controlling Concept', 'Central Purpose', 'Universal Message'];
+            skills = skills
+                .map(s => ({ cat: s.cat, items: s.items.filter(it => _removeLangP1.indexOf(it) === -1) }))
+                .filter(s => s.items.length > 0);
+        }
         let inner = `<p><em>Rate your confidence in each skill (1 = basic, 5 = expert):</em></p>`;
         skills.forEach(s => {
             inner += `<h3>${s.cat}</h3>`;
