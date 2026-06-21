@@ -3960,6 +3960,14 @@ TEMPLATE;
         } else {
             $block .= "step:                  {$fields['step']}\n";
         }
+        // v7.19.595: derive assessment_mode so the protocol consumes it instead of
+        // asking the student to choose Diagnostic/Redraft/Exam Practice (legacy artifact, item N).
+        // diagnostic = lenient first-attempt (Phase 1); redraft = strict structure/word-count (Phase 2).
+        if (in_array($fields['task'], ['assessment', 'redraft_assessment'], true)) {
+            $dt = strtolower((string)($context['draft_type'] ?? ''));
+            $is_redraft = ($fields['task'] === 'redraft_assessment') || (strpos($dt, 'redraft') !== false);
+            $block .= "assessment_mode:       " . ($is_redraft ? 'redraft' : 'diagnostic') . "\n";
+        }
         if ($fields['task'] === 'mark_scheme_unit' && $fields['bridge_step']) {
             $block .= "bridge_step:           {$fields['bridge_step']}\n";
         }
