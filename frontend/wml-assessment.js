@@ -4037,7 +4037,16 @@
                     }
                 }
 
-                const historyToSend = canvasChatHistory.slice(0, -1).slice(-24);
+                // v7.19.591 (RELIABILITY): assessment-marking flows send the FULL
+                // conversation (conversation = state). The old slice(-24) sliding window
+                // dropped earlier turns on long sessions, so the AI forgot it had already
+                // marked Q1-Q3 \u2192 re-marked / restarted = the confirmed loop (audit root
+                // cause 2B). Bounded marking flows are safe unbounded; non-marking canvas
+                // chats keep the window to cap cost.
+                const _wmlMarkingFlow = ['assessment', 'redraft_assessment', 'feedback_discussion'].includes(state.task);
+                const historyToSend = _wmlMarkingFlow
+                    ? canvasChatHistory.slice(0, -1)
+                    : canvasChatHistory.slice(0, -1).slice(-24);
 
                 const response = await fetch(API.chat, {
                     method: 'POST',
@@ -11039,8 +11048,16 @@
                                     }
                                 }
 
-                                // Sliding window: last 24 messages (excluding current)
-                                const historyToSend = canvasChatHistory.slice(0, -1).slice(-24);
+                                // v7.19.591 (RELIABILITY): assessment-marking flows send the
+                                // FULL conversation (conversation = state). The old slice(-24)
+                                // sliding window dropped earlier turns on long sessions, so the
+                                // AI forgot it had already marked Q1-Q3 → re-marked / restarted =
+                                // the confirmed loop (audit root cause 2B). Non-marking canvas
+                                // chats keep the window to cap cost.
+                                const _wmlMarkingFlow = ['assessment', 'redraft_assessment', 'feedback_discussion'].includes(state.task);
+                                const historyToSend = _wmlMarkingFlow
+                                    ? canvasChatHistory.slice(0, -1)
+                                    : canvasChatHistory.slice(0, -1).slice(-24);
 
                                 const response = await fetch(API.chat, {
                                     method: 'POST',

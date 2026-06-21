@@ -4344,6 +4344,42 @@ class SWML_REST_API {
         }
 
         $meta_key = $this->chat_meta_key($board, $text, $topic, $suffix, $attempt, $cw_project_id);
+
+        // v7.19.591 (DATA-LOSS GUARD): mirror the doc-save shrink guard (save_canvas,
+        // v7.19.146). A glitchy/restarted client can POST a SHORTER history than what
+        // is already stored (the truncation/loop bug, or a reload that lost local
+        // state) and blindly clobber the fuller transcript — this is why only a
+        // 9-message fragment of one student's assessment survived. Reject a shrink on
+        // the SAME key (new attempts get a different key via the attempt index) unless
+        // the caller explicitly opts in.
+        $incoming_count = count($history);
+        $allow_shrink   = !empty($params['allow_shrink']) || !empty($params['reset']);
+        if (!$allow_shrink) {
+            $existing_raw = get_user_meta($user_id, $meta_key, true);
+            if (!empty($existing_raw)) {
+                $existing = json_decode(is_string($existing_raw) ? $existing_raw : '', true);
+                if (!is_array($existing)) {
+                    $existing = json_decode(wp_unslash((string) $existing_raw), true);
+                }
+                $existing_count = (is_array($existing) && isset($existing['history']) && is_array($existing['history']))
+                    ? count($existing['history'])
+                    : 0;
+                if ($existing_count > 2 && $incoming_count < $existing_count) {
+                    error_log(sprintf(
+                        '[WML v7.19.591] chat shrink REJECTED user=%d key=%s incoming=%d existing=%d',
+                        $user_id, $meta_key, $incoming_count, $existing_count
+                    ));
+                    return rest_ensure_response([
+                        'success'        => false,
+                        'guard'          => 'chat_shrink',
+                        'message'        => 'Refused to overwrite a longer stored chat with a shorter one',
+                        'incoming_count' => $incoming_count,
+                        'existing_count' => $existing_count,
+                    ]);
+                }
+            }
+        }
+
         $data = [
             'history'  => $history,
             'chatId'   => $chat_id,
