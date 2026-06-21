@@ -553,6 +553,15 @@ window.WML = (function() {
         return text ? text.label : ucfirst(textId);
     }
 
+    // v7.19.594: true when a subject has no real text to pick (Language papers,
+    // unseen poetry, etc.) — its getTextLabel returns the subject's own label, so
+    // a separate "text" chip just restates board+subject. Callers use this to skip
+    // the redundant text badge.
+    function isSkipTextSelect(subjectId) {
+        const subject = TEXT_CATALOGUE[subjectId];
+        return !!(subject && subject.skipTextSelect);
+    }
+
     const state = {
         mode: config.urlParams?.mode || '',
         board: config.urlParams?.board || '',
@@ -2698,7 +2707,7 @@ window.WML = (function() {
         state,
         // Data maps
         TEXT_CATALOGUE, POETRY_ANTHOLOGY_BY_BOARD, PROSE_ANTHOLOGY_BY_BOARD,
-        NONFICTION_ANTHOLOGY_BY_BOARD, BOARD_TEXT_FILTER, AUTHOR_MAP, SECTION_COLOURS, getTextLabel,
+        NONFICTION_ANTHOLOGY_BY_BOARD, BOARD_TEXT_FILTER, AUTHOR_MAP, SECTION_COLOURS, getTextLabel, isSkipTextSelect,
         // Step arrays
         PLAN_STEPS, ASSESSMENT_STEPS, POLISHING_STEPS, QUOTE_ANALYSIS_STEPS,
         CONCEPTUAL_NOTES_STEPS, POETRY_CN_STEPS, NONFICTION_CN_STEPS,

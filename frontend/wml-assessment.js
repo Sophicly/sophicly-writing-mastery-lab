@@ -2848,7 +2848,12 @@
                 protoBadges.appendChild(nameEl);
             }
         } else {
-            [boardLabel, subjectLabel, textLabel].filter(Boolean).forEach(b =>
+            // v7.19.594: drop the text chip for skipTextSelect subjects (Language
+            // papers, unseen poetry) — its label restates board+subject ("Aqa lang
+            // paper 1" alongside "Language P1"), so it's redundant noise. Real
+            // set-texts (Macbeth, Jane Eyre) keep their chip.
+            const _skipText = WML.isSkipTextSelect && WML.isSkipTextSelect(state.subject);
+            [boardLabel, subjectLabel, _skipText ? '' : textLabel].filter(Boolean).forEach(b =>
                 protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: b }))
             );
         }
@@ -5642,7 +5647,11 @@
             ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: boardLabel }));
             ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: subjectLabel }));
             // v7.14.14: Skip text badge when it duplicates subject (skipTextSelect subjects like unseen_poetry, language1)
-            if (textLabel && textLabel.toLowerCase().replace(/[\s_-]/g, '') !== subjectLabel.toLowerCase().replace(/[\s_-]/g, '')) {
+            // v7.19.594: also skip via the skipTextSelect flag — language papers' text
+            // label ("Aqa lang paper 1") differs from the subject string so the
+            // normalized-equality test missed it; the flag catches it reliably.
+            const _skipTextHdr = WML.isSkipTextSelect && WML.isSkipTextSelect(state.subject);
+            if (textLabel && !_skipTextHdr && textLabel.toLowerCase().replace(/[\s_-]/g, '') !== subjectLabel.toLowerCase().replace(/[\s_-]/g, '')) {
                 ctxBadges.appendChild(el('span', { className: 'swml-canvas-ctx-badge', textContent: textLabel }));
             }
         }
