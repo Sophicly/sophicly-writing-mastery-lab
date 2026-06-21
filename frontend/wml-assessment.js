@@ -1551,20 +1551,46 @@
     function _attachPanelMic(textarea, micBtn, onChange) {
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SR) { micBtn.style.display = 'none'; return; }
-        let rec = null, listening = false;
+        // one-time pulse keyframes for the live state
+        if (!document.getElementById('swml-mic-live-style')) {
+            const st = document.createElement('style');
+            st.id = 'swml-mic-live-style';
+            st.textContent = '@keyframes swmlMicPulse{0%{box-shadow:0 0 0 0 rgba(255,84,112,0.55)}70%{box-shadow:0 0 0 9px rgba(255,84,112,0)}100%{box-shadow:0 0 0 0 rgba(255,84,112,0)}}.swml-mic-live{animation:swmlMicPulse 1.3s infinite;}';
+            document.head.appendChild(st);
+        }
+        let rec = null, listening = false, baseText = '', finalText = '';
+        const setLive = () => {
+            listening = true;
+            micBtn.style.background = '#ff5470';
+            micBtn.classList.add('swml-mic-live');
+            micBtn.innerHTML = SVG_MIC_STOP || SVG_MIC;
+            textarea.setAttribute('placeholder', 'Listening… speak now');
+        };
+        const setIdle = () => {
+            listening = false;
+            micBtn.style.background = 'rgba(255,255,255,0.08)';
+            micBtn.classList.remove('swml-mic-live');
+            micBtn.innerHTML = SVG_MIC;
+            textarea.setAttribute('placeholder', 'What were you trying to show? (type or use the mic)');
+        };
         micBtn.addEventListener('click', () => {
             if (listening && rec) { rec.stop(); return; }
             rec = new SR();
-            rec.continuous = true; rec.interimResults = false; rec.lang = 'en-GB';
-            rec.onstart = () => { listening = true; micBtn.style.background = 'rgba(255,84,112,0.25)'; micBtn.style.borderColor = '#ff5470'; };
-            const reset = () => { listening = false; micBtn.style.background = 'rgba(255,255,255,0.05)'; micBtn.style.borderColor = 'rgba(255,255,255,0.15)'; };
-            rec.onend = reset; rec.onerror = reset;
+            rec.continuous = true; rec.interimResults = true; rec.lang = 'en-GB';
+            baseText = textarea.value ? textarea.value.trim() + ' ' : '';
+            finalText = '';
+            rec.onstart = setLive;
+            rec.onend = setIdle; rec.onerror = setIdle;
             rec.onresult = (ev) => {
-                let add = '';
+                let interim = '';
                 for (let i = ev.resultIndex; i < ev.results.length; i++) {
-                    if (ev.results[i].isFinal) add += ev.results[i][0].transcript;
+                    const t = ev.results[i][0].transcript;
+                    if (ev.results[i].isFinal) finalText += t + ' ';
+                    else interim += t;
                 }
-                if (add) { textarea.value = (textarea.value ? textarea.value.trim() + ' ' : '') + add.trim(); if (onChange) onChange(); }
+                // live: show committed finals + the in-flight interim as it's spoken
+                textarea.value = (baseText + finalText + interim).replace(/\s+/g, ' ').replace(/^\s+/, '');
+                if (onChange) onChange();
             };
             rec.start();
         });
@@ -1626,14 +1652,14 @@
         parsed.ao.forEach(code => {
             const chip = el('button', { textContent: code });
             chip.type = 'button';
-            chip.style.cssText = 'padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.75);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;';
+            chip.style.cssText = 'padding:4px 14px;border-radius:999px;border:none;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.78);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;';
             chip.addEventListener('click', () => {
                 if (selectedAO.has(code)) {
                     selectedAO.delete(code);
-                    chip.style.background = 'rgba(255,255,255,0.05)'; chip.style.color = 'rgba(255,255,255,0.75)'; chip.style.borderColor = 'rgba(255,255,255,0.2)';
+                    chip.style.background = 'rgba(255,255,255,0.08)'; chip.style.color = 'rgba(255,255,255,0.78)';
                 } else {
                     selectedAO.add(code);
-                    chip.style.background = 'rgba(83,51,237,0.25)'; chip.style.color = '#fff'; chip.style.borderColor = '#5333ed';
+                    chip.style.background = '#5333ed'; chip.style.color = '#fff';
                 }
                 refreshSubmit();
             });
@@ -1648,7 +1674,7 @@
         ta.addEventListener('input', refreshSubmit);
         const mic = el('button', { innerHTML: SVG_MIC, title: 'Dictate' });
         mic.type = 'button';
-        mic.style.cssText = 'flex:0 0 auto;width:42px;height:42px;border-radius:9px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+        mic.style.cssText = 'flex:0 0 auto;width:42px;height:42px;border-radius:9px;border:none;background:rgba(255,255,255,0.08);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;';
         _attachPanelMic(ta, mic, refreshSubmit);
         taRow.appendChild(ta); taRow.appendChild(mic);
         aoWrap.appendChild(aoLabel); aoWrap.appendChild(chipRow); aoWrap.appendChild(taRow);
