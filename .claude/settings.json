@@ -616,7 +616,11 @@
       "Bash(php -l sophicly-student-data/includes/class-exam-dates.php)",
       "Bash(php -l sophicly-onboarding/includes/class-rest-api.php)",
       "Bash(php -l sophicly-onboarding/sophicly-onboarding.php)",
-      "Bash(php /tmp/exam_test.php)"
+      "Bash(php /tmp/exam_test.php)",
+      "Bash(awk 'NR>=2700 && NR<=2855 && /textLabel|boardLabel =|subjectLabel =/' frontend/wml-assessment.js)",
+      "Bash(awk 'NR>=2740 && NR<=2845 && /textLabel|getTextLabel|skipText/' frontend/wml-assessment.js)",
+      "Bash(grep -vE \"\\\\.map$|node_modules\")",
+      "Bash(awk ' *)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
