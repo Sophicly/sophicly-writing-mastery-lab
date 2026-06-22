@@ -718,7 +718,8 @@
       "Bash(grep -nE 'spl-success-message|spl-footer-actions|id=\"spl-app\"|\\\\$course_id|\\\\$is_review_mode =|course_completed|get_post_field|post_name|\\\\$is_summary' single-sfwd-focus.php)",
       "Bash(grep -n '\\\\$user_id\\\\s*=' single-sfwd-focus.php)",
       "Bash(scp -i /Users/neilwilliams/.ssh/sophicly_staging /tmp/wml_g9mode.php runcloud@18.133.5.229:/tmp/wml_g9mode.php)",
-      "Bash(awk 'NR>=25380 && NR<=25425 && /function /{print NR\": \"$0}' frontend/wml-assessment.js)"
+      "Bash(awk 'NR>=25380 && NR<=25425 && /function /{print NR\": \"$0}' frontend/wml-assessment.js)",
+      "Bash(grep -n \"flex: 1, fontWeight: 500 }}>{group.unit_title}\\\\|swml-mastered-pill\\\\|flex: 1, fontWeight: 500 }}>{\" components/GenericExerciseCard.jsx)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

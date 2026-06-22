@@ -1845,15 +1845,14 @@
         9: 'linear-gradient(135deg, #5333ed 0%, #2c003e 100%)'
     };
     const _GRADE_DARK_TEXT = { 4: true, 5: true, 6: true }; // orange/yellow/green need dark text when filled
-    function _gradeFromPctCanon(pct) {
-        pct = Math.max(0, Math.min(100, pct));
-        if (pct >= 95) return 9; if (pct >= 85) return 8; if (pct >= 75) return 7;
-        if (pct >= 65) return 6; if (pct >= 55) return 5; if (pct >= 45) return 4;
-        if (pct >= 35) return 3; if (pct >= 25) return 2; return 1;
-    }
     // Returns { grade, flat, isGradient, dark } for a predicted mark n of max.
+    // v7.19.620: spread the 9 grade colours EVENLY across the pills (linear rank), so the full
+    // ladder shows and the TOP mark always lands on the brand purple GRADIENT — the aspirational
+    // "aim here" signifier students already see on the dashboard + LD sidebar. (NOT grade-boundary
+    // %, which compressed G1–4 and skipped green on an /8 scale — Neil 2026-06-22.)
     function _markGradeStyle(n, max) {
-        const g = _gradeFromPctCanon(max > 0 ? (n / max * 100) : 0);
+        const r = max > 0 ? (n / max) : 0;
+        const g = Math.max(1, Math.min(9, Math.round(1 + r * 8)));
         const bg = _GRADE_BG[g];
         const isGradient = g === 9;
         return { grade: g, flat: isGradient ? '#5333ed' : bg, gradient: bg, isGradient, dark: !!_GRADE_DARK_TEXT[g] };
@@ -2103,8 +2102,10 @@
                 const predRow = el('div', {});
                 predRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
                 const pbtns = [];
-                // each pill coloured by the GRADE its mark% earns (canonical scale). No stroke,
-                // lower height, faint grade-tint at rest → solid grade fill when picked.
+                // each pill coloured by its rank on the 9-grade ladder (0→red … max→purple
+                // gradient). No stroke, lower height. Faint grade-tint at rest → solid grade fill
+                // when picked. The TOP (gradient) pill shows the gradient AT REST too — it's the
+                // aspirational "aim here" beacon, consistent w/ the dashboard + LD sidebar (Neil).
                 const pstyles = [];
                 const paint = (bb, gs, on) => {
                     bb.style.borderColor = 'transparent';
@@ -2112,6 +2113,9 @@
                         if (gs.isGradient) { bb.style.backgroundImage = gs.gradient; bb.style.backgroundColor = ''; }
                         else { bb.style.backgroundImage = 'none'; bb.style.backgroundColor = gs.flat; }
                         bb.style.color = gs.dark ? '#1a1a1a' : '#fff';
+                    } else if (gs.isGradient) {
+                        bb.style.backgroundImage = gs.gradient; bb.style.backgroundColor = '';
+                        bb.style.color = '#fff';
                     } else {
                         bb.style.backgroundImage = 'none';
                         bb.style.backgroundColor = gs.flat + '22'; // ~13% tint
