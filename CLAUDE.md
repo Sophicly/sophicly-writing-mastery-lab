@@ -55,6 +55,22 @@ action = () => doB(); // clean override
 
 ---
 
+## CANVAS TASK-SCOPING — #1 RECURRING BUG CLASS (read before adding any canvas post-processor)
+
+Almost every "it works for X but silently does nothing for Y" bug in WML is **behaviour gated by a task-NAME string check**. Examples that have bitten us: `applyAssessmentFeedback` appended inside `if (state.task.startsWith('cw_'))` → never ran for `assessment` (v7.19.600); `assessment_mode()` keyed off a `language2`-only list → P1 vs P2 diverge; canvas slug `aqa_lang_paper_1` vs subject `language1` vs `language_p1` (three names, one thing); `diagnostic` vs `redraft_assessment`; `"Q2"` vs `"Question 2"`. New code inherits the **nearest** name-guard by accident and silently no-ops for every sibling task — and silence reads as success until a human tests.
+
+**RULES (enforce on every canvas change):**
+
+1. **Cross-cutting marker/content consumers run UNCONDITIONALLY + self-guard.** Functions that fill the canvas from the AI reply (`applySectionFills`, `applyAssessmentFeedback`, `applyFieldSets`, reflection detection, …) must be called on EVERY canvas turn and decide internally whether to act (no-op when the reply has nothing for them). NEVER nest them inside a `if (task === …)` / `startsWith('cw_')` guard — that is exactly how they silently skip sibling tasks. Both `sendCanvasMessage` pipelines (the dual pipeline below) must call them.
+
+2. **Gate on CAPABILITIES / task-family, never on a literal task name.** Prefer a capability lookup (does this task get feedback boxes? a reflection panel?) over `task.startsWith(...)`. A new task / topic / paper should opt in via config, so it can't silently miss. (Same principle as the dashboard "derive, don't per-type-wire" rule.)
+
+3. **One canonical naming layer.** Resolve task→family, subject↔canvas-slug, and Q-id (`Q2`/`Question 2`/`2`) through a single helper and reuse it everywhere; key behaviour off the family, not the literal. (`resolve_session_fields` does half of this server-side — extend it; add the JS twin rather than re-deriving names ad hoc.)
+
+4. **Fail loud + rollout matrix.** When a turn LOOKS like it should fill the canvas but fills nothing, `console.warn` loudly (see the SILENT-SKIP guard in `applyAssessmentFeedback`) — don't fail quietly. Before shipping any canvas feature, verify it across **{P1, P2} × {diagnostic, redraft} × {topic 1 … N}** (and both chat pipelines). Match the box by question NUMBER, not the `"Qn"` literal — labels render as `Feedback: Q2 (— / 8)` but the format drifts.
+
+---
+
 ## DUAL CHAT PIPELINE
 
 WML has two separate chat systems:

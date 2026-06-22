@@ -669,6 +669,19 @@
                 console.log('WML Feedback: filed card', JSON.stringify(card.title || card.q), '→', card.q);
                 wrote = true;
             });
+            // v7.19.601 FAIL-LOUD: a marking turn produced feedback cards but NONE filed.
+            // This is the silent-skip class (wrong box label / no feedback boxes in this
+            // canvas / task-name gating) — surface it instead of failing quietly.
+            if (cards.length && !wrote) {
+                const boxes = [];
+                canvasEditor.state.doc.descendants((node) => {
+                    if (node.type && node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'feedback') boxes.push(node.attrs.label);
+                    return true;
+                });
+                console.warn('WML Feedback SILENT-SKIP: ' + cards.length + ' card(s) detected (' +
+                    cards.map(c => c.q).join(',') + ') but NONE filed. Feedback boxes in doc: ' +
+                    (boxes.length ? JSON.stringify(boxes) : 'NONE') + '. (Check box labels / canvas type / task gating.)');
+            }
             if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
         } catch (e) {
             console.warn('WML Feedback: error (non-fatal)', e && e.message);
