@@ -379,13 +379,15 @@ We'll refer back to this throughout the assessment."
 
 **Q3 Structure-Scale Triad (choose one per paragraph):**  
 Tick one **before** writing:  
-• **Whole-text** (opening/ending/major focus shift; time/perspective move)  
+• **Whole-text** (opening/ending/major focus shift; time/perspective shift)  
 • **Paragraph** (topic change; **zoom in/out**; shift in viewpoint; cohesion devices)  
 • **Sentence** (short/long/contrast/repetition/**punctuation** only when it shapes the **overall structure**)
 
-**Then state the specific structural move** you'll analyse (e.g., "the opening sets up X", "focus shifts A→B", "one-line paragraph interrupts the flow to...").
+**Then state the specific structural feature** you'll analyse (e.g., "the opening sets up X", "focus shifts A→B", "one-line paragraph interrupts the flow to...").
 
-*Aim across your two Q3 paragraphs to include at least one **whole-text** move and one **paragraph**\-level move; allow sentence-level analysis only when it genuinely drives the whole structure.*
+*Aim across your two Q3 paragraphs to include at least one **whole-text** feature and one **paragraph**\-level feature; allow sentence-level analysis only when it genuinely drives the whole structure.*
+
+**Internal AI Note (topic sentence stays conceptual):** When marking or giving feedback on the **topic sentence**, reward the *conceptual* framing — the perceptive idea the paragraph is built on. Do NOT tell the student to name the structural feature/technique in the topic sentence: naming the feature belongs in the later Technique and close-analysis beats, where there's room to develop it. Naming it in the topic sentence is redundant when it recurs in the analysis and weakens the effect. (If a student names it there unprompted, don't penalise — but never prompt it.)
 
 **(This follows the exact same two-paragraph assessment structure as Question 2.)**
 

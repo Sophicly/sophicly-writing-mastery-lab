@@ -751,6 +751,25 @@
         });
         return max;
     }
+    // v7.19.623: the Section B WRITING question number, derived from the feedback boxes.
+    // The writing box always carries the largest single mark (40) vs the reading boxes
+    // (4/8/8/20), so "highest-max feedback box" identifies it board-agnostically — AQA
+    // Section B = Q5, Eduqas C1 = Q6, etc. Used to recover predictQ for the AO5/AO6
+    // reflection when the model drops the @REFLECT_GATE q (prose fallback has no "Q5" token).
+    function _writingFeedbackQ() {
+        if (!canvasEditor) return null;
+        let best = null, bestMax = -1;
+        canvasEditor.state.doc.descendants((node) => {
+            if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'feedback') {
+                const lbl = String(node.attrs.label || '');
+                const ln = (lbl.match(/feedback\D*(\d+)/i) || [])[1];
+                const mm = lbl.match(/\/\s*(\d+)\s*\)/);
+                if (ln && mm) { const mx = parseInt(mm[1], 10); if (mx > bestMax) { bestMax = mx; best = ln; } }
+            }
+            return true;
+        });
+        return best;
+    }
     // pull the ACTUAL question mark from the "Qn Total …" line — LAST X/Y on the line
     // (handles "2.25 + 1.5 = 3.75/8" and "AO5 17/24 + AO6 11/16 = 28/40"); rounds to whole.
     function _extractQuestionMark(reply, qNum) {
@@ -2017,7 +2036,15 @@
         // FIRST reflection (max derivable + not yet predicted). Predicted = calibration-only.
         let predicted = null;
         const _pqm = (parsed && parsed.q ? String(parsed.q) : '').match(/(\d+)/);
-        const predictQ = _pqm ? _pqm[1] : '';
+        let predictQ = _pqm ? _pqm[1] : '';
+        // v7.19.623: the Section B / creative-writing reflection (ao = AO5/AO6) often arrives
+        // without a "Q5" token — the model drops the @REFLECT_GATE marker and reverts to prose
+        // ("your creative writing"), or omits q. predictQ stayed empty → the predict row never
+        // showed for the 40-mark writing question. Recover it from the writing feedback box.
+        if (!predictQ && parsed && Array.isArray(parsed.ao) && parsed.ao.indexOf('AO5') !== -1) {
+            const _wq = _writingFeedbackQ();
+            if (_wq) predictQ = String(_wq);
+        }
         const predictMax = predictQ ? _feedbackMaxForQ(predictQ) : null;
         const showPredict = !!(predictQ && predictMax && _getPredicted(predictQ) == null);
 

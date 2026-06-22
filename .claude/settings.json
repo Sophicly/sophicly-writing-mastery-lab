@@ -724,7 +724,14 @@
       "Bash(sed -i '' 's/Version: 7.19.620/Version: 7.19.621/; s/SWML_VERSION'\"'\"', '\"'\"'7.19.620/SWML_VERSION'\"'\"', '\"'\"'7.19.621/' sophicly-writing-mastery-lab.php)",
       "Bash(grep -noE \"Feedback: Q[1-5][^\\(]*\\\\\\(— / [0-9]+\\\\\\)|Feedback: Q' \\\\+ [^,]*|'Feedback: Q[^']*'|\\\\`Feedback: Q[^\\\\`]*\\\\`\" frontend/wml-assessment.js)",
       "Bash(grep -n \"Feedback: Q'\\\\|'Feedback: Q\\\\|\\\\`Feedback: Q\\\\|Feedback: Q\\\\${\" frontend/wml-assessment.js)",
-      "Bash(head -3 HANDOFFS.md)"
+      "Bash(head -3 HANDOFFS.md)",
+      "Bash(awk 'NR>=4900 && NR<=5057 && /return|ASSESSMENT_COMPLETE|Session Complete|detectAssessmentComplete|markComplete|setAssessBtn/' frontend/wml-assessment.js)",
+      "Bash(awk 'NR>=4450 && NR<=4525 && /function |detectQuickActions|detectActions|parseActions|=>.*\\\\{/' frontend/wml-app.js)",
+      "Bash(awk 'NR<=4520 && /function [A-Za-z_]+\\\\\\(/ {ln=NR; name=$0} END{}' frontend/wml-app.js)",
+      "Bash(cd /Users/neilwilliams/.claude/projects/-Users-neilwilliams-Library-CloudStorage-GoogleDrive-abdullah-sophicly-com-My-Drive-Business-Web-Development-Sophicly-Website-Etch-for-Sophicly-Etch-for-Sophicly-Walkthrough-Etch-for-Sophicly-Walkthro-ytgeqm/memory)",
+      "Bash(cat feedback_topic_sentence_conceptual_no_move.md)",
+      "Bash(find /Users/neilwilliams/.claude -name \"*topic_sentence_conceptual*\")",
+      "Bash(\"/usr/local/bin/node\" \"/Users/neilwilliams/.claude/plugins/cache/context-mode/context-mode/1.0.163/cli.bundle.mjs\" upgrade --platform claude-code)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
