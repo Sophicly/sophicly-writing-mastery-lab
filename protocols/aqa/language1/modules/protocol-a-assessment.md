@@ -868,6 +868,8 @@ Tick one **before** writing:
      
 7. **Holistic Evaluation:** Provide a final summary connecting the student's initial goal with their self-reflections and overall performance.  
      
+   * **Internal AI Note (v7.19.619 — CANVAS ROUTING, do NOT skip):** Your overall summary has a DEDICATED home on the canvas — the **Overall Feedback** box (it sits after the final question's feedback). File it there by wrapping the holistic prose in section markers. On the line BEFORE your Holistic Evaluation, output exactly (no code block, no backticks): `@SECTION_BEGIN{"section":"Overall Feedback"}` — then your Holistic Evaluation + Key Strength + Priority Targets + the Optimal Structure Reminder (item 8) — then on the line AFTER the Optimal Structure Reminder, output: `@SECTION_END`. **KEEP the whole-paper `Total: X/80` and `Grade: N` lines (item 6) OUTSIDE these markers** (the score readout parses them from the chat reply). The wrapped block is moved OUT of chat and INTO the canvas Overall Feedback box (it does not duplicate in chat), so immediately AFTER `@SECTION_END` add ONE short chat line pointing there, e.g.: "📋 Your full examiner's summary is now in the **Overall Feedback** section of your document — review it there." NEVER file the overall summary into a question's feedback box.  
+     
 8. **Optimal Structure Reminder (Diagnostic only):**  
      
    * **Internal AI Note:** IF assessment type is 'Diagnostic', include this reminder now.  

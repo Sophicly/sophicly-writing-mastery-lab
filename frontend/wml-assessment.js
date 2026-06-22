@@ -16266,6 +16266,8 @@
             // Migrate old documents — inject missing sections + dividers + plans + outlines + InputFields
             _migrateStep('migrateDocument', migrateDocument);
             _migrateStep('migrateDividers', migrateDividers);
+            // v7.19.619: after dividers exist (RESULTS anchor), heal-in the Overall Feedback section.
+            _migrateStep('migrateOverallFeedbackSection', migrateOverallFeedbackSection);
             _migrateStep('migrateExtractQuestionDivider', migrateExtractQuestionDivider);
             _migrateStep('migrateMissingPlans', migrateMissingPlans);
             _migrateStep('migrateMissingOutlines', migrateMissingOutlines);
@@ -22215,6 +22217,17 @@
         return sectionHTML('feedback', 'Analytics', true, null, inner);
     }
 
+    // v7.19.619: dedicated home for the AI's end-of-assessment OVERALL summary (holistic
+    // evaluation + key strength + priority targets + closing). Read-only, AI-filled via
+    // @SECTION_BEGIN{"section":"Overall Feedback"}…@SECTION_END (applySectionFills). Sits after
+    // the last question's feedback box, before the RESULTS / Score Summary block (Neil 2026-06-22).
+    // 'feedback' type but NO question digit in the label → none of the per-question mark/calibration
+    // overlays attach to it (they gate on a Qn match). Mirrors the non-Q Analytics feedback section.
+    function buildOverallFeedbackSection() {
+        return sectionHTML('feedback', 'Overall Feedback', false, null,
+            '<p><em>Your examiner’s overall summary — holistic evaluation, key strength, and priority targets — will appear here once your assessment is complete.</em></p>');
+    }
+
     function buildActionPlanSection(mode) {
         let inner =
             `<h3>Grade Goal</h3>` +
@@ -25500,6 +25513,26 @@
      * Old documents saved before v7.12.59 lack divider sections.
      * Inserts dividers before the first Plan, Response, Feedback, and Scores sections.
      */
+    // v7.19.619: heal-in the Overall Feedback section (after the last feedback box, before the
+    // RESULTS divider / Score Summary) for assessment docs that predate it. Runs every load;
+    // no-op once the section exists. Insertion mirrors migrateDividers' string-anchor pattern.
+    function migrateOverallFeedbackSection() {
+        if (!canvasEditor) return;
+        let html = canvasEditor.getHTML();
+        if (!html.includes('data-section-type')) return;
+        if (html.indexOf('data-section-label="Overall Feedback"') !== -1) return; // already present
+        // Anchor: the RESULTS divider if present, else the scores section. Either marks the
+        // start of the results block, so inserting before it lands the section right after the
+        // last feedback box. Skip docs with no results block (not a markable assessment).
+        const anchor = html.match(/<div[^>]*data-section-type="divider"[^>]*data-section-label="RESULTS"[^>]*>/)
+            || html.match(/<div[^>]*data-section-type="scores"[^>]*>/);
+        if (!anchor) return;
+        const idx = html.indexOf(anchor[0]);
+        const newHtml = html.slice(0, idx) + buildOverallFeedbackSection() + html.slice(idx);
+        canvasEditor.commands.setContent(newHtml, false);
+        console.log('WML Migration: injected Overall Feedback section before RESULTS/scores');
+    }
+
     function migrateDividers() {
         if (!canvasEditor) return;
         // v7.17.19: mark_scheme_unit uses its own custom dividers (QUIZ NOTES / FYW NOTES) — skip essay-divider migration.
