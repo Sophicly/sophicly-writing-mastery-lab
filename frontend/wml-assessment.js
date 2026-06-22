@@ -1821,6 +1821,29 @@
     // AO is given (chip or text). Posts one combined message via sendCanvasMessage.
     // Marker format: @REFLECT_GATE{"q":"Q2","para":"1","skill":"...","ao":["AO1","AO2"]}
     const _REFLECT_LADDER = { 1: '#ff5470', 2: '#F1C40F', 3: '#1CD991', 4: '#4D76FD', 5: '#5333ed' };
+    // v7.19.611: colour a predicted MARK by the GRADE its percentage earns, using the CANONICAL
+    // Sophicly grade→colour scale (mirror of dashboard GRADE_COLORS / rangefinder GRADE_BG / server
+    // Sophicly_Grade_Mapper — bands locked w/ Neil 2026-05-22; keep in sync). 9 = brand gradient,
+    // 8 = purple, 7 = blue, 6 = green, 5 = amber, 1–4 = red. mark% → grade → colour.
+    const _GRADE_BG = {
+        1: '#ef4466', 2: '#ef4466', 3: '#ef4466', 4: '#ef4466',
+        5: '#f5a623', 6: '#1CD991', 7: '#4D76FD', 8: '#5333ed',
+        9: 'linear-gradient(135deg, #5333ed 0%, #2c003e 100%)'
+    };
+    const _GRADE_DARK_TEXT = { 5: true, 6: true }; // amber/green need dark text when filled
+    function _gradeFromPctCanon(pct) {
+        pct = Math.max(0, Math.min(100, pct));
+        if (pct >= 95) return 9; if (pct >= 85) return 8; if (pct >= 75) return 7;
+        if (pct >= 65) return 6; if (pct >= 55) return 5; if (pct >= 45) return 4;
+        if (pct >= 35) return 3; if (pct >= 25) return 2; return 1;
+    }
+    // Returns { grade, flat, isGradient, dark } for a predicted mark n of max.
+    function _markGradeStyle(n, max) {
+        const g = _gradeFromPctCanon(max > 0 ? (n / max * 100) : 0);
+        const bg = _GRADE_BG[g];
+        const isGradient = g === 9;
+        return { grade: g, flat: isGradient ? '#5333ed' : bg, gradient: bg, isGradient, dark: !!_GRADE_DARK_TEXT[g] };
+    }
 
     function _parseReflectGate(text) {
         if (!text) return null;
@@ -1959,7 +1982,7 @@
             const c = _REFLECT_LADDER[n];
             const b = el('button', { textContent: String(n) });
             b.type = 'button';
-            b.style.cssText = `flex:1;padding:10px 0;border-radius:9px;border:1px solid ${c};background:transparent;color:${c};font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;`;
+            b.style.cssText = `flex:1;padding:6px 0;border-radius:8px;border:1px solid ${c};background:transparent;color:${c};font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;`;
             b.addEventListener('click', () => {
                 rating = n;
                 rateBtns.forEach((bb, i) => {
@@ -2052,18 +2075,31 @@
                 const predRow = el('div', {});
                 predRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
                 const pbtns = [];
+                // each pill coloured by the GRADE its mark% earns (canonical scale). No stroke,
+                // lower height, faint grade-tint at rest → solid grade fill when picked.
+                const pstyles = [];
+                const paint = (bb, gs, on) => {
+                    bb.style.borderColor = 'transparent';
+                    if (on) {
+                        if (gs.isGradient) { bb.style.backgroundImage = gs.gradient; bb.style.backgroundColor = ''; }
+                        else { bb.style.backgroundImage = 'none'; bb.style.backgroundColor = gs.flat; }
+                        bb.style.color = gs.dark ? '#1a1a1a' : '#fff';
+                    } else {
+                        bb.style.backgroundImage = 'none';
+                        bb.style.backgroundColor = gs.flat + '22'; // ~13% tint
+                        bb.style.color = gs.flat;
+                    }
+                };
                 for (let n = 0; n <= predictMax; n++) {
+                    const gs = _markGradeStyle(n, predictMax);
+                    pstyles.push(gs);
                     const b = el('button', { textContent: String(n) });
                     b.type = 'button';
-                    b.style.cssText = 'flex:1;min-width:32px;padding:9px 0;border-radius:9px;border:1px solid rgba(255,255,255,0.18);background:transparent;color:rgba(255,255,255,0.8);font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;';
+                    b.style.cssText = 'flex:1;min-width:32px;padding:5px 0;border-radius:8px;border:1px solid transparent;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;';
+                    paint(b, gs, false);
                     b.addEventListener('click', () => {
                         predicted = n;
-                        pbtns.forEach((bb, i) => {
-                            const on = i === n;
-                            bb.style.background = on ? '#5333ed' : 'transparent';
-                            bb.style.color = on ? '#fff' : 'rgba(255,255,255,0.8)';
-                            bb.style.borderColor = on ? '#5333ed' : 'rgba(255,255,255,0.18)';
-                        });
+                        pbtns.forEach((bb, i) => paint(bb, pstyles[i], i === n));
                         refreshSubmit();
                     });
                     pbtns.push(b);
@@ -16878,7 +16914,7 @@
                         const _pred = _getPredicted(_qForCalib);
                         const calibEl = document.createElement('div');
                         calibEl.className = 'swml-calib-readout';
-                        calibEl.style.cssText = 'display:flex;gap:7px;align-items:center;font-size:11px;font-weight:600;margin-bottom:5px;white-space:nowrap;color:rgba(255,255,255,0.6);';
+                        calibEl.style.cssText = 'display:flex;gap:7px;align-items:center;font-size:11px;font-weight:600;white-space:nowrap;color:rgba(255,255,255,0.6);';
                         const dim = 'opacity:0.45';
                         const predTxt = _pred == null
                             ? '<span style="' + dim + '">Predicted —</span>'
@@ -17344,10 +17380,12 @@
                 if (!overlay) return;
                 fbIdx++;
                 const sRect = section.getBoundingClientRect();
-                const badgeWidth = Math.min(label.length * 7.5 + 24, 300) * z;
-                const top = (sRect.top - dwRect.top) / z - 12;
-                const left = (sRect.left - dwRect.left) / z + 12 + badgeWidth / z + 6;
-                overlay.style.cssText = `position:absolute;top:${top}px;left:${left}px;pointer-events:auto;z-index:5;`;
+                // v7.19.611: readout + mark selector on their OWN line, just below the label tab
+                // (was beside the badge on the tab row, colliding with the tick/chevron). The
+                // section reserves a top band (padding-top in CSS) so this can't overlap content.
+                const top = (sRect.top - dwRect.top) / z + 14;
+                const left = (sRect.left - dwRect.left) / z + 12;
+                overlay.style.cssText = `position:absolute;top:${top}px;left:${left}px;display:flex;align-items:center;gap:14px;pointer-events:auto;z-index:5;`;
             });
 
             // ── Position self-assessment dropdowns ──

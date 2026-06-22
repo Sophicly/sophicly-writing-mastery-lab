@@ -706,7 +706,12 @@
       "Bash(scp -i ~/.ssh/sophicly_staging -o StrictHostKeyChecking=no /tmp/grade_verify2.php runcloud@18.133.5.229:/tmp/grade_verify2.php)",
       "Bash(scp -i ~/.ssh/sophicly_staging -o StrictHostKeyChecking=no /tmp/gvmin.php runcloud@18.133.5.229:/tmp/gvmin.php)",
       "Bash(grep -nA14 '\\\\$bucket_weights = array\\(' sophicly-student-data/includes/class-wml-rest-api.php)",
-      "Bash(grep -niE \"\\\\\\(— ?/|/ ?\\\\\\\\\\\\$\\\\{|— ?/ ?'|FEEDBACK: Q\" frontend/wml-assessment.js)"
+      "Bash(grep -niE \"\\\\\\(— ?/|/ ?\\\\\\\\\\\\$\\\\{|— ?/ ?'|FEEDBACK: Q\" frontend/wml-assessment.js)",
+      "Bash(ssh runcloud@18.133.5.229 \"cd /home/runcloud/webapps/SophiclyMain-SOnG8uTN-staging && /usr/local/lsws/lsphp82/bin/php8.2 /usr/local/bin/wp eval-file /dev/stdin --skip-themes\")",
+      "Bash(scp -i /Users/neilwilliams/.ssh/sophicly_staging /tmp/wml_verify.php runcloud@18.133.5.229:/tmp/wml_verify.php)",
+      "Bash(scp -i /Users/neilwilliams/.ssh/sophicly_staging /tmp/wml_verify2.php runcloud@18.133.5.229:/tmp/wml_verify2.php)",
+      "Bash(awk 'NR>=5120 && NR<=5180' frontend/wml-canvas.css)",
+      "Bash(node -e \"const c=require\\('fs'\\).readFileSync\\('frontend/wml-canvas.css','utf8'\\); console.log\\('open',\\(c.match\\(/{/g\\)||[]\\).length,'close',\\(c.match\\(/}/g\\)||[]\\).length\\);\")"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

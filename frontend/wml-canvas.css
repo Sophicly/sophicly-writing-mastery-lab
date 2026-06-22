@@ -5966,6 +5966,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-section-feedback {
     border-left-color: #ffb432;
     background: rgba(255, 180, 50, 0.1);
+    /* v7.19.611: reserve a header band so the calibration readout + mark selector sit on their
+       OWN line below the label tab (were crammed beside the badge, colliding with tick/chevron). */
+    padding-top: 44px !important;
 }
 .swml-section-feedback::before {
     background: rgba(255, 180, 50, 0.35);
