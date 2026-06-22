@@ -619,6 +619,24 @@
         return body ? [{ q: 'Q' + qm[1], title: title, body: body, _detected: true }] : null;
     }
 
+    // v7.19.605: the QUESTION-LEVEL total + key-targets ("**Q2 Total: 4.5/8** … key targets …")
+    // is emitted OUTSIDE the @FB_BEGIN/@FB_END markers (after @FB_END), so the marker pass never
+    // captures it and, because markers WERE found, the _detectFeedbackCard fallback is skipped —
+    // the mark + targets were silently dropped from the box. Detect it as its own card so it files
+    // regardless of markers. Matches "Qn Total" specifically (NOT per-paragraph "Paragraph n Total").
+    function _detectQuestionTotal(aiReply) {
+        const t = String(aiReply || '');
+        const m = t.match(/\*{0,2}Q(?:uestion)?\s*([1-5])\s*Total\s*:?\s*\*{0,2}\s*\d+(?:\.\d+)?\s*\/\s*\d+/i);
+        if (!m) return null;
+        let body = _stripFeedbackMarkers(t);
+        const start = body.search(/\*{0,2}Q(?:uestion)?\s*[1-5]\s*Total\b/i);
+        if (start < 0) return null;
+        body = body.slice(start)
+            .replace(/\n\s*[^\n]*\bType\s+\*{0,2}[CY]\*{0,2}\b[\s\S]*$/i, '')
+            .trim();
+        return body ? { q: 'Q' + m[1], title: 'Question Total', body: body, _detected: true } : null;
+    }
+
     function applyAssessmentFeedback(aiReply) {
         try {
             if (!aiReply || !canvasEditor) return;
@@ -640,6 +658,10 @@
             }
             // Fallback: no usable markers → detect the marking block from natural output.
             if (!cards.length) { cards = _detectFeedbackCard(aiReply) || []; }
+            // v7.19.605: ALWAYS also capture the question-level total + targets (it lives outside
+            // the @FB markers, so the marker pass above never sees it). Complementary, not exclusive.
+            const qTotal = _detectQuestionTotal(aiReply);
+            if (qTotal) cards.push(qTotal);
             if (!cards.length) return;
             const numOf = s => { const x = String(s || '').match(/\d+/); return x ? x[0] : ''; };
             let wrote = false;

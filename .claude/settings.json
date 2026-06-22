@@ -702,7 +702,8 @@
       "Bash(node --check src/components/GenericExerciseCard.jsx)",
       "Bash(ls *.sh)",
       "Bash(ls deploy*)",
-      "Bash(grep -rniE \"induction|deadline|window|within .{0,3}days|days_remaining|days_left|enrol|start_date|started_at\" sophicly-onboarding/ sophicly-toasts/includes/class-goal-deadline-source.php --include=\"*.php\" --include=\"*.js\")"
+      "Bash(grep -rniE \"induction|deadline|window|within .{0,3}days|days_remaining|days_left|enrol|start_date|started_at\" sophicly-onboarding/ sophicly-toasts/includes/class-goal-deadline-source.php --include=\"*.php\" --include=\"*.js\")",
+      "Bash(scp -i ~/.ssh/sophicly_staging -o StrictHostKeyChecking=no /tmp/grade_verify2.php runcloud@18.133.5.229:/tmp/grade_verify2.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
