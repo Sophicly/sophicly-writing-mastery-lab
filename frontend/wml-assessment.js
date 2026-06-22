@@ -597,8 +597,15 @@
     function _detectFeedbackCard(aiReply) {
         const t = String(aiReply || '');
         // must look like a marking delivery, not a gate/reflection/summary
-        const isMarking = /(Rewritten to Gold Standard|Optimal Gold Standard|Mark Breakdown|STRENGTHS|Total for (?:this )?(?:paragraph|introduction|conclusion)|Paragraph\s*\d\s*Total)/i.test(t);
-        if (!isMarking) return null;
+        // v7.19.602: a REAL marking turn always carries a slash-score Total
+        // ("Q1 Total: 3.5/4", "Paragraph 1 Total: 3.0/4") and/or the two gold models.
+        // The old loose "Mark Breakdown" alt matched the transition turn "Type Y to see
+        // your mark breakdown for Paragraph 1" → filed a stub that poisoned the title-dedup
+        // so the REAL Q2 card was rejected (the SILENT-SKIP). Q1 (retrieval, no gold) also
+        // matched none of the old keywords → now caught by the score-Total signal.
+        const hasScoreTotal = /Total:\s*\d+(?:\.\d+)?\s*\/\s*\d+/i.test(t);
+        const hasGold = /Rewritten to Gold Standard|Optimal Gold Standard/i.test(t);
+        if (!hasScoreTotal && !hasGold) return null;
         const qm = t.match(/Q(?:uestion)?\s*([1-5])\b/i);
         if (!qm) return null;
         let title = '';
@@ -606,7 +613,7 @@
         if (pm) title = pm[1].replace(/\s+/g, ' ').replace(/\bparagraph\b/i, 'Paragraph');
         // slice the markdown from the first marking heading to before the Y/C gate
         let body = _stripFeedbackMarkers(t);
-        const startM = body.search(/(?:Mark Breakdown|STRENGTHS|(?:Q\d|Question\s*\d|Paragraph\s*\d)[^\n]{0,40}Assessment)/i);
+        const startM = body.search(/(?:Mark Breakdown|STRENGTHS|Statement\s*1\b|(?:Q\d|Question\s*\d|Paragraph\s*\d)[^\n]{0,40}Assessment)/i);
         if (startM > 0) body = body.slice(startM);
         body = body.replace(/\n\s*[^\n]*\bType\s+\*{0,2}[CY]\*{0,2}\b[\s\S]*$/i, '').trim();
         return body ? [{ q: 'Q' + qm[1], title: title, body: body, _detected: true }] : null;
