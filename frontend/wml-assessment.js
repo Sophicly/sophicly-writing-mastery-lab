@@ -7527,6 +7527,13 @@
 
         // v7.13.74: Unified scroll helper — used by outline panel and in-document TOC.
         // Scrolls contentWrap only (not parent containers) to avoid multi-ancestor conflicts.
+        // v7.19.614: land the clicked section's TOP just inside the viewport, with a small
+        // CONSTANT pad that clears the floating section-label tag (top:-10) + a little air.
+        // Was `containerRect.height / 3` (~33% down), which read as "just below the top" and,
+        // because section heights vary, landed inconsistently relative to the heading — every
+        // outline-panel item AND the island route through here, so they were "all mixed up"
+        // (Neil 2026-06-22). One offset, every caller lands the heading at the top.
+        const SWML_SCROLL_TOP_PAD = 24;
         function scrollContentTo(target) {
             if (!target || !contentWrap) return;
             const containerRect = contentWrap.getBoundingClientRect();
@@ -7534,7 +7541,7 @@
             // Account for zoom: visual offset / scale = layout offset
             const scale = canvasZoom || 1;
             const visualOffset = targetRect.top - containerRect.top;
-            const scrollTarget = contentWrap.scrollTop + (visualOffset / scale) - (containerRect.height / 3);
+            const scrollTarget = contentWrap.scrollTop + (visualOffset / scale) - SWML_SCROLL_TOP_PAD;
             contentWrap.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
         }
 
