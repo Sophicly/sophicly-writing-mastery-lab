@@ -1834,16 +1834,17 @@
     // AO is given (chip or text). Posts one combined message via sendCanvasMessage.
     // Marker format: @REFLECT_GATE{"q":"Q2","para":"1","skill":"...","ao":["AO1","AO2"]}
     const _REFLECT_LADDER = { 1: '#ff5470', 2: '#F1C40F', 3: '#1CD991', 4: '#4D76FD', 5: '#5333ed' };
-    // v7.19.611: colour a predicted MARK by the GRADE its percentage earns, using the CANONICAL
-    // Sophicly grade→colour scale (mirror of dashboard GRADE_COLORS / rangefinder GRADE_BG / server
-    // Sophicly_Grade_Mapper — bands locked w/ Neil 2026-05-22; keep in sync). 9 = brand gradient,
-    // 8 = purple, 7 = blue, 6 = green, 5 = amber, 1–4 = red. mark% → grade → colour.
+    // v7.19.618: colour a predicted MARK by the GRADE its percentage earns, using NEIL'S full
+    // 7-tier grade→colour ladder (2026-06-22): 9 = brand gradient, 8 = bright purple, 7 = blue,
+    // 6 = green, 5 = yellow, 4 = orange, 3↓ = red. mark% → grade → colour. All hexes are existing
+    // house colours. NOTE: this is FULLER than the dashboard/rangefinder canonical GRADE_BG (which
+    // lumps G1–4 red + G5 amber) — flagged to align the dashboard so every surface matches.
     const _GRADE_BG = {
-        1: '#ef4466', 2: '#ef4466', 3: '#ef4466', 4: '#ef4466',
-        5: '#f5a623', 6: '#1CD991', 7: '#4D76FD', 8: '#5333ed',
+        1: '#ff5470', 2: '#ff5470', 3: '#ff5470',
+        4: '#f5a623', 5: '#F1C40F', 6: '#1CD991', 7: '#4D76FD', 8: '#5333ed',
         9: 'linear-gradient(135deg, #5333ed 0%, #2c003e 100%)'
     };
-    const _GRADE_DARK_TEXT = { 5: true, 6: true }; // amber/green need dark text when filled
+    const _GRADE_DARK_TEXT = { 4: true, 5: true, 6: true }; // orange/yellow/green need dark text when filled
     function _gradeFromPctCanon(pct) {
         pct = Math.max(0, Math.min(100, pct));
         if (pct >= 95) return 9; if (pct >= 85) return 8; if (pct >= 75) return 7;
