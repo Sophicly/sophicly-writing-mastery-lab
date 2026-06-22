@@ -615,7 +615,10 @@
         let body = _stripFeedbackMarkers(t);
         const startM = body.search(/(?:Mark Breakdown|STRENGTHS|Statement\s*1\b|(?:Q\d|Question\s*\d|Paragraph\s*\d)[^\n]{0,40}Assessment)/i);
         if (startM > 0) body = body.slice(startM);
-        body = body.replace(/\n\s*[^\n]*\bType\s+\*{0,2}[CY]\*{0,2}\b[\s\S]*$/i, '').trim();
+        body = body
+            .replace(/\n\s*[^\n]*\bType\s+\*{0,2}[CY]\*{0,2}\b[\s\S]*$/i, '')               // drop trailing Y/C gate
+            .replace(/\n\s*\*{0,2}\s*Q(?:uestion)?\s*[1-5]\s*Total\b[\s\S]*$/i, '')         // v7.19.606: question total is its OWN card — don't duplicate it inside the paragraph card
+            .trim();
         return body ? [{ q: 'Q' + qm[1], title: title, body: body, _detected: true }] : null;
     }
 
@@ -626,15 +629,25 @@
     // regardless of markers. Matches "Qn Total" specifically (NOT per-paragraph "Paragraph n Total").
     function _detectQuestionTotal(aiReply) {
         const t = String(aiReply || '');
-        const m = t.match(/\*{0,2}Q(?:uestion)?\s*([1-5])\s*Total\s*:?\s*\*{0,2}\s*\d+(?:\.\d+)?\s*\/\s*\d+/i);
-        if (!m) return null;
+        // v7.19.606: the "Qn Total" line drifts in format across questions —
+        //   Q1/Q2/Q4 simple  "Q2 Total: 4.5/8"
+        //   Q3 summed         "Q3 Total: 2.25 + 1.5 = 3.75/8"
+        //   Q5 (legacy table) "| **Q5 Total** | | **40** | **28** |"
+        //   Q5 AO-split        "Q5 Total: AO5 17/24 + AO6 11/16 = 28/40"
+        // The old regex required a "/" immediately after "Total:" → matched only the simple
+        // form and silently dropped Q3/Q5. Gate ONLY on the presence of a "Qn Total" label
+        // (NOT per-paragraph "Paragraph n Total", NOT "whole paper"/"Grand" total) and slice
+        // the block as-is — the readable text fills the box whatever the numeric layout.
+        const HDR = /\*{0,2}\s*Q(?:uestion)?\s*([1-5])\s*Total\b/i;
+        if (!HDR.test(t)) return null;
         let body = _stripFeedbackMarkers(t);
-        const start = body.search(/\*{0,2}Q(?:uestion)?\s*[1-5]\s*Total\b/i);
+        const start = body.search(HDR);
         if (start < 0) return null;
+        const q = 'Q' + ((body.slice(start).match(/Q(?:uestion)?\s*([1-5])/i) || [])[1] || '');
         body = body.slice(start)
             .replace(/\n\s*[^\n]*\bType\s+\*{0,2}[CY]\*{0,2}\b[\s\S]*$/i, '')
             .trim();
-        return body ? { q: 'Q' + m[1], title: 'Question Total', body: body, _detected: true } : null;
+        return body ? { q: q, title: 'Question Total', body: body, _detected: true } : null;
     }
 
     function applyAssessmentFeedback(aiReply) {
@@ -653,6 +666,7 @@
                 const body = (m[2] || '')
                     .replace(/@FB_END[\s\S]*$/, '')
                     .replace(/\n\s*[^\n]*\bType\s+\*{0,2}[CY]\*{0,2}\b[\s\S]*$/i, '') // drop trailing Y/C gate if @FB_END missing
+                    .replace(/\n\s*\*{0,2}\s*Q(?:uestion)?\s*[1-5]\s*Total\b[\s\S]*$/i, '') // v7.19.606: if @FB_END dropped, don't let the marker body swallow the question total (it's its own card)
                     .trim();
                 if (q && body) cards.push({ q: q, title: title, body: body });
             }
