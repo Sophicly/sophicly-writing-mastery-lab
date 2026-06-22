@@ -1955,6 +1955,9 @@
             };
             rec.start();
         });
+        // v7.19.617: let callers (e.g. Submit reflection) stop an in-flight dictation so the
+        // mic closes immediately instead of staying live until the next message lands (Neil).
+        micBtn._swmlStopMic = () => { try { if (listening && rec) rec.stop(); } catch (_) {} };
     }
 
     function _renderReflectPanel(parsed, onSubmit) {
@@ -2055,8 +2058,11 @@
         const submit = el('button', { textContent: 'Submit reflection →' });
         submit.type = 'button';
         submit.style.cssText = 'align-self:flex-end;padding:9px 18px;border-radius:9px;border:none;background:#5333ed;color:#fff;font-size:13px;font-weight:600;cursor:pointer;opacity:0.4;pointer-events:none;transition:opacity .15s;';
-        submit.addEventListener('click', () => {
+        const doSubmit = () => {
             if (rating == null) return;
+            // v7.19.617: close the AO-targeting mic on submit so it doesn't linger live until
+            // the next message lands (Neil). No-op if not recording.
+            if (mic && mic._swmlStopMic) mic._swmlStopMic();
             const aoStr = Array.from(selectedAO).join(', ');
             const detail = ta.value.trim();
             let msg = '';
@@ -2071,6 +2077,14 @@
             if (detail) msg += ` ${detail}`;
             wrap.style.opacity = '0.5'; wrap.style.pointerEvents = 'none';
             onSubmit(msg);
+        };
+        submit.addEventListener('click', doSubmit);
+        // v7.19.617: Enter submits (Shift+Enter = newline), gated by the same validity as the button.
+        ta.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (submit.style.pointerEvents !== 'none') doSubmit();
+            }
         });
 
         // 0. Mark PREDICTION (question's first reflection only) — a committed whole-mark guess.
