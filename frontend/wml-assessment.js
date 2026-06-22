@@ -568,6 +568,48 @@
         }
     }
 
+    // v7.19.622: CONTENT-FALLBACK router for the end-of-assessment OVERALL summary. The protocol
+    // asks the AI to wrap the holistic block in @SECTION markers (→ applySectionFills), but the model
+    // does NOT emit them reliably, so the "Overall Feedback" box kept showing its placeholder. Markers
+    // are unreliable — content-detection is the contract. On the final-summary turn we detect the
+    // holistic block by content and write it into the Overall Feedback section deterministically.
+    // Runs UNCONDITIONALLY each canvas turn (self-guards) — both pipelines call applyAssessmentFeedback.
+    function _routeOverallFeedback(aiReply) {
+        try {
+            if (!aiReply || !canvasEditor) return;
+            const t = String(aiReply);
+            // final-summary signal (NOT a per-question marking turn)
+            if (!/Holistic Evaluation|\[ASSESSMENT_COMPLETE\]|Priority Target/i.test(t)) return;
+            // locate the Overall Feedback section
+            let pos = null, node = null;
+            canvasEditor.state.doc.descendants((n, p) => {
+                if (pos !== null) return false;
+                if (n.type.name === 'sectionBlock' && n.attrs && /overall\s*feedback/i.test(String(n.attrs.label || ''))) { pos = p; node = n; }
+                return true;
+            });
+            if (pos === null || !node) return;
+            // already filled by @SECTION (if the AI DID emit markers)? skip — don't double-write.
+            if (!/will appear here once your assessment is complete/i.test(node.textContent || '')) return;
+            // extract the holistic block: from the Holistic Evaluation heading (or just after the
+            // Grade line) up to BEFORE the Action Plan dialogue / chat pointer / completion code.
+            let body = _stripFeedbackMarkers(t)
+                .replace(/@SECTION_BEGIN\s*\{[^}]*\}/g, '').replace(/@SECTION_END/g, '');
+            let start = body.search(/\n\s*#{0,4}\s*\*{0,2}\s*Holistic Evaluation/i);
+            if (start < 0) { const gm = body.search(/Grade:\s*[1-9U]\b/i); start = gm >= 0 ? body.indexOf('\n', gm) : 0; }
+            let chunk = body.slice(Math.max(0, start))
+                .replace(/\n\s*#{0,4}\s*\*{0,2}\s*Action Plan[\s\S]*$/i, '')
+                .replace(/\n[^\n]*Final Step:[\s\S]*$/i, '')
+                .replace(/\n[^\n]*(?:full examiner'?s summary is now|Overall Feedback\*{0,2} section of your document)[\s\S]*$/i, '')
+                .replace(/\[ASSESSMENT_COMPLETE\]/gi, '')
+                .trim();
+            if (chunk.length < 40) return;
+            const html = cwMarkdownToDocHtml(chunk);
+            canvasEditor.commands.insertContentAt({ from: pos + 1, to: pos + node.nodeSize - 1 }, html);
+            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+            console.log('[WML overall-fb] filled Overall Feedback (' + chunk.length + ' chars)');
+        } catch (e) { console.warn('[WML overall-fb] error', e && e.message); }
+    }
+
     // v7.19.598: Phase 4 — auto-insert assessment feedback into the per-question
     // Feedback box (kills the legacy copy-paste step). The AI wraps each paragraph's
     // mark breakdown + feedback + both gold models in:
@@ -756,6 +798,9 @@
     function applyAssessmentFeedback(aiReply) {
         try {
             if (!aiReply || !canvasEditor) return;
+            // v7.19.622: route the overall summary to its dedicated section (content-fallback,
+            // marker-independent). Unconditional + self-guarding (canvas task-scoping rule).
+            _routeOverallFeedback(aiReply);
             // Tolerant: capture body up to @FB_END, OR the next @FB_BEGIN, OR end of message
             // (the model often drops the closing @FB_END — a begin-only marker must still file).
             const re = /@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)(?=@FB_END|@FB_BEGIN|$)/g;

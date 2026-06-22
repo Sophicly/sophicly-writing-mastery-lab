@@ -721,7 +721,10 @@
       "Bash(awk 'NR>=25380 && NR<=25425 && /function /{print NR\": \"$0}' frontend/wml-assessment.js)",
       "Bash(grep -n \"flex: 1, fontWeight: 500 }}>{group.unit_title}\\\\|swml-mastered-pill\\\\|flex: 1, fontWeight: 500 }}>{\" components/GenericExerciseCard.jsx)",
       "Bash(node -e \"const c=require\\('fs'\\).readFileSync\\('frontend/wml-canvas.css','utf8'\\);const o=\\(c.match\\(/{/g\\)||[]\\).length,cl=\\(c.match\\(/}/g\\)||[]\\).length;console.log\\('css braces',o,cl,o===cl?'OK':'MISMATCH'\\)\")",
-      "Bash(sed -i '' 's/Version: 7.19.620/Version: 7.19.621/; s/SWML_VERSION'\"'\"', '\"'\"'7.19.620/SWML_VERSION'\"'\"', '\"'\"'7.19.621/' sophicly-writing-mastery-lab.php)"
+      "Bash(sed -i '' 's/Version: 7.19.620/Version: 7.19.621/; s/SWML_VERSION'\"'\"', '\"'\"'7.19.620/SWML_VERSION'\"'\"', '\"'\"'7.19.621/' sophicly-writing-mastery-lab.php)",
+      "Bash(grep -noE \"Feedback: Q[1-5][^\\(]*\\\\\\(— / [0-9]+\\\\\\)|Feedback: Q' \\\\+ [^,]*|'Feedback: Q[^']*'|\\\\`Feedback: Q[^\\\\`]*\\\\`\" frontend/wml-assessment.js)",
+      "Bash(grep -n \"Feedback: Q'\\\\|'Feedback: Q\\\\|\\\\`Feedback: Q\\\\|Feedback: Q\\\\${\" frontend/wml-assessment.js)",
+      "Bash(head -3 HANDOFFS.md)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
