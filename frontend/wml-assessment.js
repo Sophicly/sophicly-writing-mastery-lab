@@ -660,27 +660,46 @@
                     return;
                 }
                 const existingText = targetNode.textContent || '';
-                // v7.19.603: precise per-card heading is BOTH the visible heading AND the
-                // dedup key — "Q2 — Paragraph 1", "Q2 — Paragraph 2", "Q1 — Assessment".
+                // v7.19.604: each card owns a HEADING-DELIMITED region inside the box, keyed on
+                // a precise heading ("Q2 — Paragraph 1", "Q2 — Paragraph 2", "Q1 — Assessment").
+                // The heading is BOTH the visible title AND the card's identity. Re-marking the
+                // same card OVERWRITES just its own region — student notes and sibling cards
+                // (¶2, other Qs) are left untouched. A new card APPENDS below existing content
+                // (never destructive). Only our injected card heading is an <h3>; body lines are
+                // not '#'-prefixed, so they never collide with a card heading.
                 const cardHeading = card.title ? (card.q + ' — ' + card.title) : (card.q + ' — Assessment');
-                // dedup: skip ONLY an exact re-fire of THIS card (Path-C re-entry / repeated
-                // marking turn). It must NEVER block on a stale stub or student-typed text —
-                // those don't carry the exact heading, so the real card still files (appended
-                // below whatever is there, preserving existing content). The old title-substring
-                // dedup let a stale "Paragraph 1" stub poison the real "Paragraph 1" card.
-                if (existingText.indexOf(cardHeading) !== -1) return;
                 const html = cwMarkdownToDocHtml('### ' + cardHeading + '\n\n' + card.body);
-                const isPlaceholder = existingText.trim() === '' || /will appear after assessment|will be assessed here|appear here after/i.test(existingText);
-                if (isPlaceholder) {
-                    const from = targetPos + 1;
-                    const to = targetPos + targetNode.nodeSize - 1;
-                    canvasEditor.commands.insertContentAt({ from: from, to: to }, html);
+                const boxInner = targetPos + 1;
+                const boxEnd = targetPos + targetNode.nodeSize - 1;
+                // Find this card's existing region: its heading node, then the NEXT card
+                // heading ("Qn …") that bounds the region's end (or the box end if last).
+                let cardStart = null, cardEnd = null;
+                canvasEditor.state.doc.nodesBetween(boxInner, boxEnd, (node, pos) => {
+                    if (node.type.name !== 'heading') return true;
+                    const htext = (node.textContent || '').trim();
+                    if (cardStart === null) {
+                        if (htext === cardHeading) cardStart = pos;
+                    } else if (cardEnd === null && /^Q[1-5]\b/.test(htext)) {
+                        cardEnd = pos;
+                    }
+                    return true;
+                });
+                if (cardStart !== null) {
+                    // OVERWRITE just this card's region (re-mark / Path-C re-entry).
+                    const to = (cardEnd !== null) ? cardEnd : boxEnd;
+                    canvasEditor.commands.insertContentAt({ from: cardStart, to: to }, html);
+                    console.log('WML Feedback: overwrote card', JSON.stringify(cardHeading), '→', card.q);
                 } else {
-                    // append at the section's end (inside the block)
-                    const endPos = targetPos + targetNode.nodeSize - 1;
-                    canvasEditor.commands.insertContentAt(endPos, html);
+                    const isPlaceholder = existingText.trim() === '' || /will appear after assessment|will be assessed here|appear here after/i.test(existingText);
+                    if (isPlaceholder) {
+                        // fresh box — replace the placeholder
+                        canvasEditor.commands.insertContentAt({ from: boxInner, to: boxEnd }, html);
+                    } else {
+                        // box already holds a sibling card / student text — append below (non-destructive)
+                        canvasEditor.commands.insertContentAt(boxEnd, html);
+                    }
+                    console.log('WML Feedback: filed card', JSON.stringify(cardHeading), '→', card.q);
                 }
-                console.log('WML Feedback: filed card', JSON.stringify(card.title || card.q), '→', card.q);
                 wrote = true;
             });
             // v7.19.601 FAIL-LOUD: a marking turn produced feedback cards but NONE filed.
