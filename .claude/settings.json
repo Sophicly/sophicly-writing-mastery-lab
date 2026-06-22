@@ -711,7 +711,9 @@
       "Bash(scp -i /Users/neilwilliams/.ssh/sophicly_staging /tmp/wml_verify.php runcloud@18.133.5.229:/tmp/wml_verify.php)",
       "Bash(scp -i /Users/neilwilliams/.ssh/sophicly_staging /tmp/wml_verify2.php runcloud@18.133.5.229:/tmp/wml_verify2.php)",
       "Bash(awk 'NR>=5120 && NR<=5180' frontend/wml-canvas.css)",
-      "Bash(node -e \"const c=require\\('fs'\\).readFileSync\\('frontend/wml-canvas.css','utf8'\\); console.log\\('open',\\(c.match\\(/{/g\\)||[]\\).length,'close',\\(c.match\\(/}/g\\)||[]\\).length\\);\")"
+      "Bash(node -e \"const c=require\\('fs'\\).readFileSync\\('frontend/wml-canvas.css','utf8'\\); console.log\\('open',\\(c.match\\(/{/g\\)||[]\\).length,'close',\\(c.match\\(/}/g\\)||[]\\).length\\);\")",
+      "Bash(scp -i /Users/neilwilliams/.ssh/sophicly_staging /tmp/wml_trace.php runcloud@18.133.5.229:/tmp/wml_trace.php)",
+      "Bash(node -e \"const c=require\\('fs'\\).readFileSync\\('frontend/wml-canvas.css','utf8'\\); const o=\\(c.match\\(/{/g\\)||[]\\).length,cl=\\(c.match\\(/}/g\\)||[]\\).length; console.log\\('css braces', o, cl, o===cl?'OK':'MISMATCH'\\);\")"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

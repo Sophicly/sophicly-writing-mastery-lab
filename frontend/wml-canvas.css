@@ -7226,6 +7226,16 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     font-weight: 600;
     padding: 3px 9px;
 }
+/* v7.19.612: in Auto mode, ring the numeric pill matching the computed grade (house green)
+   so the resolved grade is visible on the selector — without stealing 'active' from Auto. */
+.swml-pill.swml-pill-auto-resolved {
+    color: #fff;
+    box-shadow: inset 0 0 0 1.5px #1CD991, 0 0 6px rgba(28, 217, 145, 0.4);
+}
+[data-swml-theme="light"] .swml-pill.swml-pill-auto-resolved {
+    color: #137a5a;
+    box-shadow: inset 0 0 0 1.5px #1CD991, 0 0 5px rgba(28, 217, 145, 0.3);
+}
 
 /* Grade pill variant — Auto pill default purple ONLY when no tier class
    yet computed (e.g. before any feedback marks are set). Once

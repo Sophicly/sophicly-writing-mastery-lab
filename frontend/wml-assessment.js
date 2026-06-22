@@ -7541,9 +7541,14 @@
         function scrollToPos(pos) {
             if (!canvasEditor) return;
             try {
-                const domNode = canvasEditor.view.domAtPos(pos + 1)?.node;
-                const target = domNode?.nodeType === 1 ? domNode : domNode?.parentElement?.closest('[data-section-type], h2, h3') || domNode?.parentElement;
-                scrollContentTo(target);
+                // v7.19.612: resolve via the SAME position→DOM helper the index list +
+                // active-detection + completion ticks use (_siNodeDom = nodeDOM(pos), which
+                // returns the section's node-view wrapper at this exact pos). The old
+                // domAtPos(pos+1)+closest path mis-resolved node-view feedback sections to a
+                // neighbouring section, so a jump to Q4 feedback landed mid-Q2 (Neil 2026-06-22).
+                const target = _siNodeDom(pos)
+                    || (() => { const d = canvasEditor.view.domAtPos(pos + 1)?.node; return d?.nodeType === 1 ? d : (d?.parentElement?.closest('[data-section-type], h2, h3') || d?.parentElement); })();
+                if (target) scrollContentTo(target);
             } catch(e) {}
         }
 
@@ -17036,6 +17041,17 @@
                         // v7.19.169: each grade pill colored as its own tier (G9 dark purple, etc).
                         tierFn: (opt) => opt.isAuto ? null : String(opt.value),
                     });
+                    // v7.19.612: in Auto mode, ALSO ring the numeric pill matching the computed
+                    // grade so the tutor sees which grade Auto resolved to (the "Grade: N" text
+                    // already carries it — single source; we just surface it on the selector).
+                    // Neil flag 2026-06-22: "calculated grade 5 but the pill didn't select it".
+                    if (currentGrade === 'auto') {
+                        const cg = (gradePara.textContent.match(/Grade:\s*([1-9])/) || [])[1];
+                        if (cg) {
+                            const tgt = gradeWidget.querySelector('.swml-pill[data-value="' + cg + '"]');
+                            if (tgt) tgt.classList.add('swml-pill-auto-resolved');
+                        }
+                    }
                     wrapper.appendChild(gradeWidget);
                     dropdownLayer.appendChild(wrapper);
                 }
