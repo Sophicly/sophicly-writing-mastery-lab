@@ -2026,6 +2026,8 @@
             let msg = '';
             if (showPredict && predicted != null) {
                 _setPredicted(predictQ, predicted);
+                // show the prediction in the box's calibration row immediately (before the mark).
+                try { if (typeof _scoreOverlaysRefresh === 'function') _scoreOverlaysRefresh(); } catch (_) {}
                 msg += `Predicted ${parsed.q || ('Q' + predictQ)} mark: ${predicted}/${predictMax}. `;
             }
             msg += `Self-rating: ${rating}/5.`;
@@ -3838,8 +3840,8 @@
                         const isFeedbackGate = hasY && hasC && /clarif/i.test(detectText);
                         if (isFeedbackGate) {
                             const hint = el('div', { className: 'swml-quick-hint' });
-                            hint.style.cssText = 'font-size:11px;opacity:0.7;margin-bottom:6px;display:flex;align-items:center;gap:4px;';
-                            hint.innerHTML = '✓ This feedback has been saved to your <strong>Feedback</strong> box automatically.';
+                            hint.style.cssText = 'font-size:11px;opacity:0.7;margin-bottom:6px;line-height:1.4;';
+                            hint.textContent = '✓ Saved to your Feedback box automatically.';
                             bar.appendChild(hint);
                         }
                         actions.forEach(action => {
@@ -16895,9 +16897,13 @@
                         }
                         const sep = '<span style="opacity:0.3">·</span>';
                         calibEl.innerHTML = predTxt + sep + actTxt + sep + deltaTxt;
-                        wrapper.insertBefore(calibEl, widget);
+                        // append BEFORE the widget is appended below → calibEl ends up the first
+                        // child (above the pill). (insertBefore(…, widget) would throw here — widget
+                        // isn't a child of wrapper yet — and the throw was silently eating the readout.)
+                        wrapper.appendChild(calibEl);
+                        console.log('[WML calib] readout Q' + _qForCalib + ' pred=' + _pred + ' act=' + currentMarks);
                     }
-                } catch (_) { /* calibration readout is best-effort */ }
+                } catch (e) { console.warn('[WML calib] readout error', e && e.message); }
 
                 wrapper.appendChild(widget);
                 dropdownLayer.appendChild(wrapper);
