@@ -16868,22 +16868,33 @@
                 // mark. Shows above the actual pill so the student sees the gap at the section top.
                 try {
                     const _qForCalib = (baseName.match(/(\d+)/) || [])[1] || '';
-                    const _pred = _qForCalib ? _getPredicted(_qForCalib) : null;
-                    if (_pred != null) {
+                    if (_qForCalib) {
+                        // v7.19.609: ALWAYS render the calibration readout so the Predicted · Actual · Δ
+                        // structure is visible even before a prediction/mark exists (— placeholders).
+                        // Predicted is READ-ONLY here (committed in chat before the mark is revealed —
+                        // hypercorrection); the box only displays it.
+                        const _pred = _getPredicted(_qForCalib);
                         const calibEl = document.createElement('div');
                         calibEl.className = 'swml-calib-readout';
-                        calibEl.style.cssText = 'display:flex;gap:7px;align-items:center;font-size:11px;font-weight:600;margin-bottom:5px;white-space:nowrap;color:rgba(255,255,255,0.65);';
-                        let h = '<span>Predicted ' + _pred + '</span><span style="opacity:0.4">·</span>';
-                        if (currentMarks >= 0) {
+                        calibEl.style.cssText = 'display:flex;gap:7px;align-items:center;font-size:11px;font-weight:600;margin-bottom:5px;white-space:nowrap;color:rgba(255,255,255,0.6);';
+                        const dim = 'opacity:0.45';
+                        const predTxt = _pred == null
+                            ? '<span style="' + dim + '">Predicted —</span>'
+                            : '<span>Predicted <strong style="color:rgba(255,255,255,0.85)">' + _pred + '</strong></span>';
+                        const actTxt = currentMarks >= 0
+                            ? '<span>Actual <strong style="color:rgba(255,255,255,0.85)">' + currentMarks + '</strong></span>'
+                            : '<span style="' + dim + '">Actual —</span>';
+                        let deltaTxt;
+                        if (_pred != null && currentMarks >= 0) {
                             const v = _calibVerdict(_pred, currentMarks, maxMarks);
                             const sign = v.delta > 0 ? '+' : '';
                             const lab = v.verdict === 'accurate' ? 'examiner-accurate' : (v.verdict === 'slightly' ? 'slightly off' : 'recalibrate');
-                            h += '<span>Actual ' + currentMarks + '</span><span style="opacity:0.4">·</span>'
-                               + '<span style="color:' + v.color + '">Δ ' + sign + v.delta + ' (' + lab + ')</span>';
+                            deltaTxt = '<span style="color:' + v.color + '">Δ ' + sign + v.delta + ' (' + lab + ')</span>';
                         } else {
-                            h += '<span style="opacity:0.55">Actual —</span>';
+                            deltaTxt = '<span style="' + dim + '">Δ —</span>';
                         }
-                        calibEl.innerHTML = h;
+                        const sep = '<span style="opacity:0.3">·</span>';
+                        calibEl.innerHTML = predTxt + sep + actTxt + sep + deltaTxt;
                         wrapper.insertBefore(calibEl, widget);
                     }
                 } catch (_) { /* calibration readout is best-effort */ }
