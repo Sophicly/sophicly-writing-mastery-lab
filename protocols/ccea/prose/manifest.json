@@ -81,7 +81,8 @@
             "modules/knowledge-hub.md",
             "../../shared/assessment/protocol-a-assessment.md",
             "literature/modules/theme-check.md",
-            "literature/modules/socratic-literature.md"
+            "literature/modules/socratic-literature.md",
+            "mark-scheme/marking-fairness-universal.md"
         ],
         "steps": {}
     },
@@ -95,7 +96,6 @@
         ],
         "steps": {}
     },
-
     "exam_question": {
         "always": [
             "../../shared/exam-question/modules/foundation.md",

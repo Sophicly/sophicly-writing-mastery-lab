@@ -93,7 +93,8 @@
             "modules/communication-standards.md",
             "modules/knowledge-core.md",
             "modules/quote-validation.md",
-            "modules/protocol-a-assessment.md"
+            "modules/protocol-a-assessment.md",
+            "mark-scheme/marking-fairness-universal.md"
         ],
         "steps": {}
     },

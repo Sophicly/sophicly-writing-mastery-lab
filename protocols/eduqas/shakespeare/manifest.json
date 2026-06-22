@@ -24,9 +24,39 @@
             "planning/b-intro.md"
         ],
         "groups": [
-            { "id": "setup", "label": "Setup", "steps": [1] },
-            { "id": "part_a", "label": "Part A", "steps": [2, 3, 4, 5, 6, 7, 8] },
-            { "id": "part_b", "label": "Part B", "steps": [9, 10, 11, 12, 13, 14, 15] }
+            {
+                "id": "setup",
+                "label": "Setup",
+                "steps": [
+                    1
+                ]
+            },
+            {
+                "id": "part_a",
+                "label": "Part A",
+                "steps": [
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8
+                ]
+            },
+            {
+                "id": "part_b",
+                "label": "Part B",
+                "steps": [
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15
+                ]
+            }
         ],
         "steps": {
             "1": {
@@ -197,7 +227,8 @@
             "modules/knowledge-ttecea-rationale.md",
             "modules/quote-validation.md",
             "modules/macros-scanner.md",
-            "modules/protocol-a-assessment.md"
+            "modules/protocol-a-assessment.md",
+            "mark-scheme/marking-fairness-universal.md"
         ],
         "steps": {}
     },
@@ -228,7 +259,6 @@
         ],
         "steps": {}
     },
-
     "exam_question": {
         "always": [
             "../../shared/exam-question/modules/foundation.md",

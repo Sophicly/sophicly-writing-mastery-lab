@@ -2,7 +2,6 @@
     "board": "aqa",
     "version": "15.1.7",
     "base_path": "protocols/aqa/literature",
-
     "planning": {
         "always": [
             "modules/foundation.md",
@@ -26,7 +25,6 @@
             "../../shared/literature/modules/context-drive-check.md",
             "planning/b-intro.md"
         ],
-
         "steps": {
             "1": {
                 "label": "Setup, Goals & Diagnostic",
@@ -103,7 +101,6 @@
             }
         }
     },
-
     "assessment": {
         "always": [
             "modules/foundation.md",
@@ -129,11 +126,11 @@
             "modules/penalty-codes.md",
             "modules/quote-validation.md",
             "modules/workflow-entry.md",
-            "modules/protocol-a-assessment.md"
+            "modules/protocol-a-assessment.md",
+            "mark-scheme/marking-fairness-universal.md"
         ],
         "steps": {}
     },
-
     "polishing": {
         "always": [
             "modules/foundation.md",
@@ -156,7 +153,6 @@
         ],
         "steps": {}
     },
-
     "exam_question": {
         "always": [
             "../../shared/exam-question/modules/foundation.md",
@@ -164,7 +160,6 @@
         ],
         "steps": {}
     },
-
     "exam_question_modern": {
         "always": [
             "../../shared/exam-question/modules/foundation.md",

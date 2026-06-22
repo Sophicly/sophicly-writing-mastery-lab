@@ -12,8 +12,26 @@
             "modules/knowledge-poetry.md"
         ],
         "groups": [
-            { "id": "setup", "label": "Setup", "steps": [1, 2] },
-            { "id": "part_a", "label": "Part A", "steps": [3, 4, 5, 6, 7, 8] }
+            {
+                "id": "setup",
+                "label": "Setup",
+                "steps": [
+                    1,
+                    2
+                ]
+            },
+            {
+                "id": "part_a",
+                "label": "Part A",
+                "steps": [
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8
+                ]
+            }
         ],
         "steps": {
             "1": {
@@ -78,7 +96,8 @@
             "modules/guards-progress-poetry.md",
             "modules/knowledge-poetry.md",
             "modules/model-answers-poetry.md",
-            "modules/protocol-a-assessment-poetry.md"
+            "modules/protocol-a-assessment-poetry.md",
+            "mark-scheme/marking-fairness-universal.md"
         ],
         "steps": {}
     },

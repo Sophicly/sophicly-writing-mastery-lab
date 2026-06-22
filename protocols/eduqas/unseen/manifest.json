@@ -11,8 +11,26 @@
             "literature/modules/conclusion-scaffolding.md"
         ],
         "groups": [
-            { "id": "poem_1", "label": "Poem 1", "steps": [1, 2, 3, 4, 5, 6] },
-            { "id": "comparison", "label": "Comparison", "steps": [7, 8] }
+            {
+                "id": "poem_1",
+                "label": "Poem 1",
+                "steps": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                ]
+            },
+            {
+                "id": "comparison",
+                "label": "Comparison",
+                "steps": [
+                    7,
+                    8
+                ]
+            }
         ],
         "steps": {
             "1": {
@@ -87,7 +105,8 @@
             "modules/protocol-a-assessment.md",
             "literature/modules/theme-check.md",
             "literature/modules/socratic-literature.md",
-            "literature/modules/conclusion-scaffolding.md"
+            "literature/modules/conclusion-scaffolding.md",
+            "mark-scheme/marking-fairness-universal.md"
         ],
         "steps": {}
     },

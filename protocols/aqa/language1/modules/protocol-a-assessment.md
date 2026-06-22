@@ -145,8 +145,8 @@ We'll refer back to this throughout the assessment."
        → **Awarded \[X\]/0.5 marks** because \[specific reason\]  
      * Detailed, perceptive close analysis of language techniques (AO2): \+0.5  
        → **Awarded \[X\]/0.5 marks** because \[specific reason\]  
-     * Detailed analysis of the interrelationship of techniques (AO2): \+0.5  
-       → **Awarded \[X\]/0.5 marks** because \[specific reason\]  
+     * **BONUS** — Detailed analysis of the interrelationship of techniques (AO2): \+0.5 *(this is a BONUS element — examiners reward it but never require it. The 6 non-bonus elements form the 3.5 base; this adds on top, capped at the 4.0 paragraph max. When absent, do NOT deduct, do NOT list it as a weakness, do NOT note it — it can only help. See `marking-fairness-universal.md`.)*  
+       → **Awarded \[X\]/0.5 bonus marks** because \[specific reason\] — *award only if genuine interrelationship analysis is present; if absent, simply omit this row.*  
      * A first detailed, perceptive sentence evaluating the effects on the reader (AO2): \+0.5  
        → **Awarded \[X\]/0.5 marks** because \[specific reason\]  
      * A second detailed, perceptive sentence evaluating the effects on the reader (AO2): \+0.5  

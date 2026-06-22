@@ -2,7 +2,6 @@
     "board": "edexcel-igcse",
     "version": "2.0.0",
     "base_path": "protocols/edexcel-igcse/literature",
-
     "planning": {
         "always": [
             "modules/foundation.md",
@@ -24,7 +23,6 @@
             "modules/knowledge-core.md",
             "planning/b-intro.md"
         ],
-
         "steps": {
             "1": {
                 "label": "Setup, Goals & Diagnostic",
@@ -100,7 +98,6 @@
             }
         }
     },
-
     "assessment": {
         "always": [
             "modules/foundation.md",
@@ -126,11 +123,11 @@
             "modules/penalty-codes.md",
             "modules/quote-validation.md",
             "modules/workflow-entry.md",
-            "modules/protocol-a-assessment.md"
+            "modules/protocol-a-assessment.md",
+            "mark-scheme/marking-fairness-universal.md"
         ],
         "steps": {}
     },
-
     "polishing": {
         "always": [
             "modules/foundation.md",

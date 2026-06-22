@@ -74,7 +74,8 @@
             "modules/knowledge-progress.md",
             "modules/knowledge-state.md",
             "modules/knowledge-hub.md",
-            "modules/protocol-a-assessment.md"
+            "modules/protocol-a-assessment.md",
+            "mark-scheme/marking-fairness-universal.md"
         ],
         "steps": {}
     },

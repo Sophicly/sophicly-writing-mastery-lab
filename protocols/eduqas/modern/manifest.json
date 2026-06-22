@@ -126,7 +126,8 @@
             "modules/knowledge-ttecea-rationale.md",
             "modules/quote-validation.md",
             "modules/macros-scanner.md",
-            "../../shared/assessment/protocol-a-assessment.md"
+            "../../shared/assessment/protocol-a-assessment.md",
+            "mark-scheme/marking-fairness-universal.md"
         ],
         "steps": {}
     },

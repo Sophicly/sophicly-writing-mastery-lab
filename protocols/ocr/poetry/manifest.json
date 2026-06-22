@@ -15,8 +15,24 @@
             "modules/anti-hallucination.md"
         ],
         "groups": [
-            { "id": "part_a", "label": "Part (a) Comparison", "steps": [1, 2, 3, 4, 5] },
-            { "id": "part_b", "label": "Part (b) Single Poem", "steps": [6] }
+            {
+                "id": "part_a",
+                "label": "Part (a) Comparison",
+                "steps": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5
+                ]
+            },
+            {
+                "id": "part_b",
+                "label": "Part (b) Single Poem",
+                "steps": [
+                    6
+                ]
+            }
         ],
         "steps": {
             "1": {
@@ -71,7 +87,8 @@
             "modules/protocol-a-part-b.md",
             "modules/knowledge-quickref.md",
             "modules/effects-knowledge-bank.md",
-            "modules/anti-hallucination.md"
+            "modules/anti-hallucination.md",
+            "mark-scheme/marking-fairness-universal.md"
         ],
         "steps": {}
     },
