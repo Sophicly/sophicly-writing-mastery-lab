@@ -650,6 +650,95 @@
         return body ? { q: q, title: 'Question Total', body: body, _detected: true } : null;
     }
 
+    // ──────────────────────────────────────────────────────────────────────
+    // v7.19.608: CALIBRATION (predicted vs actual) — deterministic spine.
+    // Predicted = whole-mark the student commits in chat (calibration-only, NEVER feeds grade).
+    // Actual = the AI's question mark, ROUNDED to whole (Neil), auto-written into the feedback
+    // box label (the existing grade source). Δ + tolerance verdict colour the box header.
+    // Tolerance scales with mark range (examiner-standardisation framing): ≤8→±1, ≤20→±2, else→±3.
+    // ──────────────────────────────────────────────────────────────────────
+    // Set inside buildDropdownOverlays (which is nested in the canvas-render scope, out of
+    // reach here) so the top-level auto-set can recompute grade + rebuild the score pills.
+    let _scoreOverlaysRefresh = null;
+    function _calibDocKey() {
+        try { if (typeof CANVAS_SAVE_KEY === 'function') return CANVAS_SAVE_KEY(); } catch (_) {}
+        try { return location.pathname + ':a' + ((state && state.attempt) || ''); } catch (_) { return 'wml'; }
+    }
+    function _predKey(qNum) { return 'swml_pred:' + _calibDocKey() + ':Q' + qNum; }
+    function _getPredicted(qNum) {
+        try { const v = parseInt(localStorage.getItem(_predKey(qNum)), 10); return (isNaN(v) || v < 0) ? null : v; } catch (_) { return null; }
+    }
+    function _setPredicted(qNum, val) {
+        try { localStorage.setItem(_predKey(qNum), String(parseInt(val, 10))); } catch (_) {}
+    }
+    function _toleranceFor(max) { const m = parseInt(max, 10); if (!m || m <= 8) return 1; if (m <= 20) return 2; return 3; }
+    function _calibVerdict(pred, act, max) {
+        const tol = _toleranceFor(max);
+        const delta = pred - act;
+        const ad = Math.abs(delta);
+        const verdict = ad <= tol ? 'accurate' : (ad <= tol * 2 ? 'slightly' : 'recalibrate');
+        const color = verdict === 'accurate' ? '#1CD991' : (verdict === 'slightly' ? '#F1C40F' : '#ff5470');
+        return { tol: tol, delta: delta, abs: ad, verdict: verdict, color: color };
+    }
+    // max marks for a question, from its feedback box label "… Qn (— / MAX)".
+    function _feedbackMaxForQ(qNum) {
+        if (!canvasEditor || !qNum) return null;
+        let max = null;
+        canvasEditor.state.doc.descendants((node) => {
+            if (max != null) return false;
+            if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'feedback') {
+                const lbl = String(node.attrs.label || '');
+                const ln = (lbl.match(/feedback\D*(\d+)/i) || [])[1] || '';
+                if (ln === String(qNum)) { const mm = lbl.match(/\/\s*(\d+)\s*\)/); if (mm) max = parseInt(mm[1], 10); }
+            }
+            return true;
+        });
+        return max;
+    }
+    // pull the ACTUAL question mark from the "Qn Total …" line — LAST X/Y on the line
+    // (handles "2.25 + 1.5 = 3.75/8" and "AO5 17/24 + AO6 11/16 = 28/40"); rounds to whole.
+    function _extractQuestionMark(reply, qNum) {
+        const t = String(reply || '');
+        const lm = t.match(new RegExp('Q(?:uestion)?\\s*' + qNum + '\\s*Total\\b[^\\n]*', 'i'));
+        if (!lm) return null;
+        const pairs = lm[0].match(/\d+(?:\.\d+)?\s*\/\s*\d+/g);
+        if (!pairs || !pairs.length) return null;
+        const last = pairs[pairs.length - 1].split('/');
+        const raw = parseFloat(last[0]);
+        const max = parseInt(last[1], 10);
+        if (isNaN(raw) || isNaN(max) || max <= 0) return null;
+        return { score: Math.round(raw), max: max, raw: raw };
+    }
+    // write the ACTUAL mark into the feedback section label (the grade source), recompute, refresh pills.
+    function _setFeedbackMark(qNum, score, max) {
+        if (!canvasEditor) return false;
+        let done = false;
+        canvasEditor.state.doc.descendants((node, pos) => {
+            if (done) return false;
+            if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'feedback') {
+                const lbl = String(node.attrs.label || '');
+                const ln = (lbl.match(/feedback\D*(\d+)/i) || [])[1] || '';
+                if (ln === String(qNum)) {
+                    const base = lbl.replace(/\s*\(\s*(?:—|\d+)\s*\/\s*\d+\s*\)\s*$/, '');
+                    const newLabel = base + ' (' + score + ' / ' + max + ')';
+                    if (newLabel !== lbl) {
+                        canvasEditor.view.dispatch(canvasEditor.state.tr.setNodeMarkup(pos, undefined, Object.assign({}, node.attrs, { label: newLabel })));
+                    }
+                    done = true;
+                    return false;
+                }
+            }
+            return true;
+        });
+        if (done) {
+            try { if (typeof _scoreOverlaysRefresh === 'function') _scoreOverlaysRefresh(); } catch (_) {}
+            console.log('[WML calib] auto-set ACTUAL Q' + qNum + ' = ' + score + '/' + max);
+        } else {
+            console.warn('[WML calib] no feedback box found to set ACTUAL for Q' + qNum);
+        }
+        return done;
+    }
+
     function applyAssessmentFeedback(aiReply) {
         try {
             if (!aiReply || !canvasEditor) return;
@@ -750,6 +839,13 @@
                 console.warn('WML Feedback SILENT-SKIP: ' + cards.length + ' card(s) detected (' +
                     cards.map(c => c.q).join(',') + ') but NONE filed. Feedback boxes in doc: ' +
                     (boxes.length ? JSON.stringify(boxes) : 'NONE') + '. (Check box labels / canvas type / task gating.)');
+            }
+            // v7.19.608: auto-fill the ACTUAL question mark (rounded) into the feedback selector/label
+            // when the Question Total lands — the system sets the mark, not the student (Neil).
+            if (qTotal && qTotal.q) {
+                const _qn = numOf(qTotal.q);
+                const _mk = _extractQuestionMark(aiReply, _qn);
+                if (_mk) _setFeedbackMark(_qn, _mk.score, _mk.max);
             }
             if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
             // v7.19.607: mirror the chat — bring the just-filled question's feedback box into
@@ -1832,8 +1928,19 @@
         let rating = null;
         const selectedAO = new Set();
 
+        // v7.19.608: fold the per-QUESTION mark PREDICTION into this panel (token-efficient —
+        // rides the existing reflection submit, no extra AI turn). Shown only on a question's
+        // FIRST reflection (max derivable + not yet predicted). Predicted = calibration-only.
+        let predicted = null;
+        const _pqm = (parsed && parsed.q ? String(parsed.q) : '').match(/(\d+)/);
+        const predictQ = _pqm ? _pqm[1] : '';
+        const predictMax = predictQ ? _feedbackMaxForQ(predictQ) : null;
+        const showPredict = !!(predictQ && predictMax && _getPredicted(predictQ) == null);
+
         const refreshSubmit = () => {
-            const ok = rating != null && (selectedAO.size > 0 || ta.value.trim().length > 0);
+            const ok = rating != null
+                && (selectedAO.size > 0 || ta.value.trim().length > 0)
+                && (!showPredict || predicted != null);
             submit.style.opacity = ok ? '1' : '0.4';
             submit.style.pointerEvents = ok ? 'auto' : 'none';
         };
@@ -1916,13 +2023,63 @@
             if (rating == null) return;
             const aoStr = Array.from(selectedAO).join(', ');
             const detail = ta.value.trim();
-            let msg = `Self-rating: ${rating}/5.`;
+            let msg = '';
+            if (showPredict && predicted != null) {
+                _setPredicted(predictQ, predicted);
+                msg += `Predicted ${parsed.q || ('Q' + predictQ)} mark: ${predicted}/${predictMax}. `;
+            }
+            msg += `Self-rating: ${rating}/5.`;
             if (aoStr) msg += ` AO targeting: ${aoStr}.`;
             if (detail) msg += ` ${detail}`;
             wrap.style.opacity = '0.5'; wrap.style.pointerEvents = 'none';
             onSubmit(msg);
         });
 
+        // 0. Mark PREDICTION (question's first reflection only) — a committed whole-mark guess.
+        // Pills for ≤8 marks, compact select for Q4/Q5. Calibration-only; stored on submit.
+        let predWrap = null;
+        if (showPredict) {
+            predWrap = el('div', {});
+            predWrap.style.cssText = 'display:flex;flex-direction:column;gap:7px;';
+            const predLabel = el('div', {});
+            predLabel.style.cssText = 'font-size:13px;line-height:1.4;';
+            predLabel.appendChild(el('strong', { textContent: 'Predict your ' + (parsed.q || ('Q' + predictQ)) + ' mark' }));
+            predLabel.appendChild(document.createTextNode(' — what do you think you scored, out of ' + predictMax + '?'));
+            predWrap.appendChild(predLabel);
+            if (predictMax <= 8) {
+                const predRow = el('div', {});
+                predRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
+                const pbtns = [];
+                for (let n = 0; n <= predictMax; n++) {
+                    const b = el('button', { textContent: String(n) });
+                    b.type = 'button';
+                    b.style.cssText = 'flex:1;min-width:32px;padding:9px 0;border-radius:9px;border:1px solid rgba(255,255,255,0.18);background:transparent;color:rgba(255,255,255,0.8);font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;';
+                    b.addEventListener('click', () => {
+                        predicted = n;
+                        pbtns.forEach((bb, i) => {
+                            const on = i === n;
+                            bb.style.background = on ? '#5333ed' : 'transparent';
+                            bb.style.color = on ? '#fff' : 'rgba(255,255,255,0.8)';
+                            bb.style.borderColor = on ? '#5333ed' : 'rgba(255,255,255,0.18)';
+                        });
+                        refreshSubmit();
+                    });
+                    pbtns.push(b);
+                    predRow.appendChild(b);
+                }
+                predWrap.appendChild(predRow);
+            } else {
+                const sel = el('select', {});
+                sel.style.cssText = 'padding:9px 12px;border-radius:9px;border:1px solid rgba(255,255,255,0.18);background:rgba(0,0,0,0.3);color:#fff;font-size:14px;font-weight:600;cursor:pointer;';
+                const ph = el('option', { textContent: '— pick your predicted mark —' }); ph.value = '';
+                sel.appendChild(ph);
+                for (let n = 0; n <= predictMax; n++) { const o = el('option', { textContent: n + ' / ' + predictMax }); o.value = String(n); sel.appendChild(o); }
+                sel.addEventListener('change', () => { predicted = sel.value === '' ? null : parseInt(sel.value, 10); refreshSubmit(); });
+                predWrap.appendChild(sel);
+            }
+        }
+
+        if (predWrap) wrap.appendChild(predWrap);
         wrap.appendChild(rateWrap); wrap.appendChild(aoWrap); wrap.appendChild(submit);
         return wrap;
     }
@@ -16598,6 +16755,9 @@
             if (!canvasEditor) return;
             const editor = document.getElementById('swml-tiptap-editor');
             if (!editor) return;
+            // v7.19.608: expose recompute+rebuild to the top-level calibration auto-set
+            // (recalculateScoreSummary + buildDropdownOverlays are nested here, out of its scope).
+            _scoreOverlaysRefresh = function () { try { recalculateScoreSummary(); } catch (_) {} try { buildDropdownOverlays(); } catch (_) {} };
 
             // Remove existing overlay layer + any open popover
             if (dropdownLayer) dropdownLayer.remove();
@@ -16703,6 +16863,31 @@
                         valueLabelFn: (v) => v === -1 ? '—' : `${v} / ${maxMarks}`,
                     });
                 }
+                // v7.19.608: calibration readout — Predicted · Actual · Δ (tolerance colour).
+                // Predicted is calibration-only (from the chat prediction); actual = the live label
+                // mark. Shows above the actual pill so the student sees the gap at the section top.
+                try {
+                    const _qForCalib = (baseName.match(/(\d+)/) || [])[1] || '';
+                    const _pred = _qForCalib ? _getPredicted(_qForCalib) : null;
+                    if (_pred != null) {
+                        const calibEl = document.createElement('div');
+                        calibEl.className = 'swml-calib-readout';
+                        calibEl.style.cssText = 'display:flex;gap:7px;align-items:center;font-size:11px;font-weight:600;margin-bottom:5px;white-space:nowrap;color:rgba(255,255,255,0.65);';
+                        let h = '<span>Predicted ' + _pred + '</span><span style="opacity:0.4">·</span>';
+                        if (currentMarks >= 0) {
+                            const v = _calibVerdict(_pred, currentMarks, maxMarks);
+                            const sign = v.delta > 0 ? '+' : '';
+                            const lab = v.verdict === 'accurate' ? 'examiner-accurate' : (v.verdict === 'slightly' ? 'slightly off' : 'recalibrate');
+                            h += '<span>Actual ' + currentMarks + '</span><span style="opacity:0.4">·</span>'
+                               + '<span style="color:' + v.color + '">Δ ' + sign + v.delta + ' (' + lab + ')</span>';
+                        } else {
+                            h += '<span style="opacity:0.55">Actual —</span>';
+                        }
+                        calibEl.innerHTML = h;
+                        wrapper.insertBefore(calibEl, widget);
+                    }
+                } catch (_) { /* calibration readout is best-effort */ }
+
                 wrapper.appendChild(widget);
                 dropdownLayer.appendChild(wrapper);
             });
