@@ -596,6 +596,11 @@
     // for the Copy button — reuse it; fall back to the stripped reply if it returns null.
     function _detectFeedbackCard(aiReply) {
         const t = String(aiReply || '');
+        // v7.19.616: the FINAL SUMMARY is NOT a per-question marking turn. It carries a grand
+        // total + holistic prose + a Q1…Q5 score table, and the old "first Q match" grabbed
+        // "Q1" → dumped the WHOLE summary into Q1's feedback box (Neil 2026-06-22). Skip it here;
+        // it routes to the "Overall Feedback" section via @SECTION markers (applySectionFills).
+        if (/\[ASSESSMENT_COMPLETE\]|Final Summary|Holistic Evaluation|Score Breakdown|Grand Total|Priority Target/i.test(t)) return null;
         // must look like a marking delivery, not a gate/reflection/summary
         // v7.19.602: a REAL marking turn always carries a slash-score Total
         // ("Q1 Total: 3.5/4", "Paragraph 1 Total: 3.0/4") and/or the two gold models.
@@ -670,6 +675,15 @@
     }
     function _setPredicted(qNum, val) {
         try { localStorage.setItem(_predKey(qNum), String(parseInt(val, 10))); } catch (_) {}
+    }
+    // v7.19.616: clear all stored predictions for a doc key, so a reset / attempt-switch
+    // can't leave orphaned predictions that suppress the predict row on a fresh run. Mirrors
+    // the canvas/chat localStorage clear at the attempt-management reset points.
+    function _clearPredictionsForDoc(docKey) {
+        try {
+            const prefix = 'swml_pred:' + (docKey || _calibDocKey()) + ':';
+            Object.keys(localStorage).filter(k => k.indexOf(prefix) === 0).forEach(k => localStorage.removeItem(k));
+        } catch (_) {}
     }
     function _toleranceFor(max) { const m = parseInt(max, 10); if (!m || m <= 8) return 1; if (m <= 20) return 2; return 3; }
     function _calibVerdict(pred, act, max) {
@@ -1513,7 +1527,7 @@
                             })
                         });
                     } catch (e) { console.warn('WML: attempt switch failed —', e.message); }
-                    try { localStorage.removeItem(CANVAS_SAVE_KEY()); localStorage.removeItem(CHAT_SAVE_KEY()); } catch(_) {}
+                    try { _clearPredictionsForDoc(CANVAS_SAVE_KEY()); localStorage.removeItem(CANVAS_SAVE_KEY()); localStorage.removeItem(CHAT_SAVE_KEY()); } catch(_) {}
                     overlay.remove();
                     // v7.15.107: Navigate with ?attempt=N so v7.15.106 URL-param
                     // handler pre-resolves state.attempt AND the diagnostic-
@@ -1554,7 +1568,7 @@
                         sessionStorage.setItem('swml_new_attempt', String(state.attempt));
                     }
                 } catch (e) { console.warn('WML: new-attempt failed —', e.message); }
-                try { localStorage.removeItem(CANVAS_SAVE_KEY()); localStorage.removeItem(CHAT_SAVE_KEY()); } catch(_) {}
+                try { _clearPredictionsForDoc(CANVAS_SAVE_KEY()); localStorage.removeItem(CANVAS_SAVE_KEY()); localStorage.removeItem(CHAT_SAVE_KEY()); } catch(_) {}
                 overlay.remove();
                 // v7.15.107: Navigate with ?attempt=N so the diagnostic overlay
                 // is skipped after reload. sessionStorage still set for any
