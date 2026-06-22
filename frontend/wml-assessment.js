@@ -4664,6 +4664,11 @@
                             }
                         } catch (_e) { console.warn('WML Canvas: universal step marker error', _e); }
 
+                        // v7.19.600: auto-file assessment feedback into per-Q boxes — MUST run for
+                        // assessment turns, which are NOT cw_ tasks, so it lives OUTSIDE the cw_ guard
+                        // below. Self-guards (no-op unless the reply carries @FB markers or a marking block).
+                        applyAssessmentFeedback(res.reply);
+
                         // v7.14.68: Planning/polishing step detection — advance sidebar based on AI content
                         if (state.task === 'planning' || state.task === 'polishing') {
                             const planStep = detectPlanningStep(res.reply, state.step);
@@ -4678,7 +4683,6 @@
                             applyCwSubstepProgress(detectCwSubstep(res.reply));
                             applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                             applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
-                            applyAssessmentFeedback(res.reply); // v7.19.598: Phase 4 — auto-file feedback into per-Q boxes
                             applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored row-fill (Phase 3 — CW Step 3 loglines)
                             // v7.19.504: Step-1 seed-logline self-heal — after the turn settles
                             // (loading cleared), re-emit markers if the rows didn't fill.
@@ -11467,12 +11471,14 @@
                                         await extractAndSavePlan(msg, res.reply);
                                         console.log('WML Canvas: Plan state after extraction:', { total_score: state.plan.total_score, grade: state.plan.grade, task: state.task });
 
+                                        // v7.19.600: auto-file assessment feedback (runs for ALL tasks, outside the cw_ guard).
+                                        applyAssessmentFeedback(res.reply);
+
                                         // v7.14.69: CW sub-step progress tracking (training-env pipeline)
                                         if (state.task && state.task.startsWith('cw_')) {
                                             applyCwSubstepProgress(detectCwSubstep(res.reply));
                             applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                             applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
-                            applyAssessmentFeedback(res.reply); // v7.19.598: Phase 4 — auto-file feedback into per-Q boxes
                             applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored row-fill (Phase 3 — CW Step 3 loglines)
                                         }
 
