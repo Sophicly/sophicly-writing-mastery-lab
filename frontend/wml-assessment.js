@@ -660,9 +660,16 @@
                     return;
                 }
                 const existingText = targetNode.textContent || '';
-                // dedup: this card already filed (re-fire / Path-C re-entry)
-                if (card.title && existingText.indexOf(card.title) !== -1) return;
-                const html = cwMarkdownToDocHtml((card.title ? '### ' + card.title + '\n\n' : '') + card.body);
+                // v7.19.603: precise per-card heading is BOTH the visible heading AND the
+                // dedup key — "Q2 — Paragraph 1", "Q2 — Paragraph 2", "Q1 — Assessment".
+                const cardHeading = card.title ? (card.q + ' — ' + card.title) : (card.q + ' — Assessment');
+                // dedup: skip ONLY an exact re-fire of THIS card (Path-C re-entry / repeated
+                // marking turn). It must NEVER block on a stale stub or student-typed text —
+                // those don't carry the exact heading, so the real card still files (appended
+                // below whatever is there, preserving existing content). The old title-substring
+                // dedup let a stale "Paragraph 1" stub poison the real "Paragraph 1" card.
+                if (existingText.indexOf(cardHeading) !== -1) return;
+                const html = cwMarkdownToDocHtml('### ' + cardHeading + '\n\n' + card.body);
                 const isPlaceholder = existingText.trim() === '' || /will appear after assessment|will be assessed here|appear here after/i.test(existingText);
                 if (isPlaceholder) {
                     const from = targetPos + 1;
