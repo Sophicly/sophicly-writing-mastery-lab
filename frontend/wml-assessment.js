@@ -861,8 +861,7 @@
                             if (qn && (lbl.match(/\d+/) || [])[0] === qn) tgtEl = b;
                         });
                     if (tgtEl) {
-                        const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                        tgtEl.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+                        _swmlScrollToTop(tgtEl);
                         console.log('[WML feedback] auto-scrolled to feedback box Q' + qn);
                     }
                 } catch (_) { /* scroll is best-effort, never block */ }
@@ -3057,13 +3056,27 @@
         if (pct >= 30) return { fill: '#ff5470', text: '#ff5470' };
         return { fill: '#d63638', text: '#d63638' };
     }
+    // v7.19.615: ONE top-level scroll-to-top helper, so EVERY document-jump (codex unit,
+    // progress section, feedback auto-scroll) lands the target's TOP just inside the canvas
+    // viewport — same feel as the outline panel + island (scrollContentTo). Replaces the
+    // scattered scrollIntoView({block:'center'}) calls that centred the target inconsistently.
+    function _swmlScrollToTop(target, pad) {
+        if (!target) return;
+        const cw = target.closest('.swml-canvas-content');
+        const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!cw) { try { target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); } catch (_) {} return; }
+        const cwRect = cw.getBoundingClientRect();
+        const tRect = target.getBoundingClientRect();
+        const top = cw.scrollTop + (tRect.top - cwRect.top) - (pad == null ? 24 : pad);
+        cw.scrollTo({ top: Math.max(0, top), behavior: reduce ? 'auto' : 'smooth' });
+    }
     function _jumpToProgressSection(editor, label) {
         // Loop-based lookup — never CSS.escape attribute selectors (WML rule).
         let target = null;
         editor.querySelectorAll('.swml-section-block[data-section-label]').forEach(s => {
             if (!target && s.getAttribute('data-section-label') === label) target = s;
         });
-        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        _swmlScrollToTop(target);
     }
     // Shared head + bar for both the CW (per-section) and Codex (per-unit) cards.
     // countText e.g. "3 of 6 sections complete" / "2 of 9 units complete". pct drives
@@ -3191,7 +3204,7 @@
                 target = el.closest('.swml-section-block') || el;
             }
         });
-        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        _swmlScrollToTop(target);
     }
     function _renderCodexProgressCardBody(card, editor) {
         const { list, done, total, pct } = _computeCodexProgress(editor);

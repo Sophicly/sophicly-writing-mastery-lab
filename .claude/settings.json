@@ -714,7 +714,9 @@
       "Bash(node -e \"const c=require\\('fs'\\).readFileSync\\('frontend/wml-canvas.css','utf8'\\); console.log\\('open',\\(c.match\\(/{/g\\)||[]\\).length,'close',\\(c.match\\(/}/g\\)||[]\\).length\\);\")",
       "Bash(scp -i /Users/neilwilliams/.ssh/sophicly_staging /tmp/wml_trace.php runcloud@18.133.5.229:/tmp/wml_trace.php)",
       "Bash(node -e \"const c=require\\('fs'\\).readFileSync\\('frontend/wml-canvas.css','utf8'\\); const o=\\(c.match\\(/{/g\\)||[]\\).length,cl=\\(c.match\\(/}/g\\)||[]\\).length; console.log\\('css braces', o, cl, o===cl?'OK':'MISMATCH'\\);\")",
-      "Bash(grep -n ''\\\\''always'\\\\''\\\\|\\\\[.always.\\\\]\\\\|base_path\\\\|shared/'\\\\''\\\\|->resolve\\\\|module_path\\\\|$file_path\\\\|file_get_contents\\\\|each module\\\\|foreach' includes/class-protocol-router.php)"
+      "Bash(grep -n ''\\\\''always'\\\\''\\\\|\\\\[.always.\\\\]\\\\|base_path\\\\|shared/'\\\\''\\\\|->resolve\\\\|module_path\\\\|$file_path\\\\|file_get_contents\\\\|each module\\\\|foreach' includes/class-protocol-router.php)",
+      "Bash(grep -nE 'spl-success-message|spl-footer-actions|id=\"spl-app\"|\\\\$course_id|\\\\$is_review_mode =|course_completed|get_post_field|post_name|\\\\$is_summary' single-sfwd-focus.php)",
+      "Bash(grep -n '\\\\$user_id\\\\s*=' single-sfwd-focus.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
