@@ -752,6 +752,25 @@
                     (boxes.length ? JSON.stringify(boxes) : 'NONE') + '. (Check box labels / canvas type / task gating.)');
             }
             if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
+            // v7.19.607: mirror the chat — bring the just-filled question's feedback box into
+            // view (once, on fill = "section enter"). Honours prefers-reduced-motion; scrolls the
+            // canvas, not the page. Targets the box for the FIRST card's question (the one being marked).
+            if (wrote) {
+                try {
+                    const qn = numOf((cards[0] || {}).q);
+                    let tgtEl = null;
+                    (canvasEditor.view && canvasEditor.view.dom ? canvasEditor.view.dom : document)
+                        .querySelectorAll('.swml-section-feedback').forEach((b) => {
+                            const lbl = b.getAttribute('data-section-label') || '';
+                            if (qn && (lbl.match(/\d+/) || [])[0] === qn) tgtEl = b;
+                        });
+                    if (tgtEl) {
+                        const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                        tgtEl.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+                        console.log('[WML feedback] auto-scrolled to feedback box Q' + qn);
+                    }
+                } catch (_) { /* scroll is best-effort, never block */ }
+            }
         } catch (e) {
             console.warn('WML Feedback: error (non-fatal)', e && e.message);
         }

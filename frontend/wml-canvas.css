@@ -11261,3 +11261,72 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     .swml-canvas-proto #swml-progress-steps > *,
     .swml-step-group-header.open + .swml-step-group-body .swml-step { animation: none; }
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   v7.19.607: Feedback boxes — completion tick + collapsible accordion
+   (node-view in wml-section-block.js sets data-section-complete + .swml-fb-toggle)
+   ────────────────────────────────────────────────────────────────────────── */
+.swml-section-feedback { position: relative; }
+
+/* Green house-badge tick when the box holds real feedback (top-right, clear of the label tag) */
+.swml-section-feedback[data-section-complete="true"]::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    right: 40px;
+    width: 18px;
+    height: 18px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%231CD991'/%3E%3Cpolyline points='17 9 10.5 15.5 7 12' fill='none' stroke='%23ffffff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: contain;
+    pointer-events: none;
+    z-index: 3;
+}
+
+/* Collapse toggle — slim borderless chevron, top-right */
+.swml-fb-toggle {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 0;
+    z-index: 4;
+    transition: background 0.15s ease;
+}
+.swml-fb-toggle:hover { background: rgba(255,255,255,0.08); }
+.swml-canvas-light .swml-fb-toggle:hover { background: rgba(0,0,0,0.06); }
+.swml-fb-chevron {
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    opacity: 0.55;
+    transform: rotate(45deg);            /* points down = expanded */
+    transition: transform 0.18s ease;
+    margin-top: -3px;
+}
+.swml-section-feedback.swml-fb-collapsed .swml-fb-chevron {
+    transform: rotate(-45deg);           /* points right = collapsed */
+    margin-top: 0;
+}
+
+/* Collapsed: hide the inner content, keep the box label tag + toggle + tick visible */
+.swml-section-feedback .swml-section-content {
+    overflow: hidden;
+    transition: max-height 0.2s ease;
+}
+.swml-section-feedback.swml-fb-collapsed .swml-section-content {
+    display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+    .swml-fb-chevron, .swml-section-feedback .swml-section-content { transition: none; }
+}

@@ -172,6 +172,62 @@
                 }
             } catch (_) { /* never block render */ }
 
+            // v7.19.607: feedback boxes get a completion tick too — "complete" = the box
+            // holds real (non-placeholder) feedback text. Computed from the node model so it
+            // survives re-render. Lives OUTSIDE the read-only guard above because feedback is
+            // read-only for students yet must still show its tick.
+            try {
+                if (type === 'feedback') {
+                    const _txt = (node.textContent || '').trim();
+                    const _placeholder = !_txt || /will appear after assessment|will be assessed here|appear here after/i.test(_txt);
+                    dom.setAttribute('data-section-complete', _placeholder ? 'false' : 'true');
+                }
+            } catch (_) { /* never block render */ }
+
+            // v7.19.607: feedback boxes are COLLAPSIBLE (manual toggle, persisted in
+            // localStorage per page+label). Mirrors the chip path: content goes in an inner
+            // contentDOM so the toggle button can be a sibling OUTSIDE the editable content,
+            // and ignoreMutation firewalls it from ProseMirror. (Auto-collapse-on-complete is
+            // deferred to the calibration tier — it needs the engagement/gap-reflection signal.)
+            if (type === 'feedback') {
+                const contentDOM = document.createElement('div');
+                contentDOM.className = 'swml-section-content';
+                dom.appendChild(contentDOM);
+
+                const fbLabel = (node.attrs && node.attrs.label) || dom.getAttribute('data-section-label') || '';
+                let COLLAPSE_KEY = '';
+                try { COLLAPSE_KEY = 'swml_fbcollapse:' + location.pathname + ':' + fbLabel; } catch (_) { COLLAPSE_KEY = ''; }
+                let collapsed = false;
+                try { collapsed = COLLAPSE_KEY && localStorage.getItem(COLLAPSE_KEY) === '1'; } catch (_) { collapsed = false; }
+                if (collapsed) dom.classList.add('swml-fb-collapsed');
+
+                const toggle = document.createElement('button');
+                toggle.type = 'button';
+                toggle.className = 'swml-fb-toggle';
+                toggle.setAttribute('contenteditable', 'false');
+                toggle.setAttribute('aria-label', 'Collapse or expand this feedback');
+                toggle.setAttribute('data-tooltip', 'Collapse / expand feedback');
+                toggle.innerHTML = '<span class="swml-fb-chevron" aria-hidden="true"></span>';
+                toggle.addEventListener('mousedown', (ev) => { ev.preventDefault(); ev.stopPropagation(); });
+                toggle.addEventListener('click', (ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    const nowCollapsed = dom.classList.toggle('swml-fb-collapsed');
+                    try { if (COLLAPSE_KEY) localStorage.setItem(COLLAPSE_KEY, nowCollapsed ? '1' : '0'); } catch (_) { /* storage off */ }
+                    if (window.console) console.log('[WML feedback] collapse toggle', JSON.stringify(fbLabel), '→', nowCollapsed ? 'collapsed' : 'expanded');
+                });
+                dom.appendChild(toggle);
+
+                return {
+                    dom,
+                    contentDOM,
+                    ignoreMutation: (mutation) => {
+                        if (!mutation || !mutation.target) return false;
+                        return toggle === mutation.target || toggle.contains(mutation.target);
+                    },
+                };
+            }
+
             // v7.19.497: Progress-summary section — a REAL doc node (reserves layout
             // space, sits cleanly above the sign-off, unlike the prior floating overlay).
             // Renders a non-editable derived card; the live %/links are filled by
