@@ -7427,29 +7427,32 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-pill.swml-tier-1:hover:not(.is-active) { background-color: rgba(229, 57, 53, 0.22); color: rgba(255,255,255,0.85); }
 
 /* Active state — saturated brand color + white text + shadow */
-.swml-pill.is-active.swml-tier-9 { background: #2c003e; color: #fff; box-shadow: 0 1px 4px rgba(44, 0, 62, 0.55); }
+/* v7.19.621: ONE consistent grade ladder everywhere (Neil) — top = brand purple GRADIENT,
+   then purple, blue, green, yellow, orange, red. Matches the predict pills (_GRADE_BG) so the
+   colour carries the same meaning across the predict row, the actual-mark selector + grade pills. */
+.swml-pill.is-active.swml-tier-9 { background: #5333ed; background-image: linear-gradient(135deg, #5333ed 0%, #2c003e 100%); color: #fff; box-shadow: 0 1px 4px rgba(44, 0, 62, 0.55); }
 .swml-pill.is-active.swml-tier-8 { background: #5333ED; color: #fff; box-shadow: 0 1px 4px rgba(83, 51, 237, 0.45); }
 .swml-pill.is-active.swml-tier-7 { background: #4D76FD; color: #fff; box-shadow: 0 1px 4px rgba(77, 118, 253, 0.45); }
-.swml-pill.is-active.swml-tier-6 { background: #1CD991; color: #fff; box-shadow: 0 1px 4px rgba(28, 217, 145, 0.45); }
-.swml-pill.is-active.swml-tier-5 { background: #FFC107; color: #1a1a2e; box-shadow: 0 1px 4px rgba(255, 193, 7, 0.45); }
-.swml-pill.is-active.swml-tier-4 { background: #FF9800; color: #fff; box-shadow: 0 1px 4px rgba(255, 152, 0, 0.45); }
-.swml-pill.is-active.swml-tier-3 { background: #E53935; color: #fff; box-shadow: 0 1px 4px rgba(229, 57, 53, 0.45); }
-.swml-pill.is-active.swml-tier-2 { background: #E53935; color: #fff; box-shadow: 0 1px 4px rgba(229, 57, 53, 0.45); }
-.swml-pill.is-active.swml-tier-1 { background: #E53935; color: #fff; box-shadow: 0 1px 4px rgba(229, 57, 53, 0.45); }
+.swml-pill.is-active.swml-tier-6 { background: #1CD991; color: #1a1a2e; box-shadow: 0 1px 4px rgba(28, 217, 145, 0.45); }
+.swml-pill.is-active.swml-tier-5 { background: #F1C40F; color: #1a1a2e; box-shadow: 0 1px 4px rgba(241, 196, 15, 0.45); }
+.swml-pill.is-active.swml-tier-4 { background: #f5a623; color: #1a1a2e; box-shadow: 0 1px 4px rgba(245, 166, 35, 0.45); }
+.swml-pill.is-active.swml-tier-3 { background: #ff5470; color: #fff; box-shadow: 0 1px 4px rgba(255, 84, 112, 0.45); }
+.swml-pill.is-active.swml-tier-2 { background: #ff5470; color: #fff; box-shadow: 0 1px 4px rgba(255, 84, 112, 0.45); }
+.swml-pill.is-active.swml-tier-1 { background: #ff5470; color: #fff; box-shadow: 0 1px 4px rgba(255, 84, 112, 0.45); }
 
 /* v7.19.170 — unselected popover options stay neutral (match pill behaviour).
    Color only applies to .is-active and hover. */
 .swml-popover-option[class*="swml-tier-"] { color: rgba(255,255,255,0.85); background: transparent; }
 
-.swml-popover-option.is-active.swml-tier-9 { background: #2c003e; color: #fff; }
+.swml-popover-option.is-active.swml-tier-9 { background: #5333ed; background-image: linear-gradient(135deg, #5333ed 0%, #2c003e 100%); color: #fff; }
 .swml-popover-option.is-active.swml-tier-8 { background: #5333ED; color: #fff; }
 .swml-popover-option.is-active.swml-tier-7 { background: #4D76FD; color: #fff; }
-.swml-popover-option.is-active.swml-tier-6 { background: #1CD991; color: #fff; }
-.swml-popover-option.is-active.swml-tier-5 { background: #FFC107; color: #1a1a2e; }
-.swml-popover-option.is-active.swml-tier-4 { background: #FF9800; color: #fff; }
+.swml-popover-option.is-active.swml-tier-6 { background: #1CD991; color: #1a1a2e; }
+.swml-popover-option.is-active.swml-tier-5 { background: #F1C40F; color: #1a1a2e; }
+.swml-popover-option.is-active.swml-tier-4 { background: #f5a623; color: #1a1a2e; }
 .swml-popover-option.is-active.swml-tier-3,
 .swml-popover-option.is-active.swml-tier-2,
-.swml-popover-option.is-active.swml-tier-1 { background: #E53935; color: #fff; }
+.swml-popover-option.is-active.swml-tier-1 { background: #ff5470; color: #fff; }
 
 .swml-popover-option.swml-tier-9:hover { background: rgba(44, 0, 62, 0.45); }
 .swml-popover-option.swml-tier-8:hover { background: rgba(83, 51, 237, 0.35); }

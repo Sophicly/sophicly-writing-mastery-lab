@@ -16935,9 +16935,12 @@
                 const opts = [{ value: -1, label: '—', isDash: true }];
                 for (let i = 0; i <= maxMarks; i++) opts.push({ value: i, label: String(i) });
 
-                // v7.19.169: grade-tier color heatmap per mark (each pill/option colored by
-                // grade-equivalent of mark / maxMarks). Dash stays neutral.
-                const feedbackTierFn = (opt) => opt.value === -1 ? null : getGradeFromMarks(opt.value, maxMarks);
+                // v7.19.621: colour each mark by its RANK on the 9-grade ladder (even spread,
+                // full mark → tier-9 = brand gradient) — IDENTICAL mapping to the predict pills
+                // (_markGradeStyle) so the colour means the same thing on both rows (Neil). Was
+                // getGradeFromMarks (grade-boundary %, which compressed low marks + skipped green).
+                const _tierRank = (v) => String(Math.max(1, Math.min(9, Math.round(1 + (maxMarks > 0 ? (v / maxMarks) : 0) * 8))));
+                const feedbackTierFn = (opt) => opt.value === -1 ? null : _tierRank(opt.value);
 
                 let widget;
                 if (maxMarks <= 8) {
@@ -16953,7 +16956,7 @@
                         options: opts.map(o => ({
                             value: o.value,
                             label: o.value === -1 ? '—' : `${o.value} / ${maxMarks}`,
-                            tier: o.value === -1 ? null : getGradeFromMarks(o.value, maxMarks),
+                            tier: o.value === -1 ? null : _tierRank(o.value),
                         })),
                         currentValue: currentMarks,
                         onChange: onMarkChange,
