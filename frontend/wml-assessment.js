@@ -398,6 +398,7 @@
         };
         let maxMarkedIdx = -1;
         qs.forEach((q, i) => { if (q.marked) maxMarkedIdx = i; });
+        const firstUnmarkedIdx = qs.findIndex(q => !q.marked);
         const steps = [];
         let n = 0, firstIncomplete = 0;
         steps.push({ step: ++n, label: 'Setup & Goals', group: null, display: '1' });
@@ -406,19 +407,37 @@
             const isRetrieval = !isB && q.max <= 4;        // Q1 true/false retrieval
             const group = isB ? 'Section B' : ('Question ' + q.n);
             const behind = i < maxMarkedIdx;               // a later question already marked → fully done
-            const predicted = _getPredicted(q.n) != null;
-            const paras = (!isB && !isRetrieval) ? _extractParas(q.text, q.max) : [];
+            const predicted = _getPredicted(q.n) != null;  // the student committed a prediction
             const beats = [];
-            // Predict & AO (the per-question reflection); done once marking starts.
-            if (!isRetrieval) beats.push({ label: 'Predict & AO', done: behind || predicted || q.marked || paras.length > 0 });
-            if (paras.length) {
-                paras.forEach((label, pi) => {
-                    const laterExists = pi < paras.length - 1;
-                    beats.push({ label: label, done: behind || q.marked || laterExists });
-                });
+            if (isRetrieval) {
+                beats.push({ label: 'Mark & Feedback', done: behind || q.marked }); // Q1: no predict/gold (spec)
+            } else if (isB) {
+                // Section B = holistic (not paragraph-marked): element beats.
+                beats.push({ label: 'Predict & AO', done: behind || predicted || q.marked });
+                beats.push({ label: 'Section Feedback', done: behind || q.marked });
+                beats.push({ label: 'Gold Article', done: behind || (q.marked && q.hasGold) });
             } else {
-                beats.push({ label: isB ? 'Section Feedback' : 'Mark & Feedback', done: behind || q.marked });
-                if (!isRetrieval) beats.push({ label: isB ? 'Gold Article' : 'Gold Models', done: behind || (q.marked && q.hasGold) });
+                // Reading question → PER-PARAGRAPH, each paragraph carrying its three
+                // element beats (Predict & AO → Mark & Feedback → Gold), matching the
+                // protocol order (¶1 predict→mark→gold, then ¶2 …). Completed paragraphs
+                // are read from the box; for the question currently in progress we add the
+                // one paragraph being worked on (so its Predict/Mark beats show live).
+                const markedParas = _extractParas(q.text, q.max);
+                const isActive = (i === firstUnmarkedIdx);
+                const totalParas = markedParas.length + ((isActive && !q.marked) ? 1 : 0);
+                for (let p = 1; p <= totalParas; p++) {
+                    const pName = markedParas[p - 1] || ('Paragraph ' + p);
+                    const pMarked = behind || q.marked || p <= markedParas.length; // this ¶'s mark is filed
+                    const pPredict = pMarked || predicted;                         // prediction committed
+                    beats.push({ label: pName + ' · Predict & AO', done: pPredict });
+                    beats.push({ label: pName + ' · Mark & Feedback', done: pMarked });
+                    beats.push({ label: pName + ' · Gold', done: pMarked });
+                }
+                if (totalParas === 0) {                       // not yet started — element fallback
+                    beats.push({ label: 'Predict & AO', done: behind || predicted });
+                    beats.push({ label: 'Mark & Feedback', done: behind });
+                    beats.push({ label: 'Gold Models', done: behind });
+                }
             }
             let di = 0;
             beats.forEach((b) => {
@@ -426,11 +445,12 @@
                 if (firstIncomplete === 0 && !b.done) firstIncomplete = n;
             });
         });
-        // v7.19.628: Total & Grade circle shows the actual GRADE in its ladder colour
+        // v7.19.629: Total & Grade circle shows the actual GRADE in its ladder colour
         // (9 gradient / 8 purple / 7 blue / 6 green / 5 yellow / 4 orange / 3↓ red — Neil)
-        // once a grade exists; the aspirational ★ until then. Colour applied post-render
-        // by _styleTotalGradeCircle (the generic circle classes don't carry grade colour).
-        const _grade = parseInt(state.plan && state.plan.grade, 10) || 0;
+        // once a grade exists; the aspirational ★ until then. NOTE: state.plan.grade is
+        // stored as the full match "Grade: 6" (detectAssessmentStep), so pull the digit.
+        const _gm = String((state.plan && state.plan.grade) || '').match(/\b([1-9])\b/);
+        const _grade = _gm ? parseInt(_gm[1], 10) : 0;
         steps.push({ step: ++n, label: 'Total & Grade', group: null, display: _grade ? String(_grade) : '★', gradeTier: _grade || null });
         const allDone = qs.every(q => q.marked);
         const current = allDone ? n : (firstIncomplete || 2);
