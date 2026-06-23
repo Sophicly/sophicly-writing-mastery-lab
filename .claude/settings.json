@@ -770,7 +770,9 @@
       "Bash(php -l sophicly-student-data/includes/class-gamification-rest-api.php)",
       "Bash(grep -r \"CourseGrade\\\\|course_grade\\\\|learndash.*grade\\\\|learnpress\\\\|ld_course\" /Users/neilwilliams/.claude/projects -type f --include=\"*.md\")",
       "Bash(grep -nE 'namespace\\\\s*=|protected.*namespace|\\\\$this->namespace =' includes/class-rest-api.php)",
-      "Bash(bash -n deploy-production.sh)"
+      "Bash(bash -n deploy-production.sh)",
+      "Bash(grep -nA30 \"function grade_average_from_rows\" sophicly-student-data/includes/class-wml-rest-api.php)",
+      "Bash(grep -rnA45 \"function get_process_score\\\\|function compute_process_score\\\\|function calculate_process_score\" --include='*.php' sophicly-student-data/includes/)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
