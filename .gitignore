@@ -20,3 +20,7 @@ CleanShot*.png
 CleanShot*.jpg
 .agents/
 .claude/skills/
+
+# Claude Code session permissions — machine/session cruft, can capture secrets; never commit
+.claude/settings.json
+.claude/settings.local.json
