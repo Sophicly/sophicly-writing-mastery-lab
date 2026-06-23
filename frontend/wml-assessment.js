@@ -16734,6 +16734,26 @@
 
             positionTransferOverlays();
             container.addEventListener('scroll', positionTransferOverlays, { passive: true });
+            // v7.19.624: reposition on RESIZE too. The dropdown layer got resize + ResizeObserver
+            // (drift fixes v7.19.168 / .174) but the transfer layer only bound SCROLL — so the
+            // Transfer-All buttons drifted off their dividers on window resize / sidebar collapse /
+            // fullscreen toggle until a scroll re-fired. Mirror the dropdown pattern, but self-clean
+            // each render so the binding always calls the CURRENT closure (transferLayer is a
+            // per-render `let` — a once-bound global handler would capture a stale, removed layer).
+            try { if (window._swmlTransferResizeObserver) window._swmlTransferResizeObserver.disconnect(); } catch (_) {}
+            if (window._swmlTransferResizeHandler) window.removeEventListener('resize', window._swmlTransferResizeHandler);
+            let _tlRaf = 0;
+            const _tlReposition = function () { if (_tlRaf) cancelAnimationFrame(_tlRaf); _tlRaf = requestAnimationFrame(positionTransferOverlays); };
+            window._swmlTransferResizeHandler = _tlReposition;
+            window.addEventListener('resize', _tlReposition, { passive: true });
+            if (typeof ResizeObserver !== 'undefined') {
+                const _tlRo = new ResizeObserver(_tlReposition);
+                const _tlDoc = document.querySelector('.swml-canvas-doc');
+                const _tlOverlay = document.getElementById('swml-canvas-overlay');
+                if (_tlDoc) _tlRo.observe(_tlDoc);
+                if (_tlOverlay) _tlRo.observe(_tlOverlay);
+                window._swmlTransferResizeObserver = _tlRo;
+            }
         }
 
         /** Position transfer buttons relative to their target sections */

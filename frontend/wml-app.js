@@ -4285,9 +4285,15 @@
 
         // Quick action buttons for AI messages (only on live messages, not replay)
         if (from === 'ai' && !silent) {
-            // Suppress old A/B/C task-selection quick actions when assessment is complete
-            const assessmentDone = state.task === 'assessment' && state.plan.total_score && state.plan.grade;
-            const actions = assessmentDone ? [] : detectQuickActions(text);
+            // v7.19.624: the post-grade Action Plan (Hattie "Where am I going?" A–E) and the
+            // Optional Enhancement (Type S / N) are LEGITIMATE interactive prompts delivered
+            // AFTER total_score + grade are set. The old blanket `assessmentDone ? []` killed
+            // ALL quick-actions once graded, so those options rendered as plain text (Neil
+            // 2026-06-22). The stale "task-selection A/B/C menu" the guard was meant to suppress
+            // only ever reappeared via REPLAY — already excluded by the `!silent` gate above —
+            // and the live final-summary carries no letter/number options to mis-detect, so the
+            // blanket suppression was redundant and over-broad. Let the detector run normally.
+            const actions = detectQuickActions(text);
             if (actions.length > 0) {
                 // Detect if this is a multi-select context (pick 3-5, choose multiple, select several, select all that apply)
                 // v7.18.12: include "TYPE ALL CORRECT LETTERS" (quiz multi-AO/multi-theme prompt)

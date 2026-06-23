@@ -558,7 +558,16 @@ window.WML = (function() {
     // a separate "text" chip just restates board+subject. Callers use this to skip
     // the redundant text badge.
     function isSkipTextSelect(subjectId) {
-        const subject = TEXT_CATALOGUE[subjectId];
+        // v7.19.624: the subject id drifts across the stack — the bridge sets
+        // 'language_p1' / 'language_c1' / 'language_paper_2' etc, while TEXT_CATALOGUE
+        // keys only on 'language1' / 'language2'. The exact-key lookup silently missed
+        // those variants, so the redundant text chip ("Aqa lang paper 1", restating
+        // board + paper) kept showing in the sidebar. Language papers and unseen
+        // subjects NEVER pick a real text — match the whole family by prefix so id
+        // drift can't reintroduce the duplicate chip (the v7.19.594 intent, made robust).
+        const s = String(subjectId || '').toLowerCase();
+        if (/^language/.test(s) || /^unseen/.test(s)) return true;
+        const subject = TEXT_CATALOGUE[s];
         return !!(subject && subject.skipTextSelect);
     }
 
