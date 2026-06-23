@@ -291,6 +291,19 @@
         return ['language2', 'language_p2', 'language_paper_2', 'lang_p2'].includes(s);
     }
 
+    // v7.19.626: sync gate — is this a multi-question LANGUAGE assessment that will
+    // get the frontend per-question sidebar (everything EXCEPT AQA P2, which is the
+    // server model)? Resolves from the subject alone, BEFORE the doc loads, so the
+    // render can HIDE the steps until the granular model paints instead of flashing
+    // the generic flat-8 first (Neil — polish; P1 is the model paper, the flat-8 is
+    // becoming dead weight). The flat-8 only survives for Literature single-essay docs.
+    function _expectLangSidebar() {
+        if (state.reviewMode) return false;
+        if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return false;
+        if (_expectServerSidebar()) return false;          // AQA P2 → authoritative server model
+        return /^language/.test((state.subject || '').toLowerCase());
+    }
+
     // Reveal the (hidden) default sidebar when the server model never arrived —
     // fetch failure fallback so the panel is never left empty.
     function _revealDefaultSidebar() {
@@ -3725,27 +3738,34 @@
             // this change just means the brief initial paint uses the right
             // task labels instead of the generic ASSESSMENT defaults.
             const _gs = (typeof getSteps === 'function') ? getSteps() : null;
-            // v7.19.625: multi-question Language papers (non-P2) get a per-question
-            // granular sidebar derived from the feedback boxes, replacing the flat-8.
-            const _langModel = _buildLangSidebarModel();
-            const assessSteps = _langModel ? _langModel.steps : (canvasSidebarSteps || (_gs && _gs.length ? _gs.map((s, i) => ({ step: i + 1, label: s.label })) : [
-                { step: 1, label: 'Setup & Details' },
-                { step: 2, label: 'Goal Setting' },
-                { step: 3, label: 'Self-Reflection' },
-                { step: 4, label: 'Essay Review' },
-                { step: 5, label: 'Introduction' },
-                { step: 6, label: 'Body Paragraphs' },
-                { step: 7, label: 'Conclusion' },
-                { step: 8, label: 'Summary & Action Plan' },
-            ]));
-            _renderSidebarSteps(protoSteps, assessSteps, _langModel ? { alwaysGroup: true } : undefined);
-            // v7.19.376: server-driven contexts keep the default paint hidden
-            // until the model applies (kills the old-layout flash); the
-            // chat-load fetch reveals it as a fallback if no model arrives.
-            if (!_langModel && _expectServerSidebar()) protoSteps.style.display = 'none';
-            // v7.19.625: once the panel is in the DOM, seat the active pointer from
-            // the marks already present (handles re-entry into a completed/partial doc).
-            if (_langModel) setTimeout(_refreshLangSidebar, 0);
+            // v7.19.625/626: multi-question Language papers (non-P2) get a per-question
+            // granular sidebar derived from the feedback boxes. The doc loads async, so
+            // at first paint the boxes may not exist yet → HIDE the panel (like the P2
+            // server path) instead of flashing the generic flat-8; _refreshLangSidebar
+            // paints + reveals it once the doc settles. The flat-8 survives only for
+            // Literature single-essay docs that never get a Language model.
+            const _langExpected = _expectLangSidebar();
+            const _langModel = _langExpected ? _buildLangSidebarModel() : null;
+            if (_langModel) {
+                _renderSidebarSteps(protoSteps, _langModel.steps, { alwaysGroup: true });
+            } else if (_langExpected || _expectServerSidebar()) {
+                protoSteps.style.display = 'none';   // hide until the granular model paints
+            } else {
+                const assessSteps = canvasSidebarSteps || (_gs && _gs.length ? _gs.map((s, i) => ({ step: i + 1, label: s.label })) : [
+                    { step: 1, label: 'Setup & Details' },
+                    { step: 2, label: 'Goal Setting' },
+                    { step: 3, label: 'Self-Reflection' },
+                    { step: 4, label: 'Essay Review' },
+                    { step: 5, label: 'Introduction' },
+                    { step: 6, label: 'Body Paragraphs' },
+                    { step: 7, label: 'Conclusion' },
+                    { step: 8, label: 'Summary & Action Plan' },
+                ]);
+                _renderSidebarSteps(protoSteps, assessSteps);
+            }
+            // v7.19.625: once the panel is in the DOM, seat (+ reveal) the granular
+            // sidebar from the marks present — handles async doc load + re-entry.
+            if (_langExpected) setTimeout(_refreshLangSidebar, 0);
             protoBody.appendChild(protoSteps);
         }
 
@@ -11181,21 +11201,29 @@
             // auto-scrolled into view on every server-sidebar advance.
             const protoSteps = el('div', { id: 'swml-progress-steps', style: { overflowY: 'auto', overflowX: 'hidden', flex: '1 1 auto', minHeight: '0' } });
                             // v7.13.97: Use task-specific steps for exam prep, manifest sidebarSteps for assessment, fallback to defaults
-                            // v7.19.625: multi-question Language papers (non-P2) → per-question granular sidebar.
-                            const _langModel2 = _buildLangSidebarModel();
-                            const assessSteps = _langModel2 ? _langModel2.steps : (canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
-                                { step: 1, label: 'Setup & Details' },
-                                { step: 2, label: 'Goal Setting' },
-                                { step: 3, label: 'Self-Reflection' },
-                                { step: 4, label: 'Essay Review' },
-                                { step: 5, label: 'Introduction' },
-                                { step: 6, label: 'Body Paragraphs' },
-                                { step: 7, label: 'Conclusion' },
-                                { step: 8, label: 'Summary & Action Plan' },
-                            ]));
-                            _renderSidebarSteps(protoSteps, assessSteps, _langModel2 ? { alwaysGroup: true } : undefined);
+                            // v7.19.625/626: multi-question Language papers (non-P2) → per-question granular
+                            // sidebar; hide until it paints (no generic flat-8 flash) when the doc is still loading.
+                            const _langExpected2 = _expectLangSidebar();
+                            const _langModel2 = _langExpected2 ? _buildLangSidebarModel() : null;
+                            if (_langModel2) {
+                                _renderSidebarSteps(protoSteps, _langModel2.steps, { alwaysGroup: true });
+                            } else if (_langExpected2) {
+                                protoSteps.style.display = 'none';
+                            } else {
+                                const assessSteps = canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
+                                    { step: 1, label: 'Setup & Details' },
+                                    { step: 2, label: 'Goal Setting' },
+                                    { step: 3, label: 'Self-Reflection' },
+                                    { step: 4, label: 'Essay Review' },
+                                    { step: 5, label: 'Introduction' },
+                                    { step: 6, label: 'Body Paragraphs' },
+                                    { step: 7, label: 'Conclusion' },
+                                    { step: 8, label: 'Summary & Action Plan' },
+                                ]);
+                                _renderSidebarSteps(protoSteps, assessSteps);
+                            }
                             protoBody.appendChild(protoSteps);
-                            if (_langModel2) setTimeout(_refreshLangSidebar, 0);
+                            if (_langExpected2) setTimeout(_refreshLangSidebar, 0);
                         }
 
                         // Bottom buttons — matching original sidebar, with icon+text for collapsed mode
