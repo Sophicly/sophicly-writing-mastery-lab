@@ -16837,8 +16837,13 @@
         /** Build the transfer button overlay layer */
         function buildTransferOverlays(container) {
             if (!canvasEditor) return;
+            // v7.19.634: clear any existing transfer layer FIRST, before the task gates.
+            // Otherwise the early-returns below (FQ / crib / codex / CW — docs with no
+            // Response section) leave a stale Transfer button behind when an earlier
+            // render built one before state.task resolved (Neil saw this on FQ).
+            if (transferLayer) { transferLayer.remove(); transferLayer = null; }
             if (state.task === 'exam_crib') return;
-            // v7.19.633: foundational_quiz doc has no Response section — Transfer button is redundant.
+            // foundational_quiz doc has no Response section — Transfer button is redundant.
             if (state.task === 'foundational_quiz') return;
             // v7.19.224: Codex has no Response section — Transfer-to-Response buttons irrelevant.
             if (state.task === 'mastery_codex') return;
@@ -16847,7 +16852,6 @@
             if (state.task && state.task.startsWith('cw_')) return;
             var editor = document.getElementById('swml-tiptap-editor');
             if (!editor) return;
-            if (transferLayer) transferLayer.remove();
             transferLayer = document.createElement('div');
             transferLayer.className = 'swml-transfer-layer';
             transferLayer.style.cssText = 'position:absolute;top:0;left:0;right:0;pointer-events:none;z-index:4;visibility:hidden;';
