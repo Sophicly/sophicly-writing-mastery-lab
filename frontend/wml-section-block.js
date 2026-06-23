@@ -179,7 +179,7 @@
             try {
                 if (type === 'feedback') {
                     const _txt = (node.textContent || '').trim();
-                    const _placeholder = !_txt || /will appear after assessment|will be assessed here|appear here after/i.test(_txt);
+                    const _placeholder = !_txt || /will appear after assessment|will be assessed here|appear here (?:after|once)|summary[\s\S]*will appear here/i.test(_txt);
                     dom.setAttribute('data-section-complete', _placeholder ? 'false' : 'true');
                 }
             } catch (_) { /* never block render */ }

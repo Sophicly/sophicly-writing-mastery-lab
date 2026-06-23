@@ -735,7 +735,9 @@
       "Bash(awk 'NR>=3540 && NR<=3590 && /subjectLabel|boardLabel|textLabel|state.subject|getSubjectLabel|getTextLabel|SUBJECT/' frontend/wml-assessment.js)",
       "Bash(grep -rhoE \"mw-row__grade--[a-z0-9{}\\\\$ ?>=:'.\\(\\)gradeClsFromNumprimary]+\" components/)",
       "Bash(grep -oE \"g\\\\\\\\\\\\$|g[1-9]|high|mid|low\")",
-      "Bash(scp -i /Users/neilwilliams/.ssh/sophicly_staging /tmp/wml_diag2.php runcloud@18.133.5.229:/tmp/wml_diag2.php)"
+      "Bash(scp -i /Users/neilwilliams/.ssh/sophicly_staging /tmp/wml_diag2.php runcloud@18.133.5.229:/tmp/wml_diag2.php)",
+      "Bash(scp -i ~/.ssh/sophicly_staging -o StrictHostKeyChecking=no -o ConnectTimeout=20 /tmp/wml_reset.php runcloud@18.133.5.229:/tmp/wml_reset.php)",
+      "Bash(grep -n 'has_mark_complete\\\\|mark_complete_html\\\\|learndash_show_user_course_complete\\\\|learndash_mark_complete\\\\|sfwd_mark_complete\\\\|learndash_process_mark_complete\\\\|\\\\$mark_complete' single-sfwd-focus.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
