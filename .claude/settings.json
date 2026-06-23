@@ -763,7 +763,11 @@
       "Bash(grep -nA34 \"function get_enrollment_date\" sophicly-student-data/includes/class-deadline-engine.php)",
       "Bash(curl -s -X POST \"https://api.cloudflare.com/client/v4/zones/891ccf5d510fb7d463e389d3dfbc3f9f/purge_cache\" -H \"Authorization: Bearer cfut_EHnyBetJIJXBLdXj756zIO9z1xUotWfod3iZ2brO5a59e5cd\" -H \"Content-Type: application/json\" --data '{\"purge_everything\":true}')",
       "Bash(scp -i ~/.ssh/sophicly_staging -o StrictHostKeyChecking=no -o ConnectTimeout=40 runcloud@18.133.5.229:/home/runcloud/webapps/SophiclyMain/wp-content/uploads/deadline-backup-20260623-155755/*.csv /private/tmp/claude-501/-Users-neilwilliams-Library-CloudStorage-GoogleDrive-abdullah-sophicly-com-My-Drive-Business-Web-Development-Sophicly-Website-Etch-for-Sophicly-Etch-for-Sophicly-Walkthrough-Etch-for-Sophicly-Walkthro-ytgeqm/a5612162-681a-4456-9748-2805b8c96b8c/scratchpad/deadline-backup-20260623-155755/)",
-      "Bash(grep -nA22 \"function apply_due_override\" sophicly-student-data/includes/class-deadline-engine.php)"
+      "Bash(grep -nA22 \"function apply_due_override\" sophicly-student-data/includes/class-deadline-engine.php)",
+      "Bash(sed -i '' 's/Version: 2.30.219/Version: 2.30.220/; s/SDASH_VERSION'\"'\"', '\"'\"'2.30.219'\"'\"'/SDASH_VERSION'\"'\"', '\"'\"'2.30.220'\"'\"'/' sophicly-dashboard/sophicly-dashboard.php)",
+      "Bash(sed -i '' 's/Version: 2.31.65/Version: 2.31.66/; s/SOPHICLY_VERSION'\"'\"', '\"'\"'2.31.65'\"'\"'/SOPHICLY_VERSION'\"'\"', '\"'\"'2.31.66'\"'\"'/' sophicly-student-data/sophicly-student-data.php)",
+      "Bash(php -l sophicly-student-data/sophicly-student-data.php)",
+      "Bash(php -l sophicly-student-data/includes/class-gamification-rest-api.php)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

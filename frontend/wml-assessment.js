@@ -25211,6 +25211,21 @@
         return sectionHTML('quizresult', title, false, null, inner);
     }
 
+    // v7.19.635: mirror the quiz grade onto the Protocol Progress sidebar's
+    // "Results" step (Neil — show Grade N there too). Idempotent: strips any
+    // prior " · Grade N" suffix first. Grade comes from _pendingQuizResult.
+    function _patchQuizResultSidebar() {
+        if (state.task !== 'foundational_quiz' && state.task !== 'mark_scheme_unit') return;
+        const g = _pendingQuizResult && _pendingQuizResult.grade;
+        if (!g) return;
+        const cont = document.getElementById('swml-progress-steps');
+        if (!cont) return;
+        cont.querySelectorAll('.swml-step-label').forEach(l => {
+            const base = (l.textContent || '').replace(/\s*·\s*Grade\b.*$/i, '').trim();
+            if (/^results$/i.test(base)) l.textContent = `${base} · Grade ${g}`;
+        });
+    }
+
     // Upsert the Quiz Result card into the live editor, positioned directly
     // under the Quiz Notes section (before the Forging Your Weapon divider).
     // Idempotent: strips any prior card first. Preserves student-typed notes
@@ -25251,6 +25266,7 @@
             try { canvasEditor.commands.setContent(tmp.innerHTML, false); }
             finally { _migrationActive = false; }
             snapshotTemplateBaseline(canvasEditor);
+            _patchQuizResultSidebar(); // v7.19.635: also show Grade N on the sidebar Results step
             console.log('WML v7.19.321: Quiz Result card applied', result);
         } catch (e) {
             console.warn('WML v7.19.321: Quiz Result card apply failed', e);
