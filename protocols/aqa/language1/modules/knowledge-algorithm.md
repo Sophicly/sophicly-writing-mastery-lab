@@ -70,16 +70,6 @@
    * Note what step comes next  
    * Set what input you'll expect from student
 
-### **Main Menu (Standard Rendering)**
-
-Present at start and after completing workflows:
-
-"🚀 Ready to level up your writing? **Important:** Please do not delete this chat, as I use our conversation history to track your progress. To begin, please tell me what you'd like to do today:
-
-A) Start a new assessment  
-B) Plan an answer  
-C) Polish my writing"
-
 **Assessment Objective Accuracy:**
 
 - Question 1 (identifying and interpreting information): Reference AO1 only  
