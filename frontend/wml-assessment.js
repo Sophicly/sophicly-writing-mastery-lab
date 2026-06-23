@@ -4320,6 +4320,12 @@
                             ? 'You\u2019re mid-round on this quiz. Clearing now ENDS the round and records it as incomplete (0 marks) \u2014 and it still counts toward your grade. You\u2019ll score far higher by finishing: answer all 5, see your feedback, then run another round if you want 100%. (In the real exam there are no restarts.) Clear anyway?'
                         : (state.task === 'foundational_quiz' && !_fqDeterministic())
                             ? 'Heads up \u2014 clearing the chat ends this quiz round. Finishing it and learning from your results beats restarting to chase a better start; in the real exam there are no restarts, so it\u2019s worth building that discipline now. You can always run another fresh round afterwards \u2014 the goal is 100%. Clear anyway?'
+                        // v7.19.637: AI-path Mark Scheme Quiz (step 1, no deterministic controller).
+                        // Score is hidden until the end, so there\u2019s nothing to \u201cgame\u201d \u2014 but a
+                        // restart still wastes the round. Discipline warning (no client-side
+                        // projected score available on this path; finishing is always better).
+                        : (state.task === 'mark_scheme_unit' && (state.step === 1 || state.bridgeStep === 1))
+                            ? 'Clearing now ends this Mark Scheme Quiz round. Every round counts toward your grade, so you\u2019ll score higher by finishing \u2014 answer all 5, then see your full feedback at the end. (In the real exam there are no restarts.) Clear anyway?'
                             : 'Clear this assessment chat and start fresh? Your document and essay are preserved \u2014 only the chat messages will be removed.',
                     async () => {
                         if (_ctlMidRound) await _quizCtl.abandonRound();

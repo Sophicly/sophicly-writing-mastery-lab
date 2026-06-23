@@ -6217,6 +6217,34 @@ TEMPLATE;
             $block .= "Continue tracking scores INTERNALLY (you'll need them for the Step 12 breakdown), but display nothing. The student answers each question without knowing whether they are tracking high or low — that is what makes this an assessment rather than a coaching exercise. The scoring breakdown at Step 12 is the FIRST time the student sees any score figures.\n";
         }
 
+        // v7.19.637: DEFER EVERYTHING for the mark_scheme_unit Quiz (step 1).
+        // Reverses the earlier "quizzes CAN show a running score" directive
+        // (Neil 2026-06-23): a live score/feedback tempts restart-gaming and
+        // short-circuits retrieval. Unifies MSQ with the Foundational Quiz's
+        // already-shipped end-of-round model. This is a HARD GATE — it overrides
+        // any per-question "give immediate feedback + score" / "show running
+        // score" / "immediate emoji feedback" instruction in the loaded quiz
+        // protocol below, which is now stale.
+        if ($task === 'mark_scheme_unit' && $step === 1) {
+            $block .= "\n### DEFER ALL FEEDBACK AND SCORE TO THE END — HARD GATE (CRITICAL)\n";
+            $block .= "This OVERRIDES any instruction in the quiz protocol that asks for per-question feedback, a running score, or immediate emoji marks. During the 5 questions, reveal NOTHING about correctness.\n";
+            $block .= "After the student answers each question (Q1–Q5):\n";
+            $block .= "- DO NOT say whether the answer was right, wrong, or partial.\n";
+            $block .= "- DO NOT give an explanation, exemplar, model answer, or distractor analysis yet.\n";
+            $block .= "- DO NOT emit a score, mark, percentage, or running tally (`💯 Current score`, `Score so far`, `X / Y`, `X out of Y`) in any form, anywhere.\n";
+            $block .= "- DO emit the hidden per-question capture marker on its own line (the server records the mark silently and strips it from display): `[[QUIZ q=<n> of=5 pts=<0-2> max=2 cat=<AO/category>]]`.\n";
+            $block .= "- DO give a SHORT neutral acknowledgement only (e.g. \"Got that — next one.\"), then the continuation cue.\n";
+            $block .= "Hold every answer, the correct answer, and a one-line reason INTERNALLY. The RESULTS turn (after Q5) is the FIRST time the student sees any of it: emit `[[QUIZ_DONE]]` on its own line, then reveal each question's ✓/⚠️/✗ mark, the correct answer, the explanation/exemplar, the total score, percentage, and grade — all in one batch. The score is computed by the SERVER from your per-question markers; do NOT compute or send any numbers before the results turn.\n";
+
+            // v7.19.637: fill-in-the-gap → real inline input field. The frontend
+            // (formatAI in wml-core.js) renders the literal token [BLANK] (and 3+
+            // underscores) as a typed-into <input> with a Submit button. So a gap
+            // question MUST contain the [BLANK] token, never a prose "type the
+            // missing word" prompt — otherwise it renders as plain text.
+            $block .= "\n### FILL-IN-THE-GAP — RENDER A REAL INPUT FIELD (CRITICAL)\n";
+            $block .= "For any fill-in-the-blank / gap question, write the gap as the literal token `[BLANK]` INSIDE the sentence (e.g. \"AO3 rewards perceptive analysis of [BLANK].\"). The frontend turns `[BLANK]` into an inline text input the student types into. Do NOT replace it with underscores-in-prose or a \"type the missing word\" instruction, and do NOT render any button yourself — the input + Submit are generated automatically. One `[BLANK]` per gap; use several only if the question genuinely has several gaps.\n";
+        }
+
         // v7.18.19: Score-persistence marker emission for mark_scheme. The DB row
         // is created on every canvas save; the score columns stay NULL until
         // Sophia emits the [QUIZ_COMPLETE:...] marker at Step 12 and the frontend
@@ -6240,7 +6268,10 @@ TEMPLATE;
         // which leaks the correct answer mid-assessment. Symmetric phrasing is
         // pedagogically equivalent and preserves the diagnostic value. v7.18.26
         // extends to mark_scheme_unit so MSQ + FYW also use neutral framing.
-        if ($task === 'mark_scheme' || $task === 'mark_scheme_unit') {
+        // v7.19.637: mark_scheme_unit step 1 (MSQ) DROPPED from this block — under
+        // the new defer-everything gate there is no mid-quiz distractor analysis;
+        // distractor discussion (if any) happens at the results reveal after Q5.
+        if ($task === 'mark_scheme') {
             $block .= "\n### DISTRACTOR ANALYSIS — NEUTRAL PHRASING (CRITICAL)\n";
             $block .= "Distractor Analysis runs after each MCQ question. The framing must NOT reveal which answer was correct. Use SYMMETRIC, NEUTRAL phrasing that treats every option as a candidate worth interrogating:\n";
             $block .= "- DO NOT say \"Why might someone INCORRECTLY choose A?\" / \"What makes A WRONG?\" / \"What makes it tempting but WRONG?\".\n";
@@ -6262,13 +6293,16 @@ TEMPLATE;
             $block .= "The exact phrase \"Ready for Question N?\" or \"Ready for the results?\" surfaces a Yes / Hold-on quick-action button so the student can click instead of typing. Place this cue on its own line at the end of the message. Do NOT place it before the distractor prompt; it always comes LAST.\n";
         }
         // v7.18.26: continue-prompt mandate for mark_scheme_unit Quiz (5 Qs).
+        // v7.19.637: reworded for the defer-everything gate — between questions
+        // there is a NEUTRAL acknowledgement (no feedback/score), and the cue
+        // follows it. The cue still surfaces the Yes / Hold-on quick-action button.
         if ($task === 'mark_scheme_unit' && $step === 1) {
             $block .= "\n### CONTINUE-PROMPT MANDATE (CRITICAL)\n";
-            $block .= "Every per-question feedback / distractor message must END with an explicit continuation cue, regardless of question type:\n";
-            $block .= "- After Q1 feedback: \"Ready for Question 2?\"\n";
-            $block .= "- After Q2 feedback: \"Ready for Question 3?\"\n";
-            $block .= "- ... and so on through Q4. After Q5: \"Ready for the results?\".\n";
-            $block .= "The exact phrase \"Ready for Question N?\" or \"Ready for the results?\" surfaces a Yes / Hold-on quick-action button so the student can click instead of typing. Place this cue on its own line at the end of the message. Do NOT place it before the distractor prompt; it always comes LAST.\n";
+            $block .= "After the student answers, your message is a SHORT neutral acknowledgement only (no correctness, no score — see the defer gate above) and must END with an explicit continuation cue, regardless of question type:\n";
+            $block .= "- After the Q1 answer: \"Ready for Question 2?\"\n";
+            $block .= "- After the Q2 answer: \"Ready for Question 3?\"\n";
+            $block .= "- ... and so on through Q4. After the Q5 answer: \"Ready for the results?\".\n";
+            $block .= "The exact phrase \"Ready for Question N?\" or \"Ready for the results?\" surfaces a Yes / Hold-on quick-action button so the student can click instead of typing. Place this cue on its own line at the end of the message. Do NOT reveal any feedback or score before \"Ready for the results?\" is answered.\n";
         }
         // v7.18.26: continue-prompt mandate for FYW (5 phases).
         if ($task === 'mark_scheme_unit' && $step === 2) {

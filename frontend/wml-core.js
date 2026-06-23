@@ -2546,7 +2546,11 @@ window.WML = (function() {
         //            questions render as input fields rather than "\_\_\_\_\_\_".
         let blankIdx = 0;
         text = text.replace(/(?:\\_){3,}/g, (m) => '_'.repeat(m.length / 2));
-        text = text.replace(/\[BLANK\]/gi, () => `[SWML_BLANK_${blankIdx++}]`);
+        // v7.19.637: also match the markdown-escaped form \[BLANK\] — the quiz
+        // question banks store the token escaped, and the AI sometimes relays it
+        // that way, which the bare /\[BLANK\]/ regex would miss (leaving it as
+        // literal text instead of a fill-in-the-gap input field).
+        text = text.replace(/\\?\[BLANK\\?\]/gi, () => `[SWML_BLANK_${blankIdx++}]`);
         text = text.replace(/_{3,}/g, () => `[SWML_BLANK_${blankIdx++}]`);
 
         // ── Pre-process: split concatenated pipe table rows (AI sometimes omits newlines) ──
