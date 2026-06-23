@@ -4589,7 +4589,7 @@
         // the downstream yes/no fallback is blocked by hasLetterChoices=true,
         // so no button renders at all.
         if (letterOptions.length === 1) {
-            const isForwardPrompt = /ready to (?:move|continue|proceed|go)|next\s+question|shall\s+we\s+(?:proceed|continue)|continue\s+to/i.test(text);
+            const isForwardPrompt = /ready to (?:move|continue|proceed|go)|ready\s+for\s+(?:your\s+)?results|show\s+(?:my\s+)?(?:final\s+)?results|next\s+question|shall\s+we\s+(?:proceed|continue)|continue\s+to/i.test(text);
             if (isForwardPrompt) return letterOptions;
         }
 

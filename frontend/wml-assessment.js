@@ -3813,7 +3813,8 @@
             });
             protoBadges.appendChild(badge);
         }
-        if (state.attempt > 0) _updateAttemptBadge();
+        // v7.19.633: foundational_quiz is single-attempt (no attempt model) — no "Attempt N" badge.
+        if (state.attempt > 0 && state.task !== 'foundational_quiz') _updateAttemptBadge();
         protoBody.appendChild(protoBadges);
 
         // Protocol Progress label — v7.17.16: skip entirely when manifest sets panels.progress=false (mark_scheme_unit).
@@ -6639,7 +6640,8 @@
         const _cribHideAttempt = state.task === 'exam_crib';
         // v7.19.207: Mastery Codex has no attempt model — single user-scoped doc.
         const _codexHideAttempt = state.task === 'mastery_codex';
-        if (!_tfHideAttempt && !_cribHideAttempt && !_codexHideAttempt) {
+        const _fqHideAttempt = state.task === 'foundational_quiz'; // v7.19.633: FQ single-attempt — no attempt badge
+        if (!_tfHideAttempt && !_cribHideAttempt && !_codexHideAttempt && !_fqHideAttempt) {
             const attemptPlaceholder = el('span', {
                 className: 'swml-canvas-ctx-badge swml-ctx-attempt-badge',
                 textContent: ((state.attempt || 0) >= 1) ? `Attempt ${state.attempt}` : '',
@@ -16836,6 +16838,8 @@
         function buildTransferOverlays(container) {
             if (!canvasEditor) return;
             if (state.task === 'exam_crib') return;
+            // v7.19.633: foundational_quiz doc has no Response section — Transfer button is redundant.
+            if (state.task === 'foundational_quiz') return;
             // v7.19.224: Codex has no Response section — Transfer-to-Response buttons irrelevant.
             if (state.task === 'mastery_codex') return;
             // v7.19.463: CW steps have plan sections (Story Components, Story Ideas, Chosen
@@ -24403,7 +24407,15 @@
                 // v7.19.247: re-paint Score-Summary dates after the async server doc
                 // lands. Deferred a tick so the canvas builder has (re)assigned the ref
                 // and the score section exists in the DOM. Idempotent.
-                setTimeout(() => { if (typeof _recalcScoreSummaryRef === 'function') _recalcScoreSummaryRef(); }, 0);
+                setTimeout(() => {
+                    if (typeof _recalcScoreSummaryRef === 'function') _recalcScoreSummaryRef();
+                    // v7.19.633: project the persisted Quiz Result (FQ / MSQ) into the doc on
+                    // LOAD. The live finalise path (res.quizResult) can miss the in-doc write;
+                    // _pendingQuizResult was captured above from /canvas/load, so re-project it
+                    // here so it self-heals on every reopen. applyQuizResultToEditor self-guards
+                    // (no-ops unless _pendingQuizResult + a quiz task + canvasEditor present).
+                    if (typeof applyQuizResultToEditor === 'function') applyQuizResultToEditor();
+                }, 0);
             }
         } catch (e) {
             console.log('WML: Server load unavailable, using localStorage');
