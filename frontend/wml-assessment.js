@@ -363,22 +363,39 @@
                     if (qm) {
                         const max = parseInt((lbl.match(/\/\s*(\d+)\s*\)/) || [])[1] || '0', 10);
                         const marked = /\(\s*\d+(?:\.\d+)?\s*\/\s*\d+\s*\)/.test(lbl); // numeric, not "—"
-                        const hasGold = /Gold Standard|Optimal/i.test(String(node.textContent || '')); // gold rewrite filed
-                        qs.push({ n: qm[1], max: max, marked: marked, hasGold: hasGold });
+                        const text = String(node.textContent || '');
+                        const hasGold = /Gold Standard|Optimal/i.test(text); // gold rewrite filed
+                        qs.push({ n: qm[1], max: max, marked: marked, hasGold: hasGold, text: text });
                     }
                 }
                 return true;
             });
         } catch (_) { return null; }
         if (qs.length < 2) return null;                   // not a multi-question paper
-        // v7.19.627: each question expands to its ELEMENT beats so the student sees
-        // exactly where they are (Neil): Predict & AO → Mark & Feedback → Gold Models.
-        // Beat completion is derived from the doc + the stored prediction (no protocol
-        // stitching): predict = a committed prediction exists; mark = a numeric mark in
-        // the box label; gold = the box text carries a gold rewrite. Q1 (retrieval,
-        // ≤4 marks) is a single Mark & Feedback beat (no predict / no gold — spec). Once
-        // a LATER question is marked, earlier questions' beats are forced done so a missed
-        // gold-detect can't strand the pointer (monotonic, sequential Q1→Q5).
+        // v7.19.628: each question expands to its PER-PARAGRAPH rows (Neil) so the student
+        // sees exactly where they are — detected DYNAMICALLY from the feedback-box content
+        // as each paragraph is marked (modern read-from-doc, no protocol stitching / no
+        // hardcoded paragraph counts). Monotonic: a paragraph is done once a LATER paragraph
+        // appears or the question is marked; the last detected paragraph is in progress.
+        // Before any paragraph is filed, the question shows its element beats (Predict & AO →
+        // Mark & Feedback → Gold) as the fallback. Q1 (retrieval, ≤4) = single Mark & Feedback
+        // (no predict/gold — spec). Section B = holistic element beats (no paragraphs). Once a
+        // LATER question is marked, earlier beats force-complete so a missed detect can't
+        // strand the pointer (sequential Q1→Q5).
+        const _extractParas = function (text, qmax) {
+            const t = String(text || '');
+            // Intro/Conclusion are real paragraphs only on essay-weight questions (Q4 ~20);
+            // on Q2/Q3 the words can appear in prose feedback → match numbered paragraphs only.
+            const re = qmax >= 16
+                ? /(?:Body\s+Paragraph|Paragraph)\s*(\d+)|Introduction|Conclusion/gi
+                : /(?:Body\s+Paragraph|Paragraph)\s*(\d+)/gi;
+            const out = []; let m;
+            while ((m = re.exec(t)) !== null) {
+                const label = m[1] ? ('Paragraph ' + m[1]) : (/Introduction/i.test(m[0]) ? 'Introduction' : 'Conclusion');
+                if (out.indexOf(label) === -1) out.push(label);
+            }
+            return out;
+        };
         let maxMarkedIdx = -1;
         qs.forEach((q, i) => { if (q.marked) maxMarkedIdx = i; });
         const steps = [];
@@ -390,17 +407,31 @@
             const group = isB ? 'Section B' : ('Question ' + q.n);
             const behind = i < maxMarkedIdx;               // a later question already marked → fully done
             const predicted = _getPredicted(q.n) != null;
+            const paras = (!isB && !isRetrieval) ? _extractParas(q.text, q.max) : [];
             const beats = [];
-            if (!isRetrieval) beats.push({ label: 'Predict & AO', done: behind || predicted || q.marked });
-            beats.push({ label: isB ? 'Section Feedback' : 'Mark & Feedback', done: behind || q.marked });
-            if (!isRetrieval) beats.push({ label: isB ? 'Gold Article' : 'Gold Models', done: behind || (q.marked && q.hasGold) });
+            // Predict & AO (the per-question reflection); done once marking starts.
+            if (!isRetrieval) beats.push({ label: 'Predict & AO', done: behind || predicted || q.marked || paras.length > 0 });
+            if (paras.length) {
+                paras.forEach((label, pi) => {
+                    const laterExists = pi < paras.length - 1;
+                    beats.push({ label: label, done: behind || q.marked || laterExists });
+                });
+            } else {
+                beats.push({ label: isB ? 'Section Feedback' : 'Mark & Feedback', done: behind || q.marked });
+                if (!isRetrieval) beats.push({ label: isB ? 'Gold Article' : 'Gold Models', done: behind || (q.marked && q.hasGold) });
+            }
             let di = 0;
             beats.forEach((b) => {
                 steps.push({ step: ++n, label: b.label, group: group, display: String(++di) });
                 if (firstIncomplete === 0 && !b.done) firstIncomplete = n;
             });
         });
-        steps.push({ step: ++n, label: 'Total & Grade', group: null, display: '★' });
+        // v7.19.628: Total & Grade circle shows the actual GRADE in its ladder colour
+        // (9 gradient / 8 purple / 7 blue / 6 green / 5 yellow / 4 orange / 3↓ red — Neil)
+        // once a grade exists; the aspirational ★ until then. Colour applied post-render
+        // by _styleTotalGradeCircle (the generic circle classes don't carry grade colour).
+        const _grade = parseInt(state.plan && state.plan.grade, 10) || 0;
+        steps.push({ step: ++n, label: 'Total & Grade', group: null, display: _grade ? String(_grade) : '★', gradeTier: _grade || null });
         const allDone = qs.every(q => q.marked);
         const current = allDone ? n : (firstIncomplete || 2);
         return { steps: steps, current: current };
@@ -411,7 +442,29 @@
     // Rides _applyServerSidebar: re-renders only when the step STRUCTURE changes
     // (sig guard), otherwise just moves the active pointer.
     function _refreshLangSidebar() {
-        try { const m = _buildLangSidebarModel(); if (m) _applyServerSidebar(m); } catch (_) {}
+        try { const m = _buildLangSidebarModel(); if (m) { _applyServerSidebar(m); _styleTotalGradeCircle(m); } } catch (_) {}
+    }
+    // v7.19.628: paint the final "Total & Grade" circle with the achieved grade in its
+    // ladder colour (reusing _GRADE_BG / _GRADE_DARK_TEXT). Runs AFTER _applyServerSidebar
+    // (which repaints every circle) so it wins; no-op until a grade exists (★ stays).
+    function _styleTotalGradeCircle(m) {
+        const total = m && m.steps && m.steps[m.steps.length - 1];
+        if (!total || !total.gradeTier) return;
+        const c = document.getElementById('swml-progress-steps');
+        if (!c) return;
+        const stepEls = c.querySelectorAll('.swml-step[data-step]');
+        const el = stepEls[stepEls.length - 1];                 // Total & Grade is the last step
+        if (!el) return;
+        const circle = el.querySelector('.swml-step-circle');
+        if (!circle) return;
+        const g = total.gradeTier;
+        // drop active/complete so their fixed colours + the ::after tick don't override
+        el.classList.remove('complete', 'active');
+        circle.classList.remove('complete', 'active');
+        circle.textContent = String(g);
+        circle.style.background = _GRADE_BG[g] || '#5333ed';     // hex or grade-9 gradient
+        circle.style.color = _GRADE_DARK_TEXT[g] ? '#1a1a1a' : '#fff';
+        circle.style.borderColor = 'transparent';
     }
 
     // v7.15.56: entry modal shown once per (user, student, post) combo so tutors
