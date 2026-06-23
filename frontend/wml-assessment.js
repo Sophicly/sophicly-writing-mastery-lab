@@ -326,6 +326,60 @@
         }, 350); // after the accordion max-height transition
     }
 
+    // ── v7.19.625: GRANULAR per-question sidebar for multi-question LANGUAGE
+    // assessments that the SERVER model does NOT drive (everything except AQA P2,
+    // which is server-beat-driven via assessment_sidebar_model). Built ENTIRELY from
+    // the canvas feedback boxes — the same source the marks + predict pills read — so
+    // it advances on the exact signal Neil validated, with ZERO protocol/marking
+    // change. Emitted in assessment_sidebar_model's shape so it rides the existing
+    // _applyServerSidebar consumer (one render/advance path — no second mechanism).
+    // Replaces the generic flat-8 (Setup…Session Complete) with Setup → Q1…Qn →
+    // Section B → Total & Grade. Literature (intro/body/conclusion boxes, not "Qn")
+    // and single-essay papers fall through to null → unchanged.
+    function _buildLangSidebarModel() {
+        if (state.reviewMode) return null;
+        if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return null;
+        if (_expectServerSidebar()) return null;          // AQA P2 → authoritative server model
+        if (!canvasEditor) return null;
+        const qs = [];
+        try {
+            canvasEditor.state.doc.descendants((node) => {
+                if (node.type && node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'feedback') {
+                    const lbl = String(node.attrs.label || '');
+                    const qm = lbl.match(/feedback\s*[:\-]?\s*q\s*(\d+)/i);   // "Feedback: Q3 (— / 8)"
+                    if (qm) {
+                        const max = parseInt((lbl.match(/\/\s*(\d+)\s*\)/) || [])[1] || '0', 10);
+                        const marked = /\(\s*\d+(?:\.\d+)?\s*\/\s*\d+\s*\)/.test(lbl); // numeric, not "—"
+                        qs.push({ n: qm[1], max: max, marked: marked });
+                    }
+                }
+                return true;
+            });
+        } catch (_) { return null; }
+        if (qs.length < 2) return null;                   // not a multi-question paper
+        const steps = [];
+        let n = 0;
+        steps.push({ step: ++n, label: 'Setup & Goals', group: null, display: '1' });
+        qs.forEach((q) => {
+            const isB = q.max >= 40;                       // Section B writing question
+            steps.push({ step: ++n, label: 'Mark, Feedback & Golds', group: isB ? 'Section B' : ('Question ' + q.n), display: '1' });
+        });
+        steps.push({ step: ++n, label: 'Total & Grade', group: null, display: '★' });
+        // current follows the marks: the first UNMARKED question's step (the one in
+        // progress); Total & Grade once every question is marked.
+        const firstUnmarked = qs.findIndex(q => !q.marked);
+        const current = firstUnmarked === -1 ? n : (2 + firstUnmarked);
+        return { steps: steps, current: current };
+    }
+
+    // Re-derive + apply the Language sidebar so the pointer advances as marks land.
+    // No-op for contexts without a model (P2 server-driven / Literature / single-essay).
+    // Rides _applyServerSidebar: re-renders only when the step STRUCTURE changes
+    // (sig guard), otherwise just moves the active pointer.
+    function _refreshLangSidebar() {
+        try { const m = _buildLangSidebarModel(); if (m) _applyServerSidebar(m); } catch (_) {}
+    }
+
     // v7.15.56: entry modal shown once per (user, student, post) combo so tutors
     // landing on a lesson in review mode see the context before they start reviewing.
     function maybeShowReviewEntryModal() {
@@ -3671,7 +3725,10 @@
             // this change just means the brief initial paint uses the right
             // task labels instead of the generic ASSESSMENT defaults.
             const _gs = (typeof getSteps === 'function') ? getSteps() : null;
-            const assessSteps = canvasSidebarSteps || (_gs && _gs.length ? _gs.map((s, i) => ({ step: i + 1, label: s.label })) : [
+            // v7.19.625: multi-question Language papers (non-P2) get a per-question
+            // granular sidebar derived from the feedback boxes, replacing the flat-8.
+            const _langModel = _buildLangSidebarModel();
+            const assessSteps = _langModel ? _langModel.steps : (canvasSidebarSteps || (_gs && _gs.length ? _gs.map((s, i) => ({ step: i + 1, label: s.label })) : [
                 { step: 1, label: 'Setup & Details' },
                 { step: 2, label: 'Goal Setting' },
                 { step: 3, label: 'Self-Reflection' },
@@ -3680,12 +3737,15 @@
                 { step: 6, label: 'Body Paragraphs' },
                 { step: 7, label: 'Conclusion' },
                 { step: 8, label: 'Summary & Action Plan' },
-            ]);
-            _renderSidebarSteps(protoSteps, assessSteps);
+            ]));
+            _renderSidebarSteps(protoSteps, assessSteps, _langModel ? { alwaysGroup: true } : undefined);
             // v7.19.376: server-driven contexts keep the default paint hidden
             // until the model applies (kills the old-layout flash); the
             // chat-load fetch reveals it as a fallback if no model arrives.
-            if (_expectServerSidebar()) protoSteps.style.display = 'none';
+            if (!_langModel && _expectServerSidebar()) protoSteps.style.display = 'none';
+            // v7.19.625: once the panel is in the DOM, seat the active pointer from
+            // the marks already present (handles re-entry into a completed/partial doc).
+            if (_langModel) setTimeout(_refreshLangSidebar, 0);
             protoBody.appendChild(protoSteps);
         }
 
@@ -5082,6 +5142,7 @@
                         // assessment turns, which are NOT cw_ tasks, so it lives OUTSIDE the cw_ guard
                         // below. Self-guards (no-op unless the reply carries @FB markers or a marking block).
                         applyAssessmentFeedback(res.reply);
+                        _refreshLangSidebar(); // v7.19.625: advance per-Q Language sidebar as marks land
 
                         // v7.14.68: Planning/polishing step detection — advance sidebar based on AI content
                         if (state.task === 'planning' || state.task === 'polishing') {
@@ -9881,6 +9942,10 @@
                         updateProgress(maxStep);
                         console.log('WML initAssessmentState: Sidebar → step', maxStep);
                     }
+                    // v7.19.625: multi-question Language papers (non-P2) — seat the per-question
+                    // granular sidebar from the marks now present in the loaded doc (overrides the
+                    // flat maxStep above). Covers all 3 entry paths since they funnel through here.
+                    _refreshLangSidebar();
                     if (state._phaseMarkedComplete) return;
                     try {
                         const phaseUrl = `${API.phaseStatus}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topic=${state.topicNumber || 1}`;
@@ -11116,7 +11181,9 @@
             // auto-scrolled into view on every server-sidebar advance.
             const protoSteps = el('div', { id: 'swml-progress-steps', style: { overflowY: 'auto', overflowX: 'hidden', flex: '1 1 auto', minHeight: '0' } });
                             // v7.13.97: Use task-specific steps for exam prep, manifest sidebarSteps for assessment, fallback to defaults
-                            const assessSteps = canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
+                            // v7.19.625: multi-question Language papers (non-P2) → per-question granular sidebar.
+                            const _langModel2 = _buildLangSidebarModel();
+                            const assessSteps = _langModel2 ? _langModel2.steps : (canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
                                 { step: 1, label: 'Setup & Details' },
                                 { step: 2, label: 'Goal Setting' },
                                 { step: 3, label: 'Self-Reflection' },
@@ -11125,9 +11192,10 @@
                                 { step: 6, label: 'Body Paragraphs' },
                                 { step: 7, label: 'Conclusion' },
                                 { step: 8, label: 'Summary & Action Plan' },
-                            ]);
-                            _renderSidebarSteps(protoSteps, assessSteps);
+                            ]));
+                            _renderSidebarSteps(protoSteps, assessSteps, _langModel2 ? { alwaysGroup: true } : undefined);
                             protoBody.appendChild(protoSteps);
+                            if (_langModel2) setTimeout(_refreshLangSidebar, 0);
                         }
 
                         // Bottom buttons — matching original sidebar, with icon+text for collapsed mode
@@ -11899,6 +11967,7 @@
 
                                         // v7.19.600: auto-file assessment feedback (runs for ALL tasks, outside the cw_ guard).
                                         applyAssessmentFeedback(res.reply);
+                                        _refreshLangSidebar(); // v7.19.625: advance per-Q Language sidebar as marks land
 
                                         // v7.14.69: CW sub-step progress tracking (training-env pipeline)
                                         if (state.task && state.task.startsWith('cw_')) {

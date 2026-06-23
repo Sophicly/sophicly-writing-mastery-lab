@@ -732,7 +732,9 @@
       "Bash(cat feedback_topic_sentence_conceptual_no_move.md)",
       "Bash(find /Users/neilwilliams/.claude -name \"*topic_sentence_conceptual*\")",
       "Bash(\"/usr/local/bin/node\" \"/Users/neilwilliams/.claude/plugins/cache/context-mode/context-mode/1.0.163/cli.bundle.mjs\" upgrade --platform claude-code)",
-      "Bash(awk 'NR>=3540 && NR<=3590 && /subjectLabel|boardLabel|textLabel|state.subject|getSubjectLabel|getTextLabel|SUBJECT/' frontend/wml-assessment.js)"
+      "Bash(awk 'NR>=3540 && NR<=3590 && /subjectLabel|boardLabel|textLabel|state.subject|getSubjectLabel|getTextLabel|SUBJECT/' frontend/wml-assessment.js)",
+      "Bash(grep -rhoE \"mw-row__grade--[a-z0-9{}\\\\$ ?>=:'.\\(\\)gradeClsFromNumprimary]+\" components/)",
+      "Bash(grep -oE \"g\\\\\\\\\\\\$|g[1-9]|high|mid|low\")"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
