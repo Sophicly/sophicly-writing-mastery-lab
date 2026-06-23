@@ -363,25 +363,46 @@
                     if (qm) {
                         const max = parseInt((lbl.match(/\/\s*(\d+)\s*\)/) || [])[1] || '0', 10);
                         const marked = /\(\s*\d+(?:\.\d+)?\s*\/\s*\d+\s*\)/.test(lbl); // numeric, not "—"
-                        qs.push({ n: qm[1], max: max, marked: marked });
+                        const hasGold = /Gold Standard|Optimal/i.test(String(node.textContent || '')); // gold rewrite filed
+                        qs.push({ n: qm[1], max: max, marked: marked, hasGold: hasGold });
                     }
                 }
                 return true;
             });
         } catch (_) { return null; }
         if (qs.length < 2) return null;                   // not a multi-question paper
+        // v7.19.627: each question expands to its ELEMENT beats so the student sees
+        // exactly where they are (Neil): Predict & AO → Mark & Feedback → Gold Models.
+        // Beat completion is derived from the doc + the stored prediction (no protocol
+        // stitching): predict = a committed prediction exists; mark = a numeric mark in
+        // the box label; gold = the box text carries a gold rewrite. Q1 (retrieval,
+        // ≤4 marks) is a single Mark & Feedback beat (no predict / no gold — spec). Once
+        // a LATER question is marked, earlier questions' beats are forced done so a missed
+        // gold-detect can't strand the pointer (monotonic, sequential Q1→Q5).
+        let maxMarkedIdx = -1;
+        qs.forEach((q, i) => { if (q.marked) maxMarkedIdx = i; });
         const steps = [];
-        let n = 0;
+        let n = 0, firstIncomplete = 0;
         steps.push({ step: ++n, label: 'Setup & Goals', group: null, display: '1' });
-        qs.forEach((q) => {
+        qs.forEach((q, i) => {
             const isB = q.max >= 40;                       // Section B writing question
-            steps.push({ step: ++n, label: 'Mark, Feedback & Golds', group: isB ? 'Section B' : ('Question ' + q.n), display: '1' });
+            const isRetrieval = !isB && q.max <= 4;        // Q1 true/false retrieval
+            const group = isB ? 'Section B' : ('Question ' + q.n);
+            const behind = i < maxMarkedIdx;               // a later question already marked → fully done
+            const predicted = _getPredicted(q.n) != null;
+            const beats = [];
+            if (!isRetrieval) beats.push({ label: 'Predict & AO', done: behind || predicted || q.marked });
+            beats.push({ label: isB ? 'Section Feedback' : 'Mark & Feedback', done: behind || q.marked });
+            if (!isRetrieval) beats.push({ label: isB ? 'Gold Article' : 'Gold Models', done: behind || (q.marked && q.hasGold) });
+            let di = 0;
+            beats.forEach((b) => {
+                steps.push({ step: ++n, label: b.label, group: group, display: String(++di) });
+                if (firstIncomplete === 0 && !b.done) firstIncomplete = n;
+            });
         });
         steps.push({ step: ++n, label: 'Total & Grade', group: null, display: '★' });
-        // current follows the marks: the first UNMARKED question's step (the one in
-        // progress); Total & Grade once every question is marked.
-        const firstUnmarked = qs.findIndex(q => !q.marked);
-        const current = firstUnmarked === -1 ? n : (2 + firstUnmarked);
+        const allDone = qs.every(q => q.marked);
+        const current = allDone ? n : (firstIncomplete || 2);
         return { steps: steps, current: current };
     }
 
@@ -2209,6 +2230,7 @@
                 _setPredicted(predictQ, predicted);
                 // show the prediction in the box's calibration row immediately (before the mark).
                 try { if (typeof _scoreOverlaysRefresh === 'function') _scoreOverlaysRefresh(); } catch (_) {}
+                _refreshLangSidebar(); // v7.19.627: tick the "Predict & AO" beat now, not next turn
                 msg += `Predicted ${parsed.q || ('Q' + predictQ)} mark: ${predicted}/${predictMax}. `;
             }
             msg += `Self-rating: ${rating}/5.`;
