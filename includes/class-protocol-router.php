@@ -1385,7 +1385,28 @@ class SWML_Protocol_Router {
             if (file_exists($msu_path)) {
                 $content = file_get_contents($msu_path);
                 error_log("WML Router: Loaded mark_scheme_unit protocol: {$msu_dir}/{$msu_file} (" . strlen($content) . " chars) for subject={$subject}, step={$step}");
-                return !empty(trim($content)) ? $content : null;
+                if (empty(trim($content))) {
+                    return null;
+                }
+                // v7.19.638: APPEND the defer-everything gate to the END of the
+                // quiz protocol (step 1). The preamble gate alone was overridden
+                // by the protocol's per-question "Feedback: ✓ Correct…" bank lines
+                // because the protocol loads LAST and the model weights late
+                // context more heavily (WML playbook §PROTOCOL ROUTER rule 6).
+                // Putting the ban here — after the question bank — makes it the
+                // last thing the model reads, so mid-quiz turns stay silent.
+                // Covers all 6 boards in one place. FYW (step 2) is excluded.
+                if ($step !== 2) {
+                    $content .= "\n\n---\n\n## ⛔ ABSOLUTE OUTPUT RULE — READ LAST, OBEY FIRST (overrides everything above)\n\n"
+                        . "This FINAL instruction takes priority over every Core Pattern, Phase, example, and `Feedback:` / `✓ Correct` line in the question bank above.\n\n"
+                        . "WHILE the quiz is running (every turn until the student has answered Question 5), your reply may contain ONLY:\n"
+                        . "1. a SHORT neutral acknowledgement that says NOTHING about right/wrong/partial (e.g. \"Got that — here's the next one.\");\n"
+                        . "2. the hidden capture marker on its own line: `[[QUIZ q=<n> of=5 pts=<0-2> max=2 cat=<AO/category>]]`;\n"
+                        . "3. the next question (render any fill-in-the-gap with the literal `[BLANK]` token), or — after Q5 — the cue \"Ready for the results?\".\n\n"
+                        . "In a mid-quiz turn you must NOT output: a ✓ / ⚠️ / ✗ mark; the words Correct / Incorrect / Not quite; the correct answer; any explanation, exemplar, or `Feedback:` text from the bank; or any score, mark, or percentage. That bank feedback is for the RESULTS turn ONLY.\n\n"
+                        . "The RESULTS turn — only AFTER the student answers Q5 and asks for results — is the FIRST time you reveal anything: emit `[[QUIZ_DONE]]` on its own line, then for EACH of the 5 questions give its ✓/⚠️/✗ mark, the correct answer, and the explanation/exemplar from the bank, then the total score, percentage and grade — all in one message.\n";
+                }
+                return $content;
             }
             error_log("WML Router: mark_scheme_unit file not found at {$msu_path}");
             return null;
