@@ -4551,10 +4551,20 @@
         // tail after the prompt — that's the actual button cluster.
         const isFeedbackMsg = /\bFeedback\s*[—\-:]|✓\s*Correct|✗\s*Not\s*quite|⚠️?\s*Partial\s*credit/i.test(text);
         const readyTailRegex = /Ready\s+(?:to\s+(?:move\s+on|continue|proceed|go)|for\s+(?:your\s+|the\s+)?(?:results|final|next))/i;
-        if (isFeedbackMsg && readyTailRegex.test(text)) {
-            const readyIdx = text.search(readyTailRegex);
-            if (readyIdx > -1) {
-                const tailLines = text.slice(readyIdx).split('\n').map(l => l.trim()).filter(Boolean);
+        // v7.19.639: end-of-round RESULTS message scopes letters to the final
+        // menu too. The defer-everything reveal lists every question's recapped
+        // A)/B)/C)/D) options + "Correct!" before the closing
+        // "What would you like to do next? A) Try another round / B) Ask / C) Finish"
+        // menu — so the unscoped letterOptions grabbed the FIRST A)/B) (a revealed
+        // answer) instead of the menu. Scope to the tail after the LAST forward
+        // anchor (Ready… OR the menu prompt), whichever appears later.
+        const menuTailRegex = /What\s+would\s+you\s+like\s+to\s+do(?:\s+next)?/i;
+        const _readyIdx = text.search(readyTailRegex);
+        const _menuIdx  = text.search(menuTailRegex);
+        const _anchorIdx = Math.max(_readyIdx, _menuIdx);
+        if (_anchorIdx > -1 && (isFeedbackMsg || _menuIdx > -1)) {
+            {
+                const tailLines = text.slice(_anchorIdx).split('\n').map(l => l.trim()).filter(Boolean);
                 const tailOptions = [];
                 for (const line of tailLines) {
                     const m = line.match(letterRegex) || line.match(letterBoldRegex);

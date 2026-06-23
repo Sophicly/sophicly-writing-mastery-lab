@@ -25274,6 +25274,17 @@
             snapshotTemplateBaseline(canvasEditor);
             _patchQuizResultSidebar(); // v7.19.635: also show Grade N on the sidebar Results step
             console.log('WML v7.19.321: Quiz Result card applied', result);
+            // v7.19.639: tell the LearnDash focus-mode SPA a grade just landed so
+            // it can refresh the sidebar chips + metrics-row pill live (no reload).
+            // The SPA listens for this on its /course-step-grades fetch (see handoff
+            // learndash-focus-sidebar-realtime-grade-refresh-2026-06-23). Harmless
+            // when the SPA isn't present (standalone WML page).
+            try {
+                document.dispatchEvent(new CustomEvent('sophiclyGradeUpdated', { detail: {
+                    task: state.task, board: state.board, subject: state.subject,
+                    text: state.text, grade: result.grade,
+                } }));
+            } catch (_) {}
         } catch (e) {
             console.warn('WML v7.19.321: Quiz Result card apply failed', e);
         }
