@@ -777,7 +777,9 @@
       "Bash(perl -i -pe 's/DB query for Anrow included/DB query for Anam'\"'\"'s row included/' HANDOFFS.md)",
       "Bash(grep -n 'function\\\\|best\\\\|max\\\\|return\\\\|foreach\\\\|\\\\$attempt\\\\|:a\\\\|preg_replace\\\\|ex_key\\\\|highest')",
       "Bash(awk -F: '$1 < 2900')",
-      "Bash(git restore *)"
+      "Bash(git restore *)",
+      "Bash(ls sophicly-dashboard/*.sh sophicly-student-data/*.sh)",
+      "Bash(ls *.sh deploy*)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
