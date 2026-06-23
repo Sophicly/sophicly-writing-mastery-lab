@@ -767,7 +767,10 @@
       "Bash(sed -i '' 's/Version: 2.30.219/Version: 2.30.220/; s/SDASH_VERSION'\"'\"', '\"'\"'2.30.219'\"'\"'/SDASH_VERSION'\"'\"', '\"'\"'2.30.220'\"'\"'/' sophicly-dashboard/sophicly-dashboard.php)",
       "Bash(sed -i '' 's/Version: 2.31.65/Version: 2.31.66/; s/SOPHICLY_VERSION'\"'\"', '\"'\"'2.31.65'\"'\"'/SOPHICLY_VERSION'\"'\"', '\"'\"'2.31.66'\"'\"'/' sophicly-student-data/sophicly-student-data.php)",
       "Bash(php -l sophicly-student-data/sophicly-student-data.php)",
-      "Bash(php -l sophicly-student-data/includes/class-gamification-rest-api.php)"
+      "Bash(php -l sophicly-student-data/includes/class-gamification-rest-api.php)",
+      "Bash(grep -r \"CourseGrade\\\\|course_grade\\\\|learndash.*grade\\\\|learnpress\\\\|ld_course\" /Users/neilwilliams/.claude/projects -type f --include=\"*.md\")",
+      "Bash(grep -nE 'namespace\\\\s*=|protected.*namespace|\\\\$this->namespace =' includes/class-rest-api.php)",
+      "Bash(bash -n deploy-production.sh)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",

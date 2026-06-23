@@ -1619,6 +1619,8 @@ Say: "Based on typical AQA grade boundaries, this places you at approximately **
 
 **Internal AI Note:** Analyze marks across all assessed questions to identify highest-scoring area (strength) and lowest-scoring area (priority target). Reference SESSION\_STATE.marks for all assessed questions.
 
+**Internal AI Note (v7.19.636 — CANVAS ROUTING, do NOT skip):** This personalised action plan IS the overall feedback summary and has a DEDICATED home on the canvas — the **Overall Feedback** box (it sits after the final question's feedback). File it there by wrapping the action-plan prose in section markers. On the line BEFORE "Based on your performance…", output exactly (no code block, no backticks): `@SECTION_BEGIN{"section":"Overall Feedback"}` — then the Top Strength + Priority Target + the three "What to work on next" actions — then on the line AFTER the third action, output: `@SECTION_END`. **KEEP the whole-paper `Total: X/80` and `Grade: N` lines OUTSIDE these markers** (the score readout parses them from the chat reply). The wrapped block is moved OUT of chat and INTO the canvas Overall Feedback box (it does not duplicate in chat), so immediately AFTER `@SECTION_END` add ONE short chat line pointing there, e.g.: "📋 Your full examiner's summary is now in the **Overall Feedback** section of your document — review it there." NEVER file the overall summary into a question's feedback box.
+
 ---
 
 Say: "**Based on your performance, here is your personalized action plan:**
