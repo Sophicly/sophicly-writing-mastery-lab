@@ -772,7 +772,12 @@
       "Bash(grep -nE 'namespace\\\\s*=|protected.*namespace|\\\\$this->namespace =' includes/class-rest-api.php)",
       "Bash(bash -n deploy-production.sh)",
       "Bash(grep -nA30 \"function grade_average_from_rows\" sophicly-student-data/includes/class-wml-rest-api.php)",
-      "Bash(grep -rnA45 \"function get_process_score\\\\|function compute_process_score\\\\|function calculate_process_score\" --include='*.php' sophicly-student-data/includes/)"
+      "Bash(grep -rnA45 \"function get_process_score\\\\|function compute_process_score\\\\|function calculate_process_score\" --include='*.php' sophicly-student-data/includes/)",
+      "Bash(grep -niE \"course grade|COURSE GRADE|grade.{0,3}5\\\\.0|metrics|PROCESS|TOPIC|FIRST DRAFT\" frontend/wml-app.js)",
+      "Bash(perl -i -pe 's/DB query for Anrow included/DB query for Anam'\"'\"'s row included/' HANDOFFS.md)",
+      "Bash(grep -n 'function\\\\|best\\\\|max\\\\|return\\\\|foreach\\\\|\\\\$attempt\\\\|:a\\\\|preg_replace\\\\|ex_key\\\\|highest')",
+      "Bash(awk -F: '$1 < 2900')",
+      "Bash(git restore *)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
