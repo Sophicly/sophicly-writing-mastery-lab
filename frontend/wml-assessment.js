@@ -288,7 +288,13 @@
         if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return false;
         if ((state.board || '').toLowerCase() !== 'aqa') return false;
         const s = (state.subject || '').toLowerCase().replace(/-/g, '_');
-        return ['language2', 'language_p2', 'language_paper_2', 'lang_p2'].includes(s);
+        void s;
+        // v7.19.632 Phase 2c: AQA Lang P2 de-stitched — it now uses the FRONTEND
+        // _buildLangSidebarModel (read-from-canvas) like P1, NOT the server question model.
+        // No subject currently uses the server question-sidebar, so this is always false.
+        // FALLBACK: to revert P2 to the server model, restore
+        // ['language2','language_p2','language_paper_2','lang_p2'].includes(s).
+        return false;
     }
 
     // v7.19.626: sync gate — is this a multi-question LANGUAGE assessment that will
@@ -5125,7 +5131,10 @@
                             complete: res.assessmentState.completion_emitted,
                         });
                         // v7.19.373: server-driven sidebar for question-mode assessment.
-                        if (res.assessmentState.sidebar) {
+                        // v7.19.632 Phase 2c: skip for frontend-lang contexts (AQA P2 now
+                        // drives its own _buildLangSidebarModel — don't let a stray server
+                        // model override it). Literature keeps the server sidebar.
+                        if (res.assessmentState.sidebar && !_expectLangSidebar()) {
                             try { _applyServerSidebar(res.assessmentState.sidebar); }
                             catch (_e) { console.warn('WML Canvas: server sidebar error', _e); }
                         }
@@ -9849,7 +9858,7 @@
                             console.log(state.reviewMode ? 'WML Review: Student chat loaded from server' : 'WML Training: Chat loaded from server (localStorage empty)');
                         }
                         if (serverChat.sidebar) {
-                            try { _applyServerSidebar(serverChat.sidebar); }
+                            try { if (!_expectLangSidebar()) _applyServerSidebar(serverChat.sidebar); } // v7.19.632 Phase 2c: P2 uses frontend sidebar
                             catch (_e) { console.warn('WML Training: boot sidebar error', _e); }
                         }
                     } catch (e) { console.log('WML Training: Server chat load unavailable'); }
@@ -12279,7 +12288,7 @@
                                                     console.log(state.reviewMode ? 'WML Review: Student chat loaded from server' : 'WML Canvas: Chat loaded from server (localStorage empty)');
                                                 }
                                                 if (serverChat.sidebar) {
-                                                    try { _applyServerSidebar(serverChat.sidebar); }
+                                                    try { if (!_expectLangSidebar()) _applyServerSidebar(serverChat.sidebar); } // v7.19.632 Phase 2c: P2 uses frontend sidebar
                                                     catch (_e) { console.warn('WML Canvas: boot sidebar error', _e); }
                                                 }
                                             } catch (e) { console.log('WML Canvas: Server chat load unavailable'); }

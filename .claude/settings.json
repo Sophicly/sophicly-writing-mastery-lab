@@ -748,13 +748,23 @@
       "Bash(curl -s --compressed -H 'User-Agent: Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/126 Safari/537.36' https://sophicly.com/wp-content/plugins/sophicly-dashboard/dist/sdash.js?ver=2.30.218)",
       "Bash(tee /tmp/served.js)",
       "Bash(curl -s --compressed \"https://sophiclymain-staging.kjjabv7qty-yjr3ozq9r41m.p.temp-site.link/wp-content/plugins/sophicly-dashboard/dist/sdash.js\")",
-      "Bash(grep -n 'if \\($task === '\\\\''mark_scheme'\\\\''\\)' includes/class-protocol-router.php)"
+      "Bash(grep -n 'if \\($task === '\\\\''mark_scheme'\\\\''\\)' includes/class-protocol-router.php)",
+      "Bash(grep -n 'sophicly-text-understanding'\\\\'', '\\\\''sophicly-next-step'\\\\''\\\\|as $handle\\\\|wp_enqueue_script\\( $handle\\\\|wp_enqueue_style\\( $handle' sophicly-components.php)",
+      "Bash(\"/usr/local/bin/node\" \"/Users/neilwilliams/.claude/plugins/cache/context-mode/context-mode/1.0.165/cli.bundle.mjs\" upgrade --platform claude-code)",
+      "Bash(curl -s \"https://api.cloudflare.com/client/v4/user/tokens/verify\" -H \"Authorization: Bearer cfut_EHnyBetJIJXBLdXj756zIO9z1xUotWfod3iZ2brO5a59e5cd\")",
+      "Bash(find . -name \"deploy-production.sh\" -path \"*dashboard*\")",
+      "Bash(find . -name \"deploy-production.sh\")",
+      "Bash(curl -s -X POST https://api.cloudflare.com/client/v4/zones/891ccf5d510fb7d463e389d3dfbc3f9f/purge_cache -H 'Authorization: Bearer cfut_EHnyBetJIJXBLdXj756zIO9z1xUotWfod3iZ2brO5a59e5cd' -H 'Content-Type: application/json' --data '{\"purge_everything\":true}')",
+      "Bash(mkdir -p /Users/neilwilliams/.sophicly)",
+      "Bash(chmod 700 /Users/neilwilliams/.sophicly)",
+      "Bash(chmod 600 /Users/neilwilliams/.sophicly/cf-deploy.env)"
     ],
     "additionalDirectories": [
       "/Users/neilwilliams/.claude/handoffs/open",
       "/Users/neilwilliams/.claude/handoffs",
       "/Users/neilwilliams/.claude/handoffs/in-progress",
-      "/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/GHL Parent Demo Funnel"
+      "/Users/neilwilliams/Library/CloudStorage/GoogleDrive-abdullah@sophicly.com/My Drive/Business/Web Development/Sophicly Website/GHL Parent Demo Funnel",
+      "/Users/neilwilliams/.sophicly"
     ]
   }
 }

@@ -4288,7 +4288,13 @@ TEMPLATE;
         // segments. SEG DIAG retained to CONFIRM seg_step advances on staging. Runtime
         // subject is 'language_p2', so normalise hyphens + accept every P2 spelling.
         $sq = strtolower(str_replace('-', '_', (string) $subject));
-        $question_subjects = ['language2', 'language_p2', 'language_paper_2', 'lang_p2'];
+        // v7.19.632 Phase 2b: AQA Lang P2 de-stitched to monolith — its question-mode
+        // state machine is disabled (manifest assessment.steps now empty → whole-protocol
+        // load, like P1). Empty list = no question-mode subjects. Literature paragraph-mode
+        // ($lit_subjects) is unaffected. FALLBACK: if the P2 monolith loops in testing,
+        // restore the P2 forms here ('language2','language_p2','language_paper_2','lang_p2')
+        // to re-enable ONLY the question-pointer state block (steps stay empty → still monolith).
+        $question_subjects = [];
         return in_array($subject, $lit_subjects, true)
             || in_array($sq, $question_subjects, true);
     }
@@ -4309,7 +4315,9 @@ TEMPLATE;
         // advancer's current_beat now persists turn-to-turn — confirm via SEG DIAG on
         // staging. Runtime sends 'language_p2', so normalise hyphens + accept all P2 forms.
         $s = strtolower(str_replace('-', '_', (string) $subject));
-        $question_subjects = ['language2', 'language_p2', 'language_paper_2', 'lang_p2'];
+        // v7.19.632 Phase 2b: P2 monolith — empty so P2 resolves to 'paragraphs' (machine
+        // off). See is_assessment_state_machine_enabled for the fallback restore note.
+        $question_subjects = [];
         return in_array($s, $question_subjects, true) ? 'questions' : 'paragraphs';
     }
 
