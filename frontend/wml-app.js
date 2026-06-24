@@ -12,19 +12,15 @@
 (function() {
     'use strict';
 
-    // v7.19.652: single-boot guard + instrumentation (CW "Step 2 loads 3×").
-    // LearnDash Focus SPA re-evaluates this bundle on soft-nav, spawning a fresh IIFE
-    // instance each time — each with its own boot renderSetup(), 1s pollster, and
-    // focusSpaNavigated listener → N concurrent renders + stacked overlays. The persistent
-    // first instance's pollster/listener already own SPA re-init, so extra instances are
-    // pure duplication. Block re-evaluation; instance #1 owns the lifecycle. The eval
-    // counter confirms the root on staging: count climbing across navs = re-eval is real.
-    window.__swmlBootCount = (window.__swmlBootCount || 0) + 1;
-    console.log('[WML boot] bundle evaluation #' + window.__swmlBootCount);
-    if (window.__swmlBooted) {
-        console.log('[WML boot] re-eval BLOCKED by single-boot guard — instance #1 owns SPA re-init');
-        return;
-    }
+    // v7.19.653: single-boot guard. A LearnDash Focus SPA soft-nav can load a SECOND copy
+    // of this bundle into the SAME window — most likely around a deploy/version bump (the
+    // old cached bundle is still running its 1s pollster + focusSpaNavigated listener, and
+    // rehydrateAssets pulls the new one). Two IIFE instances = two boots, two pollsters →
+    // duplicate/triple canvas render + stacked overlays (the one-time "Step 2 loaded 3×",
+    // which a hard refresh — single clean bundle — cleared). Block the second instance;
+    // instance #1 owns the lifecycle. No-op in the normal single-bundle case (confirmed on
+    // staging: a clean load logs nothing here).
+    if (window.__swmlBooted) { console.warn('[WML] duplicate bundle load blocked (single-boot guard)'); return; }
     window.__swmlBooted = true;
 
     const WML = window.WML;
