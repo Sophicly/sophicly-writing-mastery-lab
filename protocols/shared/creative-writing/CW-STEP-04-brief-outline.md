@@ -76,6 +76,19 @@ A complete six-beat Story Spine outline saved to the canvas document, plus:
 | 4 of 5 | Beat 6 and Coherence Check | Climax/resolution defined, throughline confirmed, coherence checked | `[SUBSTEP_COMPLETE: step_4, substep_4, "Beat 6 and Check"]` |
 | 5 of 5 | Review and Save | Complete Story Spine and core message approved | `[SUBSTEP_COMPLETE: step_4, substep_5, "Review and Save"]` |
 
+**2.3.1 Document Field Sync — STORY SPINE BEATS (CRITICAL)**
+
+The canvas document's **Story Spine** section has six beat rows: `cw-step-4-beat1`, `cw-step-4-beat2`, `cw-step-4-beat3`, `cw-step-4-beat4`, `cw-step-4-beat5`, `cw-step-4-beat6` (Beat 1 "At first…" → Beat 6 "Until finally…"). These rows are written by YOU (you compose the present-tense beat from the student's answer), so use the signal that carries the text:
+
+`@FIELD_SET{ "field": "cw-step-4-beat1", "value": "<the agreed beat, present tense>" }`
+
+**Rules:**
+1. **Fill each beat the MOMENT it is agreed** — emit that beat's `@FIELD_SET` in the SAME reply where the student confirms its "full beat" (Beat 1 → Step 2, Beat 2 → Step 3, Beat 3 → Step 4, Beat 4 → Step 5, Beat 5 → Step 6, Beat 6 → Step 7). The student watches each box fill in turn as they progress — do NOT wait until the end.
+2. The `value` is the beat in **present simple tense**, a single clean sentence, WITHOUT the connective lead-in ("At first," / "And then," / "Until," / "And because of this," / "Until finally,") — the connective is already the row's label.
+3. If a beat is later refined (Step 8 coherence check or Step 9 review), **re-emit that beat's `@FIELD_SET`** — it overwrites the row.
+4. At **Step 9 (Synthesise and Present)**, re-emit ALL SIX markers together with the final polished present-tense versions, so the document exactly matches the spine you show the student.
+5. Never mention or show these markers to the student — they are stripped from what they see. Put each on its own line.
+
 **2.4 Step-by-Step Process**
 
 ---
@@ -140,6 +153,8 @@ Apply Feedback Principle.
 
 Apply Feedback Principle. Ensure the answer incorporates the need, flaw, and hidden strength.
 
+_On agreement, write Beat 1 to the canvas (own line, hidden from the student):_ `@FIELD_SET{ "field": "cw-step-4-beat1", "value": "<Beat 1, present tense, no 'At first,' lead-in>" }`
+
 _Completion: When Beat 1 is complete with need, flaw, and hidden strength, emit:_ `[SUBSTEP_COMPLETE: step_4, substep_1, "Beat 1"]`
 
 ---
@@ -156,6 +171,8 @@ For example:
 **And then,** [What did your character normally do each day that showed us their problem?]"
 
 Apply Feedback Principle. Push for specificity — the routine should be a concrete, visual action, not an abstract state.
+
+_On agreement, write Beat 2 to the canvas (own line, hidden):_ `@FIELD_SET{ "field": "cw-step-4-beat2", "value": "<Beat 2, present tense, no 'And then,' lead-in>" }`
 
 ---
 
@@ -178,6 +195,8 @@ Apply Feedback Principle. Then ask the irony follow-up:
 
 Apply Feedback Principle.
 
+_On agreement, write Beat 3 to the canvas (own line, hidden):_ `@FIELD_SET{ "field": "cw-step-4-beat3", "value": "<Beat 3, present tense, no 'Until,' lead-in>" }`
+
 _Completion: When Beats 2 and 3 are both complete, emit:_ `[SUBSTEP_COMPLETE: step_4, substep_2, "Beats 2-3"]`
 
 ---
@@ -193,6 +212,8 @@ Goals are often one of these types of action:
 
 Apply Feedback Principle. If the goal is purely external, ask: "That's the visible goal — but how does achieving it connect to the deeper need you identified? What would success really mean to them emotionally?"
 
+_On agreement, write Beat 4 to the canvas (own line, hidden):_ `@FIELD_SET{ "field": "cw-step-4-beat4", "value": "<Beat 4, present tense, no 'And because of this,' lead-in>" }`
+
 ---
 
 **Step 6: Beat 5 — "And because of this..."**
@@ -207,6 +228,8 @@ Obstacles are often:
 **And because of this,** [What was the next major challenge or discovery they faced as a result of their decision?]"
 
 Apply Feedback Principle. If the obstacle doesn't target the flaw, ask: "That's an interesting obstacle. But how does it specifically attack or test the flaw you mentioned — their [flaw]? The best obstacles force the protagonist to confront the very thing they've been avoiding."
+
+_On agreement, write Beat 5 to the canvas (own line, hidden):_ `@FIELD_SET{ "field": "cw-step-4-beat5", "value": "<Beat 5, present tense, no 'And because of this,' lead-in>" }`
 
 _Completion: When Beats 4 and 5 are both complete, emit:_ `[SUBSTEP_COMPLETE: step_4, substep_3, "Beats 4-5"]`
 
@@ -231,6 +254,8 @@ Apply Feedback Principle. Then ask the irony follow-up:
 **How does what they _actually_ get in the end contrast with what they _thought_ they wanted?** For example, a character who wanted treasure might find friendship instead. A character who wanted revenge might find peace by choosing forgiveness."
 
 Apply Feedback Principle.
+
+_On agreement, write Beat 6 to the canvas (own line, hidden):_ `@FIELD_SET{ "field": "cw-step-4-beat6", "value": "<Beat 6, present tense, no 'Until finally,' lead-in>" }`
 
 ---
 
@@ -266,6 +291,16 @@ _Completion: When Beat 6 is complete and coherence check passes, emit:_ `[SUBSTE
 **Step 9: Synthesise and Present**
 
 Assemble the answers into a complete Story Spine and write it to the canvas document. Use present simple tense.
+
+_Re-emit ALL SIX beat markers (own lines, hidden) with the final polished present-tense versions, so the document matches the spine you present — any beat refined during the coherence check is overwritten here:_
+```
+@FIELD_SET{ "field": "cw-step-4-beat1", "value": "<final Beat 1, present tense>" }
+@FIELD_SET{ "field": "cw-step-4-beat2", "value": "<final Beat 2, present tense>" }
+@FIELD_SET{ "field": "cw-step-4-beat3", "value": "<final Beat 3, present tense>" }
+@FIELD_SET{ "field": "cw-step-4-beat4", "value": "<final Beat 4, present tense>" }
+@FIELD_SET{ "field": "cw-step-4-beat5", "value": "<final Beat 5, present tense>" }
+@FIELD_SET{ "field": "cw-step-4-beat6", "value": "<final Beat 6, present tense>" }
+```
 
 "Excellent work. Here is your complete Pixar Story Spine Outline:
 
