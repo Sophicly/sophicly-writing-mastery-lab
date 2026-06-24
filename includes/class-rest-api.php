@@ -875,24 +875,36 @@ class SWML_REST_API {
      */
     private function resolve_quiz_question($q_id, $p) {
         if ($q_id === '' || !class_exists('SWML_Quiz_Bank')) return null;
-        $pos = strrpos($q_id, ':');
-        if ($pos === false) return null;
-        $q_num = (int) substr($q_id, $pos + 1);
+        $parts = explode(':', $q_id);
+        if (count($parts) < 3) return null;
+        $q_num = (int) end($parts);
         if ($q_num <= 0) return null;
 
-        $quiz_type = sanitize_key($p['quiz_type'] ?? 'mark_scheme');
-        if ($quiz_type === 'foundational') {
-            $pool = SWML_Quiz_Bank::questions_for_fq(sanitize_text_field($p['text'] ?? ''));
+        // Resolve the pool. The id is authoritative — it encodes the namespace as
+        // "<subject>:<board>:<q_num>" (MSQ) or "fq:<text>:<q_num>" (FQ), all
+        // sanitize_key-safe (no colons), so a stale/old client that only POSTs
+        // {id, answer} still resolves. Request params are a secondary fallback.
+        $candidates = [];
+        if ($parts[0] === 'fq') {
+            $candidates[] = SWML_Quiz_Bank::questions_for_fq($parts[1]);
+            if (!empty($p['text'])) {
+                $candidates[] = SWML_Quiz_Bank::questions_for_fq(sanitize_text_field($p['text']));
+            }
         } else {
-            $pool = SWML_Quiz_Bank::questions_for(
-                sanitize_text_field($p['subject'] ?? ''),
-                sanitize_text_field($p['board'] ?? '')
-            );
+            $candidates[] = SWML_Quiz_Bank::questions_for($parts[0], $parts[1]);
+            if (!empty($p['subject'])) {
+                $candidates[] = SWML_Quiz_Bank::questions_for(
+                    sanitize_text_field($p['subject']),
+                    sanitize_text_field($p['board'] ?? $parts[1])
+                );
+            }
         }
-        foreach ((array) $pool as $cand) {
-            if ((int) ($cand['q_num'] ?? 0) === $q_num) {
-                $cand['id'] = $q_id;
-                return $cand;
+        foreach ($candidates as $pool) {
+            foreach ((array) $pool as $cand) {
+                if ((int) ($cand['q_num'] ?? 0) === $q_num) {
+                    $cand['id'] = $q_id;
+                    return $cand;
+                }
             }
         }
         return null;
