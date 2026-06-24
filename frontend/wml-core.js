@@ -1497,6 +1497,16 @@ window.WML = (function() {
     function cap(task, flag) {
         return caps(task) ? !!caps(task)[flag] : false;
     }
+    // markingFlow: assessment-marking flows send the FULL chat history (the
+    // v7.19.591 confirmed-loop fix). Reads the server caps; the literal fallback
+    // fires ONLY if swmlConfig.taskCaps is absent (transient stale-page HTML +
+    // new JS) — a silent regress otherwise. Keep the fallback set in sync with
+    // SWML_Protocol_Router::build_task_caps()'s $marking_flow_tasks. (v7.19.655)
+    function isMarkingFlow(task) {
+        const c = caps(task);
+        if (c) return !!c.markingFlow;
+        return ['assessment', 'redraft_assessment', 'feedback_discussion'].includes(task);
+    }
 
     function _deriveLangPaperShape(paperSpec, questionNumber) {
         const sections = paperSpec && paperSpec.sections;
@@ -2795,6 +2805,6 @@ window.WML = (function() {
         // v7.15.70: Paper-shape resolver (dormant — consumed starting Release B)
         resolvePaperShape,
         // v7.19.x Commit 1: canonical task-caps lookup (dormant — no call site wired yet)
-        caps, cap,
+        caps, cap, isMarkingFlow,
     };
 })();
