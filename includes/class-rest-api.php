@@ -4376,7 +4376,11 @@ class SWML_REST_API {
         $topic   = absint($params['topicNumber'] ?? 0);
         $suffix  = sanitize_text_field($params['suffix'] ?? '');
         $attempt = absint($params['attempt'] ?? 0);
+        // v7.19.648: `?? []` catches null/absent but NOT a present-but-scalar
+        // history (a malformed/legacy/replayed client). array_map/count on a scalar
+        // is a PHP 8 TypeError fatal → 500 on every assessment chat save. Cast hard.
         $history = $params['history'] ?? [];
+        if (!is_array($history)) $history = [];
         $chat_id = sanitize_text_field($params['chatId'] ?? '');
         // v7.17.39: CW project scope — isolates chat per project
         $cw_project_id = sanitize_text_field($params['cw_project_id'] ?? '');
