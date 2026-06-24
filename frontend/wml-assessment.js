@@ -25222,13 +25222,27 @@
     // prior " · Grade N" suffix first. Grade comes from _pendingQuizResult.
     function _patchQuizResultSidebar() {
         if (state.task !== 'foundational_quiz' && state.task !== 'mark_scheme_unit') return;
-        const g = _pendingQuizResult && _pendingQuizResult.grade;
-        if (!g) return;
+        const g = parseInt(_pendingQuizResult && _pendingQuizResult.grade, 10);
+        if (!g || g < 1 || g > 9) return;
         const cont = document.getElementById('swml-progress-steps');
         if (!cont) return;
-        cont.querySelectorAll('.swml-step-label').forEach(l => {
-            const base = (l.textContent || '').replace(/\s*·\s*Grade\b.*$/i, '').trim();
-            if (/^results$/i.test(base)) l.textContent = `${base} · Grade ${g}`;
+        // v7.19.640: show the GRADE in the Results step CIRCLE, house-ladder
+        // coloured (9 = brand purple gradient, 8 purple, 7 blue, 6 green, 5 amber,
+        // 4 orange, ≤3 red), instead of the step number "7"/✓. Label stays plain
+        // "Results" (the grade now lives in the circle). Reuses the canonical
+        // _GRADE_BG ladder — no invented colours.
+        cont.querySelectorAll('.swml-step').forEach(step => {
+            const label = step.querySelector('.swml-step-label');
+            const base = ((label && label.textContent) || '').replace(/\s*·\s*Grade\b.*$/i, '').trim();
+            if (!/^results$/i.test(base)) return;
+            if (label) label.textContent = base;
+            const circle = step.querySelector('.swml-step-circle');
+            if (circle) {
+                circle.textContent = String(g);
+                circle.classList.add('swml-step-grade');
+                circle.style.setProperty('background', _GRADE_BG[g] || '#5333ed', 'important');
+                circle.style.setProperty('color', _GRADE_DARK_TEXT[g] ? '#1c1d1f' : '#fff', 'important');
+            }
         });
     }
 
