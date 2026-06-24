@@ -194,6 +194,8 @@ if (studentText.length > THRESHOLD) return ' ✓';
 4. **Test the async path.** Both outcomes — data before click AND click before data.
 5. **Check both chat pipelines.** Planning AND assessment.
 
+**Full regression gate:** for any change touching canvas / either chat pipeline / migrate-heal chain / saved doc shape / quiz engine / boot wiring, run the staging matrix in **`WML-SMOKE-TEST.md`** (plugin root) before prod. `{P1,P2}×{diagnostic,redraft}×topic` + CW steps 1–4 + quiz record/resume + boot/SPA-nav. Any red console error = fail.
+
 ---
 
 ## TERMINOLOGY
