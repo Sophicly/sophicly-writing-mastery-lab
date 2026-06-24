@@ -5631,7 +5631,11 @@
             async function recordAnswer(msg, q) {
                 busy = true; showCanvasTyping();
                 try {
-                    const res = await apiPost(API.quizAnswer, { id: q.id, answer: msg });
+                    // v7.19.643: send the quiz context so the server can rebuild this
+                    // question from its source pool when the per-user bank slot has been
+                    // lost (resume / another quiz reused or finished the slot).
+                    const res = await apiPost(API.quizAnswer, { id: q.id, answer: msg,
+                        board: state.board, subject: state.subject, text: state.text, quiz_type: quizType });
                     removeCanvasTyping();
                     if (!res || !res.success) {
                         aiBubble("Sorry — I couldn't record that one. Type your answer again (e.g. a letter for multiple choice).");

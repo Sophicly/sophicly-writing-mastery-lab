@@ -792,12 +792,18 @@ class SWML_REST_API {
         $answer  = is_string($p['answer'] ?? null) ? trim($p['answer']) : '';
 
         $bank = $this->read_quiz_bank($user_id);
-        if (!$bank) return rest_ensure_response(['success' => false, 'code' => 'no_active_quiz']);
-
         $q = null;
-        foreach ($bank['questions'] as $cand) {
-            if (($cand['id'] ?? '') === $q_id) { $q = $cand; break; }
+        if ($bank && !empty($bank['questions'])) {
+            foreach ($bank['questions'] as $cand) {
+                if (($cand['id'] ?? '') === $q_id) { $q = $cand; break; }
+            }
         }
+        // v7.19.643: stateless fallback. The bank meta is a SINGLE per-user slot —
+        // overwritten by any other quiz's start, deleted on finish, and never
+        // rehydrated on a localStorage resume. When it misses, rebuild the question
+        // from its source pool by id (ids are deterministic: subject:board:q_num /
+        // fq:text:q_num) so a resumed/cross-quiz round can still be scored.
+        if (!$q) $q = $this->resolve_quiz_question($q_id, $p);
         if (!$q) return rest_ensure_response(['success' => false, 'code' => 'unknown_question']);
 
         $res    = SWML_Quiz_Bank::score($q, $answer);
@@ -857,6 +863,39 @@ class SWML_REST_API {
             ],
             'categoriesWithErrors' => $summary['categories_with_errors'] ?? [],
         ]);
+    }
+
+    /**
+     * v7.19.643: resolve a question (WITH key) straight from its source pool by id,
+     * bypassing the volatile per-user bank slot. The id encodes the namespace:
+     * MSQ = "<subject>:<board>:<q_num>", FQ = "fq:<text>:<q_num>". q_num is the last
+     * segment and is stable per source markdown, so a resumed round always resolves.
+     * board/subject/text come from the request (the client already holds them) to
+     * avoid a lossy sanitize_key round-trip through the id prefix.
+     */
+    private function resolve_quiz_question($q_id, $p) {
+        if ($q_id === '' || !class_exists('SWML_Quiz_Bank')) return null;
+        $pos = strrpos($q_id, ':');
+        if ($pos === false) return null;
+        $q_num = (int) substr($q_id, $pos + 1);
+        if ($q_num <= 0) return null;
+
+        $quiz_type = sanitize_key($p['quiz_type'] ?? 'mark_scheme');
+        if ($quiz_type === 'foundational') {
+            $pool = SWML_Quiz_Bank::questions_for_fq(sanitize_text_field($p['text'] ?? ''));
+        } else {
+            $pool = SWML_Quiz_Bank::questions_for(
+                sanitize_text_field($p['subject'] ?? ''),
+                sanitize_text_field($p['board'] ?? '')
+            );
+        }
+        foreach ((array) $pool as $cand) {
+            if ((int) ($cand['q_num'] ?? 0) === $q_num) {
+                $cand['id'] = $q_id;
+                return $cand;
+            }
+        }
+        return null;
     }
 
     /** Decode the stored picked-session meta (with keys). Returns null if none. */
