@@ -5151,6 +5151,22 @@
                     // reload even before /canvas/load re-projects it.
                     if (res.quizResult) {
                         _pendingQuizResult = res.quizResult;
+                        // v7.19.642: the quiz finalised server-side — advance the sidebar to
+                        // the Results step so it's marked REACHED. The "Quiz Complete" text
+                        // detector above misses the deferred MSQ results turn (it emits
+                        // [[QUIZ_DONE]] + "Mastery!", not [QUIZ_COMPLETE), so the stepper stuck
+                        // on Q5 and the grade chip (which only stamps once Results is reached)
+                        // never rendered. res.quizResult is the authoritative "done" signal.
+                        if (state.task === 'foundational_quiz' || state.task === 'mark_scheme_unit') {
+                            let _resN = 0;
+                            document.querySelectorAll('#swml-progress-steps .swml-step').forEach(st => {
+                                const lbl = st.querySelector('.swml-step-label');
+                                const base = ((lbl && lbl.textContent) || '').replace(/\s*·.*$/, '').trim();
+                                if (/^results$/i.test(base)) { const n = parseInt(st.dataset.step, 10); if (n) _resN = n; }
+                            });
+                            const _cur = state.task === 'mark_scheme_unit' ? (state.sidebarStep || 0) : (state.step || 0);
+                            if (_resN && _resN > _cur) updateProgress(_resN);
+                        }
                         applyQuizResultToEditor();
                         if (typeof saveCanvasContent === 'function') saveCanvasContent();
                     }
