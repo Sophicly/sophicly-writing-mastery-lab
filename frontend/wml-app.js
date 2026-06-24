@@ -4127,6 +4127,10 @@
             // in data-display — never repaint the global ordinal over it.
             circle.textContent = (s < step || (s === step && state._phaseMarkedComplete)) ? '✓' : (el.dataset.display || s);
         });
+        // v7.19.641: the loop above repaints every step circle (className + digit),
+        // which wipes the Results-step grade chip. Re-apply it. No-op until a quiz
+        // result exists AND the Results step is reached (guarded in the patch).
+        try { if (window.WML && WML._patchQuizResultSidebar) WML._patchQuizResultSidebar(); } catch (_) {}
         // v7.14.68: Accordion group state — open the group containing the active step, update group headers
         $$('.swml-step-group').forEach(group => {
             const header = group.querySelector('.swml-step-group-header');

@@ -25235,16 +25235,22 @@
             const label = step.querySelector('.swml-step-label');
             const base = ((label && label.textContent) || '').replace(/\s*·\s*Grade\b.*$/i, '').trim();
             if (!/^results$/i.test(base)) return;
-            if (label) label.textContent = base;
             const circle = step.querySelector('.swml-step-circle');
-            if (circle) {
-                circle.textContent = String(g);
-                circle.classList.add('swml-step-grade');
-                circle.style.setProperty('background', _GRADE_BG[g] || '#5333ed', 'important');
-                circle.style.setProperty('color', _GRADE_DARK_TEXT[g] ? '#1c1d1f' : '#fff', 'important');
-            }
+            if (!circle) return;
+            // Only stamp the grade once the Results step is actually REACHED
+            // (complete/active). Otherwise a stale _pendingQuizResult from a prior
+            // round would paint a grade onto the Results circle mid-new-attempt.
+            if (!/\b(complete|active)\b/.test(circle.className)) return;
+            if (label) label.textContent = base;
+            circle.textContent = String(g);
+            circle.classList.add('swml-step-grade');
+            circle.style.setProperty('background', _GRADE_BG[g] || '#5333ed', 'important');
+            circle.style.setProperty('color', _GRADE_DARK_TEXT[g] ? '#1c1d1f' : '#fff', 'important');
         });
     }
+    // v7.19.641: exposed so updateProgress() (wml-app.js) can re-apply the grade
+    // chip after it repaints the step circles (which wipes the class + digit).
+    try { window.WML = window.WML || {}; window.WML._patchQuizResultSidebar = _patchQuizResultSidebar; } catch (_) {}
 
     // Upsert the Quiz Result card into the live editor, positioned directly
     // under the Quiz Notes section (before the Forging Your Weapon divider).
