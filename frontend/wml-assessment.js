@@ -1170,6 +1170,57 @@
         }
     }
 
+    // v7.19.651: DETERMINISTIC Story-Spine backstop (CW Step 4). @FIELD_SET markers give
+    // the live per-beat fill, but an LLM can omit a marker — and AI Engine function-calling
+    // (the structured-output alternative) is disabled WML-wide (model-switch bug), so we
+    // cannot lean on tool calls. The AI ALWAYS prints the synthesised six-line spine block
+    // (it's the deliverable shown to the student), so we parse THAT fixed structure in code
+    // and fill the rows — no marker, no extra LLM turn, correctness guaranteed. Beats 4 & 5
+    // share the "And because of this," connective, so we match the whole block by position.
+    // Runs every canvas turn; self-guards (no-op unless the doc holds cw-step-4-beat rows AND
+    // the reply contains the block). The synthesis is canonical, so it overwrites stale rows.
+    function applySpineSynthesis(aiReply) {
+        try {
+            if (!aiReply || !canvasEditor) return;
+            let hasBeats = false;
+            canvasEditor.state.doc.descendants((node) => {
+                if (hasBeats) return false;
+                if (node.type.name === 'outlineRow' && node.attrs && /^cw-step-4-beat[1-6]$/.test(node.attrs.fieldId || '')) { hasBeats = true; return false; }
+                return true;
+            });
+            if (!hasBeats) return;
+            const c = '\\s*\\*{0,2}\\s*';                 // optional markdown bold/space around a connective
+            const lead = '[-*\\u2022]?\\s*\\*{0,2}\\s*';  // optional bullet + bold at line start
+            const re = new RegExp(
+                lead + 'At first,?' + c + '(.+?)\\s*[\\r\\n]+' +
+                lead + 'And then,?' + c + '(.+?)\\s*[\\r\\n]+' +
+                lead + 'Until,?' + c + '(.+?)\\s*[\\r\\n]+' +
+                lead + 'And because of this,?' + c + '(.+?)\\s*[\\r\\n]+' +
+                lead + 'And because of this,?' + c + '(.+?)\\s*[\\r\\n]+' +
+                lead + 'Until finally,?' + c + '(.+?)\\s*(?:[\\r\\n]|$)', 'i');
+            const m = re.exec(aiReply);
+            if (!m) return;
+            const beats = [m[1], m[2], m[3], m[4], m[5], m[6]]
+                .map(s => (s || '').replace(/\*+/g, '').replace(/^\[|\]$/g, '').trim());
+            let wrote = false;
+            beats.forEach((val, i) => {
+                if (!val) return;
+                const fid = 'cw-step-4-beat' + (i + 1);
+                let targetPos = null, targetNode = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (targetPos !== null) return false;
+                    if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === fid) { targetPos = pos; targetNode = node; return false; }
+                    return true;
+                });
+                if (targetPos === null) return;
+                if ((targetNode.textContent || '').trim() === val) return;
+                canvasEditor.commands.insertContentAt({ from: targetPos + 1, to: targetPos + targetNode.nodeSize - 1 }, { type: 'text', text: val });
+                wrote = true;
+            });
+            if (wrote) { console.log('WML Spine: deterministic synthesis fill (6 beats)'); if (typeof saveCanvasContent === 'function') saveCanvasContent(); }
+        } catch (e) { console.warn('WML Spine: synthesis parse error (non-fatal)', e && e.message); }
+    }
+
     // v7.19.504: Step-1 seed-logline self-heal. The 3 loglines are seeded into rows by
     // @FIELD_SET markers the AI emits on save-approval — an LLM can omit/mangle them.
     // After the approval turn, if the rows are still empty, fire ONE silent repair turn
@@ -5306,6 +5357,7 @@
                             applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                             applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
                             applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored row-fill (Phase 3 — CW Step 3 loglines)
+                            applySpineSynthesis(res.reply); // v7.19.651: deterministic Step-4 spine backstop (marker-independent)
                             // v7.19.504: Step-1 seed-logline self-heal — after the turn settles
                             // (loading cleared), re-emit markers if the rows didn't fill.
                             if (state.task === 'cw_step_1') {
@@ -12151,6 +12203,7 @@
                             applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
                             applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
                             applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored row-fill (Phase 3 — CW Step 3 loglines)
+                            applySpineSynthesis(res.reply); // v7.19.651: deterministic Step-4 spine backstop (marker-independent)
                                         }
 
                                         // ── Assessment step + completion detection + Mark Complete (v7.12.35) ──
