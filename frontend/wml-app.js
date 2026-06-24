@@ -12,6 +12,21 @@
 (function() {
     'use strict';
 
+    // v7.19.652: single-boot guard + instrumentation (CW "Step 2 loads 3×").
+    // LearnDash Focus SPA re-evaluates this bundle on soft-nav, spawning a fresh IIFE
+    // instance each time — each with its own boot renderSetup(), 1s pollster, and
+    // focusSpaNavigated listener → N concurrent renders + stacked overlays. The persistent
+    // first instance's pollster/listener already own SPA re-init, so extra instances are
+    // pure duplication. Block re-evaluation; instance #1 owns the lifecycle. The eval
+    // counter confirms the root on staging: count climbing across navs = re-eval is real.
+    window.__swmlBootCount = (window.__swmlBootCount || 0) + 1;
+    console.log('[WML boot] bundle evaluation #' + window.__swmlBootCount);
+    if (window.__swmlBooted) {
+        console.log('[WML boot] re-eval BLOCKED by single-boot guard — instance #1 owns SPA re-init');
+        return;
+    }
+    window.__swmlBooted = true;
+
     const WML = window.WML;
 
     // ── Destructure core exports as local variables ──
