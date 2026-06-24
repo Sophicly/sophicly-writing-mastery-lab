@@ -1507,6 +1507,18 @@ window.WML = (function() {
         if (c) return !!c.markingFlow;
         return ['assessment', 'redraft_assessment', 'feedback_discussion'].includes(task);
     }
+    // hasAssessmentSections: does migrateDocument inject the 5 post-assessment
+    // sections? Reads server caps; the fallback (stale-page HTML + new JS)
+    // reproduces migrateDocument's OLD 4-condition skip set EXACTLY so the
+    // collapse is behaviour-identical either way. Keep in sync with
+    // build_task_caps()'s $non_assessment_doc. (v7.19.657)
+    function hasAssessmentSections(task) {
+        const c = caps(task);
+        if (c) return !!c.assessmentSections;
+        return !(task === 'mark_scheme' || task === 'mark_scheme_unit'
+            || (task && task.indexOf('cw_') === 0)
+            || ['conceptual_notes', 'memory_practice', 'exam_question', 'exam_crib', 'mastery_codex', 'foundational_quiz'].includes(task));
+    }
 
     function _deriveLangPaperShape(paperSpec, questionNumber) {
         const sections = paperSpec && paperSpec.sections;
@@ -2805,6 +2817,6 @@ window.WML = (function() {
         // v7.15.70: Paper-shape resolver (dormant — consumed starting Release B)
         resolvePaperShape,
         // v7.19.x Commit 1: canonical task-caps lookup (dormant — no call site wired yet)
-        caps, cap, isMarkingFlow,
+        caps, cap, isMarkingFlow, hasAssessmentSections,
     };
 })();

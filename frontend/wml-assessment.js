@@ -25887,29 +25887,15 @@
 
     function migrateDocument() {
         if (!canvasEditor) return;
-        // Mark scheme has its own sections — skip essay migration (v7.12.96)
-        if (state.task === 'mark_scheme') { console.log('WML Migration: Skipping — mark scheme document'); return; }
-        // v7.17.19: mark_scheme_unit is a 2-section notes scratchpad — no assessment sections.
-        if (state.task === 'mark_scheme_unit') { console.log('WML Migration: Skipping — mark scheme unit (notes only)'); return; }
-        // v7.13.43: CW exercises have their own section structure — skip assessment migration
-        if (state.task && state.task.startsWith('cw_')) { console.log('WML Migration: Skipping — CW exercise document'); return; }
-        // v7.14.85: Conceptual notes, memory practice, and exam question creator don't have assessment sections
-        // v7.19.128: exam_crib is also not an assessment doc — it's memorise+draft. Without
-        // this skip, migrateDocument() injects Score Summary / Self-Assessment / Analytics /
-        // Action Plan into every crib mount, fighting the v7.19.124 footer-strip pass.
-        // Console diagnostic from Neil's IC pilot showed the cycle: strip removes 4 sections,
-        // this migration injects 4 back. Adding exam_crib here breaks the cycle.
-        // v7.19.231: mastery_codex emits its own sections via buildMasteryCodexTemplate;
-        // no Score Summary / Self-Assessment / Analytics / Action Plan. Without this skip,
-        // migrateDocument injects all four (visible after diagnostic-class exclusion in v7.19.230).
-        // Tutor Sign-off is already appended inside the Codex template itself.
-        // v7.19.567: foundational_quiz is a deterministic quiz on a conceptual-notes-style
-        // doc — NOT an essay assessment. Without this skip, migrateDocument injected Score
-        // Summary / Self-Assessment / Analytics / Action Plan / Tutor Sign-off into the FQ
-        // doc; the Self-Assessment section spawned orphan "Hook" skill dropdowns floating at
-        // the bottom of the page. A quiz gets none of these (its result shows via the Quiz
-        // Result card instead).
-        if (['conceptual_notes', 'memory_practice', 'exam_question', 'exam_crib', 'mastery_codex', 'foundational_quiz'].includes(state.task)) { console.log('WML Migration: Skipping — non-assessment exercise'); return; }
+        // v7.19.657: the four old skip conditions (mark_scheme, mark_scheme_unit,
+        // cw_* prefix, + [conceptual_notes, memory_practice, exam_question, exam_crib,
+        // mastery_codex, foundational_quiz]) collapsed into ONE server-owned capability
+        // — exclusion set now lives in build_task_caps()'s $non_assessment_doc. Each of
+        // those docs builds its own structure; injecting Score Summary / Self-Assessment /
+        // Analytics / Action Plan / Tutor Sign-off here fought their templates (e.g. the
+        // IC-pilot exam_crib strip↔inject cycle; FQ's orphan "Hook" dropdowns). Parity-
+        // verified === the old predicate across all tasks before this swap (v7.19.656).
+        if (!WML.hasAssessmentSections(state.task)) { console.log('WML Migration: Skipping — non-assessment doc (caps.assessmentSections=false)'); return; }
         const currentHTML = canvasEditor.getHTML();
         // Only run on documents that have section blocks (i.e. structured templates)
         if (!currentHTML.includes('data-section-type')) return;
