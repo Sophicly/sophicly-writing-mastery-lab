@@ -7471,16 +7471,25 @@ Before marking the introduction, ask the student to confirm their essay structur
         if (!(window.swmlConfig && window.swmlConfig.isAdmin)) return;
         const taskCaps = window.swmlConfig.taskCaps;
         if (!taskCaps) return;
-        // Embedded authoritative copy of the literal at wml-assessment.js:5040 / :12146.
-        const OLD_MARKING = ['assessment', 'redraft_assessment', 'feedback_discussion'];
+        // Each check embeds the AUTHORITATIVE OLD predicate (the literal that a
+        // converted guard USED to evaluate inline) and asserts server caps === old,
+        // for every task, BEFORE that guard is swapped. Add a row when adding a cap.
+        const CHECKS = [
+            // markingFlow — wml-assessment.js:5040/:12146 (converted v7.19.655)
+            { flag: 'markingFlow', old: t => ['assessment', 'redraft_assessment', 'feedback_discussion'].includes(t) },
+            // assessmentSections — migrateDocument() skip set, wml-assessment.js:~25891-25912
+            { flag: 'assessmentSections', old: t => !(t === 'mark_scheme' || t === 'mark_scheme_unit' || t.indexOf('cw_') === 0 || ['conceptual_notes', 'memory_practice', 'exam_question', 'exam_crib', 'mastery_codex', 'foundational_quiz'].includes(t)) },
+        ];
         const divergences = [];
         Object.keys(taskCaps).forEach(task => {
-            const oldVal = OLD_MARKING.includes(task);
-            const newVal = !!(taskCaps[task] || {}).markingFlow;
-            if (oldVal !== newVal) divergences.push({ task, cap: 'markingFlow', oldVal, newVal });
+            CHECKS.forEach(c => {
+                const oldVal = c.old(task);
+                const newVal = !!(taskCaps[task] || {})[c.flag];
+                if (oldVal !== newVal) divergences.push({ task, cap: c.flag, oldVal, newVal });
+            });
         });
         if (divergences.length) console.error('[WML caps drift]', divergences);
-        else console.info('[WML caps] parity OK —', Object.keys(taskCaps).length, 'tasks, markingFlow matched');
+        else console.info('[WML caps] parity OK —', Object.keys(taskCaps).length, 'tasks,', CHECKS.map(c => c.flag).join(' + '), 'matched');
     }
 
     // ── Boot ──

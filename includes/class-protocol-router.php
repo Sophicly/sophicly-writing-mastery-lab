@@ -4276,12 +4276,19 @@ TEMPLATE;
 
     public function build_task_caps() {
         $marking_flow_tasks = ['assessment', 'redraft_assessment', 'feedback_discussion'];
+        // assessmentSections: does migrateDocument inject the 5 post-assessment
+        // sections (Score Summary / Self-Assessment / Analytics / Action Plan /
+        // Tutor Sign-off)? FALSE for non-assessment docs. MIRRORS the four skip
+        // conditions in migrateDocument() at wml-assessment.js:~25891-25912
+        // (mark_scheme, mark_scheme_unit, cw_* prefix, + this explicit set).
+        $non_assessment_doc = ['mark_scheme', 'mark_scheme_unit', 'conceptual_notes', 'memory_practice', 'exam_question', 'exam_crib', 'mastery_codex', 'foundational_quiz'];
         $caps = [];
         foreach (self::KNOWN_TASKS as $t) {
             $contract = $this->resolve_task_contract($t);
             $caps[$t] = [
-                'taskFamily'  => $contract['task_family'] ?? null,
-                'markingFlow' => in_array($t, $marking_flow_tasks, true),
+                'taskFamily'         => $contract['task_family'] ?? null,
+                'markingFlow'        => in_array($t, $marking_flow_tasks, true),
+                'assessmentSections' => !in_array($t, $non_assessment_doc, true) && strpos($t, 'cw_') !== 0,
             ];
         }
         return $caps;
