@@ -803,16 +803,7 @@ class SWML_REST_API {
         // rehydrated on a localStorage resume. When it misses, rebuild the question
         // from its source pool by id (ids are deterministic: subject:board:q_num /
         // fq:text:q_num) so a resumed/cross-quiz round can still be scored.
-        $bank_hit = (bool) $q;
         if (!$q) $q = $this->resolve_quiz_question($q_id, $p);
-        // TEMP DIAG v7.19.645 — remove after capture. Captures the EXACT incoming
-        // request + the full raw JSON body to a known readable file.
-        @file_put_contents(WP_CONTENT_DIR . '/swml-quiz-diag.log',
-            gmdate('c') . ' uid=' . $user_id
-            . ' bank_hit=' . ($bank_hit ? '1' : '0')
-            . ' resolved=' . ($q ? '1' : '0')
-            . ' RAW=' . wp_json_encode($p) . "\n",
-            FILE_APPEND);
         if (!$q) return rest_ensure_response(['success' => false, 'code' => 'unknown_question']);
 
         $res    = SWML_Quiz_Bank::score($q, $answer);
@@ -839,8 +830,13 @@ class SWML_REST_API {
             'feedback'   => $res['feedback'],
             'correctKey' => $res['correctKey'],
             'whyWrong'   => $res['whyWrong'] ?? [],
-            'seq'        => $q['seq'],
-            'total'      => count($bank['questions']),
+            // v7.19.646: null-safe — on the stateless resolver path $bank is null and
+            // pool questions carry no 'seq'. count(null) was a PHP 8 TypeError fatal
+            // (the real cause of "couldn't record that one" on resumed rounds).
+            'seq'        => $q['seq'] ?? 0,
+            'total'      => (isset($bank['questions']) && is_array($bank['questions']))
+                                ? count($bank['questions'])
+                                : (int) ($q['total'] ?? 0),
             'running'    => $running,
         ]);
     }
