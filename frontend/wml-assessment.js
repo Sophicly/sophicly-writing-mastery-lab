@@ -16636,7 +16636,13 @@
             let _preMigrateSize = 0;
             try { _preMigrateSize = canvasEditor.getHTML().length; } catch (_) {}
             try { console.log('[WML load-debug v7.19.136] migrate chain START', { docSize: _preMigrateSize }); } catch (_) {}
+            // v7.19.658 (PERF): the v7.19.136 per-step size instrumentation calls getHTML()
+            // (full-doc serialize) TWICE per step — ~24 serializations every canvas load, pure
+            // debug telemetry. Gate it to admins so students skip the cost; the heals (fn())
+            // run identically either way. Big-doc CW loads feel this.
+            const _MIGRATE_DEBUG = !!(window.swmlConfig && window.swmlConfig.isAdmin);
             const _migrateStep = function (label, fn) {
+                if (!_MIGRATE_DEBUG) { try { fn(); } catch (_) {} return; }
                 let _before = 0; try { _before = canvasEditor.getHTML().length; } catch (_) {}
                 try { fn(); } catch (e) { try { console.warn('[WML load-debug v7.19.136] migrate step threw', label, e && e.message); } catch (_) {} }
                 let _after = 0; try { _after = canvasEditor.getHTML().length; } catch (_) {}
