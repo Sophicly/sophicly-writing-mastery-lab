@@ -803,7 +803,18 @@ class SWML_REST_API {
         // rehydrated on a localStorage resume. When it misses, rebuild the question
         // from its source pool by id (ids are deterministic: subject:board:q_num /
         // fq:text:q_num) so a resumed/cross-quiz round can still be scored.
+        $bank_hit = (bool) $q;
         if (!$q) $q = $this->resolve_quiz_question($q_id, $p);
+        // TEMP DIAG v7.19.645 — remove after capture. Logs the exact incoming request.
+        error_log('[SWML quiz_answer DIAG] uid=' . $user_id
+            . ' id=' . wp_json_encode($q_id)
+            . ' answer=' . wp_json_encode($answer)
+            . ' bank_hit=' . ($bank_hit ? '1' : '0')
+            . ' resolved=' . ($q ? '1' : '0')
+            . ' subject=' . wp_json_encode($p['subject'] ?? null)
+            . ' board=' . wp_json_encode($p['board'] ?? null)
+            . ' text=' . wp_json_encode($p['text'] ?? null)
+            . ' quiz_type=' . wp_json_encode($p['quiz_type'] ?? null));
         if (!$q) return rest_ensure_response(['success' => false, 'code' => 'unknown_question']);
 
         $res    = SWML_Quiz_Bank::score($q, $answer);
