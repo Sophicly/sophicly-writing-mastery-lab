@@ -6027,6 +6027,22 @@
         } catch (_) {}
         return hit;
     }
+    // v7.19.649: doc-root guard (UNIVERSAL — every WML canvas, every course). All
+    // scaffolded boxes (outline rows, plan/response sections, inputFields, General
+    // Notes) live INSIDE a `sectionBlock`; the empty GAPS between sections are the bare
+    // document root. The schema (StarterKit doc = block+, sectionBlock content = block+)
+    // lets ProseMirror drop a free paragraph there, so a student clicking a gap could
+    // type stray top-level prose ("this should not be editable"). Returns true when
+    // `pos` sits inside a sectionBlock, false at the doc root. Fail-OPEN (true) on a
+    // resolve glitch so a student is never trapped mid-edit. Programmatic fills use
+    // commands (not these handlers), so Sophia's writes are unaffected.
+    function _swmlInSection(state, pos) {
+        try {
+            const $p = state.doc.resolve(Math.max(0, Math.min(pos, state.doc.content.size)));
+            for (let d = $p.depth; d > 0; d--) { if ($p.node(d).type.name === 'sectionBlock') return true; }
+            return false;
+        } catch (_) { return true; }
+    }
 
     let _canvasGuard = false; // Prevents double-render of canvas workspace (v7.12.61)
     function renderCanvasWorkspace() {
@@ -15603,6 +15619,8 @@
                 handlePaste(view, event) {
                     // v7.19.471: never paste into locked scaffold (titles/instructions)
                     if (_swmlRangeLocked(view.state, view.state.selection.from, view.state.selection.to)) return true;
+                    // v7.19.649: never paste into a doc-root gap (outside every section)
+                    if (!_swmlInSection(view.state, view.state.selection.from)) return true;
                     const { $from } = view.state.selection;
                     let insideInputField = false;
                     for (let d = $from.depth; d >= 0; d--) {
@@ -15660,12 +15678,15 @@
                 // untouched. Declared before the reviewMode spread so review mode (stricter)
                 // still wins.
                 handleTextInput(view, from, to) {
-                    return _swmlRangeLocked(view.state, from, to);
+                    // v7.19.649: block locked scaffold AND any doc-root gap (outside every section)
+                    return _swmlRangeLocked(view.state, from, to) || !_swmlInSection(view.state, from);
                 },
                 handleKeyDown(view, event) {
                     const k = event.key;
                     if (k !== 'Backspace' && k !== 'Delete' && k !== 'Enter') return false;
                     const sel = view.state.selection;
+                    // v7.19.649: no typing/splitting in a doc-root gap (outside every section)
+                    if (!_swmlInSection(view.state, sel.from)) return true;
                     if (!sel.empty) return _swmlRangeLocked(view.state, sel.from, sel.to);
                     if (_swmlPosLocked(view.state, sel.from)) return true;
                     // block boundary merges that would pull content into an adjacent locked node
@@ -28393,7 +28414,26 @@ ${html}
                 SectionBlock, InputField, ChecklistItem, SelectField, ClozeCheck,
             ],
             content: savedContent || getExamPrepDocTemplate(state.task),
-            editorProps: { attributes: { spellcheck: 'true' } },
+            editorProps: {
+                attributes: { spellcheck: 'true' },
+                // v7.19.649: same doc-root + scaffold-lock guard as the main canvas —
+                // students can only type inside the scaffolded boxes, never the gaps.
+                handleTextInput(view, from, to) {
+                    return _swmlRangeLocked(view.state, from, to) || !_swmlInSection(view.state, from);
+                },
+                handleKeyDown(view, event) {
+                    const k = event.key;
+                    if (k !== 'Backspace' && k !== 'Delete' && k !== 'Enter') return false;
+                    const sel = view.state.selection;
+                    if (!_swmlInSection(view.state, sel.from)) return true;
+                    if (!sel.empty) return _swmlRangeLocked(view.state, sel.from, sel.to);
+                    return _swmlPosLocked(view.state, sel.from);
+                },
+                handlePaste(view) {
+                    if (!_swmlInSection(view.state, view.state.selection.from)) return true;
+                    return _swmlRangeLocked(view.state, view.state.selection.from, view.state.selection.to);
+                },
+            },
             onUpdate: ({ editor }) => {
                 const wc = getResponseWordCount(editor);
                 wcDisplay.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
