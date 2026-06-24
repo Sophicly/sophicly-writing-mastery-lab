@@ -4246,6 +4246,48 @@ TEMPLATE;
     }
 
     /**
+     * v7.19.x Canonical task-caps INFRA (Commit 1 — pure addition, zero behaviour change).
+     *
+     * The authoritative, server-owned capability map the client will gate on
+     * instead of literal task-name string checks scattered across the JS. Built
+     * here so a typo cannot diverge — the literal lives in ONE PHP place.
+     *
+     * Each known client task maps to:
+     *   taskFamily  — from resolve_task_contract (may be null for unknown tasks).
+     *   markingFlow — TRUE only for the bounded-history marking flows. This MIRRORS
+     *                 the literal at wml-assessment.js:5040 / :12146
+     *                 ['assessment','redraft_assessment','feedback_discussion'].
+     *
+     * The dev-only JS parity guard asserts new (caps) === old (literal) for every
+     * task before any guard is converted in a later commit.
+     */
+    const KNOWN_TASKS = [
+        'assessment', 'redraft_assessment', 'feedback_discussion', 'planning',
+        'outlining', 'polishing', 'reassessment', 'essay_plan', 'model_answer',
+        'model_answer_video', 'exam_question', 'exam_crib', 'exam_practice',
+        'free_practice', 'verbal_rehearsal', 'memory_practice', 'conceptual_notes',
+        'foundational_quiz', 'mark_scheme_unit', 'mark_scheme', 'mark_scheme_assessment',
+        'mastery_codex', 'initial', 'redraft', 'preliminary', 'diagnostic',
+        'development', 'cw_step_1', 'cw_step_2', 'cw_step_3', 'cw_step_4', 'cw_step_5',
+        'cw_trial_1', 'cw_trial_2', 'cw_trial_3', 'analysis', 'choice', 'compact',
+        'comparison', 'evaluation', 'extended', 'extended_writing', 'full',
+        'multiple_choice', 'retrieval', 'short_analysis', 'standard', 'thesis_only',
+    ];
+
+    public function build_task_caps() {
+        $marking_flow_tasks = ['assessment', 'redraft_assessment', 'feedback_discussion'];
+        $caps = [];
+        foreach (self::KNOWN_TASKS as $t) {
+            $contract = $this->resolve_task_contract($t);
+            $caps[$t] = [
+                'taskFamily'  => $contract['task_family'] ?? null,
+                'markingFlow' => in_array($t, $marking_flow_tasks, true),
+            ];
+        }
+        return $caps;
+    }
+
+    /**
      * Build student history/reminders section
      */
     private function build_reminders($user_id, $text) {

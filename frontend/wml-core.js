@@ -1487,6 +1487,17 @@ window.WML = (function() {
         return { shape: 'lit-extract-single', source: 'default', _fallback: true };
     }
 
+    // ── Canonical task-caps lookup (v7.19.x Commit 1 — INFRA, dormant) ──
+    // The server (SWML_Protocol_Router::build_task_caps) emits swmlConfig.taskCaps:
+    // every known task → { taskFamily, markingFlow, … }. These read it so client
+    // gates can stop spelling literal task strings. No call site wired yet.
+    function caps(task) {
+        return (window.swmlConfig && window.swmlConfig.taskCaps && window.swmlConfig.taskCaps[task]) || null;
+    }
+    function cap(task, flag) {
+        return caps(task) ? !!caps(task)[flag] : false;
+    }
+
     function _deriveLangPaperShape(paperSpec, questionNumber) {
         const sections = paperSpec && paperSpec.sections;
         if (!Array.isArray(sections)) return null;
@@ -2783,5 +2794,7 @@ window.WML = (function() {
         cwProject,
         // v7.15.70: Paper-shape resolver (dormant — consumed starting Release B)
         resolvePaperShape,
+        // v7.19.x Commit 1: canonical task-caps lookup (dormant — no call site wired yet)
+        caps, cap,
     };
 })();

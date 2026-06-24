@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.653
+ * Version: 7.19.654
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.653');
+define('SWML_VERSION', '7.19.654');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -406,6 +406,11 @@ class Sophicly_Writing_Mastery_Lab {
                 'attempt' => absint($_GET['attempt'] ?? 0),
                 'student_id' => $review_student_id,
             ],
+            // v7.19.x Commit 1: server-owned canonical task-caps (INFRA, zero behaviour
+            // change). Client gates on swmlConfig.taskCaps[task].<flag> instead of literal
+            // task-name string checks. Same builder feeds BOTH localize sites so they
+            // cannot drift. A dev-only parity guard asserts new===old before any conversion.
+            'taskCaps' => SWML_Protocol_Router::instance()->build_task_caps(),
         ]);
 
         // v7.14.16: Embed language paper specs for type-aware document builder
@@ -801,6 +806,9 @@ class Sophicly_Writing_Mastery_Lab {
                     'draft' => '', 'redraft' => '', 'unit_id' => 0,
                     'student_id' => $embed_review['student_id'],
                 ],
+                // v7.19.x Commit 1: server-owned canonical task-caps (same builder as the
+                // standalone-page localize site above so the two payloads cannot drift).
+                'taskCaps' => SWML_Protocol_Router::instance()->build_task_caps(),
             ]);
         } else {
             // v7.14.16: Refresh nonce for LD Focus Mode AJAX transitions

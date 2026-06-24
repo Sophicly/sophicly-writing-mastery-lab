@@ -7463,6 +7463,26 @@ Before marking the introduction, ask the student to confirm their essay structur
         configurable: true
     });
 
+    // ── Canonical task-caps parity guard (v7.19.x Commit 1 — dev-only, prod-safe) ──
+    // Proves the new server-emitted caps answer === the OLD literal answer for the
+    // markingFlow capability across EVERY known task, BEFORE any guard is converted in
+    // a later commit. Admins only (no student console noise); no-op if caps absent.
+    function _wmlCapsParityCheck() {
+        if (!(window.swmlConfig && window.swmlConfig.isAdmin)) return;
+        const taskCaps = window.swmlConfig.taskCaps;
+        if (!taskCaps) return;
+        // Embedded authoritative copy of the literal at wml-assessment.js:5040 / :12146.
+        const OLD_MARKING = ['assessment', 'redraft_assessment', 'feedback_discussion'];
+        const divergences = [];
+        Object.keys(taskCaps).forEach(task => {
+            const oldVal = OLD_MARKING.includes(task);
+            const newVal = !!(taskCaps[task] || {}).markingFlow;
+            if (oldVal !== newVal) divergences.push({ task, cap: 'markingFlow', oldVal, newVal });
+        });
+        if (divergences.length) console.error('[WML caps drift]', divergences);
+        else console.info('[WML caps] parity OK —', Object.keys(taskCaps).length, 'tasks, markingFlow matched');
+    }
+
     // ── Boot ──
     // v7.19.117: bind the chat selection toolbar at IIFE init so it works on
     // canvas screens (assessment / exam_crib / etc.) that never call renderPlan.
@@ -7470,6 +7490,7 @@ Before marking the introduction, ask the student to confirm their essay structur
     setupSelectionReply();
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderSetup);
     else renderSetup();
+    _wmlCapsParityCheck();
 
     // ── SPA Re-initialization (v7.13.15 → v7.17.78) ──
     // LearnDash Focus Mode swaps lesson body via AJAX — JS hooks die unless we
