@@ -24897,45 +24897,55 @@
         }
     }
 
-    // v7.17.39: beforeunload flush — if either canvas or chat has a pending
-    // debounced save when the tab unloads, fire it via fetch `keepalive: true`
-    // so the request survives page unload. sendBeacon can't carry the X-WP-Nonce
-    // header (blobs only) and would fail check_auth, so keepalive is the right
-    // primitive here. Kills the "typed, saw 'Saved', refreshed too fast, data
-    // lost" repro Neil hit on CW. Registered once per module load.
+    // v7.17.39 / v7.19.678: flush pending debounced saves NOW (canvas doc, chat, CW
+    // artifact) via fetch `keepalive: true` so the request survives page unload. sendBeacon
+    // can't carry the X-WP-Nonce header (blobs only) and would fail check_auth, so keepalive
+    // is the right primitive. Kills the "typed, saw 'Saved', navigated too fast, data lost"
+    // repro on CW.
+    //
+    // ROOT FIX (v7.19.678) for CW step→step last-edit loss: the pending trackers below are
+    // module-global. On a fast SPA nav (e.g. Step-3 → Step-4), the INCOMING lesson's first
+    // save clobbered the OUTGOING step's pending artifact write before its 3s timer fired —
+    // so the last-typed rows (e.g. the unticked Step-3 logline drafts) never reached the
+    // per-project artifact that _loadCWProjectIntoEditor reads on the next mount. onBlur
+    // populates these snapshots before the nav; this dispatches them before they can be
+    // overwritten. Registered once per module load.
+    function _flushPendingSaves() {
+        try {
+            if (_pendingCanvasSaveBody) {
+                try { fetch(API.canvasSave, { method: 'POST', headers, body: JSON.stringify(_pendingCanvasSaveBody), keepalive: true }); } catch (_) {}
+                _pendingCanvasSaveBody = null;
+                clearTimeout(canvasSaveToServerTimer);
+            }
+            if (_pendingChatSaveBody) {
+                try { fetch(API.chatSave, { method: 'POST', headers, body: JSON.stringify(_pendingChatSaveBody), keepalive: true }); } catch (_) {}
+                _pendingChatSaveBody = null;
+                clearTimeout(chatSaveTimer);
+            }
+            if (_pendingCwArtifact) {
+                try {
+                    fetch(API.cwArtifact, {
+                        method: 'POST', headers,
+                        body: JSON.stringify({
+                            project_id: _pendingCwArtifact.projectId,
+                            key: _pendingCwArtifact.artifactKey,
+                            value: _pendingCwArtifact.html,
+                        }),
+                        keepalive: true,
+                    });
+                } catch (_) {}
+                _pendingCwArtifact = null;
+                clearTimeout(_cwArtifactSaveTimer);
+            }
+        } catch (_) { /* best-effort; never block nav/unload */ }
+    }
     if (typeof window !== 'undefined' && !window._swmlBeforeUnloadFlushRegistered) {
         window._swmlBeforeUnloadFlushRegistered = true;
-        window.addEventListener('beforeunload', function () {
-            try {
-                if (_pendingCanvasSaveBody) {
-                    try { fetch(API.canvasSave, { method: 'POST', headers, body: JSON.stringify(_pendingCanvasSaveBody), keepalive: true }); } catch (_) {}
-                    _pendingCanvasSaveBody = null;
-                    clearTimeout(canvasSaveToServerTimer);
-                }
-                if (_pendingChatSaveBody) {
-                    try { fetch(API.chatSave, { method: 'POST', headers, body: JSON.stringify(_pendingChatSaveBody), keepalive: true }); } catch (_) {}
-                    _pendingChatSaveBody = null;
-                    clearTimeout(chatSaveTimer);
-                }
-                // v7.17.40: CW artifact mirror flush — same keepalive pattern so the
-                // artifact write races alongside the canvas-doc write during unload.
-                if (_pendingCwArtifact) {
-                    try {
-                        fetch(API.cwArtifact, {
-                            method: 'POST', headers,
-                            body: JSON.stringify({
-                                project_id: _pendingCwArtifact.projectId,
-                                key: _pendingCwArtifact.artifactKey,
-                                value: _pendingCwArtifact.html,
-                            }),
-                            keepalive: true,
-                        });
-                    } catch (_) {}
-                    _pendingCwArtifact = null;
-                    clearTimeout(_cwArtifactSaveTimer);
-                }
-            } catch (_) { /* best-effort; never block unload */ }
-        });
+        window.addEventListener('beforeunload', _flushPendingSaves);
+        // v7.19.678: SPA navigation does NOT fire beforeunload. Flush on focusSpaNavigated
+        // too, so a step→step nav persists the outgoing step's last edits before the
+        // incoming lesson's editor mounts and clobbers the shared pending trackers.
+        document.addEventListener('focusSpaNavigated', _flushPendingSaves);
     }
 
     // v7.19.422: client-side mirror of the server heal (class-rest-api
