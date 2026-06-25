@@ -16798,7 +16798,7 @@
                 const sparksHTML = dividerHTML('SPARKS YOU LIKED') +
                     sectionHTML('response', 'Sparks From Step 1', true, null,
                         '<h3 data-locked="true">Sparks You Liked from Step 1</h3>' +
-                        '<p data-locked="true"><em>The seed ideas you ticked in Step 1 appear here as optional starting points — sparks to draw on. You don’t have to use them; develop your own three ideas below.</em></p>' +
+                        '<p data-locked="true"><em>The seed ideas you ticked in Step 1 appear here as optional starting points — sparks to draw on. You don’t have to use them; develop your own three ideas below. <strong>These come from Step 1 — to change them, go back to Step 1 and re-tick.</strong></em></p>' +
                         outlineRowHTML({ id: 'liked-1', label: 'Spark 1', prompt: '—', locked: true }, 'cw-step-2-liked-1') +
                         outlineRowHTML({ id: 'liked-2', label: 'Spark 2', prompt: '—', locked: true }, 'cw-step-2-liked-2') +
                         outlineRowHTML({ id: 'liked-3', label: 'Spark 3', prompt: '—', locked: true }, 'cw-step-2-liked-3'));
@@ -18971,7 +18971,7 @@
             html += dividerHTML('SPARKS YOU LIKED');
             html += sectionHTML('response', 'Sparks From Step 1', true, null,
                 '<h3 data-locked="true">Sparks You Liked from Step 1</h3>' +
-                '<p data-locked="true"><em>The seed ideas you ticked in Step 1 appear here as optional starting points — sparks to draw on. You don’t have to use them; develop your own three ideas below.</em></p>' +
+                '<p data-locked="true"><em>The seed ideas you ticked in Step 1 appear here as optional starting points — sparks to draw on. You don’t have to use them; develop your own three ideas below. <strong>These come from Step 1 — to change them, go back to Step 1 and re-tick.</strong></em></p>' +
                 outlineRowHTML({ id: 'liked-1', label: 'Spark 1', prompt: '—', locked: true }, 'cw-step-2-liked-1') +
                 outlineRowHTML({ id: 'liked-2', label: 'Spark 2', prompt: '—', locked: true }, 'cw-step-2-liked-2') +
                 outlineRowHTML({ id: 'liked-3', label: 'Spark 3', prompt: '—', locked: true }, 'cw-step-2-liked-3')
