@@ -16622,6 +16622,7 @@
                 const artifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'liked_seeds');
                 const raw = (artifact?.success && typeof artifact.value === 'string') ? artifact.value : '';
                 const lines = raw.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 3);
+                console.log('WML CW Step2 liked-fill DEBUG: artifact success=' + (artifact && artifact.success) + ' rawLen=' + raw.length + ' lines=' + lines.length);
                 const rowIds = ['cw-step-2-liked-1', 'cw-step-2-liked-2', 'cw-step-2-liked-3'];
                 const fills = lines.length
                     ? rowIds.map((_, i) => lines[i] || '')
@@ -16780,21 +16781,34 @@
         const tryHealCwStep2SparksSection = () => {
             if (!isCwTask || !canvasEditor || cwStepDef?.step !== 2) return;
             try {
-                // NB: a divider's `attrs.label` does NOT survive the HTML save→reload round-trip
-                // (the label persists only as the rendered <p> text). So match the divider on
-                // node.textContent, and detect "already inserted" via the cw-step-2-liked-1
-                // fieldId (fieldIds always persist) — never on attrs.label, which is empty on reload.
-                let hasSparks = false, storyIdeasDividerPos = null;
-                canvasEditor.state.doc.descendants((node, pos) => {
-                    if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === 'cw-step-2-liked-1') { hasSparks = true; return false; }
-                    if (storyIdeasDividerPos === null && node.type.name === 'sectionBlock' && node.attrs
-                        && (node.attrs.type || '') === 'divider'
-                        && /your story ideas/i.test(((node.attrs.label || '') + ' ' + (node.textContent || '')))) {
-                        storyIdeasDividerPos = pos;
-                    }
-                    return true;
+                // ROBUST anchor: the ONLY thing guaranteed to survive an HTML save→reload is an
+                // outlineRow fieldId — sectionBlock attrs.type AND attrs.label both come back
+                // empty/changed on reload, so divider-attr matching silently fails (Neil: "we see
+                // this a lot"). Find the top-level child whose subtree holds cw-step-2-idea1 (the
+                // "Your Story Ideas" section) and insert just before it — or before the short
+                // divider immediately preceding it so the sparks sit above the divider. Detect
+                // already-inserted via cw-step-2-liked-1.
+                const doc = canvasEditor.state.doc;
+                let hasSparks = false, ideaIndex = -1;
+                const childOffsets = [];
+                doc.forEach((child, offset, index) => {
+                    childOffsets[index] = offset;
+                    let hasIdea1 = false, hasLiked1 = false;
+                    child.descendants((n) => {
+                        if (n.type.name === 'outlineRow' && n.attrs) {
+                            if (n.attrs.fieldId === 'cw-step-2-idea1') hasIdea1 = true;
+                            if (n.attrs.fieldId === 'cw-step-2-liked-1') hasLiked1 = true;
+                        }
+                        return true;
+                    });
+                    if (hasLiked1) hasSparks = true;
+                    if (hasIdea1 && ideaIndex === -1) ideaIndex = index;
                 });
-                if (hasSparks || storyIdeasDividerPos === null) return;
+                console.log('WML CW Step2 sparks-heal DEBUG: children=' + doc.childCount + ' ideaIndex=' + ideaIndex + ' hasSparks=' + hasSparks);
+                if (hasSparks || ideaIndex === -1) return;
+                let insertIndex = ideaIndex;
+                if (ideaIndex > 0 && (doc.child(ideaIndex - 1).textContent || '').trim().length <= 40) insertIndex = ideaIndex - 1;
+                const storyIdeasDividerPos = childOffsets[insertIndex];
                 const sparksHTML = dividerHTML('SPARKS YOU LIKED') +
                     sectionHTML('response', 'Sparks From Step 1', true, null,
                         '<h3 data-locked="true">Sparks You Liked from Step 1</h3>' +
