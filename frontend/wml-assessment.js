@@ -17159,8 +17159,11 @@
                 parsed.querySelectorAll('[data-field-id]').forEach(row => {
                     const m = (row.getAttribute('data-field-id') || '').match(/^cw-step-4-beat([1-6])$/);
                     if (!m) return;
+                    // Serialized HTML keeps the answer as the row's OWN text (the
+                    // .swml-outline-input wrapper is added by the live NodeView only); fall
+                    // back to it if a future shape nests the text.
                     const input = row.querySelector('.swml-outline-input');
-                    beats[m[1]] = ((input ? input.textContent : '') || '').trim();
+                    beats[m[1]] = ((input ? input.textContent : row.textContent) || '').trim();
                 });
                 for (let i = 1; i <= 6; i++) {
                     const text = beats[String(i)];
