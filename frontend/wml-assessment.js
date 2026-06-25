@@ -16743,6 +16743,68 @@
                 console.log('WML CW: Step 3 logline rows healed to checkboxes (' + updates.length + ')');
             } catch (e) { console.log('WML CW: logline checkbox heal skipped —', e && e.message); }
         };
+        // v7.19.667: HEAL existing Step-1 docs — give the 3 seed-logline rows a checkbox so the
+        // student can tick the ones they like (carry to Step 2). Attr-only (criteria.type), so
+        // positions don't shift. Mirrors tryHealCwStep3LoglineCheckboxes. Idempotent.
+        const tryHealCwStep1LoglineCheckboxes = () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 1) return;
+            try {
+                const updates = [];
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (node.type.name === 'outlineRow' && node.attrs && typeof node.attrs.fieldId === 'string'
+                        && node.attrs.fieldId.indexOf('cw-step-1-logline-') === 0) {
+                        let crit = {};
+                        try { crit = JSON.parse(node.attrs.criteria || '{}'); } catch (_) { crit = {}; }
+                        if (crit.type !== 'checkbox') {
+                            crit.type = 'checkbox';
+                            updates.push({ pos: pos, attrs: { ...node.attrs, criteria: JSON.stringify(crit) } });
+                        }
+                    }
+                    return true;
+                });
+                if (!updates.length) return;
+                _migrationActive = true;
+                try {
+                    let tr = canvasEditor.state.tr; // attr-only changes don't shift positions
+                    updates.forEach(u => { tr = tr.setNodeMarkup(u.pos, undefined, u.attrs); });
+                    canvasEditor.view.dispatch(tr);
+                } finally { _migrationActive = false; }
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 1 seed-logline rows healed to checkboxes (' + updates.length + ')');
+            } catch (e) { console.log('WML CW: Step 1 logline checkbox heal skipped —', e && e.message); }
+        };
+        // v7.19.667: HEAL existing Step-2 docs that predate the "Sparks You Liked from Step 1"
+        // section — insert it just before the "YOUR STORY IDEAS" divider. tryFillLikedSeeds (run
+        // AFTER this) then fills its rows from the liked_seeds artifact. Idempotent (skips if the
+        // Sparks section already exists). Mirrors tryHealCwStep4ChosenLoglineSection.
+        const tryHealCwStep2SparksSection = () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 2) return;
+            try {
+                let hasSparks = false, storyIdeasDividerPos = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.label === 'Sparks From Step 1') { hasSparks = true; return false; }
+                    if (storyIdeasDividerPos === null && node.type.name === 'sectionBlock' && node.attrs
+                        && (node.attrs.type || '') === 'divider' && /your story ideas/i.test(node.attrs.label || '')) {
+                        storyIdeasDividerPos = pos;
+                    }
+                    return true;
+                });
+                if (hasSparks || storyIdeasDividerPos === null) return;
+                const sparksHTML = dividerHTML('SPARKS YOU LIKED') +
+                    sectionHTML('response', 'Sparks From Step 1', true, null,
+                        '<h3 data-locked="true">Sparks You Liked from Step 1</h3>' +
+                        '<p data-locked="true"><em>The seed ideas you ticked in Step 1 appear here as optional starting points — sparks to draw on. You don’t have to use them; develop your own three ideas below.</em></p>' +
+                        outlineRowHTML({ id: 'liked-1', label: 'Spark 1', prompt: '—', locked: true }, 'cw-step-2-liked-1') +
+                        outlineRowHTML({ id: 'liked-2', label: 'Spark 2', prompt: '—', locked: true }, 'cw-step-2-liked-2') +
+                        outlineRowHTML({ id: 'liked-3', label: 'Spark 3', prompt: '—', locked: true }, 'cw-step-2-liked-3'));
+                _migrationActive = true;
+                try { canvasEditor.commands.insertContentAt(storyIdeasDividerPos, sparksHTML); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 2 Sparks section healed in');
+            } catch (e) { console.log('WML CW: step2 sparks heal skipped —', e && e.message); }
+        };
         // v7.19.486: HEAL existing Step-4 docs that predate the "Your Chosen Logline" carry
         // section — insert it just before the Story Spine divider so the chosen logline shows
         // there. tryFillStep4ChosenLogline (run after this) then fills it from the artifact.
@@ -16900,7 +16962,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
