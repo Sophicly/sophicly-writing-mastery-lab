@@ -4426,6 +4426,14 @@
                             // round 1 (mirrors the MSQ chat-clear branch + the boot gate). NO
                             // silent-send to the AI (that would re-run the legacy protocol quiz).
                             setTimeout(() => { _quizCtl.reset(); _quizCtl.start({ quizType: 'foundational' }); }, 200);
+                        } else if (state.task === 'cw_step_1') {
+                            // v7.19.662: CW Step 1 deterministic walk owns chat-clear too \u2014
+                            // reset the sidecar + fresh-start the controller (mirror the MSQ
+                            // chat-clear branch at ~L4472). Without this, clearing the chat
+                            // showed the AI "Welcome back" greeting + Let's-begin button and
+                            // the walk never ran (controller bypassed \u2192 AI sat on the new
+                            // wait-for-answers protocol).
+                            setTimeout(() => { _cwProfileCtl.reset(); _cwProfileCtl.start(); }, 200);
                         } else if (isCwTask && cwStepDef) {
                             const stepLabel = cwStepDef.label || 'this step';
                             const stepNum = cwStepDef.step || cwStepDef.trial || '';
