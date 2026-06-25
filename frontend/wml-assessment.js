@@ -19339,7 +19339,7 @@
             html += sectionHTML('plan', 'Story Components', true, null,
                 '<h3>Your Story Components</h3>' +
                 '<p><em>These components will be filled in as you work through the exercise in the chat. Sophia will guide you through each one step by step.</em></p>' +
-                outlineRowHTML({ id: 'protagonist', label: 'Protagonist', prompt: 'Who is your main character?' }, 'cw-step-3-protagonist') +
+                outlineRowHTML({ id: 'protagonist', label: 'Protagonist', prompt: 'Which character experiences the greatest change, and whose change reveals the meaning of your story?' }, 'cw-step-3-protagonist') +
                 outlineRowHTML({ id: 'flaw', label: 'Flaw (Emotional Shield)', prompt: 'What visible behaviour protects a deeper vulnerability?' }, 'cw-step-3-flaw') +
                 outlineRowHTML({ id: 'wound', label: 'Wound', prompt: 'What deeper hurt or fear is the flaw covering?' }, 'cw-step-3-wound') +
                 outlineRowHTML({ id: 'incident', label: 'Inciting Incident', prompt: 'The event that shatters their normal life' }, 'cw-step-3-incident') +
