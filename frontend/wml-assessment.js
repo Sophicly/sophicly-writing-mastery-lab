@@ -56,6 +56,7 @@
     // Self-contained markdown → HTML for the guide. Covers everything the guide uses:
     // h1–h4, paragraphs, ul, ol, blockquote, hr, bold, italic, links. Kept separate
     // from cwMarkdownToDocHtml() (CW doc renderer) so neither regresses the other.
+    // Returns { html, toc }: toc lists h2/h3 with stable ids for the contents rail.
     function renderGuideMarkdown(md) {
         const esc = s => String(s)
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -65,9 +66,11 @@
             .replace(/__([^_]+)__/g, '<strong>$1</strong>')
             .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>')
             .replace(/(^|[^_])_([^_\n]+)_/g, '$1<em>$2</em>');
+        const plain = s => String(s).replace(/[*_`#]/g, '').trim();
 
         const lines = String(md || '').replace(/\r\n/g, '\n').split('\n');
-        let html = '', para = [], listType = null, inQuote = false;
+        let html = '', para = [], listType = null, inQuote = false, hid = 0;
+        const toc = [];
         const flushPara = () => { if (para.length) { html += '<p>' + inline(para.join(' ')) + '</p>'; para = []; } };
         const closeList = () => { if (listType) { html += '</' + listType + '>'; listType = null; } };
         const closeQuote = () => { if (inQuote) { html += '</blockquote>'; inQuote = false; } };
@@ -78,7 +81,14 @@
             if (trimmed === '') { flushPara(); closeList(); closeQuote(); continue; }
             if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) { closeAll(); html += '<hr>'; continue; }
             const h = trimmed.match(/^(#{1,4})\s+(.*)$/);
-            if (h) { closeAll(); const lvl = h[1].length; html += `<h${lvl}>${inline(h[2])}</h${lvl}>`; continue; }
+            if (h) {
+                closeAll();
+                const lvl = h[1].length;
+                let idAttr = '';
+                if (lvl === 2 || lvl === 3) { const id = 'cwg-' + (++hid); idAttr = ` id="${id}"`; toc.push({ id, level: lvl, text: plain(h[2]) }); }
+                html += `<h${lvl}${idAttr}>${inline(h[2])}</h${lvl}>`;
+                continue;
+            }
             const q = trimmed.match(/^>\s?(.*)$/);
             if (q) { flushPara(); closeList(); if (!inQuote) { html += '<blockquote>'; inQuote = true; } html += '<p>' + inline(q[1]) + '</p>'; continue; }
             closeQuote();
@@ -90,7 +100,45 @@
             para.push(trimmed);
         }
         closeAll();
-        return html || '<p></p>';
+        return { html: html || '<p></p>', toc };
+    }
+
+    // Build the contents rail + scroll-spy. scrollEl = the body (scroll container).
+    function buildGuideToc(tocEl, items, scrollEl) {
+        tocEl.innerHTML = '';
+        if (!items || items.length < 2) { tocEl.style.display = 'none'; return; }
+        tocEl.appendChild(el('div', { className: 'swml-guide-toc-head', textContent: 'Contents' }));
+        const list = el('div', { className: 'swml-guide-toc-list' });
+        const byId = {};
+        items.forEach(it => {
+            const link = el('a', { className: 'swml-guide-toc-link lvl' + it.level, textContent: it.text, href: '#' });
+            link.dataset.target = it.id;
+            link.onclick = (e) => {
+                e.preventDefault();
+                const tgt = document.getElementById(it.id);
+                if (tgt) tgt.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            };
+            byId[it.id] = link;
+            list.appendChild(link);
+        });
+        tocEl.appendChild(list);
+
+        // Scroll-spy: a heading is "current" while it sits in the top quarter of the body.
+        let activeId = null;
+        const setActive = (id) => {
+            if (id === activeId || !byId[id]) return;
+            if (activeId && byId[activeId]) byId[activeId].classList.remove('active');
+            activeId = id;
+            byId[id].classList.add('active');
+            byId[id].scrollIntoView({ block: 'nearest' });
+        };
+        const obs = new IntersectionObserver((entries) => {
+            const visible = entries.filter(en => en.isIntersecting)
+                .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+            if (visible.length) setActive(visible[0].target.id);
+        }, { root: scrollEl, rootMargin: '0px 0px -72% 0px', threshold: 0 });
+        items.forEach(it => { const hEl = document.getElementById(it.id); if (hEl) obs.observe(hEl); });
+        if (items[0]) setActive(items[0].id);
     }
 
     function closeGuidePanel() {
@@ -98,7 +146,7 @@
         if (!overlay) return;
         overlay.classList.remove('open');
         if (typeof overlay._cleanup === 'function') overlay._cleanup();
-        setTimeout(() => overlay.remove(), 220);
+        setTimeout(() => overlay.remove(), 240);
     }
 
     function showGuidePanel() {
@@ -110,15 +158,29 @@
 
         const overlay = el('div', { className: 'swml-guide-overlay', id: 'swml-guide-overlay' });
         const drawer  = el('div', { className: 'swml-guide-drawer' });
+
+        const tocToggle = el('button', { className: 'swml-guide-toc-toggle', innerHTML: SVG_LIST_DETAILS,
+            'aria-label': 'Toggle contents', title: 'Contents', onClick: () => drawer.classList.toggle('toc-collapsed') });
         const header = el('div', { className: 'swml-guide-header' }, [
+            tocToggle,
             el('span', { className: 'swml-guide-title', textContent: 'Creative Writing Reference Guide' }),
             el('button', { className: 'swml-guide-close', innerHTML: '&times;', 'aria-label': 'Close guide', onClick: () => closeGuidePanel() }),
         ]);
+
+        const main = el('div', { className: 'swml-guide-main' });
+        const toc  = el('nav', { className: 'swml-guide-toc', id: 'swml-guide-toc' });
         const body = el('div', { className: 'swml-guide-body', id: 'swml-guide-body' });
         body.appendChild(el('div', { className: 'swml-guide-loading', textContent: 'Loading guide…' }));
+        main.appendChild(toc);
+        main.appendChild(body);
+
         drawer.appendChild(header);
-        drawer.appendChild(body);
+        drawer.appendChild(main);
         overlay.appendChild(drawer);
+
+        // On narrow screens the contents rail overlays the reading column, so start it
+        // collapsed — the toggle reveals it on demand.
+        if (window.innerWidth < 760) drawer.classList.add('toc-collapsed');
 
         // Layer 2: block scroll-chaining originating on the backdrop (not the drawer body).
         const stopOnBackdrop = (e) => { if (e.target === overlay) e.preventDefault(); };
@@ -130,16 +192,20 @@
         overlay._cleanup = () => {
             document.removeEventListener('keydown', onKey);
             document.body.style.overflow = prevBodyOverflow;
+            _teardownGuideSelectionMenu();
         };
 
         document.body.appendChild(overlay);
         requestAnimationFrame(() => overlay.classList.add('open'));
 
         const render = (mdText) => {
+            const { html, toc: tocItems } = renderGuideMarkdown(mdText);
             const article = el('div', { className: 'swml-guide-article' });
-            article.innerHTML = renderGuideMarkdown(mdText);
+            article.innerHTML = html;
             body.innerHTML = '';
             body.appendChild(article);
+            buildGuideToc(toc, tocItems, body);
+            _setupGuideSelectionMenu(article);
         };
         if (cwGuideCache != null) { render(cwGuideCache); return; }
         fetch(`${config.restUrl}cw-guide`, { headers })
@@ -157,6 +223,64 @@
                         textContent: 'The guide could not be loaded right now. Please try again shortly.' }));
                 }
             });
+    }
+
+    // ── Guide highlight → "Add to notes" (v7.19.676) ──
+    // Same mechanism as the canvas selection toolbar (reuses sendToNotes →
+    // WML.sendToNotes), but a single notes-only action. Students harvest craft
+    // lines from the guide straight into their notepad while they read.
+    let _guideSelMenu = null;
+    let _guideSelHandlers = null;
+
+    function _hideGuideSelMenu() { if (_guideSelMenu) { _guideSelMenu.remove(); _guideSelMenu = null; } }
+
+    function _setupGuideSelectionMenu(article) {
+        _teardownGuideSelectionMenu();
+        const onUp = () => {
+            setTimeout(() => {
+                const sel = window.getSelection();
+                if (!sel || sel.isCollapsed) { _hideGuideSelMenu(); return; }
+                const text = sel.toString().trim();
+                if (text.length < 2) { _hideGuideSelMenu(); return; }
+                if (!article.contains(sel.anchorNode) || !article.contains(sel.focusNode)) { _hideGuideSelMenu(); return; }
+                const rect = sel.getRangeAt(0).getBoundingClientRect();
+                _hideGuideSelMenu();
+                const menu = el('div', { className: 'swml-guide-sel-menu' });
+                menu.appendChild(el('button', { className: 'swml-guide-sel-btn', innerHTML: SVG_SEL_NOTE + ' <span>Add to notes</span>',
+                    onClick: (e) => {
+                        e.stopPropagation();
+                        sendToNotes(text);
+                        try { showToast('Added to your notes'); } catch (_) {}
+                        _hideGuideSelMenu();
+                        sel.removeAllRanges();
+                    }
+                }));
+                document.body.appendChild(menu);
+                const mw = menu.offsetWidth, mh = menu.offsetHeight;
+                let top = rect.top - mh - 8;
+                if (top < 8) top = rect.bottom + 8;
+                let left = Math.max(8, Math.min(rect.left + rect.width / 2 - mw / 2, window.innerWidth - mw - 8));
+                menu.style.top = top + 'px';
+                menu.style.left = left + 'px';
+                _guideSelMenu = menu;
+            }, 10);
+        };
+        const onDown = (e) => { if (_guideSelMenu && !_guideSelMenu.contains(e.target)) _hideGuideSelMenu(); };
+        article.addEventListener('mouseup', onUp);
+        article.addEventListener('touchend', onUp);
+        document.addEventListener('mousedown', onDown);
+        _guideSelHandlers = { article, onUp, onDown };
+    }
+
+    function _teardownGuideSelectionMenu() {
+        _hideGuideSelMenu();
+        if (_guideSelHandlers) {
+            const { article, onUp, onDown } = _guideSelHandlers;
+            article.removeEventListener('mouseup', onUp);
+            article.removeEventListener('touchend', onUp);
+            document.removeEventListener('mousedown', onDown);
+            _guideSelHandlers = null;
+        }
     }
 
     // v7.19.323: KILL SWITCH for the deterministic mark-scheme quiz controller
