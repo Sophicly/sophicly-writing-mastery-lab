@@ -71,9 +71,14 @@ The moment the student's answers arrive, present the profile in chat for review.
 
 ---
 
-Does this feel right? Anything you'd like to add or change?"
+Does this feel right, or is there anything you'd like to adjust?
 
-Wait for the student to confirm or request changes. Make any adjustments they ask for.
+A) Looks great — let's continue
+B) I'd like to change something"
+
+**Present options A and B on their own lines** (exactly as above) so they render as clickable buttons for the student. Then wait:
+- **A** (or any free-text approval): proceed to Step 2 — Generate Seed Loglines.
+- **B** (or a free-text change request): ask what they'd like to adjust, revise the profile in chat, then offer the A/B choice again. Do not proceed until they're happy.
 
 ---
 
