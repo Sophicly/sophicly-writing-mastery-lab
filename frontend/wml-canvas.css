@@ -5042,9 +5042,11 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 /* Per-section transfer button (small arrow icon) */
 .swml-transfer-btn {
-    /* v7.19.690: solid house-green fill, NO outline (was a faint 0.12 fill +
-       0.25 border = the "AI stroke" look Neil flagged). Definition comes from
-       an inset highlight + soft drop shadow, not a border. */
+    /* v7.19.693: brand-PURPLE fill — it's an ACTION (transfer to Response), so it
+       must read as separate from the house-GREEN ✓ completion tick beside it
+       (status: done). Same coherent transfer family as the Transfer All pill.
+       v7.19.690: solid fill, NO outline (definition from inset highlight + shadow,
+       not a border — was the "AI stroke" look). */
     pointer-events: auto;
     position: absolute;
     display: flex;
@@ -5055,10 +5057,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     border-radius: 6px;
     border: 0;
     cursor: pointer;
-    background: rgba(28,217,145,0.82);
+    background: rgba(83,51,237,0.9);
     color: #fff;
     font-size: 12px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.18);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
     transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
     outline: none;
     opacity: 0;
@@ -5072,9 +5074,9 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     opacity: 1;
 }
 .swml-transfer-btn:hover {
-    background: #1CD991;
+    background: #5333ed;
     transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(28,217,145,0.42), inset 0 1px 0 rgba(255,255,255,0.22);
+    box-shadow: 0 2px 7px rgba(83,51,237,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
 }
 .swml-transfer-btn:active {
     transform: translateY(0) scale(0.92);
@@ -5109,24 +5111,24 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     border-radius: 5px;
     border: 0;
     cursor: pointer;
-    background: linear-gradient(180deg, rgba(28,217,145,0.92), rgba(22,180,120,0.92));
+    background: linear-gradient(180deg, rgba(83,51,237,0.95), rgba(67,40,205,0.95));
     color: #fff;
     font-family: 'Proxima Soft Complete', 'Proxima Soft', sans-serif;
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 0.4px;
     text-transform: uppercase;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.16);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.18);
     transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
     outline: none;
     white-space: nowrap;
 }
 .swml-transfer-all-btn svg { flex-shrink: 0; width: 11px; height: 11px; }
 .swml-transfer-all-btn:hover {
-    background: linear-gradient(180deg, rgba(28,217,145,1), rgba(22,190,128,0.96));
+    background: linear-gradient(180deg, #5333ed, rgba(74,44,222,0.97));
     color: #fff;
     transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(28,217,145,0.38), inset 0 1px 0 rgba(255,255,255,0.22);
+    box-shadow: 0 3px 9px rgba(83,51,237,0.45), inset 0 1px 0 rgba(255,255,255,0.24);
 }
 .swml-transfer-all-btn:active {
     transform: translateY(0) scale(0.97);
@@ -5143,20 +5145,18 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 /* Light theme */
 [data-swml-theme="light"] .swml-transfer-btn {
-    background: rgba(28,190,128,0.92);
+    background: rgba(83,51,237,0.92);
     color: #fff;
 }
 [data-swml-theme="light"] .swml-transfer-btn:hover {
-    background: #16b478;
+    background: #5333ed;
 }
 [data-swml-theme="light"] .swml-transfer-all-btn {
-    background: linear-gradient(180deg, rgba(28,200,135,0.95), rgba(28,180,120,0.85));
-    border-color: rgba(28,180,120,0.4);
+    background: linear-gradient(180deg, rgba(83,51,237,0.96), rgba(67,40,205,0.9));
     color: #fff;
 }
 [data-swml-theme="light"] .swml-transfer-all-btn:hover {
-    background: linear-gradient(180deg, rgba(28,200,135,1), rgba(28,180,120,0.95));
-    border-color: rgba(28,180,120,0.6);
+    background: linear-gradient(180deg, #5333ed, rgba(74,44,222,0.97));
     color: #fff;
 }
 
