@@ -5297,19 +5297,23 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
    Click selects whole section content + dispatches synthetic mouseup so the
    existing canvas-doc selection toolbar mounts via its normal codepath. */
 .swml-section-select-all {
+    /* v7.19.688: aligned into one tidy top-right row with the pull chip + the
+       ✓ completion tick. All three: top:10px, 22x22, 8px gaps → right:12 (tick),
+       42 (select-all), 72 (pull). Was top:-10/right:12 (26x20) which stacked
+       directly on the tick's column and touched it at y=10 (Neil: crowded). */
     position: absolute;
-    top: -10px;
-    right: 12px;
+    top: 10px;
+    right: 42px;
     z-index: 2;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 26px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     padding: 0;
     margin: 0;
     border: 0;
-    border-radius: 4px;
+    border-radius: 6px;
     background: linear-gradient(180deg, rgba(83,51,237,0.85), rgba(44,0,62,0.92));
     color: rgba(255,255,255,0.85);
     cursor: pointer;
@@ -5449,12 +5453,14 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* v7.19.95 — pull chip on plan sections in exam_crib (sibling to Select-All).
    Sits ABOVE the Select-All chip in the top-right corner with offset. */
 .swml-section-pull {
+    /* v7.19.688: leftmost in the tidy top-right row (tick 12 → select-all 42 →
+       pull 72). 22x22, 8px gaps, top:10 to sit level with the tick + select-all. */
     position: absolute;
-    top: -10px;
-    right: 44px; /* clears the Select-All chip (32px wide + 12px gap) */
+    top: 10px;
+    right: 72px;
     z-index: 3;
-    width: 26px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     border-radius: 6px;
     border: 1px solid rgba(125,249,233,0.35);
     background: linear-gradient(180deg, rgba(28,217,145,0.85), rgba(28,217,145,0.55));
