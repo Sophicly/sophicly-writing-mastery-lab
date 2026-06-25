@@ -16619,13 +16619,31 @@
         const tryFillLikedSeeds = async () => {
             if (!isCwTask || !canvasEditor || cwStepDef?.step !== 2 || !state.cwProjectId) return;
             try {
-                const artifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'liked_seeds');
-                const raw = (artifact?.success && typeof artifact.value === 'string') ? artifact.value : '';
-                const lines = raw.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 3);
-                console.log('WML CW Step2 liked-fill DEBUG: artifact success=' + (artifact && artifact.success) + ' rawLen=' + raw.length + ' lines=' + lines.length);
+                // Read the instant localStorage mirror first (race-proof on fast navigation),
+                // then fall back to the server artifact (cross-device / fresh browser).
+                let raw = '';
+                try { raw = localStorage.getItem('swml_cw_likedseeds_' + state.cwProjectId) || ''; } catch (_) {}
+                if (!raw) {
+                    const artifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'liked_seeds');
+                    raw = (artifact?.success && typeof artifact.value === 'string') ? artifact.value : '';
+                }
+                // Parse the position-aware 3-slot array (JSON: index 0/1/2 = Spark 1/2/3).
+                // Back-compat: an old newline-joined value fills top-down.
+                let slots = ['', '', ''];
+                if (raw) {
+                    try {
+                        const arr = JSON.parse(raw);
+                        if (Array.isArray(arr)) { for (let i = 0; i < 3; i++) slots[i] = (typeof arr[i] === 'string') ? arr[i].trim() : ''; }
+                        else throw 0;
+                    } catch (_) {
+                        const compact = raw.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 3);
+                        slots = [compact[0] || '', compact[1] || '', compact[2] || ''];
+                    }
+                }
+                console.log('WML CW Step2 liked-fill DEBUG: rawLen=' + raw.length + ' slots=' + JSON.stringify(slots));
                 const rowIds = ['cw-step-2-liked-1', 'cw-step-2-liked-2', 'cw-step-2-liked-3'];
-                const fills = lines.length
-                    ? rowIds.map((_, i) => lines[i] || '')
+                const fills = slots.some(Boolean)
+                    ? slots
                     : ['You didn’t tick any sparks in Step 1 — that’s fine. Develop your own three ideas below.', '', ''];
                 let wrote = false;
                 rowIds.forEach((fid, i) => {
@@ -16652,7 +16670,7 @@
                 if (wrote) {
                     try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
                     if (typeof saveCanvasContent === 'function') saveCanvasContent();
-                    console.log('WML CW: Step 2 liked-seeds filled from artifact →', lines.length, 'spark(s)');
+                    console.log('WML CW: Step 2 liked-seeds filled →', slots.filter(Boolean).length, 'spark(s)');
                 }
             } catch (e) { console.log('WML CW: no liked_seeds artifact to fill —', e && e.message); }
         };
@@ -24320,39 +24338,41 @@
             }
         } catch (_) { /* never throw out of save */ }
     }
-    // v7.19.666: CW Step-1 "liked seeds" sync — MULTI-select twin of _syncCwStep2ChosenIdea.
-    // Collect ALL ticked seed-logline rows → save the `liked_seeds` artifact (newline-joined
-    // sentences) so Step 2 can surface them as "Sparks you liked from Step 1" + feed them to
-    // chat. UNLIKE chosen_idea (which never clobbers on none-ticked), this writes the EXACT
-    // current ticks — including empty when the student unticks all. Derive-on-save (the fixed
-    // pattern), never click-time.
+    // v7.19.671: CW Step-1 "liked seeds" sync — POSITION-AWARE + race-proof.
+    // Build a fixed 3-slot array (index 0/1/2 = logline 1/2/3): each slot holds the logline
+    // text if its box is ticked, else ''. So ticking ONLY logline 3 lands in Spark 3 (not
+    // compacted to Spark 1). Mirror to localStorage (synchronous → no save-then-navigate race)
+    // AND the server artifact (cross-device). Step 2 reads localStorage first. Derive-on-save
+    // (the fixed pattern), never click-time. Writes the EXACT current ticks incl. all-empty.
     let _lastSyncedLikedSeedsSig = null;
+    function _likedSeedsLsKey() { return 'swml_cw_likedseeds_' + (state.cwProjectId || 'p'); }
     function _syncCwStep1LikedSeeds() {
         try {
             if (state.task !== 'cw_step_1' || !state.cwProjectId || !canvasEditor) return;
-            const liked = [];
+            const slots = ['', '', '']; // logline 1 / 2 / 3 — position preserved
             canvasEditor.state.doc.descendants((node) => {
-                if (node.type && node.type.name === 'outlineRow' && node.attrs
-                    && typeof node.attrs.fieldId === 'string'
-                    && /^cw-step-1-logline-[123]$/.test(node.attrs.fieldId)) {
-                    const fid = node.attrs.fieldId;
-                    // live tick state (Map) wins; fall back to the baked attr on fresh load
-                    let cs = _outlineCheckState.has(fid) ? _outlineCheckState.get(fid) : null;
-                    if (!cs) { try { cs = JSON.parse(node.attrs.checkState || '{}'); } catch (_) { cs = {}; } }
-                    if (cs && Array.isArray(cs.checked) && cs.checked.includes(0)) {
-                        const t = (node.textContent || '').trim();
-                        if (t) liked.push(t);
+                if (node.type && node.type.name === 'outlineRow' && node.attrs && typeof node.attrs.fieldId === 'string') {
+                    const m = /^cw-step-1-logline-([123])$/.exec(node.attrs.fieldId);
+                    if (m) {
+                        const fid = node.attrs.fieldId;
+                        // live tick state (Map) wins; fall back to the baked attr on fresh load
+                        let cs = _outlineCheckState.has(fid) ? _outlineCheckState.get(fid) : null;
+                        if (!cs) { try { cs = JSON.parse(node.attrs.checkState || '{}'); } catch (_) { cs = {}; } }
+                        if (cs && Array.isArray(cs.checked) && cs.checked.includes(0)) {
+                            slots[parseInt(m[1], 10) - 1] = (node.textContent || '').trim();
+                        }
                     }
                 }
                 return true;
             });
-            const value = liked.join('\n');
+            const value = JSON.stringify(slots);
             const sig = state.cwProjectId + '|' + value;
             if (sig === _lastSyncedLikedSeedsSig) return; // unchanged — no write
             _lastSyncedLikedSeedsSig = sig;
+            try { localStorage.setItem(_likedSeedsLsKey(), value); } catch (_) {} // instant, race-proof
             if (window.WML && WML.cwProject) {
                 WML.cwProject.saveArtifact(state.cwProjectId, 'liked_seeds', value).catch(() => {});
-                console.log('WML CW: liked_seeds synced from Step-1 doc →', liked.length, 'ticked');
+                console.log('WML CW: liked_seeds synced →', slots.filter(Boolean).length, 'ticked', value);
             }
         } catch (_) { /* never throw out of save */ }
     }
