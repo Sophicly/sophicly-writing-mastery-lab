@@ -107,7 +107,14 @@
                         try {
                             const crit = JSON.parse((child.attrs && child.attrs.criteria) || '{}');
                             const cs = JSON.parse((child.attrs && child.attrs.checkState) || '{}');
-                            if (crit.type === 'checkbox') {
+                            // v7.19.679: a LOCKED row is a read-only carryover (e.g. Step-2
+                            // "Sparks From Step 1" slots, filled from Step-1 ticks) — the student
+                            // can't edit it, so it must NOT be a completion requirement. Auto-
+                            // satisfy it; an all-locked section (Sparks, with 0–3 slots filled)
+                            // then reads complete instead of wedging progress below 100%.
+                            if (crit.locked === true || crit.locked === 'true') {
+                                rowOk = true;
+                            } else if (crit.type === 'checkbox') {
                                 // Single-select pick group (e.g. logline drafts): the TICK is
                                 // tracked at section level (anyChecked); a row just needs text.
                                 checkboxRows++;

@@ -3559,7 +3559,11 @@
         let allFilled = true, hasCheckboxRow = false, anyChecked = false;
         rows.forEach(r => {
             const input = r.querySelector('.swml-outline-input') || r;
-            if ((input.textContent || '').trim().length === 0) allFilled = false;
+            // v7.19.679: LOCKED rows are read-only carryovers (e.g. Step-2 "Sparks From
+            // Step 1" slots) — the student can't fill them, so an empty locked row must
+            // NOT block completion. Mirrors the nodeView locked-row auto-satisfy.
+            const locked = input.classList && input.classList.contains('swml-outline-locked');
+            if (!locked && (input.textContent || '').trim().length === 0) allFilled = false;
             const cb = r.querySelector('input[type="checkbox"]');
             if (cb) { hasCheckboxRow = true; if (cb.checked) anyChecked = true; }
             const sel = r.querySelector('.swml-outline-select');
