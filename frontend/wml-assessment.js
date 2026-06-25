@@ -20259,6 +20259,7 @@
         if (state.task === 'planning') {
             const wc = getPlanningWordCount(editor);
             widget.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
+            applyWcWidgetColour(wc); // neutral for planning (no target)
             return;
         }
         const wc = getResponseWordCount(editor);
@@ -20269,6 +20270,11 @@
             canvasWordIdeal = Math.round(mq * 1.25);
         }
         widget.textContent = `${wc} / ${canvasWordTarget}`;
+        // v7.19.695: colour the pill HERE — this is the canonical live updater
+        // (onUpdate + post-load). canvasWordTarget is already multi-Q-adjusted above,
+        // so the ladder keys off the SAME target the label shows. (The .694 calls were
+        // on the diagnostic/CW paths, not this one — label moved, colour didn't.)
+        applyWcWidgetColour(wc);
     }
 
     // Literature essay word count targets (by total marks)
