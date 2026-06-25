@@ -16610,6 +16610,51 @@
                 console.log('WML CW: Step 3 chosen-idea filled from Step-2 artifact');
             } catch (e) { console.log('WML CW: no chosen_idea artifact to fill —', e && e.message); }
         };
+        // v7.19.666: Step-2 — fill the "Sparks You Liked from Step 1" rows from the
+        // `liked_seeds` artifact (the seed loglines the student ticked in Step 1). Mirrors
+        // tryFillChosenIdea's row-write. Re-runs on every Step-2 load, so changing the ticks
+        // in Step 1 reflects here. When nothing is ticked, row 1 collapses to a friendly note
+        // and rows 2–3 clear. Locked rows = read-only reference; the student develops their
+        // own three ideas in the Story Ideas section below.
+        const tryFillLikedSeeds = async () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 2 || !state.cwProjectId) return;
+            try {
+                const artifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'liked_seeds');
+                const raw = (artifact?.success && typeof artifact.value === 'string') ? artifact.value : '';
+                const lines = raw.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 3);
+                const rowIds = ['cw-step-2-liked-1', 'cw-step-2-liked-2', 'cw-step-2-liked-3'];
+                const fills = lines.length
+                    ? rowIds.map((_, i) => lines[i] || '')
+                    : ['You didn’t tick any sparks in Step 1 — that’s fine. Develop your own three ideas below.', '', ''];
+                let wrote = false;
+                rowIds.forEach((fid, i) => {
+                    // Re-scan fresh each iteration — a prior row's edit shifts positions.
+                    let targetPos = null, targetNode = null;
+                    canvasEditor.state.doc.descendants((node, pos) => {
+                        if (targetPos !== null) return false;
+                        if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === fid) { targetPos = pos; targetNode = node; return false; }
+                        return true;
+                    });
+                    if (targetPos === null || !targetNode) return; // older Step-2 doc without the row
+                    const want = fills[i];
+                    const have = (targetNode.textContent || '').trim();
+                    if (have === want) return; // already current
+                    const from = targetPos + 1;
+                    const to = targetPos + targetNode.nodeSize - 1;
+                    _migrationActive = true;
+                    try {
+                        if (want) canvasEditor.commands.insertContentAt({ from: from, to: to }, { type: 'text', text: want });
+                        else if (have) canvasEditor.commands.deleteRange({ from: from, to: to });
+                    } finally { _migrationActive = false; }
+                    wrote = true;
+                });
+                if (wrote) {
+                    try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                    if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                    console.log('WML CW: Step 2 liked-seeds filled from artifact →', lines.length, 'spark(s)');
+                }
+            } catch (e) { console.log('WML CW: no liked_seeds artifact to fill —', e && e.message); }
+        };
         // v7.19.484: HEAL existing Step-3 docs created before the Wound row was added to
         // the template — inject a `cw-step-3-wound` row immediately after the flaw row so
         // in-progress projects gain it with no admin step (new docs get it from the
@@ -16754,10 +16799,10 @@
                 if (!secNode || hasRows || hasText) return;
                 const newSection = sectionHTML('response', 'Seed Loglines', true, null,
                     '<h3 data-locked="true">Seed Loglines</h3>' +
-                    '<p data-locked="true"><em>Three story ideas inspired by your profile, seeded from your Step 1 chat. They’re starting points — edit any of them.</em></p>' +
-                    outlineRowHTML({ id: 'logline-1', label: 'Logline 1', prompt: 'Action-oriented: inciting incident + protagonist + action + antagonist.' }, 'cw-step-1-logline-1') +
-                    outlineRowHTML({ id: 'logline-2', label: 'Logline 2', prompt: 'Character-flaw oriented: a protagonist must change a personal flaw to solve the problem.' }, 'cw-step-1-logline-2') +
-                    outlineRowHTML({ id: 'logline-3', label: 'Logline 3', prompt: 'Genre-focused: your preferred genre blended with your core fear or passion.' }, 'cw-step-1-logline-3'));
+                    '<p data-locked="true"><em>Three story ideas inspired by your profile, seeded from your Step 1 chat. They’re starting points — edit any of them. <strong>Tick the box</strong> beside any you like and they’ll carry into Step 2 as starting sparks.</em></p>' +
+                    outlineRowHTML({ id: 'logline-1', label: 'Logline 1', prompt: 'Action-oriented: inciting incident + protagonist + action + antagonist.', type: 'checkbox' }, 'cw-step-1-logline-1') +
+                    outlineRowHTML({ id: 'logline-2', label: 'Logline 2', prompt: 'Character-flaw oriented: a protagonist must change a personal flaw to solve the problem.', type: 'checkbox' }, 'cw-step-1-logline-2') +
+                    outlineRowHTML({ id: 'logline-3', label: 'Logline 3', prompt: 'Genre-focused: your preferred genre blended with your core fear or passion.', type: 'checkbox' }, 'cw-step-1-logline-3'));
                 _migrationActive = true;
                 try { canvasEditor.commands.insertContentAt({ from: secPos, to: secPos + secNode.nodeSize }, newSection); }
                 finally { _migrationActive = false; }
@@ -16855,7 +16900,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -18816,10 +18861,10 @@
             html += dividerHTML('SEED LOGLINES');
             html += sectionHTML('response', 'Seed Loglines', true, null,
                 '<h3 data-locked="true">Seed Loglines</h3>' +
-                '<p data-locked="true"><em>Three story ideas inspired by your profile, seeded from your Step 1 chat. They\u2019re starting points \u2014 edit any of them.</em></p>' +
-                outlineRowHTML({ id: 'logline-1', label: 'Logline 1', prompt: 'Action-oriented: inciting incident + protagonist + action + antagonist.' }, 'cw-step-1-logline-1') +
-                outlineRowHTML({ id: 'logline-2', label: 'Logline 2', prompt: 'Character-flaw oriented: a protagonist must change a personal flaw to solve the problem.' }, 'cw-step-1-logline-2') +
-                outlineRowHTML({ id: 'logline-3', label: 'Logline 3', prompt: 'Genre-focused: your preferred genre blended with your core fear or passion.' }, 'cw-step-1-logline-3')
+                '<p data-locked="true"><em>Three story ideas inspired by your profile, seeded from your Step 1 chat. They\u2019re starting points \u2014 edit any of them. <strong>Tick the box</strong> beside any you like and they\u2019ll carry into Step 2 as starting sparks.</em></p>' +
+                outlineRowHTML({ id: 'logline-1', label: 'Logline 1', prompt: 'Action-oriented: inciting incident + protagonist + action + antagonist.', type: 'checkbox' }, 'cw-step-1-logline-1') +
+                outlineRowHTML({ id: 'logline-2', label: 'Logline 2', prompt: 'Character-flaw oriented: a protagonist must change a personal flaw to solve the problem.', type: 'checkbox' }, 'cw-step-1-logline-2') +
+                outlineRowHTML({ id: 'logline-3', label: 'Logline 3', prompt: 'Genre-focused: your preferred genre blended with your core fear or passion.', type: 'checkbox' }, 'cw-step-1-logline-3')
             );
             return html;
         }
@@ -18851,6 +18896,18 @@
                 '<p><strong>4.</strong> <em>\u201cFeathers of Fate\u201d: In a dystopian future where birds have mysteriously gained heightened intelligence and become a dominant species, a group of survivors must navigate their way through a world overrun by these avian creatures. As they seek refuge, they stumble upon a hidden society of humans with the ability to communicate and control birds.</em></p>' +
                 '<p><strong>5.</strong> <em>\u201cVirtual Vengeance\u201d: In a near-future society, a brilliant programmer creates a groundbreaking virtual reality game that immerses players into an alternate world. However, as more and more people become obsessed with the game, they discover that their actions in the virtual world have real-life consequences. A group of gamers must band together to uncover the truth behind the game\u2019s origin.</em></p>' +
                 '<p><strong>6.</strong> <em>\u201cEchoes of Extinction\u201d: Set in a post-apocalyptic world where a cataclysmic event has rendered most of the Earth uninhabitable, a small group of survivors discovers a hidden underground sanctuary. As they explore this refuge, they uncover a dark secret: the survival of everyone inside depends on a terrible bargain the sanctuary’s founders made long ago — and the newcomers are expected to pay their share.</em></p>'
+            );
+            // v7.19.666: Sparks carried over from the seed loglines the student ticked in
+            // Step 1. Rows are filled on load from the `liked_seeds` artifact (tryFillLikedSeeds);
+            // when nothing was ticked the section collapses to a single friendly note. Optional
+            // starting points — they feed ideation, they do NOT replace the student's own ideas.
+            html += dividerHTML('SPARKS YOU LIKED');
+            html += sectionHTML('response', 'Sparks From Step 1', true, null,
+                '<h3 data-locked="true">Sparks You Liked from Step 1</h3>' +
+                '<p data-locked="true"><em>The seed ideas you ticked in Step 1 appear here as optional starting points — sparks to draw on. You don’t have to use them; develop your own three ideas below.</em></p>' +
+                outlineRowHTML({ id: 'liked-1', label: 'Spark 1', prompt: '—', locked: true }, 'cw-step-2-liked-1') +
+                outlineRowHTML({ id: 'liked-2', label: 'Spark 2', prompt: '—', locked: true }, 'cw-step-2-liked-2') +
+                outlineRowHTML({ id: 'liked-3', label: 'Spark 3', prompt: '—', locked: true }, 'cw-step-2-liked-3')
             );
             html += dividerHTML('YOUR STORY IDEAS');
             html += sectionHTML('plan', 'Story Ideas', true, null,
@@ -24182,6 +24239,43 @@
             }
         } catch (_) { /* never throw out of save */ }
     }
+    // v7.19.666: CW Step-1 "liked seeds" sync — MULTI-select twin of _syncCwStep2ChosenIdea.
+    // Collect ALL ticked seed-logline rows → save the `liked_seeds` artifact (newline-joined
+    // sentences) so Step 2 can surface them as "Sparks you liked from Step 1" + feed them to
+    // chat. UNLIKE chosen_idea (which never clobbers on none-ticked), this writes the EXACT
+    // current ticks — including empty when the student unticks all. Derive-on-save (the fixed
+    // pattern), never click-time.
+    let _lastSyncedLikedSeedsSig = null;
+    function _syncCwStep1LikedSeeds() {
+        try {
+            if (state.task !== 'cw_step_1' || !state.cwProjectId || !canvasEditor) return;
+            const liked = [];
+            canvasEditor.state.doc.descendants((node) => {
+                if (node.type && node.type.name === 'outlineRow' && node.attrs
+                    && typeof node.attrs.fieldId === 'string'
+                    && /^cw-step-1-logline-[123]$/.test(node.attrs.fieldId)) {
+                    const fid = node.attrs.fieldId;
+                    // live tick state (Map) wins; fall back to the baked attr on fresh load
+                    let cs = _outlineCheckState.has(fid) ? _outlineCheckState.get(fid) : null;
+                    if (!cs) { try { cs = JSON.parse(node.attrs.checkState || '{}'); } catch (_) { cs = {}; } }
+                    if (cs && Array.isArray(cs.checked) && cs.checked.includes(0)) {
+                        const t = (node.textContent || '').trim();
+                        if (t) liked.push(t);
+                    }
+                }
+                return true;
+            });
+            const value = liked.join('\n');
+            const sig = state.cwProjectId + '|' + value;
+            if (sig === _lastSyncedLikedSeedsSig) return; // unchanged — no write
+            _lastSyncedLikedSeedsSig = sig;
+            if (window.WML && WML.cwProject) {
+                WML.cwProject.saveArtifact(state.cwProjectId, 'liked_seeds', value).catch(() => {});
+                console.log('WML CW: liked_seeds synced from Step-1 doc →', liked.length, 'ticked');
+            }
+        } catch (_) { /* never throw out of save */ }
+    }
+
     // v7.19.485: Step-3 — ticking a logline draft transfers its text into the Chosen
     // Logline row (a ONE-TIME copy on tick; the student then refines it freely — we do
     // NOT re-derive on every save, which would clobber their refinements). Mirrors the
@@ -24274,6 +24368,8 @@
         }
         // v7.19.468: keep the CW Step-2 chosen-idea artifact in sync with the ticked box.
         _syncCwStep2ChosenIdea();
+        // v7.19.666: keep the CW Step-1 liked-seeds artifact in sync with the ticked loglines.
+        _syncCwStep1LikedSeeds();
         // v7.19.485: keep the CW Step-3 chosen-logline artifact in sync for Step-4 carry.
         _syncCwStep3ChosenLogline();
         let html = canvasEditor.getHTML();
