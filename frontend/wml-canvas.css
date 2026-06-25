@@ -3157,8 +3157,8 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     bottom: 50px; right: 24px;
     display: flex; align-items: center; gap: 6px;
     padding: 6px 12px;
-    background: rgba(20,20,40,0.9);
-    border: 1px solid rgba(83,51,237,0.35); /* brand purple, not teal (v7.19.423) */
+    background: rgba(20,20,40,0.9); /* JS overrides per word-count ladder tier */
+    border: 0; /* v7.19.694: no stroke — the fill colour IS the progress signal */
     border-radius: 8px;
     backdrop-filter: blur(8px);
     z-index: 50;
@@ -3169,6 +3169,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     color: rgba(255,255,255,0.92);
     font-variant-numeric: tabular-nums;
     box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    transition: background 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
 }
 .swml-canvas-light .swml-wc-widget {
     background: rgba(255,255,255,0.92);
@@ -3176,12 +3177,13 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     color: #2c003e;
 }
 .swml-wc-widget-close {
+    /* v7.19.694: inherit the widget's (JS-set) text colour so the × stays legible
+       on every tier — was a fixed faint white that vanished on the light tiers. */
     background: none; border: none; cursor: pointer;
-    color: rgba(255,255,255,0.3); font-size: 14px;
+    color: inherit; opacity: 0.45; font-size: 14px;
     padding: 0 0 0 4px; line-height: 1;
 }
-.swml-wc-widget-close:hover { color: #ff6b6b; }
-.swml-canvas-light .swml-wc-widget-close { color: rgba(0,0,0,0.3); }
+.swml-wc-widget-close:hover { color: #ff6b6b; opacity: 1; }
 
 /* v7.14.65: Hide Meow Apps AI Engine chatbot when canvas is open */
 .mwai-trigger { display: none !important; }

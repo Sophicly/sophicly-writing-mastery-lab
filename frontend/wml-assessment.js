@@ -13518,6 +13518,10 @@
         wcWidget.appendChild(wcWidgetLabel);
         wcWidget.appendChild(wcWidgetClose);
         canvas.appendChild(wcWidget);
+        // v7.19.694: paint the initial ladder colour once the editor DOM exists
+        // (reloaded docs already have words → real tier; fresh docs read 0 → red).
+        // Live edits recolour via the onUpdate handler.
+        requestAnimationFrame(() => { try { applyWcWidgetColour(getResponseWordCount(canvasEditor)); } catch (_) { try { applyWcWidgetColour(0); } catch (__) {} } });
         // v7.15.23: Hide word count for planning-only exercises (no essay writing)
         // v7.15.100: also hide for foundational_quiz, conceptual_notes,
         // mark_scheme_assessment — none of these produce written essays.
@@ -16496,6 +16500,7 @@
                 if (diagWcLabel) diagWcLabel.textContent = getWordCountLabel(wc);
                 if (diagCompleteBtn) diagCompleteBtn.style.display = wc >= canvasWordMinimum ? 'block' : 'none';
                 if (wcWidgetLabel) wcWidgetLabel.textContent = `${wc} / ${canvasWordTarget}`;
+                applyWcWidgetColour(wc);
 
                 // v7.17.32: Auto-fire @POPULATE_CHECKLIST for any unpopulated MSQ
                 // placeholders (diagnostic has no chat, also back-fills legacy stuck attempts).
@@ -16620,6 +16625,7 @@
                 const wcAfter = getResponseWordCount(canvasEditor);
                 if (wcDisplay) wcDisplay.textContent = `${wcAfter} word${wcAfter !== 1 ? 's' : ''}`;
                 if (wcWidgetLabel) wcWidgetLabel.textContent = `${wcAfter} / ${canvasWordTarget}`;
+                applyWcWidgetColour(wcAfter);
                 console.log('WML CW: Built structured plot outline for:', slug, '- wc:', wcAfter);
             };
             // v7.19.441: rebuild the whole doc from the fresh template when the structure
@@ -16632,6 +16638,7 @@
                 const wcAfter = getResponseWordCount(canvasEditor);
                 if (wcDisplay) wcDisplay.textContent = `${wcAfter} word${wcAfter !== 1 ? 's' : ''}`;
                 if (wcWidgetLabel) wcWidgetLabel.textContent = `${wcAfter} / ${canvasWordTarget}`;
+                applyWcWidgetColour(wcAfter);
                 console.log('WML CW: Step 6 rebuilt to match Step 5 choice →', slug);
             };
             // Decide: first-fill (placeholder), already-correct (no-op), or rebuild-on-mismatch.
@@ -20148,11 +20155,33 @@
     let canvasDualTargets = null;    // { partA: {target,minimum,ideal}, partB: {target,minimum,ideal} } for dual questions
 
     // Word count colour tiers: orange (< min) → yellow (min→target) → green (target→ideal) → purple gradient (ideal+)
+    // v7.19.694: 7-tier house colour ladder, keyed off the word TARGET (T) so it
+    // scales when T changes per paper. At the default T=650 this is exactly Neil's
+    // spec — <550 red, 550 orange, 600 yellow, 650 green (acceptable/minimum hit),
+    // 700 blue, 750 purple, 850+ Grade-9 purple-gradient (the real stretch). All
+    // hexes are the canonical house ladder (_GRADE_BG / _REFLECT_LADDER), not invented.
     function getWordCountColour(wc) {
-        if (wc > canvasWordIdeal) return 'linear-gradient(90deg, #2c003e, #5333ed)';  // Brand purple gradient — excellent
-        if (wc >= canvasWordTarget) return '#1CD991';   // Green — target reached
-        if (wc >= canvasWordMinimum) return '#F1C40F';  // Yellow — minimum reached
-        return '#E67E22';                                // Orange — below minimum
+        var T = canvasWordTarget || 650;
+        if (wc >= T + 200) return 'linear-gradient(135deg, #5333ed 0%, #2c003e 100%)'; // Grade-9 stretch
+        if (wc >= T + 100) return '#5333ed';  // purple — strong
+        if (wc >= T + 50)  return '#4D76FD';  // blue — good
+        if (wc >= T)       return '#1CD991';  // green — target / acceptable
+        if (wc >= T - 50)  return '#F1C40F';  // yellow — almost there
+        if (wc >= T - 100) return '#f5a623';  // orange — needs more
+        return '#ff5470';                      // red — well short
+    }
+    // Paint the floating word-count widget with the same ladder so its colour IS
+    // the progress signal (Neil). Dark text on the light tiers (green/yellow/orange)
+    // for legibility; white on red/blue/purple/gradient. Neutral (CSS default) when
+    // there's no real target — e.g. the planning task shows "N words", not "N / T".
+    function applyWcWidgetColour(wc) {
+        var w = document.getElementById('swml-wc-widget');
+        if (!w) return;
+        if (state.task === 'planning') { w.style.background = ''; w.style.color = ''; return; }
+        var bg = getWordCountColour(wc);
+        var darkText = (bg === '#1CD991' || bg === '#F1C40F' || bg === '#f5a623');
+        w.style.background = bg;
+        w.style.color = darkText ? '#2c003e' : '#fff';
     }
     function getWordCountLabel(wc) {
         if (canvasDualTargets) {
