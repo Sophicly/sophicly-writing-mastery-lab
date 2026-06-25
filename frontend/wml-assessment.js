@@ -17878,14 +17878,16 @@
                 btn.style.display = '';
                 var dRect = divider.getBoundingClientRect();
                 var top = (dRect.top - dwRect.top) / z + (dRect.height / z / 2) - 10;
-                // v7.19.691: right-align the pill to the SECTION content edge, not the
-                // (full-width) divider rect — so its right edge lines up with the
-                // section's controls instead of protruding past the section border
-                // (Neil). Match the 12px control inset the ✓ tick uses, so the whole
-                // top-right cluster shares one right edge.
+                // v7.19.692: right-align the pill's right edge EXACTLY to the section's
+                // right border — secs[0].getBoundingClientRect().right is that edge
+                // (border box). left = sectionRight − pillWidth, all in the doc's
+                // untransformed layout space (/z converts the screen delta; offsetWidth
+                // is already layout px). Flush with the planning-area edge, no inset
+                // (Neil: was 12px too far left). Falls back to the divider edge if a
+                // section isn't found yet.
                 var secs = collectSectionsAfterDivider(divider, btn.dataset.targetType);
                 var rightRef = (secs && secs.length) ? secs[0].getBoundingClientRect().right : dRect.right;
-                var left = (rightRef - dwRect.left) / z - btn.offsetWidth - 12;
+                var left = (rightRef - dwRect.left) / z - btn.offsetWidth;
                 btn.style.cssText = 'position:absolute;top:' + top + 'px;left:' + left + 'px;pointer-events:auto;';
             });
 
