@@ -6037,9 +6037,30 @@
             // After Q12: hand off to ONE AI synthesis turn. Deactivate so the next
             // send falls through to the normal AI pipeline; push the 12 answers as a
             // hidden context message (AI-visible, UI-hidden) + a short silent trigger.
+            // Read the 12 answers from the DOCUMENT boxes (not the session-only `answers`
+            // array). The boxes APPEND across re-visits (a student may add more relevant
+            // detail on a second pass — Neil: keep it, erase is manual only), so the boxes
+            // are the full source of truth. Fall back to this session's typed answer only if
+            // a box is empty (e.g. a write failed).
+            function readBoxAnswers() {
+                const out = new Array(TOTAL).fill('');
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants((node) => {
+                            if (node.type && node.type.name === 'outlineRow' && node.attrs) {
+                                const m = /^cw-step-1-q(\d+)$/.exec(node.attrs.fieldId || '');
+                                if (m) { const n = parseInt(m[1], 10) - 1; if (n >= 0 && n < TOTAL) out[n] = (node.textContent || '').trim(); }
+                            }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out;
+            }
             function buildSynthContext() {
-                const lines = QS.map((q, i) => `Q${q.seq} (${q.label}): ${answers[i] || '(left blank)'}`);
-                return '[STUDENT’S 12 WRITER-PROFILE ANSWERS — synthesise the Writer’s Profile and three seed loglines from these]\n\n' + lines.join('\n');
+                const box = readBoxAnswers();
+                const lines = QS.map((q, i) => `Q${q.seq} (${q.label}): ${box[i] || answers[i] || '(left blank)'}`);
+                return '[STUDENT’S WRITER-PROFILE ANSWERS — these are the full answers in their document (a question may hold notes added across more than one sitting; use ALL of it). Synthesise the Writer’s Profile and three seed loglines from these]\n\n' + lines.join('\n');
             }
             function fireSynthesis() {
                 active = false;
@@ -6058,18 +6079,8 @@
             // Regenerate (after the student edits a box): re-read the 12 boxes from the
             // document, refresh `answers`, and re-fire the single synthesis turn.
             function regenerate() {
-                try {
-                    if (canvasEditor) {
-                        canvasEditor.state.doc.descendants((node) => {
-                            if (node.type && node.type.name === 'outlineRow' && node.attrs) {
-                                const m = /^cw-step-1-q(\d+)$/.exec(node.attrs.fieldId || '');
-                                if (m) { const n = parseInt(m[1], 10) - 1; if (n >= 0 && n < TOTAL) answers[n] = (node.textContent || '').trim(); }
-                            }
-                            return true;
-                        });
-                    }
-                } catch (e) {}
-                aiBubble('Updating your **Writer’s Profile** and seed ideas from your edited answers…');
+                // buildSynthContext reads the boxes directly, so just re-fire synthesis.
+                aiBubble('Updating your **Writer’s Profile** and seed ideas from your latest answers…');
                 setTimeout(fireSynthesis, 200);
             }
 
