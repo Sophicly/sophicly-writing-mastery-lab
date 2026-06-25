@@ -571,6 +571,45 @@
         console.log('WML CW: Sub-step complete →', detected.name, `(step_${detected.stepNum}, substep_${detected.substepNum})`);
     }
 
+    // v7.19.660: shared deterministic box-write core — finds the outlineRow by fieldId and
+    // writes `verbatim` (empty field → set; existing → append, never destroy; exact-dup → skip).
+    // Returns true if it wrote. Used by both @FIELD_COMMIT (applyFieldCommits) and the
+    // deterministic CW-Step-1 controller (_cwProfileCtl), so the write path is identical.
+    // Does NOT save — the caller batches saveCanvasContent().
+    function _writeOutlineRowField(fid, verbatim) {
+        if (!canvasEditor || !fid || !verbatim) return false;
+        let targetPos = null, targetNode = null;
+        canvasEditor.state.doc.descendants((node, pos) => {
+            if (targetPos !== null) return false;
+            if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === fid) {
+                targetPos = pos; targetNode = node; return false;
+            }
+            return true;
+        });
+        if (targetPos === null || !targetNode) {
+            console.warn('WML FieldFill: no outlineRow for field', fid, '(left empty — student can type it)');
+            return false;
+        }
+        const existing = (targetNode.textContent || '');
+        const from = targetPos + 1;
+        const to = targetPos + targetNode.nodeSize - 1;
+        if (!existing.trim()) {
+            canvasEditor.commands.insertContentAt({ from: from, to: to }, { type: 'text', text: verbatim });
+            console.log('WML FieldFill: wrote', verbatim.length, 'chars →', fid);
+        } else if (existing.indexOf(verbatim) !== -1) {
+            console.log('WML FieldFill: skip — field', fid, 'already contains this answer (re-fire)');
+            return false;
+        } else {
+            const content = [];
+            const hasBr = !!(canvasEditor.schema.nodes && canvasEditor.schema.nodes.hardBreak);
+            if (hasBr) { content.push({ type: 'hardBreak' }, { type: 'hardBreak' }); }
+            content.push({ type: 'text', text: (hasBr ? '' : '\n\n') + verbatim });
+            canvasEditor.commands.insertContentAt(to, content);
+            console.log('WML FieldFill: appended', verbatim.length, 'chars →', fid, '(preserved prior content)');
+        }
+        return true;
+    }
+
     // v7.19.429: GENERIC chat→canvas field-fill primitive (Phase 1 — first consumer: CW Step 1).
     // The AI emits a tiny judgment-only signal @FIELD_COMMIT{ "field": "<id>" } the moment it
     // judges the student has answered the current question. CODE then writes the student's
@@ -596,45 +635,11 @@
                 if (fid && fields.indexOf(fid) === -1) fields.push(fid);
             }
             if (!fields.length) return;
+            // v7.19.431: NEVER destroy existing content (empty → write; existing → append;
+            // exact-dup → skip). v7.19.660: write logic extracted to _writeOutlineRowField
+            // (shared with the deterministic CW-Step-1 controller).
             let wrote = false;
-            fields.forEach(fid => {
-                let targetPos = null, targetNode = null;
-                canvasEditor.state.doc.descendants((node, pos) => {
-                    if (targetPos !== null) return false;
-                    if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === fid) {
-                        targetPos = pos; targetNode = node; return false;
-                    }
-                    return true;
-                });
-                if (targetPos === null || !targetNode) {
-                    console.warn('WML FieldFill: no outlineRow for field', fid, '(left empty — student can type it)');
-                    return;
-                }
-                // v7.19.431: NEVER destroy existing content. Empty field → write the
-                // answer. Field that already has content (the student typed it, OR an
-                // earlier/different chat answer) → APPEND — the two may be different or
-                // evolved ideas and losing either is unrecoverable (Neil; ed-research:
-                // ownership + loss-aversion). Exact-duplicate re-fires are skipped so
-                // reprocessing the same reply can't duplicate text.
-                const existing = (targetNode.textContent || '');
-                const from = targetPos + 1;
-                const to = targetPos + targetNode.nodeSize - 1;
-                if (!existing.trim()) {
-                    canvasEditor.commands.insertContentAt({ from: from, to: to }, { type: 'text', text: verbatim });
-                    console.log('WML FieldFill: wrote', verbatim.length, 'chars →', fid);
-                } else if (existing.indexOf(verbatim) !== -1) {
-                    console.log('WML FieldFill: skip — field', fid, 'already contains this answer (re-fire)');
-                    return;
-                } else {
-                    const content = [];
-                    const hasBr = !!(canvasEditor.schema.nodes && canvasEditor.schema.nodes.hardBreak);
-                    if (hasBr) { content.push({ type: 'hardBreak' }, { type: 'hardBreak' }); }
-                    content.push({ type: 'text', text: (hasBr ? '' : '\n\n') + verbatim });
-                    canvasEditor.commands.insertContentAt(to, content);
-                    console.log('WML FieldFill: appended', verbatim.length, 'chars →', fid, '(preserved prior content)');
-                }
-                wrote = true;
-            });
+            fields.forEach(fid => { if (_writeOutlineRowField(fid, verbatim)) wrote = true; });
             if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
         } catch (e) {
             console.warn('WML FieldFill: error (non-fatal)', e && e.message);
@@ -4827,6 +4832,13 @@
                 await _quizCtl.handleTurn(msg);
                 return;
             }
+            // v7.19.660: CW Step 1 (Writer's Profile) — deterministic walk owns the turn
+            // (code-driven 12 questions, no AI per answer). Falls through only once the
+            // controller deactivates at Q12 → the single synthesis send hits the AI path.
+            if (state.task === 'cw_step_1' && _cwProfileCtl.active) {
+                await _cwProfileCtl.handleTurn(msg);
+                return;
+            }
 
             // v7.19.244: Paragraph-boundary preflight. Runs once per assessment
             // chat (first user turn only) when an essay is present in the canvas.
@@ -5899,6 +5911,191 @@
             };
         })();
 
+        // ══════════════════════════════════════════════════════════════════
+        // v7.19.660: DETERMINISTIC CW STEP 1 (Writer's Profile) CONTROLLER.
+        // Replaces the 12-turn conversational AI walk with a code-driven walk
+        // (zero AI per question — the questions are a fixed template anyway). AI
+        // fires ONCE at the end to synthesise the Writer's Profile + 3 seed
+        // loglines (the only judgment work). Token win: 12 turns → ~1.
+        // Borrows _quizCtl's SHAPE (active/busy, aiBubble, quick buttons,
+        // localStorage sidecar resume) but NOT its scoring guts — Step 1 is
+        // open-ended reflection, no right/wrong. The Socratic framing is fixed
+        // protocol text shown as static copy. Thin answers get ONE soft,
+        // dismissible nudge (authored follow-up) then proceed — never hard-block
+        // a 14-16yo (SDT autonomy + senior-UX). See CW-STEP-01 protocol (now
+        // synthesis-only) + handoff wml-cw-step1-deterministic-...md.
+        const _cwProfileCtl = (function () {
+            // 12 fixed questions in 5 sub-steps. `intro` = the section's framing,
+            // shown once before its first Q. `followup` = the gentle nudge if the
+            // answer is thin. Mirrors protocols/shared/creative-writing/CW-STEP-01.
+            const SECTIONS = [
+                { sub: 1, name: 'Inner World',
+                  intro: 'Your **Memory Well** is your most powerful source of story ideas — your experiences, emotions, and values. Powerful feelings like passion and fear are the fuel for great stories. Let’s explore yours.',
+                  qs: [
+                    { fid: 'cw-step-1-q1', label: 'Passion', q: 'What’s something you genuinely love or care about — something you could talk about for hours?', followup: 'Tell me a little more — what is it about that you love?' },
+                    { fid: 'cw-step-1-q2', label: 'Fear', q: 'What frightens you — and can you remember a moment you actually felt it?', followup: 'Even a sentence about the moment you felt it helps — what happened?' },
+                    { fid: 'cw-step-1-q3', label: 'Regret', q: 'Is there a regret or setback that has stayed with you? (Nothing painful needed — even a small one works.)', followup: 'A small one is fine — what was it, and why did it stay with you?' },
+                  ] },
+                { sub: 2, name: 'Moral Compass',
+                  intro: 'Now your moral compass. Stories are always about values — what we believe is right and wrong. This is where conflict and meaning come from.',
+                  qs: [
+                    { fid: 'cw-step-1-q4', label: 'Injustice', q: 'Think of a time something struck you as deeply unfair — what was it?', followup: 'What was the situation, and why did it feel unfair?' },
+                    { fid: 'cw-step-1-q5', label: 'Admiration', q: 'Think of someone you admire — what’s one thing they did that stuck with you?', followup: 'What did they actually do that stuck with you?' },
+                    { fid: 'cw-step-1-q6', label: 'Social Problem', q: 'What’s one problem in the world — past, present, or future — that you find yourself thinking about?', followup: 'Even a short answer is fine — which problem, and why that one?' },
+                  ] },
+                { sub: 3, name: 'Imagination Well',
+                  intro: 'One last thing from your Memory Well, then we play. The best stories often start with a question the author can’t answer — and grow by asking “What if…?”',
+                  qs: [
+                    { fid: 'cw-step-1-q7', label: 'Big Question', q: 'What’s something about the world, life, or the future that you genuinely wonder about?', followup: 'What’s the question you keep coming back to?' },
+                    { fid: 'cw-step-1-q8', label: 'Save What You Love', q: '**What if** the thing you love most suddenly came under threat — and your hero was the only one who could save it? Who is the hero, what stands in their way, and what would they risk to win?', followup: 'Sketch it loosely — who’s the hero, and what are they up against?' },
+                    { fid: 'cw-step-1-q9', label: 'Face Your Fear', q: '**What if** a character wanted something so desperately they’d do almost anything for it — but the only way to reach it ran straight through your greatest fear? What do they want, and what does facing the fear cost them?', followup: 'What do they want that badly, and what would it cost them?' },
+                    { fid: 'cw-step-1-q10', label: 'Right the Wrong', q: '**What if** one person could finally put right the unfairness you named — but only at a terrible cost? What would they have to give up?', followup: 'What would they have to give up to put it right?' },
+                  ] },
+                { sub: 4, name: 'External Sources',
+                  intro: 'Finally, your **External Sources Well** — the stories you already love. Your taste tells us a lot about the kind of stories you might want to write.',
+                  qs: [
+                    { fid: 'cw-step-1-q11', label: 'Stories You Love', q: 'What are one or two stories you love — and what is it about them that grips you?', followup: 'The “why” matters most — what grips you about them?' },
+                    { fid: 'cw-step-1-q12', label: 'Favourite Genres', q: 'And what are your favourite genres? For example: fantasy, sci-fi, mystery, thriller, horror, comedy, adventure, drama.', followup: 'Just name one or two genres you enjoy.' },
+                  ] },
+            ];
+            // Flatten to 12 items, each tagged with its section + a flag for the section's first Q.
+            const QS = [];
+            SECTIONS.forEach(sec => sec.qs.forEach((qq, i) => QS.push(Object.assign({
+                sub: sec.sub, secName: sec.name, secIntro: (i === 0) ? sec.intro : null,
+                lastOfSub: (i === sec.qs.length - 1), seq: QS.length + 1,
+            }, qq))));
+            const TOTAL = QS.length; // 12
+
+            let idx = 0;          // question awaiting an answer
+            let answers = [];     // verbatim answers, parallel to QS
+            let active = false;
+            let busy = false;
+            let nudgedFor = -1;   // index we last soft-nudged (one nudge per Q)
+
+            const lsKey = () => { try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw1') + '_cwp1'; } catch (e) { return 'swml_cwp1'; } };
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, answers })); } catch (e) {} }
+            function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            function resetSend() { busy = false; chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+            function aiBubble(plain) {
+                addChatMessage(formatAI(plain), 'ai', plain);
+                canvasChatHistory.push({ role: 'assistant', content: plain });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+
+            function renderQ() {
+                if (idx >= TOTAL) { finish(); return; }
+                const q = QS[idx];
+                let body = '';
+                if (q.secIntro) body += q.secIntro + '\n\n';
+                body += `**Question ${q.seq} of ${TOTAL} · ${q.secName}**\n\n${q.q}`;
+                aiBubble(body);
+                persist();
+                resetSend();
+            }
+
+            // One soft nudge for a thin answer (< 3 words), then accept on resubmit.
+            function isThin(msg) { return (msg || '').trim().split(/\s+/).filter(Boolean).length < 3; }
+
+            async function handleTurn(msg) {
+                if (busy) return;
+                const clean = (msg || '').trim();
+                addChatMessage(clean, 'user');
+                canvasChatHistory.push({ role: 'user', content: clean });
+                chatTextarea.value = '';
+                chatTextarea.style.height = '40px';
+                if (!clean) { resetSend(); return; }
+                const q = QS[idx];
+                if (!q) { finish(); return; }
+                // Soft nudge once: thin answer + not yet nudged for THIS question.
+                if (isThin(clean) && nudgedFor !== idx) {
+                    nudgedFor = idx;
+                    aiBubble(q.followup + '\n\n*(Or just press send again to keep what you wrote — it’s your call.)*');
+                    saveCanvasChat(canvasChatHistory, canvasChatId);
+                    resetSend();
+                    return;
+                }
+                // Accept: write verbatim into the matching document box (deterministic).
+                answers[idx] = clean;
+                try { if (_writeOutlineRowField(q.fid, clean) && typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (e) { console.warn('WML CWP1: box write failed (non-fatal)', e && e.message); }
+                // Sub-step progress at the section boundary (drives the sidebar).
+                if (q.lastOfSub) { try { applyCwSubstepProgress({ stepNum: 1, substepNum: q.sub, name: q.secName }); } catch (e) {} }
+                nudgedFor = -1;
+                idx++;
+                persist();
+                if (idx >= TOTAL) { finish(); return; }
+                renderQ();
+            }
+
+            // After Q12: hand off to ONE AI synthesis turn. Deactivate so the next
+            // send falls through to the normal AI pipeline; push the 12 answers as a
+            // hidden context message (AI-visible, UI-hidden) + a short silent trigger.
+            function buildSynthContext() {
+                const lines = QS.map((q, i) => `Q${q.seq} (${q.label}): ${answers[i] || '(left blank)'}`);
+                return '[STUDENT’S 12 WRITER-PROFILE ANSWERS — synthesise the Writer’s Profile and three seed loglines from these]\n\n' + lines.join('\n');
+            }
+            function fireSynthesis() {
+                active = false;
+                clearPersist();
+                canvasChatHistory.push({ role: 'user', content: buildSynthContext(), hidden: true });
+                canvasSilentSend = true;
+                chatTextarea.value = 'I’ve answered all twelve — please pull them together into my Writer’s Profile and three seed story ideas.';
+                sendCanvasMessage();
+            }
+            function finish() {
+                resetSend();
+                aiBubble('Brilliant — that’s all twelve. 🌟 Give me a moment to pull your answers together into your **Writer’s Profile** and three seed story ideas…');
+                setTimeout(fireSynthesis, 350);
+            }
+
+            // Regenerate (after the student edits a box): re-read the 12 boxes from the
+            // document, refresh `answers`, and re-fire the single synthesis turn.
+            function regenerate() {
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants((node) => {
+                            if (node.type && node.type.name === 'outlineRow' && node.attrs) {
+                                const m = /^cw-step-1-q(\d+)$/.exec(node.attrs.fieldId || '');
+                                if (m) { const n = parseInt(m[1], 10) - 1; if (n >= 0 && n < TOTAL) answers[n] = (node.textContent || '').trim(); }
+                            }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                aiBubble('Updating your **Writer’s Profile** and seed ideas from your edited answers…');
+                setTimeout(fireSynthesis, 200);
+            }
+
+            // Static Inside-Out welcome (was the AI's first turn — now fixed copy, no AI).
+            const WELCOME = 'Welcome to the first step of your creative writing journey. The best stories come from things that truly matter to the writer. The great storytelling teacher John Truby says:\n\n*“Write something that may change your life… if a story is that important to you, it may be that important to a lot of people in the audience.”*\n\nWe’ll find what matters to **you** across your **Three Wells** — your memories and values, your imagination, and the stories you already love. Answer each question in a good amount of detail; I’ll gather your answers into your Writer’s Profile, then pull it all together at the end. Let’s begin.';
+            function start() {
+                active = true; idx = 0; answers = []; nudgedFor = -1;
+                console.log('WML v7.19.660: CW Step 1 — deterministic profile controller start');
+                aiBubble(WELCOME);
+                persist();   // sidecar exists from the off → clean resume even before Q1 is answered
+                renderQ();   // Q1 (with its section framing)
+            }
+            function reset() { active = false; idx = 0; answers = []; nudgedFor = -1; clearPersist(); }
+            // Resume a partly-finished walk after reload (null-safe). The current question
+            // bubble is ALREADY replayed from saved chat — restore position only, never
+            // re-render (would double-show the question). Mirrors _quizCtl.rehydrate.
+            function tryResume() {
+                try {
+                    const raw = localStorage.getItem(lsKey());
+                    if (!raw) return false;
+                    const d = JSON.parse(raw);
+                    if (!d || typeof d.idx !== 'number' || d.idx >= TOTAL) return false;
+                    idx = d.idx; answers = Array.isArray(d.answers) ? d.answers : []; nudgedFor = -1; active = true;
+                    console.log('WML CWP1: resumed at Q' + (idx + 1) + '/' + TOTAL);
+                    return true;
+                } catch (e) { return false; }
+            }
+
+            return {
+                start, reset, regenerate, handleTurn, tryResume,
+                get active() { return active; },
+            };
+        })();
+
         return {
             protoPanel,
             chatPanel,
@@ -5909,6 +6106,7 @@
             addChatMessage,
             sendCanvasMessage,
             quizCtl: _quizCtl,
+            cwProfileCtl: _cwProfileCtl,
             canvasChatHistory,
             get canvasChatId() { return canvasChatId; },
             set canvasChatId(v) { canvasChatId = v; },
@@ -10295,6 +10493,13 @@
                     if (_fqDeterministic() && tp.quizCtl) {
                         tp.quizCtl.tryResume({ quizType: 'foundational' });
                     }
+                    // v7.19.660: CW Step 1 deterministic walk resumes the same way — bubbles
+                    // already replayed above; restore position only (no re-render). If the
+                    // sidecar is gone (walk finished → synthesis/review), this no-ops and the
+                    // student's reply falls through to the AI review path.
+                    if (state.task === 'cw_step_1' && tp.cwProfileCtl) {
+                        tp.cwProfileCtl.tryResume();
+                    }
 
                     // v7.17.59: Hoisted greeting regen + grade buttons UP — was
                     // post-await (3-5s gap during which the un-styled bubble was
@@ -10665,6 +10870,15 @@
                     setTimeout(() => {
                         console.log('WML v7.19.579: FQ — deterministic controller start');
                         if (tp.quizCtl) tp.quizCtl.start({ quizType: 'foundational' });
+                    }, 400);
+                } else if (state.task === 'cw_step_1' && !state.reviewMode) {
+                    // v7.19.660: CW Step 1 (Writer's Profile) — deterministic walk owns it.
+                    // No AI greeting / silent-send: start() shows the Inside-Out welcome +
+                    // renders Q1 itself, then code walks all 12 questions (zero AI per answer).
+                    // The single synthesis turn fires from the controller after Q12.
+                    setTimeout(() => {
+                        console.log('WML v7.19.660: CW Step 1 — deterministic profile controller start');
+                        if (tp.cwProfileCtl) tp.cwProfileCtl.start();
                     }, 400);
                 } else if (!state.reviewMode) {
                     // All other training-env exercises: silent auto-send (protocol drives greeting)
