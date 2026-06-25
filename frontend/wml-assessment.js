@@ -10621,6 +10621,18 @@
                     const stepNum = cwStepDef?.step || cwStepDef?.trial || '';
                     const projectId = state.cwProjectId;
 
+                    // v7.19.661: CW Step 1 (Writer's Profile) — deterministic walk owns the
+                    // fresh entry. This isCwSi greeting branch is ABOVE the controller-start
+                    // ladder, so Step 1 must be intercepted HERE (the ladder branch is
+                    // unreachable for CW). start() shows the Inside-Out welcome + renders Q1
+                    // itself; no AI greeting / Let's-begin button. Step 1 has no predecessor
+                    // draft or dependencies, so skipping the rest of this block is safe.
+                    if (state.task === 'cw_step_1' && !state.reviewMode && tp.cwProfileCtl) {
+                        console.log('WML v7.19.661: CW Step 1 — deterministic profile controller start (isCwSi entry)');
+                        tp.cwProfileCtl.start();
+                        return;
+                    }
+
                     // Load predecessor draft
                     const draftPredKey = WML.CW_DRAFT_PREDECESSOR[cwStepDef?.step];
                     if (draftPredKey && projectId) {
@@ -10870,15 +10882,6 @@
                     setTimeout(() => {
                         console.log('WML v7.19.579: FQ — deterministic controller start');
                         if (tp.quizCtl) tp.quizCtl.start({ quizType: 'foundational' });
-                    }, 400);
-                } else if (state.task === 'cw_step_1' && !state.reviewMode) {
-                    // v7.19.660: CW Step 1 (Writer's Profile) — deterministic walk owns it.
-                    // No AI greeting / silent-send: start() shows the Inside-Out welcome +
-                    // renders Q1 itself, then code walks all 12 questions (zero AI per answer).
-                    // The single synthesis turn fires from the controller after Q12.
-                    setTimeout(() => {
-                        console.log('WML v7.19.660: CW Step 1 — deterministic profile controller start');
-                        if (tp.cwProfileCtl) tp.cwProfileCtl.start();
                     }, 400);
                 } else if (!state.reviewMode) {
                     // All other training-env exercises: silent auto-send (protocol drives greeting)
