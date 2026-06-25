@@ -5042,6 +5042,9 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 /* Per-section transfer button (small arrow icon) */
 .swml-transfer-btn {
+    /* v7.19.690: solid house-green fill, NO outline (was a faint 0.12 fill +
+       0.25 border = the "AI stroke" look Neil flagged). Definition comes from
+       an inset highlight + soft drop shadow, not a border. */
     pointer-events: auto;
     position: absolute;
     display: flex;
@@ -5049,13 +5052,14 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     justify-content: center;
     width: 22px;
     height: 22px;
-    border-radius: 5px;
-    border: 1px solid rgba(28,217,145,0.25);
+    border-radius: 6px;
+    border: 0;
     cursor: pointer;
-    background: rgba(28,217,145,0.12);
-    color: rgba(255,255,255,0.55);
+    background: rgba(28,217,145,0.82);
+    color: #fff;
     font-size: 12px;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.18);
+    transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
     outline: none;
     opacity: 0;
 }
@@ -5068,12 +5072,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     opacity: 1;
 }
 .swml-transfer-btn:hover {
-    background: rgba(28,217,145,0.35);
-    border-color: rgba(28,217,145,0.6);
-    color: #fff;
+    background: #1CD991;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(28,217,145,0.42), inset 0 1px 0 rgba(255,255,255,0.22);
 }
 .swml-transfer-btn:active {
-    transform: scale(0.92);
+    transform: translateY(0) scale(0.92);
 }
 .swml-transfer-btn.swml-transfer-success {
     background: rgba(28,217,145,0.5);
@@ -5092,34 +5096,37 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
    text, slightly larger. Reads as a real, confident action — and visually
    consistent with the per-section ↓ transfer buttons it commands. */
 .swml-transfer-all-btn {
+    /* v7.19.690: slimmed (was oversized at 10px / 5px-12px pad) + borderless.
+       Solid same-hue green gradient (the disciplined "push-button" gradient,
+       not a generic AI multi-hue one), inset highlight + shadow for edge —
+       no stroke. Coherent with the borderless ↓ chips it commands. */
     pointer-events: auto;
     position: absolute;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 5px 12px;
-    border-radius: 6px;
-    border: 1px solid rgba(125,249,233,0.35);
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 5px;
+    border: 0;
     cursor: pointer;
-    background: linear-gradient(180deg, rgba(28,217,145,0.9), rgba(28,217,145,0.62));
+    background: linear-gradient(180deg, rgba(28,217,145,0.92), rgba(22,180,120,0.92));
     color: #fff;
     font-family: 'Proxima Soft Complete', 'Proxima Soft', sans-serif;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     letter-spacing: 0.4px;
     text-transform: uppercase;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.18);
-    transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.16);
+    transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
     outline: none;
     white-space: nowrap;
 }
-.swml-transfer-all-btn svg { flex-shrink: 0; }
+.swml-transfer-all-btn svg { flex-shrink: 0; width: 11px; height: 11px; }
 .swml-transfer-all-btn:hover {
-    background: linear-gradient(180deg, rgba(28,217,145,1), rgba(28,217,145,0.78));
-    border-color: rgba(125,249,233,0.6);
+    background: linear-gradient(180deg, rgba(28,217,145,1), rgba(22,190,128,0.96));
     color: #fff;
     transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(28,217,145,0.35), inset 0 1px 0 rgba(255,255,255,0.22);
+    box-shadow: 0 3px 8px rgba(28,217,145,0.38), inset 0 1px 0 rgba(255,255,255,0.22);
 }
 .swml-transfer-all-btn:active {
     transform: translateY(0) scale(0.97);
@@ -5136,14 +5143,11 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 /* Light theme */
 [data-swml-theme="light"] .swml-transfer-btn {
-    background: rgba(28,180,120,0.1);
-    border-color: rgba(28,180,120,0.2);
-    color: rgba(0,0,0,0.35);
+    background: rgba(28,190,128,0.92);
+    color: #fff;
 }
 [data-swml-theme="light"] .swml-transfer-btn:hover {
-    background: rgba(28,180,120,0.25);
-    border-color: rgba(28,180,120,0.5);
-    color: rgba(0,0,0,0.7);
+    background: #16b478;
 }
 [data-swml-theme="light"] .swml-transfer-all-btn {
     background: linear-gradient(180deg, rgba(28,200,135,0.95), rgba(28,180,120,0.85));

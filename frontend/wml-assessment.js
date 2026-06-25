@@ -17877,8 +17877,8 @@
                 if (!divider) { btn.style.display = 'none'; return; }
                 btn.style.display = '';
                 var dRect = divider.getBoundingClientRect();
-                var top = (dRect.top - dwRect.top) / z + (dRect.height / z / 2) - 11;
-                var left = (dRect.right - dwRect.left) / z - 104; // v7.19.689: right margin for the restyled (wider) pill
+                var top = (dRect.top - dwRect.top) / z + (dRect.height / z / 2) - 10;
+                var left = (dRect.right - dwRect.left) / z - 92; // v7.19.690: snug right margin for the slimmed pill
                 btn.style.cssText = 'position:absolute;top:' + top + 'px;left:' + left + 'px;pointer-events:auto;';
             });
 
