@@ -5086,34 +5086,43 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     color: #ff6b6b;
 }
 /* "Transfer All" button on dividers (pill-shaped label) */
+/* v7.19.689: impeccable pass — was a faint 9px outline pill (0.5-alpha text,
+   barely legible). Now matches the house-green pull/transfer chip family:
+   soft green gradient + mint border + inset highlight + drop shadow, white
+   text, slightly larger. Reads as a real, confident action — and visually
+   consistent with the per-section ↓ transfer buttons it commands. */
 .swml-transfer-all-btn {
     pointer-events: auto;
     position: absolute;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 3px 10px;
-    border-radius: 4px;
-    border: 1px solid rgba(28,217,145,0.25);
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(125,249,233,0.35);
     cursor: pointer;
-    background: rgba(28,217,145,0.1);
-    color: rgba(255,255,255,0.5);
+    background: linear-gradient(180deg, rgba(28,217,145,0.9), rgba(28,217,145,0.62));
+    color: #fff;
     font-family: 'Proxima Soft Complete', 'Proxima Soft', sans-serif;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
     text-transform: uppercase;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.18);
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
     outline: none;
     white-space: nowrap;
 }
+.swml-transfer-all-btn svg { flex-shrink: 0; }
 .swml-transfer-all-btn:hover {
-    background: rgba(28,217,145,0.3);
-    border-color: rgba(28,217,145,0.6);
+    background: linear-gradient(180deg, rgba(28,217,145,1), rgba(28,217,145,0.78));
+    border-color: rgba(125,249,233,0.6);
     color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(28,217,145,0.35), inset 0 1px 0 rgba(255,255,255,0.22);
 }
 .swml-transfer-all-btn:active {
-    transform: scale(0.96);
+    transform: translateY(0) scale(0.97);
 }
 .swml-transfer-all-btn.swml-transfer-success {
     background: rgba(28,217,145,0.5);
@@ -5137,14 +5146,14 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     color: rgba(0,0,0,0.7);
 }
 [data-swml-theme="light"] .swml-transfer-all-btn {
-    background: rgba(28,180,120,0.06);
-    border-color: rgba(28,180,120,0.2);
-    color: rgba(0,0,0,0.4);
+    background: linear-gradient(180deg, rgba(28,200,135,0.95), rgba(28,180,120,0.85));
+    border-color: rgba(28,180,120,0.4);
+    color: #fff;
 }
 [data-swml-theme="light"] .swml-transfer-all-btn:hover {
-    background: rgba(28,180,120,0.18);
-    border-color: rgba(28,180,120,0.5);
-    color: rgba(0,0,0,0.7);
+    background: linear-gradient(180deg, rgba(28,200,135,1), rgba(28,180,120,0.95));
+    border-color: rgba(28,180,120,0.6);
+    color: #fff;
 }
 
 /* ── CW Resource Buttons (v7.13.47) ── */

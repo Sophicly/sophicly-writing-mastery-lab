@@ -17861,8 +17861,12 @@
                 if (!section) { btn.style.display = 'none'; return; }
                 btn.style.display = '';
                 var sRect = section.getBoundingClientRect();
-                var top = (sRect.top - dwRect.top) / z + 4;
-                var left = (sRect.right - dwRect.left) / z - 30;
+                // v7.19.689: align into the section's top-right control row at top:10
+                // (level with the ✓ completion tick) and inset to right-64 so the ↓
+                // clears the tick (right:12, 22px) with an 8px gap, instead of landing
+                // on top of it (Neil). Mirrors the .688 exam_crib chip-row tidy.
+                var top = (sRect.top - dwRect.top) / z + 10;
+                var left = (sRect.right - dwRect.left) / z - 64;
                 btn.style.cssText = 'position:absolute;top:' + top + 'px;left:' + left + 'px;pointer-events:auto;';
             });
 
@@ -17873,8 +17877,8 @@
                 if (!divider) { btn.style.display = 'none'; return; }
                 btn.style.display = '';
                 var dRect = divider.getBoundingClientRect();
-                var top = (dRect.top - dwRect.top) / z + (dRect.height / z / 2) - 10;
-                var left = (dRect.right - dwRect.left) / z - 90;
+                var top = (dRect.top - dwRect.top) / z + (dRect.height / z / 2) - 11;
+                var left = (dRect.right - dwRect.left) / z - 104; // v7.19.689: right margin for the restyled (wider) pill
                 btn.style.cssText = 'position:absolute;top:' + top + 'px;left:' + left + 'px;pointer-events:auto;';
             });
 
