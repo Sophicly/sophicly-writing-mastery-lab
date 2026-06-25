@@ -17191,11 +17191,16 @@
         const tryHealCwStep5OutlineSection = () => {
             if (!isCwTask || !canvasEditor || cwStepDef?.step !== 5) return;
             try {
+                // Anchor on node.textContent + outlineRow fieldId, NOT sectionBlock
+                // attrs.type/label — those do NOT survive the HTML save→reload round-trip
+                // (reference_wml_divider_label_not_survive_roundtrip). The PRE-WORK REFLECTION
+                // divider's text persists as its node textContent ("PRE-WORK REFLECTION",
+                // uppercase — distinct from the section's mixed-case "Pre-Work Reflection" h3).
                 let hasCarry = false, preworkDividerPos = null;
                 canvasEditor.state.doc.descendants((node, pos) => {
                     if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === 'cw-step-5-s4-beat1') { hasCarry = true; return false; }
-                    if (preworkDividerPos === null && node.type.name === 'sectionBlock' && node.attrs
-                        && (node.attrs.type || '') === 'divider' && /pre-?work reflection/i.test(node.attrs.label || '')) {
+                    if (preworkDividerPos === null && node.type.name === 'sectionBlock'
+                        && (node.textContent || '').trim().toUpperCase() === 'PRE-WORK REFLECTION') {
                         preworkDividerPos = pos;
                     }
                     return true;
