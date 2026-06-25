@@ -16640,7 +16640,6 @@
                         slots = [compact[0] || '', compact[1] || '', compact[2] || ''];
                     }
                 }
-                console.log('WML CW Step2 liked-fill DEBUG: rawLen=' + raw.length + ' slots=' + JSON.stringify(slots));
                 const rowIds = ['cw-step-2-liked-1', 'cw-step-2-liked-2', 'cw-step-2-liked-3'];
                 const fills = slots.some(Boolean)
                     ? slots
@@ -16822,7 +16821,6 @@
                     if (hasLiked1) hasSparks = true;
                     if (hasIdea1 && ideaIndex === -1) ideaIndex = index;
                 });
-                console.log('WML CW Step2 sparks-heal DEBUG: children=' + doc.childCount + ' ideaIndex=' + ideaIndex + ' hasSparks=' + hasSparks);
                 if (hasSparks || ideaIndex === -1) return;
                 let insertIndex = ideaIndex;
                 if (ideaIndex > 0 && (doc.child(ideaIndex - 1).textContent || '').trim().length <= 40) insertIndex = ideaIndex - 1;
