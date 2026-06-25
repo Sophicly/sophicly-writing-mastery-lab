@@ -16780,11 +16780,16 @@
         const tryHealCwStep2SparksSection = () => {
             if (!isCwTask || !canvasEditor || cwStepDef?.step !== 2) return;
             try {
+                // NB: a divider's `attrs.label` does NOT survive the HTML save→reload round-trip
+                // (the label persists only as the rendered <p> text). So match the divider on
+                // node.textContent, and detect "already inserted" via the cw-step-2-liked-1
+                // fieldId (fieldIds always persist) — never on attrs.label, which is empty on reload.
                 let hasSparks = false, storyIdeasDividerPos = null;
                 canvasEditor.state.doc.descendants((node, pos) => {
-                    if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.label === 'Sparks From Step 1') { hasSparks = true; return false; }
+                    if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === 'cw-step-2-liked-1') { hasSparks = true; return false; }
                     if (storyIdeasDividerPos === null && node.type.name === 'sectionBlock' && node.attrs
-                        && (node.attrs.type || '') === 'divider' && /your story ideas/i.test(node.attrs.label || '')) {
+                        && (node.attrs.type || '') === 'divider'
+                        && /your story ideas/i.test(((node.attrs.label || '') + ' ' + (node.textContent || '')))) {
                         storyIdeasDividerPos = pos;
                     }
                     return true;
