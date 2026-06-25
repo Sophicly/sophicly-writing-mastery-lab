@@ -17143,6 +17143,72 @@
                 console.log('WML CW: Step 4 chosen-logline carry section healed in');
             } catch (e) { console.log('WML CW: step4 carry heal skipped —', e && e.message); }
         };
+        // v7.19.682: CW Step 5 — fill the read-only "Your Outline (from Step 4)" beats from
+        // the `brief_outline` artifact (the saved Step-4 doc). Parses the six cw-step-4-beat
+        // rows out of that HTML and writes them into the locked cw-step-5-s4-beat rows.
+        // Refreshes on every Step-5 load so it tracks edits made back in Step 4. Mirrors
+        // tryFillStep4ChosenLogline; deterministic (code, not the LLM).
+        const tryFillStep5Outline = async () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 5 || !state.cwProjectId) return;
+            try {
+                const artifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'brief_outline');
+                const htmlStr = (artifact?.success && typeof artifact.value === 'string') ? artifact.value : '';
+                if (!htmlStr) return;
+                const parsed = new DOMParser().parseFromString(htmlStr, 'text/html');
+                const beats = {};
+                parsed.querySelectorAll('[data-field-id]').forEach(row => {
+                    const m = (row.getAttribute('data-field-id') || '').match(/^cw-step-4-beat([1-6])$/);
+                    if (!m) return;
+                    const input = row.querySelector('.swml-outline-input');
+                    beats[m[1]] = ((input ? input.textContent : '') || '').trim();
+                });
+                for (let i = 1; i <= 6; i++) {
+                    const text = beats[String(i)];
+                    if (!text) continue;
+                    // Re-scan each iteration — a prior insert shifts later node positions.
+                    let targetPos = null, targetNode = null;
+                    canvasEditor.state.doc.descendants((node, pos) => {
+                        if (targetPos !== null) return false;
+                        if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === 'cw-step-5-s4-beat' + i) { targetPos = pos; targetNode = node; return false; }
+                        return true;
+                    });
+                    if (targetPos === null || !targetNode) continue; // older Step-5 doc without the rows
+                    if ((targetNode.textContent || '').trim() === text) continue; // already current
+                    const from = targetPos + 1, to = targetPos + targetNode.nodeSize - 1;
+                    _migrationActive = true;
+                    try { canvasEditor.commands.insertContentAt({ from: from, to: to }, { type: 'text', text: text }); }
+                    finally { _migrationActive = false; }
+                }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 5 outline filled from brief_outline artifact');
+            } catch (e) { console.log('WML CW: no brief_outline artifact to fill —', e && e.message); }
+        };
+        // v7.19.682: HEAL existing Step-5 docs that predate the outline carry section —
+        // insert it just before the PRE-WORK REFLECTION divider. tryFillStep5Outline (run
+        // after this) then fills it. Marker-guarded + idempotent. Mirrors
+        // tryHealCwStep4ChosenLoglineSection.
+        const tryHealCwStep5OutlineSection = () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 5) return;
+            try {
+                let hasCarry = false, preworkDividerPos = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === 'cw-step-5-s4-beat1') { hasCarry = true; return false; }
+                    if (preworkDividerPos === null && node.type.name === 'sectionBlock' && node.attrs
+                        && (node.attrs.type || '') === 'divider' && /pre-?work reflection/i.test(node.attrs.label || '')) {
+                        preworkDividerPos = pos;
+                    }
+                    return true;
+                });
+                if (hasCarry || preworkDividerPos === null) return;
+                _migrationActive = true;
+                try { canvasEditor.commands.insertContentAt(preworkDividerPos, _cwStep5OutlineSectionHTML()); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 5 outline carry section healed in');
+            } catch (e) { console.log('WML CW: step5 outline heal skipped —', e && e.message); }
+        };
         // v7.19.503: HEAL — upgrade the old free-prose "Seed Loglines" section to 3 rows
         // (cw-step-1-logline-1/2/3) for existing Step-1 docs. Skips if the rows already
         // exist OR if the section already holds seeded prose text (don't destroy content —
@@ -17271,7 +17337,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -19468,6 +19534,7 @@
                 'Stage V: Final Push \u2014 Death and Rebirth<br>' +
                 'Stage VI: The Goal and the Aftermath \u2014 Final Union, Transformation Complete</p>'
             );
+            html += _cwStep5OutlineSectionHTML(); // v7.19.682: carry the Step-4 outline in above the reflection
             html += dividerHTML('PRE-WORK REFLECTION');
             html += sectionHTML('plan', 'Pre-Work Reflection', true, null,
                 '<h3>Pre-Work Reflection</h3>' +
@@ -21147,6 +21214,24 @@
     function _feedbackEditable() {
         const cfg = window.swmlConfig || {};
         return cfg.viewerMode === 'edit';
+    }
+
+    // v7.19.682: Step 4 → Step 5 outline carryover section. ONE source of truth for the
+    // template (_cwDocTemplateInner) AND the heal (tryHealCwStep5OutlineSection) so the
+    // divider/label can't drift between them. Read-only Story-Spine beats, filled from the
+    // brief_outline artifact by tryFillStep5Outline. Locked rows → don't gate progress
+    // (v7.19.679). Defined at IIFE scope so both callers see it.
+    function _cwStep5OutlineSectionHTML() {
+        return dividerHTML('YOUR OUTLINE FROM STEP 4') +
+            sectionHTML('response', 'Your Outline (from Step 4)', true, null,
+                '<h3 data-locked="true">Your Outline (from Step 4)</h3>' +
+                '<p data-locked="true"><em>The six-beat Story Spine you built in Step 4. Keep it in view as you choose your plot structure. <strong>To change your outline, go back to Step 4.</strong></em></p>' +
+                outlineRowHTML({ id: 's4-beat1', label: 'Beat 1: At First…', prompt: 'set in Step 4', locked: true }, 'cw-step-5-s4-beat1') +
+                outlineRowHTML({ id: 's4-beat2', label: 'Beat 2: And Then…', prompt: 'set in Step 4', locked: true }, 'cw-step-5-s4-beat2') +
+                outlineRowHTML({ id: 's4-beat3', label: 'Beat 3: Until…', prompt: 'set in Step 4', locked: true }, 'cw-step-5-s4-beat3') +
+                outlineRowHTML({ id: 's4-beat4', label: 'Beat 4: Because of This…', prompt: 'set in Step 4', locked: true }, 'cw-step-5-s4-beat4') +
+                outlineRowHTML({ id: 's4-beat5', label: 'Beat 5: Because of This…', prompt: 'set in Step 4', locked: true }, 'cw-step-5-s4-beat5') +
+                outlineRowHTML({ id: 's4-beat6', label: 'Beat 6: Until Finally…', prompt: 'set in Step 4', locked: true }, 'cw-step-5-s4-beat6'));
     }
 
     function sectionHTML(type, label, editable, partNumber, innerHTML, extraDataAttrs) {
