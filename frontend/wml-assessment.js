@@ -3676,18 +3676,16 @@
         headText.appendChild(count);
         const pctEl = document.createElement('div');
         pctEl.className = 'swml-progress-pct';
-        if (allDone) {
-            pctEl.classList.add('is-check');
-            pctEl.textContent = '';
-        } else {
-            pctEl.textContent = pct;
-            const sign = document.createElement('span');
-            sign.className = 'swml-progress-pct-sign';
-            sign.textContent = '%';
-            pctEl.appendChild(sign);
-            pctEl.style.color = band.text;
-            sign.style.color = band.text;
-        }
+        // v7.19.680: show "100%" on completion, not a blank check — students like seeing
+        // the number (Neil). The countText ("All sections complete") + the green card
+        // already signal done; this just keeps the percentage visible at the finish.
+        pctEl.textContent = allDone ? '100' : pct;
+        const sign = document.createElement('span');
+        sign.className = 'swml-progress-pct-sign';
+        sign.textContent = '%';
+        pctEl.appendChild(sign);
+        pctEl.style.color = band.text;
+        sign.style.color = band.text;
         head.appendChild(headText);
         head.appendChild(pctEl);
         card.appendChild(head);
