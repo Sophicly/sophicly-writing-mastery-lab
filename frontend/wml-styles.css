@@ -3104,10 +3104,17 @@ html[data-theme="light"] .swml-tooltip[data-placement="right"]::after {
     box-shadow: -18px 0 48px rgba(20, 12, 40, 0.28);
     display: flex;
     flex-direction: column;
-    transform: translateX(100%);
-    transition: transform .26s cubic-bezier(.22, .61, .36, 1);
+    transform: translateX(40px);
+    opacity: 0;
+    /* ease-out-expo: arrives gently rather than snapping in */
+    transition: transform .44s cubic-bezier(.16, 1, .3, 1),
+                opacity .34s ease,
+                width .34s cubic-bezier(.16, 1, .3, 1);
 }
-.swml-guide-overlay.open .swml-guide-drawer { transform: translateX(0); }
+.swml-guide-overlay.open .swml-guide-drawer { transform: translateX(0); opacity: 1; }
+/* Collapsing the Contents rail narrows the whole drawer so the reading column
+   stays flush to the edge — no empty gutter on the right. */
+.swml-guide-drawer.toc-collapsed { width: min(648px, 96vw); }
 
 .swml-guide-header {
     flex: 0 0 auto;
@@ -3276,6 +3283,16 @@ html[data-theme="light"] .swml-tooltip[data-placement="right"]::after {
 .swml-guide-article blockquote p { margin: 0 0 .45em; }
 .swml-guide-article blockquote p:last-child { margin-bottom: 0; }
 
+/* Staggered entrance — top blocks fade up in sequence as the drawer arrives */
+@keyframes swmlGuideFadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+}
+.swml-guide-article.stagger > * {
+    opacity: 0;
+    animation: swmlGuideFadeUp .5s cubic-bezier(.16, 1, .3, 1) both;
+}
+
 /* Highlight → Add to notes (floating, fixed to viewport) */
 .swml-guide-sel-menu { position: fixed; z-index: 99995; }
 .swml-guide-sel-btn {
@@ -3301,6 +3318,7 @@ html[data-theme="light"] .swml-tooltip[data-placement="right"]::after {
     .swml-guide-overlay,
     .swml-guide-drawer,
     .swml-guide-toc { transition: none; }
+    .swml-guide-article.stagger > * { opacity: 1; animation: none; }
 }
 
 @media (max-width: 760px) {

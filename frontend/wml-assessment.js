@@ -204,6 +204,13 @@
             article.innerHTML = html;
             body.innerHTML = '';
             body.appendChild(article);
+            // Staggered entrance: top blocks cascade in as the drawer settles
+            // (base offset lets the slide start first; capped so deep content isn't held back).
+            article.classList.add('stagger');
+            const kids = article.children;
+            for (let i = 0; i < kids.length; i++) {
+                kids[i].style.animationDelay = (0.12 + Math.min(i, 14) * 0.045) + 's';
+            }
             buildGuideToc(toc, tocItems, body);
             _setupGuideSelectionMenu(article);
         };
