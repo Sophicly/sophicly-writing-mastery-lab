@@ -23,6 +23,23 @@
     const { el } = window.WML;
     if (typeof el !== 'function') { console.warn('WML SelectionChip: el helper missing'); return; }
 
+    // v7.19.687: idempotency / two-bundle guard. The Focus SPA re-injects the WML
+    // bundles on navigation (and a deploy can briefly serve two ?ver in one page —
+    // reference_wml_spa_duplicate_bundle_single_boot_guard). Without a guard, the
+    // second run of THIS IIFE reassigns window.WML.SelectionChip to a FRESH instance
+    // whose `_bound` is false — REPLACING the instance wml-assessment already mounted
+    // (_bound=true). The Sophia selection button then calls openBox() on the dead
+    // clobber and logs "openBox called before mount", so the contextual chat never
+    // opens (observed: mount ran on ?ver=665, openBox on ?ver=684). wml-app has a
+    // single-boot guard for exactly this; the stateful chip module needs its own.
+    // First definition wins; a later duplicate no-ops, leaving the mounted instance
+    // (and its closure state) intact. Stateless WML helpers don't need this — only
+    // SelectionChip carries mount/_bound state in its closure.
+    if (window.WML.SelectionChip && typeof window.WML.SelectionChip.openBox === 'function') {
+        console.log('WML SelectionChip: already defined — skipping duplicate bundle init (two-bundle guard)');
+        return;
+    }
+
     // ── Quick-action vocabulary (locked to inline-coaching-engine-1.md v3 — 7-tier polish ladder) ──
     // T1-T5 = silent-audit tier scans (BLOCK-on-gap within tier).
     // T6 = prose mechanics (vocab / sentence length / register).
