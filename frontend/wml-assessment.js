@@ -17004,6 +17004,49 @@
                 console.log('WML CW: Step 4 chosen-logline filled from artifact');
             } catch (e) { console.log('WML CW: no chosen_logline artifact to fill —', e && e.message); }
         };
+        // v7.19.685: CW Step 3 — RESTORE the editable "Your Chosen Logline" (cw-step-3-chosen)
+        // row from the chosen_logline artifact ONLY when the row is empty. Step 3 has no
+        // reload-restore otherwise: it relies on the doc HTML, so the SPA-nav save race can
+        // land a blank row (Neil saw section 7 empty after ticking). The artifact is the last
+        // value synced FROM this row (see _syncCwStep3ChosenLogline), so refilling an emptied
+        // row is lossless. FILL-ONLY-IF-EMPTY — never clobber text the student currently has
+        // (the row is editable, not locked; a fresh edit must win over the stale artifact).
+        const tryFillStep3ChosenLogline = async () => {
+            if (!isCwTask || !canvasEditor || cwStepDef?.step !== 3 || !state.cwProjectId) return;
+            try {
+                let targetPos = null, targetNode = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (targetPos !== null) return false;
+                    if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === 'cw-step-3-chosen') {
+                        targetPos = pos; targetNode = node; return false;
+                    }
+                    return true;
+                });
+                if (targetPos === null || !targetNode) return; // older Step-3 doc without the row
+                if ((targetNode.textContent || '').trim()) return; // row already has the student's text — leave it
+                const artifact = await WML.cwProject.loadArtifact(state.cwProjectId, 'chosen_logline');
+                const text = (artifact?.success && typeof artifact.value === 'string') ? artifact.value.trim() : '';
+                if (!text) return;
+                // Re-scan: the await above may have let other heals shift positions.
+                targetPos = null; targetNode = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (targetPos !== null) return false;
+                    if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === 'cw-step-3-chosen') {
+                        targetPos = pos; targetNode = node; return false;
+                    }
+                    return true;
+                });
+                if (targetPos === null || !targetNode) return;
+                if ((targetNode.textContent || '').trim()) return; // re-check after await — don't clobber
+                const from = targetPos + 1, to = targetPos + targetNode.nodeSize - 1;
+                _migrationActive = true;
+                try { canvasEditor.commands.insertContentAt({ from: from, to: to }, { type: 'text', text: text }); }
+                finally { _migrationActive = false; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW: Step 3 chosen-logline restored from artifact (row was empty)');
+            } catch (e) { console.log('WML CW: no chosen_logline artifact to restore —', e && e.message); }
+        };
         // v7.19.486: HEAL existing Step-3 docs whose logline-draft rows predate the
         // checkbox change — flip each cw-step-3-logline-* row's `criteria` to type:checkbox
         // (attr-only setNodeMarkup; content + any text preserved). Idempotent. Lets in-progress
@@ -17120,11 +17163,15 @@
         const tryHealCwStep4ChosenLoglineSection = () => {
             if (!isCwTask || !canvasEditor || cwStepDef?.step !== 4) return;
             try {
+                // Anchor on node.textContent, NOT sectionBlock attrs.type/label — those do
+                // NOT survive the HTML save→reload round-trip (.683 hit the same trap for
+                // Step 5; reference_wml_divider_label_not_survive_roundtrip). The Story Spine
+                // divider's text persists as its node textContent ("STORY SPINE", uppercase).
                 let hasCarry = false, spineDividerPos = null;
                 canvasEditor.state.doc.descendants((node, pos) => {
                     if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === 'cw-step-4-chosen-logline') { hasCarry = true; return false; }
-                    if (spineDividerPos === null && node.type.name === 'sectionBlock' && node.attrs
-                        && (node.attrs.type || '') === 'divider' && /story spine/i.test(node.attrs.label || '')) {
+                    if (spineDividerPos === null && node.type.name === 'sectionBlock'
+                        && (node.textContent || '').trim().toUpperCase() === 'STORY SPINE') {
                         spineDividerPos = pos;
                     }
                     return true;
@@ -17345,7 +17392,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
