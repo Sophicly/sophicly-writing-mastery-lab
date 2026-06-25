@@ -102,6 +102,10 @@ class SWML_REST_API {
             'methods' => 'GET', 'callback' => [$this, 'get_resources'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
+        register_rest_route($namespace, '/cw-guide', [
+            'methods' => 'GET', 'callback' => [$this, 'get_cw_guide'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
         register_rest_route($namespace, '/question/(?P<unit_id>\d+)', [
             'methods' => 'GET', 'callback' => [$this, 'get_unit_question'],
             'permission_callback' => [$this, 'check_auth'],
@@ -562,6 +566,26 @@ class SWML_REST_API {
             'videos' => array_values($videos),
             'task'   => $task,
             'step'   => $step,
+        ]);
+    }
+
+    /**
+     * Serve the Creative Writing Reference Guide markdown.
+     * Canonical source: resources/creative-writing-reference-guide.md (shipped with plugin).
+     * Update = edit that file + redeploy. Lazy-fetched by the in-WML guide reader (CW only).
+     */
+    public function get_cw_guide($request) {
+        $path = SWML_PATH . 'resources/creative-writing-reference-guide.md';
+        if (!file_exists($path) || !is_readable($path)) {
+            return new WP_Error('guide_missing', 'Reference guide not found.', ['status' => 404]);
+        }
+        $markdown = file_get_contents($path);
+        if ($markdown === false) {
+            return new WP_Error('guide_unreadable', 'Reference guide could not be read.', ['status' => 500]);
+        }
+        return rest_ensure_response([
+            'markdown' => $markdown,
+            'version'  => SWML_VERSION,
         ]);
     }
 

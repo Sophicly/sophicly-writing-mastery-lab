@@ -3026,6 +3026,13 @@
         sbBody.appendChild(el('button', { className: 'swml-sidebar-btn video-btn', id: 'swml-video-btn', innerHTML: SVG_VIDEO + ' Video Lessons', onClick: showVideoPanel }));
         sbBody.appendChild(el('button', { className: 'swml-sidebar-btn resources', innerHTML: SVG_LIBRARY + ' Library & Resources', onClick: () => window.open(libraryUrl, '_blank') }));
 
+        // CW-only: in-WML Creative Writing Reference Guide (slide-in reader, no external nav)
+        const isCwGuide = (state.subject === 'creative_writing') || (state.task && state.task.startsWith('cw_'));
+        if (isCwGuide) {
+            const SVG_GUIDE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>';
+            sbBody.appendChild(el('button', { className: 'swml-sidebar-btn cw-guide', innerHTML: SVG_GUIDE + ' Reference Guide', style: { marginTop: '6px' }, onClick: showGuidePanel }));
+        }
+
         // Past work button
         sbBody.appendChild(el('button', { className: 'swml-sidebar-btn', innerHTML: SVG_FOLDER + ' Past Work', style: { marginTop: '8px' },
             onClick: showPortfolio }));
@@ -4061,6 +4068,153 @@
                 document.addEventListener('click', closeHandler);
             }, 100);
         });
+    }
+
+    // ── Creative Writing Reference Guide (in-WML reader) ──
+    // Lazy-fetched from /cw-guide; canonical source = plugin resources/creative-writing-reference-guide.md.
+    let cwGuideCache = null;
+
+    // Self-contained markdown → HTML for the guide reader. Covers everything the
+    // guide uses: h1–h4, paragraphs, ul, ol, blockquote, hr, bold, italic, links.
+    // Deliberately separate from cwMarkdownToDocHtml() (CW doc renderer) — no shared regressions.
+    function renderGuideMarkdown(md) {
+        const esc = s => String(s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const inline = s => esc(s)
+            .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+            .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+            .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>')
+            .replace(/(^|[^_])_([^_\n]+)_/g, '$1<em>$2</em>');
+
+        const lines = String(md || '').replace(/\r\n/g, '\n').split('\n');
+        let html = '';
+        let para = [];          // buffered paragraph lines
+        let listType = null;    // 'ul' | 'ol' | null
+        let inQuote = false;
+
+        const flushPara = () => {
+            if (para.length) { html += '<p>' + inline(para.join(' ')) + '</p>'; para = []; }
+        };
+        const closeList = () => { if (listType) { html += '</' + listType + '>'; listType = null; } };
+        const closeQuote = () => { if (inQuote) { html += '</blockquote>'; inQuote = false; } };
+        const closeAll = () => { flushPara(); closeList(); closeQuote(); };
+
+        for (let raw of lines) {
+            const line = raw.replace(/\s+$/, '');
+            const trimmed = line.trim();
+
+            if (trimmed === '') { flushPara(); closeList(); closeQuote(); continue; }
+
+            // Horizontal rule
+            if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) { closeAll(); html += '<hr>'; continue; }
+
+            // Headings
+            const h = trimmed.match(/^(#{1,4})\s+(.*)$/);
+            if (h) { closeAll(); const lvl = h[1].length; html += `<h${lvl}>${inline(h[2])}</h${lvl}>`; continue; }
+
+            // Blockquote
+            const q = trimmed.match(/^>\s?(.*)$/);
+            if (q) {
+                flushPara(); closeList();
+                if (!inQuote) { html += '<blockquote>'; inQuote = true; }
+                html += '<p>' + inline(q[1]) + '</p>';
+                continue;
+            }
+            closeQuote();
+
+            // Ordered list
+            const ol = trimmed.match(/^\d+\.\s+(.*)$/);
+            if (ol) { flushPara(); if (listType !== 'ol') { closeList(); html += '<ol>'; listType = 'ol'; } html += '<li>' + inline(ol[1]) + '</li>'; continue; }
+
+            // Unordered list
+            const ul = trimmed.match(/^[-*]\s+(.*)$/);
+            if (ul) { flushPara(); if (listType !== 'ul') { closeList(); html += '<ul>'; listType = 'ul'; } html += '<li>' + inline(ul[1]) + '</li>'; continue; }
+
+            // Paragraph text
+            closeList();
+            para.push(trimmed);
+        }
+        closeAll();
+        return html || '<p></p>';
+    }
+
+    function _mountGuideBody(bodyEl, markdown) {
+        const article = el('div', { className: 'swml-guide-article' });
+        article.innerHTML = renderGuideMarkdown(markdown);
+        bodyEl.innerHTML = '';
+        bodyEl.appendChild(article);
+    }
+
+    function showGuidePanel() {
+        if ($('#swml-guide-overlay')) { closeGuidePanel(); return; }
+
+        // Layer 3: lock the page behind the drawer; restore on close.
+        const prevBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        const overlay = el('div', { className: 'swml-guide-overlay', id: 'swml-guide-overlay' });
+        const drawer  = el('div', { className: 'swml-guide-drawer' });
+
+        const header = el('div', { className: 'swml-guide-header' }, [
+            el('span', { className: 'swml-guide-title', textContent: 'Creative Writing Reference Guide' }),
+            el('button', { className: 'swml-guide-close', innerHTML: '&times;', 'aria-label': 'Close guide', onClick: () => closeGuidePanel() }),
+        ]);
+        const body = el('div', { className: 'swml-guide-body', id: 'swml-guide-body' });
+        body.appendChild(el('div', { className: 'swml-guide-loading', textContent: 'Loading guide…' }));
+
+        drawer.appendChild(header);
+        drawer.appendChild(body);
+        overlay.appendChild(drawer);
+
+        // Layer 2: block scroll chaining originating on the backdrop (not the drawer).
+        const stopOnBackdrop = (e) => { if (e.target === overlay) e.preventDefault(); };
+        overlay.addEventListener('wheel', stopOnBackdrop, { passive: false });
+        overlay.addEventListener('touchmove', stopOnBackdrop, { passive: false });
+
+        // Backdrop click closes
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeGuidePanel(); });
+
+        // Esc closes
+        const onKey = (e) => { if (e.key === 'Escape') closeGuidePanel(); };
+        document.addEventListener('keydown', onKey);
+
+        overlay._cleanup = () => {
+            document.removeEventListener('keydown', onKey);
+            document.body.style.overflow = prevBodyOverflow;
+        };
+
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add('open'));
+
+        // Lazy fetch + cache
+        const render = (md) => _mountGuideBody(body, md);
+        if (cwGuideCache != null) { render(cwGuideCache); return; }
+        fetch(`${config.restUrl}cw-guide`, { headers })
+            .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+            .then(data => {
+                if (!data || typeof data.markdown !== 'string' || !data.markdown.trim()) {
+                    throw new Error('empty guide payload');
+                }
+                cwGuideCache = data.markdown;
+                if ($('#swml-guide-body')) render(cwGuideCache);
+            })
+            .catch(err => {
+                console.warn('[CW] Reference Guide failed to load:', err);
+                if ($('#swml-guide-body')) {
+                    body.innerHTML = '';
+                    body.appendChild(el('div', { className: 'swml-guide-loading',
+                        textContent: 'The guide could not be loaded right now. Please try again shortly.' }));
+                }
+            });
+    }
+
+    function closeGuidePanel() {
+        const overlay = $('#swml-guide-overlay');
+        if (!overlay) return;
+        overlay.classList.remove('open');
+        if (typeof overlay._cleanup === 'function') overlay._cleanup();
+        setTimeout(() => overlay.remove(), 220);
     }
 
     function checkVideoTooltip() {
