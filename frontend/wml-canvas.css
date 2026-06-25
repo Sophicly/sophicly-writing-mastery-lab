@@ -2888,6 +2888,24 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
         0 2px 8px rgba(81,218,207,0.2);
 }
 .swml-resources-panel .swml-cw-resource-btn:active { transform: translateY(1px) !important; }
+/* Secondary "full version in library" link — muted, no button chrome (v7.19.675) */
+.swml-resources-panel .swml-cw-resource-link {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 14px 9px;
+    margin: 0 4px 2px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: 'Proxima Soft Complete', 'Proxima Soft', sans-serif;
+    color: rgba(125,249,233,0.55);
+    cursor: pointer;
+    transition: color 160ms;
+}
+.swml-resources-panel .swml-cw-resource-link svg { flex-shrink: 0; opacity: 0.7; }
+.swml-resources-panel .swml-cw-resource-link:hover { color: #7DF9E9; }
+.swml-canvas-light .swml-resources-panel .swml-cw-resource-link { color: rgba(45,122,120,0.7); }
+.swml-canvas-light .swml-resources-panel .swml-cw-resource-link:hover { color: #2d7a78; }
 /* Light mode resource buttons */
 .swml-canvas-light .swml-resources-panel .swml-cw-resource-btn {
     color: #2d7a78;

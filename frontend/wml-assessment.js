@@ -47,6 +47,118 @@
     const { stripAIInternals, detectAssessmentStep, formatAI } = WML;
     const { renderLogo, renderBadges } = WML;
 
+    // ── Creative Writing Reference Guide — in-WML slide-in reader (v7.19.675) ──
+    // Opened from the CW Resources rail panel (no external nav). Canonical source =
+    // plugin resources/creative-writing-reference-guide.md, served by REST /cw-guide,
+    // lazy-fetched on first open + cached (guide is 54KB and growing).
+    let cwGuideCache = null;
+
+    // Self-contained markdown → HTML for the guide. Covers everything the guide uses:
+    // h1–h4, paragraphs, ul, ol, blockquote, hr, bold, italic, links. Kept separate
+    // from cwMarkdownToDocHtml() (CW doc renderer) so neither regresses the other.
+    function renderGuideMarkdown(md) {
+        const esc = s => String(s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const inline = s => esc(s)
+            .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+            .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+            .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>')
+            .replace(/(^|[^_])_([^_\n]+)_/g, '$1<em>$2</em>');
+
+        const lines = String(md || '').replace(/\r\n/g, '\n').split('\n');
+        let html = '', para = [], listType = null, inQuote = false;
+        const flushPara = () => { if (para.length) { html += '<p>' + inline(para.join(' ')) + '</p>'; para = []; } };
+        const closeList = () => { if (listType) { html += '</' + listType + '>'; listType = null; } };
+        const closeQuote = () => { if (inQuote) { html += '</blockquote>'; inQuote = false; } };
+        const closeAll = () => { flushPara(); closeList(); closeQuote(); };
+
+        for (let raw of lines) {
+            const trimmed = raw.replace(/\s+$/, '').trim();
+            if (trimmed === '') { flushPara(); closeList(); closeQuote(); continue; }
+            if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) { closeAll(); html += '<hr>'; continue; }
+            const h = trimmed.match(/^(#{1,4})\s+(.*)$/);
+            if (h) { closeAll(); const lvl = h[1].length; html += `<h${lvl}>${inline(h[2])}</h${lvl}>`; continue; }
+            const q = trimmed.match(/^>\s?(.*)$/);
+            if (q) { flushPara(); closeList(); if (!inQuote) { html += '<blockquote>'; inQuote = true; } html += '<p>' + inline(q[1]) + '</p>'; continue; }
+            closeQuote();
+            const ol = trimmed.match(/^\d+\.\s+(.*)$/);
+            if (ol) { flushPara(); if (listType !== 'ol') { closeList(); html += '<ol>'; listType = 'ol'; } html += '<li>' + inline(ol[1]) + '</li>'; continue; }
+            const ul = trimmed.match(/^[-*]\s+(.*)$/);
+            if (ul) { flushPara(); if (listType !== 'ul') { closeList(); html += '<ul>'; listType = 'ul'; } html += '<li>' + inline(ul[1]) + '</li>'; continue; }
+            closeList();
+            para.push(trimmed);
+        }
+        closeAll();
+        return html || '<p></p>';
+    }
+
+    function closeGuidePanel() {
+        const overlay = $('#swml-guide-overlay');
+        if (!overlay) return;
+        overlay.classList.remove('open');
+        if (typeof overlay._cleanup === 'function') overlay._cleanup();
+        setTimeout(() => overlay.remove(), 220);
+    }
+
+    function showGuidePanel() {
+        if ($('#swml-guide-overlay')) { closeGuidePanel(); return; }
+
+        // Layer 3 (scroll isolation): lock the page behind the drawer; restore on close.
+        const prevBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        const overlay = el('div', { className: 'swml-guide-overlay', id: 'swml-guide-overlay' });
+        const drawer  = el('div', { className: 'swml-guide-drawer' });
+        const header = el('div', { className: 'swml-guide-header' }, [
+            el('span', { className: 'swml-guide-title', textContent: 'Creative Writing Reference Guide' }),
+            el('button', { className: 'swml-guide-close', innerHTML: '&times;', 'aria-label': 'Close guide', onClick: () => closeGuidePanel() }),
+        ]);
+        const body = el('div', { className: 'swml-guide-body', id: 'swml-guide-body' });
+        body.appendChild(el('div', { className: 'swml-guide-loading', textContent: 'Loading guide…' }));
+        drawer.appendChild(header);
+        drawer.appendChild(body);
+        overlay.appendChild(drawer);
+
+        // Layer 2: block scroll-chaining originating on the backdrop (not the drawer body).
+        const stopOnBackdrop = (e) => { if (e.target === overlay) e.preventDefault(); };
+        overlay.addEventListener('wheel', stopOnBackdrop, { passive: false });
+        overlay.addEventListener('touchmove', stopOnBackdrop, { passive: false });
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeGuidePanel(); });
+        const onKey = (e) => { if (e.key === 'Escape') closeGuidePanel(); };
+        document.addEventListener('keydown', onKey);
+        overlay._cleanup = () => {
+            document.removeEventListener('keydown', onKey);
+            document.body.style.overflow = prevBodyOverflow;
+        };
+
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add('open'));
+
+        const render = (mdText) => {
+            const article = el('div', { className: 'swml-guide-article' });
+            article.innerHTML = renderGuideMarkdown(mdText);
+            body.innerHTML = '';
+            body.appendChild(article);
+        };
+        if (cwGuideCache != null) { render(cwGuideCache); return; }
+        fetch(`${config.restUrl}cw-guide`, { headers })
+            .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+            .then(data => {
+                if (!data || typeof data.markdown !== 'string' || !data.markdown.trim()) throw new Error('empty guide payload');
+                cwGuideCache = data.markdown;
+                if ($('#swml-guide-body')) render(cwGuideCache);
+            })
+            .catch(err => {
+                console.warn('[CW] Reference Guide failed to load:', err);
+                if ($('#swml-guide-body')) {
+                    body.innerHTML = '';
+                    body.appendChild(el('div', { className: 'swml-guide-loading',
+                        textContent: 'The guide could not be loaded right now. Please try again shortly.' }));
+                }
+            });
+    }
+
     // v7.19.323: KILL SWITCH for the deterministic mark-scheme quiz controller
     // (Bug #1 root fix — code-scored, AI never scorekeeps). Set false to fall
     // back to the legacy AI-marker quiz path if marking ever misbehaves on
@@ -7261,8 +7373,11 @@
         // v7.19.448: universal CW resources shown on EVERY creative-writing step
         // (Neil) — the reference guide is relevant throughout the course. Step-specific
         // links below are appended underneath these.
+        // v7.19.675: the guide now opens in-WML (slide-in reader) instead of navigating
+        // out to the library. `inApp` flips the click target; `url` kept as the secondary
+        // "full version in library" fallback link.
         const CW_UNIVERSAL_RESOURCES = [
-            { label: 'Creative Writing Reference Guide', url: 'https://www.sophicly.com/library/resources/creative-writing-reference-guide/' },
+            { label: 'Creative Writing Reference Guide', inApp: true, url: 'https://www.sophicly.com/library/resources/creative-writing-reference-guide/' },
         ];
         // v7.19.454: the old Step-2 Google-Doc reading links + course/category links were
         // replaced by the single Creative Writing Reference Guide (its Story Sparks section now
@@ -7339,7 +7454,33 @@
             resPanel.appendChild(resPanelHeader);
 
             const resList = el('div', { className: 'swml-outline-list', style: { padding: '10px 6px' } });
+            const SVG_BOOK_OPEN = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
             cwPanelRes.forEach(r => {
+                if (r.inApp) {
+                    // Primary: open the guide in-place (no nav out of Focus mode)
+                    const open = el('div', {
+                        className: 'swml-cw-resource-btn',
+                        innerHTML: SVG_BOOK_OPEN + ' ' + r.label,
+                        onClick: () => {
+                            resPanel.classList.remove('swml-resources-open');
+                            resTrigger.classList.remove('is-active');
+                            showGuidePanel();
+                        }
+                    });
+                    open.style.cursor = 'pointer';
+                    resList.appendChild(open);
+                    // Secondary: full version in the library (external)
+                    if (r.url) {
+                        const ext = el('div', {
+                            className: 'swml-cw-resource-link',
+                            innerHTML: SVG_ARROW_DASH + ' Open full version in library',
+                            onClick: () => window.open(r.url, '_blank', 'noopener')
+                        });
+                        ext.style.cursor = 'pointer';
+                        resList.appendChild(ext);
+                    }
+                    return;
+                }
                 const link = el('div', {
                     className: 'swml-cw-resource-btn',
                     innerHTML: SVG_ARROW_DASH + ' ' + r.label,
