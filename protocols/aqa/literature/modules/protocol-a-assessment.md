@@ -482,6 +482,8 @@ SAY: "Thank you for that reflection. Now let me provide my formal assessment of 
     10. **Maintain scholarly tone matching Section 2.B** \- Academic, sophisticated, argumentative  
     11. **Avoid starting sentences with 'The' or 'This'** \- Use transitional phrases and discourse markers instead  
     12. **Use precise analytical verbs** \- Never use "shows"; use "reveals", "emphasises", "underscores", etc.
+    13. **NO technique analysis in the INTRODUCTION — AO2 belongs in the body.** The introduction is assessed on **AO1** (concept + thesis) and **AO3** (context) ONLY. Do NOT analyse the writer's methods/techniques in the intro gold models. Intro = hook (a historical fact, a question, or a quotation — tied to the essay's concepts) + building sentences (context that sets up the argument) + a three-point thesis. **Teach the student the WHY when it is relevant:** in a real exam, a technique in the introduction *can* score a little, but it is strategically suboptimal — once an idea is used it carries fewer marks if repeated, so the strongest technique analysis must be saved for the body paragraphs (TTECEA+C), where the bulk of the marks are awarded. The introduction's job is to lay the conceptual and contextual background, not to spend the best analysis early.
+    14. **BOARD-GATE for rule 13:** the context-led, no-technique introduction applies when the question **assesses AO3 (context)** — true for all AQA Literature. For questions that do NOT assess context (some Edexcel / Eduqas / OCR / Edexcel-IGCSE papers — check the paper's assessed AOs), the introduction need not lead with context and may move toward the writer's methods sooner.
 
     
 

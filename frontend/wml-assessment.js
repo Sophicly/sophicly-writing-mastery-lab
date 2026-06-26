@@ -984,6 +984,20 @@
             if (h) { closeList(); html += '<h3>' + inline(h[1]) + '</h3>'; continue; }
             const b = line.match(/^[-*•]\s+(.+)$/);
             if (b) { if (!listOpen) { html += '<ul>'; listOpen = true; } html += '<li>' + inline(b[1]) + '</li>'; continue; }
+            // v7.19.704: markdown TABLE row → readable line (canvas schema has no table node,
+            // so a real <table> would strip; the mark-breakdown table was showing as raw pipes).
+            // A row with ≥2 pipes is a table row: skip the |---|---| separator; render each
+            // data/header row as "**cell0** — cell1 · cell2 · …".
+            if ((line.match(/\|/g) || []).length >= 2) {
+                if (/^\|?[\s:|-]+\|?$/.test(line) && line.indexOf('-') !== -1) { closeList(); continue; } // separator row
+                const cells = line.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map(c => c.trim());
+                if (cells.length >= 2 && cells.some(c => c)) {
+                    closeList();
+                    const first = cells.shift();
+                    html += '<p><strong>' + inline(first) + '</strong>' + (cells.length ? ' — ' + cells.filter(c => c).map(inline).join(' · ') : '') + '</p>';
+                    continue;
+                }
+            }
             closeList();
             html += '<p>' + inline(line) + '</p>';
         }
@@ -1370,7 +1384,13 @@
                 // (¶2, other Qs) are left untouched. A new card APPENDS below existing content
                 // (never destructive). Only our injected card heading is an <h3>; body lines are
                 // not '#'-prefixed, so they never collide with a card heading.
-                const cardHeading = card.title ? (card.q + ' — ' + card.title) : (card.q + ' — Assessment');
+                // v7.19.704: dedup when q == title (lit "Introduction"/"Conclusion" set both) →
+                // "Introduction" not "Introduction — Introduction". Body ("Body 1" / "Body Paragraph 1")
+                // and Language ("Q2" / "Paragraph 1") still combine.
+                const _cardTitle = (card.title || '').trim();
+                const cardHeading = _cardTitle
+                    ? (_cardTitle.toLowerCase() === String(card.q || '').trim().toLowerCase() ? _cardTitle : (card.q + ' — ' + _cardTitle))
+                    : (card.q + ' — Assessment');
                 const html = cwMarkdownToDocHtml('### ' + cardHeading + '\n\n' + card.body);
                 const boxInner = targetPos + 1;
                 const boxEnd = targetPos + targetNode.nodeSize - 1;
@@ -9435,7 +9455,11 @@
                 const CD_PHASE_LABELS = { initial: 'Phase 1', redraft: 'Phase 2', preliminary: 'Preliminary', free_practice: 'Free Practice', exam_practice: 'Exam Practice' };
                 const phasePrefix = CD_PHASE_LABELS[state.phase] ? CD_PHASE_LABELS[state.phase] + ': ' : '';
                 countdownDisplay.textContent = `${phasePrefix}Day ${daysPassed + 1} · ${daysLeft}d left`;
-                countdownDisplay.style.color = daysLeft <= 2 ? '#ff6b6b' : daysLeft <= 5 ? '#ffb432' : '';
+                // v7.19.704: brand deadline ramp + always-lit healthy state (Neil
+                // liked the amber brightening). Was off-brand #ff6b6b/#ffb432 with a
+                // dead-grey healthy state; now matches the brand ramp used elsewhere
+                // (teal → yellow → orange). Teal at >5 days so it always reads alive.
+                countdownDisplay.style.color = daysLeft <= 2 ? '#E67E22' : daysLeft <= 5 ? '#F1C40F' : '#51dacf';
             }
             updateCountdown();
             statusBar.appendChild(countdownDisplay);
@@ -20254,12 +20278,12 @@
             const combined = partA.target + partB.target;
             if (wc > partA.ideal + partB.ideal) return `${wc} words (A: ${partA.target} + B: ${partB.target}) ✓ Excellent length!`;
             if (wc >= combined) return `${wc} words (A: ${partA.target} + B: ${partB.target}) ✓ Target reached`;
-            if (wc >= canvasWordMinimum) return `${wc} words (A: ${partA.target} + B: ${partB.target}) — Minimum reached`;
+            if (wc >= canvasWordMinimum) return `${wc} words (A: ${partA.target} + B: ${partB.target}) — minimum met, keep going`;
             return `${wc} / ${combined} words (A: ${partA.target} + B: ${partB.target})`;
         }
         if (wc > canvasWordIdeal) return `${wc} / ${canvasWordTarget} words ✓ Excellent length!`;
         if (wc >= canvasWordTarget) return `${wc} / ${canvasWordTarget} words ✓ Target reached`;
-        if (wc >= canvasWordMinimum) return `${wc} / ${canvasWordTarget} words — Minimum reached`;
+        if (wc >= canvasWordMinimum) return `${wc} / ${canvasWordTarget} words — minimum met, keep going`;
         return `${wc} / ${canvasWordTarget} words`;
     }
 
