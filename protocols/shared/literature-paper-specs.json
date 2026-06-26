@@ -83,7 +83,7 @@
     "shakespeare": {
       "shape": "lit-extract-paired",
       "marks": 40,
-      "spag_marks": null,
+      "spag_marks": 4,
       "aos": ["AO1", "AO2", "AO3", "AO4"],
       "extract": { "count": 2, "lines_min_each": 25, "lines_max_each": 45, "typical_each": 30, "verified": false, "source": "OCR J352/02 Section B — set-text extract (25-40) + unseen comparison extract (20-40); needs PDF count" },
       "question_prefix": "Explore how [author] presents... Refer to both extracts in your answer."
@@ -91,7 +91,7 @@
     "19th_century": {
       "shape": "lit-extract-paired",
       "marks": 40,
-      "spag_marks": null,
+      "spag_marks": 4,
       "aos": ["AO1", "AO2", "AO3", "AO4"],
       "extract": { "count": 2, "lines_min_each": 25, "lines_max_each": 45, "typical_each": 30, "verified": false, "source": "OCR J352/01 — paired-extract format (set text + unseen)" },
       "question_prefix": "Explore how [author] presents..."
@@ -100,17 +100,19 @@
       "shape": "lit-extract-paired",
       "marks": 40,
       "spag_marks": null,
-      "aos": ["AO1", "AO2", "AO3", "AO4"],
+      "aos": ["AO1", "AO2", "AO3"],
       "extract": { "count": 2, "lines_min_each": 25, "lines_max_each": 45, "typical_each": 30, "verified": false, "source": "OCR J352/01 — paired-extract format" },
-      "question_prefix": "Explore how [author] presents..."
+      "question_prefix": "Explore how [author] presents...",
+      "_note": "v7.19.703 FIX: OCR J352/01 Sec A modern prose/drama = AO1+AO2+AO3, NO AO4 (AO4/SPaG is Sec B 19th-century only). Verified vs official June 2024 MS AO grid (Sec A modern = AO1 5 + AO2 2.5 + AO3 5; no AO4)."
     },
     "poetry_anthology": {
       "shape": "poetry-comparison",
-      "marks": null,
+      "marks": 20,
       "spag_marks": null,
-      "aos": ["AO1", "AO2", "AO3"],
+      "aos": ["AO1", "AO2"],
       "extract": { "count": 2, "lines_min_each": 8, "lines_max_each": 40, "verified": false, "source": "OCR J352/02 Section A — named anthology poem + unseen poem for comparison" },
-      "question_prefix": null
+      "question_prefix": null,
+      "_note": "v7.19.703 FIX: OCR J352/02 Sec A 'poetry across time' = 20 marks, AO1+AO2 (no AO3, no AO4; AO3/AO4 sit on Sec B Shakespeare). Verified vs official June 2024 MS."
     }
   },
 
@@ -119,34 +121,37 @@
       "shape": "lit-extract-single",
       "marks": 40,
       "spag_marks": null,
-      "aos": ["AO1", "AO2", "AO4"],
+      "aos": ["AO1", "AO2", "AO3"],
       "extract": { "count": 1, "lines_min": 25, "lines_max": 40, "typical": 30, "verified": false, "source": "Edexcel 1ET0/01 — two-part question (a) extract close analysis (b) whole-play; May 2023 QP" },
       "question_prefix": "Explore how...",
-      "_note": "Section A Shakespeare uses two-part format: (a) extract-based (b) whole-play. Doc template may need dual-part handling via existing question_format='dual_extract'."
+      "_note": "v7.19.703 FIX: Edexcel 1ET0 Paper 1 Sec A Shakespeare = AO1+AO2+AO3, NO AO4 (a=AO2/20, b=AO1 15+AO3 5). Verified vs official June 2024 MS AO grid. Section A Shakespeare uses two-part format: (a) extract-based (b) whole-play."
     },
     "19th_century": {
       "shape": "lit-extract-single",
       "marks": 40,
       "spag_marks": null,
-      "aos": ["AO1", "AO2", "AO4"],
+      "aos": ["AO1", "AO2"],
       "extract": { "count": 1, "lines_min": 22, "lines_max": 32, "typical": 27, "verified": true, "source": "Edexcel 1ET0/02 Section A — Pearson spec explicitly states 'approximately 400 words' for extract" },
-      "question_prefix": "Explore how..."
+      "question_prefix": "Explore how...",
+      "_note": "v7.19.703 FIX: Edexcel 1ET0 Paper 2 Sec A 19th-century novel = AO1+AO2 ONLY (a=AO2/20, b=AO1/20), NO AO3, NO AO4. Verified vs official June 2024 MS AO grid."
     },
     "modern_text": {
       "shape": "lit-extract-single",
       "marks": 40,
-      "spag_marks": null,
-      "aos": ["AO1", "AO2", "AO4"],
+      "spag_marks": 8,
+      "aos": ["AO1", "AO3", "AO4"],
       "extract": { "count": 1, "lines_min": 20, "lines_max": 40, "verified": false, "source": "Edexcel 1ET0/01 post-1914 — varies by set text/year; some papers use whole-text question without extract — verify per paper" },
-      "question_prefix": "Explore how..."
+      "question_prefix": "Explore how...",
+      "_note": "v7.19.703 FIX: Edexcel 1ET0 Paper 1 Sec B post-1914 modern = AO1(16)+AO3(16)+AO4(8) = 40, NO AO2. Verified vs official June 2024 MS AO grid."
     },
     "poetry_anthology": {
       "shape": "poetry-single-named",
       "marks": 20,
       "spag_marks": null,
-      "aos": ["AO1", "AO2", "AO3"],
+      "aos": ["AO1", "AO3"],
       "extract": { "count": 1, "lines_min": 8, "lines_max": 40, "typical": 20, "verified": true, "source": "Edexcel 1ET0/02 Section B Part 1 — one anthology poem printed; student compares with second anthology poem" },
-      "question_prefix": "Compare the ways..."
+      "question_prefix": "Compare the ways...",
+      "_note": "v7.19.703 FIX: Edexcel 1ET0 Paper 2 Sec B Part 1 anthology poetry = AO1(15)+AO3(5) = 20, NO AO2. Verified vs official June 2024 MS AO grid."
     },
     "unseen": {
       "shape": "poetry-unseen",
@@ -170,19 +175,20 @@
     "19th_century": {
       "shape": "lit-extract-single",
       "marks": 40,
-      "spag_marks": 5,
-      "aos": ["AO1", "AO2", "AO4"],
+      "spag_marks": null,
+      "aos": ["AO1", "AO2", "AO3"],
       "extract": { "count": 1, "lines_min": 20, "lines_max": 40, "typical": 30, "verified": false, "source": "EDUQAS C720U20 Section B — single 19th-c prose extract" },
+      "_note": "v7.19.703 FIX: Eduqas Component 2 Sec B 19th-century prose = AO1+AO2+AO3 (equally weighted), Total 40, NO AO4/SPaG. Verified vs official June 2024 MS ('AO1, AO2 and AO3 are equally weighted, Total marks 40'). SPaG sits on Shakespeare + Post-1914 only.",
       "question_prefix": null
     },
     "modern_text": {
       "shape": "lit-no-extract",
       "marks": 40,
-      "spag_marks": null,
+      "spag_marks": 5,
       "aos": ["AO1", "AO2", "AO4"],
       "extract": null,
       "question_prefix": null,
-      "_note": "Confirmed: EDUQAS C720U20 Section A post-1914 prose/drama — essay question only, no extract printed"
+      "_note": "v7.19.703: Eduqas Component 2 Sec A post-1914 prose/drama = AO1+AO2+AO4, Total 35+5 (5 SPaG). Verified vs official June 2024 MS ('Total marks 35+5', 'assesses AO1, AO2 and AO4 (5 additional marks)'). Essay question only, no extract printed."
     },
     "poetry_anthology": {
       "shape": "poetry-single-named",
