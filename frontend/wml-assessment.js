@@ -20582,6 +20582,22 @@
     // which is reserved for AQA Lang P2 Q1's AI-generated multi-select statements.
     // If you need to exclude template scaffolding, prefer `snapshotTemplateBaseline`
     // (baseline subtraction) or a `data-*` attribute on the specific template node.
+    // v7.19.696: remove template scaffold/prompt text from a section clone BEFORE
+    // counting, so it never inflates the student's word count (Neil: blank response
+    // showed "4 / 650" from the "Write your essay here." placeholder). Deterministic
+    // — replaces the fragile _swmlResponseBaseline subtraction (persisted/timing
+    // dependent; 0 on some docs → placeholder leaked). (1) drop anything explicitly
+    // data-locked (instructions, and the placeholder once templates ship it locked);
+    // (2) older docs ship the placeholder as a plain <p><em>…</em></p> with no marker,
+    // so also drop paragraphs whose entire text is a known prompt. Student
+    // italics-within-prose are untouched.
+    const _WC_PLACEHOLDERS = ['write your essay here.'];
+    function _stripScaffoldForCount(clone) {
+        clone.querySelectorAll('[data-locked="true"]').forEach(el => el.remove());
+        clone.querySelectorAll('p, h3, h4').forEach(p => {
+            if (_WC_PLACEHOLDERS.indexOf((p.textContent || '').trim().toLowerCase()) !== -1) p.remove();
+        });
+    }
     function getResponseWordCount(editor) {
         // v7.17.60: null-editor survival pattern (mirror v7.17.53 getResponseText).
         // RunCloudRescue 2026-04-25: clear-chat handler computed wc immediately
@@ -20632,15 +20648,14 @@
                 // but its content is AI-generated 8 statements + a hint line —
                 // not student writing. Counting them inflated the wc by ~110.
                 clone.querySelectorAll('[data-checklist-item]').forEach(el => el.remove());
-                // v7.19.147: stop stripping <em>. Counter was eating student italics
-                // (quoted passages, emphasis). Template em ("Write your essay here.")
-                // is handled by baseline subtraction.
+                // v7.19.696: strip scaffold/placeholder directly (was baseline-subtracted).
+                // Student italics-within-prose still count (v7.19.147 kept <em>).
+                _stripScaffoldForCount(clone);
                 const text = clone.textContent || '';
                 const words = text.trim().split(/\s+/).filter(w => w.length > 0);
                 total += words.length;
             });
-            const baseline = liveEditorEl._swmlTemplateBaseline || 0;
-            return Math.max(0, total - baseline);
+            return total;
         }
         let total = 0;
         responseSections.forEach(section => {
@@ -20648,15 +20663,15 @@
             // v7.19.148: h3 strip removed — see note in editableSections branch above.
             // v7.18.41: exclude checklistItem statements + instruction line — see comment above.
             clone.querySelectorAll('[data-checklist-item]').forEach(el => el.remove());
-            // v7.19.147: em strip removed — see note in editableSections branch above.
+            // v7.19.696: strip scaffold/placeholder directly (was baseline-subtracted) —
+            // a blank response now counts 0, not the 4 placeholder words (Neil). Student
+            // italics-within-prose still count (v7.19.147 kept <em>).
+            _stripScaffoldForCount(clone);
             const text = clone.textContent || '';
             const words = text.trim().split(/\s+/).filter(w => w.length > 0);
             total += words.length;
         });
-        // Subtract response-only baseline (may not exist on closure-null path —
-        // returns 0 from `|| 0`, total still reflects student's typed words).
-        const baseline = liveEditorEl._swmlResponseBaseline || 0;
-        return Math.max(0, total - baseline);
+        return total;
     }
 
     // v7.19.285: Total words a student has written across the whole Mastery Codex.
@@ -23039,7 +23054,7 @@
 
     function buildResponseSection(partLabel) {
         const label = partLabel ? `Response — ${partLabel}` : 'Response';
-        return sectionHTML('response', label, true, null, `<p><em>Write your essay here.</em></p><p></p>`);
+        return sectionHTML('response', label, true, null, `<p data-locked="true"><em>Write your essay here.</em></p><p></p>`);
     }
 
     // ── Per-Paragraph Feedback — each paragraph is its own section ──
