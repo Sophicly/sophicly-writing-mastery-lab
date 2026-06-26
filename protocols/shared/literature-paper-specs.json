@@ -37,11 +37,12 @@
     },
     "19th_century": {
       "shape": "lit-extract-single",
-      "marks": 34,
-      "spag_marks": 4,
-      "aos": ["AO1", "AO2", "AO3", "AO4"],
+      "marks": 30,
+      "spag_marks": null,
+      "aos": ["AO1", "AO2", "AO3"],
       "extract": { "count": 1, "lines_min": 20, "lines_max": 35, "typical": 28, "verified": false, "source": "AQA 87021 Jun23/Specimen QPs" },
-      "question_prefix": "Starting with this extract, how does..."
+      "question_prefix": "Starting with this extract, how does...",
+      "_note": "v7.19.702 FIX: AQA Paper 1 Sec B 19th-century novel = 30 marks, AO1-3, NO AO4 (AO4/SPaG is Paper 1 Sec A Shakespeare only). Was wrongly 34+AO4 — mis-marked grades."
     },
     "modern_text": {
       "shape": "lit-no-extract",

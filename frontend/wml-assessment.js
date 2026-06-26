@@ -13507,57 +13507,11 @@
             }
         }
 
-        // ── Sequence Navigation Buttons (v7.12.85) ──
-        // Show Previous / Next buttons for navigating between exercise steps
-        // v7.14.13: Skip for diagnostic (task='') — LearnDash handles exercise transitions
-        // v7.14.48: Also skip for feedback_discussion (LD handles nav), and all training-env exercises
-        if (state.topicNumber && state.task && !canvasInFeedback && !useTrainingEnv) {
-            const PHASE1_SEQ = [
-                { id: 'diagnostic', task: '', label: 'Write Essay' },
-                { id: 'assessment', task: 'assessment', label: 'Get Assessed' },
-                { id: 'feedback_discussion', task: 'feedback_discussion', label: 'Discuss Feedback' },
-            ];
-            const PHASE2_SEQ = [
-                { id: 'mark_scheme', task: 'mark_scheme', label: 'Mark Scheme' },
-                { id: 'model_answer', task: 'model_answer_video', label: 'Model Answer' },
-                { id: 'planning', task: 'planning', label: 'Plan Redraft' },
-                { id: 'outlining', task: 'outlining', label: 'Outline Response' },
-                { id: 'polishing', task: 'polishing', label: 'Polish Essay' },
-                { id: 'reassessment', task: 'redraft_assessment', label: 'Get Reassessed' },
-            ];
-            const seq = state.phase === 'redraft' ? PHASE2_SEQ : PHASE1_SEQ;
-            const currentTask = state.task || '';
-            const currentIdx = seq.findIndex(s => s.task === currentTask);
-
-            if (currentIdx >= 0) {
-                const navWrap = el('div', { className: 'swml-seq-nav' });
-                const prev = currentIdx > 0 ? seq[currentIdx - 1] : null;
-                const next = currentIdx < seq.length - 1 ? seq[currentIdx + 1] : null;
-
-                if (prev) {
-                    navWrap.appendChild(el('button', {
-                        className: 'swml-seq-btn swml-seq-prev',
-                        innerHTML: `<span class="swml-seq-arrow">←</span> <span class="swml-seq-label">${prev.label}</span>`,
-                        onClick: () => {
-                            state.task = prev.task;
-                            window.WML.renderCanvasWorkspace();
-                        }
-                    }));
-                }
-                if (next) {
-                    const nextBtn = el('button', {
-                        className: 'swml-seq-btn swml-seq-next',
-                        innerHTML: `<span class="swml-seq-label">${next.label}</span> <span class="swml-seq-arrow">→</span>`,
-                        onClick: () => {
-                            state.task = next.task;
-                            window.WML.renderCanvasWorkspace();
-                        }
-                    });
-                    navWrap.appendChild(nextBtn);
-                }
-                rightPanel.appendChild(navWrap);
-            }
-        }
+        // v7.19.702: REMOVED the in-canvas Sequence Navigation buttons (swml-seq-nav,
+        // Prev/Next "Plan Redraft" / "Polish Essay" that switched state.task in place).
+        // Old-structure remnant — students now navigate exercise steps via the LearnDash
+        // footer + bridge (separate lessons), same model as the .699 canvas Mark-Complete
+        // removal. The in-canvas task-switch nav is dead UX. (Neil, 2026-06-26.)
 
         // Sidebar — single clean toggle via header click
         let sidebarOpen = true;
@@ -25229,12 +25183,14 @@
     function _flushPendingSaves() {
         try {
             if (_pendingCanvasSaveBody) {
-                try { fetch(API.canvasSave, { method: 'POST', headers, body: JSON.stringify(_pendingCanvasSaveBody), keepalive: true }); } catch (_) {}
+                // v7.19.702: .catch the async rejection — try/catch only traps sync throws, so a
+                // fetch that rejects mid-SPA-nav ("Failed to fetch") escaped as an unhandled rejection.
+                try { fetch(API.canvasSave, { method: 'POST', headers, body: JSON.stringify(_pendingCanvasSaveBody), keepalive: true }).catch(function(){}); } catch (_) {}
                 _pendingCanvasSaveBody = null;
                 clearTimeout(canvasSaveToServerTimer);
             }
             if (_pendingChatSaveBody) {
-                try { fetch(API.chatSave, { method: 'POST', headers, body: JSON.stringify(_pendingChatSaveBody), keepalive: true }); } catch (_) {}
+                try { fetch(API.chatSave, { method: 'POST', headers, body: JSON.stringify(_pendingChatSaveBody), keepalive: true }).catch(function(){}); } catch (_) {}
                 _pendingChatSaveBody = null;
                 clearTimeout(chatSaveTimer);
             }
@@ -25248,7 +25204,7 @@
                             value: _pendingCwArtifact.html,
                         }),
                         keepalive: true,
-                    });
+                    }).catch(function(){}); // v7.19.702: swallow async rejection on SPA-nav flush
                 } catch (_) {}
                 _pendingCwArtifact = null;
                 clearTimeout(_cwArtifactSaveTimer);
