@@ -706,12 +706,83 @@
         return { steps: steps, current: current };
     }
 
+    // ── v7.19.698: GRANULAR per-PARAGRAPH sidebar for single-essay LITERATURE
+    // assessments (parity with the Language per-question accordion — Neil). Built
+    // from the same canvas feedback boxes (sectionType='feedback'), which the lit
+    // template pre-seeds as "Feedback: Introduction (— / 3)", "Feedback: Body N
+    // (— / 8)", "Feedback: Conclusion (— / 3)" (wml-assessment.js ~23364). Groups by
+    // PARAGRAPH (Introduction / Body Paragraph N / Conclusion); each group carries the
+    // marking beats Mark & Feedback → Gold rewrite → Alt gold model. CONTENT-gated (not
+    // subject-name gated — avoids the #1 task-name trap): returns null unless ≥2 of
+    // those paragraph feedback boxes exist, so Language (Qn boxes) and pre-feedback docs
+    // fall through unchanged. Emitted in the assessment_sidebar_model shape so it rides
+    // the existing _applyServerSidebar consumer (one render/advance path). Monotonic:
+    // once a LATER paragraph is marked, earlier beats force-complete so a missed detect
+    // can't strand the pointer (Intro → Body → Conclusion order).
+    function _buildLitSidebarModel() {
+        if (state.reviewMode) return null;
+        if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return null;
+        if (_expectServerSidebar()) return null;          // AQA P2 → server model
+        if (_expectLangSidebar()) return null;            // Language → its own per-Q model
+        if (!canvasEditor) return null;
+        const paras = [];
+        try {
+            canvasEditor.state.doc.descendants((node) => {
+                if (node.type && node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'feedback') {
+                    const lbl = String(node.attrs.label || '');
+                    let name = null, order = 99, m;
+                    if (/feedback\s*[:\-]?\s*introduction/i.test(lbl)) { name = 'Introduction'; order = 0; }
+                    else if ((m = lbl.match(/feedback\s*[:\-]?\s*body\s*(?:paragraph\s*)?(\d+)/i))) { name = 'Body Paragraph ' + m[1]; order = parseInt(m[1], 10); }
+                    else if (/feedback\s*[:\-]?\s*conclusion/i.test(lbl)) { name = 'Conclusion'; order = 98; }
+                    if (!name) return true;                // Analytics / non-paragraph feedback box
+                    const max = parseInt((lbl.match(/\/\s*(\d+)\s*\)/) || [])[1] || '0', 10);
+                    const marked = /\(\s*\d+(?:\.\d+)?\s*\/\s*\d+\s*\)/.test(lbl);  // numeric mark filed, not "—"
+                    const text = String(node.textContent || '');
+                    const hasGold = /Gold Standard|Optimal/i.test(text);
+                    paras.push({ name: name, order: order, max: max, marked: marked, hasGold: hasGold });
+                }
+                return true;
+            });
+        } catch (_) { return null; }
+        if (paras.length < 2) return null;                 // not a paragraph-marked lit essay
+        paras.sort((a, b) => a.order - b.order);            // Intro → Body 1..N → Conclusion
+        let maxMarkedIdx = -1;
+        paras.forEach((p, i) => { if (p.marked) maxMarkedIdx = i; });
+        const steps = [];
+        let n = 0, firstIncomplete = 0;
+        steps.push({ step: ++n, label: 'Setup & Goals', group: null, display: '1' });
+        paras.forEach((p, i) => {
+            const behind = i < maxMarkedIdx;               // a later paragraph already marked → done
+            const pMarked = behind || p.marked;
+            const pGold = pMarked && p.hasGold;            // both golds file together with the mark
+            const beats = [
+                { label: 'Mark & Feedback', done: pMarked },
+                { label: 'Gold rewrite', done: pGold },
+                { label: 'Alt gold model', done: pGold },
+            ];
+            let di = 0;
+            beats.forEach((b) => {
+                steps.push({ step: ++n, label: b.label, group: p.name, display: String(++di) });
+                if (firstIncomplete === 0 && !b.done) firstIncomplete = n;
+            });
+        });
+        const _gm = String((state.plan && state.plan.grade) || '').match(/\b([1-9])\b/);
+        const _grade = _gm ? parseInt(_gm[1], 10) : 0;
+        steps.push({ step: ++n, label: 'Total & Grade', group: null, display: _grade ? String(_grade) : '★', gradeTier: _grade || null });
+        const allDone = paras.every(p => p.marked);
+        const current = allDone ? n : (firstIncomplete || 2);
+        return { steps: steps, current: current };
+    }
+
     // Re-derive + apply the Language sidebar so the pointer advances as marks land.
     // No-op for contexts without a model (P2 server-driven / Literature / single-essay).
     // Rides _applyServerSidebar: re-renders only when the step STRUCTURE changes
     // (sig guard), otherwise just moves the active pointer.
     function _refreshLangSidebar() {
-        try { const m = _buildLangSidebarModel(); if (m) { _applyServerSidebar(m); _styleTotalGradeCircle(m); } } catch (_) {}
+        try { const m = _buildLangSidebarModel(); if (m) { _applyServerSidebar(m); _styleTotalGradeCircle(m); return; } } catch (_) {}
+        // v7.19.698: fall through to the Literature per-paragraph model — one render
+        // path, so every marks-land hook that calls _refreshLangSidebar advances lit too.
+        try { const lm = _buildLitSidebarModel(); if (lm) { _applyServerSidebar(lm); _styleTotalGradeCircle(lm); } } catch (_) {}
     }
     // v7.19.628: paint the final "Total & Grade" circle with the achieved grade in its
     // ladder colour (reusing _GRADE_BG / _GRADE_DARK_TEXT). Runs AFTER _applyServerSidebar
@@ -4149,8 +4220,15 @@
             // Literature single-essay docs that never get a Language model.
             const _langExpected = _expectLangSidebar();
             const _langModel = _langExpected ? _buildLangSidebarModel() : null;
+            // v7.19.698: single-essay Literature gets the same granular accordion, grouped
+            // by paragraph, built from its pre-seeded Intro/Body/Conclusion feedback boxes.
+            const _litAssess = !_langModel && !_langExpected && !_expectServerSidebar()
+                && !state.reviewMode && (state.task === 'assessment' || state.task === 'redraft_assessment');
+            const _litModel = _litAssess ? _buildLitSidebarModel() : null;
             if (_langModel) {
                 _renderSidebarSteps(protoSteps, _langModel.steps, { alwaysGroup: true });
+            } else if (_litModel) {
+                _renderSidebarSteps(protoSteps, _litModel.steps, { alwaysGroup: true });
             } else if (_langExpected || _expectServerSidebar()) {
                 protoSteps.style.display = 'none';   // hide until the granular model paints
             } else {
@@ -4168,7 +4246,8 @@
             }
             // v7.19.625: once the panel is in the DOM, seat (+ reveal) the granular
             // sidebar from the marks present — handles async doc load + re-entry.
-            if (_langExpected) setTimeout(_refreshLangSidebar, 0);
+            // v7.19.698: also for lit assessments (refresh falls through to the lit model).
+            if (_langExpected || _litAssess) setTimeout(_refreshLangSidebar, 0);
             protoBody.appendChild(protoSteps);
         }
 
@@ -11915,8 +11994,14 @@
                             // sidebar; hide until it paints (no generic flat-8 flash) when the doc is still loading.
                             const _langExpected2 = _expectLangSidebar();
                             const _langModel2 = _langExpected2 ? _buildLangSidebarModel() : null;
+                            // v7.19.698: Literature granular per-paragraph accordion (same as primary path).
+                            const _litAssess2 = !_langModel2 && !_langExpected2 && !_expectServerSidebar()
+                                && !state.reviewMode && (state.task === 'assessment' || state.task === 'redraft_assessment');
+                            const _litModel2 = _litAssess2 ? _buildLitSidebarModel() : null;
                             if (_langModel2) {
                                 _renderSidebarSteps(protoSteps, _langModel2.steps, { alwaysGroup: true });
+                            } else if (_litModel2) {
+                                _renderSidebarSteps(protoSteps, _litModel2.steps, { alwaysGroup: true });
                             } else if (_langExpected2) {
                                 protoSteps.style.display = 'none';
                             } else {
@@ -11933,7 +12018,7 @@
                                 _renderSidebarSteps(protoSteps, assessSteps);
                             }
                             protoBody.appendChild(protoSteps);
-                            if (_langExpected2) setTimeout(_refreshLangSidebar, 0);
+                            if (_langExpected2 || _litAssess2) setTimeout(_refreshLangSidebar, 0);
                         }
 
                         // Bottom buttons — matching original sidebar, with icon+text for collapsed mode
