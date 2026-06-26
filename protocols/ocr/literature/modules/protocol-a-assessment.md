@@ -280,7 +280,7 @@ SAY: "Now we'll move into self-assessment where you'll reflect on your own work 
 
 ---
 
-**1\. Introduction Assessment (3 Marks Total)**
+**1\. Introduction Assessment (5 Marks Total)**
 
 **STEP 1: Student Metacognitive Reflection**
 
@@ -485,7 +485,7 @@ SAY: "Thank you for that reflection. Now let me provide my formal assessment of 
 
 ---
 
-**2\. Body Paragraph Assessments (7 Marks Each)**
+**2\. Body Paragraph Assessments (9 Marks Each)**
 
 **\[AI\_INTERNAL\] Repeat this three-step process for each body paragraph (1, 2, 3).**
 
@@ -756,7 +756,7 @@ SAY: "Thank you. Now here's my formal assessment."
 
 ---
 
-**3\. Conclusion Assessment (6 Marks Total)**
+**3\. Conclusion Assessment (8 Marks Total)**
 
 **STEP 1: Student Metacognitive Reflection**
 
