@@ -1308,7 +1308,7 @@
             if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'feedback') {
                 const lbl = String(node.attrs.label || '');
                 if (_paraKey(lbl) === _paraKey(qNum) && _paraKey(qNum)) {
-                    const base = lbl.replace(/\s*\(\s*(?:—|\d+)\s*\/\s*\d+\s*\)\s*$/, '');
+                    const base = lbl.replace(/\s*\(\s*(?:—|\d+(?:\.\d+)?)\s*\/\s*\d+\s*\)\s*$/, ''); // v7.19.707: half-mark aware
                     const newLabel = base + ' (' + score + ' / ' + max + ')';
                     if (newLabel !== lbl) {
                         canvasEditor.view.dispatch(canvasEditor.state.tr.setNodeMarkup(pos, undefined, Object.assign({}, node.attrs, { label: newLabel })));
@@ -1404,6 +1404,17 @@
                 const isLitCard = !/^Q\s*\d/i.test(String(card.q || ''));
                 if (isLitCard) {
                     canvasEditor.commands.insertContentAt({ from: boxInner, to: boxEnd }, html);
+                    // v7.19.707: auto-SELECT the ACTUAL mark for lit (Language has this; Neil noted lit
+                    // didn't). Parse the section total from THIS card's body ("Total Mark for <section>:
+                    // A / B" or "… A out of B") — take only the SCORE; pull MAX from the canonical box
+                    // (_feedbackMaxForQ), because the protocol body total line still says a stale "/8"
+                    // while the box is correctly /7. Half-mark preserved; box selector is decimal-aware now.
+                    const _lm = String(card.body || '').match(/Total Mark for [^:\n]*:\s*\*{0,2}\s*([\d.]+)\s*(?:\/|out of)\s*\d+/i);
+                    if (_lm) {
+                        const _sc = parseFloat(_lm[1]);
+                        const _mx = _feedbackMaxForQ(card.q);
+                        if (!isNaN(_sc) && _mx > 0) _setFeedbackMark(card.q, _sc, _mx);
+                    }
                     console.log('WML Feedback: replaced lit box (one-card-per-box)', JSON.stringify(cardHeading), '→', card.q);
                     wrote = true;
                     return;
@@ -18205,14 +18216,19 @@
                 });
             };
 
+            // v7.19.707: Literature marks in HALF-mark steps (0.5) — Language is whole-only.
+            // The actual-mark selector + label parser were whole-only (\d+), so a 0.5 lit score
+            // (e.g. R&J intro 0.5/3) couldn't be auto-selected and would even break the regex.
+            // Lit → a half-step dropdown (Neil's choice) + decimal-aware parsing throughout.
+            const _halfMarks = !/^language/.test((state.subject || '').toLowerCase());
             const feedbackSections = editor.querySelectorAll('[data-section-type="feedback"]');
             feedbackSections.forEach((section, idx) => {
                 const label = section.getAttribute('data-section-label') || '';
-                const match = label.match(/^(Feedback:\s*.+?)\s*\((?:—|(\d+))\s*\/\s*(\d+)\)$/);
+                const match = label.match(/^(Feedback:\s*.+?)\s*\((?:—|(\d+(?:\.\d+)?))\s*\/\s*(\d+)\)$/);
                 if (!match) return;
 
                 const baseName = match[1].trim();
-                const currentMarks = match[2] !== undefined ? parseInt(match[2]) : -1; // -1 = dash/unset
+                const currentMarks = match[2] !== undefined ? parseFloat(match[2]) : -1; // -1 = dash/unset
                 const maxMarks = parseInt(match[3]);
 
                 const wrapper = document.createElement('div');
@@ -18221,8 +18237,8 @@
                 wrapper.dataset.sectionIdx = idx;
 
                 const onMarkChange = (rawVal) => {
-                    const intVal = parseInt(rawVal);
-                    const displayVal = intVal === -1 ? '—' : intVal;
+                    const numVal = parseFloat(rawVal); // v7.19.707: parseFloat — lit half-marks (0.5)
+                    const displayVal = (isNaN(numVal) || numVal === -1) ? '—' : numVal;
                     const newLabel = `${baseName} (${displayVal} / ${maxMarks})`;
                     // v7.19.191: wrap mutation + recalculate in scroll-preserve guard.
                     _withScrollPreserve(() => {
@@ -18244,9 +18260,13 @@
                     });
                 };
 
-                // Build options: dash sentinel + 0..maxMarks
+                // Build options: dash sentinel + 0..maxMarks (half-steps for lit, whole for language)
                 const opts = [{ value: -1, label: '—', isDash: true }];
-                for (let i = 0; i <= maxMarks; i++) opts.push({ value: i, label: String(i) });
+                const _markStep = _halfMarks ? 0.5 : 1;
+                for (let i = 0; i <= maxMarks + 1e-9; i += _markStep) {
+                    const v = Math.round(i * 2) / 2; // guard float drift (0.5 steps)
+                    opts.push({ value: v, label: String(v) });
+                }
 
                 // v7.19.621: colour each mark by its RANK on the 9-grade ladder (even spread,
                 // full mark → tier-9 = brand gradient) — IDENTICAL mapping to the predict pills
@@ -18256,7 +18276,9 @@
                 const feedbackTierFn = (opt) => opt.value === -1 ? null : _tierRank(opt.value);
 
                 let widget;
-                if (maxMarks <= 8) {
+                // v7.19.707: lit half-mark sections ALWAYS use the dropdown (a /7 body = 16 half-steps,
+                // too many for a pill row). Language keeps whole-number pills for ≤8.
+                if (maxMarks <= 8 && !_halfMarks) {
                     widget = createSwmlPillRow({
                         options: opts,
                         currentValue: currentMarks,
@@ -18989,7 +19011,7 @@
                 if (match[1] === '—') {
                     allSet = false; // Not yet set
                 } else {
-                    totalMarks += parseInt(match[1]) || 0;
+                    totalMarks += parseFloat(match[1]) || 0; // v7.19.707: parseFloat — lit half-marks
                 }
             });
             if (maxTotal === 0) return;
