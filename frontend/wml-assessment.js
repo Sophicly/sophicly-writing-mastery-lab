@@ -1222,16 +1222,31 @@
         const color = verdict === 'accurate' ? '#1CD991' : (verdict === 'slightly' ? '#F1C40F' : '#ff5470');
         return { tol: tol, delta: delta, abs: ad, verdict: verdict, color: color };
     }
-    // max marks for a question, from its feedback box label "… Qn (— / MAX)".
+    // v7.19.701: ONE canonical paragraph key for a feedback-box label OR a marker q-value.
+    // Lit Intro/Conclusion boxes carry NO question digit ("Feedback: Introduction (— / 3)");
+    // the old digit-only match read their MAX ("3") and mis-keyed them as a numbered
+    // question (colliding with Body 3). Resolve by NAME first, digit second → 'Intro' /
+    // 'Conclusion' / '1' / '2' / '3', and Language 'Q2' → '2' (backward-compatible). Mirrors
+    // _buildLitSidebarModel's name match + the .700 calibration readout keys so filing,
+    // mark-set, max-lookup, predict panel + readout all agree (CLAUDE.md canvas-rule #3).
+    function _paraKey(s) {
+        const t = String(s == null ? '' : s).toLowerCase();
+        if (t.indexOf('introduc') !== -1) return 'Intro';
+        if (t.indexOf('conclus') !== -1) return 'Conclusion';
+        const m = t.match(/(\d+)/);
+        return m ? m[1] : '';
+    }
+    // max marks for a question/paragraph, from its feedback box label "… (— / MAX)".
     function _feedbackMaxForQ(qNum) {
         if (!canvasEditor || !qNum) return null;
+        const key = _paraKey(qNum);
+        if (!key) return null;
         let max = null;
         canvasEditor.state.doc.descendants((node) => {
             if (max != null) return false;
             if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'feedback') {
                 const lbl = String(node.attrs.label || '');
-                const ln = (lbl.match(/feedback\D*(\d+)/i) || [])[1] || '';
-                if (ln === String(qNum)) { const mm = lbl.match(/\/\s*(\d+)\s*\)/); if (mm) max = parseInt(mm[1], 10); }
+                if (_paraKey(lbl) === key) { const mm = lbl.match(/\/\s*(\d+)\s*\)/); if (mm) max = parseInt(mm[1], 10); }
             }
             return true;
         });
@@ -1278,8 +1293,7 @@
             if (done) return false;
             if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'feedback') {
                 const lbl = String(node.attrs.label || '');
-                const ln = (lbl.match(/feedback\D*(\d+)/i) || [])[1] || '';
-                if (ln === String(qNum)) {
+                if (_paraKey(lbl) === _paraKey(qNum) && _paraKey(qNum)) {
                     const base = lbl.replace(/\s*\(\s*(?:—|\d+)\s*\/\s*\d+\s*\)\s*$/, '');
                     const newLabel = base + ' (' + score + ' / ' + max + ')';
                     if (newLabel !== lbl) {
@@ -1330,16 +1344,16 @@
             const qTotal = _detectQuestionTotal(aiReply);
             if (qTotal) cards.push(qTotal);
             if (!cards.length) return;
-            const numOf = s => { const x = String(s || '').match(/\d+/); return x ? x[0] : ''; };
+            const numOf = s => { const x = String(s || '').match(/\d+/); return x ? x[0] : ''; }; // still used by the ACTUAL-mark autofill + scroll-target below
             let wrote = false;
             cards.forEach(card => {
-                const cardNum = numOf(card.q); // "Q2" → "2"  (format-proof)
+                const cardNum = _paraKey(card.q); // "Q2"→"2", "Introduction"→"Intro", "Body 2"→"2", "Conclusion"→"Conclusion"
                 let targetPos = null, targetNode = null;
                 canvasEditor.state.doc.descendants((node, pos) => {
                     if (targetPos !== null) return false;
                     if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'feedback') {
                         const lbl = String(node.attrs.label || '');
-                        const lblNum = (lbl.match(/feedback\D*(\d+)/i) || [])[1] || '';
+                        const lblNum = _paraKey(lbl);
                         if (cardNum && lblNum === cardNum) { targetPos = pos; targetNode = node; return false; }
                     }
                     return true;
@@ -1368,8 +1382,8 @@
                     const htext = (node.textContent || '').trim();
                     if (cardStart === null) {
                         if (htext === cardHeading) cardStart = pos;
-                    } else if (cardEnd === null && /^Q[1-5]\b/.test(htext)) {
-                        cardEnd = pos;
+                    } else if (cardEnd === null && /^(Q[1-5]|Introduction|Body|Conclusion)\b/.test(htext)) {
+                        cardEnd = pos; // v7.19.701: bound lit cards too (headings are Introduction/Body N/Conclusion, not Qn)
                     }
                     return true;
                 });
@@ -2572,8 +2586,9 @@
         // rides the existing reflection submit, no extra AI turn). Shown only on a question's
         // FIRST reflection (max derivable + not yet predicted). Predicted = calibration-only.
         let predicted = null;
-        const _pqm = (parsed && parsed.q ? String(parsed.q) : '').match(/(\d+)/);
-        let predictQ = _pqm ? _pqm[1] : '';
+        // v7.19.701: resolve via the canonical key so lit's 'Introduction'/'Conclusion'
+        // (no digit) populate the predict row too — not just numbered Body paragraphs.
+        let predictQ = _paraKey(parsed && parsed.q ? parsed.q : '');
         // v7.19.623: the Section B / creative-writing reflection (ao = AO5/AO6) often arrives
         // without a "Q5" token — the model drops the @REFLECT_GATE marker and reverts to prose
         // ("your creative writing"), or omits q. predictQ stayed empty → the predict row never
@@ -18264,9 +18279,7 @@
                     // them stable non-numeric keys so the readout renders for EVERY marked
                     // paragraph; _predKey is string-keyed, so 'Intro'/'Conclusion' sit alongside
                     // the numeric body keys.
-                    const _qForCalib = (baseName.match(/(\d+)/) || [])[1]
-                        || (/introduction/i.test(baseName) ? 'Intro'
-                            : /conclusion/i.test(baseName) ? 'Conclusion' : '');
+                    const _qForCalib = _paraKey(baseName); // v7.19.701: single canonical resolver (name-first)
                     if (_qForCalib) {
                         // v7.19.609: ALWAYS render the calibration readout so the Predicted · Actual · Δ
                         // structure is visible even before a prediction/mark exists (— placeholders).

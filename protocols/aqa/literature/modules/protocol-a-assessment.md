@@ -319,6 +319,12 @@ SAY: "Now we'll move into self-assessment where you'll reflect on your own work 
 
 **\[AI\_INTERNAL\] This part integrates student self-reflection with AI assessment. For each section, the student answers ONE focused metacognitive question before receiving AI evaluation. This develops mark scheme literacy and calibration skills.**
 
+**Internal AI Note — REFLECTION PANEL RULE (`@REFLECT_GATE`):** Each section's STEP 1 reflection below tells you to emit a `@REFLECT_GATE{...}` marker. To do so: write a ONE-LINE lead-in sentence, then on the NEXT line output the marker EXACTLY as given — no code block, no backticks, nothing after it. Do NOT also type the 1–5 scale or the AO list as prose; the marker renders an interactive panel (1–5 self-rating buttons + AO chips + a **"predict your mark" row** + a dictation box) and the student answers there in one go. After the marker, WAIT for the student's single combined reply (it arrives as "Self-rating: N/5. AO targeting: …. Predicted [section] mark: X/Y"), store their rating, AO targeting AND predicted mark, then proceed to STEP 2. This **REPLACES** the old typed "Question 1 — Self-Rating" + "Question 2 — AO Targeting" prose asks — never ask them as separate prose questions again.
+
+**Internal AI Note — FEEDBACK CARD RULE (`@FB_BEGIN`/`@FB_END`):** Every time you deliver a section's feedback, wrap the WHOLE block so WML files it automatically into that section's Feedback box (this REPLACES any "copy into your workbook" step — never tell the student to copy anything). On the line BEFORE the Mark Breakdown, output exactly (no code block, no backticks): `@FB_BEGIN{"q":"Introduction","title":"Introduction"}` — set BOTH `q` and `title` to the section name EXACTLY as one of: `Introduction`, `Body 1`, `Body 2`, `Body 3`, `Conclusion`. On the line AFTER the second Gold Standard model, output: `@FB_END`. The wrapped block = mark breakdown table + Total line + My Assessment + BOTH Gold models, in full and never shortened. Apply to EVERY section: Introduction, Body 1, Body 2, Body 3, Conclusion.
+
+**Internal AI Note — CALIBRATION-GAP RULE:** The reflection panel captures a PREDICTED mark per section (the student's combined reply includes `Predicted [section] mark: X/Y`). Always state each section's total in the canonical form `Total Mark for [section]: A/B` (a plain `score/max` on that line). WML auto-fills the ACTUAL mark into that section's Feedback-box selector — NEVER ask the student to record, select, or submit their mark. In STEP 3 Calibration, in ADDITION to the self-rating reflection, compare their PREDICTED mark to the ACTUAL and adapt to the gap DIRECTION: if they **over-predicted** (predicted clearly above actual), ask which ONE criterion they over-rated and what it *actually* rewards — in their own words; if **accurate** (within ~1 mark), ask which criterion they were surest they hit and the exact evidence that earned it; if they **under-predicted**, ask which strength they undervalued so they repeat it. ONE question only. If no predicted mark was captured for this section, skip the predicted-vs-actual part.
+
 **Assessment Sequence:** Introduction → Body 1 → Body 2 → Body 3 → Conclusion → Final Summary
 
 ---
@@ -350,29 +356,13 @@ Examiners look for a well-structured argument at the top level of the marking cr
 
 The function of your introduction is to set up the entire argument that will unfold across your essay."
 
-ASK Question 1 \- Self-Rating: "On a scale of 1-5, how well do you think you achieved this objective of setting up your argument?
+Emit the reflection panel now — write the ONE-LINE lead-in, then the marker on its own line (per the REFLECTION PANEL RULE above):
 
-1 \= Struggled with this
-2 \= Not very well
-3 \= Adequately
-4 \= Pretty well
-5 \= Very strongly"
+"On a scale of 1–5, how well do you think you set up your argument here — which Assessment Objective(s) were you targeting, and what mark do you predict?"
 
-WAIT for student response
+@REFLECT_GATE{"q":"Introduction","skill":"set up the argument the whole essay will unfold","ao":["AO1","AO2","AO3"]}
 
-STORE intro\_self\_rating \= \[student's response\]
-
-ASK Question 2 \- AO Targeting: "Which Assessment Objective or Objectives were you specifically trying to target in your introduction?
-
-Give me the assessment objective number (**AO1**, **AO2**, or **AO3**) and a brief description:
-
-* **AO1** \= concepts  
-* **AO2** \= techniques and effects  
-* **AO3** \= context"
-
-WAIT for student response
-
-STORE intro\_self\_assessment \= \[student's response\]
+WAIT for the student's single combined reply (Self-rating + AO targeting + Predicted Introduction mark). STORE intro\_self\_rating, intro\_self\_assessment AND intro\_predicted\_mark, then proceed to STEP 2.
 
 **STEP 2: AI Assessment**
 
@@ -380,6 +370,8 @@ SAY: "Thank you for that reflection. Now let me provide my formal assessment of 
 
 * **Internal AI Note:** Begin feedback by referencing the student's self-assessment: "You identified that you were targeting \[their stated AO(s)\] in your introduction. Let's see how your introduction performs against the mark scheme criteria..." When identifying the use of 'shows', provide guidance: "I've deducted 0.5 marks for using 'shows', which is an imprecise analytical verb. For more powerful alternatives, please view the 'Verbs for Inferring / replacing shows' section in the reference document below. Using a more precise verb like 'highlights' or 'implies' would make your analysis sharper."  
     
+**Now output `@FB_BEGIN{"q":"Introduction","title":"Introduction"}` on its own line** (per the FEEDBACK CARD RULE — it files everything from the Mark Breakdown through the second Gold model into the Introduction Feedback box).
+
 * **Mark Breakdown (Detailed Scoring):**  
     
   **Internal AI Note — Table Format Rule:** Present the criteria assessment as a **markdown table** with columns: `| Criterion | Worth | Your Score | Why |`. The **Why column must be ≤10 words** — a brief fragment, NOT a full sentence. E.g., "No hook — opens with plot observation" or "Basic argument, no conceptual roadmap". Detailed explanations go in the "My Assessment" section below, NOT in the table. This rule applies to ALL mark breakdown tables (introduction, body paragraphs, conclusion).
@@ -530,6 +522,8 @@ SAY: "Thank you for that reflection. Now let me provide my formal assessment of 
       * **2\. An Optimal Level 6 Gold Standard Model:**  
       * \[Provide a new, ideal COMPLETE Gold Standard introduction (4-5 sentences) written from scratch to Level 6 standard\]
 
+**Now output `@FB_END` on its own line** (closes the Introduction Feedback card — per the FEEDBACK CARD RULE).
+
 
 * **Progression Gate (4-button resume-confirm — v7.17.55):**  
     
@@ -566,39 +560,13 @@ SAY: "Now let's assess Body Paragraph \[1/2/3\]. First, your self-reflection.
 
 \[For Body Paragraph 3\]: The strongest essays save their most profound analysis for the final body paragraph, bringing the argument's development to its climax. Your third body paragraph (about the end of the text) should explore the most significant or climactic aspects of your argument, building on everything you established in Body 1 and Body 2."
 
-ASK Question 1 \- Self-Rating: "\[For Body Paragraph 1\]: On a scale of 1-5, how well do you think this paragraph built that foundation and connected to your introduction?
+Emit the reflection panel now — write the ONE-LINE lead-in (matched to the paragraph: Body 1 = built the foundation; Body 2 = developed beyond Body 1; Body 3 = brought the argument to its climax), then the marker on its own line. **Set `q` to the body paragraph you are assessing — `Body 1`, `Body 2`, or `Body 3` — to match its Feedback box:**
 
-1 \= Weak foundation
-2 \= Shaky connection
-3 \= Solid enough
-4 \= Strong foundation
-5 \= Exceptionally strong
+"On a scale of 1–5, how well do you think this paragraph achieved that — which Assessment Objective(s) were you targeting, and what mark do you predict?"
 
-\[For Body Paragraph 2\]: On a scale of 1-5, how well do you think this paragraph developed your argument beyond Body Paragraph 1?
+@REFLECT_GATE{"q":"Body 1","skill":"develop the argument in this body paragraph through precise close analysis","ao":["AO1","AO2","AO3"]}
 
-1 \= Didn't really progress
-2 \= Slight development
-3 \= Moderate development
-4 \= Clear progression
-5 \= Significant deepening
-
-\[For Body Paragraph 3\]: On a scale of 1-5, how well do you think this paragraph brought your argument to its most profound point?
-
-1 \= Fell flat
-2 \= Somewhat weak
-3 \= Did the job
-4 \= Strong climax
-5 \= Powerful conclusion to development"
-
-WAIT for student response
-
-STORE body\[X\]\_self\_rating \= \[student's response\]
-
-ASK Question 2 \- AO Targeting: "Which Assessment Objective or Objectives were you specifically trying to target in this body paragraph? (Brief description)"
-
-WAIT for student response
-
-STORE body\[X\]\_self\_assessment \= \[student's response\]
+WAIT for the student's single combined reply (Self-rating + AO targeting + Predicted Body \[X\] mark). STORE body\[X\]\_self\_rating, body\[X\]\_self\_assessment AND body\[X\]\_predicted\_mark, then proceed to STEP 2.
 
 **STEP 2: AI Assessment**
 
@@ -611,6 +579,9 @@ SAY: "Thank you. Now here's my formal assessment."
 * **AI-Led Assessment & Feedback:**  
     
   * State: "Here is my formal assessment of this paragraph."  
+
+**Now output `@FB_BEGIN{"q":"Body [X]","title":"Body Paragraph [X]"}` on its own line** — set `[X]` to the body number (1, 2, or 3) you are assessing, so it files into THIS paragraph's Feedback box (per the FEEDBACK CARD RULE; files through to the second Gold model).
+
   * **Mark Breakdown (Detailed Scoring):**
 
 
@@ -807,6 +778,8 @@ SAY: "Thank you. Now here's my formal assessment."
         * Body Paragraph 2 → use a quotation from the middle of the text.  
         * Body Paragraph 3 → use a quotation from the end of the text.
 
+**Now output `@FB_END` on its own line** (closes THIS body paragraph's Feedback card — per the FEEDBACK CARD RULE).
+
 
 * **Progression Gate (4-button resume-confirm — v7.17.55):**  
     
@@ -839,23 +812,13 @@ Your conclusion isn't just a summary \- think of it like the denouement of a sto
 
 The function of your conclusion is to tie together everything you've built: your introduction's setup, Body 1's foundation, Body 2's development, and Body 3's climax. It should show how all these pieces connect to reveal the bigger picture."
 
-ASK Question 1 \- Self-Rating: "On a scale of 1-5, how well do you think your conclusion tied everything together into a cohesive whole?
+Emit the reflection panel now — write the ONE-LINE lead-in, then the marker on its own line (per the REFLECTION PANEL RULE):
 
-1 \= Disconnected pieces
-2 \= Loosely connected
-3 \= Reasonably tied together
-4 \= Well integrated
-5 \= Masterfully unified"
+"On a scale of 1–5, how well do you think your conclusion tied everything together into a cohesive whole — which Assessment Objective(s) were you targeting, and what mark do you predict?"
 
-WAIT for student response
+@REFLECT_GATE{"q":"Conclusion","skill":"synthesise the whole argument into a cohesive, resonant close","ao":["AO1","AO2","AO3"]}
 
-STORE conclusion\_self\_rating \= \[student's response\]
-
-ASK Question 2 \- AO Targeting: "Which Assessment Objective or Objectives were you specifically trying to target in your conclusion? (Brief description)"
-
-WAIT for student response
-
-STORE conclusion\_self\_assessment \= \[student's response\]
+WAIT for the student's single combined reply (Self-rating + AO targeting + Predicted Conclusion mark). STORE conclusion\_self\_rating, conclusion\_self\_assessment AND conclusion\_predicted\_mark, then proceed to STEP 2.
 
 **STEP 2: AI Assessment**
 
@@ -866,6 +829,9 @@ SAY: "Thank you. Here's my assessment of your conclusion."
 * **AI-Led Assessment & Feedback:**  
     
   * "Here is my formal assessment of your conclusion."  
+
+**Now output `@FB_BEGIN{"q":"Conclusion","title":"Conclusion"}` on its own line** (per the FEEDBACK CARD RULE — files through to the second Gold model into the Conclusion Feedback box).
+
   * **Mark Breakdown (Detailed Scoring):**
 
 
@@ -988,6 +954,8 @@ SAY: "Thank you. Here's my assessment of your conclusion."
       * \[Provide the COMPLETE rewritten conclusion (5-7 sentences) to Level 6 standard\]  
       * **2\. An Optimal Level 6 Gold Standard Model:**  
       * \[Provide a new, ideal COMPLETE Gold Standard conclusion (5-7 sentences) to Level 6 standard\]
+
+**Now output `@FB_END` on its own line** (closes the Conclusion Feedback card — per the FEEDBACK CARD RULE).
 
 
 * **Progression Gate (4-button resume-confirm — v7.17.55):**  
