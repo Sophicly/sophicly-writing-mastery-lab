@@ -360,7 +360,7 @@ Emit the reflection panel now — write the ONE-LINE lead-in, then the marker on
 
 "On a scale of 1–5, how well do you think you set up your argument here — which Assessment Objective(s) were you targeting, and what mark do you predict?"
 
-@REFLECT_GATE{"q":"Introduction","skill":"set up the argument the whole essay will unfold","ao":["AO1","AO2","AO3"]}
+@REFLECT_GATE{"q":"Introduction","skill":"set up the argument the whole essay will unfold","ao":["AO1","AO2","AO3"],"max":3}
 
 WAIT for the student's single combined reply (Self-rating + AO targeting + Predicted Introduction mark). STORE intro\_self\_rating, intro\_self\_assessment AND intro\_predicted\_mark, then proceed to STEP 2.
 
@@ -576,7 +576,7 @@ Emit the reflection panel now — write the ONE-LINE lead-in (matched to the par
 
 "On a scale of 1–5, how well do you think this paragraph achieved that — which Assessment Objective(s) were you targeting, and what mark do you predict?"
 
-@REFLECT_GATE{"q":"Body 1","skill":"develop the argument in this body paragraph through precise close analysis","ao":["AO1","AO2","AO3"]}
+@REFLECT_GATE{"q":"Body 1","skill":"develop the argument in this body paragraph through precise close analysis","ao":["AO1","AO2","AO3"],"max":7}
 
 WAIT for the student's single combined reply (Self-rating + AO targeting + Predicted Body \[X\] mark). STORE body\[X\]\_self\_rating, body\[X\]\_self\_assessment AND body\[X\]\_predicted\_mark, then proceed to STEP 2.
 
@@ -838,7 +838,7 @@ Emit the reflection panel now — write the ONE-LINE lead-in, then the marker on
 
 "On a scale of 1–5, how well do you think your conclusion tied everything together into a cohesive whole — which Assessment Objective(s) were you targeting, and what mark do you predict?"
 
-@REFLECT_GATE{"q":"Conclusion","skill":"synthesise the whole argument into a cohesive, resonant close","ao":["AO1","AO2","AO3"]}
+@REFLECT_GATE{"q":"Conclusion","skill":"synthesise the whole argument into a cohesive, resonant close","ao":["AO1","AO2","AO3"],"max":6}
 
 WAIT for the student's single combined reply (Self-rating + AO targeting + Predicted Conclusion mark). STORE conclusion\_self\_rating, conclusion\_self\_assessment AND conclusion\_predicted\_mark, then proceed to STEP 2.
 

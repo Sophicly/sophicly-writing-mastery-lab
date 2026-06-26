@@ -1394,6 +1394,20 @@
                 const html = cwMarkdownToDocHtml('### ' + cardHeading + '\n\n' + card.body);
                 const boxInner = targetPos + 1;
                 const boxEnd = targetPos + targetNode.nodeSize - 1;
+                // v7.19.706: LITERATURE boxes hold exactly ONE card per box (Intro box = intro only,
+                // Body 1 box = body 1 only) — unlike Language (Q4 box holds intro+BP1-3+conclusion).
+                // So for a lit card REPLACE the whole box body every fill. This kills the duplicate-
+                // stacking Neil saw (the heading-keyed overwrite missed stale content whose heading
+                // drifted — e.g. ".704 dedup changed 'Introduction — Introduction' → 'Introduction'",
+                // so the old block orphaned and the new one appended below). Lit q = a section NAME
+                // ("Introduction"/"Body 1"/"Conclusion"); Language q = "Q1".."Q5" → keep its region logic.
+                const isLitCard = !/^Q\s*\d/i.test(String(card.q || ''));
+                if (isLitCard) {
+                    canvasEditor.commands.insertContentAt({ from: boxInner, to: boxEnd }, html);
+                    console.log('WML Feedback: replaced lit box (one-card-per-box)', JSON.stringify(cardHeading), '→', card.q);
+                    wrote = true;
+                    return;
+                }
                 // Find this card's existing region: its heading node, then the NEXT card
                 // heading ("Qn …") that bounds the region's end (or the box end if last).
                 let cardStart = null, cardEnd = null;
@@ -2501,11 +2515,16 @@
         try {
             const d = JSON.parse(m[1]);
             const ao = Array.isArray(d.ao) && d.ao.length ? d.ao.map(String) : ['AO1', 'AO2', 'AO3', 'AO4'];
+            // v7.19.706: the marker may carry the section max ("max":3) so the predict-mark row
+            // never depends on the canvas-box lookup (which returned null at panel-render time for
+            // lit Intro → predict row silently hidden). Marker-max is authoritative; box lookup falls back.
+            const max = (d.max != null && !isNaN(parseInt(d.max, 10))) ? parseInt(d.max, 10) : null;
             return {
                 q: d.q ? String(d.q) : '',
                 para: d.para != null ? String(d.para) : '',
                 skill: d.skill ? String(d.skill) : 'achieve the goal for this paragraph',
                 ao,
+                max,
             };
         } catch (err) {
             console.warn('WML @REFLECT_GATE: JSON parse failed', err);
@@ -2617,7 +2636,9 @@
             const _wq = _writingFeedbackQ();
             if (_wq) predictQ = String(_wq);
         }
-        const predictMax = predictQ ? _feedbackMaxForQ(predictQ) : null;
+        // v7.19.706: prefer the marker-carried max (deterministic) over the canvas-box lookup,
+        // which returned null at panel-render time for lit → the predict-mark row never showed.
+        const predictMax = (parsed && parsed.max != null) ? parsed.max : (predictQ ? _feedbackMaxForQ(predictQ) : null);
         const showPredict = !!(predictQ && predictMax && _getPredicted(predictQ) == null);
 
         const refreshSubmit = () => {
@@ -5617,10 +5638,19 @@
                                     sendCanvasMessage();
                                 }
                             });
-                            const currentLabel = (res.assessmentState && res.assessmentState.current_paragraph_label)
+                            // v7.19.706: the old payload ("Yes, let's continue with the next paragraph")
+                            // was too vague — the model read it and re-emitted the SAME gate instead of
+                            // advancing (Neil hit this: clicked continue 3× on R&J, Body 1 never started).
+                            // Derive the ACTUAL next section from the gate's own text ("…continue with
+                            // **Body Paragraph 1**?") and post a HARD DIRECTIVE that names it + tells the
+                            // model exactly what to do next (emit that section's STEP 1 reflection panel)
+                            // + not to repeat the gate. Deterministic label, unambiguous instruction.
+                            const _gateNext = cleanReply.match(/continue with\s*\*{0,2}\s*([^*?\n]+?)\s*\*{0,2}\s*\?/i);
+                            const nextLabel = (_gateNext && _gateNext[1].trim())
+                                || (res.assessmentState && res.assessmentState.current_paragraph_label)
                                 || 'the next paragraph';
                             confirmBar.appendChild(_mkBtn('✓ Got it — continue',
-                                `Yes, let's continue with ${currentLabel}.`));
+                                `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}: go straight to its STEP 1 reflection and emit the @REFLECT_GATE panel for ${nextLabel} now. Do NOT repeat this confirmation or re-ask whether to continue.`));
                             confirmBar.appendChild(_mkBtn('🤔 Still confused',
                                 `I'm still not clear — could you explain again?`));
                             confirmBar.appendChild(_mkBtn('💬 Different question',
