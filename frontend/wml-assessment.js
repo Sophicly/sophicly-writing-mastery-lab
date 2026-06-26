@@ -13533,7 +13533,9 @@
         // v7.18.7: also hide floating widget for exam_question (AI-generated content, not student writing).
         // v7.19.210: also hide for mastery_codex — induction reflections, no word target.
         // Separate from `_hideWcForTask` (line 5499) which hides the footer counter.
-        const _hideWcByTask = ['essay_plan', 'mark_scheme', 'mark_scheme_assessment', 'mark_scheme_unit', 'foundational_quiz', 'conceptual_notes', 'exam_question', 'mastery_codex', 'exam_crib'].includes(state.task);
+        // v7.19.697: hide for 'planning' too — Response Planning is about structure,
+        // not length (Neil); a word count there is noise.
+        const _hideWcByTask = ['planning', 'essay_plan', 'mark_scheme', 'mark_scheme_assessment', 'mark_scheme_unit', 'foundational_quiz', 'conceptual_notes', 'exam_question', 'mastery_codex', 'exam_crib'].includes(state.task);
         const _hideWcByCwStage = isCwTask && cwStepDef?.step && cwStepDef.step <= 8;
         if (_hideWcByTask || _hideWcByCwStage) {
             wcWidget.style.display = 'none';
