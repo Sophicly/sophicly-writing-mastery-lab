@@ -1131,6 +1131,29 @@
         return out;
     }
 
+    // v7.19.709: strip the 4-button resume-confirm gate MARKERS from the DISPLAYED chat text
+    // (the frontend renders them as real buttons — the raw "[✓ Got it — continue]" etc., often
+    // wrapped in backticks, were leaking into the bubble as visible code). Display-only; the
+    // detection at the resume-confirm handler still reads the raw reply, so buttons still render.
+    function _stripResumeMarkers(text) {
+        if (!text) return text;
+        return String(text).replace(/`?\s*\[\s*(?:[✓🤔💬⏸]\s*)?(?:Got it[^\]]*|Still confused|Different question|Pause here)\s*\]\s*`?/gi, '');
+    }
+
+    // v7.19.709: deterministic params for a literature section's reflection panel, so the frontend
+    // can RENDER the next section's @REFLECT_GATE panel itself when the model loops the progression
+    // gate (Neil: Body 2/3/Conclusion were never reached). Mirrors the protocol marker data
+    // (maxes are the folded SpaG split: intro 3, body 8, conclusion 7 = 34).
+    function _litSectionParams(label) {
+        const t = String(label || '').toLowerCase();
+        const ao = ['AO1', 'AO2', 'AO3'];
+        if (t.indexOf('introduc') !== -1) return { q: 'Introduction', skill: 'set up the argument the whole essay will unfold', ao: ao, max: 3 };
+        if (t.indexOf('conclus') !== -1) return { q: 'Conclusion', skill: 'synthesise the whole argument into a cohesive, resonant close', ao: ao, max: 7 };
+        const m = t.match(/(\d+)/);
+        if (m) return { q: 'Body ' + m[1], skill: 'develop the argument in this body paragraph through precise close analysis', ao: ao, max: 8 };
+        return null;
+    }
+
     // v7.19.599: content-fallback feedback parse when the model omits @FB markers
     // entirely. The marking turn is recognisable (a per-paragraph total + the two gold
     // models). We file the whole assessment block into the box for the Question the
@@ -4031,6 +4054,7 @@
     let _cwArtifactSaveTimer = null;
     let _pendingCwArtifact = null; // { projectId, artifactKey, html } — for beforeunload flush
     let canvasSilentSend = false; // v7.14.3: When true, sendCanvasMessage skips user bubble display
+    let _assessConfirmedTarget = null; // v7.19.709: the section we last clicked ✓-continue for. If the model RE-EMITS the gate for the SAME section (a loop), the frontend renders that section's reflection panel itself instead of the buttons.
     let _currentAddComment = null; // v7.14.48: Module-level ref for context toolbar (survives re-renders)
     let _currentComments = null; // v7.15.30: Module-level ref to comments object (for tryServerLoad)
     let _currentUpdateCommentCount = null; // v7.15.30: Module-level ref
@@ -4455,6 +4479,7 @@
                 text = _stripReflectGate(text);
                 // v7.19.598: strip @FB_BEGIN/@FB_END (auto-filed to feedback boxes); keep inner text in chat.
                 text = _stripFeedbackMarkers(text);
+                text = _stripResumeMarkers(text); // v7.19.709: strip leaked [✓ Got it…] gate markers (buttons render separately)
 
                 const body = el('div', { className: 'swml-bubble-body' });
                 body.innerHTML = text;
@@ -5638,6 +5663,37 @@
                         && /\[\s*⏸?\s*Pause here\s*\]/i.test(cleanReply);
                     if (_hasResumeConfirmMarkers) {
                         setTimeout(() => {
+                            // Derive the ACTUAL next section from the gate's own text ("…continue with
+                            // **Body Paragraph 1**?").
+                            const _gateNext = cleanReply.match(/continue with\s*\*{0,2}\s*([^*?\n]+?)\s*\*{0,2}\s*\?/i);
+                            const nextLabel = (_gateNext && _gateNext[1].trim())
+                                || (res.assessmentState && res.assessmentState.current_paragraph_label)
+                                || 'the next paragraph';
+                            const greetBubble = chatMessages.lastElementChild;
+                            const bc = greetBubble ? (greetBubble.querySelector('.swml-bubble-content') || greetBubble) : null;
+                            const _isLit = !/^language/.test((state.subject || '').toLowerCase());
+
+                            // v7.19.709 DETERMINISTIC LOOP-BREAKER: the model RE-EMITTED the gate for the
+                            // SAME section we already clicked ✓ on → it's stuck (Neil: Body 2/3/Conclusion
+                            // were never reached because the model looped the gate instead of advancing).
+                            // Don't re-show the buttons — render that section's reflection panel OURSELVES so
+                            // the assessment advances no matter what the model does. Lit only (params are
+                            // lit-shaped: intro 3 / body 8 / conclusion 7). The panel's combined reply then
+                            // drives the model to mark the section (which it does reliably).
+                            const _loopParams = _isLit ? _litSectionParams(nextLabel) : null;
+                            if (_loopParams && nextLabel === _assessConfirmedTarget && bc) {
+                                _assessConfirmedTarget = null;
+                                try {
+                                    const panel = _renderReflectPanel(_loopParams, (answer) => {
+                                        if (chatTextarea) { chatTextarea.value = answer; }
+                                        sendCanvasMessage();
+                                    });
+                                    bc.appendChild(panel);
+                                    console.warn('WML: progression loop broken — frontend rendered ' + _loopParams.q + ' reflection panel');
+                                } catch (e) { console.warn('WML loop-breaker render failed', e); }
+                                return;
+                            }
+
                             const confirmBar = el('div', { className: 'swml-quick-actions' });
                             const _mkBtn = (label, payload) => el('button', {
                                 className: 'swml-quick-btn',
@@ -5649,30 +5705,28 @@
                                     sendCanvasMessage();
                                 }
                             });
-                            // v7.19.706: the old payload ("Yes, let's continue with the next paragraph")
-                            // was too vague — the model read it and re-emitted the SAME gate instead of
-                            // advancing (Neil hit this: clicked continue 3× on R&J, Body 1 never started).
-                            // Derive the ACTUAL next section from the gate's own text ("…continue with
-                            // **Body Paragraph 1**?") and post a HARD DIRECTIVE that names it + tells the
-                            // model exactly what to do next (emit that section's STEP 1 reflection panel)
-                            // + not to repeat the gate. Deterministic label, unambiguous instruction.
-                            const _gateNext = cleanReply.match(/continue with\s*\*{0,2}\s*([^*?\n]+?)\s*\*{0,2}\s*\?/i);
-                            const nextLabel = (_gateNext && _gateNext[1].trim())
-                                || (res.assessmentState && res.assessmentState.current_paragraph_label)
-                                || 'the next paragraph';
-                            confirmBar.appendChild(_mkBtn('✓ Got it — continue',
-                                `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}: go straight to its STEP 1 reflection and emit the @REFLECT_GATE panel for ${nextLabel} now. Do NOT repeat this confirmation or re-ask whether to continue.`));
+                            // ✓ continue: REMEMBER the target (so a re-emitted gate is caught as a loop above)
+                            // and send the advance directive SILENTLY — the verbose directive must not show in
+                            // chat (Neil flagged it as leaked "code"). The other three buttons stay visible.
+                            const _continueBtn = el('button', {
+                                className: 'swml-quick-btn',
+                                textContent: '✓ Got it — continue',
+                                onClick: () => {
+                                    confirmBar.remove();
+                                    _assessConfirmedTarget = nextLabel;
+                                    canvasSilentSend = true;
+                                    chatTextarea.value = `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}: go straight to its STEP 1 reflection and emit the @REFLECT_GATE panel for ${nextLabel} now. Do NOT repeat this confirmation or re-ask whether to continue.`;
+                                    sendCanvasMessage();
+                                }
+                            });
+                            confirmBar.appendChild(_continueBtn);
                             confirmBar.appendChild(_mkBtn('🤔 Still confused',
                                 `I'm still not clear — could you explain again?`));
                             confirmBar.appendChild(_mkBtn('💬 Different question',
                                 `Actually, I have a different question first.`));
                             confirmBar.appendChild(_mkBtn('⏸ Pause here',
                                 `I need to pause — we'll continue later.`));
-                            const greetBubble = chatMessages.lastElementChild;
-                            if (greetBubble) {
-                                const bc = greetBubble.querySelector('.swml-bubble-content') || greetBubble;
-                                bc.appendChild(confirmBar);
-                            }
+                            if (bc) bc.appendChild(confirmBar);
                         }, 50);
                     }
                     // v7.19.393: legacy v7.17.54 bare [1][2][3][4][5] rating bar REMOVED.
@@ -12387,6 +12441,7 @@
                                 text = _stripReflectGate(text);
                                 // v7.19.598: strip @FB markers; feedback auto-files to per-Q boxes, text stays in chat.
                                 text = _stripFeedbackMarkers(text);
+                                text = _stripResumeMarkers(text); // v7.19.709: strip leaked [✓ Got it…] gate markers
                                 const body = el('div', { className: 'swml-bubble-body' });
                                 body.innerHTML = text;
                                 content.appendChild(body);
