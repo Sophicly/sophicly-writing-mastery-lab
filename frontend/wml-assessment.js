@@ -18258,7 +18258,15 @@
                 // Predicted is calibration-only (from the chat prediction); actual = the live label
                 // mark. Shows above the actual pill so the student sees the gap at the section top.
                 try {
-                    const _qForCalib = (baseName.match(/(\d+)/) || [])[1] || '';
+                    // v7.19.700: Intro/Conclusion have no digit in their label, so the old
+                    // digit-only key dropped them from the calibration readout — Body 1/2/3
+                    // showed Predicted·Actual·Δ but Introduction/Conclusion didn't (Neil). Give
+                    // them stable non-numeric keys so the readout renders for EVERY marked
+                    // paragraph; _predKey is string-keyed, so 'Intro'/'Conclusion' sit alongside
+                    // the numeric body keys.
+                    const _qForCalib = (baseName.match(/(\d+)/) || [])[1]
+                        || (/introduction/i.test(baseName) ? 'Intro'
+                            : /conclusion/i.test(baseName) ? 'Conclusion' : '');
                     if (_qForCalib) {
                         // v7.19.609: ALWAYS render the calibration readout so the Predicted · Actual · Δ
                         // structure is visible even before a prediction/mark exists (— placeholders).
