@@ -13443,10 +13443,13 @@
             // cumulative 9-week reflection journal you revisit weekly. The LearnDash
             // footer "Mark Complete" is the correct (and only needed) completion path;
             // the right panel shows a soft word-count target instead.
-            if (state.task !== 'mastery_codex') {
-                diagCompleteBtn = markCompleteBtn;
-                rightPanel.appendChild(markCompleteBtn);
-            }
+            // v7.19.699: canvas "Mark Complete" button removed (Neil) — it's redundant
+            // with the LearnDash footer Mark Complete, which is the real completion +
+            // sequencing path (diagnostic and assessment are separate lessons; the footer
+            // moves the student on). diagCompleteBtn stays null → every `if (diagCompleteBtn)`
+            // setter no-ops; the canvas autosaves continuously so nothing is lost. The dead
+            // Path-B transition handler on markCompleteBtn is now an unreferenced orphan
+            // (never appended → never fires); left in place to keep this removal surgical.
 
             // ── Persistent diagnostic completion state (v7.12.30) ──
             // On re-entry, check if diagnostic was already submitted → green bar + disabled button + nav link
