@@ -18790,7 +18790,7 @@
             let fbIdx = 0;
             feedbackSections.forEach(section => {
                 const label = section.getAttribute('data-section-label') || '';
-                if (!label.match(/\((?:—|\d+)\s*\/\s*\d+\)$/)) return; // Match both — and numeric marks (v7.12.60)
+                if (!label.match(/\((?:—|\d+(?:\.\d+)?)\s*\/\s*\d+\)$/)) return; // v7.19.708: half-mark aware (was \d+ → a 1.5/8 lit box was SKIPPED, desyncing overlay→section so Body 1's readout landed on Body 2)
                 const overlay = fbOverlays[fbIdx];
                 if (!overlay) return;
                 fbIdx++;
