@@ -25415,6 +25415,22 @@
         } catch (e) { return html; }
     }
 
+    // v7.19.716: strip the dead in-canvas Sequence Navigation buttons (.swml-seq-nav —
+    // Prev/Next "Plan Redraft" / "Polish Essay"). The GENERATOR was removed in v7.19.702,
+    // but the markup persists inside every doc saved before then, so existing students still
+    // see the relic in EVERY lesson. Heal it out of the loaded HTML; the cleaned copy persists
+    // on the next autosave. DOM-based (robust to attribute order/variants). (Neil, 2026-06-27.)
+    function _stripSeqNavLocal(html) {
+        if (!html || html.indexOf('swml-seq-nav') === -1) return html;
+        try {
+            const w = document.createElement('div');
+            w.innerHTML = html;
+            let changed = false;
+            w.querySelectorAll('.swml-seq-nav').forEach(n => { n.remove(); changed = true; });
+            return changed ? w.innerHTML : html;
+        } catch (e) { return html; }
+    }
+
     function loadCanvasContent() {
         // Synchronous: return localStorage for instant editor init
         try {
@@ -25422,7 +25438,7 @@
             const _val = localStorage.getItem(_key) || '';
             // v7.19.136 instrumentation — every localStorage read for the canvas doc
             try { console.log('[WML load-debug v7.19.136] localStorage read', { key: _key, size: _val.length }); } catch (_) {}
-            return stripResponsesForPlanningLocal(healQ2InferenceStemsLocal(_val));
+            return _stripSeqNavLocal(stripResponsesForPlanningLocal(healQ2InferenceStemsLocal(_val)));
         } catch (e) { return ''; }
     }
 

@@ -3459,12 +3459,26 @@ class SWML_REST_API {
      * extract the HTML as everything between the first value and the metadata,
      * then parse the metadata separately.
      */
+    // v7.19.716: strip the dead in-canvas Sequence Navigation buttons (.swml-seq-nav —
+    // "Plan Redraft" / "Polish Essay") from stored docs on read. The generator was removed in
+    // v7.19.702; the markup persists in every doc saved before then. Server chokepoint so
+    // tutor-review / sibling-seed / new-device loads are clean too (the frontend mirrors this
+    // in _stripSeqNavLocal). Regex, not DOM (no DOM in PHP): the seq-nav buttons contain
+    // <span>s only, so the first </div> closes the wrapper.
+    private static function strip_seq_nav_html($html) {
+        if (!is_string($html) || strpos($html, 'swml-seq-nav') === false) return $html;
+        return preg_replace('#<div[^>]*class="[^"]*swml-seq-nav[^"]*"[^>]*>.*?</div>#is', '', $html);
+    }
+
     private static function decode_canvas_json($raw) {
         if (!is_string($raw) || empty($raw)) return null;
 
         // 1. Try normal json_decode (works for properly-saved data via wp_slash)
         $doc = json_decode($raw, true);
-        if (is_array($doc)) return $doc;
+        if (is_array($doc)) {
+            if (!empty($doc['html'])) $doc['html'] = self::strip_seq_nav_html($doc['html']);
+            return $doc;
+        }
 
         // 2. Try wp_unslash / stripslashes (might help in some edge cases)
         $doc = json_decode(wp_unslash($raw), true);
