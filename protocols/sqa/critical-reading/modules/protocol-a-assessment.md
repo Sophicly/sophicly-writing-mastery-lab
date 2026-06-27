@@ -305,7 +305,7 @@ WAIT for student response
 
 ---
 
-**1\. Introduction Assessment (3 Marks Total)**
+**1\. Introduction Assessment (2 Marks Total)**
 
 **STEP 1: Student Metacognitive Reflection**
 
@@ -481,7 +481,7 @@ A) Yes, ready to continue
 
 ---
 
-**2\. Body Paragraph Assessments (7 Marks Each)**
+**2\. Body Paragraph Assessments (5 Marks Each)**
 
 **\[AI\_INTERNAL\] Repeat this three-step process for each body paragraph (1, 2, 3).**
 
@@ -743,7 +743,7 @@ A) Yes, ready to continue
 
 ---
 
-**3\. Conclusion Assessment (6 Marks Total)**
+**3\. Conclusion Assessment (3 Marks Total)**
 
 **STEP 1: Student Metacognitive Reflection**
 

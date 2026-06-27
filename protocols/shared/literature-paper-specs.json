@@ -290,8 +290,8 @@
       "marks": 20,
       "spag_marks": null,
       "aos": null,
-      "split": { "shape": "holistic", "marks": 20 },
-      "_split_note": "Band-holistic critical essay /20 — marked as a whole piece (SQA does NOT split into intro/body/conclusion marks). sqa/critical-reading protocol corrected 30→holistic /20.",
+      "split": { "shape": "standard", "intro": 2, "body": 5, "body_count": 3, "conclusion": 3 },
+      "_split_note": "Critical essay /20, marked on the Sophicly TTECEA scaffold rescaled from 30→20 (2/5×3/3). SQA's own MS is band-holistic, but Sophicly keeps the granular per-paragraph scaffold for teaching (per granular-marking rule). sqa/critical-reading protocol rescaled 3/7×3/6 → 2/5×3/3.",
       "extract": null,
       "question_prefix": null,
       "_note": "Confirmed: SQA N5 Critical Reading Section 2 — critical essay on previously-studied text; choice of questions; no extract. 20 marks, band-holistic. Verified vs N5 Critical Reading 2025 MS."

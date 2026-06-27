@@ -307,7 +307,7 @@ WAIT for student response
 
 ---
 
-**1\. Introduction Assessment (3 Marks Total)**
+**1\. Introduction Assessment (5 Marks Total)**
 
 **STEP 1: Student Metacognitive Reflection**
 
@@ -364,16 +364,16 @@ SAY: "Thank you for that reflection. Now let me provide my formal assessment of 
 
      
 
-  3. **Building sentence(s) evaluating a major stylistic feature in relation to the question (AO2)** \- Worth: 1.0 mark  
+  3. **Building sentence(s) evaluating a major stylistic feature in relation to the question (AO2)** \- Worth: 2.0 marks  
        
-     - Your score: \[X\]/1.0  
+     - Your score: \[X\]/2.0  
      - Why: \[Specific explanation if not full marks\]
 
      
 
-  4. **Clear, precise three-point thesis with powerful argument (AO1)** \- Worth: 1.0 mark  
+  4. **Clear, precise three-point thesis with powerful argument (AO1)** \- Worth: 2.0 marks  
        
-     - Your score: \[X\]/1.0  
+     - Your score: \[X\]/2.0  
      - Why: \[Specific explanation if not full marks\]
 
 
@@ -390,7 +390,7 @@ SAY: "Thank you for that reflection. Now let me provide my formal assessment of 
   **Total penalties:** \-\[X\] marks
 
 
-  **Total Mark for Introduction:** \[Sum of scores minus penalties\] out of 4
+  **Total Mark for Introduction:** \[Sum of scores minus penalties\] out of 5
 
 
 * **Percentage & Grade:** \[Calculated Percentage\]%, which is a **Grade \[Calculated Grade\]**  
@@ -509,7 +509,7 @@ SAY: "Thank you for that reflection. Now let me provide my formal assessment of 
 
 ---
 
-**2\. Body Paragraph Assessments (7 Marks Each)**
+**2\. Body Paragraph Assessments (9 Marks Each)**
 
 **\[AI\_INTERNAL\] Repeat this three-step process for each body paragraph (1, 2, 3).**
 
@@ -609,9 +609,9 @@ SAY: "Thank you. Now here's my formal assessment."
 
      
 
-  6. **Perceptive close analysis of words/sound/structure (AO2)** \- Worth: 1.0 mark  
+  6. **Perceptive close analysis of words/sound/structure (AO2)** \- Worth: 2.0 marks  
        
-     - Your score: \[X\]/1.0  
+     - Your score: \[X\]/2.0  
      - Why: \[Explanation if not full marks\]
 
      
@@ -623,23 +623,23 @@ SAY: "Thank you. Now here's my formal assessment."
 
      
 
-  8. **First detailed sentence on reader effects (AO2)** \- Worth: 0.75 marks  
+  8. **First detailed sentence on reader effects (AO2)** \- Worth: 1.25 marks  
        
      - Should explore effects following the logical chain: focus → emotions → thoughts → real-world actions  
      - May cover 1-2 effects from this chain (e.g., focus and emotion, or emotion and thought)  
      - Must connect effects to meaning/author's concepts  
-     - Your score: \[X\]/0.75  
+     - Your score: \[X\]/1.25  
      - Why: \[Explanation if not full marks\]
 
      
 
-  9. **Second detailed sentence on reader effects (AO2)** \- Worth: 0.75 marks  
+  9. **Second detailed sentence on reader effects (AO2)** \- Worth: 1.25 marks  
        
      - Should continue the logical progression from sentence 8  
      - Must explore different effect(s) than sentence 8  
      - If S8 covered early chain (focus/emotion), S9 should cover later chain (thoughts/actions)  
      - Must connect effects to meaning/author's concepts  
-     - Your score: \[X\]/0.75  
+     - Your score: \[X\]/1.25  
      - Why: \[Explanation if not full marks\]
 
 
@@ -672,7 +672,7 @@ SAY: "Thank you. Now here's my formal assessment."
   **Total penalties:** \-\[X\] marks
 
 
-  **Total Mark for this paragraph:** \[Sum minus penalties\] out of 8
+  **Total Mark for this paragraph:** \[Sum minus penalties\] out of 9
 
 
 * **Percentage & Grade:** \[Calculated Percentage\]%, which is a **Grade \[Calculated Grade\]**  
@@ -771,7 +771,7 @@ SAY: "Thank you. Now here's my formal assessment."
 
 ---
 
-**3\. Conclusion Assessment (6 Marks Total)**
+**3\. Conclusion Assessment (8 Marks Total)**
 
 **STEP 1: Student Metacognitive Reflection**
 
@@ -828,9 +828,9 @@ SAY: "Thank you. Here's my assessment of your conclusion."
 
      
 
-  3. **Evaluates controlling concept (AO1)** \- Worth: 1.0 mark  
+  3. **Evaluates controlling concept (AO1)** \- Worth: 2.0 marks  
        
-     - Your score: \[X\]/1.0  
+     - Your score: \[X\]/2.0  
      - Why: \[Explanation if not full marks\]
 
      
@@ -842,9 +842,9 @@ SAY: "Thank you. Here's my assessment of your conclusion."
 
      
 
-  5. **Evaluates author's purpose (AO1)** \- Worth: 1.5 marks  
+  5. **Evaluates author's purpose (AO1)** \- Worth: 2.5 marks  
        
-     - Your score: \[X\]/1.5  
+     - Your score: \[X\]/2.5  
      - Why: \[Explanation if not full marks\]
 
      
@@ -874,7 +874,7 @@ SAY: "Thank you. Here's my assessment of your conclusion."
   **Total penalties:** \-\[X\] marks
 
 
-  **Total Mark for conclusion:** \[Sum minus penalties\] out of 7
+  **Total Mark for conclusion:** \[Sum minus penalties\] out of 8
 
 
 * **Percentage & Grade:** \[Calculated Percentage\]%, which is a **Grade \[Calculated Grade\]**  
