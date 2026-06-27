@@ -26795,7 +26795,14 @@
         if (currentHTML.includes('data-section-type')) {
             if (topicData) {
                 const actualQ = topicData?.question_text || topicData?.part_a_question || '';
-                const questionInDoc = actualQ && currentHTML.includes(actualQ.substring(0, 50));
+                // v7.19.713: normalise BOTH sides (decode HTML entities + collapse whitespace +
+                // lowercase) before comparing. The stored doc is entity-encoded HTML (&amp;, —
+                // em-dashes, <em> wrappers) while topicData.question_text is bank plaintext, so a raw
+                // includes() of the first 50 chars FALSE-NEGATIVES on cosmetic encoding — which then
+                // tripped the destructive "stale → wipe" path below and blanked real marked essays.
+                const _normCmp = (s) => { try { const _d = document.createElement('div'); _d.innerHTML = String(s || ''); return (_d.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase(); } catch (_) { return String(s || '').replace(/\s+/g, ' ').trim().toLowerCase(); } };
+                const _qNorm = _normCmp(actualQ).slice(0, 50);
+                const questionInDoc = !!actualQ && _qNorm.length > 0 && _normCmp(currentHTML).includes(_qNorm);
                 const docMarksMatch = currentHTML.match(/\[(\d+)\s*marks?\]/i);
                 const topicTotalMarks = (parseInt(topicData?.part_a_marks) || 0) + (parseInt(topicData?.part_b_marks) || 0) || parseInt(topicData?.marks) || 0;
                 const marksMismatch = docMarksMatch && topicTotalMarks > 0 && parseInt(docMarksMatch[1]) !== topicTotalMarks;
@@ -26838,6 +26845,37 @@
                     }
                 }
                 const isStale = !questionInDoc || marksMismatch || specDriftMismatch || multiQuestionDrift;
+                // v7.19.713: NEVER run the destructive staleness regen on a doc that holds student
+                // work. The regen below does removeItem(CANVAS_SAVE_KEY) + setContent('<p></p>') +
+                // re-template — only ever safe on a PRISTINE template. A question-text/marks drift is
+                // irrelevant once the student has written an essay or feedback has been filed. Without
+                // this guard a cosmetic mismatch blanked real marked diagnostics (R&J: 573-word essay
+                // + 6 feedback boxes vanished on refresh; the server copy survived, so it "came back"
+                // on a heal/re-nav where topicData failed to load and this whole block was skipped —
+                // the intermittency Neil saw). Root fix: gate the wipe on hasStudentWork.
+                let _hasFeedbackContent = false;
+                try {
+                    const _fd = document.createElement('div'); _fd.innerHTML = currentHTML;
+                    _fd.querySelectorAll('[data-section-type="feedback"]').forEach((fb) => {
+                        const _t = (fb.textContent || '').replace(/\s+/g, ' ').trim();
+                        const _isPlaceholder = !_t || /will appear after assessment|will be assessed here|appear here after/i.test(_t);
+                        if (!_isPlaceholder && _t.length > 30) _hasFeedbackContent = true;
+                    });
+                } catch (_) {}
+                // Threshold > 20 cleanly separates a real essay (hundreds of words) from the empty
+                // template placeholder ("Write your essay here.") regardless of whether the response
+                // baseline has rehydrated yet — so a genuinely pristine template still regenerates.
+                const _responseWords = (typeof getResponseWordCount === 'function') ? getResponseWordCount(canvasEditor) : 0;
+                const hasStudentWork = _responseWords > 20 || _hasFeedbackContent;
+                if (isStale && hasStudentWork) {
+                    // Fail loud (CLAUDE.md #10): a real doc tripped a stale signal — preserve, never wipe.
+                    console.warn('WML: stale-signal on a doc WITH student work — preserving (no regen).',
+                        'responseWords:', _responseWords, 'hasFeedback:', _hasFeedbackContent,
+                        'questionInDoc:', questionInDoc, 'marksMismatch:', marksMismatch,
+                        'specDriftMismatch:', specDriftMismatch, 'multiQuestionDrift:', multiQuestionDrift);
+                    _backfillMissingPlanSection(topicData);
+                    return;
+                }
                 if (isStale) {
                     console.log('WML: Stale document detected — regenerating.', 'questionInDoc:', questionInDoc, 'marksMismatch:', marksMismatch, 'specDriftMismatch:', specDriftMismatch, 'multiQuestionDrift:', multiQuestionDrift, 'docMarks:', docMarksMatch?.[1], 'topicMarks:', topicTotalMarks);
                     try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
