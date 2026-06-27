@@ -4328,7 +4328,13 @@
                 _renderSidebarSteps(protoSteps, _langModel.steps, { alwaysGroup: true });
             } else if (_litModel) {
                 _renderSidebarSteps(protoSteps, _litModel.steps, { alwaysGroup: true });
-            } else if (_langExpected || _expectServerSidebar()) {
+            } else if (_langExpected || _expectServerSidebar() || _litAssess) {
+                // v7.19.715: also hide for a Literature assessment whose granular model isn't
+                // built yet (feedback boxes load async → _litModel null at first paint). Was
+                // falling through to the generic flat-8 below and FLASHING it before
+                // _refreshLangSidebar swapped in the per-paragraph accordion. Hide instead and
+                // let _refreshLangSidebar reveal+paint the granular once the doc settles (10880),
+                // exactly like the Language/server-sidebar path — no generic flash (Neil).
                 protoSteps.style.display = 'none';   // hide until the granular model paints
             } else {
                 const assessSteps = canvasSidebarSteps || (_gs && _gs.length ? _gs.map((s, i) => ({ step: i + 1, label: s.label })) : [
@@ -12144,7 +12150,11 @@
                                 _renderSidebarSteps(protoSteps, _langModel2.steps, { alwaysGroup: true });
                             } else if (_litModel2) {
                                 _renderSidebarSteps(protoSteps, _litModel2.steps, { alwaysGroup: true });
-                            } else if (_langExpected2) {
+                            } else if (_langExpected2 || _expectServerSidebar() || _litAssess2) {
+                                // v7.19.715: embedded pipeline parity — hide (don't flash the
+                                // generic flat-8) whenever a granular model is expected: Language,
+                                // server sidebar, OR a Literature assessment whose model is still
+                                // building. _refreshLangSidebar reveals+paints it once ready (12936).
                                 protoSteps.style.display = 'none';
                             } else {
                                 const assessSteps = canvasSidebarSteps || (isExamPrep ? (getSteps() || []).map((s, i) => ({ step: i + 1, label: s.label })) : [
