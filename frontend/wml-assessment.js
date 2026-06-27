@@ -1494,6 +1494,14 @@
                 if (_mk) _setFeedbackMark(_qn, _mk.score, _mk.max);
             }
             if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
+            // v7.19.714: feedback/marks are a discrete, non-reproducible system mutation, so
+            // flush to the SERVER immediately rather than waiting for the 5s debounce (which a
+            // refresh or SPA-nav can eat — exactly how the assessment feedback never reached the
+            // DB and "vanished"). _flushPendingSaves pushes the just-enqueued canvas-save body
+            // now (keepalive POST), so the marked doc reliably persists server-side AND is there
+            // to seed the next lesson (Discuss-Feedback). Pairs with the v7.19.713 localStorage
+            // wipe fix — this closes the server side of feedback persistence.
+            if (wrote && typeof _flushPendingSaves === 'function') _flushPendingSaves();
             // v7.19.607: mirror the chat — bring the just-filled question's feedback box into
             // view (once, on fill = "section enter"). Honours prefers-reduced-motion; scrolls the
             // canvas, not the page. Targets the box for the FIRST card's question (the one being marked).
@@ -25491,7 +25499,9 @@
             // migration off the legacy shared _redraft doc). NOT in review mode (tutor must
             // see the real stored state, not a seed). Server only seeds when the doc is empty.
             const _stageSeed = (
-                ['planning', 'outlining', 'polishing', 'assessment', 'redraft_assessment'].includes(state.task)
+                // v7.19.714: feedback_discussion joins the seed list — Phase 1 Discuss-Feedback
+                // now has its OWN _fbdiscuss doc and seeds forward from the assessment snapshot.
+                ['planning', 'outlining', 'polishing', 'assessment', 'redraft_assessment', 'feedback_discussion'].includes(state.task)
                 || (state.task && state.task.startsWith('cw_'))
             ) ? '&seedFromSiblings=1' : '';
             if (state.reviewMode && state.reviewStudentId) {

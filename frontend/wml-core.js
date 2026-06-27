@@ -1057,15 +1057,21 @@ window.WML = (function() {
             storageSuffix: '',
             // v7.19.249 (Model B): the Phase 2 reassessment mounts as task='assessment'
             // (redraft_assessment collapses to it) with phase='redraft' → its OWN
-            // _reassessment canvas doc, matching the redraft_assessment manifest. Phase 1
-            // assessment (any other phase) keeps the legacy '' suffix, unchanged.
-            canvasStorageSuffixForPhase: function (phase) { return phase === 'redraft' ? '_reassessment' : ''; },
+            // _reassessment canvas doc, matching the redraft_assessment manifest.
+            // v7.19.714 (Phase-1 snapshot chain): Phase 1 assessment now gets its OWN
+            // _assessment doc too (was the legacy '' shared with the diagnostic). Diagnostic
+            // + Assessment become independent per-stage snapshots — edits in Assessment no
+            // longer bleed back into the Diagnostic — and the Assessment doc seeds forward
+            // from the diagnostic essay (seedFromSiblings). Mirrors the proven Phase-2
+            // _reassessment split; only the suffix + seed-source differ (same task/template).
+            canvasStorageSuffixForPhase: function (phase) { return phase === 'redraft' ? '_reassessment' : '_assessment'; },
             // v7.19.582: the CHAT suffix MUST track the canvas suffix per phase, else the
             // Phase 1 (diagnostic) and Phase 2 (reassessment) assessment chats COLLIDE on
             // the same '' key (Phase 2 overwrote Phase 1) AND the tutor review view — which
             // loads the doc by the _reassessment suffix — finds no chat there (chat was at '').
             // Mirror canvasStorageSuffixForPhase so chat + canvas live under the same suffix.
-            storageSuffixForPhase: function (phase) { return phase === 'redraft' ? '_reassessment' : ''; },
+            // v7.19.714: Phase 1 chat follows the canvas to '_assessment' (was '').
+            storageSuffixForPhase: function (phase) { return phase === 'redraft' ? '_reassessment' : '_assessment'; },
             chatHeaderLabel: 'Essay Assessment',
             sidebarSteps: [
                 { step: 1, label: 'Setup & Details' },
@@ -1087,16 +1093,16 @@ window.WML = (function() {
             protocolSource: null,
             protocolTask: null,
             completionType: 'manual',
-            // v7.15.81: Discuss Feedback is part of the phase sequence, not a
-            // separate document. Phase 1 sequence shares the diagnostic doc
-            // (empty suffix); Phase 2 sequence shares the redraft doc
-            // (_redraft). Only standalone keeps its own record since that path
-            // is bring-your-own-work, unrelated to any topic attempt.
+            // v7.15.81: Discuss Feedback is part of the phase sequence.
+            // v7.19.714 (Phase-1 snapshot chain): Phase 1 Discuss-Feedback now gets its OWN
+            // _fbdiscuss doc (was the legacy '' shared with diagnostic + assessment), seeded
+            // forward from the assessment doc (essay + feedback) via seedFromSiblings. Phase 2
+            // still shares the redraft doc (_redraft); standalone keeps its own BYO record.
             storageSuffix: '',
             storageSuffixForPhase: function (phase) {
                 if (phase === 'redraft')    return '_redraft';
                 if (phase === 'standalone') return '_fb_standalone';
-                return '';
+                return '_fbdiscuss';
             },
             chatHeaderLabel: 'Discuss Feedback',
             sidebarSteps: null,

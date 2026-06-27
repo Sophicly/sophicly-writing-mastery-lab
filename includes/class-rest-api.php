@@ -2350,7 +2350,11 @@ class SWML_REST_API {
             // null, so the tutor saw a BLANK doc while the student saw their own work
             // (Reeham, 2026-06-09). Mirror the seed READ-ONLY: no write-forward, no
             // pull-stamp; is_seed flags it for the frontend.
-            if (in_array($suffix, self::phase2_stage_order(), true)) {
+            // v7.19.714: extend the same READ-ONLY tutor-review seed to the Phase-1 snapshot
+            // stages (_assessment / _fbdiscuss) so a tutor reviewing a freshly-split stage that
+            // hasn't been independently saved yet still sees the student's seeded work, not a blank.
+            if (in_array($suffix, self::phase2_stage_order(), true)
+                || in_array($suffix, ['_assessment', '_fbdiscuss'], true)) {
                 $seed_html = $this->seed_from_sibling_stage($student_id, $board, $text, $topic_number, $meta_key);
                 if (!empty($seed_html)) {
                     if (strpos($text, 'lang_paper') !== false) {
