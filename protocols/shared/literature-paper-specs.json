@@ -307,9 +307,7 @@
       "split": { "shape": "standard", "intro": 3, "body": 7, "body_count": 3, "conclusion": 6 },
       "extract": null,
       "question_prefix": null,
-      "_note": "Edexcel IGCSE 4ET1/02 Q1 literary-heritage essay — whole-text, OPEN BOOK. 30 marks (AO1 10 / AO2 10 / AO4 10 — AO4 = CONTEXT in iGCSE, NOT SPaG). edexcel-igcse/heritage protocol 3/7×3/6=30 ✓.",
-      "verified": false,
-      "_verify": "Total 30 from protocol (self-consistent 3/7×3/6) + extraction agent; AO split per 4ET1 — re-confirm vs official Edexcel iGCSE MS before treating as gold."
+      "_note": "Edexcel IGCSE 4ET1/02 literary-heritage essay (Shakespeare/heritage text) — whole-text, OPEN BOOK. 30 marks = AO1 10 + AO2 10 + AO4 10 (AO4 = CONTEXT in iGCSE, NOT SPaG). Verified DIRECTLY vs official 'Edexcel IGCSE Shakespeare June 2024 MS' AO grid. edexcel-igcse/heritage protocol 3/7×3/6=30 ✓."
     },
     "modern": {
       "shape": "lit-no-extract",
@@ -319,20 +317,17 @@
       "split": { "shape": "standard", "intro": 3, "body": 7, "body_count": 3, "conclusion": 6 },
       "extract": null,
       "question_prefix": null,
-      "_note": "Edexcel IGCSE 4ET1/02 modern drama — whole-text open-book essay. 30 marks (AO1 15 / AO2 15). edexcel-igcse/modern protocol 3/7×3/6=30 ✓.",
-      "verified": false,
-      "_verify": "Total 30 from protocol + extraction; re-confirm vs official 4ET1 MS."
+      "_note": "Edexcel IGCSE 4ET1/02 modern drama — whole-text open-book essay. 30 marks = AO1 15 + AO2 15 (no AO4). Verified DIRECTLY vs official 'Edexcel IGCSE Modern Drama June 2023 MS' + 'Modern Lit June 2024 MS' AO grids. edexcel-igcse/modern protocol 3/7×3/6=30 ✓."
     },
     "modern-prose": {
       "shape": "lit-no-extract",
-      "marks": null,
+      "marks": 40,
       "spag_marks": null,
-      "aos": ["AO1", "AO2"],
-      "split": null,
-      "_split_note": "NEEDS-VERIFY: edexcel-igcse/modern-prose protocol is 5-section summing 40, but iGCSE modern-prose is likely 30 — conflict unresolved. Do NOT lock until read against official 4ET1/01 Section C MS.",
+      "aos": ["AO1", "AO4"],
+      "split": { "shape": "standard", "intro": 5, "body": 10, "body_count": 3, "conclusion": 5 },
       "extract": null,
       "question_prefix": null,
-      "_note": "Edexcel IGCSE 4ET1/01 Section C modern prose — whole-text essay, closed book. No printed extract. Total UNVERIFIED (protocol says 40, expected 30)."
+      "_note": "Edexcel IGCSE 4ET1/01 Section C modern prose — whole-text essay, closed book. 40 marks = AO1 20 + AO4 20 (AO4 = CONTEXT in iGCSE, NOT SPaG; NO AO2). Verified DIRECTLY vs official 'Edexcel IGCSE Modern Prose June 2024 MS' AO grid. edexcel-igcse/modern-prose protocol 5/10×3/5=40 ✓."
     },
     "literature": {
       "shape": "lit-no-extract",
@@ -342,9 +337,7 @@
       "split": { "shape": "standard", "intro": 3, "body": 7, "body_count": 3, "conclusion": 6 },
       "extract": null,
       "question_prefix": null,
-      "_note": "Catch-all for Edexcel IGCSE Spec A Literature 4ET1 — all papers confirmed no printed extract. edexcel-igcse/literature protocol 3/7×3/6=30.",
-      "verified": false,
-      "_verify": "Total 30 from protocol; re-confirm vs official 4ET1 MS per text/paper."
+      "_note": "Catch-all for Edexcel IGCSE Spec A Literature 4ET1 — generic 30-mark essay fallback (real papers split: heritage/modern-drama 30, modern-prose 40). Prefer the specific paper keys over this catch-all. edexcel-igcse/literature protocol 3/7×3/6=30."
     },
     "anthology_poetry": {
       "shape": "poetry-comparison",
