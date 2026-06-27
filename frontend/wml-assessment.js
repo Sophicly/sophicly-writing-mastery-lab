@@ -1154,6 +1154,21 @@
         return null;
     }
 
+    // v7.19.717: target-grade kickoff payload. After the student picks their target grade in a
+    // LITERATURE assessment, force the Introduction's STEP-1 @REFLECT_GATE before any marking —
+    // the SAME silent forcing directive the ✓-continue gate uses for later sections (L5732).
+    // Root: the protocol already mandates the intro reflect gate (protocol-a-assessment.md L365 +
+    // HARD PRECONDITION L371), but on ENTRY the model conflates the upfront target grade with the
+    // section reflection and jumps straight to marking the intro — so the predict/reflect panel
+    // never showed (Neil hit this 3×). Sets canvasSilentSend so the verbose directive never leaks
+    // into chat. Language first-Q reflect behaviour differs (Q1 retrieval) → bare grade send.
+    function _gradeKickoffValue(g) {
+        const _isLit = (typeof isLanguageSubject === 'function') ? !isLanguageSubject() : true;
+        if (!_isLit) return g;
+        canvasSilentSend = true;
+        return "I'm aiming for " + g + ". Now begin the Introduction: go straight to its STEP 1 reflection and emit the @REFLECT_GATE panel for the Introduction now — do NOT start marking yet.";
+    }
+
     // v7.19.599: content-fallback feedback parse when the model omits @FB markers
     // entirely. The marking turn is recognisable (a per-paragraph total + the two gold
     // models). We file the whole assessment block into the box for the Question the
@@ -4980,7 +4995,7 @@
                             gradeBarCC.appendChild(el('button', {
                                 className: 'swml-quick-btn',
                                 textContent: g,
-                                onClick: () => { gradeBarCC.remove(); chatTextarea.value = g; sendCanvasMessage(); }
+                                onClick: () => { gradeBarCC.remove(); chatTextarea.value = _gradeKickoffValue(g); sendCanvasMessage(); }
                             }));
                         });
                         const ccBubble = chatMessages.lastElementChild;
@@ -11108,7 +11123,7 @@
                                     gradeBar.appendChild(el('button', {
                                         className: 'swml-quick-btn',
                                         textContent: g,
-                                        onClick: () => { gradeBar.remove(); tp.chatTextarea.value = g; tp.sendCanvasMessage(); }
+                                        onClick: () => { gradeBar.remove(); tp.chatTextarea.value = _gradeKickoffValue(g); tp.sendCanvasMessage(); }
                                     }));
                                 });
                                 const bc = lastBubble.querySelector('.swml-bubble-content') || lastBubble;
@@ -11345,7 +11360,7 @@
                             gradeBar.appendChild(el('button', {
                                 className: 'swml-quick-btn',
                                 textContent: g,
-                                onClick: () => { gradeBar.remove(); tp.chatTextarea.value = g; tp.sendCanvasMessage(); }
+                                onClick: () => { gradeBar.remove(); tp.chatTextarea.value = _gradeKickoffValue(g); tp.sendCanvasMessage(); }
                             }));
                         });
                         const greetBubble = tp.chatMessages.lastElementChild;
@@ -12301,7 +12316,7 @@
                                             gradeBarCC.appendChild(el('button', {
                                                 className: 'swml-quick-btn',
                                                 textContent: g,
-                                                onClick: () => { gradeBarCC.remove(); chatTextarea.value = g; sendCanvasMessage(); }
+                                                onClick: () => { gradeBarCC.remove(); chatTextarea.value = _gradeKickoffValue(g); sendCanvasMessage(); }
                                             }));
                                         });
                                         const ccBubble = chatMessages.lastElementChild;
@@ -13291,7 +13306,7 @@
                                                             gradeBar.appendChild(el('button', {
                                                                 className: 'swml-quick-btn',
                                                                 textContent: g,
-                                                                onClick: () => { gradeBar.remove(); chatTextarea.value = g; sendCanvasMessage(); }
+                                                                onClick: () => { gradeBar.remove(); chatTextarea.value = _gradeKickoffValue(g); sendCanvasMessage(); }
                                                             }));
                                                         });
                                                         const bc = lastBubble.querySelector('.swml-bubble-content') || lastBubble;
@@ -13529,7 +13544,7 @@
                                                     gradeBar.appendChild(el('button', {
                                                         className: 'swml-quick-btn',
                                                         textContent: g,
-                                                        onClick: () => { gradeBar.remove(); chatTextarea.value = g; sendCanvasMessage(); }
+                                                        onClick: () => { gradeBar.remove(); chatTextarea.value = _gradeKickoffValue(g); sendCanvasMessage(); }
                                                     }));
                                                 });
                                                 const greetBubble = chatMessages.lastElementChild;
