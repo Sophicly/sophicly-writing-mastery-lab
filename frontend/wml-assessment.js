@@ -7823,11 +7823,14 @@
         // can't drift the copy. Diagnostic = CALM baseline (the first attempt is deliberately low-pressure
         // — soft word count, no gate — so this must NOT add stakes); redraft = lift-your-average. Student-
         // facing only (skip tutor/parent review). Collapse state remembered per phase.
-        // v7.19.730: the diagnostic/redraft WRITE doc carries task='' (write-only canvas, wml-app.js:116/476)
-        // — the grade-doc signal is task='assessment' OR a write doc whose draftType is an essay draft.
-        // Excludes planning/outlining/polishing (own tasks), mark_scheme*, cw_*, quizzes, notes (all non-'').
-        const _wnEssayDoc = state.task === 'assessment'
-            || (state.task === '' && /^(diagnostic|development)/.test(String(state.draftType || '')));
+        // v7.19.736: ONLY the Phase-1 diagnostic/development WRITE doc (Neil). The write canvas carries
+        // task='' (wml-app.js:116/476) with an exact draftType of 'diagnostic' or 'development'. This
+        // EXCLUDES the assessment/marking phase (task='assessment' — "the assessment is the assessment")
+        // and redrafts (draftType '*_redraft'). The card's "do your best baseline" belongs at the moment
+        // the student writes, not when Sophia marks. Also excludes planning/outlining/polishing/mark_scheme/
+        // cw/quizzes/notes (all non-'' tasks).
+        const _wnDraft = String(state.draftType || '');
+        const _wnEssayDoc = state.task === '' && (_wnDraft === 'diagnostic' || _wnDraft === 'development');
         // v7.19.733: floating, dismissible info card (Adobe-tooltip style) instead of a full-width inline
         // banner — it OVERLAYS the bottom-right of the doc column (position:absolute in editorPane), so it
         // never pushes the document down. Appears on entry with a soft fade, dismissible (× or Got it),
