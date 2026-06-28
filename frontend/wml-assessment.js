@@ -29626,6 +29626,16 @@ ${html}
             if (fab) fab.style.display = 'none';
             if (pnl) pnl.style.display = 'none';
             document.querySelectorAll('.sn-tab, .sn-tab-trigger, #snTabTrigger').forEach(t => t.style.display = 'none');
+        } else {
+            // v7.19.720: SPA re-appear fix — restore notes on every NON-test lesson, clearing any
+            // inline display:none left by a previously-visited diagnostic/mark_scheme lesson. The main
+            // canvas builder runs per lesson, so leaving a test lesson re-shows the tab (the notes
+            // plugin's class-reveal can't override a stale inline style — WML must clear its own).
+            const fab = document.querySelector('.sn-fab');
+            const pnl = document.querySelector('.sn-panel');
+            if (fab) fab.style.display = '';
+            if (pnl) pnl.style.display = '';
+            document.querySelectorAll('.sn-tab, .sn-tab-trigger, #snTabTrigger').forEach(t => t.style.display = '');
         }
 
         // ── TipTap Editor ──
