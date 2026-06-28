@@ -20565,9 +20565,14 @@
         // target. Matches the isDiagnosticT1 shape used elsewhere (L18720). Universal (all subjects).
         if (state.topicNumber === 1 && state.draftType === 'diagnostic') {
             canvasWordMinimum = 0; // unblock Mark Complete on the first diagnostic regardless of length
+            // v7.19.724: soft TEXT ("N words", no "/target" pressure number — no length gate on the
+            // first attempt) but KEEP the house colour ladder (Neil): red→orange→yellow→green→blue→
+            // purple→gradient is gentle progress feedback, not a gate. Scale the ladder to the whole-
+            // paper target so the bands mean the same here as on every other stage.
+            const _mqT = _visibleMultiqTarget(editor);
+            if (_mqT && _mqT > 0) canvasWordTarget = _mqT;
             widget.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
-            const w = document.getElementById('swml-wc-widget');
-            if (w) { w.style.background = ''; w.style.color = ''; }
+            applyWcWidgetColour(wc);
             return;
         }
         const mq = _visibleMultiqTarget(editor);
