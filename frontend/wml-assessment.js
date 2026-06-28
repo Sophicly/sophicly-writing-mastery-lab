@@ -1447,7 +1447,11 @@
                     // A / B" or "… A out of B") — take only the SCORE; pull MAX from the canonical box
                     // (_feedbackMaxForQ), because the protocol body total line still says a stale "/8"
                     // while the box is correctly /7. Half-mark preserved; box selector is decimal-aware now.
-                    const _lm = String(card.body || '').match(/Total Mark for [^:\n]*:\s*\*{0,2}\s*([\d.]+)\s*(?:\/|out of)\s*\d+/i);
+                    // v7.19.718: allow bold markers AFTER the score too ("**6**/8", "**6** / 8") — the
+                    // single most common LLM rendering bolds JUST the score number, so the old pattern
+                    // (asterisks only BEFORE the digit) silently failed to set the ACTUAL mark and the box
+                    // stayed "— / N" → that section under-counted toward the grade with no warning.
+                    const _lm = String(card.body || '').match(/Total Mark for [^:\n]*:\s*\*{0,2}\s*([\d.]+)\s*\*{0,2}\s*(?:\/|out of)\s*\d+/i);
                     if (_lm) {
                         const _sc = parseFloat(_lm[1]);
                         const _mx = _feedbackMaxForQ(card.q);
@@ -5902,6 +5906,25 @@
                                 console.log('WML Canvas: Assessment Complete detected in AI response');
                                 if (!state.plan.total_score && detected.totalScore) { state.plan.total_score = detected.totalScore; console.log('WML: Force-extracted total_score:', detected.totalScore); }
                                 if (!state.plan.grade && detected.grade) { state.plan.grade = detected.grade; console.log('WML: Force-extracted grade:', detected.grade); }
+                                // v7.19.718: deterministic CLOSING backstop (runs regardless of embed). The
+                                // protocol's closing line is a literal the model can drop, leaving the assessment
+                                // ending on the Conclusion's feedback with no closing. When completion is genuine
+                                // (state machine fully scored, when present) and the reply carries no closing
+                                // signal, append a clear well-done close. Idempotent via the DOM check — no
+                                // persistent flag to reset (Neil: the last message should close the session out).
+                                try {
+                                    const _stateOk = !res.assessmentState
+                                        || ((res.assessmentState.tables_emitted_total === 5) && res.assessmentState.completion_emitted);
+                                    const _replyHasClose = /That wraps|Well done|Session Complete|assessment is (?:now )?complete|revisit before you mark|completed your assessment/i.test(res.reply || '');
+                                    const _alreadyClosed = !!(chatMessages && /That wraps your assessment\s*—\s*well done/i.test(chatMessages.textContent || ''));
+                                    if (_stateOk && !_replyHasClose && !_alreadyClosed) {
+                                        const _closeMsg = "That wraps your assessment — well done for working through every section and reflecting on your predicted marks along the way. Your full feedback and grade are saved in the document above; take a moment to review them when you're ready.";
+                                        addChatMessage(_closeMsg, 'ai', _closeMsg);
+                                        canvasChatHistory.push({ role: 'assistant', content: _closeMsg });
+                                        saveCanvasChat(canvasChatHistory, canvasChatId);
+                                        console.log('WML: appended deterministic closing message (model dropped the closing line)');
+                                    }
+                                } catch (_) {}
                             }
                             // v7.19.245: Hide WML Mark Complete in the LearnDash training
                             // env. LearnDash owns topic completion there (.learndash_mark_complete_button),
@@ -7411,6 +7434,7 @@
         // v7.14.39: Context-aware badge labels — mastery programme uses redraft-specific names
         const diagBadgeLabel = state.task === 'feedback_discussion' ? 'Discuss Feedback'
             : state.task === 'planning' && state.phase === 'redraft' ? 'Plan Redraft'
+            : state.task === 'outlining' ? 'Outline Redraft'  // v7.19.718: was falling through to 'Diagnostic' (bridge injects task=outlining; mislabel hid the Notes tab)
             : state.task === 'polishing' && state.phase === 'redraft' ? 'Polish Redraft'
             : _epTasks.includes(state.task) ? (_epConfig.chatHeaderLabel || ucfirst(state.task))
             : 'Diagnostic';
