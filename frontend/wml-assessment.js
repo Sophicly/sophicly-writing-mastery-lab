@@ -20448,6 +20448,22 @@
     // hexes are the canonical house ladder (_GRADE_BG / _REFLECT_LADDER), not invented.
     function getWordCountColour(wc) {
         var T = canvasWordTarget || 650;
+        // v7.19.725: first-time diagnostic uses a SOFTER ladder (Neil) — students still see a
+        // "good length" signal, but green (acceptable) hits at the MINIMUM (0.7×T ≈ 450 at T 650)
+        // instead of the full target, while the purple-gradient stretch stays at T+200 (≈ 850).
+        // Lower bands compress toward green; gradient/purple/blue keep their target-relative spots.
+        // Scales to any paper (single-essay Lit T 650, multi-Q Lang whole-paper T). No length GATE
+        // here — purely the colour signal; the text stays soft and Mark Complete stays unblocked.
+        if (state.topicNumber === 1 && state.draftType === 'diagnostic') {
+            var g = Math.round(T * 0.7);
+            if (wc >= T + 200) return 'linear-gradient(135deg, #5333ed 0%, #2c003e 100%)';
+            if (wc >= T + 100) return '#5333ed';
+            if (wc >= T + 50)  return '#4D76FD';
+            if (wc >= g)       return '#1CD991';  // green — acceptable, reached at the minimum
+            if (wc >= g - 50)  return '#F1C40F';
+            if (wc >= g - 100) return '#f5a623';
+            return '#ff5470';
+        }
         if (wc >= T + 200) return 'linear-gradient(135deg, #5333ed 0%, #2c003e 100%)'; // Grade-9 stretch
         if (wc >= T + 100) return '#5333ed';  // purple — strong
         if (wc >= T + 50)  return '#4D76FD';  // blue — good
