@@ -7830,17 +7830,22 @@
         // the student writes, not when Sophia marks. Also excludes planning/outlining/polishing/mark_scheme/
         // cw/quizzes/notes (all non-'' tasks).
         const _wnDraft = String(state.draftType || '');
-        const _wnEssayDoc = state.task === '' && (_wnDraft === 'diagnostic' || _wnDraft === 'development');
+        // v7.19.737: two surfaces — the Phase-1 diagnostic WRITE (task='' + diagnostic/development draft)
+        // AND the redraft's Response Planning lesson (task='planning', Phase 2, the redraft's write-
+        // equivalent). Neil: only those two, NOT the assessment/marking phase, outlining, or polishing.
+        const _wnDiagWrite = state.task === '' && (_wnDraft === 'diagnostic' || _wnDraft === 'development');
+        const _wnRedraftPlan = state.task === 'planning';
+        const _wnEssayDoc = _wnDiagWrite || _wnRedraftPlan;
         // v7.19.733: floating, dismissible info card (Adobe-tooltip style) instead of a full-width inline
         // banner — it OVERLAYS the bottom-right of the doc column (position:absolute in editorPane), so it
         // never pushes the document down. Appears on entry with a soft fade, dismissible (× or Got it),
         // and once dismissed it stays gone for that phase (per-phase localStorage). Copy carries NO em
         // dashes; brand purple #5333ed only.
         if (!state.reviewMode && _wnEssayDoc) {
-            const _wnIsRedraft = state.phase === 'redraft' || /redraft/.test(String(state.draftType || ''));
+            const _wnIsRedraft = _wnRedraftPlan || state.phase === 'redraft' || /redraft/.test(_wnDraft);
             const _wnKicker = _wnIsRedraft ? 'Lift your grade' : 'Your baseline';
             const _wnBody = _wnIsRedraft
-                ? 'Redrafts carry the second-heaviest weight in your average. This is your chance to lift your grade, so put your best work in.'
+                ? 'Redrafts carry the second-heaviest weight in your average. This is your real chance to lift your grade, so plan your strongest response.'
                 : 'This is your honest baseline: just do your best. It counts toward your average, and every stage after this builds on it.';
             // v7.19.735: key by LESSON (board+text+topic+phase), not globally — so the card reappears
             // on each NEW diagnostic/redraft (Neil: ~monthly, a per-piece nudge), dismissible per piece.
