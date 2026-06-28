@@ -7839,7 +7839,9 @@
             const _wnBody = _wnIsRedraft
                 ? 'Redrafts carry the second-heaviest weight in your average. This is your chance to lift your grade, so put your best work in.'
                 : 'This is your honest baseline: just do your best. It counts toward your average, and every stage after this builds on it.';
-            const _wnKey = 'swml-weight-card-dismissed-' + (_wnIsRedraft ? 'redraft' : 'diag');
+            // v7.19.735: key by LESSON (board+text+topic+phase), not globally — so the card reappears
+            // on each NEW diagnostic/redraft (Neil: ~monthly, a per-piece nudge), dismissible per piece.
+            const _wnKey = 'swml-weight-card-dismissed-' + [state.board, state.text, (state.topicNumber || 0), (_wnIsRedraft ? 'r' : 'd')].join('_');
             let _wnDismissed = false;
             try { _wnDismissed = localStorage.getItem(_wnKey) === '1'; } catch (e) {}
             if (!_wnDismissed) {
