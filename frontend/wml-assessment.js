@@ -7830,19 +7830,19 @@
             || (state.task === '' && /^(diagnostic|development)/.test(String(state.draftType || '')));
         if (!state.reviewMode && _wnEssayDoc) {
             const _wnIsRedraft = state.phase === 'redraft' || /redraft/.test(String(state.draftType || ''));
-            const _wnTitle = _wnIsRedraft ? 'Why this redraft matters' : 'About your diagnostic';
+            // Editorial kicker (not an icon+title callout) + body. Copy carries NO em dashes.
+            const _wnKicker = _wnIsRedraft ? 'Lift your grade' : 'Your baseline';
             const _wnBody = _wnIsRedraft
-                ? 'Redrafts carry the second-heaviest weight in your average — this is a real chance to lift your grade. Put your best work in.'
-                : 'This is your honest baseline — just do your best. It counts toward your average, and every stage after this builds from here.';
+                ? 'Redrafts carry the second-heaviest weight in your average. This is your chance to lift your grade, so put your best work in.'
+                : 'This is your honest baseline: just do your best. It counts toward your average, and every stage after this builds on it.';
             const _wnKey = 'swml-weight-notice-collapsed-' + (_wnIsRedraft ? 'redraft' : 'diag');
             let _wnCollapsed = false;
             try { _wnCollapsed = localStorage.getItem(_wnKey) === '1'; } catch (e) {}
             const wnBar = el('div', { className: 'swml-weight-notice-bar' });
             const wn = el('div', { className: 'swml-weight-notice' + (_wnCollapsed ? ' collapsed' : '') });
-            const _wnIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>';
-            const _wnChev = '<svg class="swml-weight-notice-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+            const _wnChev = '<svg class="swml-weight-notice-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
             const wnHead = el('div', { className: 'swml-weight-notice-head' });
-            wnHead.innerHTML = '<span class="swml-weight-notice-title">' + _wnIcon + '<span>' + _wnTitle + '</span></span>' + _wnChev;
+            wnHead.innerHTML = '<span class="swml-weight-notice-eyebrow">' + _wnKicker + '</span>' + _wnChev;
             const wnBody = el('div', { className: 'swml-weight-notice-body' });
             wnBody.textContent = _wnBody;
             wnHead.addEventListener('click', () => {

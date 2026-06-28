@@ -6495,49 +6495,48 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     color: #fff;
 }
 
-/* ── v7.19.729: grade-weight motivation notice (collapsible, top of graded docs) ── */
-.swml-weight-notice-bar { padding: 0 0 12px; }
+/* ── v7.19.732: grade-weight motivation notice (collapsible, top of graded docs) — impeccable pass.
+   Editorial uppercase kicker (not an icon+title callout box), brand purple #5333ed surface only (no
+   stroke, no blue), measured body (64ch), ease-out chevron. ── */
+.swml-weight-notice-bar { padding: 2px 0 16px; }
 .swml-weight-notice {
-    /* v7.19.731: brand purple #5333ed only (NO blue). Raised from 0.10 → 0.20 so the violet reads
-       as purple, not blue — at low alpha over the dark canvas the blue channel of #5333ed dominated. */
-    background: rgba(83,51,237,0.20);
-    border-radius: 12px;
-    padding: 10px 14px;
+    background: rgba(83,51,237,0.20); /* brand purple #5333ed — surface contrast, no stroke, no blue */
+    border-radius: 14px;
+    padding: 13px 18px;
 }
 .swml-weight-notice-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
     cursor: pointer;
     user-select: none;
 }
-.swml-weight-notice-title {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    font-weight: 600;
-    font-size: 13px;
-    line-height: 1.3;
-    color: rgba(255,255,255,0.92);
+.swml-weight-notice-eyebrow {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    color: rgba(249,247,253,0.92); /* near-white, faint warm tint — reads neutral, never blue */
 }
 .swml-weight-notice-chev {
     flex-shrink: 0;
-    color: rgba(255,255,255,0.5);
-    transition: transform 0.2s ease;
+    color: rgba(249,247,253,0.45);
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .swml-weight-notice.collapsed .swml-weight-notice-chev { transform: rotate(-90deg); }
 .swml-weight-notice-body {
-    margin-top: 7px;
-    font-size: 13px;
-    line-height: 1.5;
-    color: rgba(255,255,255,0.78);
+    margin-top: 8px;
+    max-width: 64ch;
+    font-size: 13.5px;
+    line-height: 1.58;
+    color: rgba(255,255,255,0.80);
 }
 .swml-weight-notice.collapsed .swml-weight-notice-body { display: none; }
-[data-swml-theme="light"] .swml-weight-notice { background: rgba(83,51,237,0.07); }
-[data-swml-theme="light"] .swml-weight-notice-title { color: #2c003e; }
-[data-swml-theme="light"] .swml-weight-notice-chev { color: rgba(44,0,62,0.45); }
-[data-swml-theme="light"] .swml-weight-notice-body { color: rgba(44,0,62,0.8); }
+[data-swml-theme="light"] .swml-weight-notice { background: rgba(83,51,237,0.08); }
+[data-swml-theme="light"] .swml-weight-notice-eyebrow { color: #5333ed; }
+[data-swml-theme="light"] .swml-weight-notice-chev { color: rgba(83,51,237,0.5); }
+[data-swml-theme="light"] .swml-weight-notice-body { color: rgba(44,0,62,0.82); }
 
 /* ── v7.19.12: Interactive matching widget (@MATCH marker) ── */
 .swml-match-widget {
