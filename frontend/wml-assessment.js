@@ -7823,8 +7823,13 @@
         // can't drift the copy. Diagnostic = CALM baseline (the first attempt is deliberately low-pressure
         // — soft word count, no gate — so this must NOT add stakes); redraft = lift-your-average. Student-
         // facing only (skip tutor/parent review). Collapse state remembered per phase.
-        if (!state.reviewMode && ['diagnostic', 'assessment'].includes(state.task)) {
-            const _wnIsRedraft = state.phase === 'redraft';
+        // v7.19.730: the diagnostic/redraft WRITE doc carries task='' (write-only canvas, wml-app.js:116/476)
+        // — the grade-doc signal is task='assessment' OR a write doc whose draftType is an essay draft.
+        // Excludes planning/outlining/polishing (own tasks), mark_scheme*, cw_*, quizzes, notes (all non-'').
+        const _wnEssayDoc = state.task === 'assessment'
+            || (state.task === '' && /^(diagnostic|development)/.test(String(state.draftType || '')));
+        if (!state.reviewMode && _wnEssayDoc) {
+            const _wnIsRedraft = state.phase === 'redraft' || /redraft/.test(String(state.draftType || ''));
             const _wnTitle = _wnIsRedraft ? 'Why this redraft matters' : 'About your diagnostic';
             const _wnBody = _wnIsRedraft
                 ? 'Redrafts carry the second-heaviest weight in your average — this is a real chance to lift your grade. Put your best work in.'
