@@ -1149,8 +1149,18 @@
         const ao = ['AO1', 'AO2', 'AO3'];
         if (t.indexOf('introduc') !== -1) return { q: 'Introduction', skill: 'set up the argument the whole essay will unfold', ao: ao, max: 3 };
         if (t.indexOf('conclus') !== -1) return { q: 'Conclusion', skill: 'synthesise the whole argument into a cohesive, resonant close', ao: ao, max: 7 };
-        const m = t.match(/(\d+)/);
-        if (m) return { q: 'Body ' + m[1], skill: 'develop the argument in this body paragraph through precise close analysis', ao: ao, max: 8 };
+        // v7.19.722: accept word-numbers ("Body Two") as well as digits ("Body 2"). The model
+        // drifts between forms when it re-emits the progression gate, and a digit-only match used
+        // to return null for "Body Two" → the deterministic loop-breaker never fired and later
+        // sections were never reached. Intro/Conclusion are handled above, so a bare number word
+        // here is always a body-paragraph index.
+        let n = (t.match(/(\d+)/) || [])[1] || null;
+        if (!n) {
+            const words = { one: '1', two: '2', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8', nine: '9', ten: '10' };
+            const wm = t.match(/\b(one|two|three|four|five|six|seven|eight|nine|ten)\b/);
+            if (wm) n = words[wm[1]];
+        }
+        if (n) return { q: 'Body ' + n, skill: 'develop the argument in this body paragraph through precise close analysis', ao: ao, max: 8 };
         return null;
     }
 
@@ -5714,7 +5724,13 @@
                             // lit-shaped: intro 3 / body 8 / conclusion 7). The panel's combined reply then
                             // drives the model to mark the section (which it does reliably).
                             const _loopParams = _isLit ? _litSectionParams(nextLabel) : null;
-                            if (_loopParams && nextLabel === _assessConfirmedTarget && bc) {
+                            // v7.19.722: compare CANONICAL section identity, not the raw gate label. The
+                            // model paraphrases the section between gate emissions ("Body Paragraph 1" →
+                            // "Body 1" / "Body One"), so a raw-string === missed the loop and the breaker
+                            // never fired. Resolve both sides through _litSectionParams().q so the same
+                            // section matches regardless of surface form.
+                            const _prevParams = _isLit ? _litSectionParams(_assessConfirmedTarget) : null;
+                            if (_loopParams && _prevParams && _loopParams.q === _prevParams.q && bc) {
                                 _assessConfirmedTarget = null;
                                 try {
                                     const panel = _renderReflectPanel(_loopParams, (answer) => {
