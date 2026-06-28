@@ -7828,31 +7828,38 @@
         // Excludes planning/outlining/polishing (own tasks), mark_scheme*, cw_*, quizzes, notes (all non-'').
         const _wnEssayDoc = state.task === 'assessment'
             || (state.task === '' && /^(diagnostic|development)/.test(String(state.draftType || '')));
+        // v7.19.733: floating, dismissible info card (Adobe-tooltip style) instead of a full-width inline
+        // banner — it OVERLAYS the bottom-right of the doc column (position:absolute in editorPane), so it
+        // never pushes the document down. Appears on entry with a soft fade, dismissible (× or Got it),
+        // and once dismissed it stays gone for that phase (per-phase localStorage). Copy carries NO em
+        // dashes; brand purple #5333ed only.
         if (!state.reviewMode && _wnEssayDoc) {
             const _wnIsRedraft = state.phase === 'redraft' || /redraft/.test(String(state.draftType || ''));
-            // Editorial kicker (not an icon+title callout) + body. Copy carries NO em dashes.
             const _wnKicker = _wnIsRedraft ? 'Lift your grade' : 'Your baseline';
             const _wnBody = _wnIsRedraft
                 ? 'Redrafts carry the second-heaviest weight in your average. This is your chance to lift your grade, so put your best work in.'
                 : 'This is your honest baseline: just do your best. It counts toward your average, and every stage after this builds on it.';
-            const _wnKey = 'swml-weight-notice-collapsed-' + (_wnIsRedraft ? 'redraft' : 'diag');
-            let _wnCollapsed = false;
-            try { _wnCollapsed = localStorage.getItem(_wnKey) === '1'; } catch (e) {}
-            const wnBar = el('div', { className: 'swml-weight-notice-bar' });
-            const wn = el('div', { className: 'swml-weight-notice' + (_wnCollapsed ? ' collapsed' : '') });
-            const _wnChev = '<svg class="swml-weight-notice-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
-            const wnHead = el('div', { className: 'swml-weight-notice-head' });
-            wnHead.innerHTML = '<span class="swml-weight-notice-eyebrow">' + _wnKicker + '</span>' + _wnChev;
-            const wnBody = el('div', { className: 'swml-weight-notice-body' });
-            wnBody.textContent = _wnBody;
-            wnHead.addEventListener('click', () => {
-                const c = wn.classList.toggle('collapsed');
-                try { localStorage.setItem(_wnKey, c ? '1' : '0'); } catch (e) {}
-            });
-            wn.appendChild(wnHead);
-            wn.appendChild(wnBody);
-            wnBar.appendChild(wn);
-            contentWrap.appendChild(wnBar);
+            const _wnKey = 'swml-weight-card-dismissed-' + (_wnIsRedraft ? 'redraft' : 'diag');
+            let _wnDismissed = false;
+            try { _wnDismissed = localStorage.getItem(_wnKey) === '1'; } catch (e) {}
+            if (!_wnDismissed) {
+                const wnCard = el('div', { className: 'swml-weight-card' });
+                const wnEyebrow = el('div', { className: 'swml-weight-card-eyebrow', textContent: _wnKicker });
+                const wnBody = el('div', { className: 'swml-weight-card-body', textContent: _wnBody });
+                const wnDismiss = () => {
+                    wnCard.classList.add('swml-weight-card-out');
+                    setTimeout(() => wnCard.remove(), 240);
+                    try { localStorage.setItem(_wnKey, '1'); } catch (e) {}
+                };
+                const wnClose = el('button', { className: 'swml-weight-card-close', title: 'Dismiss', innerHTML: '&times;', onClick: wnDismiss });
+                const wnOk = el('button', { className: 'swml-weight-card-ok', textContent: 'Got it', onClick: wnDismiss });
+                wnCard.appendChild(wnClose);
+                wnCard.appendChild(wnEyebrow);
+                wnCard.appendChild(wnBody);
+                wnCard.appendChild(wnOk);
+                editorPane.appendChild(wnCard);
+                requestAnimationFrame(() => wnCard.classList.add('swml-weight-card-in'));
+            }
         }
         contentWrap.appendChild(btnColumn); // sticky button column (outline + resources triggers)
         contentWrap.appendChild(outlinePanel);

@@ -6495,48 +6495,82 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     color: #fff;
 }
 
-/* ── v7.19.732: grade-weight motivation notice (collapsible, top of graded docs) — impeccable pass.
-   Editorial uppercase kicker (not an icon+title callout box), brand purple #5333ed surface only (no
-   stroke, no blue), measured body (64ch), ease-out chevron. ── */
-.swml-weight-notice-bar { padding: 2px 0 16px; }
-.swml-weight-notice {
-    background: rgba(83,51,237,0.20); /* brand purple #5333ed — surface contrast, no stroke, no blue */
+/* ── v7.19.733: grade-weight info card (floating, dismissible — Adobe-tooltip style). Overlays the
+   bottom-right of the doc column (position:absolute in editorPane) so it NEVER pushes the document
+   down. Soft fade+rise on entry, dismissible (× / Got it). Brand purple #5333ed only, solid-fill
+   button, no stroke. ── */
+.swml-weight-card {
+    position: absolute;
+    right: 22px;
+    bottom: 22px;
+    z-index: 38;
+    width: 300px;
+    max-width: calc(100% - 44px);
+    background: #232230; /* elevated dark surface, faint brand-purple tint */
     border-radius: 14px;
-    padding: 13px 18px;
+    padding: 16px 18px 15px;
+    box-shadow: 0 14px 44px rgba(20, 8, 40, 0.5);
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+    transition: opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1), transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
 }
-.swml-weight-notice-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    cursor: pointer;
-    user-select: none;
-}
-.swml-weight-notice-eyebrow {
+.swml-weight-card.swml-weight-card-in { opacity: 1; transform: none; }
+.swml-weight-card.swml-weight-card-out { opacity: 0; transform: translateY(8px) scale(0.985); }
+.swml-weight-card-eyebrow {
     font-size: 10.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.13em;
     color: rgba(249,247,253,0.92); /* near-white, faint warm tint — reads neutral, never blue */
+    margin-bottom: 8px;
+    padding-right: 16px;
 }
-.swml-weight-notice-chev {
-    flex-shrink: 0;
-    color: rgba(249,247,253,0.45);
-    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.swml-weight-notice.collapsed .swml-weight-notice-chev { transform: rotate(-90deg); }
-.swml-weight-notice-body {
-    margin-top: 8px;
-    max-width: 64ch;
+.swml-weight-card-body {
     font-size: 13.5px;
-    line-height: 1.58;
-    color: rgba(255,255,255,0.80);
+    line-height: 1.56;
+    color: rgba(255,255,255,0.82);
+    margin-bottom: 14px;
 }
-.swml-weight-notice.collapsed .swml-weight-notice-body { display: none; }
-[data-swml-theme="light"] .swml-weight-notice { background: rgba(83,51,237,0.08); }
-[data-swml-theme="light"] .swml-weight-notice-eyebrow { color: #5333ed; }
-[data-swml-theme="light"] .swml-weight-notice-chev { color: rgba(83,51,237,0.5); }
-[data-swml-theme="light"] .swml-weight-notice-body { color: rgba(44,0,62,0.82); }
+.swml-weight-card-close {
+    position: absolute;
+    top: 9px;
+    right: 11px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    color: rgba(255,255,255,0.5);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.swml-weight-card-close:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.85); }
+.swml-weight-card-ok {
+    background: #5333ed; /* solid brand purple — no gradient, no border */
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    padding: 7px 16px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+}
+.swml-weight-card-ok:hover { filter: brightness(1.08); }
+[data-swml-theme="light"] .swml-weight-card {
+    background: #fff;
+    box-shadow: 0 14px 44px rgba(44, 0, 62, 0.18);
+}
+[data-swml-theme="light"] .swml-weight-card-eyebrow { color: #5333ed; }
+[data-swml-theme="light"] .swml-weight-card-body { color: rgba(44,0,62,0.82); }
+[data-swml-theme="light"] .swml-weight-card-close { color: rgba(44,0,62,0.45); }
+[data-swml-theme="light"] .swml-weight-card-close:hover { background: rgba(44,0,62,0.06); color: #2c003e; }
 
 /* ── v7.19.12: Interactive matching widget (@MATCH marker) ── */
 .swml-match-widget {
