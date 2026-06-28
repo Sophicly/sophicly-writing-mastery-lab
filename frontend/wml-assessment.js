@@ -13852,7 +13852,10 @@
         // Students need the Notes tab to capture cross-unit reflections.
         const snFab = document.querySelector('.sn-fab');
         const snPanel = document.querySelector('.sn-panel');
-        if (!useTrainingEnv && !useInlineCoachingEnv && state.task !== 'mastery_codex') {
+        // v7.19.719: hide notes ONLY on the test lessons {diagnostic, mark_scheme}. Diagnostic,
+        // outlining and polishing SHARE the free env, so the old env-based condition wrongly hid
+        // notes on outline + polish. Gate on TASK (the deny-list), matching the notes plugin.
+        if (['diagnostic', 'mark_scheme'].includes(state.task)) {
             if (snFab) snFab.style.display = 'none';
             if (snPanel) snPanel.style.display = 'none';
             document.querySelectorAll('.sn-tab, .sn-tab-trigger, #snTabTrigger, [class*="sticky-note-tab"], [class*="notes-tab"]').forEach(t => t.style.display = 'none');
@@ -29089,14 +29092,17 @@ ${html}
             document.body.style.overflow = 'hidden';
         }
 
-        // Hide notepad
-        const fab = document.querySelector('.sn-fab');
-        const pnl = document.querySelector('.sn-panel');
-        if (fab) fab.style.display = 'none';
-        if (pnl) pnl.style.display = 'none';
-        document.querySelectorAll('.sn-tab, .sn-tab-trigger, #snTabTrigger, [class*="sticky-note-tab"], [class*="notes-tab"]').forEach(t => t.style.display = 'none');
-        const fabTrigger = document.getElementById('snFabTrigger');
-        if (fabTrigger) fabTrigger.style.display = 'none';
+        // Hide notepad — v7.19.719: only on the test lessons {diagnostic, mark_scheme}. This is the
+        // Discuss-Feedback canvas (task=feedback_discussion) which should SHOW notes → guard no-ops here.
+        if (['diagnostic', 'mark_scheme'].includes(state.task)) {
+            const fab = document.querySelector('.sn-fab');
+            const pnl = document.querySelector('.sn-panel');
+            if (fab) fab.style.display = 'none';
+            if (pnl) pnl.style.display = 'none';
+            document.querySelectorAll('.sn-tab, .sn-tab-trigger, #snTabTrigger, [class*="sticky-note-tab"], [class*="notes-tab"]').forEach(t => t.style.display = 'none');
+            const fabTrigger = document.getElementById('snFabTrigger');
+            if (fabTrigger) fabTrigger.style.display = 'none';
+        }
 
         // Entrance animation
         overlay.style.opacity = '0';
@@ -29611,12 +29617,16 @@ ${html}
             document.body.style.overflow = 'hidden';
         }
 
-        // Hide notepad
-        const fab = document.querySelector('.sn-fab');
-        const pnl = document.querySelector('.sn-panel');
-        if (fab) fab.style.display = 'none';
-        if (pnl) pnl.style.display = 'none';
-        document.querySelectorAll('.sn-tab, .sn-tab-trigger, #snTabTrigger').forEach(t => t.style.display = 'none');
+        // Hide notepad — v7.19.719: only on the test lessons {diagnostic, mark_scheme}. This is the
+        // MAIN canvas builder (runs for EVERY canvas lesson); it used to hide notes unconditionally,
+        // so non-test lessons (outline/polish/planning/…) lost the tab. Gate on TASK.
+        if (['diagnostic', 'mark_scheme'].includes(state.task)) {
+            const fab = document.querySelector('.sn-fab');
+            const pnl = document.querySelector('.sn-panel');
+            if (fab) fab.style.display = 'none';
+            if (pnl) pnl.style.display = 'none';
+            document.querySelectorAll('.sn-tab, .sn-tab-trigger, #snTabTrigger').forEach(t => t.style.display = 'none');
+        }
 
         // ── TipTap Editor ──
         const SectionBlock = window.TipTap?.Node?.create({
