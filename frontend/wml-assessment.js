@@ -24927,7 +24927,13 @@
         let html = '';
 
         const GRADE_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => ({ value: String(n), label: String(n) }));
-        const AO_OPTIONS = ['AO1', 'AO2', 'AO3', 'AO4', 'AO5', 'AO6'].map(a => ({ value: a, label: a }));
+        // v7.19.728: AO5/AO6 are Language-only (reading AO1–AO4 + writing AO5/AO6). Literature uses
+        // AO1–AO4 (AO4 = SPaG/Context) — never AO5/AO6. Scope the chips to the subject so a Lit mark
+        // scheme assessment doesn't offer inapplicable AOs.
+        const _msIsLang = (typeof isLanguageSubject === 'function') ? isLanguageSubject()
+            : !!(window.WML && WML.isLanguageSubject && WML.isLanguageSubject());
+        const AO_OPTIONS = (_msIsLang ? ['AO1', 'AO2', 'AO3', 'AO4', 'AO5', 'AO6'] : ['AO1', 'AO2', 'AO3', 'AO4'])
+            .map(a => ({ value: a, label: a }));
         const PATTERN_HINTS = [
             { value: 'confused-x-y',      label: 'I confused one term with another (X vs Y)' },
             { value: 'misread-stem',      label: 'I misread the question stem' },

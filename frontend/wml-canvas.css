@@ -6440,23 +6440,22 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 .swml-select-chip {
     appearance: none;
-    background: rgba(255,255,255,0.05);
-    color: rgba(255,255,255,0.75);
-    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.78);
+    border: none; /* v7.19.728: no stroke — surface contrast instead (Neil); slimmer vertical padding */
     border-radius: 999px;
-    padding: 5px 12px;
+    padding: 3px 12px;
+    line-height: 1.45;
     font-size: 13px;
     font-family: inherit;
     cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    transition: background 0.15s ease, color 0.15s ease;
 }
 .swml-select-chip:hover {
-    background: rgba(255,255,255,0.1);
-    border-color: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.14);
 }
 .swml-select-chip.selected {
     background: linear-gradient(135deg, #5333ed 0%, #4D76FD 100%);
-    border-color: #51dacf;
     color: #fff;
 }
 .swml-select-chip.selected:hover {
@@ -6486,9 +6485,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     color: #2c003e;
 }
 [data-swml-theme="light"] .swml-select-chip {
-    background: rgba(0,0,0,0.04);
+    background: rgba(0,0,0,0.06);
     color: #2c003e;
-    border-color: rgba(0,0,0,0.18);
 }
 [data-swml-theme="light"] .swml-select-chip:hover {
     background: rgba(0,0,0,0.08);
