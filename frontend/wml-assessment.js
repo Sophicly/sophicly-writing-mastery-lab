@@ -13864,6 +13864,20 @@
             document.querySelectorAll('div[style*="position: fixed"], div[style*="position:fixed"]').forEach(t => {
                 if (t.textContent.trim() === 'Take Notes' || t.textContent.trim() === 'TakeNotes') t.style.display = 'none';
             });
+        } else {
+            // v7.19.721: SPA re-appear ROOT FIX — restore notes on every NON-test lesson, clearing any
+            // inline display:none left by a previously-visited diagnostic/mark_scheme lesson. This is the
+            // CANONICAL hide site (initAssessmentState runs per lesson for diagnostic AND outline/polish),
+            // so co-locating the restore here makes it idempotent. (v720's restore was misplaced in
+            // renderExamPrepCanvas, which never runs for outline — hence the tab stayed hidden.)
+            if (snFab) snFab.style.display = '';
+            if (snPanel) snPanel.style.display = '';
+            document.querySelectorAll('.sn-tab, .sn-tab-trigger, #snTabTrigger, [class*="sticky-note-tab"], [class*="notes-tab"]').forEach(t => t.style.display = '');
+            const snFabTrigger = document.getElementById('snFabTrigger');
+            if (snFabTrigger) snFabTrigger.style.display = '';
+            document.querySelectorAll('div[style*="position: fixed"], div[style*="position:fixed"]').forEach(t => {
+                if (t.textContent.trim() === 'Take Notes' || t.textContent.trim() === 'TakeNotes') t.style.display = '';
+            });
         }
 
         // Cinematic entrance handled by CSS @keyframes canvasRevealForward
