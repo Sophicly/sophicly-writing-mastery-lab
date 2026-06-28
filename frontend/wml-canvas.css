@@ -6498,7 +6498,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* ── v7.19.729: grade-weight motivation notice (collapsible, top of graded docs) ── */
 .swml-weight-notice-bar { padding: 0 0 12px; }
 .swml-weight-notice {
-    background: rgba(83,51,237,0.10); /* brand-purple tint — surface contrast, NO stroke */
+    /* v7.19.731: brand purple #5333ed only (NO blue). Raised from 0.10 → 0.20 so the violet reads
+       as purple, not blue — at low alpha over the dark canvas the blue channel of #5333ed dominated. */
+    background: rgba(83,51,237,0.20);
     border-radius: 12px;
     padding: 10px 14px;
 }
