@@ -6502,14 +6502,14 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-weight-card {
     position: absolute;
     right: 22px;
-    bottom: 22px;
+    top: 84px; /* raised into the eyeline (was bottom) — clears the format toolbar */
     z-index: 38;
     width: 300px;
     max-width: calc(100% - 44px);
-    background: #232230; /* elevated dark surface, faint brand-purple tint */
-    border-radius: 14px;
+    background: #242628; /* canonical raised-on-base (#1c1d1f) — neutral, NOT purple-tinted (BRAND.md) */
+    border-radius: 12px; /* lg max for rectangular surfaces (BRAND.md) */
     padding: 16px 18px 15px;
-    box-shadow: 0 14px 44px rgba(20, 8, 40, 0.5);
+    box-shadow: 0 12px 36px rgba(44, 0, 62, 0.5); /* brand deep-purple tinted elevation, no border */
     opacity: 0;
     transform: translateY(10px) scale(0.985);
     transition: opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1), transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
@@ -6564,8 +6564,8 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 .swml-weight-card-ok:hover { filter: brightness(1.08); }
 [data-swml-theme="light"] .swml-weight-card {
-    background: #fff;
-    box-shadow: 0 14px 44px rgba(44, 0, 62, 0.18);
+    background: #e7e7ed; /* brand light raised surface (BRAND.md) — not pure white */
+    box-shadow: 0 12px 36px rgba(44, 0, 62, 0.16);
 }
 [data-swml-theme="light"] .swml-weight-card-eyebrow { color: #5333ed; }
 [data-swml-theme="light"] .swml-weight-card-body { color: rgba(44,0,62,0.82); }
