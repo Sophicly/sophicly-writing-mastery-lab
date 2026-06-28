@@ -20490,12 +20490,22 @@
     // the marks-table path below. Q1 20 (statement ticks) / Q2 200 (2×~100 paired
     // inferences) / Q3 450 (3×150 TTECEA) / Q4 550 (intro 50 + 3×150 + concl 50) /
     // Q5 650 (Section B — settled).
+    // v7.19.723: Paper 1 added. Language papers have BOTH a reading Section A (Q1–Q4) and a
+    // writing Section B (Q5) on one canvas, so a single flat target (Section B's 650) ignored
+    // Section A entirely — the widget showed e.g. 1591/650 (Neil). Summing per-Q targets gives
+    // Section A its own word budget + gate. P1 per-Q (Neil, ~150 words/4 marks, Q5 holistic 650):
+    // Q1 20 (list 4 points) / Q2 300 (8m) / Q3 300 (8m) / Q4 500 (20m essay) / Q5 650 (Section B).
+    // Generalising to other boards = adding their per-paper entry here (their Q-mark maps differ).
     const MULTIQ_RESPONSE_TARGETS = {
+        'aqa|lang_paper_1': { Q1: 20, Q2: 300, Q3: 300, Q4: 500, Q5: 650 },
         'aqa|lang_paper_2': { Q1: 20, Q2: 200, Q3: 450, Q4: 550, Q5: 650 },
     };
     function _multiqTargetKey() {
         if (state.board !== 'aqa') return null;
-        return String(state.text || '').indexOf('lang_paper_2') !== -1 ? 'aqa|lang_paper_2' : null;
+        const txt = String(state.text || '');
+        if (txt.indexOf('lang_paper_2') !== -1) return 'aqa|lang_paper_2';
+        if (txt.indexOf('lang_paper_1') !== -1) return 'aqa|lang_paper_1';
+        return null;
     }
     // v7.19.423: planning lessons count STUDENT words only — text typed into the
     // input fields of VISIBLE plan/outline sections. Section labels, placeholders,
@@ -20549,6 +20559,17 @@
             return;
         }
         const wc = getResponseWordCount(editor);
+        // v7.19.723: Topic 1 Phase 1 diagnostic — the very first attempt shows a SOFT live count
+        // only (no "/ target", no colour gate, no minimum). Neil: don't pressure length on the pure
+        // diagnostic — mark what's there. Every other stage + every later topic keeps the full
+        // target. Matches the isDiagnosticT1 shape used elsewhere (L18720). Universal (all subjects).
+        if (state.topicNumber === 1 && state.draftType === 'diagnostic') {
+            canvasWordMinimum = 0; // unblock Mark Complete on the first diagnostic regardless of length
+            widget.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
+            const w = document.getElementById('swml-wc-widget');
+            if (w) { w.style.background = ''; w.style.color = ''; }
+            return;
+        }
         const mq = _visibleMultiqTarget(editor);
         if (mq && mq > 0) {
             canvasWordTarget = mq;
@@ -25043,6 +25064,10 @@
         canvasWordMinimum = targets.minimum || 450;
         canvasWordIdeal = targets.ideal || 800;
         canvasUsesWordCount = targets.usesWordCount;
+        // v7.19.723: Topic 1 Phase 1 diagnostic carries NO length gate (the first-ever attempt is a
+        // pure diagnostic). Zero the minimum at init so Mark Complete is reachable before the painter
+        // (_paintWcWidgetLabel) next runs — closes the first-tick stale-minimum edge.
+        if (state.topicNumber === 1 && state.draftType === 'diagnostic') canvasWordMinimum = 0;
 
         // Dual questions: compute per-part targets for guidance display
         if (isDual) {
