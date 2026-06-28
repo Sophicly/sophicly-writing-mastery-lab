@@ -6162,6 +6162,45 @@
                 ]);
             }
 
+            // v7.19.727: shuffle MCQ option ORDER each round so a memorised "answer was the 3rd
+            // option" can't be reused (Neil). Re-letters the shuffled options A,B,C… for clean
+            // display but keeps each option's ORIGINAL bank letter, and the server (which scores by
+            // letter) stays the single source of truth — the student's chosen DISPLAY letter is
+            // translated back to its ORIGINAL letter before scoring (_toOrig) and the server's
+            // correct-key is translated to the DISPLAY letter for review (_toDisp). "All/None of the
+            // above" options stay pinned last; True/False + fill_blank have no options → untouched.
+            function _shuffleQ(q) {
+                if (!q || !Array.isArray(q.options) || q.options.length < 2) return;
+                if (q.type === 'true_false') return;
+                const fixed = [], movable = [];
+                q.options.forEach(o => { (/\b(all|none) of (the )?(above|these|others)\b/i.test(o.text || '') ? fixed : movable).push(o); });
+                for (let i = movable.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    const tmp = movable[i]; movable[i] = movable[j]; movable[j] = tmp;
+                }
+                const order = movable.concat(fixed);
+                const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+                q._letterMap = {}; q._revMap = {};
+                order.forEach((o, i) => {
+                    if (!o.origLetter) o.origLetter = o.letter;
+                    const disp = LETTERS[i] || o.origLetter;
+                    q._letterMap[disp] = o.origLetter;   // display → original (scoring)
+                    q._revMap[o.origLetter] = disp;      // original → display (review)
+                    o.letter = disp;
+                });
+                q.options = order;
+            }
+            // Display letters → original bank letters, before sending to the server for scoring.
+            function _toOrig(raw, q) {
+                if (!q || !q._letterMap) return raw;
+                return String(raw).replace(/[A-Ga-g]/g, ch => q._letterMap[ch.toUpperCase()] || ch);
+            }
+            // Server correct-key (original letters) → the display letters the student actually saw.
+            function _toDisp(key, q) {
+                if (!q || !q._revMap || key == null) return key;
+                return String(key).replace(/[A-Ga-g]/g, ch => q._revMap[ch.toUpperCase()] || ch);
+            }
+
             function renderQ() {
                 if (idx >= qs.length) { endRound(); return; }
                 const q = qs[idx];
@@ -6228,7 +6267,7 @@
                     // v7.19.643: send the quiz context so the server can rebuild this
                     // question from its source pool when the per-user bank slot has been
                     // lost (resume / another quiz reused or finished the slot).
-                    const res = await apiPost(API.quizAnswer, { id: q.id, answer: msg,
+                    const res = await apiPost(API.quizAnswer, { id: q.id, answer: _toOrig(msg, q),
                         board: state.board, subject: state.subject, text: state.text, quiz_type: quizType });
                     removeCanvasTyping();
                     if (!res || !res.success) {
@@ -6262,7 +6301,7 @@
                 roundResults.forEach((r, i) => {
                     const mark = r.res && r.res.correct ? '✓' : '✗';
                     body += `**${i + 1}. ${mark}**  Your answer: \`${r.answer}\``;
-                    if (!(r.res && r.res.correct)) body += `  —  correct: **${r.res ? r.res.correctKey : '?'}**`;
+                    if (!(r.res && r.res.correct)) body += `  —  correct: **${r.res ? _toDisp(r.res.correctKey, r.q) : '?'}**`;
                     body += `\n${(r.res && r.res.feedback) || ''}\n`;
                     // Blake-Harvard why-wrong glosses: on a wrong answer, explain why
                     // each distractor is wrong (server sends them only when wrong).
@@ -6324,7 +6363,7 @@
                         // v7.19.580: POST-ROUND clarification — the round is over and the student
                         // has seen their results, so correct answers MAY now be discussed.
                         const roundLines = roundResults.map((r, i) =>
-                            `${i + 1}. ${r.q.question}  (correct: ${r.res ? r.res.correctKey : '?'})`).join('\n');
+                            `${i + 1}. ${r.q.question}  (correct: ${r.res ? _toDisp(r.res.correctKey, r.q) : '?'})`).join('\n');
                         prompt = `[${hLabel} — POST-ROUND CLARIFICATION]\n[THE 5 QUESTIONS JUST COMPLETED]\n${roundLines}\n\n[STUDENT'S QUESTION]\n${msg}\n\nThe round is finished and the student has already seen their results, so you MAY discuss the correct answers here. Explain clearly and warmly. Do NOT present a new quiz question and do NOT emit any markers or scores.`;
                     }
                     const res = await apiPost(API.chat, {
@@ -6369,6 +6408,7 @@
                         return;
                     }
                     qs = res.questions; total = res.total || qs.length; idx = 0; roundResults = []; active = true;
+                    qs.forEach(_shuffleQ);   // v7.19.727: randomise option order for THIS round (persisted, so resume keeps it)
                     persist();
                     renderQ();
                 } catch (e) {
