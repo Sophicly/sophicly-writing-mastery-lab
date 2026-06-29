@@ -11159,6 +11159,15 @@
             // ── Chat persistence: resume or fresh start ──
             // Deferred until TipTap editor initialises + template loads
             const _initTrainingChat = async () => {
+                // v7.19.757: every load path funnels through here AFTER attempt
+                // resolution (normal tail 12140, sessionStorage fast-path, and the
+                // selector → _reloadDocumentForAttempt reinit) — so state.attempt is
+                // now the genuine on-screen attempt, never the transient seed. Flip
+                // the gate + re-run recalc so a completed-but-uncommitted essay heals
+                // its grade commit NOW, carrying the correct attempt_number. The
+                // earlier build-time recalc no-op'd because this was still false.
+                state._attemptSettled = true;
+                if (typeof _recalcScoreSummaryRef === 'function') _recalcScoreSummaryRef();
                 let savedChat = state.reviewMode ? null : loadCanvasChat();
                 // v7.17.39: CW chat is now project-scoped server-side — remove the pre-v7.17.39
                 // skip so CW also rehydrates chat from server on fresh device / cleared localStorage.
@@ -19757,7 +19766,13 @@
                 // !state.reviewMode: a tutor/viewer opening a student's completed
                 // doc must NOT fire a commit — it would write under the viewer's
                 // account, not the student's (complete_phase keys on current user).
-                if (_isEssay && !state.reviewMode && allSet && _fbCount >= 5 && maxTotal > 0
+                // v7.19.757: state._attemptSettled — the build-time recalc-init (~19772)
+                // can fire DURING the load window, before the /attempts divergence-reload
+                // settles state.attempt (transient seed = 1 while server current = 2). Gate
+                // the commit until _initTrainingChat (the terminal every load path funnels
+                // through, AFTER attempt resolution) flips this true and re-runs recalc →
+                // commit then carries the genuine on-screen attempt_number, never the seed.
+                if (_isEssay && !state.reviewMode && state._attemptSettled && allSet && _fbCount >= 5 && maxTotal > 0
                     && !state._phaseCommitted && !state._phaseCommitting) {
                     _autoCommitAssessment(totalMarks, maxTotal, (grade === 'U' ? '1' : String(grade)));
                 }
