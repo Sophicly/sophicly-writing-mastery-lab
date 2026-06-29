@@ -776,21 +776,30 @@ class SWML_REST_API {
         $count   = min(10, max(1, absint($p['count'] ?? 5)));
         // v7.19.578: quiz_type selects the bank + the engine's persist dispatch.
         // 'foundational' → text-keyed FQ bank + persist_foundational; default MSQ.
+        // v7.19.739: 'mark_scheme_assessment' → per-TEXT, board-sectioned MSA bank
+        // (examiner-level) + persist_mark_scheme_assessment; the MSA Final picks ~10.
         $quiz_type = sanitize_key($p['quiz_type'] ?? 'mark_scheme');
         $is_fq     = ($quiz_type === 'foundational');
+        $is_msa    = ($quiz_type === 'mark_scheme_assessment');
 
-        $picked = $is_fq
-            ? SWML_Quiz_Bank::pick_session_fq($text, $count)
-            : SWML_Quiz_Bank::pick_session($subject, $board, $count);
+        if ($is_msa) {
+            $picked = SWML_Quiz_Bank::pick_session_msa($text, $board, $count);
+        } elseif ($is_fq) {
+            $picked = SWML_Quiz_Bank::pick_session_fq($text, $count);
+        } else {
+            $picked = SWML_Quiz_Bank::pick_session($subject, $board, $count);
+        }
         if (empty($picked)) {
             return rest_ensure_response(['success' => false, 'code' => 'no_questions',
-                'message' => $is_fq
-                    ? 'No foundational question bank found for this text.'
-                    : 'No question bank found for this board/subject.']);
+                'message' => $is_msa
+                    ? 'No mark-scheme assessment bank found for this text/board.'
+                    : ($is_fq
+                        ? 'No foundational question bank found for this text.'
+                        : 'No question bank found for this board/subject.')]);
         }
 
         $engine = SWML_Quiz_Engine::instance();
-        $engine->start($user_id, $is_fq ? 'foundational' : 'mark_scheme', count($picked), $board, $text, $attempt);
+        $engine->start($user_id, $is_msa ? 'mark_scheme_assessment' : ($is_fq ? 'foundational' : 'mark_scheme'), count($picked), $board, $text, $attempt);
 
         // Persist the picked set WITH keys server-side; client never sees keys.
         update_user_meta($user_id, self::QUIZ_BANK_META . $user_id,
@@ -914,7 +923,16 @@ class SWML_REST_API {
         // sanitize_key-safe (no colons), so a stale/old client that only POSTs
         // {id, answer} still resolves. Request params are a secondary fallback.
         $candidates = [];
-        if ($parts[0] === 'fq') {
+        if ($parts[0] === 'msa') {
+            // MSA ids: "msa:<text>:<board>:<q_num>".
+            $candidates[] = SWML_Quiz_Bank::questions_for_msa($parts[1], $parts[2] ?? ($p['board'] ?? ''));
+            if (!empty($p['text'])) {
+                $candidates[] = SWML_Quiz_Bank::questions_for_msa(
+                    sanitize_text_field($p['text']),
+                    sanitize_text_field($p['board'] ?? ($parts[2] ?? ''))
+                );
+            }
+        } elseif ($parts[0] === 'fq') {
             $candidates[] = SWML_Quiz_Bank::questions_for_fq($parts[1]);
             if (!empty($p['text'])) {
                 $candidates[] = SWML_Quiz_Bank::questions_for_fq(sanitize_text_field($p['text']));

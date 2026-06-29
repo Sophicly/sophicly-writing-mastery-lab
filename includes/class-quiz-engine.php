@@ -348,20 +348,24 @@ class SWML_Quiz_Engine {
                 'grade'      => (int) ($r['last_grade'] ?? 0),
             ];
         }
+        // v7.19.739: MSA Final reads its own session_records row (task='mark_scheme'),
+        // distinct from the MSQ drill's 'mark_scheme_unit'. Contingent on the
+        // student-data listener writing task='mark_scheme' for the '_msa' suffix.
+        $ms_task = ($quiz_type === 'mark_scheme_assessment') ? 'mark_scheme' : 'mark_scheme_unit';
         global $wpdb;
         $table = $wpdb->prefix . 'sophicly_session_records';
         // Query by columns (not the reconstructed session_id) so an attempt /
         // suffix-variant mismatch can't hide a real result. Latest scored
-        // mark_scheme_unit row for this board+text(+topic) wins.
+        // row for this board+text(+topic) wins.
         $row = $wpdb->get_row($wpdb->prepare(
             "SELECT total_score, grade FROM {$table}
              WHERE user_id = %d AND board = %s AND text_slug = %s
-               AND task = 'mark_scheme_unit'
+               AND task = %s
                AND total_score IS NOT NULL AND total_score <> ''
                AND ( %d = 0 OR topic_number = %d )
              ORDER BY updated_at DESC, id DESC LIMIT 1",
             absint($user_id), sanitize_key($board), sanitize_text_field($text),
-            (int) $topic, (int) $topic
+            $ms_task, (int) $topic, (int) $topic
         ), ARRAY_A);
         if (!$row || $row['total_score'] === null || $row['total_score'] === '') return null;
         $parts = explode('/', (string) $row['total_score']);
@@ -465,6 +469,39 @@ class SWML_Quiz_Engine {
         // live via the chat payload (get_last_finalize_summary) and on reload via
         // load_canvas (get_persisted_result). Persistence sink = the session_records
         // row written by the sophicly_canvas_saved listener above.
+    }
+
+    /**
+     * Mark Scheme ASSESSMENT persistence (v7.19.739). The MSA Final is the graded,
+     * examiner-level assessment — a DISTINCT dashboard bucket from the MSQ drill.
+     * Fires sophicly_canvas_saved with task_kind='mark_scheme' (dashboard weight 8;
+     * the MSQ uses 'mark_scheme_quiz' weight 3) + suffix '_msa' so the
+     * session_records row is distinct from the MSQ '_msu' row. No mastery sidecar
+     * (the MSA is a one-shot graded assessment, not a 5/5 mastery loop).
+     * CROSS-PLUGIN DEPENDENCY: the student-data WML canvas_saved listener must map
+     * task_kind='mark_scheme' (suffix '_msa') → the mark_scheme bucket / a
+     * session_records row with task='mark_scheme' for the dashboard mean +
+     * get_persisted_result() reload to populate. Coordinate in the student-data chat.
+     */
+    private function persist_mark_scheme_assessment($user_id, $accumulator, $summary) {
+        $quiz_extra = [
+            'score_raw'        => (int) round($summary['score']),
+            'score_max'        => (int) round($summary['max']),
+            'score_percentage' => $summary['percentage'],
+            'grade_equivalent' => $summary['grade'],
+            'task_kind'        => 'mark_scheme',
+        ];
+        do_action(
+            'sophicly_canvas_saved',
+            $user_id,
+            $accumulator['board'],
+            $accumulator['text'],
+            '',
+            0,
+            $accumulator['topic_number'],
+            '_msa',
+            $quiz_extra
+        );
     }
 
     /**
