@@ -783,7 +783,17 @@ class SWML_REST_API {
         $is_msa    = ($quiz_type === 'mark_scheme_assessment');
 
         if ($is_msa) {
-            $picked = SWML_Quiz_Bank::pick_session_msa($text, $board, $count);
+            // v7.19.744: anti-repeat — avoid the question NUMBERS served in the student's
+            // previous attempt so a re-sit rotates fresh Qs where the pool allows. seen_ids
+            // are stamped ids 'msa:{text}:{board}:{q_num}'; we extract the trailing q_num.
+            $seen_raw = (isset($p['seen_ids']) && is_array($p['seen_ids'])) ? $p['seen_ids'] : [];
+            $avoid = [];
+            foreach ($seen_raw as $sid) {
+                $parts = explode(':', (string) $sid);
+                $qn = (int) end($parts);
+                if ($qn > 0) $avoid[] = $qn;
+            }
+            $picked = SWML_Quiz_Bank::pick_session_msa($text, $board, $count, $avoid);
         } elseif ($is_fq) {
             $picked = SWML_Quiz_Bank::pick_session_fq($text, $count);
         } else {

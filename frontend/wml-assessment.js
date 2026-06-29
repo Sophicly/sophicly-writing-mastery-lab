@@ -6265,10 +6265,13 @@
             };
             const _msaAction = (cat) => MSA_ACTIONS[cat] || 'reread the Level 6 descriptor for that strand and match its exact wording.';
             function _msaWeakest(byCat) {
-                let weak = null, lowest = 2;
+                // v7.19.745: only a GENUINE weakness (a dropped mark, rate < 1.0) counts.
+                // Init lowest at 1 so a category at full marks is never tagged "weakest"
+                // (the 20/20 bug: every AO at rate 1.0 was flagged AO2 3/3 as weakest).
+                let weak = null, lowest = 1;
                 Object.keys(byCat).forEach(c => {
                     const t = byCat[c].total || 1, r = byCat[c].right / t;
-                    if (r < lowest) { lowest = r; weak = c; }
+                    if (r < 1 && r < lowest) { lowest = r; weak = c; }
                 });
                 return weak;
             }
@@ -6304,6 +6307,10 @@
                 if (weak) {
                     L.push(`**Weakest this time:** ${weak} (${cur.byCat[weak].right}/${cur.byCat[weak].total}).`);
                     if (!reachedTop) L.push(`**Next attempt, one thing:** ${_msaAction(weak)}`);
+                } else {
+                    // v7.19.745: no dropped marks — affirm full coverage instead of mislabelling
+                    // a perfect AO as the "weakest".
+                    L.push(`**No weak spot this time:** full marks across every assessment objective.`);
                 }
                 return L.join('\n\n');
             }
@@ -6466,6 +6473,9 @@
                     msaAttempts.push({
                         grade: qr ? qr.grade : 0, pct: qr ? qr.percentage : 0,
                         score: qr ? qr.score : 0, max: qr ? qr.max : (n * 2), byCat,
+                        // v7.19.744 anti-repeat: remember which Qs this attempt served so the
+                        // next re-sit can rotate fresh ones (sent as seen_ids on /quiz/start).
+                        ids: roundResults.map(r => (r.q && r.q.id) ? r.q.id : null).filter(Boolean),
                     });
                     const grade = qr ? qr.grade : 0;
                     const reachedTop = grade >= 9;
@@ -6561,6 +6571,10 @@
                         count: (quizType === 'mark_scheme_assessment' ? 10 : 5),  // v7.19.739: MSA Final = 10 Qs × 2 = /20
                         quiz_type: quizType,
                         topic_number: (state.topicNumber || 0),  // v7.19.741: stamp THIS lesson's topic (not a stale session one) so the grade maps to the right LD lesson
+                        // v7.19.744 anti-repeat: on a re-sit, tell the picker which Qs the LAST
+                        // attempt served so it rotates fresh ones where the pool allows.
+                        seen_ids: (quizType === 'mark_scheme_assessment' && msaAttempts.length)
+                            ? (msaAttempts[msaAttempts.length - 1].ids || []) : [],
                     });
                     removeCanvasTyping();
                     if (!res || !res.success || !res.questions || !res.questions.length) {

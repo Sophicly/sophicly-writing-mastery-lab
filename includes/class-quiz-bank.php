@@ -252,10 +252,10 @@ class SWML_Quiz_Bank {
         return self::resolve_board(self::parse_sections_msa($text), $board);
     }
 
-    public static function pick_session_msa($text, $board, $n = 10) {
+    public static function pick_session_msa($text, $board, $n = 10, $avoid = []) {
         $pool = self::questions_for_msa($text, $board);
         if (empty($pool)) return [];
-        return self::pick_from_pool($pool, 'msa:' . sanitize_key((string) $text) . ':' . sanitize_key((string) $board), $n);
+        return self::pick_from_pool($pool, 'msa:' . sanitize_key((string) $text) . ':' . sanitize_key((string) $board), $n, $avoid);
     }
 
     /**
@@ -263,15 +263,30 @@ class SWML_Quiz_Bank {
      * fill round-robin. Returns FULL question objects (keys + feedback) — the
      * caller MUST strip keys before sending to the client. Shared by MSQ + FQ.
      */
-    private static function pick_from_pool($pool, $id_prefix, $n = 5) {
+    private static function pick_from_pool($pool, $id_prefix, $n = 5, $avoid = []) {
         $n = max(1, min($n, count($pool)));
+        $avoid = array_flip(array_map('intval', (array) $avoid));   // q_num set served last attempt
 
         $by_cat = [];
         foreach ($pool as $q) {
             $key = ($q['ao'] ?? '') !== '' ? $q['ao'] : ($q['category'] ?: '_');
             $by_cat[$key][] = $q;
         }
-        foreach ($by_cat as &$g) { shuffle($g); }
+        // Shuffle within each category, then float UNSEEN questions ahead of any served
+        // in the student's last attempt (v7.19.744 MSA anti-repeat). Seen ones stay as a
+        // fallback so a thin AO bucket (e.g. AO4 = 1 Q) can still fill. Explicit partition
+        // (not usort) preserves the shuffle within each partition regardless of PHP sort
+        // stability. Empty $avoid (MSQ/FQ) → behaviour byte-unchanged.
+        foreach ($by_cat as &$g) {
+            shuffle($g);
+            if (!empty($avoid)) {
+                $unseen = []; $seen = [];
+                foreach ($g as $q) {
+                    if (isset($avoid[(int) ($q['q_num'] ?? 0)])) $seen[] = $q; else $unseen[] = $q;
+                }
+                $g = array_merge($unseen, $seen);
+            }
+        }
         unset($g);
         $cats = array_keys($by_cat);
         shuffle($cats);
