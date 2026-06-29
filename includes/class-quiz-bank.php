@@ -160,7 +160,7 @@ class SWML_Quiz_Bank {
     /** A question is scoreable only if it has a resolvable key + stem. */
     private static function is_scoreable($q) {
         if (($q['question'] ?? '') === '') return false;
-        if (in_array($q['type'], ['mcq', 'select_all'], true)) {
+        if (in_array($q['type'], ['mcq', 'select_all', 'ranking'], true)) {
             return !empty($q['correct']) && !empty($q['options']);
         }
         if (in_array($q['type'], ['true_false', 'fill_blank'], true)) {
@@ -181,8 +181,18 @@ class SWML_Quiz_Bank {
     public static function questions_for($subject, $board) {
         $sections = self::parse_sections($subject);
         if (empty($sections)) return [];
-        $needle = strtolower(preg_replace('/[^a-z0-9]+/i', ' ', (string) $board));
-        $needle = trim($needle);
+        return self::resolve_board($sections, $board);
+    }
+
+    /**
+     * Resolve a requested board to its section's questions — matches the board
+     * token inside the section label (case-insensitive), then the board's first
+     * word, then falls back to the first section. Shared by the MSQ (subject-keyed)
+     * and MSA (text-keyed) banks.
+     */
+    private static function resolve_board($sections, $board) {
+        if (empty($sections)) return [];
+        $needle = trim(strtolower(preg_replace('/[^a-z0-9]+/i', ' ', (string) $board)));
         // Try exact-ish board-token containment first.
         foreach ($sections as $label => $qs) {
             $hay = strtolower(preg_replace('/[^a-z0-9]+/i', ' ', $label));
@@ -192,8 +202,7 @@ class SWML_Quiz_Bank {
         $first = strtok($needle, ' ');
         if ($first) {
             foreach ($sections as $label => $qs) {
-                $hay = strtolower($label);
-                if (strpos($hay, $first) !== false) return $qs;
+                if (strpos(strtolower($label), $first) !== false) return $qs;
             }
         }
         // Fallback: first section in the file.
@@ -222,6 +231,31 @@ class SWML_Quiz_Bank {
         $pool = self::questions_for_fq($text);
         if (empty($pool)) return [];
         return self::pick_from_pool($pool, 'fq:' . sanitize_key((string) $text), $n);
+    }
+
+    /**
+     * Mark Scheme ASSESSMENT banks (v7.19.739): per-TEXT, board-sectioned,
+     * examiner-level. A DISTINCT (harder, exact-mark-scheme-vocabulary) bank from
+     * the MSQ drill — one file per text at
+     * protocols/shared/mark-scheme-assessment/banks/{text}.md with board sections
+     * (### **SECTION A: AQA (8702 — Shakespeare)**). Picks ~10, AO-stratified.
+     */
+    private static function msa_dir() {
+        return plugin_dir_path(dirname(__FILE__)) . 'protocols/shared/mark-scheme-assessment/banks/';
+    }
+
+    public static function parse_sections_msa($text) {
+        return self::parse_file(self::msa_dir() . sanitize_file_name((string) $text) . '.md');
+    }
+
+    public static function questions_for_msa($text, $board) {
+        return self::resolve_board(self::parse_sections_msa($text), $board);
+    }
+
+    public static function pick_session_msa($text, $board, $n = 10) {
+        $pool = self::questions_for_msa($text, $board);
+        if (empty($pool)) return [];
+        return self::pick_from_pool($pool, 'msa:' . sanitize_key((string) $text) . ':' . sanitize_key((string) $board), $n);
     }
 
     /**
@@ -319,6 +353,20 @@ class SWML_Quiz_Bank {
             case 'fill_blank':
                 $marks = self::fill_matches($raw, $q['answer']) ? $max : 0.0;
                 break;
+            case 'ranking':
+                // Correct is the authored ORDER (e.g. "C, B, D, A" = weakest→top).
+                $pick = self::ordered_letters($raw);
+                $key  = $q['correct'];
+                if (!empty($pick) && $pick === $key) {
+                    $marks = $max;                                   // exact order
+                } elseif (!empty($pick) && !empty($key)
+                    && count($pick) === count($key)
+                    && $pick[0] === $key[0] && end($pick) === end($key)) {
+                    $marks = 1.0;                                    // top + bottom correctly placed
+                } else {
+                    $marks = 0.0;
+                }
+                break;
         }
         $correct = ($marks >= $max);
         // Blake-Harvard why-wrong glosses (Phase 2): on a wrong answer, return the
@@ -358,6 +406,7 @@ class SWML_Quiz_Bank {
     private static function norm_type($raw) {
         $r = strtolower($raw);
         if (strpos($r, 'select all') !== false) return 'select_all';
+        if (strpos($r, 'rank') !== false) return 'ranking';
         if (strpos($r, 'true') !== false && strpos($r, 'false') !== false) return 'true_false';
         if (strpos($r, 'fill') !== false) return 'fill_blank';
         if (strpos($r, 'mcq') !== false) return 'mcq';
@@ -369,6 +418,17 @@ class SWML_Quiz_Bank {
         if (!preg_match_all('/[A-E]/i', (string) $raw, $m)) return [];
         $out = array_map('strtoupper', $m[0]);
         return array_values(array_unique($out));
+    }
+
+    /** Ordered A-E letters from raw input, preserving sequence, de-duped (ranking). */
+    private static function ordered_letters($raw) {
+        if (!preg_match_all('/[A-E]/i', (string) $raw, $m)) return [];
+        $out = [];
+        foreach ($m[0] as $l) {
+            $l = strtoupper($l);
+            if (!in_array($l, $out, true)) $out[] = $l;
+        }
+        return $out;
     }
 
     private static function norm_tf($raw) {
@@ -394,7 +454,7 @@ class SWML_Quiz_Bank {
     }
 
     private static function display_key($q) {
-        if (in_array($q['type'], ['mcq', 'select_all'], true)) return implode(', ', $q['correct']);
+        if (in_array($q['type'], ['mcq', 'select_all', 'ranking'], true)) return implode(', ', $q['correct']);
         return (string) $q['answer'];
     }
 
