@@ -132,6 +132,22 @@ class SWML_Quiz_Engine {
             'questions'       => [],
         ];
 
+        // v7.19.752: MSQ rounds must each persist as a DISTINCT session_records row so
+        // every round counts toward the course average (Neil's all-attempts rule). The
+        // in-sitting `round` resets next sitting, so we use a MONOTONIC, cross-sitting
+        // attempt ordinal kept in user_meta per (board,text,topic). Assigned ONCE here at
+        // round-start and reused on any re-finalize → idempotent (a double-fired finalize
+        // reads the same accumulator value and can't mint a second row). MSA
+        // ('mark_scheme_assessment') keeps its frontend-driven attempt #; FQ persists per
+        // attempt via its own hook — neither is touched.
+        if ($accumulator['quiz_type'] === 'mark_scheme') {
+            $seq_key = 'swml_msq_attemptseq_' . $accumulator['board'] . '_'
+                . sanitize_key($accumulator['text']) . '_' . $accumulator['topic_number'];
+            $seq = (int) get_user_meta($user_id, $seq_key, true) + 1;
+            update_user_meta($user_id, $seq_key, $seq);
+            $accumulator['attempt_number'] = $seq;
+        }
+
         $this->save_accumulator($user_id, $accumulator);
         error_log("[WML Quiz Engine] start uid={$user_id} type={$accumulator['quiz_type']} total={$accumulator['total_questions']} board={$accumulator['board']} text={$accumulator['text']} attempt={$accumulator['attempt_number']}");
         return $accumulator;
@@ -446,6 +462,10 @@ class SWML_Quiz_Engine {
             'score_percentage' => $summary['percentage'],
             'grade_equivalent' => $summary['grade'],
             'task_kind'        => 'mark_scheme_quiz',
+            // v7.19.752: monotonic round ordinal (assigned in start()) so each MSQ round
+            // lands as its OWN session_records row (…:_msu:aN) — every round counts toward
+            // the average, no overwrite. Mirrors the _msa fix.
+            'attempt_number'   => max(1, (int) ($accumulator['attempt_number'] ?? 1)),
         ];
         do_action(
             'sophicly_canvas_saved',
