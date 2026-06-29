@@ -6198,6 +6198,51 @@
                     if (last) { const bc = last.querySelector('.swml-bubble-content') || last; bc.appendChild(bar); }
                 }, 50);
             }
+            // v7.19.749: tap-to-rank UI for ranking questions (restores the v7.14.51 pattern
+            // into the deterministic quiz). Tap an option → it gets a number badge (1, 2, …);
+            // re-tap removes it and renumbers the rest. Submit only enables once ALL options
+            // are ordered, then feeds the displayed-letter order string (e.g. "B, D, A, C")
+            // through handleTurn — exactly what typing the letters would produce, so the
+            // scorer/_toOrig mapping is unchanged. Typing the order still works in parallel.
+            function appendRankButtons(q) {
+                const opts = (q && q.options) ? q.options : [];
+                if (opts.length < 2) return;
+                setTimeout(() => {
+                    const ranked = [];                 // ordered displayed letters
+                    const btnMap = new Map();          // letter → button
+                    const bar = el('div', { className: 'swml-quick-actions swml-rank-actions' });
+                    const submit = el('button', {
+                        className: 'swml-quick-btn swml-quick-submit', textContent: 'Submit ranking →', disabled: true,
+                        onClick: () => { if (ranked.length !== opts.length) return; bar.remove(); handleTurn(ranked.join(', ')); }
+                    });
+                    const relabel = () => {
+                        btnMap.forEach((btn, letter) => {
+                            const i = ranked.indexOf(letter);
+                            const base = btn.dataset.baseLabel;
+                            if (i >= 0) { btn.classList.add('selected'); btn.innerHTML = `<span class="swml-rank-num">${i + 1}</span> ${base}`; }
+                            else { btn.classList.remove('selected'); btn.innerHTML = base; }
+                        });
+                        submit.disabled = ranked.length !== opts.length;
+                        submit.textContent = ranked.length ? `Submit ranking (${ranked.length}/${opts.length}) →` : 'Submit ranking →';
+                    };
+                    opts.forEach(o => {
+                        const base = `<strong>${o.letter})</strong> ${o.text}`;
+                        const btn = el('button', { className: 'swml-quick-btn swml-rank-btn', innerHTML: base,
+                            onClick: () => {
+                                const i = ranked.indexOf(o.letter);
+                                if (i >= 0) ranked.splice(i, 1); else ranked.push(o.letter);
+                                relabel();
+                            }
+                        });
+                        btn.dataset.baseLabel = base;
+                        btnMap.set(o.letter, btn);
+                        bar.appendChild(btn);
+                    });
+                    bar.appendChild(submit);
+                    const last = chatMessages.lastElementChild;
+                    if (last) { const bc = last.querySelector('.swml-bubble-content') || last; bc.appendChild(bar); }
+                }, 50);
+            }
             // v7.19.580 (FQ): the post-round menu — Next/Another round, Ask a question, Finish.
             function showRoundMenu() {
                 const nextLabel = lastMastered ? 'Try another round' : 'Start the next round →';
@@ -6405,6 +6450,9 @@
                 // True / False quick-action buttons (parity with the MCQ option buttons).
                 if (q.type === 'true_false') {
                     appendQuickButtons([{ label: 'True', value: 'True' }, { label: 'False', value: 'False' }]);
+                } else if (q.type === 'ranking') {
+                    // v7.19.749: tap-to-rank buttons (typing the order still works too).
+                    appendRankButtons(q);
                 }
                 // v7.19.743: MSA has 14 sidebar steps (Setup=1, Q1-10=2-11, Results=12…) — drive
                 // the real step (Qn → n+1), no 7-cap. MSQ/FQ keep the 7-step cap.
