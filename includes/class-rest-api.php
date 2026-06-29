@@ -899,10 +899,30 @@ class SWML_REST_API {
         // rounds-to-mastery only stamped when the round actually hit 5/5.
         $mastered = !empty($p['mastered']);
         $rounds   = $mastered ? max(1, absint($p['rounds'] ?? 1)) : 0;
+        // v7.19.746: read the picked-session TEXT before finalize deletes the bank meta,
+        // so we can attach the student's mark-scheme CONFIDENCE self-rating (per-text, from
+        // the [sophicly_mark_scheme_understanding] survey, keyed by the SAME text slug WML
+        // uses) for the MSA calibration reflection. Self-rating, never a grade signal.
+        $ms_bank = $this->read_quiz_bank($user_id);
+        $ms_text = is_array($ms_bank) ? sanitize_key((string) ($ms_bank['text'] ?? '')) : '';
         $summary  = SWML_Quiz_Engine::instance()->finalize($user_id, 0, $rounds);
         delete_user_meta($user_id, self::QUIZ_BANK_META . $user_id);
 
         if (!$summary) return rest_ensure_response(['success' => false, 'code' => 'finalize_failed']);
+
+        $ms_conf = null;
+        if ($ms_text !== '') {
+            $craw = get_user_meta($user_id, 'sophicly_markscheme_understanding', true);
+            if (!empty($craw)) {
+                $cmap = json_decode($craw, true);
+                if (!is_array($cmap)) $cmap = json_decode(wp_unslash($craw), true);
+                if (is_array($cmap) && isset($cmap[$ms_text]['rating'])) {
+                    $r = (int) $cmap[$ms_text]['rating'];
+                    if ($r >= 1 && $r <= 5) $ms_conf = $r;
+                }
+            }
+        }
+
         return rest_ensure_response([
             'success'    => true,
             'quizResult' => [
@@ -912,6 +932,7 @@ class SWML_REST_API {
                 'grade'      => $summary['grade'],
                 'rounds'     => (int) ($summary['rounds'] ?? 0),
                 'mastery'    => ((int) ($summary['rounds'] ?? 0) > 0),
+                'ms_confidence' => $ms_conf,   // 1-5 or null — MSA calibration reflection
             ],
             'categoriesWithErrors' => $summary['categories_with_errors'] ?? [],
         ]);

@@ -6275,10 +6275,33 @@
                 });
                 return weak;
             }
-            function buildMsaFeedForward(attempts, reachedTop) {
+            // v7.19.746: maps the start-of-unit mark-scheme CONFIDENCE self-rating (1-5)
+            // against the actual grade (1-9) and frames the gap as INSIGHT, never a score
+            // (calibration, not a metric — see project_self_assessment_calibration_widget).
+            function _msaConfidenceReflection(rating, grade) {
+                if (!rating || !grade) return '';
+                const expected = [0, 2, 4, 5, 7, 9][rating] || 0;   // rating→rough grade band
+                const gap = grade - expected;
+                if (gap >= 2) return `**Calibration:** at the start of the unit you rated your mark-scheme confidence **${rating}/5**, but you scored **Grade ${grade}** — you understand this better than you think. Let that update how you rate yourself next time.`;
+                if (gap <= -2) return `**Calibration:** you rated your confidence **${rating}/5** but scored **Grade ${grade}** — your confidence is currently ahead of your accuracy. That gap is the work: keep matching each option to the exact mark-scheme word.`;
+                return `**Calibration:** your start-of-unit confidence (**${rating}/5**) lines up with this result — you are judging your own understanding accurately.`;
+            }
+            // v7.19.746: Hattie feed-forward (Where to next?) — the Action Plan. The ONE
+            // next-step on the weakest AO PLUS the three things Neil wants every student
+            // conscious of: target it in their own writing, self-assess + calibrate with the
+            // tutor, and keep completing the steps in order for repeated mark-scheme review.
+            function buildMsaActionPlan(attempts, reachedTop, weak) {
+                const L = [];
+                if (!reachedTop && weak) L.push(`**Sharpen this first (${weak}):** ${_msaAction(weak)}`);
+                L.push(`**1. Target it in your own writing.** Take what the mark scheme rewards and decide what to aim for in your next essay — write *toward* the descriptor, not just about the text.`);
+                L.push(`**2. Mark your own writing, then calibrate with your tutor.** Practise spotting where you would gain and lose marks in your own response, then talk it through with your tutor to refine that judgement.`);
+                L.push(`**3. Keep moving through the steps in order.** You will meet the mark scheme and your own writing again and again across the programme — each pass deepens the same judgement. Completing each step in sequence is what builds it.`);
+                return L.join('\n\n');
+            }
+            function buildMsaFeedForward(attempts, reachedTop, msConf, weak) {
                 const cur = attempts[attempts.length - 1];
                 const prev = attempts.length > 1 ? attempts[attempts.length - 2] : null;
-                const weak = _msaWeakest(cur.byCat);
+                if (!weak) weak = _msaWeakest(cur.byCat);
                 const L = [];
                 L.push('**Where you’re aiming:** Grade 9 = matching the mark scheme’s exact descriptor language. That’s the bar.');
                 let back = `**This attempt:** ${cur.score}/${cur.max} → **Grade ${cur.grade}**.`;
@@ -6305,13 +6328,16 @@
                     if (cross) L.push('**Across your attempts:** ' + cross.charAt(0).toUpperCase() + cross.slice(1).trim());
                 }
                 if (weak) {
+                    // v7.19.746: the "one thing" next-step moved to the Action Plan (feed-forward).
                     L.push(`**Weakest this time:** ${weak} (${cur.byCat[weak].right}/${cur.byCat[weak].total}).`);
-                    if (!reachedTop) L.push(`**Next attempt, one thing:** ${_msaAction(weak)}`);
                 } else {
                     // v7.19.745: no dropped marks — affirm full coverage instead of mislabelling
                     // a perfect AO as the "weakest".
                     L.push(`**No weak spot this time:** full marks across every assessment objective.`);
                 }
+                // v7.19.746: calibration insight — start-of-unit confidence vs actual grade.
+                const _cr = _msaConfidenceReflection(msConf, cur.grade);
+                if (_cr) L.push(_cr);
                 return L.join('\n\n');
             }
             function _msaConsolidation(attempts) {
@@ -6479,8 +6505,18 @@
                     });
                     const grade = qr ? qr.grade : 0;
                     const reachedTop = grade >= 9;
+                    const msConf = (qr && qr.ms_confidence) ? qr.ms_confidence : null;  // v7.19.746 1-5 self-rating
                     active = false;
-                    aiBubble(buildMsaFeedForward(msaAttempts, reachedTop));
+                    // v7.19.746: split Sophia's synthesis into Hattie's two distinct outputs —
+                    // FEEDBACK (how am I going) + ACTION PLAN (where to next) — to match the
+                    // sidebar steps 13 + 14, then persist both into the doc + advance the sidebar.
+                    const _weak = _msaWeakest(msaAttempts[msaAttempts.length - 1].byCat);
+                    const _fbMd = buildMsaFeedForward(msaAttempts, reachedTop, msConf, _weak);
+                    const _apMd = buildMsaActionPlan(msaAttempts, reachedTop, _weak);
+                    aiBubble('**📋 Feedback**\n\n' + _fbMd);
+                    aiBubble('**🎯 Action Plan**\n\n' + _apMd);
+                    try { applyMsaNarrativeToDoc(_fbMd, _apMd); } catch (e) { console.warn('WML MSA: doc narrative insert failed', e); }
+                    try { updateProgress(14); } catch (e) {}   // walk sidebar through Feedback (13) + Action Plan (14)
                     if (reachedTop) {
                         clearPersist();
                         betweenRounds = true;   // typed messages now route to post-attempt clarification
@@ -26917,6 +26953,51 @@
     // v7.19.641: exposed so updateProgress() (wml-app.js) can re-apply the grade
     // chip after it repaints the step circles (which wipes the class + digit).
     try { window.WML = window.WML || {}; window.WML._patchQuizResultSidebar = _patchQuizResultSidebar; } catch (_) {}
+
+    // v7.19.746: write Sophia's deterministic FEEDBACK (feed-back) + ACTION PLAN
+    // (feed-forward) as read-only cards INTO the MSA doc — Feedback inside "2. HOW AM
+    // I GOING?", Action Plan inside "5. WHERE TO NEXT?" — so the Hattie synthesis
+    // persists alongside the student's own reflection boxes (and survives refresh),
+    // not only in the chat. Idempotent: keyed off data-section-label (TipTap preserves
+    // it; arbitrary data-* attrs get dropped on the round-trip). MSA only; fail-soft —
+    // if a target divider is absent the chat bubble still carried the content.
+    function applyMsaNarrativeToDoc(feedbackMd, actionMd) {
+        if (state.task !== 'mark_scheme' || !canvasEditor) return;
+        const FB_LABEL = "Sophia's Feedback", AP_LABEL = "Sophia's Action Plan";
+        try {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = canvasEditor.getHTML() || '';
+            // strip prior cards (idempotent re-runs across attempts)
+            tmp.querySelectorAll(`[data-section-label="${FB_LABEL}"],[data-section-label="${AP_LABEL}"]`).forEach(n => n.remove());
+
+            const _divs = Array.from(tmp.querySelectorAll('[data-section-type="divider"]'));
+            const _find = re => _divs.find(d => re.test((d.getAttribute('data-section-label') || '') + ' ' + (d.textContent || '')));
+            const _insertAfter = (divider, html) => {
+                if (!divider || !divider.parentNode) return false;
+                const wrap = document.createElement('div');
+                wrap.innerHTML = html;
+                const card = wrap.firstElementChild;
+                if (!card) return false;
+                divider.parentNode.insertBefore(card, divider.nextSibling);
+                return true;
+            };
+
+            let touched = false;
+            const _fb = _find(/HOW AM I GOING/i);
+            if (_fb) touched = _insertAfter(_fb, sectionHTML('notice', FB_LABEL, false, null, cwMarkdownToDocHtml(feedbackMd))) || touched;
+            const _ap = _find(/WHERE TO NEXT/i);
+            if (_ap) touched = _insertAfter(_ap, sectionHTML('notice', AP_LABEL, false, null, cwMarkdownToDocHtml(actionMd))) || touched;
+            if (!touched) { console.warn('WML MSA: no Feed-Back/Feed-Forward divider found — doc cards skipped (chat still has them)'); return; }
+
+            _migrationActive = true;
+            try { canvasEditor.commands.setContent(tmp.innerHTML, false); }
+            finally { _migrationActive = false; }
+            snapshotTemplateBaseline(canvasEditor);
+            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+        } catch (e) {
+            console.warn('WML MSA: applyMsaNarrativeToDoc failed (non-fatal)', e && e.message);
+        }
+    }
 
     // Upsert the Quiz Result card into the live editor, positioned directly
     // under the Quiz Notes section (before the Forging Your Weapon divider).
