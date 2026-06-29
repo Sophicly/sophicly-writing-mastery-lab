@@ -19610,6 +19610,55 @@
             return true;
         }
 
+        // v7.19.756: PROGRAMMATIC, embedded-safe commit of the essay-assessment
+        // grade. The Mark-Complete button is hidden when embedded in LearnDash
+        // (wml-assessment.js ~5979 gates on !WML.isEmbedded), and the canvas-save
+        // piggyback persists QUIZ grades only — NOT essays (student-data listener
+        // states "Essays flow through complete_phase → on_phase_complete"). So an
+        // embedded essay's grade never reached student-data. This fires the same
+        // complete_phase endpoint the button used, with the DETERMINISTIC doc grade
+        // (never the AI's drifted chat grade) + the resolved attempt number, with no
+        // student action. Idempotent (state._phaseCommitted); on reload it re-UPDATEs
+        // the same attempt row (keyed by attempt_number) → no dupes, no double-count.
+        async function _autoCommitAssessment(totalMarks, maxTotal, gradeVal) {
+            if (state._phaseCommitted || state._phaseCommitting) return;
+            if (!gradeVal || !(maxTotal > 0)) return;
+            state._phaseCommitting = true;   // set sync before any await — re-entry guard
+            try {
+                // Resolve the REAL attempt first, so we never overwrite a prior
+                // attempt's row by defaulting to 1 before /attempts resolves.
+                try { await _resolveCtxAttempt(); } catch (_) {}
+                const p = state.plan || {};
+                const getVal = (v) => (typeof v === 'object' && v !== null) ? (v.content || '') : (v || '');
+                const phase = ((state.phase === 'redraft') || (state.task === 'redraft_assessment')) ? 'redraft' : 'initial';
+                const payload = {
+                    board: state.board,
+                    text: state.text,
+                    topic_number: state.topicNumber || 1,
+                    phase: phase,
+                    grade: String(gradeVal),                  // deterministic doc grade — NOT the AI's
+                    total_score: totalMarks + '/' + maxTotal,
+                    ao1_score: getVal(p.ao1_score), ao2_score: getVal(p.ao2_score),
+                    ao3_score: getVal(p.ao3_score), ao4_score: getVal(p.ao4_score),
+                    strength_1: getVal(p.strength_1), target_1: getVal(p.target_1), target_2: getVal(p.target_2),
+                    attempt_number: (state.attempt || 1),     // on_phase_complete keys the row by this → additive, never overwrites a prior attempt
+                    lesson_url: (WML.cfg && WML.cfg.lessonUrl) || '',
+                };
+                const res = await apiPost(API.phaseComplete, payload);
+                if (res && res.success) {
+                    state._phaseCommitted = true;
+                    state._phaseMarkedComplete = true;
+                    console.log('WML: assessment auto-committed — grade=' + payload.grade + ' total=' + payload.total_score + ' attempt=' + payload.attempt_number + ' phase=' + phase);
+                } else {
+                    console.warn('WML: assessment auto-commit failed (retries on next recalc)', res);
+                }
+            } catch (e) {
+                console.warn('WML: _autoCommitAssessment error', e && e.message);
+            } finally {
+                state._phaseCommitting = false;
+            }
+        }
+
         function recalculateScoreSummary() {
             const editor = document.getElementById('swml-tiptap-editor');
             if (!editor) return;
@@ -19694,6 +19743,25 @@
                     autoPill.classList.add('swml-tier-' + effective);
                 }
             }
+
+            // v7.19.756: programmatic grade commit (see _autoCommitAssessment).
+            // Fire when EVERY section is marked (allSet) — the deterministic doc
+            // grade is then final. Embedded-safe, no student action; runs on load
+            // too → heals a completed-but-uncommitted attempt. The fbCount >= 5
+            // gate (intro + 3 body + conclusion) prevents a premature commit on a
+            // part-marked essay. (Language papers differ in section count — verify
+            // that gate when propagating this beyond Literature.)
+            try {
+                const _isEssay = (state.task === 'assessment' || state.task === 'redraft_assessment');
+                const _fbCount = editor.querySelectorAll('[data-section-type="feedback"]').length;
+                // !state.reviewMode: a tutor/viewer opening a student's completed
+                // doc must NOT fire a commit — it would write under the viewer's
+                // account, not the student's (complete_phase keys on current user).
+                if (_isEssay && !state.reviewMode && allSet && _fbCount >= 5 && maxTotal > 0
+                    && !state._phaseCommitted && !state._phaseCommitting) {
+                    _autoCommitAssessment(totalMarks, maxTotal, (grade === 'U' ? '1' : String(grade)));
+                }
+            } catch (_) {}
         }
 
         // v7.19.247: expose recalc + paint dates once now. tryServerLoad sets
