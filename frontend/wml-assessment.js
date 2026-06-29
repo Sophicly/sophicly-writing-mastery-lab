@@ -6119,10 +6119,13 @@
             let quizType = 'mark_scheme';  // v7.19.579: 'mark_scheme' | 'foundational' — same engine, different bank + copy
             let betweenRounds = false;     // v7.19.580 (FQ): round finished, awaiting Next / Ask / Finish — controller still owns the turn
             let lastMastered = false;      // v7.19.580: was the just-finished round a 5/5 (labels the menu)
+            // v7.19.740: MSA cross-attempt history — per attempt {grade,pct,score,max,byCat:{AO1:{right,total},…}}.
+            // Drives the self-referenced delta + repeated-weakness/improvement feed-forward across retries.
+            let msaAttempts = [];
 
             // FQ + MSA each keep their OWN sidecar key so MSQ resume is byte-identical (no collision).
             const lsKey = () => (quizType === 'foundational' ? 'swml_fq_' : quizType === 'mark_scheme_assessment' ? 'swml_msa_' : 'swml_msq_') + [state.board, state.subject, state.text, (state.attempt || 1)].join('_');
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total, round, roundResults })); } catch (e) {} }
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total, round, roundResults, msaAttempts })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function rehydrate(opts) {
                 if (opts && opts.quizType) quizType = (opts.quizType === 'foundational') ? 'foundational' : (opts.quizType === 'mark_scheme_assessment') ? 'mark_scheme_assessment' : 'mark_scheme';
@@ -6133,7 +6136,15 @@
                     if (!d || !Array.isArray(d.qs) || !d.qs.length) return false;
                     qs = d.qs; idx = d.idx || 0; total = d.total || d.qs.length;
                     round = d.round || 1; roundResults = Array.isArray(d.roundResults) ? d.roundResults : [];
+                    msaAttempts = Array.isArray(d.msaAttempts) ? d.msaAttempts : [];
                     active = (idx < qs.length);
+                    // v7.19.740: MSA resumed BETWEEN attempts (last attempt finished, not yet at
+                    // Grade 9) — re-show the Try-again / Finish menu so a reload doesn't strand them.
+                    if (!active && quizType === 'mark_scheme_assessment' && msaAttempts.length) {
+                        active = true; betweenRounds = true;   // own the turn so typed Qs route to clarify
+                        setTimeout(() => { try { showMsaMenu(); } catch (e) {} }, 60);
+                        return true;
+                    }
                     if (active) console.log('WML MSQ: resumed round ' + round + ' at Q' + (idx + 1) + '/' + total);
                     return active;
                 } catch (e) { return false; }
@@ -6183,6 +6194,23 @@
                     { label: 'Finish', onClick: () => { aiBubble('Well done today — every round you finish builds your foundations. Keep going! 👋'); } },
                 ]);
             }
+            // v7.19.740: MSA post-attempt menu — Try again (fresh 10) until Grade 9, then Ask/Finish.
+            // Reused by endRound + routeHelp so it re-appears after a between-attempt question.
+            function showMsaMenu() {
+                const last = msaAttempts.length ? msaAttempts[msaAttempts.length - 1] : null;
+                if (last && last.grade >= 9) {
+                    appendQuickButtons([
+                        { label: 'Ask about an answer', onClick: () => { aiBubble('Of course — ask me about any of the ten and I’ll talk it through using the mark scheme’s own words. 😊'); } },
+                        { label: 'Finish', onClick: () => { betweenRounds = false; aiBubble('Well done — judging writing against the mark scheme is exactly how examiners think. 👋'); } },
+                    ]);
+                } else {
+                    appendQuickButtons([
+                        { label: 'Try again — fresh 10', onClick: () => { betweenRounds = false; round++; startRound(); } },
+                        { label: 'Ask about an answer', onClick: () => { aiBubble('Ask me about any of the ten — I’ll talk it through using the mark scheme’s own words. Hit “Try again” when you’re ready. 😊'); } },
+                        { label: 'Stop here for now', onClick: () => { betweenRounds = false; aiBubble(_msaConsolidation(msaAttempts)); } },
+                    ]);
+                }
+            }
 
             // v7.19.727: shuffle MCQ option ORDER each round so a memorised "answer was the 3rd
             // option" can't be reused (Neil). Re-letters the shuffled options A,B,C… for clean
@@ -6221,6 +6249,69 @@
             function _toDisp(key, q) {
                 if (!q || !q._revMap || key == null) return key;
                 return String(key).replace(/[A-Ga-g]/g, ch => q._revMap[ch.toUpperCase()] || ch);
+            }
+
+            // v7.19.740: MSA feed-forward synthesis (deterministic, no LLM). Structure +
+            // rules grounded in the feedback research (Hattie feed-up→back→forward; process/
+            // self-regulation level, never ability praise; ONE focus; self-referenced delta;
+            // "not yet" framing; SDT competence). Per-category next-step actions in the mark
+            // scheme's own vocabulary.
+            const MSA_ACTIONS = {
+                AO1: 'when an answer only retells character or plot, mark it down — Level 6 AO1 wants a *conceptualised* argument with *judicious* references.',
+                AO2: 'when an answer only *names* a method, score it lower — Level 6 AO2 wants *analysis* with *exploration of the effects*.',
+                AO3: 'when context sits as a bolt-on fact, mark it down — Level 6 AO3 wants *specific, detailed links* between context, text and task.',
+                AO4: 'judge accuracy in the service of meaning — AO4 rewards *consistently accurate* spelling and punctuation and *controlled* vocabulary and sentence structures.',
+                Vocabulary: 'pin the EXACT mark-scheme word — e.g. *conceptualised* not "conceptual", *judiciously* not "judicial". The precise term IS the mark.',
+            };
+            const _msaAction = (cat) => MSA_ACTIONS[cat] || 'reread the Level 6 descriptor for that strand and match its exact wording.';
+            function _msaWeakest(byCat) {
+                let weak = null, lowest = 2;
+                Object.keys(byCat).forEach(c => {
+                    const t = byCat[c].total || 1, r = byCat[c].right / t;
+                    if (r < lowest) { lowest = r; weak = c; }
+                });
+                return weak;
+            }
+            function buildMsaFeedForward(attempts, reachedTop) {
+                const cur = attempts[attempts.length - 1];
+                const prev = attempts.length > 1 ? attempts[attempts.length - 2] : null;
+                const weak = _msaWeakest(cur.byCat);
+                const L = [];
+                L.push('**Where you’re aiming:** Grade 9 = matching the mark scheme’s exact descriptor language. That’s the bar.');
+                let back = `**This attempt:** ${cur.score}/${cur.max} → **Grade ${cur.grade}**.`;
+                if (prev && weak && prev.byCat[weak]) {
+                    back += ` Last attempt ${weak} was ${prev.byCat[weak].right}/${prev.byCat[weak].total}; this time ${cur.byCat[weak].right}/${cur.byCat[weak].total}` + (reachedTop ? '.' : ' — not yet at 9, but moving.');
+                } else if (prev) {
+                    const dg = cur.grade - prev.grade;
+                    back += dg > 0 ? ` Up from Grade ${prev.grade} — moving.` : (dg < 0 ? ` (Grade ${prev.grade} last time.)` : ` Same as last time — let’s shift it.`);
+                }
+                L.push(back);
+                if (attempts.length >= 2) {
+                    const cats = Array.from(new Set(attempts.flatMap(a => Object.keys(a.byCat))));
+                    const repeated = [], improved = [];
+                    cats.forEach(c => {
+                        const rates = attempts.map(a => a.byCat[c] ? a.byCat[c].right / a.byCat[c].total : null).filter(x => x != null);
+                        if (rates.length >= 2) {
+                            if (rates.slice(-2).every(r => r < 0.6)) repeated.push(c);
+                            if (rates[rates.length - 1] - rates[0] >= 0.34) improved.push(c);
+                        }
+                    });
+                    let cross = '';
+                    if (repeated.length) cross += `you keep slipping on **${repeated.join(', ')}**. `;
+                    if (improved.length) cross += `you’ve improved on **${improved.join(', ')}** since you started.`;
+                    if (cross) L.push('**Across your attempts:** ' + cross.charAt(0).toUpperCase() + cross.slice(1).trim());
+                }
+                if (weak) {
+                    L.push(`**Weakest this time:** ${weak} (${cur.byCat[weak].right}/${cur.byCat[weak].total}).`);
+                    if (!reachedTop) L.push(`**Next attempt, one thing:** ${_msaAction(weak)}`);
+                }
+                return L.join('\n\n');
+            }
+            function _msaConsolidation(attempts) {
+                const first = attempts[0];
+                const best = attempts.reduce((b, a) => (a.grade >= b.grade ? a : b), attempts[0]);
+                const journey = (first.grade !== best.grade) ? ` You moved from Grade ${first.grade} to Grade ${best.grade} — write what changed.` : '';
+                return `**Now capture it in the document on the left (once).** Your goal, the ONE pattern across your attempts, and your action plan.${journey} That written reflection is what makes the strategy stick.`;
             }
 
             function renderQ() {
@@ -6326,8 +6417,10 @@
                     ? `**Assessment review — ${correctN}/${n} correct**\n\n`
                     : `**Round ${round} review — ${correctN}/${n} correct**\n\n`;
                 roundResults.forEach((r, i) => {
-                    const mark = r.res && r.res.correct ? '✓' : '✗';
+                    // v7.19.740: ◐ for partial credit (fill near-miss) so the review matches the score.
+                    const mark = (r.res && r.res.correct) ? '✓' : ((r.res && r.res.partial) ? '◐' : '✗');
                     body += `**${i + 1}. ${mark}**  Your answer: \`${r.answer}\``;
+                    if (r.res && r.res.partial) body += `  — **${r.res.marks}/${r.res.max}** (right idea, imprecise form)`;
                     if (!(r.res && r.res.correct)) body += `  —  correct: **${r.res ? _toDisp(r.res.correctKey, r.q) : '?'}**`;
                     body += `\n${(r.res && r.res.feedback) || ''}\n`;
                     // Blake-Harvard why-wrong glosses: on a wrong answer, explain why
@@ -6353,20 +6446,37 @@
                 } catch (e) { removeCanvasTyping(); }
                 finally { resetSend(); }
 
-                // v7.19.739: Mark Scheme ASSESSMENT — one-shot graded /20, NO mastery loop.
-                // Finalise once, show the grade, offer an UNGRADED verbalisation/ask beat, stop.
+                // v7.19.740: Mark Scheme ASSESSMENT — graded /20, RE-SIT until Grade 9 (or honest
+                // best). Tracks per-AO performance across attempts → self-referenced delta +
+                // repeated-weakness/improvement feed-forward (research-grounded). "Try again" is a
+                // BUTTON (fresh 10), never clear-chat. Written reflection in the doc is done ONCE
+                // at the end. All attempts count toward the grade average.
                 if (quizType === 'mark_scheme_assessment') {
-                    clearPersist();
+                    const byCat = {};
+                    roundResults.forEach(r => {
+                        const c = (r.q && r.q.category) ? r.q.category : '—';
+                        if (!byCat[c]) byCat[c] = { right: 0, total: 0 };
+                        byCat[c].total++;
+                        if (r.res && r.res.correct) byCat[c].right += 1;
+                        else if (r.res && r.res.partial) byCat[c].right += 0.5;
+                    });
+                    msaAttempts.push({
+                        grade: qr ? qr.grade : 0, pct: qr ? qr.percentage : 0,
+                        score: qr ? qr.score : 0, max: qr ? qr.max : (n * 2), byCat,
+                    });
+                    const grade = qr ? qr.grade : 0;
+                    const reachedTop = grade >= 9;
                     active = false;
-                    const tail = qr ? ` — **${qr.score}/${qr.max}** (${qr.percentage}%) · **Grade ${qr.grade}**` : '';
-                    aiBubble(`**Assessment complete${tail}.** Your result is saved to the document on the left, and it counts toward your mark-scheme-literacy grade.\n\nOne last thing — in your OWN sentence, but using the mark scheme's language: pick the answer you found hardest and say what would move it up a Level. (Optional — type it below, or finish.)`);
-                    // betweenRounds routes a typed reflection to routeHelp (ungraded, post-round
-                    // clarification) — Sophia responds using the mark scheme, scores nothing.
-                    betweenRounds = true;
-                    appendQuickButtons([
-                        { label: 'Ask about an answer', onClick: () => { aiBubble('Of course — ask me about any of the ten and I’ll talk it through using the mark scheme’s own words. 😊'); } },
-                        { label: 'Finish', onClick: () => { betweenRounds = false; aiBubble('Well done — judging writing against the mark scheme is exactly how you learn to mark yourself like an examiner. 👋'); } },
-                    ]);
+                    aiBubble(buildMsaFeedForward(msaAttempts, reachedTop));
+                    if (reachedTop) {
+                        clearPersist();
+                        betweenRounds = true;   // typed messages now route to post-attempt clarification
+                        aiBubble('🎉 **Grade 9 — you’re marking like an examiner.** ' + _msaConsolidation(msaAttempts));
+                    } else {
+                        persist();              // keep msaAttempts for the next attempt + resume
+                        betweenRounds = true;
+                    }
+                    showMsaMenu();
                     return;
                 }
 
@@ -6426,12 +6536,12 @@
                     } else {
                         aiBubble("I'm having trouble answering just now — try rephrasing, or type your answer when you're ready.");
                     }
-                    if (betweenRounds) showRoundMenu();
+                    if (betweenRounds) { (quizType === 'mark_scheme_assessment') ? showMsaMenu() : showRoundMenu(); }
                     else appendQuickBar('Back to the question', renderQ);
                 } catch (e) {
                     removeCanvasTyping();
                     aiBubble("I'm having trouble answering just now — type your answer when you're ready.");
-                    if (betweenRounds) showRoundMenu();
+                    if (betweenRounds) { (quizType === 'mark_scheme_assessment') ? showMsaMenu() : showRoundMenu(); }
                     else appendQuickBar('Back to the question', renderQ);
                 } finally {
                     resetSend();
@@ -6470,7 +6580,7 @@
                 quizType = (opts && opts.quizType === 'foundational') ? 'foundational'
                          : (opts && opts.quizType === 'mark_scheme_assessment') ? 'mark_scheme_assessment'
                          : 'mark_scheme';
-                round = 1; roundResults = [];
+                round = 1; roundResults = []; msaAttempts = [];
                 if (quizType === 'foundational') {
                     const tname = (state.textLabel || state.text || '').replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                     aiBubble(`Welcome to your **Foundational Quiz**${tname ? ' — ' + tname : ''}. 👋 Five quick questions to check your overall understanding now you've read the text. I'll hold all the feedback to the **end of the round** — that's how the real exam works, and how it sticks. 🧠\n\n🎯 **Every round you complete counts toward your grade**, so give each one your best. **Aim for 100%** — if you miss any, just take a fresh set of 5 until you ace a whole round. Jot anything worth keeping into **General Notes**. Stuck on a question? Just **ask me** and I'll help you think it through.`);
@@ -6489,7 +6599,7 @@
             // sidecar so a subsequent start() begins a fresh round 1 (not a stale mid-round).
             function reset() {
                 active = false; round = 1; roundResults = []; idx = 0; qs = [];
-                betweenRounds = false; lastMastered = false;
+                betweenRounds = false; lastMastered = false; msaAttempts = [];
                 clearPersist();
             }
 
@@ -26804,6 +26914,10 @@
             wrap.innerHTML = renderQuizResultSectionHTML(result);
             const card = wrap.firstElementChild;
             if (!card) return;
+            // v7.19.740: the MSA is an ASSESSMENT, not a quiz — relabel the shared card copy.
+            if (state.task === 'mark_scheme') {
+                card.innerHTML = card.innerHTML.replace(/Quiz Result/gi, 'Mark Scheme Assessment — Result');
+            }
 
             if (state.task === 'foundational_quiz') {
                 // v7.19.566: place the grade card directly UNDER the General Notes

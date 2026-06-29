@@ -351,7 +351,10 @@ class SWML_Quiz_Bank {
                 $marks = (self::norm_tf($raw) !== '' && self::norm_tf($raw) === self::norm_tf($q['answer'])) ? $max : 0.0;
                 break;
             case 'fill_blank':
-                $marks = self::fill_matches($raw, $q['answer']) ? $max : 0.0;
+                // v7.19.740: partial credit — exact (incl. UK/US spelling) = full; right word
+                // in an imprecise form ("conceptual" for "conceptualised") = half; wrong = 0.
+                $fg = self::fill_grade($raw, $q['answer']);
+                $marks = ($fg === 'exact') ? $max : (($fg === 'near') ? round($max / 2, 1) : 0.0);
                 break;
             case 'ranking':
                 // Correct is the authored ORDER (e.g. "C, B, D, A" = weakest→top).
@@ -439,18 +442,38 @@ class SWML_Quiz_Bank {
         return '';
     }
 
-    private static function fill_matches($raw, $answer) {
+    /**
+     * Grade a fill-blank answer (v7.19.740 — partial credit). Returns:
+     *   'exact' → full marks: identical, UK/US spelling variant, or key word(s) present as a phrase.
+     *   'near'  → half marks: the RIGHT word in an imprecise form ("conceptual" for
+     *             "conceptualised" — a prefix of the key) or a 1-2 char typo. Rewards the
+     *             concept while still teaching the precise mark-scheme word (the lost mark
+     *             + feedback do the teaching). Neil 2026-06-29.
+     *   'no'    → 0: a different word ("judicial" for "judiciously").
+     */
+    private static function fill_grade($raw, $answer) {
         $norm = function ($s) {
             $s = strtolower(trim((string) $s));
+            // US→UK so "conceptualized" === "conceptualised" (full marks, not a near-miss).
+            $s = preg_replace('/iz(e|ed|es|ing)\b/', 'is$1', $s);
+            $s = str_replace(['ization', 'izations'], ['isation', 'isations'], $s);
             $s = preg_replace('/[^a-z0-9\s]/', '', $s);
             return trim(preg_replace('/\s+/', ' ', $s));
         };
         $a = $norm($raw);
         $b = $norm($answer);
-        if ($a === '' || $b === '') return false;
-        if ($a === $b) return true;
-        // Accept the key word(s) appearing as a phrase within the student answer.
-        return strpos(' ' . $a . ' ', ' ' . $b . ' ') !== false;
+        if ($a === '' || $b === '') return 'no';
+        if ($a === $b) return 'exact';
+        // Key word(s) present as a phrase within the answer = full credit.
+        if (strpos(' ' . $a . ' ', ' ' . $b . ' ') !== false) return 'exact';
+        // NEAR: same word, imprecise form — one is a prefix of the other (>=4 shared
+        // leading chars, e.g. "conceptual" -> "conceptualised"), or a small typo.
+        $short = (strlen($a) <= strlen($b)) ? $a : $b;
+        $long  = (strlen($a) <= strlen($b)) ? $b : $a;
+        if (strlen($short) >= 4 && strpos($long, $short) === 0) return 'near';
+        $lev = levenshtein($a, $b);
+        if ($lev > 0 && $lev <= 2 && strlen($long) >= 5) return 'near';
+        return 'no';
     }
 
     private static function display_key($q) {
