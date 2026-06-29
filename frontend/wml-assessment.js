@@ -4948,6 +4948,11 @@
                         // sidecar + start a fresh round 1. FYW (step 2) and mark_scheme
                         // final assessment fall through to the AI silent-send below.
                         setTimeout(() => { _quizCtl.reset(); _quizCtl.start(); }, 200);
+                        } else if (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme') {
+                        // v7.19.739: MSA Final is deterministic too — reset the sidecar + start a
+                        // fresh assessment (mirror the boot gate). Do NOT silent-send to the AI
+                        // (that re-ran the legacy LLM mark-scheme assessment).
+                        setTimeout(() => { _quizCtl.reset(); _quizCtl.start({ quizType: 'mark_scheme_assessment' }); }, 200);
                         } else if (state.task === 'mark_scheme_unit' || state.task === 'mark_scheme') {
                         // v7.18.46: mark-scheme-* tasks get a fresh protocol-driven start
                         // (same pattern as exam_prep at L2232). Pre-v7.18.46 fell through to
@@ -5307,6 +5312,12 @@
             }
             // v7.19.579: FQ (banked text) — same deterministic controller owns the turn.
             if (_fqDeterministic() && _quizCtl.active) {
+                await _quizCtl.handleTurn(msg);
+                return;
+            }
+            // v7.19.739: MSA Final (mark_scheme) — same deterministic controller owns the
+            // turn while active (answers code-scored; "ask" routes to Sophia help).
+            if (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme' && _quizCtl.active) {
                 await _quizCtl.handleTurn(msg);
                 return;
             }
@@ -6109,12 +6120,12 @@
             let betweenRounds = false;     // v7.19.580 (FQ): round finished, awaiting Next / Ask / Finish — controller still owns the turn
             let lastMastered = false;      // v7.19.580: was the just-finished round a 5/5 (labels the menu)
 
-            // FQ keeps its OWN sidecar key so MSQ resume is byte-identical (no collision).
-            const lsKey = () => (quizType === 'foundational' ? 'swml_fq_' : 'swml_msq_') + [state.board, state.subject, state.text, (state.attempt || 1)].join('_');
+            // FQ + MSA each keep their OWN sidecar key so MSQ resume is byte-identical (no collision).
+            const lsKey = () => (quizType === 'foundational' ? 'swml_fq_' : quizType === 'mark_scheme_assessment' ? 'swml_msa_' : 'swml_msq_') + [state.board, state.subject, state.text, (state.attempt || 1)].join('_');
             function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total, round, roundResults })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function rehydrate(opts) {
-                if (opts && opts.quizType) quizType = (opts.quizType === 'foundational') ? 'foundational' : 'mark_scheme';
+                if (opts && opts.quizType) quizType = (opts.quizType === 'foundational') ? 'foundational' : (opts.quizType === 'mark_scheme_assessment') ? 'mark_scheme_assessment' : 'mark_scheme';
                 try {
                     const raw = localStorage.getItem(lsKey());
                     if (!raw) return false;
@@ -6215,11 +6226,14 @@
             function renderQ() {
                 if (idx >= qs.length) { endRound(); return; }
                 const q = qs[idx];
-                let body = `**Round ${round} · Question ${q.seq} of ${q.total}**\n\n${q.question}`;
+                // v7.19.739: the MSA is a one-shot assessment, not a mastery round — drop the "Round N ·" prefix.
+                const qHead = (quizType === 'mark_scheme_assessment') ? `**Question ${q.seq} of ${q.total}**` : `**Round ${round} · Question ${q.seq} of ${q.total}**`;
+                let body = `${qHead}\n\n${q.question}`;
                 if (q.options && q.options.length) {
                     body += '\n\n' + q.options.map(o => `**${o.letter})** ${o.text}`).join('\n');
                 }
                 if (q.type === 'select_all')      body += '\n\n*Select all that apply — type the letters, e.g. `A, C`.*';
+                else if (q.type === 'ranking')    body += '\n\n*Rank them by typing the letters in order, weakest first, e.g. `B, D, C, A`.*';
                 else if (q.type === 'true_false') body += '\n\n*Choose True or False below — or just type it.*';
                 else if (q.type === 'fill_blank') body += '\n\n*Type your answer in a word or short phrase.*';
                 else                              body += '\n\n*Type the letter of your answer, e.g. `B`.*';
@@ -6236,7 +6250,7 @@
             function classify(raw, type) {
                 const t = (raw || '').trim();
                 if (!t) return 'empty';
-                if (type === 'mcq' || type === 'select_all') {
+                if (type === 'mcq' || type === 'select_all' || type === 'ranking') {
                     return /^[A-Ea-e](\s*,\s*[A-Ea-e])*$/.test(t) ? 'answer' : 'question';
                 }
                 if (type === 'true_false') {
@@ -6308,7 +6322,9 @@
                 const n = roundResults.length;
                 const correctN = roundResults.filter(r => r.res && r.res.correct).length;
                 const mastered = (n > 0 && correctN === n);
-                let body = `**Round ${round} review — ${correctN}/${n} correct**\n\n`;
+                let body = (quizType === 'mark_scheme_assessment')
+                    ? `**Assessment review — ${correctN}/${n} correct**\n\n`
+                    : `**Round ${round} review — ${correctN}/${n} correct**\n\n`;
                 roundResults.forEach((r, i) => {
                     const mark = r.res && r.res.correct ? '✓' : '✗';
                     body += `**${i + 1}. ${mark}**  Your answer: \`${r.answer}\``;
@@ -6336,6 +6352,23 @@
                     }
                 } catch (e) { removeCanvasTyping(); }
                 finally { resetSend(); }
+
+                // v7.19.739: Mark Scheme ASSESSMENT — one-shot graded /20, NO mastery loop.
+                // Finalise once, show the grade, offer an UNGRADED verbalisation/ask beat, stop.
+                if (quizType === 'mark_scheme_assessment') {
+                    clearPersist();
+                    active = false;
+                    const tail = qr ? ` — **${qr.score}/${qr.max}** (${qr.percentage}%) · **Grade ${qr.grade}**` : '';
+                    aiBubble(`**Assessment complete${tail}.** Your result is saved to the document on the left, and it counts toward your mark-scheme-literacy grade.\n\nOne last thing — in your OWN sentence, but using the mark scheme's language: pick the answer you found hardest and say what would move it up a Level. (Optional — type it below, or finish.)`);
+                    // betweenRounds routes a typed reflection to routeHelp (ungraded, post-round
+                    // clarification) — Sophia responds using the mark scheme, scores nothing.
+                    betweenRounds = true;
+                    appendQuickButtons([
+                        { label: 'Ask about an answer', onClick: () => { aiBubble('Of course — ask me about any of the ten and I’ll talk it through using the mark scheme’s own words. 😊'); } },
+                        { label: 'Finish', onClick: () => { betweenRounds = false; aiBubble('Well done — judging writing against the mark scheme is exactly how you learn to mark yourself like an examiner. 👋'); } },
+                    ]);
+                    return;
+                }
 
                 const isFq = (quizType === 'foundational');
                 lastMastered = mastered;
@@ -6411,7 +6444,9 @@
                 try {
                     const res = await apiPost(API.quizStart, {
                         board: state.board, subject: state.subject, text: state.text || '',
-                        attempt: state.attempt || 1, count: 5, quiz_type: quizType,
+                        attempt: state.attempt || 1,
+                        count: (quizType === 'mark_scheme_assessment' ? 10 : 5),  // v7.19.739: MSA Final = 10 Qs × 2 = /20
+                        quiz_type: quizType,
                     });
                     removeCanvasTyping();
                     if (!res || !res.success || !res.questions || !res.questions.length) {
@@ -6432,11 +6467,17 @@
 
             async function start(opts) {
                 if (active) return;
-                quizType = (opts && opts.quizType === 'foundational') ? 'foundational' : 'mark_scheme';
+                quizType = (opts && opts.quizType === 'foundational') ? 'foundational'
+                         : (opts && opts.quizType === 'mark_scheme_assessment') ? 'mark_scheme_assessment'
+                         : 'mark_scheme';
                 round = 1; roundResults = [];
                 if (quizType === 'foundational') {
                     const tname = (state.textLabel || state.text || '').replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                     aiBubble(`Welcome to your **Foundational Quiz**${tname ? ' — ' + tname : ''}. 👋 Five quick questions to check your overall understanding now you've read the text. I'll hold all the feedback to the **end of the round** — that's how the real exam works, and how it sticks. 🧠\n\n🎯 **Every round you complete counts toward your grade**, so give each one your best. **Aim for 100%** — if you miss any, just take a fresh set of 5 until you ace a whole round. Jot anything worth keeping into **General Notes**. Stuck on a question? Just **ask me** and I'll help you think it through.`);
+                } else if (quizType === 'mark_scheme_assessment') {
+                    // v7.19.739: MSA Final — one graded set of 10 (×2 = /20), examiner-thinking, no mastery loop.
+                    const board = (state.board || '').toUpperCase().replace(/-/g, ' ');
+                    aiBubble(`Welcome to your **Mark Scheme Assessment**${board ? ' — ' + board : ''}. This is the real thing: **10 questions**, each worth 2 marks, **/20** in total. You'll judge real writing against the exam board's own words and decide what reaches the top Level — thinking like an examiner. I'll hold all feedback to the **end**, then reveal every answer with the mark scheme's reasoning, and your grade. Stuck on the meaning of a word or a question? Just **ask me** — that never costs you marks. Let's begin. 🎯`);
                 } else {
                     const board = (state.board || '').toUpperCase().replace(/-/g, ' ');
                     aiBubble(`Welcome to the **Mark Scheme Quiz**${board ? ' — ' + board : ''}. Each round is **5 questions**, and I'll give you the full feedback at the *end* of the round. **Aim for 100%** — we'll keep going with fresh sets until you ace a whole round. Stuck on any question? Just **ask me** and I'll explain.`);
@@ -11174,6 +11215,10 @@
                     if (_fqDeterministic() && tp.quizCtl) {
                         tp.quizCtl.tryResume({ quizType: 'foundational' });
                     }
+                    // v7.19.739: MSA Final (mark_scheme) resumes its deterministic round the same way.
+                    if (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme' && tp.quizCtl) {
+                        tp.quizCtl.tryResume({ quizType: 'mark_scheme_assessment' });
+                    }
                     // v7.19.660: CW Step 1 deterministic walk resumes the same way — bubbles
                     // already replayed above; restore position only (no re-render). If the
                     // sidecar is gone (walk finished → synthesis/review), this no-ops and the
@@ -11555,6 +11600,14 @@
                     setTimeout(() => {
                         console.log('WML v7.19.323: MSQ — deterministic controller start');
                         if (tp.quizCtl) tp.quizCtl.start();
+                    }, 400);
+                } else if (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme' && !state.reviewMode) {
+                    // v7.19.739: Mark Scheme ASSESSMENT (Final) — deterministic controller owns it.
+                    // One graded set of 10 (×2 = /20). No AI greeting / silent-send: start()
+                    // renders the welcome + fetches the key-stripped questions itself.
+                    setTimeout(() => {
+                        console.log('WML v7.19.739: MSA — deterministic controller start');
+                        if (tp.quizCtl) tp.quizCtl.start({ quizType: 'mark_scheme_assessment' });
                     }, 400);
                 } else if (_fqDeterministic() && !state.reviewMode) {
                     // v7.19.579: Foundational Quiz (banked text) — same deterministic
@@ -26741,7 +26794,7 @@
     function applyQuizResultToEditor() {
         const result = _pendingQuizResult;
         if (!result || !canvasEditor) return;
-        if (state.task !== 'mark_scheme_unit' && state.task !== 'foundational_quiz') return;
+        if (state.task !== 'mark_scheme_unit' && state.task !== 'foundational_quiz' && state.task !== 'mark_scheme') return;
         try {
             const tmp = document.createElement('div');
             tmp.innerHTML = canvasEditor.getHTML() || '';
@@ -26761,6 +26814,15 @@
                 const _gn = _divs.findIndex(d => /GENERAL\s*NOTES/i.test((d.getAttribute('data-section-label') || '') + ' ' + (d.textContent || '')));
                 const _next = (_gn >= 0) ? _divs[_gn + 1] : null;
                 if (_next && _next.parentNode) _next.parentNode.insertBefore(card, _next);
+                else if (tmp.firstChild) tmp.insertBefore(card, tmp.firstChild);
+                else tmp.appendChild(card);
+            } else if (state.task === 'mark_scheme') {
+                // v7.19.739: MSA Final — place the auto Score · % · Grade card at the TOP
+                // of the mark-scheme doc, just under the "How to Use" notice if present, so
+                // it is the first thing the student sees (the deterministic score replaces the
+                // old manual "record what Sophia gave you" box).
+                const _notice = tmp.querySelector('[data-section-type="notice"]');
+                if (_notice && _notice.parentNode) _notice.parentNode.insertBefore(card, _notice.nextSibling);
                 else if (tmp.firstChild) tmp.insertBefore(card, tmp.firstChild);
                 else tmp.appendChild(card);
             } else {
