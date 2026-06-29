@@ -6723,12 +6723,23 @@ TEMPLATE;
     private static function derive_paragraphs_scored_from_history($chat_history) {
         $scored   = [];
         $complete = false;
+        // v7.19.755: DENOMINATOR-AGNOSTIC. The mark total per section is
+        // board/paper-specific (AQA Lit body = /8, Language reading Qs = /7,
+        // conclusion = /6|/7|/11 …). Hard-coding the denominator silently broke
+        // progression whenever a mark scheme changed (AQA Lit bodies moved /7→/8:
+        // body+conclusion tables stopped matching → auto-repair perpetually reset
+        // current_paragraph to body_1 → the section-advance LOOP → Final Summary
+        // never reached → complete_phase never fired → grade never committed).
+        // The SECTION LABEL is the stable identifier; the total is not. Match any
+        // /\d+ and key on the label so every board's allocation is recognised.
+        // (Next hardening: derive off the structured @FB_BEGIN{"q":…} marker the
+        // protocol already emits, retiring prose-scraping entirely.)
         $strict_patterns = [
-            'intro'      => '/Total Mark for (?:Introduction|Paragraph\s*1)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*3\b/i',
-            'body_1'     => '/Total Mark for (?:Body\s*Paragraph\s*1|Paragraph\s*2)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*7\b/i',
-            'body_2'     => '/Total Mark for (?:Body\s*Paragraph\s*2|Paragraph\s*3)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*7\b/i',
-            'body_3'     => '/Total Mark for (?:Body\s*Paragraph\s*3|Paragraph\s*4)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*7\b/i',
-            'conclusion' => '/Total Mark for (?:Conclusion|Paragraph\s*5)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*(?:6|11)\b/i',
+            'intro'      => '/Total Mark for (?:Introduction|Paragraph\s*1)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
+            'body_1'     => '/Total Mark for (?:Body\s*Paragraph\s*1|Paragraph\s*2)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
+            'body_2'     => '/Total Mark for (?:Body\s*Paragraph\s*2|Paragraph\s*3)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
+            'body_3'     => '/Total Mark for (?:Body\s*Paragraph\s*3|Paragraph\s*4)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
+            'conclusion' => '/Total Mark for (?:Conclusion|Paragraph\s*5)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
         ];
         if (!is_array($chat_history)) return ['scored' => [], 'complete' => false];
         foreach ($chat_history as $msg) {
