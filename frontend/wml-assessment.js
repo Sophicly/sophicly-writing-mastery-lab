@@ -4837,11 +4837,19 @@
                 // are gated !_fqDeterministic() so a banked FQ never double-records.
                 const _ctlMidRound = QUIZ_CONTROLLER_ON && _quizCtl.active && _quizCtl.midRound && _quizCtl.answered > 0
                     && ((state.task === 'mark_scheme_unit' && (state.step === 1 || state.bridgeStep === 1)) || _fqDeterministic());
-                const _proj = _ctlMidRound ? _quizCtl.projected : null;
-                const _ctlLabel = _fqDeterministic() ? 'Foundational Quiz' : 'Mark Scheme Quiz';
+                // v7.19.751: the GRADED Mark Scheme Assessment must also record an abandoned
+                // attempt (anti-farm parity with the MSQ) \u2014 once the student has answered \u22651.
+                // Not gated on midRound so it also catches the predict-then-reveal step (all 10
+                // answered, idx past the end): abandonRound there finalises their real answers.
+                const _ctlMsaInProgress = QUIZ_CONTROLLER_ON && _quizCtl.active && state.task === 'mark_scheme' && _quizCtl.answered > 0;
+                const _ctlRecord = _ctlMidRound || _ctlMsaInProgress;
+                const _proj = _ctlRecord ? _quizCtl.projected : null;
+                const _ctlNoun = _ctlMsaInProgress ? 'assessment' : 'round';
+                const _ctlLabel = _fqDeterministic() ? 'Foundational Quiz'
+                    : (_ctlMsaInProgress ? 'Mark Scheme Assessment' : 'Mark Scheme Quiz');
                 showConfirm(
-                    _ctlMidRound
-                        ? 'You\u2019re mid-round on the ' + _ctlLabel + ' (' + _quizCtl.answered + ' of 5 answered). Clearing now ENDS this round \u2014 unanswered questions score 0, so this attempt will be recorded as ' + _proj.score + '/' + _proj.max + ' (' + _proj.pct + '% \u00b7 Grade ' + _proj.grade + '). You\u2019ll usually score higher by finishing the round first. Clear anyway?'
+                    _ctlRecord
+                        ? 'You\u2019re mid-' + _ctlNoun + ' on the ' + _ctlLabel + ' (' + _quizCtl.answered + ' of ' + _quizCtl.roundSize + ' answered). Clearing now ENDS this ' + _ctlNoun + ' \u2014 unanswered questions score 0, so this attempt will be recorded as ' + _proj.score + '/' + _proj.max + ' (' + _proj.pct + '% \u00b7 Grade ' + _proj.grade + ') and it counts toward your average grade. You\u2019ll usually score higher by finishing first \u2014 every attempt counts, so just see it through. Clear anyway?'
                         : (state.task === 'foundational_quiz' && !_fqDeterministic() && _fqIsMidRound(canvasChatHistory))
                             ? 'You\u2019re mid-round on this quiz. Clearing now ENDS the round and records it as incomplete (0 marks) \u2014 and it still counts toward your grade. You\u2019ll score far higher by finishing: answer all 5, see your feedback, then run another round if you want 100%. (In the real exam there are no restarts.) Clear anyway?'
                         : (state.task === 'foundational_quiz' && !_fqDeterministic())
@@ -4854,7 +4862,7 @@
                             ? 'Clearing now ends this Mark Scheme Quiz round. Every round counts toward your grade, so you\u2019ll score higher by finishing \u2014 answer all 5, then see your full feedback at the end. (In the real exam there are no restarts.) Clear anyway?'
                             : 'Clear this assessment chat and start fresh? Your document and essay are preserved \u2014 only the chat messages will be removed.',
                     async () => {
-                        if (_ctlMidRound) await _quizCtl.abandonRound();
+                        if (_ctlRecord) await _quizCtl.abandonRound();
                         if (state.task === 'foundational_quiz' && !_fqDeterministic() && _fqIsMidRound(canvasChatHistory)) {
                             // v7.19.570: bailed mid-round \u2014 record it as incomplete (0) so
                             // every started round counts (anti-cheat: a started round can't be
@@ -6817,6 +6825,7 @@
                 get active() { return active; },
                 get midRound() { return active && qs.length > 0 && idx < qs.length; },
                 get answered() { return active ? roundResults.length : 0; },
+                get roundSize() { return active ? (qs.length || 0) : 0; },   // v7.19.751: total Qs this round (5 MSQ/FQ, 10 MSA)
                 // v7.19.350: what THIS round records if abandoned now (unanswered = 0).
                 // Grade band mirrors the canonical Sophicly_Grade_Mapper /
                 // SWML_Quiz_Engine::percentage_to_grade: 9≥95 8≥85 7≥75 6≥65 5≥55 4≥45 3≥35 2≥25 else 1.
