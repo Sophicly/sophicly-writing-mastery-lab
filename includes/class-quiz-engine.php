@@ -294,7 +294,11 @@ class SWML_Quiz_Engine {
                         $of > 0 ? $of : 5,
                         $context['board'] ?? '',
                         $context['text']  ?? '',
-                        max(1, absint($context['attempt'] ?? 1))
+                        max(1, absint($context['attempt'] ?? 1)),
+                        // v7.19.742: stamp the CURRENT lesson's topic from the chat request, not
+                        // a stale active-session topic (same wrong-lesson class of bug as the
+                        // deterministic path). Null → start() falls back to the session.
+                        isset($context['topic_number']) ? absint($context['topic_number']) : null
                     );
                 }
                 $this->record_question($user_id, [
