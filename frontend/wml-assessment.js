@@ -6733,7 +6733,11 @@
                 try {
                     const res = await apiPost(API.quizStart, {
                         board: state.board, subject: state.subject, text: state.text || '',
-                        attempt: state.attempt || 1,
+                        // v7.19.750: MSA re-sits must each carry a DISTINCT attempt # so the grade
+                        // row isn't overwritten (G8 clobbering G9). msaAttempts holds the COMPLETED
+                        // attempts, so the round about to start = length + 1 (first = 1). MSQ/FQ keep
+                        // the LearnDash phase attempt.
+                        attempt: (quizType === 'mark_scheme_assessment') ? (msaAttempts.length + 1) : (state.attempt || 1),
                         count: (quizType === 'mark_scheme_assessment' ? 10 : 5),  // v7.19.739: MSA Final = 10 Qs × 2 = /20
                         quiz_type: quizType,
                         topic_number: (state.topicNumber || 0),  // v7.19.741: stamp THIS lesson's topic (not a stale session one) so the grade maps to the right LD lesson

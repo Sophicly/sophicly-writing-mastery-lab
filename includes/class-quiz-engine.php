@@ -500,6 +500,12 @@ class SWML_Quiz_Engine {
             'score_percentage' => $summary['percentage'],
             'grade_equivalent' => $summary['grade'],
             'task_kind'        => 'mark_scheme',
+            // v7.19.750: emit the re-sit attempt # so student-data persists each re-sit as
+            // its OWN session_records row (session_id …:_msa:aN) instead of UPDATEing one row
+            // (which let a lower re-sit overwrite a higher grade — G8 clobbered G9). Also the
+            // idempotency key: a double-fired finalize reuses the same attempt → updates one
+            // row, never double-counts. See handoff wml-emit-msa-attempt-number-2026-06-29.
+            'attempt_number'   => max(1, (int) ($accumulator['attempt_number'] ?? 1)),
         ];
         do_action(
             'sophicly_canvas_saved',
