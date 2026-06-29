@@ -6334,7 +6334,9 @@
                 if (q.type === 'true_false') {
                     appendQuickButtons([{ label: 'True', value: 'True' }, { label: 'False', value: 'False' }]);
                 }
-                try { updateProgress(Math.min(idx + 2, 7)); } catch (e) {}
+                // v7.19.743: MSA has 14 sidebar steps (Setup=1, Q1-10=2-11, Results=12…) — drive
+                // the real step (Qn → n+1), no 7-cap. MSQ/FQ keep the 7-step cap.
+                try { updateProgress(quizType === 'mark_scheme_assessment' ? (idx + 2) : Math.min(idx + 2, 7)); } catch (e) {}
                 persist();
             }
 
@@ -6430,7 +6432,8 @@
                     body += '\n';
                 });
                 aiBubble(body);
-                try { updateProgress(7); } catch (e) {}
+                // v7.19.743: MSA → mark the "Results & Grade" step (12); MSQ/FQ → step 7.
+                try { updateProgress(quizType === 'mark_scheme_assessment' ? 12 : 7); } catch (e) {}
 
                 busy = true; showCanvasTyping();
                 let qr = null;
@@ -26869,7 +26872,7 @@
     // "Results" step (Neil — show Grade N there too). Idempotent: strips any
     // prior " · Grade N" suffix first. Grade comes from _pendingQuizResult.
     function _patchQuizResultSidebar() {
-        if (state.task !== 'foundational_quiz' && state.task !== 'mark_scheme_unit') return;
+        if (state.task !== 'foundational_quiz' && state.task !== 'mark_scheme_unit' && state.task !== 'mark_scheme') return;
         const g = parseInt(_pendingQuizResult && _pendingQuizResult.grade, 10);
         if (!g || g < 1 || g > 9) return;
         const cont = document.getElementById('swml-progress-steps');
@@ -26882,7 +26885,8 @@
         cont.querySelectorAll('.swml-step').forEach(step => {
             const label = step.querySelector('.swml-step-label');
             const base = ((label && label.textContent) || '').replace(/\s*·\s*Grade\b.*$/i, '').trim();
-            if (!/^results$/i.test(base)) return;
+            // v7.19.743: match "Results" (MSQ/FQ) AND "Results & Grade" (MSA sidebar step 12).
+            if (!/^results\b/i.test(base)) return;
             const circle = step.querySelector('.swml-step-circle');
             if (!circle) return;
             // Only stamp the grade once the Results step is actually REACHED
