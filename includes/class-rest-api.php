@@ -923,6 +923,33 @@ class SWML_REST_API {
             }
         }
 
+        // v7.19.747: MSA predict-then-reveal calibration. The client commits a /20
+        // prediction BEFORE the marks reveal (hypercorrection — Butterfield & Metcalfe)
+        // and sends it here. Persist predicted-vs-actual per text for the dashboard
+        // Calibration Card. CALIBRATION ONLY — never folded into the grade average
+        // ([[project_self_assessment_calibration_widget]]). Read path for the dashboard:
+        // user_meta 'sophicly_msa_calibration' = { "<text_slug>": [ {predicted, actual,
+        // max, grade, board, at}, ... ] }.
+        $predicted = (isset($p['predicted']) && $p['predicted'] !== null && $p['predicted'] !== '')
+            ? max(0, min(40, (int) $p['predicted'])) : null;
+        if ($predicted !== null && $ms_text !== '') {
+            $cal_raw = get_user_meta($user_id, 'sophicly_msa_calibration', true);
+            $cal = !empty($cal_raw) ? json_decode($cal_raw, true) : null;
+            if (!is_array($cal)) $cal = !empty($cal_raw) ? json_decode(wp_unslash($cal_raw), true) : null;
+            if (!is_array($cal)) $cal = [];
+            if (!isset($cal[$ms_text]) || !is_array($cal[$ms_text])) $cal[$ms_text] = [];
+            $cal[$ms_text][] = [
+                'predicted' => $predicted,
+                'actual'    => (float) $summary['score'],
+                'max'       => (int) $summary['max'],
+                'grade'     => (int) $summary['grade'],
+                'board'     => is_array($ms_bank) ? sanitize_key((string) ($ms_bank['board'] ?? '')) : '',
+                'at'        => current_time('c'),
+            ];
+            if (count($cal[$ms_text]) > 50) $cal[$ms_text] = array_slice($cal[$ms_text], -50);
+            update_user_meta($user_id, 'sophicly_msa_calibration', wp_slash(wp_json_encode($cal)));
+        }
+
         return rest_ensure_response([
             'success'    => true,
             'quizResult' => [

@@ -6122,10 +6122,14 @@
             // v7.19.740: MSA cross-attempt history — per attempt {grade,pct,score,max,byCat:{AO1:{right,total},…}}.
             // Drives the self-referenced delta + repeated-weakness/improvement feed-forward across retries.
             let msaAttempts = [];
+            // v7.19.747: MSA predict-then-reveal — the student commits a /20 prediction
+            // BEFORE any marks are shown. Calibration only; never feeds the grade.
+            let predictedScore = null;      // 0-20 once committed this attempt
+            let awaitingPrediction = false; // gating flag while we wait for the prediction
 
             // FQ + MSA each keep their OWN sidecar key so MSQ resume is byte-identical (no collision).
             const lsKey = () => (quizType === 'foundational' ? 'swml_fq_' : quizType === 'mark_scheme_assessment' ? 'swml_msa_' : 'swml_msq_') + [state.board, state.subject, state.text, (state.attempt || 1)].join('_');
-            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total, round, roundResults, msaAttempts })); } catch (e) {} }
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total, round, roundResults, msaAttempts, predictedScore, awaitingPrediction })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function rehydrate(opts) {
                 if (opts && opts.quizType) quizType = (opts.quizType === 'foundational') ? 'foundational' : (opts.quizType === 'mark_scheme_assessment') ? 'mark_scheme_assessment' : 'mark_scheme';
@@ -6137,7 +6141,18 @@
                     qs = d.qs; idx = d.idx || 0; total = d.total || d.qs.length;
                     round = d.round || 1; roundResults = Array.isArray(d.roundResults) ? d.roundResults : [];
                     msaAttempts = Array.isArray(d.msaAttempts) ? d.msaAttempts : [];
+                    predictedScore = (typeof d.predictedScore === 'number') ? d.predictedScore : null;
+                    awaitingPrediction = !!d.awaitingPrediction;
                     active = (idx < qs.length);
+                    // v7.19.747: MSA resumed while AWAITING the /20 prediction (all 10 answered,
+                    // prediction not yet committed) — re-show the predict prompt so a reload
+                    // doesn't strand them between the last question and the reveal.
+                    if (!active && quizType === 'mark_scheme_assessment' && !msaAttempts.length
+                        && awaitingPrediction && predictedScore === null) {
+                        active = true;
+                        setTimeout(() => { try { awaitingPrediction = false; endRound(); } catch (e) {} }, 60);
+                        return true;
+                    }
                     // v7.19.740: MSA resumed BETWEEN attempts (last attempt finished, not yet at
                     // Grade 9) — re-show the Try-again / Finish menu so a reload doesn't strand them.
                     if (!active && quizType === 'mark_scheme_assessment' && msaAttempts.length) {
@@ -6278,6 +6293,27 @@
             // v7.19.746: maps the start-of-unit mark-scheme CONFIDENCE self-rating (1-5)
             // against the actual grade (1-9) and frames the gap as INSIGHT, never a score
             // (calibration, not a metric — see project_self_assessment_calibration_widget).
+            // v7.19.747: predict-vs-actual calibration verdict (/20). Tolerance scales like
+            // examiner standardisation (a board standardises markers to a band around the lead
+            // examiner): within ±2 = examiner-accurate, ±3-4 = slightly off, ≥5 = recalibrate.
+            // Judges the student's SELF-ASSESSMENT accuracy ONLY — never the work itself, and
+            // never the grade (D2/D3 of the predict-reveal spec).
+            function _msaCalibration(predicted, actual) {
+                if (predicted == null || actual == null) return '';
+                const d = predicted - actual, ad = Math.abs(d);
+                const adDisp = Number.isInteger(ad) ? String(ad) : ad.toFixed(1);
+                const dir = (Math.abs(d) < 0.5) ? 'spot on' : (d > 0 ? `over by ${adDisp}` : `under by ${adDisp}`);
+                let verdict, emoji;
+                if (ad <= 2)      { verdict = 'examiner-accurate'; emoji = '🎯'; }
+                else if (ad <= 4) { verdict = 'slightly off';      emoji = '📏'; }
+                else              { verdict = 'recalibrate';       emoji = '🔄'; }
+                const actDisp = Number.isInteger(actual) ? String(actual) : actual.toFixed(1);
+                let line = `**Your prediction:** you said **${predicted}/20**, you scored **${actDisp}/20** — ${dir} (${emoji} ${verdict}). This measures how well you judged your own work, not the work itself.`;
+                if (verdict === 'examiner-accurate') line += ' Boards standardise examiners to a band around the lead examiner — you marked yourself inside that band.';
+                else if (d > 2) line += ' You over-rated this time: name the ONE part of the mark scheme you thought you hit but did not, and what it *actually* rewards.';
+                else if (d < -2) line += ' You under-rated this time: name the strength you undervalued so you trust it next time.';
+                return line;
+            }
             function _msaConfidenceReflection(rating, grade) {
                 if (!rating || !grade) return '';
                 const expected = [0, 2, 4, 5, 7, 9][rating] || 0;   // rating→rough grade band
@@ -6312,6 +6348,9 @@
                     back += dg > 0 ? ` Up from Grade ${prev.grade} — moving.` : (dg < 0 ? ` (Grade ${prev.grade} last time.)` : ` Same as last time — let’s shift it.`);
                 }
                 L.push(back);
+                // v7.19.747: predict-vs-actual calibration (separate verdict from the grade).
+                const _calLine = _msaCalibration(cur.predicted, cur.actual);
+                if (_calLine) L.push(_calLine);
                 if (attempts.length >= 2) {
                     const cats = Array.from(new Set(attempts.flatMap(a => Object.keys(a.byCat))));
                     const repeated = [], improved = [];
@@ -6398,6 +6437,9 @@
                 chatTextarea.style.height = '40px';
                 chatSendBtn.style.opacity = '0.4';
                 chatSendBtn.style.pointerEvents = 'none';
+                // v7.19.747: awaiting the MSA /20 prediction — capture this typed number as the
+                // prediction (before any reveal), not as a quiz answer or a clarification.
+                if (awaitingPrediction) { _capturePrediction(msg); return; }
                 // v7.19.580 (FQ): round finished — any typed message is a clarification about
                 // the round just done (controller still owns the turn so it never leaks to the
                 // legacy LLM quiz). The menu buttons handle Next/Finish.
@@ -6444,7 +6486,38 @@
             // always; the card must not go stale on a sub-100% round), then
             // mastery-or-loop. Persisting every round also makes the grade honest — a
             // student who stops at 3/5 counts as that grade; only a 5/5 finish = 100%.
+            // v7.19.747: parse + commit the student's /20 prediction, then reveal.
+            function _capturePrediction(raw) {
+                if (predictedScore !== null) return;   // already committed — ignore a stray second input
+                const mm = String(raw == null ? '' : raw).match(/-?\d+(?:\.\d+)?/);
+                let v = mm ? Math.round(parseFloat(mm[0])) : NaN;
+                if (isNaN(v)) { aiBubble('Just your best guess as a number **0–20**, please — how many marks out of 20 do you think you earned?'); resetSend(); return; }
+                v = Math.max(0, Math.min(20, v));
+                predictedScore = v;
+                awaitingPrediction = false;
+                persist();
+                aiBubble(`You predicted **${v}/20**. Let’s see how close you were…`);
+                _revealAndFinish();
+            }
+
+            // v7.19.747: predict-then-reveal GATE. On the MSA, the student must commit a /20
+            // prediction BEFORE any marks are revealed (hypercorrection — a committed guess
+            // that's wrong is the most durable correction). Calibration only; never the grade.
+            // Re-entrant: callers (renderQ, handleTurn, resume) keep calling endRound(); the
+            // gate falls through to the real reveal once a prediction exists. MSQ/FQ unaffected.
             async function endRound() {
+                if (quizType === 'mark_scheme_assessment' && predictedScore === null) {
+                    if (!awaitingPrediction) {
+                        awaitingPrediction = true;
+                        persist();
+                        aiBubble('**Before I show your marks — predict your score.** Out of **20**, how many do you think you earned? Tap a number below, or type any number **0–20**. Committing a guess first is how examiners sharpen their judgement — it never affects your grade. 🎯');
+                        appendQuickButtons([0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20].map(nn => ({ label: String(nn), onClick: () => _capturePrediction(String(nn)) })));
+                    }
+                    return;
+                }
+                await _revealAndFinish();
+            }
+            async function _revealAndFinish() {
                 const n = roundResults.length;
                 const correctN = roundResults.filter(r => r.res && r.res.correct).length;
                 const mastered = (n > 0 && correctN === n);
@@ -6471,7 +6544,10 @@
                 busy = true; showCanvasTyping();
                 let qr = null;
                 try {
-                    const res = await apiPost(API.quizFinish, { rounds: round, mastered: mastered });
+                    const res = await apiPost(API.quizFinish, { rounds: round, mastered: mastered,
+                        // v7.19.747: send the committed /20 prediction so PHP persists the
+                        // predicted-vs-actual calibration record for the dashboard (MSA only).
+                        predicted: (quizType === 'mark_scheme_assessment' ? predictedScore : null) });
                     removeCanvasTyping();
                     if (res && res.success && res.quizResult) {
                         qr = res.quizResult;
@@ -6502,6 +6578,9 @@
                         // v7.19.744 anti-repeat: remember which Qs this attempt served so the
                         // next re-sit can rotate fresh ones (sent as seen_ids on /quiz/start).
                         ids: roundResults.map(r => (r.q && r.q.id) ? r.q.id : null).filter(Boolean),
+                        // v7.19.747: predict-then-reveal calibration (predicted /20 vs actual).
+                        predicted: predictedScore,
+                        actual: qr ? qr.score : null,
                     });
                     const grade = qr ? qr.grade : 0;
                     const reachedTop = grade >= 9;
@@ -6599,6 +6678,9 @@
 
             // Fetch a fresh round of 5 (resets the per-round state) and render Q1.
             async function startRound() {
+                // v7.19.747: every fresh MSA set of 10 (first attempt OR a re-sit) clears the
+                // prediction so the student commits a NEW /20 guess before the new reveal.
+                if (quizType === 'mark_scheme_assessment') { predictedScore = null; awaitingPrediction = false; }
                 busy = true; showCanvasTyping();
                 try {
                     const res = await apiPost(API.quizStart, {
