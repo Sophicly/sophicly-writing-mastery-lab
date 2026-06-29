@@ -134,3 +134,43 @@ Question types: MCQ · Select All · Fill · Ranking. Exact AQA Level descriptor
    * **Why A:** Ambitious vocabulary without control does not earn the AO4 high band.
    * **Why C:** Length is not an AO4 criterion.
    * **Why D:** Quotation count is not assessed by AO4.
+
+15. **Type: MCQ [Tests Vocabulary]**
+   * **Question:** AQA asks for a "critical style". In a mark scheme, what does "critical" actually mean?
+   * **Options:** A) Pointing out the play's faults and what Shakespeare did badly, B) Forming an evaluative, argued judgement and taking a position on interpretation, C) Writing in a serious, formal tone, D) Disagreeing with other readers' views
+   * **Correct:** B
+   * **AO:** Vocabulary
+   * **Feedback:** ✓ Correct. In a mark scheme "critical" does NOT mean fault-finding. It means evaluative and argued — you weigh interpretations and commit to a position. AQA pairs it as "critical, exploratory": an argued reading that opens up meaning.
+   * **Why A:** This is the everyday sense of "critical" (negative), not the assessment sense.
+   * **Why C:** Tone is not what "critical" rewards — an argued judgement is.
+   * **Why D:** Critical means evaluating the text, not other students.
+
+16. **Type: MCQ [Tests Vocabulary]**
+   * **Question:** Two students support the idea that Juliet matures. Student X quotes six lines about love. Student Y selects the single half-line "I'll no longer be a Capulet" to pin the turn to self-determination. Whose references are "judicious" — and what does "judicious" mean?
+   * **Options:** A) Student X — judicious means using as much evidence as possible, B) Student Y — judicious means a well-judged, selective reference chosen to do the most argumentative work, C) Both equally — judicious just means quoting accurately, D) Neither — judicious means using the longest quotation
+   * **Correct:** B
+   * **AO:** Vocabulary
+   * **Feedback:** ✓ Correct. "Judicious" means well-judged and selective — the reference is chosen because it does real work, not because it is long or abundant. Y's precise half-line outperforms X's six general lines. This is why AQA Level 6 says "judicious use of precise references".
+   * **Why A:** Judicious is about wise selection, not quantity — more can mean less precise.
+   * **Why C:** Accuracy alone is not judiciousness; the CHOICE must serve the argument.
+   * **Why D:** Length is irrelevant; aptness to the point is what counts.
+
+17. **Type: MCQ [Tests Vocabulary]**
+   * **Question:** AQA Level 6 AO1 rewards a "conceptualised" response. A conceptualised response is one that...
+   * **Options:** A) uses difficult, complicated vocabulary, B) is organised around an idea or concept, treating character and plot as evidence for that idea, C) includes as much historical context as possible, D) is very long and highly detailed
+   * **Correct:** B
+   * **AO:** Vocabulary
+   * **Feedback:** ✓ Correct. "Conceptualised" means built around a concept — e.g. reading the play as an exploration of autonomy versus inherited authority, with characters and events as evidence. It is about organising ideas, not about complexity, length or context-stuffing.
+   * **Why A:** Hard vocabulary is not a concept — conceptualised is about the idea, not the wording.
+   * **Why C:** Context supports AO3; it does not make a response conceptualised.
+   * **Why D:** Length is not conceptualisation — a short response can be conceptualised.
+
+18. **Type: MCQ [Tests Vocabulary]**
+   * **Question:** AQA AO2 moves from "explanation of effects" (Level 4) to "exploration of effects" (Level 6). What does "exploration" add that "explanation" does not?
+   * **Options:** A) It names more techniques, B) It opens up several possible effects or meanings and how they shift the reader, rather than stating a single fixed effect, C) It is simply longer, D) It avoids using quotations
+   * **Correct:** B
+   * **AO:** Vocabulary
+   * **Feedback:** ✓ Correct. "Explanation" states one effect; "exploration" opens up several possible meanings and how they work on the reader. That shift from a single stated effect to layered, opened-up meaning is the AQA Level 4 to Level 6 climb for AO2.
+   * **Why A:** Naming more techniques is feature-spotting, not exploration.
+   * **Why C:** Length is not the difference — depth of opened-up meaning is.
+   * **Why D:** Quotations are still needed; exploration works through precise references.
