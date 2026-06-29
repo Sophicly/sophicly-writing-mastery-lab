@@ -2632,6 +2632,17 @@
         return { q: q, para: '', skill: skill, ao: ao, _detected: true };
     }
 
+    // v7.19.738: the @REFLECT_GATE / prose-fallback reflection panel is an ESSAY-assessment
+    // capability (per-paragraph self-rating 1–5 + AO targeting). The chat-quiz tasks
+    // (mark_scheme = Mark Scheme Assessment, mark_scheme_unit = MSQ/FYW, foundational_quiz)
+    // write NOTHING and have no per-paragraph goal — but their per-question CONFIDENCE rating
+    // ("Rate your confidence: 1–5") tripped _detectReflectAsk (hasScale + "self-reflection"
+    // wording), leaking the essay panel into the MSA. Gate the panel OUT of those tasks so
+    // the cross-cutting detector self-guards by task family (CLAUDE.md canvas task-scoping).
+    function _taskUsesReflectPanel() {
+        return !['mark_scheme', 'mark_scheme_unit', 'foundational_quiz'].includes(state.task);
+    }
+
     // Self-contained mic for the panel's own textarea (the doc-editor dictation at
     // toggleDictation targets the canvas, not this field — keep them independent).
     function _attachPanelMic(textarea, micBtn, onChange) {
@@ -4518,7 +4529,7 @@
                 text = _stripMatchMarker(text);
 
                 // v7.19.596: @REFLECT_GATE composite reflection panel — parse before strip.
-                const _reflectData = _parseReflectGate(text) || _detectReflectAsk(rawText || text);
+                const _reflectData = _taskUsesReflectPanel() ? (_parseReflectGate(text) || _detectReflectAsk(rawText || text)) : null;
                 text = _stripReflectGate(text);
                 // v7.19.598: strip @FB_BEGIN/@FB_END (auto-filed to feedback boxes); keep inner text in chat.
                 text = _stripFeedbackMarkers(text);
@@ -12605,7 +12616,7 @@
                                 const _matchData2 = _parseMatchMarker(text);
                                 text = _stripMatchMarker(text);
                                 // v7.19.596: @REFLECT_GATE composite reflection panel — parse before strip.
-                                const _reflectData2 = _parseReflectGate(text) || _detectReflectAsk(rawText || text);
+                                const _reflectData2 = _taskUsesReflectPanel() ? (_parseReflectGate(text) || _detectReflectAsk(rawText || text)) : null;
                                 text = _stripReflectGate(text);
                                 // v7.19.598: strip @FB markers; feedback auto-files to per-Q boxes, text stays in chat.
                                 text = _stripFeedbackMarkers(text);
