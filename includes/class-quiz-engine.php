@@ -106,10 +106,16 @@ class SWML_Quiz_Engine {
     /**
      * Start a new quiz attempt. Resets any previous accumulator.
      */
-    public function start($user_id, $quiz_type, $total_questions, $board, $text, $attempt_number = 1) {
+    public function start($user_id, $quiz_type, $total_questions, $board, $text, $attempt_number = 1, $topic_number = null) {
         $session = SWML_Session_Manager::get_active_session($user_id);
         $session_id   = $session['session_id']            ?? '';
-        $topic_number = $session['context']['topic_number'] ?? 0;
+        // v7.19.741: prefer the CURRENT lesson's topic_number passed explicitly by the caller
+        // (the client sends it on /quiz/start). The active-session value is only a FALLBACK and
+        // can be STALE from a previously-visited lesson — that stale topic stamped the quiz row
+        // and mis-mapped the grade to the wrong LearnDash lesson (MSA on U2L5 → grade on U4L11).
+        if ($topic_number === null) {
+            $topic_number = $session['context']['topic_number'] ?? 0;
+        }
 
         $accumulator = [
             'quiz_type'       => sanitize_key($quiz_type),

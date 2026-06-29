@@ -6557,6 +6557,7 @@
                         attempt: state.attempt || 1,
                         count: (quizType === 'mark_scheme_assessment' ? 10 : 5),  // v7.19.739: MSA Final = 10 Qs × 2 = /20
                         quiz_type: quizType,
+                        topic_number: (state.topicNumber || 0),  // v7.19.741: stamp THIS lesson's topic (not a stale session one) so the grade maps to the right LD lesson
                     });
                     removeCanvasTyping();
                     if (!res || !res.success || !res.questions || !res.questions.length) {
@@ -25197,12 +25198,14 @@
             + `<p><em>Sophia gives you the per-question table. Here you commit to ONE pattern claim across all your wrong (or near-wrong) answers — that's the synthesis the literature shows actually transfers.</em></p>`
             + `<p><em>📋 See Sophia's <strong>Step 4 (Results)</strong> + <strong>Step 5 (Grade & Calculation)</strong> in the chat for the data.</em></p>`
         );
-        html += sectionHTML('mark_scheme_response', 'Score + Grade (record what Sophia gave you)', true, null,
-            `<p><strong>Raw score</strong> (e.g. "15/20" — type as Sophia gave it):</p>`
-            + inputHTML('Score from Sophia’s Step 4 dashboard', 'ms-score-raw')
-            + `<p><strong>Predicted grade (1–9):</strong></p>`
-            + selectHTML('Grade Sophia gave you', 'ms-predicted-grade', GRADE_OPTIONS, false)
-            + `<p><strong>Grade you are aiming for (1–9):</strong></p>`
+        // v7.19.741: Score · % · Grade are AUTO-filled from the deterministic assessment —
+        // the result card is inserted right under this divider by applyQuizResultToEditor, so
+        // the student never re-types what the assessment already computed. Only the TARGET
+        // grade stays manual. (Deleted the old manual "Raw score" input + the mislabelled
+        // "Predicted grade = grade Sophia gave you" select — Neil 2026-06-29.)
+        html += sectionHTML('mark_scheme_response', 'Grade you are aiming for', true, null,
+            `<p><strong>Your Score, percentage and grade are filled in automatically above</strong>, straight from your assessment — no need to copy them. Set the grade you are working towards:</p>`
+            + `<p><strong>Target grade (1–9):</strong></p>`
             + selectHTML('Target grade', 'ms-grade-goal', GRADE_OPTIONS, false)
         );
         html += sectionHTML('mark_scheme_response', 'ONE pattern across your wrong answers', true, null,
@@ -26931,12 +26934,15 @@
                 else if (tmp.firstChild) tmp.insertBefore(card, tmp.firstChild);
                 else tmp.appendChild(card);
             } else if (state.task === 'mark_scheme') {
-                // v7.19.739: MSA Final — place the auto Score · % · Grade card at the TOP
-                // of the mark-scheme doc, just under the "How to Use" notice if present, so
-                // it is the first thing the student sees (the deterministic score replaces the
-                // old manual "record what Sophia gave you" box).
+                // v7.19.741: MSA Final — place the auto Score · % · Grade card INSIDE
+                // "2. HOW AM I GOING? (Feed-Back)", right under that divider, where the old
+                // manual "record what Sophia gave you" box used to sit (Neil: in-section, not a
+                // separate top card). Fall back to under the "How to Use" notice, then top.
+                const _divs = Array.from(tmp.querySelectorAll('[data-section-type="divider"]'));
+                const _fb = _divs.find(d => /HOW AM I GOING/i.test((d.getAttribute('data-section-label') || '') + ' ' + (d.textContent || '')));
                 const _notice = tmp.querySelector('[data-section-type="notice"]');
-                if (_notice && _notice.parentNode) _notice.parentNode.insertBefore(card, _notice.nextSibling);
+                if (_fb && _fb.parentNode) _fb.parentNode.insertBefore(card, _fb.nextSibling);
+                else if (_notice && _notice.parentNode) _notice.parentNode.insertBefore(card, _notice.nextSibling);
                 else if (tmp.firstChild) tmp.insertBefore(card, tmp.firstChild);
                 else tmp.appendChild(card);
             } else {

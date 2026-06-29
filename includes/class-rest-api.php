@@ -799,7 +799,11 @@ class SWML_REST_API {
         }
 
         $engine = SWML_Quiz_Engine::instance();
-        $engine->start($user_id, $is_msa ? 'mark_scheme_assessment' : ($is_fq ? 'foundational' : 'mark_scheme'), count($picked), $board, $text, $attempt);
+        // v7.19.741: thread the CURRENT lesson's topic_number from the client so the quiz row
+        // is stamped with THIS lesson, not a stale session topic (which mis-mapped MSA grades
+        // to the wrong LearnDash lesson). Null when absent → engine falls back to the session.
+        $topic = isset($p['topic_number']) ? absint($p['topic_number']) : null;
+        $engine->start($user_id, $is_msa ? 'mark_scheme_assessment' : ($is_fq ? 'foundational' : 'mark_scheme'), count($picked), $board, $text, $attempt, $topic);
 
         // Persist the picked set WITH keys server-side; client never sees keys.
         update_user_meta($user_id, self::QUIZ_BANK_META . $user_id,
