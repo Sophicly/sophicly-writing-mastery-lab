@@ -2983,6 +2983,31 @@
         return out;
     }
 
+    // v7.19.753: identity field-capture for the v7.19.14 → v7.19.741 heal. v7.19.741
+    // removed the §2 manual "Raw score" (ms-score-raw) + "Predicted grade"
+    // (ms-predicted-grade) fields. A pre-741 v14 doc still carries them and passes the
+    // '1. WHERE AM I GOING' gate, so it never re-templates. v14→741 field ids are
+    // otherwise identical, so capture every typed value by its OWN id; on re-apply the
+    // two removed ids find no target node and drop cleanly. Nothing typed is lost.
+    function _parseMSFFieldsIdentity(html) {
+        if (!html || typeof html !== 'string') return [];
+        let tmp;
+        try { tmp = document.createElement('div'); tmp.innerHTML = html; }
+        catch (_) { return []; }
+        const out = [];
+        tmp.querySelectorAll('[data-input-field][data-field-id]').forEach(el => {
+            const id = el.getAttribute('data-field-id') || '';
+            const text = (el.textContent || '').trim();
+            if (id && text) out.push({ fieldId: id, value: text, type: 'input' });
+        });
+        tmp.querySelectorAll('[data-select-field][data-field-id]').forEach(el => {
+            const id = el.getAttribute('data-field-id') || '';
+            const val = el.getAttribute('data-value') || '';
+            if (id && val) out.push({ fieldId: id, value: val, type: 'select' });
+        });
+        return out;
+    }
+
     // Apply migrated fields to a TipTap editor — locate selectField / inputField
     // nodes by fieldId, set value (selectField) or replace inline text (inputField).
     function _applyMigratedMSFFields(editor, fields) {
@@ -27374,18 +27399,30 @@
             // Old "MARK SCHEME → TTECEA ENGAGEMENT" exists in BOTH v7.19.12 and
             // v7.19.14, so it can't distinguish. Use the unique Feed-Up divider.
             const hasV14Template = currentMS.includes('1. WHERE AM I GOING');
-            if (hasV14Template) {
-                console.log('WML: Mark scheme document (v7.19.14+) already loaded, skipping template');
+            // v7.19.753: the '1. WHERE AM I GOING' divider is unchanged between the
+            // pre-741 and post-741 v14 templates, so it CANNOT detect the v7.19.741
+            // field removal. A pre-741 doc still carries the deleted §2 manual fields
+            // (ms-score-raw / ms-predicted-grade — the "Raw score" + "Predicted grade"
+            // boxes the result card now replaces), passes this gate, and never heals.
+            // Detect those two ids and re-template, preserving every typed value by
+            // identity. The regex is specific to the two removed ids, so a healthy
+            // post-741 doc has neither and correctly skips (no false-positive wipe).
+            const hasStaleV14Fields = /data-field-id="(ms-score-raw|ms-predicted-grade)"/.test(currentMS);
+            if (hasV14Template && !hasStaleV14Fields) {
+                console.log('WML: Mark scheme document (v7.19.741+) already current, skipping template');
                 return;
             }
-            // v7.19.14: capture v7.19.12 field values BEFORE swap so they can be
-            // applied to the new doc post-swap.
-            const _migratedFields = _parseV12MSFFields(currentMS);
+            // Capture field values BEFORE swap so they can be re-applied post-swap.
+            // v14-stale docs keep identical field ids (bar the two removed) → identity
+            // capture; pre-v14 docs need the v7.19.12→14 remap.
+            const _migratedFields = hasV14Template
+                ? _parseMSFFieldsIdentity(currentMS)
+                : _parseV12MSFFields(currentMS);
             if (currentMS.includes('mark_scheme_ao') || currentMS.includes('data-section-type')) {
-                console.log('WML: Clearing stale mark scheme document (pre-v7.19.14 template or leaked exam template)');
+                console.log('WML: Clearing stale mark scheme document (pre-v7.19.741 fields, pre-v7.19.14 template, or leaked exam template)');
                 try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
             }
-            console.log('WML: Generating mark scheme study template (v7.19.14)');
+            console.log('WML: Generating mark scheme study template (current)');
             const msTemplate = getMarkSchemeTemplate(null);
             if (canvasEditor) {
                 _migrationActive = true;
@@ -27395,12 +27432,12 @@
                     _migrationActive = false;
                 }
                 if (_migratedFields.length) {
-                    try { _applyMigratedMSFFields(canvasEditor, _migratedFields); console.log('WML: Migrated', _migratedFields.length, 'v7.19.12 MSF field(s) → v7.19.14'); }
-                    catch (e) { console.warn('WML: v7.19.12→v7.19.14 MSF migration failed', e); }
+                    try { _applyMigratedMSFFields(canvasEditor, _migratedFields); console.log('WML: Preserved', _migratedFields.length, 'MSF field value(s) across heal'); }
+                    catch (e) { console.warn('WML: MSF field preservation failed', e); }
                 }
                 snapshotTemplateBaseline(canvasEditor);
                 refreshWordCountUI();
-                console.log('WML: Mark scheme template injected (v7.19.14)');
+                console.log('WML: Mark scheme template injected (current)');
             }
             return;
         }
