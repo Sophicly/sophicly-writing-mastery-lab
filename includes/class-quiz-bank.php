@@ -255,6 +255,14 @@ class SWML_Quiz_Bank {
         if (isset(self::$subject_map[$text])) {
             $candidates[] = preg_replace('/\.md$/', '', self::$subject_map[$text]);
         }
+        // Canvas-slug form: <board>_lang_paper_N / language_paper_N → languageN.md.
+        // state.text drifts between the subject ('language1'), the alias ('language_p1')
+        // and the canvas slug ('aqa_lang_paper_1') — one canonical naming layer
+        // (CLAUDE.md canvas rule #3). Requires the "lang" token so no Literature text
+        // (none contain "lang_paper") can false-match.
+        if (preg_match('/(?:lang|language)_?paper[_-]?([12])/i', (string) $text, $mm)) {
+            $candidates[] = 'language' . $mm[1];
+        }
         foreach ($candidates as $slug) {
             if ($slug === '') continue;
             $path = $dir . $slug . '.md';
