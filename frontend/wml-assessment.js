@@ -8840,6 +8840,14 @@
                 if (!cur || cur.unit !== s.unit) { cur = { unit: s.unit, unitPos: s.unitPos, items: [] }; groups.push(cur); }
                 cur.items.push(s);
             });
+            // v7.19.768: a "Table of Contents" entry at the very TOP of the list that jumps to
+            // the very top of the document. The breadcrumb already reads "Table of Contents" when
+            // you're at the top, but there was no NAV ENTRY to get back there — Overview jumps to
+            // the first SECTION (Question & Extract), not the document top (Neil 2026-06-30).
+            const tocItem = el('button', { className: 'swml-scroll-index-item swml-scroll-index-toc', tabIndex: -1,
+                onClick: () => { closeIndexPanel(); contentWrap.scrollTo({ top: 0, behavior: 'smooth' }); } });
+            tocItem.appendChild(el('span', { className: 'swml-scroll-index-itemlabel', textContent: 'Table of Contents' }));
+            siList.appendChild(tocItem);
             groups.forEach(g => {
                 const groupWrap = el('div', { className: 'swml-scroll-index-group swml-scroll-index-collapsed' });
                 // header = chevron (toggle open/close) + label (jump to the unit's start)
@@ -9030,6 +9038,11 @@
         }, { passive: true });
         // initial paint — build list once so the title shows the current section even when closed
         requestAnimationFrame(() => { buildIndexList(); updateIndexProgress(); updateIndexActive(); });
+        // v7.19.768: expose buildIndexList so the async server-load completion can REBUILD the
+        // section positions AFTER setContent lands the real doc (the initial paint above captures
+        // TEMPLATE positions, which the closed-panel breadcrumb then tracked → wrong/oscillating
+        // section names). Mirrors the _recalcScoreSummaryRef hand-off.
+        _siRebuildRef = () => { try { buildIndexList(); updateIndexProgress(); updateIndexActive(); } catch (_) {} };
 
         let outlineOpen = false;
         function toggleOutlinePanel(force) {
@@ -9333,10 +9346,15 @@
             if (!target || !contentWrap) return;
             const containerRect = contentWrap.getBoundingClientRect();
             const targetRect = target.getBoundingClientRect();
-            // Account for zoom: visual offset / scale = layout offset
-            const scale = canvasZoom || 1;
+            // v7.19.768: NO zoom division. docWrap is scaled by canvasZoom (origin top) INSIDE
+            // the unscaled contentWrap scroller, so getBoundingClientRect already returns the
+            // VISUAL (post-scale) position and scrollTop moves content in the scroller's own
+            // (unscaled) pixels — 1:1 with the visual offset. The old `/ scale` double-compensated:
+            // at <100% it inflated the offset and overshot, scrolling way past the target (Neil
+            // 2026-06-30: "scroll-to exaggerated when zoomed out / window smaller"). At 100% it
+            // was a no-op (÷1), which is why it only looked correct there.
             const visualOffset = targetRect.top - containerRect.top;
-            const scrollTarget = contentWrap.scrollTop + (visualOffset / scale) - SWML_SCROLL_TOP_PAD;
+            const scrollTarget = contentWrap.scrollTop + visualOffset - SWML_SCROLL_TOP_PAD;
             contentWrap.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
         }
 
@@ -25989,6 +26007,13 @@
     // _positionOverlaysRef → the sidebar-accordion toggle re-anchors the doc mark/calib overlays.
     let _gradeFromPctRef = null;
     let _positionOverlaysRef = null;
+    // v7.19.768: hoisted ref to the scroll-index island's buildIndexList so the async
+    // server-load completion can REBUILD it. The island captures section positions at
+    // canvas-build time — i.e. on the TEMPLATE, BEFORE the server doc lands via setContent
+    // — so the closed-panel breadcrumb tracked STALE positions and named the wrong section
+    // (Neil: breadcrumb oscillated RESPONSE↔Question↔Essay-Plan). The panel itself was fine
+    // because it rebuilds on open. Rebuilding after load fixes the live tracking.
+    let _siRebuildRef = null;
     // v7.14.77: Patch checkbox state into HTML string AFTER getHTML() —
     // no TipTap transaction needed, zero scroll side-effects.
     function patchCheckStateIntoHTML(html) {
@@ -26541,6 +26566,9 @@
                 // and the score section exists in the DOM. Idempotent.
                 setTimeout(() => {
                     if (typeof _recalcScoreSummaryRef === 'function') _recalcScoreSummaryRef();
+                    // v7.19.768: rebuild the scroll-index after the real doc lands so the island
+                    // breadcrumb tracks the LOADED doc's sections, not the pre-load TEMPLATE.
+                    if (typeof _siRebuildRef === 'function') _siRebuildRef();
                     // v7.19.633: project the persisted Quiz Result (FQ / MSQ) into the doc on
                     // LOAD. The live finalise path (res.quizResult) can miss the in-doc write;
                     // _pendingQuizResult was captured above from /canvas/load, so re-project it

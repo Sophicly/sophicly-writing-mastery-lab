@@ -8304,6 +8304,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-scroll-index-group-items { display: flex; flex-direction: column; gap: 1px; }
 .swml-scroll-index-group.swml-scroll-index-collapsed .swml-scroll-index-group-items { display: none; }
 .swml-scroll-index-group-items .swml-scroll-index-item { padding-left: 26px; }
+/* v7.19.768: "Table of Contents" row sits above the unit groups; subtle separator below. */
+.swml-scroll-index-toc { font-weight: 600; margin-bottom: 4px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); border-radius: 0; }
+.swml-canvas-light .swml-scroll-index-toc { border-bottom-color: rgba(20,18,30,0.1); }
 
 .swml-scroll-index-item {
     display: flex;
