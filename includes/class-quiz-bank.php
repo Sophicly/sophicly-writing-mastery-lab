@@ -245,7 +245,22 @@ class SWML_Quiz_Bank {
     }
 
     public static function parse_sections_msa($text) {
-        return self::parse_file(self::msa_dir() . sanitize_file_name((string) $text) . '.md');
+        $dir = self::msa_dir();
+        // Prefer an exact text-named bank (e.g. romeo_and_juliet); else resolve a
+        // drifted Language subject alias (language_p1 / language_paper_1 / lang_p1)
+        // to the canonical basename via the shared subject_map, so state.text drift
+        // still finds the bank instead of silently falling back to the legacy AI MSA
+        // (Reeham AQA Lang P1, 2026-06-30 — only romeo_and_juliet.md existed). (v7.19.781)
+        $candidates = [sanitize_file_name((string) $text)];
+        if (isset(self::$subject_map[$text])) {
+            $candidates[] = preg_replace('/\.md$/', '', self::$subject_map[$text]);
+        }
+        foreach ($candidates as $slug) {
+            if ($slug === '') continue;
+            $path = $dir . $slug . '.md';
+            if (file_exists($path)) return self::parse_file($path);
+        }
+        return [];
     }
 
     public static function questions_for_msa($text, $board) {
