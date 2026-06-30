@@ -19102,6 +19102,12 @@
                             }
                             recalculateScoreSummary();
                             if (typeof updateOutline === 'function') updateOutline();
+                            if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion();
+                            // v7.19.765: PERSIST. The SA write is an overlay-driven DOM change that
+                            // does NOT fire the editor onUpdate, so the ratings never autosaved — they
+                            // vanished on refresh (Neil 2026-06-30). saveCanvasContent serialises the
+                            // doc (getHTML) + persists, also graduating the seeded _assessment doc.
+                            if (typeof saveCanvasContent === 'function') saveCanvasContent();
                         });
                     };
 
@@ -19273,6 +19279,9 @@
                             recalculateScoreSummary();
                             if (typeof updateOutline === 'function') updateOutline();
                             if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion();
+                            // v7.19.765: PERSIST — same reason as the SA dropdowns: this overlay
+                            // write doesn't fire onUpdate, so the count never autosaved.
+                            if (typeof saveCanvasContent === 'function') saveCanvasContent();
                         });
                     };
 
@@ -26480,6 +26489,20 @@
                     // here so it self-heals on every reopen. applyQuizResultToEditor self-guards
                     // (no-ops unless _pendingQuizResult + a quiz task + canvasEditor present).
                     if (typeof applyQuizResultToEditor === 'function') applyQuizResultToEditor();
+                    // v7.19.765: GRADUATE a seeded ASSESSMENT doc. A seed (is_seed) is read-only
+                    // server-side; the design relies on "the first autosave persists it" — but the
+                    // assessment's only inputs (Self-Assessment dropdowns, opt-out pill, Analytics
+                    // boxes) arrive through overlay controls that don't fire the editor onUpdate, so
+                    // the _assessment doc NEVER graduated: every reload re-seeded from the diagnostic
+                    // and is_seed→prefer-server discarded the student's inputs (Neil 2026-06-30 —
+                    // nothing survived refresh). Persist the seed NOW + flush to the server
+                    // immediately, so the NEXT load reads a REAL _assessment doc (not a seed) and
+                    // student inputs stick. Scoped to the assessment tasks (prose stages already
+                    // graduate via typing); saveCanvasContent self-guards review mode.
+                    if (res.is_seed && (state.task === 'assessment' || state.task === 'redraft_assessment')
+                        && typeof saveCanvasContent === 'function') {
+                        try { saveCanvasContent(); if (typeof _flushPendingSaves === 'function') _flushPendingSaves(); } catch (_) {}
+                    }
                 }, 0);
             }
         } catch (e) {
