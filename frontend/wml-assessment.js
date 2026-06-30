@@ -4007,6 +4007,72 @@
             }
         } catch (_) { /* never throw */ }
     }
+    // v7.19.774: reset the MARKING OUTPUT on a fresh assessment chat (Clear-chat restart).
+    // ROOT for "the Protocol Progress sidebar still shows all-complete after I clear the
+    // chat" (Neil, R&J AQA): the sidebar (_buildLitSidebarModel) is CONTENT-gated — it reads
+    // beat completion straight from the feedback-box labels (numeric mark = done) + box text
+    // (gold present). Clearing only the CHAT leaves the prior run's marks in the doc, so the
+    // sidebar reads them as complete. Resetting the sidebar therefore MEANS resetting the
+    // doc's marking output. We clear ONLY the marking (feedback boxes + predictions + the
+    // Score Summary readout) and PRESERVE the student's essay/response, Self-Assessment, and
+    // plan — so if the re-mark is interrupted the doc is a clean "ready to assess" state, not
+    // corrupt. Writes go through PM transactions (setNodeMarkup / insertContentAt) so the
+    // DOMObserver can't revert them (the v766 asymmetry). Self-guards to assessment tasks and
+    // fires ONLY on the user's explicit Clear-chat action — never on load (cf. the v713
+    // blank-on-refresh wipe). Paragraph feedback boxes only (label carries "(— / N)"); the
+    // qualitative Analytics box has no mark and is left for the new run to overwrite.
+    function _resetAssessmentMarkingOutput() {
+        if (!canvasEditor) return;
+        if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return;
+        if (state.reviewMode) return;
+        const HAS_MARK = /\(\s*\S+\s*\/\s*\d+\s*\)/;          // "(3 / 8)" or "(— / 8)"
+        const PLACEHOLDER = '<p><em>Feedback and revised paragraph example will appear after assessment.</em></p>';
+        try {
+            // 1) Labels (attrs-only → positions stable, batch in ONE transaction).
+            let tr = canvasEditor.state.tr, labelChanged = false;
+            canvasEditor.state.doc.descendants((node, pos) => {
+                if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'feedback') {
+                    const lbl = String(node.attrs.label || '');
+                    if (!HAS_MARK.test(lbl)) return true;     // skip Analytics / unmarked boxes
+                    const reset = lbl.replace(/\(\s*\S+\s*\/\s*(\d+)\s*\)/, '(— / $1)');
+                    if (reset !== lbl) { tr = tr.setNodeMarkup(pos, undefined, Object.assign({}, node.attrs, { label: reset })); labelChanged = true; }
+                }
+                return true;
+            });
+            if (labelChanged) canvasEditor.view.dispatch(tr);
+            // 2) Box content → placeholder (structural → re-query each pass; positions shift).
+            let guard = 0;
+            while (guard++ < 40) {
+                let target = null;
+                canvasEditor.state.doc.descendants((node, pos) => {
+                    if (target) return false;
+                    if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'feedback'
+                        && HAS_MARK.test(String(node.attrs.label || ''))) {
+                        const txt = String(node.textContent || '');
+                        if (!(txt.trim() === '' || /will appear after assessment|will be assessed here/i.test(txt))) {
+                            target = { pos: pos, size: node.nodeSize };
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+                if (!target) break;
+                canvasEditor.commands.insertContentAt({ from: target.pos + 1, to: target.pos + target.size - 1 }, PLACEHOLDER);
+            }
+            // 3) Drop stored predictions so the predict-mark row shows again on the re-mark.
+            try { _clearPredictionsForDoc(); } catch (_) {}
+            // 4) Refresh ticks + Score Summary readout + sidebar AFTER the DOM reflects the PM
+            //    changes. recalc reads the now-empty boxes → "Total Marks: 0 / N (in progress)";
+            //    _refreshLangSidebar repaints the Protocol Progress beats back to not-started.
+            requestAnimationFrame(() => {
+                try { _recomputeAllCompletion(); } catch (_) {}
+                try { if (typeof _recalcScoreSummaryRef === 'function') _recalcScoreSummaryRef(); } catch (_) {}
+                try { _refreshLangSidebar(); } catch (_) {}
+                try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
+            });
+            console.log('WML v7.19.774: assessment marking output reset on fresh chat');
+        } catch (e) { console.warn('WML reset-marking: non-fatal', e && e.message); }
+    }
     // v7.19.490: the section nodeView re-applies a fixed attr set on every render
     // (computeDomAttrs has no data-section-complete), and pagination/late row mounts
     // can wipe or pre-empt the load pass — so re-run completion (debounced) after any
@@ -5094,6 +5160,11 @@
                         chatMessages.innerHTML = '';
                         state.plan = {};
                         state._phaseMarkedComplete = false;
+                        // v7.19.774: a fresh assessment chat must reset the Protocol Progress
+                        // sidebar — which is content-gated on the doc's marks, so we clear the
+                        // marking output (feedback boxes + Score Summary readout + predictions),
+                        // preserving the essay. Self-guards to assessment tasks (no-op otherwise).
+                        _resetAssessmentMarkingOutput();
                         // v7.19.3: preserve state.step for mark_scheme_unit (it's the bridge
                         // dispatch value 1=Quiz / 2=FYW, NOT a sidebar position). Pre-fix
                         // chat-clear in FYW lesson reset state.step from 2 back to 1, so
