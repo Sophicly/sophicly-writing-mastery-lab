@@ -6478,7 +6478,15 @@ TEMPLATE;
         // as FYW: explicit "DO NOT ASK" directive overrides the protocol fallback.
         // Systemic root fix (uniform `## SESSION CONTEXT — PRE-SET VARIABLES`
         // block) tracked in plan: ~/.claude/plans/you-are-the-wml-sparkling-lynx.md.
-        $step = isset($context['step']) ? (int) $context['step'] : 0;
+        // v7.19.779: default unset step to 1, MATCHING the protocol loader (L1282
+        // `$context['step'] ?? 1`). The loader picks the MSQ (step-1) protocol when
+        // step is unset, but this block previously defaulted unset→0, so the gate
+        // `in_array($step,[1,2])` silently failed → the board-skip directive was NOT
+        // emitted → Sophia fell through to the protocol's "which Exam Board?" menu
+        // even though board+task were correct (AQA Lang P1 MSQ, 2026-06-30). Unset
+        // step reliably means Quiz=1 here: a Forging lesson MUST set step=2 or the
+        // loader would mis-load the Quiz protocol — so aligning the default is safe.
+        $step = (int) ($context['step'] ?? 1);
         $board_raw = $context['board'] ?? '';
         if ($task === 'mark_scheme_unit' && $board_raw !== '' && in_array($step, [1, 2], true)) {
             $board_display_map = [
