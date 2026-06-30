@@ -489,6 +489,16 @@
                             // never grow the whole list past the viewport.
                             if (body) { body.style.maxHeight = 'min(42vh, 480px)'; body.style.overflowY = 'auto'; }
                         }
+                        // v7.19.758: re-anchor the doc's absolutely-positioned mark + calib-readout
+                        // overlays after the 0.3s max-height transition. An accordion expand reflows
+                        // the panel but fires neither the scroll nor resize listener that positions
+                        // them, so the "Predicted · Actual · Δ" row drifted off its box until the next
+                        // scroll. Re-running positionDropdownOverlays redraws them in place (it also
+                        // resets each overlay's display, so a hidden one re-shows).
+                        if (typeof _positionOverlaysRef === 'function') {
+                            requestAnimationFrame(() => { try { _positionOverlaysRef(); } catch (_) {} });
+                            setTimeout(() => { try { _positionOverlaysRef(); } catch (_) {} }, 330);
+                        }
                     }
                 }, [
                     el('span', { className: 'swml-step-group-title', textContent: group.label }),
@@ -698,8 +708,7 @@
         // (9 gradient / 8 purple / 7 blue / 6 green / 5 yellow / 4 orange / 3↓ red — Neil)
         // once a grade exists; the aspirational ★ until then. NOTE: state.plan.grade is
         // stored as the full match "Grade: 6" (detectAssessmentStep), so pull the digit.
-        const _gm = String((state.plan && state.plan.grade) || '').match(/\b([1-9])\b/);
-        const _grade = _gm ? parseInt(_gm[1], 10) : 0;
+        const _grade = _deterministicDocGrade();   // v7.19.758: deterministic doc grade (summed marks), NOT the AI's state.plan.grade
         steps.push({ step: ++n, label: 'Total & Grade', group: null, display: _grade ? String(_grade) : '★', gradeTier: _grade || null });
         const allDone = qs.every(q => q.marked);
         const current = allDone ? n : (firstIncomplete || 2);
@@ -719,6 +728,29 @@
     // the existing _applyServerSidebar consumer (one render/advance path). Monotonic:
     // once a LATER paragraph is marked, earlier beats force-complete so a missed detect
     // can't strand the pointer (Intro → Body → Conclusion order).
+    // v7.19.758: ONE source for the assessment grade. Sums EVERY filed feedback mark
+    // in the doc (the same DOM read recalculateScoreSummary uses) and bands it via the
+    // canonical getGradeFromPercentage (exposed as _gradeFromPctRef so this module-level
+    // fn can reach the builder-scoped bander → identical boundaries). Replaces the
+    // sidebar's old state.plan.grade source — the AI's free arithmetic, which both
+    // mis-rounds (9.5→9) AND mis-bands (9→Grade 2; 9 is Grade 3) → drifted from the
+    // deterministic doc/commit grade. Returns 0 (★) until a mark is filed.
+    function _deterministicDocGrade() {
+        const editor = document.getElementById('swml-tiptap-editor');
+        if (!editor || typeof _gradeFromPctRef !== 'function') return 0;
+        let total = 0, max = 0, any = false;
+        editor.querySelectorAll('[data-section-type="feedback"]').forEach(section => {
+            const lbl = section.getAttribute('data-section-label') || '';
+            const mm = lbl.match(/\((\S+)\s*\/\s*(\d+)\)$/);
+            if (!mm) return;
+            max += parseInt(mm[2], 10);
+            if (mm[1] !== '—') { total += parseFloat(mm[1]) || 0; any = true; } // '—' = unset
+        });
+        if (!any || max <= 0) return 0;
+        const g = _gradeFromPctRef(Math.round((total / max) * 100));
+        return (g === 'U' || !g) ? 0 : (parseInt(g, 10) || 0);
+    }
+
     function _buildLitSidebarModel() {
         if (state.reviewMode) return null;
         if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return null;
@@ -766,8 +798,7 @@
                 if (firstIncomplete === 0 && !b.done) firstIncomplete = n;
             });
         });
-        const _gm = String((state.plan && state.plan.grade) || '').match(/\b([1-9])\b/);
-        const _grade = _gm ? parseInt(_gm[1], 10) : 0;
+        const _grade = _deterministicDocGrade();   // v7.19.758: deterministic doc grade (summed marks), NOT the AI's state.plan.grade
         steps.push({ step: ++n, label: 'Total & Grade', group: null, display: _grade ? String(_grade) : '★', gradeTier: _grade || null });
         const allDone = paras.every(p => p.marked);
         const current = allDone ? n : (firstIncomplete || 2);
@@ -1536,16 +1567,22 @@
             // canvas, not the page. Targets the box for the FIRST card's question (the one being marked).
             if (wrote) {
                 try {
-                    const qn = numOf((cards[0] || {}).q);
+                    // v7.19.758: match by the canonical _paraKey, NOT the first digit. The
+                    // old numOf(q) → (lbl.match(/\d+/)) matched only boxes with a digit, so
+                    // INTRODUCTION + CONCLUSION (no digit → qn '') silently never scrolled —
+                    // body 1/2/3 did. _paraKey resolves "Introduction"→"Intro",
+                    // "Body 2"→"2", "Conclusion"→"Conclusion" on BOTH the card.q and the box
+                    // label (same key the fill-loop uses at ~1418), so every section scrolls.
+                    const key0 = _paraKey((cards[0] || {}).q);
                     let tgtEl = null;
                     (canvasEditor.view && canvasEditor.view.dom ? canvasEditor.view.dom : document)
                         .querySelectorAll('.swml-section-feedback').forEach((b) => {
                             const lbl = b.getAttribute('data-section-label') || '';
-                            if (qn && (lbl.match(/\d+/) || [])[0] === qn) tgtEl = b;
+                            if (key0 && _paraKey(lbl) === key0) tgtEl = b;
                         });
                     if (tgtEl) {
                         _swmlScrollToTop(tgtEl);
-                        console.log('[WML feedback] auto-scrolled to feedback box Q' + qn);
+                        console.log('[WML feedback] auto-scrolled to feedback box', key0);
                     }
                 } catch (_) { /* scroll is best-effort, never block */ }
             }
@@ -19784,6 +19821,8 @@
         // value is ready; the init call renders Date Started without a mark-change.
         // recalc is idempotent (reads DOM + module vars fresh), so extra calls are safe.
         _recalcScoreSummaryRef = recalculateScoreSummary;
+        _gradeFromPctRef = getGradeFromPercentage;   // v7.19.758: expose canonical bander to module-level _deterministicDocGrade
+        _positionOverlaysRef = positionDropdownOverlays; // v7.19.758: let the sidebar-accordion toggle re-anchor doc overlays
         recalculateScoreSummary();
 
         // ── Document Data Extraction (v7.11.9) ──
@@ -25794,6 +25833,11 @@
     // v7.19.247: hoisted recalc ref — assigned inside canvas builder, called from
     // tryServerLoad so real Score-Summary dates paint after an async server load.
     let _recalcScoreSummaryRef = null;
+    // v7.19.758: hoisted refs to builder-scoped fns so module-level helpers can reach them.
+    // _gradeFromPctRef → _deterministicDocGrade bands with the canonical getGradeFromPercentage.
+    // _positionOverlaysRef → the sidebar-accordion toggle re-anchors the doc mark/calib overlays.
+    let _gradeFromPctRef = null;
+    let _positionOverlaysRef = null;
     // v7.14.77: Patch checkbox state into HTML string AFTER getHTML() —
     // no TipTap transaction needed, zero scroll side-effects.
     function patchCheckStateIntoHTML(html) {
