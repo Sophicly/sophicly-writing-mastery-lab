@@ -19253,11 +19253,26 @@
 
                     const handleOptChange = (rawVal) => {
                         const v = parseInt(rawVal);
-                        const scrollContainer = editor.closest('.swml-canvas-content');
-                        const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
-                        optOutPara.innerHTML = `<em>Number of opt-outs:</em> ${v === -1 ? '—' : v}`;
-                        requestAnimationFrame(() => {
-                            if (scrollContainer) scrollContainer.scrollTop = scrollTop;
+                        // v7.19.763 ROOT: write ONLY the trailing text node (a characterData
+                        // mutation) so ProseMirror's DOMObserver commits it to the doc. The old
+                        // `optOutPara.innerHTML = ...` REPLACED the <em> element — a STRUCTURAL
+                        // change PM couldn't map, so it reverted the paragraph to "—": the count
+                        // never stuck, never persisted, and the Analytics tick never went green
+                        // (Neil 2026-06-30). It also never re-ran completion. Now mirror the
+                        // proven Self-Assessment path: text-node write + recalc + outline +
+                        // completion recompute, all inside the scroll-preserve guard.
+                        _withScrollPreserve(() => {
+                            const em = optOutPara.querySelector('em');
+                            const tail = em ? em.nextSibling : optOutPara.lastChild;
+                            const valText = v === -1 ? ' —' : ' ' + v;
+                            if (tail && tail.nodeType === 3) {
+                                tail.nodeValue = valText;
+                            } else {
+                                optOutPara.appendChild(document.createTextNode(valText));
+                            }
+                            recalculateScoreSummary();
+                            if (typeof updateOutline === 'function') updateOutline();
+                            if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion();
                         });
                     };
 
