@@ -298,6 +298,98 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Feedback:** Q2 asks about "language," which includes words (A), sentences (B), and techniques (D). The opening (C) is usually a structural point for Q3.
     * **AO:** AO2
     * **Why C:** The opening paragraph is a sequencing point about where the writer chooses to begin, which belongs in the Q3 structure answer rather than Q2.
+11. **Type: MCQ \[Tests AO1\]**
+    * **Question:** Question 1 ("List four things") draws on which AO1 skill?
+    * **Options:** A) Identifying explicit and implicit information from the text, B) Analysing how language creates effects, C) Comparing two writers' perspectives, D) Evaluating the text critically.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. AO1 is "identify and interpret explicit and implicit information and ideas." Question 1 is the pure retrieval end of that skill — find and list, no analysis.
+    * **AO:** AO1
+    * **Why B:** Analysing how language creates effects is AO2, assessed in Question 2, not the retrieval that Question 1 rewards.
+    * **Why C:** Comparing writers' perspectives is AO3, which appears on Paper 2, never on a single-source retrieval task.
+    * **Why D:** Critical evaluation is AO4, assessed in Question 4 — far beyond the listing Question 1 asks for.
+12. **Type: True/False \[Tests AO1\]**
+    * **Question:** True or False: a Question 1 answer can be a single word or short phrase rather than a full sentence.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The mark scheme states responses "can be a single word; full sentences are not required" — one mark per accurate, relevant point.
+    * **AO:** AO1
+    * **WhyWrong:** Writing full sentences feels safer, but Question 1 only rewards accurate retrieval; the extra words earn nothing and cost time.
+13. **Type: MCQ \[Tests AO2\]**
+    * **Question:** A Question 2 answer "explains clearly the effects of the writer's language and selects relevant detail." Which AQA Level is that?
+    * **Options:** A) Level 4 — perceptive, detailed analysis, B) Level 3 — clear, relevant explanation, C) Level 2 — some understanding and comment, D) Level 1 — simple, limited comment.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. "Explains clearly the effects… relevant detail" is the exact Level 3 wording. Level 4 would ANALYSE (not just explain) and select JUDICIOUS detail.
+    * **AO:** AO2
+    * **Why A:** Perceptive, detailed analysis is Level 4 — it analyses layered effects with judicious detail, beyond clear explanation.
+    * **Why C:** "Some understanding" only attempts to comment on effect; a clear explanation of effects sits a Level above that.
+    * **Why D:** A simple, limited comment offers a generic effect; explaining the effect clearly with relevant detail is two Levels higher.
+14. **Type: MCQ \[Tests AO2\]**
+    * **Question:** What single move lifts a Question 2 answer from Level 3 to Level 4?
+    * **Options:** A) Quoting more lines to widen the supporting evidence, B) Analysing the effects with judicious detail and sophisticated terminology, C) Writing longer, more developed paragraphs, D) Naming as many techniques as possible.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 4 is "perceptive, detailed analysis… judicious textual detail… sophisticated and accurate terminology." The lift is explanation becoming analysis plus judicious selection — not quantity.
+    * **AO:** AO2
+    * **Why A:** AQA rewards judicious selection, not the number of quotations a response stacks up.
+    * **Why C:** Paragraph length is not a Level descriptor; a short, perceptive point can reach Level 4.
+    * **Why D:** Naming many techniques is feature-spotting; the top band wants terminology used judiciously to serve the analysis.
+15. **Type: Fill-in-the-Blank \[Tests AO2\]**
+    * **Question:** Complete the AQA Level 4 key words for the reading questions: "Perceptive, \[BLANK\]."
+    * **Answer:** detailed
+    * **Feedback:** ✓ Correct. The four AQA reading Levels are L1 Simple/limited, L2 Some/attempts, L3 Clear/relevant, L4 Perceptive/detailed. "Detailed" pairs with "perceptive" at the top.
+    * **AO:** AO2
+    * **WhyWrong:** Words like "sophisticated" or "critical" belong to other ladders; the AQA Paper 1 top band is "perceptive, detailed."
+16. **Type: True/False \[Tests AO2\]**
+    * **Question:** True or False: writing about a flashback or a shift in focus belongs in Question 3 (structure), not Question 2 (language).
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Flashbacks and focus shifts are structural features — how the text is sequenced. Question 2 is for word- and sentence-level language choices.
+    * **AO:** AO2
+    * **WhyWrong:** These feel like clever points to raise anywhere, but structure questions reward sequencing; saving them for Question 3 is where they score.
+17. **Type: MCQ \[Tests AO4\]**
+    * **Question:** What does "critical evaluation" require in Question 4 that explaining the writer's effects does not?
+    * **Options:** A) Testing the statement as an argument and reaching a weighed judgement, B) Finding as many quotations as possible to confirm it, C) Explaining each technique the writer uses in detail, D) Summarising the events of the second half of the source.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. Level 4 AO4 "develops a convincing and critical response to the focus of the statement" — you weigh it and judge, rather than just agreeing or explaining effects.
+    * **AO:** AO4
+    * **Why B:** Quantity of quotation is not evaluation; AQA rewards judicious references that support a judgement.
+    * **Why C:** Explaining techniques is AO2 work carried into Question 4; evaluation must weigh and judge the statement.
+    * **Why D:** Retelling the events of the source earns nothing for critical evaluation.
+18. **Type: Fill-in-the-Blank \[Tests AO4\]**
+    * **Question:** Complete the AQA Level 4 evaluation descriptor: "Develops a convincing and \[BLANK\] response to the focus of the statement."
+    * **Answer:** critical
+    * **Feedback:** ✓ Correct. "Convincing and critical" is the top-band AO4 wording — testing the statement, not simply supporting it.
+    * **AO:** AO4
+    * **WhyWrong:** "Detailed" or "clear" describe lower bands; the word that separates Level 4 evaluation is "critical."
+19. **Type: MCQ \[Tests AO5\]**
+    * **Question:** The AQA top-band (Level 4) descriptor for Question 5 writing is "Communication is convincing and ___." Which word fits?
+    * **Options:** A) engaging, B) compelling, C) sophisticated, D) detailed.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. "Convincing and compelling" is the upper Level 4 AO5 wording — writing that pulls the reader in and holds them. "Engaging" is the Level 3 word.
+    * **AO:** AO5
+    * **Why A:** "Engaging" is the Level 3 communication descriptor, a band below the top.
+    * **Why C:** "Sophisticated" describes vocabulary at Level 3, not the communication descriptor.
+    * **Why D:** "Detailed" is a reading-question word, not the AO5 communication descriptor.
+20. **Type: Select All That Apply \[Tests AO5\]**
+    * **Question:** Which are assessed by AO5 (Content and Organisation) in Question 5? (Select all that apply)
+    * **Options:** A) Matching tone, style and register to purpose and audience, B) Crafting vocabulary and linguistic devices for effect, C) Spelling and punctuation accuracy, D) Structuring and linking paragraphs coherently.
+    * **Correct:** A, B, D
+    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
+    * **Feedback:** AO5 covers content and organisation — matching register, crafting language for effect, and structuring paragraphs. Spelling and punctuation are AO6, marked on a separate ladder.
+    * **AO:** AO5
+    * **Why C:** Spelling and punctuation accuracy is AO6 (Technical Accuracy), scored separately from AO5 Content and Organisation.
+21. **Type: MCQ \[Tests AO6\]**
+    * **Question:** Which of these does AO6 assess in Question 5?
+    * **Options:** A) The originality of the ideas in the writing, B) A range of vocabulary and sentence structures with accurate spelling and punctuation, C) How well the whole piece is organised and linked, D) Whether the form matches the purpose and audience.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. AO6 is technical accuracy — a range of vocabulary and sentence structures used for effect, with accurate spelling and punctuation. It is worth 20% of the whole qualification.
+    * **AO:** AO6
+    * **Why A:** Originality of ideas is AO5 Content.
+    * **Why C:** Organising and linking the whole piece is AO5 Organisation.
+    * **Why D:** Matching form to purpose and audience is AO5.
+22. **Type: True/False \[Tests AO6\]**
+    * **Question:** True or False: AO6 (Technical Accuracy) is worth 20% of the marks for the whole qualification.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The mark scheme states AO6 "must constitute 20% of the marks for each specification as a whole" — which is why spelling, punctuation and grammar matter across every written answer.
+    * **AO:** AO6
+    * **WhyWrong:** It is easy to treat technical accuracy as minor, but a full fifth of the marks ride on it; neglecting it caps a whole grade.
 
 ### **SECTION B: EDEXCEL (1EN0 \- Paper 1: Fiction and Imaginative Writing)**
 
