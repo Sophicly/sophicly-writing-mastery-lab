@@ -3967,6 +3967,20 @@
                 if (r !== null) sec.setAttribute('data-section-complete', r ? 'true' : 'false');
             });
             _updateProgressSummary(); // v7.19.496: refresh CW progress card after completion recompute
+            // v7.19.771: self-heal Date Completed on LOAD for an already-complete doc. The
+            // optimistic stamp in recalc can run BEFORE the ticks are computed; here they're
+            // fresh. If the student finished every required section but docCompletedAt was never
+            // stamped (e.g. they completed it before this shipped, or the marking pass settled
+            // after the last edit), stamp now + save so the flag reaches the server and the date
+            // persists. Set-once via the empty guard; assessment tasks only; never in review.
+            if (!_canvasCompletedAt && (state.task === 'assessment' || state.task === 'redraft_assessment')
+                && !state.reviewMode && typeof _isAssessmentComplete === 'function' && _isAssessmentComplete()) {
+                try {
+                    _canvasCompletedAt = new Date().toISOString();
+                    if (typeof _recalcScoreSummaryRef === 'function') _recalcScoreSummaryRef(); // paint Date Completed now
+                    if (typeof saveCanvasContent === 'function') saveCanvasContent();            // → assessmentComplete flag → server set-once stamp
+                } catch (_) {}
+            }
         } catch (_) { /* never throw */ }
     }
     // v7.19.490: the section nodeView re-applies a fixed attr set on every render
