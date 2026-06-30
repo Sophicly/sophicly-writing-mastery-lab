@@ -8775,8 +8775,10 @@
                 // CONTENT-driven, not phase-gated: hide a results section only while it's still an
                 // empty placeholder (the blank write phase); once populated it's navigable. Universal.
                 if (canvas.classList.contains('swml-canvas-diagnostic') && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) {
-                    const _d = _siNodeDom(pos);
-                    const _t = _d ? (_d.textContent || '').replace(/\s+/g, ' ').trim() : '';
+                    // v7.19.762: read the PM node's text directly (node.textContent) — _siNodeDom(pos)
+                    // returned null at build time for some sections, wrongly treating populated
+                    // results as empty placeholders → still excluded from the nav.
+                    const _t = (node.textContent || '').replace(/\s+/g, ' ').trim();
                     const _placeholder = !_t || /will appear|will be assessed|appear here|once your assessment|not yet/i.test(_t);
                     if (_placeholder) return false;
                 }
