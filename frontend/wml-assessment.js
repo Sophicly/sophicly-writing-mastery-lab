@@ -3874,6 +3874,40 @@
         } catch (_) { return false; }
     }
 
+    // v7.19.766: write a PARAGRAPH's inline content through a ProseMirror transaction.
+    // The Self-Assessment dropdowns + opt-out pill wrote paragraph text via the DOM
+    // (p.textContent / nodeValue), which PM's DOMObserver REVERTS when the synchronous
+    // recalc right after flushes it before it commits — so those values never reached the
+    // doc, never saved, and never greened the tick (Neil 2026-06-30), while the adjacent
+    // input-FIELD nodes (real PM nodes) persisted fine. Locate the target paragraph by a
+    // text predicate and replace its content with `segments` (each { text, italic? }) so the
+    // value commits to doc state, serialises into getHTML, and persists. Mirrors
+    // _setInputFieldText (node) + the feedback-mark dropdown (setNodeMarkup on the node).
+    function _setParagraphContentViaPM(matchFn, segments) {
+        if (!canvasEditor) return false;
+        let pos = null, node = null;
+        canvasEditor.state.doc.descendants((n, p) => {
+            if (pos !== null) return false;
+            if (n.type && n.type.name === 'paragraph' && matchFn(n.textContent || '')) { pos = p; node = n; return false; }
+            return true;
+        });
+        if (pos === null || !node) return false;
+        const from = pos + 1, to = pos + node.nodeSize - 1;
+        try {
+            const schema = canvasEditor.schema;
+            const italic = schema.marks.italic || schema.marks.em;
+            const nodes = segments.filter(s => s.text !== '').map(s =>
+                schema.text(String(s.text), s.italic && italic ? [italic.create()] : null)
+            );
+            canvasEditor.chain().command(({ tr }) => {
+                if (nodes.length) tr.replaceWith(from, to, nodes);
+                else tr.delete(from, to);
+                return true;
+            }).run();
+            return true;
+        } catch (_) { return false; }
+    }
+
     // v7.19.488: recompute ALL completion indicators once (rows + section ticks). The
     // onUpdate loop only fires on edits, so an already-filled doc shows no completion
     // ticks until the student types. Call this on load (after content + nodeViews mount)
@@ -19095,10 +19129,15 @@
                         const newText = `${skillName}: ${newVal || '—'} / 5`;
                         // v7.19.191: scroll-preserve guard around SA mutation + recalc + outline update.
                         _withScrollPreserve(() => {
-                            if (p.querySelector('em')) {
-                                // Don't touch if it has em tags (it's a prompt, not a rating)
-                            } else {
-                                p.textContent = newText;
+                            if (!p.querySelector('em')) {
+                                // v7.19.766: write via a PM transaction (the old p.textContent
+                                // DOM write was reverted by ProseMirror → never saved / never
+                                // greened). Locate by skill name + the "/ 5" suffix (excludes the
+                                // "Rate your confidence…" prompt, which has no "/ 5").
+                                _setParagraphContentViaPM(
+                                    t => t.indexOf(skillName + ':') === 0 && /\/\s*5\s*$/.test(t),
+                                    [{ text: newText }]
+                                );
                             }
                             recalculateScoreSummary();
                             if (typeof updateOutline === 'function') updateOutline();
@@ -19259,23 +19298,19 @@
 
                     const handleOptChange = (rawVal) => {
                         const v = parseInt(rawVal);
-                        // v7.19.763 ROOT: write ONLY the trailing text node (a characterData
-                        // mutation) so ProseMirror's DOMObserver commits it to the doc. The old
-                        // `optOutPara.innerHTML = ...` REPLACED the <em> element — a STRUCTURAL
-                        // change PM couldn't map, so it reverted the paragraph to "—": the count
-                        // never stuck, never persisted, and the Analytics tick never went green
-                        // (Neil 2026-06-30). It also never re-ran completion. Now mirror the
-                        // proven Self-Assessment path: text-node write + recalc + outline +
-                        // completion recompute, all inside the scroll-preserve guard.
+                        // v7.19.766 ROOT: write through a ProseMirror TRANSACTION, not the DOM.
+                        // Every DOM approach was reverted by PM's DOMObserver (innerHTML structural
+                        // change → revert; nodeValue characterData → flushed by the synchronous
+                        // recalc before it committed), so the count never stuck, never saved, never
+                        // greened the tick (Neil 2026-06-30). _setParagraphContentViaPM replaces the
+                        // paragraph content in doc state — preserving the italic label — so it
+                        // commits, serialises into getHTML, and persists. Same mechanism the
+                        // feedback-mark dropdown uses (setNodeMarkup).
                         _withScrollPreserve(() => {
-                            const em = optOutPara.querySelector('em');
-                            const tail = em ? em.nextSibling : optOutPara.lastChild;
-                            const valText = v === -1 ? ' —' : ' ' + v;
-                            if (tail && tail.nodeType === 3) {
-                                tail.nodeValue = valText;
-                            } else {
-                                optOutPara.appendChild(document.createTextNode(valText));
-                            }
+                            _setParagraphContentViaPM(
+                                t => /Number of opt-outs/i.test(t),
+                                [{ text: 'Number of opt-outs:', italic: true }, { text: ' ' + (v === -1 ? '—' : v) }]
+                            );
                             recalculateScoreSummary();
                             if (typeof updateOutline === 'function') updateOutline();
                             if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion();
