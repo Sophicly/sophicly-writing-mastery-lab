@@ -327,11 +327,13 @@ class SWML_Quiz_Bank {
             if (!$progressed) break;
         }
 
-        // Stamp a stable id + sequential session position.
+        // Stamp a stable id + sequential session position, and (v7.19.785) shuffle
+        // the OPTION ORDER so the answer isn't always at the same letter across re-sits.
         $out = [];
         foreach (array_values($picked) as $i => $q) {
             $q['id']     = $id_prefix . ':' . $q['q_num'];
             $q['seq']    = $i + 1;
+            $q           = self::shuffle_options($q);
             $out[]       = $q;
         }
         return $out;
@@ -353,6 +355,45 @@ class SWML_Quiz_Bank {
             'options'  => $opts,           // empty for fill/true-false
             'maxMarks' => $q['max_marks'],
         ];
+    }
+
+    /**
+     * v7.19.785: shuffle the OPTION ORDER (mcq / select_all / ranking) and remap the
+     * correct-letter set + per-distractor why-keys by POSITION, so the answer isn't
+     * pinned to the same letter across re-sits. Re-letters the same A.. set in a new
+     * order — the scorer reads the SAME shuffled copy that the client sees (the picked
+     * set is persisted whole), so keys stay in sync.
+     *
+     * GUARD: only shuffles when the feedback / why text does NOT cite an option by
+     * letter ("(C)", "C)", "B =", "A, B"). Legacy letter-citing banks keep their
+     * authored order until rewritten content-referenced — re-lettering can then never
+     * desync a letter reference. Fail-safe: any doubt → no shuffle.
+     */
+    private static function shuffle_options($q) {
+        if (empty($q['options']) || !in_array($q['type'], ['mcq', 'select_all', 'ranking'], true)) return $q;
+        $letters = array_keys($q['options']);
+        if (count($letters) < 2) return $q;
+        $cite = $q['feedback'] . ' ' . implode(' ', (array) ($q['why'] ?? [])) . ' ' . ($q['why_generic'] ?? '');
+        if (preg_match('/\([A-E]\)|(?<![A-Za-z])[A-E]\s*[\)=,]/', $cite)) return $q;  // letter-cite → leave order
+
+        $perm = range(0, count($letters) - 1);
+        shuffle($perm);
+        $newOptions = [];
+        $oldToNew   = [];
+        foreach ($perm as $newPos => $oldPos) {
+            $nl = $letters[$newPos];
+            $ol = $letters[$oldPos];
+            $newOptions[$nl]  = $q['options'][$ol];
+            $oldToNew[$ol]    = $nl;
+        }
+        $q['options'] = $newOptions;
+        $q['correct'] = array_map(function ($l) use ($oldToNew) { return $oldToNew[$l] ?? $l; }, $q['correct']);
+        if (!empty($q['why'])) {
+            $nw = [];
+            foreach ($q['why'] as $l => $g) { $nw[$oldToNew[$l] ?? $l] = $g; }
+            $q['why'] = $nw;
+        }
+        return $q;
     }
 
     // ─────────────────────────────────────────────────────────────────────
