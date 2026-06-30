@@ -1821,6 +1821,7 @@ class SWML_REST_API {
         // wrote, not the scaffold), then render Date Started FROM this field on load.
         // Carry any existing value forward unchanged; never overwrite once set.
         $existing_started = '';
+        $existing_completed = '';        // v7.19.770
         $existing_tpl_baseline = null;   // v7.19.286
         $existing_resp_baseline = null;  // v7.19.286
         $existing_doc_raw = get_user_meta($user_id, $meta_key, true);
@@ -1831,6 +1832,9 @@ class SWML_REST_API {
             }
             if (is_array($existing_doc) && !empty($existing_doc['startedAt'])) {
                 $existing_started = $existing_doc['startedAt'];
+            }
+            if (is_array($existing_doc) && !empty($existing_doc['docCompletedAt'])) {
+                $existing_completed = $existing_doc['docCompletedAt'];
             }
             if (is_array($existing_doc) && isset($existing_doc['templateBaseline']) && is_numeric($existing_doc['templateBaseline'])) {
                 $existing_tpl_baseline = (int) $existing_doc['templateBaseline'];
@@ -1843,6 +1847,15 @@ class SWML_REST_API {
             $doc['startedAt'] = $existing_started;
         } elseif ($word_count > 0) {
             $doc['startedAt'] = current_time('c');
+        }
+        // v7.19.770: set-once STUDENT completion stamp — "Date Completed". Carry an existing
+        // value forward unchanged; else stamp now when the client reports EVERY required section
+        // done (assessmentComplete flag). Independent of tutor sign-off (Neil's model: not every
+        // student has a tutor). Never un-stamps once set.
+        if (!empty($existing_completed)) {
+            $doc['docCompletedAt'] = $existing_completed;
+        } elseif (!empty($params['assessmentComplete'])) {
+            $doc['docCompletedAt'] = current_time('c');
         }
         // v7.19.286: set-once template baselines. Prefer an already-stored value
         // (captured from the pristine template at first save); only accept the
@@ -2241,10 +2254,10 @@ class SWML_REST_API {
                 $doc['html'], $user_id, $board, $text, (int) $topic_number, (string) $suffix, max(1, (int) $attempt)
             );
             $doc['html'] = self::heal_score_summary_boundaries($doc['html']);
-            // v7.19.764: bake the real Date Started into the served HTML (root fix —
-            // robust against client paint-timing; see heal_score_summary_dates).
-            if (!empty($doc['startedAt'])) {
-                $doc['html'] = self::heal_score_summary_dates($doc['html'], $doc['startedAt']);
+            // v7.19.764/770: bake the real Date Started + Date Completed into the served HTML
+            // (root fix — robust against client paint-timing; see heal_score_summary_dates).
+            if (!empty($doc['startedAt']) || !empty($doc['docCompletedAt'])) {
+                $doc['html'] = self::heal_score_summary_dates($doc['html'], $doc['startedAt'] ?? '', $doc['docCompletedAt'] ?? '');
             }
             // v7.19.419: heal-on-load — swap pre-2026 AQA Language P2 Q2 stems
             // ("Write a summary of the differences/similarities…") for the updated
@@ -2463,9 +2476,9 @@ class SWML_REST_API {
                 $doc['html'], $student_id, $board, $text, (int) $topic_number, (string) $suffix, max(1, (int) $attempt)
             );
             $doc['html'] = self::heal_score_summary_boundaries($doc['html']);
-            // v7.19.764: bake the real Date Started into the served HTML for the tutor too.
-            if (!empty($doc['startedAt'])) {
-                $doc['html'] = self::heal_score_summary_dates($doc['html'], $doc['startedAt']);
+            // v7.19.764/770: bake Date Started + Date Completed into the served HTML for the tutor too.
+            if (!empty($doc['startedAt']) || !empty($doc['docCompletedAt'])) {
+                $doc['html'] = self::heal_score_summary_dates($doc['html'], $doc['startedAt'] ?? '', $doc['docCompletedAt'] ?? '');
             }
             // v7.19.419: same Q2 stem heal as load_canvas — tutor sees the updated
             // inference wording too.
@@ -4296,18 +4309,29 @@ class SWML_REST_API {
      * Format matches the client _fmtDMY (en-GB 'j M Y' → e.g. "27 Jun 2026").
      * No-op when startedAt is unset (pristine pre-work doc keeps its "—").
      */
-    private static function heal_score_summary_dates($html, $started_at) {
-        if (empty($html) || !is_string($html) || empty($started_at)) return $html;
-        $ts = strtotime((string) $started_at);
-        if (!$ts) return $html;
-        $fmt = wp_date('j M Y', $ts);
-        // Replace the value after the "Date Started:" label, up to the closing tag.
-        return preg_replace(
-            '/(<em>\s*Date Started:\s*<\/em>)[^<]*/u',
-            '${1} ' . $fmt,
-            $html,
-            1
-        );
+    private static function heal_score_summary_dates($html, $started_at, $completed_at = '') {
+        if (empty($html) || !is_string($html)) return $html;
+        // Date Started (set-once first-edit).
+        if (!empty($started_at) && ($ts = strtotime((string) $started_at))) {
+            $html = preg_replace(
+                '/(<em>\s*Date Started:\s*<\/em>)[^<]*/u',
+                '${1} ' . wp_date('j M Y', $ts),
+                $html,
+                1
+            );
+        }
+        // v7.19.770: Date Completed (set-once STUDENT completion, docCompletedAt). Same
+        // bake-into-HTML robustness as Date Started; no-op until the student completes, so a
+        // not-yet-complete doc keeps its "—".
+        if (!empty($completed_at) && ($tc = strtotime((string) $completed_at))) {
+            $html = preg_replace(
+                '/(<em>\s*Date Completed:\s*<\/em>)[^<]*/u',
+                '${1} ' . wp_date('j M Y', $tc),
+                $html,
+                1
+            );
+        }
+        return $html;
     }
 
     /**

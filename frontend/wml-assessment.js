@@ -3859,6 +3859,33 @@
         return null;
     }
 
+    // v7.19.770: is the WHOLE assessment finished by the STUDENT? Drives the server set-once
+    // "Date Completed" stamp (Neil's model: completion = student finishing every required
+    // section, independent of any tutor sign-off). Reads the live data-section-complete attrs
+    // (so it tracks the same ticks the student sees). Required EVERY time: essay marked (Score
+    // Summary) + Self-Assessment + Analytics + Action Plan. Essay Plan is required too EXCEPT on
+    // the very first diagnostic (Topic 1, Phase 1), where it's optional (Neil 2026-06-30). Action
+    // Plan ≠ Essay Plan — Action Plan is ALWAYS required.
+    function _isAssessmentComplete() {
+        if (!canvasEditor) return false;
+        const editorEl = canvasEditor.options && canvasEditor.options.element;
+        if (!editorEl) return false;
+        const done = (sel) => { const s = editorEl.querySelector(sel); return !!(s && s.getAttribute('data-section-complete') === 'true'); };
+        if (!done('.swml-section-block[data-section-type="scores"]')) return false;       // essay marked
+        if (!done('.swml-section-block[data-section-label="Self-Assessment"]')) return false;
+        if (!done('.swml-section-block[data-section-label="Analytics"]')) return false;
+        if (!done('.swml-section-block[data-section-label="Action Plan"]')) return false;
+        // Essay Plan: required everywhere EXCEPT the first diagnostic (Topic 1, Phase 1).
+        const isFirstDiagnostic = ((state.topicNumber === 1 || state.topicNumber === '1') && state.phase === 'initial');
+        if (!isFirstDiagnostic) {
+            const plans = editorEl.querySelectorAll('.swml-section-block[data-section-type="plan"]');
+            for (let i = 0; i < plans.length; i++) {
+                if (plans[i].getAttribute('data-section-complete') !== 'true') return false;
+            }
+        }
+        return true;
+    }
+
     // v7.19.759: set an InputField node's text by data-field-id through a REAL ProseMirror
     // transaction (not a raw DOM .textContent write, which the nodeView re-render discards
     // and which never persists to the saved doc). Used by the Grade Goal pill so selecting
@@ -19897,10 +19924,19 @@
                 return isNaN(dt.getTime()) ? '' : dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
             };
             const startedStr = _fmtDMY(_canvasStartedAt);
-            const completedStr = _fmtDMY(_canvasSignoffAt);
+            // v7.19.770: Date Completed = the STUDENT finishing every required section (server
+            // set-once docCompletedAt), NOT the tutor sign-off — not every student has a tutor
+            // (Neil 2026-06-30). The tutor's date stays separate on the Tutor Sign-off section.
+            // Optimistic client stamp so the date appears the moment the last section completes;
+            // the save sends assessmentComplete:true and the server set-once stamp is authoritative
+            // on reload (same day → no drift). Set-once client-side via the empty guard.
+            if (!_canvasCompletedAt && typeof _isAssessmentComplete === 'function' && _isAssessmentComplete()) {
+                try { _canvasCompletedAt = new Date().toISOString(); } catch (_) {}
+            }
+            const completedStr = _fmtDMY(_canvasCompletedAt);
             let elapsedStr = '';
-            if (_canvasStartedAt && _canvasSignoffAt) {
-                const ms = new Date(_canvasSignoffAt).getTime() - new Date(_canvasStartedAt).getTime();
+            if (_canvasStartedAt && _canvasCompletedAt) {
+                const ms = new Date(_canvasCompletedAt).getTime() - new Date(_canvasStartedAt).getTime();
                 if (!isNaN(ms) && ms >= 0) {
                     const days = Math.round(ms / 86400000);
                     elapsedStr = days + (days === 1 ? ' day' : ' days');
@@ -19935,8 +19971,10 @@
                     // pre-work doc has no startedAt server-side either, so it stays "—" correctly.
                     if (startedStr) p.innerHTML = `<em>Date Started:</em> ${startedStr}`;
                 } else if (text.includes('Date Completed:')) {
-                    // Sign-off is the completion event. "—" until the tutor signs off.
-                    p.innerHTML = `<em>Date Completed:</em> ${completedStr || '—'}`;
+                    // v7.19.770: stamps when the STUDENT completes every required section
+                    // (server set-once docCompletedAt); "—" until then. Only UPGRADE (never blank
+                    // a server-baked date), mirroring Date Started.
+                    if (completedStr) p.innerHTML = `<em>Date Completed:</em> ${completedStr}`;
                 } else if (text.includes('Days Elapsed:')) {
                     p.innerHTML = `<em>Days Elapsed:</em> ${elapsedStr || '—'}`;
                 } else if (text.includes('Word Count:')) {
@@ -21197,6 +21235,9 @@
     // recalculateScoreSummary which renders Date Started / Date Completed / Days elapsed.
     let _canvasStartedAt = '';
     let _canvasSignoffAt = '';
+    // v7.19.770: _canvasCompletedAt = STUDENT completion (server set-once docCompletedAt,
+    // stamped when every required section is done) — feeds the Score-Summary "Date Completed".
+    let _canvasCompletedAt = '';
     let canvasDualTargets = null;    // { partA: {target,minimum,ideal}, partB: {target,minimum,ideal} } for dual questions
 
     // Word count colour tiers: orange (< min) → yellow (min→target) → green (target→ideal) → purple gradient (ideal+)
@@ -26130,6 +26171,10 @@
             suffix: snap.suffix,
             attempt: snap.attempt,
             planningMode: snap.planningMode,
+            // v7.19.770: tell the server when the student has finished every required section, so
+            // it set-once stamps docCompletedAt (→ Score-Summary "Date Completed"). Only sent true
+            // for an assessment doc that is genuinely complete; never un-stamps.
+            assessmentComplete: ((snap.task === 'assessment' || snap.task === 'redraft_assessment') && _isAssessmentComplete()),
             lessonUrl: snap.embedded
                 ? window.location.href
                 : _buildWmlDeepLink({ board: snap.board, text: snap.text, topic: snap.topicNumber, task: snap.task }),
@@ -26457,6 +26502,9 @@
             if (res.success && res.doc && res.doc.html) {
                 // v7.19.247: capture the real first-edit start date for the Score Summary.
                 _canvasStartedAt = res.doc.startedAt || _canvasStartedAt || '';
+                // v7.19.770: STUDENT completion date (set-once server-side; "—" until every
+                // required section is done). Feeds Score-Summary "Date Completed" (not tutor sign-off).
+                _canvasCompletedAt = res.doc.docCompletedAt || _canvasCompletedAt || '';
                 // v7.19.286: UNIVERSAL TEMPLATE-BASELINE REHYDRATION. The set-once
                 // baselines stored at first save describe the pristine template. Restore
                 // them onto the editor element so getResponseWordCount subtracts the
