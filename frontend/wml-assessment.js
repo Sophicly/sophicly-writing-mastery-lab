@@ -3819,6 +3819,61 @@
         sectionEl.setAttribute('data-section-complete', complete ? 'true' : 'false');
     }
 
+    // v7.19.759: ONE completion check for the three STUDENT-filled assessment sections
+    // (Analytics, Action Plan, Self-Assessment). These are feedback/action-type, so the
+    // checkSectionComplete recompute above skips them — previously only the outline-panel
+    // path (getSectionIndicator) evaluated them, so on reload their SAVED
+    // data-section-complete went stale (empty Analytics kept a green tick). This is the
+    // single source: getSectionIndicator delegates here AND _recomputeAllCompletion calls
+    // it on load/edit, so the header tick always reflects live content. Returns
+    // true/false for the three handled labels, null for anything else.
+    function _assessSectionComplete(domSection, label) {
+        if (!domSection) return null;
+        if (label === 'Self-Assessment') {
+            // complete = no 5-scale dropdown still unset ("Skill: — / 5")
+            const unrated = Array.from(domSection.querySelectorAll('p')).filter(p => /:\s*—\s*\/\s*5\s*$/.test(p.textContent || ''));
+            return unrated.length === 0;
+        }
+        if (label === 'Analytics' || label === 'Action Plan') {
+            const fields = domSection.querySelectorAll('.swml-input-field');
+            if (!fields.length) return false;                 // template not mounted yet
+            let allFilled = true;
+            fields.forEach(f => { if ((f.textContent || '').trim().length === 0) allFilled = false; });
+            if (label === 'Analytics') {
+                // the opt-out count must also be chosen (the "Number of opt-outs: —" line)
+                const optP = Array.from(domSection.querySelectorAll('p')).find(p => /Number of opt-outs/i.test(p.textContent || ''));
+                const optSet = !optP || !/—\s*$/.test((optP.textContent || '').trim());
+                return allFilled && optSet;
+            }
+            return allFilled;                                 // Action Plan
+        }
+        return null;
+    }
+
+    // v7.19.759: set an InputField node's text by data-field-id through a REAL ProseMirror
+    // transaction (not a raw DOM .textContent write, which the nodeView re-render discards
+    // and which never persists to the saved doc). Used by the Grade Goal pill so selecting
+    // a grade fills + persists the "Your target grade" box — no re-typing.
+    function _setInputFieldText(fieldId, text) {
+        if (!canvasEditor) return false;
+        let pos = null, node = null;
+        canvasEditor.state.doc.descendants((n, p) => {
+            if (pos !== null) return false;
+            if (n.type && n.type.name === 'inputField' && n.attrs && n.attrs.fieldId === fieldId) { pos = p; node = n; return false; }
+            return true;
+        });
+        if (pos === null || !node) return false;
+        const from = pos + 1, to = pos + node.nodeSize - 1;
+        try {
+            canvasEditor.chain().command(({ tr }) => {
+                if (text) tr.replaceWith(from, to, canvasEditor.schema.text(String(text)));
+                else tr.delete(from, to);
+                return true;
+            }).run();
+            return true;
+        } catch (_) { return false; }
+    }
+
     // v7.19.488: recompute ALL completion indicators once (rows + section ticks). The
     // onUpdate loop only fires on edits, so an already-filled doc shows no completion
     // ticks until the student types. Call this on load (after content + nodeViews mount)
@@ -3834,6 +3889,13 @@
             });
             editorEl.querySelectorAll('.swml-outline-row').forEach(row => { if (row._checkRowComplete) row._checkRowComplete(); });
             editorEl.querySelectorAll('.swml-section-block[data-section-type="outline"], .swml-section-block[data-section-type="plan"], .swml-section-block[data-section-type="response"], .swml-section-block[data-section-type="improvement"]').forEach(sec => checkSectionComplete(sec));
+            // v7.19.759: recompute the three student-filled assessment sections too — they
+            // are feedback/action-type (skipped above), so without this their saved tick
+            // went stale on reload (empty Analytics showed a green tick). Single source.
+            editorEl.querySelectorAll('.swml-section-block[data-section-type="feedback"], .swml-section-block[data-section-type="action"]').forEach(sec => {
+                const r = _assessSectionComplete(sec, sec.getAttribute('data-section-label') || '');
+                if (r !== null) sec.setAttribute('data-section-complete', r ? 'true' : 'false');
+            });
             _updateProgressSummary(); // v7.19.496: refresh CW progress card after completion recompute
         } catch (_) { /* never throw */ }
     }
@@ -9282,33 +9344,18 @@
                         // Any number (including 0) means it's been deliberately set
                         return ' ✓';
                     }
-                    // Analytics section (type=feedback, label=Analytics) — check for student text
+                    // Analytics — single shared check (v7.19.759): InputField sub-fields
+                    // all filled + opt-out count chosen. The old h3-sibling text walk
+                    // counted the "Number of opt-outs: —" dash as content → false ✓.
                     if (s.label === 'Analytics') {
-                        const headings = domSection.querySelectorAll('h3');
-                        if (headings.length === 0) return '';
-                        let allFilled = true;
-                        headings.forEach(h3 => {
-                            let studentText = '';
-                            let sibling = h3.nextElementSibling;
-                            while (sibling && sibling.tagName !== 'H3') {
-                                const clone = sibling.cloneNode(true);
-                                clone.querySelectorAll('em').forEach(el => el.remove());
-                                const remaining = clone.textContent?.trim() || '';
-                                if (remaining.length > 0) studentText += remaining;
-                                sibling = sibling.nextElementSibling;
-                            }
-                            if (studentText.length < 1) allFilled = false;
-                        });
-                        return allFilled ? ' ✓' : '';
+                        return _assessSectionComplete(domSection, 'Analytics') ? ' ✓' : '';
                     }
                     return '';
                 }
                 // Action Plan / Action sections: check for student text beyond prompts
                 if (s.type === 'action') {
                     if (s.label === 'Self-Assessment') {
-                        const unrated = Array.from(domSection.querySelectorAll('p')).filter(p => p.textContent.match(/:\s*—\s*\/\s*5$/));
-                        if (unrated.length === 0) return ' ✓';
-                        return '';
+                        return _assessSectionComplete(domSection, 'Self-Assessment') ? ' ✓' : ''; // v7.19.759 shared check
                     }
                     // Tutor Sign-off (old documents use type 'action' instead of 'signoff')
                     if (s.label === 'Tutor Sign-off') {
@@ -9316,25 +9363,9 @@
                         if (statusP && statusP.textContent.includes('Signed off')) return ' ✓';
                         return '';
                     }
-                    // Action Plan: check EACH sub-section has content (not just total text)
+                    // Action Plan: every InputField sub-field filled — single shared check (v7.19.759)
                     if (s.label === 'Action Plan') {
-                        const headings = domSection.querySelectorAll('h3');
-                        if (headings.length === 0) return '';
-                        let allFilled = true;
-                        headings.forEach(h3 => {
-                            let studentText = '';
-                            let sibling = h3.nextElementSibling;
-                            while (sibling && sibling.tagName !== 'H3') {
-                                // Clone paragraph, strip em prompts, check what's left
-                                const clone = sibling.cloneNode(true);
-                                clone.querySelectorAll('em').forEach(el => el.remove());
-                                const remaining = clone.textContent?.trim() || '';
-                                if (remaining.length > 0) studentText += remaining;
-                                sibling = sibling.nextElementSibling;
-                            }
-                            if (studentText.length < 1) allFilled = false;
-                        });
-                        return allFilled ? ' ✓' : '';
+                        return _assessSectionComplete(domSection, 'Action Plan') ? ' ✓' : '';
                     }
                     // Other action sections — generic text check
                     const clone = domSection.cloneNode(true);
@@ -19151,8 +19182,11 @@
                         if (gradeGoalPara) {
                             gradeGoalPara.innerHTML = `<em>Your target grade:</em> ${v || '—'}`;
                         } else if (gradeGoalField) {
-                            // Input-field shape: write value as plain text (preserves field-id wrapper)
-                            gradeGoalField.textContent = v ? `Grade ${v}` : '';
+                            // v7.19.759: persist through a real PM transaction so selecting the
+                            // pill FILLS the "Your target grade" box (no re-typing) and survives
+                            // save/reload. The old raw .textContent write was discarded by the
+                            // InputField nodeView re-render, so the box stayed empty (Neil).
+                            _setInputFieldText('action-grade-goal', v ? `Grade ${v}` : '');
                         }
                         requestAnimationFrame(() => {
                             if (scrollContainer) scrollContainer.scrollTop = scrollTop;
