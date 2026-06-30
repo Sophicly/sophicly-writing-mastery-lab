@@ -2241,6 +2241,11 @@ class SWML_REST_API {
                 $doc['html'], $user_id, $board, $text, (int) $topic_number, (string) $suffix, max(1, (int) $attempt)
             );
             $doc['html'] = self::heal_score_summary_boundaries($doc['html']);
+            // v7.19.764: bake the real Date Started into the served HTML (root fix —
+            // robust against client paint-timing; see heal_score_summary_dates).
+            if (!empty($doc['startedAt'])) {
+                $doc['html'] = self::heal_score_summary_dates($doc['html'], $doc['startedAt']);
+            }
             // v7.19.419: heal-on-load — swap pre-2026 AQA Language P2 Q2 stems
             // ("Write a summary of the differences/similarities…") for the updated
             // inference wording. Exact-match on the five known template stems;
@@ -2458,6 +2463,10 @@ class SWML_REST_API {
                 $doc['html'], $student_id, $board, $text, (int) $topic_number, (string) $suffix, max(1, (int) $attempt)
             );
             $doc['html'] = self::heal_score_summary_boundaries($doc['html']);
+            // v7.19.764: bake the real Date Started into the served HTML for the tutor too.
+            if (!empty($doc['startedAt'])) {
+                $doc['html'] = self::heal_score_summary_dates($doc['html'], $doc['startedAt']);
+            }
             // v7.19.419: same Q2 stem heal as load_canvas — tutor sees the updated
             // inference wording too.
             if ($board === 'aqa' && strpos($text, 'lang_paper_2') !== false) {
@@ -4274,6 +4283,31 @@ class SWML_REST_API {
             $html = preg_replace($pattern, '${1}' . $m[1] . '${2}', $html, 1);
         }
         return $html;
+    }
+
+    /**
+     * v7.19.764: bake the real "Date Started" into the served Score-Summary HTML
+     * from the doc's set-once startedAt field. ROOT fix for the "Date Started
+     * disappeared" regression: the date was always safe in the DB, but the client
+     * recalc painted it from a module var (_canvasStartedAt) that can be empty at
+     * paint time (load-order / double-mount stale ref) and the old `|| '—'` then
+     * blanked it. With the date in the served HTML the doc is correct regardless of
+     * client timing, and the paired client guard only ever upgrades, never blanks.
+     * Format matches the client _fmtDMY (en-GB 'j M Y' → e.g. "27 Jun 2026").
+     * No-op when startedAt is unset (pristine pre-work doc keeps its "—").
+     */
+    private static function heal_score_summary_dates($html, $started_at) {
+        if (empty($html) || !is_string($html) || empty($started_at)) return $html;
+        $ts = strtotime((string) $started_at);
+        if (!$ts) return $html;
+        $fmt = wp_date('j M Y', $ts);
+        // Replace the value after the "Date Started:" label, up to the closing tag.
+        return preg_replace(
+            '/(<em>\s*Date Started:\s*<\/em>)[^<]*/u',
+            '${1} ' . $fmt,
+            $html,
+            1
+        );
     }
 
     /**

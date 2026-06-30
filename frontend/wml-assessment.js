@@ -19838,7 +19838,15 @@
                         p.innerHTML = `<em>Grade:</em> <span class="${tierCls}">${grade}</span>${inProgress}`;
                     }
                 } else if (text.includes('Date Started:')) {
-                    p.innerHTML = `<em>Date Started:</em> ${startedStr || '—'}`;
+                    // v7.19.764: only UPGRADE the date, never blank it. _canvasStartedAt can be
+                    // empty at paint time (load-order / double-mount stale recalc ref), and the
+                    // old `|| '—'` clobbered a real date back to a dash — that was the "Date
+                    // Started disappeared" regression (Neil 2026-06-30); the value was safe in
+                    // the DB the whole time. The server now bakes the real date into the served
+                    // HTML from $doc['startedAt'] (heal_score_summary_dates), so when we have no
+                    // client value we leave whatever is there — it is already correct. A pristine
+                    // pre-work doc has no startedAt server-side either, so it stays "—" correctly.
+                    if (startedStr) p.innerHTML = `<em>Date Started:</em> ${startedStr}`;
                 } else if (text.includes('Date Completed:')) {
                     // Sign-off is the completion event. "—" until the tutor signs off.
                     p.innerHTML = `<em>Date Completed:</em> ${completedStr || '—'}`;
