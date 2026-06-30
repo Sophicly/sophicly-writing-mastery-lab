@@ -1324,7 +1324,12 @@
     // mark-set, max-lookup, predict panel + readout all agree (CLAUDE.md canvas-rule #3).
     function _paraKey(s) {
         const t = String(s == null ? '' : s).toLowerCase();
-        if (t.indexOf('introduc') !== -1) return 'Intro';
+        // v7.19.773: match 'intro' (not 'introduc') so this is IDEMPOTENT — _paraKey's own
+        // output 'Intro' re-keys to 'Intro' (was '' → null). _feedbackMaxForQ(predictQ) calls
+        // _paraKey on an already-keyed value, so the non-idempotent 'introduc' check silently
+        // returned null max for the Introduction → predict-mark row hidden. ('Conclusion'
+        // already round-trips: 'conclusion'.indexOf('conclus') matches.)
+        if (t.indexOf('intro') !== -1) return 'Intro';
         if (t.indexOf('conclus') !== -1) return 'Conclusion';
         const m = t.match(/(\d+)/);
         return m ? m[1] : '';
@@ -2664,6 +2669,18 @@
         let q = '';
         const qm = t.match(/\bQ(?:uestion)?\s*([1-5])\b/i);
         if (qm) q = 'Q' + qm[1];
+        // v7.19.773: NAMED-section reflections (Literature essays: Introduction / Body
+        // Paragraph N / Conclusion — no Q digit) left q empty in prose-fallback, so predictQ
+        // was '' and the predict-mark row silently hid (Neil, R&J AQA). Resolve the paragraph
+        // from prose — prefer the skill ask itself, fall back to the whole reflection — and set
+        // q to a label _paraKey can resolve ('Introduction'/'Conclusion'/'Body Paragraph N'),
+        // which then reads its max from the pre-seeded feedback box. (Numbered Qs already hit qm.)
+        if (!q) {
+            const scope = (sm && sm[1] && /introduc|conclus|paragraph|\bbody\b/i.test(sm[1])) ? sm[1] : t;
+            if (/introduc/i.test(scope)) q = 'Introduction';
+            else if (/conclus/i.test(scope)) q = 'Conclusion';
+            else { const bm = scope.match(/(?:body\s*paragraph|body|paragraph)\s*(\d+)/i); if (bm) q = 'Body Paragraph ' + bm[1]; }
+        }
         let ao = ['AO1', 'AO2', 'AO3', 'AO4'];
         if (/\bAO5\b|\bAO6\b|creative writing/i.test(t)) ao = ['AO5', 'AO6'];
         return { q: q, para: '', skill: skill, ao: ao, _detected: true };
@@ -2759,6 +2776,13 @@
         // which returned null at panel-render time for lit → the predict-mark row never showed.
         const predictMax = (parsed && parsed.max != null) ? parsed.max : (predictQ ? _feedbackMaxForQ(predictQ) : null);
         const showPredict = !!(predictQ && predictMax && _getPredicted(predictQ) == null);
+        // v7.19.773: fail loud — an essay reflection that resolved NEITHER a section nor a max
+        // is the silent-skip Neil hit (predict-mark row vanishes). Warn unless it's a legit
+        // already-predicted hide. Surfaces any residual board/paper gap instead of hiding it.
+        if (!showPredict && !(predictQ && _getPredicted(predictQ) != null)) {
+            console.warn('WML reflect: predict-mark row hidden (section/max unresolved)',
+                { q: parsed && parsed.q, predictQ: predictQ, predictMax: predictMax });
+        }
 
         const refreshSubmit = () => {
             const ok = rating != null
