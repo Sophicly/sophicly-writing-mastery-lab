@@ -3847,6 +3847,15 @@
             }
             return allFilled;                                 // Action Plan
         }
+        if (label === 'Score Summary') {
+            // v7.19.767: auto-derived section (marks/grade/dates filled by the marking pass) —
+            // no student input to gate on, so it completes once the essay is MARKED (Total Marks
+            // shows a number, not the "—" placeholder). Date Completed waits for tutor sign-off
+            // and does NOT gate this — it's the tutor's field, not the student's.
+            const totalP = Array.from(domSection.querySelectorAll('p')).find(p => /Total Marks/i.test(p.textContent || ''));
+            if (!totalP) return false;
+            return !/Total Marks:\s*—/i.test((totalP.textContent || '').trim());
+        }
         return null;
     }
 
@@ -3926,7 +3935,7 @@
             // v7.19.759: recompute the three student-filled assessment sections too — they
             // are feedback/action-type (skipped above), so without this their saved tick
             // went stale on reload (empty Analytics showed a green tick). Single source.
-            editorEl.querySelectorAll('.swml-section-block[data-section-type="feedback"], .swml-section-block[data-section-type="action"]').forEach(sec => {
+            editorEl.querySelectorAll('.swml-section-block[data-section-type="feedback"], .swml-section-block[data-section-type="action"], .swml-section-block[data-section-type="scores"]').forEach(sec => {
                 const r = _assessSectionComplete(sec, sec.getAttribute('data-section-label') || '');
                 if (r !== null) sec.setAttribute('data-section-complete', r ? 'true' : 'false');
             });
@@ -8905,19 +8914,28 @@
             return dom || null;
         }
 
-        // active section = last section scrolled past the detection line; drives the row
-        // highlight AND the island's live breadcrumb.
-        // v7.19.534: line at 35% sits just BELOW where a jump lands the target (height/3
-        // ≈ 33.3%), so a section you jumped to registers as active immediately instead of
-        // the previous section staying selected (off-by-one breadcrumb on unit jumps).
+        // active section = the section the reader is ON (occupying the top of the view);
+        // drives the row highlight AND the island's live breadcrumb.
+        // v7.19.767 ROOT: detection line sits near the TOP of the viewport (just below where a
+        // jump lands the target — SWML_SCROLL_TOP_PAD = 24px), and we pick the section whose
+        // span CONTAINS the line. The old "last section above a 35% line" OVERSHOT short leading
+        // sections: when Question/Extract were each shorter than 35% of the viewport, several
+        // sat above the line at once and it selected the LOWEST — so the breadcrumb skipped
+        // ahead to RESPONSE while the reader was still on Question/Extract (Neil, repeatedly).
+        // Containment handles short stacks correctly AND still registers a jump immediately
+        // (the jumped target lands at 24px, inside the 40px line). Fall back to the last
+        // section that has started, covering gaps + the final section once it passes the line.
         function computeActiveIdx() {
             if (indexPositions.length === 0 || !canvasEditor) return -1;
             const cRect = contentWrap.getBoundingClientRect();
-            const threshold = cRect.top + cRect.height * 0.35;
+            const line = cRect.top + 40;
             let activeIdx = -1;
             for (let i = 0; i < indexPositions.length; i++) {
                 const dom = _siNodeDom(indexPositions[i].pos);
-                if (dom && dom.getBoundingClientRect().top <= threshold) activeIdx = i;
+                if (!dom) continue;
+                const r = dom.getBoundingClientRect();
+                if (r.top <= line && r.bottom > line) return i; // section straddling the line wins
+                if (r.top <= line) activeIdx = i;               // else track the last one that has started
             }
             return activeIdx;
         }
@@ -8965,8 +8983,13 @@
             // island stays viewport-safe; a separate innerHeight*0.52 clamp here landed
             // BELOW the list box on short/windowed viewports and clipped the last unit
             // (overflow:hidden hid it permanently — unreachable by scrolling the list).
-            siNav.style.maxHeight = siNav.scrollHeight + 'px';
+            // v7.19.767: expand the active group FIRST, THEN measure. The old order set
+            // maxHeight to the all-COLLAPSED scrollHeight, then updateIndexActive expanded
+            // the active group — so the extra rows overflowed the fixed cap and siNav's
+            // overflow:hidden CLIPPED the lower units (FEEDBACK / RESULTS), making them
+            // unreachable ("stuck at Response", Neil). Measuring after the expand fits them.
             updateIndexActive();
+            siNav.style.maxHeight = siNav.scrollHeight + 'px';
             // land the active row in view inside the list (rect-based — robust to the
             // nested group structure where offsetTop is relative to the group, not the list)
             requestAnimationFrame(() => {
