@@ -65,7 +65,7 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **Options:** A) What the writer focuses your attention on at the beginning and how that focus shifts as the source develops, B) A whole-text feature such as a perspective shift or a flashback to an earlier moment, C) A simile the writer uses to describe the effects of the heat on the landscape, D) A paragraph-level change of topic or a shift in time that contributes to the whole
    * **Correct:** A, B, D
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. AQA: structural features are "at a whole-text level eg beginnings/endings/perspective shifts; at a paragraph level eg topic change/aspects of cohesion; and at a sentence level when judged to contribute to whole structure." A, B and D are structure. A simile (C) is a LANGUAGE feature — it belongs to Question 2, not Question 3.
+   * **Feedback:** ✓ Correct. AQA: structural features are "at a whole-text level eg beginnings/endings/perspective shifts; at a paragraph level eg topic change/aspects of cohesion; and at a sentence level when judged to contribute to whole structure." The beginning-focus, the whole-text perspective shift and the paragraph-level topic change are all structure. A simile is a LANGUAGE feature — it belongs to Question 2, not Question 3.
    * **Why C:** A simile is a language device assessed in Question 2; writing about language in the structure question caps the response at Level 1–2.
 
 7. **Type: MCQ [Tests AO2]**
@@ -150,3 +150,85 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **Why A:** L4 needs a FULL range and CONSISTENT accuracy, not "mostly".
    * **Why C:** L2 only "attempts" a variety; this response achieves one.
    * **Why D:** L1 is a "simple range"; a variety used for effect is above it.
+
+16. **Type: MCQ [Tests AO1]**
+   * **Question:** For Question 1 ("List four things about Mary"), which answer would the mark scheme REJECT?
+   * **Options:** A) "Her limbs were heavy" — a detail about Mary from the correct lines, B) "It was hot" — a fact about the setting, not about Mary, C) "Her head ached" — a state of Mary's drawn from the lines, D) "She went to get a glass of water" — an action Mary takes
+   * **Correct:** B
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. The mark scheme's test is "does it tell you something about Mary? Is it from the correct lines?" A fact about the weather or setting that doesn't include Mary sits in the Reject column; the other three are all about Mary.
+   * **Why A:** A detail about Mary's body from the named lines is exactly what Question 1 credits.
+   * **Why C:** A physical state of Mary's, drawn from the correct lines, is creditable.
+   * **Why D:** An action Mary performs is a valid thing "about Mary."
+17. **Type: Ranking [Tests AO2]**
+   * **Question:** These four comments all answer the STRUCTURE question (Q3) about the same opening ("suddenly, the heat became intolerable"). Rank them WEAKEST to STRONGEST by AQA AO2 Level (letters in order, weakest first).
+   * **Options:** A) The opening describes the heat, and a later line says "as time passed, the heat became an obsession", so we know the heat keeps getting worse over time, B) The opening focus on "suddenly, the heat became intolerable" is a moment of exposition that implies a climactic moment to come; the time shift "as time passed" and its absence of detail suggest Mary is so consumed that time has become immeasurable to her, C) The opening tells us the heat "suddenly" became "intolerable" so we understand it is worse than normal, and the writer repeats the idea of heat in the second paragraph to show it is all Mary can think about, D) The text opens on "suddenly, the heat became intolerable" so we immediately understand Mary was unprepared, which creates tension; the shift in time "as time passed" gives no detail of how much, showing the heat is all she can think about
+   * **Correct:** A, C, D, B
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. These are AQA's own indicative answers for the structure question. The plot-and-paraphrase comment is simple, limited understanding; the "worse than normal… repeats the idea" comment shows some understanding; the "creates tension… shift in time" comment is a clear explanation of the structural effects; the exposition-and-climax reading that interprets the time shift is perceptive, detailed analysis. The ladder is describe, then some understanding, then clear explanation, then perceptive analysis.
+   * **WhyWrong:** Weakest to strongest: the plot-description comment, then the "worse than normal" some-understanding comment, then the "creates tension" clear explanation, then the exposition-and-climax perceptive analysis. Each rung is one AQA Level higher.
+18. **Type: MCQ [Tests AO2]**
+   * **Question:** A Question 3 (structure) answer says: "The writer starts with the heat and then moves to Mary inside the house, which is a structural shift." What is the ceiling for this comment?
+   * **Options:** A) Level 4 — it analyses the effect of the structural shift in perceptive detail, B) Level 2 — it identifies a shift but only comments on it, without explaining its effect on the reader, C) Level 3 — it clearly explains the effect of the shift, D) Level 1 — it makes no reference to structure at all
+   * **Correct:** B
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. Naming a shift and labelling it "a structural shift" identifies the feature with a comment but no explained effect — Level 2, "some understanding." To climb, the answer must explain (Level 3) then analyse (Level 4) what the shift DOES to the reader.
+   * **Why A:** Perceptive analysis explores the effect of the shift; merely naming it does not.
+   * **Why C:** A clear explanation would say what the shift achieves for the reader; this only labels it.
+   * **Why D:** The comment does refer to structure, so it is above the no-structure floor.
+19. **Type: Select All [Tests AO2]**
+   * **Question:** Select ALL that move a Question 2 language answer toward Level 4 (and none that do not).
+   * **Options:** A) Analysing the effects the writer's choices create, rather than just naming a technique, B) Selecting judicious textual detail that earns its place in the argument, C) Listing as many techniques as possible to show range, D) Using subject terminology accurately and only where it serves the analysis
+   * **Correct:** A, B, D
+   * **AO:** AO2
+   * **Feedback:** Level 4 AO2 is "perceptive, detailed analysis… judicious textual detail… sophisticated and accurate terminology." Analysing effects, judicious detail and accurate terminology all belong there. Listing many techniques is feature-spotting, which the mark scheme does not reward.
+   * **Why C:** Naming many techniques is feature-spotting; AQA rewards judicious selection and explored effect, not quantity.
+20. **Type: MCQ [Tests AO4]**
+   * **Question:** A Question 4 answer "makes a clear and relevant response to the statement, shows clear understanding of the writer's methods, and evaluates the effects clearly." Which Level?
+   * **Options:** A) Level 4 — perceptive, detailed, critical evaluation, B) Level 3 — clear, relevant evaluation, C) Level 2 — some attempts at evaluation, D) Level 1 — simple, limited evaluation
+   * **Correct:** B
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. "Clear and relevant response… clear understanding of methods… evaluates clearly the effects" is the exact Level 3 wording. Level 4 would be convincing and CRITICAL, weighing the statement and evaluating the effects in detail.
+   * **Why A:** Level 4 is convincing and critical, weighing the statement; a clear, relevant response sits a band below.
+   * **Why C:** "Some attempts at evaluation" makes only some response to the statement; a clear, relevant evaluation is above that.
+   * **Why D:** A simple, limited response shows limited understanding of method; this answer is clearer than that.
+21. **Type: Fill [Tests AO4]**
+   * **Question:** Complete the AQA Level 4 evaluation key words: "Perceptive, [BLANK] evaluation."
+   * **Answer:** detailed
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. The AO4 ladder mirrors the reading ladder: L1 Simple/limited, L2 Some, L3 Clear/relevant, L4 Perceptive/detailed. The top band pairs "perceptive" with "detailed."
+   * **WhyWrong:** "Critical" describes the RESPONSE at Level 4, but the Level key words are "perceptive, detailed."
+22. **Type: MCQ [Tests AO4]**
+   * **Question:** What is the key difference between a Level 3 and a Level 4 Question 4 response?
+   * **Options:** A) Level 4 weighs the statement critically and evaluates the effects in detail, where Level 3 makes a clear, relevant response and evaluates the effects clearly, B) Level 4 uses more quotations than Level 3, C) Level 4 is simply longer and more developed than Level 3, D) Level 4 compares the source with a second text, which Level 3 does not
+   * **Correct:** A
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. Level 3 is "clear and relevant… evaluates clearly the effects." Level 4 is "convincing and critical… evaluates critically and in detail." The lift is a weighed, critical judgement — not length or quotation count.
+   * **Why B:** Quantity of quotation is not a Level distinction; judicious reference is what counts.
+   * **Why C:** Length is not a descriptor; a concise response can be Level 4.
+   * **Why D:** Cross-text comparison is AO3 on Paper 2; it has no place in this single-source evaluation.
+23. **Type: Select All [Tests AO5]**
+   * **Question:** Select ALL that describe an AQA Level 4 (19–24) Question 5 response (and none that do not).
+   * **Options:** A) Communication is convincing and compelling, B) Tone, style and register are assuredly matched to purpose and audience, C) Spelling and punctuation are consistently accurate across the whole piece, D) Structural features are varied and inventive, with fluently linked paragraphs
+   * **Correct:** A, B, D
+   * **AO:** AO5
+   * **Feedback:** AO5 (Content and Organisation) Level 4 is convincing and compelling communication, assuredly matched register, and varied, inventive structure. Consistent spelling and punctuation is AO6 Technical Accuracy, scored on a separate ladder.
+   * **Why C:** Spelling and punctuation accuracy is AO6, not AO5 — the two halves of Question 5 are marked separately.
+24. **Type: MCQ [Tests AO6]**
+   * **Question:** A student's writing has "mostly secure" sentence demarcation, "a range of punctuation used mostly with success", and "a variety of sentence forms." Which AO6 Level?
+   * **Options:** A) Level 4 — consistently secure demarcation and a wide range of punctuation with a high level of accuracy, B) Level 3 — mostly secure and mostly accurate, with a variety of sentence forms, C) Level 2 — some control of a range of punctuation, D) Level 1 — occasional sentence demarcation
+   * **Correct:** B
+   * **AO:** AO6
+   * **Feedback:** ✓ Correct. "Mostly secure… mostly with success… variety of sentence forms" is the Level 3 wording. Level 4 raises "mostly" to "consistently" and "a range" to "a wide range… with a high level of accuracy."
+   * **Why A:** Level 4 needs CONSISTENT security and a wide, highly accurate range, not "mostly."
+   * **Why C:** Level 2 only has "some control"; this response is mostly secure, a band higher.
+   * **Why D:** Level 1 is "occasional" demarcation; "mostly secure" is well above that.
+25. **Type: MCQ [Tests AO2]**
+   * **Question:** Which point belongs in Question 2 (language), NOT Question 3 (structure)?
+   * **Options:** A) The connotations of the verb "darted" in describing the lizards, B) The way the writer shifts focus from outside to inside the house, C) The decision to open the extract with the heat before introducing Mary, D) The flashback to Mary's earlier life partway through the source
+   * **Correct:** A
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. The connotations of a single word are language (Question 2). Focus shifts, opening choices and flashbacks are all structural features — how the text is sequenced — which belong in Question 3.
+   * **Why B:** A shift of focus across the text is a structural feature for Question 3.
+   * **Why C:** Where the writer chooses to begin is a structural, sequencing choice for Question 3.
+   * **Why D:** A flashback is a structural device that reorders time, assessed in Question 3.
