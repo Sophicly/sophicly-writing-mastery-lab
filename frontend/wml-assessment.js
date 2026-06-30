@@ -8924,15 +8924,17 @@
 
         // active section = the section the reader is ON (occupying the top of the view);
         // drives the row highlight AND the island's live breadcrumb.
-        // v7.19.767 ROOT: detection line sits near the TOP of the viewport (just below where a
-        // jump lands the target — SWML_SCROLL_TOP_PAD = 24px), and we pick the section whose
-        // span CONTAINS the line. The old "last section above a 35% line" OVERSHOT short leading
-        // sections: when Question/Extract were each shorter than 35% of the viewport, several
-        // sat above the line at once and it selected the LOWEST — so the breadcrumb skipped
-        // ahead to RESPONSE while the reader was still on Question/Extract (Neil, repeatedly).
-        // Containment handles short stacks correctly AND still registers a jump immediately
-        // (the jumped target lands at 24px, inside the 40px line). Fall back to the last
-        // section that has started, covering gaps + the final section once it passes the line.
+        // v7.19.769 ROOT: pure sticky-header pick — the LAST section whose top has reached a line
+        // near the TOP of the viewport (40px, just below where a jump lands the target at
+        // SWML_SCROLL_TOP_PAD = 24px). A section becomes active when its top reaches the line and
+        // STAYS active (through its own body AND the gap below it) until the NEXT section's top
+        // reaches the line. Before the first section reaches it → -1 → "Table of Contents".
+        // CRITICAL: skip not-rendered / hidden sections. The "What happens next?" notice (and any
+        // collapsed/empty section) reports a {top:0,bottom:0} rect — top<=line is satisfied and,
+        // being a LATE index, it hijacked the result in every gap → the breadcrumb flashed
+        // "RESPONSE" between sections and before Question & Extract (Neil 2026-06-30). The v767
+        // "containing line" variant didn't fix this because the zero-height rect still polluted
+        // the fallback. Skipping zero-height rects is the root fix.
         function computeActiveIdx() {
             if (indexPositions.length === 0 || !canvasEditor) return -1;
             const cRect = contentWrap.getBoundingClientRect();
@@ -8940,10 +8942,10 @@
             let activeIdx = -1;
             for (let i = 0; i < indexPositions.length; i++) {
                 const dom = _siNodeDom(indexPositions[i].pos);
-                if (!dom) continue;
+                if (!dom || !dom.getBoundingClientRect) continue;
                 const r = dom.getBoundingClientRect();
-                if (r.top <= line && r.bottom > line) return i; // section straddling the line wins
-                if (r.top <= line) activeIdx = i;               // else track the last one that has started
+                if (r.height <= 0) continue;                    // hidden/unrendered — never active
+                if (r.top <= line) activeIdx = i;               // last section whose top reached the line
             }
             return activeIdx;
         }
