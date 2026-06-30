@@ -8767,8 +8767,19 @@
                 const label = (node.attrs.label || '').trim();
                 // dividers set the current UNIT context (label + pos, for the header jump)
                 if (type === 'divider') { currentUnit = label; currentUnitPos = pos; return; }
-                // mirror updateOutline's diagnostic-hidden guard
-                if (canvas.classList.contains('swml-canvas-diagnostic') && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) return false;
+                // v7.19.761 ROOT FIX: the old guard hid ALL results sections (feedback/scores/
+                // analytics/action/signoff/improvement) whenever the canvas carried the
+                // 'swml-canvas-diagnostic' class — but that class persists after assessment, so a
+                // COMPLETED assessment's populated results were unreachable from the nav AND absent
+                // from the active-section detection (breadcrumb landed on the wrong section). Now
+                // CONTENT-driven, not phase-gated: hide a results section only while it's still an
+                // empty placeholder (the blank write phase); once populated it's navigable. Universal.
+                if (canvas.classList.contains('swml-canvas-diagnostic') && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) {
+                    const _d = _siNodeDom(pos);
+                    const _t = _d ? (_d.textContent || '').replace(/\s+/g, ' ').trim() : '';
+                    const _placeholder = !_t || /will appear|will be assessed|appear here|once your assessment|not yet/i.test(_t);
+                    if (_placeholder) return false;
+                }
                 if (!label) return;
                 rows.push({ type, label, pos, unit: currentUnit, unitPos: currentUnitPos });
             });
@@ -9293,8 +9304,15 @@
             canvasEditor.state.doc.descendants((node, pos) => {
                 if (node.type.name === 'sectionBlock') {
                     const type = node.attrs.sectionType || 'response';
-                    // v7.14.11: Skip sections hidden in diagnostic mode (check DOM class for robustness)
-                    if (type !== 'divider' && canvas.classList.contains('swml-canvas-diagnostic') && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) return false;
+                    // v7.19.761 ROOT FIX (mirrors the scroll-island guard): hide results sections
+                    // only while they're still empty placeholders, not for the whole diagnostic
+                    // phase — a COMPLETED assessment keeps the 'swml-canvas-diagnostic' class, so the
+                    // old type-only guard left its populated results out of the outline forever.
+                    if (type !== 'divider' && canvas.classList.contains('swml-canvas-diagnostic') && ['feedback', 'scores', 'analytics', 'action', 'signoff', 'improvement'].includes(type)) {
+                        const _t = (node.textContent || '').replace(/\s+/g, ' ').trim();
+                        const _placeholder = !_t || /will appear|will be assessed|appear here|once your assessment|not yet/i.test(_t);
+                        if (_placeholder) return false;
+                    }
                     sections.push({ type, label: node.attrs.label || '', pos });
                 }
             });

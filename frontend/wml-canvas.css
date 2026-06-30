@@ -5259,10 +5259,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 /* v7.19.494: the badge shows on EVERY tracked editable section ([data-section-complete]
    present = it has trackable rows) — faint/grey while incomplete, house-green when done,
    with a smooth transition. Greys signal the target before the student fills it. */
-.swml-section-plan[data-section-complete]::after,
-.swml-section-response[data-section-complete]::after,
-.swml-section-outline[data-section-complete]::after,
-.swml-section-improvement[data-section-complete]::after {
+/* v7.19.761 ROOT FIX: badge driven by the data-section-complete ATTRIBUTE, not an
+   enumerated type list. The old per-type selectors silently skipped 'action' (Action
+   Plan / Self-Assessment) and would skip any future section type / board / question.
+   The nodeView (wml-section-block.js) sets data-section-complete ONLY on trackable
+   sections, so this attribute selector is self-limiting + universal. Dividers/progress
+   never carry the attr (excluded belt-and-braces). */
+.swml-section-block[data-section-complete]:not(.swml-section-divider):not(.swml-section-progress)::after {
     content: '';
     position: absolute;
     top: 10px;
@@ -5277,25 +5280,18 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     pointer-events: none;
     transition: background 0.3s ease, box-shadow 0.3s ease;
 }
-.swml-section-plan[data-section-complete="true"]::after,
-.swml-section-response[data-section-complete="true"]::after,
-.swml-section-outline[data-section-complete="true"]::after,
-.swml-section-improvement[data-section-complete="true"]::after {
+.swml-section-block[data-section-complete="true"]:not(.swml-section-divider):not(.swml-section-progress)::after {
     /* complete: house-green circle + full white check */
     background: #1CD991 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
     box-shadow: 0 2px 6px rgba(28,217,145,0.35);
 }
+/* feedback boxes carry the collapse chevron at right:8px — shift the badge left to clear it */
+.swml-section-feedback[data-section-complete]::after { right: 40px; }
 /* light theme — fainter grey on light bg + darker incomplete check */
-[data-swml-theme="light"] .swml-section-plan[data-section-complete]::after,
-[data-swml-theme="light"] .swml-section-response[data-section-complete]::after,
-[data-swml-theme="light"] .swml-section-outline[data-section-complete]::after,
-[data-swml-theme="light"] .swml-section-improvement[data-section-complete]::after {
+[data-swml-theme="light"] .swml-section-block[data-section-complete]:not(.swml-section-divider):not(.swml-section-progress)::after {
     background: rgba(0,0,0,0.07) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-opacity='0.4' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
 }
-[data-swml-theme="light"] .swml-section-plan[data-section-complete="true"]::after,
-[data-swml-theme="light"] .swml-section-response[data-section-complete="true"]::after,
-[data-swml-theme="light"] .swml-section-outline[data-section-complete="true"]::after,
-[data-swml-theme="light"] .swml-section-improvement[data-section-complete="true"]::after {
+[data-swml-theme="light"] .swml-section-block[data-section-complete="true"]:not(.swml-section-divider):not(.swml-section-progress)::after {
     background: #1CD991 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
     box-shadow: 0 2px 6px rgba(28,217,145,0.25);
 }
@@ -7546,6 +7542,21 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-pill.swml-tier-3:hover:not(.is-active),
 .swml-pill.swml-tier-2:hover:not(.is-active),
 .swml-pill.swml-tier-1:hover:not(.is-active) { background-color: rgba(229, 57, 53, 0.22); color: rgba(255,255,255,0.85); }
+
+/* v7.19.761: the GRADE ladder shows its house colours AT REST as an "aim here" heatmap
+   (Neil 2026-06-30). SCOPED to .swml-pill-row-grade (score-summary grade + action-plan
+   grade goal) so the many-pill per-question MARK rows stay neutral — the 2026-05-14
+   "full heatmap too noisy" flag was about those mark rows, not the 1–9 grade ladder.
+   :not(.is-active) keeps the saturated active state below as the selection signal. */
+.swml-pill-row-grade .swml-pill.swml-tier-9:not(.is-active) { background-color: rgba(44, 0, 62, 0.32); color: rgba(255,255,255,0.85); }
+.swml-pill-row-grade .swml-pill.swml-tier-8:not(.is-active) { background-color: rgba(83, 51, 237, 0.26); color: rgba(255,255,255,0.85); }
+.swml-pill-row-grade .swml-pill.swml-tier-7:not(.is-active) { background-color: rgba(77, 118, 253, 0.26); color: rgba(255,255,255,0.85); }
+.swml-pill-row-grade .swml-pill.swml-tier-6:not(.is-active) { background-color: rgba(28, 217, 145, 0.28); color: rgba(255,255,255,0.85); }
+.swml-pill-row-grade .swml-pill.swml-tier-5:not(.is-active) { background-color: rgba(241, 196, 15, 0.28); color: rgba(255,255,255,0.85); }
+.swml-pill-row-grade .swml-pill.swml-tier-4:not(.is-active) { background-color: rgba(255, 152, 0, 0.28); color: rgba(255,255,255,0.85); }
+.swml-pill-row-grade .swml-pill.swml-tier-3:not(.is-active),
+.swml-pill-row-grade .swml-pill.swml-tier-2:not(.is-active),
+.swml-pill-row-grade .swml-pill.swml-tier-1:not(.is-active) { background-color: rgba(229, 57, 53, 0.28); color: rgba(255,255,255,0.85); }
 
 /* Active state — saturated brand color + white text + shadow */
 /* v7.19.621: ONE consistent grade ladder everywhere (Neil) — top = brand purple GRADIENT,
@@ -11405,20 +11416,10 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
    ────────────────────────────────────────────────────────────────────────── */
 .swml-section-feedback { position: relative; }
 
-/* Green house-badge tick when the box holds real feedback (top-right, clear of the label tag) */
-.swml-section-feedback[data-section-complete="true"]::after {
-    content: '';
-    position: absolute;
-    top: 10px;
-    right: 40px;
-    width: 18px;
-    height: 18px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%231CD991'/%3E%3Cpolyline points='17 9 10.5 15.5 7 12' fill='none' stroke='%23ffffff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-size: contain;
-    pointer-events: none;
-    z-index: 3;
-}
+/* v7.19.761: the feedback completion badge is now the SINGLE universal
+   data-section-complete badge (see ~L5262); feedback only needs the right:40px shift
+   to clear the collapse chevron, declared there. The old feedback-specific 18px badge
+   was removed so there's one badge definition, not a per-type duplicate. */
 
 /* Collapse toggle — slim borderless chevron, top-right */
 .swml-fb-toggle {
