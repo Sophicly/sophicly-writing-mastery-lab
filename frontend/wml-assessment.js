@@ -4771,7 +4771,7 @@
         let canvasChatLoading = false;
 
         // Chat message helper
-        function addChatMessage(text, role, rawText) {
+        function addChatMessage(text, role, rawText, opts) {
             chatMessages.querySelectorAll('.swml-quick-actions').forEach(q => q.remove());
             const bubble = el('div', { className: `swml-bubble ${role === 'ai' ? 'ai' : 'user'}` });
             const content = el('div', { className: 'swml-bubble-content' });
@@ -4878,7 +4878,7 @@
                 const detectText = rawText || text.replace(/<[^>]+>/g, '');
                 const canvasAssessDone = state.task === 'assessment' && state.plan.total_score && state.plan.grade;
                 const isHattieQuestion = /(?:Where\s+am\s+I\s+going|How\s+am\s+I\s+going|Where\s+to\s+next|transfer.*skills|how\s+will\s+you.*apply|Session\s+Complete)/i.test(detectText);
-                const actions = (canvasAssessDone || isHattieQuestion || _reflectData) ? [] : detectQuickActions(detectText);
+                const actions = (canvasAssessDone || isHattieQuestion || _reflectData || (opts && opts.suppressActions)) ? [] : detectQuickActions(detectText);
                 if (actions.length > 0) {
                     const isMulti = /(?:pick|choose|select|commit to)\s*(?:(?:up to|between|at least)?\s*)?(\d)\s*[-\u2013to]+\s*(\d)/i.test(detectText)
                         || /(?:pick|choose|select)\s+(?:multiple|several|a few|some)\b/i.test(detectText)
@@ -6461,8 +6461,8 @@
                 chatSendBtn.style.opacity = '1';
                 chatSendBtn.style.pointerEvents = 'auto';
             }
-            function aiBubble(plain) {
-                addChatMessage(formatAI(plain), 'ai', plain);
+            function aiBubble(plain, opts) {
+                addChatMessage(formatAI(plain), 'ai', plain, opts);
                 canvasChatHistory.push({ role: 'assistant', content: plain });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
@@ -6732,11 +6732,15 @@
                     body += '\n\n' + q.options.map(o => `**${o.letter})** ${o.text}`).join('\n');
                 }
                 if (q.type === 'select_all')      body += '\n\n*Select all that apply — type the letters, e.g. `A, C`.*';
-                else if (q.type === 'ranking')    body += '\n\n*Rank them by typing the letters in order, weakest first, e.g. `B, D, C, A`.*';
+                else if (q.type === 'ranking')    body += '\n\n*Tap the options **in order, weakest first** — tap one again to remove it. (Or type the letters, e.g. `B, D, C, A`.)*';
                 else if (q.type === 'true_false') body += '\n\n*Choose True or False below — or just type it.*';
                 else if (q.type === 'fill_blank') body += '\n\n*Type your answer in a word or short phrase.*';
                 else                              body += '\n\n*Type the letter of your answer, e.g. `B`.*';
-                aiBubble(body);
+                // v7.19.783: ranking + true_false render their OWN widget (appendRankButtons /
+                // appendQuickButtons) — suppress the generic quick-action auto-detector for those
+                // bubbles, else it parses the option lines into a DUPLICATE button set. MCQ /
+                // select_all have no explicit widget and rely on the detector, so keep it on.
+                aiBubble(body, { suppressActions: (q.type === 'ranking' || q.type === 'true_false') });
                 // v7.19.580: True/False has no options array → no auto-buttons. Add explicit
                 // True / False quick-action buttons (parity with the MCQ option buttons).
                 if (q.type === 'true_false') {
@@ -7188,8 +7192,8 @@
             function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ idx, answers })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { busy = false; chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
-            function aiBubble(plain) {
-                addChatMessage(formatAI(plain), 'ai', plain);
+            function aiBubble(plain, opts) {
+                addChatMessage(formatAI(plain), 'ai', plain, opts);
                 canvasChatHistory.push({ role: 'assistant', content: plain });
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
