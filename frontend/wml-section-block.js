@@ -179,12 +179,51 @@
                 }
             } catch (_) { /* never block render */ }
 
+            // v7.19.760: the three STUDENT-FILLED assessment sections compute completion
+            // HERE, at render time, from the node model — so the tick survives nodeView
+            // rebuild (JS-set attrs get wiped, comment L88). Analytics is type 'feedback', so
+            // the "any text = complete" block below forced it green (its h3 labels + the
+            // "Number of opt-outs: —" line are non-placeholder text) → false green when empty.
+            // Action Plan + Self-Assessment are type 'action' — not handled anywhere here, so
+            // their externally-set tick was wiped on rebuild. One authoritative source now.
+            let _assessHandled = false;
+            try {
+                const _lbl = (node.attrs && node.attrs.label) || '';
+                if (_lbl === 'Analytics' || _lbl === 'Action Plan' || _lbl === 'Self-Assessment') {
+                    let comp;
+                    if (_lbl === 'Self-Assessment') {
+                        comp = true; // complete unless a 5-scale dropdown is still "— / 5"
+                        node.descendants((c) => {
+                            if (c.type && c.type.name === 'paragraph' && /:\s*—\s*\/\s*5\s*$/.test((c.textContent || '').trim())) comp = false;
+                        });
+                    } else {
+                        let inp = 0, inpFilled = 0;
+                        node.descendants((c) => {
+                            if (c.type && c.type.name === 'inputField') { inp++; if ((c.textContent || '').trim().length > 0) inpFilled++; }
+                        });
+                        comp = inp > 0 && inpFilled === inp; // every InputField filled
+                        if (_lbl === 'Analytics') {
+                            // the opt-out count must also be chosen ("Number of opt-outs: —" = not done)
+                            node.descendants((c) => {
+                                if (c.type && c.type.name === 'paragraph') {
+                                    const t = (c.textContent || '').trim();
+                                    if (/Number of opt-outs/i.test(t) && /—\s*$/.test(t)) comp = false;
+                                }
+                            });
+                        }
+                    }
+                    dom.setAttribute('data-section-complete', comp ? 'true' : 'false');
+                    _assessHandled = true;
+                }
+            } catch (_) { /* never block render */ }
+
             // v7.19.607: feedback boxes get a completion tick too — "complete" = the box
             // holds real (non-placeholder) feedback text. Computed from the node model so it
             // survives re-render. Lives OUTSIDE the read-only guard above because feedback is
-            // read-only for students yet must still show its tick.
+            // read-only for students yet must still show its tick. (Skips Analytics — handled
+            // above as a student-filled form, not an AI feedback box.)
             try {
-                if (type === 'feedback') {
+                if (type === 'feedback' && !_assessHandled) {
                     const _txt = (node.textContent || '').trim();
                     const _placeholder = !_txt || /will appear after assessment|will be assessed here|appear here (?:after|once)|summary[\s\S]*will appear here/i.test(_txt);
                     dom.setAttribute('data-section-complete', _placeholder ? 'false' : 'true');

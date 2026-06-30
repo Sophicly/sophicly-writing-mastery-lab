@@ -5479,7 +5479,11 @@
             const isSilent = canvasSilentSend;
             canvasSilentSend = false;
             if (!isSilent) addChatMessage(msg, 'user');
-            canvasChatHistory.push({ role: 'user', content: msg });
+            // v7.19.760: a SILENT send (quick-action advance directive, "Let's begin!", etc.)
+            // must stay in history for the AI's context but NEVER render — tag it hidden so the
+            // resume loop (L11572) skips it. Without this the verbose "@REFLECT_GATE" directive
+            // re-appeared as a user bubble on reload (Neil flagged it as leaked "code").
+            canvasChatHistory.push({ role: 'user', content: msg, hidden: isSilent });
             chatTextarea.value = '';
             chatTextarea.style.height = '40px';
             chatSendBtn.style.opacity = '0.4';
@@ -13378,7 +13382,10 @@
                             const isSilent = canvasSilentSend;
                             canvasSilentSend = false;
                             if (!isSilent) addChatMessage(msg, 'user');
-                            canvasChatHistory.push({ role: 'user', content: msg });
+                            // v7.19.760: tag silent sends hidden so the resume loop skips them
+                            // (kept in history for AI context) — stops the verbose advance directive
+                            // re-rendering as a user bubble on reload. Mirrors the primary pipeline.
+                            canvasChatHistory.push({ role: 'user', content: msg, hidden: isSilent });
                             chatTextarea.value = '';
                             chatTextarea.style.height = '40px';
                             chatSendBtn.style.opacity = '0.4';
