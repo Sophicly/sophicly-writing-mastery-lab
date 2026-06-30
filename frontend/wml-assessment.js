@@ -5160,11 +5160,12 @@
                         chatMessages.innerHTML = '';
                         state.plan = {};
                         state._phaseMarkedComplete = false;
-                        // v7.19.774: sidebar/marks reset on fresh assessment chat — HELD from prod
-                        // (awaiting human test). Call restored on staging in the next bump. The
-                        // _resetAssessmentMarkingOutput() function is defined but intentionally
-                        // not invoked here in the prod build (777).
-                        // _resetAssessmentMarkingOutput();
+                        // v7.19.774: a fresh assessment chat must reset the Protocol Progress
+                        // sidebar — which is content-gated on the doc's marks, so we clear the
+                        // marking output (feedback boxes + Score Summary readout + predictions),
+                        // preserving the essay. Self-guards to assessment tasks (no-op otherwise).
+                        // STAGING ONLY (778) — held from prod (777) pending human test.
+                        _resetAssessmentMarkingOutput();
                         // v7.19.3: preserve state.step for mark_scheme_unit (it's the bridge
                         // dispatch value 1=Quiz / 2=FYW, NOT a sidebar position). Pre-fix
                         // chat-clear in FYW lesson reset state.step from 2 back to 1, so
