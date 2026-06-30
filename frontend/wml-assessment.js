@@ -10402,6 +10402,12 @@
 
         // ── Detachable Extract Panel (v7.11.6, v7.14.61: dual independent panels) ──
         const extractPanels = {}; // keyed by source index (0, 1) or 'single' for non-multi
+        // v7.19.772: extract panels now live on <body> (to escape the embedded stacking trap), so
+        // they no longer die with the canvas subtree on SPA-nav. Sweep any orphans left by a prior
+        // mount when this canvas builds — engineers out the "stale panel lingers after navigating
+        // away" failure that the body-portal otherwise introduces. Safe: no panel is open yet at
+        // build time (they're user-opened), so this only ever removes genuine orphans.
+        try { document.querySelectorAll('body > .swml-extract-panel').forEach(p => p.remove()); } catch (_) {}
         function closeAllExtractPanels() {
             Object.keys(extractPanels).forEach(k => {
                 if (extractPanels[k]) extractPanels[k].remove();
@@ -10601,7 +10607,10 @@
             });
             // Position
             if (position) { panel.style.top = position.top; panel.style.right = position.right || 'auto'; panel.style.left = position.left || 'auto'; }
-            canvas.appendChild(panel);
+            // v7.19.772 ROOT: portal to <body> (panel is position:fixed). Inside `canvas` it was
+            // trapped in the embedded-mode transformed-ancestor stacking context and hid behind the
+            // LD sidebar. On <body> it escapes that context so its z-index applies over everything.
+            document.body.appendChild(panel);
             extractPanels[sourceIdx] = panel;
             extractBtn.classList.add('active');
         }

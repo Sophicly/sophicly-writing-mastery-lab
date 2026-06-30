@@ -4608,14 +4608,23 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 
 /* ── Detachable Extract Panel ── */
 .swml-extract-panel {
-    position: absolute;
+    /* v7.19.772 ROOT: position:fixed + portalled to <body> (see wml-assessment.js). In LD/focus
+       embedded mode a WML ancestor carries transform/will-change, which creates a stacking context
+       that TRAPS a fixed descendant — so the panel could never rise above the LD sidebar (a sibling
+       OUTSIDE that context) no matter its z-index. This is the recurring "panel hides behind the
+       sidebar" bug. Living on <body> escapes the trap entirely; z-index then actually applies. */
+    position: fixed;
     top: 60px; right: 20px;
     width: 380px; max-height: 60vh;
     background: rgba(40, 41, 43, 0.97);
     border: 1px solid rgba(81, 218, 207, 0.2);
     border-radius: 10px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    z-index: 200;
+    /* v7.19.772: sit ABOVE the LearnDash focus sidebar. The panel goes position:fixed while
+       dragged (escapes the canvas overflow:hidden), so when pulled left over the LD sidebar the
+       old z:200 lost to it. Raised above the WML high-overlay band (99990–99999) so the detached
+       reference panel always stays on top (Neil 2026-06-30). */
+    z-index: 100010;
     display: flex; flex-direction: column;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
