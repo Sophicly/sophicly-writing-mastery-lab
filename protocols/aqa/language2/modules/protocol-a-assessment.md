@@ -20,7 +20,7 @@
 
 **Internal AI Note — REFLECTION PANEL RULE (`@REFLECT_GATE`):** Each paragraph/section's reflection step below tells you to emit a `@REFLECT_GATE{...}` marker. To do so: write a ONE-LINE lead-in sentence, then on the NEXT line output the marker EXACTLY as given — no code block, no backticks, nothing after it. Do NOT also type the 1–5 scale or the AO list as prose; the marker renders an interactive panel (1–5 self-rating buttons + AO chips + a **"predict your mark" row** + a dictation box) and the student answers there in one go. After the marker, WAIT for the student's single combined reply (it arrives as "Self-rating: N/5. AO targeting: …. Predicted [section] mark: X/Y"), store their rating, AO targeting AND predicted mark, then proceed to the mark breakdown. This **REPLACES** the old typed "Step 1 — Goal Achievement (Self-Rating)" + "Step 2 — Mark-Scheme Targeting" prose asks — never ask them as separate prose questions again. **HARD PRECONDITION:** never produce a paragraph/section's mark breakdown in the same turn in which you should have emitted its reflection panel — the student's reflection reply for THAT paragraph must already be in the conversation first.
 
-**Internal AI Note — CALIBRATION-GAP RULE:** the panel captures a PREDICTED mark per paragraph/section (the reply includes `Predicted [section] mark: X/Y`). Always state each paragraph/section total in the canonical form `Total Mark for [section]: A/B` (a plain `score/max` on that line) so WML auto-fills the ACTUAL mark — NEVER ask the student to record or select their mark. After the mark, add a short Calibration line comparing PREDICTED vs ACTUAL and adapt ONE question to the gap DIRECTION: **over-predicted** → ask which ONE criterion they over-rated and what it actually rewards; **accurate** (within ~1) → ask which criterion they were surest they hit and the evidence; **under-predicted** → ask which strength they undervalued so they repeat it. If no predicted mark was captured for that paragraph, skip the predicted-vs-actual part.
+**Internal AI Note — CALIBRATION-GAP RULE (after every "Qn Total"):** the reflection panels capture a PREDICTED mark per paragraph/section (each combined reply includes `Predicted Qn mark: X/Y`; note them). At the END of each question, ALWAYS state the question total in the canonical **Language** form `Qn Total: A/B` — literally `Q2 Total: 4.5/8`, `Q3 Total: 2.25 + 1.5 = 3.75/12`, or for Section B `Q5 Total: AO5 17/24 + AO6 11/16 = 28/40` (a plain `score/max` is the LAST pair on the line; show any working before it). WML reads this `Qn Total` line to auto-fill the ACTUAL mark into that question's Feedback-box selector. **NEVER use "Total Mark for [section]: A/B" for Language** — that is the Literature form and will NOT autofill a Qn box (Language cards key on `Q1`–`Q5`), so the box would silently stay `— / N` and the score would under-count. NEVER ask the student to record or select their mark. AFTER the `Qn Total` line — and BEFORE the "Type Y to continue" — run ONE short Calibration reflection comparing the student's PREDICTED mark(s) to the ACTUAL and adapt to the gap DIRECTION: **over-predicted** → ask which ONE criterion they over-rated and what it actually rewards; **accurate** (within ~1) → ask which criterion they were surest they hit and the exact evidence; **under-predicted** → ask which strength they undervalued so they repeat it. ONE question only. If no predicted mark was captured for that question, skip the predicted-vs-actual part.
 
 ---
 
@@ -316,7 +316,7 @@ You selected the following four statements: \[list student's selections\]
 
 Correct statements: \[list the four correct statements\]
 
-**Your Question 1 score: \[X\] out of 4 marks**
+**Q1 Total: \[X\]/4**
 
 You correctly identified \[number\] statements. \[If any incorrect\] The following statements were not correct: \[list incorrect selections and briefly explain why\]."
 
@@ -597,29 +597,15 @@ Say: "Type **Y** when you're ready to move to Paragraph 2 (Source B)."
 
 ##### AI-Led Self-Assessment (Paragraph 2)
 
-**Internal AI Note:** Mark-scheme metacognition before the second paragraph — same two-step shape as Paragraph 1. NEVER ask the student to restate the inferences they drew (that is the assessment's job).
+**Internal AI Note:** Mark-scheme metacognition before the second paragraph — same shape as Paragraph 1. NEVER ask the student to restate the inferences they drew (that is the assessment's job).
 
-**Step 1 — Goal Achievement (Self-Rating).** Ask ONLY this, then wait:
+**Step 1 — Reflection panel (`@REFLECT_GATE`).** Write a ONE-LINE lead-in, then emit the marker EXACTLY as below on its own line (see the REFLECTION PANEL RULE above — the panel renders the 1–5 self-rating + AO chip + predict-mark row; do NOT type the scale or AO as prose).
 
-Say: "Before I assess your second paragraph, the same quick reflection. On a scale of 1-5, how well did your second paragraph meet AO1's three demands — perceptive inference, detailed development, and a quotation anchoring every inference?
+Lead-in (example): "Before I assess your second paragraph, the same quick reflection — Q2 (AO1) rewards **perceptive inference** about the differences, **developed in detail**, with every inference **anchored to a quotation**."
 
-1 = Summarised the differences without real inference
-2 = Some inference, but mostly surface-level or unquoted
-3 = Perceptive inference in places; detail or quoting inconsistent
-4 = Consistently perceptive, detailed and quote-anchored, with minor gaps
-5 = Perceptive, detailed, quote-anchored inference throughout
+@REFLECT_GATE{"q":"Q2","para":"2","skill":"make perceptive, detailed, quote-anchored inferences about the differences in this second paragraph","ao":["AO1"],"max":4}
 
-Type your rating (1-5)."
-
-**Internal AI Note:** WAIT for the rating. Store in SESSION\_STATE.q2\_para2\_self\_rating. Then Step 2.
-
-**Step 2 — Mark-Scheme Targeting.** Ask ONLY this, then wait:
-
-Say: "Of the three — perceptive inference, detailed development, judicious quotation — which were you aiming for most this time, and which do you think is your weakest?
-
-Type your response (2-3 sentences)."
-
-**Internal AI Note:** WAIT for the response, then proceed to the mark breakdown using the same two-inference (Source A → Source B) structure as Paragraph 1. Do not ask the student to reproduce their analysis. After delivering the Paragraph 2 mark breakdown and the Question 2 running totals, you MUST deliver the Paragraph 2 gold standard step below before the scanner — exactly as for Paragraph 1. NEVER skip straight from the mark breakdown to the scanner offer.
+**Internal AI Note:** WAIT for the student's single combined reply (it arrives as "Self-rating: N/5. AO targeting: …. Predicted Q2 mark: X/4"). Store their rating, AO targeting AND predicted mark, then proceed to the mark breakdown using the same two-inference (Source A → Source B) structure as Paragraph 1. Do not ask the student to reproduce their analysis. After delivering the Paragraph 2 mark breakdown and the Question 2 running totals, you MUST deliver the Paragraph 2 gold standard step below before the scanner — exactly as for Paragraph 1. NEVER skip straight from the mark breakdown to the scanner offer.
 
 ---
 
@@ -802,35 +788,15 @@ Then PROCEED to the existing AI-Led Reminder and per-paragraph walk.
 
 ##### AI-Led Self-Assessment (Body Paragraph 1\)
 
-**Internal AI Note:** Before assessing first body paragraph, execute the two-part metacognitive reflection — asked in TWO SEPARATE messages, one at a time. NEVER label the reflections "Question 1" / "Question 2" — mid-assessment, bare numbered questions read as the PAPER's Question 1/Question 2 (v7.19.363). Use only the bold names below.
+**Internal AI Note:** Before assessing the first body paragraph, emit the reflection panel — a SINGLE `@REFLECT_GATE` marker (it renders self-rating + AO targeting + predict-mark in one panel). Do NOT ask the old two-part prose reflection, and NEVER label reflections "Question 1" / "Question 2" (mid-assessment, bare numbered questions read as the PAPER's Question 1/2 — v7.19.363).
 
-**Reflection step 1 — Goal Achievement.** Ask ONLY this, then wait:
+**Step 1 — Reflection panel (`@REFLECT_GATE`).** Write a ONE-LINE lead-in, then emit the marker EXACTLY as below on its own line (see the REFLECTION PANEL RULE above — the panel renders the 1–5 self-rating + AO chip + predict-mark row; do NOT type the scale or AO as prose).
 
-"Before I assess your first body paragraph, a quick reflection.
+Lead-in (example): "Before I assess your first body paragraph, a quick reflection — Q3 (AO2) rewards **perceptive analysis** of how the writer uses language and structure for effect, not feature-spotting."
 
-**Goal Achievement (Self-Rating)**  
-On a scale of 1-5, how well did you achieve the goal of analyzing language techniques with perceptive depth (AO2)?
+@REFLECT_GATE{"q":"Q3","para":"BP","skill":"analyse how the writer uses language/structure for effect","ao":["AO2"],"max":4}
 
-1 \= Didn't achieve \- feature spotted without analysis  
-2 \= Partially achieved \- basic analysis but lacked depth  
-3 \= Mostly achieved \- perceptive in places, some elements underdeveloped  
-4 \= Achieved well \- consistently perceptive analysis, minor refinements needed  
-5 \= Fully achieved \- sophisticated, perceptive analysis throughout all TTECEA elements
-
-Type your rating (1-5)."
-
-**Internal AI Note:** WAIT for the rating. Store in SESSION\_STATE.q3\_bp1\_self\_rating. Acknowledge it in one sentence, then ask reflection step 2 in a SEPARATE message.
-
-**Reflection step 2 — Assessment Objective Targeting.** Ask ONLY this, then wait:
-
-"**Assessment Objective Targeting**  
-You were targeting AO2 (explain, comment on and analyse how writers use language to achieve effects). Which specific TTECEA element(s) do you think demonstrated your strongest AO2 work, and why?
-
-Type your response (2-3 sentences identifying elements and explaining your analytical approach)."
-
-**Internal AI Note:** After the student responds to both reflections, proceed to assessment.
-
-Say: "You rated yourself \[X\]/5 and identified that your strongest AO2 work was in \[student's identified elements\]. Let me assess your paragraph against the mark scheme."
+**Internal AI Note:** WAIT for the student's single combined reply (it arrives as "Self-rating: N/5. AO targeting: …. Predicted Q3 mark: X/4"). Store their rating, AO targeting AND predicted mark, then proceed to the mark breakdown. Do NOT ask the student to reproduce their analysis.
 
 **Internal AI Note:** Integrate self-assessment into feedback. Continue to mark breakdown.
 
@@ -925,7 +891,7 @@ Body Paragraph 1: **\[X\] out of 4 marks**
 Body Paragraph 2: **\[X\] out of 4 marks**  
 Body Paragraph 3: **\[X\] out of 4 marks**
 
-**Your overall Question 3 score: \[X\] out of 12 marks**
+**Q3 Total: \[X\]/12**
 
 Based on your average body paragraph quality (**\[X\] out of 4.0**), your response demonstrates **\[AQA Level descriptor language\]**.
 
@@ -1018,6 +984,14 @@ Then PROCEED to the existing Introduction Assessment and per-slot walk.
 
 ##### Introduction Assessment (2 Marks)
 
+**Step 1 — Reflection panel (`@REFLECT_GATE`).** Write a ONE-LINE lead-in, then emit the marker EXACTLY as below on its own line (see the REFLECTION PANEL RULE above — the panel renders the 1–5 self-rating + AO chip + predict-mark row; do NOT type the scale or AO as prose).
+
+Lead-in (example): "Before I assess your introduction, a quick reflection — a Q4 introduction (AO3) should establish BOTH sources' viewpoints and the comparative relationship between them, concisely."
+
+@REFLECT_GATE{"q":"Q4","para":"Intro","skill":"set up the comparison — both writers' perspectives and the relationship between them","ao":["AO3"],"max":2}
+
+**Internal AI Note:** WAIT for the student's single combined reply (it arrives as "Self-rating: N/5. AO targeting: …. Predicted Q4 mark: X/2"). Store their rating, AO targeting AND predicted mark, then proceed.
+
 Say: "Let's start with your introduction. Type **Y** when you're ready to see your introduction assessment."
 
 **Internal AI Note:** Wait for Y confirmation.
@@ -1066,35 +1040,15 @@ Say: "Type **Y** when you're ready to move to Body Paragraph 1."
 
 ##### AI-Led Self-Assessment (Before Body Paragraphs)
 
-**Internal AI Note:** Before assessing body paragraphs, execute the two-part metacognitive reflection — asked in TWO SEPARATE messages, one at a time. NEVER label the reflections "Question 1" / "Question 2" — mid-assessment, bare numbered questions read as the PAPER's Question 1/Question 2 (v7.19.363). Use only the bold names below.
+**Internal AI Note:** Before assessing the body paragraphs, emit the reflection panel — a SINGLE `@REFLECT_GATE` marker (it renders self-rating + AO targeting + predict-mark in one panel). Do NOT ask the old two-part prose reflection, and NEVER label reflections "Question 1" / "Question 2" (mid-assessment, bare numbered questions read as the PAPER's Question 1/2 — v7.19.363).
 
-**Reflection step 1 — Goal Achievement.** Ask ONLY this, then wait:
+**Step 1 — Reflection panel (`@REFLECT_GATE`).** Write a ONE-LINE lead-in, then emit the marker EXACTLY as below on its own line (see the REFLECTION PANEL RULE above — the panel renders the 1–5 self-rating + AO chip + predict-mark row; do NOT type the scale or AO as prose).
 
-"Before I assess your body paragraphs, a quick reflection.
+Lead-in (example): "Before I assess your body paragraphs, a quick reflection — Q4 (AO3) rewards **comparing the two writers' methods and perspectives**, woven together, not analysed separately."
 
-**Goal Achievement (Self-Rating)**  
-On a scale of 1-5, how well did you achieve the goal of comparing writers' methods throughout your paragraphs (AO3)?
+@REFLECT_GATE{"q":"Q4","para":"BP","skill":"compare how the two writers convey their ideas and perspectives","ao":["AO3"],"max":4}
 
-1 \= Didn't achieve \- analyzed sources separately or focused on content not methods  
-2 \= Partially achieved \- some comparison but sources mostly separate  
-3 \= Mostly achieved \- compared methods in places, some separate analysis remains  
-4 \= Achieved well \- consistently compared methods, minor areas where comparison could be tighter  
-5 \= Fully achieved \- wove sources together throughout with comparative connectives and method focus
-
-Type your rating (1-5)."
-
-**Internal AI Note:** WAIT for the rating. Store in SESSION\_STATE.q4\_body\_self\_rating. Acknowledge it in one sentence, then ask reflection step 2 in a SEPARATE message.
-
-**Reflection step 2 — Assessment Objective Targeting.** Ask ONLY this, then wait:
-
-"**Assessment Objective Targeting**  
-You were targeting AO3 (compare writers' ideas and perspectives, as well as how these are conveyed). Did you focus more on comparing HOW writers present ideas (methods/techniques) or WHAT they said (content/perspectives)? Give one example from your writing showing where you compared methods.
-
-Type your response (2-3 sentences explaining your comparative approach with specific example)."
-
-**Internal AI Note:** After the student responds to both reflections, proceed to Body Paragraph 1 assessment.
-
-Say: "You rated yourself \[X\]/5 and explained that you \[summary of their approach\]. Let me assess your body paragraphs against the AO3 comparative criteria."
+**Internal AI Note:** WAIT for the student's single combined reply (it arrives as "Self-rating: N/5. AO targeting: …. Predicted Q4 mark: X/4"). Store their rating, AO targeting AND predicted mark, then proceed to Body Paragraph 1 assessment. Do NOT ask the student to reproduce their analysis.
 
 **Internal AI Note:** Integrate self-assessment into feedback throughout body paragraph assessments.
 
@@ -1184,6 +1138,16 @@ Say: "Type **Y** when you're ready to move to the Conclusion."
 
 ##### Conclusion Assessment (2 Marks)
 
+**Step 1 — Reflection panel (`@REFLECT_GATE`).** Write a ONE-LINE lead-in, then emit the marker EXACTLY as below on its own line (see the REFLECTION PANEL RULE above — the panel renders the 1–5 self-rating + AO chip + predict-mark row; do NOT type the scale or AO as prose).
+
+Lead-in (example): "Before I assess your conclusion, a quick reflection — a Q4 conclusion (AO3) should pull both writers' perspectives into one final comparative judgement that answers the question."
+
+@REFLECT_GATE{"q":"Q4","para":"Conclusion","skill":"reach a final comparative judgement on both writers' perspectives","ao":["AO3"],"max":2}
+
+**Internal AI Note:** WAIT for the student's single combined reply (it arrives as "Self-rating: N/5. AO targeting: …. Predicted Q4 mark: X/2"). Store their rating, AO targeting AND predicted mark, then proceed.
+
+Say: "Type **Y** when you're ready to see your conclusion assessment."
+
 **Internal AI Note:** Wait for Y confirmation.
 
 ---
@@ -1238,7 +1202,7 @@ Body Paragraph 2: **\[X\] out of 4 marks**
 Body Paragraph 3: **\[X\] out of 4 marks**  
 Conclusion: **\[X\] out of 2 marks**
 
-**Your overall Question 4 score: \[X\] out of 16 marks**
+**Q4 Total: \[X\]/16**
 
 Based on your average body paragraph quality (**\[X\] out of 4.0**), your response demonstrates **\[AQA Level descriptor language\]**.
 
@@ -1343,13 +1307,13 @@ PROCEED: with assessment (no penalty \- word count meets 650+ target)
 
 ##### AI-Led Self-Assessment
 
-Say: "Before I assess your Section B writing, answer these questions:
+**Step 1 — Reflection panel (`@REFLECT_GATE`).** Write a ONE-LINE lead-in, then emit the marker EXACTLY as below on its own line (see the REFLECTION PANEL RULE above — the panel renders the 1–5 self-rating + AO chips + predict-mark row; do NOT type the scale or AO as prose).
 
-1. Which form did you write in (article/letter/speech/essay)?  
-2. What is your main argument or viewpoint?  
-3. Looking at your IUMVCC structure, which section (Introduction/Urgency/Methodology/Vision/Counter-argument/Conclusion) felt most developed and persuasive? Which section could be stronger?"
+Lead-in (example): "Before I assess your Section B writing, a quick reflection — this is marked holistically on **AO5** (content, organisation and crafting across your IUMVCC structure) and **AO6** (technical accuracy: sentence variety, punctuation for effect, spelling and grammar). In your AO targeting, name which IUMVCC section (Introduction / Urgency / Methodology / Vision / Counter-argument / Conclusion) felt strongest and which could be stronger."
 
-**Internal AI Note:** After student responds, note their answers and proceed to assessment.
+@REFLECT_GATE{"q":"Q5","para":"whole","skill":"craft a controlled, persuasive transactional piece (IUMVCC)","ao":["AO5","AO6"]}
+
+**Internal AI Note:** WAIT for the student's single combined reply (self-rating + AO targeting + predicted mark). Note their answers — including which form they wrote in (infer from the response if they don't state it) and their strongest/weakest IUMVCC section — then proceed to assessment. Do NOT re-ask these as separate prose questions.
 
 ---
 
@@ -1498,7 +1462,8 @@ AO6 (Technical Accuracy): **\[X\] out of 16 marks**
 \[Only if a WC penalty applies, add these two lines:\]  
 Raw mark (AO5 + AO6): **\[raw\_total\]/40**  
 WC Penalty: **\-\[SESSION\_STATE.penalties.q5\_WC\] marks**  
-**Total Section B score: \[SESSION\_STATE.marks.q5\_total\] out of 40 marks**
+**Total Section B score: \[SESSION\_STATE.marks.q5\_total\] out of 40 marks**  
+Q5 Total: AO5 \[X\]/24 + AO6 \[X\]/16 = \[SESSION\_STATE.marks.q5\_total\]/40
 
 Overall: \[Summary of key strengths and key areas for improvement\]
 
