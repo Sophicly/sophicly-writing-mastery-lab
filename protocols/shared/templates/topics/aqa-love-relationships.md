@@ -602,6 +602,7 @@ I run just one ov my daddy’s shops
 from 9 o’clock to 9 o’clock
 and he vunt me not to hav a break
 but ven nobody in, I do di lock –
+
 cos up di stairs is my newly bride
 vee share in chapatti
 vee share in di chutney
@@ -625,14 +626,16 @@ she book dem for di meat at di cheese ov her price –
 my bride
 she effing at my mum
 in all di colours of Punjabi
-den stumble like a drunk making fun at my daddy
+den stumble like a drunk
+making fun at my daddy
 
 my bride
 tiny eyes ov a gun
 and di tummy ov a teddy
 
 my bride
-she hav a red crew cut and she wear a Tartan sari
+she hav a red crew cut
+and she wear a Tartan sari
 a donkey jacket and some pumps
 on di squeak ov di girls dat are pinching my sweeties –
 
@@ -656,10 +659,13 @@ at di beaches ov di UK in di brightey moon –
 
 from di stool each night she say,
 *How much do yoo charge for dat moon baby?*
+
 from di stool each night I say,
 *Is half di cost ov yoo baby,*
+
 from di stool each night she say,
 *How much does dat come to baby?*
+
 from di stool each night I say,
 *Is priceless baby –*
 ## Question
