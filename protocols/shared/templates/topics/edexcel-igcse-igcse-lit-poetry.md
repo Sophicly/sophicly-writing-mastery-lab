@@ -169,24 +169,60 @@ Explore how Dharker presents the significance of water and community in 'Blessin
 ---
 
 # Topic 5: Search For My Tongue (Sujata Bhatt)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** Bhatt uses the extended metaphor of a tongue to explore the conflict between her mother tongue (Gujarati) and the language of her adopted country (English), dramatising the fear of losing cultural identity through bilingualism.
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** Search For My Tongue
+**Focus Poet:** Sujata Bhatt
+**Extract Location:** Search For My Tongue by Sujata Bhatt
 
-## Source A
-**Title:** Search For My Tongue
-**Author:** Sujata Bhatt
-**Context:** Bhatt emigrated from India to the United States, and the poem draws on her personal experience of navigating two languages and cultures. The inclusion of Gujarati script within the English text enacts the very duality the poem describes.
+## Poem
+You ask me what I mean
+by saying I have lost my tongue.
+I ask you, what would you do
+if you had two tongues in your mouth,
+and lost the first one, the mother tongue,
+and could not really know the other,
+the foreign tongue.
+You could not use them both together
+even if you thought that way.
+And if you lived in a place you had to
+speak a foreign tongue,
+your mother tongue would rot,
+rot and die in your mouth
+until you had to “spit it out”.
+I thought I spit it out
+but overnight while I dream,
 
-[TEXT TO BE ADDED -- see anthology document]
+મને હતું કે આખ્ખી જીભ આખ્ખી ભાષા,
+(munay hutoo kay aakhee jeebh aakhee bhasha)
+મેં થૂંકી નાખી છે.
+(may thoonky nakhi chay)
+પરંતુ રાત્રે સ્વપ્નામાં મારી ભાષા પાછી આવે છે.
+(parantoo rattray svupnama mari bhasha pachi aavay chay)
+ફૂલની જેમ મારી ભાષા મારી જીભ.
+(foolnee jaim mari bhasha mari jeebh)
+મોઢામાં ખીલે છે.
+(modhama kheelay chay)
+ફળની જેમ મારી ભાષા મારી જીભ
+(fullnee jaim mari bhasha mari jeebh)
+મોઢામાં પાકે છે.
+(modhama pakay chay)
 
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
+it grows back, a stump of a shoot
+grows longer, grows moist, grows strong veins,
+it ties the other tongue in knots,
+the bud opens, the bud opens in my mouth,
+it pushes the other tongue aside.
+Everytime I think I've forgotten,
+I think I've lost the mother tongue,
+it blossoms out of my mouth.
 
+## Question
 Explore how Bhatt presents the struggle of cultural identity in 'Search For My Tongue'.
+
+[30 marks]
 
 ---
 
