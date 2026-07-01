@@ -145,10 +145,21 @@ enforcement below are the invariant standard. Unit of assessment: **paragraph** 
 ## B3. Paragraph mapping (position-only + hard cap — A8 applied)
 First → Introduction; 2nd/3rd/4th → Body 1/2/3; LAST → Conclusion; anything between 4th and last = EXTRA.
 EXACTLY five `@FB` cards per assessment, labels only from {Introduction, Body 1, Body 2, Body 3, Conclusion}.
-EXTRA paragraphs: named + briefly characterised in the Final Summary, with (first diagnostic only) a rough
-extra-marks estimate and the repeatable-structure lesson — the five-paragraph essay is the conventional,
-transferable, repeatable structure; consolidate the strongest analysis into three body paragraphs. After
-the Conclusion's progression gate the ONLY remaining output is the Final Summary — never another section.
+After the Conclusion's progression gate the ONLY remaining output is the Final Summary — never another
+section, never another `@FB` card.
+
+**EXTRA-paragraph response is TWO-TIER (Neil, 2026-07-02) — scope: Literature essays ≥20 marks (any text
+incl. poetry anthology, one-part or Part a/b). Unseen-poetry short questions (e.g. AQA Q2 = 8 marks,
+2 paragraphs) are a different shape — out of scope, handled when unseen is built:**
+- **Tier 1 — Topic 1 Phase 1 diagnostic ONLY (the one attempt before we teach the structure): generous.**
+  Extras named + briefly characterised in the Final Summary, a rough extra-marks estimate ("might earn
+  another 2–4 marks in a real exam"), then the repeatable-structure lesson — five-paragraph essay is the
+  conventional, transferable structure; consolidate the strongest analysis into three body paragraphs.
+- **Tier 2 — EVERYTHING else (any later diagnostic, redraft, Topic 2+, exam practice): stern.** By now the
+  student has been walked through planning step-by-step — >5 paragraphs per question means the process was
+  skipped. Extras score **ZERO** (stated plainly, no estimate), a stern-but-caring warning, and an explicit
+  instruction to go back and redo the planning step properly before their next submission. Never soften
+  Tier 2 into Tier 1.
 
 ## B4. Per-section cycle (×5 — identical shape, every section, equal depth)
 1. **STEP 1 — Reflection panel.** One-line contextual lead-in (section's function in the argument arc:
@@ -237,7 +248,7 @@ change that alters emissions is not "shipped" until the data lands in the dashbo
 | Check | Expect |
 |---|---|
 | `grep -c '@REFLECT_GATE'` | ≥ 1 per assessed section (5 for Lit essay) |
-| `grep -c '@FB_BEGIN'` == `grep -c '@FB_END'` | balanced, = section count |
+| `@FB_BEGIN`/`@FB_END` instruction SITES ("Now output …" lines) | one balanced pair per section template (raw string counts differ — prose rules mention the markers; that's fine) |
 | `grep -c 'Total Mark for'` | = section count (canonical line present per section) |
 | `grep -c 'ASSESSMENT_COMPLETE'` | ≥ 1 |
 | `grep -c 'HARD PRECONDITION'` | ≥ 1 per gate (each REFLECT/mark/progression chained) |
