@@ -242,7 +242,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Stage directions (e.g., "pink and intimate" lighting), B) Structural shifts (e.g., from ignorance to knowledge), C) The author's biography, D) Specific word choices (e.g., "anguish").
    * **Correct:** A, B, D
    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
-   * **Feedback:** Methods are the tools the writer uses, but a valid AO2 point pairs the method with its specific effect on the audience — what it makes them focus on, feel, think, or do. Naming the method alone (e.g. "uses stage directions") is feature-spotting and scores low. Biography (C) is usually weak context unless linked to the *ideas*.
+   * **Feedback:** Methods are the tools the writer uses, but a valid AO2 point pairs the method with its specific effect on the audience — what it makes them focus on, feel, think, or do. Naming the method alone (e.g. "uses stage directions") is feature-spotting and scores low. Biography is usually weak context unless linked to the *ideas*.
    * **AO:** AO2
    * **Why C:** The author's life feels relevant because the author made every choice, but biography is background information, not a method visible on the page.
 4. **Type: MCQ \[Tests AO4 Definition\]**
@@ -331,7 +331,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Weave it into your argument about *why* the author wrote the book, B) Write a separate paragraph about the author's life, C) Explain how the text reflects the social/historical struggles of the time, D) List facts about World War 2.
    * **Correct:** A, C
    * **Scoring:** 2 marks for A, C. 1 mark if mostly correct.
-   * **Feedback:** Context must be "Convincingly Integrated" (A/C). Separate facts (B/D) do not score highly.
+   * **Feedback:** ✓ Correct. Context scores when it is Convincingly Integrated — woven into your argument about why the author wrote the book, or used to explain how the text reflects the struggles of its time. A separate paragraph of biography, or a list of historical facts, does not score highly.
    * **AO:** AO3
    * **Why B:** A dedicated context paragraph feels organised and thorough, but separating context from the argument is the classic bolt-on error.
    * **Why D:** Historical facts feel like proof of knowledge, but a list of events with no link to the text's ideas reads as history, not literary analysis.
@@ -361,7 +361,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) To spot techniques like alliteration, B) To support your interpretation of the character/theme (AO1), C) To show you memorised the book, D) To link to the context (AO3).
    * **Correct:** B, D
    * **Scoring:** 2 marks for B, D. 1 mark if mostly correct.
-   * **Feedback:** Use quotes to prove your *argument* (B) and link to *context* (D), not to analyse language mechanics.
+   * **Feedback:** Use quotes to prove your *argument* and link to *context*, not to analyse language mechanics.
    * **AO:** AO1
    * **Why A:** Technique-spotting is a deeply trained habit, but language analysis is not credited in this section, so it spends time where no marks exist.
    * **Why C:** Showing off memorised quotations feels like proof of effort, but quotes only earn credit when they support an interpretation or contextual point.
@@ -409,7 +409,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
 4. **Type: True/False \[Tests Context\]**
    * **Question:** True or False: Context (AO3) is explicitly assessed in the Post-1914 Prose/Drama section for Eduqas.
    * **Answer:** False
-   * **Feedback:** ✓ Correct. This specific section focuses on AO1 (Concepts) and AO2 (Analysis). AO3 is assessed elsewhere (e.g., Poetry / 19th C).
+   * **Feedback:** ✓ Correct. This specific section focuses on AO1 (Concepts) and AO2 (Analysis). AO3 is assessed elsewhere (e.g. Poetry or the 19th-century novel).
    * **AO:** AO1
    * **WhyWrong:** It feels true because context is assessed in most Literature sections, but this particular Eduqas section credits argument and analysis only — context is rewarded elsewhere on the paper.
 5. **Type: MCQ \[Tests Strategy\]**
@@ -432,7 +432,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Evaluative adverbs ("powerfully", "subtly"), B) Treating characters as constructs, C) Retelling the plot in sequence, D) Sustained conceptual argument from intro to conclusion.
    * **Correct:** A, B, D
    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
-   * **Feedback:** Evaluative language (A), construct-level thinking (B), and a sustained argument (D) all define Critical Style. Plot retelling (C) caps you at the lowest band.
+   * **Feedback:** Evaluative language, construct-level thinking, and a sustained argument all define Critical Style. Plot retelling caps you at the lowest band.
    * **AO:** AO1
    * **Why C:** Retelling the plot in order feels safe and thorough, but chronology is storytelling, the opposite of critical style, and it caps the band.
 8. **Type: MCQ \[Tests AO3 Exclusion — Grade 9 separator\]**
@@ -482,7 +482,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) The set text and the unseen extract, B) Similar themes/ideas (AO1), C) Contextual factors (AO3), D) Only the characters' names.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** You compare ideas (B) and context (C) across both texts (A).
+   * **Feedback:** You compare ideas and context across both texts.
    * **AO:** AO1
    * **Why D:** Matching character names feels like a connection, but it is surface-level pairing; real comparison links ideas and contexts, not labels.
 4. **Type: MCQ \[Tests Assessment Objectives\]**
@@ -520,7 +520,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Stage directions and lighting cues, B) Structural shifts, C) Specific word choices, D) The author's biography.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Stage directions (A), structure (B), and word-level choices (C) are all AO2 targets. Biography (D) is not a method; save it for contextual framing where rewarded.
+   * **Feedback:** Stage directions, structure, and word-level choices are all AO2 targets. Biography is not a method; save it for contextual framing where rewarded.
    * **AO:** AO2
    * **Why D:** The author's life feels relevant because the author crafted the play, but biography is background knowledge, not a dramatic device used on the page.
 9. **Type: True/False \[Tests SPaG\]**
@@ -528,12 +528,12 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Answer:** True
    * **Feedback:** ✓ Correct. AO4 for OCR Literature is Technical Accuracy — proofread carefully, especially in timed conditions.
    * **AO:** AO4
-   * **WhyWrong:** The statement is true of OCR Literature as a whole, but the AO4 marks for technical accuracy are credited on the 19th-century prose question (Section B), not on this modern prose/drama essay — so proofread carefully there, while your modern-text marks come from AO1, AO2 and AO3.
+   * **WhyWrong:** The statement is true of OCR Literature as a whole, but the AO4 marks for technical accuracy are credited on the Section B 19th-century prose question, not on this modern prose/drama essay — so proofread carefully there, while your modern-text marks come from AO1, AO2 and AO3.
 10. **Type: MCQ \[Tests Part (b) Conceptual Approach\]**
     * **Question:** For OCR Part (b), which approach best targets the top band?
     * **Options:** A) Retell another scene from memory, B) Explore another moment through Conceptual Analysis (AO1) and Methods (AO2), using judicious evidence, C) List techniques without interpretation, D) Only summarise the ending.
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Part (b) rewards exploration of a fresh moment with argument + methods. Plot retelling (A) caps you at the lowest band.
+    * **Feedback:** ✓ Correct. Part (b) rewards exploration of a fresh moment with argument + methods. Plot retelling caps you at the lowest band.
     * **AO:** AO1
     * **Why A:** Retelling a well-known scene feels productive because you know it so well, but memory of events is storytelling and caps the band.
     * **Why C:** A technique list feels analytical, but naming devices without interpreting their meaning is feature-spotting with no argument.
@@ -561,7 +561,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Sensitively, B) In considerable detail, C) By listing terms, D) By explaining the effect on the reader.
    * **Correct:** A, B, D
    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
-   * **Feedback:** The skill being marked is analysis of method and its effect on the reader (D) — that is what earns the marks. "Sensitively" (A) and "in considerable detail" (B) are not separate skills; they are adjectives describing *how well* you do that analysis. Listing terms (C) is surface-level feature-spotting with no effect.
+   * **Feedback:** The skill being marked is analysis of method and its effect on the reader — that is what earns the marks. "Sensitively" and "in considerable detail" are not separate skills; they are adjectives describing *how well* you do that analysis. Listing terms is surface-level feature-spotting with no effect.
    * **AO:** AO2
    * **Why C:** Listing terminology feels like displaying analytical knowledge, but naming devices without exploring their effect on the reader is surface-level feature-spotting.
 4. **Type: MCQ \[Tests Context\]**
@@ -590,7 +590,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) "I think…" or "This suggests to me…", B) Evaluating the writer's message/success, C) Showing engagement with the themes, D) Writing a diary entry about your life.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** It's about intellectual engagement (A, B, C) with the text, not your personal life (D).
+   * **Feedback:** It's about intellectual engagement with the text, not your personal life.
    * **AO:** AO1
    * **Why D:** "Personal" can be misread as autobiographical, but the response Cambridge rewards is personal engagement with the text's ideas, not stories from your own life.
 8. **Type: MCQ \[Tests Extract Question\]**

@@ -251,7 +251,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Judicious single-word quotations, B) Treating characters as constructs, C) Retelling the plot in sequence, D) A conceptualised thesis in the introduction.
    * **Correct:** A, B, D
    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
-   * **Feedback:** Judicious micro-quotes (A), construct-level thinking (B), and a conceptual thesis (D) all push you into Level 6. Plot retelling (C) caps you at the lower bands.
+   * **Feedback:** Judicious micro-quotes, construct-level thinking, and a conceptual thesis all push you into Level 6. Plot retelling caps you at the lower bands.
    * **AO:** AO1
    * **Why C:** Retelling the plot feels like proving you know the text, but it only shows knowledge of events — examiners reward argument and analysis, not narrative summary.
 5. **Type: True/False \[Tests AO3 Chain\]**
@@ -289,7 +289,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Topic sentence (conceptual argument), B) Technique named with terminology, C) Judicious evidence, D) A paragraph summarising the author's biography.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Topic, Technique, and Evidence are all mandatory. Author's biography (D) is not part of TTECEA+C — context should be integrated into Purpose, not a standalone biography dump.
+   * **Feedback:** Topic, Technique, and Evidence are all mandatory. Author's biography is not part of TTECEA+C — context should be integrated into Purpose, not a standalone biography dump.
    * **AO:** AO2
    * **Why D:** Biography feels like context, but a life-story paragraph is a bolt-on — the framework integrates context into Author's Purpose, never as a standalone summary.
 10. **Type: True/False \[Tests AO2 Author's Purpose\]**
@@ -336,7 +336,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Sustained focus on the task, B) Whole-text knowledge (Beginning, Middle, End), C) Informed personal engagement, D) A creative writing introduction.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Task focus (A), whole-text arc (B), and personal engagement (C) define Level 5. Creative writing (D) is not assessed in a Literature essay.
+   * **Feedback:** Task focus, whole-text arc, and personal engagement define Level 5. Creative writing is not assessed in a Literature essay.
    * **AO:** AO1
    * **Why D:** A flashy opening can feel impressive, but Literature essays reward critical argument — creative flourishes belong on the Language writing paper, not here.
 6. **Type: MCQ \[Tests Malthusian Context\]**
@@ -365,7 +365,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Language choices (verbs, adjectives, imagery), B) Sentence structure and form, C) Structure of the extract (shifts, openings, endings), D) The author's biography.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Part (a) is AO2: Language (A), Form (B), and Structure (C). Biography (D) has no place here — Part (a) gives 0 marks for AO3.
+   * **Feedback:** Part (a) is AO2: Language, Form, and Structure. Biography has no place here — Part (a) gives 0 marks for AO3.
    * **AO:** AO2
    * **Why D:** Biography feels relevant because you learned it in class, but the extract question rewards only analysis of the writing itself — life facts earn nothing here.
 10. **Type: MCQ \[Tests Evaluative Vocabulary\]**
@@ -400,7 +400,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Tell the story without analysis, B) Analyse methods and link them to meaning, C) Use judicious textual references, D) Show whole-text knowledge.
    * **Correct:** B, C, D
    * **Scoring:** 2 marks for B, C, D. 1 mark if mostly correct.
-   * **Feedback:** Methods-to-meaning (B), judicious references (C), and whole-text knowledge (D) are essential. Plot retelling (A) caps you at the lowest band.
+   * **Feedback:** Methods-to-meaning, judicious references, and whole-text knowledge are essential. Plot retelling caps you at the lowest band.
    * **AO:** AO1
    * **Why A:** Retelling the story feels like demonstrating knowledge, but narrative summary without analysis shows the lowest level of engagement and caps your band.
 4. **Type: True/False \[Tests AO1 Conceptual\]**
@@ -438,7 +438,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) "Misanthropic ice" embedded in a sentence, B) A three-line block quote describing London, C) A single precise micro-quote like "wolfish", D) The full Scrooge/Fred conversation from Stave 1.
    * **Correct:** A, C
    * **Scoring:** 2 marks for A, C. 1 mark if mostly correct.
-   * **Feedback:** Judicious means well-judged and short. Micro-quotes (A, C) let you embed evidence and analyse individual words. Block quotes (B, D) break flow and waste time.
+   * **Feedback:** Judicious means well-judged and short. Micro-quotes let you embed evidence and analyse individual words. Block quotes break flow and waste time.
    * **AO:** AO1
    * **Why B:** A three-line quote feels thorough, but length is the opposite of judicious — long quotes interrupt your sentence and leave no room to analyse individual words.
    * **Why D:** Reproducing a whole conversation shows recall, not judgement; judicious evidence means selecting the few words that carry the most meaning.
@@ -560,7 +560,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Transition words (However, Consequently, Furthermore), B) An evaluative thesis held throughout, C) Micro-quotations embedded in sentences, D) Switching informal and formal tone randomly.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Transitions (A), a sustained thesis (B), and embedded quotations (C) all build the sustained critical style OCR rewards.
+   * **Feedback:** Transitions, a sustained thesis, and embedded quotations all build the sustained critical style OCR rewards.
    * **AO:** AO1
    * **Why D:** Varying tone might sound like flair, but random shifts between informal and formal break the consistency that "sustained" demands — the register must hold throughout.
 4. **Type: MCQ \[Tests AO1 Conceptual\]**
@@ -598,7 +598,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Use the extract as an evidence bank for AO2, B) Move fluidly to discuss whole-text arc for AO1, C) Integrate context (AO3) throughout, D) Ignore the extract completely.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Level 6 candidates use the extract (A), move to the whole novel (B), and integrate context (C). Ignoring the extract (D) loses AO2 evidence. This fluency is the Grade 9 separator.
+   * **Feedback:** Level 6 candidates use the extract, move to the whole novel, and integrate context. Ignoring the extract loses AO2 evidence. This fluency is the Grade 9 separator.
    * **AO:** AO1
    * **Why D:** Skipping the extract to show off whole-text knowledge backfires — the printed passage is your richest source of close-analysis evidence, and ignoring it forfeits those marks.
 9. **Type: True/False \[Tests Arc Structure\]**
@@ -639,7 +639,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) A bold, argued thesis, B) Judicious quotations supporting your argument, C) Close analysis of language, D) Copying class notes without any personal take.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** A bold thesis (A), judicious evidence (B), and close analysis (C) are all required. Recycling class notes (D) is the opposite of "individuality".
+   * **Feedback:** A bold thesis, judicious evidence, and close analysis are all required. Recycling class notes is the opposite of "individuality".
    * **AO:** AO1
    * **Why D:** Class notes feel safe because a teacher approved them, but reproducing them wholesale is the opposite of individuality — the descriptor rewards your own argued reading.
 4. **Type: True/False \[Tests Critical Style\]**
@@ -677,7 +677,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Engage with the extract in detail for language analysis, B) Connect extract observations to the whole text's argument, C) Integrate context where it drives the author's concept, D) Treat the extract in isolation from the rest of the novel.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Top-band Cambridge responses move between extract and whole text (A, B) and integrate context (C). Treating the extract in isolation (D) misses the perceptive understanding required. Grade 9 separator.
+   * **Feedback:** Top-band Cambridge responses move between extract and whole text and integrate context. Treating the extract in isolation misses the perceptive understanding required. Grade 9 separator.
    * **AO:** AO1
    * **Why D:** Sealing the extract off from the novel feels focused, but perceptive understanding means seeing how the passage works within the whole text's argument and arc.
 9. **Type: True/False \[Tests Tone\]**
@@ -718,7 +718,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) "Successfully", B) "Compellingly", C) "Effectively", D) "There is".
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Evaluative adverbs (A, B, C) are judgement words — but they only earn credit when they front a judgement about HOW the method affects the reader. Used alone, "successfully" or "effectively" is an empty label (feature-spotting); plain description ("there is") earns nothing either.
+   * **Feedback:** Evaluative adverbs are judgement words — but they only earn credit when they front a judgement about HOW the method affects the reader. Used alone, "successfully" or "effectively" is an empty label (feature-spotting); plain description ("there is") earns nothing either.
    * **AO:** AO1
    * **Why D:** "There is" simply points at a feature's existence — it describes rather than judges, which is the very habit evaluative language exists to replace.
 4. **Type: True/False \[Tests Understanding\]**
@@ -756,7 +756,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Short judicious quotations embedded in your sentence, B) Close analysis of specific word connotations, C) Block quotes of entire paragraphs, D) No quotations at all.
    * **Correct:** A, B
    * **Scoring:** 2 marks for A, B. 1 mark if mostly correct.
-   * **Feedback:** Short embedded quotes (A) and word-level close analysis (B) are SQA top-mark habits. Block quotes (C) and no quotes (D) both fail Analysis criteria.
+   * **Feedback:** Short embedded quotes and word-level close analysis are SQA top-mark habits. Block quotes and no quotes both fail Analysis criteria.
    * **AO:** AO2
    * **Why C:** Copying whole paragraphs feels like thorough evidence, but block quotes crowd out your own analysis and show no selection skill.
    * **Why D:** Working without quotations leaves every claim unsupported — analysis must be anchored in the writer's actual words to earn credit.

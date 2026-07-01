@@ -44,7 +44,7 @@ Question types: MCQ · Select All · Fill · Ranking. Exact AQA Level descriptor
    * **Options:** A) "Shakespeare uses the lovers' deaths to explore how a rigid inherited order destroys the very lives it claims to protect.", B) "Romeo and Juliet is a play about two young people who fall in love and then die.", C) "The feud between the two families is a bad thing, and it leads to a lot of sadness in the play.", D) "Shakespeare presents the feud as destructive through the deaths of the lovers, making the audience feel how dangerous inherited hatred can be."
    * **Correct:** B, C, D, A
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. Each rung is one clear AQA band higher. B = plot summary, retelling events only (Level 1 "simple comment"). C = a simple value-judgement ("a bad thing… a lot of sadness") with no method and no evidence (Level 2 "supported comment"). D = a clear, explained response that names a method (the deaths) AND its effect on the audience (Level 4 "clear explained response"). A = critical and "conceptualised", arguing an idea from the first line (Level 6). The ladder is plot → comment → explained method-and-effect → concept.
+   * **Feedback:** ✓ Correct. Each rung is one clear AQA band higher. The plot-summary rung, retelling events only, is Level 1 (simple comment). The simple value-judgement about a bad thing causing sadness, with no method and no evidence, is Level 2 (supported comment). The clear, explained response that names a method (the deaths) and its effect on the audience is Level 4 (clear explained response). The critical, conceptualised rung, arguing an idea from the first line, is Level 6. The ladder is plot → comment → explained method-and-effect → concept.
    * **WhyWrong:** Weakest to strongest is B (plot only) then C (a value-judgement with no method) then D (an explained method + reader effect) then A (conceptualised). Each rung is exactly one AQA Level higher; the jump to Level 6 is the move from explaining events to arguing a concept.
 
 5. **Type: MCQ [Tests AO1]**
@@ -79,7 +79,7 @@ Question types: MCQ · Select All · Fill · Ranking. Exact AQA Level descriptor
    * **Options:** A) It moves from identifying a method to analysing how it creates meaning, B) It explores several effects the writer's methods have on the reader, C) It names as many techniques as possible to demonstrate range, D) It uses subject terminology judiciously, only where it serves the analysis
    * **Correct:** A, B, D
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. AQA Level 6 AO2 = "Analysis of the writer's methods... Exploration of effects of the writer's methods... subject terminology used judiciously." Analysis (A), exploration of effects (B) and judicious terminology (D) are all top-band. Maximising technique-count (C) is feature-spotting, which the mark scheme penalises.
+   * **Feedback:** ✓ Correct. AQA Level 6 AO2 = "Analysis of the writer's methods... Exploration of effects of the writer's methods... subject terminology used judiciously." Analysis, exploration of effects and judicious terminology are all top-band. Maximising technique-count is feature-spotting, which the mark scheme penalises.
    * **Why C:** Naming many techniques is feature-spotting — AQA rewards judicious selection and exploration of effect, not quantity.
 
 9. **Type: Ranking [Tests AO2]**
@@ -87,7 +87,7 @@ Question types: MCQ · Select All · Fill · Ranking. Exact AQA Level descriptor
    * **Options:** A) "The extended Queen Mab fantasy lets Shakespeare explore how dreams are shaped by each dreamer's desire, so that Mercutio's cynicism becomes an analysis of love itself as self-deception.", B) "Shakespeare uses imagery in the Queen Mab speech.", C) "Shakespeare's imagery of tiny, fragile creatures examines how Mercutio reduces love to something trivial and absurd.", D) "Shakespeare uses imagery of small creatures to make Mercutio seem playful and imaginative."
    * **Correct:** B, D, C, A
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. Each rung is one clear AQA AO2 band higher. B = bare identification of a method, no effect at all (Level 3). D = a clear explanation of ONE simple effect ("playful and imaginative") (Level 4). C = a sustained examination of HOW the method works on meaning ("reduces love to something trivial") (Level 5). A = analysis with exploration of layered effects, tied to a concept (Level 6). The ladder is identify, explain ONE effect, examine HOW it works, then analyse-and-explore.
+   * **Feedback:** ✓ Correct. Each rung is one clear AQA AO2 band higher. The bare identification of a method, with no effect at all, is Level 3. The clear explanation of one simple effect (playful and imaginative) is Level 4. The sustained examination of how the method reduces love to something trivial is Level 5. The analysis with exploration of layered effects, tied to a concept, is Level 6. The ladder is identify, explain one effect, examine how it works, then analyse-and-explore.
    * **WhyWrong:** Weakest to strongest: B (identify) then D (explain) then C (examine) then A (analyse + explore effects). Level 6 explores layered effects, not a single stated one.
 
 10. **Type: MCQ [Tests AO2]**

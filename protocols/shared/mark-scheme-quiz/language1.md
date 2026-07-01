@@ -242,7 +242,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Critical evaluation of the statement, B) Detailed analysis of writer's methods, C) Comparison with another text, D) References to the text (quotes).  
    * **Correct:** A, B, D  
    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.  
-   * **Feedback:** You must Evaluate (A), Analyze Methods (B), and Support with Quotes (D). Comparison (C) is for Paper 2 only.  
+   * **Feedback:** You must Evaluate, Analyze Methods, and Support with Quotes. Comparison is for Paper 2 only.  
    * **AO:** AO4
    * **Why C:** Comparing texts feels like a top-band move, but evaluation here works within one text; cross-text comparison belongs to Paper 2.
 4. **Type: MCQ \[Tests AO2 Application\]**  
@@ -295,7 +295,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Options:** A) Specific words (nouns, verbs), B) Sentence forms (simple, complex), C) The opening paragraph of the whole text, D) Language features (similes, personification).  
     * **Correct:** A, B, D  
     * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.  
-    * **Feedback:** Q2 asks about "language," which includes words (A), sentences (B), and techniques (D). The opening (C) is usually a structural point for Q3.
+    * **Feedback:** Q2 asks about "language," which includes words, sentences, and techniques. The opening is usually a structural point for Q3.
     * **AO:** AO2
     * **Why C:** The opening paragraph is a sequencing point about where the writer chooses to begin, which belongs in the Q3 structure answer rather than Q2.
 11. **Type: MCQ \[Tests AO1\]**
@@ -413,7 +413,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Analyzing word choice, B) Analyzing sentence structure, C) Analyzing text organization, D) Evaluating the writer's success.  
    * **Correct:** A, B, C  
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.  
-   * **Feedback:** Q3 covers Language (A, B) and Structure (C). Evaluation (D) is for Question 4\.  
+   * **Feedback:** Q3 covers Language and Structure. Evaluation is for Question 4\.  
    * **AO:** AO2
    * **Why D:** Judging the writer's success is evaluation, which Edexcel saves for Question 4; Q3 only asks how language and structure work.
 4. **Type: MCQ \[Tests Question 1\]**  
@@ -451,7 +451,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Compelling tone and register, B) Paragraphing and cohesion, C) Using a metaphor in every sentence, D) Sophisticated vocabulary.  
    * **Correct:** A, B, D  
    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.  
-   * **Feedback:** Examiners look for tone (A), structure (B), and vocabulary (D). Overloading techniques (C) can lower your mark if it sounds unnatural.  
+   * **Feedback:** Examiners look for tone, structure, and vocabulary. Overloading techniques can lower your mark if it sounds unnatural.  
    * **AO:** AO5
    * **Why C:** Forcing a metaphor into every sentence feels ambitious, but technique-cramming reads as unnatural and can weaken the writing rather than lift it.
 9. **Type: True/False \[Tests AO1\]**  
@@ -501,7 +501,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Similarities between the texts, B) Differences between the texts, C) Analysis of language methods, D) Your personal opinion on the topic.  
    * **Correct:** A, B, C  
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.  
-   * **Feedback:** You need comparison of ideas (A, B) AND comparison of how writers present them (C).  
+   * **Feedback:** You need comparison of ideas AND comparison of how writers present them.  
    * **AO:** AO3
    * **Why D:** Your view on the topic feels relevant, but the marks reward comparing the texts and their methods, not your own stance on the issue.
 5. **Type: True/False \[Tests Reading\]**  
@@ -530,7 +530,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) What the writer says (Meaning), B) How the writer says it (Method), C) Why the writer says it (Purpose/Effect), D) Whether you agree with them.  
    * **Correct:** A, B, C  
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.  
-   * **Feedback:** Meaning, Method, and Effect form the core of analysis. Personal agreement (D) is not assessed here.  
+   * **Feedback:** Meaning, Method, and Effect form the core of analysis. Personal agreement is not assessed here.  
    * **AO:** AO2
    * **Why D:** Whether you agree feels like engagement, but agreement is not analysis; the marks come from meaning, method and effect.
 9. **Type: True/False \[Tests Comparison\]**  
@@ -610,7 +610,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Use quotes from both texts, B) Analyze the writer's life story, C) Make clear links between the texts, D) Focus only on one text.  
    * **Correct:** A, C  
    * **Scoring:** 2 marks for A, C. 1 mark if mostly correct.  
-   * **Feedback:** Direct comparison (C) supported by evidence (A) is key.  
+   * **Feedback:** Direct comparison supported by evidence is key.  
    * **AO:** AO3
    * **Why B:** The writer's life story sounds like useful background, but biography is never assessed here; the marks stay inside the two texts.
    * **Why D:** Focusing on one text feels more manageable, yet a comparison question scores nothing for ideas left uncompared.
@@ -813,7 +813,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Select powerful words/phrases, B) Explain the dictionary definition, C) Explain the effect on the reader, D) Compare it to another text.  
    * **Correct:** A, C  
    * **Scoring:** 2 marks for A, C. 1 mark if mostly correct.  
-   * **Feedback:** Select the imagery/words (A) and explain what they suggest/make the reader feel (C). Do NOT just define them (B).  
+   * **Feedback:** Select the imagery/words and explain what they suggest/make the reader feel. Do NOT just define them.  
    * **AO:** AO2
    * **Why B:** A dictionary definition shows you know the word, but the marks reward what it suggests in context, not what it means in isolation.
    * **Why D:** Comparison feels like a higher-order skill, but this question stays inside one passage; bringing in another text earns nothing.
@@ -821,11 +821,11 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Question:** How many main reading passages are there in Paper 1?  
    * **Options:** A) 1, B) 2, C) 3, D) 4\.  
    * **Correct:** C  
-   * **Feedback:** ✓ Correct. There are usually three texts (Text A, B, and C) that you must read and respond to.  
+   * **Feedback:** ✓ Correct. There are usually three source texts that you must read and respond to.
    * **AO:** AO1
    * **Why A:** A single passage is the pattern on some GCSE first papers; Cambridge sets three texts across this paper.
    * **Why B:** Two texts matches several GCSE comparison papers, which makes it a tempting transfer, but Cambridge uses three.
-   * **Why D:** Four texts overestimates the reading load; the paper is built around Texts A, B and C.
+   * **Why D:** Four texts overestimates the reading load; the paper is built around three source texts.
 5. **Type: True/False \[Tests Extended Response\]**  
    * **Question:** True or False: Question 3 (Extended Response) requires you to adopt a specific voice or role (e.g., write a letter as a character).  
    * **Answer:** True  
@@ -852,7 +852,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Use your own words, B) Copy whole sentences from the text, C) Be concise, D) Add your own opinion.  
    * **Correct:** A, C  
    * **Scoring:** 2 marks for A, C. 1 mark if mostly correct.  
-   * **Feedback:** Use own words (A) and be concise (C). Copying (B) loses marks. Opinions (D) are not relevant for summary.  
+   * **Feedback:** Use own words and be concise. Copying loses marks. Opinions are not relevant for summary.  
    * **AO:** AO1
    * **Why B:** Copying whole sentences proves you found the points, but summary marks depend on rephrasing; lifted wording costs you.
    * **Why D:** Opinions show engagement elsewhere, but a summary reports the text's content neutrally; your own view has no place in it.

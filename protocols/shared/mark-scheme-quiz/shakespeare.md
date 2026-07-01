@@ -251,7 +251,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Specific word choices and their connotations, B) Dramatic form (soliloquy, aside, dramatic irony), C) Structural shifts in a scene, D) The actor's biography.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Word-level (A), dramatic form (B), and structure (C) are all AO2. Actor biography (D) is not a writer's method.
+   * **Feedback:** Word-level, dramatic form, and structure are all AO2. Actor biography is not a writer's method.
    * **AO:** AO2
    * **Why D:** It is tempting to count anything about performance as a method, but an actor's biography sits outside the text — writer's methods are choices Shakespeare made.
 5. **Type: True/False \[Tests AO4 SPaG\]**
@@ -267,7 +267,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Feedback:** ✓ Correct. "A" answers "So What?" — connecting the micro technique to the macro message. This is the conceptualising habit that earns Level 6.
    * **AO:** AO1
    * **Why A:** Plot summary feels like proof you know the play, but the "A" beat asks what Shakespeare means by the moment, not what happens in it.
-   * **Why C:** Naming the technique is the second "T" of TTECEA+C, done earlier in the paragraph; "A" zooms out to the writer's overall message.
+   * **Why C:** Naming the technique is the second element (T) of the TTECEA+C framework, done earlier in the paragraph; the stronger move links the method back to the writer's overall message.
    * **Why D:** Historical dates belong to context, the "+C" beat; "A" is about Shakespeare's overarching purpose, not background facts.
 7. **Type: Fill-in-the-Blank \[Tests AO1 Conceptual\]**
    * **Question:** AQA Level 6 demands a \[BLANK\] response — one that treats the play as a conscious construct exploring big ideas.
@@ -280,7 +280,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Judicious micro-quotations, B) Treating characters as constructs, C) Retelling the plot in sequence, D) A conceptualised thesis in the introduction.
    * **Correct:** A, B, D
    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
-   * **Feedback:** Judicious micro-quotes (A), construct-level thinking (B), and a conceptual thesis (D) all push to Level 6. Plot retelling (C) caps you at lower bands.
+   * **Feedback:** Judicious micro-quotes, construct-level thinking, and a conceptual thesis all push to Level 6. Plot retelling caps you at lower bands.
    * **AO:** AO1
    * **Why C:** Retelling the plot feels like demonstrating knowledge, but examiners already know the story; narrative sequence without argument caps the response at lower bands.
 9. **Type: True/False \[Tests Exploratory Response\]**
@@ -330,7 +330,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Definitive conceptual claims, B) Sustained analytical authority from intro to conclusion, C) Hedging ("might suggest", "perhaps indicates") on every claim, D) A perceptive, well-supported interpretation.
    * **Correct:** A, B, D
    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
-   * **Feedback:** Assured responses argue (A), sustain (B), and perceive (D). Constant hedging (C) signals Level 4 tentativeness.
+   * **Feedback:** Assured responses argue, sustain, and perceive. Constant hedging signals Level 4 tentativeness.
    * **AO:** AO1
    * **Why C:** Hedging feels academically cautious, but "might suggest" on every claim signals tentativeness; assured responses commit to definitive, well-supported judgements.
 5. **Type: True/False \[Tests AO3 Integration\]**
@@ -359,7 +359,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Use the printed extract as an AO2 evidence bank, B) Move to the whole play to demonstrate AO1 argument/arc, C) Integrate context (AO3) throughout, D) Treat the extract in isolation from the rest of the play.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Fluid movement between extract and whole play (A, B) plus integrated context (C) define the Grade 9 separator.
+   * **Feedback:** Fluid movement between extract and whole play plus integrated context define the Grade 9 separator.
    * **AO:** AO1
    * **Why D:** Focusing only on the extract feels safe because the evidence sits in front of you, but isolation sacrifices the whole-play argument that separates the top band.
 9. **Type: True/False \[Tests AO2 Terminology\]**
@@ -372,7 +372,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Question:** Which opening sentence signals Edexcel Level 5 "assured" intellectual authority?
     * **Options:** A) "Macbeth might possibly be about ambition", B) "Shakespeare constructs ambition as an epistemologically fragmenting force that corrupts perceptual certainty", C) "Shakespeare writes a play called Macbeth", D) "In this essay I will try to explore ambition".
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Option B works because it names how Shakespeare *constructs* ambition (a deliberate method) and judges its effect — corrupting the certainty of what is real, which is what unsettles the audience. The authority comes from method→effect-on-audience, not the long words. "Might possibly" (A) and "will try to" (D) signal Level 4 tentativeness. Precise vocabulary on its own, without a named method and its effect, does NOT lift the band.
+    * **Feedback:** ✓ Correct. Option B works because it names how Shakespeare *constructs* ambition (a deliberate method) and judges its effect — corrupting the certainty of what is real, which is what unsettles the audience. The authority comes from method→effect-on-audience, not the long words. "Might possibly" and "will try to" signal Level 4 tentativeness. Precise vocabulary on its own, without a named method and its effect, does NOT lift the band.
     * **AO:** AO1
     * **Why A:** "Might possibly" double-hedges before the argument has begun; tentative openings signal Level 4 caution rather than assured authority.
     * **Why C:** Stating that the play exists makes no interpretive claim at all; assurance requires a definitive argument from the very first sentence.
@@ -409,7 +409,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Sustained conceptual argument from intro to conclusion, B) Flowing analytical connections between paragraphs, C) Evaluative adverbs ("powerfully", "subtly"), D) Random observations without linking them.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Sustained argument (A), flowing connections (B), and evaluative language (C) all build cohesion. Disconnected observations (D) are at most Level 3-4.
+   * **Feedback:** Sustained argument, flowing connections, and evaluative language all build cohesion. Disconnected observations are at most Level 3-4.
    * **AO:** AO1
    * **Why D:** Stacking observations can feel productive, but cohesion is precisely about linking; random unconnected points are the opposite of the Level 5 descriptor.
 5. **Type: True/False \[Tests AO2\]**
@@ -438,7 +438,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Analyses methods and links them to meaning, B) Uses judicious textual references, C) Shows whole-text knowledge, D) Retells the plot in sequence.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Methods-to-meaning (A), judicious references (B), and whole-text knowledge (C) are essential. Plot retelling (D) caps you at the lowest band.
+   * **Feedback:** Methods-to-meaning, judicious references, and whole-text knowledge are essential. Plot retelling caps you at the lowest band.
    * **AO:** AO1
    * **Why D:** Retelling plot feels like proving knowledge of the play, but examiners credit argument and analysis; narrative summary caps the response at the lowest levels.
 9. **Type: True/False \[Tests SPaG\]**
@@ -488,7 +488,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Evaluative adverbs ("powerfully", "subtly", "compellingly"), B) Probing layers, ambiguities, and deeper implications, C) Treating characters as constructs, D) Paraphrasing the plot.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Evaluative language (A), probing ambiguity (B), and construct-level thinking (C) signal Band 5. Paraphrase (D) caps you lower.
+   * **Feedback:** Evaluative language, probing ambiguity, and construct-level thinking signal Band 5. Paraphrase caps you lower.
    * **AO:** AO1
    * **Why D:** Paraphrasing the plot can feel like showing understanding, but it stays descriptive; Band 5 demands evaluation and probing of implication, not retelling.
 5. **Type: True/False \[Tests Context on Shakespeare\]**
@@ -517,7 +517,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Identifying multiple interpretations of a single moment, B) Probing what a technique implies beyond the surface, C) Weighing ambiguity in a character's motivation, D) Retelling what happens in chronological order.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Multiple interpretations (A), probing implications (B), and weighing ambiguity (C) all show perception. Chronological retelling (D) is surface-level.
+   * **Feedback:** Multiple interpretations, probing implications, and weighing ambiguity all show perception. Chronological retelling is surface-level.
    * **AO:** AO1
    * **Why D:** Chronological retelling feels organised and safe, but it stays on the surface of events; perception means probing beneath what happens to what it implies.
 9. **Type: True/False \[Tests Extract Focus\]**
@@ -567,7 +567,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Transition words (However, Consequently, Furthermore), B) An evaluative thesis held throughout, C) Micro-quotations embedded in sentences, D) Switching between informal and formal tone.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Transitions (A), sustained thesis (B), and embedded quotations (C) build OCR's Level 6 sustained critical style.
+   * **Feedback:** Transitions, sustained thesis, and embedded quotations build OCR's Level 6 sustained critical style.
    * **AO:** AO1
    * **Why D:** Varying tone can feel engaging, but slipping into informality breaks the sustained critical register that Level 6 explicitly demands.
 5. **Type: True/False \[Tests Context Integration\]**
@@ -596,7 +596,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Use the printed extract as an evidence bank for AO2, B) Move fluidly to discuss whole-play arc for AO1, C) Integrate context (AO3) throughout, D) Ignore the extract completely.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Level 6 candidates use the extract (A), move to the whole play (B), and integrate context (C). Ignoring the extract (D) loses AO2 evidence. This fluency is the Grade 9 separator.
+   * **Feedback:** Level 6 candidates use the extract, move to the whole play, and integrate context. Ignoring the extract loses AO2 evidence. This fluency is the Grade 9 separator.
    * **AO:** AO1
    * **Why D:** Ignoring the extract throws away the richest close-analysis evidence on the paper; the printed passage is the designed springboard for word-level work.
 9. **Type: True/False \[Tests Arc Structure\]**
@@ -646,7 +646,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Integrated evaluative judgements across paragraphs, B) Evaluative adverbs ("successfully", "powerfully", "subtly"), C) A sustained critical thesis, D) Disconnected observations stacked together.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Cohesive evaluation flows across paragraphs (A), uses judgement vocabulary (B), and sustains one thesis (C). Disconnected observations (D) fall to lower ranges.
+   * **Feedback:** Cohesive evaluation flows across paragraphs, uses judgement vocabulary, and sustains one thesis. Disconnected observations fall to lower ranges.
    * **AO:** AO1
    * **Why D:** Stacking observations together feels productive, but cohesion is about connection; disconnected points are the precise opposite of cohesive evaluation.
 5. **Type: True/False \[Tests Precise Language\]**
@@ -675,7 +675,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) A clear conceptual argument about what Shakespeare is saying, B) Perceptive insight into the theme, C) Engagement with the text's deeper meaning, D) Retelling the plot in sequence.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** A, B, C all show Understanding in the SQA sense — argument, insight, engagement. Retelling (D) is surface-level.
+   * **Feedback:** ✓ Correct. Argument, insight and engagement all show Understanding in the SQA sense. Retelling the plot is surface-level.
    * **AO:** AO1
    * **Why D:** Retelling the plot in order feels like demonstrating knowledge, but Understanding in SQA's sense means grasping meaning and concept, not recounting events.
 9. **Type: True/False \[Tests Extract vs Whole Text — Grade 9 separator\]**

@@ -1261,7 +1261,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Question:** In IGCSE Spec A, which AO number assesses writing content/organisation?
    * **Options:** A) AO3, B) AO4, C) AO5, D) AO6.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. In Spec A, AO4 covers writing content/communication and AO5 covers technical accuracy — different numbers from GCSE, where those are AO5 and AO6.
+   * **Feedback:** ✓ Correct. In Spec A the writing content and communication sits under AO4 and technical accuracy under AO5 — different numbers from GCSE, where those are AO5 and AO6.
    * **AO:** AO5
    * **Why A:** AO3 is the comparison objective in Spec A — picking it confuses the reading AOs with the writing AOs.
    * **Why C:** AO5 is the GCSE habit answer — but in Spec A's numbering, AO5 is technical accuracy, and the content/organisation marks sit under AO4.
@@ -1380,7 +1380,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
    * **Question:** In IGCSE Spec B, what does AO5 assess?
    * **Options:** A) Writing content and organisation, B) Technical accuracy (SPaG), C) Comparison skills, D) Language analysis.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. In Spec B, AO5 is technical accuracy (spelling, punctuation, grammar) — not the content/organisation that GCSE's AO5 covers.
+   * **Feedback:** ✓ Correct. In Spec B the AO5 strand is technical accuracy (spelling, punctuation, grammar) — not the content and organisation that GCSE's AO5 covers.
    * **AO:** AO6
    * **Why A:** Content and organisation is the GCSE habit answer — in Spec B's numbering that work sits under AO4, while AO5 is the technical-accuracy scale.
    * **Why C:** Comparison is AO3 — a reading objective; AO5 belongs to the writing side of the paper.

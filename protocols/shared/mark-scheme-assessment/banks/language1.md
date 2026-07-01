@@ -47,7 +47,7 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **Options:** A) The simile "like flames" suggests the heat is so powerful it is reflected in the wildlife; the verb "darted" creates the imagery of the lizards' rapid movements as they leap across the rocks, B) The word "flames" tells us they were hot like fire and the word "darted" shows the lizards are fast, C) The image of the lizards transforming into fire conveys Mary's perception of the heat's power to change nature itself; "darted" extends the image — the lizards moving as swiftly and erratically as fire, D) The word "darted" suggests the heat is so strong the lizards cannot stay still and "flames" suggests the rocks are as hot as fire
    * **Correct:** B, D, A, C
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. These are AQA's own indicative-standard answers (June 2024). B = simple comment on effect (L1). D = some understanding, an attempt to comment (L2). A = clear explanation of the effects with relevant detail and accurate terminology (L3). C = perceptive, detailed analysis of the effects (L4). The ladder is comment → attempt → clear explanation → perceptive analysis.
+   * **Feedback:** ✓ Correct. These are AQA's own indicative-standard answers (June 2024). The bare simple comment on effect is Level 1. The attempt at some understanding is Level 2. The clear explanation of the effects with relevant detail and accurate terminology is Level 3. The perceptive, detailed analysis of the effects is Level 4. The ladder is comment → attempt → clear explanation → perceptive analysis.
    * **WhyWrong:** Weakest→strongest is B (simple comment) then D (some/attempts) then A (clear explanation) then C (perceptive analysis). Each rung is exactly one AQA Level higher; the L3→L4 jump is explanation becoming analysis of the writer's effects.
 
 5. **Type: MCQ [Tests AO2]**
@@ -100,7 +100,7 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **Options:** A) I agree it is unfair because Mary only used some water; he looks at her "as if she had committed a crime" — the simile compares her to a criminal, making her powerless — though "suddenly sorry" shows he wants forgiveness, so maybe she has some power, B) Dick's anger is unfair as Mary suffers in the heat; "as if she had committed a crime" places her as the criminal and Dick as the judge, making her powerless; yet this fades when he is "suddenly sorry", conveying the power she has over him, C) Dick's anger is mean because Mary only wanted to cool down; the word "crime" shows he thinks she has done something bad, and it says he is "suddenly sorry" which shows he feels bad, D) Dick's intensity could be seen as unfair as the simile presents Mary as both criminal and prisoner, trapped in the relationship; yet his guilt when "suddenly sorry" conveys his fear of losing her, placing her in the ultimate position of power
    * **Correct:** C, A, B, D
    * **AO:** AO4
-   * **Feedback:** ✓ Correct. AQA's own indicative answers (June 2024). C = simple, limited evaluation (L1). A = some attempts at evaluation with some understanding of method (L2). B = clear, relevant evaluation of the effects (L3). D = perceptive, detailed, critical evaluation that weighs both readings (L4). The ladder is simple → some → clear → critical.
+   * **Feedback:** ✓ Correct. AQA's own indicative answers (June 2024). The simple, limited evaluation is Level 1. The response with some attempts at evaluation and some understanding of method is Level 2. The clear, relevant evaluation of the effects is Level 3. The perceptive, detailed, critical evaluation that weighs both readings is Level 4. The ladder is simple → some → clear → critical.
    * **WhyWrong:** Weakest→strongest is C (simple) then A (some) then B (clear) then D (perceptive/critical). Each rung is one AQA Level higher; L4 weighs the statement critically rather than simply agreeing with it.
 
 11. **Type: MCQ [Tests AO4]**
@@ -128,7 +128,7 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **Options:** A) Tone, style and register are assuredly matched to purpose and audience, B) Extensive and ambitious vocabulary with sustained crafting of linguistic devices, C) Sentence demarcation is consistently secure with a wide range of accurate punctuation, D) Varied and inventive use of structural features with fluently linked paragraphs
    * **Correct:** A, B, D
    * **AO:** AO5
-   * **Feedback:** ✓ Correct. AO5 (Content and Organisation) L4 = "convincing and compelling… tone, style and register assuredly matched… extensive and ambitious vocabulary with sustained crafting… varied and inventive use of structural features… fluently linked paragraphs." Secure demarcation and punctuation (C) are AO6 (Technical Accuracy), marked on a separate ladder.
+   * **Feedback:** ✓ Correct. AO5 (Content and Organisation) L4 = "convincing and compelling… tone, style and register assuredly matched… extensive and ambitious vocabulary with sustained crafting… varied and inventive use of structural features… fluently linked paragraphs." Secure demarcation and punctuation are AO6 (Technical Accuracy), marked on a separate ladder.
    * **Why C:** Sentence demarcation and punctuation are AO6 Technical Accuracy, not AO5 Content and Organisation — the two halves of Question 5 are scored separately.
 
 14. **Type: MCQ [Tests AO6]**
@@ -136,7 +136,7 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **Options:** A) The originality, imagination and ambition of the ideas developed across the writing, B) A range of vocabulary and sentence structures for effect, with accurate spelling and punctuation, C) How well the structure of the whole piece is organised, linked and made cohesive for the reader, D) Whether the chosen form, tone and register are matched to the purpose and audience
    * **Correct:** B
    * **AO:** AO6
-   * **Feedback:** ✓ Correct. AO6 = "use a range of vocabulary and sentence structures for clarity, purpose and effect, with accurate spelling and punctuation" — worth 20% of the whole qualification. Ideas, organisation, tone and form (A, C, D) are all AO5; AO6 is the technical-accuracy half of Question 5.
+   * **Feedback:** ✓ Correct. AO6 = "use a range of vocabulary and sentence structures for clarity, purpose and effect, with accurate spelling and punctuation" — worth 20% of the whole qualification. Ideas, organisation, tone and form are all AO5; AO6 is the technical-accuracy half of Question 5.
    * **Why A:** Imagination and ideas are AO5 Content.
    * **Why C:** Organisation and cohesion are AO5 Organisation.
    * **Why D:** Matching form to purpose and audience is AO5.

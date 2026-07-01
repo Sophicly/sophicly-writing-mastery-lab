@@ -234,7 +234,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
 2. **Type: Fill-in-the-Blank \[Tests Comparison Structure\]**
    * **Question:** For AQA anthology, top-band responses use \[BLANK\] comparison — weaving both poems into each paragraph rather than treating Poem A then Poem B in blocks.
    * **Answer:** Integrated
-   * **Feedback:** ✓ Correct. Integrated (interwoven) comparison is the Grade 9 separator. Block treatment — Poem A, then Poem B — caps you at lower bands.
+   * **Feedback:** ✓ Correct. Integrated (interwoven) comparison is the Grade 9 separator. Block treatment — writing about one poem in full, then the other — caps you at lower bands.
    * **AO:** AO1
    * **WhyWrong:** Answers like "detailed" or "balanced" name general virtues — the specific top-band skill is weaving both poems through every paragraph, which "integrated" captures exactly.
 3. **Type: MCQ \[Tests Context Weighting\]**
@@ -251,7 +251,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Imagery and specific word connotations, B) Form (sonnet, dramatic monologue, free verse), C) Structure (volta, stanza breaks, enjambment), D) The poet's biography.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Imagery (A), form (B), and structure (C) are all AO2 targets. Biography (D) is context, not method. But a method only counts as AO2 analysis once you pair it with its effect on the reader (Focus/Feel/Think/Act) — naming "enjambment" or "sonnet form" alone is feature-spotting and earns low marks; you must say what the method makes the reader focus on, feel, think, or do.
+   * **Feedback:** Imagery, form, and structure are all AO2 targets. Biography is context, not method. But a method only counts as AO2 analysis once you pair it with its effect on the reader (Focus/Feel/Think/Act) — naming "enjambment" or "sonnet form" alone is feature-spotting and earns low marks; you must say what the method makes the reader focus on, feel, think, or do.
    * **AO:** AO2
    * **Why D:** Biography feels relevant because poets draw on their lives, but it is contextual information about the writer, not a method the poet deploys on the page.
 5. **Type: True/False \[Tests Integrated Comparison\]**
@@ -280,7 +280,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Integrated comparison in every paragraph, B) Judicious micro-quotations from both poems, C) Conceptualised interpretation, D) Block treatment of Poem A then Poem B.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Integrated comparison (A), judicious evidence (B), and conceptual interpretation (C) all define Level 6. Block treatment (D) caps you lower. The interwoven structure is only the vehicle — within it you must compare the two poets' METHODS and their DIFFERING effects on the reader (e.g. "where Shelley's irony makes the reader feel power's futility, Browning's controlled tone makes us recoil"); interweaving and connectors alone are not AO2 comparison.
+   * **Feedback:** Integrated comparison, judicious evidence, and conceptual interpretation all define Level 6. Block treatment caps you lower. The interwoven structure is only the vehicle — within it you must compare the two poets' METHODS and their DIFFERING effects on the reader (e.g. "where Shelley's irony makes the reader feel power's futility, Browning's controlled tone makes us recoil"); interweaving and connectors alone are not AO2 comparison.
    * **AO:** AO1
    * **Why D:** Block treatment feels organised and complete, but handling Poem A then Poem B separately prevents the integrated comparison Level 6 requires.
 9. **Type: True/False \[Tests Unseen Adjacent\]**
@@ -330,7 +330,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Language (imagery, word choices), B) Form (sonnet, free verse, villanelle), C) Structure (stanza, rhyme scheme, volta), D) The poet's bank balance.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Language (A), Form (B), and Structure (C) are the three AO2 strands. Biography (D) is never a method. Remember: a method only counts as AO2 analysis once you pair it with its effect on the reader (Focus/Feel/Think/Act) — listing devices alone is feature-spotting and caps you low; always state what the method makes the reader focus on, feel, think, or do.
+   * **Feedback:** Language, Form, and Structure are the three AO2 strands. Biography is never a method. Remember: a method only counts as AO2 analysis once you pair it with its effect on the reader (Focus/Feel/Think/Act) — listing devices alone is feature-spotting and caps you low; always state what the method makes the reader focus on, feel, think, or do.
    * **AO:** AO2
    * **Why D:** The deliberately silly option tests a real confusion — facts about the poet's life or circumstances are context at best, never a method working on the page.
 5. **Type: True/False \[Tests AO3 Integration\]**
@@ -359,7 +359,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Evaluative adverbs ("powerfully", "subtly", "ironically"), B) Assured analytical authority, C) Definitive conceptual claims, D) Hedging every sentence.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Evaluative language (A), authority (B), and conceptual claims (C) define the top band. Hedging (D) signals tentativeness. Note: an adverb like "powerfully" only earns credit when it fronts a judgement about HOW the method affects the reader (e.g. "powerfully unsettles the reader by…"); on its own it is an empty label, not evaluation.
+   * **Feedback:** Evaluative language, authority, and conceptual claims define the top band. Hedging signals tentativeness. Note: an adverb like "powerfully" only earns credit when it fronts a judgement about HOW the method affects the reader (e.g. "powerfully unsettles the reader by…"); on its own it is an empty label, not evaluation.
    * **AO:** AO2
    * **Why D:** Hedging can feel academically cautious, but constant tentativeness undercuts the assured analytical authority the top band rewards.
 9. **Type: True/False \[Tests Balanced Coverage\]**
@@ -372,7 +372,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Question:** For Edexcel GCSE Poetry AO3, which sentence best integrates context?
     * **Options:** A) "Owen was a soldier", B) "Owen's 'Exposure' weaponises the indifferent weather to critique the romanticised 'Dulce et Decorum' rhetoric of early-WWI propaganda", C) "WWI was a bad war", D) "This is a sad poem".
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Option B integrates context (propaganda culture) into analysis of the poet's method. Bolt-on biography (A) and vague facts (C, D) score minimal AO3.
+    * **Feedback:** ✓ Correct. Option B integrates context (propaganda culture) into analysis of the poet's method. Bolt-on biography and vague facts score minimal AO3.
     * **AO:** AO3
     * **Why A:** "Owen was a soldier" is true and relevant-sounding, but bolt-on biography earns minimal credit because it does no analytical work on the poem.
     * **Why C:** A sweeping historical judgement feels contextual, yet it is too vague to illuminate anything specific about the poem's methods or meaning.
@@ -409,7 +409,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) "Whereas Poem A uses X, Poem B uses Y to…", B) "Similarly, both poems…", C) "In contrast to Poem A's tone, Poem B's…", D) "Poem A is about love, Poem B is about war" (with no link).
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Comparative connectors (A, B, C) build AO3. Juxtaposition without linkage (D) does not count as comparison.
+   * **Feedback:** Comparative connectors build AO3. Juxtaposition without linkage does not count as comparison.
    * **AO:** AO1
    * **Why D:** Mentioning both poems feels comparative, but stating two subjects side by side with no linking idea is juxtaposition, not comparison.
 5. **Type: True/False \[Tests Methods Coverage\]**
@@ -438,7 +438,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Evaluative adverbs ("powerfully", "subtly"), B) Sustained conceptual thesis, C) Flowing analytical connections between paragraphs, D) Disconnected bullet-point-style observations.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Evaluative language (A), sustained thesis (B), and flowing connections (C) build cohesion. Disconnected observations (D) don't. Remember: an adverb like "subtly" only earns credit when it fronts a judgement about HOW the method affects the reader (e.g. "subtly destabilises the reader's sympathy"); alone it is an empty label, not evaluation.
+   * **Feedback:** Evaluative language, sustained thesis, and flowing connections build cohesion. Disconnected observations don't. Remember: an adverb like "subtly" only earns credit when it fronts a judgement about HOW the method affects the reader (e.g. "subtly destabilises the reader's sympathy"); alone it is an empty label, not evaluation.
    * **AO:** AO2
    * **Why D:** Bullet-style observations can each be accurate, but disconnected points are the precise opposite of the flowing, linked evaluation that "cohesive" names.
 9. **Type: True/False \[Tests Context\]**
@@ -488,7 +488,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Sustain conceptual argument (AO1), B) Analyse language/form/structure (AO2), C) Integrate context where it drives the poet's concept (AO3), D) Neglect one AO to go deeper on another.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** All three AOs must be engaged (A, B, C). Neglect (D) costs you a third of the marks.
+   * **Feedback:** All three AOs must be engaged. Neglect costs you a third of the marks.
    * **AO:** AO1
    * **Why D:** Going deeper on a favourite objective feels like playing to strengths, but with the three weighted roughly equally, neglecting one forfeits about a third of the marks.
 5. **Type: True/False \[Tests Illuminating vs Thoughtful\]**
@@ -517,7 +517,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Integrated comparison within each paragraph, B) Comparative connectors ("Whereas…", "In contrast…", "Similarly…"), C) Perceptive linking of shared concepts across both poems, D) Block analysis of Poem A then Poem B.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Integrated comparison (A), connectors (B), and perceptive concept-linking (C) all build Band 5. Block treatment (D) caps lower. The interwoven structure and connectors are only the frame — Band 5 needs that frame to carry a comparison of the two poets' METHODS and their DIFFERING effects on the reader; "Whereas… Similarly…" with no method+effect is feature-spotting, not comparison.
+   * **Feedback:** Integrated comparison, connectors, and perceptive concept-linking all build Band 5. Block treatment caps lower. The interwoven structure and connectors are only the frame — Band 5 needs that frame to carry a comparison of the two poets' METHODS and their DIFFERING effects on the reader; "Whereas… Similarly…" with no method+effect is feature-spotting, not comparison.
    * **AO:** AO1
    * **Why D:** Treating each poem in its own block feels methodical, but separating them prevents the integrated comparison Band 5 rewards and caps the response lower.
 9. **Type: True/False \[Tests AO3 on Poetry\]**
@@ -559,7 +559,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
 3. **Type: Fill-in-the-Blank \[Tests Interwoven — Grade 9 separator\]**
    * **Question:** OCR Level 6 demands "a sustained, \[BLANK\] comparison of texts" — weaving both poems together throughout the response.
    * **Answer:** Interwoven
-   * **Feedback:** ✓ Correct. "A sustained, interwoven comparison of texts" is OCR's top-band comparison requirement. Block treatment — Poem A, then Poem B — caps you lower.
+   * **Feedback:** ✓ Correct. A sustained, interwoven comparison of texts is OCR's top-band comparison requirement. Block treatment — writing about one poem in full, then the other — caps you lower.
    * **AO:** AO1
    * **WhyWrong:** "Developed" or "detailed" belong to lower descriptors — OCR's Level 6 comparison bullet asks for an "interwoven" comparison, the two poems woven together throughout the response.
 4. **Type: Select All That Apply \[Tests Sustained Critical Style\]**
@@ -567,7 +567,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Evaluative adverbs across the response, B) A sustained conceptual thesis from intro to conclusion, C) Discerning micro-quotations integral to argument, D) Switching register between formal and informal.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Evaluative language (A), sustained thesis (B), and integral quotations (C) build Level 6. Register-switching (D) breaks sustained critical style.
+   * **Feedback:** Evaluative language, sustained thesis, and integral quotations build Level 6. Register-switching breaks sustained critical style.
    * **AO:** AO1
    * **Why D:** Varying register can feel engaging, but slipping between formal and informal voices breaks the sustained critical style Level 6 demands.
 5. **Type: True/False \[Tests Discerning References\]**
@@ -596,7 +596,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Interweaves both poems in every paragraph, B) Sustains conceptual argument across the comparison, C) Uses discerning micro-quotations from both, D) Treats Poem A and Poem B in rigid blocks.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Interwoven comparison (A), sustained argument (B), and discerning evidence (C) define Level 6. Rigid block treatment (D) caps lower. The interweaving is only the mechanic — Level 6 needs it to carry a comparison of the two poets' METHODS and their DIFFERING effects on the reader (e.g. "Shelley's irony makes us judge the tyrant; the other poet's pathos makes us pity the victim"); weaving and connectors alone are not AO2 comparison.
+   * **Feedback:** Interwoven comparison, sustained argument, and discerning evidence define Level 6. Rigid block treatment caps lower. The interweaving is only the mechanic — Level 6 needs it to carry a comparison of the two poets' METHODS and their DIFFERING effects on the reader (e.g. "Shelley's irony makes us judge the tyrant; the other poet's pathos makes us pity the victim"); weaving and connectors alone are not AO2 comparison.
    * **AO:** AO1
    * **Why D:** Rigid blocks feel structured, but separating the poems prevents the interwoven comparison OCR's top level explicitly requires.
 9. **Type: True/False \[Tests AO Distinction\]**
@@ -646,7 +646,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) "Successfully", B) "Compellingly", C) "Effectively", D) "There is".
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Evaluative adverbs (A, B, C) are judgement words. Plain description ("there is") does not show evaluation. But the word only earns credit when it fronts a judgement about HOW the method affects the reader (e.g. "successfully draws the reader into the speaker's grief"); on its own "successfully" or "compellingly" is an empty label, not evaluation.
+   * **Feedback:** Evaluative adverbs are judgement words. Plain description ("there is") does not show evaluation. But the word only earns credit when it fronts a judgement about HOW the method affects the reader (e.g. "successfully draws the reader into the speaker's grief"); on its own "successfully" or "compellingly" is an empty label, not evaluation.
    * **AO:** AO2
    * **Why D:** "There is" feels like presenting evidence, but it merely points at a feature — pointing is description, and only judgement words show evaluation.
 5. **Type: True/False \[Tests Commonality Approach\]**
@@ -675,7 +675,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Options:** A) Integrated evaluative judgements across paragraphs, B) Evaluative adverbs ("successfully", "powerfully", "subtly"), C) A sustained critical thesis, D) Disconnected observations stacked together.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Cohesive evaluation flows (A), uses judgement vocabulary (B), and sustains one thesis (C). Disconnected observations (D) fall lower.
+   * **Feedback:** Cohesive evaluation flows, uses judgement vocabulary, and sustains one thesis. Disconnected observations fall lower.
    * **AO:** AO2
    * **Why D:** Stacked observations can each be correct, but cohesive evaluation requires them connected into one flowing argument, not piled up separately.
 9. **Type: True/False \[Tests Precise Evidence\]**
