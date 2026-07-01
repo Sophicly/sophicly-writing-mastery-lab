@@ -135,6 +135,8 @@ When the AI misbehaves in WML but works in the raw AI Engine chatbot, the preamb
 
 ## PROTOCOL REFACTORS — STUDY EACH PROTOCOL (v7.17.0+)
 
+**⭐ Before touching ANY assessment or planning protocol, read `PROTOCOL-STANDARD.md` (plugin root). It is the codified contract — R&J gold standard + Neil's locked expectations + grep-able acceptance checks. A protocol change that fails its checks does not ship.**
+
 Every protocol (board + paper + question) has its own AO structure, paragraph scaffold, marking granularity. Do NOT assume uniformity.
 
 - **Language Section A reading Qs** (AQA / Edexcel / Eduqas): single AO per Q from schema. TTECEA ×N paragraphs. Q1 typically retrieval (mark-per-statement); Q2-Q4 analysis/evaluation.
