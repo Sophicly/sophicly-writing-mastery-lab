@@ -7728,10 +7728,14 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     border-radius: 12px; padding: 11px 16px;
     box-shadow: 0 3px 12px rgba(0,0,0,0.18);
 }
-.swml-signoff-avatar {
-    width: 38px; height: 38px; border-radius: 50%;
-    object-fit: cover; border: 1px solid rgba(28, 217, 145, 0.35);
-    flex: 0 0 auto;
+/* v7.19.788: override-proof — a generic LD/theme `img { height:auto; max-width:100% }`
+   reset was defeating the fixed square, rendering the avatar as a portrait rectangle.
+   Scope + !important on the shape props force the circle regardless of the host theme. */
+.swml-signoff-signed .swml-signoff-avatar {
+    width: 38px !important; height: 38px !important; min-width: 38px;
+    aspect-ratio: 1 / 1; max-width: none !important; padding: 0 !important;
+    border-radius: 50% !important; object-fit: cover !important;
+    border: 1px solid rgba(28, 217, 145, 0.35); flex: 0 0 auto;
 }
 .swml-signoff-meta { display: flex; flex-direction: column; gap: 1px; line-height: 1.35; }
 .swml-signoff-name { font-size: 12.5px; font-weight: 700; color: #fff; }
