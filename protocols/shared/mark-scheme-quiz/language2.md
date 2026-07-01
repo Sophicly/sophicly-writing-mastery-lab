@@ -854,7 +854,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
     * **Options:** A) Identifies different perspectives in both texts, B) Analyses how language techniques convey those perspectives, C) Uses long quotations from both texts, D) Integrates comparison within paragraphs rather than treating texts separately, E) Mentions the historical context of the 19th century text.
     * **Correct:** A, B, D
     * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
-    * **Feedback:** Level 3 needs comparison of ideas (A), analysis of how methods convey attitudes (B), and integrated comparison (D). Long quotations (C) aren't required and can hinder analysis; historical context (E) can add value but isn't a Level 3 requirement.
+    * **Feedback:** Level 3 needs comparison of ideas across both texts, analysis of how the writers' methods convey those attitudes, and comparison integrated within paragraphs rather than handled text-by-text. Long quotations aren't required and can crowd out the analysis; historical context can add value but is never a Level 3 requirement.
     * **AO:** AO3
     * **Why C:** Long quotations feel like strong evidence, but the levels reward well-chosen references — copying out chunks crowds the page and often replaces the analysis that earns marks.
     * **Why E:** Context seems scholarly, yet AO3 here rewards comparing perspectives and methods — historical background is never named as a requirement in the comparison levels.
@@ -929,7 +929,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
     * **Options:** A) Analyses how writers' methods are used, B) Selects a range of judicious supporting detail from both texts, C) Shows detailed and perceptive understanding of the different ideas and perspectives in both texts, D) Evaluates which writer argues more convincingly, E) Comments on the historical context of the 19th-century source.
     * **Correct:** A, B, C
     * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-    * **Feedback:** Level 4 names analysis of how methods are used (A), judicious supporting detail from both texts (B), and detailed, perceptive understanding of the different ideas and perspectives (C). Judging which writer is more convincing (D) is evaluation, not AO3 comparison; historical context (E) is not a descriptor requirement.
+    * **Feedback:** Level 4 names analysis of how the writers' methods are used, judicious supporting detail drawn from both texts, and a detailed, perceptive understanding of the different ideas and perspectives in both. Judging which writer is more convincing is evaluation, not AO3 comparison; historical context is not a descriptor requirement.
     * **AO:** AO3
     * **Why D:** Ranking the writers feels comparative, but it is an evaluative judgement — AO3 compares perspectives and methods without declaring a winner.
     * **Why E:** Context sounds like sophistication, yet the comparison descriptors never ask for historical background — marks come from the texts' perspectives and methods.
