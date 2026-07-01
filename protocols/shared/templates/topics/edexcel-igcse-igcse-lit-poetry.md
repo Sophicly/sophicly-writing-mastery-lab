@@ -1,22 +1,53 @@
 # Topic 1: If-- (Rudyard Kipling)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** Kipling's didactic poem uses an extended conditional structure to define ideal masculine stoicism, presenting a father's advice to his son through a series of hypothetical challenges that build towards the reward of manhood and "the Earth."
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** If--
+**Focus Poet:** Rudyard Kipling
+**Extract Location:** If-- by Rudyard Kipling
 
-## Source A
-**Title:** If--
-**Author:** Rudyard Kipling
-**Context:** Written in 1895 and published in *Rewards and Fairies* (1910), this poem is often read as Kipling's tribute to Leander Starr Jameson, a colonial leader. It reflects Victorian and Edwardian ideals of self-discipline, resilience, and stoic masculinity within the context of British imperialism.
+## Poem
+If you can keep your head when all about you
+Are losing theirs and blaming it on you,
+If you can trust yourself when all men doubt you,
+But make allowance for their doubting too;
+If you can wait and not be tired by waiting,
+Or being lied about, don’t deal in lies,
+Or being hated, don’t give way to hating,
+And yet don’t look too good, nor talk too wise:
 
-[TEXT TO BE ADDED -- see anthology document]
+If you can dream — and not make dreams your master;
+If you can think — and not make thoughts your aim;
+If you can meet with Triumph and Disaster
+And treat those two impostors just the same;
+If you can bear to hear the truth you’ve spoken
+Twisted by knaves to make a trap for fools,
+Or watch the things you gave your life to, broken,
+And stoop and build ’em up with worn-out tools:
 
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
+If you can make one heap of all your winnings
+And risk it on one turn of pitch-and-toss,
+And lose, and start again at your beginnings
+And never breathe a word about your loss;
+If you can force your heart and nerve and sinew
+To serve your turn long after they are gone,
+And so hold on when there is nothing in you
+Except the Will which says to them: ‘Hold on!’
 
+If you can talk with crowds and keep your virtue,
+Or walk with Kings — nor lose the common touch,
+If neither foes nor loving friends can hurt you,
+If all men count with you, but none too much;
+If you can fill the unforgiving minute
+With sixty seconds’ worth of distance run,
+Yours is the Earth and everything that’s in it,
+And — which is more — you’ll be a Man, my son!
+
+## Question
 Explore how Kipling presents ideals of character and resilience in 'If--'.
+
+[30 marks]
 
 ---
 
@@ -30,46 +61,110 @@ Explore how Kipling presents ideals of character and resilience in 'If--'.
 ---
 
 # Topic 3: Prayer Before Birth (Louis MacNeice)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** MacNeice's dramatic monologue gives voice to an unborn child who pleads for protection from the corruptions and cruelties of the modern world, using an incantatory, liturgical structure that builds from hope to despair.
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** Prayer Before Birth
+**Focus Poet:** Louis MacNeice
+**Extract Location:** Prayer Before Birth by Louis MacNeice
 
-## Source A
-**Title:** Prayer Before Birth
-**Author:** Louis MacNeice
-**Context:** Written in 1944 during World War II, this poem reflects MacNeice's anxieties about totalitarianism, dehumanisation, and the loss of individual identity in a world shaped by conflict and political extremism.
+## Poem
+I am not yet born; O hear me.
+Let not the bloodsucking bat or the rat or the stoat or the
+club-footed ghoul come near me.
 
-[TEXT TO BE ADDED -- see anthology document]
+I am not yet born, console me.
+I fear that the human race may with tall walls wall me,
+with strong drugs dope me, with wise lies lure me,
+on black racks rack me, in blood-baths roll me.
 
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
+I am not yet born; provide me
+With water to dandle me, grass to grow for me, trees to talk
+to me, sky to sing to me, birds and a white light
+in the back of my mind to guide me.
 
+I am not yet born; forgive me
+For the sins that in me the world shall commit, my words
+when they speak me, my thoughts when they think me,
+my treason engendered by traitors beyond me,
+my life when they murder by means of my
+hands, my death when they live me.
+
+I am not yet born; rehearse me
+In the parts I must play and the cues I must take when
+old men lecture me, bureaucrats hector me, mountains
+frown at me, lovers laugh at me, the white
+waves call me to folly and the desert calls
+me to doom and the beggar refuses
+my gift and my children curse me.
+
+I am not yet born; O hear me,
+Let not the man who is beast or who thinks he is God
+come near me.
+
+I am not yet born; O fill me
+With strength against those who would freeze my
+humanity, would dragoon me into a lethal automaton,
+would make me a cog in a machine, a thing with
+one face, a thing, and against all those
+who would dissipate my entirety, would
+blow me like thistledown hither and
+thither or hither and thither
+like water held in the
+hands would spill me.
+
+Let them not make me a stone and let them not spill me.
+Otherwise kill me.
+
+## Question
 Explore how MacNeice presents fear and vulnerability in 'Prayer Before Birth'.
+
+[30 marks]
 
 ---
 
 # Topic 4: Blessing (Imtiaz Dharker)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** Dharker captures the moment a water pipe bursts in a drought-stricken community, transforming a mundane event into a sacred celebration through sensory imagery and religious language that reveals the preciousness of basic resources.
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** Blessing
+**Focus Poet:** Imtiaz Dharker
+**Extract Location:** Blessing by Imtiaz Dharker
 
-## Source A
-**Title:** Blessing
-**Author:** Imtiaz Dharker
-**Context:** Dharker draws on her experience of life in the slums of Mumbai, where water scarcity is a daily reality. The poem explores poverty, community, and the way something as simple as water can become a divine gift.
+## Poem
+The skin cracks like a pod.
+There never is enough water.
 
-[TEXT TO BE ADDED -- see anthology document]
+Imagine the drip of it,
+the small splash, echo
+in a tin mug,
+the voice of a kindly god.
 
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
+Sometimes, the sudden rush
+of fortune. The municipal pipe bursts,
+silver crashes to the ground
+and the flow has found
+a roar of tongues. From the huts,
+a congregation : every man woman
+child for streets around
+butts in, with pots,
+brass, copper, aluminium,
+plastic buckets,
+frantic hands,
 
+and naked children
+screaming in the liquid sun,
+their highlights polished to perfection,
+flashing light,
+as the blessing sings
+over their small bones.
+
+## Question
 Explore how Dharker presents the significance of water and community in 'Blessing'.
+
+[30 marks]
 
 ---
 
@@ -96,263 +191,643 @@ Explore how Bhatt presents the struggle of cultural identity in 'Search For My T
 ---
 
 # Topic 6: Half-past Two (U A Fanthorpe)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** Fanthorpe presents a child's experience of being kept behind after school through the lens of his inability to tell the time, using invented compound words to capture the way children understand time through routine rather than abstract measurement.
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** Half-past Two
+**Focus Poet:** U A Fanthorpe
+**Extract Location:** Half-past Two by U A Fanthorpe
 
-## Source A
-**Title:** Half-past Two
-**Author:** U A Fanthorpe
-**Context:** Fanthorpe, a former teacher, draws on her understanding of childhood cognition. The poem explores how adults impose arbitrary structures on children's experience, and the liberating but also frightening quality of timelessness.
+## Poem
+Once upon a schooltime
+He did Something Very Wrong
+(I forget what it was).
 
-[TEXT TO BE ADDED -- see anthology document]
+And She said he’d done
+Something Very Wrong, and must
+Stay in the school-room till half-past two.
 
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
+(Being cross, she’d forgotten
+She hadn’t taught him Time.
+He was too scared at being wicked to remind her.)
 
+He knew a lot of time: he knew
+Gettinguptime, timeyouwereofftime,
+Timetogohomenowtime, TVtime,
+
+Timeformykisstime (that was Grantime).
+All the important times he knew,
+But not half-past two.
+
+He knew the clockface, the little eyes
+And two long legs for walking,
+But he couldn’t click its language,
+
+So he waited, beyond onceupona,
+Out of reach of all the timefors,
+And knew he’d escaped for ever
+
+Into the smell of old chrysanthemums on Her desk,
+Into the silent noise his hangnail made,
+Into the air outside the window, into ever.
+
+And then, My goodness, she said,
+Scuttling in, I forgot all about you.
+Run along or you’ll be late.
+
+So she slotted him back into schooltime,
+And he got home in time for teatime,
+Nexttime, notimeforthatnowtime,
+
+But he never forgot how once by not knowing time,
+He escaped into the clockless land for ever,
+Where time hides tick-less waiting to be born.
+
+## Question
 Explore how Fanthorpe presents a child's perception of time in 'Half-past Two'.
+
+[30 marks]
 
 ---
 
 # Topic 7: Piano (D H Lawrence)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** Lawrence's lyric poem captures the overwhelming power of memory as a woman's singing transports the adult speaker back to childhood, creating a tension between mature self-control and the irresistible pull of nostalgia.
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** Piano
+**Focus Poet:** D H Lawrence
+**Extract Location:** Piano by D H Lawrence
 
-## Source A
-**Title:** Piano
-**Author:** D H Lawrence
-**Context:** Written in 1918, the poem reflects Lawrence's working-class Nottinghamshire upbringing and his close relationship with his mother. It explores the Romantic tension between reason and emotion, and the way sensory experience can unlock buried feeling.
+## Poem
+Softly, in the dusk, a woman is singing to me;
+Taking me back down the vista of years, till I see
+A child sitting under the piano, in the boom of the tingling strings
+And pressing the small, poised feet of a mother who smiles as she sings.
 
-[TEXT TO BE ADDED -- see anthology document]
+In spite of myself, the insidious mastery of song
+Betrays me back, till the heart of me weeps to belong
+To the old Sunday evenings at home, with winter outside
+And hymns in the cosy parlour, the tinkling piano our guide.
 
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
+So now it is vain for the singer to burst into clamour
+10 With the great black piano appassionato. The glamour
+Of childish days is upon me, my manhood is cast
+Down in the flood of remembrance, I weep like a child for the past.
 
+## Question
 Explore how Lawrence presents the power of memory and nostalgia in 'Piano'.
+
+[30 marks]
 
 ---
 
 # Topic 8: Hide and Seek (Vernon Scannell)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** Scannell uses the children's game of hide and seek as an extended metaphor for abandonment and disillusionment, shifting from the excitement of hiding to the chilling realisation that the seekers have left.
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** Hide and Seek
+**Focus Poet:** Vernon Scannell
+**Extract Location:** Hide and Seek by Vernon Scannell
 
-## Source A
-**Title:** Hide and Seek
-**Author:** Vernon Scannell
-**Context:** Scannell, a World War II veteran who experienced combat trauma, often explored themes of fear, isolation, and the loss of innocence. The poem's surface simplicity conceals a darker meditation on trust and abandonment.
+## Poem
+Call out. Call loud: ‘I’m ready! Come and find me!’
+The sacks in the toolshed smell like the seaside.
+They’ll never find you in this salty dark,
+But be careful that your feet aren’t sticking out.
+Wiser not to risk another shout.
+The floor is cold. They’ll probably be searching
+The bushes near the swing. Whatever happens
+You mustn’t sneeze when they come prowling in.
+And here they are, whispering at the door;
+You’ve never heard them sound so hushed before.
+Don’t breathe. Don’t move. Stay dumb. Hide in your blindness.
+They’re moving closer, someone stumbles, mutters;
+Their words and laughter scuffle, and they’re gone.
+But don’t come out just yet; they’ll try the lane
+And then the greenhouse and back here again.
+They must be thinking that you’re very clever,
+Getting more puzzled as they search all over.
+It seems a long time since they went away.
+Your legs are stiff, the cold bites through your coat;
+The dark damp smell of sand moves in your throat.
+It’s time to let them know that you’re the winner.
+Push off the sacks. Uncurl and stretch. That’s better!
+Out of the shed and call to them: ‘I’ve won!
+Here I am! Come and own up I’ve caught you!’
+The darkening garden watches. Nothing stirs.
+The bushes hold their breath; the sun is gone.
+Yes, here you are. But where are they who sought you?
 
-[TEXT TO BE ADDED -- see anthology document]
-
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
-
+## Question
 Explore how Scannell presents the transition from excitement to isolation in 'Hide and Seek'.
+
+[30 marks]
 
 ---
 
 # Topic 9: Sonnet 116 (William Shakespeare)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** Shakespeare defines true love through a series of negatives and nautical metaphors, arguing that genuine love is constant, unshakeable, and immune to the ravages of time -- an "ever-fixed mark" that guides even through tempests.
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** Sonnet 116
+**Focus Poet:** William Shakespeare
+**Extract Location:** Sonnet 116 by William Shakespeare
 
-## Source A
-**Title:** Sonnet 116
-**Author:** William Shakespeare
-**Context:** Part of Shakespeare's sequence of 154 sonnets (published 1609), Sonnet 116 belongs to the "Fair Youth" sequence. It reflects Renaissance ideals of love as a transcendent, almost Platonic force, while the final couplet's challenge -- "If this be error and upon me proved" -- introduces a note of defiance.
+## Poem
+Let me not to the marriage of true minds
+Admit impediments; love is not love
+Which alters when it alteration finds,
+Or bends with the remover to remove.
+O no, it is an ever-fixèd mark
+That looks on tempests and is never shaken;
+It is the star to every wandering bark,
+Whose worth's unknown, although his height be taken.
+Love's not Time's fool, though rosy lips and cheeks
+Within his bending sickle's compass come;
+Love alters not with his brief hours and weeks,
+But bears it out even to the edge of doom.
+If this be error and upon me proved,
+I never writ, nor no man ever loved.
 
-[TEXT TO BE ADDED -- see anthology document]
-
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
-
+## Question
 Explore how Shakespeare presents the nature of true love in 'Sonnet 116'.
+
+[30 marks]
 
 ---
 
 # Topic 10: La Belle Dame sans Merci (John Keats)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** Keats's ballad tells of a knight enthralled and then abandoned by a mysterious fairy woman, using medieval imagery and a circular narrative structure to explore the destructive power of romantic obsession and the boundary between dream and reality.
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** La Belle Dame sans Merci
+**Focus Poet:** John Keats
+**Extract Location:** La Belle Dame sans Merci by John Keats
 
-## Source A
-**Title:** La Belle Dame sans Merci
-**Author:** John Keats
-**Context:** Written in 1819 during Keats's most productive year, the poem draws on medieval romance and the Romantic fascination with the supernatural. Keats was suffering from tuberculosis, and the poem's themes of entrapment, loss, and wasting illness carry autobiographical resonance.
+## Poem
+I
+O what can ail thee, knight-at-arms,
+Alone and palely loitering?
+The sedge has withered from the lake,
+And no birds sing.
 
-[TEXT TO BE ADDED -- see anthology document]
+II
+O what can ail thee, knight-at-arms,
+So haggard and so woe-begone?
+The squirrel’s granary is full,
+And the harvest’s done.
 
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
+III
+I see a lily on thy brow,
+With anguish moist and fever-dew,
+And on thy cheek a fading rose
+Fast withereth too.
 
+IV
+I met a lady in the meads,
+Full beautiful — a faery’s child,
+Her hair was long, her foot was light,
+And her eyes were wild.
+
+V
+I made a garland for her head,
+And bracelets too, and fragrant zone;
+She looked at me as she did love,
+And made sweet moan.
+
+VI
+I set her on my pacing steed,
+And nothing else saw all day long,
+For sidelong would she bend, and sing
+A faery’s song.
+
+VII
+She found me roots of relish sweet,
+And honey wild, and manna-dew,
+And sure in language strange she said —
+‘I love thee true’.
+
+VIII
+She took me to her elfin grot,
+And there she wept and sighed full sore,
+And there I shut her wild wild eyes
+With kisses four.
+
+IX
+And there she lullèd me asleep
+And there I dreamed — Ah! woe betide! —
+The latest dream I ever dreamt
+On the cold hill side.
+
+X
+I saw pale kings, and princes too,
+Pale warriors, death-pale were they all;
+They cried — ‘La Belle Dame sans Merci
+Thee hath in thrall!’
+
+XI
+I saw their starved lips in the gloam,
+With horrid warning gapèd wide,
+And I awoke and found me here,
+On the cold hill’s side.
+
+XII
+And this is why I sojourn here
+Alone and palely loitering,
+Though the sedge is withered from the lake,
+And no birds sing.
+
+## Question
 Explore how Keats presents enchantment and loss in 'La Belle Dame sans Merci'.
+
+[30 marks]
 
 ---
 
 # Topic 11: Poem at Thirty-Nine (Alice Walker)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** Walker reflects on her relationship with her deceased father, moving from grief to celebration as she recognises how his influence -- his cooking, his generosity, his writing -- has shaped the woman she has become.
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** Poem at Thirty-Nine
+**Focus Poet:** Alice Walker
+**Extract Location:** Poem at Thirty-Nine by Alice Walker
 
-## Source A
-**Title:** Poem at Thirty-Nine
-**Author:** Alice Walker
-**Context:** Walker, an African-American novelist and activist, grew up in rural Georgia under segregation. The poem draws on her experience of poverty and her father's determination that she should have an education and creative freedom despite the constraints of race and class in 1950s America.
+## Poem
+How I miss my father.
+I wish he had not been
+so tired
+when I was
+born.
 
-[TEXT TO BE ADDED -- see anthology document]
+Writing deposit slips and checks
+I think of him.
+He taught me how.
+This is the form,
+he must have said:
+the way it is done.
+I learned to see
+bits of paper as a way
+to escape the life he knew
+and even in high school
+had a savings
+account.
 
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
+He taught me
+that telling the truth
+did not always mean
+a beating;
+though many of my truths
+must have grieved him
+before the end.
 
+How I miss my father!
+He cooked like a person
+dancing
+in a yoga meditation
+and craved the voluptuous
+sharing
+of good food.
+
+Now I look and cook just like him:
+my brain light;
+tossing this and that
+into the pot;
+seasoning none of my life
+the same way twice; happy to feed
+whoever strays my way.
+
+He would have grown
+to admire
+the woman I’ve become:
+cooking, writing, chopping wood,
+staring into the fire.
+
+## Question
 Explore how Walker presents her relationship with her father in 'Poem at Thirty-Nine'.
+
+[30 marks]
 
 ---
 
 # Topic 12: War Photographer (Carol Ann Duffy)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** Duffy contrasts the war photographer's darkroom ritual with the horrors he has witnessed, exposing the uncomfortable gap between the suffering captured in conflict zones and the indifference of readers at home who view the images over Sunday supplements.
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** War Photographer
+**Focus Poet:** Carol Ann Duffy
+**Extract Location:** War Photographer by Carol Ann Duffy
 
-## Source A
-**Title:** War Photographer
-**Author:** Carol Ann Duffy
-**Context:** Inspired by Duffy's friendship with war photographers including Don McCullin, the poem explores the moral burden of documenting suffering. It raises questions about complicity, compassion fatigue, and the role of media in shaping public response to conflict.
+## Poem
+In his darkroom he is finally alone
+with spools of suffering set out in ordered rows.
+The only light is red and softly glows,
+as though this were a church and he
+a priest preparing to intone a Mass.
+Belfast. Beirut. Phnom Penh. All flesh is grass.
 
-[TEXT TO BE ADDED -- see anthology document]
+He has a job to do. Solutions slop in trays
+beneath his hands, which did not tremble then
+though seem to now. Rural England. Home again
+to ordinary pain which simple weather can dispel,
+to fields which don’t explode beneath the feet
+of running children in a nightmare heat.
 
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
+Something is happening. A stranger’s features
+faintly start to twist before his eyes,
+a half-formed ghost. He remembers the cries
+of this man’s wife, how he sought approval
+without words to do what someone must
+and how the blood stained into foreign dust.
 
+A hundred agonies in black and white
+from which his editor will pick out five or six
+for Sunday’s supplement. The reader’s eyeballs prick
+with tears between the bath and pre-lunch beers.
+From the aeroplane he stares impassively at where
+he earns his living and they do not care.
+
+## Question
 Explore how Duffy presents the tension between suffering and indifference in 'War Photographer'.
+
+[30 marks]
 
 ---
 
 # Topic 13: The Tyger (William Blake)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** Blake's iconic poem from *Songs of Experience* uses the image of a fearsome tiger to interrogate the nature of creation, asking how the same God who made the gentle lamb could also forge a creature of such terrifying power and symmetry.
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** The Tyger
+**Focus Poet:** William Blake
+**Extract Location:** The Tyger by William Blake
 
-## Source A
-**Title:** The Tyger
-**Author:** William Blake
-**Context:** Published in *Songs of Experience* (1794), this poem is a companion piece to 'The Lamb' from *Songs of Innocence*. Blake, a radical Romantic, uses the tiger to challenge Enlightenment rationalism and explore the duality of creation -- beauty and terror, innocence and experience.
+## Poem
+Tyger, Tyger, burning bright,
+In the forests of the night:
+What immortal hand or eye,
+Could frame thy fearful symmetry?
 
-[TEXT TO BE ADDED -- see anthology document]
+In what distant deeps or skies
+Burnt the fire of thine eyes?
+On what wings dare he aspire?
+What the hand dare seize the fire?
 
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
+And what shoulder, & what art,
+Could twist the sinews of thy heart?
+And when thy heart began to beat,
+What dread hand? & what dread feet?
 
+What the hammer? what the chain,
+In what furnace was thy brain?
+What the anvil? what dread grasp
+Dare its deadly terrors clasp!
+
+When the stars threw down their spears
+And water'd heaven with their tears:
+Did he smile his work to see?
+Did he who made the Lamb make thee?
+
+Tyger, Tyger burning bright,
+In the forests of the night:
+What immortal hand or eye,
+Dare frame thy fearful symmetry?
+
+## Question
 Explore how Blake presents the power and mystery of creation in 'The Tyger'.
+
+[30 marks]
 
 ---
 
 # Topic 14: My Last Duchess (Robert Browning)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** Browning's dramatic monologue reveals the chilling psychology of a Renaissance duke who has had his wife killed for smiling too freely, using the gap between the speaker's controlled rhetoric and the horror of what he describes to expose the violence of patriarchal possessiveness.
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** My Last Duchess
+**Focus Poet:** Robert Browning
+**Extract Location:** My Last Duchess by Robert Browning
 
-## Source A
-**Title:** My Last Duchess
-**Author:** Robert Browning
-**Context:** Published in 1842, the poem is based on Alfonso II, Duke of Ferrara, whose first wife Lucrezia de' Medici died in suspicious circumstances in 1561. Browning uses the historical setting to explore Victorian anxieties about power, gender, and the commodification of women.
+## Poem
+Ferrara
 
-[TEXT TO BE ADDED -- see anthology document]
+That’s my last Duchess painted on the wall,
+Looking as if she were alive. I call
+That piece a wonder, now: Frà Pandolf’s hands
+Worked busily a day, and there she stands.
+Will't please you sit and look at her? I said
+‘Frà Pandolf’ by design, for never read
+Strangers like you that pictured countenance,
+The depth and passion of its earnest glance,
+But to myself they turned (since none puts by
+The curtain I have drawn for you, but I)
+And seemed as they would ask me, if they durst,
+How such a glance came there; so, not the first
+Are you to turn and ask thus. Sir, ’twas not
+Her husband’s presence only, called that spot
+Of joy into the Duchess’ cheek: perhaps
+Frà Pandolf chanced to say, ‘Her mantle laps
+Over my lady’s wrist too much,' or ‘Paint
+Must never hope to reproduce the faint
+Half-flush that dies along her throat’: such stuff
+Was courtesy, she thought, and cause enough
+For calling up that spot of joy. She had
+A heart – how shall I say? – too soon made glad,
+Too easily impressed; she liked whate’er
+She looked on, and her looks went everywhere.
+Sir, ’twas all one! My favour at her breast,
+The dropping of the daylight in the West,
+The bough of cherries some officious fool
+Broke in the orchard for her, the white mule
+She rode with round the terrace – all and each
+Would draw from her alike the approving speech,
+Or blush, at least. She thanked men, – good! but thanked
+Somehow – I know not how – as if she ranked
+My gift of a nine-hundred-years-old name
+With anybody’s gift. Who’d stoop to blame
+This sort of trifling? Even had you skill
+In speech – (which I have not) – to make your will
+Quite clear to such an one, and say, ‘Just this
+Or that in you disgusts me; here you miss,
+Or there exceed the mark’ – and if she let
+Herself be lessoned so, nor plainly set
+Her wits to yours, forsooth, and made excuse,
+– E’en then would be some stooping; and I choose
+Never to stoop. Oh sir, she smiled, no doubt,
+Whene’er I passed her; but who passed without
+Much the same smile? This grew; I gave commands;
+Then all smiles stopped together. There she stands
+As if alive. Will't please you rise? We’ll meet
+The company below, then. I repeat,
+The Count your master’s known munificence
+Is ample warrant that no just pretence
+Of mine for dowry will be disallowed;
+Though his fair daughter’s self, as I avowed
+At starting, is my object. Nay, we’ll go
+Together down, sir. Notice Neptune, though,
+Taming a sea-horse, thought a rarity,
+Which Claus of Innsbruck cast in bronze for me!
 
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
-
+## Question
 Explore how Browning presents power and control in 'My Last Duchess'.
+
+[30 marks]
 
 ---
 
 # Topic 15: Half-caste (John Agard)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** Agard uses humour, Caribbean dialect, and absurdist logic to dismantle the offensive term "half-caste," arguing that if mixed heritage makes someone incomplete, then Picasso's art and Tchaikovsky's music must also be "half" works -- exposing the absurdity of racial categorisation.
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** Half-caste
+**Focus Poet:** John Agard
+**Extract Location:** Half-caste by John Agard
 
-## Source A
-**Title:** Half-caste
-**Author:** John Agard
-**Context:** Agard was born in Guyana and moved to England in 1977. The poem responds directly to the racial prejudice he experienced in Britain, using the derogatory term "half-caste" as a springboard for a witty, confrontational challenge to the language of racism and cultural superiority.
+## Poem
+Excuse me
+standing on one leg
+I’m half-caste
 
-[TEXT TO BE ADDED -- see anthology document]
+Explain yuself
+wha yu mean
+when yu say half-caste
+yu mean when picasso
+mix red an green
+is a half-caste canvas/
+explain yuself
+wha yu mean
+when yu say half-caste
+yu mean when light an shadow
+mix in de sky
+is a half-caste weather/
+well in dat case
+england weather
+nearly always half-caste
+in fact some o dem cloud
+half-caste till dem overcast
+so spiteful dem dont want de sun pass
+ah rass/
+explain yuself
+wha yu mean
+when yu say half-caste
+yu mean when tchaikovsky
+sit down at dah piano
+an mix a black key
+wid a white key
+is a half-caste symphony/
 
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
+Explain yuself
+wha yu mean
+Ah listening to yu wid de
+keen half of mih ear
+Ah lookin at yu wid de keen
+half of mih eye
+and when I’m introduced to yu
+I’m sure you’ll understand
+why I offer yu half-a-hand
+an when I sleep at night
+I close half-a-eye
+consequently when I dream
+I dream half-a-dream
+an when moon begin to glow
+I half-caste human being
+cast half-a-shadow
+but yu must come back tomorrow
+wid de whole of yu eye
+an de whole of yu ear
+an de whole of yu mind
 
+an I will tell yu
+de other half
+of my story
+
+## Question
 Explore how Agard challenges prejudice and racial language in 'Half-caste'.
+
+[30 marks]
 
 ---
 
 # Topic 16: Do not go gentle into that good night (Dylan Thomas)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** Thomas's villanelle is a passionate plea to his dying father to resist death, using the rigid, repetitive form to enact the speaker's desperate refusal to accept mortality while the repeated refrains build in emotional intensity.
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** Do not go gentle into that good night
+**Focus Poet:** Dylan Thomas
+**Extract Location:** Do not go gentle into that good night by Dylan Thomas
 
-## Source A
-**Title:** Do not go gentle into that good night
-**Author:** Dylan Thomas
-**Context:** Written in 1947 and published in 1951, the poem was addressed to Thomas's father, D. J. Thomas, a retired English teacher who was losing his sight and health. The villanelle form -- with its obsessive repetitions -- mirrors the son's refusal to accept his father's decline.
+## Poem
+Do not go gentle into that good night,
+Old age should burn and rave at close of day;
+Rage, rage against the dying of the light.
 
-[TEXT TO BE ADDED -- see anthology document]
+Though wise men at their end know dark is right,
+Because their words had forked no lightning they
+Do not go gentle into that good night.
 
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
+Good men, the last wave by, crying how bright
+Their frail deeds might have danced in a green bay,
+Rage, rage against the dying of the light.
 
+Wild men who caught and sang the sun in flight,
+And learn, too late, they grieved it on its way,
+Do not go gentle into that good night.
+
+Grave men, near death, who see with blinding sight
+Blind eyes could blaze like meteors and be gay,
+Rage, rage against the dying of the light.
+
+And you, my father, there on the sad height,
+Curse, bless, me now with your fierce tears, I pray.
+Do not go gentle into that good night.
+Rage, rage against the dying of the light.
+
+## Question
 Explore how Thomas presents resistance to death in 'Do not go gentle into that good night'.
+
+[30 marks]
 
 ---
 
 # Topic 17: Remember (Christina Rossetti)
-**Type:** single
-**Format:** single
+**Type:** poetry_named
 **Teaching Point:** Rossetti's Petrarchan sonnet moves from the speaker's urgent plea to be remembered after death to a selfless reversal in the sestet, where she concedes that it is better to "forget and smile" than to "remember and be sad" -- a shift that redefines love as letting go.
-**Marks:** 20
-**AOs:** AO1, AO2, AO3, AO4
+**Marks:** 30
+**AOs:** AO1,AO2,AO4
+**Focus Poem:** Remember
+**Focus Poet:** Christina Rossetti
+**Extract Location:** Remember by Christina Rossetti
 
-## Source A
-**Title:** Remember
-**Author:** Christina Rossetti
-**Context:** Written in 1849 when Rossetti was just 19, the poem reflects the Victorian preoccupation with death and mourning. As a devout Anglican, Rossetti's faith shapes the poem's movement from earthly attachment to a more generous, spiritually mature acceptance of loss.
+## Poem
+Remember me when I am gone away,
+Gone far away into the silent land;
+When you can no more hold me by the hand,
+Nor I half turn to go yet turning stay.
+Remember me when no more day by day
+You tell me of our future that you planned:
+Only remember me; you understand
+It will be late to counsel then or pray.
+Yet if you should forget me for a while
+And afterwards remember, do not grieve:
+For if the darkness and corruption leave
+A vestige of the thoughts that once I had,
+Better by far you should forget and smile
+Than that you should remember and be sad.
 
-[TEXT TO BE ADDED -- see anthology document]
-
-## Q1
-**Marks:** 20 (AO1 5 + AO2 5 + AO3 5 + AO4 5)
-**AOs:** AO1, AO2, AO3, AO4
-
+## Question
 Explore how Rossetti presents ideas about love, loss, and memory in 'Remember'.
+
+[30 marks]
+
+---
+
