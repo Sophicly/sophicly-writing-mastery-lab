@@ -11,22 +11,22 @@ Types: MCQ · Fill · True-False · Select All
 ### Quiz: Conflict Poetry
 
 1. **Type: MCQ [Tests Identifying Form]**
-   * **Question:** What form does Brooke use for "The Soldier"?
-   * **Options:** A) A sonnet, B) A ballad, C) Free verse, D) A villanelle
+   * **Question:** "The Man He Killed" by Hardy takes which form?
+   * **Options:** A) A dramatic monologue, B) A sonnet, C) An epic, D) A villanelle
    * **Correct:** A
-   * **Feedback:** ✓ Correct. "The Soldier" is a sonnet, its dignified form giving weight to a patriotic, elegiac vision of sacrifice.
-   * **Why B:** A ballad is a narrative song form, unlike this fourteen-line poem.
-   * **Why C:** It keeps sonnet length and rhyme, so it is not free verse.
-   * **Why D:** A villanelle uses strict refrains, which this poem does not.
+   * **Feedback:** ✓ Correct. An ordinary soldier speaks, and through his conversational voice the poem exposes the absurdity of killing a man he might have befriended.
+   * **Why B:** It is a short personal speech, not a fourteen-line sonnet.
+   * **Why C:** It is not a long heroic epic.
+   * **Why D:** It has no villanelle refrains.
 
 2. **Type: MCQ [Tests Identifying Form]**
-   * **Question:** "Anthem for Doomed Youth" by Owen is written in which form?
-   * **Options:** A) A sonnet, B) A ballad, C) An ode, D) Free verse
+   * **Question:** "next to of course god america i" by cummings is built, unusually, on which fourteen-line form?
+   * **Options:** A) A sonnet, used satirically, B) A ballad, C) An ode, D) A villanelle
    * **Correct:** A
-   * **Feedback:** ✓ Correct. Owen uses the sonnet as an elegy, its ordered form ironically framing the ceremony and mourning denied to the war dead.
-   * **Why B:** It is a fourteen-line elegy, not a narrative ballad.
-   * **Why C:** An ode praises; this poem mourns within a sonnet.
-   * **Why D:** It keeps sonnet form, so it is not free verse.
+   * **Feedback:** ✓ Correct. cummings uses a fourteen-line sonnet, but crams it with a breathless, cliché-stuffed speech to satirise empty patriotic rhetoric.
+   * **Why B:** It is a fourteen-line sonnet, not a narrative ballad.
+   * **Why C:** An ode praises sincerely; this poem mocks hollow patriotism.
+   * **Why D:** A villanelle uses strict refrains, which this poem does not.
 
 3. **Type: MCQ [Tests Identifying Form]**
    * **Question:** "The Charge of the Light Brigade" by Tennyson is best described as...
@@ -50,13 +50,12 @@ Types: MCQ · Fill · True-False · Select All
    * **WhyWrong:** The word is "anapestic" — the galloping anapestic rhythm that carries the narrative forward.
 
 6. **Type: Select All [Tests Identifying Form]**
-   * **Question:** Which of these OCR Conflict poems are sonnets?
-   * **Options:** A) The Soldier (Brooke), B) Anthem for Doomed Youth (Owen), C) The Charge of the Light Brigade (Tennyson), D) Mametz Wood (Sheers)
-   * **Correct:** A, B
-   * **Scoring:** 2 marks for A,B. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. The Soldier and Anthem for Doomed Youth are both sonnets, using the form for patriotic and elegiac war poetry.
-   * **Why C:** The Charge of the Light Brigade is a driving narrative poem, not a sonnet.
-   * **Why D:** Mametz Wood is free verse, not a sonnet.
+   * **Question:** Which of these OCR Conflict poems are narrative poems that tell a story?
+   * **Options:** A) The Destruction of Sennacherib (Byron), B) The Charge of the Light Brigade (Tennyson), C) Come On, Come Back (Stevie Smith), D) Mametz Wood (Sheers)
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
+   * **Feedback:** ✓ Correct. Sennacherib, The Charge of the Light Brigade and Come On, Come Back all tell stories, relating events in sequence.
+   * **Why D:** Mametz Wood is a reflective free-verse meditation on remains, not a story-telling narrative.
 
 7. **Type: MCQ [Tests Form Features]**
    * **Question:** How many lines does a sonnet have, and what does it usually feature?
@@ -89,13 +88,13 @@ Types: MCQ · Fill · True-False · Select All
    * **WhyWrong:** The word is "volta" — the turning point within a sonnet.
 
 11. **Type: MCQ [Tests Form Effects]**
-   * **Question:** What is the effect of Owen's use of the sonnet in "Anthem for Doomed Youth"?
-   * **Options:** A) It makes the poem cheerful, B) The dignified form works as an ironic elegy, mourning soldiers denied proper funeral rites, C) It tells a fast adventure, D) It hides the subject
+   * **Question:** Why does cummings cram a breathless, cliché-filled speech into the sonnet form of "next to of course god america i"?
+   * **Options:** A) To sincerely praise his country, B) To satirise empty, second-hand patriotic rhetoric by stuffing the dignified form with hollow phrases, C) To tell a love story, D) To describe a landscape
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The sonnet's solemn order clashes with the chaos of war, sharpening the grief for the young men mourned without ceremony.
-   * **Why A:** The poem is a solemn elegy, not cheerful.
-   * **Why C:** It mourns rather than telling an adventure.
-   * **Why D:** The form frames and heightens the subject.
+   * **Feedback:** ✓ Correct. Forcing tired patriotic clichés into the noble sonnet form exposes how meaningless and rehearsed such rhetoric has become.
+   * **Why A:** The poem mocks such rhetoric rather than sincerely praising the country.
+   * **Why C:** It satirises patriotism, not a love story.
+   * **Why D:** It targets political speech, not a landscape.
 
 12. **Type: MCQ [Tests Form Effects]**
    * **Question:** How does the driving rhythm of "The Charge of the Light Brigade" affect the reader?
@@ -119,45 +118,45 @@ Types: MCQ · Fill · True-False · Select All
    * **WhyWrong:** The word is "narrative" — a narrative poem tells a story.
 
 15. **Type: MCQ [Tests Form & Meaning]**
-   * **Question:** How does the sonnet form serve the meaning of "The Soldier"?
-   * **Options:** A) Its dignified, ordered form suits a patriotic, elegiac vision of noble sacrifice, B) It tells a comic story, C) It rejects all structure, D) It mocks the soldier
+   * **Question:** How does the mixed lyric-and-narrative form of "Dulce et Decorum Est" serve its meaning?
+   * **Options:** A) It tells the horror of a gas attack while voicing bitter feeling, exposing the "old Lie" that dying for one's country is sweet, B) It praises a season, C) It celebrates a victory, D) It tells a fairy tale
    * **Correct:** A
-   * **Feedback:** ✓ Correct. The sonnet's dignity lends weight and idealism to Brooke's patriotic view of dying for one's country.
-   * **Why B:** It is a solemn, patriotic poem, not comic.
-   * **Why C:** It uses the tight sonnet structure, not rejecting form.
-   * **Why D:** It idealises the soldier rather than mocking him.
-
-16. **Type: MCQ [Tests Form & Meaning]**
-   * **Question:** Owen's "Dulce et Decorum Est" mixes lyric and narrative. How does this serve the poem?
-   * **Options:** A) It tells the horror of a gas attack while voicing bitter personal feeling, exposing the lie that dying for one's country is sweet, B) It praises a season, C) It celebrates victory, D) It tells a fairy tale
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. The narrative of the gas attack, charged with lyric anger, drives home Owen's attack on the "old Lie" about glorious death.
+   * **Feedback:** ✓ Correct. The vivid narrative of the gas attack, charged with lyric anger, drives home Owen's attack on the lie of glorious death.
    * **Why B:** It concerns war's horror, not a season.
    * **Why C:** It condemns rather than celebrates war.
    * **Why D:** It relates a real horror, not a fairy tale.
 
+16. **Type: MCQ [Tests Form & Meaning]**
+   * **Question:** How does the ballad stanza of "A Wife in London" by Hardy shape the poem?
+   * **Options:** A) Its narrative, song-like stanzas tell, with cruel irony, of a wife learning of her husband's death just before his hopeful letter arrives, B) It argues a legal case, C) It praises a monarch, D) It tells a comic joke
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. The ballad stanzas carry the bitter two-part story — the death-news, then the too-late letter — sharpening the tragic irony.
+   * **Why B:** It tells a personal tragedy, not a legal case.
+   * **Why C:** It mourns a private loss, not praising a monarch.
+   * **Why D:** Its irony is tragic, not comic.
+
 17. **Type: Select All [Tests Form & Meaning]**
    * **Question:** Which of these correctly link a poem's form to its meaning?
-   * **Options:** A) The Soldier uses the sonnet for a dignified, patriotic elegy, B) The Charge of the Light Brigade uses driving narrative rhythm to memorialise heroism, C) Mametz Wood uses free verse for quiet reflection on the dead, D) Anthem for Doomed Youth uses a comic ballad to mock soldiers
+   * **Options:** A) next to of course god america i uses the sonnet satirically to mock hollow patriotism, B) The Charge of the Light Brigade uses driving narrative rhythm to memorialise heroism, C) Mametz Wood uses free verse for quiet reflection on the dead, D) The Man He Killed uses a joyful ode to celebrate war
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Sonnet-as-elegy, narrative-as-memorial and free-verse-as-reflection all show form serving meaning.
-   * **Why D:** Anthem for Doomed Youth is a solemn sonnet elegy, not a comic ballad mocking soldiers.
+   * **Feedback:** ✓ Correct. Satirical sonnet, memorialising narrative and reflective free verse all show form serving meaning.
+   * **Why D:** The Man He Killed is a dramatic monologue exposing war's absurdity, not a joyful ode celebrating it.
 
 18. **Type: True-False [Tests Form & Meaning]**
-   * **Question:** Both "The Soldier" and "Anthem for Doomed Youth" use the sonnet, but to very different ends — one patriotic, one bitterly elegiac.
+   * **Question:** In "Bayonet Charge", the fragmented, broken form reflects the chaos of battle and the collapse of heroic ideals.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. The same form serves opposite visions: Brooke's idealised sacrifice and Owen's grief at wasted young lives.
-   * **WhyWrong:** This is true — both are sonnets, yet one is patriotic and the other a bitter elegy, showing how form can serve different meanings.
+   * **Feedback:** ✓ Correct. Hughes opens with epic conventions then fractures them, the disorienting form mirroring panic and the failure of glorious heroism.
+   * **WhyWrong:** This is true — the broken form mirrors the chaos of combat and the breakdown of the heroic ideal.
 
 19. **Type: MCQ [Tests Form & Meaning]**
-   * **Question:** What does the lyric form of "Vergissmeinnicht" (Forget-me-not) by Douglas help convey?
-   * **Options:** A) The personal, human toll of war, seen in a dead soldier and his sweetheart's photo, B) A heroic cavalry charge, C) A comic misunderstanding, D) A political rally
+   * **Question:** What does the reflective lyric form of "The Falling Leaves" by Cole help convey?
+   * **Options:** A) Grief at the mass death of young soldiers, likened to leaves falling, B) A heroic cavalry charge, C) A comic misunderstanding, D) A political rally
    * **Correct:** A
-   * **Feedback:** ✓ Correct. The reflective lyric focuses on one dead enemy soldier and the girl who loved him, revealing war's intimate human cost.
-   * **Why B:** It dwells on a single death, not a charge.
-   * **Why C:** The tone is sombre and reflective, not comic.
-   * **Why D:** It is a personal reflection, not a rally.
+   * **Feedback:** ✓ Correct. The quiet lyric uses the image of leaves silently falling to mourn the vast, unglorified loss of young lives in war.
+   * **Why B:** It mourns mass death, not narrating a charge.
+   * **Why C:** The tone is elegiac, not comic.
+   * **Why D:** It is a private reflection, not a rally.
 
 20. **Type: Fill [Tests Form & Meaning]**
    * **Question:** "The Charge of the Light Brigade" is a [BLANK] poem whose driving rhythm memorialises the doomed cavalry charge.

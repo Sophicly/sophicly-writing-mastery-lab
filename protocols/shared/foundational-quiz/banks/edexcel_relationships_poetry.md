@@ -44,17 +44,17 @@ Types: MCQ · Fill · True-False · Select All
    * **WhyWrong:** Both do use free verse, giving them a modern, personal, unconstrained voice.
 
 5. **Type: Fill [Tests Identifying Form]**
-   * **Question:** "Ghazal" by Dharker is written in the traditional [BLANK] form, using couplets and a refrain to express longing.
-   * **Answer:** ghazal
-   * **Feedback:** ✓ Correct. The ghazal, a traditional form of couplets with a recurring refrain, carries themes of love and longing.
-   * **WhyWrong:** The word is "ghazal" — the traditional couplet-and-refrain form the poem takes and is named for.
+   * **Question:** "She Walks in Beauty" by Byron is a romantic [BLANK] — a short, musical poem of personal feeling celebrating beauty.
+   * **Answer:** lyric
+   * **Feedback:** ✓ Correct. The smooth, musical lyric form matches Byron's harmonious praise of his subject's beauty.
+   * **WhyWrong:** The word is "lyric" — a romantic lyric, its musical flow suiting the celebration of beauty.
 
 6. **Type: Select All [Tests Identifying Form]**
    * **Question:** Which of these Relationships poems are written in free verse?
-   * **Options:** A) The Manhunt (Armitage), B) Quickdraw (Duffy), C) Singh Song! (Nagra), D) Sonnet 43 (Barrett Browning)
+   * **Options:** A) The Manhunt (Armitage), B) i wanna be yours (Cooper Clarke), C) Valentine (Duffy), D) Sonnet 43 (Barrett Browning)
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. The Manhunt, Quickdraw and Singh Song! all use free verse, suiting intimacy, extended metaphor and playful voice.
+   * **Feedback:** ✓ Correct. The Manhunt, i wanna be yours and Valentine all use free verse, suiting intimacy, contemporary voice and fresh imagery.
    * **Why D:** Sonnet 43 is a Petrarchan sonnet, not free verse.
 
 7. **Type: MCQ [Tests Form Features]**
@@ -128,7 +128,7 @@ Types: MCQ · Fill · True-False · Select All
 
 16. **Type: MCQ [Tests Form & Meaning]**
    * **Question:** How does the free verse of "The Manhunt" suit its subject?
-   * **Options:** A) Its loose, intimate couplets trace the slow, tender search into a wounded partner's scars, B) It tells a heroic battle narrative, C) It argues a legal case, D) It celebrates a military victory
+   * **Options:** A) Its loose, intimate form traces the slow, tender search into a wounded partner's scars, B) It tells a heroic battle narrative, C) It argues a legal case, D) It celebrates a military victory
    * **Correct:** A
    * **Feedback:** ✓ Correct. The gentle, fragmentary free verse mirrors the patient, intimate process of trying to reach and heal a partner damaged by war.
    * **Why B:** It is an intimate poem of care, not a battle narrative.
@@ -144,10 +144,10 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** Nettles is a lyric about a parent's protective anger, not a villanelle celebrating a wedding.
 
 18. **Type: True-False [Tests Form & Meaning]**
-   * **Question:** "She Walks in Beauty" is a romantic lyric whose musical, flowing language celebrates a woman's beauty.
+   * **Question:** "Neutral Tones" by Hardy is a reflective lyric in regular quatrains, its measured form suiting disillusionment with love.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. The smooth, musical lyric form matches Byron's harmonious praise of his subject's beauty.
-   * **WhyWrong:** This is true — the melodic romantic lyric suits the poem's celebration of beauty.
+   * **Feedback:** ✓ Correct. The controlled, grey quatrains match Hardy's bleak reflection on a love that has faded.
+   * **WhyWrong:** This is true — the reflective lyric in quatrains suits the poem's melancholic disillusionment.
 
 19. **Type: MCQ [Tests Form & Meaning]**
    * **Question:** What does the reflective lyric form of "One Flesh" by Jennings convey?
