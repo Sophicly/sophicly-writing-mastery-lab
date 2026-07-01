@@ -18540,6 +18540,10 @@
             // prompt/label edits (and the 15→12 restructure) reach existing projects without
             // starting a new one. See migrateCwStep1Questions for the two cases.
             _migrateStep('migrateCwStep1Questions', () => migrateCwStep1Questions(cwStepDef));
+            // v7.19.792: RETROFILL — back-fill the focus poem into poetry docs started before
+            // the poem shipped in the topic template. Async (own topic fetch + persistence),
+            // fire-and-forget; capability-gated + idempotent (see migratePoetryFocusPoem).
+            try { migratePoetryFocusPoem(); } catch (_) {}
             // v7.19.136 instrumentation — final migrate-chain doc size
             try { console.log('[WML load-debug v7.19.136] migrate chain END', { docSize: canvasEditor.getHTML().length, delta: canvasEditor.getHTML().length - _preMigrateSize }); } catch (_) {}
             // Inject cover image if missing from loaded document
@@ -28435,6 +28439,100 @@
         }
     }
 
+    // v7.19.792: RETROFILL heal — poetry topics now ship the named focus poem in the topic
+    // template's extract_text (v7.19.790/791), so a FRESH topic-start prints the poem in the
+    // "Question & Extract" section. But docs that students STARTED before that shipped hold
+    // only the question — no poem. Data fixes only touch new writes, so back-fill on load:
+    // if this doc's single-format "Question & Extract" section has no Extract yet AND the topic
+    // bank now carries extract_text, inject the poem line-break-safe (split on \n, exact shape
+    // of buildQuestionSection) into that section and persist. Capability-gated (acts only when
+    // a "Question & Extract" section exists AND the topic has extract_text) — never keys on a
+    // task name, so it covers L&R + P&C now and every future anthology. Idempotent: no-op once
+    // an Extract heading is present. Async (topic fetch) — fired after the sync migrate chain.
+    async function migratePoetryFocusPoem() {
+        if (!canvasEditor || !canvasEditor.state) return;
+        // Locate a single-format "Question & Extract" section (poetry/prose diagnostic + redraft).
+        // Dual-format ("Question & Extract — Part A") and non-essay docs (mark_scheme / CW /
+        // exam_question / conceptual_notes / multi-Q) carry no such section → naturally skipped,
+        // and no topic fetch fires for them.
+        let hasExtract = false;
+        let found = false;
+        canvasEditor.state.doc.descendants((node) => {
+            if (found) return false;
+            if (node.type.name === 'sectionBlock'
+                && node.attrs.sectionType === 'question'
+                && (node.attrs.label || '') === 'Question & Extract') {
+                found = true;
+                node.descendants((c) => {
+                    if (c.type.name === 'heading' && /^\s*Extract\s*$/i.test(c.textContent || '')) hasExtract = true;
+                });
+                return false;
+            }
+        });
+        if (!found) return;      // no Question & Extract section on this doc
+        if (hasExtract) return;  // already back-filled / prose extract already present → idempotent no-op
+
+        // Topic bank must now carry the poem. If empty, this topic genuinely has no extract
+        // (e.g. a no-extract question) → leave the section as-is.
+        let td = null;
+        try { td = await fetchTopicData(); } catch (e) { return; }
+        if (!td) return;
+        if (!canvasEditor || !canvasEditor.state) return; // editor torn down during the async gap
+        const extractText = (td.extract_text || '').toString();
+        if (!extractText.trim()) return;
+        const extractLocation = (td.extract_location || '').toString();
+        const questionText = (td.question_text || '').toString();
+
+        // Re-query fresh (positions may have shifted during the async gap).
+        let freshPos = -1, freshSize = 0;
+        canvasEditor.state.doc.descendants((node, pos) => {
+            if (freshPos !== -1) return false;
+            if (node.type.name === 'sectionBlock'
+                && node.attrs.sectionType === 'question'
+                && (node.attrs.label || '') === 'Question & Extract') {
+                freshPos = pos; freshSize = node.nodeSize; return false;
+            }
+        });
+        if (freshPos === -1) return;
+
+        // Build inner content EXACTLY as buildQuestionSection does (line-break-safe): Extract h3
+        // + location + per-line <p> + Question h3 + question (bullet-aware) + marks meta. Do NOT
+        // reuse _injectQuestionIntoCanvas — its single-<p> path collapses newlines.
+        let cleanExtract = extractText;
+        if (cleanExtract.includes('&')) {
+            const dec = document.createElement('textarea');
+            dec.innerHTML = cleanExtract; cleanExtract = dec.value;
+        }
+        let inner = '<h3>Extract</h3>';
+        if (extractLocation) inner += `<p><em>${escapeHTML(extractLocation)}</em></p>`;
+        inner += cleanExtract.split('\n').map(l => `<p>${richText(l) || '&nbsp;'}</p>`).join('');
+        inner += '<h3>Question</h3>';
+        if (questionText && questionText.includes('•')) {
+            const parts = questionText.split('•').map(p => p.trim()).filter(Boolean);
+            inner += `<p>${richText(parts[0])}</p>`;
+            parts.slice(1).forEach(b => { inner += `<p>• ${richText(b)}</p>`; });
+        } else {
+            inner += `<p>${richText(questionText)}</p>`;
+        }
+        if (td.marks || td.aos) {
+            const meta = [];
+            if (td.marks) meta.push(`[${td.marks} marks]`);
+            if (td.aos) meta.push(td.aos);
+            inner += `<p><em>${meta.join(' — ')}</em></p>`;
+        }
+
+        const sectionStart = freshPos + 1;
+        const sectionEnd = freshPos + freshSize - 1;
+        _migrationActive = true;
+        try {
+            // No .focus() — a load-time heal must not scroll the canvas to this section.
+            canvasEditor.chain().setTextSelection({ from: sectionStart, to: sectionEnd })
+                .insertContent(inner).run();
+        } finally { _migrationActive = false; }
+        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+        console.log('WML Migration: poetry focus poem back-filled into Question & Extract');
+    }
+
     /**
      * v7.14.69: Migrate old plan/outline sections to InputField format.
      * Documents saved before v7.14.28 use <p><em>prompt</em></p><p>student text</p> pairs.
@@ -31125,7 +31223,7 @@ ${html}
                 const sectionStart = pos + 1;
                 const sectionEnd = pos + node.nodeSize - 1;
                 const extractHtml = extractText
-                    ? `<h3>Extract${extractLoc ? ' \u2014 ' + extractLoc.replace(/</g, '&lt;') : ''}</h3><p>${extractText.replace(/</g, '&lt;')}</p>`
+                    ? `<h3>Extract${extractLoc ? ' \u2014 ' + extractLoc.replace(/</g, '&lt;') : ''}</h3><p>${extractText.replace(/</g, '&lt;').replace(/\n/g, '<br>')}</p>`
                     : '<p><em>No extract for this question.</em></p>';
                 canvasEditor.chain().focus().setTextSelection({ from: sectionStart, to: sectionEnd })
                     .insertContent(extractHtml).run();
