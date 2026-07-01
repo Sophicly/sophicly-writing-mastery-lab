@@ -18540,9 +18540,10 @@
             // prompt/label edits (and the 15→12 restructure) reach existing projects without
             // starting a new one. See migrateCwStep1Questions for the two cases.
             _migrateStep('migrateCwStep1Questions', () => migrateCwStep1Questions(cwStepDef));
-            // v7.19.792: RETROFILL — back-fill the focus poem into poetry docs started before
-            // the poem shipped in the topic template. Async (own topic fetch + persistence),
-            // fire-and-forget; capability-gated + idempotent (see migratePoetryFocusPoem).
+            // v7.19.792/793: RE-SYNC — keep the poetry doc's Question & Extract section in sync
+            // with the topic template (back-fills a missing poem; updates a stale one after a data
+            // correction). Async (own topic fetch + persistence), fire-and-forget; capability-gated
+            // + steady-state stable (see migratePoetryFocusPoem).
             try { migratePoetryFocusPoem(); } catch (_) {}
             // v7.19.136 instrumentation — final migrate-chain doc size
             try { console.log('[WML load-debug v7.19.136] migrate chain END', { docSize: canvasEditor.getHTML().length, delta: canvasEditor.getHTML().length - _preMigrateSize }); } catch (_) {}
@@ -28439,23 +28440,25 @@
         }
     }
 
-    // v7.19.792: RETROFILL heal — poetry topics now ship the named focus poem in the topic
-    // template's extract_text (v7.19.790/791), so a FRESH topic-start prints the poem in the
-    // "Question & Extract" section. But docs that students STARTED before that shipped hold
-    // only the question — no poem. Data fixes only touch new writes, so back-fill on load:
-    // if this doc's single-format "Question & Extract" section has no Extract yet AND the topic
-    // bank now carries extract_text, inject the poem line-break-safe (split on \n, exact shape
-    // of buildQuestionSection) into that section and persist. Capability-gated (acts only when
-    // a "Question & Extract" section exists AND the topic has extract_text) — never keys on a
-    // task name, so it covers L&R + P&C now and every future anthology. Idempotent: no-op once
-    // an Extract heading is present. Async (topic fetch) — fired after the sync migrate chain.
+    // v7.19.792/793: RE-SYNC heal — poetry topics now ship the named focus poem in the topic
+    // template's extract_text (v7.19.790+), so a FRESH topic-start prints the poem in the
+    // "Question & Extract" section. Two problems this fixes for EXISTING docs (data fixes only
+    // touch new writes): (a) docs students STARTED before the poem shipped hold only the question
+    // — no poem; (b) docs that already back-filled a poem before a DATA correction (stanza breaks,
+    // Dooley/Doshi, line-number cleanup) hold the stale version. The "Question & Extract" section
+    // is canonical read-only reference (never student-edited), so the robust fix is to keep it in
+    // SYNC with the topic bank: on load, compare the section's rendered extract to the current
+    // topic extract_text and rebuild it (line-break-safe, exact buildQuestionSection shape) only
+    // when they differ. Capability-gated (acts only when a single-format "Question & Extract"
+    // section exists AND the topic carries extract_text) — never keys on a task name, so it covers
+    // L&R + P&C now and every future anthology / correction. Steady-state stable (no re-write once
+    // synced). Async (topic fetch) — fired after the sync migrate chain.
     async function migratePoetryFocusPoem() {
         if (!canvasEditor || !canvasEditor.state) return;
         // Locate a single-format "Question & Extract" section (poetry/prose diagnostic + redraft).
         // Dual-format ("Question & Extract — Part A") and non-essay docs (mark_scheme / CW /
         // exam_question / conceptual_notes / multi-Q) carry no such section → naturally skipped,
         // and no topic fetch fires for them.
-        let hasExtract = false;
         let found = false;
         canvasEditor.state.doc.descendants((node) => {
             if (found) return false;
@@ -28463,14 +28466,10 @@
                 && node.attrs.sectionType === 'question'
                 && (node.attrs.label || '') === 'Question & Extract') {
                 found = true;
-                node.descendants((c) => {
-                    if (c.type.name === 'heading' && /^\s*Extract\s*$/i.test(c.textContent || '')) hasExtract = true;
-                });
                 return false;
             }
         });
         if (!found) return;      // no Question & Extract section on this doc
-        if (hasExtract) return;  // already back-filled / prose extract already present → idempotent no-op
 
         // Topic bank must now carry the poem. If empty, this topic genuinely has no extract
         // (e.g. a no-extract question) → leave the section as-is.
@@ -28483,17 +28482,41 @@
         const extractLocation = (td.extract_location || '').toString();
         const questionText = (td.question_text || '').toString();
 
-        // Re-query fresh (positions may have shifted during the async gap).
-        let freshPos = -1, freshSize = 0;
+        // Re-query fresh (positions may have shifted during the async gap); keep the node to
+        // compute the current extract signature for the sync compare.
+        let freshPos = -1, freshSize = 0, freshNode = null;
         canvasEditor.state.doc.descendants((node, pos) => {
             if (freshPos !== -1) return false;
             if (node.type.name === 'sectionBlock'
                 && node.attrs.sectionType === 'question'
                 && (node.attrs.label || '') === 'Question & Extract') {
-                freshPos = pos; freshSize = node.nodeSize; return false;
+                freshPos = pos; freshSize = node.nodeSize; freshNode = node; return false;
             }
         });
         if (freshPos === -1) return;
+
+        // ── SYNC CHECK ──────────────────────────────────────────────────────────
+        // Signature = the extract region only (location + poem lines), normalised so markdown
+        // markers (*..*/**..**), &nbsp; stanza-gaps and whitespace don't cause false diffs.
+        // Compare the doc's current section against the authoritative topic data; skip if equal.
+        const _norm = (s) => String(s || '').replace(/\*/g, '').replace(/ /g, ' ').replace(/\s+/g, ' ').trim();
+        const desiredExtractLines = [];
+        if (extractLocation) desiredExtractLines.push(_norm(extractLocation));
+        extractText.split('\n').forEach((l) => desiredExtractLines.push(_norm(l)));
+        const desiredSig = desiredExtractLines.join('\n');
+        const currentExtractLines = [];
+        let inRegion = false;
+        freshNode.descendants((c) => {
+            if (c.type.name === 'heading') {
+                const h = (c.textContent || '').trim();
+                if (/^Extract$/i.test(h)) { inRegion = true; return false; }
+                if (/^Question$/i.test(h)) { inRegion = false; return false; }
+                return false;
+            }
+            if (inRegion && c.type.name === 'paragraph') currentExtractLines.push(_norm(c.textContent));
+        });
+        const currentSig = currentExtractLines.join('\n');
+        if (currentSig === desiredSig) return; // already in sync → steady-state no-op
 
         // Build inner content EXACTLY as buildQuestionSection does (line-break-safe): Extract h3
         // + location + per-line <p> + Question h3 + question (bullet-aware) + marks meta. Do NOT
@@ -28530,7 +28553,7 @@
                 .insertContent(inner).run();
         } finally { _migrationActive = false; }
         if (typeof saveCanvasContent === 'function') saveCanvasContent();
-        console.log('WML Migration: poetry focus poem back-filled into Question & Extract');
+        console.log('WML Migration: poetry focus poem synced into Question & Extract (' + (currentSig ? 'updated' : 'back-filled') + ')');
     }
 
     /**

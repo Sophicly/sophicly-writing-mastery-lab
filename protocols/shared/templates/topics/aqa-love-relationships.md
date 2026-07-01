@@ -16,6 +16,7 @@ Pale grew thy cheek and cold,
 Colder thy kiss;
 Truly that hour foretold
 Sorrow to this.
+
 The dew of the morning
 Sunk chill on my brow –
 It felt like the warning
@@ -24,6 +25,7 @@ Thy vows are all broken,
 And light is thy fame;
 I hear thy name spoken,
 And share in its shame.
+
 They name thee before me,
 A knell in mine ear;
 A shudder comes o’er me –
@@ -32,6 +34,7 @@ They know not I knew thee,
 Who knew thee too well –
 Long, long shall I rue thee,
 Too deeply to tell.
+
 In secret we met –
 In silence I grieve,
 That thy heart could forget,
@@ -40,7 +43,6 @@ If I should meet thee
 After long years,
 How should I greet thee? –
 With silence and tears.
-
 ## Question
 Compare how poets present the pain of lost love in 'When We Two Parted' and one other poem from the Love and Relationships anthology.
 
@@ -77,6 +79,7 @@ Nothing in the world is single;
 All things by a law divine
 In one another’s being mingle –
 Why not I with thine?
+
 See the mountains kiss high Heaven
 And the waves clasp one another;
 No sister-flower would be forgiven
@@ -85,7 +88,6 @@ And the sunlight clasps the earth,
 And the moonbeams kiss the sea –
 What are all these kissings worth,
 If thou kiss not me?
-
 ## Question
 Compare how poets present desire and longing in 'Love's Philosophy' and one other poem from the Love and Relationships anthology.
 
@@ -163,7 +165,6 @@ Her darling one wish would be heard.
 And thus we sit together now,
 And all night long we have not stirred,
 And yet God has not said a word!
-
 ## Question
 Compare how poets present power and control in relationships in 'Porphyria's Lover' and one other poem from the Love and Relationships anthology.
 
@@ -195,7 +196,6 @@ Drop heavily down, – burst, shattered, everywhere!
 Because, in this deep joy to see and hear thee
 And breathe within thy shadow a new air,
 I do not think of thee – I am too near thee.
-
 ## Question
 Compare how poets present intense romantic feelings in 'Sonnet 29 — "I think of thee!"' and one other poem from the Love and Relationships anthology.
 
@@ -217,19 +217,21 @@ We stood by a pond that winter day,
 And the sun was white, as though chidden of God,
 And a few leaves lay on the starving sod;
 – They had fallen from an ash, and were grey.
+
 Your eyes on me were as eyes that rove
 Over tedious riddles of years ago;
 And some words played between us to and fro
 On which lost the more by our love.
+
 The smile on your mouth was the deadest thing
 Alive enough to have strength to die;
 And a grin of bitterness swept thereby
 Like an ominous bird a-wing…
+
 Since then, keen lessons that love deceives,
 And wrings with wrong, have shaped to me
 Your face, and the God-curst sun, and a tree,
 And a pond edged with greyish leaves.
-
 ## Question
 Compare how poets present the end of a relationship in 'Neutral Tones' and one other poem from the Love and Relationships anthology.
 
@@ -250,19 +252,22 @@ Compare how poets present the end of a relationship in 'Neutral Tones' and one o
 In February, digging his garden, planting potatoes,
 he saw the first lapwings return and came
 indoors to write to me, his knuckles singing
+
 as they reddened in the warmth.
 It’s not romance, simply how things are.
 You out there, in the cold, seeing the seasons
+
 turning, me with my heartful of headlines
 feeding words onto a blank screen.
 Is your life more real because you dig and sow?
+
 You wouldn’t say so, breaking ice on a waterbutt,
 clearing a path through snow. Still, it’s you
 who sends me word of that other world
+
 pouring air and light into an envelope. So that
 at night, watching the same news in different houses,
 our souls tap out messages across the icy miles.
-
 ## Question
 Compare how poets present the ways people maintain connections across distance in 'Letters from Yorkshire' and one other poem from the Love and Relationships anthology.
 
@@ -289,6 +294,7 @@ Like the shut of a winter’s day
 Her smile went out, and ’twasn’t a woman –
 More like a little frightened fay.
 One night, in the Fall, she runned away.
+
 ‘Out ’mong the sheep, her be,’ they said,
 Should properly have been abed;
 But sure enough she wasn’t there
@@ -299,6 +305,7 @@ Before our lanterns. To Church-Town
 All in a shiver and a scare
 We caught her, fetched her home at last
 And turned the key upon her, fast.
+
 She does the work about the house
 As well as most, but like a mouse:
 Happy enough to chat and play
@@ -309,10 +316,12 @@ When one of us comes within reach.
 The women say that beasts in stall
 Look round like children at her call.
 *I’ve* hardly heard her speak at all.
+
 Shy as a leveret, swift as he,
 Straight and slight as a young larch tree,
 Sweet as the first wild violets, she,
 To her wild self. But what to me?
+
 The short days shorten and the oaks are brown,
 The blue smoke rises to the low grey sky,
 One leaf in the still air falls slowly down,
@@ -321,12 +330,12 @@ On the black earth spread white with rime,
 The berries redden up to Christmas-time.
 What’s Christmas-time without there be
 Some other in the house than we!
+
 She sleeps up in the attic there
 Alone, poor maid. ’Tis but a stair
 Betwixt us. Oh! my God! the down,
 The soft young down of her, the brown,
 The brown of her – her eyes, her hair, her hair!
-
 ## Question
 Compare how poets present barriers within relationships in 'The Farmer's Bride' and one other poem from the Love and Relationships anthology.
 
@@ -349,22 +358,24 @@ A sunny day with leaves just turning,
 The touch-lines new-ruled – since I watched you play
 Your first game of football, then, like a satellite
 Wrenched from its orbit, go drifting away
+
 Behind a scatter of boys. I can see
 You walking away from me towards the school
 With the pathos of a half-fledged thing set free
 Into a wilderness, the gait of one
 Who finds no path where the path should be.
+
 That hesitant figure, eddying away
 Like a winged seed loosened from its parent stem,
 Has something I never quite grasp to convey
 About nature’s give-and-take – the small, the scorching
 Ordeals which fire one’s irresolute clay.
+
 I have had worse partings, but none that so
 Gnaws at my mind still. Perhaps it is roughly
 Saying what God alone could perfectly show –
 How selfhood begins with a walking away,
 And love is proved in the letting go.
-
 ## Question
 Compare how poets present the difficulty of letting go in 'Walking Away' and one other poem from the Love and Relationships anthology.
 
@@ -386,23 +397,27 @@ They are waiting for me somewhere beyond Eden Rock:
 My father, twenty-five, in the same suit
 Of Genuine Irish Tweed, his terrier Jack
 Still two years old and trembling at his feet.
+
 My mother, twenty-three, in a sprigged dress
 Drawn at the waist, ribbon in her straw hat,
 Has spread the stiff white cloth over the grass.
 Her hair, the colour of wheat, takes on the light.
+
 She pours tea from a Thermos, the milk straight
-10 From an old H.P. sauce bottle, a screw
+From an old H.P. sauce bottle, a screw
 Of paper for a cork; slowly sets out
 The same three plates, the tin cups painted blue.
+
 The sky whitens as if lit by three suns.
 My mother shades her eyes and looks my way
-15 Over the drifted stream. My father spins
+Over the drifted stream. My father spins
 A stone along the water. Leisurely,
+
 They beckon to me from the other bank.
 I hear them call, ‘See where the stream-path is!
 Crossing is not as hard as you might think.’
-20 I had not thought that it would be like this.
 
+I had not thought that it would be like this.
 ## Question
 Compare how poets present memory and the bonds between parent and child in 'Eden Rock' and one other poem from the Love and Relationships anthology.
 
@@ -424,27 +439,31 @@ My father worked with a horse-plough,
 His shoulders globed like a full sail strung
 Between the shafts and the furrow.
 The horse strained at his clicking tongue.
+
 An expert. He would set the wing
 And fit the bright steel-pointed sock.
 The sod rolled over without breaking.
 At the headrig, with a single pluck
+
 Of reins, the sweating team turned round
-10 And back into the land. His eye
+And back into the land. His eye
 Narrowed and angled at the ground,
 Mapping the furrow exactly.
+
 I stumbled in his hob-nailed wake,
 Fell sometimes on the polished sod;
-15 Sometimes he rode me on his back
+Sometimes he rode me on his back
 Dipping and rising to his plod.
+
 I wanted to grow up and plough,
 To close one eye, stiffen my arm.
 All I ever did was follow
-20 In his broad shadow round the farm.
+In his broad shadow round the farm.
+
 I was a nuisance, tripping, falling,
 Yapping always. But today
 It is my father who keeps stumbling
 Behind me, and will not go away.
-
 ## Question
 Compare how poets present admiration and changing relationships between parents and children in 'Follower' and one other poem from the Love and Relationships anthology.
 
@@ -466,18 +485,19 @@ Mother, any distance greater than a single span
 requires a second pair of hands.
 You come to help me measure windows, pelmets, doors,
 the acres of the walls, the prairies of the floors.
+
 You at the zero-end, me with the spool of tape, recording
 length, reporting metres, centimetres back to base, then leaving
 up the stairs, the line still feeding out, unreeling
 years between us. Anchor. Kite.
+
 I space-walk through the empty bedrooms, climb
-10 the ladder to the loft, to breaking point, where something
+the ladder to the loft, to breaking point, where something
 has to give;
 two floors below your fingertips still pinch
 the last one-hundredth of an inch ... I reach
 towards a hatch that opens on an endless sky
-15 to fall or fly.
-
+to fall or fly.
 ## Question
 Compare how poets present the tension between closeness and independence in 'Mother, Any Distance' and one other poem from the Love and Relationships anthology.
 
@@ -500,22 +520,24 @@ with your pals, Maggie McGeeney and Jean Duff.
 The three of you bend from the waist, holding
 each other, or your knees, and shriek at the pavement.
 Your polka-dot dress blows round your legs. Marilyn.
+
 I’m not here yet. The thought of me doesn’t occur
 in the ballroom with the thousand eyes, the fizzy, movie
 tomorrows the right walk home could bring. I knew you would dance
 like that. Before you were mine, your Ma stands at the close
-10 with a hiding for the late one. You reckon it’s worth it.
+with a hiding for the late one. You reckon it’s worth it.
+
 The decade ahead of my loud, possessive yell was the best one, eh?
 I remember my hands in those high-heeled red shoes, relics,
 and now your ghost clatters toward me over George Square
 till I see you, clear as scent, under the tree,
-15 with its lights, and whose small bites on your neck, sweetheart?
+with its lights, and whose small bites on your neck, sweetheart?
+
 *Cha cha cha!* You’d teach me the steps on the way home from Mass,
 stamping stars from the wrong pavement. Even then
 I wanted the bold girl winking in Portobello, somewhere
 in Scotland, before I was born. That glamorous love lasts
-20 where you sparkle and waltz and laugh before you were mine.
-
+where you sparkle and waltz and laugh before you were mine.
 ## Question
 Compare how poets present a child's perspective on a parent's life in 'Before You Were Mine' and one other poem from the Love and Relationships anthology.
 
@@ -536,23 +558,29 @@ Compare how poets present a child's perspective on a parent's life in 'Before Yo
 The clouds had given their all -
 two days of rain and then a break
 in which we walked,
+
 the waterlogged earth
 gulping for breath at our feet
 as we skirted the lake, silent and apart,
+
 until the swans came and stopped us
 with a show of tipping in unison.
 As if rolling weights down their bodies to their heads
-10 they halved themselves in the dark water,
+
+they halved themselves in the dark water,
 icebergs of white feather, paused before returning again
 like boats righting in rough weather.
+
 ‘They mate for life’ you said as they left,
 porcelain over the stilling water. I didn’t reply
-15 but as we moved on through the afternoon light,
-slow-stepping in the lake’s shingle and sand,
-I noticed our hands, that had, somehow, swum the distance between us
-and folded, one over the other,
-20 like a pair of wings settling after flight.
+but as we moved on through the afternoon light,
 
+slow-stepping in the lake’s shingle and sand,
+I noticed our hands, that had, somehow,
+swum the distance between us
+
+and folded, one over the other,
+like a pair of wings settling after flight.
 ## Question
 Compare how poets present the way love can survive difficulties in 'Winter Swans' and one other poem from the Love and Relationships anthology.
 
@@ -579,54 +607,61 @@ vee share in chapatti
 vee share in di chutney
 after vee hav made luv
 like vee rowing through Putney –
-10 Ven I return vid my pinnie untied
+
+Ven I return vid my pinnie untied
 di shoppers always point and cry:
 *Hey Singh, ver yoo bin?*
 *Yor lemons are limes*
 *yor bananas are plantain,*
-15 *dis dirty little floor need a little bit of mop*
+*dis dirty little floor need a little bit of mop*
 *in di worst Indian shop*
 *on di whole Indian road –*
+
 Above my head high heel tap di ground
 as my vife on di web is playing wid di mouse
-20 ven she netting two cat on her Sikh lover site
+ven she netting two cat on her Sikh lover site
 she book dem for di meat at di cheese ov her price –
+
 my bride
 she effing at my mum
 in all di colours of Punjabi
-25 den stumble like a drunk making fun at my daddy
+den stumble like a drunk making fun at my daddy
+
 my bride
 tiny eyes ov a gun
 and di tummy ov a teddy
-30 my bride
+
+my bride
 she hav a red crew cut and she wear a Tartan sari
 a donkey jacket and some pumps
 on di squeak ov di girls dat are pinching my sweeties –
-35 Ven I return from di tickle ov my bride
+
+Ven I return from di tickle ov my bride
 di shoppers always point and cry:
 *Hey Singh, ver yoo bin?*
 *Di milk is out ov date*
 *and di bread is alvays stale,*
-40 *di tings yoo hav on offer yoo hav never got in stock*
+*di tings yoo hav on offer yoo hav never got in stock*
 *in di worst Indian shop*
 *on di whole Indian road –*
+
 Late in di midnight hour
 ven yoo shoppers are wrap up quiet
-45 ven di precinct is concrete-cool
+ven di precinct is concrete-cool
 vee cum down whispering stairs
 and sit on my silver stool,
 from behind di chocolate bars
 vee stare past di half-price window signs
-50 at di beaches ov di UK in di brightey moon –
+at di beaches ov di UK in di brightey moon –
+
 from di stool each night she say,
 *How much do yoo charge for dat moon baby?*
 from di stool each night I say,
 *Is half di cost ov yoo baby,*
-55 from di stool each night she say,
+from di stool each night she say,
 *How much does dat come to baby?*
 from di stool each night I say,
 *Is priceless baby –*
-
 ## Question
 Compare how poets present love as a source of joy and identity in 'Singh Song!' and one other poem from the Love and Relationships anthology.
 
@@ -653,25 +688,24 @@ traverse along his belt
 to an earth-stained hand. The nails
 are splintered and give good purchase,
 the skin of his finger is smooth and thick
-10 like warm ice. On his arm I discover
+like warm ice. On his arm I discover
 the glassy ridge of a scar, place my feet
 gently in the old stitches and move on.
 At his still firm shoulder, I rest for a while
 in the shade, not looking down,
-15 for climbing has its dangers, then pull myself up
+for climbing has its dangers, then pull myself up
 the loose skin of his neck
 to a smiling mouth to drink among teeth.
 Refreshed, I cross the screed cheek,
 to stare into his brown eyes, watch a pupil
-20 slowly open and close. Then up over
+slowly open and close. Then up over
 the forehead, the wrinkles well-spaced
 and easy, to his thick hair (soft and white
 at this altitude), reaching for the summit,
 where gasping for breath I can only lie
-25 watching clouds and birds circle,
+watching clouds and birds circle,
 feeling his heat, knowing
 the slow pulse of his good heart.
-
 ## Question
 Compare how poets present the ways we try to understand and connect with the people we love in 'Climbing My Grandfather' and one other poem from the Love and Relationships anthology.
 
