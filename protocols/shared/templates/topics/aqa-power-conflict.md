@@ -5,7 +5,7 @@
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Ozymandias
 **Focus Poet:** Percy Bysshe Shelley
-**Extract Location:** Percy Bysshe Shelley
+**Extract Location:** Ozymandias by Percy Bysshe Shelley
 
 ## Poem
 I met a traveller from an antique land
@@ -47,7 +47,7 @@ N/A — Conceptual Notes topic.
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** London
 **Focus Poet:** William Blake
-**Extract Location:** William Blake
+**Extract Location:** London by William Blake
 
 ## Poem
 I wander through each chartered street,
@@ -83,7 +83,7 @@ Compare how poets present ideas about the effects of power on people in 'London'
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** The Prelude: Stealing the Boat
 **Focus Poet:** William Wordsworth
-**Extract Location:** William Wordsworth
+**Extract Location:** The Prelude: Stealing the Boat by William Wordsworth
 
 ## Poem
 One summer evening (led by her) I found
@@ -144,7 +144,7 @@ Compare how poets present the power of nature in 'The Prelude' and one other poe
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** My Last Duchess
 **Focus Poet:** Robert Browning
-**Extract Location:** Robert Browning
+**Extract Location:** My Last Duchess by Robert Browning
 
 ## Poem
 That’s my last Duchess painted on the wall,
@@ -217,7 +217,7 @@ Compare how poets present ideas about control and power in 'My Last Duchess' and
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** The Charge of the Light Brigade
 **Focus Poet:** Alfred Lord Tennyson
-**Extract Location:** Alfred Lord Tennyson
+**Extract Location:** The Charge of the Light Brigade by Alfred Lord Tennyson
 
 ## Poem
 Half a league, half a league,
@@ -294,7 +294,7 @@ Compare how poets present ideas about the experience of conflict in 'The Charge 
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Exposure
 **Focus Poet:** Wilfred Owen
-**Extract Location:** Wilfred Owen
+**Extract Location:** Exposure by Wilfred Owen
 
 ## Poem
 Our brains ache, in the merciless iced east winds that knive us ...
@@ -358,7 +358,7 @@ Compare how poets present the reality of conflict in 'Exposure' and one other po
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Storm on the Island
 **Focus Poet:** Seamus Heaney
-**Extract Location:** Seamus Heaney
+**Extract Location:** Storm on the Island by Seamus Heaney
 
 ## Poem
 We are prepared: we build our houses squat,
@@ -394,7 +394,7 @@ Compare how poets present the power of nature in 'Storm on the Island' and one o
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Bayonet Charge
 **Focus Poet:** Ted Hughes
-**Extract Location:** Ted Hughes
+**Extract Location:** Bayonet Charge by Ted Hughes
 
 ## Poem
 Suddenly he awoke and was running – raw
@@ -436,7 +436,7 @@ Compare how poets present fear in conflict in 'Bayonet Charge' and one other poe
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Remains
 **Focus Poet:** Simon Armitage
-**Extract Location:** Simon Armitage
+**Extract Location:** Remains by Simon Armitage
 
 ## Poem
 On another occasion, we get sent out
@@ -490,7 +490,7 @@ Compare how poets present the effects of conflict on individuals in 'Remains' an
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Poppies
 **Focus Poet:** Jane Weir
-**Extract Location:** Jane Weir
+**Extract Location:** Poppies by Jane Weir
 
 ## Poem
 Three days before Armistice Sunday
@@ -543,7 +543,7 @@ Compare how poets present loss and memory in 'Poppies' and one other poem from t
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** War Photographer
 **Focus Poet:** Carol Ann Duffy
-**Extract Location:** Carol Ann Duffy
+**Extract Location:** War Photographer by Carol Ann Duffy
 
 ## Poem
 In his darkroom he is finally alone
@@ -587,7 +587,7 @@ Compare how poets present the effects of conflict on people in 'War Photographer
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Tissue
 **Focus Poet:** Imtiaz Dharker
-**Extract Location:** Imtiaz Dharker
+**Extract Location:** Tissue by Imtiaz Dharker
 
 ## Poem
 Paper that lets the light
@@ -650,7 +650,7 @@ Compare how poets present ideas about the power of human structures in 'Tissue' 
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** The Emigree
 **Focus Poet:** Carol Rumens
-**Extract Location:** Carol Rumens
+**Extract Location:** The Emigree by Carol Rumens
 
 ## Poem
 There once was a country… I left it as a child
@@ -694,7 +694,7 @@ Compare how poets present ideas about identity and belonging in 'The Emigree' an
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Checking Out Me History
 **Focus Poet:** John Agard
-**Extract Location:** John Agard
+**Extract Location:** Checking Out Me History by John Agard
 
 ## Poem
 Dem tell me
@@ -770,7 +770,7 @@ Compare how poets present ideas about identity and power in 'Checking Out Me His
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Kamikaze
 **Focus Poet:** Beatrice Garland
-**Extract Location:** Beatrice Garland
+**Extract Location:** Kamikaze by Beatrice Garland
 
 ## Poem
 Her father embarked at sunrise

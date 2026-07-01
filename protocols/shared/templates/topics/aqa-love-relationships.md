@@ -5,7 +5,7 @@
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** When We Two Parted
 **Focus Poet:** Lord Byron
-**Extract Location:** Lord Byron
+**Extract Location:** When We Two Parted by Lord Byron
 
 ## Poem
 When we two parted
@@ -68,7 +68,7 @@ N/A — Conceptual Notes topic.
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Love's Philosophy
 **Focus Poet:** Percy Bysshe Shelley
-**Extract Location:** Percy Bysshe Shelley
+**Extract Location:** Love's Philosophy by Percy Bysshe Shelley
 
 ## Poem
 The fountains mingle with the river
@@ -102,7 +102,7 @@ Compare how poets present desire and longing in 'Love's Philosophy' and one othe
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Porphyria's Lover
 **Focus Poet:** Robert Browning
-**Extract Location:** Robert Browning
+**Extract Location:** Porphyria's Lover by Robert Browning
 
 ## Poem
 The rain set early in to-night,
@@ -179,7 +179,7 @@ Compare how poets present power and control in relationships in 'Porphyria's Lov
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Sonnet 29 — 'I think of thee!'
 **Focus Poet:** Elizabeth Barrett Browning
-**Extract Location:** Elizabeth Barrett Browning
+**Extract Location:** Sonnet 29 — 'I think of thee!' by Elizabeth Barrett Browning
 
 ## Poem
 I think of thee! – my thoughts do twine and bud
@@ -210,7 +210,7 @@ Compare how poets present intense romantic feelings in 'Sonnet 29 — "I think o
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Neutral Tones
 **Focus Poet:** Thomas Hardy
-**Extract Location:** Thomas Hardy
+**Extract Location:** Neutral Tones by Thomas Hardy
 
 ## Poem
 We stood by a pond that winter day,
@@ -246,7 +246,7 @@ Compare how poets present the end of a relationship in 'Neutral Tones' and one o
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Letters from Yorkshire
 **Focus Poet:** Maura Dooley
-**Extract Location:** Maura Dooley
+**Extract Location:** Letters from Yorkshire by Maura Dooley
 
 ## Poem
 In February, digging his garden, planting potatoes,
@@ -282,7 +282,7 @@ Compare how poets present the ways people maintain connections across distance i
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** The Farmer's Bride
 **Focus Poet:** Charlotte Mew
-**Extract Location:** Charlotte Mew
+**Extract Location:** The Farmer's Bride by Charlotte Mew
 
 ## Poem
 Three Summers since I chose a maid,
@@ -350,7 +350,7 @@ Compare how poets present barriers within relationships in 'The Farmer's Bride' 
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Walking Away
 **Focus Poet:** Cecil Day Lewis
-**Extract Location:** Cecil Day-Lewis
+**Extract Location:** Walking Away by Cecil Day Lewis
 
 ## Poem
 It is eighteen years ago, almost to the day –
@@ -390,7 +390,7 @@ Compare how poets present the difficulty of letting go in 'Walking Away' and one
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Eden Rock
 **Focus Poet:** Charles Causley
-**Extract Location:** Charles Causley
+**Extract Location:** Eden Rock by Charles Causley
 
 ## Poem
 They are waiting for me somewhere beyond Eden Rock:
@@ -432,7 +432,7 @@ Compare how poets present memory and the bonds between parent and child in 'Eden
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Follower
 **Focus Poet:** Seamus Heaney
-**Extract Location:** Seamus Heaney
+**Extract Location:** Follower by Seamus Heaney
 
 ## Poem
 My father worked with a horse-plough,
@@ -478,7 +478,7 @@ Compare how poets present admiration and changing relationships between parents 
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Mother Any Distance
 **Focus Poet:** Simon Armitage
-**Extract Location:** Simon Armitage
+**Extract Location:** Mother Any Distance by Simon Armitage
 
 ## Poem
 Mother, any distance greater than a single span
@@ -512,7 +512,7 @@ Compare how poets present the tension between closeness and independence in 'Mot
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Before You Were Mine
 **Focus Poet:** Carol Ann Duffy
-**Extract Location:** Carol Ann Duffy
+**Extract Location:** Before You Were Mine by Carol Ann Duffy
 
 ## Poem
 I’m ten years away from the corner you laugh on
@@ -552,7 +552,7 @@ Compare how poets present a child's perspective on a parent's life in 'Before Yo
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Winter Swans
 **Focus Poet:** Owen Sheers
-**Extract Location:** Owen Sheers
+**Extract Location:** Winter Swans by Owen Sheers
 
 ## Poem
 The clouds had given their all -
@@ -595,7 +595,7 @@ Compare how poets present the way love can survive difficulties in 'Winter Swans
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Singh Song!
 **Focus Poet:** Daljit Nagra
-**Extract Location:** Daljit Nagra
+**Extract Location:** Singh Song! by Daljit Nagra
 
 ## Poem
 I run just one ov my daddy’s shops
@@ -682,7 +682,7 @@ Compare how poets present love as a source of joy and identity in 'Singh Song!' 
 **AOs:** AO1,AO2,AO3
 **Focus Poem:** Climbing My Grandfather
 **Focus Poet:** Andrew Waterhouse
-**Extract Location:** Andrew Waterhouse
+**Extract Location:** Climbing My Grandfather by Andrew Waterhouse
 
 ## Poem
 I decide to do it free, without a rope or net.
