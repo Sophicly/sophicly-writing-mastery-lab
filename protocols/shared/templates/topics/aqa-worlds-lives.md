@@ -1,13 +1,44 @@
-# Topic 1: The Emigree
+# Topic 1: Lines Written in Early Spring
 **Type:** poetry_named
-**Teaching Point:** The Emigree by Carol Rumens explores the speaker's idealised memory of a homeland left behind, presenting it as a city of perpetual sunlight despite political darkness. Students should analyse how Rumens uses the personification of the city as a lover, the contrast between the threatening present and the luminous past, and the defiant final stanza to explore how memory resists political oppression. The poem raises questions about whether nostalgia distorts or preserves truth.
+**Teaching Point:** Wordsworth contrasts the harmony and joy of the natural world with the cruelty humanity inflicts on itself. Writing in simple ballad quatrains, he presents nature as a moral teacher whose 'holy plan' shames 'what man has made of man'. Students should analyse how the gentle imagery of flowers and birds sharpens the poem's quiet political anger.
 **Marks:** 30
 **AOs:** AO1,AO2,AO3
-**Focus Poem:** The Emigree
-**Focus Poet:** Carol Rumens
+**Focus Poem:** Lines Written in Early Spring
+**Focus Poet:** William Wordsworth
+**Extract Location:** Lines Written in Early Spring by William Wordsworth
 
+## Poem
+I heard a thousand blended notes,
+While in a grove I sate reclined,
+In that sweet mood when pleasant thoughts
+Bring sad thoughts to the mind.
+
+To her fair works did Nature link
+The human soul that through me ran;
+And much it grieved my heart to think
+What man has made of man.
+
+Through primrose tufts, in that green bower,
+The periwinkle trailed its wreaths;
+And 'tis my faith that every flower
+Enjoys the air it breathes.
+
+The birds around me hopped and played,
+Their thoughts I cannot measure:–
+But the least motion which they made
+It seemed a thrill of pleasure.
+
+The budding twigs spread out their fan,
+To catch the breezy air;
+And I must think, do all I can,
+That there was pleasure there.
+
+If this belief from heaven be sent,
+If such be Nature's holy plan,
+Have I not reason to lament
+What man has made of man?
 ## Question
-Compare how poets present ideas about memory and belonging in 'The Emigree' and one other poem from the Worlds and Lives anthology.
+Compare how poets present the relationship between humanity and nature in 'Lines Written in Early Spring' and one other poem from the Worlds and Lives anthology.
 
 [30 marks]
 
@@ -15,7 +46,7 @@ Compare how poets present ideas about memory and belonging in 'The Emigree' and 
 
 # Topic 2: Conceptual Notes
 **Type:** conceptual-notes
-**Teaching Point:** This topic covers the key concepts, themes, contextual knowledge, and comparison strategies needed for the AQA Worlds and Lives poetry anthology.
+**Teaching Point:** This topic covers the key concepts, themes, and contextual knowledge needed for the AQA Worlds and Lives Poetry Anthology.
 **Marks:** 0
 **AOs:** none
 
@@ -24,376 +55,647 @@ N/A — Conceptual Notes topic.
 
 ---
 
-# Topic 3: Afternoons
+# Topic 3: A Century Later
 **Type:** poetry_named
-**Teaching Point:** Afternoons by Philip Larkin observes young mothers in a recreation ground whose individual identities are being quietly erased by domesticity and routine. Students should analyse how Larkin uses the detached, melancholy tone, passive constructions, and the image of being "pushed to the side of their own lives" to present the passage of time as a form of displacement. The poem's deceptively simple three-stanza structure mirrors the narrowing of possibility it describes.
+**Teaching Point:** Dharker responds to the shooting of Malala Yousafzai, reframing a schoolgirl's walk to class as an act of courage under fire. Military metaphors ('firing-line', 'target') collide with images of ordinary girlhood to insist that education cannot be killed. Students should examine how the poem transforms violence into defiance and collective hope.
 **Marks:** 30
 **AOs:** AO1,AO2,AO3
-**Focus Poem:** Afternoons
-**Focus Poet:** Philip Larkin
-
-## Question
-Compare how poets present the effects of time on identity in 'Afternoons' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 4: Blessing
-**Type:** poetry_named
-**Teaching Point:** Blessing by Imtiaz Dharker depicts a burst water pipe in a Mumbai slum as a moment of communal ecstasy, using religious imagery to elevate a basic resource into something sacred. Students should analyse how Dharker uses the contrast between drought and abundance, the accelerating rhythm as water flows, and the final image of "small bones" glistening to explore the relationship between poverty, gratitude, and the fragility of life. The poem's form — short, breathless lines — mirrors the rush of water itself.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** Blessing
+**Focus Poem:** A Century Later
 **Focus Poet:** Imtiaz Dharker
+**Extract Location:** A Century Later by Imtiaz Dharker
 
+## Poem
+The school-bell is a call to battle,
+every step to class, a step into the firing-line.
+Here is the target, fine skin at the temple,
+cheek still rounded from being fifteen.
+
+Surrendered, surrounded, she
+takes the bullet in the head
+
+and walks on. The missile cuts
+a pathway in her mind, to an orchard
+in full bloom, a field humming under the sun,
+its lap open and full of poppies.
+
+This girl has won
+the right to be ordinary,
+
+wear bangles to a wedding, paint her fingernails,
+go to school. Bullet, she says, you are stupid.
+You have failed. You cannot kill a book
+or the buzzing in it.
+
+A murmur, a swarm. Behind her, one by one,
+the schoolgirls are standing up
+to take their places on the front line.
 ## Question
-Compare how poets present ideas about community and need in 'Blessing' and one other poem from the Worlds and Lives anthology.
+Compare how poets present the power of education and resilience in 'A Century Later' and one other poem from the Worlds and Lives anthology.
 
 [30 marks]
 
 ---
 
-# Topic 5: A Complaint
+# Topic 4: Name Journeys
 **Type:** poetry_named
-**Teaching Point:** A Complaint by William Wordsworth mourns the loss of emotional connection in a once-intimate relationship, using the extended metaphor of a fountain that has dried to a "comfortless and hidden well." Students should analyse how Wordsworth uses the contrast between the fountain's former abundance and its current stillness, the measured iambic rhythm, and the restrained but devastating tone to explore betrayal and emotional withdrawal. The poem's formal control contains intense personal grief.
+**Teaching Point:** Mundair traces how migration and language reshape identity, as her name is 'dislodged' and made 'exotic' on moving from South to North. Allusions to Hindu epic (Rama, Sita) root the speaker in a heritage the 'Anglo Echo chamber' cannot hold. Students should explore how the poem presents belonging as something eroded yet defended.
 **Marks:** 30
 **AOs:** AO1,AO2,AO3
-**Focus Poem:** A Complaint
-**Focus Poet:** William Wordsworth
+**Focus Poem:** Name Journeys
+**Focus Poet:** Raman Mundair
+**Extract Location:** Name Journeys by Raman Mundair
 
+## Poem
+Like Rama I have felt the Wilderness
+but I have not been blessed
+with a companion as sweet as she,
+Sita; loyal pure and true of heart.
+Like her, I have been chastened
+through trial by fire. Sita and I,
+spiritual sari \- sisters entwined
+in an infinite silk that would swathe
+Draupadi's blush. My name
+a journey between rough and smooth,
+an interlacing of banyan leaves with sugar
+cane. Woven tapestries of Journeys;
+traveling from South
+to North, where the Punjabi in my mouth
+became dislodged as milk teeth fell
+and hit infertile English soil.
+My mouth toiled to accommodate
+the rough musicality of Mancunian vows
+and my name became a stumble
+that filled English mouths
+with a discordant rhyme, an exotic
+rhythm dulled, my voice a mystery
+in the Anglo Echo chamber –
+void of history and memory.
 ## Question
-Compare how poets present the pain of changing relationships in 'A Complaint' and one other poem from the Worlds and Lives anthology.
+Compare how poets present identity and belonging in 'Name Journeys' and one other poem from the Worlds and Lives anthology.
 
 [30 marks]
 
 ---
 
-# Topic 6: Composed Upon Westminster Bridge
+# Topic 5: A Wider View
 **Type:** poetry_named
-**Teaching Point:** Composed Upon Westminster Bridge by William Wordsworth captures London at dawn as a scene of sublime natural beauty, with the city wearing the morning "like a garment." Students should analyse how Wordsworth uses the Petrarchan sonnet form, the personification of the city and the river, and the paradox of finding nature's majesty in an urban landscape to challenge assumptions about where beauty and spiritual peace can be found. The poem's stillness contrasts with the industrial reality Wordsworth knew was coming.
+**Teaching Point:** Seneviratne links her own present to her great-great-grandfather's industrial Leeds, binding generations through a shared longing to see beyond hardship. The poem moves across time until ancestor and descendant seem to stand together, 'anchored / only by the axis of our gaze'. Students should analyse how place and inheritance create continuity across a century.
 **Marks:** 30
 **AOs:** AO1,AO2,AO3
-**Focus Poem:** Composed Upon Westminster Bridge
-**Focus Poet:** William Wordsworth
+**Focus Poem:** A Wider View
+**Focus Poet:** Seni Seneviratne
+**Extract Location:** A Wider View by Seni Seneviratne
 
+## Poem
+From the backyard of his back-to-back,
+my great-great-grandad searched for spaces
+in the smoke-filled sky to stack his dreams,
+high enough above the cholera to keep them
+and his newborn safe from harm.
+
+In eighteen sixty-nine, eyes dry with dust
+from twelve hours combing flax beneath
+the conicals of light in Marshall's Temple Mill,
+he took the long way home because
+he craved the comfort of a wider view.
+
+As he passed the panelled gates of Tower Works,
+the tall octagonal crown of Harding's chimney
+drew his sights beyond the limits of his working life
+drowned the din of engines, horns and shuttles
+with imagined peals of ringing bells.
+
+Today, my footsteps echo in the sodium gloom
+of Neville Street's Dark Arches and the red-brick vaults
+begin to moan as time, collapsing in the River Aire,
+sweeps me out to meet him on the Wharf.
+
+We stand now, timeless in the flux of time, anchored
+only by the axis of our gaze – a ventilation shaft
+with gilded tiles, and Giotto's geometric lines
+while the curve of past and future generations
+arcs between us.
 ## Question
-Compare how poets present a sense of wonder at a particular place in 'Composed Upon Westminster Bridge' and one other poem from the Worlds and Lives anthology.
+Compare how poets present the connection between people and place in 'A Wider View' and one other poem from the Worlds and Lives anthology.
 
 [30 marks]
 
 ---
 
-# Topic 7: Dulce et Decorum Est
+# Topic 6: England in 1819
 **Type:** poetry_named
-**Teaching Point:** Dulce et Decorum Est by Wilfred Owen dismantles the patriotic lie that dying for one's country is noble by forcing the reader to witness a gas attack in visceral, nightmarish detail. Students should analyse how Owen uses the shift from exhausted marching to frantic action to haunting memory, the direct address to "My friend," and the bitter Latin title to target those who glorify war from safety. The poem's irregular sonnet-like structure mirrors the chaos and breakdown it describes.
+**Teaching Point:** Shelley's sonnet is a furious indictment of a corrupt ruling class - a 'mad, blind' king, leech-like princes and unjust laws - yet it ends with hope that a 'glorious Phantom' of reform may rise. Students should examine how the piled-up catalogue of abuses builds pressure before the volta's turn toward possibility.
 **Marks:** 30
 **AOs:** AO1,AO2,AO3
-**Focus Poem:** Dulce et Decorum Est
-**Focus Poet:** Wilfred Owen
+**Focus Poem:** England in 1819
+**Focus Poet:** Percy Bysshe Shelley
+**Extract Location:** England in 1819 by Percy Bysshe Shelley
 
+## Poem
+An old, mad, blind, despised, and dying King;
+Princes, the dregs of their dull race, who flow
+Through public scorn,–mud from a muddy spring;
+Rulers who neither see nor feel nor know,
+But leechlike to their fainting country cling
+Till they drop, blind in blood, without a blow.
+A people starved and stabbed in th' untilled field;
+An army, whom liberticide and prey
+Makes as a two-edged sword to all who wield;
+Golden and sanguine laws which tempt and slay;
+Religion Christless, Godless–a book sealed;
+A senate, Time's worst statute, unrepealed–
+Are graves from which a glorious Phantom may
+Burst, to illumine our tempestuous day.
 ## Question
-Compare how poets present the reality of suffering in 'Dulce et Decorum Est' and one other poem from the Worlds and Lives anthology.
+Compare how poets present power and corruption in 'England in 1819' and one other poem from the Worlds and Lives anthology.
 
 [30 marks]
 
 ---
 
-# Topic 8: The Farmer's Bride
+# Topic 7: Shall Earth No More Inspire Thee
 **Type:** poetry_named
-**Teaching Point:** The Farmer's Bride by Charlotte Mew is a dramatic monologue in which a farmer describes his young wife's terror of physical intimacy, her attempted escape, and her subsequent captivity. Students should analyse how Mew uses the farmer's increasingly possessive voice, the animal imagery applied to the bride, and the claustrophobic domestic setting to explore the power imbalance in marriage, female entrapment, and the dangerous gap between desire and understanding. The final stanza's shift to desperate longing is deeply unsettling.
+**Teaching Point:** Brontë personifies Nature as a devoted companion pleading with a 'lonely dreamer' to return to its consolations. The steady quatrains and intimate voice make the natural world both seductive and possessive. Students should analyse how the poem presents nature as a source of comfort and near-spiritual belonging.
 **Marks:** 30
 **AOs:** AO1,AO2,AO3
-**Focus Poem:** The Farmer's Bride
-**Focus Poet:** Charlotte Mew
+**Focus Poem:** Shall Earth No More Inspire Thee
+**Focus Poet:** Emily Brontë
+**Extract Location:** Shall Earth No More Inspire Thee by Emily Brontë
 
+## Poem
+Shall earth no more inspire thee,
+Thou lonely dreamer now?
+Since passion may not fire thee
+Shall Nature cease to bow?
+
+Thy mind is ever moving
+In regions dark to thee;
+Recall its useless roving–
+Come back and dwell with me.
+
+I know my mountain breezes
+Enchant and soothe thee still–
+I know my sunshine pleases
+Despite thy wayward will.
+
+When day with evening blending
+Sinks from the summer sky,
+I've seen thy spirit bending
+In fond idolatry.
+
+I've watched thee every hour;
+I know my mighty sway,
+I know my magic power
+To drive thy griefs away.
+
+Few hearts to mortals given
+On earth so wildly pine;
+Yet none would ask a heaven
+More like this earth than thine.
+
+Then let my winds caress thee;
+Thy comrade let me be–
+Since nought beside can bless thee,
+Return and dwell with me.
 ## Question
-Compare how poets present ideas about desire and control in relationships in 'The Farmer's Bride' and one other poem from the Worlds and Lives anthology.
+Compare how poets present the power of nature in 'Shall Earth No More Inspire Thee' and one other poem from the Worlds and Lives anthology.
 
 [30 marks]
 
 ---
 
-# Topic 9: Follower
+# Topic 8: Homing
 **Type:** poetry_named
-**Teaching Point:** Follower by Seamus Heaney traces the reversal of a father-son relationship, moving from the boy's admiration of his father's expert ploughing to the admission that the ageing father now stumbles behind him. Students should analyse how Heaney uses precise agricultural vocabulary, the carefully crafted quatrains, and the metaphor of following to explore how childhood hero-worship gives way to adult guilt and the inevitable shift of dependency. The final couplet's reversal delivers the poem's emotional punch.
+**Teaching Point:** Berry celebrates a Black Country accent that elocution tried to erase, longing to reclaim the dialect 'jemmied open' from a dead relative's memory. Regional words become treasured, industrial and alive. Students should explore how the poem ties language to identity, class and love.
 **Marks:** 30
 **AOs:** AO1,AO2,AO3
-**Focus Poem:** Follower
-**Focus Poet:** Seamus Heaney
+**Focus Poem:** Homing
+**Focus Poet:** Liz Berry
+**Extract Location:** Homing by Liz Berry
 
+## Poem
+For years you kept your accent
+in a box beneath the bed,
+the lock rusted shut by hours of elocution
+how now brown cow
+the teacher's ruler across your legs.
+
+We heard it escape sometimes,
+a guttural uh on the phone to your sister,
+saft or blart to a taxi driver
+unpacking your bags from his boot.
+I loved its thick drawl, g's that rang.
+
+Clearing your house, the only thing
+I wanted was that box, jemmied open
+to let years of lost words spill out –
+bibble, fittle, tay, wum,
+vowels ferrous as nails, consonants
+
+you could lick the coal from.
+I wanted to swallow them all: the pits,
+railways, factories thunking and clanging
+the night shift, the red brick
+back-to-back you were born in.
+
+I wanted to forge your voice
+in my mouth, a blacksmith's furnace;
+shout it from the roofs,
+send your words, like pigeons,
+fluttering for home.
 ## Question
-Compare how poets present the relationship between parents and children in 'Follower' and one other poem from the Worlds and Lives anthology.
+Compare how poets present identity and belonging in 'Homing' and one other poem from the Worlds and Lives anthology.
 
 [30 marks]
 
 ---
 
-# Topic 10: I Started Early - Took my Dog
+# Topic 9: In a London Drawingroom
 **Type:** poetry_named
-**Teaching Point:** I Started Early - Took my Dog by Emily Dickinson uses an encounter with the sea as an extended metaphor for a powerful, possibly threatening force — whether nature, desire, or death — that first attracts and then overwhelms the speaker. Students should analyse how Dickinson uses the personification of the sea as a pursuer, the playful yet sinister tone, and her characteristic dashes and slant rhyme to create ambiguity about whether the poem describes liberation, seduction, or danger. The speaker's retreat to "the Solid Town" suggests a return to safety and convention.
+**Teaching Point:** Eliot presents an industrial London of unbroken grey monotony, where the city smothers nature, freedom and joy. The single unbroken verse paragraph mirrors the 'one huge prison-house' it describes. Students should analyse how relentless imagery of shadow and enclosure conveys the dehumanising weight of the city.
 **Marks:** 30
 **AOs:** AO1,AO2,AO3
-**Focus Poem:** I Started Early - Took my Dog
-**Focus Poet:** Emily Dickinson
+**Focus Poem:** In a London Drawingroom
+**Focus Poet:** George Eliot
+**Extract Location:** In a London Drawingroom by George Eliot
 
+## Poem
+The sky is cloudy, yellowed by the smoke.
+For view there are the houses opposite
+Cutting the sky with one long line of wall
+Like solid fog: far as the eye can stretch
+Monotony of surface & of form
+Without a break to hang a guess upon.
+No bird can make a shadow as it flies,
+For all is shadow, as in ways o'erhung
+By thickest canvass, where the golden rays
+Are clothed in hemp. No figure lingering
+Pauses to feed the hunger of the eye
+Or rest a little on the lap of life.
+All hurry on & look upon the ground,
+Or glance unmarking at the passers by
+The wheels are hurrying too, cabs, carriages
+All closed, in multiplied identity.
+The world seems one huge prison-house & court
+Where men are punished at the slightest cost,
+With lowest rate of colour, warmth & joy.
 ## Question
-Compare how poets present an encounter with a powerful force in 'I Started Early - Took my Dog' and one other poem from the Worlds and Lives anthology.
+Compare how poets present the experience of living in a city in 'In a London Drawingroom' and one other poem from the Worlds and Lives anthology.
 
 [30 marks]
 
 ---
 
-# Topic 11: Island Man
+# Topic 10: Pot
 **Type:** poetry_named
-**Teaching Point:** Island Man by Grace Nichols portrays a Caribbean immigrant in London caught between waking dreams of his island home and the grey reality of his daily commute. Students should analyse how Nichols uses the lack of punctuation, the drifting line spacing, and the sensory contrast between turquoise waves and "grey metallic soar" to capture the disorientation of existing between two worlds. The poem's visual layout on the page mirrors the man's fragmented consciousness.
+**Teaching Point:** Khan addresses a looted pot in a museum, using fractured, often one-line stanzas to voice the displacement and questioned belonging of a diaspora identity. The pot - moved, mislabelled, doubted - becomes a mirror for the speaker's own experience of being told they are 'not really one of us'. Students should examine how fragmented form enacts cultural dislocation.
 **Marks:** 30
 **AOs:** AO1,AO2,AO3
-**Focus Poem:** Island Man
+**Focus Poem:** Pot
+**Focus Poet:** Shamshad Khan
+**Extract Location:** Pot by Shamshad Khan
+
+## Poem
+so big – they said you shouldn't really be moved
+
+so fragile you might break
+
+you could be from anywhere pot
+
+styles have travelled just like terracotta
+you could almost be an english pot
+
+but I know you're not.
+
+I know half of the story pot
+of where you come from
+of how you got here
+
+but I need you to tell me the rest pot
+
+tell me
+
+did they say you were bought pot
+a looters' deal done
+the whole lot
+sold to the gentleman in the grey hat
+
+or
+did they say you were lost pot
+finders are keepers you know pot
+
+or
+did they say they didn't notice you pot
+must have slipped onto the white sailing yacht
+
+bound for england.
+
+Someone
+somewhere
+will have missed you pot
+gone out looking for you pot
+because
+someone
+somewhere
+made you
+finger nails
+pressed
+snake patterned you pot
+washed you pot
+used you pot
+loved you pot
+
+if I could shatter this glass
+I would take you back myself pot.
+
+you think they wouldn't recognise you pot
+
+say diaspora
+you left now
+you're not really one of us.
+
+pot I've been back to where my family's from
+they were happy
+to see me
+laughed a lot
+said I was more asian than the asian's pot
+I was pot
+
+imagine.
+the hot sun on your back
+
+feel flies settle on your skin
+warm grain poured inside
+
+empty pot
+growl if you hear me
+
+pot?
+
+Pot?
+## Question
+Compare how poets present cultural identity and displacement in 'Pot' and one other poem from the Worlds and Lives anthology.
+
+[30 marks]
+
+---
+
+# Topic 11: With Birds You're Never Lonely
+**Type:** poetry_named
+**Teaching Point:** Antrobus, a deaf poet, contrasts the overwhelming noise of the city with a New Zealand forest where switching off his hearing aids opens 'a silence that was not an absence'. Couplets pace a search for belonging in nature and ancestral knowledge. Students should analyse how sound, silence and place shape the poem's ideas about connection.
+**Marks:** 30
+**AOs:** AO1,AO2,AO3
+**Focus Poem:** With Birds You're Never Lonely
+**Focus Poet:** Raymond Antrobus
+**Extract Location:** With Birds You're Never Lonely by Raymond Antrobus
+
+## Poem
+I can't hear the barista
+over the coffee machine.
+
+Spoons slam, steam rises.
+I catch the eye of a man
+
+sitting in the corner
+of the cafe reading alone
+
+about trees which is, incidentally,
+all I can think about
+
+since returning.
+Last week I sat alone
+
+on a stump, deep in Zealandia forest
+with sun-syrupped Kauri trees
+
+and brazen Tui birds with white tufts
+and yellow and black beaks.
+
+They landed by my feet, blaring so loudly
+I had to turn off my hearing aids.
+
+When all sound disappeared, I was tuned
+into a silence that was not an absence.
+
+As I switched sound on again,
+silence collapsed.
+
+The forest spat all the birds back,
+and I was jealous—
+
+the earthy Kauri trees, their endless
+brown and green trunks of sturdiness.
+
+I wondered what the trees would say about us?
+What books would they write if they had to cut us down?
+
+Later, stumbling from the forest I listened
+to a young Maori woman.
+
+She could tell which bird chirped,
+a skill she learned from her grandfather
+
+who said with birds you're never lonely.
+In that moment I felt sorry
+
+for any grey tree in London,
+for the family they don't have,
+
+the Gods they can't hold.
+## Question
+Compare how poets present the relationship between people and the natural world in 'With Birds You're Never Lonely' and one other poem from the Worlds and Lives anthology.
+
+[30 marks]
+
+---
+
+# Topic 12: A Portable Paradise
+**Type:** poetry_named
+**Teaching Point:** Robinson passes on his grandmother's advice to carry 'Paradise' - a portable inheritance of hope and homeland - concealed against life's pressures. The single unbroken block mirrors a treasure kept close and whole. Students should explore how the poem presents heritage as resilience against hardship.
+**Marks:** 30
+**AOs:** AO1,AO2,AO3
+**Focus Poem:** A Portable Paradise
+**Focus Poet:** Roger Robinson
+**Extract Location:** A Portable Paradise by Roger Robinson
+
+## Poem
+And if I speak of Paradise,
+then I'm speaking of my grandmother
+who told me to carry it always
+on my person, concealed, so
+no one else would know but me.
+That way they can't steal it, she'd say.
+And if life puts you under pressure,
+trace its ridges in your pocket,
+smell its piney scent on your handkerchief,
+hum its anthem under your breath.
+And if your stresses are sustained and daily,
+get yourself to an empty room – be it hotel,
+hostel or hovel – find a lamp
+and empty your paradise onto a desk:
+your white sands, green hills and fresh fish.
+Shine the lamp on it like the fresh hope
+of morning, and keep staring at it till you sleep.
+## Question
+Compare how poets present hope and inheritance in 'A Portable Paradise' and one other poem from the Worlds and Lives anthology.
+
+[30 marks]
+
+---
+
+# Topic 13: On an Afternoon Train from Purley to Victoria, 1955
+**Type:** poetry_named
+**Teaching Point:** Berry recounts a warm yet loaded exchange with a well-meaning stranger whose questions expose casual ignorance about race and origin. Gentle humour and the repeated 'said' hold prejudice and kindness in the same frame. Students should examine how the poem presents identity, belonging and everyday misunderstanding.
+**Marks:** 30
+**AOs:** AO1,AO2,AO3
+**Focus Poem:** On an Afternoon Train from Purley to Victoria, 1955
+**Focus Poet:** James Berry
+**Extract Location:** On an Afternoon Train from Purley to Victoria, 1955 by James Berry
+
+## Poem
+Hello, she said, and startled me.
+Nice day. Nice day I agreed.
+
+I am a Quaker she said and Sunday
+I was moved in silence
+to speak a poem loudly
+for racial brotherhood.
+
+I was thoughtful, then said
+what poem came on like that?
+One the moment inspired she said.
+I was again thoughtful.
+
+Inexplicably I saw
+empty city streets lit dimly
+in a day's first hours.
+Alongside in darkness
+was my father's big banana field.
+
+Where are you from? she said.
+Jamaica I said.
+What part of Africa is Jamaica? she said.
+Where Ireland is near Lapland I said.
+Hard to see why you leave
+such sunny country she said.
+Snow falls elsewhere I said.
+So sincere she was beautiful
+as people sat down around us.
+## Question
+Compare how poets present identity and prejudice in 'On an Afternoon Train from Purley to Victoria, 1955' and one other poem from the Worlds and Lives anthology.
+
+[30 marks]
+
+---
+
+# Topic 14: The Jewellery Maker
+**Type:** poetry_named
+**Teaching Point:** Parker honours a craftsman who, like his father before him, shapes gold into living forms with a surgeon's care, imagining the women who will one day wear his work. The measured stanzas dignify skilled labour and continuity across generations. Students should analyse how the poem celebrates craft, devotion and the passing-on of a trade.
+**Marks:** 30
+**AOs:** AO1,AO2,AO3
+**Focus Poem:** The Jewellery Maker
+**Focus Poet:** Louisa Adjoa Parker
+**Extract Location:** The Jewellery Maker by Louisa Adjoa Parker
+
+## Poem
+Each day after sunrise he walks to the workshop–
+like his father before him, and his father too
+the slap of sandalled feet on heat-baked stone,
+the smell of blossom, a plate-blue sky. He greets
+his neighbours with a smile. In the distance
+a wild dog barks.
+
+He sits straight-backed, lays out pointed tools
+the way a surgeon might – neat as soldiers.
+He likes hot metal, the smell, the way it yields
+to his touch. Under deft fingers gold butterflies dance;
+flowers bloom; silvery moons wax and wane,
+then wax again; bright dragonflies flap two pairs of wings.
+
+He likes the tiny loops and curls – he'd decorate
+his house in this, drape his wife in fine-spun gold;
+her skin wrinkled by sun, in simple cotton dress,
+her only jewellery a plain gold band, worn thin.
+He imagines the women who will wear
+what he has made, clear-eyed, bird-boned, unlined skin
+warming the metal his hands caress.
+## Question
+Compare how poets present work and creativity in 'The Jewellery Maker' and one other poem from the Worlds and Lives anthology.
+
+[30 marks]
+
+---
+
+# Topic 15: Thirteen
+**Type:** poetry_named
+**Teaching Point:** Femi confronts the stop-and-search of a thirteen-year-old, cutting between police suspicion and a childhood assembly that called the class 'supernovas'. The tension between being seen as a threat and being a child exposes racial injustice and stolen innocence. Students should explore how the poem sets tenderness against menace to indict a society that fails its children.
+**Marks:** 30
+**AOs:** AO1,AO2,AO3
+**Focus Poem:** Thirteen
+**Focus Poet:** Caleb Femi
+**Extract Location:** Thirteen by Caleb Femi
+
+## Poem
+You will be four minutes from home
+when you are cornered by an officer
+who will tell you of a robbery, forty
+minutes ago in the area. You fit
+the description of a man? – You'll laugh.
+Thirteen, you'll tell him: you're thirteen.
+
+You'll be patted on the shoulder, then, by another fed
+whose face takes you back to Gloucester Primary School,
+a Wednesday assembly about being little stars.
+This same officer had an horizon in the east
+of his smile when he told your class that
+you were all supernovas,
+the biggest and brightest stars.
+
+You will show the warmth of your teeth
+praying he remembers the heat of you supernova;
+he will see you powerless – plump.
+You will watch the two men cast lots for your organs.
+
+Don't you remember me? you will ask.
+You gave a talk at my primary school.
+While fear condenses on your lips,
+you will remember that Wednesday, after the assembly,
+your teacher speaking more about supernovas:
+how they are, in fact, dying stars
+on the verge of becoming black holes.
+## Question
+Compare how poets present injustice and identity in 'Thirteen' and one other poem from the Worlds and Lives anthology.
+
+[30 marks]
+
+---
+
+# Topic 16: Like an Heiress
+**Type:** poetry_named
+**Teaching Point:** Nichols reworks the sonnet to confront environmental damage, as a beach 'deserted except for' human rubbish forces reflection on 'the quickening years and fate of our planet'. The shift from 'I' to 'our' turns private observation into collective warning. Students should analyse how the poem uses inheritance and beauty to sound an ecological alarm.
+**Marks:** 30
+**AOs:** AO1,AO2,AO3
+**Focus Poem:** Like an Heiress
 **Focus Poet:** Grace Nichols
+**Extract Location:** Like an Heiress by Grace Nichols
 
+## Poem
+Like an heiress, drawn to the light of her
+eye-catching jewels, Atlantic draws me
+to the mirror of my oceanic small-days.
+But the beach is deserted except for a lone
+wave of rubbish against the seawall –
+used car tyres, plastic bottles, styrofoam cups
+rightly tossed back by an ocean's moodswings.
+Undisturbed, not even by a sea bird,
+I stand under the sun's burning treasury
+gazing out at the far-out gleam of Atlantic
+before heading back like a tourist
+to the sanctuary of my hotel room
+to dwell in the air-conditioned coolness
+on the quickening years and fate of our planet.
 ## Question
-Compare how poets present the experience of living between two cultures or places in 'Island Man' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 12: Letters from Yorkshire
-**Type:** poetry_named
-**Teaching Point:** Letters from Yorkshire by Maura Dooley contrasts the physical, outdoor life of a man in Yorkshire with the speaker's indoor, screen-based existence, yet argues that their connection through letters transcends distance. Students should analyse how Dooley uses the seasonal imagery, the contrast between "his" and "my" worlds, and the metaphor of the word-processor's "blank screen" to explore what constitutes a meaningful life and how communication sustains relationships. The poem questions whether the contemplative life is lesser than the active one.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** Letters from Yorkshire
-**Focus Poet:** Maura Dooley
-
-## Question
-Compare how poets present ideas about connection and distance in 'Letters from Yorkshire' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 13: Living Space
-**Type:** poetry_named
-**Teaching Point:** Living Space by Imtiaz Dharker describes a precarious structure in a Mumbai slum — beams "balanced crookedly," nails "driven in at unexpected angles" — yet finds faith and resilience in the eggs hung in a basket from the frame. Students should analyse how Dharker uses the physical description of the building as a metaphor for the fragility and determination of marginalised lives, and how the final image of the eggs as "white, unbroken" transforms the poem into a statement about hope persisting against structural instability.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** Living Space
-**Focus Poet:** Imtiaz Dharker
-
-## Question
-Compare how poets present human resilience in difficult circumstances in 'Living Space' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 14: Love's Philosophy
-**Type:** poetry_named
-**Teaching Point:** Love's Philosophy by Percy Bysshe Shelley presents an argument for physical union through a series of natural examples — rivers mingling, winds mixing, mountains kissing heaven — building to the frustrated question of why the beloved refuses the speaker. Students should analyse how Shelley uses the accumulation of natural imagery, the rhetorical structure, and the regular rhythm and rhyme to create a persuasive yet ultimately self-serving argument. The poem can be read as charming romantic logic or as a study in how nature is co-opted to justify desire.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** Love's Philosophy
-**Focus Poet:** Percy Bysshe Shelley
-
-## Question
-Compare how poets present attitudes to love and desire in 'Love's Philosophy' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 15: Mother, any distance
-**Type:** poetry_named
-**Teaching Point:** Mother, any distance by Simon Armitage uses the extended metaphor of a tape measure to explore the tension between a son's desire for independence and his continued need for his mother's support. Students should analyse how Armitage uses the measuring imagery, the shift from domestic interior to the "hatch that opens on an endless sky," and the half-rhymes to capture the mixture of excitement and anxiety in leaving home. The poem's form — loosely sonnet-shaped — reflects the stretching of the bond without quite breaking it.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** Mother, any distance
-**Focus Poet:** Simon Armitage
-
-## Question
-Compare how poets present the bond between parent and child in 'Mother, any distance' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 16: My Last Duchess
-**Type:** poetry_named
-**Teaching Point:** My Last Duchess by Robert Browning is a dramatic monologue in which a Renaissance duke reveals his chilling possessiveness while showing a visitor a portrait of his late wife. Students should analyse how Browning uses the controlled rhyming couplets, enjambment, and the duke's seemingly civilised tone to expose his jealousy, objectification of women, and casual cruelty beneath a veneer of aristocratic refinement. The gap between what the duke says and what he inadvertently reveals is the poem's central mechanism.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** My Last Duchess
-**Focus Poet:** Robert Browning
-
-## Question
-Compare how poets present ideas about power and control in 'My Last Duchess' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 17: Neutral Tones
-**Type:** poetry_named
-**Teaching Point:** Neutral Tones by Thomas Hardy recalls the moment a relationship died, using a bleak winter landscape — a white sun, a pond, fallen leaves — to externalise emotional desolation. Students should analyse how Hardy uses the cyclical structure (returning to the pond in the final stanza), the deliberately drained colour palette, and the ambiguity of "the God-curst sun" to present love's failure as both personal tragedy and cosmic indifference. The poem's tight ABBA rhyme scheme locks the speaker into his painful memory.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** Neutral Tones
-**Focus Poet:** Thomas Hardy
-
-## Question
-Compare how poets present the end of love or emotional loss in 'Neutral Tones' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 18: Night Mail
-**Type:** poetry_named
-**Teaching Point:** Night Mail by W. H. Auden tracks the overnight postal train's journey from London to Scotland, using rhythm and sound to mimic the train's movement through the landscape. Students should analyse how Auden shifts the metre from heavy, climbing rhythms in the hills to rapid, light-footed lines on the descent, and how the final section elevates the mundane act of mail delivery into something that connects all of society — lovers, the lonely, the hopeful. The poem celebrates communication as a democratic, binding force.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** Night Mail
-**Focus Poet:** W. H. Auden
-
-## Question
-Compare how poets present ideas about connection and communication in 'Night Mail' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 19: No Problem
-**Type:** poetry_named
-**Teaching Point:** No Problem by Benjamin Zephaniah confronts racial prejudice with defiant humour, listing the discriminations the speaker faces while insisting they are "no problem" because the problem belongs to the racist, not the victim. Students should analyse how Zephaniah uses the reggae-influenced rhythm, the ironic repetition of "no problem," and the direct, confrontational address to reclaim power from those who would diminish him. The poem's oral performance tradition is central to its meaning — it is designed to be heard as much as read.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** No Problem
-**Focus Poet:** Benjamin Zephaniah
-
-## Question
-Compare how poets present ideas about identity and prejudice in 'No Problem' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 20: Ozymandias
-**Type:** poetry_named
-**Teaching Point:** Ozymandias by Percy Bysshe Shelley explores the transience of power through the ruined statue of a once-mighty ruler in an empty desert. Students should analyse how Shelley uses the layered narration — traveller to speaker to reader — the ironic juxtaposition of "Look on my Works, ye Mighty, and despair!" against "Nothing beside remains," and the subtly disrupted sonnet form to argue that all political authority is temporary and that art outlasts the tyrants it depicts.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** Ozymandias
-**Focus Poet:** Percy Bysshe Shelley
-
-## Question
-Compare how poets present ideas about the transience of power in 'Ozymandias' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 21: Poppies
-**Type:** poetry_named
-**Teaching Point:** Poppies by Jane Weir presents a mother's grief as her son leaves for military service, weaving domestic imagery — smoothing a collar, removing cat hairs — with the symbolism of poppies and Remembrance. Students should analyse how Weir uses the fragmented, associative structure to mirror the way grief disrupts linear thought, how the sensory details of touch and texture convey what words cannot, and how the final image of the speaker leaning against a war memorial "hoping to hear" her son's voice captures the unresolvable tension between patriotic duty and maternal love.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** Poppies
-**Focus Poet:** Jane Weir
-
-## Question
-Compare how poets present the emotional impact of separation or loss in 'Poppies' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 22: She Walks in Beauty
-**Type:** poetry_named
-**Teaching Point:** She Walks in Beauty by Lord Byron celebrates a woman whose beauty harmonises darkness and light, using the unusual conceit of comparing her to a starry night rather than daylight. Students should analyse how Byron uses antithesis, the flowing anapaestic rhythm, and the movement from external appearance to internal virtue across the three stanzas to argue that true beauty is inseparable from goodness and serenity. The restrained admiration of the speaker — observing but never possessing — distinguishes this from more overtly passionate love poetry.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** She Walks in Beauty
-**Focus Poet:** Lord Byron
-
-## Question
-Compare how poets present admiration and the idea of beauty in 'She Walks in Beauty' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 23: Singh Song!
-**Type:** poetry_named
-**Teaching Point:** Singh Song! by Daljit Nagra presents a young British-Indian shopkeeper who neglects his father's corner shop to spend time with his new bride upstairs, blending Punjabi-inflected English with contemporary British culture. Students should analyse how Nagra uses the playful phonetic spelling, the dual-voice structure, and the contrast between the complaining customers and the lovers' private world to celebrate cultural hybridity, romantic joy, and the tension between filial duty and personal desire. The poem's humour is inseparable from its serious exploration of identity.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** Singh Song!
-**Focus Poet:** Daljit Nagra
-
-## Question
-Compare how poets present ideas about cultural identity and personal happiness in 'Singh Song!' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 24: Tissue
-**Type:** poetry_named
-**Teaching Point:** Tissue by Imtiaz Dharker uses paper as an extended metaphor for the structures humans build — maps, holy books, receipts, architecture — arguing that all are fragile and temporary. Students should analyse how Dharker uses the thin, slipping stanzas, the recurring motif of light passing through paper, and the final twist where "tissue" becomes human skin to challenge our attachment to permanence and control. The poem's form deliberately resists solidity, mirroring its argument that letting light through matters more than building something that lasts.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** Tissue
-**Focus Poet:** Imtiaz Dharker
-
-## Question
-Compare how poets present ideas about impermanence and what humans value in 'Tissue' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 25: War Photographer
-**Type:** poetry_named
-**Teaching Point:** War Photographer by Carol Ann Duffy portrays a photographer developing images from a conflict zone in his darkroom in "Rural England," exploring the moral tension between documenting suffering and the public's indifference to it. Students should analyse how Duffy uses the quasi-religious imagery of the darkroom as a kind of church, the contrast between "Belfast. Beirut. Phnom Penh." and the ordered rows of English fields, and the photographer's hands that "did not tremble then" but do now to examine guilt, distance, and the failure of images to provoke lasting empathy.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** War Photographer
-**Focus Poet:** Carol Ann Duffy
-
-## Question
-Compare how poets present the relationship between suffering and those who witness it in 'War Photographer' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 26: When We Two Parted
-**Type:** poetry_named
-**Teaching Point:** When We Two Parted by Lord Byron recalls a secret love affair that ended in betrayal, using cold, deathly imagery — "pale grew thy cheek and cold," "a knell to mine ear" — to convey the speaker's enduring bitterness and shame. Students should analyse how Byron uses the tight, clipped stanzas, the repeated motifs of silence and secrecy, and the cyclical structure that returns to the moment of parting to present heartbreak as something that never fully heals. The poem's restraint intensifies its emotional impact.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** When We Two Parted
-**Focus Poet:** Lord Byron
-
-## Question
-Compare how poets present feelings of betrayal and heartbreak in 'When We Two Parted' and one other poem from the Worlds and Lives anthology.
-
-[30 marks]
-
----
-
-# Topic 27: Wind
-**Type:** poetry_named
-**Teaching Point:** Wind by Ted Hughes presents a house besieged by a ferocious storm, using violent, physical imagery — the hills "drummed and strained," the house "rang like some fine green goblet" — to convey nature as an overwhelming, almost sentient force. Students should analyse how Hughes uses the compressed metaphors, the relentless present tense, and the claustrophobic interior scenes to explore human vulnerability in the face of elemental power. The poem refuses resolution — the wind does not stop, and the inhabitants cannot act, only endure.
-**Marks:** 30
-**AOs:** AO1,AO2,AO3
-**Focus Poem:** Wind
-**Focus Poet:** Ted Hughes
-
-## Question
-Compare how poets present the power of nature in 'Wind' and one other poem from the Worlds and Lives anthology.
+Compare how poets present humanity's impact on the natural world in 'Like an Heiress' and one other poem from the Worlds and Lives anthology.
 
 [30 marks]
 
