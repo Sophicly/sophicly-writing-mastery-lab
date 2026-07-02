@@ -32,7 +32,7 @@ Compare how the poets present childhood innocence and institutional care in 'Hol
 
 # Topic 2: Conceptual Notes
 **Type:** conceptual-notes
-**Teaching Point:** This topic covers the key concepts, themes, and poetic techniques needed for the OCR Youth and Age Poetry Cluster from the Towards a World Unknown anthology.
+**Teaching Point:** This topic covers the key concepts, themes, and poetic techniques needed for the OCR Youth and Age Poetry Cluster from the Towards a World Unknown anthology (2022 revised edition, first assessment 2024).
 **Marks:** 0
 **AOs:** none
 
@@ -41,39 +41,7 @@ N/A — Conceptual Notes topic.
 
 ---
 
-# Topic 3: When I have fears that I may cease to be
-**Type:** poetry_named
-**Teaching Point:** Keats's sonnet piles up everything death would cancel — the unwritten books, the unread romance of the night sky, the 'fair creature of an hour' never seen again — then stands alone on the shore of the wide world as love and fame sink to nothingness. Students should examine how the repeated 'When... When... And when' structure builds the pressure of unfinished life, and how the couplet's solitary thinking releases it into bleak perspective rather than consolation.
-**Marks:** 40
-**AOs:** AO1,AO2
-**Focus Poem:** When I have fears that I may cease to be
-**Focus Poet:** John Keats
-**Extract Location:** When I have fears that I may cease to be by John Keats
-
-## Poem
-When I have fears that I may cease to be
-Before my pen has glean'd my teeming brain,
-Before high pilèd books, in charact'ry,
-Hold like rich garners the full-ripen'd grain;
-When I behold, upon the night's starr'd face,
-Huge cloudy symbols of a high romance,
-And think that I may never live to trace
-Their shadows, with the magic hand of chance;
-And when I feel, fair creature of an hour,
-That I shall never look upon thee more,
-Never have relish in the faery power
-Of unreflecting love; then on the shore
-Of the wide world I stand alone, and think,
-Till Love and Fame to nothingness do sink.
-
-## Question
-Compare how the poets present the fear of time cut short in 'When I have fears that I may cease to be' and the poem printed on the exam paper.
-
-[20 marks — Part (a)]
-
----
-
-# Topic 4: The Bluebell
+# Topic 3: The Bluebell
 **Type:** poetry_named
 **Teaching Point:** Brontë's speaker, laughing carelessly among smiling flowers, is undone by a single bluebell that recalls the 'happy childhood's hours' when such flowers were fairy gifts and hearts were kindred. Students should examine how the ballad quatrains move from present composure through involuntary memory to mourning, so that the flower's 'silent eloquence' measures exactly what a toilsome adult life has cost.
 **Marks:** 40
@@ -149,7 +117,7 @@ Compare how the poets present memory and lost childhood in 'The Bluebell' and th
 
 ---
 
-# Topic 5: Midnight on the Great Western
+# Topic 4: Midnight on the Great Western
 **Type:** poetry_named
 **Teaching Point:** Hardy studies a boy travelling alone at midnight, ticket in hatband, key on a string, 'bewrapt past knowing to what he was going' — then wonders whether the child's incurious calm bespeaks a soul from a higher sphere. Students should examine how the watching adult's questions, never answered, turn a third-class carriage into an image of every journey towards a world unknown, and the boy's placidity into something between vulnerability and transcendence.
 **Marks:** 40
@@ -190,84 +158,7 @@ Compare how the poets present childhood vulnerability and the unknown in 'Midnig
 
 ---
 
-# Topic 6: Spring and Fall: to a Young Child
-**Type:** poetry_named
-**Teaching Point:** Hopkins tells the grieving child that her sorrow over Goldengrove's falling leaves is her first, unnamed encounter with 'the blight man was born for' — that as the heart ages it will weep, knowingly, for itself. Students should examine how the coined compounds ('wanwood leafmeal') and the sprung rhythm's rocking tenderness deliver the poem's stern truth: 'It is Margaret you mourn for'.
-**Marks:** 40
-**AOs:** AO1,AO2
-**Focus Poem:** Spring and Fall: to a Young Child
-**Focus Poet:** Gerard Manley Hopkins
-**Extract Location:** Spring and Fall: to a Young Child by Gerard Manley Hopkins
-
-## Poem
-Margaret, are you grieving
-Over Goldengrove unleaving?
-Leaves, like the things of man, you
-With your fresh thoughts care for, can you?
-Ah! as the heart grows older
-It will come to such sights colder
-By and by, nor spare a sigh
-Though worlds of wanwood leafmeal lie;
-And yet you will weep and know why.
-Now no matter, child, the name:
-Sorrow's springs are the same.
-Nor mouth had, no nor mind, expressed
-What heart heard of, ghost guessed:
-It is the blight man was born for,
-It is Margaret you mourn for.
-
-## Question
-Compare how the poets present the child's first awareness of mortality in 'Spring and Fall: to a Young Child' and the poem printed on the exam paper.
-
-[20 marks — Part (a)]
-
----
-
-# Topic 7: Ode
-**Type:** poetry_named
-**Teaching Point:** O'Shaughnessy's music-makers — dreamers, world-losers, movers and shakers — build and overthrow empires with a song, each age 'a dream that is dying, / Or one that is coming to birth'. Students should examine how the ode's swinging rhythms and its paradox of powerless-yet-world-shaking artists present history as a relay of generations, renewed by those who imagine rather than those who rule.
-**Marks:** 40
-**AOs:** AO1,AO2
-**Focus Poem:** Ode
-**Focus Poet:** Arthur O'Shaughnessy
-**Extract Location:** Ode by Arthur O'Shaughnessy
-
-## Poem
-We are the music-makers,
-And we are the dreamers of dreams,
-Wandering by lone sea-breakers
-And sitting by desolate streams;
-World-losers and world-forsakers,
-On whom the pale moon gleams:
-Yet we are the movers and shakers
-Of the world for ever, it seems.
-
-With wonderful deathless ditties
-We build up the world's great cities,
-And out of a fabulous story
-We fashion an empire's glory:
-One man with a dream, at pleasure,
-Shall go forth and conquer a crown;
-And three with a new song's measure
-Can trample an empire down.
-
-We, in the ages lying
-In the buried past of the earth,
-Built Nineveh with our sighing,
-And Babel itself with our mirth;
-And o'erthrew them with prophesying
-To the old of the new world's worth;
-For each age is a dream that is dying,
-Or one that is coming to birth.
-
-## Question
-Compare how the poets present generations and renewal in 'Ode' and the poem printed on the exam paper.
-
-[20 marks — Part (a)]
-
----
-
-# Topic 8: Out, Out–
+# Topic 5: Out, Out–
 **Type:** poetry_named
 **Teaching Point:** Frost narrates a farm boy's death at the buzz-saw with terrible economy — the hand gone, the 'little — less — nothing!' of the pulse — while the Vermont sunset proceeds indifferent behind him. Students should examine how the saw's snarling personification, the boy's 'rueful laugh', and the survivors' turn to 'their affairs' present young life as both precious and, to the working world that consumed it, dispensable — the Macbeth allusion of the title framing its brevity.
 **Marks:** 40
@@ -319,55 +210,71 @@ Compare how the poets present the fragility of young life in 'Out, Out–' and t
 
 ---
 
-# Topic 9: Red Roses
+# Topic 6: Theme for English B
 **Type:** poetry_named
-**Teaching Point:** Sexton renders a child's abuse through the mother's own euphemism — the 'dance' that leaves Tommy with 'red roses in different places' — and through the boy's protective lie, 'I fell', told so he will not be sent away. Students should examine how the flat, unflinching free verse and the terrible tenderness of the final image (he pretends to be her ball, loving the spots he gives her) expose how a child's loyalty can be enlisted to conceal the harm done to him.
+**Teaching Point:** Set a page that will 'come out of you' and therefore be true, Hughes's twenty-two-year-old — 'the only colored student in my class' — walks his instructor down the hill into Harlem and writes back a page that is Harlem, Bessie, bop, Bach and America at once. Students should examine how the poem tests the assignment's premise: whether a page can simply be 'you' when who you are is entangled with an instructor who is older, white and 'somewhat more free'.
 **Marks:** 40
 **AOs:** AO1,AO2
-**Focus Poem:** Red Roses
-**Focus Poet:** Anne Sexton
-**Extract Location:** Red Roses by Anne Sexton
+**Focus Poem:** Theme for English B
+**Focus Poet:** Langston Hughes
+**Extract Location:** Theme for English B by Langston Hughes
 
 ## Poem
-Tommy is three and when he's bad
-his mother dances with him.
-She puts on the record,
-'Red Roses for a Blue Lady'
-and throws him across the room.
-Mind you,
-she never laid a hand on him,
-only the wall laid a hand on him.
-He gets red roses in different places,
-the head, that time he was as sleepy as a river,
-the back, that time he was a broken scarecrow,
-the arm like a diamond had bitten it,
-the leg, twisted like a licorice stick,
-all the dance they did together,
-Blue Lady and Tommy.
-You fell, she said, just remember you fell.
-I fell, is all he told the doctors
-in the big hospital. A nice lady came
-and asked him questions but because
-he didn't want to be sent away he said, I fell.
-He never said anything else although he could talk fine.
-He never told about the music
-or how she'd sing and shout
-holding him up and throwing him.
+The instructor said,
 
-He pretends he is her ball.
-He tries to fold up and bounce
-but he squashes like fruit.
-For he loves Blue Lady and the spots
-of red red roses he gives her.
+      Go home and write
+      a page tonight.
+      And let that page come out of you—
+      Then, it will be true.
+
+I wonder if it’s that simple?
+I am twenty-two, colored, born in Winston-Salem.
+I went to school there, then Durham, then here
+to this college on the hill above Harlem.
+I am the only colored student in my class.
+The steps from the hill lead down into Harlem,
+through a park, then I cross St. Nicholas,
+Eighth Avenue, Seventh, and I come to the Y,
+the Harlem Branch Y, where I take the elevator
+up to my room, sit down, and write this page:
+
+It’s not easy to know what is true for you or me
+at twenty-two, my age. But I guess I’m what
+I feel and see and hear, Harlem, I hear you:
+hear you, hear me—we two—you, me, talk on this page.
+(I hear New York, too.) Me—who?
+Well, I like to eat, sleep, drink, and be in love.
+I like to work, read, learn, and understand life.
+I like a pipe for a Christmas present,
+or records—Bessie, bop, or Bach.
+I guess being colored doesn’t make me not like
+the same things other folks like who are other races.
+So will my page be colored that I write?
+
+Being me, it will not be white.
+But it will be
+a part of you, instructor.
+You are white—
+yet a part of me, as I am a part of you.
+That’s American.
+Sometimes perhaps you don’t want to be a part of me.
+Nor do I often want to be a part of you.
+But we are, that’s true!
+As I learn from you,
+I guess you learn from me—
+although you’re older—and white—
+and somewhat more free.
+
+This is my page for English B.
 
 ## Question
-Compare how the poets present childhood suffering and concealment in 'Red Roses' and the poem printed on the exam paper.
+Compare how the poets present youth finding its voice in 'Theme for English B' and the poem printed on the exam paper.
 
 [20 marks — Part (a)]
 
 ---
 
-# Topic 10: Baby Song
+# Topic 7: Baby Song
 **Type:** poetry_named
 **Teaching Point:** Gunn gives the newborn a voice of pure protest: expelled from 'the private ease of Mother's womb' into a lighted room, it lies 'raging, small, and red', already knowing it will regret what it cannot return to. Students should examine how the nursery-rhyme couplets carry a decidedly un-lullaby argument — that life begins not with welcome but with eviction, and consciousness with the memory of a lost perfect comfort.
 **Marks:** 40
@@ -405,7 +312,7 @@ Compare how the poets present birth and unwilling beginnings in 'Baby Song' and 
 
 ---
 
-# Topic 11: You're
+# Topic 8: You're
 **Type:** poetry_named
 **Teaching Point:** Plath addresses her unborn child in a cascade of riddling similes — clownlike, gilled like a fish, 'a creel of eels', 'a clean slate, with your own face on' — mapping a being known only by its movements and its promise. Students should examine how the poem's two nine-line stanzas (a gestational joke of nines) and its exuberant image-making present pregnancy as playful guesswork about an identity still forming.
 **Marks:** 40
@@ -442,7 +349,7 @@ Compare how the poets present anticipation of new life in 'You're' and the poem 
 
 ---
 
-# Topic 12: Cold Knap Lake
+# Topic 9: Cold Knap Lake
 **Type:** poetry_named
 **Teaching Point:** Clarke recalls — or half-recalls — a drowned child brought back to life by her mother's breath, then asks 'Was I there?', letting the troubled surface of memory close over the event like the lake itself. Students should examine how the poem's shift from vivid narrative to interrogative doubt, and the final couplet's 'closing water', present childhood memory as a poem's own kind of drowning: all lost things lying under a surface that can no longer be read.
 **Marks:** 40
@@ -486,7 +393,7 @@ Compare how the poets present memory and childhood experience in 'Cold Knap Lake
 
 ---
 
-# Topic 13: My First Weeks
+# Topic 10: My First Weeks
 **Type:** poetry_named
 **Teaching Point:** Olds reconstructs her first fortnight — the drenched happiness of birth and the breast 'the size of my head' — before the hospital's four-hour rationing teaches her 'to give up', a lesson she frames as character-building by others' laws. Students should examine how the single unbroken verse paragraph and the sensuous, comic detail present earliest infancy as paradise and its regulation as the first shaping — and first thwarting — of the self.
 **Marks:** 40
@@ -541,7 +448,7 @@ Compare how the poets present infancy and the shaping of the self in 'My First W
 
 ---
 
-# Topic 14: Venus's-flytraps
+# Topic 11: Venus's-flytraps
 **Type:** poetry_named
 **Teaching Point:** Komunyakaa's five-year-old wades out into deep sunny grass at the edge of the railroad tracks, boasting of his Lone Ranger six-shooter while circling what he 'don't supposed to know' — men hiding in boxcars, his mother calling him a mistake, flowers that eat. Students should examine how the poem's cascading indented lines and the child's insistent 'I am five' voice hold innocence and dangerous adult knowledge in a single breath, each stanza-less rush carrying him closer to what the flytraps embody.
 **Marks:** 40
@@ -619,7 +526,7 @@ Compare how the poets present the child's encounter with adult knowledge in 'Ven
 
 ---
 
-# Topic 15: Love
+# Topic 12: Love
 **Type:** poetry_named
 **Teaching Point:** Clanchy meets her newborn as a stranger — his 'misericord face' like a joke on his father, an emperor 'dying on silk cushions' — and confesses she did not know how to keep, wrap or feed him. Students should examine how the poem's estranging similes and its tentative, enjambed sentences chart love beginning not as instinct but as attention: remembering the feel of his head, the down of his hair, 'I started there.'
 **Marks:** 40
@@ -666,51 +573,166 @@ Compare how the poets present the unfamiliarity of new life in 'Love' and the po
 
 ---
 
-# Topic 16: Farther
+# Topic 13: Happy Birthday Moon
 **Type:** poetry_named
-**Teaching Point:** Sheers climbs the Skirrid with his father the day after Boxing Day, feeling 'the tipping in the scales of us, / the intersection of our ages' on a hill itself split by a father's grief. Students should examine how the mountain's legend, the shared photograph at the trig point and the title's pun on farther/father hold closeness and growing distance in balance — 'with every step apart, I'm another closer to you.'
+**Teaching Point:** A father reads to his deaf son, giving the Moon a new name each night and greeting the boy's mishearing — 'Rain-nan Akabok' — with laughter rather than correction. Students should examine how the pantoum's returning lines enact the practice of learning to speak and to listen, until repetition itself becomes the answer to the poem's central plea: to 'really hear each other'.
 **Marks:** 40
 **AOs:** AO1,AO2
-**Focus Poem:** Farther
-**Focus Poet:** Owen Sheers
-**Extract Location:** Farther by Owen Sheers
+**Focus Poem:** Happy Birthday Moon
+**Focus Poet:** Raymond Antrobus
+**Extract Location:** Happy Birthday Moon by Raymond Antrobus
 
 ## Poem
-I don't know if the day after Boxing Day has a name
-but it was then we climbed the Skirrid again,
-choosing the long way round,
-through the wood, simplified by snow,
-along the dry stone wall, its puzzle solved by moss,
-and out of the trees into that cleft of earth
-split they say by a father's grief
-at the loss of his son to man.
-We stopped there at an altar of rock and rested,
-watching the dog shrink over the hill before continuing ourselves,
-finding the slope steeper than expected.
-A blade of wind from the east
-and the broken stone giving under our feet
-with the sound of a crowd sighing.
-Half way up and I turned to look at you,
-your bent head the colour of the rocks,
-your breath reaching me, short and sharp and solitary,
-and again I felt the tipping in the scales of us,
-the intersection of our ages.
-The dog returns having caught nothing but his own tongue
-and you are with me again, so together we climbed to the top
-and shared the shock of a country unrolled before us,
-the hedged fields breaking on the edge of Wales.
-Pulling a camera from my pocket I placed it on the trig point
-and leant my cheek against the stone to find you in its frame,
-before joining you and waiting for the shutter's blink
-that would tell me I had caught this:
-the sky rubbed raw over the mountains,
-us standing on the edge of the world, together against the view
-and me reaching for some kind of purchase
-or at least a shallow handhold in the thought
-that with every step apart, I'm another closer to you.
+Dad reads aloud. I follow his finger across the page.
+Sometimes his finger moves past words, tracing white space.
+He makes the Moon say something new every night
+to his deaf son who slurs his speech.
+
+Sometimes his finger moves past words, tracing white space.
+Tonight he gives the Moon my name, but I can’t say it,
+his deaf son who slurs his speech.
+Dad taps the page, says, try again.
+
+Tonight he gives the Moon my name, but I can’t say it.
+I say Rain-nan Akabok. He laughs.
+Dad taps the page, says, try again,
+but I like making him laugh. I say my mistake again.
+
+I say Rain-nan Akabok. He laughs,
+says, Raymond you’re something else.
+I like making him laugh. I say my mistake again.
+Rain-nan Akabok. What else will help us?
+
+He says, Raymond you’re something else.
+I’d like to be the Moon, the bear, even the rain.
+Rain-nan Akabok, what else will help us
+hear each other, really hear each other?
+
+I’d like to be the Moon, the bear, even the rain.
+Dad makes the Moon say something new every night
+and we hear each other, really hear each other.
+As Dad reads aloud, I follow his finger across the page.
 
 ## Question
-Compare how the poets present fathers, sons and the passage of time in 'Farther' and the poem printed on the exam paper.
+Compare how the poets present a parent’s patience and a child’s voice in 'Happy Birthday Moon' and the poem printed on the exam paper.
+
+[20 marks — Part (a)]
+
+---
+
+# Topic 14: Prayer
+**Type:** poetry_named
+**Teaching Point:** Kunial braces two bedsides against each other: the father whispering first words into his newborn ear in a maternity ward, and the son at his dying mother's ear whispering thanks and love, never knowing if she heard. Students should examine how the borrowed line from George Herbert — prayer as 'God's breath in man returning to his birth' — lets the poem ask what language can do at the two thresholds where it matters most.
+**Marks:** 40
+**AOs:** AO1,AO2
+**Focus Poem:** Prayer
+**Focus Poet:** Zaffar Kunial
+**Extract Location:** Prayer by Zaffar Kunial
+
+## Poem
+First heard words, delivered to this right ear
+Allah hu Akbar – God is great – by my father
+in the Queen Elizabeth maternity ward.
+God’s breath in man returning to his birth,
+says Herbert, is prayer. If I continued
+
+his lines from there, from birth – a break Herbert
+chimes with heav’n and earth – I’d keep in thought
+my mum on a Hereford hospital bed
+and say what prayer couldn’t end. I’d say
+I made an animal noise, hurled language’s hurt
+
+at midday, when word had come. Cancer. Now so spread
+by midnight her rings were off.
+                                                 I stayed on. At her bed.
+Earlier, time and rhythm flatlining, I whispered
+Thank you   I love you   thank you
+                                                        mouth at her ear.
+She stared on, ahead. I won’t know if she heard.
+
+## Question
+Compare how the poets present birth, death and what words can hold in 'Prayer' and the poem printed on the exam paper.
+
+[20 marks — Part (a)]
+
+---
+
+# Topic 15: Tea With Our Grandmothers
+**Type:** poetry_named
+**Teaching Point:** Shire answers a friend's bereavement by summoning four grandmothers — Somali, Kenyan, Welsh, Sudanese — each carried in a name, a laugh, a broken language or 'a tally of surviving' marked on the skin. Students should examine how the stanzas' single elegiac flow turns tea-pouring, cardamom and cinnamon into rites of inheritance: the women's endurance rising from the cup 'like a ghost'.
+**Marks:** 40
+**AOs:** AO1,AO2
+**Focus Poem:** Tea With Our Grandmothers
+**Focus Poet:** Warsan Shire
+**Extract Location:** Tea With Our Grandmothers by Warsan Shire
+
+## Poem
+The morning your habooba died
+I thought of my ayeeyo, the woman
+I was named after, Warsan Baraka,
+skin dark like tamarind flesh,
+who died grinding cardamom
+waiting for her sons to come home and
+raise the loneliness they'd left behind;
+
+or my mother's mother, Noura
+with the honeyed laugh, who
+broke cinnamon barks between
+her palms, nursing her husband's
+stroke, her sister's cancer and
+her own bad back with broken
+Swahili and stubborn Italian;
+
+and Doris, the mother of your
+English rose, named after
+the daughter of Oceanus and Tethys
+the Welsh in your blood, from the land
+of Cymry, your grandmother who
+dreams of clotted cream in her tea
+through the swell of diabetes;
+
+then your habooba Al-Sura,
+God keep her, with three lines on
+each cheek, a tally of surviving,
+the woman who cooled your tea
+pouring it like the weight of deeds
+between bowl and cup, until the steam
+would rise like a ghost
+
+## Question
+Compare how the poets present inheritance across generations in 'Tea With Our Grandmothers' and the poem printed on the exam paper.
+
+[20 marks — Part (a)]
+
+---
+
+# Topic 16: Equilibrium
+**Type:** poetry_named
+**Teaching Point:** At a naming ceremony, Lola sets a wailing newborn against a grandfather whose eyes have become 'two stopwatches / counting down his own exit' — one name arriving as another begins to be forgotten. Students should examine how the couplets and the central conceit, 'the equation of equilibrium', hold birth and decline in a single steady measure: the family's arithmetic of love balancing what it gains against what it loses.
+**Marks:** 40
+**AOs:** AO1,AO2
+**Focus Poem:** Equilibrium
+**Focus Poet:** Theresa Lola
+**Extract Location:** Equilibrium by Theresa Lola
+
+## Poem
+My new-born brother wailed into existence
+and my grandfather’s eyes became two stopwatches
+
+counting down his own exit. At the naming ceremony
+my grandfather was quiet as a body cut open for autopsy.
+
+He broke bread, sipped on fresh orange juice.
+The pause between each sip elongated and I knew
+
+the mathematician in him
+had remembered the equation of equilibrium.
+
+As my new-born brother was crowned with a name
+my grandfather’s brain began to forget his.
+
+## Question
+Compare how the poets present youth and age in balance in 'Equilibrium' and the poem printed on the exam paper.
 
 [20 marks — Part (a)]
 

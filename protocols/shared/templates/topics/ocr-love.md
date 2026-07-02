@@ -47,7 +47,7 @@ Compare how the poets present the tension between love and material ambition in 
 
 # Topic 2: Conceptual Notes
 **Type:** conceptual-notes
-**Teaching Point:** This topic covers the key concepts, themes, and poetic techniques needed for the OCR Love and Relationships Poetry Cluster from the Towards a World Unknown anthology.
+**Teaching Point:** This topic covers the key concepts, themes, and poetic techniques needed for the OCR Love and Relationships Poetry Cluster from the Towards a World Unknown anthology (2022 revised edition, first assessment 2024).
 **Marks:** 0
 **AOs:** none
 
@@ -152,170 +152,49 @@ Compare how the poets present the comparative worth of love and friendship in 'L
 
 ---
 
-# Topic 6: A Broken Appointment
+# Topic 6: Looking at Your Hands
 **Type:** poetry_named
-**Teaching Point:** Hardy's speaker grieves less that the woman does not love him than that she lacked the 'pure lovingkindness' to come anyway, turning a missed meeting into a moral judgement about compassion. Students should examine how the refrain-like framing lines ('You did not come' / 'You love not me') and the poem's measured, argumentative middle convert private hurt into a reproach about what one human being owes another.
+**Teaching Point:** Carter's speaker refuses to still his voice, telling the 'dear friend' whose hands he watches that his reading, his marching and his attention are all one search for fire. Students should examine how the poem fuses personal affection with political solidarity — the closing declaration that he does 'not sleep to dream' but dreams 'to change the world' making love itself a form of commitment to others.
 **Marks:** 40
 **AOs:** AO1,AO2
-**Focus Poem:** A Broken Appointment
-**Focus Poet:** Thomas Hardy
-**Extract Location:** A Broken Appointment by Thomas Hardy
+**Focus Poem:** Looking at Your Hands
+**Focus Poet:** Martin Carter
+**Extract Location:** Looking at Your Hands by Martin Carter
 
 ## Poem
-You did not come,
-And marching Time drew on, and wore me numb.
-Yet less for loss of your dear presence there
-Than that I thus found lacking in your make
-That high compassion which can overbear
-Reluctance for pure lovingkindness' sake
-Grieved I, when, as the hope-hour stroked its sum,
-You did not come.
+No!
+I will not still my voice!
+I have
+too much to claim —
+if you see me
+looking at books
+or coming to your house
+or walking in the sun
+know that I look for fire!
 
-You love not me,
-And love alone can lend you loyalty;
-– I know and knew it. But, unto the store
-Of human deeds divine in all but name,
-Was it not worth a little hour or more
-To add yet this: Once you, a woman, came
-To soothe a time-torn man; even though it be
-You love not me.
+I have learnt
+from books dear friend
+of men dreaming and living
+and hungering in a room without a light
+who could not die since death was far too poor
+who did not sleep to dream, but dreamed to change the world!
+
+And so
+if you see me
+looking at your hands
+listening when you speak
+marching in your ranks
+you must know
+I do not sleep to dream, but dream to change the world.
 
 ## Question
-Compare how the poets present disappointment and unreturned love in 'A Broken Appointment' and the poem printed on the exam paper.
+Compare how the poets present love and commitment to a shared struggle in 'Looking at Your Hands' and the poem printed on the exam paper.
 
 [20 marks — Part (a)]
 
 ---
 
-# Topic 7: Fin de Fête
-**Type:** poetry_named
-**Teaching Point:** Mew stages the end of a love affair as the end of a party — the score settled, good-night said at the door — then lets the borrowed innocence of the picture-book babes in the wood expose how unprotected the abandoned speaker actually is. Students should examine how the poem's light, almost flippant opening tone collapses into the solitary image of the shadow over the bed, so that composure itself becomes the measure of loss.
-**Marks:** 40
-**AOs:** AO1,AO2
-**Focus Poem:** Fin de Fête
-**Focus Poet:** Charlotte Mew
-**Extract Location:** Fin de Fête by Charlotte Mew
-
-## Poem
-Sweetheart, for such a day
-One mustn't grudge the score;
-Here, then, it's all to pay,
-It's Good-night at the door.
-
-Good-night and good dreams to you, —
-Do you remember the picture-book thieves
-Who left two children sleeping in a wood the long night through,
-And how the birds came down and covered them with leaves?
-
-So you and I should have slept, — But now,
-Oh, what a lonely head!
-With just the shadow of a waving bough
-In the moonlight over your bed.
-
-## Question
-Compare how the poets present the end of a relationship in 'Fin de Fête' and the poem printed on the exam paper.
-
-[20 marks — Part (a)]
-
----
-
-# Topic 8: The Sorrow of True Love
-**Type:** poetry_named
-**Teaching Point:** Thomas distinguishes the 'great sorrow' of true lovers parting — a despair still lit by hope — from the bleaker, permanent drizzle of a sorrow that comes from too little love, which can never hope and so can never shine. Students should examine how the poem's weather imagery and its careful comparative argument present hopeless remorse, not passionate grief, as the true opposite of love.
-**Marks:** 40
-**AOs:** AO1,AO2
-**Focus Poem:** The Sorrow of True Love
-**Focus Poet:** Edward Thomas
-**Extract Location:** The Sorrow of True Love by Edward Thomas
-
-## Poem
-The sorrow of true love is a great sorrow
-And true love parting blackens a bright morrow:
-Yet almost they equal joys, since their despair
-Is but hope blinded by its tears, and clear
-Above the storm the heavens wait to be seen.
-But greater sorrow from less love has been
-That can mistake lack of despair for hope
-And knows not tempest and the perfect scope
-Of summer, but a frozen drizzle perpetual
-Of drops that from remorse and pity fall
-And cannot ever shine in the sun or thaw,
-Removed eternally from the sun's law.
-
-## Question
-Compare how the poets present the pain of parting and of love withheld in 'The Sorrow of True Love' and the poem printed on the exam paper.
-
-[20 marks — Part (a)]
-
----
-
-# Topic 9: An Arundel Tomb
-**Type:** poetry_named
-**Teaching Point:** Larkin reads the stone hand-holding of the earl and countess as an 'almost-instinct almost true': time has transfigured a sculptor's detail into a final blazon of love the couple hardly meant. Students should examine how the poem's slow accumulation of centuries and the heavily qualified final line let scepticism and hope coexist in the claim that 'What will survive of us is love'.
-**Marks:** 40
-**AOs:** AO1,AO2
-**Focus Poem:** An Arundel Tomb
-**Focus Poet:** Philip Larkin
-**Extract Location:** An Arundel Tomb by Philip Larkin
-
-## Poem
-Side by side, their faces blurred,
-The earl and countess lie in stone,
-Their proper habits vaguely shown
-As jointed armour, stiffened pleat,
-And that faint hint of the absurd—
-The little dogs under their feet.
-
-Such plainness of the pre-baroque
-Hardly involves the eye, until
-It meets his left-hand gauntlet, still
-Clasped empty in the other; and
-One sees, with a sharp tender shock,
-His hand withdrawn, holding her hand.
-
-They would not think to lie so long.
-Such faithfulness in effigy
-Was just a detail friends would see:
-A sculptor's sweet commissioned grace
-Thrown off in helping to prolong
-The Latin names around the base.
-
-They would not guess how early in
-Their supine stationary voyage
-The air would change to soundless damage,
-Turn the old tenantry away;
-How soon succeeding eyes begin
-To look, not read. Rigidly they
-
-Persisted, linked, through lengths and breadths
-Of time. Snow fell, undated. Light
-Each summer thronged the glass. A bright
-Litter of birdcalls strewed the same
-Bone-riddled ground. And up the paths
-The endless altered people came,
-
-Washing at their identity.
-Now, helpless in the hollow of
-An unarmorial age, a trough
-Of smoke in slow suspended skeins
-Above their scrap of history,
-Only an attitude remains:
-
-Time has transfigured them into
-Untruth. The stone fidelity
-They hardly meant has come to be
-Their final blazon, and to prove
-Our almost-instinct almost true:
-What will survive of us is love.
-
-## Question
-Compare how the poets present love, time and what endures in 'An Arundel Tomb' and the poem printed on the exam paper.
-
-[20 marks — Part (a)]
-
----
-
-# Topic 10: Love After Love
+# Topic 7: Love After Love
 **Type:** poetry_named
 **Teaching Point:** Walcott promises a time when the self, long ignored for another, is welcomed home like a returning guest — given wine, bread and back its own heart. Students should examine how the poem's calm imperatives and its imagery of threshold and feast transform the aftermath of love from loss into a quiet ceremony of self-restoration.
 **Marks:** 40
@@ -351,7 +230,7 @@ Compare how the poets present rediscovering the self after love in 'Love After L
 
 ---
 
-# Topic 11: Morning Song
+# Topic 8: Morning Song
 **Type:** poetry_named
 **Teaching Point:** Plath renders the arrival of a child as estrangement before attachment: the baby is a 'fat gold watch', a 'new statue' in a drafty museum, and the mother 'no more your mother / Than the cloud'. Students should examine how the poem's succession of distancing conceits gives way, through the night feed, to the balloons of the child's own rising voice — attunement earned rather than assumed.
 **Marks:** 40
@@ -392,44 +271,38 @@ Compare how the poets present the strangeness of new parenthood in 'Morning Song
 
 ---
 
-# Topic 12: Long Distance II
+# Topic 9: Poem for My Love
 **Type:** poetry_named
-**Teaching Point:** Harrison's father keeps his dead wife's slippers warming and her transport pass renewed, a 'still raw love' the son calls crime-like disbelief — until the final quatrain reveals the son dialling his dead parents' disconnected number. Students should examine how the plain, colloquial quatrains and the turn from 'he' to 'I' expose the son's inherited grief beneath his declared rationalism.
+**Teaching Point:** Jordan's thirteen unbroken lines move from open questions — how do two people come to lie 'here next to each other / in the night' — through rain, leaves and the watchers outside, to the plain astonishment of 'I am amazed by peace'. Students should examine how the poem's unpunctuated wonder and its final image of the sleeping beloved present love as an improbable calm the world's restlessness cannot reach.
 **Marks:** 40
 **AOs:** AO1,AO2
-**Focus Poem:** Long Distance II
-**Focus Poet:** Tony Harrison
-**Extract Location:** Long Distance II by Tony Harrison
+**Focus Poem:** Poem for My Love
+**Focus Poet:** June Jordan
+**Extract Location:** Poem for My Love by June Jordan
 
 ## Poem
-Though my mother was already two years dead
-Dad kept her slippers warming by the gas,
-put hot water bottles her side of the bed
-and still went to renew her transport pass.
-
-You couldn't just drop in. You had to phone.
-He'd put you off an hour to give him time
-to clear away her things and look alone
-as though his still raw love were such a crime.
-
-He couldn't risk my blight of disbelief
-though sure that very soon he'd hear her key
-scrape in the rusted lock and end his grief.
-He knew she'd just popped out to get the tea.
-
-I believe life ends with death, and that is all.
-You haven't both gone shopping; just the same,
-in my new black leather phone book there's your name
-and the disconnected number I still call.
+How do we come to be here next to each other
+in the night
+Where are the stars that show us to our love
+inevitable
+Outside the leaves flame usual in darkness
+and the rain
+falls cool and blessed on the holy flesh
+the black men waiting on the corner for
+a womanly mirage
+I am amazed by peace
+It is this possibility of you
+asleep
+and breathing in the quiet air
 
 ## Question
-Compare how the poets present love and grief after loss in 'Long Distance II' and the poem printed on the exam paper.
+Compare how the poets present the wonder of love in 'Poem for My Love' and the poem printed on the exam paper.
 
 [20 marks — Part (a)]
 
 ---
 
-# Topic 13: I Wouldn't Thank You for a Valentine
+# Topic 10: I Wouldn't Thank You for a Valentine
 **Type:** poetry_named
 **Teaching Point:** Lochhead's speaker itemises and rejects every commercial trapping of Valentine's Day — padded hearts, Interflora roses, soppy personal ads — yet the poem's final line ('I wouldn't thank you, I'd melt') betrays the longing the bravado protects. Students should examine how the accumulating comic lists and the refrain's last-moment swerve let the poem satirise romantic convention while confessing susceptibility to it.
 **Marks:** 40
@@ -482,7 +355,7 @@ Compare how the poets present attitudes towards romantic convention in 'I Wouldn
 
 ---
 
-# Topic 14: In Paris With You
+# Topic 11: In Paris With You
 **Type:** poetry_named
 **Teaching Point:** Fenton's wounded speaker refuses the word 'love' and the tourist's Paris alike, insisting on the sleazy hotel room and 'the little bit of Paris in our view' as the honest ground of a rebound affair. Students should examine how the comic coinages and the displacement of 'love' onto 'Paris' let the poem say what the speaker cannot — that this guarded, damaged intimacy is love beginning again.
 **Marks:** 40
@@ -534,7 +407,53 @@ Compare how the poets present love on the rebound in 'In Paris With You' and the
 
 ---
 
-# Topic 15: Warming Her Pearls
+# Topic 12: Flirtation
+**Type:** poetry_named
+**Teaching Point:** Dove holds the first moments of attraction where 'there's no need / to say anything' — an orange flaring on a plate, night salting the sky, a heart humming a forgotten tune. Students should examine how the airy couplets and the closing single line craft the moment into a 'topiary' to walk through: pleasure located in possibility itself, before anything is declared or decided.
+**Marks:** 40
+**AOs:** AO1,AO2
+**Focus Poem:** Flirtation
+**Focus Poet:** Rita Dove
+**Extract Location:** Flirtation by Rita Dove
+
+## Poem
+After all, there’s no need
+to say anything
+
+at first. An orange, peeled
+and quartered, flares
+
+like a tulip on a wedgewood plate
+Anything can happen.
+
+Outside the sun
+has rolled up her rugs
+
+and night strewn salt
+across the sky. My heart
+
+is humming a tune
+I haven’t heard in years!
+
+Quiet’s cool flesh—
+let’s sniff and eat it.
+
+There are ways
+to make of the moment
+
+a topiary
+so the pleasure’s in
+
+walking through.
+
+## Question
+Compare how the poets present the beginning of attraction in 'Flirtation' and the poem printed on the exam paper.
+
+[20 marks — Part (a)]
+
+---
+
+# Topic 13: Warming Her Pearls
 **Type:** poetry_named
 **Teaching Point:** Duffy gives voice to a lady's maid whose duty — wearing her mistress's pearls warm — becomes the single permitted intimacy in a desire that class forbids her to speak. Students should examine how the pearls' movement between the two bodies, and the maid's watchful, sensuous narration, measure both the closeness of servant and mistress and the unbridgeable distance between them.
 **Marks:** 40
@@ -581,7 +500,7 @@ Compare how the poets present desire and distance in 'Warming Her Pearls' and th
 
 ---
 
-# Topic 16: Dusting the Phone
+# Topic 14: Dusting the Phone
 **Type:** poetry_named
 **Teaching Point:** Kay charts the obsessive limbo of waiting for a lover's call, where every ring and silence is read as disaster and the phone becomes a shrine the speaker polishes and serves. Students should examine how the fragmented, repetitive syntax and the swing between fantasy and self-mockery present love as a state of anxious, undignified dependency.
 **Marks:** 40
@@ -623,6 +542,117 @@ I don't know what.
 
 ## Question
 Compare how the poets present the anxiety of waiting for love in 'Dusting the Phone' and the poem printed on the exam paper.
+
+[20 marks — Part (a)]
+
+---
+
+# Topic 15: The Perseverance
+**Type:** poetry_named
+**Teaching Point:** Antrobus waits as a boy outside The Perseverance — the pub that keeps swallowing his father 'a minute' at a time — in a sestina whose obsessive end-words circle like the waiting itself. Students should examine how the Peter Tosh epigraph's 'overstanding' reframes the poem: the adult speaker comprehending, without excusing, a father who was love and absence in the same body.
+**Marks:** 40
+**AOs:** AO1,AO2
+**Focus Poem:** The Perseverance
+**Focus Poet:** Raymond Antrobus
+**Extract Location:** The Perseverance by Raymond Antrobus
+
+## Poem
+“Love is the man overstanding”
+PETER TOSH
+
+I wait outside the perseverance.
+Just popping in here a minute.
+I’d heard him say it many times before
+like all kids with a drinking father
+watch him disappear
+into smoke and laughter.
+
+There is no such thing as too much laughter,
+my father says, drinking in the perseverance
+until everything disappears —
+I’m outside counting minutes,
+waiting for the man, my father
+to finish his shot and take me home before
+
+it gets dark. We’ve been here before,
+no such thing as too much laughter
+unless you’re my mother without my father,
+
+working weekends while the perseverance
+spits him out for a minute.
+He gives me 50p to make me disappear.
+
+50p in my hand, I disappear
+like a coin in a parking meter before
+the time runs out. How many minutes
+will I lose listening to the laughter
+spilling from the perseverance
+while strangers ask, where is your father?
+
+I stare at the door and say, my father
+is working. Strangers who don’t disappear
+but hug me for my perseverance.
+Dad said this will be the last time before,
+while the TV spilled canned laughter,
+us, on the sofa in his council flat, knowing any minute
+
+the yams will boil, any minute,
+I will eat again with my father,
+who cooks and serves laughter
+good as any Jamaican who disappeared
+from the Island I tasted before
+
+overstanding our heat and perseverance.
+
+I still hear popping in for a minute, see him disappear.
+We lose our fathers before we know it.
+I am still outside the perseverance, listening for the laughter.
+
+## Question
+Compare how the poets present love, family and endurance in 'The Perseverance' and the poem printed on the exam paper.
+
+[20 marks — Part (a)]
+
+---
+
+# Topic 16: Lullaby
+**Type:** poetry_named
+**Teaching Point:** Dedicated to her sister Khudejha, Asghar's poem turns orphanhood into a bedtime story: the parents buried on opposite sides of the world wake when their daughters sleep, meeting in a tunnel through the planet to dance all night. Students should examine how the couplets' lullaby softness reclaims the macabre — grief re-imagined as an underworld of reunion so that the sisters can rest.
+**Marks:** 40
+**AOs:** AO1,AO2
+**Focus Poem:** Lullaby
+**Focus Poet:** Fatimah Asghar
+**Extract Location:** Lullaby by Fatimah Asghar
+
+## Poem
+*For Khudejha*
+
+when the sadness comes
+my sister tells me a story –
+
+a man buried in pakistan
+a woman buried in new york city
+
+when we sleep they wake
+opposite sides of the world
+
+the planet opens a tunnel
+where they meet: dirt sky & worm
+
+stars. the lovers dance,
+all night, their way back
+
+my father’s fingertips
+pressing against my mother’s
+
+crooked smile. her henna-dyed
+hair light the underworld
+
+the mole on his lip’s left side
+winks the dark.
+
+## Question
+Compare how the poets present love that survives loss in 'Lullaby' and the poem printed on the exam paper.
 
 [20 marks — Part (a)]
 

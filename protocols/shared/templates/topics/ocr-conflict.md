@@ -1,52 +1,4 @@
-# Topic 1: A Poison Tree
-**Type:** poetry_named
-**Teaching Point:** Blake contrasts anger spoken and ended with anger concealed and cultivated — watered with tears, sunned with false smiles — until it fruits into an apple that kills the foe. Students should examine how the nursery-simple quatrains and the extended tree conceit trace suppression, not wrath itself, as the true source of destruction, and how the speaker's gladness at the end implicates him entirely.
-**Marks:** 40
-**AOs:** AO1,AO2
-**Focus Poem:** A Poison Tree
-**Focus Poet:** William Blake
-**Extract Location:** A Poison Tree by William Blake
-
-## Poem
-I was angry with my friend:
-I told my wrath, my wrath did end.
-I was angry with my foe:
-I told it not, my wrath did grow.
-
-And I watered it in fears,
-Night and morning with my tears;
-And I sunned it with smiles,
-And with soft deceitful wiles.
-
-And it grew both day and night,
-Till it bore an apple bright.
-And my foe beheld it shine.
-And he knew that it was mine,
-
-And into my garden stole
-When the night had veiled the pole;
-In the morning glad I see
-My foe outstretched beneath the tree.
-
-## Question
-Compare how the poets present the growth of suppressed anger in 'A Poison Tree' and the poem printed on the exam paper.
-
-[20 marks — Part (a)]
-
----
-
-# Topic 2: Conceptual Notes
-**Type:** conceptual-notes
-**Teaching Point:** This topic covers the key concepts, themes, and poetic techniques needed for the OCR Conflict Poetry Cluster from the Towards a World Unknown anthology.
-**Marks:** 0
-**AOs:** none
-
-## Question
-N/A — Conceptual Notes topic.
-
----
-
-# Topic 3: Envy
+# Topic 1: Envy
 **Type:** poetry_named
 **Teaching Point:** Lamb figures the envious person as a rose-tree fretting to bear violets and lilies, blind to its own red rose — a conflict waged not against others but against one's own nature. Students should examine how the didactic emblem and the closing counsel of 'care and culture' present contentment as the discovery and tending of a talent already possessed.
 **Marks:** 40
@@ -84,7 +36,18 @@ Compare how the poets present inner conflict and discontent in 'Envy' and the po
 
 ---
 
-# Topic 4: Boat Stealing (from 1799 Prelude)
+# Topic 2: Conceptual Notes
+**Type:** conceptual-notes
+**Teaching Point:** This topic covers the key concepts, themes, and poetic techniques needed for the OCR Conflict Poetry Cluster from the Towards a World Unknown anthology (2022 revised edition, first assessment 2024).
+**Marks:** 0
+**AOs:** none
+
+## Question
+N/A — Conceptual Notes topic.
+
+---
+
+# Topic 3: Boat Stealing (from 1799 Prelude)
 **Type:** poetry_named
 **Teaching Point:** Wordsworth recounts stealing a boat as an 'act of stealth / And troubled pleasure' until a huge cliff seems to stride after him, leaving his brain working 'with a dim and undetermined sense / Of unknown modes of being'. Students should examine how the blank verse's calm onward movement carries the boy from confident mastery to darkness and blank desertion, so that nature's rebuke becomes an inner, formative conflict rather than an external punishment.
 **Marks:** 40
@@ -150,7 +113,7 @@ Compare how the poets present guilt and the conflict within the mind in 'Boat St
 
 ---
 
-# Topic 5: The Destruction of Sennacherib
+# Topic 4: The Destruction of Sennacherib
 **Type:** poetry_named
 **Teaching Point:** Byron's galloping anapaests sweep the Assyrian host from gleaming purple-and-gold to withered leaves in two stanzas, the Angel of Death unmaking an army without a single human battle. Students should examine how the relentless rhythm, the leaf similes and the final image of might melting 'like snow' present earthly military power as instantly reversible before a greater force.
 **Marks:** 40
@@ -197,6 +160,58 @@ Compare how the poets present the destruction of military power in 'The Destruct
 
 ---
 
+# Topic 5: Songs for the People
+**Type:** poetry_named
+**Teaching Point:** Harper — poet, abolitionist and activist writing in the wake of the American Civil War — asks to make songs not for carnage or strife but music that can hush the world's discord and reach 'the hearts of men'. Students should examine how the hymn-like quatrains enact the healing they describe, proposing song itself as the counterforce to war and the builder of 'more abundant life'.
+**Marks:** 40
+**AOs:** AO1,AO2
+**Focus Poem:** Songs for the People
+**Focus Poet:** Frances E. W. Harper
+**Extract Location:** Songs for the People by Frances E. W. Harper
+
+## Poem
+Let me make the songs for the people,
+Songs for the old and young;
+Songs to stir like a battle-cry
+Wherever they are sung.
+
+Not for the clashing of sabres,
+For carnage nor for strife;
+​But songs to thrill the hearts of men
+With more abundant life.
+
+Let me make the songs for the weary,
+Amid life's fever and fret,
+Till hearts shall relax their tension,
+And careworn brows forget.
+
+Let me sing for little children,
+Before their footsteps stray,
+Sweet anthems of love and duty,
+To float o'er life's highway.
+
+I would sing for the poor and aged,
+When shadows dim their sight;
+Of the bright and restful mansions,
+Where there shall be no night.
+
+Our world, so worn and weary,
+Needs music, pure and strong,
+To hush the jangle and discords
+Of sorrow, pain, and wrong.
+
+Music to soothe all its sorrow,
+Till war and crime shall cease;
+And the hearts of men grown tender
+Girdle the world with peace.
+
+## Question
+Compare how the poets present healing after conflict in 'Songs for the People' and the poem printed on the exam paper.
+
+[20 marks — Part (a)]
+
+---
+
 # Topic 6: There's a Certain Slant of Light
 **Type:** poetry_named
 **Teaching Point:** Dickinson locates conflict entirely within: a winter light that oppresses like cathedral music inflicts 'Heavenly Hurt' that leaves no scar, only 'internal difference, / Where the Meanings, are'. Students should examine how the dashes, slant rhymes and paradoxes ('imperial affliction') render a despair that cannot be taught, shown or shared — an invisible wound the landscape itself seems to hold its breath before.
@@ -234,82 +249,79 @@ Compare how the poets present internal struggle and despair in 'There's a Certai
 
 ---
 
-# Topic 7: The Man He Killed
+# Topic 7: Colonization in Reverse
 **Type:** poetry_named
-**Teaching Point:** Hardy's soldier rehearses why he shot a man he would have stood a drink — 'because he was my foe' — and hears the emptiness of his own explanation as he stumbles over it. Students should examine how the halting repetitions and the pub-talk idiom expose war as 'quaint and curious': a system that turns identical, interchangeable men into each other's killers for reasons neither can state.
+**Teaching Point:** Bennett's Jamaican-patois ballad watches the Windrush generation shipping out 'bag an baggage' to settle England — colonising 'de mother lan' in reverse — with a glee that turns history upside down. Students should examine how the dialect voice and dancing ballad metre carry the satire: the coloniser's own journey replayed back at it, comedy sharpened into a reckoning with empire.
 **Marks:** 40
 **AOs:** AO1,AO2
-**Focus Poem:** The Man He Killed
-**Focus Poet:** Thomas Hardy
-**Extract Location:** The Man He Killed by Thomas Hardy
+**Focus Poem:** Colonization in Reverse
+**Focus Poet:** Louise Bennett
+**Extract Location:** Colonization in Reverse by Louise Bennett
 
 ## Poem
-"Had he and I but met
-By some old ancient inn,
-We should have set us down to wet
-Right many a nipperkin!
+Wat a joyful news, miss Mattie,
+I feel like me heart gwine burs
+Jamaica people colonizin
+Englan in reverse.
 
-"But ranged as infantry,
-And staring face to face,
-I shot at him as he at me,
-And killed him in his place.
+By de hundred, by de tousan
+From country and from town,
+By de ship-load, by de plane-load
+Jamaica is Englan boun.
 
-"I shot him dead because —
-Because he was my foe,
-Just so: my foe of course he was;
-That's clear enough; although
+Dem a pour out a Jamaica
+Everybody future plan
+Is fe get a big-time job
+An settle in de mother lan.
 
-"He thought he'd 'list, perhaps,
-Off-hand like — just as I —
-Was out of work — had sold his traps —
-No other reason why.
+What a islan! What a people!
+Man an woman, old an young
+Jus a pack dem bag an baggage
+An tun history upside dung!
 
-"Yes; quaint and curious war is!
-You shoot a fellow down
-You'd treat, if met where any bar is,
-Or help to half a crown."
+Some people doan like travel,
+But fe show dem loyalty
+Dem all a open up cheap-fare-
+To-Englan agency.
+
+An week by week dem shippin off
+Dem countryman like fire,
+Fe immigrate an populate
+De seat a de Empire.
+
+Oonoo see how life is funny,
+Oonoo see de tunabout?
+Jamaica live fe box bread
+Out a English people mout’.
+
+For wen dem ketch a Englan,
+An start play dem different role,
+Some will settle down to work
+An some will settle fe de dole.
+
+Jane say de dole is not too bad
+Because dey payin she
+Two pounds a week fe seek a job
+Dat suit her dignity.
+
+Me say Jane will never fine work
+At de rate how she dah look,
+For all day she stay pon Aunt Fan couch
+An read love-story book.
+
+Wat a devilment a Englan!
+Dem face war an brave de worse,
+But me wonderin how dem gwine stan
+Colonizin in reverse.
 
 ## Question
-Compare how the poets present the senselessness of war in 'The Man He Killed' and the poem printed on the exam paper.
+Compare how the poets present migration and history overturned in 'Colonization in Reverse' and the poem printed on the exam paper.
 
 [20 marks — Part (a)]
 
 ---
 
-# Topic 8: Anthem for Doomed Youth
-**Type:** poetry_named
-**Teaching Point:** Owen's sonnet asks what funeral rites exist for men who 'die as cattle' and answers with the weapons themselves — guns for bells, rifles for prayers, shells for choirs — before the sestet turns home to the mourners' eyes and drawn blinds. Students should examine how the poem's substitution of battlefield sounds for sacred ritual, and its quiet domestic close, measure the scale of loss by the impossibility of mourning it properly.
-**Marks:** 40
-**AOs:** AO1,AO2
-**Focus Poem:** Anthem for Doomed Youth
-**Focus Poet:** Wilfred Owen
-**Extract Location:** Anthem for Doomed Youth by Wilfred Owen
-
-## Poem
-What passing-bells for these who die as cattle?
-Only the monstrous anger of the guns.
-Only the stuttering rifles' rapid rattle
-Can patter out their hasty orisons.
-No mockeries for them; no prayers nor bells,
-Nor any voice of mourning save the choirs, —
-The shrill, demented choirs of wailing shells;
-And bugles calling for them from sad shires.
-
-What candles may be held to speed them all?
-Not in the hands of boys, but in their eyes
-Shall shine the holy glimmers of goodbyes.
-The pallor of girls' brows shall be their pall;
-Their flowers the tenderness of patient minds,
-And each slow dusk a drawing-down of blinds.
-
-## Question
-Compare how the poets present the loss and mourning of war in 'Anthem for Doomed Youth' and the poem printed on the exam paper.
-
-[20 marks — Part (a)]
-
----
-
-# Topic 9: Vergissmeinnicht
+# Topic 8: Vergissmeinnicht
 **Type:** poetry_named
 **Teaching Point:** Douglas returns to a dead German gunner sprawled beside the photograph of his girl, Steffi, and finds 'the lover and killer... mingled' in one decaying body. Students should examine how the poem's cold, exact observation and its final abstraction — death singling out the soldier and mortally hurting the lover — force reader and soldier alike to concede the enemy's full humanity.
 **Marks:** 40
@@ -356,7 +368,7 @@ Compare how the poets present the humanity of the enemy in 'Vergissmeinnicht' an
 
 ---
 
-# Topic 10: What Were They Like?
+# Topic 9: What Were They Like?
 **Type:** poetry_named
 **Teaching Point:** Levertov casts the poem as an interrogation about a Vietnam already annihilated: six courteous, anthropological questions met by answers in which bones are charred, buds are gone and 'it is not remembered'. Students should examine how the question-and-answer structure and the conditional, rumoured beauty of the final lines ('It was reported...') present war as the erasure not just of people but of a whole culture's memory.
 **Marks:** 40
@@ -406,7 +418,7 @@ Compare how the poets present war's destruction of a culture in 'What Were They 
 
 ---
 
-# Topic 11: Lament
+# Topic 10: Lament
 **Type:** poetry_named
 **Teaching Point:** Clarke's elegy for the Gulf War proceeds as a litany — 'For the green turtle... For Ahmed... For the tern' — in which soldiers, children, seabirds and the ocean itself stand in one unbroken line of mourning. Students should examine how the repeated preposition and the tercets' steady accumulation widen conflict's casualty list to the whole created world, ending in 'the ashes of language' where lament itself burns out.
 **Marks:** 40
@@ -451,79 +463,7 @@ Compare how the poets present the wider casualties of war in 'Lament' and the po
 
 ---
 
-# Topic 12: Punishment
-**Type:** poetry_named
-**Teaching Point:** Heaney addresses an Iron Age girl executed for adultery and preserved in the bog, then turns the accusation on himself: the 'artful voyeur' who 'would have cast... the stones of silence' and who stands dumb while his own society tars its betraying sisters. Students should examine how the short, tender quatrains and the pivot from 'her' to 'I' make the poem an anatomy of complicity — understanding 'the exact and tribal, intimate revenge' even while mourning its victim.
-**Marks:** 40
-**AOs:** AO1,AO2
-**Focus Poem:** Punishment
-**Focus Poet:** Seamus Heaney
-**Extract Location:** Punishment by Seamus Heaney
-
-## Poem
-I can feel the tug
-of the halter at the nape
-of her neck, the wind
-on her naked front.
-
-It blows her nipples
-to amber beads,
-it shakes the frail rigging
-of her ribs.
-
-I can see her drowned
-body in the bog,
-the weighing stone,
-the floating rods and boughs.
-
-Under which at first
-she was a barked sapling
-that is dug up
-oak-bone, brain-firkin:
-
-her shaved head
-like a stubble of black corn,
-her blindfold a soiled bandage,
-her noose a ring
-
-to store
-the memories of love.
-Little adulteress,
-before they punished you
-
-you were flaxen-haired,
-undernourished, and your
-tar-black face was beautiful.
-My poor scapegoat,
-
-I almost love you
-but would have cast, I know,
-the stones of silence.
-I am the artful voyeur
-
-of your brain's exposed
-and darkened combs,
-your muscles' webbing
-and all your numbered bones:
-
-I who have stood dumb
-when your betraying sisters,
-cauled in tar,
-wept by the railings,
-
-who would connive
-in civilized outrage
-yet understand the exact
-and tribal, intimate revenge.
-
-## Question
-Compare how the poets present punishment and complicity in 'Punishment' and the poem printed on the exam paper.
-
-[20 marks — Part (a)]
-
----
-
-# Topic 13: Flag
+# Topic 11: Flag
 **Type:** poetry_named
 **Teaching Point:** Agard's question-and-answer tercets reduce the flag to 'just a piece of cloth' — yet one that brings nations to their knees, emboldens men and outlives the blood they bleed. Students should examine how the dismissive refrain and the final swerve to the reader ('Then blind your conscience to the end') expose how a symbol acquires the power to command lives, and what surrendering to it costs.
 **Marks:** 40
@@ -560,69 +500,7 @@ Compare how the poets present the power of symbols in conflict in 'Flag' and the
 
 ---
 
-# Topic 14: Phrase Book
-**Type:** poetry_named
-**Teaching Point:** Shapcott splices a televised Gulf War into a tourist's phrase-book English, so that pilots' euphemisms — 'Stealthed', 'Cleansed', 'Taken Out' — collide with the polite helplessness of 'Where is the British Consulate?'. Students should examine how the collage of registers and the recurring 'I am an Englishwoman' dramatise a language so managed and evasive that the speaker can no longer find 'the word for it' — for love, or for what war does.
-**Marks:** 40
-**AOs:** AO1,AO2
-**Focus Poem:** Phrase Book
-**Focus Poet:** Jo Shapcott
-**Extract Location:** Phrase Book by Jo Shapcott
-
-## Poem
-I'm standing here inside my skin,
-which will do for a Human Remains Pouch
-for the moment. Look down there (up here).
-Quickly. Slowly. This is my own front room
-
-where I'm lost in the action, live from a war,
-on screen. I am an Englishwoman. I don't understand you.
-What's the matter? You are right. You are wrong.
-Things are going well (badly). Am I disturbing you?
-
-TV is showing bliss as taught to pilots:
-Blend, Low silhouette, Irregular shape, Small,
-Secluded. (Please write it down. Please speak slowly.)
-Bliss is how it was in this very room
-
-when I raised my body to his mouth,
-when he even balanced me in the air,
-or at least I thought so and yes the pilots say
-yes they have caught it through the Side-Looking
-
-Airborne Radar, and through the J-Stars.
-I am expecting a gentleman (a young gentleman,
-two gentlemen, some gentlemen). Please send him
-(them) up at once. This is really beautiful.
-
-Yes they have seen us, the pilots in the Kill Box
-on their screens and played the routine for
-getting us Stealthed, that is, Cleansed, to you and me,
-Taken Out. They know how to move into a single room
-
-like that, to send in with Pinpoint Accuracy, a hundred Harms.
-I have two cases and a cardboard box. There is another
-bag there. I cannot open my case - look out,
-the lock is broken. Have I done enough?
-
-Bliss the pilots say is for evasion
-and escape. What's love in all this debris?
-Just one person pounding another into dust,
-into dust. I do not know the word for it yet.
-
-Where is the British Consulate? Please explain.
-What does it mean? What must I do? Where
-can I find? What have I done? I have done
-nothing. Let me pass please. I am an Englishwoman.
-
-## Question
-Compare how the poets present language and modern warfare in 'Phrase Book' and the poem printed on the exam paper.
-
-[20 marks — Part (a)]
-
----
-
-# Topic 15: Honour Killing
+# Topic 12: Honour Killing
 **Type:** poetry_named
 **Teaching Point:** Dharker's speaker strips off, garment by garment, everything imposed on her — coat of country, veil, silks, even skin and womb — until she can 'see / what I am in here' and begin 'making, crafting, / plotting' at a new geography. Students should examine how the widening pattern of the stanzas and the escalating undressing conceit turn the title's violence back on itself: the true killing was the burial of the self, and the poem is its undoing.
 **Marks:** 40
@@ -677,7 +555,7 @@ Compare how the poets present conflict between self and imposed identity in 'Hon
 
 ---
 
-# Topic 16: Partition
+# Topic 13: Partition
 **Type:** poetry_named
 **Teaching Point:** Bhatt filters Partition through her mother's memory: a nineteen-year-old listening to the cries from Ahmedabad railway station, too afraid to go with her aunt, still guilty at midnight fifty years on. Students should examine how the unbroken verse paragraph and the closing indented question — how could a man 'who knew nothing / about geography / divide a country?' — set one woman's lifelong regret against the abstract line-drawing of political power.
 **Marks:** 40
@@ -727,6 +605,126 @@ divide a country?'
 
 ## Question
 Compare how the poets present the human cost of political division in 'Partition' and the poem printed on the exam paper.
+
+[20 marks — Part (a)]
+
+---
+
+# Topic 14: Papa-T
+**Type:** poetry_named
+**Teaching Point:** D'Aguiar's grandfather recites the Tennyson he learned at sea, and the boy sees redcoats picked off 'one by one' — war poetry filtered through a Guyanese elder's stretched consonants and no-nonsense discipline. Students should examine how the elegy layers three inheritances — Tennyson's charge, Papa-T's voice, the grandson's blank page — and how its final twist, 'to hear, to disobey', answers the obedience at the heart of the original poem.
+**Marks:** 40
+**AOs:** AO1,AO2
+**Focus Poem:** Papa-T
+**Focus Poet:** Fred D’Aguiar
+**Extract Location:** Papa-T by Fred D’Aguiar
+
+## Poem
+When Grandad recited the Tennyson learned at sea,
+I saw companies of redcoats tin-soldiering it
+Through rugged country, picked off one by one
+By poison-tipped blow-darts or arrows from nowhere:
+Their drums’ panicky rattle, their bugler’s yelp,
+Musket-clap and popping cannons, smoke everywhere.
+
+He’d cut short to shout, If yu all don’t pay me mind,
+I goin ge yu a good lickin an sen yu to bed, resuming
+As he breathed in, his consonants stretched beyond recall,
+Into a whales’ crying place, beginning polyp kingdoms,
+Shipwrecked into Amerindian care for months. We’d sit tight,
+All eyes on our sweet seasalter, for that last-line-sound,
+
+Someone mistimed once, making him start again.
+These days the perfect-lined face of a blank page
+Startles at first, like Papa-T’s no-nonsense recitals;
+It has me itching to bring him reeling-off in that tongue –
+Honour the charge they made! Honour the Light Brigade,
+Noble six hundred: to hear, to disobey.
+
+## Question
+Compare how the poets present memory, heritage and the echoes of conflict in 'Papa-T' and the poem printed on the exam paper.
+
+[20 marks — Part (a)]
+
+---
+
+# Topic 15: We Lived Happily during the War
+**Type:** poetry_named
+**Teaching Point:** Kaminsky's speaker confesses that when other people's houses were bombed, 'we protested but not enough' — while America fell, 'invisible house by invisible house', around a bed in the great country of money. Students should examine how the broken lineation and the bracketed plea '(forgive us)' indict the comfortable bystander: the poem's title returning at the end as the quietest possible accusation.
+**Marks:** 40
+**AOs:** AO1,AO2
+**Focus Poem:** We Lived Happily during the War
+**Focus Poet:** Ilya Kaminsky
+**Extract Location:** We Lived Happily during the War by Ilya Kaminsky
+
+## Poem
+And when they bombed other people’s houses, we
+
+protested
+but not enough, we opposed them but not
+
+enough. I was
+in my bed, around my bed America
+
+was falling: invisible house by invisible house by invisible house.
+
+I took a chair outside and watched the sun.
+
+In the sixth month
+of a disastrous reign in the house of money
+
+in the street of money in the city of money in the country of money,
+our great country of money, we (forgive us)
+
+lived happily during the war.
+
+## Question
+Compare how the poets present complicity and comfort during distant war in 'We Lived Happily during the War' and the poem printed on the exam paper.
+
+[20 marks — Part (a)]
+
+---
+
+# Topic 16: Thirteen
+**Type:** poetry_named
+**Teaching Point:** Femi's boy is stopped four minutes from home by an officer who says he fits 'the description of a man' — the same officer who once told a Wednesday assembly that every child was a supernova. Students should examine how the second-person future tense makes the encounter feel fated, and how the remembered science lesson closes the trap: supernovas are dying stars on the verge of becoming black holes.
+**Marks:** 40
+**AOs:** AO1,AO2
+**Focus Poem:** Thirteen
+**Focus Poet:** Caleb Femi
+**Extract Location:** Thirteen by Caleb Femi
+
+## Poem
+You will be four minutes from home
+when you are cornered by an officer
+who will tell you of a robbery, forty
+minutes ago in the area. You fit
+the description of a man? – You’ll laugh.
+Thirteen, you’ll tell him: you’re thirteen.
+
+You’ll be patted on the shoulder, then, by another fed
+whose face takes you back to Gloucester Primary School,
+a Wednesday assembly about being little stars.
+This same officer had an horizon in the east
+of his smile when he told your class that
+you were all supernovas,
+the biggest and brightest stars.
+
+You will show the warmth of your teeth
+praying he remembers the heat of your supernova;
+he will see you powerless – plump.
+You will watch the two men cast lots for your organs.
+
+Don’t you remember me? you will ask.
+You gave a talk at my primary school.
+While fear condenses on your lips,
+you will remember that Wednesday, after the assembly,
+your teacher speaking more about supernovas:
+how they are, in fact, dying stars
+on the verge of becoming black holes.
+
+## Question
+Compare how the poets present the individual against authority in 'Thirteen' and the poem printed on the exam paper.
 
 [20 marks — Part (a)]
 
