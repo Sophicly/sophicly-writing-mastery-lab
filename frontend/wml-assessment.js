@@ -1168,7 +1168,11 @@
     // detection at the resume-confirm handler still reads the raw reply, so buttons still render.
     function _stripResumeMarkers(text) {
         if (!text) return text;
-        return String(text).replace(/`?\s*\[\s*(?:[✓🤔💬⏸]\s*)?(?:Got it[^\]]*|Still confused|Different question|Pause here)\s*\]\s*`?/gi, '');
+        // v7.19.810: 'u' flag added — 🤔/💬 are astral (surrogate pairs); without /u the
+        // character class matched only one surrogate half, so `[🤔 Still confused]` and
+        // `[💬 Different question]` leaked into the visible bubble while `[✓ Got it]`
+        // (BMP ✓) stripped fine. Observed live in Neil's v809 run.
+        return String(text).replace(/`?\s*\[\s*(?:[✓🤔💬⏸]\s*)?(?:Got it[^\]]*|Still confused|Different question|Pause here)\s*\]\s*`?/giu, '');
     }
 
     // v7.19.709: deterministic params for a literature section's reflection panel, so the frontend
@@ -1206,8 +1210,14 @@
     function _gradeKickoffValue(g) {
         const _isLit = (typeof isLanguageSubject === 'function') ? !isLanguageSubject() : true;
         if (!_isLit) return g;
-        canvasSilentSend = true;
-        return "I'm aiming for " + g + ". Now begin the Introduction: go straight to its STEP 1 reflection and emit the @REFLECT_GATE panel for the Introduction now — do NOT start marking yet.";
+        // v7.19.810: directive removed. It silently injected "go straight to the
+        // Introduction ... emit @REFLECT_GATE now" into history — (a) it instructed
+        // the model to SKIP the pre-assessment chain (second cause of the skipped
+        // headline-goal/keyword gates, alongside the old state block), and (b) the
+        // pre-chain gate rendered it as a visible user bubble, leaking @REFLECT_GATE
+        // to the student. The setup-phase state block (v7.19.809) now owns
+        // "reflection panel first" — the student's reply can just be the grade.
+        return "I'm aiming for " + g + ".";
     }
 
     // v7.19.599: content-fallback feedback parse when the model omits @FB markers
@@ -5295,7 +5305,7 @@
                         const _renderPostClearGreeting = () => {
                         const tn = state.textName || state.text || 'your text';
                         const wc = getResponseWordCount(canvasEditor);
-                        const qText = extractEssayQuestion(canvasEditor);
+                        const qText = extractEssayQuestion(canvasEditor) || state.question || ''; // v7.19.810: state.question fallback (stale-editor '' dropped the question recap)
                         const _isLang = isLanguageSubject();
                         const workNoun = _isLang ? 'response' : 'essay';
                         const questionInfo = qText ? `\n\nYour ${workNoun} question: **${qText}**` : '';
@@ -5585,7 +5595,7 @@
         const PRECHAIN_GOAL_OPTIONS = [
             'A) Developing perceptive close analysis of language and techniques (AO2)',
             'B) Understanding how context drives concepts and shapes the author’s techniques (AO3)',
-            'C) Writing conceptual topic sentences and coherent analysis (AO1)',
+            'C) Developing a convincing conceptual argument across the whole essay (AO1)',
             'D) Exploring effects on the reader more deeply (AO2)',
             'E) Figuring out my strengths and weaknesses as a writer',
         ];
@@ -5609,13 +5619,18 @@
                 plain = `Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay **as a whole**: what was the **one main goal** you were working toward? You'll set a mini-goal for each paragraph as we go — this is your **headline goal** for the whole piece. Please choose the option that best describes your focus:\n\n${optsPlain}`;
                 html = `<p>Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay <strong>as a whole</strong>: what was the <strong>one main goal</strong> you were working toward?</p><p style="margin-top:8px">You'll set a mini-goal for each paragraph as we go — this is your <strong>headline goal</strong> for the whole piece. Choose the option that best describes your focus, or type your own:</p>`;
             } else {
-                const qText = (typeof extractEssayQuestion === 'function' && canvasEditor) ? (extractEssayQuestion(canvasEditor) || '') : '';
+                // v7.19.810: fall back to state.question — extractEssayQuestion returns ''
+                // on a stale editor ref, which dropped the question quote (observed live).
+                const qText = (((typeof extractEssayQuestion === 'function' && canvasEditor) ? (extractEssayQuestion(canvasEditor) || '') : '') || state.question || '');
                 const qPlain = qText ? `'${qText}'` : 'your essay question';
                 plain = `Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering: ${qPlain} — what were the **key aspects** this question asked you to explore?`;
                 const qBox = qText ? `<div style="margin:10px 0;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
                 html = `<p>Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering:</p>${qBox}<p>What were the <strong>key aspects</strong> this question asked you to explore? (type or use the mic)</p>`;
             }
-            addChatMessage(html, 'ai', plain);
+            // v7.19.810: suppressActions — the plain text carries the lettered options
+            // for the AI's context, which auto-detection would ALSO turn into buttons
+            // (duplicate truncated set observed live). Our own goalBar renders them.
+            addChatMessage(html, 'ai', plain, { suppressActions: true });
             canvasChatHistory.push({ role: 'assistant', content: plain });
             saveCanvasChat(canvasChatHistory, canvasChatId);
             if (stage === 'headline') {
@@ -5685,8 +5700,12 @@
             // injection [CONTEXT] path + structure preflight).
             const _pcStage = _assessPreChainStage();
             if (_pcStage) {
-                addChatMessage(msg, 'user');
-                canvasChatHistory.push({ role: 'user', content: msg, preChain: true });
+                // v7.19.810: respect silent sends (mirrors the main path below) — a
+                // directive-style send must never render as a user bubble.
+                const _pcSilent = canvasSilentSend;
+                canvasSilentSend = false;
+                if (!_pcSilent) addChatMessage(msg, 'user');
+                canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _pcSilent });
                 chatTextarea.value = '';
                 chatTextarea.style.height = '40px';
                 _renderPreChainQuestion(_pcStage);
@@ -13218,7 +13237,7 @@
                                         const tn = state.textName || state.text || 'your text';
                                         const wc = getResponseWordCount(canvasEditor);
                                         // Retrieve essay question from document
-                                        const qText = extractEssayQuestion(canvasEditor);
+                                        const qText = extractEssayQuestion(canvasEditor) || state.question || ''; // v7.19.810: state.question fallback (stale-editor '' dropped the question recap)
                                         const questionInfo = qText ? `\n\nYour essay question: **${qText}**` : '';
                                         // v7.14.43: Context-aware greeting — exam practice has no "diagnostic"
                                         const essayLabel = (state.mode === 'exam_prep') ? `${tn} essay` : (state.phase === 'redraft') ? `${tn} redraft essay` : `${tn} diagnostic essay`;
@@ -13359,7 +13378,7 @@
                         }
 
                         // Chat message helper — uses same structure as original chat
-                        function addChatMessage(text, role, rawText) {
+                        function addChatMessage(text, role, rawText, opts) { // v7.19.810: opts.suppressActions (mirrors primary)
                             // Remove previous quick action bars
                             chatMessages.querySelectorAll('.swml-quick-actions').forEach(q => q.remove());
 
@@ -13422,7 +13441,7 @@
                                 const canvasAssessDone = state.task === 'assessment' && state.plan.total_score && state.plan.grade;
                                 // Suppress quick actions on Hattie reflective questions (v7.12.34)
                                 const isHattieQuestion = /(?:Where\s+am\s+I\s+going|How\s+am\s+I\s+going|Where\s+to\s+next|transfer.*skills|how\s+will\s+you.*apply|Session\s+Complete)/i.test(detectText);
-                                const actions = (canvasAssessDone || isHattieQuestion || _reflectData2) ? [] : detectQuickActions(detectText);
+                                const actions = (canvasAssessDone || isHattieQuestion || _reflectData2 || (opts && opts.suppressActions)) ? [] : detectQuickActions(detectText);
                                 if (actions.length > 0) {
                                     // Multi-select detection (AO selection, "select all that apply")
                                     const isMulti = /(?:pick|choose|select|commit to)\s*(?:(?:up to|between|at least)?\s*)?(\d)\s*[-–to]+\s*(\d)/i.test(detectText)
@@ -13695,7 +13714,7 @@
                         const PRECHAIN_GOAL_OPTIONS = [
                             'A) Developing perceptive close analysis of language and techniques (AO2)',
                             'B) Understanding how context drives concepts and shapes the author’s techniques (AO3)',
-                            'C) Writing conceptual topic sentences and coherent analysis (AO1)',
+                            'C) Developing a convincing conceptual argument across the whole essay (AO1)',
                             'D) Exploring effects on the reader more deeply (AO2)',
                             'E) Figuring out my strengths and weaknesses as a writer',
                         ];
@@ -13716,7 +13735,9 @@
                                 plain = `Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay **as a whole**: what was the **one main goal** you were working toward? You'll set a mini-goal for each paragraph as we go — this is your **headline goal** for the whole piece. Please choose the option that best describes your focus:\n\n${optsPlain}`;
                                 html = `<p>Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay <strong>as a whole</strong>: what was the <strong>one main goal</strong> you were working toward?</p><p style="margin-top:8px">You'll set a mini-goal for each paragraph as we go — this is your <strong>headline goal</strong> for the whole piece. Choose the option that best describes your focus, or type your own:</p>`;
                             } else {
-                                const qText = (typeof extractEssayQuestion === 'function' && canvasEditor) ? (extractEssayQuestion(canvasEditor) || '') : '';
+                                // v7.19.810: fall back to state.question — extractEssayQuestion returns ''
+                // on a stale editor ref, which dropped the question quote (observed live).
+                const qText = (((typeof extractEssayQuestion === 'function' && canvasEditor) ? (extractEssayQuestion(canvasEditor) || '') : '') || state.question || '');
                                 const qPlain = qText ? `'${qText}'` : 'your essay question';
                                 plain = `Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering: ${qPlain} — what were the **key aspects** this question asked you to explore?`;
                                 const qBox = qText ? `<div style="margin:10px 0;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
@@ -13756,8 +13777,11 @@
                             // incomplete, code owns the turn (no AI round-trip).
                             const _pcStage = _assessPreChainStage();
                             if (_pcStage) {
-                                addChatMessage(msg, 'user');
-                                canvasChatHistory.push({ role: 'user', content: msg, preChain: true });
+                                // v7.19.810: respect silent sends (mirrors primary pipeline).
+                                const _pcSilent = canvasSilentSend;
+                                canvasSilentSend = false;
+                                if (!_pcSilent) addChatMessage(msg, 'user');
+                                canvasChatHistory.push({ role: 'user', content: msg, preChain: true, hidden: _pcSilent });
                                 chatTextarea.value = '';
                                 chatTextarea.style.height = '40px';
                                 _renderPreChainQuestion(_pcStage);
