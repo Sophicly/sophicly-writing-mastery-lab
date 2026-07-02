@@ -308,8 +308,18 @@
         ? window.swmlConfig.fqBankTexts.map(s => String(s).toLowerCase())
         : ['romeo_and_juliet'];
     function _fqDeterministic() {
-        return QUIZ_CONTROLLER_ON && state.task === 'foundational_quiz'
+        const on = QUIZ_CONTROLLER_ON && state.task === 'foundational_quiz'
             && FQ_BANK_TEXTS.indexOf((state.text || '').toLowerCase()) !== -1;
+        // v7.19.825: SLUG GUARDRAIL — an FQ lesson whose text has no authored bank
+        // silently fell back to the legacy AI quiz, and silence reads as success (the
+        // #1 slug-bug class: one underscore off and nothing visibly breaks). Warn
+        // loudly, once, so any slug↔bank mismatch surfaces the first time the lesson
+        // is opened in testing.
+        if (!on && QUIZ_CONTROLLER_ON && state.task === 'foundational_quiz' && !_fqDeterministic._warned) {
+            _fqDeterministic._warned = true;
+            console.warn('WML FQ: no question bank matches text "' + state.text + '" — legacy AI quiz fallback. If a bank exists under a different slug, add an alias to SLUG_ALIASES (class-rest-api.php), the one slug registry.');
+        }
+        return on;
     }
 
     // ── Late-bound wrappers for planning/chat functions ──
@@ -1207,6 +1217,12 @@
             });
             if (replayed) {
                 console.warn('WML HEAL: re-filed ' + replayed + ' marking message(s) from chat history into placeholder feedback boxes');
+                // v7.19.825: rebuild the mark dropdowns + Predicted·Actual·Δ readouts too.
+                // The overlays were built at canvas mount from the PRE-heal labels, so the
+                // restored ACTUAL marks showed in the box titles but the overlay row stayed
+                // "Actual — · Δ —" until a manual re-mark (Neil's post-recovery screenshot).
+                // _scoreOverlaysRefresh = recalculateScoreSummary + buildDropdownOverlays.
+                try { if (typeof _scoreOverlaysRefresh === 'function') _scoreOverlaysRefresh(); } catch (_) {}
                 try { if (typeof _recalcScoreSummaryRef === 'function') _recalcScoreSummaryRef(); } catch (_) {}
                 try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
             }

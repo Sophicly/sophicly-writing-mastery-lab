@@ -71,6 +71,22 @@ Almost every "it works for X but silently does nothing for Y" bug in WML is **be
 
 ---
 
+## TEXT-SLUG REGISTRY — one canonical layer (v7.19.823+)
+
+`$SLUG_ALIASES` in `includes/class-rest-api.php` is THE text-slug registry. Every inbound slug
+(bridge/course-map, picker id, legacy form) normalises through `normalize_text_slug()` at the REST
+boundary — canvas load/save AND quiz start; FQ activation (`swmlConfig.fqBankTexts`, built by
+`get_fq_bank_texts()` in the main plugin file) expands it so every alias form activates.
+
+1. **Canonical = the form live user_meta keys use.** NEVER flip a canonical to a different form —
+   normalisation drives meta-key construction, so flipping silently re-keys student data.
+2. **Bank + template FILENAMES use the canonical slug.** Never ship duplicate files per slug form —
+   add an alias instead.
+3. **Any new divergence** (new course slug, new picker id, dash/underscore drift) gets ONE line in
+   `$SLUG_ALIASES`. That is the only place slugs reconcile.
+4. **Never silent:** a `foundational_quiz` text with no matching bank `console.warn`s and falls back
+   to the legacy AI quiz — that warning means "add an alias or a bank", never a code fork.
+
 ## DUAL CHAT PIPELINE
 
 WML has two separate chat systems:
