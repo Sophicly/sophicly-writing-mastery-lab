@@ -748,9 +748,9 @@
             if (mm[1] !== '—') { total += parseFloat(mm[1]) || 0; any = true; } // '—' = unset
         });
         if (!any || max <= 0) return 0;
-        // v7.19.815: same WC penalty as the Score Summary — the grade chip must
-        // band the FINAL total, not the raw box sum (A6: one source of truth).
-        const g = _gradeFromPctRef(Math.round((Math.max(0, total - _docWcPenalty) / max) * 100));
+        // v7.19.816: same WC CEILING as the Score Summary (Neil: ceiling, never a
+        // deduction) — the grade chip bands MIN(sum, max − penalty).
+        const g = _gradeFromPctRef(Math.round((Math.min(total, Math.max(0, max - _docWcPenalty)) / max) * 100));
         return (g === 'U' || !g) ? 0 : (parseInt(g, 10) || 0);
     }
 
@@ -20274,10 +20274,10 @@
                 }
             });
             if (maxTotal === 0) return;
-            // v7.19.815: ONE source of truth (PROTOCOL-STANDARD A6). The chat's final
-            // total applies the WC penalty (5 marks per 100 words under target, rounded)
-            // but the doc summary summed raw boxes — live 2026-07-02: doc 9/34 · Grade 3
-            // vs chat 5/34 · Grade 1. Apply the SAME deterministic formula here.
+            // v7.19.816: ONE source of truth (PROTOCOL-STANDARD A6) + Neil's SETTLED
+            // semantics: the WC penalty is a CEILING, never a deduction. Under-length
+            // essays already lose marks organically — the ceiling only bites when the
+            // box sum exceeds (max − penalty). Final = MIN(sum, max − penalty).
             let _wcPen = 0;
             try {
                 const _wcNow = getResponseWordCount(canvasEditor);
@@ -20287,7 +20287,7 @@
                 }
             } catch (_) { _wcPen = 0; }
             _docWcPenalty = _wcPen; // share with _deterministicDocGrade (grade chip)
-            const finalMarks = Math.max(0, totalMarks - _wcPen);
+            const finalMarks = Math.min(totalMarks, Math.max(0, maxTotal - _wcPen));
             const pct = Math.round((finalMarks / maxTotal) * 100);
             const grade = getGradeFromPercentage(pct);
 
@@ -20322,10 +20322,10 @@
             scoreSection.querySelectorAll('p').forEach(p => {
                 const text = p.textContent || '';
                 if (text.includes('Total Marks:')) {
-                    // v7.19.815: show the FINAL total (post WC penalty) with the working
-                    // visible — matches the chat's Final Summary table exactly.
+                    // v7.19.816: ceiling semantics — show the capped total, with the
+                    // ceiling note visible whenever it applies.
                     p.innerHTML = `<em>Total Marks:</em> ${finalMarks} / ${maxTotal}` +
-                        (_wcPen > 0 ? ` <span style="opacity:0.6;font-size:0.9em">(${totalMarks} − ${_wcPen} word-count penalty)</span>` : '');
+                        (_wcPen > 0 ? ` <span style="opacity:0.6;font-size:0.9em">(max ${Math.max(0, maxTotal - _wcPen)}/${maxTotal} — word count)</span>` : '');
                 } else if (text.includes('Percentage:')) {
                     p.innerHTML = `<em>Percentage:</em> ${pct}%`;
                 } else if (text.startsWith('Grade:') || (p.querySelector('em') && p.querySelector('em').textContent.includes('Grade:'))) {
@@ -22078,7 +22078,13 @@
         }
 
         qRaw = qRaw.replace(/\s+/g, ' ').trim();
-        if (qRaw.length > 120) qRaw = qRaw.substring(0, 120).replace(/\s+\S*$/, '') + '…';
+        // v7.19.816 (Neil): keep the FULL main question sentence — the old 120-char
+        // cut left "…presents…" mid-clause in the greeting/keyword recap. Prefer the
+        // first sentence terminator (drops the "Write about:" bullet tail); fall back
+        // to a 300-char word cut.
+        const _qSent = qRaw.match(/^[\s\S]{40,}?[.?!]/);
+        if (_qSent && _qSent[0].length < qRaw.length) qRaw = _qSent[0].trim();
+        if (qRaw.length > 300) qRaw = qRaw.substring(0, 300).replace(/\s+\S*$/, '') + '…';
         return qRaw.length > 10 ? qRaw : '';
     }
 

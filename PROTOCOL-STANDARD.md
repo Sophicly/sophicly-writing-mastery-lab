@@ -76,7 +76,17 @@ Totals, percentages, grades are COMPUTED BY CODE from the per-section marks; the
 derives. (Live evidence of why: one run produced chat total 3/34, doc summary 4.75/34, actual box-sum
 1.75/34 — three numbers, all different.) Until the code-computed pipeline ships (Chat B), the protocol
 must at minimum: state each section total ONLY in the canonical line `Total Mark for [section]: A/B`,
-and compute the final total ONLY as the sum of those five lines minus the WC penalty, once.
+and compute the final total ONLY as `MIN(sum of those five lines, max − WC penalty)`.
+
+**WC penalty = CEILING, never a deduction (Neil, 2026-07-02 — SETTLED, universal):** an under-length
+essay already loses marks organically, so the penalty must not double-punish. It lowers the MAXIMUM
+achievable (`max − penalty`); the section sum is never reduced. The ceiling only bites when the sum
+exceeds it. Doc Score Summary + Auto grade chip apply the same MIN (v7.19.816).
+
+**One ladder everywhere:** every grade the assessment outputs — per-section "Percentage & Grade" lines
+AND the final grade — bands on the SAME canonical Sophicly ladder (9≥85% … 2≥15%). Never real-exam
+boundaries for sections. (Live 2026-07-02: sections banded on the real-exam scale while the final used
+the canonical ladder — two scales in one assessment.)
 
 ## A7. Golds are never shortened
 Every gold/model rewrite is COMPLETE (full paragraph counts per section spec), every time, both models,
