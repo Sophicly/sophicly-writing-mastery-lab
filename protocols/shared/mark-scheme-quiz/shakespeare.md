@@ -393,15 +393,15 @@ Emit it after EVERY question's feedback, using the real values for THIS question
 
 ### **SECTION B: EDEXCEL GCSE (1ET0 — Shakespeare)**
 
-1. **Type: MCQ \[Tests Discriminating Examples\]**
-   * **Question:** Edexcel Level 5 requires "discriminating use of relevant examples in support." What does "discriminating" mean in practice?
-   * **Options:** A) Only using quotations from major characters, B) Selecting a large number of examples, C) Choosing examples precisely calibrated to prove your specific conceptual argument with minimal ambiguity, D) Using examples from complex, difficult speeches.
-   * **Correct:** C
-   * **Feedback:** ✓ Correct. "Discriminating" means excellent judgement in selection — evidence that precisely fits your analytical purpose. Level 4 uses "appropriate" examples; Level 5 "discriminating" means every example is surgically chosen for probative value.
+1. **Type: MCQ \[Tests Level 5 Discerning References\]**
+   * **Question:** Edexcel's Level 5 (17-20) rewards "discerning references \[that\] are an integral part of the response." What does "discerning" mean in practice?
+   * **Options:** A) Using quotations only from the major characters, B) Choosing references with excellent judgement so each precisely supports the argument, C) Selecting the largest possible number of examples, D) Quoting from the most complex, difficult speeches.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. "Discerning" means excellent judgement in selection — each reference precisely fitting the argument. The descriptor adds that these references are "integral", woven in "with assurance and full support from the text".
    * **AO:** AO1
-   * **Why A:** Major characters feel more important, but discrimination is about fit to your argument; a minor character's line can be the sharpest possible evidence.
-   * **Why B:** Quantity feels rigorous, yet stacking examples shows coverage rather than judgement; Level 5 rewards precision of selection, not volume.
-   * **Why D:** Difficult speeches look impressive, but complexity is not the criterion; the example must precisely prove your specific conceptual point.
+   * **Why A:** Major characters feel more important, but discernment is about fit to your argument; a minor character's line can be the sharpest possible evidence.
+   * **Why C:** Quantity feels rigorous, yet stacking examples shows coverage rather than judgement; Level 5 rewards discerning selection, not volume.
+   * **Why D:** Difficult speeches look impressive, but complexity is not the criterion; the reference must be well-judged and precisely support your point.
 2. **Type: MCQ \[Tests Assured Personal Response\]**
    * **Question:** What makes a response "assured" (Level 5) rather than "thorough" (Level 4) in Edexcel's mark scheme?
    * **Options:** A) Writing with confidence using phrases like "clearly" and "obviously", B) Including more personal opinions, C) Authoritative command of interpretation — definitive conceptual arguments, intellectual confidence in judgements, D) Disagreeing with traditional interpretations.
@@ -739,7 +739,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Question:** The Eduqas mark scheme states Band 5 responses use "pertinent, direct references to support interpretation." What makes a reference "pertinent" rather than just relevant?
    * **Options:** A) Using the longest, most detailed quotations, B) Using references from different acts, C) References precisely targeted to directly illuminate the specific conceptual point being made, D) References from key scenes.
    * **Correct:** C
-   * **Feedback:** ✓ Correct. "Pertinent" = acutely relevant, surgically selected. It is Eduqas's equivalent to AQA's "judicious", OCR's "discerning", Edexcel's "discriminating" — all mean precisely targeted evidence.
+   * **Feedback:** ✓ Correct. "Pertinent" = acutely relevant, surgically selected. It is Eduqas's equivalent to AQA's "judicious", OCR's "well-selected and fully integrated" (Level 6: "skilfully interwoven"), and Edexcel's "discerning" references "integral" to the response — all reward precisely targeted, well-judged evidence.
    * **AO:** AO1
    * **Why A:** Long quotations feel substantial, but pertinence is about targeting; a lengthy quote often buries the one phrase that proves your point.
    * **Why B:** Range across acts helps your argument, but "pertinent" measures how directly each reference illuminates the specific point, not where it comes from.
@@ -903,15 +903,15 @@ Emit it after EVERY question's feedback, using the real values for THIS question
 
 ### **SECTION E: OCR (J352 — Shakespeare)**
 
-1. **Type: MCQ \[Tests Discerning References\]**
-   * **Question:** The OCR mark scheme states Level 5 responses show "discerning references are an integral part of the response." What does "discerning" mean?
-   * **Options:** A) Using the most famous quotations, B) Using quotations showing discrimination and good judgement in selection, C) Using sophisticated or complex quotations, D) Using quotations examiners will recognise.
+1. **Type: MCQ \[Tests Well-Selected Integrated References\]**
+   * **Question:** The OCR mark scheme states Level 5 textual references are "well-selected and fully integrated", rising at Level 6 to "precise, pertinent and skilfully interwoven." What quality do these descriptors reward?
+   * **Options:** A) Using the most famous quotations, B) References chosen with judgement and woven seamlessly into the argument, C) Using sophisticated or complex quotations, D) Using quotations examiners will recognise.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. "Discerning" means insight and perceptiveness in selection — quotations chosen with judgement that precisely support conceptual argument. Not about fame or complexity.
+   * **Feedback:** ✓ Correct. OCR rewards references that are "well-selected and fully integrated" at Level 5 and "precise, pertinent and skilfully interwoven" at Level 6 — chosen with judgement and built into the argument, not dropped in. It is not about fame or complexity.
    * **AO:** AO1
-   * **Why A:** Famous quotations feel reliable, but recognisability is irrelevant; discernment is judgement in selection for your specific argument.
-   * **Why C:** Complexity can impress superficially, but a simple word chosen with insight is more discerning than a convoluted passage.
-   * **Why D:** Writing for examiner recognition misunderstands the criterion; the reference must serve your argument, not signal revision of well-known lines.
+   * **Why A:** Famous quotations feel reliable, but recognisability is irrelevant; the criterion is judgement in selection and how well the reference is integrated.
+   * **Why C:** Complexity can impress superficially, but a simple word woven in with insight integrates better than a convoluted passage.
+   * **Why D:** Writing for examiner recognition misunderstands the criterion; the reference must serve your argument and be skilfully interwoven, not signal revision of well-known lines.
 2. **Type: MCQ \[Tests Critical Style\]**
    * **Question:** Which opening demonstrates OCR's "sustained critical style in an informed personal response" (Level 6)?
    * **Options:** A) "Othello is Shakespeare's tragic play about jealousy", B) "Shakespeare constructs jealousy as an epistemological pathogen that corrupts perceptual certainty and destabilises rational cognition", C) "In this essay I will examine how Shakespeare presents jealousy", D) "Othello's jealousy destroys his marriage".
@@ -970,11 +970,11 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Feedback:** ✓ Correct. The arc (e.g. Macbeth's trajectory from hero to tyrant) demonstrates sustained focus on the whole text — an explicit Level 6 requirement.
    * **AO:** AO1
    * **WhyWrong:** Tracking the arc can feel like plot summary, so some students avoid it, but tracing a character's trajectory with analytical purpose demonstrates whole-text knowledge.
-10. **Type: MCQ \[Tests Integral References\]**
-    * **Question:** OCR Level 5 requires references that are "an integral part of the response". Which is most integrated?
+10. **Type: MCQ \[Tests Well-Selected Integrated References\]**
+    * **Question:** OCR Level 5 requires references that are "well-selected and fully integrated" (rising to "precise, pertinent and skilfully interwoven" at Level 6). Which is most fully integrated?
     * **Options:** A) A three-line block quote dropped between paragraphs, B) A single precise micro-quote like "wolfish" embedded mid-sentence within an analytical argument, C) No quotations at all, D) Paraphrased plot summary.
     * **Correct:** B
-    * **Feedback:** ✓ Correct. "Integral" = woven into your argument, not dropped in. Micro-quotes embedded in analytical sentences enable smooth, sustained critical style.
+    * **Feedback:** ✓ Correct. "Fully integrated" means woven into your argument, not dropped in. Well-selected micro-quotes embedded in analytical sentences are skilfully interwoven and enable a sustained critical style.
     * **AO:** AO1
     * **Why A:** A block quote dropped between paragraphs sits apart from your argument; "integral" means the reference is built into the analytical sentence itself.
     * **Why C:** Argument without quotation cannot be integral; references must actually be present and woven in to anchor the analysis.
@@ -1260,23 +1260,23 @@ Emit it after EVERY question's feedback, using the real values for THIS question
   * **C (Context):** Historical driver, integrated into Purpose (where AO3 assessed).
 * **Board Top-Band Distinguisher Terms (all synonyms for "precisely targeted, well-judged evidence"):**
   * **AQA:** Judicious.
-  * **Edexcel GCSE:** Discriminating.
+  * **Edexcel GCSE:** Discerning (references integral to the response).
   * **Edexcel IGCSE:** Discerning (references integral to response).
   * **Eduqas:** Pertinent.
-  * **OCR:** Discerning (integral to response).
+  * **OCR:** Well-selected and fully integrated (Level 6: precise, pertinent and skilfully interwoven).
   * **SQA:** Precise.
 * **Board Specifics:**
   * **AQA:** AO1 + AO2 + AO3 + AO4 SPaG (4 marks). Level 6 = Conceptualised + Exploratory + Judicious.
-  * **Edexcel GCSE:** AO1 + AO2 + AO3 + AO4 SPaG. Level 5 = Assured personal engagement + Discriminating examples + Perceptive critical style.
+  * **Edexcel GCSE:** AO1 + AO2 + AO3 + AO4 SPaG. Level 5 = Assured personal engagement + Discerning integral references + Perceptive critical style.
   * **Edexcel IGCSE (4ET1):** AO1 + AO2 + AO4 CONTEXT (NOT SPaG). Level 5 = Cohesive evaluation + Excellent integrated context.
   * **Eduqas:** AO1 + AO2 only (NO AO3 on Shakespeare). Band 5 = Pertinent references + Sensitive and evaluative approach + Perceptive understanding.
-  * **OCR:** AO1 + AO2 + AO3 + AO4 SPaG. Level 6 = Sustained critical style + Informed personal response + Discerning integral references.
+  * **OCR:** AO1 + AO2 + AO3 + AO4 SPaG. Level 6 = Sustained critical style + Informed personal response + Precise, pertinent and skilfully interwoven references (Level 5: well-selected and fully integrated).
   * **SQA:** Understanding + Analysis + Evaluation. 20-18 = Thorough and precise + Very detailed/thoughtful explanation + Cohesive evaluation.
 * **Key Terms:**
   * **Conceptualised:** Treating the play as a constructed argument.
   * **Construct:** A character treated as a vehicle for an idea, not a real person.
   * **Analyse:** Break down HOW a method works.
   * **Evaluate:** Judge HOW WELL it works.
-  * **Judicious / Discriminating / Discerning / Pertinent / Precise:** Board-specific synonyms for surgically selected, well-judged evidence.
+  * **Judicious / Discerning / Pertinent / Well-selected / Precise:** Board-specific synonyms for surgically selected, well-judged evidence.
 
 *End of Protocol*
