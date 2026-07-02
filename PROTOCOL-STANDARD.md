@@ -115,7 +115,12 @@ enforcement below are the invariant standard. Unit of assessment: **paragraph** 
   the model never re-counts.
 
 ## B1. Pre-assessment chain (ALL gated, in order — each precondition names the previous reply)
-1. **Grade-target ask** — "what grade are you aiming for?" Selector limited to 7 / 8 / 9.
+**TWO distinct goals are captured — never conflate them (live failure 2026-07-02: the model threaded the
+grade goal as the headline goal because the conceptual question never fired):**
+- **Grade goal** = the number (7/8/9). Used for the WC-adjusted ceiling note + Final Summary framing.
+- **Headline goal** = the CONCEPTUAL aim (convincing argument / effects / structure / …). This is the one
+  that threads through every section and closes in the Final Summary. The grade goal is NOT a substitute.
+1. **Grade-goal ask** — "what grade are you aiming for?" Selector limited to 7 / 8 / 9.
 2. **Headline-goal question** (essay-level) — stem declares the hierarchy: "Looking at your essay as a
    whole: what was the **one main goal** you were working toward? You'll set a mini-goal for each
    paragraph as we go — this is your headline goal for the whole piece." Lettered options (close
