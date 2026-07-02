@@ -12651,9 +12651,27 @@
                                 state.attempt = _serverAttempt;
                                 console.log('WML: Attempt hint diverged from server — reloading canvas at attempt', _serverAttempt);
                                 try {
-                                    const fresh = loadCanvasContent();
+                                    // v7.19.821: SERVER-authoritative reload (ROOT of the 2026-07-02 wipe).
+                                    // This branch used to re-render from localStorage (loadCanvasContent),
+                                    // so a stale local copy of the corrected attempt silently replaced the
+                                    // server doc in the editor — and any later save persisted that stale
+                                    // copy under the corrected attempt's key (a1-hinted boot diverged to
+                                    // a2, localStorage was stale, v817's migrate mutation forced a save →
+                                    // Neil's certified a2 doc overwritten). Fetch the corrected attempt's
+                                    // doc from the server; localStorage only as fallback when the server
+                                    // has none. When the server doc wins, save it straight back through
+                                    // the normal pipeline so the stale localStorage copy is replaced and
+                                    // cannot win a future local-vs-server gate.
+                                    const _dvSuffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
+                                    const _dvUrl = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(_dvSuffix)}&attempt=${state.attempt}${cwScopeQuery()}`;
+                                    const _dvRes = await fetch(_dvUrl, { headers }).then(r => r.json());
+                                    const _dvServerHtml = (_dvRes && _dvRes.success && _dvRes.doc && _dvRes.doc.html) ? _dvRes.doc.html : '';
+                                    const _dvHtml = _dvServerHtml || (loadCanvasContent() || '');
                                     if (canvasEditor && typeof canvasEditor.commands?.setContent === 'function') {
-                                        canvasEditor.commands.setContent(fresh || '', false);
+                                        canvasEditor.commands.setContent(_dvHtml, false);
+                                        if (_dvServerHtml && !state.reviewMode && typeof saveCanvasContent === 'function') {
+                                            saveCanvasContent(); // refresh localStorage with the authoritative doc
+                                        }
                                     }
                                 } catch (e) {
                                     console.warn('WML: canvas reload after divergence failed', e.message);
