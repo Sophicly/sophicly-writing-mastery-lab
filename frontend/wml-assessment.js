@@ -11983,6 +11983,17 @@
                     // granular sidebar from the marks now present in the loaded doc (overrides the
                     // flat maxStep above). Covers all 3 entry paths since they funnel through here.
                     _refreshLangSidebar();
+                    // v7.19.820: schedule the placeholder-box self-heal in THIS pipeline too.
+                    // v819 wired only the renderCanvasWorkspace twin (~14400) — dual-pipeline
+                    // rule: this training-panels twin is the path the stepper's "Get Assessed"
+                    // resume actually runs, so the heal never fired for Neil's doc. Scheduled
+                    // before the early returns below (phase-complete docs are exactly the ones
+                    // needing recovery); _healFeedbackBoxesFromHistory self-guards task/review/
+                    // hydration and no-ops when every box holds real content.
+                    try {
+                        setTimeout(() => _healFeedbackBoxesFromHistory(tp.canvasChatHistory), 1600);
+                        setTimeout(() => _healFeedbackBoxesFromHistory(tp.canvasChatHistory), 5200);
+                    } catch (_) {}
                     if (state._phaseMarkedComplete) return;
                     try {
                         const phaseUrl = `${API.phaseStatus}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topic=${state.topicNumber || 1}`;
