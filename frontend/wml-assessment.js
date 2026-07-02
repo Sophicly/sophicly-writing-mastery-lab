@@ -5572,6 +5572,66 @@
         function removeCanvasTyping() { removeTypingBubble(chatMessages); }
         function showCanvasTyping() { createTypingBubble(chatMessages); }
 
+        // v7.19.809: PRE-ASSESSMENT CHAIN — code-asked, deterministic (Phase 2).
+        // Live failures 2026-07-01/02 proved model-remembered setup questions are
+        // a coin-flip: Sophia twice skipped the protocol's mandatory headline-goal
+        // + keyword-recall gates and threaded the GRADE as the headline goal. The
+        // grade question is frontend-synthetic and has never been skipped — these
+        // two now follow the same pattern. sendCanvasMessage intercepts the
+        // student's reply while the chain is incomplete (no AI round-trip),
+        // renders the next question itself, and only falls through to the AI once
+        // all three replies are in history. Scope: literature essay assessments
+        // only (language papers run question-mode with a different setup).
+        const PRECHAIN_GOAL_OPTIONS = [
+            'A) Developing perceptive close analysis of language and techniques (AO2)',
+            'B) Understanding how context drives concepts and shapes the author’s techniques (AO3)',
+            'C) Writing conceptual topic sentences and coherent analysis (AO1)',
+            'D) Exploring effects on the reader more deeply (AO2)',
+            'E) Figuring out my strengths and weaknesses as a writer',
+        ];
+        function _assessPreChainStage() {
+            if (state.task !== 'assessment') return null;
+            if (typeof WML !== 'undefined' && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject()) return null;
+            const askedBy = (re) => canvasChatHistory.some(m => m.role === 'assistant' && re.test(m.content || ''));
+            // Setup window only: any marking activity in history → chain closed.
+            // (Also shields resumed pre-fix chats already mid-marking.)
+            if (askedBy(/@REFLECT_GATE|Total Mark for|\[ASSESSMENT_COMPLETE\]/i)) return null;
+            // Synthetic greeting (grade question) not rendered yet → not our flow.
+            if (!askedBy(/what grade are you aiming for/i)) return null;
+            if (!askedBy(/headline goal/i)) return 'headline';
+            if (!askedBy(/key aspects/i)) return 'keyword';
+            return null;
+        }
+        function _renderPreChainQuestion(stage) {
+            let plain, html;
+            if (stage === 'headline') {
+                const optsPlain = PRECHAIN_GOAL_OPTIONS.join('\n') + '\nF) Something else (type it below)';
+                plain = `Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay **as a whole**: what was the **one main goal** you were working toward? You'll set a mini-goal for each paragraph as we go — this is your **headline goal** for the whole piece. Please choose the option that best describes your focus:\n\n${optsPlain}`;
+                html = `<p>Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay <strong>as a whole</strong>: what was the <strong>one main goal</strong> you were working toward?</p><p style="margin-top:8px">You'll set a mini-goal for each paragraph as we go — this is your <strong>headline goal</strong> for the whole piece. Choose the option that best describes your focus, or type your own:</p>`;
+            } else {
+                const qText = (typeof extractEssayQuestion === 'function' && canvasEditor) ? (extractEssayQuestion(canvasEditor) || '') : '';
+                const qPlain = qText ? `'${qText}'` : 'your essay question';
+                plain = `Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering: ${qPlain} — what were the **key aspects** this question asked you to explore?`;
+                const qBox = qText ? `<div style="margin:10px 0;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
+                html = `<p>Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering:</p>${qBox}<p>What were the <strong>key aspects</strong> this question asked you to explore? (type or use the mic)</p>`;
+            }
+            addChatMessage(html, 'ai', plain);
+            canvasChatHistory.push({ role: 'assistant', content: plain });
+            saveCanvasChat(canvasChatHistory, canvasChatId);
+            if (stage === 'headline') {
+                const goalBar = el('div', { className: 'swml-quick-actions' });
+                PRECHAIN_GOAL_OPTIONS.forEach(opt => {
+                    goalBar.appendChild(el('button', {
+                        className: 'swml-quick-btn',
+                        textContent: opt,
+                        onClick: () => { goalBar.remove(); chatTextarea.value = 'My headline goal: ' + opt.replace(/^[A-E]\)\s*/, ''); sendCanvasMessage(); }
+                    }));
+                });
+                const bubble = chatMessages.lastElementChild;
+                if (bubble) (bubble.querySelector('.swml-bubble-content') || bubble).appendChild(goalBar);
+            }
+        }
+
         // sendCanvasMessage — AI Engine chat
         async function sendCanvasMessage() {
             const msg = chatTextarea.value.trim();
@@ -5616,6 +5676,24 @@
                 return;
             }
 
+            // v7.19.809: PRE-ASSESSMENT CHAIN gate — while the setup chain is
+            // incomplete, code owns the turn: record the student's reply, ask the
+            // next setup question synthetically, no AI round-trip. Deterministic —
+            // the protocol's mandatory headline-goal + keyword-recall gates can no
+            // longer be skipped by the model. Replies are tagged preChain so the
+            // first AI-bound turn still counts as userMsgCount === 1 (essay
+            // injection [CONTEXT] path + structure preflight).
+            const _pcStage = _assessPreChainStage();
+            if (_pcStage) {
+                addChatMessage(msg, 'user');
+                canvasChatHistory.push({ role: 'user', content: msg, preChain: true });
+                chatTextarea.value = '';
+                chatTextarea.style.height = '40px';
+                _renderPreChainQuestion(_pcStage);
+                console.log('WML pre-chain: code-asked "' + _pcStage + '" question (no AI turn)');
+                return;
+            }
+
             // v7.19.244: Paragraph-boundary preflight. Runs once per assessment
             // chat (first user turn only) when an essay is present in the canvas.
             // Diagnostic phase = silent diagnosis only (no modal).
@@ -5623,7 +5701,7 @@
             // 'cancel' choice aborts the send and returns focus to the editor.
             let _structureDiagnosis = null;
             if (state.task === 'assessment' && canvasEditor && typeof getResponseText === 'function') {
-                const _firstTurn = canvasChatHistory.filter(m => m.role === 'user').length === 0;
+                const _firstTurn = canvasChatHistory.filter(m => m.role === 'user' && !m.preChain).length === 0;
                 if (_firstTurn) {
                     try {
                         const _essayPreflight = getResponseText(canvasEditor);
@@ -5674,7 +5752,10 @@
             try {
                 let promptText = msg;
                 const essay = getResponseText(canvasEditor);
-                const userMsgCount = canvasChatHistory.filter(m => m.role === 'user').length;
+                // v7.19.809: preChain replies (grade/goal/keyword — code-asked, never
+                // sent to the AI) don't count — the first AI-bound send must still
+                // take the userMsgCount === 1 [CONTEXT] + essay-injection path.
+                const userMsgCount = canvasChatHistory.filter(m => m.role === 'user' && !m.preChain).length;
                 const boardName = (state.board || '').toUpperCase().replace('-', ' ');
                 const subjectName = (state.subject || '').replace(/_/g, ' ');
                 const textName = state.textName || state.text || '';
@@ -13607,6 +13688,57 @@
                         function removeCanvasTyping() { removeTypingBubble(chatMessages); }
                         function showCanvasTyping() { createTypingBubble(chatMessages); }
 
+                        // v7.19.809: PRE-ASSESSMENT CHAIN — code-asked, deterministic.
+                        // Mirrors the training-panel pipeline (see buildTrainingPanels)
+                        // — both sendCanvasMessage pipelines must gate identically or
+                        // the chain silently skips in this workspace (dual-pipeline rule).
+                        const PRECHAIN_GOAL_OPTIONS = [
+                            'A) Developing perceptive close analysis of language and techniques (AO2)',
+                            'B) Understanding how context drives concepts and shapes the author’s techniques (AO3)',
+                            'C) Writing conceptual topic sentences and coherent analysis (AO1)',
+                            'D) Exploring effects on the reader more deeply (AO2)',
+                            'E) Figuring out my strengths and weaknesses as a writer',
+                        ];
+                        function _assessPreChainStage() {
+                            if (state.task !== 'assessment') return null;
+                            if (typeof WML !== 'undefined' && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject()) return null;
+                            const askedBy = (re) => canvasChatHistory.some(m => m.role === 'assistant' && re.test(m.content || ''));
+                            if (askedBy(/@REFLECT_GATE|Total Mark for|\[ASSESSMENT_COMPLETE\]/i)) return null;
+                            if (!askedBy(/what grade are you aiming for/i)) return null;
+                            if (!askedBy(/headline goal/i)) return 'headline';
+                            if (!askedBy(/key aspects/i)) return 'keyword';
+                            return null;
+                        }
+                        function _renderPreChainQuestion(stage) {
+                            let plain, html;
+                            if (stage === 'headline') {
+                                const optsPlain = PRECHAIN_GOAL_OPTIONS.join('\n') + '\nF) Something else (type it below)';
+                                plain = `Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay **as a whole**: what was the **one main goal** you were working toward? You'll set a mini-goal for each paragraph as we go — this is your **headline goal** for the whole piece. Please choose the option that best describes your focus:\n\n${optsPlain}`;
+                                html = `<p>Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay <strong>as a whole</strong>: what was the <strong>one main goal</strong> you were working toward?</p><p style="margin-top:8px">You'll set a mini-goal for each paragraph as we go — this is your <strong>headline goal</strong> for the whole piece. Choose the option that best describes your focus, or type your own:</p>`;
+                            } else {
+                                const qText = (typeof extractEssayQuestion === 'function' && canvasEditor) ? (extractEssayQuestion(canvasEditor) || '') : '';
+                                const qPlain = qText ? `'${qText}'` : 'your essay question';
+                                plain = `Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering: ${qPlain} — what were the **key aspects** this question asked you to explore?`;
+                                const qBox = qText ? `<div style="margin:10px 0;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
+                                html = `<p>Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering:</p>${qBox}<p>What were the <strong>key aspects</strong> this question asked you to explore? (type or use the mic)</p>`;
+                            }
+                            addChatMessage(html, 'ai', plain);
+                            canvasChatHistory.push({ role: 'assistant', content: plain });
+                            saveCanvasChat(canvasChatHistory, canvasChatId);
+                            if (stage === 'headline') {
+                                const goalBar = el('div', { className: 'swml-quick-actions' });
+                                PRECHAIN_GOAL_OPTIONS.forEach(opt => {
+                                    goalBar.appendChild(el('button', {
+                                        className: 'swml-quick-btn',
+                                        textContent: opt,
+                                        onClick: () => { goalBar.remove(); chatTextarea.value = 'My headline goal: ' + opt.replace(/^[A-E]\)\s*/, ''); sendCanvasMessage(); }
+                                    }));
+                                });
+                                const bubble = chatMessages.lastElementChild;
+                                if (bubble) (bubble.querySelector('.swml-bubble-content') || bubble).appendChild(goalBar);
+                            }
+                        }
+
                         async function sendCanvasMessage() {
                             const msg = chatTextarea.value.trim();
                             if (!msg || canvasChatLoading) return;
@@ -13617,6 +13749,20 @@
                             if (_consumeFreshChatFlag()) {
                                 canvasChatId = _freshChatId();
                                 console.log('WML v7.19.576: post-clear — new AI Engine conversation', canvasChatId);
+                            }
+
+                            // v7.19.809: PRE-ASSESSMENT CHAIN gate — mirrors the
+                            // training-panel pipeline. While the setup chain is
+                            // incomplete, code owns the turn (no AI round-trip).
+                            const _pcStage = _assessPreChainStage();
+                            if (_pcStage) {
+                                addChatMessage(msg, 'user');
+                                canvasChatHistory.push({ role: 'user', content: msg, preChain: true });
+                                chatTextarea.value = '';
+                                chatTextarea.style.height = '40px';
+                                _renderPreChainQuestion(_pcStage);
+                                console.log('WML pre-chain: code-asked "' + _pcStage + '" question (no AI turn)');
+                                return;
                             }
 
                             canvasChatLoading = true;
@@ -13645,7 +13791,8 @@
                                 // Inject document content as context — on EVERY message to prevent hallucination
                                 let promptText = msg;
                                 const essay = getResponseText(canvasEditor);
-                                const userMsgCount = canvasChatHistory.filter(m => m.role === 'user').length;
+                                // v7.19.809: exclude code-asked preChain replies (mirrors primary pipeline).
+                                const userMsgCount = canvasChatHistory.filter(m => m.role === 'user' && !m.preChain).length;
                                 const boardName = (state.board || '').toUpperCase().replace('-', ' ');
                                 const subjectName = (state.subject || '').replace(/_/g, ' ');
                                 const textName = state.textName || state.text || '';

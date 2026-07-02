@@ -5862,7 +5862,36 @@ TEMPLATE;
                                                   (array) ($state['paragraphs_scored'] ?? [])));
         if ($scored_list === '') $scored_list = 'none yet';
 
+        // v7.19.809: SETUP-PHASE awareness. This block used to open with "YOU ARE
+        // MID-ATTEMPT ... NEXT output MUST be the mark table for Introduction"
+        // from TURN 1 of a fresh attempt — directly contradicting the protocol's
+        // mandatory pre-assessment chain (headline goal → keyword recall →
+        // Introduction reflection panel). The model arbitrated that conflict by
+        // skipping the chain (live failures 2026-07-01/02, both R&J T1P1 runs).
+        // Setup phase = nothing scored AND no reflection panel emitted yet; it
+        // ends the moment the first @REFLECT_GATE appears in history.
+        $setup_phase = ($emitted === 0);
+        if ($setup_phase && !empty($swml_chat_history) && is_array($swml_chat_history)) {
+            foreach ($swml_chat_history as $m) {
+                $mrole = is_array($m) ? ($m['role'] ?? '') : '';
+                $mtext = is_array($m) ? (string) ($m['content'] ?? '') : '';
+                if ($mrole === 'assistant' && strpos($mtext, '@REFLECT_GATE') !== false) {
+                    $setup_phase = false;
+                    break;
+                }
+            }
+        }
+
         $block  = "\n\n---\n\n";
+        if ($setup_phase) {
+        $block .= "## ASSESSMENT STATE — SETUP PHASE (marking has NOT begun)\n\n";
+        $block .= "**Sequence:** Setup (grade target → headline goal → keyword recall) → Introduction → Body Paragraph 1 → Body Paragraph 2 → Body Paragraph 3 → Conclusion\n";
+        $block .= "**Paragraphs scored so far:** none yet\n\n";
+        $block .= "### RULES — NON-NEGOTIABLE\n\n";
+        $block .= "1. The pre-assessment chain MUST be complete before ANY marking output. Check the conversation for ALL THREE student replies: (a) grade target, (b) HEADLINE GOAL (their choice from the goal options — a CONCEPTUAL aim, never a grade number), (c) KEYWORD RECALL (the key aspects the question asks them to explore). If any is missing, ask ONLY the next missing question (in that order) and STOP — nothing else in the turn.\n";
+        $block .= "2. Once all three replies are present: give the word-count note ONCE (per the protocol's setup stage, tied to their grade target), acknowledge their keyword recall, then begin the Introduction with its STEP 1 reflection lead-in + `@REFLECT_GATE` panel per the protocol. The reflection lead-in cites the HEADLINE GOAL — never the grade.\n";
+        $block .= "3. Do NOT emit any mark table, section feedback, or `@FB` card during setup.\n";
+        } else {
         $block .= "## ASSESSMENT STATE — YOU ARE MID-ATTEMPT\n\n";
         $block .= "**Current paragraph:** {$current_label} (key: `{$current}`)\n";
         $block .= "**Sequence:** Introduction → Body Paragraph 1 → Body Paragraph 2 → Body Paragraph 3 → Conclusion\n";
@@ -5878,7 +5907,10 @@ TEMPLATE;
             $block .= "   `[✓ Got it — continue]` `[🤔 Still confused]` `[💬 Different question]` `[⏸ Pause here]`\n";
             $block .= "2. Do NOT produce a paragraph mark table yet.\n";
         } else {
-            $block .= "1. Your NEXT output MUST be the granular mark table for **{$current_label}** UNLESS the student asked a clarifying question.\n";
+            // v7.19.809: rule 1 now follows the protocol's per-section sequence —
+            // the old flat "NEXT output MUST be the mark table" contradicted the
+            // @REFLECT_GATE reflection-panel-first rule on every section.
+            $block .= "1. Follow the protocol's per-section sequence for **{$current_label}**: if the student's reflection-panel reply for {$current_label} (arrives as \"Self-rating: N/5 …\") is NOT yet in the conversation, emit {$current_label}'s STEP 1 reflection lead-in + `@REFLECT_GATE` marker and WAIT. Once their reflection reply IS in, your NEXT output MUST be the granular mark table for **{$current_label}** UNLESS the student asked a clarifying question.\n";
             $block .= "2. Mark-table format: columns `Element | AO | Worth | Score | Why`. End with `Total Mark for {$current_label}: X / Y` on its own line.\n";
             $block .= "3. If the student's last turn is a clarifying question (not an answer), engage Socratically. Do NOT produce a mark table during a detour.\n";
             $block .= "4. After resolving a detour, you MUST emit a resume-confirm block:\n";
@@ -5886,6 +5918,7 @@ TEMPLATE;
             $block .= "   followed by: `[✓ Got it — continue]` `[🤔 Still confused]` `[💬 Different question]` `[⏸ Pause here]`\n";
             $block .= "5. Never infer paragraph selection from an ambiguous one-word reply — always consult this state block.\n";
         }
+        } // v7.19.809: end mid-attempt branch (setup-phase branch above)
         if ($depth >= 3) {
             $block .= "6. Detour depth is at cap. Politely nudge: \"Let's pause the detour and come back to your assessment.\"\n";
         }
