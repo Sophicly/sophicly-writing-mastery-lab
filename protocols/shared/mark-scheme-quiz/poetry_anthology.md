@@ -216,7 +216,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
 
    \*\*Before you go — don't forget to click \*Mark Complete\* on this lesson in LearnDash so your progress is tracked.\*\* ✅"
 
-## **4\. QUESTION BANK (Full Sets: 10 Qs Per Board)**
+## **4\. QUESTION BANK (Full Sets: 22 Qs Per Board)**
 
 *Note: All Questions are worth 2 Marks each.*
 
@@ -298,6 +298,97 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** "Shows" feels analytical but merely points at the text — it describes what happens without judging how the method works on the reader.
     * **Why B:** "Says" treats the poem as plain statement, reporting its content rather than evaluating the poet's crafted choices.
     * **Why D:** "Writes about" is topic-labelling — it names the subject without any judgement of method or effect, the opposite of evaluation.
+11. **Type: MCQ \[Tests Number of Levels\]**
+   * **Question:** Across how many levels is the AQA anthology comparison (Questions 25–26) marked?
+   * **Options:** A) Four levels, B) Five levels, C) Six levels, D) Nine levels.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. AQA marks this 30-mark question across six levels — Level 1 (1–5) up to Level 6 (26–30) — each carrying banded AO1, AO2 and AO3 descriptors.
+   * **AO:** AO1
+   * **Why A:** Four levels matches some shorter mark schemes, but the AQA poetry comparison is banded into six.
+   * **Why B:** Five levels is the Edexcel pattern; AQA's 30-mark grid runs to six.
+   * **Why D:** Nine is the GCSE grade scale, not the number of marking levels.
+12. **Type: Fill-in-the-Blank \[Tests Level 6 Label\]**
+   * **Question:** AQA Level 6 (26–30) is labelled "Convincing, critical analysis and \[BLANK\]".
+   * **Answer:** Exploration
+   * **Feedback:** ✓ Correct. The band heading is "Convincing, critical analysis and exploration" — the response takes "a conceptualised approach to the full task supported by a range of judicious references".
+   * **AO:** AO1
+   * **WhyWrong:** "Evaluation" or "comparison" name the skills, but AQA's exact Level 6 heading pairs "analysis" with "exploration".
+13. **Type: MCQ \[Tests Band Boundary\]**
+   * **Question:** Which mark range is AQA Level 5 ("Thoughtful, developed consideration")?
+   * **Options:** A) 16–20, B) 21–25, C) 26–30, D) 11–15.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Level 5 spans 21–25 marks; Level 6 sits above at 26–30 and Level 4 below at 16–20.
+   * **AO:** AO1
+   * **Why A:** 16–20 is Level 4 ("Clear understanding"), one band below.
+   * **Why C:** 26–30 is Level 6, the top band.
+   * **Why D:** 11–15 is Level 3 ("Explained, structured").
+14. **Type: Select All That Apply \[Tests Level 6 Descriptors\]**
+   * **Question:** Which phrases are verbatim AQA Level 6 descriptors? (Select all that apply)
+   * **Options:** A) "Critical, exploratory comparison", B) "conceptualised approach to the full task", C) "fine-grained and insightful analysis of methods", D) "Simple comments relevant to comparison".
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** The first three are lifted from the Level 6 band; "Simple comments relevant to comparison" is the Level 1 AO1 descriptor.
+   * **AO:** AO1
+   * **Why D:** "Simple comments relevant to comparison" sounds acceptable, but it is the bottom-band Level 1 wording, not Level 6.
+15. **Type: MCQ \[Tests AO3 Wording\]**
+   * **Question:** For AQA AO3 (6 marks), what does the top band actually credit?
+   * **Options:** A) "Exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task", B) Accurate spelling and punctuation, C) Naming the rhyme scheme, D) A memorised biography of the poet.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. AQA AO3 rewards contextual understanding shown through "specific, detailed links between context/text/task" — never a bolt-on history paragraph.
+   * **AO:** AO3
+   * **Why B:** Spelling and punctuation is AO4, which is not assessed on this question.
+   * **Why C:** Naming a rhyme scheme is low-level AO2 feature-spotting, not contextual exploration.
+   * **Why D:** A memorised biography is bolt-on background — the band demands context linked to text and task.
+16. **Type: Fill-in-the-Blank \[Tests Verb Ladder\]**
+   * **Question:** AQA AO2 rises from "identification" of methods at Level 2 to "\[BLANK\]" of methods at Level 6.
+   * **Answer:** Analysis
+   * **Feedback:** ✓ Correct. The AO2 verb ladder climbs from "Identification of writer's methods" (Level 2) to "Analysis of writer's methods with subject terminology used judiciously" (Level 6).
+   * **AO:** AO2
+   * **WhyWrong:** "Comment" or "explanation" are middle rungs — the Level 6 AO2 verb is "analysis", paired with judicious terminology.
+17. **Type: True/False \[Tests Level 6 References\]**
+   * **Question:** True or False: AQA Level 6 AO1 requires "judicious use of precise references to support interpretation(s)".
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. "Judicious" is the AQA top-band evidence word — precise, well-chosen references woven into interpretation.
+   * **AO:** AO1
+   * **WhyWrong:** Answering False assumes more or longer quotations score higher, but the band rewards "judicious", precisely chosen references, not quantity.
+18. **Type: MCQ \[Tests Level 1 Descriptor\]**
+   * **Question:** A response that is "narrative and/or descriptive in approach" falls into which AQA level?
+   * **Options:** A) Level 6, B) Level 4, C) Level 1, D) Level 5.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. "Narrative and/or descriptive in approach" is the Level 1 (1–5) hallmark — retelling the poem rather than comparing methods.
+   * **AO:** AO1
+   * **Why A:** Level 6 is critical and exploratory — the opposite of narrative retelling.
+   * **Why B:** Level 4 already shows "Clear comparison", well beyond description.
+   * **Why D:** Level 5 is "Thoughtful, developed" — description belongs to the bottom band.
+19. **Type: Fill-in-the-Blank \[Tests Level 5 Label\]**
+   * **Question:** AQA Level 5 (21–25) is headed "Thoughtful, developed \[BLANK\]".
+   * **Answer:** Consideration
+   * **Feedback:** ✓ Correct. The Level 5 heading is "Thoughtful, developed consideration"; its AO1 bullet asks for "Apt references integrated into interpretation(s)".
+   * **AO:** AO1
+   * **WhyWrong:** "Comparison" or "analysis" appear inside the band, but the exact Level 5 heading word is "consideration".
+20. **Type: True/False \[Tests Reference Integration\]**
+   * **Question:** True or False: AQA Level 5 AO1 asks for "Apt references integrated into interpretation(s)".
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. At Level 5 references are "apt" and "integrated into interpretation"; at Level 6 they become "judicious" and "precise".
+   * **AO:** AO1
+   * **WhyWrong:** Choosing False overlooks that integration of evidence is exactly what separates the upper bands from bolt-on quotation.
+21. **Type: MCQ \[Tests Conceptualised Threshold\]**
+   * **Question:** At which AQA level does a "conceptualised approach to the full task" first appear?
+   * **Options:** A) Level 3, B) Level 2, C) Level 4, D) Level 6.
+   * **Correct:** D
+   * **Feedback:** ✓ Correct. A "conceptualised approach to the full task supported by a range of judicious references" is the Level 6 marker — treating each poem as an argument about a big idea.
+   * **AO:** AO1
+   * **Why A:** Level 3 is "Explained, structured" — organised but not yet conceptualised.
+   * **Why B:** Level 2 offers only "Supported comparison" with comments on references.
+   * **Why C:** Level 4 reaches "Clear understanding" but stops short of a conceptualised approach.
+22. **Type: Select All That Apply \[Tests Mark Allocation\]**
+   * **Question:** Which statements about the AQA anthology 30-mark question are correct? (Select all that apply)
+   * **Options:** A) AO1 is worth 12 marks, B) AO2 is worth 12 marks, C) AO3 is worth 6 marks, D) AO4 SPaG is worth 6 marks.
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** The 30 marks split AO1=12, AO2=12, AO3=6. AO4 (SPaG) is not assessed on this question at all.
+   * **AO:** AO1
+   * **Why D:** SPaG is assessed on some Literature questions, which makes it tempting, but AO4 carries no marks on the poetry comparison.
 
 ### **SECTION B: EDEXCEL GCSE (1ET0 — Poetry)**
 
@@ -348,12 +439,12 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Why A:** Block-by-block analysis feels orderly, but separating the poems prevents genuine comparison and risks the unbalanced-response cap.
    * **Why C:** Famous lines feel safe, but evidence must be chosen because it proves your specific points, not because the quotation is well known.
    * **Why D:** Technique-listing feels knowledgeable, yet naming devices without interpreting their effects is feature-spotting and scores low.
-7. **Type: Fill-in-the-Blank \[Tests Discriminating Evidence\]**
-   * **Question:** Top-band Edexcel responses use \[BLANK\] evidence — carefully chosen, precisely targeted micro-quotations from both poems.
-   * **Answer:** Discriminating
-   * **Feedback:** ✓ Correct. "Discriminating" is Edexcel's top-band keyword — surgically selected quotations that precisely prove each analytical point.
+7. **Type: Fill-in-the-Blank \[Tests Level 5 Keyword\]**
+   * **Question:** Edexcel GCSE Level 5 (17–20) describes writing "informed by \[BLANK\] comparisons and contrasts".
+   * **Answer:** Perceptive
+   * **Feedback:** ✓ Correct. On Edexcel GCSE (1ET0), the Level 5 keyword is "perceptive" — "perceptive comparisons and contrasts" plus a "cohesive evaluation of the poets' language and its effect on the reader", with terminology "integrated and precise". ("Discriminating" belongs to the Edexcel IGCSE 4ET1 scheme, not GCSE.)
    * **AO:** AO1
-   * **WhyWrong:** "Relevant" or "detailed" describe mid-band evidence — Edexcel's specific top-band keyword is "discriminating": surgically selected quotations that precisely prove each point.
+   * **WhyWrong:** "Discriminating" is the Edexcel IGCSE top-band word; on GCSE 1ET0 the Level 5 keyword is "perceptive", paired with "cohesive evaluation" and terminology that is "integrated and precise".
 8. **Type: Select All That Apply \[Tests Evaluative Style\]**
    * **Question:** Which features build Edexcel's top-band evaluative voice? (Select all that apply)
    * **Options:** A) Evaluative adverbs ("powerfully", "subtly", "ironically"), B) Assured analytical authority, C) Definitive conceptual claims, D) Hedging every sentence.
@@ -377,6 +468,97 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** "Owen was a soldier" is true and relevant-sounding, but bolt-on biography earns minimal credit because it does no analytical work on the poem.
     * **Why C:** A sweeping historical judgement feels contextual, yet it is too vague to illuminate anything specific about the poem's methods or meaning.
     * **Why D:** Naming the poem's mood is a reading response, not context — it contains no historical or cultural information at all.
+11. **Type: MCQ \[Tests Mark Allocation\]**
+   * **Question:** On Edexcel GCSE poetry, how are the 20 marks allocated across the indicative bullets?
+   * **Options:** A) All 20 marks to AO2, B) The middle bullets carry AO2 (15 marks); the final bullet carries AO3 (5 marks), C) Split evenly, 10 for AO2 and 10 for AO3, D) AO4 SPaG only.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The mark scheme states the middle bullets (15 marks) are AO2 and the last bullet is AO3 (5 marks) — methods dominate at three-quarters of the total.
+   * **AO:** AO2
+   * **Why A:** AO2 is dominant, but 5 marks still sit with AO3 — it is not the whole allocation.
+   * **Why C:** An even split misreads the weighting; language, form and structure carry 15 of the 20 marks.
+   * **Why D:** SPaG (AO4) is not credited on this comparison at all.
+12. **Type: MCQ \[Tests Number of Levels\]**
+   * **Question:** Edexcel GCSE poetry comparison is marked across how many levels?
+   * **Options:** A) Four, B) Five, C) Six, D) Nine.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Five levels: Level 1 (1–4), Level 2 (5–8), Level 3 (9–12), Level 4 (13–16), Level 5 (17–20).
+   * **AO:** AO1
+   * **Why A:** Four undercounts — the grid runs to five levels.
+   * **Why C:** Six levels is the AQA pattern, not Edexcel GCSE.
+   * **Why D:** Nine is the grade scale, not the number of marking levels.
+13. **Type: MCQ \[Tests Level 5 Range\]**
+   * **Question:** Which mark range is Edexcel GCSE Level 5?
+   * **Options:** A) 13–16, B) 9–12, C) 17–20, D) 5–8.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. Level 5 is 17–20; Level 4 sits below at 13–16.
+   * **AO:** AO1
+   * **Why A:** 13–16 is Level 4 ("compares and contrasts the poems effectively").
+   * **Why B:** 9–12 is Level 3.
+   * **Why D:** 5–8 is Level 2, where only "underdeveloped comparisons" appear.
+14. **Type: Fill-in-the-Blank \[Tests Cohesive Evaluation\]**
+   * **Question:** Edexcel GCSE Level 5 offers a "\[BLANK\] evaluation of the poets' language and its effect on the reader".
+   * **Answer:** Cohesive
+   * **Feedback:** ✓ Correct. The Level 5 band demands a "cohesive evaluation" — flowing, connected judgements rather than stacked observations.
+   * **AO:** AO2
+   * **WhyWrong:** "Detailed" or "sustained" describe Level 4; the exact Level 5 word for the evaluation is "cohesive".
+15. **Type: True/False \[Tests Unbalanced Cap\]**
+   * **Question:** True or False: On Edexcel GCSE, "responses that are considerably unbalanced will not be able to access Level 3".
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. The general guidance blocks considerably unbalanced responses from Level 3, where a wide range of comparison is required.
+   * **AO:** AO1
+   * **WhyWrong:** Answering False assumes depth on one poem is enough, but the mark scheme explicitly bars considerably unbalanced answers from Level 3 and above.
+16. **Type: MCQ \[Tests One-Poem Cap\]**
+   * **Question:** If a candidate considers only ONE poem, Edexcel GCSE says the mark "cannot progress beyond":
+   * **Options:** A) the top of Level 2, B) Level 4, C) the top of Level 3, D) there is no cap.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. The Level 2 note states the mark "cannot progress beyond the top of Level 2 if only ONE poem has been considered" — a hard ceiling at 8 marks.
+   * **AO:** AO1
+   * **Why B:** Level 4 is far above the single-poem ceiling of the top of Level 2.
+   * **Why C:** The top of Level 3 is where considerably unbalanced answers are barred; the one-poem rule caps lower still.
+   * **Why D:** There is a firm cap — the top of Level 2 — for a one-poem response.
+17. **Type: Select All That Apply \[Tests Level 5 Descriptors\]**
+   * **Question:** Which are verbatim Edexcel GCSE Level 5 descriptors? (Select all that apply)
+   * **Options:** A) "perceptive grasp of form and structure and their effect", B) "cohesive evaluation of the poets' language", C) "Relevant subject terminology is integrated and precise", D) "There is little or no comparison of the two poems".
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** The first three are Level 5 wording; "little or no comparison" is the Level 1 descriptor.
+   * **AO:** AO2
+   * **Why D:** "Little or no comparison" is the bottom-band Level 1 phrasing, the opposite of Level 5.
+18. **Type: Fill-in-the-Blank \[Tests Level 4 Analysis\]**
+   * **Question:** At Edexcel GCSE Level 4, "Analysis of form and structure and their effect is \[BLANK\]".
+   * **Answer:** Sustained
+   * **Feedback:** ✓ Correct. Level 4 (13–16) makes the analysis "sustained" and comments "effectively on the poets' use of language".
+   * **AO:** AO2
+   * **WhyWrong:** "Perceptive" belongs to Level 5; at Level 4 the analysis is described as "sustained".
+19. **Type: True/False \[Tests Comparison AO\]**
+   * **Question:** True or False: On Edexcel GCSE poetry, comparison is "not directly associated with a discrete assessment objective" — it is evidenced through AO2 and AO3 coverage.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. The mark scheme states comparison has no discrete AO; candidates show it through their language, form, structure and context work.
+   * **AO:** AO1
+   * **WhyWrong:** Choosing False assumes a separate "comparison AO", but the scheme says comparison is demonstrated through the AO2 and AO3 requirements.
+20. **Type: MCQ \[Tests Level 3 Threshold\]**
+   * **Question:** What must an Edexcel GCSE response do to reach Level 3 (9–12)?
+   * **Options:** A) "compare and contrast a range of points" and consider some similarities and/or differences, B) analyse spelling and grammar, C) memorise both poems in full, D) write about a single poem only.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. Level 3 requires comparing "a range of points" with some similarities and/or differences, plus sound understanding of form and structure.
+   * **AO:** AO1
+   * **Why B:** Spelling and grammar is AO4, not assessed on this comparison.
+   * **Why C:** Memorising is not a band descriptor; the level rewards comparison of points.
+   * **Why D:** A single-poem answer is capped at the top of Level 2, below Level 3.
+21. **Type: Fill-in-the-Blank \[Tests Second Poem\]**
+   * **Question:** Edexcel guidance says coverage "need not be equally weighted but the second poem should have \[BLANK\] treatment".
+   * **Answer:** Substantial
+   * **Feedback:** ✓ Correct. The two poems need not be equal, but the second must receive "substantial treatment" — thin coverage risks the unbalanced penalties.
+   * **AO:** AO1
+   * **WhyWrong:** "Equal" contradicts the guidance — coverage need not be equal, but the second poem must be substantial.
+22. **Type: Select All That Apply \[Tests AO2 Strands\]**
+   * **Question:** AO2 (15 marks) on Edexcel GCSE poetry rewards analysis of which? (Select all that apply)
+   * **Options:** A) Language, B) Form, C) Structure, D) The examiner's mood.
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** Language, form and structure are the AO2 strands. The examiner's mood is a distractor — never a marked feature.
+   * **AO:** AO2
+   * **Why D:** The deliberately silly option tests the confusion — only language, form and structure count under AO2.
 
 ### **SECTION C: EDEXCEL IGCSE (4ET1 — Poetry Anthology)**
 
@@ -456,6 +638,97 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** Naming the mood feels like a response, but "the poem is sad" offers no method, no comparison and no concept — description at its thinnest.
     * **Why C:** Spotting a shared subject looks comparative, yet linking topics without analysing how either poet treats them earns almost nothing.
     * **Why D:** "Both use words" is trivially true of all writing — it shows the danger of comparison so general that it says nothing at all.
+11. **Type: MCQ \[Tests AO3 Wording\]**
+   * **Question:** On Edexcel IGCSE (4ET1) poetry, what does AO3 (15 marks) assess?
+   * **Options:** A) "Explore links and connections between texts", B) Spelling, punctuation and grammar, C) Historical background of the poet only, D) Basic reading comprehension.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. On 4ET1 poetry, AO3 is "Explore links and connections between texts" — the comparison objective, worth 15 of the 30 marks.
+   * **AO:** AO3
+   * **Why B:** Spelling and punctuation is AO4 elsewhere, not the poetry AO3.
+   * **Why C:** Biographical background alone is not what "links and connections between texts" rewards.
+   * **Why D:** Comprehension underpins any answer but is not the AO3 comparison skill.
+12. **Type: Fill-in-the-Blank \[Tests AO2 Wording\]**
+   * **Question:** IGCSE AO2 rewards analysis of "the language, form and structure used by a writer to create meanings and \[BLANK\]".
+   * **Answer:** Effects
+   * **Feedback:** ✓ Correct. The AO2 wording is "create meanings and effects" — analysis must reach the effect on the reader, not stop at naming devices.
+   * **AO:** AO2
+   * **WhyWrong:** "Ideas" or "themes" are close, but the exact AO2 phrase pairs "meanings and effects".
+13. **Type: MCQ \[Tests Level 5 Range\]**
+   * **Question:** Which mark range is Edexcel IGCSE Level 5?
+   * **Options:** A) 19–24, B) 25–30, C) 13–18, D) 17–20.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Level 5 is 25–30; Level 4 sits below at 19–24.
+   * **AO:** AO1
+   * **Why A:** 19–24 is Level 4 ("focused and detailed... sustained").
+   * **Why C:** 13–18 is Level 3.
+   * **Why D:** 17–20 is the Edexcel GCSE top band, not the IGCSE 30-mark grid.
+14. **Type: Fill-in-the-Blank \[Tests Discriminating\]**
+   * **Question:** IGCSE Level 5 (25–30) requires "\[BLANK\] use of relevant examples to support the response".
+   * **Answer:** Discriminating
+   * **Feedback:** ✓ Correct. "Discriminating" IS the Edexcel IGCSE 4ET1 top-band evidence word — distinct from AQA's "judicious" or the GCSE "perceptive".
+   * **AO:** AO2
+   * **WhyWrong:** "Relevant" is used lower down ("clearly relevant" at Level 3, "fully relevant" at Level 4); the Level 5 word is "discriminating".
+15. **Type: True/False \[Tests Interrelationship\]**
+   * **Question:** True or False: IGCSE Level 5 asks for "a cohesive evaluation of the interrelationship of the language, form and structure".
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. The top band evaluates how language, form and structure work together — their "interrelationship" — and their effect on the reader.
+   * **AO:** AO2
+   * **WhyWrong:** Answering False overlooks that the Level 5 wording specifically rewards the "interrelationship" of the methods, not each in isolation.
+16. **Type: MCQ \[Tests Level 4 Sustained\]**
+   * **Question:** At IGCSE Level 4 (19–24), the analysis of language, form and structure and their effect on the reader is described as:
+   * **Options:** A) minimal, B) sustained, C) absent, D) largely descriptive.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Level 4 is "focused and detailed, and the analysis... is sustained".
+   * **AO:** AO2
+   * **Why A:** "Minimal" identification is the Level 1 description.
+   * **Why C:** "Absent" fits no rewardable band.
+   * **Why D:** "Largely descriptive" is the Level 2 hallmark, below sustained analysis.
+17. **Type: Select All That Apply \[Tests Level 5 Descriptors\]**
+   * **Question:** Which are verbatim IGCSE Level 5 descriptors? (Select all that apply)
+   * **Options:** A) "cohesive evaluation of the interrelationship", B) "compares and contrasts the poems perceptively", C) "Discriminating use of relevant examples", D) "There is little or no comparison of the two poems".
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** The first three are Level 5 wording; "little or no comparison" is the Level 1 descriptor.
+   * **AO:** AO2
+   * **Why D:** "Little or no comparison" is the bottom-band Level 1 phrasing, not Level 5.
+18. **Type: MCQ \[Tests Number of Levels\]**
+   * **Question:** Edexcel IGCSE (4ET1) poetry comparison is marked across how many levels?
+   * **Options:** A) Six, B) Four, C) Five, D) Nine.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. Five levels: Level 1 (1–6), Level 2 (7–12), Level 3 (13–18), Level 4 (19–24), Level 5 (25–30).
+   * **AO:** AO1
+   * **Why A:** Six levels is the AQA grid, not IGCSE.
+   * **Why B:** Four undercounts the five-level IGCSE grid.
+   * **Why D:** Nine is the grade scale, not the marking levels.
+19. **Type: Fill-in-the-Blank \[Tests Level 2 Ceiling\]**
+   * **Question:** The top of IGCSE Level 2 is \[BLANK\] marks — the ceiling reached if only one poem is considered.
+   * **Answer:** 12
+   * **Feedback:** ✓ Correct. Level 2 runs 7–12, so the single-poem note caps such answers at 12 of 30.
+   * **AO:** AO1
+   * **WhyWrong:** Guessing higher assumes strong single-poem work keeps its marks, but the ceiling is the top of Level 2 at 12.
+20. **Type: True/False \[Tests Evidence Ladder\]**
+   * **Question:** True or False: IGCSE Level 4 uses "fully relevant examples", while Level 5 uses "discriminating" examples.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. The evidence ladder climbs from "clearly relevant" (Level 3) to "fully relevant" (Level 4) to "discriminating" (Level 5).
+   * **AO:** AO2
+   * **WhyWrong:** Choosing False overlooks the graded evidence vocabulary — each level names a sharper standard of example selection.
+21. **Type: MCQ \[Tests Level 3 Links\]**
+   * **Question:** At IGCSE Level 3 (13–18), understanding of language, form and structure is linked to:
+   * **Options:** A) the poet's biography, B) their effect on the reader, C) the exam timetable, D) spelling accuracy.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Level 3 "shows an understanding of the range of language, form and structure used by the writer and links these to their effect on the reader".
+   * **AO:** AO2
+   * **Why A:** Biography is not the link the band rewards; effect on the reader is.
+   * **Why C:** The timetable is irrelevant to any descriptor.
+   * **Why D:** Spelling is AO4, not the AO2 effect-link.
+22. **Type: Select All That Apply \[Tests Comparison Ladder\]**
+   * **Question:** Which describe genuine IGCSE comparison across the levels? (Select all that apply)
+   * **Options:** A) "compares and contrasts a range of points" (Level 3), B) "considering a wide range of similarities and/or differences" (Level 4), C) "a varied and comprehensive range of similarities and/or differences" (Level 5), D) naming two poems side by side with no linking idea.
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** The comparison ladder widens level by level; juxtaposing two poems with no link is not comparison at all.
+   * **AO:** AO3
+   * **Why D:** Placing poems side by side without a linking idea is juxtaposition, which earns no AO3 comparison credit.
 
 ### **SECTION D: EDUQAS (C720U — Poetry Anthology)**
 
@@ -478,7 +751,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Question:** Eduqas Band 5 demands "pertinent, direct references to support interpretation". What makes a reference "pertinent"?
    * **Options:** A) Using the longest quotations, B) Using famous lines, C) References precisely targeted to illuminate the specific conceptual point, D) Using different stanzas.
    * **Correct:** C
-   * **Feedback:** ✓ Correct. Pertinent = acutely relevant, surgically selected. Eduqas's equivalent to AQA's "judicious", Edexcel's "discriminating", OCR's "discerning".
+   * **Feedback:** ✓ Correct. Pertinent = acutely relevant, surgically selected. Eduqas's equivalent to AQA's "judicious", Edexcel IGCSE's "discriminating", OCR's "well-selected".
    * **AO:** AO1
    * **Why A:** Long quotations feel like strong evidence, but length is not relevance — pertinent references are short and precisely targeted.
    * **Why B:** Famous lines feel authoritative, yet a reference is pertinent only if it proves your specific conceptual point, not because it is well known.
@@ -535,6 +808,97 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** Naming the theme feels like understanding, but "the poem is about love" is the obvious surface — illumination requires insight beyond it.
     * **Why C:** Spotting the shared genre is a starting point, yet "both are love poems" links labels without revealing anything about either poet's treatment.
     * **Why D:** Mentioning the onion shows recall of an image, but an isolated detail with no interpretation or comparison cannot illuminate meaning.
+11. **Type: Fill-in-the-Blank \[Tests Band 5 Heading\]**
+   * **Question:** Eduqas Band 5 opens: comparison is "critical, illuminating and \[BLANK\] across AO1, AO2 and AO3".
+   * **Answer:** Sustained
+   * **Feedback:** ✓ Correct. The Band 5 heading is "critical, illuminating and sustained across AO1, AO2 and AO3", with "a wide ranging discussion of the similarities and/or differences".
+   * **AO:** AO1
+   * **WhyWrong:** "Detailed" or "developed" describe lower bands; the Band 5 trio is "critical, illuminating and sustained".
+12. **Type: MCQ \[Tests Two-Part Structure\]**
+   * **Question:** How is the Eduqas Component 1 poetry section structured?
+   * **Options:** A) A single printed-poem question (15 marks), then a comparison with a chosen anthology poem (25 marks), B) One 40-mark essay, C) Two unseen poems only, D) A single 25-mark question with no printed poem.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. Part 7.1 analyses a printed poem for 15 marks; Part 7.2 compares it with a chosen anthology poem for 25 marks.
+   * **AO:** AO1
+   * **Why B:** A single 40-mark essay is not the Eduqas poetry structure.
+   * **Why C:** The printed poem is named and given, not unseen.
+   * **Why D:** The printed-poem question (15 marks) precedes the 25-mark comparison.
+13. **Type: MCQ \[Tests Band 5 Range\]**
+   * **Question:** Which mark range is Eduqas Band 5 on the 25-mark comparison?
+   * **Options:** A) 16–20, B) 21–25, C) 25–30, D) 11–15.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Band 5 is 21–25; Band 4 sits below at 16–20.
+   * **AO:** AO1
+   * **Why A:** 16–20 is Band 4 ("focussed, coherent and sustained").
+   * **Why C:** 25–30 belongs to the 30-mark boards, not the Eduqas 25-mark question.
+   * **Why D:** 11–15 is a lower band on this grid.
+14. **Type: Fill-in-the-Blank \[Tests AO2 Terminology\]**
+   * **Question:** Eduqas Band 5 AO2 asks candidates to use "\[BLANK\] subject terminology in an appropriate context".
+   * **Answer:** Precise
+   * **Feedback:** ✓ Correct. Band 5 AO2 rewards "precise subject terminology in an appropriate context" alongside "assured reference to meanings and effects".
+   * **AO:** AO2
+   * **WhyWrong:** "Relevant" or "accurate" appear in lower bands; the Band 5 word is "precise".
+15. **Type: True/False \[Tests AO3 Assured\]**
+   * **Question:** True or False: Eduqas Band 5 AO3 requires "an assured understanding of the relationships between texts and the contexts in which they were written".
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. Band 5 AO3 is an "assured understanding" of text-and-context relationships, including period, location, social structures and genre.
+   * **AO:** AO3
+   * **WhyWrong:** Answering False overlooks that AO3 is fully assessed and that "assured" is its Band 5 marker.
+16. **Type: MCQ \[Tests Band 4 Heading\]**
+   * **Question:** At Eduqas Band 4 (16–20), the comparison is described as:
+   * **Options:** A) "critical, illuminating", B) "simple", C) "narrative", D) "focussed, coherent and sustained".
+   * **Correct:** D
+   * **Feedback:** ✓ Correct. Band 4 comparison is "focussed, coherent and sustained across AO1, AO2 and AO3" with "a clear discussion" of similarities and differences.
+   * **AO:** AO1
+   * **Why A:** "Critical, illuminating" is the Band 5 heading, one band higher.
+   * **Why B:** "Simple" belongs to the lowest band.
+   * **Why C:** "Narrative" retelling sits well below Band 4.
+17. **Type: Select All That Apply \[Tests Band 5 AO1\]**
+   * **Question:** Which are verbatim Eduqas Band 5 AO1 descriptors? (Select all that apply)
+   * **Options:** A) "a sensitive and evaluative approach to the task", B) "a perceptive understanding of the texts", C) "pertinent, direct references from across the texts", D) "little awareness of the writer's methods".
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** The first three are Band 5 AO1 wording; "little awareness" is a bottom-band phrase.
+   * **AO:** AO1
+   * **Why D:** "Little awareness" is a lowest-band descriptor, the opposite of Band 5.
+18. **Type: MCQ \[Tests Equal Weighting\]**
+   * **Question:** On the Eduqas 25-mark comparison, how are the assessment objectives weighted?
+   * **Options:** A) AO2 dominant, B) AO1, AO2 and AO3 equally weighted, C) AO3 dominant, D) AO1 only.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The mark scheme states "AO1, AO2 and AO3 are equally weighted in this question" — none can be neglected.
+   * **AO:** AO1
+   * **Why A:** AO2 matters but does not dominate — the three AOs are equal here.
+   * **Why C:** AO3 is one equal third, not the dominant strand.
+   * **Why D:** AO1 alone ignores the equal AO2 and AO3 weighting.
+19. **Type: Fill-in-the-Blank \[Tests Band 4 Approach\]**
+   * **Question:** Eduqas Band 4 AO1 uses "a \[BLANK\] approach to the task" and shows "a secure understanding".
+   * **Answer:** Thoughtful
+   * **Feedback:** ✓ Correct. Band 4 pairs "a thoughtful approach" with "a secure understanding"; Band 5 lifts this to "sensitive and evaluative" and "perceptive".
+   * **AO:** AO1
+   * **WhyWrong:** "Sensitive" is the Band 5 word; Band 4's approach is "thoughtful".
+20. **Type: True/False \[Tests Wide-Ranging Discussion\]**
+   * **Question:** True or False: Eduqas Band 5 promises "a wide ranging discussion of the similarities and/or differences between the poems".
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. Band 5 requires breadth — "a wide ranging discussion" of similarities and differences, not one or two isolated links.
+   * **AO:** AO1
+   * **WhyWrong:** Choosing False overlooks that the top band explicitly rewards range across the comparison.
+21. **Type: MCQ \[Tests AO3 Contexts\]**
+   * **Question:** Eduqas AO3 contexts, "where relevant", include which of the following?
+   * **Options:** A) Period, location, social structures and literary contexts such as genre, B) The poet's shopping list, C) Spelling and punctuation only, D) The temperature of the exam hall.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. The scheme lists "period, location, social structures and literary contexts such as genre" as relevant AO3 contexts.
+   * **AO:** AO3
+   * **Why B:** Trivial biographical minutiae is not a marked context.
+   * **Why C:** Spelling is AO4, not the AO3 contexts named.
+   * **Why D:** The exam-hall setting is a distractor with no bearing on the poems.
+22. **Type: Select All That Apply \[Tests Band 5 Markers\]**
+   * **Question:** Which mark a Eduqas Band 5 response? (Select all that apply)
+   * **Options:** A) "assured reference to meanings and effects", B) "analyse the texts critically", C) "engaging fully, perhaps with some originality", D) neglecting one of the three equally weighted AOs.
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** The first three are Band 5 wording; because the AOs are equal, neglecting one forfeits about a third of the marks.
+   * **AO:** AO1
+   * **Why D:** Dropping one AO to go deeper on another surrenders roughly a third of the total, since all three are equally weighted.
 
 ### **SECTION E: OCR (J352 — Poetry Across Time)**
 
@@ -564,18 +928,18 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **WhyWrong:** "Developed" or "detailed" belong to lower descriptors — OCR's Level 6 comparison bullet asks for an "interwoven" comparison, the two poems woven together throughout the response.
 4. **Type: Select All That Apply \[Tests Sustained Critical Style\]**
    * **Question:** What features sustain OCR's Level 6 "sustained critical style in an informed personal response"? (Select all that apply)
-   * **Options:** A) Evaluative adverbs across the response, B) A sustained conceptual thesis from intro to conclusion, C) Discerning micro-quotations integral to argument, D) Switching register between formal and informal.
+   * **Options:** A) Evaluative adverbs across the response, B) A sustained conceptual thesis from intro to conclusion, C) Precise, pertinent micro-quotations skilfully interwoven, D) Switching register between formal and informal.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Evaluative language, sustained thesis, and integral quotations build Level 6. Register-switching breaks sustained critical style.
+   * **Feedback:** Evaluative language, sustained thesis, and skilfully interwoven quotations build Level 6. Register-switching breaks sustained critical style.
    * **AO:** AO1
    * **Why D:** Varying register can feel engaging, but slipping between formal and informal voices breaks the sustained critical style Level 6 demands.
-5. **Type: True/False \[Tests Discerning References\]**
-   * **Question:** True or False: OCR Level 5 demands "discerning references" that are "an integral part of the response" — embedded within sentences rather than dropped in as block quotes.
+5. **Type: True/False \[Tests Integrated References\]**
+   * **Question:** True or False: OCR Level 5 describes textual references and quotations as "well-selected and fully integrated".
    * **Answer:** True
-   * **Feedback:** ✓ Correct. "Discerning" + "integral" means embedded micro-quotations woven into your argument.
+   * **Feedback:** ✓ Correct. At Level 5 references are "well-selected and fully integrated"; at Level 6 they become "precise, pertinent and skilfully interwoven".
    * **AO:** AO1
-   * **WhyWrong:** Choosing False assumes block quotations show stronger evidence, but "integral" means the opposite — short references embedded inside your own sentences.
+   * **WhyWrong:** Choosing False assumes block quotations show stronger evidence, but the band rewards references "fully integrated" — short and embedded inside your own sentences.
 6. **Type: Fill-in-the-Blank \[Tests Personal Response\]**
    * **Question:** OCR Level 6 demands an "informed \[BLANK\] response" — an original, thoughtful interpretation that engages your critical voice.
    * **Answer:** Personal
@@ -593,10 +957,10 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Why D:** The poet's life seems illuminating, but biography is neither a method nor an assessed objective on this question.
 8. **Type: Select All That Apply \[Tests Part (b) Comparison\]**
    * **Question:** For the OCR Part (a) comparison, a top-band response: (Select all that apply)
-   * **Options:** A) Interweaves both poems in every paragraph, B) Sustains conceptual argument across the comparison, C) Uses discerning micro-quotations from both, D) Treats Poem A and Poem B in rigid blocks.
+   * **Options:** A) Interweaves both poems in every paragraph, B) Sustains conceptual argument across the comparison, C) Uses precise, pertinent quotations skilfully interwoven from both, D) Treats Poem A and Poem B in rigid blocks.
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
-   * **Feedback:** Interwoven comparison, sustained argument, and discerning evidence define Level 6. Rigid block treatment caps lower. The interweaving is only the mechanic — Level 6 needs it to carry a comparison of the two poets' METHODS and their DIFFERING effects on the reader (e.g. "Shelley's irony makes us judge the tyrant; the other poet's pathos makes us pity the victim"); weaving and connectors alone are not AO2 comparison.
+   * **Feedback:** Interwoven comparison, sustained argument, and skilfully interwoven evidence define Level 6. Rigid block treatment caps lower. The interweaving is only the mechanic — Level 6 needs it to carry a comparison of the two poets' METHODS and their DIFFERING effects on the reader (e.g. "Shelley's irony makes us judge the tyrant; the other poet's pathos makes us pity the victim"); weaving and connectors alone are not AO2 comparison.
    * **AO:** AO1
    * **Why D:** Rigid blocks feel structured, but separating the poems prevents the interwoven comparison OCR's top level explicitly requires.
 9. **Type: True/False \[Tests AO Distinction\]**
@@ -614,6 +978,97 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** A verdict like "the poem is good" sounds evaluative, but it offers judgement with no method, evidence or reasoning behind it.
     * **Why C:** Naming the form is accurate terminology, yet "this is a sonnet" is identification — Level 6 needs the form's effect analysed and judged.
     * **Why D:** A bare factual statement about the poet describes nothing in the text — it is the flattest possible description, not critical style.
+11. **Type: MCQ \[Tests Holistic Marking\]**
+   * **Question:** How is OCR J352/02 Section A (Poetry across time) marked?
+   * **Options:** A) Holistically, with one overall mark indicated at the end of the response, B) One mark per line, C) Spelling first, then content, D) Purely by word count.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. The scheme states "the response is to be marked holistically" with examiners indicating the overall mark at the end.
+   * **AO:** AO2
+   * **Why B:** Line-by-line tallying is not how a holistic level-based grid works.
+   * **Why C:** Spelling (AO4) is not assessed on this poetry question.
+   * **Why D:** Length is never the measure — the level descriptors judge quality.
+12. **Type: Fill-in-the-Blank \[Tests Level 6 Heading\]**
+   * **Question:** OCR Part (a) Level 6 (18–20) demands a "\[BLANK\] critical style in an informed personal response to both text and task".
+   * **Answer:** Sustained
+   * **Feedback:** ✓ Correct. The Level 6 heading is "Sustained critical style in an informed personal response", with quotations "precise, pertinent and skilfully interwoven".
+   * **AO:** AO1
+   * **WhyWrong:** "Convincing" heads Level 5; the Level 6 word is "sustained".
+13. **Type: MCQ \[Tests Level 6 Range\]**
+   * **Question:** Which mark range is OCR Level 6 on Part (a)?
+   * **Options:** A) 15–17, B) 18–20, C) 11–14, D) 7–10.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Level 6 is 18–20; Level 5 sits below at 15–17.
+   * **AO:** AO1
+   * **Why A:** 15–17 is Level 5 ("Convincing critical style").
+   * **Why C:** 11–14 is Level 4 ("Credible critical style").
+   * **Why D:** 7–10 is Level 3.
+14. **Type: Fill-in-the-Blank \[Tests Level 5 References\]**
+   * **Question:** OCR Level 5 describes textual references and quotations as "well-selected and fully \[BLANK\]".
+   * **Answer:** Integrated
+   * **Feedback:** ✓ Correct. Level 5 references are "well-selected and fully integrated"; Level 6 lifts this to "precise, pertinent and skilfully interwoven".
+   * **AO:** AO1
+   * **WhyWrong:** "Interwoven" is the Level 6 word; at Level 5 references are "fully integrated".
+15. **Type: True/False \[Tests AO2 Dominant\]**
+   * **Question:** True or False: In OCR Part (a), "AO2 is the dominant assessment objective".
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. Part (a) names AO2 the dominant objective — most energy goes to analysis of language, form and structure.
+   * **AO:** AO2
+   * **WhyWrong:** Answering False overlooks the explicit statement that AO2 dominates Part (a).
+16. **Type: MCQ \[Tests Evidence Ladder\]**
+   * **Question:** How do textual references differ between OCR Level 5 and Level 6?
+   * **Options:** A) Level 5 "well-selected and fully integrated"; Level 6 "precise, pertinent and skilfully interwoven", B) They are identical, C) Level 5 forbids quotation, D) Level 6 uses no evidence.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. The evidence standard sharpens from "well-selected and fully integrated" (Level 5) to "precise, pertinent and skilfully interwoven" (Level 6).
+   * **AO:** AO1
+   * **Why B:** The bands use distinct wording — integration at Level 5, skilful interweaving at Level 6.
+   * **Why C:** Every level rewards textual support; none forbids quotation.
+   * **Why D:** Level 6 uses the most precise evidence, not none.
+17. **Type: Select All That Apply \[Tests Level 6 Descriptors\]**
+   * **Question:** Which are verbatim OCR Part (a) Level 6 descriptors? (Select all that apply)
+   * **Options:** A) "Detailed and sensitive analysis of writer's use of language, form and structure", B) "Consistently effective use of relevant subject terminology", C) "Achieves a sustained, interwoven comparison of texts", D) "A basic response to both text and task".
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** The first three are Level 6 wording; "A basic response" is the Level 1 heading.
+   * **AO:** AO2
+   * **Why D:** "A basic response to both text and task" is the bottom-band Level 1 heading, not Level 6.
+18. **Type: MCQ \[Tests Number of Levels\]**
+   * **Question:** OCR Part (a) Poetry across time is marked across how many levels?
+   * **Options:** A) Five, B) Six, C) Four, D) Nine.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Six levels: Level 1 (1–3) up to Level 6 (18–20).
+   * **AO:** AO1
+   * **Why A:** Five levels is the Edexcel pattern, not OCR.
+   * **Why C:** Four undercounts the six-level OCR grid.
+   * **Why D:** Nine is the grade scale, not the marking levels.
+19. **Type: Fill-in-the-Blank \[Tests Level 4 Heading\]**
+   * **Question:** OCR Level 4 (11–14) is headed a "\[BLANK\] critical style in a detailed personal response".
+   * **Answer:** Credible
+   * **Feedback:** ✓ Correct. Level 4 is a "Credible critical style" with "Some analytical comments" and "Competent use of relevant subject terminology".
+   * **AO:** AO1
+   * **WhyWrong:** "Convincing" is Level 5 and "Sustained" is Level 6; Level 4 is "credible".
+20. **Type: True/False \[Tests Part (b) Task\]**
+   * **Question:** True or False: OCR Part (b) asks you to explore ONE other anthology poem and does not require a two-poem comparison.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. Part (b) is a single-poem exploration ("Explore in detail one other poem from your anthology"); only Part (a) requires comparison.
+   * **AO:** AO1
+   * **WhyWrong:** Answering False confuses the parts — comparison lives in Part (a); Part (b) explores one poem in depth.
+21. **Type: MCQ \[Tests Level 3 Comparison\]**
+   * **Question:** At OCR Part (a) Level 3 (7–10), the comparison is described as:
+   * **Options:** A) "sustained, interwoven", B) "Makes some explicit, relevant comparisons between texts", C) absent, D) "perceptive throughout".
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Level 3 "Makes some explicit, relevant comparisons between texts" — a step below the sustained comparison of the upper bands.
+   * **AO:** AO1
+   * **Why A:** "Sustained, interwoven" is the Level 6 comparison bullet.
+   * **Why C:** Comparison is present at Level 3, not absent.
+   * **Why D:** "Perceptive throughout" overstates a mid-level response.
+22. **Type: Select All That Apply \[Tests Personal Response\]**
+   * **Question:** Across OCR levels, an "informed personal response" is built through which of the following? (Select all that apply)
+   * **Options:** A) A maintained critical style, B) Analysis of language, form and structure (AO2), C) Precise, pertinent textual references, D) An autobiographical anecdote about your weekend.
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** A personal response is your own critical interpretation, evidenced by close analysis and precise references — never autobiography.
+   * **AO:** AO1
+   * **Why D:** "Personal response" means an informed critical view of the poem, not a story about your own life.
 
 ### **SECTION F: SQA (National 5 / Higher — Scottish Text Poetry)**
 
@@ -693,6 +1148,97 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** A blunt verdict sounds evaluative, but "this poem is good" links to nothing in the poet's wider work and contains no analysis.
     * **Why C:** A true fact about the poet gestures at the wider body of work, but commonality needs shared techniques or concerns identified, not mere existence noted.
     * **Why D:** Identifying the subject shows understanding of the extract alone — commonality requires connecting beyond it to the poet's other poems.
+11. **Type: MCQ \[Tests 8-Mark Breakdown\]**
+   * **Question:** How are the 8 marks of the SQA Scottish Text commonality question allocated?
+   * **Options:** A) Up to 2 for identifying commonality, 2 for reference to the given extract, and 4 for similar references to at least one other poem by the writer, B) 8 marks for a single quotation, C) 4 marks for spelling, D) 8 marks awarded holistically with no breakdown.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. The scheme splits the 8 marks: 2 for commonality, 2 for the extract, and 4 for references to at least one other poem by the same writer.
+   * **AO:** AO1
+   * **Why B:** A single quotation cannot earn the full 8 — the marks are spread across commonality, extract and other poems.
+   * **Why C:** Spelling is not what these marks reward; analysis and connection are.
+   * **Why D:** The scheme gives a precise breakdown, not a holistic single judgement.
+12. **Type: Fill-in-the-Blank \[Tests No Mini Essay\]**
+   * **Question:** SQA guidance says candidates may answer the commonality question in bullet points — there is "no requirement to write a '\[BLANK\] essay'".
+   * **Answer:** Mini
+   * **Feedback:** ✓ Correct. The scheme states "there is no requirement to write a 'mini essay'" — linked statements or bullet points are accepted.
+   * **AO:** AO1
+   * **WhyWrong:** "Critical" or "full" miss the exact wording — the guidance rules out the need for a "mini essay".
+13. **Type: MCQ \[Tests Reference and Comment\]**
+   * **Question:** How are the shorter SQA Scottish Text analysis questions typically marked?
+   * **Options:** A) Reference (1) plus Comment (1), B) 2 marks for length, C) Holistically with no breakdown, D) One mark per line written.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. The standard pattern is "Reference (1) / Comment (1)" — a quotation identified, then its effect explained.
+   * **AO:** AO2
+   * **Why B:** Length earns nothing; a precise reference and comment do.
+   * **Why C:** These questions carry an explicit reference-plus-comment breakdown.
+   * **Why D:** Marks reward analysis, not the number of lines.
+14. **Type: Fill-in-the-Blank \[Tests 20-18 Summary\]**
+   * **Question:** On the SQA critical-essay grid, the top column (20–18) summarises the essay as "thorough and \[BLANK\]".
+   * **Answer:** Precise
+   * **Feedback:** ✓ Correct. The 20–18 summary row reads "thorough and precise"; the 17–14 band drops to "very detailed and shows some insight".
+   * **AO:** AO1
+   * **WhyWrong:** "Detailed" describes the band below — the top column pairs "thorough" with "precise".
+15. **Type: True/False \[Tests Other-Poem Marks\]**
+   * **Question:** True or False: In the SQA commonality question, 4 of the 8 marks are reserved for relevant references to at least one OTHER poem by the same writer.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. Half the marks — 4 of 8 — require connecting the extract to the writer's wider work.
+   * **AO:** AO1
+   * **WhyWrong:** Answering False treats the extract as self-contained, but the largest share of marks rewards links to other poems by the writer.
+16. **Type: MCQ \[Tests 17-14 Summary\]**
+   * **Question:** On the SQA critical-essay grid, how is a 17–14 essay summarised?
+   * **Options:** A) "thorough and precise", B) "very detailed and shows some insight", C) "superficial and/or technically weak", D) "lacks detail and relevance".
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The 17–14 summary is "very detailed and shows some insight"; "thorough and precise" is the band above.
+   * **AO:** AO1
+   * **Why A:** "Thorough and precise" is the top 20–18 summary.
+   * **Why C:** "Superficial and/or technically weak" is the bottom 4–0 band.
+   * **Why D:** "Lacks detail and relevance" is the 9–5 band.
+17. **Type: Select All That Apply \[Tests Commonality Elements\]**
+   * **Question:** Which of these does the SQA scheme name as valid "elements of commonality"? (Select all that apply)
+   * **Options:** A) Theme, B) Importance of setting, C) Use of imagery, D) The exact number of stanzas counted.
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** The scheme lists theme, central relationship, importance of setting, use of imagery, characterisation and narrative style. A stanza count is mere description, not commonality.
+   * **AO:** AO1
+   * **Why D:** Counting stanzas identifies a feature without linking shared concerns or techniques across poems.
+18. **Type: MCQ \[Tests Grid Top Band\]**
+   * **Question:** The SQA critical-essay supplementary marking grid runs from which top band downwards?
+   * **Options:** A) 25–21, B) 20–18, C) 30–26, D) 18–15.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The grid columns are 20–18, 17–14, 13–10, 9–5 and 4–0.
+   * **AO:** AO1
+   * **Why A:** A 25-mark top band belongs to Eduqas, not the SQA grid.
+   * **Why C:** 30–26 belongs to the 30-mark GCSE boards.
+   * **Why D:** 18–15 is not a column on this grid.
+19. **Type: Fill-in-the-Blank \[Tests Analysis Terminology\]**
+   * **Question:** The SQA 20–18 analysis descriptor requires "confident use of critical \[BLANK\]".
+   * **Answer:** Terminology
+   * **Feedback:** ✓ Correct. The top band shows "thorough awareness of the writer's techniques, through analysis, making confident use of critical terminology".
+   * **AO:** AO2
+   * **WhyWrong:** "Devices" or "quotation" appear elsewhere — the phrase here is "critical terminology".
+20. **Type: True/False \[Tests Line of Thought\]**
+   * **Question:** True or False: On the SQA grid, a 20–18 response sustains "a line of thought that is consistently relevant to the task".
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. The top band's line of thought is "consistently relevant to the task"; lower bands drop to "relevant" then "mostly relevant".
+   * **AO:** AO1
+   * **WhyWrong:** Answering False overlooks that consistent relevance of the argument is exactly what marks the top band.
+21. **Type: MCQ \[Tests 13-10 Line of Thought\]**
+   * **Question:** On the SQA grid, a 13–10 essay's line of thought is described as:
+   * **Options:** A) "consistently relevant", B) "mostly relevant to the task", C) irrelevant, D) absent.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. At 13–10 the line of thought is "mostly relevant to the task" — a step below the consistent relevance of the top band.
+   * **AO:** AO1
+   * **Why A:** "Consistently relevant" is the 20–18 band.
+   * **Why C:** An irrelevant line of thought sits in the lowest band.
+   * **Why D:** The argument is present but only "mostly" relevant, not absent.
+22. **Type: Select All That Apply \[Tests 20-18 Analysis\]**
+   * **Question:** Which describe the SQA 20–18 analysis band? (Select all that apply)
+   * **Options:** A) "thorough awareness of the writer's techniques, through analysis", B) "confident use of critical terminology", C) "very detailed/thoughtful explanation of stylistic devices", D) "numerous errors in spelling, grammar and punctuation".
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** The first three are the 20–18 analysis descriptors; "numerous errors" belongs to the bottom 4–0 band.
+   * **AO:** AO2
+   * **Why D:** "Numerous errors in spelling, grammar and punctuation" is the lowest 4–0 descriptor, not the top band.
 
 ## **5\. KNOWLEDGE BASE (For Clarification Phase)**
 
