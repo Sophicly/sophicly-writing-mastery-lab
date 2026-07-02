@@ -11487,3 +11487,18 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 @media (prefers-reduced-motion: reduce) {
     .swml-fb-chevron, .swml-section-feedback .swml-section-content { transition: none; }
 }
+
+/* v7.19.813: My Essay panel — response-section label headings (multi-Q papers) */
+.swml-extract-essay-heading {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.55;
+    margin: 14px 0 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+[data-swml-theme="light"] .swml-extract-essay-heading {
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+}

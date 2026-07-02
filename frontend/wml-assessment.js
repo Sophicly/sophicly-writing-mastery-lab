@@ -10653,7 +10653,8 @@
             const header = el('div', { className: 'swml-extract-panel-header' });
             const srcEl = typeof sourceIdx === 'number' ? sourceEls[sourceIdx] : null;
             const isTabsMode = sourceIdx === 'tabs' && sourceEls && sourceEls.length >= 2;
-            const label = isTabsMode ? 'Extract' : (srcEl ? (srcEl.getAttribute('data-section-label') || ('Source ' + (sourceIdx + 1))) : (sourceEls.length > 0 ? 'Source Material' : 'Extract'));
+            const isEssayMode = sourceIdx === 'essay'; // v7.19.813: student's own response(s), for side-by-side feedback reading
+            const label = isEssayMode ? 'My Essay' : (isTabsMode ? 'Extract' : (srcEl ? (srcEl.getAttribute('data-section-label') || ('Source ' + (sourceIdx + 1))) : (sourceEls.length > 0 ? 'Source Material' : 'Extract')));
             header.appendChild(el('span', { textContent: label }));
             header.appendChild(el('button', {
                 className: 'swml-extract-panel-close', textContent: '✕',
@@ -10663,7 +10664,30 @@
 
             const body = el('div', { className: 'swml-extract-panel-body' });
 
-            if (isTabsMode) {
+            if (isEssayMode) {
+                // v7.19.813 (Neil): clone every response section so the student can read
+                // their own writing side-by-side with the feedback boxes. Multi-question
+                // papers (language, Eduqas part a/b) come free: each non-empty response
+                // renders under its own label heading. Clones are forced read-only —
+                // this is a viewing pad, not a second editor.
+                const respEls = editorEl.querySelectorAll('[data-section-type="response"]');
+                let essayAdded = 0;
+                respEls.forEach((r, i) => {
+                    if (!(r.textContent || '').trim()) return;
+                    if (respEls.length > 1) {
+                        const rLbl = r.getAttribute('data-section-label') || _deriveTabLabel(r, i);
+                        body.appendChild(el('div', { className: 'swml-extract-essay-heading', textContent: rLbl }));
+                    }
+                    const cloned = _stripChipsFromClone(r.cloneNode(true));
+                    cloned.removeAttribute('contenteditable');
+                    cloned.querySelectorAll('[contenteditable]').forEach(n => n.setAttribute('contenteditable', 'false'));
+                    body.appendChild(cloned);
+                    essayAdded++;
+                });
+                if (!essayAdded) {
+                    body.appendChild(el('p', { textContent: 'Nothing written yet — your essay will appear here once you write it.' }));
+                }
+            } else if (isTabsMode) {
                 // v7.19.86: Tab strip for multi-extract docs (exam_crib has 10 extracts).
                 // v7.19.87: pad now shows preamble + extract + question per Q. Frame
                 // intentionally excluded — frame is the controlling concept the student
@@ -10813,6 +10837,29 @@
             document.body.appendChild(panel);
             extractPanels[sourceIdx] = panel;
             extractBtn.classList.add('active');
+
+            // v7.19.813 (Neil): "My Essay" toggle in every non-essay panel header —
+            // spawns an independent floating panel with the student's own response(s)
+            // so feedback can be read side-by-side with the writing it critiques.
+            // Same pattern as the "+ Source B" header button.
+            if (!isEssayMode) {
+                const essayBtn = el('button', {
+                    className: 'swml-extract-tab',
+                    textContent: '+ My Essay',
+                    style: { marginLeft: '8px', fontSize: '10px', padding: '3px 8px' },
+                    onClick: (e) => {
+                        e.stopPropagation();
+                        if (extractPanels['essay']) {
+                            extractPanels['essay'].remove(); delete extractPanels['essay'];
+                            essayBtn.textContent = '+ My Essay';
+                        } else {
+                            spawnExtractPanel([], 'essay', { top: '110px', right: '48px' });
+                            essayBtn.textContent = '− My Essay';
+                        }
+                    }
+                });
+                header.insertBefore(essayBtn, header.querySelector('.swml-extract-panel-close'));
+            }
         }
 
         const extractBtn = el('button', {
