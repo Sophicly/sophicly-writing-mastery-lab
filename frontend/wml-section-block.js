@@ -246,7 +246,16 @@
                 if (type === 'feedback' && !_assessHandled) {
                     const _txt = (node.textContent || '').trim();
                     const _placeholder = !_txt || /will appear after assessment|will be assessed here|appear here (?:after|once)|summary[\s\S]*will appear here/i.test(_txt);
-                    dom.setAttribute('data-section-complete', _placeholder ? 'false' : 'true');
+                    // v7.19.823: mark-bearing boxes (label ends "(… / N)") also require the
+                    // ACTUAL mark to be chosen (Neil 2026-07-02) — feedback content alone
+                    // must not green the tick while the mark pill still reads "—" (the
+                    // Predicted · Actual · Δ readout is only meaningful once Actual exists).
+                    // Boxes with no mark pattern in the label (Overall Feedback, CW
+                    // feedback) keep the content-only rule.
+                    const _fbLblTxt = String((node.attrs && node.attrs.label) || '');
+                    const _markPat = /\(\s*(—|\d+(?:\.\d+)?)\s*\/\s*\d+\s*\)\s*$/.exec(_fbLblTxt);
+                    const _markChosen = !_markPat || _markPat[1] !== '—';
+                    dom.setAttribute('data-section-complete', (!_placeholder && _markChosen) ? 'true' : 'false');
                 }
             } catch (_) { /* never block render */ }
 

@@ -37,7 +37,27 @@ class SWML_REST_API {
         'pride_prejudice' => 'pride_and_prejudice',
         'romeo_juliet'    => 'romeo_and_juliet',
         'sign_of_four'    => 'sign_of_the_four',
+        // v7.19.823: picker-id ↔ bridge-slug divergences (Chat-B FQ activation handoff
+        // 2026-07-02). Canonical = the slug LIVE meta keys already use (checked staging:
+        // the_tempest + merchant_of_venice carry real rows) or, where no lessons exist
+        // yet, the student-data TEXT_LABELS form. Never flip canonical direction —
+        // user_meta keys are built on it.
+        'omam'                  => 'of_mice_and_men',
+        'tempest'               => 'the_tempest',
+        'war_of_worlds'         => 'war_of_the_worlds',
+        'taste_of_honey'        => 'a_taste_of_honey',
+        'merchant_venice'       => 'merchant_of_venice',
+        'curious_incident_play' => 'curious_incident',
     ];
+
+    /**
+     * v7.19.823: public read of the alias map so the FQ bank auto-detect
+     * (main plugin, get_fq_bank_texts) expands bank basenames with every
+     * inbound slug form. One map, no drift.
+     */
+    public static function slug_aliases() {
+        return self::$SLUG_ALIASES;
+    }
 
     /**
      * Resolve any text slug (legacy or canonical) to canonical form.
@@ -772,6 +792,12 @@ class SWML_REST_API {
         $board   = sanitize_text_field($p['board']   ?? '');
         $subject = sanitize_text_field($p['subject'] ?? '');
         $text    = sanitize_text_field($p['text']    ?? '');
+        // v7.19.823: normalize at the REST boundary for the quiz paths too — FQ/MSA
+        // resolve their bank FILE by this slug, and the lesson's raw slug (bridge
+        // text-post or picker id) may be an alias form (omam vs of_mice_and_men…).
+        // Canvas paths already normalize; quiz start was the gap (Chat-B handoff).
+        // Idempotent; MSQ ignores $text entirely.
+        $text    = $this->normalize_text_slug($text);
         $attempt = max(1, absint($p['attempt'] ?? 1));
         $count   = min(10, max(1, absint($p['count'] ?? 5)));
         // v7.19.578: quiz_type selects the bank + the engine's persist dispatch.

@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.19.822
+ * Version: 7.19.823
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.19.822');
+define('SWML_VERSION', '7.19.823');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -170,6 +170,26 @@ class Sophicly_Writing_Mastery_Lab {
         echo '<style id="swml-anti-fouc">
             html, body { background: #16181d !important; color: #fff; }
         </style>';
+    }
+
+    /**
+     * v7.19.823: FQ bank auto-detect (Chat-B activation handoff 2026-07-02). A text's
+     * deterministic Foundational Quiz activates the moment its bank file ships — no
+     * hardcoded frontend allowlist (kills the FQ_BANK_TEXTS stale-list bug class).
+     * Returns bank basenames PLUS every slug-alias form that resolves to one, so
+     * whichever slug a lesson carries (bridge/course-map or picker id) gates true.
+     * Feeds BOTH swmlConfig localize sites via this one builder (taskCaps pattern).
+     */
+    public function get_fq_bank_texts() {
+        $slugs = [];
+        foreach ((glob(SWML_PATH . 'protocols/shared/foundational-quiz/banks/*.md') ?: []) as $f) {
+            $slugs[basename($f, '.md')] = true;
+        }
+        foreach (SWML_REST_API::slug_aliases() as $alias => $canonical) {
+            if (isset($slugs[$canonical])) $slugs[$alias] = true;
+            if (isset($slugs[$alias]))     $slugs[$canonical] = true;
+        }
+        return array_keys($slugs);
     }
 
     /**
@@ -411,6 +431,8 @@ class Sophicly_Writing_Mastery_Lab {
             // task-name string checks. Same builder feeds BOTH localize sites so they
             // cannot drift. A dev-only parity guard asserts new===old before any conversion.
             'taskCaps' => SWML_Protocol_Router::instance()->build_task_caps(),
+            // v7.19.823: server-derived FQ activation — bank basenames + alias forms.
+            'fqBankTexts' => $this->get_fq_bank_texts(),
         ]);
 
         // v7.14.16: Embed language paper specs for type-aware document builder
@@ -809,6 +831,8 @@ class Sophicly_Writing_Mastery_Lab {
                 // v7.19.x Commit 1: server-owned canonical task-caps (same builder as the
                 // standalone-page localize site above so the two payloads cannot drift).
                 'taskCaps' => SWML_Protocol_Router::instance()->build_task_caps(),
+                // v7.19.823: server-derived FQ activation (same builder as the standalone site).
+                'fqBankTexts' => $this->get_fq_bank_texts(),
             ]);
         } else {
             // v7.14.16: Refresh nonce for LD Focus Mode AJAX transitions

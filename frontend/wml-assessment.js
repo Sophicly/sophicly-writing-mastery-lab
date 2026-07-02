@@ -300,8 +300,13 @@
     // but ONLY for texts that have an authored question bank
     // (protocols/shared/foundational-quiz/banks/{text}.md). Other texts stay on the
     // legacy AI path until their bank is authored — incremental, no no_questions break.
-    // Add a text slug here the moment its bank ships.
-    const FQ_BANK_TEXTS = ['romeo_and_juliet'];
+    // v7.19.823: SERVER-DERIVED (Chat-B activation handoff): swmlConfig.fqBankTexts =
+    // bank basenames + slug-alias forms, built by get_fq_bank_texts() at localize time.
+    // A bank auto-activates the moment its file ships — no stale hardcoded list.
+    // Hardcoded fallback only if the config is missing (stale cached page HTML).
+    const FQ_BANK_TEXTS = (window.swmlConfig && Array.isArray(window.swmlConfig.fqBankTexts) && window.swmlConfig.fqBankTexts.length)
+        ? window.swmlConfig.fqBankTexts.map(s => String(s).toLowerCase())
+        : ['romeo_and_juliet'];
     function _fqDeterministic() {
         return QUIZ_CONTROLLER_ON && state.task === 'foundational_quiz'
             && FQ_BANK_TEXTS.indexOf((state.text || '').toLowerCase()) !== -1;
