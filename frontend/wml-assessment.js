@@ -10914,6 +10914,19 @@
             statusBar.appendChild(extractBtn);
         }
 
+        // v7.19.814: responsive footer. The LD nav cluster is absolutely centred
+        // over the bar, so on narrow panes it overlapped the left/right flow items
+        // (Neil, 16" screen at ~1500px viewport). Tiers keyed to the BAR's own
+        // width via ResizeObserver — viewport media queries can't see pane width
+        // (sidebars + chat panel change it independently of the window).
+        try {
+            const _sbRO = new ResizeObserver((entries) => {
+                const w = entries[0].contentRect.width;
+                statusBar.classList.toggle('swml-status-compact', w < 1000);
+                statusBar.classList.toggle('swml-status-tight', w < 760);
+            });
+            _sbRO.observe(statusBar);
+        } catch (_) {}
         editorPane.appendChild(statusBar);
 
         // v7.19.265: floating "pull from previous stage" icon — last child so it

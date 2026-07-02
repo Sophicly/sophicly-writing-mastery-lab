@@ -51,6 +51,15 @@ Protocol example phrases are FORMAT templates — never present one as the stude
 (Live violation observed 2026-07-01: W1 penalty quoted a phrase not present in the paragraph. A code-side
 verbatim validator is queued — Chat B. Until then the prose rule is the only guard: enforce it hard.)
 
+**CRITERION EVIDENCE (Neil, 2026-07-02 — universal, every assessed paper):** the same standard applies to
+CRITERION scoring, not just penalties. Every criterion scored below full worth must be anchored in the
+My Assessment prose either by (a) quoting the student's verbatim phrase that shows the shortfall — e.g.
+for "surface-level, no word-level zoom", quote the analysis sentence that stayed surface-level and name
+the word they failed to zoom into — or (b) stating the element is entirely absent ("no effects sentence
+exists — nothing to quote"). A judgment without the evidence it judges is unusable feedback. The mark
+table's Why column stays ≤10 words; the evidence lives in My Assessment. Every board's
+`protocol-a-assessment.md` must carry this rule (R&J gold has it as of v7.19.813 — replicate on refactor).
+
 ## A4. Never invent mark-scheme claims
 Level descriptors, band names, mark allocations: quoted from the REAL board mark scheme only
 (`feedback_never_invent_mark_scheme_claims`). No descriptor available in the protocol's reference
@@ -97,6 +106,19 @@ bare board name — so replication to other boards forces a conscious keep/adapt
 British English. The AI is **Sophia**. Banned: "Units" for sub-parts, "1-to-1" (except platinum Assessment
 Review), "crib", "shows" as analytical verb (it's a PENALTY — W1), arrows (→) in student-facing model
 answers, "patriarchy/patriarchal", magic/spellbook framing, "move" as a noun. Scholarly, calm, encouraging.
+
+## A13. Golds follow the taught sentence order — rigidly (Neil, 2026-07-02)
+Students copy gold models as templates: a gold that deviates from the taught structure UNTEACHES the
+method even when it would score full marks. Every gold (BOTH models, EVERY section, EVERY assessed
+protocol — language, literature, poetry, Shakespeare, modern) follows that paper's taught sentence order
+exactly. For lit essays (TTECEA+C): (1) conceptual-ONLY topic sentence — **no technique words in the
+topic sentence, ever** (that's what we penalise students for); (2) technique + anchor quote + inference —
+anchor quotes sequenced Body 1 = beginning, Body 2 = middle, Body 3 = end of text/extract; (3) word-level
+close analysis; (4) effect on reader ×2; (5) author's purpose; (6) context. Intro golds: hook = conceptual/
+contextual claim, building sentences = the HISTORICAL/SOCIAL context itself (not craft commentary), then
+context→author link, then three-point thesis. Other families (Language TTECEA, Section B IUMVCC, poetry)
+apply the same principle to THEIR taught order. The AI self-checks each gold sentence-by-sentence before
+emitting. (R&J gold protocol carries the rule as of v7.19.812 — replicate on every refactor.)
 
 ---
 

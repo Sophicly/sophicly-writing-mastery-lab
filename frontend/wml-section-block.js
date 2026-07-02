@@ -261,6 +261,25 @@
                     const nowCollapsed = dom.classList.toggle('swml-fb-collapsed');
                     try { if (COLLAPSE_KEY) localStorage.setItem(COLLAPSE_KEY, nowCollapsed ? '1' : '0'); } catch (_) { /* storage off */ }
                     if (window.console) console.log('[WML feedback] collapse toggle', JSON.stringify(fbLabel), '→', nowCollapsed ? 'collapsed' : 'expanded');
+                    // v7.19.814 (Neil): expanding while sat near the viewport top made the
+                    // section appear to grow UPWARDS (scroll anchoring holds the content
+                    // below steady), leaving the student at its bottom. If the expanded
+                    // section's top sits above the visible area, scroll it to the top so
+                    // reading always starts at the start of the feedback.
+                    if (!nowCollapsed) {
+                        requestAnimationFrame(() => {
+                            try {
+                                const sc = dom.closest('.swml-canvas-content');
+                                if (sc) {
+                                    const dr = dom.getBoundingClientRect();
+                                    const cr = sc.getBoundingClientRect();
+                                    if (dr.top < cr.top) sc.scrollTo({ top: sc.scrollTop + (dr.top - cr.top) - 16, behavior: 'smooth' });
+                                } else if (dom.getBoundingClientRect().top < 0) {
+                                    dom.scrollIntoView({ block: 'start', behavior: 'smooth' });
+                                }
+                            } catch (_) { /* never block the toggle */ }
+                        });
+                    }
                 });
                 dom.appendChild(toggle);
 

@@ -11502,3 +11502,20 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 [data-swml-theme="light"] .swml-extract-essay-heading {
     border-bottom-color: rgba(0, 0, 0, 0.08);
 }
+
+/* v7.19.814: responsive status bar — compact tiers toggled by ResizeObserver
+   on the bar's own width (see wml-assessment.js). Compact (<1000px): Previous/
+   Next + Extract go icon-only (title tooltips remain); Tight (<760px): Mark
+   Complete goes icon-only and the nav cluster leaves absolute centring for the
+   flex flow, making overlap geometrically impossible. */
+.swml-status-compact { gap: 10px; }
+.swml-status-compact .swml-ld-prev,
+.swml-status-compact .swml-ld-next,
+.swml-status-compact .swml-extract-btn { font-size: 0; gap: 0; }
+.swml-status-tight .swml-ld-complete { font-size: 0; }
+.swml-status-tight { gap: 8px; }
+.swml-status-tight .swml-ld-nav {
+    position: static;
+    transform: none;
+    margin-left: auto;
+}
