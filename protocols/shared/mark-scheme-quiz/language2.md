@@ -1005,36 +1005,36 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 ### Quiz: OCR GCSE English Language Paper 2
 
 1. **Type: Fill-in-the-Blank \[Tests AO3 Knowledge\]**
-   * **Question:** In OCR's six-level system for Paper 2 comparison, Level 6 requires '\[BLANK\] analytical comparison'. What word completes this highest-level descriptor?
-   * **Answer:** perceptive
-   * **Feedback:** ✓ Correct. OCR's top band (Level 6) calls for *perceptive* analytical comparison — insight beyond the merely 'detailed' or 'thorough' lower bands.
+   * **Question:** OCR marks the comparison strand (AO3) across six levels. Level 6 rewards 'a detailed, \[BLANK\] comparison which explores writers' ideas and perspectives and how they are conveyed'. What word completes this descriptor?
+   * **Answer:** interwoven
+   * **Feedback:** ✓ Correct. The AO3 Level 6 descriptor reads 'a detailed, *interwoven* comparison which explores writers' ideas and perspectives and how they are conveyed' — the two texts braided together, not handled one after the other.
    * **AO:** AO3
-   * **WhyWrong:** Words like 'thorough' or 'detailed' are tempting because they sound top-band, but they describe the levels below — 'perceptive' marks the qualitative leap into Level 6 insight.
+   * **WhyWrong:** Words like 'perceptive' or 'sustained' sound top-band, but on this paper 'perceptive' belongs to the AO4 evaluation Level 6 and 'sustained' to the AO3 Level 5 — the AO3 top level is a detailed, INTERWOVEN comparison.
 
 ---
 
-2. **Type: MCQ \[Tests AO1 Knowledge\]**
-   * **Question:** What does Question 2 specifically test on OCR's Paper 2?
-   * **Options:** A) Language analysis, B) Evaluation of effectiveness, C) Synthesis across texts, D) Creative writing.
-   * **Correct:** C
-   * **Feedback:** ✓ Correct. Synthesis — drawing the two texts together into a combined understanding — is a key OCR Question 2 skill (other boards, such as AQA Paper 2 Q2, also test synthesis/summary across two texts).
-   * **AO:** AO1
-   * **Why A:** Language analysis is a later question's job — Question 2 asks you to combine information from the texts, not analyse how the writers use language.
-   * **Why B:** Evaluating effectiveness comes in OCR's evaluation question — Question 2 only asks you to draw the two texts' information together.
-   * **Why D:** Creative writing belongs to the writing section, not the reading questions — mixing the two means revising the wrong skill for Question 2.
-
----
-
-3. **Type: MCQ \[Tests AO1 Application\]**
-   * **Question:** A student's synthesis response lists information from Text A, then lists information from Text B, then writes a conclusion combining them. Maximum level achievable?
-   * **Options:** A) Level 2, B) Level 3, C) Level 4, D) Level 5.
+2. **Type: MCQ \[Tests AO2 Knowledge\]**
+   * **Question:** On OCR's Component 2 (J351/02), what does the 6-mark Question 2 assess?
+   * **Options:** A) Synthesis of information across both texts, B) How the writer uses language and structure to achieve effects, C) Critical evaluation of the writer's argument, D) Comparison of the two texts' perspectives.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Listing each text in turn isn't synthesis — it caps the response in the lower bands. Real synthesis connects the ideas as it goes.
-   * **AO:** AO1
-   * **Why A:** Level 2 is too harsh — the response does cover both texts and combines them at the end, which lifts it above mere copying, just not into the higher bands.
-   * **Why C:** The closing combination makes Level 4 look possible, but 'developed synthesis' means connecting ideas throughout, not bolting a comparison onto two separate lists.
-   * **Why D:** Level 5 requires perceptive connections woven across the whole response — a list-then-conclude structure is the opposite of that sustained linking.
-   * **Stretch (unscored):** What's the difference between 'synthesis' and just 'listing information from both texts'? Synthesis builds new understanding by connecting ideas — showing how they relate into a bigger picture — rather than placing them side by side.
+   * **Feedback:** ✓ Correct. Question 2 is an AO2 task worth 6 marks: analysing how the writer uses language and structure to achieve effects and influence the reader, using relevant subject terminology. Synthesis and comparison come in later questions.
+   * **AO:** AO2
+   * **Why A:** Selecting and synthesising evidence is an AO1 skill weighted far more heavily on Component 1 — on Component 2 the AO1 marks come from the short retrieval question, not Question 2.
+   * **Why C:** Critical evaluation is AO4, assessed in the 18-mark question later in the paper, not in the 6-mark language question.
+   * **Why D:** Comparison of perspectives is AO3, also part of the later 18-mark question — Question 2 examines a single text's language and structure.
+
+---
+
+3. **Type: MCQ \[Tests AO3/AO4 Knowledge\]**
+   * **Question:** OCR's final reading question is worth 18 marks. How are those marks allocated?
+   * **Options:** A) 18 marks for AO2 language analysis, B) 9 marks AO3 and 9 marks AO4, C) 6 marks AO3 (comparison) and 12 marks AO4 (evaluation), marked separately and added, D) 18 marks for AO3 comparison alone.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. The mark scheme instructs examiners to 'mark the response out of 12 marks (AO4) and out of 6 marks (AO3)... add the two marks together to award a total mark out of 18'. Two bullet points prompt evaluation (AO4); one prompts comparison (AO3).
+   * **AO:** AO3
+   * **Why A:** AO2 language analysis is assessed in the earlier 6- and 12-mark questions — the final question turns to comparison and evaluation.
+   * **Why B:** An even split is wrong — AO4 evaluation carries twice the weight of AO3 comparison in this question.
+   * **Why D:** Comparison alone accounts for only 6 of the 18 marks; the larger 12 belong to critical evaluation (AO4).
+   * **Stretch (unscored):** Why weight evaluation more heavily here? OCR's final question asks 'how far do you agree' with a statement — the bulk of the thinking is critical evaluation of the texts' impact, with comparison supporting it.
 
 ---
 
@@ -1050,16 +1050,16 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
-5. **Type: MCQ \[Tests AO Knowledge\]**
-   * **Question:** OCR uses a six-level system. What's the key difference between Level 5 'thorough' and Level 6 'perceptive'?
-   * **Options:** A) Word count, B) Number of quotations, C) Perceptive analysis shows exceptional insight and precision, D) Level 6 requires comparison of three texts.
-   * **Correct:** C
-   * **Feedback:** ✓ Correct. The jump to Level 6 is *qualitative* — exceptional insight, subtle understanding, precise expression — not just doing more of the same.
-   * **AO:** AO3
-   * **Why A:** Word count never appears in the level descriptors — assuming longer means better leads to padded responses that stay in the same band.
-   * **Why B:** Counting quotations confuses quantity of evidence with quality of thought — Level 6 rewards what you see in the evidence, not how much you cite.
-   * **Why D:** No comparison question asks for three texts — this distractor invents a structural requirement instead of recognising the qualitative leap in insight.
-   * **Stretch (unscored):** Why is the Level 5→6 jump often the hardest? Level 5 is doing everything well; Level 6 demands a qualitative leap in insight and perception, which can't be reached just by adding 'more'.
+5. **Type: MCQ \[Tests AO2 Knowledge\]**
+   * **Question:** In OCR's AO2 language grid (the six-level scale for Questions 2 and 3), what distinguishes Level 6 from Level 5?
+   * **Options:** A) Level 6 is simply a longer response, B) Level 6 is 'a skilled analysis... sophisticated appreciation' while Level 5 is 'an analysis... perceptive understanding', C) Level 6 requires comparison of a second text, D) Level 6 needs more quotations than Level 5.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The Level 6 descriptor reads 'a skilled analysis which demonstrates a sophisticated appreciation'; Level 5 reads 'an analysis which demonstrates a perceptive understanding'. The step is from perceptive understanding to skilled, sophisticated appreciation, with terminology 'precisely-selected and integrated'.
+   * **AO:** AO2
+   * **Why A:** Length appears nowhere in the descriptors — a longer Level 5 response is still Level 5.
+   * **Why C:** Comparison is a different question (AO3) — the AO2 language grid judges analysis of one text.
+   * **Why D:** Quotation count is not a criterion; Level 6 rewards precisely-selected, integrated terminology and skilled analysis, not more evidence.
+   * **Stretch (unscored):** Why is the Level 5→6 jump often the hardest? Level 5 is doing everything well; Level 6 demands a qualitative leap into skilled, sophisticated appreciation, which cannot be reached just by adding 'more'.
 
 ---
 
@@ -1088,15 +1088,15 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 ---
 
 8. **Type: MCQ \[Tests AO3 Knowledge\]**
-   * **Question:** What does 'integrated comparison' mean in OCR's mark scheme?
-   * **Options:** A) Comparing everything about both texts, B) Discussing both texts within the same paragraphs, C) Using the same quotations from both texts, D) Writing equal amounts about each text.
+   * **Question:** OCR's AO3 Level 6 rewards a 'detailed, interwoven comparison'. What does 'interwoven' describe?
+   * **Options:** A) Comparing every possible feature of both texts, B) Weaving both texts together within the same paragraphs, showing connections as you go, C) Using the same quotations from both texts, D) Writing an equal number of words about each text.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Integrated comparison weaves both texts together within the same paragraphs, showing connections as you go — rather than handling each text in a separate block.
+   * **Feedback:** ✓ Correct. An interwoven comparison braids both texts together within the same paragraphs, exploring their ideas, perspectives and how these are conveyed side by side — rather than handling each text in a separate block.
    * **AO:** AO3
-   * **Why A:** 'Comparing everything' confuses breadth with structure — integration is about HOW you organise the comparison, not how many points you cover.
-   * **Why C:** Using identical quotations from both texts is neither possible nor required — the word 'integrated' describes paragraph structure, not matching evidence.
-   * **Why D:** Equal coverage feels fair, but balance of word count is not the point — you can write equally about each text in separate blocks and still not integrate.
-   * **Stretch (unscored):** Why do students default to non-integrated comparison? Handling texts separately feels safer and easier, but it shows less sophisticated thinking than weaving them together to explore connections.
+   * **Why A:** 'Interwoven' describes HOW the comparison is organised, not how many features it covers — breadth is not the point.
+   * **Why C:** Identical quotations from both texts are neither possible nor required — the word describes paragraph structure, not matching evidence.
+   * **Why D:** Equal word counts can still be written in separate blocks — balance of length is not what 'interwoven' means.
+   * **Stretch (unscored):** Why do students default to block-by-block comparison? Handling texts separately feels safer, but it shows less connected thinking than weaving them together to explore how their perspectives differ.
 
 ---
 
@@ -1124,14 +1124,149 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
+11. **Type: Fill-in-the-Blank \[Tests AO4 Knowledge\]**
+    * **Question:** OCR's AO4 evaluation Level 6 (11–12 marks) rewards 'a sustained critical evaluation demonstrating a \[BLANK\] and considered response to the statement and a full explanation of the impact of the texts on the reader'. What word completes it?
+    * **Answer:** perceptive
+    * **Feedback:** ✓ Correct. The AO4 top level asks for a 'perceptive and considered response to the statement' with 'a full explanation of the impact of the texts on the reader', supported by 'apt, skilfully selected and integrated textual references'.
+    * **AO:** AO4
+    * **WhyWrong:** Near-misses like 'detailed' or 'thorough' describe the lower AO4 bands — the Level 6 word is 'perceptive', paired with a considered response and a full explanation of impact on the reader.
+
+---
+
+12. **Type: MCQ \[Tests AO4 Knowledge\]**
+    * **Question:** How does OCR's specification define AO4?
+    * **Options:** A) Compare writers' ideas and perspectives across texts, B) Evaluate texts critically and support this with appropriate textual references, C) Communicate clearly, effectively and imaginatively, D) Identify and interpret explicit and implicit information.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. AO4 is 'evaluate texts critically and support this with appropriate textual references' — a reasoned judgement about the text's effect on the reader, anchored in evidence.
+    * **AO:** AO4
+    * **Why A:** Comparing ideas and perspectives is the AO3 definition — a separate objective within the same 18-mark question.
+    * **Why C:** Communicating clearly and imaginatively is AO5, assessed in the Section B writing task.
+    * **Why D:** Identifying and interpreting information is AO1, assessed by the short retrieval question.
+
+---
+
+13. **Type: MCQ \[Tests AO4 Application\]**
+    * **Question:** A student's response to the 18-mark question retells what each text says and backs points by copying phrases, offering no judgement about their effect. Which AO4 level fits?
+    * **Options:** A) Level 1 (1–2 marks), B) Level 3 (5–6 marks), C) Level 4 (7–8 marks), D) Level 5 (9–10 marks).
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. The AO4 Level 1 descriptor is 'a limited description of content' with 'comments supported by copying or paraphrase'. Retelling and copying, with no evaluation of impact, sits at the bottom.
+    * **AO:** AO4
+    * **Why B:** Level 3 needs 'clear evaluative comments and some awareness of the impact on the reader' — retelling offers no evaluative comment at all.
+    * **Why C:** Level 4 requires 'developed evaluative comments' addressing the statement — description and copying fall well short.
+    * **Why D:** Level 5 demands 'an informed critical evaluation' with a thoughtful response — the opposite of copying content.
+
+---
+
+14. **Type: True/False \[Tests AO1 Knowledge\]**
+    * **Question:** True or False: On OCR's Component 2, AO1 is assessed mainly through short retrieval questions worth a few marks, while the bulk of the paper's reading marks fall on AO2, AO3 and AO4.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The AO grid gives AO1 just 4 marks (the short Question 1 parts) on this component, against AO2 (18), AO3 (6) and AO4 (12). The heavier synthesis demand sits on Component 1.
+    * **AO:** AO1
+    * **WhyWrong:** Answering False usually comes from expecting a big synthesis question here — but on Component 2 the AO1 marks come from the light retrieval question; analysis, comparison and evaluation carry the reading marks.
+
+---
+
+15. **Type: MCQ \[Tests AO2 Application\]**
+    * **Question:** On the 6-mark Question 2, a student writes a lively commentary on the writer's word choices but never mentions structure, noting features without explaining their effects. Which AO2 level best fits?
+    * **Options:** A) Level 2 (2 marks), B) Level 4 (4 marks), C) Level 5 (5 marks), D) Level 6 (6 marks).
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. The Level 2 descriptor is 'a straightforward commentary... Candidates are likely to refer more fully to either language or structure and note some features without explaining the effects.' Commenting on language only, with no effects, matches Level 2.
+    * **AO:** AO2
+    * **Why B:** Level 4 is 'a developed explanation... a secure understanding' that comments on the effects of both language and structure — this response explains no effects.
+    * **Why C:** Level 5 'an analysis... perceptive understanding' balances both language and structure — one strand with no effects cannot reach it.
+    * **Why D:** Level 6 'skilled analysis... sophisticated appreciation' needs both strands and detailed effects, well beyond this commentary.
+
+---
+
+16. **Type: Select All That Apply \[Tests AO5 Knowledge\]**
+    * **Question:** Which of these belong to OCR's AO5 Level 6 (21–24 marks) writing descriptor? (Select all that apply)
+    * **Options:** A) The form is deliberately adapted to position the reader, showing sophisticated control of purpose and effect, B) Tone, style and register are ambitiously selected to enhance the purpose of the task, C) A skilfully controlled overall structure supports coherence and cohesion and achieves a range of effects, D) An ambitious range of sentence structures with accurate punctuation, E) Neat, legible handwriting throughout.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** AO5 Level 6 rewards form 'deliberately adapted to position the reader', tone, style and register 'ambitiously selected', and a 'skilfully controlled overall structure'. Sentence structures and punctuation are marked on the separate AO6 scale, and handwriting is not assessed.
+    * **AO:** AO5
+    * **Why D:** An ambitious range of sentence structures with accurate punctuation is an AO6 descriptor (technical accuracy), marked on its own 16-mark scale, not under AO5.
+    * **Why E:** Handwriting is not an assessment objective — legibility matters only so the work can be read.
+
+---
+
+17. **Type: MCQ \[Tests AO6 Knowledge\]**
+    * **Question:** Which description matches OCR's AO6 Level 4 (13–16 marks)?
+    * **Options:** A) Simple sentences with some attempt at more complex structures and basic punctuation, B) A range of sentence structures used mostly securely, with generally accurate punctuation, C) An ambitious range of sentence structures shaping meaning, accurate punctuation for clarity and effect, and precise, subtle vocabulary, D) Deliberately adapted form showing sophisticated control of purpose.
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. AO6 Level 4 reads 'an ambitious range of sentence structures... to shape meaning and create impact. Accurate punctuation... to enhance clarity and achieve particular effects. Vocabulary is precise and subtle... Spelling of irregular and ambitious words is accurate, with very occasional lapses.'
+    * **AO:** AO6
+    * **Why A:** Simple sentences and basic punctuation describe AO6 Level 1 — the lowest band.
+    * **Why B:** 'Mostly secure' sentence structures and 'generally accurate' punctuation describe AO6 Level 2, not the top band.
+    * **Why D:** Deliberately adapted form and control of purpose are AO5 wording, not the AO6 technical scale.
+
+---
+
+18. **Type: True/False \[Tests AO3 Knowledge\]**
+    * **Question:** True or False: OCR's AO3 asks candidates to 'compare writers' ideas and perspectives, as well as how these are conveyed, across two or more texts'.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. That is the AO3 definition word for word — comparison covers both WHAT the writers think (ideas and perspectives) and HOW they convey it, across the two texts.
+    * **AO:** AO3
+    * **WhyWrong:** Answering False often comes from thinking comparison is only about ideas — but the definition explicitly includes 'how these are conveyed', so methods must be compared too.
+
+---
+
+19. **Type: MCQ \[Tests AO3 Application\]**
+    * **Question:** In the AO3 comparison strand (out of 6), a response points out the main similarities and differences between the writers' views but never considers how those views are conveyed. Which level fits?
+    * **Options:** A) Level 1 (1 mark), B) Level 2 (2 marks), C) Level 4 (4 marks), D) Level 6 (6 marks).
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 2 is 'a response which identifies main points of comparison between writers' ideas and perspectives'. Only once a response 'begins to consider how they are conveyed' does it move to Level 3 and above.
+    * **AO:** AO3
+    * **Why A:** Level 1 is 'simple points of comparison' — identifying the main similarities and differences is a step beyond that.
+    * **Why C:** Level 4 is 'a developed comparison... and how they are conveyed' — this response never addresses how the views are conveyed.
+    * **Why D:** Level 6 is 'a detailed, interwoven comparison which explores... how they are conveyed' — far beyond identifying points.
+
+---
+
+20. **Type: MCQ \[Tests AO5 Application\]**
+    * **Question:** A Section B story sustains a controlled structure and a clear sense of audience, but its adaptation of form and register is secure rather than ambitious or sophisticated. Which AO5 level fits best?
+    * **Options:** A) Level 2 (5–8 marks), B) Level 3 (9–12 marks), C) Level 5 (17–20 marks), D) Level 6 (21–24 marks).
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. Level 5 (17–20) describes form 'confidently adapted' with 'a secure understanding of purpose and audience' and a 'controlled overall structure'. Level 6 would need form 'deliberately adapted to position the reader' with 'sophisticated control'.
+    * **AO:** AO5
+    * **Why A:** Level 2 form is only 'mostly appropriate' and 'generally maintained' — well below secure, confident control.
+    * **Why B:** Level 3 shows 'clear awareness of purpose and audience' with a 'clear overall structure' — a step below the secure, sustained control described.
+    * **Why D:** Level 6 needs form 'deliberately adapted to position the reader' with 'ambitiously selected' register — this writing is secure, not yet ambitious.
+
+---
+
+21. **Type: MCQ \[Tests AO2 Application\]**
+    * **Question:** On the 12-mark Question 3, what lifts a response from AO2 Level 3 to Level 4?
+    * **Options:** A) Writing about a second text as well, B) Moving from 'a clear explanation... a general understanding' to 'a developed explanation... a secure understanding' of how language and structure achieve effects, C) Adding a personal opinion of the text, D) Quoting more lines from the extract.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 3 is 'a clear explanation which shows a general understanding'; Level 4 is 'a developed explanation which shows a secure understanding', commenting on the effects of both language and structure.
+    * **AO:** AO2
+    * **Why A:** Question 3 analyses a single text — a second text belongs to the comparison question (AO3).
+    * **Why C:** Personal opinion is evaluation (AO4), not what this language-and-structure question rewards.
+    * **Why D:** More quotation is not the criterion — the step up is developed explanation and secure understanding of effects.
+
+---
+
+22. **Type: MCQ \[Tests AO5/AO6 Knowledge\]**
+    * **Question:** How is the 40-mark Section B writing task marked on OCR's Component 2?
+    * **Options:** A) 20 marks AO5 and 20 marks AO6, B) 24 marks AO5 and 16 marks AO6, marked on two separate grids and added together, C) 16 marks AO5 and 24 marks AO6, D) 30 marks content and 10 marks accuracy.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The instruction is to 'mark the response out of 24 marks (AO5) and out of 16 marks (AO6)... add the two marks together to award a total mark out of 40'. Communication and organisation (AO5) outweighs technical accuracy (AO6).
+    * **AO:** AO5
+    * **Why A:** An even split is wrong — AO5 carries 24 marks and AO6 carries 16.
+    * **Why C:** This reverses the weighting — content and organisation (AO5) is the larger share, not technical accuracy.
+    * **Why D:** A 30/10 split overstates the imbalance — AO6 is a substantial 16 marks.
+
+---
+
 ### Quiz: Edexcel GCSE English Language Paper 2
 
 1. **Type: Fill-in-the-Blank \[Tests AO3 Knowledge\]**
-   * **Question:** For Paper 2 comparison questions, Level 5 requires 'perceptive \[BLANK\] comparison'. What word completes this descriptor?
-   * **Answer:** integrated
-   * **Feedback:** ✓ Correct. Edexcel's top band rewards *integrated* comparison — texts woven together, not handled in separate blocks.
+   * **Question:** On Edexcel's comparison question (Q7b, AO3), Level 5 rewards a response that 'considers a \[BLANK\] and comprehensive range of comparisons between the texts'. What word completes this descriptor?
+   * **Answer:** varied
+   * **Feedback:** ✓ Correct. Edexcel's AO3 ladder is built on the RANGE of comparisons: obvious (Level 2), a range (Level 3), a wide range (Level 4) and, at Level 5, 'a *varied* and comprehensive range of comparisons between the texts'.
    * **AO:** AO3
-   * **WhyWrong:** Answers like 'detailed' or 'analytical' sound right because they describe good work, but the Level 5 descriptor specifically rewards INTEGRATED comparison — texts woven together throughout.
+   * **WhyWrong:** Words like 'integrated' or 'perceptive' belong to other boards — Edexcel's Level 5 comparison descriptor is about a VARIED and comprehensive range of comparisons, not integration or perception.
 
 ---
 
@@ -1162,21 +1297,21 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 4. **Type: MCQ \[Tests AO3 Application\]**
    * **Question:** A student's transactional writing (article) begins with a rhetorical question, uses statistics, includes expert opinions, and ends with a call to action. However, the tone is very informal throughout ("loads of people reckon..."). What is the highest AO5 level this can realistically reach?
-   * **Options:** A) Level 2 (7-12 marks), B) Level 3 (13-18 marks), C) Level 4 (19-22 marks), D) Level 5 (23-24 marks).
+   * **Options:** A) Level 2 (5-9 marks), B) Level 3 (10-14 marks), C) Level 4 (15-19 marks), D) Level 5 (20-24 marks).
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The structural features pull the mark up, but the sustained informal register isn't matched to the article's purpose and audience — that caps it around Level 3 and blocks the top bands, which need register consistently controlled for effect.
+   * **Feedback:** ✓ Correct. The structural features pull the mark up, but a sustained informal register is not matched to the article's purpose and audience — that caps it around Level 3 (10–14), which 'selects material and stylistic or rhetorical devices to suit audience and purpose, with appropriate use of tone, style and register'. The top bands need register controlled for effect.
    * **AO:** AO5
-   * **Why A:** Level 2 ignores the genuine strengths — rhetorical opening, statistics, expert views and a call to action are real structural craft that lifts the piece above 'some awareness'.
-   * **Why C:** The device list makes Level 4 look earned, but 'convincing voice' requires register controlled for purpose and audience — sustained slang like 'loads of people reckon' breaks that.
-   * **Why D:** Level 5 'sophisticated manipulation' demands assured control of tone throughout — an article that never finds the right register cannot sit in the top band.
+   * **Why A:** Level 2 (5–9) ignores the genuine strengths — a rhetorical opening, statistics, expert views and a call to action are real craft that lift the piece above 'some ability'.
+   * **Why C:** Level 4 (15–19) is a 'secure ability' that 'organises material for particular effect, with effective use of tone, style and register' — sustained slang like 'loads of people reckon' breaks that effective register.
+   * **Why D:** Level 5 (20–24) 'shapes audience response with subtlety, with sophisticated and sustained use of tone, style and register' — an article that never finds the right register cannot sit in the top band.
 
 ---
 
 5. **Type: MCQ \[Tests AO5 Knowledge\]**
-   * **Question:** What does 'sophisticated manipulation of reader' mean in Level 5 transactional writing?
-   * **Options:** A) Using complicated vocabulary, B) Skilfully controlling reader response through careful choices, C) Manipulating facts to support argument, D) Using every persuasive technique possible.
+   * **Question:** Edexcel's AO5 Level 5 rewards writing that 'shapes audience response with subtlety'. What does that phrase describe?
+   * **Options:** A) Using complicated vocabulary, B) Skilfully controlling reader response through deliberate, subtle choices, C) Manipulating facts to support the argument, D) Using every persuasive technique possible.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Here 'manipulation' means skilful *control* of the reader's response through deliberate choices — sophisticated craft, not deception.
+   * **Feedback:** ✓ Correct. 'Shapes audience response with subtlety' means skilful, deliberate *control* of the reader's response — the same top band also 'manipulates complex ideas' with a sophisticated, sustained use of tone, style and register. It is craft, not deception.
    * **AO:** AO5
    * **Why A:** Complicated vocabulary confuses difficulty with sophistication — ambitious word choices help, but the descriptor is about controlling the reader's response, not showing off words.
    * **Why C:** This reads 'manipulation' in its negative everyday sense — twisting facts is dishonesty, whereas the mark scheme means skilful influence through deliberate craft.
@@ -1222,15 +1357,15 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
-9. **Type: MCQ \[Tests AO5 Application\]**
-   * **Question:** In the five-level system, what's the key progression from Level 3 'clear' to Level 4 'detailed'?
-   * **Options:** A) Length of response, B) Number of techniques identified, C) Depth and development of analysis, D) Using more complex vocabulary.
+9. **Type: MCQ \[Tests AO2 Application\]**
+   * **Question:** Edexcel's AO2 grid (Q3) climbs by single verbs: Comment → Explanation → Exploration → Analysis. What is the key progression from Level 3 'Explanation of the text' to Level 4 'Exploration of the text'?
+   * **Options:** A) Length of response, B) Number of techniques identified, C) Moving beyond explaining an effect to exploring how and why it works and its wider implications, D) Using more complex vocabulary.
    * **Correct:** C
-   * **Feedback:** ✓ Correct. The Level 3→4 step is about depth and development of analysis — going further into *how* and *why* an effect works, not just doing more or using bigger words.
+   * **Feedback:** ✓ Correct. Level 3 is 'Explanation of the text' and Level 4 is 'Exploration of the text' — the step is from explaining an effect to exploring how and why it works, developing implications, not doing more or using bigger words.
    * **AO:** AO2
-   * **Why A:** Writing more is the instinctive fix, but the descriptors measure quality of analysis — a longer response at the same depth stays at the same level.
-   * **Why B:** Spotting extra techniques is breadth, not depth — naming five devices superficially scores below analysing two of them in developed detail.
-   * **Why D:** Fancier vocabulary in YOUR answer does not deepen the analysis of the WRITER'S choices — the step up is analytical development, not lexical decoration.
+   * **Why A:** Writing more is the instinctive fix, but the single-verb ladder measures the quality of engagement — a longer explanation is still explanation.
+   * **Why B:** Spotting extra techniques is breadth, not depth — naming five devices superficially scores below exploring two of them.
+   * **Why D:** Fancier vocabulary in YOUR answer does not deepen engagement with the WRITER'S choices — the step up is from explanation to exploration.
 
 ---
 
@@ -1246,14 +1381,146 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
+11. **Type: MCQ \[Tests AO2 Knowledge\]**
+    * **Question:** On Edexcel's Paper 2, which question carries the 15 marks for AO2 (analysis of language and structure)?
+    * **Options:** A) Question 2, B) Question 3, C) Question 6, D) Question 7(b).
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Question 3 is the 15-mark AO2 task — 'explain, comment on and analyse how writers use language and structure'. Question 6 is AO4 evaluation (15), and Question 7(b) is AO3 comparison (14).
+    * **AO:** AO2
+    * **Why A:** Question 2 is a short AO1 retrieval question worth 2 marks, not the language-analysis question.
+    * **Why C:** Question 6 carries 15 marks for AO4 critical evaluation, a different skill from language analysis.
+    * **Why D:** Question 7(b) is the 14-mark AO3 comparison across both texts, not single-text language analysis.
+
+---
+
+12. **Type: True/False \[Tests AO2 Application\]**
+    * **Question:** True or False: On Question 3, a response that analyses only the writer's language, ignoring structure entirely, is capped at Level 2 however well it is written.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The mark scheme states it is 'Level 2 if only language OR structure has been considered', and a response 'cannot access Level 3 or above, where analysis of both language and structure' is required. Both strands are needed to climb.
+    * **AO:** AO2
+    * **WhyWrong:** Answering False assumes brilliant language analysis alone can reach the top — but Edexcel explicitly caps single-strand responses at Level 2 until structure is addressed too.
+
+---
+
+13. **Type: Fill-in-the-Blank \[Tests AO4 Knowledge\]**
+    * **Question:** Edexcel's AO4 grid (Q6) climbs Description → Comment → Explanation → Analysis → \[BLANK\], each applied to 'ideas, events, themes or settings'. What is the Level 5 verb?
+    * **Answer:** Evaluation
+    * **Feedback:** ✓ Correct. The AO4 ladder tops out at 'Evaluation of ideas, events, themes or settings' (Level 5, 13–15). Analysis (Level 4) breaks the text down; evaluation judges how successfully it works.
+    * **AO:** AO4
+    * **WhyWrong:** Guesses like 'exploration' or 'synthesis' belong to other grids — the AO4 evaluation question tops out on the verb EVALUATION, the critical judgement the question is named for.
+
+---
+
+14. **Type: MCQ \[Tests AO4 Application\]**
+    * **Question:** On Question 6 (evaluation), a student clearly explains the ideas and events in the text but never judges how successful or effective they are. Which AO4 level fits?
+    * **Options:** A) Level 1 (1–3 marks), B) Level 3 (7–9 marks), C) Level 4 (10–12 marks), D) Level 5 (13–15 marks).
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 3 is 'Explanation of ideas, events, themes or settings'. Explaining without judging keeps a response at explanation; evaluation (the Level 5 verb) is what the question ultimately rewards.
+    * **AO:** AO4
+    * **Why A:** Level 1 is mere 'Description' — this response explains rather than just describes, so it sits higher.
+    * **Why C:** Level 4 is 'Analysis' — breaking the text down in detail, which goes beyond clear explanation.
+    * **Why D:** Level 5 is 'Evaluation' — a critical judgement of effectiveness, which this response never offers.
+
+---
+
+15. **Type: Fill-in-the-Blank \[Tests AO1 Knowledge\]**
+    * **Question:** On Question 7(a), the 6-mark synthesis question, Level 3 rewards 'Detailed understanding of similarities' and 'Detailed \[BLANK\] of the two texts'. What word completes it?
+    * **Answer:** synthesis
+    * **Feedback:** ✓ Correct. Q7(a) is AO1: 'select and synthesise evidence from different texts'. The ladder runs Limited synthesis (Level 1) → Clear synthesis (Level 2) → Detailed synthesis of the two texts (Level 3).
+    * **AO:** AO1
+    * **WhyWrong:** Answers like 'comparison' or 'analysis' name other questions' skills — Q7(a) rewards SYNTHESIS: combining evidence from both texts into a connected understanding of their similarities.
+
+---
+
+16. **Type: MCQ \[Tests AO3 Application\]**
+    * **Question:** On Question 7(b), a response makes obvious comparisons but develops only ONE text in detail, touching the other briefly. What is the highest AO3 level available?
+    * **Options:** A) Level 2 (3–5 marks), B) Level 3 (6–8 marks), C) Level 4 (9–11 marks), D) Level 5 (12–14 marks).
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. The mark scheme notes it is 'Level 2 if only ONE text has been considered in detail', and Level 2 is 'obvious comparisons between the texts'. Genuine engagement with both texts is needed for Level 3 and above.
+    * **AO:** AO3
+    * **Why B:** Level 3 is 'a range of comparisons between the texts' — which requires both texts developed, not one in detail and one in passing.
+    * **Why C:** Level 4 is 'a wide range of comparisons' across both texts — impossible when one text is barely touched.
+    * **Why D:** Level 5 is 'a varied and comprehensive range of comparisons' — the top band, ruled out by the one-text imbalance.
+
+---
+
+17. **Type: Select All That Apply \[Tests AO5 Knowledge\]**
+    * **Question:** Which of these are named in Edexcel's AO5 Level 5 (20–24 marks) writing descriptor? (Select all that apply)
+    * **Options:** A) Sophisticated ability to communicate clearly, effectively and imaginatively, B) Shapes audience response with subtlety, with sophisticated and sustained use of tone, style and register, C) Manipulates complex ideas, utilising a range of structural and grammatical features to support coherence and cohesion, D) Uses an extensive vocabulary strategically, with rare spelling errors, E) Punctuates writing with accuracy to aid emphasis and precision.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** AO5 Level 5 names a 'sophisticated ability to communicate', shaping 'audience response with subtlety' and 'manipulating complex ideas' through structural and grammatical features. Vocabulary range, spelling and punctuation are AO6 descriptors, marked on the separate 16-mark technical scale.
+    * **AO:** AO5
+    * **Why D:** Extensive vocabulary used strategically with rare spelling errors is an AO6 Level 5 descriptor (technical accuracy), not AO5 content.
+    * **Why E:** Punctuating to aid emphasis and precision is AO6 wording, marked on the technical-accuracy scale, not AO5.
+
+---
+
+18. **Type: MCQ \[Tests AO6 Knowledge\]**
+    * **Question:** On the writing task, what distinguishes AO6 Level 5 (14–16) from Level 4 (11–13)?
+    * **Options:** A) Level 5 simply has no spelling errors at all, B) Level 5 'uses an extensive vocabulary strategically' and punctuates 'to aid emphasis and precision', where Level 4 'uses a wide, selective vocabulary with only occasional spelling errors', C) Level 5 requires a longer piece, D) Level 5 adds more persuasive techniques.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 4 'uses a wide, selective vocabulary with only occasional spelling errors' and 'positions a range of punctuation for clarity'; Level 5 'uses an extensive vocabulary strategically' with 'rare spelling errors' and punctuates 'to aid emphasis and precision'.
+    * **AO:** AO6
+    * **Why A:** Level 5 allows 'rare spelling errors' that 'do not detract from overall meaning' — flawless spelling is not the criterion.
+    * **Why C:** Length appears nowhere in the AO6 descriptors — the scale measures vocabulary, punctuation and sentence control.
+    * **Why D:** Persuasive techniques are AO5 content — AO6 is the technical-accuracy scale.
+
+---
+
+19. **Type: True/False \[Tests AO5/AO6 Knowledge\]**
+    * **Question:** True or False: On Edexcel's Section B, the 40-mark transactional writing task awards 24 marks for AO5 (communication and organisation) and 16 marks for AO6 (technical accuracy).
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The mark grid gives Question 8 or 9 24 marks for AO5 and 16 for AO6 — 40 in total. Content and organisation outweigh technical accuracy.
+    * **AO:** AO5
+    * **WhyWrong:** Answering False often comes from expecting an even split — but Edexcel weights AO5 (24) more heavily than AO6 (16) on the writing task.
+
+---
+
+20. **Type: MCQ \[Tests AO5 Application\]**
+    * **Question:** A Section B response offers a basic answer in which audience and purpose are not fully established, with limited use of structural and grammatical features. Which AO5 level fits?
+    * **Options:** A) Level 1 (1–4 marks), B) Level 2 (5–9 marks), C) Level 3 (10–14 marks), D) Level 4 (15–19 marks).
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. AO5 Level 1 describes 'a basic response, with audience and/or purpose not fully established' and 'limited use of structural and grammatical features'. That is the entry band.
+    * **AO:** AO5
+    * **Why B:** Level 2 'shows an awareness of audience and purpose, with straightforward use of tone, style and register' — a step this response has not yet reached.
+    * **Why C:** Level 3 'selects material and stylistic or rhetorical devices to suit audience and purpose' — well beyond a basic, unestablished response.
+    * **Why D:** Level 4 'organises material for particular effect' — far above a response that barely establishes its purpose.
+
+---
+
+21. **Type: MCQ \[Tests AO2 vs AO4 Knowledge\]**
+    * **Question:** Both Question 3 and Question 6 are 15-mark reading questions. What is the key difference in what they assess?
+    * **Options:** A) Question 3 is about language and structure (AO2); Question 6 is critical evaluation of ideas, events, themes or settings (AO4), B) Question 3 is comparison and Question 6 is synthesis, C) Question 3 is writing and Question 6 is reading, D) They assess the same skill on different texts.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. Question 3 (AO2) analyses 'how writers use language and structure to achieve effects'; Question 6 (AO4) is critical evaluation, climbing to 'Evaluation of ideas, events, themes or settings'.
+    * **AO:** AO4
+    * **Why B:** Comparison is AO3 (Q7b) and synthesis is AO1 (Q7a) — neither is Question 3 or Question 6.
+    * **Why C:** Both are reading questions on the source texts — the writing task is Section B.
+    * **Why D:** They assess different objectives — language analysis versus critical evaluation — not the same skill twice.
+
+---
+
+22. **Type: MCQ \[Tests AO3 Knowledge\]**
+    * **Question:** Which statement best captures what Edexcel's Question 7(b) rewards under AO3?
+    * **Options:** A) Selecting and synthesising evidence from both texts, B) Comparing writers' ideas and perspectives, as well as how these are conveyed, C) Evaluating how successfully one writer achieves their purpose, D) Analysing language and structure in a single text.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. AO3 is 'compare writers' ideas and perspectives, as well as how these are conveyed' — both WHAT the writers think and HOW they convey it, across both texts, marked on the range of comparisons.
+    * **AO:** AO3
+    * **Why A:** Selecting and synthesising evidence is AO1 (Question 7a) — a separate 6-mark question.
+    * **Why C:** Evaluating one writer's success is AO4 (Question 6) — a single-text critical judgement, not comparison.
+    * **Why D:** Analysing language and structure in one text is AO2 (Question 3), not cross-text comparison.
+
+---
+
 ### Quiz: Edexcel IGCSE English Language Spec A Paper 1
 
-1. **Type: Fill-in-the-Blank \[Tests AO2 Knowledge\]**
-   * **Question:** For the comparison question in Paper 1, Level 5 requires 'perceptive, \[BLANK\] comparison'. What word completes this descriptor?
-   * **Answer:** analytical
-   * **Feedback:** ✓ Correct. The top band needs *perceptive, analytical* comparison — close analysis of how the texts differ, not just description of what they say.
+1. **Type: Fill-in-the-Blank \[Tests AO3 Knowledge\]**
+   * **Question:** On Spec A's comparison question (Q5, AO3, 22 marks), Level 5 rewards a response that 'considers a \[BLANK\] and comprehensive range of comparisons between the texts'. What word completes this descriptor?
+   * **Answer:** varied
+   * **Feedback:** ✓ Correct. Spec A's AO3 ladder climbs by the RANGE of comparisons: obvious (Level 2), a range (Level 3), a wide range (Level 4), and 'a *varied* and comprehensive range of comparisons between the texts' at Level 5 — with analysis of ideas and perspectives and discriminating, balanced references.
    * **AO:** AO3
-   * **WhyWrong:** Near-misses like 'detailed' or 'integrated' describe lower bands or other boards — Spec A's Level 5 pairing is 'perceptive, ANALYTICAL': insight delivered through close analysis.
+   * **WhyWrong:** Words like 'analytical' or 'integrated' sound top-band, but Spec A's Level 5 comparison phrase is a VARIED and comprehensive range of comparisons — 'analysis' names the second bullet (analysis of ideas and perspectives), not the comparison descriptor itself.
 
 ---
 
@@ -1365,14 +1632,146 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
+11. **Type: Fill-in-the-Blank \[Tests AO2 Knowledge\]**
+    * **Question:** On Spec A's language question (Q4, AO2), Level 5 (11–12 marks) requires '\[BLANK\] understanding and analysis of language and structure and how these are used by writers to achieve effects'. What word completes it?
+    * **Answer:** Perceptive
+    * **Feedback:** ✓ Correct. The AO2 ladder runs Basic (L1) → Some (L2) → Clear (L3) → Thorough (L4) → Perceptive understanding and analysis (L5). At the top the 'selection of references is discriminating and clarifies the points being made'.
+    * **AO:** AO2
+    * **WhyWrong:** Near-misses like 'Thorough' or 'Clear' name the levels below — Level 4 is 'thorough understanding and exploration', while Level 5 is PERCEPTIVE understanding and analysis.
+
+---
+
+12. **Type: MCQ \[Tests AO2 Application\]**
+    * **Question:** On the AO2 language question, what lifts a response from Level 3 (5–7) to Level 4 (8–10)?
+    * **Options:** A) Writing about a second text, B) Moving from 'clear understanding and explanation' to 'thorough understanding and exploration' of how language and structure achieve effects, C) Adding a personal opinion, D) Quoting at greater length.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 3 is 'clear understanding and explanation of language and structure'; Level 4 is 'thorough understanding and exploration', with references that are 'detailed, appropriate and fully support the points being made'.
+    * **AO:** AO2
+    * **Why A:** The AO2 question analyses a single text — comparison across two texts is the separate AO3 question.
+    * **Why C:** Personal opinion is a writing habit — AO2 rewards analysis of the writer's linguistic and structural devices.
+    * **Why D:** Length of quotation is not a criterion; Level 4 references are judged 'detailed, appropriate' and fully supportive, not longer.
+
+---
+
+13. **Type: MCQ \[Tests AO3 Application\]**
+    * **Question:** On Spec A's 22-mark comparison question, a response develops a range of comparisons across both texts, explaining ideas and perspectives with appropriate references, but is not yet a 'wide' or 'comprehensive' range. Which level fits?
+    * **Options:** A) Level 2 (5–8 marks), B) Level 3 (9–13 marks), C) Level 4 (14–18 marks), D) Level 5 (19–22 marks).
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 3 is 'the response considers a range of comparisons between the texts' with 'explanation of writers' ideas and perspectives' and references 'appropriate and relevant to the points'. A wide range would be Level 4.
+    * **AO:** AO3
+    * **Why A:** Level 2 is 'obvious comparisons between the texts' — a range of developed comparisons sits above that.
+    * **Why C:** Level 4 needs 'a wide range of comparisons' with 'exploration' and references 'balanced across both texts' — beyond a plain range.
+    * **Why D:** Level 5 is 'a varied and comprehensive range' with 'analysis' and discriminating references — the top band.
+
+---
+
+14. **Type: True/False \[Tests AO3 Application\]**
+    * **Question:** True or False: On Spec A's comparison question, a candidate who considers only ONE text can score no higher than the top of Level 2.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The mark scheme states 'candidates who have considered only ONE text may only achieve a mark up to the top of Level 2'. Comparison, by definition, needs both texts in play.
+    * **AO:** AO3
+    * **WhyWrong:** Answering False assumes brilliant single-text work can still climb — but with only one text there is nothing to compare, so the scheme caps it at the top of Level 2.
+
+---
+
+15. **Type: Fill-in-the-Blank \[Tests AO4 Knowledge\]**
+    * **Question:** On Spec A's transactional writing (AO4, Communication), Level 5 (23–27 marks) opens 'Communication is \[BLANK\] and subtle'. What word completes it?
+    * **Answer:** perceptive
+    * **Feedback:** ✓ Correct. AO4 climbs from 'basic' (L1) → 'broadly appropriate' (L2) → 'communicates clearly' (L3) → 'communicates successfully' (L4) → 'communication is perceptive and subtle' (L5), sharply focused on purpose with sophisticated use of form, tone and register.
+    * **AO:** AO4
+    * **WhyWrong:** Guesses like 'successful' or 'clear' name lower bands — 'communicates successfully' is Level 4 and 'communicates clearly' is Level 3; the top band is PERCEPTIVE and subtle.
+
+---
+
+16. **Type: MCQ \[Tests AO4 Knowledge\]**
+    * **Question:** In Spec A, how is AO4 defined?
+    * **Options:** A) Explore links and connections between writers' ideas and perspectives, B) Communicate effectively and imaginatively, adapting form, tone and register for specific purposes and audiences, C) Write clearly, using a range of vocabulary and sentence structures with accurate spelling, D) Read and understand a variety of texts.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Spec A's AO4 is the WRITING communication objective: 'communicate effectively and imaginatively, adapting form, tone and register of writing for specific purposes and audiences'. Technical accuracy is the separate AO5.
+    * **AO:** AO4
+    * **Why A:** Exploring links and connections is AO3 — the reading comparison objective.
+    * **Why C:** Writing clearly with accurate spelling and punctuation is AO5, the technical-accuracy scale.
+    * **Why D:** Reading and understanding texts is AO1 — the reading objective, not writing communication.
+
+---
+
+17. **Type: MCQ \[Tests AO5 Knowledge\]**
+    * **Question:** On Spec A's writing task, what distinguishes AO5 Level 5 (16–18) from Level 4 (12–15)?
+    * **Options:** A) Level 5 is simply longer, B) Level 5 'manipulates complex ideas' and 'uses extensive vocabulary strategically', where Level 4 'manages information and ideas' and 'uses a wide, selective vocabulary with only occasional spelling errors', C) Level 5 adds more persuasive devices, D) Level 5 needs no paragraphs.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 4 'manages information and ideas... uses a wide, selective vocabulary with only occasional spelling errors'; Level 5 'manipulates complex ideas... uses extensive vocabulary strategically' and 'punctuates writing with accuracy to aid emphasis and precision'.
+    * **AO:** AO5
+    * **Why A:** Length is not a criterion on the technical-accuracy scale — it measures vocabulary, punctuation and structural control.
+    * **Why C:** Persuasive devices belong to AO4 communication — AO5 is technical accuracy.
+    * **Why D:** Both levels use paragraphing and structural features — Level 5 uses them to 'support coherence and cohesion', not to abandon them.
+
+---
+
+18. **Type: True/False \[Tests AO5 Knowledge\]**
+    * **Question:** True or False: Spec A's Paper 1 marks writing on AO4 (communication) and AO5 (technical accuracy), and there is no AO6 on this paper.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Spec A runs AO1–AO5. Writing communication is AO4 and technical accuracy (vocabulary, sentence structures, paragraphing, spelling, grammar, punctuation) is AO5 — the GCSE labels AO5/AO6 do not apply here.
+    * **AO:** AO5
+    * **WhyWrong:** Answering False usually comes from carrying GCSE's AO6 across — but Spec A has no AO6; its technical-accuracy marks live under AO5.
+
+---
+
+19. **Type: Select All That Apply \[Tests AO4 Knowledge\]**
+    * **Question:** Which of these belong to Spec A's AO4 Level 5 (23–27 marks) writing descriptor? (Select all that apply)
+    * **Options:** A) Communication is perceptive and subtle, B) Task is sharply focused on purpose and the expectations/requirements of the intended reader, C) Sophisticated use of form, tone and register, D) Uses extensive vocabulary strategically, with rare spelling errors, E) Punctuates writing with accuracy to aid emphasis and precision.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** AO4 Level 5 rewards communication that is 'perceptive and subtle', 'sharply focused on purpose' and 'sophisticated use of form, tone and register'. Vocabulary, spelling and punctuation are AO5 technical descriptors on a separate scale.
+    * **AO:** AO4
+    * **Why D:** Extensive vocabulary used strategically is an AO5 technical descriptor, not AO4 communication.
+    * **Why E:** Punctuating to aid emphasis and precision is AO5 wording, marked on the technical-accuracy scale.
+
+---
+
+20. **Type: MCQ \[Tests AO4 Application\]**
+    * **Question:** A Spec A review communicates clearly with a clear sense of purpose and appropriate use of form, tone and register, but is not yet a secure, fully successful realisation of the task. Which AO4 level fits?
+    * **Options:** A) Level 2 (6–11 marks), B) Level 3 (12–17 marks), C) Level 4 (18–22 marks), D) Level 5 (23–27 marks).
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 3 'communicates clearly', with 'a clear sense of purpose' and 'appropriate use of form, tone and register'. Level 4 would 'communicate successfully' with a 'secure realisation of purpose'.
+    * **AO:** AO4
+    * **Why A:** Level 2 only 'communicates in a broadly appropriate way' with a 'straightforward' use of form — below clear communication.
+    * **Why C:** Level 4 'communicates successfully' with 'effective use of form, tone and register' — a step above clear.
+    * **Why D:** Level 5 is 'perceptive and subtle' communication, 'sharply focused on purpose' — the top band.
+
+---
+
+21. **Type: MCQ \[Tests AO1 vs AO2 Knowledge\]**
+    * **Question:** In Spec A's Section A, what is the difference between the early short questions and Question 4?
+    * **Options:** A) The early questions are AO1 (read, understand, select and interpret information); Question 4 is AO2 (analyse how writers use linguistic and structural devices), B) The early questions are comparison and Question 4 is synthesis, C) The early questions are writing and Question 4 is reading, D) Both assess AO3 comparison.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. The short questions are AO1: 'read and understand a variety of texts, selecting and interpreting explicit and implicit information'. Question 4 is AO2: analysing how writers use linguistic and structural devices to achieve effects.
+    * **AO:** AO2
+    * **Why B:** Comparison is AO3 (Question 5), and there is no separate synthesis question in Spec A Paper 1 Section A.
+    * **Why C:** Both are reading questions on the source texts — the writing task is Section B.
+    * **Why D:** Only Question 5 assesses AO3 comparison — the early questions and Question 4 do not.
+
+---
+
+22. **Type: MCQ \[Tests AO3 Knowledge\]**
+    * **Question:** How does Spec A define AO3, assessed by the 22-mark comparison question?
+    * **Options:** A) Read and understand a variety of texts, B) Explore links and connections between writers' ideas and perspectives, as well as how these are conveyed, C) Communicate effectively and imaginatively for specific purposes and audiences, D) Write clearly with accurate spelling and punctuation.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. AO3 is 'explore links and connections between writers' ideas and perspectives, as well as how these are conveyed' — comparison of both WHAT the writers think and HOW they convey it, across both texts.
+    * **AO:** AO3
+    * **Why A:** Reading and understanding texts is AO1 — the retrieval objective.
+    * **Why C:** Communicating imaginatively for purpose and audience is AO4 — the writing objective.
+    * **Why D:** Writing clearly with accurate spelling is AO5 — technical accuracy in writing.
+
+---
+
 ### Quiz: Edexcel IGCSE English Language Spec B Paper 1
 
-1. **Type: Fill-in-the-Blank \[Tests AO2 Knowledge\]**
-   * **Question:** In Spec B Paper 1, Level 5 for comparison requires 'perceptive, \[BLANK\] integrated comparison'. What word completes this?
-   * **Answer:** fully
-   * **Feedback:** ✓ Correct. The top band asks for *fully* integrated comparison — the texts woven together throughout, not compared only at the end.
+1. **Type: Fill-in-the-Blank \[Tests AO3 Knowledge\]**
+   * **Question:** In Spec B's comparison question (Q7, AO3, 15 marks), Level 5 rewards a response that 'considers a varied and \[BLANK\] range of comparisons between the texts'. What word completes this descriptor?
+   * **Answer:** comprehensive
+   * **Feedback:** ✓ Correct. Spec B's AO3 ladder climbs by the RANGE of comparisons: obvious (Level 2), a range (Level 3), a wide range (Level 4), and 'a varied and *comprehensive* range of comparisons between the texts' at Level 5.
    * **AO:** AO3
-   * **WhyWrong:** Guesses like 'mostly' or 'partly' actually describe Level 4 ('thorough, mostly integrated') — the Level 5 leap is FULLY integrated: both texts woven together in every paragraph.
+   * **WhyWrong:** Guesses like 'fully' or 'perceptive' assume an 'integrated' phrasing this board never uses — Spec B's Level 5 comparison descriptor is a varied and COMPREHENSIVE range of comparisons.
 
 ---
 
@@ -1487,14 +1886,149 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 ---
 
+11. **Type: Fill-in-the-Blank \[Tests AO2 Knowledge\]**
+    * **Question:** On Spec B's language questions (Q3 and Q6, AO2, 10 marks each), Level 5 (9–10) requires '\[BLANK\] understanding and analysis of language and structure and how these are used by writers to achieve effects'. What word completes it?
+    * **Answer:** Perceptive
+    * **Feedback:** ✓ Correct. The AO2 ladder runs Basic (L1) → Some (L2) → Clear (L3) → Thorough (L4) → Perceptive understanding and analysis (L5), across both 10-mark language questions.
+    * **AO:** AO2
+    * **WhyWrong:** Near-misses like 'Thorough' or 'Clear' name lower levels — Level 4 is 'thorough understanding and exploration', while Level 5 is PERCEPTIVE understanding and analysis.
+
+---
+
+12. **Type: MCQ \[Tests AO2 Application\]**
+    * **Question:** On a 10-mark AO2 language question, a student clearly explains how the writer's language and structure achieve effects, with appropriate references, but does not explore them thoroughly. Which level fits?
+    * **Options:** A) Level 2 (3–4 marks), B) Level 3 (5–6 marks), C) Level 4 (7–8 marks), D) Level 5 (9–10 marks).
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 3 is 'clear understanding and explanation of language and structure and how these are used by writers to achieve effects'. Thorough exploration would lift it to Level 4.
+    * **AO:** AO2
+    * **Why A:** Level 2 is 'some understanding of and comment on language and structure' — clear explanation is a step above.
+    * **Why C:** Level 4 is 'thorough understanding and exploration' — beyond clear explanation.
+    * **Why D:** Level 5 is 'perceptive understanding and analysis' — the top band.
+
+---
+
+13. **Type: MCQ \[Tests AO3 Application\]**
+    * **Question:** On Spec B's 15-mark comparison question, a response develops a wide range of comparisons across both texts, though not yet a varied and comprehensive one. Which level fits?
+    * **Options:** A) Level 2 (4–6 marks), B) Level 3 (7–9 marks), C) Level 4 (10–12 marks), D) Level 5 (13–15 marks).
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. Level 4 is 'the response considers a wide range of comparisons between the texts'. A varied and comprehensive range would be Level 5.
+    * **AO:** AO3
+    * **Why A:** Level 2 is 'obvious comparisons' — a wide range is well above that.
+    * **Why B:** Level 3 is 'a range of comparisons' — a step below a wide range.
+    * **Why D:** Level 5 is 'a varied and comprehensive range of comparisons' — the top band, beyond a wide range.
+
+---
+
+14. **Type: MCQ \[Tests AO1 Application\]**
+    * **Question:** Spec B's Paper 1 has three sections. What is distinctive about Section B (Question 8)?
+    * **Options:** A) It is pure comparison of two texts, B) It combines reading and writing — awarding marks for AO1, AO4 and AO5 on a single task, C) It is a creative writing task only, D) It is multiple-choice retrieval only.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Section B (Question 8) is a reading-and-writing task carrying AO1 (selection and interpretation of given bullet points), AO4 (communication) and AO5 (technical accuracy) marks together.
+    * **AO:** AO1
+    * **Why A:** Comparison of two texts is Section A's AO3 question (Question 7), not Section B.
+    * **Why C:** Pure creative or transactional writing without reading is closer to Section C's task, not Section B.
+    * **Why D:** Section B rewards a written response, not multiple-choice — retrieval is credited through interpreting the bullet points in writing.
+
+---
+
+15. **Type: Fill-in-the-Blank \[Tests AO4 Knowledge\]**
+    * **Question:** On Spec B's writing communication scale (AO4), Level 5 opens 'Communication is \[BLANK\] and subtle'. What word completes it?
+    * **Answer:** perceptive
+    * **Feedback:** ✓ Correct. AO4 climbs 'basic level' (L1) → 'broadly appropriate' (L2) → 'communicates clearly' (L3) → 'communicates successfully' (L4) → 'communication is perceptive and subtle' (L5).
+    * **AO:** AO4
+    * **WhyWrong:** Guesses like 'successful' or 'clear' name the levels below — 'communicates successfully' is Level 4 and 'communicates clearly' is Level 3; the top band is PERCEPTIVE and subtle.
+
+---
+
+16. **Type: MCQ \[Tests AO4 Knowledge\]**
+    * **Question:** In Spec B, what does AO4 assess?
+    * **Options:** A) Exploring links and connections between texts, B) Communicating effectively and imaginatively, adapting form, tone and register for specific purposes and audiences, C) Writing clearly with accurate spelling, grammar and punctuation, D) Reading and interpreting information.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Spec B's AO4 is writing communication: 'communicate effectively and imaginatively, adapting form, tone and register of writing for specific purposes and audiences'. Technical accuracy is AO5.
+    * **AO:** AO4
+    * **Why A:** Exploring links and connections is AO3 — the reading comparison objective.
+    * **Why C:** Writing clearly with accurate spelling and grammar is AO5 — the technical-accuracy scale.
+    * **Why D:** Reading and interpreting is AO1 — the reading objective.
+
+---
+
+17. **Type: MCQ \[Tests AO5 Knowledge\]**
+    * **Question:** On Spec B's Section C writing (AO5, 10 marks), what distinguishes Level 5 (9–10) from Level 4 (7–8)?
+    * **Options:** A) Level 5 is longer, B) Level 5 'manipulates complex ideas, utilising a range of structural and grammatical features' and 'uses extensive vocabulary strategically', where Level 4 'manages information and ideas' with 'a wide, selective vocabulary', C) Level 5 adds more rhetorical devices, D) Level 5 drops paragraphing.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 4 'manages information and ideas... uses a wide, selective vocabulary with only occasional spelling errors'; Level 5 'manipulates complex ideas, utilising a range of structural and grammatical features' and 'uses extensive vocabulary strategically', punctuating 'to aid emphasis and precision'.
+    * **AO:** AO5
+    * **Why A:** Length is not a criterion on the technical scale — it measures vocabulary, punctuation and structural control.
+    * **Why C:** Rhetorical devices belong to AO4 communication — AO5 is technical accuracy.
+    * **Why D:** Both levels use structural and grammatical features — Level 5 deploys them to support coherence and cohesion.
+
+---
+
+18. **Type: True/False \[Tests AO4/AO5 Knowledge\]**
+    * **Question:** True or False: On Spec B, strong argument and communication earn on AO4 while inaccurate spelling and unclear sentences cost marks on AO5, because the two are marked separately.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. AO4 (communication) and AO5 (technical accuracy) are separate scales. Persuasive, well-organised writing scores on AO4; spelling, punctuation and sentence control are judged on AO5.
+    * **AO:** AO4
+    * **WhyWrong:** Answering False usually comes from treating writing as one mark — but Spec B splits it: content and communication (AO4) and technical accuracy (AO5) are scored on their own grids.
+
+---
+
+19. **Type: Select All That Apply \[Tests AO3 Knowledge\]**
+    * **Question:** Which of these phrases appear in Spec B's AO3 comparison level descriptors? (Select all that apply)
+    * **Options:** A) The response does not compare the texts, B) The response considers obvious comparisons between the texts, C) The response considers a wide range of comparisons between the texts, D) Communication is perceptive and subtle, E) Manipulates complex ideas, utilising structural and grammatical features.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** The AO3 ladder runs 'does not compare' (L1), 'obvious comparisons' (L2), 'a range' (L3), 'a wide range' (L4) and 'a varied and comprehensive range' (L5). Perceptive, subtle communication is an AO4 writing descriptor and manipulating complex ideas is an AO5 technical descriptor.
+    * **AO:** AO3
+    * **Why D:** 'Communication is perceptive and subtle' is the AO4 Level 5 writing descriptor, not part of the AO3 comparison scale.
+    * **Why E:** 'Manipulates complex ideas' is an AO5 technical-accuracy descriptor, not a comparison phrase.
+
+---
+
+20. **Type: MCQ \[Tests AO4 Application\]**
+    * **Question:** On Spec B's Section C writing (AO4, 20 marks), a response communicates clearly with a clear sense of purpose and appropriate form, but is not a fully secure, successful realisation of the task. Which level fits?
+    * **Options:** A) Level 2 (5–8 marks), B) Level 3 (9–12 marks), C) Level 4 (13–16 marks), D) Level 5 (17–20 marks).
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 3 'communicates clearly'. Level 4 would 'communicate successfully' with a secure realisation of purpose, and Level 5 would be 'perceptive and subtle'.
+    * **AO:** AO4
+    * **Why A:** Level 2 only 'communicates in a broadly appropriate way' — below clear communication.
+    * **Why C:** Level 4 'communicates successfully' — a step above clear.
+    * **Why D:** Level 5 is 'perceptive and subtle' communication — the top band.
+
+---
+
+21. **Type: MCQ \[Tests AO2 Knowledge\]**
+    * **Question:** How does Spec B define AO2, assessed by the two 10-mark language questions?
+    * **Options:** A) Read and understand a variety of texts, B) Understand and analyse how writers use linguistic and structural devices to achieve their effects, C) Explore links and connections between writers' ideas, D) Communicate effectively and imaginatively.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. AO2 is 'understand and analyse how writers use linguistic and structural devices to achieve their effects' — the analysis skill behind the two 10-mark language questions.
+    * **AO:** AO2
+    * **Why A:** Reading and understanding texts is AO1 — the retrieval objective.
+    * **Why C:** Exploring links and connections is AO3 — the comparison objective.
+    * **Why D:** Communicating imaginatively is AO4 — the writing objective.
+
+---
+
+22. **Type: MCQ \[Tests AO5 Application\]**
+    * **Question:** On Spec B's Section B task (Question 8), the AO5 technical-accuracy marks run out of 8. What does the top level (7–8) reward?
+    * **Options:** A) Basic vocabulary, often misspelt, B) Manipulating complex ideas with a range of structural features and using extensive vocabulary strategically, with rare spelling errors, C) A longer response, D) More persuasive techniques.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The AO5 top level 'manipulates complex ideas, utilising a range of structural and grammatical features' and 'uses extensive vocabulary strategically', with 'rare spelling errors' that do not detract from meaning.
+    * **AO:** AO5
+    * **Why A:** Basic vocabulary, often misspelt, is the lowest AO5 level, not the top.
+    * **Why C:** Length is not part of the AO5 descriptors — they measure vocabulary, punctuation and structural control.
+    * **Why D:** Persuasive techniques are AO4 communication — AO5 is the technical-accuracy scale.
+
+---
+
 ### Quiz: Eduqas GCSE English Language Paper 2
 
 1. **Type: Fill-in-the-Blank \[Tests AO3 Knowledge\]**
-   * **Question:** Eduqas Paper 2 Band 5 for comparison requires 'perceptive and \[BLANK\] comparison'. What word completes this?
-   * **Answer:** analytical
-   * **Feedback:** ✓ Correct. Eduqas's top band wants *perceptive and analytical* comparison — insight plus close analysis of how the texts differ.
+   * **Question:** On Eduqas's comparison question (AO3), the top mark range (9–10) rewards responses that 'make comparisons that are sustained and \[BLANK\], with a wide range of valid comments'. What word completes this descriptor?
+   * **Answer:** detailed
+   * **Feedback:** ✓ Correct. The AO3 top band asks for 'comparisons that are sustained and *detailed*, with a wide range of valid comments, showing clear understanding about how the writers get their views across to readers'.
    * **AO:** AO3
-   * **WhyWrong:** Words like 'thoughtful' or 'detailed' belong to Band 4 — Band 5 pairs 'perceptive' with ANALYTICAL: subtle insight delivered through close analysis, not just careful consideration.
+   * **WhyWrong:** Words like 'analytical' or 'perceptive' belong elsewhere — 'perceptive' describes the top AO2 and AO4 bands on this paper, while the AO3 comparison top band is 'sustained and DETAILED' comparisons.
 
 ---
 
@@ -1524,39 +2058,39 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 ---
 
 4. **Type: MCQ \[Tests AO4 Knowledge\]**
-   * **Question:** What does Eduqas mean by 'impressions and observations' in evaluation questions?
-   * **Options:** A) Personal feelings about the text, B) Evaluative judgments about effectiveness, C) First impressions only, D) Scientific observations.
+   * **Question:** Eduqas's AO4 evaluation question asks candidates to comment on 'what the writer says' and 'how the writer says it'. What does the top band (9–10) reward?
+   * **Options:** A) Personal feelings about the text with no evidence, B) A detailed and persuasive evaluation of the text and its effects, with perceptive, evaluative comments, C) A neutral summary of the writer's points, D) Correcting the writer's factual errors.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. It's Eduqas's phrasing for evaluation — reasoned judgments about how effective the writing is, not personal feelings or fleeting first impressions.
+   * **Feedback:** ✓ Correct. The AO4 top band gives 9–10 marks to 'a detailed and persuasive evaluation of the text and its effects, supported by a wide range of convincing, well-selected examples' with 'perceptive, evaluative comments to support their viewpoint'.
    * **AO:** AO4
-   * **Why A:** 'Impressions' sounds like feelings, which is the trap — the phrase asks for reasoned judgements about the writing's effect, supported from the text.
-   * **Why C:** Reading 'impressions' as first reactions stops at the surface — the question wants considered judgements developed through the whole text.
-   * **Why D:** 'Observations' borrows scientific language but means textual observations — points you notice and judge in the writing, not laboratory-style neutrality.
+   * **Why A:** Bare personal feelings with no evidence sit in the lowest band — 'some basic textual details and/or a simple personal opinion' (1–2 marks).
+   * **Why C:** A neutral summary is not evaluation — the question rewards judgement of the text and its effects, not restatement.
+   * **Why D:** Fact-checking the writer is not the task — AO4 evaluates how effectively the writing works on the reader.
 
 ---
 
-5. **Type: MCQ \[Tests AO3 Application\]**
-   * **Question:** Question A5 asks for comparison of ideas. Question A6 asks for comparison of methods. A student provides excellent analysis in A5 but writes "See my answer to A5" for A6. What happens?
-   * **Options:** A) Gets credit in both if A5 is good enough, B) Gets zero for A6 as it requires different focus, C) Examiner will look for methods points in A5, D) Automatically fails the paper.
-   * **Correct:** B
-   * **Feedback:** ✓ Correct. A5 (ideas) and A6 (methods) assess different skills and are marked separately — a cross-reference leaves A6 unanswered, so it scores nothing.
-   * **AO:** AO3
-   * **Why A:** Hoping one brilliant answer covers two questions misunderstands marking — each answer is marked on what is written under that question, so credit cannot migrate between answers.
-   * **Why C:** Examiners credit what is written in the space for each question — a cross-reference leaves that space effectively blank, however strong the earlier answer.
-   * **Why D:** 'Fails the paper' is catastrophising — the cost is the marks for A6 alone; everything else, including the excellent A5, still counts.
+5. **Type: MCQ \[Tests AO1 Application\]**
+   * **Question:** On Eduqas's Question 5 (using information from both texts), a student gives one relevant detail from each text but never draws them together or explains them. What is the most likely mark?
+   * **Options:** A) 4 marks, B) 3 marks, C) 2 marks, D) 0 marks.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. The mark scheme gives 2 marks to those who 'select at least one relevant detail from each of the texts'. Full marks (4) require candidates to 'synthesise and provide a good range of relevant detail from both texts with some explanation'.
+   * **AO:** AO1
+   * **Why A:** Full marks needs genuine synthesis and 'a good range of relevant detail from both texts with some explanation' — one detail each does not synthesise.
+   * **Why B:** The 3-mark band is for those who 'select relevant details from both texts' — more than the single detail from each described here.
+   * **Why D:** Zero is reserved for nothing worthy of credit — one relevant detail from each text does earn marks.
 
 ---
 
 6. **Type: MCQ \[Tests AO3 Knowledge\]**
-   * **Question:** For Eduqas Paper 2, which questions assess AO3 (comparison)?
-   * **Options:** A) A3 and A4 only, B) A5 and A6, C) All of Section A, D) A2 only.
-   * **Correct:** B
-   * **Feedback:** ✓ Correct. AO3 comparison is tested across A5 (comparing ideas) and A6 (comparing methods).
+   * **Question:** On Eduqas's Component 2, which single reading question assesses AO3 (comparison of the two writers' ideas and perspectives)?
+   * **Options:** A) The first extended language question (AO2), B) The evaluation question (AO4), C) The final question, which asks candidates to compare the two texts, D) The short retrieval questions (AO1).
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. Eduqas assesses AO3 through a single comparison question — the last reading question — which asks candidates to compare 'what the two writers tell readers' and 'how the writers get their views... across'. The earlier both-texts question is AO1 synthesis, not AO3.
    * **AO:** AO3
-   * **Why A:** Analysing language within a single text is easy to mistake for comparison because both demand close reading, but comparison is a separate cross-text skill that single-text questions never ask for.
-   * **Why C:** 'All of Section A' overgeneralises — most Section A questions test single-text skills like retrieval, inference and analysis, and hunting for cross-text links there wastes time where none are rewarded.
-   * **Why D:** Drawing material from both texts into one overview can feel like comparison, but synthesising content is a different skill from AO3 comparison of writers' ideas and methods.
-   * **Stretch (unscored):** Why split comparison into two questions? It lets the exam assess comparing *what* writers think (A5) separately from *how* they convey it (A6), so students can't skip one type.
+   * **Why A:** The first extended question is AO2 — analysing how one writer uses language, tone and structure, not comparing texts.
+   * **Why B:** The evaluation question is AO4 — a critical judgement of one text, not a comparison.
+   * **Why D:** The short retrieval questions are AO1 — identifying explicit information, with no comparison.
+   * **Stretch (unscored):** Why does one comparison question cover both ideas and methods? Eduqas asks candidates to compare 'what the writers tell readers' AND 'how they get their views across' inside the same answer, rather than splitting them across two questions.
 
 ---
 
@@ -1573,14 +2107,14 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 ---
 
 8. **Type: MCQ \[Tests AO3 Knowledge\]**
-   * **Question:** What's the difference between Band 4 'thoughtful' and Band 5 'perceptive' in comparison?
-   * **Options:** A) Length of response, B) Perceptive shows deeper insight into subtle differences, C) Band 5 needs more quotations, D) Thoughtful is about ideas, perceptive about methods.
+   * **Question:** On Eduqas's comparison question, what separates the 7–8 mark range from the top 9–10 range?
+   * **Options:** A) Length of response, B) The top range makes comparisons that are 'sustained and detailed, with a wide range of valid comments', where 7–8 makes 'detailed comparisons... and valid comments', C) The top range needs more quotations, D) The top range compares three texts.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The Band 4→5 step is about insight — perceiving subtle, less obvious differences between the texts — not length or more quotations.
+   * **Feedback:** ✓ Correct. At 7–8 marks candidates 'make detailed comparisons... and make valid comments on how the writers get their views across'; at 9–10 the comparisons become 'sustained and detailed, with a wide range of valid comments, showing clear understanding' of how the writers convey their views.
    * **AO:** AO3
-   * **Why A:** Length never appears in the band descriptors — a longer thoughtful response is still Band 4; insight, not stamina, makes the difference.
-   * **Why C:** Quotation-counting confuses evidence quantity with quality of perception — Band 5 rewards what you SEE in the texts, not how often you cite them.
-   * **Why D:** Splitting 'thoughtful = ideas' and 'perceptive = methods' invents a division that does not exist — both bands address ideas and methods; the difference is depth of insight.
+   * **Why A:** Length is not a marking criterion — a longer 7–8 response is still 7–8 without sustained, wide-ranging comparison.
+   * **Why C:** Quotation-counting confuses quantity with quality — the top range rewards sustained, wide-ranging valid comments, not more citations.
+   * **Why D:** Eduqas compares two texts — no comparison question asks for three.
 
 ---
 
@@ -1606,6 +2140,138 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
     * **Why C:** Zero for both is far too severe — the correct letter is unaffected, and even the mis-formed piece earns credit for its content and accuracy.
     * **Why D:** Both tasks are compulsory and both are marked — there is no best-piece rule, so ignoring one task's form costs real marks rather than being quietly dropped.
     * **Stretch (unscored):** What features show speech form vs letter form? Speech: direct address, rhetorical devices for delivery, awareness of a listening audience. Letter: formal salutation/close, paragraphed argument, awareness of a reading context.
+
+---
+
+11. **Type: Fill-in-the-Blank \[Tests AO2 Knowledge\]**
+    * **Question:** On Eduqas's language question (AO2), the top mark range (9–10) rewards those who 'make accurate and \[BLANK\] comments' with 'detailed analysis of how aspects such as language, tone and structure are used'. What word completes it?
+    * **Answer:** perceptive
+    * **Feedback:** ✓ Correct. The AO2 top band gives 9–10 marks for 'accurate and perceptive comments about how a wide range of different examples... show' the point, with 'detailed analysis of how aspects such as language, tone and structure are used'.
+    * **AO:** AO2
+    * **WhyWrong:** Guesses like 'straightforward' or 'simple' describe lower bands — 3–4 marks is 'straightforward comments' — while the AO2 top band pairs accurate with PERCEPTIVE comments and detailed analysis.
+
+---
+
+12. **Type: MCQ \[Tests AO2 Application\]**
+    * **Question:** On Eduqas's 10-mark language question, a student identifies some textual details and gives straightforward comments, but coverage across the whole text is limited and there is some imprecision. Which mark range fits?
+    * **Options:** A) 1–2 marks, B) 3–4 marks, C) 5–6 marks, D) 7–8 marks.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The 3–4 band is for those who 'identify some textual details... give straightforward comments/explanation with some relevant selection of detail, although coverage across the whole text may be limited'.
+    * **AO:** AO2
+    * **Why A:** The 1–2 band 'identifies one or two textual details' and is 'brief and limited' — this response covers more than that.
+    * **Why C:** The 5–6 band 'explains how a range of examples' work and 'begins to comment on how aspects such as language, tone and structure are used' — beyond straightforward comments.
+    * **Why D:** The 7–8 band 'begins to analyse' how language, tone and structure emphasise the writer's point — well above straightforward commenting.
+
+---
+
+13. **Type: MCQ \[Tests AO4 Application\]**
+    * **Question:** On Eduqas's evaluation question, a student offers some simple evaluation and personal response supported by straightforward textual references, with limited coverage. Which mark range fits?
+    * **Options:** A) 1–2 marks, B) 3–4 marks, C) 7–8 marks, D) 9–10 marks.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The 3–4 band gives marks to those who 'give some simple evaluation/personal response supported by straightforward textual references', showing 'some exploration... although coverage may be limited'.
+    * **AO:** AO4
+    * **Why A:** The 1–2 band offers only 'some basic textual details and/or a simple personal opinion' — briefer and more limited.
+    * **Why C:** The 7–8 band gives 'a detailed, critical evaluation of the text and its effects' with 'critical awareness and clear engagement' — beyond simple evaluation.
+    * **Why D:** The 9–10 band gives 'a detailed and persuasive evaluation... perceptive, evaluative comments' — the top band.
+
+---
+
+14. **Type: True/False \[Tests AO5/AO6 Knowledge\]**
+    * **Question:** True or False: On Eduqas's Section B, each of the two writing tasks is marked out of 20 — 12 marks for communication and organisation (AO5) and 8 marks for vocabulary, sentence structure, spelling and punctuation (AO6).
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The mark scheme states 'the total mark for each task (/20)' comes from 'communication and organisation (12 marks)' and 'vocabulary, sentence structure, spelling, punctuation (8 marks)'. Two tasks make the 40-mark Section B.
+    * **AO:** AO5
+    * **WhyWrong:** Answering False often comes from expecting one 40-mark task — but Eduqas sets TWO tasks, each out of 20, split 12 (AO5) and 8 (AO6).
+
+---
+
+15. **Type: Fill-in-the-Blank \[Tests AO5 Knowledge\]**
+    * **Question:** In Eduqas's Section B writing, Band 5 for communication and organisation opens: 'shows \[BLANK\] understanding of the purpose and format of the task'. What word completes it?
+    * **Answer:** sophisticated
+    * **Feedback:** ✓ Correct. Band 5 (11–12 marks for communication and organisation) 'shows *sophisticated* understanding of the purpose and format of the task', with 'sustained awareness of the reader' and content that is 'ambitious, pertinent and sophisticated'.
+    * **AO:** AO5
+    * **WhyWrong:** Words like 'clear' or 'consistent' describe lower bands — Band 3 'shows clear understanding' and Band 4 'shows consistent understanding', while Band 5 is SOPHISTICATED understanding.
+
+---
+
+16. **Type: MCQ \[Tests AO5/AO6 Knowledge\]**
+    * **Question:** Within each Eduqas Section B writing task, how are the two strands weighted?
+    * **Options:** A) AO5 (communication and organisation) is 60% of the marks and AO6 is 40%, B) AO5 and AO6 are weighted equally, C) AO6 (technical accuracy) is 60% and AO5 is 40%, D) AO6 is not assessed.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. The mark scheme states AO5 is '60% of the marks available' (12 of 20) and AO6 is '40%' (8 of 20). Communication and organisation carries more weight than technical accuracy.
+    * **AO:** AO5
+    * **Why B:** An equal split is wrong — communication and organisation carries the larger 12 of the 20 marks.
+    * **Why C:** This reverses the weighting — AO5 is the larger share at 60%, not AO6.
+    * **Why D:** AO6 is assessed — it accounts for 40% of each task's marks (8 of 20).
+
+---
+
+17. **Type: Select All That Apply \[Tests AO6 Knowledge\]**
+    * **Question:** Which of these belong to Eduqas's Band 5 for vocabulary, sentence structure, spelling and punctuation (the 8-mark strand)? (Select all that apply)
+    * **Options:** A) Virtually all sentence construction is controlled and accurate, B) A range of punctuation is used confidently and accurately, C) Virtually all spelling, including that of complex irregular words, is correct, D) Content is ambitious, pertinent and sophisticated, E) Shows sustained awareness of the reader / intended audience.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** The 8-mark technical strand's top band rewards accurate sentence construction, confident and accurate punctuation, and correct spelling of complex irregular words, plus a wide range of ambitious vocabulary. Ambitious content and awareness of the reader belong to the separate communication and organisation strand.
+    * **AO:** AO6
+    * **Why D:** 'Content is ambitious, pertinent and sophisticated' is a communication and organisation (AO5) descriptor, not the technical strand.
+    * **Why E:** 'Sustained awareness of the reader' is also a communication and organisation (AO5) descriptor, marked on the 12-mark strand.
+
+---
+
+18. **Type: MCQ \[Tests AO1 Knowledge\]**
+    * **Question:** How is AO1 assessed across Eduqas's Component 2 reading section?
+    * **Options:** A) Only through the comparison question, B) Through short retrieval questions (identifying explicit information) and a synthesis question drawing on both texts, C) Through the language-analysis question, D) Through the writing tasks.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. AO1 covers 'identify... explicit and implicit information' in the short retrieval questions and 'select and synthesise evidence from different texts' in the synthesis question that uses both texts.
+    * **AO:** AO1
+    * **Why A:** The comparison question is AO3 — comparing the writers' ideas and perspectives, not identifying or synthesising information.
+    * **Why C:** The language-analysis question is AO2 — how the writer uses language, tone and structure.
+    * **Why D:** The writing tasks assess AO5 and AO6 — a candidate's own writing, not reading.
+
+---
+
+19. **Type: MCQ \[Tests AO4 Knowledge\]**
+    * **Question:** Which statement matches Eduqas's AO4?
+    * **Options:** A) Compare writers' ideas and perspectives across texts, B) Evaluate texts critically and support this with appropriate textual references, C) Select and synthesise evidence from different texts, D) Communicate clearly, adapting tone and register.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. AO4 is 'evaluate texts critically and support this with appropriate textual references' — the judgement the Eduqas evaluation question rewards, climbing to a 'detailed and persuasive evaluation'.
+    * **AO:** AO4
+    * **Why A:** Comparing writers' ideas is AO3 — the comparison question.
+    * **Why C:** Selecting and synthesising evidence is AO1 — the synthesis question.
+    * **Why D:** Communicating clearly and adapting tone and register is AO5 — a writing objective.
+
+---
+
+20. **Type: MCQ \[Tests AO5 Application\]**
+    * **Question:** A Section B article shows sustained awareness of its audience, confidently adapts register, and develops ambitious, sophisticated content with clear structure. Which communication-and-organisation band fits?
+    * **Options:** A) Band 2 (3–4 marks), B) Band 3 (5–7 marks), C) Band 4 (8–10 marks), D) Band 5 (11–12 marks).
+    * **Correct:** D
+    * **Feedback:** ✓ Correct. Band 5 'shows sophisticated understanding of the purpose and format of the task', with 'sustained awareness of the reader', register 'confidently adapted', and content 'ambitious, pertinent and sophisticated'.
+    * **AO:** AO5
+    * **Why A:** Band 2 shows only 'some awareness of the purpose' with 'limited development of ideas' — far below sophisticated, sustained control.
+    * **Why B:** Band 3 'shows clear understanding' and 'clear awareness of the reader' — a step below sustained, sophisticated control.
+    * **Why C:** Band 4 'shows consistent understanding' with 'secure awareness of the reader' — strong, but not yet the sophisticated, ambitious control of Band 5.
+
+---
+
+21. **Type: MCQ \[Tests AO2 Knowledge\]**
+    * **Question:** Which statement matches Eduqas's AO2, assessed by the 10-mark language question?
+    * **Options:** A) Compare writers' ideas across two texts, B) Explain, comment on and analyse how writers use language and structure to achieve effects and influence readers, C) Evaluate texts critically with textual references, D) Write clearly with accurate spelling and punctuation.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. AO2 is 'explain, comment on and analyse how writers use language and structure to achieve effects and influence readers, using subject terminology to support their views' — the single-text language question.
+    * **AO:** AO2
+    * **Why A:** Comparing writers' ideas across texts is AO3 — the comparison question.
+    * **Why C:** Evaluating texts critically is AO4 — the evaluation question.
+    * **Why D:** Writing clearly with accurate spelling is a writing objective (AO6), not reading analysis.
+
+---
+
+22. **Type: True/False \[Tests AO3 Knowledge\]**
+    * **Question:** True or False: On Eduqas's Component 2, AO3 is assessed through a single comparison question that asks candidates to compare both what the two writers say and how they get their views across.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The comparison question asks candidates to compare 'what the two writers tell readers' and 'how the writers get their views... across to their readers' — one question covering both ideas and methods.
+    * **AO:** AO3
+    * **WhyWrong:** Answering False often comes from expecting two separate comparison questions (ideas and methods) — but Eduqas combines both into one AO3 comparison question; the earlier both-texts question is AO1 synthesis.
 
 ---
 
