@@ -299,6 +299,97 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** Argument can feel secondary to evidence, but AO1 carries 12 marks — joint top weight, not the least.
     * **Why B:** Methods can seem like a smaller add-on to the argument, but AO2 also carries 12 marks, equal with AO1.
     * **Why D:** AO4's 4 SPaG marks are genuinely the smallest allocation on the paper, but the question asks only about the three content objectives, where context's 6 marks (against 12 each for AO1 and AO2) is the lightest.
+11. **Type: MCQ \[Tests Level 6 Heading\]**
+    * **Question:** AQA's top band (Level 6, 26–30) for the Modern Text question is headed with which phrase?
+    * **Options:** A) "Thoughtful, developed consideration", B) "Convincing, critical analysis and exploration", C) "Clear understanding", D) "Explained, structured comments".
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 6 (26–30) is headed "Convincing, critical analysis and exploration". Level 5 is "Thoughtful, developed consideration"; Level 4 is "Clear understanding".
+    * **AO:** AO1
+    * **Why A:** "Thoughtful, developed consideration" is the Level 5 heading, one band below the exploratory top.
+    * **Why C:** "Clear understanding" is the Level 4 register — clear explanation, not exploration.
+    * **Why D:** This resembles lower-band structured-comment language, not the convincing critical analysis of the top band.
+12. **Type: Fill-in-the-Blank \[Tests Level 6 AO1 Phrase\]**
+    * **Question:** The AQA Level 6 AO1 descriptor asks for a "Critical, exploratory, **\[BLANK\]** response to task and whole text."
+    * **Answer:** Conceptualised
+    * **Feedback:** ✓ Correct. Level 6 rewards a "critical, exploratory, conceptualised response to task and whole text" — treat the play as a construct arguing an idea.
+    * **AO:** AO1
+    * **WhyWrong:** Guesses like "detailed" or "developed" describe lower bands; the Level 6 word in the descriptor is "conceptualised".
+13. **Type: MCQ \[Tests Mark Allocation\]**
+    * **Question:** How are the marks allocated on the AQA Modern Text question?
+    * **Options:** A) 34 marks shared equally across four AOs, B) 30 marks across AO1 (12), AO2 (12) and AO3 (6), with a further 4 marks for AO4 technical accuracy, C) 30 marks for AO1 alone, D) 40 marks with no AO4 assessed.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The Levels 1–6 grid marks AO1 (12), AO2 (12) and AO3 (6) out of 30; AO4 (technical accuracy) adds 4 marks on top, so proofreading earns real marks here.
+    * **AO:** AO4
+    * **Why A:** The four objectives are not equal — the level grid covers AO1 to AO3 out of 30 and technical accuracy sits separately at 4 marks.
+    * **Why C:** Argument is one strand of the 30-mark grid, worth 12, not the whole allocation.
+    * **Why D:** Technical accuracy is assessed on this question — 4 marks for accurate spelling, punctuation and a range of vocabulary and sentence structures.
+14. **Type: MCQ \[Tests AO2 Verb Ladder\]**
+    * **Question:** AQA's AO2 strand moves from "examination of writer's methods" to "exploration of effects of writer's methods" between which two levels?
+    * **Options:** A) Level 3 to Level 4, B) Level 4 to Level 5, C) Level 5 to Level 6, D) Level 2 to Level 3.
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. "Examination" of methods tops out at Level 5; "exploration of effects of writer's methods to create meanings" is the Level 6 lift.
+    * **AO:** AO2
+    * **Why A:** These are lower bands where methods are identified or explained, not examined or explored.
+    * **Why B:** Level 4 offers "clear explanation"; Level 5 reaches "examination", so the exploration verb arrives one band higher.
+    * **Why D:** These bands sit far below the examine-to-explore distinction the question targets.
+15. **Type: Fill-in-the-Blank \[Tests Level 6 Summary\]**
+    * **Question:** AQA's Level 6 summary describes a "fine-grained and **\[BLANK\]** analysis of methods supported by judicious use of subject terminology."
+    * **Answer:** Insightful
+    * **Feedback:** ✓ Correct. The Level 6 summary phrase is "fine-grained and insightful analysis of methods" — micro-level precision, not broad comment.
+    * **AO:** AO2
+    * **WhyWrong:** "Detailed" or "developed" fit lower bands; the Level 6 pairing is "fine-grained and insightful".
+16. **Type: True/False \[Tests AO3 Wording\]**
+    * **Question:** True or False: AQA's Level 6 AO3 descriptor rewards "exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context, text and task."
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. AO3 credits "specific, detailed links between context/text/task" — context woven into the argument, not a bolt-on history paragraph.
+    * **AO:** AO3
+    * **WhyWrong:** It can feel like context earns marks on its own, but the descriptor demands specific, detailed links between context, text and task.
+17. **Type: Select All That Apply \[Tests Level 6 Descriptor Phrases\]**
+    * **Question:** Which phrases are taken directly from AQA's Level 6 descriptor? (Select all that apply)
+    * **Options:** A) "Critical, exploratory, conceptualised response", B) "Judicious use of precise references", C) "Exploration of effects of writer's methods", D) "Apt references integrated into interpretation".
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** The conceptualised response, judicious references, and exploration of effects are all Level 6 wording. "Apt references integrated into interpretation" is the Level 5 phrase.
+    * **AO:** AO1
+    * **Why D:** "Apt references integrated into interpretation(s)" belongs to Level 5, where references become "judicious" and "precise" only at Level 6.
+18. **Type: MCQ \[Tests Level 5 Descriptor\]**
+    * **Question:** A response with a "thoughtful, developed response to task and whole text" and "apt references integrated into interpretation" sits in which AQA band?
+    * **Options:** A) Level 6 (26–30), B) Level 5 (21–25), C) Level 4 (16–20), D) Level 3 (11–15).
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. "Thoughtful, developed" and "apt references integrated" are the Level 5 (21–25) descriptors. Level 6 becomes "conceptualised" with "judicious" references.
+    * **AO:** AO1
+    * **Why A:** Level 6 demands a conceptualised response with judicious references, a rung above thoughtful development.
+    * **Why C:** Level 4 is "clear understanding" with effective references, below integrated aptness.
+    * **Why D:** Level 3 sits below clear understanding, whereas this response is already thoughtful and developed.
+19. **Type: True/False \[Tests Whole-Text Focus\]**
+    * **Question:** True or False: AQA's Modern Text AO1 descriptors ask for a response to "task and whole text", not analysis confined to a single scene.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The AO1 descriptors name "task and whole text" — range across the play to build the argument, not just one moment.
+    * **AO:** AO1
+    * **WhyWrong:** Concentrating on one memorable scene feels safe, but the descriptor explicitly rewards engagement with the whole text.
+20. **Type: Fill-in-the-Blank \[Tests AO4 Wording\]**
+    * **Question:** AQA AO4 rewards a "range of vocabulary and sentence structures for clarity, purpose and effect, with accurate spelling and **\[BLANK\]**."
+    * **Answer:** Punctuation
+    * **Feedback:** ✓ Correct. AO4 is the technical-accuracy strand — accurate spelling and punctuation plus varied, purposeful vocabulary and sentence structures, worth 4 marks on this question.
+    * **AO:** AO4
+    * **WhyWrong:** The AO4 wording pairs "spelling" with "punctuation"; "grammar" or "expression" is not the exact term the descriptor uses.
+21. **Type: MCQ \[Tests Conceptualised Opening\]**
+    * **Question:** Which opening best fits AQA's Level 6 "conceptualised" descriptor for a modern text?
+    * **Options:** A) "*An Inspector Calls* is a play about a family being interviewed", B) "There are many techniques in this play", C) "Priestley constructs the Inspector as an agent of collective conscience, using the play to interrogate the moral bankruptcy of unchecked capitalism", D) "This extract comes from Act 1".
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. This treats the play as a conscious construct exploring a big idea — the conceptualised, exploratory thesis Level 6 rewards. The lift is the argument, not the vocabulary.
+    * **AO:** AO1
+    * **Why A:** This retells the situation; narrative summary without argument caps the response at the lower bands.
+    * **Why B:** Announcing that techniques exist is feature-spotting with no conceptual claim.
+    * **Why D:** Locating the extract is orientation, not interpretation.
+22. **Type: Select All That Apply \[Tests Band Ladder Headings\]**
+    * **Question:** Which are genuine AQA Modern Text level-descriptor headings? (Select all that apply)
+    * **Options:** A) Level 6 "Convincing, critical analysis and exploration", B) Level 5 "Thoughtful, developed consideration", C) Level 4 "Clear understanding", D) Level 5 "Basic, structured comments".
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** The convincing/exploratory, thoughtful/developed and clear-understanding headings are the real Level 6, 5 and 4 labels. "Basic, structured comments" belongs to a lower band, not Level 5.
+    * **AO:** AO1
+    * **Why D:** "Basic, structured comments" is lower-band language; pairing it with Level 5 is the error to reject.
 
 ### **SECTION B: EDEXCEL GCSE (1ET0 — Post-1914)**
 
@@ -380,6 +471,97 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** Writing does record facts, which makes this tempting, but at Sophicly its real power is generating and refining ideas as you write.
     * **Why C:** This treats writing as a physical task, but the value of the essay process is intellectual — discovering your argument, not exercising your hand.
     * **Why D:** Drafting can feel slow and wasteful under time pressure, but the drafting process is exactly where your strongest concepts emerge.
+11. **Type: MCQ \[Tests Level 5 Heading\]**
+    * **Question:** Edexcel's top band (Level 5, 27–32) for Post-1914 opens with which quality?
+    * **Options:** A) "A relevant personal response, soundly related to the text", B) "An assured personal response, showing a high level of engagement with the text", C) "A largely narrative response", D) "A simple response with little personal engagement".
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 5 is "an assured personal response, showing a high level of engagement with the text". "Soundly related" is Level 3; "largely narrative" is Level 2.
+    * **AO:** AO1
+    * **Why A:** "Relevant... soundly related" is the Level 3 register, below assured engagement.
+    * **Why C:** "Largely narrative" describes the Level 2 storytelling band.
+    * **Why D:** A "simple" response with "little personal response" is the Level 1 floor.
+12. **Type: Fill-in-the-Blank \[Tests Level 5 Critical Style\]**
+    * **Question:** Edexcel Level 5 states that "a critical style is developed with maturity, **\[BLANK\]** understanding and interpretation."
+    * **Answer:** Perceptive
+    * **Feedback:** ✓ Correct. Level 5 rewards "a critical style developed with maturity, perceptive understanding and interpretation".
+    * **AO:** AO1
+    * **WhyWrong:** "Clear" or "sound" describe lower bands; the Level 5 descriptor word is "perceptive".
+13. **Type: MCQ \[Tests Bullet-to-AO Mapping\]**
+    * **Question:** In the Edexcel Post-1914 mark scheme, how are the four bullet points split between the assessment objectives?
+    * **Options:** A) All four bullets assess AO1, B) Bullets 1 and 2 assess AO1 (16 marks); bullets 3 and 4 assess AO3 (16 marks), C) Bullets 1 and 2 assess AO2; bullets 3 and 4 assess AO4, D) Each bullet assesses a different objective from AO1 to AO4.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Bullets 1 and 2 target AO1 (16 marks) — interpretation of text; bullets 3 and 4 target AO3 (16 marks) — the relationship between text and context. AO2 is not in this grid.
+    * **AO:** AO3
+    * **Why A:** Only the first two bullets are AO1; the last two carry the equally weighted context marks.
+    * **Why C:** AO2 is not assessed at all here, and technical accuracy has its own separate grid.
+    * **Why D:** There is no AO2 strand, so the four bullets cover only AO1 and AO3, two each.
+14. **Type: True/False \[Tests Context Integration\]**
+    * **Question:** True or False: Edexcel's Level 5 rewards context that is "integrated convincingly into the response", not delivered as isolated facts.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Level 5 states "understanding of the relationship between text and context is integrated convincingly into the response" — context drives the argument.
+    * **AO:** AO3
+    * **WhyWrong:** A standalone history paragraph feels thorough, but the descriptor rewards context integrated convincingly into the response.
+15. **Type: MCQ \[Tests Level 4 Register\]**
+    * **Question:** A response with a "developed personal response", a "sustained" critical style, and "sustained comment... on relevant contexts" sits at which Edexcel band?
+    * **Options:** A) Level 5 (27–32), B) Level 4 (20–26), C) Level 3 (13–19), D) Level 2 (7–12).
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. "Developed", "thorough" and "sustained comment" are the Level 4 (20–26) descriptors. Level 5 lifts to "assured" engagement and "excellent" context.
+    * **AO:** AO1
+    * **Why A:** Level 5 demands an assured response with excellent, convincingly integrated context.
+    * **Why C:** Level 3 is "relevant... soundly related" with "sound comment", below sustained development.
+    * **Why D:** Level 2 is largely narrative, well below a sustained critical style.
+16. **Type: Fill-in-the-Blank \[Tests AO4 Grid\]**
+    * **Question:** Edexcel assesses technical accuracy (AO4) on a **\[BLANK\]** mark scheme, banded 1–2, 3–5 and 6–8 marks.
+    * **Answer:** Separate
+    * **Feedback:** ✓ Correct. AO4 has a separate grid (Level 1 = 1–2, Level 2 = 3–5, Level 3 = 6–8 marks), distinct from the 32 content marks for AO1 and AO3.
+    * **AO:** AO4
+    * **WhyWrong:** It is tempting to fold SPaG into the content bands, but Edexcel marks AO4 on its own separate grid.
+17. **Type: Select All That Apply \[Tests Level 5 Features\]**
+    * **Question:** Which features build the Edexcel Level 5 Post-1914 response? (Select all that apply)
+    * **Options:** A) An assured personal response with a high level of engagement, B) A critical style developed with maturity and perceptive interpretation, C) Excellent understanding of relevant contexts, D) A largely narrative retelling of the plot.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** Assured engagement, mature perceptive interpretation, and excellent context are the Level 5 hallmarks. A largely narrative retelling caps at Level 2.
+    * **AO:** AO1
+    * **Why D:** "Largely narrative" is the Level 2 descriptor — storytelling, the opposite of an assured critical response.
+18. **Type: True/False \[Tests AO2 Exclusion\]**
+    * **Question:** True or False: Because AO2 is not in the Edexcel Post-1914 grid, quotations are best used to support interpretation (AO1) and to illuminate context (AO3), rather than for isolated language-technique analysis.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. With no AO2 strand, evidence earns credit by supporting your interpretation and contextual argument, not by naming devices for their own sake.
+    * **AO:** AO1
+    * **WhyWrong:** Technique-spotting is a trained habit, but with AO2 absent those marks do not exist here — quotes should serve AO1 and AO3.
+19. **Type: MCQ \[Tests Level 3 Register\]**
+    * **Question:** Which phrasing signals the Edexcel Level 3 (13–19) band?
+    * **Options:** A) "Assured personal response... high level of engagement", B) "A relevant personal response, soundly related to the text" with "sound comment... on relevant contexts", C) "Developed personal response and thorough" interpretation, D) "Little awareness of relevant contexts".
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 3 is "a relevant personal response, soundly related to the text" with "sound comment... on relevant contexts". "Developed/thorough" is Level 4; "assured" is Level 5.
+    * **AO:** AO1
+    * **Why A:** "Assured... high level of engagement" is the Level 5 top band.
+    * **Why C:** "Developed... thorough" is the Level 4 register.
+    * **Why D:** "Little awareness of relevant contexts" is the Level 1 floor.
+20. **Type: Fill-in-the-Blank \[Tests Context Weighting\]**
+    * **Question:** In Edexcel Post-1914, AO3 (context) is worth **\[BLANK\]** of the 32 content marks — the same weight as AO1.
+    * **Answer:** Half (16)
+    * **Feedback:** ✓ Correct. AO3 carries 16 of the 32 content marks, exactly half — equal to AO1's 16. Context is weighted as heavily as interpretation here.
+    * **AO:** AO3
+    * **WhyWrong:** Habits from other boards make context feel like a garnish, but here it is half the content marks.
+21. **Type: MCQ \[Tests Critical Style Meaning\]**
+    * **Question:** Edexcel Level 5 asks for "a critical style developed with maturity". In practice this means:
+    * **Options:** A) Criticising the playwright's shortcomings, B) An academic, argument-led voice that interprets rather than retells, C) Using elevated vocabulary throughout, D) Writing in an informal, conversational tone.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. A mature critical style is an academic, interpretive voice that argues a case — not fault-finding, not plot retelling.
+    * **AO:** AO1
+    * **Why A:** "Critical" here means analytical, not attacking the writer.
+    * **Why C:** Elevated vocabulary alone is decoration; maturity lies in the sustained argument.
+    * **Why D:** An informal tone undercuts the academic register the band expects.
+22. **Type: Select All That Apply \[Tests Band Ladder\]**
+    * **Question:** Which are genuine Edexcel Post-1914 band descriptors? (Select all that apply)
+    * **Options:** A) Level 5 "assured personal response", B) Level 4 "developed personal response and thorough", C) Level 2 "may be largely narrative", D) Level 5 "little comment on the relationship between text and context".
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** Assured (Level 5), developed/thorough (Level 4) and largely narrative (Level 2) are genuine Edexcel descriptors. "Little comment on the relationship between text and context" is the Level 1 floor, not Level 5.
+    * **AO:** AO1
+    * **Why D:** "Little comment... on the relationship between text and context" is Level 1 language; pairing it with Level 5 is the error.
 
 ### **SECTION C: EDUQAS (Post-1914 Prose/Drama)**
 
@@ -459,6 +641,97 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** This sounds like the start of analysis, but it merely states that the author wrote about a character — no evaluation, no concept, no argument.
     * **Why C:** A true statement feels safe, but identifying that a character exists is plot-level knowledge, not critical style.
     * **Why D:** Naming a surface topic feels like engaging with theme, but it describes the setting of events rather than what the author argues about the world.
+11. **Type: MCQ \[Tests Top Band AO1\]**
+    * **Question:** The Eduqas top band (29–35 marks) rewards a candidate who can:
+    * **Options:** A) Retell the plot of the wider text accurately, B) "Analyse the extract and wider text critically" and "show a perceptive understanding", C) Quote the whole extract from memory, D) List the writer's techniques.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The top band asks candidates to "analyse the extract and wider text critically" with a "perceptive understanding of the extract and wider text".
+    * **AO:** AO1
+    * **Why A:** Retelling is storytelling, which the top band rises above.
+    * **Why C:** Volume of quotation proves memory, not perceptive understanding.
+    * **Why D:** Listing techniques is feature-spotting without critical analysis.
+12. **Type: Fill-in-the-Blank \[Tests Top Band Approach\]**
+    * **Question:** The Eduqas top band asks candidates to use "a sensitive and **\[BLANK\]** approach to the task" — weighing meaning, not just describing it.
+    * **Answer:** Evaluative
+    * **Feedback:** ✓ Correct. The 29–35 band uses "a sensitive and evaluative approach to the task".
+    * **AO:** AO1
+    * **WhyWrong:** "Descriptive" or "detailed" fit lower bands; the top-band pairing is "sensitive and evaluative".
+13. **Type: MCQ \[Tests AO Weighting\]**
+    * **Question:** How are AO1 and AO2 weighted in the Eduqas Post-1914 question?
+    * **Options:** A) AO1 is worth double AO2, B) AO1 and AO2 are equally weighted, C) AO2 is worth double AO1, D) Only AO1 is assessed.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The mark scheme states "AO1 and AO2 are equally weighted in this question", across a 35-mark grid.
+    * **AO:** AO2
+    * **Why A:** Neither objective outweighs the other; the scheme states they are equal.
+    * **Why C:** AO2 does not dominate; it shares the grid equally with AO1.
+    * **Why D:** AO2 is fully assessed here alongside AO1.
+14. **Type: True/False \[Tests AO4 Additional Marks\]**
+    * **Question:** True or False: In Eduqas Post-1914, AO4 contributes 5 additional marks for accuracy in spelling, punctuation and vocabulary and sentence structures, on a separate grid.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. "This question assesses AO1, AO2 and AO4 (5 additional marks)"; there is a separate assessment grid for AO4, giving a total of 35+5.
+    * **AO:** AO4
+    * **WhyWrong:** It is easy to assume Literature never marks SPaG, but Eduqas adds 5 marks for AO4 on a separate grid here.
+15. **Type: Fill-in-the-Blank \[Tests Total Marks\]**
+    * **Question:** The Eduqas Post-1914 question is worth 35 content marks plus 5 for AO4, giving a total of **\[BLANK\]** marks.
+    * **Answer:** 40
+    * **Feedback:** ✓ Correct. The grid is worth 35 (AO1 + AO2) and AO4 adds 5, for "Total marks 35+5" — 40 in all.
+    * **AO:** AO4
+    * **WhyWrong:** Recalling only the 35-mark grid misses the 5 AO4 marks; the full total is 40.
+16. **Type: MCQ \[Tests AO2 Top Band\]**
+    * **Question:** Which of these fits the Eduqas AO2 top band?
+    * **Options:** A) Naming as many techniques as possible, B) "Assured reference to meanings and effects", exploring and evaluating how meaning and ideas are conveyed, C) Copying the extract without comment, D) Describing the plot of the wider text.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. AO2 at the top rewards "assured reference to meanings and effects", exploring and evaluating the writer's use of language, form and structure.
+    * **AO:** AO2
+    * **Why A:** Technique-listing is feature-spotting, not assured analysis of effect.
+    * **Why C:** An unanalysed quotation conveys no exploration of meaning.
+    * **Why D:** Plot description is AO1 territory at best, and only at the lowest bands.
+17. **Type: Select All That Apply \[Tests Grid AOs\]**
+    * **Question:** Which assessment objectives are assessed in the Eduqas Post-1914 Prose/Drama question? (Select all that apply)
+    * **Options:** A) AO1 (interpretation), B) AO2 (analysis of methods), C) AO3 (context), D) AO4 (technical accuracy, 5 marks).
+    * **Correct:** A, B, D
+    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
+    * **Feedback:** This question assesses AO1, AO2 and AO4 (5 additional marks). AO3 (context) is not explicitly assessed in this section — it is rewarded elsewhere on the paper.
+    * **AO:** AO1
+    * **Why C:** Context feels universal, but AO3 is not in this grid; it is rewarded elsewhere on the Eduqas paper.
+18. **Type: True/False \[Tests Second Band\]**
+    * **Question:** True or False: The Eduqas second band (22–28 marks) shows a "thoughtful approach to the task" and a "secure understanding", below the top band's "perceptive understanding".
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The 22–28 band shows a "thoughtful approach" and "secure understanding"; the 29–35 band lifts to a "perceptive understanding" and an "evaluative approach".
+    * **AO:** AO1
+    * **WhyWrong:** "Thoughtful" and "secure" sound top-tier, but they mark the second band; the top band is "perceptive" and "evaluative".
+19. **Type: MCQ \[Tests Extract and Wider Text\]**
+    * **Question:** A top-band Eduqas response must analyse:
+    * **Options:** A) Only the printed extract, B) Only the wider text from memory, C) Both the printed extract and the wider text, D) A film adaptation.
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. The descriptors repeatedly pair "the extract and wider text" — close work on the passage plus argument across the whole play.
+    * **AO:** AO1
+    * **Why A:** The extract alone ignores the wider-text engagement the band demands.
+    * **Why B:** Whole-text recall without close extract work abandons half the task.
+    * **Why D:** A film version is not the writer's printed text and earns nothing.
+20. **Type: Fill-in-the-Blank \[Tests AO4 Marks\]**
+    * **Question:** On the Eduqas grid, technical accuracy (AO4) is worth up to **\[BLANK\]** additional marks in total.
+    * **Answer:** 5 (five)
+    * **Feedback:** ✓ Correct. AO4 adds up to 5 marks (its top band is 4–5) for accurate spelling, punctuation and a range of vocabulary and sentence structures.
+    * **AO:** AO4
+    * **WhyWrong:** Figures from other boards tempt, but the Eduqas AO4 allocation is 5 marks.
+21. **Type: MCQ \[Tests Critical Analysis\]**
+    * **Question:** Which sentence best fits the Eduqas top-band demand to "analyse... critically"?
+    * **Options:** A) "The play is set after the war", B) "Priestley evaluates capitalist complacency, using the Inspector's interrogation to unsettle the audience's moral certainty", C) "There is a character called the Inspector", D) "Many things happen in the play".
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. This is sensitive, evaluative and critical — weighing what the writer argues and its effect, as the top band requires.
+    * **AO:** AO1
+    * **Why A:** A contextual fact with no analysis stays at the lowest bands.
+    * **Why C:** Identifying a character is plot-level knowledge, not critical analysis.
+    * **Why D:** A vague generalisation makes no critical claim at all.
+22. **Type: Select All That Apply \[Tests Band Phrases\]**
+    * **Question:** Which are genuine Eduqas descriptor phrases? (Select all that apply)
+    * **Options:** A) 29–35 "perceptive understanding of the extract and wider text", B) 29–35 "sensitive and evaluative approach to the task", C) 22–28 "thoughtful approach... secure understanding", D) 29–35 "simple, narrative retelling".
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** Perceptive understanding, the sensitive/evaluative approach and the thoughtful/secure second band are genuine Eduqas wording. "Simple, narrative retelling" belongs to the lowest bands, not the top.
+    * **AO:** AO1
+    * **Why D:** A simple narrative retelling is lowest-band work; pairing it with the 29–35 top band is the error to reject.
 
 ### **SECTION D: OCR (J352 — Modern Prose / Drama)**
 
@@ -538,6 +811,97 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** Retelling a well-known scene feels productive because you know it so well, but memory of events is storytelling and caps the band.
     * **Why C:** A technique list feels analytical, but naming devices without interpreting their meaning is feature-spotting with no argument.
     * **Why D:** The ending feels significant so summarising it is tempting, but summary of any moment is still plot description, not exploration.
+11. **Type: MCQ \[Tests Part (a) Level 6 Heading\]**
+    * **Question:** OCR Section A part (a) top band (Level 6, 18–20 marks) is headed:
+    * **Options:** A) "Credible critical style in a detailed personal response", B) "Sustained critical style in an informed personal response to both text and task", C) "Convincing critical style in a well-developed personal response", D) "Simple comments on the text".
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 6 (18–20) is "Sustained critical style in an informed personal response to both text and task". "Convincing" is Level 5; "Credible" is Level 4.
+    * **AO:** AO1
+    * **Why A:** "Credible... detailed" is the Level 4 heading.
+    * **Why C:** "Convincing... well-developed" is the Level 5 heading, one band below.
+    * **Why D:** "Simple comments" is lower-band language, far below the sustained top.
+12. **Type: Fill-in-the-Blank \[Tests Equally Dominant AOs\]**
+    * **Question:** In OCR part (a), the mark scheme states that AO1 and AO**\[BLANK\]** are "the equally dominant assessment objectives".
+    * **Answer:** 3
+    * **Feedback:** ✓ Correct. In part (a), "AO1 and AO3 are the equally dominant assessment objectives" — interpretation and context carry equal weight, with AO2 also credited.
+    * **AO:** AO3
+    * **WhyWrong:** AO2 is assessed in part (a) too, but the two equally dominant objectives are AO1 and AO3.
+13. **Type: MCQ \[Tests Part (a) Comparison\]**
+    * **Question:** What does OCR part (a) Level 6 require of the comparison between the studied text and the unseen extract?
+    * **Options:** A) Two separate summaries placed side by side, B) "A sustained, interwoven comparison of texts", C) Comparison of the characters' names only, D) A comparison of the two authors' biographies.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 6 "achieves a sustained, interwoven comparison of texts" — a single woven argument, not two stacked summaries.
+    * **AO:** AO1
+    * **Why A:** Two separate summaries contain no comparison, which is the whole point of part (a).
+    * **Why C:** Matching names is surface pairing, not interwoven comparison of ideas and contexts.
+    * **Why D:** Author biographies are not the printed texts being compared.
+14. **Type: True/False \[Tests Part (b) Holistic Marking\]**
+    * **Question:** True or False: OCR part (b) is marked holistically, with AO1 and AO2 equally weighted.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. In part (b), "the response is to be marked holistically... AO1 and AO2 are equally weighted" — a best-fit judgement of interpretation and analysis of methods on the studied text.
+    * **AO:** AO1
+    * **WhyWrong:** It is tempting to assume AO totals are added separately, but part (b) is judged holistically with AO1 and AO2 equal.
+15. **Type: Fill-in-the-Blank \[Tests Level 6 References\]**
+    * **Question:** OCR part (a) Level 6 describes textual references and quotations that are "precise, pertinent and skilfully **\[BLANK\]**".
+    * **Answer:** Interwoven
+    * **Feedback:** ✓ Correct. At Level 6, references are "precise, pertinent and skilfully interwoven" — embedded seamlessly, not bolted on.
+    * **AO:** AO1
+    * **WhyWrong:** "Chosen" or "selected" fit lower bands; the Level 6 word is "interwoven".
+16. **Type: MCQ \[Tests Level 5 vs Level 6\]**
+    * **Question:** A part (a) response with a "Convincing critical style in a well-developed personal response to both text and task" sits at which OCR band?
+    * **Options:** A) Level 6 (18–20), B) Level 5 (15–17), C) Level 4 (11–14), D) Level 3 (7–10).
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. "Convincing... well-developed" is Level 5 (15–17). Level 6 lifts to "Sustained... informed"; Level 4 is "Credible... detailed".
+    * **AO:** AO1
+    * **Why A:** Level 6 is "Sustained critical style", above "convincing".
+    * **Why C:** "Credible... detailed" is the Level 4 descriptor.
+    * **Why D:** Level 3 is a "reasonably detailed personal response", below convincing development.
+17. **Type: Select All That Apply \[Tests Part (a) Skills\]**
+    * **Question:** Which does OCR part (a) assess? (Select all that apply)
+    * **Options:** A) Understanding of context (AO3), B) Informed personal response and interpretation (AO1), C) Analysis of language, form and structure (AO2), D) Accurate spelling and punctuation as a separate mark.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** Part (a) credits context (AO3), interpretation (AO1) and analysis of methods (AO2), with AO1 and AO3 equally dominant. Technical accuracy is not a separate strand in this section.
+    * **AO:** AO2
+    * **Why D:** Unlike some boards, OCR's modern prose/drama section has no separate technical-accuracy mark; the marks are for AO1, AO2 and AO3.
+18. **Type: True/False \[Tests Context in Part (a)\]**
+    * **Question:** True or False: OCR part (a) Level 6 requires "perceptive and sensitive understanding of context and how it informs evaluation of the text".
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Because AO3 is equally dominant in part (a), Level 6 demands "perceptive and sensitive understanding of context and how it informs evaluation of the text".
+    * **AO:** AO3
+    * **WhyWrong:** Context can feel optional, but in part (a) it is equally dominant, and its perceptive, sensitive understanding is a Level 6 requirement.
+19. **Type: MCQ \[Tests Unseen Extract Context\]**
+    * **Question:** How does OCR provide the context for the unseen extract in part (a)?
+    * **Options:** A) Candidates must already know the unseen text, B) "The introduction to each extract will give clear contextual information", C) No context is provided or needed, D) Context is only relevant to the studied text.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. "The introduction to each extract will give clear contextual information", so candidates can develop inferences and comparison — they are not expected to know the unseen text beforehand.
+    * **AO:** AO3
+    * **Why A:** The unseen text is unseen; candidates are not expected to have studied it.
+    * **Why C:** Context is provided precisely because AO3 is equally dominant in part (a).
+    * **Why D:** Contextual comparison spans both extracts, not the studied text alone.
+20. **Type: Fill-in-the-Blank \[Tests Part (b) Focus\]**
+    * **Question:** OCR part (b) asks for an informed personal response to the **\[BLANK\]** text alone, assessing AO1 and AO2 holistically.
+    * **Answer:** Studied (set)
+    * **Feedback:** ✓ Correct. Part (b) is an essay on the studied (set) text, marked holistically for AO1 and AO2 — no unseen extract and no AO3 comparison.
+    * **AO:** AO1
+    * **WhyWrong:** Part (a) uses the unseen extract, but part (b) returns to the studied text alone for its holistic AO1/AO2 essay.
+21. **Type: MCQ \[Tests Level 4 Register\]**
+    * **Question:** Which phrase heads the OCR part (a) Level 4 (11–14) band?
+    * **Options:** A) "Sustained critical style", B) "Convincing critical style", C) "Credible critical style in a detailed personal response to both text and task", D) "Simple comments on the text".
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. Level 4 (11–14) is "Credible critical style in a detailed personal response to both text and task". "Convincing" is Level 5; "Sustained" is Level 6.
+    * **AO:** AO1
+    * **Why A:** "Sustained" is the Level 6 heading.
+    * **Why B:** "Convincing" is the Level 5 heading.
+    * **Why D:** "Simple comments" is lower-band language, below credible detail.
+22. **Type: Select All That Apply \[Tests Band Ladder Headings\]**
+    * **Question:** Which are genuine OCR part (a) level-descriptor headings? (Select all that apply)
+    * **Options:** A) Level 6 "Sustained critical style", B) Level 5 "Convincing critical style", C) Level 4 "Credible critical style", D) Level 6 "Simple, narrative comments".
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** Sustained (Level 6), Convincing (Level 5) and Credible (Level 4) are the genuine OCR part (a) headings. "Simple, narrative comments" belongs to the lowest bands, not Level 6.
+    * **AO:** AO1
+    * **Why D:** "Simple, narrative comments" is lowest-band language; pairing it with Level 6 is the error.
 
 ### **SECTION E: CAMBRIDGE IGCSE (0475 — Drama)**
 
@@ -617,6 +981,97 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** Separate AO totals describe how UK boards mark, which makes this tempting, but Cambridge judges the whole essay against one descriptor instead.
     * **Why C:** Losing marks per mistake is a deficit-marking myth; examiners match your response to the closest band, they do not count errors downward.
     * **Why D:** Strong openings matter, but no single section decides the level — the examiner weighs the whole essay against the band descriptions.
+11. **Type: MCQ \[Tests Level 8 Band Range\]**
+    * **Question:** In Cambridge 0475, which mark range corresponds to Level 8, the top band?
+    * **Options:** A) 20–22, B) 23–25, C) 17–19, D) 25 only.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 8 spans 23–25 marks. Level 7 is 20–22; Level 6 is 17–19.
+    * **AO:** AO1
+    * **Why A:** 20–22 is Level 7, one band below the top.
+    * **Why C:** 17–19 is Level 6.
+    * **Why D:** The top band covers the range 23–25, not a single mark.
+12. **Type: Fill-in-the-Blank \[Tests Level 8 AO1\]**
+    * **Question:** Cambridge Level 8 rewards a candidate who "demonstrates knowledge by incorporating well-selected reference to the text skilfully and with **\[BLANK\]**."
+    * **Answer:** Flair
+    * **Feedback:** ✓ Correct. Level 8 AO1 rewards reference deployed "skilfully and with flair" — evidence woven in with style, not merely quoted.
+    * **AO:** AO1
+    * **WhyWrong:** "Care" or "confidence" describe lower bands; the Level 8 word is "flair".
+13. **Type: MCQ \[Tests Level 8 AO2\]**
+    * **Question:** Which quality does Cambridge Level 8 (AO2) demand?
+    * **Options:** A) A clear understanding of the text, B) Sustained critical understanding "showing individuality and insight", C) Some awareness of deeper implications, D) A basic grasp of the plot.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 8 AO2 "sustains a critical understanding of the text showing individuality and insight". Level 7 is a "clear critical understanding"; Level 6 shows "some of its deeper implications".
+    * **AO:** AO2
+    * **Why A:** A "clear critical understanding" is Level 7, one band below.
+    * **Why C:** "Some of its deeper implications" is the Level 6 descriptor.
+    * **Why D:** A basic grasp of plot sits in the lower bands.
+14. **Type: True/False \[Tests AO3 as Effects\]**
+    * **Question:** True or False: For Cambridge, AO3 rewards how well a candidate "responds sensitively and in considerable detail to the way the writer achieves her/his effects".
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Cambridge AO3 is analysis of method — the Level 8 wording is "responds sensitively and in considerable detail to the way the writer achieves her/his effects".
+    * **AO:** AO3
+    * **WhyWrong:** It is easy to assume AO3 means context, but on Cambridge 0475 AO3 is analysis of how the writer achieves effects.
+15. **Type: Fill-in-the-Blank \[Tests AO4 Meaning\]**
+    * **Question:** On Cambridge 0475, AO4 rewards the candidate's "personal and evaluative **\[BLANK\]** with task and text".
+    * **Answer:** Engagement
+    * **Feedback:** ✓ Correct. Level 8 AO4 "sustains personal and evaluative engagement with task and text" — Cambridge AO4 is personal response, not SPaG.
+    * **AO:** AO4
+    * **WhyWrong:** UK boards train AO4 as technical accuracy, but the Cambridge descriptor is "personal and evaluative engagement".
+16. **Type: MCQ \[Tests Level 7 AO4\]**
+    * **Question:** Which phrase describes the Cambridge Level 7 (20–22) personal response (AO4)?
+    * **Options:** A) "A well-developed, detailed personal response", B) "Sustains a perceptive, convincing and relevant personal response", C) "Sustains personal and evaluative engagement with task and text", D) "A simple personal response".
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 7 AO4 "sustains a perceptive, convincing and relevant personal response". Level 8 is "personal and evaluative engagement"; Level 6 is "well-developed, detailed".
+    * **AO:** AO4
+    * **Why A:** "Well-developed, detailed" is the Level 6 descriptor.
+    * **Why C:** "Personal and evaluative engagement" is the Level 8 descriptor.
+    * **Why D:** A "simple" personal response sits in the lower bands.
+17. **Type: Select All That Apply \[Tests Level 8 Features\]**
+    * **Question:** Which are genuine Cambridge Level 8 descriptors? (Select all that apply)
+    * **Options:** A) Reference to the text "skilfully and with flair", B) Critical understanding "showing individuality and insight", C) "Responds sensitively and in considerable detail" to the writer's effects, D) "Makes a few relevant comments about the text".
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** Flair with reference, individuality and insight, and a sensitive, detailed response to effects are all Level 8 wording. "A few relevant comments" is a lower-band descriptor.
+    * **AO:** AO1
+    * **Why D:** "Makes a few relevant comments about the text" is lower-band language, not Level 8.
+18. **Type: True/False \[Tests Best-Fit Marking\]**
+    * **Question:** True or False: Cambridge instructs that level descriptors "should not be interpreted as hurdle statements" but as a guide to the qualities typical of work in a level.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Cambridge marks by best fit: descriptors are "a means of general guidance" and "should not be interpreted as hurdle statements" — the examiner matches the whole response to the closest level.
+    * **AO:** AO1
+    * **WhyWrong:** It feels as though every bullet must be ticked, but the descriptors are guidance, not hurdles, under best-fit marking.
+19. **Type: MCQ \[Tests Level 6 AO2\]**
+    * **Question:** A Cambridge response that "shows a clear understanding of the text and some of its deeper implications" sits at which level?
+    * **Options:** A) Level 8 (23–25), B) Level 7 (20–22), C) Level 6 (17–19), D) Level 5.
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. "A clear understanding of the text and some of its deeper implications" is Level 6 (17–19). Level 7 is a "clear critical understanding"; Level 8 shows "individuality and insight".
+    * **AO:** AO2
+    * **Why A:** Level 8 demands individuality and insight, well above "some" deeper implications.
+    * **Why B:** Level 7 is a "clear critical understanding", a rung above Level 6.
+    * **Why D:** This wording belongs specifically to Level 6, not Level 5.
+20. **Type: Fill-in-the-Blank \[Tests Level 7 AO1\]**
+    * **Question:** Cambridge Level 7 (AO1) "demonstrates knowledge by integrating much well-selected **\[BLANK\]** to the text".
+    * **Answer:** Reference
+    * **Feedback:** ✓ Correct. Level 7 AO1 integrates "much well-selected reference to the text"; Level 8 deploys it "skilfully and with flair".
+    * **AO:** AO1
+    * **WhyWrong:** "Quotation" is close, but the descriptor's exact word is "reference".
+21. **Type: MCQ \[Tests No Separate Context AO\]**
+    * **Question:** How is historical context treated in the Cambridge 0475 assessment objectives?
+    * **Options:** A) It has its own objective worth half the marks, B) There is no separate context objective; the four AOs are knowledge (AO1), understanding (AO2), analysis of effects (AO3) and personal response (AO4), C) Context is deducted if omitted, D) Context replaces AO4.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Cambridge has no standalone context objective — the four AOs reward knowledge, critical understanding, response to the writer's effects, and personal engagement. Context can still inform understanding.
+    * **AO:** AO1
+    * **Why A:** No Cambridge objective is dedicated to context, let alone half the marks.
+    * **Why C:** Best-fit marking rewards qualities present; it does not deduct for missing context.
+    * **Why D:** AO4 is personal response; context does not replace it.
+22. **Type: Select All That Apply \[Tests Band Ladder\]**
+    * **Question:** Which are genuine Cambridge level-descriptor phrases? (Select all that apply)
+    * **Options:** A) Level 8 "individuality and insight", B) Level 7 "clear critical understanding", C) Level 6 "well-developed, detailed personal response", D) Level 8 "little awareness of the text".
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** Individuality and insight (Level 8), a clear critical understanding (Level 7) and a well-developed, detailed personal response (Level 6) are genuine Cambridge descriptors. "Little awareness of the text" is lowest-band language, not Level 8.
+    * **AO:** AO1
+    * **Why D:** "Little awareness of the text" is a lowest-band phrase; pairing it with Level 8 is the error to reject.
 
 ## **5\. KNOWLEDGE BASE (For Clarification Phase)**
 
