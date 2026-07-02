@@ -217,6 +217,26 @@
                 }
             } catch (_) { /* never block render */ }
 
+            // v7.19.817: Score Summary (type 'scores') computes its tick at render time
+            // too — same wipe-on-rebuild class as the three sections above. The recompute
+            // pass (wml-assessment.js v767) set the attr from the DOM, but every nodeView
+            // rebuild (pagination, the marking pass's own PM writes to this section)
+            // recreated the dom WITHOUT it, so the tick never survived. Auto-derived
+            // section: complete once the essay is MARKED — the "Total Marks" line shows a
+            // number, not the "—" placeholder (Date Completed is the tutor's field and
+            // does not gate this).
+            try {
+                if (type === 'scores') {
+                    let comp = false, found = false;
+                    node.descendants((c) => {
+                        if (found || !c.type || c.type.name !== 'paragraph') return;
+                        const t = (c.textContent || '').trim();
+                        if (/Total Marks/i.test(t)) { found = true; comp = !/Total Marks:\s*—/i.test(t); }
+                    });
+                    dom.setAttribute('data-section-complete', comp ? 'true' : 'false');
+                }
+            } catch (_) { /* never block render */ }
+
             // v7.19.607: feedback boxes get a completion tick too — "complete" = the box
             // holds real (non-placeholder) feedback text. Computed from the node model so it
             // survives re-render. Lives OUTSIDE the read-only guard above because feedback is

@@ -3903,6 +3903,12 @@
     // Summary) + Self-Assessment + Analytics + Action Plan. Essay Plan is required too EXCEPT on
     // the very first diagnostic (Topic 1, Phase 1), where it's optional (Neil 2026-06-30). Action
     // Plan ≠ Essay Plan — Action Plan is ALWAYS required.
+    // v7.19.817: ONE predicate for the Topic-1 Phase-1 exemption (Essay Plan optional on
+    // the very first diagnostic — Neil 2026-06-30). Shared by _isAssessmentComplete and
+    // the assessment progress card so the two never drift apart.
+    function _isFirstDiagnostic() {
+        return ((state.topicNumber === 1 || state.topicNumber === '1') && state.phase === 'initial');
+    }
     function _isAssessmentComplete() {
         if (!canvasEditor) return false;
         const editorEl = canvasEditor.options && canvasEditor.options.element;
@@ -3913,8 +3919,7 @@
         if (!done('.swml-section-block[data-section-label="Analytics"]')) return false;
         if (!done('.swml-section-block[data-section-label="Action Plan"]')) return false;
         // Essay Plan: required everywhere EXCEPT the first diagnostic (Topic 1, Phase 1).
-        const isFirstDiagnostic = ((state.topicNumber === 1 || state.topicNumber === '1') && state.phase === 'initial');
-        if (!isFirstDiagnostic) {
+        if (!_isFirstDiagnostic()) {
             const plans = editorEl.querySelectorAll('.swml-section-block[data-section-type="plan"]');
             for (let i = 0; i < plans.length; i++) {
                 if (plans[i].getAttribute('data-section-complete') !== 'true') return false;
@@ -4111,6 +4116,32 @@
         });
         return { total, done, incomplete, pct: total ? Math.round(done / total * 100) : 0 };
     }
+    // v7.19.817: assessment-doc variant — the CW compute above counts EVERY attr-carrying
+    // section, but an assessment doc's progress is the STUDENT-completable required set
+    // (completion-island spec 2026-06-30): feedback mark boxes + Analytics + Action Plan +
+    // Self-Assessment + Essay Plan. Excluded by capability, never by task name:
+    // question/response/scores/signoff are not student form-fills (Score Summary and
+    // Tutor Sign-off have their own affordances), and Overall Feedback auto-files at the
+    // Final Summary — docs that predate it would wedge the card below 100% forever.
+    // Essay Plan drops out on the very first diagnostic (T1P1 — the same _isFirstDiagnostic
+    // the Date Completed stamp uses). Derived from live attrs, so multi-question Language
+    // docs (N feedback boxes) count correctly with no per-paper wiring.
+    function _computeAssessmentProgress(editor) {
+        const firstDiag = _isFirstDiagnostic();
+        const secs = editor.querySelectorAll('.swml-section-block[data-section-complete]');
+        let total = 0, done = 0; const incomplete = [];
+        secs.forEach(s => {
+            const type = s.getAttribute('data-section-type') || '';
+            const label = s.getAttribute('data-section-label') || 'Section';
+            if (type === 'question' || type === 'response' || type === 'scores' || type === 'signoff') return;
+            if (label === 'Overall Feedback') return;
+            if (type === 'plan' && firstDiag) return;
+            total++;
+            if (s.getAttribute('data-section-complete') === 'true') done++;
+            else incomplete.push(label);
+        });
+        return { total, done, incomplete, pct: total ? Math.round(done / total * 100) : 0 };
+    }
     // v7.19.501: house percentage ramp (Neil's 8 bands). Hexes from the dashboard
     // grade ladder (sophicly-dashboard/src/utils/grade.js + WORD_COUNT_LADDER) — no
     // invented colours. 90–100 = lighter→darker purple gradient; then light purple,
@@ -4193,8 +4224,8 @@
         bar.appendChild(fill);
         card.appendChild(bar);
     }
-    function _renderProgressCardBody(card, editor) {
-        const { total, done, incomplete, pct } = _computeCwProgress(editor);
+    function _renderProgressCardBody(card, editor, computeFn) {
+        const { total, done, incomplete, pct } = (computeFn || _computeCwProgress)(editor);
         // v7.19.499: total=0 is transient on first mount (sibling completion attrs
         // not set yet). NEVER hide/blank — that left the card stuck-collapsed until a
         // user click triggered a recompute. Just keep the current paint and wait for
@@ -4316,7 +4347,10 @@
             const card = editor.querySelector('.swml-progress-card');
             if (!card) return;
             // v7.19.505: Codex = per-unit card; everything else = per-section.
+            // v7.19.817: assessment-caps docs use the required-set compute (same
+            // capability gate migrateDocument uses — never a task-name literal).
             if (state.task === 'mastery_codex') _renderCodexProgressCardBody(card, editor);
+            else if (WML.hasAssessmentSections && WML.hasAssessmentSections(state.task)) _renderProgressCardBody(card, editor, _computeAssessmentProgress);
             else _renderProgressCardBody(card, editor);
         } catch (_) { /* never throw */ }
     }
@@ -28603,6 +28637,12 @@
             { label: 'Self-Assessment', build: () => buildSelfAssessmentSection() },
             { label: 'Analytics', build: () => buildAnalyticsSection() },
             { label: 'Action Plan', build: () => buildActionPlanSection(state.draftType?.includes('redraft') ? 'redraft' : 'diagnostic') },
+            // v7.19.817: Document Progress card above the sign-off (Neil, completion-island
+            // spec). Same node CW docs carry (v497); the nodeView renders the live card.
+            // Listed here so BOTH new and existing assessment docs get it — migrateDocument
+            // runs on every assessment-caps load and inserts missing sections before
+            // Tutor Sign-off, which is exactly the wanted position.
+            { label: 'Document Progress', build: () => buildProgressSection() },
             { label: 'Tutor Sign-off', build: () => buildSignoffSection() },
         ];
 
