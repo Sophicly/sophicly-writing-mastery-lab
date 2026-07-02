@@ -299,6 +299,98 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why B:** "Says" reports speech, the most descriptive verb available; it carries no sense of deliberate crafting or audience impact.
     * **Why D:** "Writes" states the bare fact of authorship; it gives no insight into how the choice works or why Shakespeare made it.
 
+11. **Type: MCQ \[Tests Level 5 vs Level 6 Verb\]**
+   * **Question:** AQA's Level 5 descriptor is "examination of effects of writer's methods"; Level 6 is "exploration of effects of writer's methods." Which single verb marks the lift from Level 5 to Level 6?
+   * **Options:** A) "Identification", B) "Explanation", C) "Examination", D) "Exploration".
+   * **Correct:** D
+   * **Feedback:** ✓ Correct. The AQA ladder climbs identify → explain → examine → explore. "Exploration" is the Level 6 verb; "examination" tops out at Level 5.
+   * **AO:** AO2
+   * **Why A:** Identification of effects is a Level 3 move — spotting a method without analysing it.
+   * **Why B:** Explanation of effects is the Level 4 descriptor — clear, but not yet the developed examination of Level 5.
+   * **Why C:** Examination is precisely the Level 5 verb, one rung below the Level 6 "exploration" the question asks for.
+12. **Type: Fill-in-the-Blank \[Tests Level 5 Heading\]**
+   * **Question:** AQA's Level 5 (21-25) column is headed "\[BLANK\], developed consideration" — apt references integrated into interpretation.
+   * **Answer:** Thoughtful
+   * **Feedback:** ✓ Correct. Level 5 = "Thoughtful, developed consideration". Level 4 is "clear understanding"; Level 6 is "convincing, critical analysis and exploration".
+   * **AO:** AO1
+   * **WhyWrong:** Likely guesses such as "clear" or "detailed" describe the Level 4 register; the Level 5 heading is "thoughtful, developed consideration".
+13. **Type: MCQ \[Tests Mark Allocation\]**
+   * **Question:** How are the marks allocated on the AQA Shakespeare question?
+   * **Options:** A) 40 marks shared equally between four AOs, B) 30 marks across AO1, AO2 and AO3, with a further 4 marks for AO4 (SPaG), C) 30 marks for AO2 alone, D) 20 marks with no AO4 assessed.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The Levels 1-6 grid marks AO1, AO2 and AO3 out of 30; AO4 (technical accuracy) adds 4 marks on top. Proofreading is worth real marks here.
+   * **AO:** AO4
+   * **Why A:** The four objectives are not equally weighted; the level grid covers AO1 to AO3 out of 30 and technical accuracy sits separately at 4 marks.
+   * **Why C:** Analysis of methods is one strand within the 30-mark grid, not the whole allocation; argument and context are marked alongside it.
+   * **Why D:** Technical accuracy is assessed on the AQA Shakespeare response — 4 marks for spelling, punctuation, vocabulary and sentence structures.
+14. **Type: MCQ \[Tests Apt vs Judicious References\]**
+   * **Question:** AQA Level 5 rewards "apt references integrated into interpretation"; Level 6 rewards "judicious use of precise references." What lifts references from "apt" to "judicious"?
+   * **Options:** A) Quoting at greater length, B) Using references from more scenes, C) Selecting each reference with fine judgement so it precisely supports the interpretation, D) Adding more quotations overall.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. "Judicious" is about discernment in selection — every reference precisely chosen to support the argument, not merely apt or relevant.
+   * **AO:** AO1
+   * **Why A:** Length is never the criterion; a longer quotation often buries the precise phrase that judicious selection would isolate.
+   * **Why B:** Range across scenes can help the argument, but judiciousness measures how well each reference fits the point, not how widely you roam.
+   * **Why D:** Adding quotations shows coverage; judicious selection rewards the quality of each choice, not the quantity.
+15. **Type: Fill-in-the-Blank \[Tests AO4 Descriptor\]**
+   * **Question:** AQA AO4 rewards students who "use a range of vocabulary and sentence structures for clarity, purpose and effect, with accurate spelling and \[BLANK\]."
+   * **Answer:** Punctuation
+   * **Feedback:** ✓ Correct. AO4 is the technical-accuracy strand — accurate spelling and punctuation plus varied, purposeful vocabulary and sentence structures, worth 4 marks.
+   * **AO:** AO4
+   * **WhyWrong:** The AO4 wording pairs "spelling" with "punctuation"; guesses like "grammar" or "expression" are not the exact term the descriptor uses.
+16. **Type: True/False \[Tests Whole-Text Focus\]**
+   * **Question:** True or False: AQA's Level 6 AO1 descriptor requires a "response to task and whole text", not analysis confined to the printed extract.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. The descriptor names "task and whole text". Use the extract for close AO2 work, then range across the whole play to build the AO1 argument.
+   * **AO:** AO1
+   * **WhyWrong:** It can feel safer to stay inside the printed extract, but the Level 6 descriptor explicitly demands engagement with the whole text, not the extract alone.
+17. **Type: Select All That Apply \[Tests Level 6 Descriptor Phrases\]**
+   * **Question:** Which phrases are taken directly from AQA's Level 6 descriptor? (Select all that apply)
+   * **Options:** A) "Critical, exploratory, conceptualised response", B) "Judicious use of precise references", C) "Exploration of effects of writer's methods", D) "Clear explanation of the writer's methods".
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** The conceptualised response, judicious references, and exploration of effects are all Level 6 wording. "Clear explanation" is the Level 4 descriptor.
+   * **AO:** AO1
+   * **Why D:** "Clear explanation of the writer's methods" is the Level 4 phrase; Level 6 demands exploration, not explanation.
+18. **Type: MCQ \[Tests AO3 Integration Wording\]**
+   * **Question:** AQA's AO3 Level 6 descriptor rewards "exploration of ideas/perspectives/contextual factors shown by specific, detailed links." What does this require of context?
+   * **Options:** A) A standalone paragraph of Jacobean history, B) Context linked specifically and in detail to the text and task, C) As many historical facts as possible, D) A date for when the play was written.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. AO3 credits "specific, detailed links" between context, text and task — context woven into the argument, not a bolt-on history paragraph.
+   * **AO:** AO3
+   * **Why A:** A standalone history paragraph is exactly the bolt-on the descriptor discourages; the links must be specific and detailed.
+   * **Why C:** Volume of facts is not rewarded; unlinked context earns little however much you supply.
+   * **Why D:** A composition date is an isolated fact; it makes no specific, detailed link between context and the task.
+19. **Type: True/False \[Tests Level 4 vs Level 5\]**
+   * **Question:** True or False: A response with "clear explanation" of methods and "effective use of references" sits at AQA Level 4, not Level 5.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. "Clear explanation" and "effective use of references" are Level 4 (16-20). Level 5 (21-25) moves to "examination" of methods and "apt references integrated into interpretation".
+   * **AO:** AO2
+   * **WhyWrong:** Effective references sound high, but the descriptor pairs them with Level 4 "clear explanation"; Level 5 requires examination, not explanation.
+20. **Type: MCQ \[Tests Conceptualised Response\]**
+   * **Question:** Which opening best fits AQA's Level 6 "conceptualised" descriptor?
+   * **Options:** A) "Macbeth is a soldier who becomes king and then dies", B) "There are lots of techniques in this extract", C) "Shakespeare constructs ambition as a corrosive force that dismantles Macbeth's moral identity, using the play to interrogate the cost of unchecked will", D) "This extract is from Act 1".
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. This treats the play as a conscious construct exploring a big idea — the conceptualised, exploratory thesis AQA's Level 6 rewards. The lift is the argument, not the vocabulary.
+   * **AO:** AO1
+   * **Why A:** This retells the plot; narrative sequence without argument caps the response at the lower bands.
+   * **Why B:** Announcing that techniques exist is feature-spotting with no conceptual claim about what Shakespeare explores.
+   * **Why D:** Locating the extract is orientation, not interpretation; it makes no argument about meaning.
+21. **Type: Fill-in-the-Blank \[Tests Fine-Grained Analysis\]**
+   * **Question:** AQA's Level 6 summary describes a "\[BLANK\] and insightful analysis of methods" — analysis that zooms in on precise detail rather than broad comment.
+   * **Answer:** Fine-grained
+   * **Feedback:** ✓ Correct. Level 6 rewards "fine-grained and insightful analysis" — micro-level precision on specific words and methods, not sweeping generalisation.
+   * **AO:** AO2
+   * **WhyWrong:** Guesses like "detailed" or "developed" describe lower bands; the Level 6 summary phrase is "fine-grained and insightful analysis".
+22. **Type: Select All That Apply \[Tests Band Ladder Headings\]**
+   * **Question:** Which are genuine AQA level-descriptor headings? (Select all that apply)
+   * **Options:** A) Level 6 "Convincing, critical analysis and exploration", B) Level 5 "Thoughtful, developed consideration", C) Level 4 "Clear understanding", D) Level 6 "Basic, structured comments".
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** The convincing/exploratory, thoughtful/developed, and clear-understanding headings are the real Level 6, 5 and 4 labels. "Structured comments" belongs to Level 3, not Level 6.
+   * **AO:** AO1
+   * **Why D:** "Structured comments" is the Level 3 heading; pairing it with Level 6 is the error to reject.
+
 ### **SECTION B: EDEXCEL GCSE (1ET0 — Shakespeare)**
 
 1. **Type: MCQ \[Tests Discriminating Examples\]**
@@ -377,6 +469,98 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** "Might possibly" double-hedges before the argument has begun; tentative openings signal Level 4 caution rather than assured authority.
     * **Why C:** Stating that the play exists makes no interpretive claim at all; assurance requires a definitive argument from the very first sentence.
     * **Why D:** "I will try to explore" announces intention instead of arguing; signposting without a thesis reads as tentative, not assured.
+
+11. **Type: MCQ \[Tests Discerning References Integral\]**
+   * **Question:** Edexcel's Level 5 (17-20) states "discerning references are an integral part of the response." What does "an integral part" require?
+   * **Options:** A) A separate quotation bank at the end, B) References woven into the argument so analysis and evidence are inseparable, C) The longest quotations available, D) At least one quotation per paragraph.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. "Integral" means the reference is built into the analytical sentence, made "with assurance and full support from the text" — not dropped in as a standalone block.
+   * **AO:** AO1
+   * **Why A:** A quotation bank sits apart from the argument; integral means the reference lives inside the analysis itself.
+   * **Why C:** Length is irrelevant to integration; a precise micro-quote embedded mid-sentence is more integral than a long block.
+   * **Why D:** A quota per paragraph is a mechanical rule, not integration; the descriptor rewards references fused into the argument.
+12. **Type: MCQ \[Tests Assured Personal Response\]**
+   * **Question:** Edexcel Level 5 opens "There is an assured personal response, showing a high level of engagement with the text." What does "assured" signal?
+   * **Options:** A) Writing quickly and confidently, B) Using the word "clearly" often, C) Authoritative, mature command of interpretation held with a high level of engagement, D) Giving lots of personal opinions.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. "Assured" is intellectual authority — the critical style "developed with maturity, perceptive understanding and interpretation" that the descriptor names.
+   * **AO:** AO1
+   * **Why A:** Speed and surface confidence are not assurance; the descriptor pairs "assured" with mature, perceptive interpretation.
+   * **Why B:** Repeating "clearly" asserts confidence without earning it; assurance comes from the quality of the interpretation.
+   * **Why D:** A volume of opinions is not authority; assurance is command of a well-supported reading, not more "I think" statements.
+13. **Type: Fill-in-the-Blank \[Tests AO2 Level 5 Wording\]**
+   * **Question:** On Edexcel's AO2 grid, Level 5 (17-20) rewards "a \[BLANK\] evaluation of the interrelationship of language, form and structure."
+   * **Answer:** Cohesive
+   * **Feedback:** ✓ Correct. The AO2 top band is a "cohesive evaluation of the interrelationship of language, form and structure" — integrated, evaluative analysis, not description.
+   * **AO:** AO2
+   * **WhyWrong:** Guesses like "detailed" describe Level 4 ("focused and detailed"); the Level 5 AO2 word is "cohesive".
+14. **Type: MCQ \[Tests Two-Grid Structure\]**
+   * **Question:** On Edexcel GCSE (1ET0) Shakespeare, how are AO1 and AO3 marked?
+   * **Options:** A) AO1 is worth 15 marks and AO3 is worth 5 marks within the same descriptor grid, B) AO1 and AO3 share a single 5-mark grid, C) AO3 is not assessed on Shakespeare, D) AO1 and AO3 are each worth 20 marks.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. On the AO1/AO3 grid, the first three bullets assess AO1 (15 marks) and the fourth bullet assesses AO3 context (5 marks); AO2 is marked on a separate 20-mark grid.
+   * **AO:** AO3
+   * **Why B:** Argument is the larger strand at 15 marks; context is the 5-mark bullet, so they do not share a 5-mark grid.
+   * **Why C:** Context is assessed — it is the fourth bullet, worth 5 marks.
+   * **Why D:** The grid splits 15/5 between argument and context, not 20/20.
+15. **Type: Select All That Apply \[Tests Level 5 AO1/AO3 Features\]**
+   * **Question:** Which are drawn from Edexcel's Level 5 AO1/AO3 descriptor? (Select all that apply)
+   * **Options:** A) "Assured personal response", B) "Critical style developed with maturity", C) "Excellent understanding of context... integrated into the response", D) "Largely narrative with some personal engagement".
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** Assured response, mature critical style, and integrated excellent context are all Level 5 wording. "Largely narrative" is the Level 2 descriptor.
+   * **AO:** AO1
+   * **Why D:** "Largely narrative" describes Level 2, where the response retells rather than argues; it is the opposite of Level 5 assurance.
+16. **Type: True/False \[Tests AO3 Integration\]**
+   * **Question:** True or False: Edexcel Level 5 requires context to be "integrated into the response", not delivered as a detachable history paragraph.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. The descriptor demands "convincing understanding of the relationship between text and context... integrated into the response" — context that drives interpretation.
+   * **AO:** AO3
+   * **WhyWrong:** A dedicated history paragraph feels like banked marks, but the descriptor rewards context integrated into the argument, not isolated facts.
+17. **Type: Fill-in-the-Blank \[Tests Critical Style Maturity\]**
+   * **Question:** Edexcel's Level 5 AO1 descriptor states the critical style is "developed with maturity, perceptive understanding and \[BLANK\]."
+   * **Answer:** Interpretation
+   * **Feedback:** ✓ Correct. The full phrase is "developed with maturity, perceptive understanding and interpretation" — an argued reading, not retelling.
+   * **AO:** AO1
+   * **WhyWrong:** Guesses like "analysis" or "insight" circle the idea, but the descriptor's third noun is "interpretation".
+18. **Type: MCQ \[Tests Level 4 vs Level 5 AO2\]**
+   * **Question:** On Edexcel's AO2 grid, what separates Level 4 (13-16) from Level 5 (17-20)?
+   * **Options:** A) Level 5 uses more quotations, B) Level 4 is "focused and detailed" analysis; Level 5 is a "cohesive evaluation of the interrelationship of language, form and structure", C) Level 5 covers more scenes, D) Level 4 uses no terminology.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The jump is from detailed analysis (Level 4) to cohesive evaluation of how language, form and structure interrelate (Level 5) — integration and judgement, not quantity.
+   * **AO:** AO2
+   * **Why A:** Quotation count is not a band criterion; the shift is toward cohesive, evaluative analysis.
+   * **Why C:** Scene coverage is breadth, not the integration and evaluation the Level 5 descriptor rewards.
+   * **Why D:** Terminology appears from Level 3 upward ("relevant subject terminology... to support examples"); its absence is not what defines Level 4.
+19. **Type: True/False \[Tests Level 3 Sound\]**
+   * **Question:** True or False: An "appropriate critical style" with "sound" comment on context describes Edexcel Level 3, below the "assured" Level 5.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. Level 3 (9-12) is "sound" and "appropriate"; Level 5 (17-20) lifts to an "assured" personal response with "excellent understanding of context". "Sound" is solid but not yet assured.
+   * **AO:** AO1
+   * **WhyWrong:** "Sound" can seem impressive, but in Edexcel's ladder it marks Level 3; the top band demands assured, perceptive, excellent work.
+20. **Type: MCQ \[Tests Discerning vs Weak References\]**
+   * **Question:** Which reference use best fits Edexcel's Level 5 "discerning references... integral part of the response"?
+   * **Options:** A) A three-line quotation copied between paragraphs, B) No quotations, relying on paraphrase, C) A list of quotations with no analysis, D) The single word "vaulting" embedded in an analytical sentence about ambition's overreach.
+   * **Correct:** D
+   * **Feedback:** ✓ Correct. A discerning micro-reference woven into the analysis is integral and supports the point "with assurance and full support from the text".
+   * **AO:** AO1
+   * **Why A:** A long quotation dropped between paragraphs sits apart from the argument rather than integral to it.
+   * **Why B:** Paraphrase removes the very words analysis depends on; nothing is integral if nothing is quoted.
+   * **Why C:** A quotation list with no analysis is neither discerning nor integral — evidence without argument.
+21. **Type: Fill-in-the-Blank \[Tests AO2 Interrelationship\]**
+   * **Question:** Edexcel's AO2 Level 5 rewards evaluation of the "\[BLANK\] of language, form and structure" — how the three work together, not in isolation.
+   * **Answer:** Interrelationship
+   * **Feedback:** ✓ Correct. The descriptor is "cohesive evaluation of the interrelationship of language, form and structure" — analysing how the methods combine to make meaning.
+   * **AO:** AO2
+   * **WhyWrong:** Guesses like "combination" or "range" miss the exact term; the descriptor's word is "interrelationship".
+22. **Type: Select All That Apply \[Tests Top-Band Edexcel\]**
+   * **Question:** A top-band Edexcel GCSE Shakespeare response should: (Select all that apply)
+   * **Options:** A) Offer an assured personal response with a mature critical style, B) Weave discerning references integral to the argument, C) Integrate excellent contextual understanding, D) Retell the plot chronologically to prove knowledge.
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** Assured response, integral discerning references, and integrated context are the Level 5 markers. Chronological retelling is the Level 2 "largely narrative" trap.
+   * **AO:** AO1
+   * **Why D:** Retelling the plot is the "largely narrative" Level 2 descriptor; it demonstrates story recall, not the assured argument Level 5 rewards.
 
 ### **SECTION C: EDEXCEL IGCSE (4ET1 — Shakespeare)**
 
@@ -457,6 +641,98 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why C:** "Bad wife" is a moral verdict on a person, not analysis of a construct; Level 5 treats Lady Macbeth as a vehicle for ideas about power and nature.
     * **Why D:** Quoting the line without interpretation is evidence with no argument; conceptual thinking must say what the method does and why it matters.
 
+11. **Type: MCQ \[Tests AO Strand Labels\]**
+   * **Question:** On Edexcel IGCSE (4ET1) Shakespeare, which three assessment objectives are assessed, and how many marks each?
+   * **Options:** A) AO1, AO2 and AO3, 10 marks each, B) AO1, AO2 and AO4, 10 marks each, C) AO1 and AO2 only, 15 marks each, D) AO2, AO3 and AO4, 10 marks each.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. IGCSE Spec A assesses AO1 (10), AO2 (10) and AO4 (10) — and here AO4 is context, not SPaG.
+   * **AO:** AO4
+   * **Why A:** AO3 is not the context strand on IGCSE Spec A; context is labelled AO4.
+   * **Why C:** All three strands are marked out of 10 each, not two strands out of 15.
+   * **Why D:** Argument is assessed, not omitted; the trio is AO1, AO2 and AO4.
+12. **Type: Fill-in-the-Blank \[Tests AO4 Wording\]**
+   * **Question:** The Edexcel IGCSE AO4 strand asks students to "show understanding of the relationships between texts and the \[BLANK\] in which they were written."
+   * **Answer:** Contexts
+   * **Feedback:** ✓ Correct. AO4 on IGCSE Spec A is the context strand — the relationship between text and the contexts of its writing, worth 10 marks.
+   * **AO:** AO4
+   * **WhyWrong:** The AO4 wording ends "contexts in which they were written"; guesses like "times" or "societies" are not the descriptor's term.
+13. **Type: MCQ \[Tests Informed Personal Engagement\]**
+   * **Question:** The IGCSE AO1 strand rewards "maintaining a critical style and presenting an informed personal engagement." What does "informed personal engagement" mean?
+   * **Options:** A) Sharing whether you enjoyed the play, B) Writing about your own life, C) Your own reasoned interpretation, grounded in close knowledge of the text, D) Agreeing with famous critics.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. "Informed personal engagement" is your own argued reading, built on close textual knowledge — not autobiography or borrowed opinion.
+   * **AO:** AO1
+   * **Why A:** Stating enjoyment is a reaction, not the informed, critical interpretation the strand requires.
+   * **Why B:** "Personal" does not mean autobiographical; it means your own reasoned response to the text.
+   * **Why D:** Repeating critics is not personal engagement; the response must be your own, informed by the text.
+14. **Type: True/False \[Tests AO4 Anomaly\]**
+   * **Question:** True or False: On Edexcel IGCSE Spec A, AO4 assesses context, whereas on AQA and Edexcel GCSE AO4 assesses technical accuracy (SPaG).
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. The AO4 label flips meaning across specs: context on IGCSE Spec A, SPaG on the UK GCSE boards. Know which paper you sit.
+   * **AO:** AO4
+   * **WhyWrong:** It is natural to assume AO4 always means SPaG, but IGCSE Spec A uses AO4 for context — the anomaly that trips up students moving between specs.
+15. **Type: Fill-in-the-Blank \[Tests Level Progression\]**
+   * **Question:** The IGCSE Level 2 (7-12) response is "largely \[BLANK\]", whereas top-band work argues and evaluates rather than recounts.
+   * **Answer:** Narrative
+   * **Feedback:** ✓ Correct. Level 2 is "largely narrative" — retelling the story. The climb to Level 5 is from narrative to cohesive evaluation.
+   * **AO:** AO1
+   * **WhyWrong:** Guesses like "descriptive" or "simple" describe adjacent bands ("simple" is Level 1); Level 2's word is "narrative".
+16. **Type: MCQ \[Tests Level 1 References\]**
+   * **Question:** The IGCSE Level 1 descriptor names "limited use of relevant examples in support." What lifts example use above Level 1?
+   * **Options:** A) Using examples that are precisely chosen and analysed to support the argument, B) Using more examples, C) Using examples from the extract only, D) Using famous quotations.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. Higher bands select relevant examples and analyse them; Level 1 offers only "limited use of relevant examples in support".
+   * **AO:** AO2
+   * **Why B:** Quantity does not raise the band; unanalysed examples stay at the lower levels however many you supply.
+   * **Why C:** Restricting to the extract limits whole-text knowledge; band lift comes from analysis, not source.
+   * **Why D:** Fame is irrelevant; a well-analysed ordinary line supports the argument better than a famous one dropped in.
+17. **Type: Select All That Apply \[Tests AO2 Analysis\]**
+   * **Question:** The IGCSE AO2 strand asks you to analyse which elements "used by a writer to create meanings and effects"? (Select all that apply)
+   * **Options:** A) Language, B) Form, C) Structure, D) The writer's biography.
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** AO2 covers language, form and structure. A writer's biography sits outside the text and is not an AO2 method.
+   * **AO:** AO2
+   * **Why D:** Biography is background about the author, not a method within the text; AO2 analyses language, form and structure.
+18. **Type: MCQ \[Tests Cohesive vs Sustained\]**
+   * **Question:** IGCSE guidance places "sustained analysis" at Level 4 and "cohesive evaluation" at Level 5. Which word signals the higher band?
+   * **Options:** A) "Sustained", B) "Detailed", C) "Sound", D) "Cohesive".
+   * **Correct:** D
+   * **Feedback:** ✓ Correct. "Cohesive" (Level 5) means integrated, flowing evaluation across the whole response; "sustained" tops out at Level 4.
+   * **AO:** AO1
+   * **Why A:** "Sustained" is the Level 4 register — kept up, but not yet the integrated cohesion of Level 5.
+   * **Why B:** "Detailed" describes thoroughness at Level 4, not the integrated evaluation of the top band.
+   * **Why C:** "Sound" belongs to Level 3 — solid but well below cohesive evaluation.
+19. **Type: True/False \[Tests Context Integration\]**
+   * **Question:** True or False: For Edexcel IGCSE, context (AO4) scores best when integrated into the analysis rather than delivered as a standalone history paragraph.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. Despite the AO4 label, context behaves like AO3 elsewhere — integrated, driving interpretation, not bolted on.
+   * **AO:** AO4
+   * **WhyWrong:** A separate history paragraph feels like banked marks, but IGCSE rewards context woven into the response and linked to the text.
+20. **Type: Fill-in-the-Blank \[Tests AO1 Critical Style\]**
+   * **Question:** The IGCSE AO1 strand asks students to demonstrate close knowledge "maintaining a \[BLANK\] style and presenting an informed personal engagement."
+   * **Answer:** Critical
+   * **Feedback:** ✓ Correct. AO1 pairs a "critical style" with "informed personal engagement" — an evaluative, argued voice, not plot summary.
+   * **AO:** AO1
+   * **WhyWrong:** Guesses like "formal" or "academic" miss the descriptor; the strand's word is "critical".
+21. **Type: MCQ \[Tests Whole-Text vs Extract\]**
+   * **Question:** A top-band IGCSE Shakespeare response uses the printed extract and the whole play how?
+   * **Options:** A) Extract only, ignoring the rest, B) Extract for close AO2 analysis, whole play for AO1 argument, C) Whole play only, ignoring the extract, D) Neither — pure context.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Use the extract as a close-analysis evidence bank for AO2, then range across the whole play for the AO1 argument and AO4 context.
+   * **AO:** AO1
+   * **Why A:** Extract-only work sacrifices the whole-text knowledge higher bands require.
+   * **Why C:** Ignoring the extract throws away the richest close-analysis evidence on the paper.
+   * **Why D:** Context alone, without close textual analysis, cannot reach the top band.
+22. **Type: Select All That Apply \[Tests Top-Band IGCSE\]**
+   * **Question:** Which build a top-band Edexcel IGCSE Shakespeare response? (Select all that apply)
+   * **Options:** A) A critical style with informed personal engagement, B) Analysis of language, form and structure creating meaning, C) Context integrated to illuminate the text, D) A largely narrative retelling of events.
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** Critical engagement, methods-to-meaning analysis, and integrated context are the strands rewarded. "Largely narrative" is the Level 2 trap.
+   * **AO:** AO1
+   * **Why D:** A narrative retelling is the Level 2 descriptor; it recounts rather than argues, capping the response low.
+
 ### **SECTION D: EDUQAS (C720U — Shakespeare)**
 
 1. **Type: MCQ \[Tests Pertinent References\]**
@@ -535,6 +811,95 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** A plot statement of the murder makes no claim about method or meaning, so it cannot carry a sensitive, evaluative voice.
     * **Why C:** "Macbeth is ambitious" names a theme at its most basic level; it offers no method, no effect and no judgement to evaluate.
     * **Why D:** Noting that the scene contains a dagger is feature-spotting; sensitivity requires saying what the vision does to the audience and why it matters.
+
+11. **Type: MCQ \[Tests References From Across the Text\]**
+   * **Question:** Eduqas Band 5 responses "include pertinent, direct references from across the text, including quotations." What does "from across the text" require?
+   * **Options:** A) Quoting only the printed extract, B) Quoting every scene in order, C) Drawing references from the whole play, not just one scene, D) Using the longest speeches.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. "From across the text" rewards whole-text knowledge — pertinent references ranging beyond a single moment, not confined to the extract.
+   * **AO:** AO1
+   * **Why A:** Extract-only quotation ignores the whole-text range the descriptor demands.
+   * **Why B:** Quoting every scene is coverage, not the pertinent, well-judged selection Band 5 rewards.
+   * **Why D:** Length is irrelevant; a short pertinent reference beats a long one that buries the point.
+12. **Type: Fill-in-the-Blank \[Tests Band 5 Approach\]**
+   * **Question:** Eduqas Band 5 rewards a "sensitive and \[BLANK\] approach to the task", analysing the text critically.
+   * **Answer:** Evaluative
+   * **Feedback:** ✓ Correct. The Band 5 phrase is "sensitive and evaluative approach" — perceiving nuance and judging significance, not just explaining.
+   * **AO:** AO1
+   * **WhyWrong:** Guesses like "analytical" or "critical" are near, but the descriptor pairs "sensitive" with "evaluative".
+13. **Type: MCQ \[Tests AO Weighting\]**
+   * **Question:** How are the AOs weighted on the Eduqas Shakespeare essay question?
+   * **Options:** A) AO1, AO2 and AO3 equally, B) AO1 and AO2 equally weighted, plus 5 marks for AO4 accuracy, C) AO2 only, D) AO1 and AO3 equally.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Eduqas states "AO1 and AO2 are equally weighted", with a separate 5 marks for AO4 (spelling, punctuation, vocabulary and sentence structures) — total 20+5.
+   * **AO:** AO2
+   * **Why A:** Context is not assessed on the Eduqas Shakespeare essay; the pairing is AO1 and AO2.
+   * **Why C:** Argument is equally weighted with analysis, so AO2 is not marked alone.
+   * **Why D:** Context is not the partner strand here; AO1 pairs with AO2.
+14. **Type: True/False \[Tests No AO3\]**
+   * **Question:** True or False: Eduqas assesses AO3 (context) on the Shakespeare essay, so a dedicated history paragraph earns marks.
+   * **Answer:** False
+   * **Feedback:** ✓ Correct. Eduqas Shakespeare is AO1 + AO2 (plus AO4 accuracy). AO3 is not assessed here, so a standalone context paragraph scores nothing.
+   * **AO:** AO3
+   * **WhyWrong:** Students trained on other boards expect context marks everywhere, but the Eduqas Shakespeare essay assesses AO1 and AO2 only.
+15. **Type: Fill-in-the-Blank \[Tests AO2 Assured Reference\]**
+   * **Question:** Eduqas AO2 Band 5 asks candidates to "make \[BLANK\] reference to meanings and effects", exploring and evaluating how meaning is conveyed.
+   * **Answer:** Assured
+   * **Feedback:** ✓ Correct. The AO2 Band 5 phrase is "make assured reference to meanings and effects" — confident, evaluative analysis of language, form and structure.
+   * **AO:** AO2
+   * **WhyWrong:** Guesses like "detailed" or "precise" appear elsewhere in the grid, but the AO2 Band 5 word paired with "reference" is "assured".
+16. **Type: MCQ \[Tests Perceptive Understanding\]**
+   * **Question:** Eduqas Band 5 asks candidates to "show a perceptive understanding of the text, engaging fully, perhaps with some originality." What does "perceptive" mean here?
+   * **Options:** A) Insight beyond the surface into layers, implications and ambiguities, B) Reading quickly, C) Knowing the plot in detail, D) Using long words.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. "Perceptive" is insight beyond the obvious — reading implication, ambiguity and layered meaning, sometimes with originality.
+   * **AO:** AO1
+   * **Why B:** Speed has nothing to do with perception; the descriptor rewards depth of insight.
+   * **Why C:** Plot knowledge is understanding of events; perception probes what the text implies.
+   * **Why D:** Vocabulary decorates without perceiving; insight lies in the reading, not the diction.
+17. **Type: Select All That Apply \[Tests AO2 Band 5 Features\]**
+   * **Question:** Which are drawn from Eduqas's AO2 Band 5 descriptor? (Select all that apply)
+   * **Options:** A) "Analyse and appreciate writers' use of language, form and structure", B) "Make assured reference to meanings and effects", C) "Use precise subject terminology in an appropriate context", D) "Discuss the writer's biography in detail".
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** Analysing language/form/structure, assured reference to meanings and effects, and precise terminology are all AO2 Band 5. Biography is not an AO2 concern.
+   * **AO:** AO2
+   * **Why D:** A writer's biography is background, not textual method; AO2 rewards analysis of language, form and structure.
+18. **Type: Fill-in-the-Blank \[Tests AO4 Accuracy\]**
+   * **Question:** On Eduqas Shakespeare, 5 additional marks assess AO4 — "accuracy in spelling, punctuation and the use of vocabulary and \[BLANK\] structures."
+   * **Answer:** Sentence
+   * **Feedback:** ✓ Correct. AO4 (5 marks) covers spelling, punctuation and the use of vocabulary and sentence structures — top performance is "consistent accuracy".
+   * **AO:** AO4
+   * **WhyWrong:** The descriptor pairs "vocabulary" with "sentence structures"; guesses like "paragraph" or "grammatical" are not the exact term.
+19. **Type: True/False \[Tests Coherence and Register\]**
+   * **Question:** True or False: Eduqas Band 5 requires candidates to "convey ideas with consistent coherence and use an appropriate register."
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. Band 5 names "consistent coherence" and "an appropriate register" — a controlled, academic voice sustained across the essay.
+   * **AO:** AO1
+   * **WhyWrong:** It is tempting to think register is only about vocabulary, but the Band 5 descriptor explicitly requires consistent coherence and appropriate register.
+20. **Type: MCQ \[Tests Sensitive/Evaluative Topic Sentence\]**
+   * **Question:** Which topic sentence best shows the Eduqas Band 5 "sensitive and evaluative approach"?
+   * **Options:** A) "The witches appear at the start of the play", B) "There are three witches", C) "The play is about Scotland", D) "Shakespeare's equivocating witches unsettle the audience's grip on truth, their paradoxes evaluating a world in which moral certainty has collapsed".
+   * **Correct:** D
+   * **Feedback:** ✓ Correct. This perceives ambiguity (equivocation) and evaluates its effect on the audience — the sensitive, evaluative voice Band 5 rewards.
+   * **AO:** AO2
+   * **Why A:** Noting when the witches appear is plot orientation, not a sensitive or evaluative claim.
+   * **Why B:** Counting the witches is observation with no interpretation of effect.
+   * **Why C:** A one-line summary of setting makes no evaluative claim about meaning.
+21. **Type: Fill-in-the-Blank \[Tests Pertinent References\]**
+   * **Question:** Eduqas Band 5 responses include "\[BLANK\], direct references from across the text" — precisely targeted, not merely relevant.
+   * **Answer:** Pertinent
+   * **Feedback:** ✓ Correct. "Pertinent, direct references" are acutely relevant and surgically chosen — Eduqas's equivalent of AQA's "judicious".
+   * **AO:** AO1
+   * **WhyWrong:** Guesses like "relevant" or "detailed" are close, but the descriptor's word is "pertinent".
+22. **Type: Select All That Apply \[Tests Band 5 Markers\]**
+   * **Question:** Which signal Eduqas Band 5 on the Shakespeare essay? (Select all that apply)
+   * **Options:** A) A sensitive and evaluative approach to the task, B) Perceptive understanding engaging fully with the text, C) Pertinent references from across the text, D) A dedicated AO3 context paragraph.
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** Sensitive evaluation, perceptive full engagement, and pertinent whole-text references are the Band 5 markers. AO3 context is not assessed on Eduqas Shakespeare.
+   * **AO:** AO1
+   * **Why D:** A context paragraph earns nothing here — Eduqas assesses AO1 and AO2 (plus AO4 accuracy), not AO3, on the Shakespeare essay.
 
 ### **SECTION E: OCR (J352 — Shakespeare)**
 
@@ -615,6 +980,98 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why C:** Argument without quotation cannot be integral; references must actually be present and woven in to anchor the analysis.
     * **Why D:** Paraphrased summary removes the very words analysis depends on; without quoted language nothing is integrated into the response.
 
+11. **Type: MCQ \[Tests Level 6 References Wording\]**
+   * **Question:** OCR's Level 6 (31-36) describes textual references as "precise, pertinent and skilfully \[BLANK\]." Which word completes the descriptor?
+   * **Options:** A) "listed", B) "counted", C) "interwoven", D) "quoted".
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. OCR Level 6 references are "precise, pertinent and skilfully interwoven" — fused into the argument, not dropped in.
+   * **AO:** AO1
+   * **Why A:** Listing references sets them apart from the argument; the descriptor demands they be interwoven.
+   * **Why B:** Counting references is quantity; OCR rewards how skilfully each is woven in.
+   * **Why D:** Simply quoting is not the criterion; the skill is weaving references seamlessly into the analysis.
+12. **Type: MCQ \[Tests Level 5 vs Level 6 Critical Style\]**
+   * **Question:** OCR Level 5 is a "convincing critical style"; Level 6 is a "sustained critical style." What lifts a response from Level 5 to Level 6?
+   * **Options:** A) A longer essay, B) Sustaining a coherent critical style with consistently perceptive understanding throughout, C) More quotations, D) Covering more of the play.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Level 6 "sustains a coherent critical style... showing consistently perceptive understanding"; the lift is consistency and perception maintained across the whole response.
+   * **AO:** AO1
+   * **Why A:** Length is never a descriptor; the jump is in sustained perception, not word count.
+   * **Why C:** Quotation count does not raise the band; Level 6 rewards how references are interwoven and understanding sustained.
+   * **Why D:** Breadth of coverage is not the criterion; the descriptor names sustained critical style and consistently perceptive understanding.
+13. **Type: Fill-in-the-Blank \[Tests Level 6 Heading\]**
+   * **Question:** OCR's top band (Level 6, 31-36) requires a "\[BLANK\] critical style in an informed personal response to both text and task."
+   * **Answer:** Sustained
+   * **Feedback:** ✓ Correct. The Level 6 heading is "sustained critical style in an informed personal response" — the register never lapses across the essay.
+   * **AO:** AO1
+   * **WhyWrong:** Guesses like "convincing" describe Level 5; the Level 6 word is "sustained".
+14. **Type: MCQ \[Tests AO2 Level 6 Analysis\]**
+   * **Question:** OCR's Level 6 AO2 requires "detailed and sensitive analysis of writer's use of language, form and structure." What does "sensitive" add beyond "detailed"?
+   * **Options:** A) Longer paragraphs, B) More technical terms, C) Alertness to nuance and layered effect, not just thorough coverage, D) A gentler tone.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. "Sensitive" analysis perceives nuance and layered effect; "detailed" alone is thorough but may miss subtlety. Level 6 wants both.
+   * **AO:** AO2
+   * **Why A:** Paragraph length is not sensitivity; the descriptor rewards perception of nuance.
+   * **Why B:** A pile of terms is not sensitivity; insight into subtle effect is.
+   * **Why D:** Tone is irrelevant; "sensitive" here means alert to nuance in the writing.
+15. **Type: True/False \[Tests OCR Assesses AO3\]**
+   * **Question:** True or False: Unlike Eduqas Shakespeare, OCR Section B Shakespeare does assess AO3 context.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. OCR Level 6 rewards "a perceptive and sensitive understanding of how context informs evaluation of the text (AO3)". Context is assessed — but must inform interpretation, not sit as a bolt-on.
+   * **AO:** AO3
+   * **WhyWrong:** Boards differ: Eduqas Shakespeare omits context, but OCR assesses it, so integrated context earns marks here.
+16. **Type: Fill-in-the-Blank \[Tests Level 5 References\]**
+   * **Question:** OCR Level 5 (25-30) describes references as "well-selected and fully \[BLANK\]" into the response.
+   * **Answer:** Integrated
+   * **Feedback:** ✓ Correct. Level 5 references are "well-selected and fully integrated"; Level 6 raises this to "precise, pertinent and skilfully interwoven".
+   * **AO:** AO1
+   * **WhyWrong:** Guesses like "quoted" or "supported" miss the descriptor; the Level 5 word is "integrated".
+17. **Type: Select All That Apply \[Tests Level 6 Descriptor Phrases\]**
+   * **Question:** Which phrases come from OCR's Level 6 descriptor? (Select all that apply)
+   * **Options:** A) "Sustained critical style in an informed personal response", B) "Precise, pertinent and skilfully interwoven" references, C) "Consistently effective use of relevant subject terminology", D) "A straightforward personal response".
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** Sustained critical style, skilfully interwoven references, and consistently effective terminology are Level 6. "A straightforward personal response" is the Level 2 heading.
+   * **AO:** AO1
+   * **Why D:** "A straightforward personal response" is the Level 2 (7-12) heading — the opposite of sustained Level 6 work.
+18. **Type: MCQ \[Tests Mark Allocation\]**
+   * **Question:** How is the OCR Shakespeare response (Section B) marked?
+   * **Options:** A) 36 marks across AO1, AO2 and AO3, with 4 further marks for AO4 SPaG, B) 40 marks for AO1 alone, C) 25 marks split between AO1 and AO2 only, D) 30 marks with no AO4.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. The Levels 1-6 grid marks AO1, AO2 and AO3 out of 36; AO4 (SPaG) adds up to 4 marks, for 40 in total.
+   * **AO:** AO4
+   * **Why B:** Analysis and context are assessed alongside argument; the grid is not AO1 alone.
+   * **Why C:** The response is worth far more than 25 marks, and context is assessed too.
+   * **Why D:** AO4 SPaG is assessed on OCR Shakespeare — up to 4 marks for technical accuracy.
+19. **Type: True/False \[Tests AO4 SPaG Wording\]**
+   * **Question:** True or False: OCR's top AO4 (SPaG) band rewards learners who "spell and punctuate with consistent accuracy" and use vocabulary and sentence structures to "achieve effective control of meaning."
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. That is the OCR high-performance AO4 descriptor (4 marks). Technical accuracy carries its own marks — proofread.
+   * **AO:** AO4
+   * **WhyWrong:** It is easy to dismiss SPaG in a Literature essay, but OCR awards up to 4 AO4 marks for consistent accuracy and control of meaning.
+20. **Type: MCQ \[Tests Convincing Understanding of Context\]**
+   * **Question:** OCR Level 5 asks candidates to use "a convincing understanding of context to inform the response." What does this reward?
+   * **Options:** A) A separate paragraph of historical facts, B) Context used to shape and deepen the interpretation of the text, C) Naming the year the play was written, D) Listing Jacobean beliefs.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Context must "inform the response" — shaping interpretation, not sitting as a detachable block of history.
+   * **AO:** AO3
+   * **Why A:** A standalone facts paragraph does not inform the reading; the descriptor demands context that shapes interpretation.
+   * **Why C:** A date is an isolated fact; alone it informs nothing.
+   * **Why D:** A list of beliefs is bolt-on context; it earns credit only when it illuminates the text.
+21. **Type: Fill-in-the-Blank \[Tests Informed Personal Response\]**
+   * **Question:** OCR's Level 6 requires an "informed \[BLANK\] response to both text and task" — your own engaged, text-grounded interpretation.
+   * **Answer:** Personal
+   * **Feedback:** ✓ Correct. "Informed personal response" is your own interpretation, grounded in the text — sustained throughout for Level 6.
+   * **AO:** AO1
+   * **WhyWrong:** Guesses like "critical" or "original" circle the idea, but the descriptor's word paired with "informed" is "personal".
+22. **Type: Select All That Apply \[Tests Band Ladder Headings\]**
+   * **Question:** Which are genuine OCR Shakespeare level headings? (Select all that apply)
+   * **Options:** A) Level 6 "Sustained critical style in an informed personal response", B) Level 5 "Convincing critical style in a well-developed personal response", C) Level 4 "Credible critical style in a detailed personal response", D) Level 6 "A straightforward personal response".
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** Sustained (Level 6), convincing (Level 5), and credible (Level 4) are the real headings. "A straightforward personal response" is Level 2, not Level 6.
+   * **AO:** AO1
+   * **Why D:** "A straightforward personal response" is the Level 2 heading; pairing it with Level 6 is the error.
+
 ### **SECTION F: SQA (National 5 / Higher — Shakespeare)**
 
 1. **Type: MCQ \[Tests Mark Ranges\]**
@@ -693,6 +1150,95 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** A tempting half-truth: naming techniques is part of analysis, but evaluation is a judgement of effectiveness, not a statement of personal liking.
     * **Why C:** Splitting the skills by genre is pure invention; both Analysis and Evaluation apply to every literary text SQA sets.
     * **Why D:** They overlap but are distinct: analysis explains how an effect is created, while evaluation judges how successfully it achieves the writer's purpose.
+
+11. **Type: MCQ \[Tests Mark Ranges Structure\]**
+   * **Question:** The SQA National 5 critical essay is marked out of 20 using descriptive ranges. Which is the top range?
+   * **Options:** A) 20-18, B) 25-20, C) 20-16, D) 17-14.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. The N5 supplementary grid runs 20-18 (top), 17-14, 13-10, 9-5, 4-0. Each range describes a quality of understanding, analysis and evaluation.
+   * **AO:** AO1
+   * **Why B:** The essay is marked out of 20, so 25 is above the maximum.
+   * **Why C:** The top range is 20-18, not 20-16; a mark of 16 falls into the next band down.
+   * **Why D:** 17-14 is the second range, one below the top.
+12. **Type: Fill-in-the-Blank \[Tests Summary Descriptor\]**
+   * **Question:** In the SQA 20-18 range, the summary line describes an essay that is "\[BLANK\] and precise."
+   * **Answer:** Thorough
+   * **Feedback:** ✓ Correct. The 20-18 summary is "thorough and precise"; 17-14 is "very detailed and shows some insight". Precision and thoroughness together mark the top range.
+   * **AO:** AO1
+   * **WhyWrong:** Guesses like "detailed" describe the 17-14 range; the top-range summary word paired with "precise" is "thorough".
+13. **Type: MCQ \[Tests Line of Thought\]**
+   * **Question:** The SQA 20-18 range requires "a line of thought that is consistently relevant to the task." What does "line of thought" mean?
+   * **Options:** A) A single quotation, B) A sustained, coherent argument running through the essay, C) A list of techniques, D) The essay's word count.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. A "line of thought" is a sustained argument; at 20-18 it is "consistently relevant to the task", at 17-14 merely "relevant".
+   * **AO:** AO1
+   * **Why A:** One quotation is evidence, not a sustained argument; a line of thought threads through the whole essay.
+   * **Why C:** A list of techniques is feature-spotting; a line of thought is a coherent argument.
+   * **Why D:** Word count is quantity; the descriptor concerns the coherence and relevance of the argument.
+14. **Type: Fill-in-the-Blank \[Tests Analysis Row\]**
+   * **Question:** The SQA 20-18 Analysis row rewards "thorough awareness of the writer's techniques, through analysis, making \[BLANK\] use" of them.
+   * **Answer:** Confident
+   * **Feedback:** ✓ Correct. At 20-18 the candidate makes "confident use" of technique analysis; at 17-14 it drops to "good use", at 13-10 "some use".
+   * **AO:** AO2
+   * **WhyWrong:** Guesses like "good" describe the 17-14 range; the top-range word is "confident".
+15. **Type: True/False \[Tests Understanding of Central Concerns\]**
+   * **Question:** True or False: The SQA grid rewards "very good understanding of the central concerns of the text" at the top range, not just knowledge of the plot.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. The 20-18 range names "very good understanding of the central concerns" — grasp of the play's core ideas, not plot recall.
+   * **AO:** AO1
+   * **WhyWrong:** Plot familiarity alone is not enough; the grid rewards understanding of the text's "central concerns" — its themes and ideas.
+16. **Type: MCQ \[Tests Evaluation Row\]**
+   * **Question:** On the SQA grid, the "Evaluation of the text" row rewards what?
+   * **Options:** A) Naming techniques accurately, B) Quoting from every act, C) A developed commentary of what has been enjoyed or gained from the text, D) Retelling the plot.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. The Evaluation row rewards "a well developed commentary of what has been enjoyed/gained from the text(s)" — a judgement of the text's impact and value.
+   * **AO:** AO2
+   * **Why A:** Naming techniques sits in the Analysis row, not Evaluation.
+   * **Why B:** Quotation coverage is not evaluation; the row asks for a developed judgement of what the text achieves.
+   * **Why D:** Retelling the plot is surface familiarity, the opposite of evaluative commentary.
+17. **Type: Select All That Apply \[Tests 20-18 Features\]**
+   * **Question:** Which describe the SQA 20-18 range? (Select all that apply)
+   * **Options:** A) High degree of familiarity with the text as a whole, B) Thorough awareness of techniques through analysis, C) A well developed evaluative commentary, D) An attempt at a line of thought that may lack relevance.
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** Whole-text familiarity, thorough technique analysis, and developed evaluation are all 20-18. "Attempts a line of thought but... may lack relevance" is the 9-5 range.
+   * **AO:** AO1
+   * **Why D:** "Attempts a line of thought but... may lack relevance" describes the 9-5 range — well below the consistently relevant argument of 20-18.
+18. **Type: Fill-in-the-Blank \[Tests Bottom Range\]**
+   * **Question:** The lowest SQA range (4-0) describes an essay that is "\[BLANK\] and/or technically weak."
+   * **Answer:** Superficial
+   * **Feedback:** ✓ Correct. The 4-0 summary is "superficial and/or technically weak" — the opposite of the "thorough and precise" top range.
+   * **AO:** AO1
+   * **WhyWrong:** Guesses like "brief" or "basic" are close, but the 4-0 summary word is "superficial".
+19. **Type: True/False \[Tests Whole-Text Familiarity\]**
+   * **Question:** True or False: SQA's top range rewards "a high degree of familiarity with the text as a whole", so whole-text knowledge matters, not just the set extract.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. The 20-18 range names "familiarity with the text as a whole" — confident movement across the whole play, not one scene.
+   * **AO:** AO1
+   * **WhyWrong:** Staying within one extract feels safe, but the top range rewards familiarity with the text as a whole.
+20. **Type: MCQ \[Tests 17-14 vs 20-18 References\]**
+   * **Question:** SQA's Analysis row moves from "very detailed/thoughtful chosen references" (20-18) to what at 17-14?
+   * **Options:** A) "No references", B) "Detailed explanation of and/or quotation", C) "Superficial references", D) "Numerous errors".
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. At 17-14 the candidate gives "detailed explanation of and/or quotation" — strong, but a step below the "very detailed/thoughtful" references of 20-18.
+   * **AO:** AO2
+   * **Why A:** References do not vanish at 17-14; they remain detailed, just less thorough than the top range.
+   * **Why C:** "Superficial" belongs to the lowest range, not 17-14.
+   * **Why D:** "Numerous errors" describes the 4-0 technically weak category, not 17-14.
+21. **Type: Fill-in-the-Blank \[Tests Insight at 17-14\]**
+   * **Question:** The SQA 17-14 summary describes an essay that is "very detailed and shows some \[BLANK\]", one step below the top range.
+   * **Answer:** Insight
+   * **Feedback:** ✓ Correct. The 17-14 summary is "very detailed and shows some insight"; the top range (20-18) is "thorough and precise".
+   * **AO:** AO1
+   * **WhyWrong:** Guesses like "detail" or "evaluation" miss the phrase; the 17-14 summary word is "insight".
+22. **Type: Select All That Apply \[Tests Three Assessment Focuses\]**
+   * **Question:** The SQA critical essay grid describes quality under which focuses? (Select all that apply)
+   * **Options:** A) Understanding of the text's central concerns, B) Analysis of the writer's techniques, C) Evaluation of what the text achieves, D) The candidate's handwriting neatness.
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** The grid assesses understanding of central concerns, analysis of techniques, and evaluation of the text. Handwriting is not a marking focus.
+   * **AO:** AO1
+   * **Why D:** Handwriting neatness is not assessed; the grid rewards understanding, analysis and evaluation.
 
 ## **5\. KNOWLEDGE BASE (For Clarification Phase)**
 
