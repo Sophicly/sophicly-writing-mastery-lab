@@ -141,7 +141,6 @@
         "always": [
             "modules/foundation-lang1.md",
             "modules/knowledge-algorithm.md",
-            "modules/knowledge-operations.md",
             "modules/knowledge-hub.md",
             "modules/knowledge-ttecea-lang.md",
             "modules/protocol-a-assessment.md",
@@ -151,7 +150,8 @@
             "language/modules/state-management.md",
             "language/modules/ttecea-rationale-lang.md",
             "mark-scheme/marking-rules-aqa-granular.md",
-            "mark-scheme/marking-fairness-universal.md"
+            "mark-scheme/marking-fairness-universal.md",
+            "modules/knowledge-mark-scheme-lang1.md"
         ],
         "steps": {}
     },

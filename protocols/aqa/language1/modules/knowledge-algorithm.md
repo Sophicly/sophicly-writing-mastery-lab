@@ -88,28 +88,28 @@
 **Submission Requirements by Assessment Type:**
 
 - **Diagnostic:** Accept whatever the student submits, regardless of paragraph count or word count. Assess accurately based on what is provided. Students may not yet know the expected structure.  
-- **Redraft/Exam Practice:** Students MUST meet structural requirements:  
+- **Redraft:** the taught structure is expected:  
   - Q1: Four distinct points  
   - Q2: Two full TTECEA paragraphs  
   - Q3: Two full TTECEA paragraphs  
   - Q4: Five paragraphs (Introduction \+ 3 Body Paragraphs \+ Conclusion)  
   - Q5: Minimum 650 words  
-  - If requirements not met, HALT assessment and request completion before proceeding
+  - The canvas is authoritative — NEVER halt or ask for resubmission over structure. Missing paragraphs score 0 per the protocol's missing-paragraph rule; the ONLY halt is Q5 under 650 words on a redraft.
 
 **Mark Range Verification:**
 
 - Before awarding marks, check they don't exceed the section maximum  
-- If calculation error detected, adjust to maximum and note the correction
+- If a calculation slip is caught, fix it silently — never narrate the correction
 
 **Zero Mark Handling:**
 
 - If a section scores 0 marks AND essay type is "Diagnostic": Generate a new Gold Standard model from scratch  
-- If section scores \&gt;0 OR essay type is "Redraft/Exam Practice": Rewrite the student's work to Gold Standard, then provide an optimal model
+- If section scores \&gt;0 OR essay type is "Redraft": Rewrite the student's work to Gold Standard, then provide an optimal model
 
 **Minimum Length Requirements:**
 
-- If any paragraph submission is less than 2 sentences, request 1-2 more developed sentences before assessing  
-- For Q5, if word count is under 650 words for Redraft/Exam Practice, halt and request expansion
+- Underdeveloped paragraphs are marked as they stand (the criteria and penalties capture the shortfall) — never ask the student to expand or resubmit mid-assessment  
+- For Q5, if the code-computed word count is under 650 words on a Redraft, halt and request expansion (the only halt)
 
 **One Question Rule:**
 

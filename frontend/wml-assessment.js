@@ -5713,7 +5713,8 @@
         // student's reply while the chain is incomplete (no AI round-trip),
         // renders the next question itself, and only falls through to the AI once
         // all three replies are in history. Scope: literature essay assessments
-        // only (language papers run question-mode with a different setup).
+        // AND (v7.19.826) AQA language papers — the P1 R&J-standard build gives
+        // language the same gated chain with paper-true goal options.
         const PRECHAIN_GOAL_OPTIONS = [
             'A) Developing perceptive close analysis of language and techniques (AO2)',
             'B) Understanding how context drives concepts and shapes the author’s techniques (AO3)',
@@ -5721,13 +5722,24 @@
             'D) Exploring effects on the reader more deeply (AO2)',
             'E) Figuring out my strengths and weaknesses as a writer',
         ];
+        // v7.19.826: language-paper goal options (delta-doc D2 — Paper 1's real AOs).
+        const PRECHAIN_GOAL_OPTIONS_LANG = [
+            'A) Analysing how writers use language for effect (AO2)',
+            'B) Analysing how writers structure texts (AO2)',
+            'C) Building a convincing evaluation of a writer’s methods (AO4)',
+            'D) Crafting an engaging piece of creative writing (AO5)',
+            'E) Improving my technical accuracy (AO6)',
+        ];
+        const _preChainIsLang = () => (typeof WML !== 'undefined' && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject());
+        const _preChainGoalOptions = () => (_preChainIsLang() ? PRECHAIN_GOAL_OPTIONS_LANG : PRECHAIN_GOAL_OPTIONS);
         function _assessPreChainStage() {
             if (state.task !== 'assessment') return null;
-            if (typeof WML !== 'undefined' && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject()) return null;
             const askedBy = (re) => canvasChatHistory.some(m => m.role === 'assistant' && re.test(m.content || ''));
             // Setup window only: any marking activity in history → chain closed.
-            // (Also shields resumed pre-fix chats already mid-marking.)
-            if (askedBy(/@REFLECT_GATE|Total Mark for|\[ASSESSMENT_COMPLETE\]/i)) return null;
+            // (Also shields resumed pre-fix chats already mid-marking. Language
+            // papers mark Q1 with a card + `Q1 Total` and no reflect gate — both
+            // forms close the chain.)
+            if (askedBy(/@REFLECT_GATE|@FB_BEGIN|Total Mark for|Q\d\s*Total\s*:|\[ASSESSMENT_COMPLETE\]/i)) return null;
             // Synthetic greeting (grade question) not rendered yet → not our flow.
             if (!askedBy(/what grade are you aiming for/i)) return null;
             if (!askedBy(/headline goal/i)) return 'headline';
@@ -5736,18 +5748,34 @@
         }
         function _renderPreChainQuestion(stage) {
             let plain, html;
+            const _pcLang = _preChainIsLang();
             if (stage === 'headline') {
-                const optsPlain = PRECHAIN_GOAL_OPTIONS.join('\n') + '\nF) Something else (type it below)';
-                plain = `Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay **as a whole**: what was the **one main goal** you were working toward? You'll set a mini-goal for each paragraph as we go — this is your **headline goal** for the whole piece. Please choose the option that best describes your focus:\n\n${optsPlain}`;
-                html = `<p>Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay <strong>as a whole</strong>: what was the <strong>one main goal</strong> you were working toward?</p><p style="margin-top:8px">You'll set a mini-goal for each paragraph as we go — this is your <strong>headline goal</strong> for the whole piece. Choose the option that best describes your focus, or type your own:</p>`;
+                const optsPlain = _preChainGoalOptions().join('\n') + '\nF) Something else (type it below)';
+                if (_pcLang) {
+                    plain = `Before we begin the assessment, I'd like to understand what you were working on. Looking at your paper **as a whole**: what was the **one main goal** you were working toward? You'll reflect on each question as we go — this is your **headline goal** for the whole paper. Please choose the option that best describes your focus:\n\n${optsPlain}`;
+                    html = `<p>Before we begin the assessment, I'd like to understand what you were working on. Looking at your paper <strong>as a whole</strong>: what was the <strong>one main goal</strong> you were working toward?</p><p style="margin-top:8px">You'll reflect on each question as we go — this is your <strong>headline goal</strong> for the whole paper. Choose the option that best describes your focus, or type your own:</p>`;
+                } else {
+                    plain = `Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay **as a whole**: what was the **one main goal** you were working toward? You'll set a mini-goal for each paragraph as we go — this is your **headline goal** for the whole piece. Please choose the option that best describes your focus:\n\n${optsPlain}`;
+                    html = `<p>Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay <strong>as a whole</strong>: what was the <strong>one main goal</strong> you were working toward?</p><p style="margin-top:8px">You'll set a mini-goal for each paragraph as we go — this is your <strong>headline goal</strong> for the whole piece. Choose the option that best describes your focus, or type your own:</p>`;
+                }
             } else {
                 // v7.19.810: fall back to state.question — extractEssayQuestion returns ''
                 // on a stale editor ref, which dropped the question quote (observed live).
                 const qText = (((typeof extractEssayQuestion === 'function' && canvasEditor) ? (extractEssayQuestion(canvasEditor) || '') : '') || state.question || '');
-                const qPlain = qText ? `'${qText}'` : 'your essay question';
-                plain = `Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering: ${qPlain} — what were the **key aspects** this question asked you to explore?`;
-                const qBox = qText ? `<div style="margin:10px 0;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
-                html = `<p>Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering:</p>${qBox}<p>What were the <strong>key aspects</strong> this question asked you to explore? (type or use the mic)</p>`;
+                if (_pcLang) {
+                    // v7.19.826: language papers — one paper-start recall anchored on the
+                    // evaluation question (Q4); each question's lead-in restates its own
+                    // focus later (delta-doc D3).
+                    const qPlain = qText ? `'${qText}'` : 'the evaluation question';
+                    plain = `Good — noted. One more check before we begin marking. Thinking back to **Question 4** in particular: ${qPlain} — what were the **key aspects** it asked you to evaluate?`;
+                    const qBox = qText ? `<div style="margin:10px 0;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
+                    html = `<p>Good — noted. One more check before we begin marking. Thinking back to <strong>Question 4</strong> in particular:</p>${qBox}<p>What were the <strong>key aspects</strong> it asked you to evaluate? (type or use the mic)</p>`;
+                } else {
+                    const qPlain = qText ? `'${qText}'` : 'your essay question';
+                    plain = `Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering: ${qPlain} — what were the **key aspects** this question asked you to explore?`;
+                    const qBox = qText ? `<div style="margin:10px 0;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
+                    html = `<p>Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering:</p>${qBox}<p>What were the <strong>key aspects</strong> this question asked you to explore? (type or use the mic)</p>`;
+                }
             }
             // v7.19.810: suppressActions — the plain text carries the lettered options
             // for the AI's context, which auto-detection would ALSO turn into buttons
@@ -5757,7 +5785,7 @@
             saveCanvasChat(canvasChatHistory, canvasChatId);
             if (stage === 'headline') {
                 const goalBar = el('div', { className: 'swml-quick-actions' });
-                PRECHAIN_GOAL_OPTIONS.forEach(opt => {
+                _preChainGoalOptions().forEach(opt => {
                     goalBar.appendChild(el('button', {
                         className: 'swml-quick-btn',
                         textContent: opt,
@@ -13929,11 +13957,22 @@
                             'D) Exploring effects on the reader more deeply (AO2)',
                             'E) Figuring out my strengths and weaknesses as a writer',
                         ];
+                        // v7.19.826: language-paper goal options (delta-doc D2 — Paper 1's real AOs).
+                        const PRECHAIN_GOAL_OPTIONS_LANG = [
+                            'A) Analysing how writers use language for effect (AO2)',
+                            'B) Analysing how writers structure texts (AO2)',
+                            'C) Building a convincing evaluation of a writer’s methods (AO4)',
+                            'D) Crafting an engaging piece of creative writing (AO5)',
+                            'E) Improving my technical accuracy (AO6)',
+                        ];
+                        const _preChainIsLang = () => (typeof WML !== 'undefined' && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject());
+                        const _preChainGoalOptions = () => (_preChainIsLang() ? PRECHAIN_GOAL_OPTIONS_LANG : PRECHAIN_GOAL_OPTIONS);
                         function _assessPreChainStage() {
                             if (state.task !== 'assessment') return null;
-                            if (typeof WML !== 'undefined' && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject()) return null;
                             const askedBy = (re) => canvasChatHistory.some(m => m.role === 'assistant' && re.test(m.content || ''));
-                            if (askedBy(/@REFLECT_GATE|Total Mark for|\[ASSESSMENT_COMPLETE\]/i)) return null;
+                            // v7.19.826: language marks Q1 with a card + `Q1 Total` and no
+                            // reflect gate — both forms close the chain.
+                            if (askedBy(/@REFLECT_GATE|@FB_BEGIN|Total Mark for|Q\d\s*Total\s*:|\[ASSESSMENT_COMPLETE\]/i)) return null;
                             if (!askedBy(/what grade are you aiming for/i)) return null;
                             if (!askedBy(/headline goal/i)) return 'headline';
                             if (!askedBy(/key aspects/i)) return 'keyword';
@@ -13941,25 +13980,39 @@
                         }
                         function _renderPreChainQuestion(stage) {
                             let plain, html;
+                            const _pcLang = _preChainIsLang();
                             if (stage === 'headline') {
-                                const optsPlain = PRECHAIN_GOAL_OPTIONS.join('\n') + '\nF) Something else (type it below)';
-                                plain = `Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay **as a whole**: what was the **one main goal** you were working toward? You'll set a mini-goal for each paragraph as we go — this is your **headline goal** for the whole piece. Please choose the option that best describes your focus:\n\n${optsPlain}`;
-                                html = `<p>Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay <strong>as a whole</strong>: what was the <strong>one main goal</strong> you were working toward?</p><p style="margin-top:8px">You'll set a mini-goal for each paragraph as we go — this is your <strong>headline goal</strong> for the whole piece. Choose the option that best describes your focus, or type your own:</p>`;
+                                const optsPlain = _preChainGoalOptions().join('\n') + '\nF) Something else (type it below)';
+                                if (_pcLang) {
+                                    plain = `Before we begin the assessment, I'd like to understand what you were working on. Looking at your paper **as a whole**: what was the **one main goal** you were working toward? You'll reflect on each question as we go — this is your **headline goal** for the whole paper. Please choose the option that best describes your focus:\n\n${optsPlain}`;
+                                    html = `<p>Before we begin the assessment, I'd like to understand what you were working on. Looking at your paper <strong>as a whole</strong>: what was the <strong>one main goal</strong> you were working toward?</p><p style="margin-top:8px">You'll reflect on each question as we go — this is your <strong>headline goal</strong> for the whole paper. Choose the option that best describes your focus, or type your own:</p>`;
+                                } else {
+                                    plain = `Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay **as a whole**: what was the **one main goal** you were working toward? You'll set a mini-goal for each paragraph as we go — this is your **headline goal** for the whole piece. Please choose the option that best describes your focus:\n\n${optsPlain}`;
+                                    html = `<p>Before we begin the assessment, I'd like to understand what you were working on. Looking at your essay <strong>as a whole</strong>: what was the <strong>one main goal</strong> you were working toward?</p><p style="margin-top:8px">You'll set a mini-goal for each paragraph as we go — this is your <strong>headline goal</strong> for the whole piece. Choose the option that best describes your focus, or type your own:</p>`;
+                                }
                             } else {
                                 // v7.19.810: fall back to state.question — extractEssayQuestion returns ''
                 // on a stale editor ref, which dropped the question quote (observed live).
                 const qText = (((typeof extractEssayQuestion === 'function' && canvasEditor) ? (extractEssayQuestion(canvasEditor) || '') : '') || state.question || '');
-                                const qPlain = qText ? `'${qText}'` : 'your essay question';
-                                plain = `Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering: ${qPlain} — what were the **key aspects** this question asked you to explore?`;
-                                const qBox = qText ? `<div style="margin:10px 0;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
-                                html = `<p>Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering:</p>${qBox}<p>What were the <strong>key aspects</strong> this question asked you to explore? (type or use the mic)</p>`;
+                                if (_pcLang) {
+                                    // v7.19.826: one paper-start recall anchored on Q4 (delta-doc D3).
+                                    const qPlain = qText ? `'${qText}'` : 'the evaluation question';
+                                    plain = `Good — noted. One more check before we begin marking. Thinking back to **Question 4** in particular: ${qPlain} — what were the **key aspects** it asked you to evaluate?`;
+                                    const qBox = qText ? `<div style="margin:10px 0;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
+                                    html = `<p>Good — noted. One more check before we begin marking. Thinking back to <strong>Question 4</strong> in particular:</p>${qBox}<p>What were the <strong>key aspects</strong> it asked you to evaluate? (type or use the mic)</p>`;
+                                } else {
+                                    const qPlain = qText ? `'${qText}'` : 'your essay question';
+                                    plain = `Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering: ${qPlain} — what were the **key aspects** this question asked you to explore?`;
+                                    const qBox = qText ? `<div style="margin:10px 0;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
+                                    html = `<p>Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering:</p>${qBox}<p>What were the <strong>key aspects</strong> this question asked you to explore? (type or use the mic)</p>`;
+                                }
                             }
                             addChatMessage(html, 'ai', plain);
                             canvasChatHistory.push({ role: 'assistant', content: plain });
                             saveCanvasChat(canvasChatHistory, canvasChatId);
                             if (stage === 'headline') {
                                 const goalBar = el('div', { className: 'swml-quick-actions' });
-                                PRECHAIN_GOAL_OPTIONS.forEach(opt => {
+                                _preChainGoalOptions().forEach(opt => {
                                     goalBar.appendChild(el('button', {
                                         className: 'swml-quick-btn',
                                         textContent: opt,
@@ -22805,21 +22858,96 @@
             return fallback;
         }
 
-        // Multiple response sections (e.g. EDUQAS Part A/B) — label each
+        // Multiple response sections (e.g. EDUQAS Part A/B, language papers) — label each
         if (responseSections.length > 1) {
-            const parts = [];
-            responseSections.forEach(section => {
-                // v7.18.41: clone + strip Q1 STATEMENTS (checklistItem) and
-                // instruction italics before extracting text. Same surgical
-                // exclusion as the PM-state walker above.
+            // v7.19.826: LANGUAGE papers get per-question paragraph pre-labelling +
+            // code-computed word counts (P1 R&J-standard build, delta-doc items 3+6).
+            // Same determinism that fixed the lit box-overwrites: the model trusts
+            // the injected labels/counts and never re-detects or re-counts.
+            const _mqLang = /^language/.test((state.subject || '').toLowerCase());
+            const _mqFirstDiag = ((state.topicNumber === 1 || state.topicNumber === '1') && state.phase === 'initial');
+            // Paragraph-faithful text extraction: InputField content separates
+            // paragraphs with <br>/block boundaries that textContent flattens —
+            // convert them to newlines BEFORE reading text.
+            const _mqParas = (section) => {
                 const clone = section.cloneNode(true);
                 clone.querySelectorAll('[data-checklist-item]').forEach(el => el.remove());
                 clone.querySelectorAll('em').forEach(el => el.remove());
-                const text = clone.textContent?.trim() || '';
-                if (text) {
-                    const label = section.getAttribute('data-section-label') || '';
-                    parts.push(label ? `=== ${label.toUpperCase()} ===\n${text}` : text);
+                const h = clone.innerHTML
+                    .replace(/<br\s*\/?>/gi, '\n')
+                    .replace(/<\/(p|div|h[1-6]|li)>/gi, '\n');
+                const tmp = document.createElement('div');
+                tmp.innerHTML = h;
+                const text = (tmp.textContent || '').replace(/ /g, ' ');
+                const paras = [];
+                let lead = '';
+                text.split(/\n+/).map(s => s.trim()).filter(Boolean).forEach(line => {
+                    const wc = line.split(/\s+/).length;
+                    if (wc >= 20) { paras.push(lead ? lead + ' ' + line : line); lead = ''; }
+                    else if (paras.length > 0 && wc > 3) { paras[paras.length - 1] += ' ' + line; }
+                    else if (wc > 3) { lead += (lead ? ' ' : '') + line; }
+                });
+                if (lead) { if (paras.length) { paras[paras.length - 1] += ' ' + lead; } else { paras.push(lead); } }
+                return paras;
+            };
+            const parts = [];
+            responseSections.forEach(section => {
+                const label = section.getAttribute('data-section-label') || '';
+                const qm = _mqLang ? label.match(/^(Q\d+)\b/i) : null;
+                if (!qm) {
+                    // v7.18.41: clone + strip Q1 STATEMENTS (checklistItem) and
+                    // instruction italics before extracting text. Same surgical
+                    // exclusion as the PM-state walker above. (Non-language
+                    // multi-part path — e.g. Eduqas Part A/B — unchanged.)
+                    const clone = section.cloneNode(true);
+                    clone.querySelectorAll('[data-checklist-item]').forEach(el => el.remove());
+                    clone.querySelectorAll('em').forEach(el => el.remove());
+                    const text = clone.textContent?.trim() || '';
+                    if (text) parts.push(label ? `=== ${label.toUpperCase()} ===\n${text}` : text);
+                    return;
                 }
+                const qId = qm[1].toUpperCase();
+                const spec = (typeof lookupQuestionSpec === 'function') ? lookupQuestionSpec(qId) : null;
+                const qMarks = spec ? (parseInt(spec.marks, 10) || 0) : 0;
+                const qType = spec ? (spec.type || '') : '';
+                const isRetrievalQ = qType === 'retrieval' || qType === 'multiple_choice' || (qMarks > 0 && qMarks <= 4);
+                const isExtendedQ = qType === 'extended_writing' || qType === 'choice' || qMarks >= 24;
+                const paras = _mqParas(section);
+                const qWords = paras.length ? paras.join(' ').split(/\s+/).filter(Boolean).length : 0;
+                if (!paras.length) {
+                    parts.push(`=== ${qId} RESPONSE — NOT ATTEMPTED (empty) ===`);
+                    return;
+                }
+                if (isRetrievalQ) {
+                    parts.push(`=== ${qId} RESPONSE — ${paras.length} statement(s), ${qWords} words (code-counted) ===\n${paras.join('\n')}`);
+                    return;
+                }
+                if (isExtendedQ) {
+                    parts.push(`=== ${qId} RESPONSE — ${qWords} words (code-counted — use THIS count for the word-count rule; never recount) — HOLISTIC: no paragraph rules ===\n${paras.join('\n\n')}`);
+                    return;
+                }
+                // Reading question: taught paragraph count = marks ÷ 4
+                // (Q2/Q3: 2 paragraphs; Q4: 5 = Intro + 3 BPs + Conclusion).
+                const taught = qMarks > 0 ? Math.max(1, Math.round(qMarks / 4)) : 0;
+                const isEssayShape = taught >= 5;
+                const mapQLabel = (i, n) => {
+                    if (!isEssayShape) {
+                        if (!taught || i < taught) return `${qId} PARAGRAPH ${i + 1} of ${taught || n}`;
+                        return `${qId} EXTRA PARAGRAPH (beyond the taught ${taught} — protocol extra-paragraph rules apply)`;
+                    }
+                    // Q4-style essay shape — the lit two-regime map (delta-doc D6):
+                    if (_mqFirstDiag && n <= 3) return `${qId} BODY PARAGRAPH ${i + 1} (short submission — no Introduction/Conclusion)`;
+                    if (_mqFirstDiag && n === 4) {
+                        return i === 0 ? `${qId} INTRODUCTION` : `${qId} BODY PARAGRAPH ${i}`;
+                    }
+                    if (i === 0) return `${qId} INTRODUCTION`;
+                    if (i === n - 1) return `${qId} CONCLUSION`;
+                    if (i <= 3) return `${qId} BODY PARAGRAPH ${i}`;
+                    return `${qId} EXTRA PARAGRAPH (do not assess — protocol extra-paragraph rules apply)`;
+                };
+                const body = paras.map((p, i) => `--- ${mapQLabel(i, paras.length)} ---\n${p}`).join('\n\n');
+                const taughtNote = taught ? ` | taught structure: ${isEssayShape ? 'Introduction + 3 Body Paragraphs + Conclusion' : `${taught} paragraphs`}` : '';
+                parts.push(`=== ${qId} RESPONSE — ${paras.length} paragraph(s), ${qWords} words (code-counted)${taughtNote} ===\n${body}`);
             });
             return parts.join('\n\n');
         }
@@ -25166,6 +25294,14 @@
         'Vocabulary Precision': ['I used simple, everyday words.', 'My vocabulary is mostly clear, with some repetition.', 'I used accurate academic and subject-specific vocabulary.', 'I used a wide range of precise and effective vocabulary.', 'My vocabulary is consistently sophisticated and nuanced.'],
         'Sentence Structure': ['My sentences are mostly short and simple.', 'I connected some ideas, but sentences are often basic.', 'I correctly used compound and complex sentences.', 'I consistently used long, detailed sentences to build arguments.', 'I used complex and compound sentences for a sophisticated academic style.'],
         'Discourse Markers': ['I mainly rely on connecting with \'the\' or \'this\'.', 'I used a few basic connecting words.', 'I used some appropriate discourse markers.', 'I used a good range of discourse markers for logical relationships.', 'I used sophisticated discourse markers seamlessly for a fluent, coherent argument.'],
+        // v7.19.826: Creative Writing (Language Q5) set — rungs mirror the real AQA 8700
+        // AO5/AO6 band ladder (simple → some success → clear → consistent → convincing/compelling).
+        'Tone & Register': ['My tone doesn\'t really match the task.', 'I attempted to match my tone to the purpose and audience.', 'My tone, style and register generally match the purpose and audience.', 'My tone is clearly and consistently matched to purpose and audience.', 'My tone, style and register are assuredly matched — the voice feels deliberate and controlled throughout.'],
+        'Vocabulary & Devices': ['I used simple vocabulary with no deliberate devices.', 'I began to vary vocabulary with some use of devices.', 'I chose vocabulary for effect and used appropriate devices.', 'I used increasingly sophisticated vocabulary with a range of successful devices.', 'I used extensive, ambitious vocabulary with sustained crafting of linguistic devices.'],
+        'Structural Features': ['My piece has little deliberate shape.', 'I attempted structural features like a shift or flashback.', 'I used structural features that usually work.', 'I used effective structural features that shape the reader\'s journey.', 'I used varied, inventive structural features that control the whole piece.'],
+        'Linked Ideas & Paragraphs': ['I wrote without paragraphs or links between ideas.', 'I attempted paragraphs with some connected ideas.', 'My paragraphs are usually coherent with a range of discourse markers.', 'My paragraphs are coherent with integrated discourse markers and connected ideas.', 'My paragraphs are fluently linked — complex ideas flow seamlessly across the piece.'],
+        'Sentence Variety': ['My sentences are mostly one simple shape.', 'I attempted a variety of sentence forms.', 'I used a variety of sentence forms for effect.', 'I controlled a range of sentence forms to manage pace and emphasis.', 'I used a full range of sentence forms for deliberate effect throughout.'],
+        'Spelling & Punctuation': ['My spelling and punctuation errors get in the way of meaning.', 'My basic spelling is accurate with some control of punctuation.', 'My spelling is generally accurate and I used a range of punctuation mostly successfully.', 'My spelling and punctuation are accurate, including complex words and a wide range of marks.', 'My spelling and punctuation are consistently accurate and ambitious — punctuation works for effect.'],
     };
 
     function buildSelfAssessmentSection(isDual) {
@@ -25205,6 +25341,11 @@
             skills = skills
                 .map(s => ({ cat: s.cat, items: s.items.filter(it => _removeLangP1.indexOf(it) === -1) }))
                 .filter(s => s.items.length > 0);
+            // v7.19.826: Q5 is 40 of the paper's 80 marks — its craft gets its own
+            // self-assessment group (Neil's settled P1 SA spec: reading = Thesis-only
+            // intro + TTECEA-no-C + Restated-thesis conclusion + Academic Writing;
+            // Q5 = the creative-writing set).
+            skills.push({ cat: 'Creative Writing (Q5)', items: ['Tone & Register', 'Vocabulary & Devices', 'Structural Features', 'Linked Ideas & Paragraphs', 'Sentence Variety', 'Spelling & Punctuation'] });
         }
         let inner = `<p><em>Rate your confidence in each skill (1 = basic, 5 = expert):</em></p>`;
         skills.forEach(s => {

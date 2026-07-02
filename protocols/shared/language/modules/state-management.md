@@ -21,7 +21,7 @@ Track these elements silently (do not display to students):
 - **total_steps:** Total steps for current workflow
 
 ### Assessment Tracking
-- **essay_type:** Diagnostic / Redraft / Exam Practice
+- **essay_type:** Diagnostic / Redraft (Exam Practice mode is retired)
 - **submitted_text:** The student's full submitted response
 - **source_text:** The extract/source(s) provided
 - **marks_awarded:** Running record per criterion

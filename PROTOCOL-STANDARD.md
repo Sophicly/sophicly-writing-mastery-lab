@@ -340,3 +340,84 @@ Violations observed with the standard above, and the owning lane:
   transcript) + live-run audit. Decisions locked: keep+gate keyword-recall AND main-goal (hierarchical,
   not redundant); WC-formula display carve-out; self-anchoring optimal golds; gold-1 adds missing
   ingredients; "all steps" not counts. Author: wml-chat-A (Fable).
+- 2026-07-02 — v1.1. Added the REPLICATION PLAYBOOK appendix (below). First execution: AQA Language
+  P1 (v7.19.826). Author: wml-chat-A (Fable).
+
+---
+
+# APPENDIX — REPLICATION PLAYBOOK (porting the standard to a new paper)
+
+The proven step-by-step procedure for converting any paper's assessment protocol to this standard.
+First executed on AQA Language P1 (v7.19.826) — the per-step references point at that build.
+Run the phases IN ORDER; each phase's output is the next phase's input.
+
+## Phase 0 — Recon (parallel, before any writing)
+1. **Audit the current protocol** against Part B: count HARD PRECONDITIONs, 4-button gates,
+   canonical Total lines, pre-chain gating, descriptor sources, WC rule shape. (The B10 table is
+   the checklist.)
+2. **Map the engine**: (a) router — is the paper in `is_assessment_state_machine_enabled` +
+   `assessment_mode()` (`$question_subjects` — BOTH lists)? Does `assessment_question_order()`
+   resolve its spec JSON? (b) frontend — marker contracts (`_parseReflectGate`, `applyAssessmentFeedback`
+   region filing, `_detectQuestionTotal` regex), pre-chain gating in BOTH `sendCanvasMessage`
+   pipelines, the `getResponseText` labeller path (single-section lit vs multi-section language),
+   SA skill sets. Get file:line for every hook.
+3. **Audit the paper's LOADED MODULE SET** (its `manifest.json` `assessment.always`) for
+   contradiction sources: second grade ladders, workbook-copy relics, retired-mode branches
+   ("Exam Practice"), task menus, gold-suppression rules, "model counts words" instructions,
+   table-vs-bullets conflicts. Every file the manifest loads is in the AI's context — a
+   contradiction anywhere is a coin-flip at runtime.
+4. **Extract the REAL mark-scheme descriptors** (A4): pdftotext the board's actual mark scheme
+   (Drive: "Sophicly Etch Mark Scheme Resources/"), verbatim, into
+   `modules/knowledge-mark-scheme-<paper>.md`, tagged with source + page. Add it to the manifest
+   (reference data LAST). If a descriptor can't be sourced, the protocol says "no descriptor
+   available" — never invent.
+
+## Phase 1 — Delta doc → Neil sign-off (the gate before build)
+Write the delta doc: VERDICT (audit) / PAPER SHAPE (marks ÷ 4 taught-structure map) / PORTS
+VERBATIM (the invariant spine below) / SWAPPED (paper content) / ENGINE WORK / DECISIONS for Neil.
+No build until every decision is ruled.
+
+**The invariant spine (ports verbatim, every paper):** gate mechanism texts (HARD PRECONDITION
+naming the previous artifact; HARD STOP turn-split; 4-button gate + anti-loop), the Internal AI
+Notes (feedback card, calibration-gap direction-adaptive, output hygiene, anti-fabrication,
+criterion-evidence quote-or-Absent, gold self-anchoring, gold sentence-order self-check,
+never-shorten), WC ceiling MIN rule, ONE canonical ladder, canonical Total lines, Final Summary
+sequence + 5-item closing gate + `[ASSESSMENT_COMPLETE]`, detour protocol (depth cap 3 +
+resume-confirm), missing-section teaching-not-critique, two-tier EXTRA rule, pre-chain
+(grade goal → headline goal → keyword recall, all named in the first gate's precondition).
+
+**What swaps per paper:** unit of assessment (paragraph/question/IUMVCC), element lists + worths
+(from the paper's real spec), taught sentence orders, AO chips (paper-true only), penalty-code
+set, descriptor file, word targets, headline-goal options (paper's real AOs), reflection
+granularity (Lit = per section; Language = per question, D1).
+
+## Phase 2 — Build
+1. **Rewrite `protocol-a-assessment.md`** from scratch against Part B + the delta doc. Do not
+   patch the monolith — port the spine, swap the paper content. Keep the frontend contract exact:
+   `@REFLECT_GATE{"q","skill","ao","max"}`, `@FB_BEGIN{"q","para","title"}` (distinct titles =
+   distinct box regions), `Total Mark for [label]: X/max` (per paragraph), `Qn Total: A/B`
+   (question auto-fill), `Total: X/max` + `Grade: N` + `[ASSESSMENT_COMPLETE]` (completion),
+   the four gate buttons byte-exact, `@SECTION_BEGIN{"section":"Overall Feedback"}`.
+2. **Engine items** (language question-mode reference, v7.19.826): enable the paper in BOTH
+   `$question_subjects` lists; verify the harvest regexes accept the protocol's canonical lines
+   (`extract_question_result_from_message` — the `Qn Total` form); port the setup-phase block +
+   headline-goal capture/echo + pending self-heal into the paper's state-block builder; un-gate
+   the pre-chain in BOTH sendCanvasMessage pipelines with paper-true goal options; extend the
+   `getResponseText` labeller (per-question paragraph labels vs taught count, code word counts);
+   add SA descriptor sets. EVERY chat feature lands in BOTH pipelines — the dual-pipeline rule.
+3. **Prune every contradiction source found in Phase 0.3** in the same ship — a contradiction
+   left loaded is a coin-flip the model arbitrates at runtime.
+
+## Phase 3 — Self-verify (before Neil touches it)
+1. **B10 grep checks** on the new protocol file (adapt expectations to the paper's shape).
+2. **Validation**: `php -l` every touched PHP file, `node --check` every JS, JSON-parse the
+   manifest, brace-count.
+3. **State-block dry run**: assessment + redraft contexts through the router (setup phase →
+   mid-flight → wrap-up mandate).
+4. **Synthetic replay on staging**: scripted AI replies through `applyAssessmentFeedback` /
+   reflect panel / summary for every question — boxes fill (right box, right region), actual
+   marks auto-set from the canonical lines, sidebar advances, Score Summary computes,
+   `[ASSESSMENT_COMPLETE]` activates Mark Complete. Both pipelines × {diagnostic, redraft}.
+
+## Phase 4 — Neil's one-shot live run
+Staging (uid 1355), full paper end-to-end. Any red console error = fail. Then prod.

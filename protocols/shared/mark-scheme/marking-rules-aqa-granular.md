@@ -122,34 +122,28 @@ Never invent penalty codes. Never exceed 3 per paragraph.
 
 ---
 
-## Core principle 7 — MAP_GRADE worked examples
+## Core principle 7 — MAP_GRADE (ONE ladder — Sophicly canonical)
 
-After aggregating all per-question marks into a Total, look up the Grade using the paper's GRADE BOUNDARIES block. Grade = HIGHEST grade where `Total >= boundary_for_that_grade`.
+Every grade this assessment outputs — per-question "Percentage & Grade" lines AND the final grade — bands on the SAME canonical Sophicly ladder: **9 ≥ 85% · 8 ≥ 75% · 7 ≥ 65% · 6 ≥ 55% · 5 ≥ 45% · 4 ≥ 35% · 3 ≥ 25% · 2 ≥ 15% · else 1**. NEVER use real-exam grade boundaries anywhere; never mix scales.
 
-Worked examples (AQA 8700/1 June 2023 boundaries: 9:65 / 8:58 / 7:51 / 6:44 / 5:37 / 4:30 / 3:23 / 2:16 / 1:9):
-
-- Total = 56/80 → 56 ≥ 51 (Grade 7) ✓, 56 < 58 (not Grade 8) → **Grade 7**
-- Total = 59/80 → 59 ≥ 58 (Grade 8) ✓, 59 < 65 (not Grade 9) → **Grade 8**
-- Total = 65/80 → 65 ≥ 65 (Grade 9) ✓ → **Grade 9**
-- Total = 44/80 → 44 ≥ 44 (Grade 6) ✓, 44 < 51 (not Grade 7) → **Grade 6**
-
-Work through the logic explicitly in your Final Summary — DO NOT pattern-match grade from total without checking each boundary. A Total = 56 is NOT Grade 6 just because "mid-50s feels like a 6" — the boundaries say Grade 7.
+The ASSESSMENT STATE block injects the exact `GRADE BOUNDARIES (/max)` line for the paper (marks form of the same ladder). Map the total with ONLY that line — never invent or recall boundary percentages of your own. Grade = the HIGHEST grade whose boundary the Total meets. Map SILENTLY (output hygiene: no visible boundary-checking arithmetic — state the finished grade only).
 
 ---
 
-## Feedback shape (per question)
+## Feedback shape (per question — the paper's protocol card order is authoritative)
 
-1. **Detailed prose feedback FIRST** — "What you did well" / "Where you lost marks", with specific quotes from the student's response and targeted advice. Reference the student's self-rating (if given).
-2. **Granular score table(s)** — one per paragraph for analysis/evaluation Qs (intro table + body paragraph tables + conclusion table as applicable). Every row has Element, AO, Worth, Score.
-3. **Penalties** — bullets below each paragraph's table if any apply.
-4. **Question total** — on its own line: `Q4 Total: X/20`.
+1. **Granular mark table(s)** — one per paragraph for analysis/evaluation Qs (intro table + body paragraph tables + conclusion table as applicable), per the paper's protocol column spec.
+2. **Penalties** — below each paragraph's table if any apply, each with the student's verbatim phrase + a worked fix.
+3. **Per-paragraph total** — the paper's canonical `Total Mark for [label]: X/max` line.
+4. **My Assessment prose** — "What you did well" / "Where you lost marks", every below-full criterion anchored with a verbatim quote or "Absent"; reference the student's self-rating (if given). Then both gold models per the protocol.
+5. **Question total** — on its own line: `Q4 Total: X/20` (frontend auto-fill regex depends on this exact form).
 
 At end of assessment (Final Summary):
 - `Total: X/Y` on its own line (frontend regex depends on this exact format).
 - `Grade: N` on its own line.
 - 1 key strength, 1-2 targets.
 - Closing encouragement.
-- Remind student to copy feedback into workbook + click Mark Complete.
+- Feedback files into the document automatically — NEVER ask the student to copy anything. Tell them to click Mark Complete.
 - No task menu, no further questions.
 
 ---
@@ -157,7 +151,7 @@ At end of assessment (Final Summary):
 ## What this module DOES NOT do
 
 - Does not prescribe element mark values — those live in the paper's `protocol-a-assessment.md`.
-- Does not override the protocol's teaching workflow (metacognitive reflection, chunked disclosure, A/B confirmations).
+- Does not override the protocol's teaching workflow (metacognitive reflection, chunked disclosure, hard-stop gates).
 - Does not define penalty codes beyond the cap rule — board-specific codes live in the protocol module or `penalty-codes.md`.
 
 This module is the cross-cutting *shape* rule. Values and workflow live with the paper.

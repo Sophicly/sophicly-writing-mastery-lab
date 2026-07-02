@@ -4363,11 +4363,15 @@ TEMPLATE;
         $sq = strtolower(str_replace('-', '_', (string) $subject));
         // v7.19.632 Phase 2b: AQA Lang P2 de-stitched to monolith — its question-mode
         // state machine is disabled (manifest assessment.steps now empty → whole-protocol
-        // load, like P1). Empty list = no question-mode subjects. Literature paragraph-mode
-        // ($lit_subjects) is unaffected. FALLBACK: if the P2 monolith loops in testing,
-        // restore the P2 forms here ('language2','language_p2','language_paper_2','lang_p2')
-        // to re-enable ONLY the question-pointer state block (steps stay empty → still monolith).
-        $question_subjects = [];
+        // load, like P1). Literature paragraph-mode ($lit_subjects) is unaffected.
+        // FALLBACK: if the P2 monolith loops in testing, restore the P2 forms here
+        // ('language2','language_p2','language_paper_2','lang_p2') to re-enable ONLY
+        // the question-pointer state block (steps stay empty → still monolith).
+        // v7.19.826: AQA Language P1 ENABLED — question-pointer state block only
+        // (language1 manifest assessment.steps stays {} → monolith flow, no
+        // step-stitching). Brings P1 the setup-phase chain enforcement,
+        // headline-goal capture/echo, self-heals, advancer and wrap-up mandate.
+        $question_subjects = ['language1', 'language_p1', 'language_paper_1', 'lang_p1'];
         return in_array($subject, $lit_subjects, true)
             || in_array($sq, $question_subjects, true);
     }
@@ -4388,9 +4392,10 @@ TEMPLATE;
         // advancer's current_beat now persists turn-to-turn — confirm via SEG DIAG on
         // staging. Runtime sends 'language_p2', so normalise hyphens + accept all P2 forms.
         $s = strtolower(str_replace('-', '_', (string) $subject));
-        // v7.19.632 Phase 2b: P2 monolith — empty so P2 resolves to 'paragraphs' (machine
+        // v7.19.632 Phase 2b: P2 monolith — P2 resolves to 'paragraphs' (machine
         // off). See is_assessment_state_machine_enabled for the fallback restore note.
-        $question_subjects = [];
+        // v7.19.826: language1 runs question-mode (P1 R&J-standard build).
+        $question_subjects = ['language1', 'language_p1', 'language_paper_1', 'lang_p1'];
         return in_array($s, $question_subjects, true) ? 'questions' : 'paragraphs';
     }
 
@@ -4849,6 +4854,17 @@ TEMPLATE;
 
         $closed    = (bool) preg_match($close_re, $content);
         $has_score = (bool) preg_match($score_re, $content, $sm);
+        // v7.19.826 (P1 R&J-standard): the live P1 protocol's canonical wrap line
+        // is `Qn Total: A/B` — the frontend's auto-fill target, emitted exactly
+        // once per question at its wrap. Accept it as BOTH mark and close anchor.
+        // Q5's form is `Q5 Total: AO5 X/24 + AO6 Y/16 = Z/40`: the paper-max
+        // denominator anchor skips the AO sub-scores and captures the final Z.
+        if (!$has_score
+            && preg_match('/\bQ(?:uestion\s*)?' . $n . '\s*Total\b[^\n]*?(\d+(?:\.\d+)?)\s*\/\s*' . max(1, $marks) . '\b/i', $content, $qt)) {
+            $sm        = $qt;
+            $has_score = true;
+            $closed    = true;
+        }
         // v7.19.353 (FIX C): Q1's live protocol (protocol-q1-msq.md) mandates a
         // bare `**Score: N/4**` — the legacy score_re ("Question 1 score: X out
         // of 4") is the superseded monolith wording and missed every live Q1
@@ -5606,6 +5622,48 @@ TEMPLATE;
         }
         if (!empty($state['completion_emitted'])) return '';
 
+        // v7.19.826: headline-goal capture (v811 port) — the pre-chain code-asks
+        // the goal for language papers too; persist once, echo every turn, and
+        // let redraft attempts retrieve the prior attempt's goal.
+        if (empty($state['headline_goal']) && !empty($swml_chat_history) && is_array($swml_chat_history)) {
+            $hg = self::extract_headline_goal_from_history($swml_chat_history);
+            if ($hg !== '') {
+                $state = SWML_Session_Manager::update_assessment_state(
+                    $user_id, $board, $text, $topic, $suffix, $attempt,
+                    ['headline_goal' => $hg]
+                );
+            }
+        }
+        $headline_goal = trim((string) ($state['headline_goal'] ?? ''));
+        $dt_raw = (string) ($context['draft_type'] ?? '');
+        $is_redraft_attempt = (($context['task'] ?? '') === 'redraft_assessment') || (strpos($dt_raw, 'redraft') !== false);
+        $prior_goal = $is_redraft_attempt
+            ? SWML_Session_Manager::get_prior_headline_goal($user_id, $board, $text, $topic, $suffix, $attempt)
+            : '';
+
+        // v7.19.826: pending self-heal (v812 port) — if pending_resume_confirm is
+        // set but the student's LAST message already satisfies it (confirm /
+        // reflection reply / bare Y), clear it so the block doesn't force a
+        // re-gate. The forced re-gate was the Body-1 loop generator (2026-07-02).
+        if (!empty($state['pending_resume_confirm']) && !empty($swml_chat_history) && is_array($swml_chat_history)) {
+            $last_user = '';
+            for ($i = count($swml_chat_history) - 1; $i >= 0; $i--) {
+                $m = $swml_chat_history[$i];
+                if (is_array($m) && ($m['role'] ?? '') === 'user') {
+                    $last_user = trim((string) ($m['content'] ?? ''));
+                    break;
+                }
+            }
+            if ($last_user !== ''
+                && preg_match('/^(?:y\s*$|yes\b|continue\b|got it\b|ready\b|ok(?:ay)?\b|advance\b|next\b|carry on\b|keep going\b|✓)|^predicted\b|^self-rating\s*:/iu', $last_user)) {
+                $state = SWML_Session_Manager::update_assessment_state(
+                    $user_id, $board, $text, $topic, $suffix, $attempt,
+                    ['pending_resume_confirm' => false]
+                );
+                error_log('WML Assessment State (questions): pending satisfied by student turn — cleared. user=' . (int) $user_id);
+            }
+        }
+
         $scored  = (array) ($state['questions_scored'] ?? []);
         $current = $state['current_question'] ?? ($this->assessment_next_question(array_keys($scored), $context) ?: 'Q1');
         if ($current === 'done') {
@@ -5614,6 +5672,48 @@ TEMPLATE;
             // ended with an action plan and NO whole-paper Total or Grade
             // anywhere. Mandate the headline result instead of going silent.
             return $this->assessment_final_summary_mandate($order, $scored);
+        }
+
+        // v7.19.826: SETUP-PHASE awareness (v809 port). Without it this block
+        // opened with "resume the protocol for Q1" from turn 1 — directly
+        // contradicting the protocol's mandatory pre-assessment chain (grade
+        // goal → headline goal → keyword recall), and the model arbitrated
+        // that conflict by skipping the chain (the lit live failures
+        // 2026-07-01/02). Setup = nothing scored AND no reflection panel or
+        // feedback card emitted yet.
+        $setup_phase = empty($scored);
+        if ($setup_phase && !empty($swml_chat_history) && is_array($swml_chat_history)) {
+            foreach ($swml_chat_history as $m) {
+                $mrole = is_array($m) ? ($m['role'] ?? '') : '';
+                $mtext = is_array($m) ? (string) ($m['content'] ?? '') : '';
+                if ($mrole === 'assistant'
+                    && (strpos($mtext, '@REFLECT_GATE') !== false || strpos($mtext, '@FB_BEGIN') !== false)) {
+                    $setup_phase = false;
+                    break;
+                }
+            }
+        }
+        if ($setup_phase) {
+            $q_ids = array_map(static function ($q) { return (string) $q['id']; }, $order);
+            $q_seq = $q_ids ? implode(' → ', $q_ids) : 'Q1 → Q5';
+            $block  = "\n\n---\n\n";
+            $block .= "<assessment_state authoritative=\"true\">\n";
+            $block .= "## ASSESSMENT STATE — SETUP PHASE (marking has NOT begun)\n";
+            $block .= "**Sequence:** Setup (grade goal → headline goal → keyword recall) → {$q_seq} → Final Summary\n";
+            $block .= "**Questions marked so far:** none yet\n";
+            if ($headline_goal !== '') {
+                $block .= "**Student's headline goal (already captured):** {$headline_goal}\n";
+            }
+            if ($prior_goal !== '') {
+                $block .= "**Prior attempt's headline goal:** {$prior_goal} — acknowledge it when the new goal is set (\"last time you focused on…\").\n";
+            }
+            $block .= "### RULES — NON-NEGOTIABLE\n";
+            $block .= "1. The pre-assessment chain MUST be complete before ANY marking output. Check the conversation for ALL THREE student replies: (a) grade goal, (b) HEADLINE GOAL (their choice from the goal options — a CONCEPTUAL aim, never a grade number), (c) KEYWORD RECALL (the key aspects the evaluation question asks them to explore). If any is missing, ask ONLY the next missing question (in that order) and STOP — nothing else in the turn.\n";
+            $block .= "2. Once all three replies are present: acknowledge the keyword recall, then begin the FIRST question exactly per the protocol (its own gate first — never a mark in the same turn).\n";
+            $block .= "3. Do NOT emit any mark, mark table, `Qn Total` line, `@FB` card or `@REFLECT_GATE` panel during setup.\n";
+            $block .= "This block is internal bookkeeping — never quote it, never narrate the state machine to the student. Operate silently.\n";
+            $block .= "</assessment_state>\n";
+            return $block;
         }
 
         // Marked-so-far summary line (mirrors protocol marks.qN + Key strength/target).
@@ -5647,6 +5747,12 @@ TEMPLATE;
         if ($cur_marks) $block .= " ({$cur_marks} marks" . ($cur_aos ? ", {$cur_aos}" : '') . ")";
         $block .= ".\n";
         $block .= "Do NOT re-mark any question already listed as marked. Do NOT restart from Q1. Do NOT reopen with \"thanks for providing your full responses\" — the responses arrived earlier; the assessment is mid-flight.\n";
+        if ($headline_goal !== '') {
+            $block .= "Student's headline goal: {$headline_goal} — cite THIS (never the grade) in every question's reflection lead-in; close it in the Final Summary's metacognitive journey.\n";
+        }
+        if ($prior_goal !== '') {
+            $block .= "Prior attempt's headline goal: {$prior_goal} — note progress against it in the Final Summary.\n";
+        }
         $block .= "Resume the protocol for {$current} from where the conversation left off. Mark every paragraph/slot of {$current} SEPARATELY exactly as the protocol specifies — its full per-paragraph sub-loop (self-assessment → granular mark table → feedback → gold-standard rewrite(s) → advance). Do NOT collapse the question into a single mark or skip the gold-standard rewrites.\n";
         if ($offered_str !== '') {
             $block .= "The last lettered options you offered were: {$offered_str}. If the student replies with a bare letter, it maps to THESE options — do not reinterpret it as essay content.\n";
@@ -5717,9 +5823,18 @@ TEMPLATE;
             $block .= "WRAP-UP RULE: after {$current}'s marking completes, the final whole-paper summary MUST contain a per-question mark list, then **Total: X/{$max_total}**, then **Grade: N** — all BEFORE any action plan. Never end the assessment without an explicit Total and Grade.\n";
             $block .= "GRADE BOUNDARIES (/{$max_total}): " . self::grade_boundaries_table_line($max_total) . ". Map the total with ONLY this table — never invent or recall boundary percentages of your own.\n";
         }
+        // v7.19.826: authoritative word count + house style (ported from the
+        // paragraph-mode block — same live failures apply to language papers).
+        $response_wc = isset($context['response_wc']) && is_numeric($context['response_wc'])
+            ? (int) $context['response_wc']
+            : null;
+        if ($response_wc !== null) {
+            $block .= "AUTHORITATIVE WORD COUNTS: the student's whole response is **{$response_wc} words** (code-counted). Per-question word counts arrive injected with the student's answers. NEVER count, estimate or approximate words yourself — echo the injected values only.\n";
+        }
+        $block .= "HOUSE STYLE: never use \"patriarchy\"/\"patriarchal\" in any prose, mark commentary or model answer — reframe as honour culture / paternal authority / social hierarchy. Never ask the student to confirm the structure of their work: paragraph labels are code-applied — trust them.\n";
         $block .= "This block is internal bookkeeping — never quote it, never narrate the state machine to the student. Operate silently.\n";
         $block .= "</assessment_state>\n";
-        $block .= "\n_(WML v7.19.289 — AQA Language Paper 2 question-pointer, Stage 1.)_\n";
+        $block .= "\n_(WML v7.19.826 — question-pointer state block: AQA Language P1 (R&J standard) + P2 fallback.)_\n";
         return $block;
     }
 

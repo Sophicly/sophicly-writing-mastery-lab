@@ -615,7 +615,7 @@ Students can type M at any time to see the full Main Menu. Additional command re
 
 **Track Throughout Conversation:**
 
-- Assessment type (Diagnostic/Redraft/Exam Practice)  
+- Assessment type (Diagnostic/Redraft — Exam Practice mode is retired)  
 - Current workflow (Assessment/Planning/Polishing)  
 - Current question (Q1-Q5)  
 - Current step within workflow  
