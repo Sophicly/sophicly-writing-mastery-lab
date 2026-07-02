@@ -6171,12 +6171,15 @@
                 if (totalMatch) saves.push({ type: 'total_score', content: totalMatch[1].trim(), step: 8 });
             }
 
-            // Grade/Level: "Grade 7" or "Grade: 3" — NOT "Level 3 features" from per-section alignment descriptions
-            // The protocol requires "Grade: Z" format in the final summary. "Level X" in mid-assessment is AQA level alignment, not the grade.
+            // Grade/Level: "Grade: N" on its own line (final summary canonical format).
+            // v7.19.812: LINE-ANCHORED. The old \bgrade\s*:? (optional colon) matched
+            // prose like "which is a Grade 1" in per-section Level Alignment cards and
+            // "Percentage & Grade: 17%" — saving a section grade as the essay grade
+            // (observed live: plan.grade = "Grade 1**" mid-assessment).
             if (!state.plan.grade) {
-                const gradeMatch = aiReply.match(/\bgrade\s*:?\s*(\d[^.,\n]{0,30})/i)
-                    || aiReply.match(/\blevel\s*:\s*(\d[^.,\n]{0,30})/i);
-                if (gradeMatch) saves.push({ type: 'grade', content: gradeMatch[0].trim(), step: 8 });
+                const gradeMatch = aiReply.match(/^\s*\*{0,2}grade\*{0,2}\s*:\s*(\d[^.,\n]{0,30})/im)
+                    || aiReply.match(/^\s*\*{0,2}level\*{0,2}\s*:\s*(\d[^.,\n]{0,30})/im);
+                if (gradeMatch) saves.push({ type: 'grade', content: gradeMatch[0].replace(/\*/g, '').trim(), step: 8 });
             }
 
             // Strengths: "Key strength:" or "Main strength:" or "Your strongest area:"

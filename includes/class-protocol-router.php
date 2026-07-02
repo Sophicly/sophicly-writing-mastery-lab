@@ -5850,6 +5850,29 @@ TEMPLATE;
             error_log('WML Assessment State: self-heal cleared premature pending_resume_confirm. user=' . (int) $user_id);
         }
 
+        // v7.19.812: pending self-heal #2 — if pending is set but the student's
+        // LAST message already answers it (confirm / reflection reply / bare Y),
+        // the gate is satisfied: clear pending so the block doesn't force a
+        // re-gate. The forced re-gate was the Body-1 loop generator (2026-07-02).
+        if (!empty($state['pending_resume_confirm']) && !empty($swml_chat_history) && is_array($swml_chat_history)) {
+            $last_user = '';
+            for ($i = count($swml_chat_history) - 1; $i >= 0; $i--) {
+                $m = $swml_chat_history[$i];
+                if (is_array($m) && ($m['role'] ?? '') === 'user') {
+                    $last_user = trim((string) ($m['content'] ?? ''));
+                    break;
+                }
+            }
+            if ($last_user !== ''
+                && preg_match('/^(?:y\s*$|yes\b|continue\b|got it\b|ready\b|ok(?:ay)?\b|advance\b|next\b|carry on\b|keep going\b|✓)|^predicted\b|^self-rating\s*:/iu', $last_user)) {
+                $state = SWML_Session_Manager::update_assessment_state(
+                    $user_id, $board, $text, $topic, $suffix, $attempt,
+                    ['pending_resume_confirm' => false]
+                );
+                error_log('WML Assessment State: pending satisfied by student turn — cleared. user=' . (int) $user_id);
+            }
+        }
+
         // v7.19.811: deterministic headline-goal capture. The pre-chain gate
         // code-asks the goal question, so the reply's position in history is
         // fixed (first user message after the question). Persist it once into
@@ -6113,11 +6136,18 @@ TEMPLATE;
         // catch-up advance if AI produced a later table than expected).
         $produced_table_for = null;
         $table_checks = [
-            'intro'      => '/Total Mark for (?:Introduction|Paragraph\s*1)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*3\b/i',
-            'body_1'     => '/Total Mark for (?:Body\s*Paragraph\s*1|Paragraph\s*2)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*7\b/i',
-            'body_2'     => '/Total Mark for (?:Body\s*Paragraph\s*2|Paragraph\s*3)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*7\b/i',
-            'body_3'     => '/Total Mark for (?:Body\s*Paragraph\s*3|Paragraph\s*4)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*7\b/i',
-            'conclusion' => '/Total Mark for (?:Conclusion|Paragraph\s*5)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*(?:6|11)\b/i',
+            // v7.19.812: denominators made agnostic (were pinned /3 /7 /6|11 from an
+            // older mark scheme — the live protocol marks body /8, conclusion /7, so
+            // "Total Mark for Body 1: 2.0 / 8" matched NOTHING and the pointer never
+            // advanced past body_1: Neil's 2026-07-02 loop). Also added the "Body N"
+            // alias — the protocol's own @FB labels use "Body 1", not "Body Paragraph 1".
+            // Section identity comes from the NAME; pinning the denominator adds no
+            // safety and has now broken twice.
+            'intro'      => '/Total Mark for (?:Introduction|Paragraph\s*1)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
+            'body_1'     => '/Total Mark for (?:Body\s*(?:Paragraph\s*)?1|Paragraph\s*2)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
+            'body_2'     => '/Total Mark for (?:Body\s*(?:Paragraph\s*)?2|Paragraph\s*3)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
+            'body_3'     => '/Total Mark for (?:Body\s*(?:Paragraph\s*)?3|Paragraph\s*4)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
+            'conclusion' => '/Total Mark for (?:Conclusion|Paragraph\s*5)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
         ];
         foreach ($table_checks as $pkey => $pattern) {
             if (preg_match($pattern, $reply)) {
@@ -6165,10 +6195,20 @@ TEMPLATE;
             $tables_so_far = (int) ($state['tables_emitted_total'] ?? 0);
             $detour_now    = (int) ($state['detour_depth'] ?? 0);
             $has_prior_activity = ($tables_so_far > 0) || ($detour_now > 0);
-            if ($has_prior_activity
+            // v7.19.812: a reply-gate only locks pending when it is a LEGITIMATE
+            // post-detour resume-confirm (the student asked a question, or a detour
+            // is open). If the model emits a gate when the student's turn was a
+            // reflection reply / Y / confirm, it OWED a table — that gate is a stall.
+            // Locking it in made the state block MANDATE the gate every turn: the
+            // self-reinforcing "Does that clear it up?" loop in Neil's 2026-07-02 run.
+            $gate_is_legit = $is_question || $detour_now > 0;
+            if ($has_prior_activity && $gate_is_legit
                 && preg_match('/(shall we continue with|ready to continue with|let(?:\'|&#39;)?s continue with|shall we move to)/i', $reply)
                 && preg_match('/got it.*continue|still confused|different question|pause here/i', $reply)) {
                 $patch['pending_resume_confirm'] = true;
+            } elseif ($has_prior_activity && !$gate_is_legit
+                && preg_match('/(shall we continue with|ready to continue with|let(?:\'|&#39;)?s continue with|shall we move to)/i', $reply)) {
+                error_log('WML Assessment State: STALL GATE detected (student turn was not a question) — refusing to lock pending. user=' . (int) $user_id . ' current=' . $current);
             } elseif (!$has_prior_activity
                 && preg_match('/(shall we continue with|ready to continue with|let(?:\'|&#39;)?s continue with|shall we move to)/i', $reply)
                 && preg_match('/got it.*continue|still confused|different question|pause here/i', $reply)) {
@@ -6839,10 +6879,14 @@ TEMPLATE;
         // (Next hardening: derive off the structured @FB_BEGIN{"q":…} marker the
         // protocol already emits, retiring prose-scraping entirely.)
         $strict_patterns = [
+            // v7.19.812: "Body N" alias added (protocol @FB labels use "Body 1") —
+            // without it the auto-repair never counted body tables emitted with the
+            // short label and kept resetting the pointer. Keep in sync with the
+            // advancer's table_checks above.
             'intro'      => '/Total Mark for (?:Introduction|Paragraph\s*1)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
-            'body_1'     => '/Total Mark for (?:Body\s*Paragraph\s*1|Paragraph\s*2)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
-            'body_2'     => '/Total Mark for (?:Body\s*Paragraph\s*2|Paragraph\s*3)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
-            'body_3'     => '/Total Mark for (?:Body\s*Paragraph\s*3|Paragraph\s*4)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
+            'body_1'     => '/Total Mark for (?:Body\s*(?:Paragraph\s*)?1|Paragraph\s*2)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
+            'body_2'     => '/Total Mark for (?:Body\s*(?:Paragraph\s*)?2|Paragraph\s*3)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
+            'body_3'     => '/Total Mark for (?:Body\s*(?:Paragraph\s*)?3|Paragraph\s*4)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
             'conclusion' => '/Total Mark for (?:Conclusion|Paragraph\s*5)\s*[:=]?\s*\d+(?:\.\d+)?\s*\/\s*\d+\b/i',
         ];
         if (!is_array($chat_history)) return ['scored' => [], 'complete' => false];
