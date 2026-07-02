@@ -1144,6 +1144,70 @@
         } catch (e) { console.warn('[WML overall-fb] error', e && e.message); }
     }
 
+    // v7.19.819: SELF-HEAL — re-file marking from the persisted chat history into any
+    // feedback box still showing its placeholder. The chat transcript IS the durable
+    // record of every @FB card (marks, feedback, both golds); the doc is a projection
+    // of it. If the two disagree — a box wiped by a stale save (2026-07-02: a
+    // migrateDocument mutation overwrote a fully-marked doc with stale placeholder
+    // content), a missed filing turn, or any future stale-write — the transcript wins
+    // and the box refills deterministically on the next load. Guards, each against a
+    // named failure mode: assessment tasks only; never in review mode (tutor must see
+    // the stored state); doc must be HYDRATED (a response section with real student
+    // text — prevents replaying marks onto a pre-load template and then persisting an
+    // essay-less doc); only PLACEHOLDER boxes are eligible (a filled box is never
+    // overwritten); saves only when something was actually re-filed.
+    function _healFeedbackBoxesFromHistory(history) {
+        try {
+            if (!canvasEditor || !Array.isArray(history) || !history.length) return;
+            if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return;
+            if (state.reviewMode) return;
+            const editorEl = canvasEditor.options && canvasEditor.options.element;
+            if (!editorEl) return;
+            let respLen = 0;
+            editorEl.querySelectorAll('.swml-section-block[data-section-type="response"]').forEach(s => {
+                respLen += (s.textContent || '').trim().length;
+            });
+            if (respLen < 100) return; // not hydrated yet — the later scheduled pass retries
+            const PLACEHOLDER_RE = /will appear after assessment|will be assessed here|appear here (?:after|once)/i;
+            const placeholderQs = new Set();
+            let overallPlaceholder = false;
+            canvasEditor.state.doc.descendants((node) => {
+                if (node.type.name !== 'sectionBlock') return true;
+                const lbl = String((node.attrs && node.attrs.label) || '');
+                const txt = (node.textContent || '').trim();
+                if (/overall\s*feedback/i.test(lbl)) {
+                    overallPlaceholder = !txt || PLACEHOLDER_RE.test(txt);
+                } else if (node.attrs && node.attrs.sectionType === 'feedback') {
+                    if (!txt || PLACEHOLDER_RE.test(txt)) placeholderQs.add(_paraKey(lbl));
+                }
+                return true;
+            });
+            if (!placeholderQs.size && !overallPlaceholder) return;
+            let replayed = 0;
+            history.forEach(m => {
+                if (!m || m.role !== 'assistant' || !m.content) return;
+                if (overallPlaceholder) _routeOverallFeedback(m.content); // self-guards: summary signal + placeholder check
+                if (m.content.indexOf('@FB_BEGIN') === -1) return;
+                const metaRe = /@FB_BEGIN\s*(\{[^}]*\})/g;
+                let mm, hit = false;
+                while ((mm = metaRe.exec(m.content)) !== null) {
+                    try {
+                        const q = _paraKey(String((JSON.parse(mm[1]) || {}).q || ''));
+                        if (q && placeholderQs.has(q)) { hit = true; break; }
+                    } catch (_) { /* malformed meta — skip this card */ }
+                }
+                if (!hit) return;
+                applyAssessmentFeedback(m.content);
+                replayed++;
+            });
+            if (replayed) {
+                console.warn('WML HEAL: re-filed ' + replayed + ' marking message(s) from chat history into placeholder feedback boxes');
+                try { if (typeof _recalcScoreSummaryRef === 'function') _recalcScoreSummaryRef(); } catch (_) {}
+                try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
+            }
+        } catch (e) { console.warn('WML HEAL: feedback re-file skipped —', e && e.message); }
+    }
+
     // v7.19.598: Phase 4 — auto-insert assessment feedback into the per-question
     // Feedback box (kills the legacy copy-paste step). The AI wraps each paragraph's
     // mark breakdown + feedback + both gold models in:
@@ -14320,6 +14384,13 @@
                                             }
 
                                             if (state.task !== 'assessment' && state.task !== 'redraft_assessment' && !isCwSi && !isExamPrep) return;
+                                            // v7.19.819: schedule the placeholder-box self-heal once the doc has
+                                            // hydrated — two passes cover slow server loads; both no-op when every
+                                            // box already holds real content (see _healFeedbackBoxesFromHistory).
+                                            try {
+                                                setTimeout(() => _healFeedbackBoxesFromHistory(canvasChatHistory), 1600);
+                                                setTimeout(() => _healFeedbackBoxesFromHistory(canvasChatHistory), 5200);
+                                            } catch (_) {}
                                             // 1. Scan ALL chat messages for sidebar step keywords
                                             const allAiMsgs = canvasChatHistory.filter(m => m.role === 'assistant');
                                             let maxStep = allAiMsgs.length > 0 ? 1 : 0; // Start at 1 only if there's chat history (v7.12.32)
