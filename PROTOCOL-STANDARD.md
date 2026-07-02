@@ -148,8 +148,15 @@ grade goal as the headline goal because the conceptual question never fired):**
 - Once validated + stored: NEVER ask the student to re-paste any part of the essay.
 
 ## B3. Paragraph mapping (position-only + hard cap — A8 applied)
-First → Introduction; 2nd/3rd/4th → Body 1/2/3; LAST → Conclusion; anything between 4th and last = EXTRA.
-EXACTLY five `@FB` cards per assessment, labels only from {Introduction, Body 1, Body 2, Body 3, Conclusion}.
+Paragraphs arrive PRE-LABELLED by code (v807) — the model trusts the labels, never re-detects. Two regimes:
+- **First diagnostic (T1P1), under 5 paragraphs:** 1–3 paragraphs = BODY 1–N only; 4 = INTRODUCTION + BODY 1–3.
+  Rationale (Neil, 11 yrs): first-time students write analysis chunks — almost none write an intro, none a
+  conclusion. **Missing sections score 0 with TEACHING feedback** (normal-at-this-stage line + what the
+  section does + ONE optimal gold from the coherent Model-2 essay; no reflection panel, no elevated model),
+  card still emitted so the box fills.
+- **5+ paragraphs, or any later attempt:** strict position map — First → Introduction; 2nd/3rd/4th →
+  Body 1/2/3; LAST → Conclusion; anything between 4th and last = EXTRA.
+AT MOST five `@FB` cards per assessment, labels only from {Introduction, Body 1, Body 2, Body 3, Conclusion}.
 After the Conclusion's progression gate the ONLY remaining output is the Final Summary — never another
 section, never another `@FB` card.
 

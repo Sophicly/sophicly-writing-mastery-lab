@@ -22407,18 +22407,28 @@
         // Extract substantial text blocks (20+ words = essay paragraph)
         const MIN_WORDS = 20;
         const blocks = [];
+        // v7.19.808: short LEADING text (e.g. a one-sentence opening under 20 words) was
+        // silently DROPPED — the merge rule only glued backwards and there was no previous
+        // block. Hold it as a pending prefix and glue it FORWARD onto the first real block.
+        let pendingLead = '';
         blockEls.forEach(el => {
             const text = el.textContent?.trim() || '';
             if (!text) return;
             const wordCount = text.split(/\s+/).length;
             if (wordCount >= MIN_WORDS) {
-                blocks.push(text);
+                blocks.push(pendingLead ? pendingLead + ' ' + text : text);
+                pendingLead = '';
             } else if (blocks.length > 0 && wordCount > 3) {
                 // Short but non-trivial text — append to previous block
                 blocks[blocks.length - 1] += ' ' + text;
+            } else if (wordCount > 3) {
+                // Short but non-trivial text BEFORE any real block — glue forward
+                pendingLead += (pendingLead ? ' ' : '') + text;
             }
             // Skip very short fragments (≤3 words) — likely empty line artefacts
         });
+        // All-short essay (every block under 20 words): the pending text IS the essay
+        if (pendingLead && blocks.length === 0) blocks.push(pendingLead);
 
         // Robust fallback chain — empty blocks → section.textContent → editor.getText().
         // v7.17.50: previously a stale canvasEditor reference after attempt reload could
@@ -22440,22 +22450,44 @@
             return '';
         }
 
-        // Single block or no blocks — return without labels
+        // v7.19.808: literature paragraph-mapping is shared by the single-block and
+        // multi-block paths below, so compute the gates once here.
+        const isLangPaper = /^language/.test((state.subject || '').toLowerCase());
+        const isFirstDiagnosticMap = ((state.topicNumber === 1 || state.topicNumber === '1') && state.phase === 'initial');
+
+        // Single block or no blocks
         if (blocks.length <= 1) {
             // v7.17.53: editor may be null — guard tail fallback
             const editorTextSafe = (editor && typeof editor.getText === 'function') ? (editor.getText() || '').trim() : '';
-            return blocks[0] || section.textContent?.trim() || editorTextSafe || '';
+            const single = blocks[0] || section.textContent?.trim() || editorTextSafe || '';
+            // v7.19.808: a one-paragraph literature essay previously went to the AI with NO
+            // label — it improvised the mapping. Label it BODY 1 (first-time students write
+            // analysis chunks, not intros/conclusions); Introduction + Conclusion score 0
+            // as missing, with teaching feedback per the protocol.
+            if (single && !isLangPaper && blocks.length === 1) {
+                return `=== PARAGRAPH 1 of 1 — BODY 1 ===\n${single}`;
+            }
+            return single;
         }
 
-        // v7.19.806: Pre-map essay paragraphs by POSITION (deterministic — agrees with the
-        // protocol + the literature assessment preamble). First = Introduction, next three =
-        // Body 1-3, LAST = Conclusion, anything between the 4th and the last = EXTRA (never
-        // assessed). Two live runs (2026-07-01/02) proved the model mis-segments and blends
-        // paragraphs when the labels are neutral ("determine function by content"). Language
-        // papers keep neutral labels — their responses are per-question, not essay-shaped.
-        const isLangPaper = /^language/.test((state.subject || '').toLowerCase());
+        // v7.19.806/808: Pre-map essay paragraphs by POSITION (deterministic — agrees with
+        // the protocol + the literature assessment preamble). Two live runs (2026-07-01/02)
+        // proved the model mis-segments and blends paragraphs when labels are neutral.
+        // TWO REGIMES (Neil, 2026-07-02):
+        //  - FIRST diagnostic (T1P1) with a SHORT essay (<5 paragraphs): first-time students
+        //    write analysis chunks, not intros/conclusions (~0% write either) — so 1-3
+        //    paragraphs are ALL BODY attempts; 4 = Introduction + Body 1-3. Introduction/
+        //    Conclusion score 0 as missing, with teaching feedback per the protocol.
+        //  - 5+ paragraphs, or ANY later attempt: strict position map — first=INTRODUCTION,
+        //    2nd-4th=BODY 1-3, LAST=CONCLUSION, between 4th and last = EXTRA (never assessed).
+        // Language papers keep neutral labels — their responses are per-question, not essays.
         const mapLabel = (i, n) => {
-            if (isLangPaper || n < 2) return `PARAGRAPH ${i + 1}`;
+            if (isLangPaper) return `PARAGRAPH ${i + 1}`;
+            if (isFirstDiagnosticMap && n <= 3) return `PARAGRAPH ${i + 1} of ${n} — BODY ${i + 1}`;
+            if (isFirstDiagnosticMap && n === 4) {
+                return i === 0 ? `PARAGRAPH 1 of 4 — INTRODUCTION`
+                               : `PARAGRAPH ${i + 1} of 4 — BODY ${i}`;
+            }
             if (i === 0) return `PARAGRAPH 1 of ${n} — INTRODUCTION`;
             if (i === n - 1) return `PARAGRAPH ${n} of ${n} — CONCLUSION`;
             if (i <= 3) return `PARAGRAPH ${i + 1} of ${n} — BODY ${i}`;
