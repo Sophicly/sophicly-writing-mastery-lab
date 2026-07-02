@@ -1621,7 +1621,18 @@ window.WML = (function() {
     // Active config based on current task
     // prose_anthology uses Literature CN, not Poetry CN
     const isPoetrySubject = () => ['poetry_anthology', 'unseen_poetry'].includes(state.subject);
-    const isLanguageSubject = () => ['language1', 'language2'].includes(state.subject);
+    // v7.19.827 ROOT FIX: the shared-lesson shortcode carries subject="language"; the
+    // plugin derives the paper form from the text slug (sophicly-writing-mastery-lab.php
+    // v7.15.29) — so the frontend receives 'language_p1' / 'language_p2', NOT 'language1'.
+    // Exact-match ['language1','language2'] therefore silently no-opped every language
+    // gate on shared language lessons (live 2026-07-03: P1 pre-chain served the
+    // LITERATURE goal options; the AQA-Language completion detector never applied).
+    // Normalise once, here — every consumer reads this ONE helper.
+    const isLanguageSubject = () => {
+        const s = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        return s === 'language' || s === 'language1' || s === 'language2'
+            || /^lang(uage)?(paper)?p?[12]$/.test(s);
+    };
     const isNonfictionSubject = () => {
         if (state.subject === 'nonfiction_anthology') return true;
         // Edexcel IGCSE Language Paper 1 = nonfiction anthology texts

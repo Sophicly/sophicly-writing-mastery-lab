@@ -421,8 +421,9 @@ class SWML_Protocol_Router {
         $out .= "\n### END-OF-ASSESSMENT RULES\n\n";
         $out .= "When you reach the Final Summary:\n";
         $out .= "1. **Score format** — output `Total: X/Y` and `Grade: N` on their own labelled lines. Regex extraction depends on this.\n";
-        $out .= "2. **No task menu** — do NOT offer 'start a new assessment / plan an essay / polish'. Tell the student to click Mark Complete in the chat.\n";
-        $out .= "3. **Closing message** — summarise total + grade, name the key strength and 1–2 targets, remind the student to copy feedback into the Feedback sections of their workbook, end with encouragement. No further questions.\n";
+        $out .= "2. **No task menu** — do NOT offer 'start a new assessment / plan an essay / polish'. TWO different clicks end the session — NEVER conflate them: `[✓ Got it — continue]` closes the conversation's final gate; the **Mark Complete** button in the DOCUMENT FOOTER is what marks the assessment complete. After the student clicks ✓, tell them to press **Mark Complete** in the footer below their document. Never say '✓ Got it — continue to mark this assessment complete'.\n";
+        $out .= "3. **Buttons travel with the ask** — whenever you tell the student to click any quick-action button, RE-EMIT that button row verbatim in the SAME message. Never point at buttons 'above' — the student may have scrolled past them.\n";
+        $out .= "4. **Closing message** — summarise total + grade, name the key strength and 1–2 targets, end with encouragement. Feedback auto-files into the workbook via the markers — never tell the student to copy anything. No further questions.\n";
 
         $out .= "\n### PROTOCOL COMPLIANCE\n\n";
         $out .= "- Follow the protocol's teaching steps EXACTLY — no summarising, abbreviating, or skipping.\n";
@@ -477,7 +478,7 @@ class SWML_Protocol_Router {
         $p .= "\n### END-OF-ASSESSMENT — CRITICAL RULES\n";
         $p .= "When you reach the final Summary & Action Plan step:\n";
         $p .= "1. **Score format** — You MUST output `Total: X/Y` and `Grade: N` on their own labelled lines. Frontend regex depends on it. `Total` = the sum of the five `Total Mark for [section]` values minus any word-count penalty — nothing else.\n";
-        $p .= "2. **No task menu** — Do NOT offer next-task choices. Tell the student to click Mark Complete.\n";
+        $p .= "2. **No task menu** — Do NOT offer next-task choices. TWO different clicks end the session — NEVER conflate them: `[✓ Got it — continue]` closes the conversation's final gate; the **Mark Complete** button in the DOCUMENT FOOTER is what marks the assessment complete. After ✓, tell the student to press **Mark Complete** in the footer below their document — never say '✓ Got it — continue to mark this assessment complete'. When telling the student to click any quick-action button, RE-EMIT that button row verbatim in the SAME message (never 'the buttons above').\n";
         $p .= "3. **Auto-filing** — Feedback files itself into the workbook via the `@FB_BEGIN`/`@FB_END` markers. NEVER tell the student to copy, paste, or save anything manually.\n";
         $p .= "4. **Closing message** — Summarise total + grade, name 1 strength + 1-2 targets, end with encouragement. No further questions.\n";
         $p .= "5. **AO selection** — When asking which AOs a paragraph targets, say 'Select all that apply'.\n";

@@ -4616,10 +4616,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     position: fixed;
     top: 60px; right: 20px;
     width: 380px; max-height: 60vh;
-    background: rgba(40, 41, 43, 0.97);
-    border: 1px solid rgba(81, 218, 207, 0.2);
+    /* v7.19.827 (Neil): no outline strokes — edge definition from shadow + surface
+       contrast only; base = the primary dark surface #1c1d1f. */
+    background: rgba(28, 29, 31, 0.97);
+    border: none;
     border-radius: 10px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.55);
     /* v7.19.772: sit ABOVE the LearnDash focus sidebar. The panel goes position:fixed while
        dragged (escapes the canvas overflow:hidden), so when pulled left over the LD sidebar the
        old z:200 lost to it. Raised above the WML high-overlay band (99990–99999) so the detached
@@ -4642,13 +4644,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     user-select: none; -webkit-user-select: none;
 }
 .swml-extract-panel-close {
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.07); border: none; color: rgba(255,255,255,0.5);
     cursor: pointer; font-size: 14px; padding: 4px 8px; border-radius: 6px;
     transition: all 0.15s; line-height: 1;
-    box-shadow: 2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(255,255,255,0.03);
     flex-shrink: 0; margin-left: auto;
 }
-.swml-extract-panel-close:hover { color: #ff6b6b; background: rgba(255,100,100,0.1); border-color: rgba(255,100,100,0.2); }
+.swml-extract-panel-close:hover { color: #ff6b6b; background: rgba(255,100,100,0.12); }
 
 /* ── Multi-source tabs (v7.14.59) ── */
 .swml-extract-panel-title-row { font-size: 12px; font-weight: 700; color: #51dacf; white-space: nowrap; }
@@ -4659,16 +4660,14 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     display: flex; gap: 4px; width: 100%; order: 3;
 }
 .swml-extract-tab {
-    flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+    flex: 1; background: rgba(255,255,255,0.06); border: none;
     color: rgba(255,255,255,0.45); font-size: 11px; font-weight: 600;
     padding: 5px 10px; border-radius: 6px; cursor: pointer;
     transition: all 0.2s; text-align: center;
 }
-.swml-extract-tab:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.08); }
+.swml-extract-tab:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.1); }
 .swml-extract-tab.active {
-    color: #51dacf; background: rgba(81,218,207,0.12);
-    border-color: rgba(81,218,207,0.25);
-    box-shadow: 0 0 8px rgba(81,218,207,0.1);
+    color: #51dacf; background: rgba(81,218,207,0.14);
 }
 .swml-extract-panel-body {
     padding: 14px;
@@ -4686,25 +4685,23 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 
 /* Light mode */
 [data-swml-theme="light"] .swml-extract-panel {
-    background: rgba(255, 255, 255, 0.95);
-    border-color: rgba(65, 170, 168, 0.2);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    background: rgba(255, 255, 255, 0.97);
+    border: none;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.16);
 }
 [data-swml-theme="light"] .swml-extract-panel-header { color: #2d7a78; }
 [data-swml-theme="light"] .swml-extract-panel-close {
-    background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: rgba(0,0,0,0.4);
-    box-shadow: 2px 2px 6px rgba(0,0,0,0.08), -1px -1px 4px rgba(255,255,255,0.6);
+    background: rgba(0,0,0,0.05); border: none; color: rgba(0,0,0,0.4);
 }
-[data-swml-theme="light"] .swml-extract-panel-close:hover { color: #ff6b6b; background: rgba(255,100,100,0.08); border-color: rgba(255,100,100,0.2); }
+[data-swml-theme="light"] .swml-extract-panel-close:hover { color: #ff6b6b; background: rgba(255,100,100,0.1); }
 [data-swml-theme="light"] .swml-extract-panel-body { color: rgba(0,0,0,0.75); }
 [data-swml-theme="light"] .swml-extract-panel-title-row { color: #2d7a78; }
 [data-swml-theme="light"] .swml-extract-tab {
-    background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.08); color: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.04); border: none; color: rgba(0,0,0,0.4);
 }
-[data-swml-theme="light"] .swml-extract-tab:hover { color: rgba(0,0,0,0.6); background: rgba(0,0,0,0.05); }
+[data-swml-theme="light"] .swml-extract-tab:hover { color: rgba(0,0,0,0.6); background: rgba(0,0,0,0.06); }
 [data-swml-theme="light"] .swml-extract-tab.active {
-    color: #2d7a78; background: rgba(65,170,168,0.1);
-    border-color: rgba(65,170,168,0.25); box-shadow: 0 0 8px rgba(65,170,168,0.08);
+    color: #2d7a78; background: rgba(65,170,168,0.12);
 }
 /* Comment popovers inside extract panel position relative to the panel */
 .swml-extract-panel .swml-comment-popover { z-index: 210; }
