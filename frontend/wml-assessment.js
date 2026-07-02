@@ -18748,9 +18748,27 @@
         // v7.19.497: HEAL — insert the "Your Progress" section before Tutor Sign-off
         // for existing CW docs (Neil doesn't restart projects). Derived/readonly, so a
         // missing one is purely cosmetic to recover. Idempotent: skips if present.
+        // v7.19.821: extended to ASSESSMENT docs (capability-gated, replacing the v817
+        // migrateDocument route that caused the 2026-07-02 wipe). This heal is the safe
+        // shape: runs in the chain AFTER tryServerLoad, targeted insertContentAt under
+        // _migrationActive (never a full setContent), and for assessment docs only when
+        // the doc is HYDRATED (student response text present) — so it can never inject
+        // into a pre-load template and persist an essay-less doc. Fresh diagnostics gain
+        // the card once the essay exists, which is when it means anything. Never mutates
+        // in review mode (tutor must see the stored doc).
         const tryHealCwProgressSection = () => {
-            if (!isCwTask || !canvasEditor) return;
+            if (!canvasEditor || state.reviewMode) return;
+            const isAssessDoc = !isCwTask && WML.hasAssessmentSections && WML.hasAssessmentSections(state.task);
+            if (!isCwTask && !isAssessDoc) return;
             try {
+                if (isAssessDoc) {
+                    const editorEl = canvasEditor.options && canvasEditor.options.element;
+                    let respLen = 0;
+                    if (editorEl) editorEl.querySelectorAll('.swml-section-block[data-section-type="response"]').forEach(s => {
+                        respLen += (s.textContent || '').trim().length;
+                    });
+                    if (respLen < 100) return; // not hydrated — next load retries
+                }
                 let hasProgress = false, signoffPos = null;
                 canvasEditor.state.doc.descendants((node, pos) => {
                     if (node.type.name !== 'sectionBlock') return true;
