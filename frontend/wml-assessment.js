@@ -28637,14 +28637,16 @@
             { label: 'Self-Assessment', build: () => buildSelfAssessmentSection() },
             { label: 'Analytics', build: () => buildAnalyticsSection() },
             { label: 'Action Plan', build: () => buildActionPlanSection(state.draftType?.includes('redraft') ? 'redraft' : 'diagnostic') },
-            // v7.19.817: Document Progress card above the sign-off (Neil, completion-island
-            // spec). Same node CW docs carry (v497); the nodeView renders the live card.
-            // Listed here so BOTH new and existing assessment docs get it — migrateDocument
-            // runs on every assessment-caps load and inserts missing sections before
-            // Tutor Sign-off, which is exactly the wanted position.
-            { label: 'Document Progress', build: () => buildProgressSection() },
             { label: 'Tutor Sign-off', build: () => buildSignoffSection() },
         ];
+        // v7.19.818: Document Progress is deliberately NOT in this list. The v817 entry
+        // made this function mutate (setContent + autosave) EVERY existing assessment doc
+        // on load — and on 2026-07-02 a save from that path overwrote Neil's certified,
+        // fully-marked R&J attempt-2 doc with stale placeholder content (server copy was
+        // intact at 11:30 UTC, wiped by the 13:04+ saves). Until the stale-content source
+        // in the load pipeline is engineered out, migrateDocument must stay a no-op for
+        // up-to-date docs. Progress-card injection will return as a targeted, guarded
+        // insertContentAt heal (see wml-CHATA handoff 2026-07-02).
 
         // Find which sections are missing
         const missingSections = [];
