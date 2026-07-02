@@ -5302,7 +5302,7 @@
                         const questionHTML = qText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${workNoun} question:</p><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
                         const essayLabel = (state.mode === 'exam_prep') ? `${tn} ${workNoun}` : (state.phase === 'redraft') ? `${tn} redraft ${workNoun}` : `${tn} diagnostic ${workNoun}`;
                         const gt = `Hi ${fn}! Welcome to the assessment phase. I've received your ${essayLabel} (${wc} words). Let's review your writing together.${questionInfo}\n\nBefore I begin marking, I need to know: **what grade are you aiming for?** This helps me tailor my feedback to where you want to be.`;
-                        const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all 8 steps to receive your full score, grade, and personalised feedback.</div>';
+                        const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all steps to receive your full score, grade, and personalised feedback.</div>';
                         const gtHTML = `${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${tn}</strong> ${(state.mode === 'exam_prep') ? workNoun : (state.phase === 'redraft') ? `redraft ${workNoun}` : `diagnostic ${workNoun}`} (<strong>${wc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`;
                         addChatMessage(gtHTML, 'ai', gt);
                         canvasChatHistory.push({ role: 'assistant', content: gt });
@@ -11587,7 +11587,8 @@
                         || aiText.includes("I've received your")
                         || (aiText.includes('essay (') && aiText.includes('words)'))
                         || aiText.includes('Before I begin marking')
-                        || aiText.includes('Complete all 8 steps');
+                        || aiText.includes('Complete all 8 steps')
+                        || aiText.includes('Complete all steps');
                     // v7.19.2: cross-bridgeStep mismatch detection within mark_scheme_unit.
                     // FYW (bridgeStep=2) loading MSQ-shape content, OR MSQ (bridgeStep=1)
                     // loading FYW-shape content, both indicate stale storage-key collision.
@@ -11902,7 +11903,7 @@
                                 const _qHTML2 = _questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${_workLabel2} question:</p><p style="font-size:13px;font-style:italic">${_questionText}</p></div>` : '';
                                 const _essayLabel2 = (state.mode === 'exam_prep') ? `${_assessTextName} ${_workLabel2}` : (state.phase === 'redraft') ? `${_assessTextName} redraft ${_workLabel2}` : `${_assessTextName} diagnostic ${_workLabel2}`;
                                 const _newPlain = `Hi ${_firstName}! Welcome to the assessment phase. I've received your ${_essayLabel2} (${_assessWc} words). Let's review your writing together.${_qSnippet2}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
-                                const _infoNote2 = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all 8 steps to receive your full score, grade, and personalised feedback.</div>';
+                                const _infoNote2 = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all steps to receive your full score, grade, and personalised feedback.</div>';
                                 const _newHTML = `${_infoNote2}<div style="margin-bottom:12px"><p>Hi <strong>${_firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${_assessTextName}</strong> ${(state.mode === 'exam_prep') ? _workLabel2 : (state.phase === 'redraft') ? `redraft ${_workLabel2}` : `diagnostic ${_workLabel2}`} (<strong>${_assessWc} words</strong>). Let's review your writing together.</p></div>${_qHTML2}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`;
                                 // Replace bubble HTML in DOM
                                 const _firstBubble = tp.chatMessages?.firstElementChild;
@@ -12175,7 +12176,7 @@
                     const questionHTML = questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${_workLabel} question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
                     const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} ${_workLabel}` : (state.phase === 'redraft') ? `${assessTextName} redraft ${_workLabel}` : `${assessTextName} diagnostic ${_workLabel}`;
                     const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
-                    const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all 8 steps to receive your full score, grade, and personalised feedback.</div>';
+                    const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all steps to receive your full score, grade, and personalised feedback.</div>';
                     tp.addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? _workLabel : (state.phase === 'redraft') ? `redraft ${_workLabel}` : `diagnostic ${_workLabel}`} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
                     tp.canvasChatHistory.push({ role: 'assistant', content: greetingText });
                     saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
@@ -14369,7 +14370,7 @@
                                             // v7.14.43: Context-aware greeting — exam practice has no "diagnostic"
                                             const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} essay` : (state.phase === 'redraft') ? `${assessTextName} redraft essay` : `${assessTextName} diagnostic essay`;
                                             const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
-                                            const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all 8 steps to receive your full score, grade, and personalised feedback.</div>';
+                                            const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all steps to receive your full score, grade, and personalised feedback.</div>';
                                             addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? 'essay' : (state.phase === 'redraft') ? 'redraft essay' : 'diagnostic essay'} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
                                             canvasChatHistory.push({ role: 'assistant', content: greetingText });
                                             saveCanvasChat(canvasChatHistory, canvasChatId);
@@ -22446,8 +22447,21 @@
             return blocks[0] || section.textContent?.trim() || editorTextSafe || '';
         }
 
-        // Label neutrally — the AI determines each paragraph's function (intro/body/conclusion)
-        const labelled = blocks.map((block, i) => `=== PARAGRAPH ${i + 1} ===\n${block}`);
+        // v7.19.806: Pre-map essay paragraphs by POSITION (deterministic — agrees with the
+        // protocol + the literature assessment preamble). First = Introduction, next three =
+        // Body 1-3, LAST = Conclusion, anything between the 4th and the last = EXTRA (never
+        // assessed). Two live runs (2026-07-01/02) proved the model mis-segments and blends
+        // paragraphs when the labels are neutral ("determine function by content"). Language
+        // papers keep neutral labels — their responses are per-question, not essay-shaped.
+        const isLangPaper = /^language/.test((state.subject || '').toLowerCase());
+        const mapLabel = (i, n) => {
+            if (isLangPaper || n < 2) return `PARAGRAPH ${i + 1}`;
+            if (i === 0) return `PARAGRAPH 1 of ${n} — INTRODUCTION`;
+            if (i === n - 1) return `PARAGRAPH ${n} of ${n} — CONCLUSION`;
+            if (i <= 3) return `PARAGRAPH ${i + 1} of ${n} — BODY ${i}`;
+            return `PARAGRAPH ${i + 1} of ${n} — EXTRA (do not assess — scores zero)`;
+        };
+        const labelled = blocks.map((block, i) => `=== ${mapLabel(i, blocks.length)} ===\n${block}`);
         return labelled.join('\n\n');
     }
 

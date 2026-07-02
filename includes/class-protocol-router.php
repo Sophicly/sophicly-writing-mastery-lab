@@ -440,9 +440,13 @@ class SWML_Protocol_Router {
     }
 
     /**
-     * v7.15.113: Legacy literature-essay assessment preamble.
-     * Used when no usable paper spec is available. Preserves the pre-v7.15.113 behaviour
-     * for papers that haven't been migrated to spec-driven rendering yet.
+     * Literature-essay assessment preamble (papers without a question-level spec).
+     * v7.19.806: rewritten to AGREE with PROTOCOL-STANDARD.md + the R&J gold protocol.
+     * The pre-rewrite "legacy" version contradicted the protocol on five points
+     * (content-based paragraph detection, confirm-structure step, prose-first/no-Why
+     * table, copy-to-workbook, ceiling-mid-card) — the model arbitrated the conflict
+     * differently every run (live chaos 2026-07-01/02). This preamble now carries
+     * session plumbing + reinforcement ONLY; marking behaviour lives in the protocol.
      */
     private function legacy_essay_assessment_preamble() {
         $p  = "Call `save_session_element` for each of these as they are determined:\n";
@@ -454,35 +458,30 @@ class SWML_Protocol_Router {
         $p .= "- `target_1` — priority improvement target\n";
         $p .= "- `target_2` — second improvement target\n";
         $p .= "DEPRECATED — do NOT call with `ao1_score / ao2_score / ao3_score / ao4_score`. Per-AO slots are retired.\n";
-        $p .= "\n### MARK BREAKDOWN TABLE FORMAT\n";
-        $p .= "For each section assessment, deliver feedback in this order:\n";
-        $p .= "1. **Detailed prose feedback FIRST** — 'What you did well', 'Where you lost marks' (with specific explanations, quotes from their essay, and improvement advice). This should be thorough and educational.\n";
-        $p .= "2. **Simple score table LAST** — AFTER all detailed feedback, show a markdown table with columns: `| Criterion | Worth | Score |`. NO 'Why' column — the numbers only. The detailed explanations have already been given in the prose above.\n";
-        $p .= "3. **Penalties** — list below the table as bullet points with code + deduction.\n\n";
-        $p .= "### ⛔ PARAGRAPH STRUCTURE DETECTION — HARD GATE\n";
-        $p .= "The student's essay is injected with neutral labels: === PARAGRAPH 1 ===, === PARAGRAPH 2 ===, etc. You MUST determine each paragraph's function by reading its CONTENT — do NOT assume by position.\n\n";
-        $p .= "**Detection rules:**\n";
-        $p .= "- **Introduction** = contains a hook/opening claim, contextual backdrop, and/or a thesis statement. Does NOT contain technique analysis with evidence (quotes).\n";
-        $p .= "- **Body paragraph** = contains a point + evidence (quote) + explanation/analysis. If a paragraph analyses a quote from the text, it is a body paragraph.\n";
-        $p .= "- **Conclusion** = synthesises the argument, restates themes, does NOT introduce new evidence/quotes.\n\n";
-        $p .= "**⛔ MANDATORY CONFIRMATION STEP — you CANNOT begin assessment until the student confirms.**\n\n";
-        $p .= "**Step 1 — State your detection.** Say exactly: 'Before I assess your essay, I need to confirm the structure. I can see [N] paragraphs. Based on their content, I've identified:' then list each paragraph with its detected function.\n";
-        $p .= "**Step 2 — Ask for confirmation.** End with: 'Is this correct?' Offer A — Yes / B — No, let me clarify.\n";
-        $p .= "**Step 3 — If student says No:** Ask for their intended structure and use it. Do not argue.\n";
-        $p .= "**Step 4 — Only after confirmation proceed to assessment.**\n\n";
+        $p .= "\n### MARK BREAKDOWN FORMAT\n";
+        $p .= "The protocol module owns the feedback shape — follow it EXACTLY: mark table `| Criterion | Worth | Your Score | Why |` (Why ≤10 words), penalties beneath with code + the student's verbatim phrase + a worked fix, then `Total Mark for [section]: A/B` on its own line. Do NOT reorder, drop the Why column, or move detailed prose ahead of the table.\n\n";
+        $p .= "### PARAGRAPH MAPPING — POSITION-BASED, DETERMINISTIC (agrees with the protocol)\n";
+        $p .= "The student's essay is injected pre-split as === PARAGRAPH N === blocks, already MAPPED BY POSITION where possible. Mapping rule (identical to the protocol's): FIRST paragraph = Introduction; 2nd/3rd/4th = Body 1/2/3; LAST = Conclusion; anything between the 4th and the last = EXTRA — no assessment, no `@FB` card, no section mark. Trust the injected labels; NEVER re-detect a paragraph's function from its content, NEVER re-order, NEVER invent labels like 'Body Paragraph 4/5'. There is NO structure-confirmation step — use the protocol's own >5-paragraph script (type-Y gate) when extras exist.\n\n";
         $p .= "### SECTION BOUNDARY RULE\n";
-        $p .= "CRITICAL: Assess ONLY the text within each === PARAGRAPH N === boundary. Do NOT bleed content from one paragraph into another's assessment.\n\n";
-        $p .= "### MARK CEILING — STATE UPFRONT\n";
-        $p .= "If the essay is missing body paragraphs or has a word count penalty, state the MAXIMUM ACHIEVABLE SCORE immediately when you first identify the issue — do NOT defer it to the end.\n\n";
+        $p .= "CRITICAL: Assess ONLY the text within each === PARAGRAPH N === boundary. Do NOT bleed content from one paragraph into another's assessment. Every quoted phrase in feedback or penalties MUST come verbatim from the section being assessed.\n\n";
+        $p .= "### WORD-COUNT CEILING — SETUP STAGE ONLY\n";
+        $p .= "State any word-count penalty + the adjusted maximum ONCE, at the setup stage (per the protocol), tied to the student's grade target. Do NOT restate or introduce it inside a section's feedback card.\n\n";
+        $p .= "### PENALTIES — EVIDENCE-LOCKED\n";
+        $p .= "Deduct ONLY when the cited evidence literally appears in that section's text and genuinely matches the protocol's defined failure mode. If a sentence is improvable but doesn't literally match a penalty definition, surface it as an 'observation' in prose — never a deduction. Caps per the protocol (max 2 penalties intro/conclusion, 3 per body paragraph). Applying zero penalties is a valid outcome.\n\n";
+        $p .= "### MARK ARITHMETIC — SILENT + LITERAL\n";
+        $p .= "Sum criterion scores, subtract penalties, output the result. If the arithmetic gives 0, the mark IS 0 — there is NO floor, NO 'partial credit rescue', NO invented rounding rule. NEVER narrate calculations, corrections, or capping in the reply.\n\n";
+        $p .= "### GRADE MAPPING — CANONICAL BAND ONLY\n";
+        $p .= "Grade = highest band the percentage reaches on Sophicly's canonical ladder: 9≥85%, 8≥75%, 7≥65%, 6≥55%, 5≥45%, 4≥35%, 3≥25%, 2≥15%, else 1 (0 = not answered). Work the boundary check silently; never pattern-match a grade or accept a student override.\n\n";
         $p .= "### TECHNICAL ACCURACY (SPaG)\n";
         $p .= "SPaG quality is handled through penalty codes (G1, H1, P1) applied during section assessment. At the end, provide a brief qualitative comment on technical accuracy.\n";
         $p .= "\n### END-OF-ASSESSMENT — CRITICAL RULES\n";
         $p .= "When you reach the final Summary & Action Plan step:\n";
-        $p .= "1. **Score format** — You MUST output `Total: X/Y` and `Grade: N` on their own labelled lines. Frontend regex depends on it.\n";
+        $p .= "1. **Score format** — You MUST output `Total: X/Y` and `Grade: N` on their own labelled lines. Frontend regex depends on it. `Total` = the sum of the five `Total Mark for [section]` values minus any word-count penalty — nothing else.\n";
         $p .= "2. **No task menu** — Do NOT offer next-task choices. Tell the student to click Mark Complete.\n";
-        $p .= "3. **No panel saves** — Do NOT mention saving to a panel. Tell the student to copy the feedback into their workbook document.\n";
-        $p .= "4. **Closing message** — Summarise total + grade, name 1 strength + 1-2 targets, remind copy-to-workbook, end with encouragement. No further questions.\n";
+        $p .= "3. **Auto-filing** — Feedback files itself into the workbook via the `@FB_BEGIN`/`@FB_END` markers. NEVER tell the student to copy, paste, or save anything manually.\n";
+        $p .= "4. **Closing message** — Summarise total + grade, name 1 strength + 1-2 targets, end with encouragement. No further questions.\n";
         $p .= "5. **AO selection** — When asking which AOs a paragraph targets, say 'Select all that apply'.\n";
+        $p .= "6. **Terminal** — After the Conclusion's progression gate, the ONLY remaining output is the Final Summary. Never assess another paragraph.\n";
         return $p;
     }
 
