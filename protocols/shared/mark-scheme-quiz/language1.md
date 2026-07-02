@@ -432,11 +432,11 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **AO:** AO5
    * **WhyWrong:** Seeing two tasks printed can suggest both are required, but you choose ONE; attempting both halves the time you can give to each piece.
 6. **Type: Fill-in-the-Blank \[Tests AO2\]**  
-   * **Question:** Question 2 focuses specifically on analyzing \[BLANK\] and structures (phrases, sentences).  
-   * **Answer:** Language  
-   * **Feedback:** ✓ Correct. Question 2 is purely about language, whereas Question 3 combines language and structure.  
+   * **Question:** In Edexcel Paper 1, the single analysis question (Question 3) asks how the writer uses language and \[BLANK\] to achieve effects.  
+   * **Answer:** Structure  
+   * **Feedback:** ✓ Correct. Question 3 is the one AO2 analysis question (6 marks), rewarding "how both language and structure are used." Questions 1 and 2 before it are short AO1 retrieval tasks, not language analysis.  
    * **AO:** AO2
-   * **WhyWrong:** Writing "structure" here muddles the pair: Q2 isolates language choices, while Q3 is the question that adds structure into the mix.
+   * **WhyWrong:** Writing "vocabulary" narrows it to word choice; the question names structure alongside language, and covering only one caps the response at the top of Level 1.
 7. **Type: MCQ \[Tests Question 4\]**  
    * **Question:** How many marks is the Evaluation Question 4 worth?  
    * **Options:** A) 15 marks, B) 20 marks, C) 40 marks, D) 10 marks.  
@@ -469,6 +469,97 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** An adjective is a word class, so spotting one is a point about word choice rather than about how ideas are arranged.
     * **Why C:** Alliteration is a sound technique within phrases, which is language-level analysis rather than the ordering of ideas.
     * **Why D:** A simile is an image built in words; it tells us nothing about how the text is sequenced or organised.
+11. **Type: MCQ \[Tests AO2\]**
+    * **Question:** An Edexcel Paper 1 Question 3 response gives "Analysis of how both language and structure are used to achieve effects, with discriminating references." Which level is that?
+    * **Options:** A) Level 1, B) Level 2, C) Level 3, D) Level 4.
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. Question 3 (AO2) tops out at Level 3 (5–6 marks): "Analysis of how both language and structure are used… the selection of references is discriminating and clarifies the points." There is no Level 4 on this six-mark question.
+    * **AO:** AO2
+    * **Why A:** Level 1 only comments on language and/or structure with undeveloped references, well below analysis of both.
+    * **Why B:** Level 2 explains how both are used with appropriate references, one rung short of the discriminating analysis described.
+    * **Why D:** Question 3 has only three levels; the fourth and fifth bands live on the fifteen-mark evaluation question, not here.
+12. **Type: Fill-in-the-Blank \[Tests AO2\]**
+    * **Question:** In Edexcel Question 3, a response that analyses only language OR only structure cannot progress beyond the top of Level \[BLANK\].
+    * **Answer:** One
+    * **Feedback:** ✓ Correct. The mark scheme states the mark "cannot progress beyond the top of Level 1 if only language OR structure has been considered." You must analyse both to reach Level 2 or 3.
+    * **AO:** AO2
+    * **WhyWrong:** Writing "Two" or "Three" assumes partial coverage still climbs the ladder; a one-sided answer is capped at the top of Level 1.
+13. **Type: MCQ \[Tests AO4\]**
+    * **Question:** Which word names the Level 5 (13–15) descriptor for Edexcel Question 4?
+    * **Options:** A) Description, B) Explanation, C) Analysis, D) Evaluation.
+    * **Correct:** D
+    * **Feedback:** ✓ Correct. The AO4 ladder climbs Description (L1) → Comment (L2) → Explanation (L3) → Analysis (L4) → Evaluation (L5, 13–15). Only the top band evaluates the ideas, events, themes or settings.
+    * **AO:** AO4
+    * **Why A:** Description of ideas is the Level 1 floor of this question, not its ceiling.
+    * **Why B:** Explanation sits at Level 3, two bands below the evaluative top.
+    * **Why C:** Analysis reaches Level 4, strong but still short of the weighed judgement Level 5 demands.
+14. **Type: Select All That Apply \[Tests AO6\]**
+    * **Question:** Which describe the Level 5 (13–16) AO6 descriptor for Edexcel imaginative writing? (Select all that apply)
+    * **Options:** A) Uses an extensive vocabulary strategically, B) Rare spelling errors do not detract from meaning, C) Basic vocabulary that is often misspelled, D) Punctuates with accuracy to aid emphasis and precision.
+    * **Correct:** A, B, D
+    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
+    * **Feedback:** The top AO6 band rewards strategic, extensive vocabulary, near-flawless spelling, and accurate punctuation used to aid emphasis and precision.
+    * **AO:** AO6
+    * **Why C:** Basic, often-misspelled vocabulary is the Level 1 descriptor, the very bottom of the sixteen-mark AO6 ladder.
+15. **Type: True/False \[Tests Writing\]**
+    * **Question:** True or False: the imaginative writing question is worth 40 marks, of which 16 are for AO6 (vocabulary, sentence structures, spelling and punctuation).
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The mark scheme states the task is worth 40 marks and "includes 16 marks for the range of vocabulary and sentence structures… with accurate use of spelling and punctuation," leaving 24 marks for AO5 content and organisation.
+    * **AO:** AO6
+    * **WhyWrong:** It is easy to assume content carries everything, but a clear 16 of the 40 marks ride on technical accuracy alone.
+16. **Type: MCQ \[Tests AO5\]**
+    * **Question:** The Level 5 (20–24) AO5 descriptor for Edexcel writing is "shapes audience response with ___." Which word completes it?
+    * **Options:** A) subtlety, B) accuracy, C) confidence, D) enthusiasm.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. The top AO5 band "shapes audience response with subtlety," in a controlled and crafted piece. Subtlety, not volume of technique, marks the highest content-and-organisation band.
+    * **AO:** AO5
+    * **Why B:** Accuracy belongs to the AO6 technical ladder, not the AO5 content-and-organisation descriptor.
+    * **Why C:** Confidence sounds plausible but is not the mark scheme's wording; the crafted control it wants is captured by "subtlety."
+    * **Why D:** Enthusiasm describes tone, not the deliberate shaping of a reader's response the band rewards.
+17. **Type: Fill-in-the-Blank \[Tests AO4\]**
+    * **Question:** Edexcel Question 4 asks you to evaluate the text and is worth \[BLANK\] marks.
+    * **Answer:** 15
+    * **Feedback:** ✓ Correct. Question 4 (AO4) carries 15 marks, the highest-tariff reading question, marked across five levels from Description to Evaluation.
+    * **AO:** AO4
+    * **WhyWrong:** Guessing 20 imports AQA's evaluation tariff; Edexcel sets this question at 15.
+18. **Type: True/False \[Tests AO2\]**
+    * **Question:** True or False: Question 3 asks you to analyse how the writer uses both language and structure, not language alone.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Question 3 is the single AO2 question and explicitly rewards "how both language and structure are used." A response weighing only one is capped at the top of Level 1.
+    * **AO:** AO2
+    * **WhyWrong:** Treating Question 3 as a pure language question loses the structure marks and caps the response before Level 2.
+19. **Type: MCQ \[Tests AO1\]**
+    * **Question:** In Edexcel Section A, Questions 1 and 2 are both retrieval questions. What are their marks?
+    * **Options:** A) Both worth 4 marks, B) Question 1 is 1 mark and Question 2 is 2 marks, C) Both worth 5 marks, D) Question 1 is 2 marks and Question 2 is 6 marks.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Question 1 is a 1-mark retrieval task and Question 2 accepts reasonable points up to a maximum of 2 marks, both AO1, both quick.
+    * **AO:** AO1
+    * **Why A:** Four marks each overstates two short openers designed to be answered in seconds.
+    * **Why C:** Five marks each would make the retrieval questions heavier than the six-mark analysis question, which they are not.
+    * **Why D:** Six marks is the AO2 analysis tariff at Question 3, not a retrieval value.
+20. **Type: Select All That Apply \[Tests AO5\]**
+    * **Question:** AO5 (Content and Organisation) rewards which of these in Edexcel imaginative writing? (Select all that apply)
+    * **Options:** A) Selecting stylistic or rhetorical devices to suit audience and purpose, B) Organising material for particular effect, C) Correct spelling of irregular words, D) Shaping the reader's response with subtlety.
+    * **Correct:** A, B, D
+    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
+    * **Feedback:** AO5 climbs through suiting devices to purpose, organising for effect, and shaping response with subtlety. Spelling accuracy is scored on the separate AO6 ladder.
+    * **AO:** AO5
+    * **Why C:** Correct spelling of irregular words is an AO6 (technical accuracy) descriptor, marked apart from AO5 content and organisation.
+21. **Type: MCQ \[Tests AO2\]**
+    * **Question:** What single shift lifts a Question 3 answer from Level 2 to Level 3?
+    * **Options:** A) Quoting from more parts of the extract, B) Moving from explanation of both language and structure to analysis of both, C) Writing about language only, in more depth, D) Adding a personal opinion of the extract.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 2 "explains how both language and structure are used"; Level 3 "analyses how both… with discriminating references." The lift is explanation becoming analysis, references becoming discriminating.
+    * **AO:** AO2
+    * **Why A:** More quotation is not a level descriptor; Edexcel rewards discriminating selection, not quantity.
+    * **Why C:** Narrowing to language alone forfeits the "both" requirement and caps the mark at Level 1.
+    * **Why D:** Personal opinion of the extract is evaluation, the work of Question 4, not Question 3 analysis.
+22. **Type: True/False \[Tests AO6\]**
+    * **Question:** True or False: across the qualification, AO6 (technical accuracy) must constitute 20% of the marks.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Spelling, punctuation and grammar are weighted heavily by design, a fifth of the whole qualification, which is why the imaginative writing task alone reserves 16 of its 40 marks for AO6.
+    * **AO:** AO6
+    * **WhyWrong:** Dismissing technical accuracy as trivial ignores that a full 20% of the qualification depends on it.
 
 ### **SECTION C: EDEXCEL IGCSE SPEC A (4EA1)**
 
@@ -487,15 +578,15 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Feedback:** ✓ Correct. This is the "Technical Accuracy" objective (equivalent to AO6 in AQA).  
    * **AO:** AO6
    * **WhyWrong:** Grammar and paragraphing also appear in the full wording of this objective, but the strand quoted here pairs spelling with punctuation as the final named element.
-3. **Type: MCQ \[Tests Question 4\]**  
-   * **Question:** Question 4 is the creative writing task. What percentage of the total marks is it worth?  
-   * **Options:** A) 25%, B) 50%, C) 40%, D) 10%.  
+3. **Type: MCQ \[Tests Marks\]**  
+   * **Question:** In Edexcel IGCSE Spec A Paper 1, how are the marks divided between reading and writing?  
+   * **Options:** A) Reading 60%, Writing 40%, B) Reading 40%, Writing 60%, C) Reading and Writing 50% each, D) Reading 75%, Writing 25%.  
    * **Correct:** C  
-   * **Feedback:** ✓ Correct. The reading section is 60%, and the writing section (Question 4\) is 40% of the paper marks.  
-   * **AO:** AO5
-   * **Why A:** A quarter sounds modest for one task, but the single writing question carries a noticeably heavier share than that.
-   * **Why B:** An even split sounds intuitive, yet reading takes the larger 60% share on this paper.
-   * **Why D:** Ten percent would make the writing task a minor add-on; at 40% it rewards far more time and care than that.
+   * **Feedback:** ✓ Correct. Section A Reading is worth 45 marks (Question 1 is 2, Question 2 is 4, Question 3 is 5, Question 4 is 12, Question 5 is 22) and Section B Transactional Writing is worth 45 marks (AO4 27 plus AO5 18), an even 50/50 split. Question 4 is a reading-analysis task, not the writing question.  
+   * **AO:** AO2
+   * **Why A:** A tilt toward reading fits some GCSE papers, but this specification balances the two sections equally.
+   * **Why B:** Weighting writing at 60% overstates it; the transactional writing carries exactly half the paper, not more.
+   * **Why D:** A 75/25 split would make writing a minor task; here it matches reading mark for mark.
 4. **Type: Select All That Apply \[Tests Question 5\]**  
    * **Question:** Question 5 compares two texts. What must you include? (Select all that apply)  
    * **Options:** A) Similarities between the texts, B) Differences between the texts, C) Analysis of language methods, D) Your personal opinion on the topic.  
@@ -540,41 +631,132 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **AO:** AO3
    * **WhyWrong:** Separate paragraphs per text feel tidy and organised, but without comparative links the response never actually compares, which is the skill being marked.
 10. **Type: MCQ \[Tests Marks\]**  
-    * **Question:** How many marks is the comparison Question 4 worth?  
+    * **Question:** How many marks is the comparison Question 5 worth?  
     * **Options:** A) 12, B) 22, C) 30, D) 10\.  
     * **Correct:** B  
-    * **Feedback:** ✓ Correct. It is a high-tariff question worth 22 marks.
+    * **Feedback:** ✓ Correct. Question 5 (AO3) is a high-tariff comparison worth 22 marks — the highest-tariff question on the paper.
     * **AO:** AO3
-    * **Why A:** Twelve marks would suit a mid-tariff analysis question; the comparison carries considerably more weight than that.
+    * **Why A:** Twelve marks is the tariff of the Question 4 single-text analysis; the comparison carries almost double.
     * **Why C:** Thirty overshoots the tariff; that figure resembles a full essay question elsewhere, not this comparison.
     * **Why D:** Ten marks underrates the question badly; treating it as low-tariff leads students to rush the paper's biggest reading reward.
+11. **Type: MCQ \[Tests AO2\]**
+    * **Question:** The Level 5 (11–12) descriptor for Edexcel IGCSE Spec A Question 4 begins "Perceptive understanding and ___ of language and structure." Which word completes it?
+    * **Options:** A) comment, B) analysis, C) description, D) identification.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The top AO2 band (11–12 marks) is "Perceptive understanding and analysis of language and structure." Analysis, not mere comment, defines Level 5.
+    * **AO:** AO2
+    * **Why A:** Comment sits at Level 2; the top band demands full analysis.
+    * **Why C:** Description is not this ladder's wording; the bands run identification, comment, explanation, exploration, analysis.
+    * **Why D:** Basic identification is the Level 1 floor of Question 4, not its ceiling.
+12. **Type: Fill-in-the-Blank \[Tests AO2\]**
+    * **Question:** Edexcel IGCSE Spec A Question 4, the single-text language and structure analysis, is worth \[BLANK\] marks.
+    * **Answer:** 12
+    * **Feedback:** ✓ Correct. Question 4 (AO2) carries 12 marks across five levels, from basic identification to perceptive analysis of language and structure.
+    * **AO:** AO2
+    * **WhyWrong:** Confusing it with the 22-mark comparison (Question 5) overstates it; the single-text analysis is worth 12.
+13. **Type: MCQ \[Tests AO3\]**
+    * **Question:** The Level 5 (19–22) descriptor for the Spec A comparison (Question 5) rewards a response that considers what?
+    * **Options:** A) A varied and comprehensive range of comparisons between the texts, B) Obvious comparisons between the texts, C) A response that does not compare the texts, D) A single detailed analysis of one text.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. The top AO3 band is "a varied and comprehensive range of comparisons between the texts." Breadth and variety of comparison define Level 5.
+    * **AO:** AO3
+    * **Why B:** Obvious comparisons is the Level 2 descriptor, well short of comprehensive range.
+    * **Why C:** A response that does not compare is Level 1; it cannot rise while the texts sit side by side unlinked.
+    * **Why D:** Analysing one text in depth ignores the comparison this question is built to reward.
+14. **Type: Select All That Apply \[Tests AO4\]**
+    * **Question:** In the Spec A transactional writing task, AO4 (Communication) climbs through which descriptors? (Select all that apply)
+    * **Options:** A) Communicates clearly (Level 3), B) Communicates successfully (Level 4), C) Communication is perceptive and subtle (Level 5), D) Correct spelling of complex words (Level 5).
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** AO4 rises from communicating clearly, to successfully, to perceptive and subtle. Spelling is scored on the separate AO5 technical ladder.
+    * **AO:** AO4
+    * **Why D:** Correct spelling is an AO5 (technical accuracy) descriptor, marked apart from AO4 communication.
+15. **Type: True/False \[Tests Writing\]**
+    * **Question:** True or False: the Spec A transactional writing task is marked out of 27 for AO4 and out of 18 for AO5, making 45 marks in total.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Section B awards 27 marks for AO4 communication and 18 marks for AO5 clear writing with a range of vocabulary and sentence structures, 45 in all, equal to the reading section.
+    * **AO:** AO4
+    * **WhyWrong:** Assuming communication and accuracy are weighted equally misreads the grid; AO4 carries 27 and AO5 carries 18.
+16. **Type: MCQ \[Tests AO5\]**
+    * **Question:** The Level 5 (16–18) AO5 descriptor for Spec A writing describes a response that does what with ideas?
+    * **Options:** A) Expresses information with limited structure, B) Orders information using paragraphs, C) Manipulates complex ideas, using a range of structural and grammatical features, D) Develops and connects appropriate ideas.
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. The top AO5 band "manipulates complex ideas, utilising a range of structural and grammatical features" for deliberate effect.
+    * **AO:** AO5
+    * **Why A:** Limited structural use is the Level 1 floor, not the accomplished top band.
+    * **Why B:** Ordering with paragraphs describes Level 2, some way below manipulation of complex ideas.
+    * **Why D:** Developing and connecting appropriate ideas is Level 3, competent but short of the top.
+17. **Type: Fill-in-the-Blank \[Tests AO1\]**
+    * **Question:** In Spec A Section A, the questions before the analysis are AO1 retrieval; Question 3 accepts reasonable points up to a maximum of \[BLANK\] marks.
+    * **Answer:** 5
+    * **Feedback:** ✓ Correct. Question 1 is worth 2 marks, Question 2 up to 4, and Question 3 up to 5, all AO1 reading, rewarding valid points from the text.
+    * **AO:** AO1
+    * **WhyWrong:** Guessing a higher figure treats retrieval like analysis; Question 3 caps at 5 marks for AO1 points.
+18. **Type: True/False \[Tests AO3\]**
+    * **Question:** True or False: in Spec A the cross-text comparison is Question 5, the highest-tariff question on the paper at 22 marks.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Question 5 (AO3) is worth 22 marks, more than any other single question, which is why it repays the most planning and time.
+    * **AO:** AO3
+    * **WhyWrong:** Treating the comparison as a minor closing task underrates the paper's biggest reward.
+19. **Type: MCQ \[Tests Assessment Objectives\]**
+    * **Question:** What does AO4 assess in Edexcel IGCSE Spec A?
+    * **Options:** A) Comparing writers' ideas across texts, B) Communicating effectively and imaginatively, adapting form, tone and register, C) Analysing linguistic and structural devices, D) Interpreting explicit and implicit information.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. AO4 is "communicate effectively and imaginatively, adapting form, tone and register," the content side of the transactional writing task.
+    * **AO:** AO4
+    * **Why A:** Comparing writers' ideas is AO3, assessed in Question 5.
+    * **Why C:** Analysing linguistic and structural devices is AO2, assessed in Question 4.
+    * **Why D:** Interpreting explicit and implicit information is AO1, the reading-retrieval objective.
+20. **Type: Select All That Apply \[Tests Writing Form\]**
+    * **Question:** Which forms suit the Spec A transactional writing task? (Select all that apply)
+    * **Options:** A) A letter, B) An article, C) A speech, D) A short story.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** Transactional writing means real-world, audience-facing forms such as letters, articles and speeches, where you adapt tone and register to purpose.
+    * **AO:** AO4
+    * **Why D:** A short story is imaginative writing; this paper's task is transactional, so a narrative would miss the form.
+21. **Type: MCQ \[Tests AO2\]**
+    * **Question:** A Spec A Question 4 answer shows "Thorough understanding and exploration of language and structure." Which level is that?
+    * **Options:** A) Level 2 (3–4), B) Level 3 (5–7), C) Level 4 (8–10), D) Level 5 (11–12).
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. "Thorough understanding and exploration" is the Level 4 (8–10) wording. Level 5 goes further to "perceptive understanding and analysis."
+    * **AO:** AO2
+    * **Why A:** Level 2 only offers "some understanding of and comment on" language and structure.
+    * **Why B:** Level 3 gives "clear understanding and explanation," one band below thorough exploration.
+    * **Why D:** Level 5 is "perceptive understanding and analysis," a step beyond exploration.
+22. **Type: True/False \[Tests Reading\]**
+    * **Question:** True or False: in Spec A Paper 1, one reading text is drawn from the studied Anthology and the other is an unseen non-fiction text.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Section A pairs a prepared Anthology text with an unseen non-fiction text, and Question 5 compares the two.
+    * **AO:** AO1
+    * **WhyWrong:** Assuming both texts are unseen ignores the prepared Anthology text you study in advance.
 
 ### **SECTION D: EDEXCEL IGCSE SPEC B (4EB1)**
 
 1. **Type: MCQ \[Tests Text Comparison\]**  
-   * **Question:** In Section A, Question 3 asks you to compare Text 1 and Text 2\. How many marks is this worth?  
-   * **Options:** A) 10 marks, B) 20 marks, C) 15 marks, D) 30 marks.  
+   * **Question:** In Section A, which question asks you to compare Text 1 and Text 2, and how many marks is it worth?  
+   * **Options:** A) Question 3, worth 10 marks, B) Question 7, worth 15 marks, C) Question 3, worth 20 marks, D) Question 8, worth 12 marks.  
    * **Correct:** B  
-   * **Feedback:** ✓ Correct. This is a significant comparison question worth 20 marks (AO3).  
+   * **Feedback:** ✓ Correct. Question 7 is the cross-text comparison (AO3), marked over five levels to a maximum of 15 marks. Question 3 earlier in Section A is a 10-mark AO2 analysis of a single text, not the comparison.  
    * **AO:** AO3
-   * **Why A:** Ten marks suggests a brief task, but this comparison is a major question demanding sustained treatment of both texts.
-   * **Why C:** Fifteen is a plausible middle guess, often borrowed from other boards' comparison tariffs rather than checked against the front of this paper.
-   * **Why D:** Thirty would dominate the whole section; no single reading question on this paper carries that much.
+   * **Why A:** Question 3 is an AO2 language-and-structure analysis worth 10 marks, not the comparison.
+   * **Why C:** Twenty marks and Question 3 both miss: the comparison is Question 7, capped at 15 marks.
+   * **Why D:** Question 8 is the directed-writing task in Section B and is not a reading comparison at all.
 2. **Type: Fill-in-the-Blank \[Tests Comparison\]**  
-   * **Question:** When comparing texts in Question 3, you must focus on both similarities and \[BLANK\].  
+   * **Question:** When comparing texts in Question 7, you must focus on both similarities and \[BLANK\].  
    * **Answer:** Differences  
    * **Feedback:** ✓ Correct. A balanced comparison explores both convergent and divergent ideas.  
    * **AO:** AO3
    * **WhyWrong:** Answers like "contrasts in language" overcomplicate it; the balance the question wants is simply similarities set alongside differences of idea and perspective.
 3. **Type: Select All That Apply \[Tests Writing\]**  
-   * **Question:** For Section B (Writing), which criteria are assessed? (Select all that apply)  
-   * **Options:** A) Effectiveness of communication (AO5), B) Comparisons with Section A texts, C) Vocabulary, Spelling, Punctuation (AO6), D) Analysis of methods.  
+   * **Question:** In the Section C writing task, which criteria are assessed? (Select all that apply)  
+   * **Options:** A) Communicating effectively and imaginatively, adapting form, tone and register (AO4), B) Comparisons with the Section A reading texts, C) A range of vocabulary and sentence structures with accurate spelling and punctuation (AO5), D) Analysis of the writers' methods.  
    * **Correct:** A, C  
    * **Scoring:** 2 marks for A, C. 1 mark if mostly correct.  
-   * **Feedback:** The writing section marks you on *your* writing skills (Content and Accuracy), not analysis or comparison.  
-   * **AO:** AO5
-   * **Why B:** Linking back to Section A texts feels like joined-up thinking, but Section B marks only your own writing, not reading connections.
-   * **Why D:** Analysing methods is a reading skill; in the writing section you deploy methods yourself rather than analyse anyone else's.
+   * **Feedback:** Spec B marks the composition on communication (AO4, 20 marks) and technical accuracy (AO5, 10 marks). This specification has no AO6; there is no reading, comparison or analysis credit in the writing task.  
+   * **AO:** AO4
+   * **Why B:** Linking back to the Section A texts earns nothing here; the writing task marks only your own composition.
+   * **Why D:** Analysing writers' methods is a reading skill; in Section C you deploy methods yourself rather than analyse them.
 4. **Type: True/False \[Tests AO1\]**  
    * **Question:** True or False: Question 1 and 2 are short-answer questions testing retrieval and inference.  
    * **Answer:** True  
@@ -590,21 +772,21 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Why B:** Fiction opens the first paper on several other specifications, which makes it a tempting guess, but 4EB1 is built entirely on non-fiction.
    * **Why C:** Poetry belongs to Literature papers; this Language paper never sets poems as reading texts.
    * **Why D:** Drama extracts are a Literature staple, not part of this non-fiction Language paper.
-6. **Type: Fill-in-the-Blank \[Tests Writing Options\]**  
-   * **Question:** In Section B, you are given \[BLANK\] writing tasks to choose from.  
-   * **Answer:** Three  
-   * **Feedback:** ✓ Correct. You choose ONE task from three options (often discursive, argumentative, or personal).  
+6. **Type: Fill-in-the-Blank \[Tests Writing\]**  
+   * **Question:** In the Spec B Section C composition, communication is marked out of 20 for AO4 and technical accuracy is marked out of \[BLANK\] for AO5.  
+   * **Answer:** 10  
+   * **Feedback:** ✓ Correct. The Section C composition is worth 30 marks in total — 20 for AO4 communication and 10 for AO5 vocabulary, sentence structures, spelling and punctuation.  
    * **AO:** AO5
-   * **WhyWrong:** Guessing "two" borrows the Edexcel GCSE pattern; Spec B offers three task options, of which you attempt only one.
+   * **WhyWrong:** Guessing 16 imports the AQA and Eduqas AO6 tariff; Spec B splits its 30-mark composition as 20 plus 10.
 7. **Type: MCQ \[Tests Directed Writing\]**  
-   * **Question:** Marks for "Directed Writing" are split between Reading and Writing. What is the split?  
-   * **Options:** A) 10 Reading / 10 Writing, B) 15 Reading / 5 Writing, C) 20 Reading / 20 Writing, D) 5 Reading / 15 Writing.  
+   * **Question:** The Section B directed-writing task (Question 8) splits its marks between reading and writing. What is the split?  
+   * **Options:** A) 10 reading / 20 writing, B) 10 reading / 10 writing, C) 20 reading / 10 writing, D) 15 reading / 15 writing.  
    * **Correct:** A  
-   * **Feedback:** ✓ Correct. You get marks for understanding the texts (Reading) and for your own writing quality (Writing).  
-   * **AO:** AO5
-   * **Why B:** Weighting reading at fifteen assumes the task mostly tests comprehension, but the split is deliberately equal.
-   * **Why C:** Twenty and twenty would make Directed Writing a forty-mark giant, larger than any single task this paper actually sets.
-   * **Why D:** Five marks for reading would barely credit your understanding of the source texts, which this task asks you to draw on throughout.
+   * **Feedback:** ✓ Correct. Question 8 is marked for AO1 reading (10 marks) and for writing across AO4 communication (12 marks) and AO5 accuracy (8 marks) — 10 reading and 20 writing, 30 in all.  
+   * **AO:** AO4
+   * **Why B:** An even 10/10 undercounts the writing; AO4 and AO5 together contribute 20 writing marks.
+   * **Why C:** Twenty reading marks overstates the AO1 share, which is fixed at 10.
+   * **Why D:** A 15/15 split matches neither the 10-mark AO1 reading nor the 20-mark writing total.
 8. **Type: Select All That Apply \[Tests Comparison Skills\]**  
    * **Question:** To get top marks in the Comparison Question 3, you must: (Select all that apply)  
    * **Options:** A) Use quotes from both texts, B) Analyze the writer's life story, C) Make clear links between the texts, D) Focus only on one text.  
@@ -629,6 +811,97 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** An even split feels standard across exam papers, but this specification weights writing more heavily than reading.
     * **Why C:** Sixty percent reverses the real balance; that figure is the Writing section's share, not Reading's.
     * **Why D:** Thirty percent makes reading look minor; at 40% it remains a substantial share that deserves real exam time.
+11. **Type: MCQ \[Tests AO2\]**
+    * **Question:** In Spec B Section A, each single-text analysis question (Questions 3 and 6) is worth how many marks?
+    * **Options:** A) 6 marks, B) 10 marks, C) 12 marks, D) 15 marks.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Questions 3 and 6 are AO2 analysis tasks, each marked over five levels to a maximum of 10 marks, topping out at "perceptive understanding and analysis of language and structure."
+    * **AO:** AO2
+    * **Why A:** Six marks is the AQA or OCR analysis-question shape, not Spec B's.
+    * **Why C:** Twelve marks matches the directed-writing AO4 band, not the single-text analysis.
+    * **Why D:** Fifteen marks is the comparison (Question 7) tariff, not a single-text analysis.
+12. **Type: Fill-in-the-Blank \[Tests AO3\]**
+    * **Question:** The Level 5 (13–15) descriptor for the Spec B comparison (Question 7) rewards "a varied and comprehensive range of \[BLANK\]" between the texts.
+    * **Answer:** comparisons
+    * **Feedback:** ✓ Correct. The top AO3 band considers "a varied and comprehensive range of comparisons between the texts." Range and variety of comparison define Level 5.
+    * **AO:** AO3
+    * **WhyWrong:** Words like "quotations" or "techniques" miss the point; the band rewards the breadth of comparison, not the count of evidence.
+13. **Type: MCQ \[Tests AO4\]**
+    * **Question:** The Level 5 (11–12) AO4 descriptor for the Spec B directed-writing task (Question 8) is "Communication is perceptive and ___." Which word completes it?
+    * **Options:** A) accurate, B) subtle, C) fluent, D) balanced.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The top AO4 band is "Communication is perceptive and subtle." Subtlety of communication marks the highest band, here worth up to 12 marks.
+    * **AO:** AO4
+    * **Why A:** Accuracy is scored on the AO5 technical ladder, not this AO4 communication descriptor.
+    * **Why C:** Fluency is not the mark scheme's word; the crafted control it names is "subtle."
+    * **Why D:** Balance describes coverage, not the perceptive subtlety the top band rewards.
+14. **Type: Select All That Apply \[Tests Directed Writing\]**
+    * **Question:** The Section B directed-writing task (Question 8) is marked for which assessment objectives? (Select all that apply)
+    * **Options:** A) AO1 reading, B) AO4 communication, C) AO5 technical accuracy, D) AO3 comparison.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** Question 8 rewards AO1 reading (10 marks), AO4 communication (12 marks) and AO5 accuracy (8 marks), reading and writing marked together in one task.
+    * **AO:** AO4
+    * **Why D:** AO3 comparison is assessed at Question 7 in Section A and never in the directed-writing task.
+15. **Type: True/False \[Tests Structure\]**
+    * **Question:** True or False: Edexcel IGCSE Spec B assesses writing through AO4 and AO5, and has no AO6.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. In Spec B, communication is AO4 and technical accuracy (vocabulary, sentence structures, spelling, punctuation) is AO5. There is no AO6; that label belongs to AQA, Eduqas and OCR.
+    * **AO:** AO5
+    * **WhyWrong:** Importing AO6 from the GCSE boards misreads the ladder; Spec B's technical-accuracy marks live under AO5.
+16. **Type: MCQ \[Tests AO1\]**
+    * **Question:** The Level 5 (9–10) AO1 descriptor for Question 8 says the selection and interpretation of the given bullet points is what?
+    * **Options:** A) apt, B) valid, C) limited, D) basic.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. The top AO1 band for the directed-writing task is that the selection and interpretation of the bullet points is "apt."
+    * **AO:** AO1
+    * **Why B:** "Valid" describes a middle band, not the precise, apt selection of the top level.
+    * **Why C:** "Limited" selection is the Level 1 floor of this reading strand.
+    * **Why D:** "Basic" belongs to the lowest band, the opposite of apt.
+17. **Type: Fill-in-the-Blank \[Tests Text Types\]**
+    * **Question:** Both reading texts in Spec B Paper 1 are \[BLANK\] texts, drawn from a range of periods.
+    * **Answer:** non-fiction
+    * **Feedback:** ✓ Correct. Spec B Paper 1 is built on non-fiction reading texts, which Section A asks you to analyse and then compare.
+    * **AO:** AO1
+    * **WhyWrong:** Expecting fiction fits Language Paper 1 on some other boards, but Spec B sets non-fiction throughout.
+18. **Type: MCQ \[Tests Writing\]**
+    * **Question:** How is the Spec B Section C composition (30 marks) divided between the assessment objectives?
+    * **Options:** A) 20 for AO4 communication and 10 for AO5 accuracy, B) 15 for AO4 and 15 for AO5, C) 24 for AO5 and 16 for AO6, D) 10 for AO4 and 20 for AO5.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. Section C awards 20 marks for AO4 communication and 10 marks for AO5 technical accuracy, 30 in total.
+    * **AO:** AO4
+    * **Why B:** An even split misreads the grid; communication carries twice the accuracy marks here.
+    * **Why C:** A 24/16 AO5/AO6 split is the AQA and Eduqas creative-writing model, not Spec B.
+    * **Why D:** Reversing the weighting undervalues communication, which is the larger 20-mark share.
+19. **Type: True/False \[Tests AO1\]**
+    * **Question:** True or False: Questions 1 and 2 in Spec B Section A are short retrieval questions, each worth only a mark or two.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Section A opens with brief AO1 retrieval questions before the analysis and comparison build.
+    * **AO:** AO1
+    * **WhyWrong:** Expecting extended writing from the first question misreads the paper, which starts with quick retrieval checks.
+20. **Type: Select All That Apply \[Tests Comparison Skills\]**
+    * **Question:** To reach the top band of the Spec B comparison (Question 7), a response should: (Select all that apply)
+    * **Options:** A) Consider a wide, varied range of comparisons between the texts, B) Use evidence from both texts, C) Compare writers' ideas and perspectives, D) Focus in depth on a single text.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** Level 5 rewards a varied, comprehensive range of comparisons, drawing on both texts to compare writers' ideas and perspectives.
+    * **AO:** AO3
+    * **Why D:** Focusing on one text abandons the comparison; a single-text answer cannot rise up the AO3 ladder.
+21. **Type: MCQ \[Tests AO2\]**
+    * **Question:** A Spec B analysis answer shows "Thorough understanding and exploration of language and structure." Which level of the 10-mark question is that?
+    * **Options:** A) Level 2 (3–4), B) Level 3 (5–6), C) Level 4 (7–8), D) Level 5 (9–10).
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. "Thorough understanding and exploration" is Level 4 (7–8). Level 5 (9–10) goes further to "perceptive understanding and analysis."
+    * **AO:** AO2
+    * **Why A:** Level 2 only offers "some understanding of and comment on" language and structure.
+    * **Why B:** Level 3 gives "clear understanding and explanation," a band below thorough exploration.
+    * **Why D:** Level 5 is "perceptive understanding and analysis," a step beyond exploration.
+22. **Type: True/False \[Tests Timing\]**
+    * **Question:** True or False: Section A (Reading) is worth 40 of the paper's 100 marks.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Section A carries 40 marks; the directed-writing Section B and the composition Section C carry 30 each, making 100 in all, so writing is weighted more heavily than reading.
+    * **AO:** AO1
+    * **WhyWrong:** Assuming reading dominates misreads the balance; the two writing sections together outweigh Section A.
 
 ### **SECTION E: EDUQAS (WJEC) (Component 1\)**
 
@@ -642,11 +915,11 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Why C:** Ten items would turn quick retrieval into a marathon; no board's opening list question asks for that many.
    * **Why D:** Three feels quick and safe, but stopping there on Eduqas would leave two available marks on the table.
 2. **Type: Fill-in-the-Blank \[Tests Question 4\]**  
-   * **Question:** Question 4 is the "Evaluation" question. It typically asks you to consider the writer's use of language and structure to create \[BLANK\] and suspense.  
-   * **Answer:** Tension  
-   * **Feedback:** ✓ Correct. "Tension and drama" or "Tension and suspense" are common focuses for this 10-mark question.  
-   * **AO:** AO4
-   * **WhyWrong:** Answers such as "interest" or "excitement" are near misses; the recurring pairing in this question is tension with suspense, the feeling of mounting unease.
+   * **Question:** Eduqas Question 4 asks how the writer uses language and \[BLANK\] to make the lines exciting and dramatic.  
+   * **Answer:** Structure  
+   * **Feedback:** ✓ Correct. Question 4 is a 10-mark AO2 question on how language and the organisation of events create excitement and drama. The critical evaluation ("to what extent do you agree…") is the separate Question 5 (AO4).  
+   * **AO:** AO2
+   * **WhyWrong:** Answering "tension" names a feeling, not the second craft strand; Question 4 pairs language with structure, and the whole-text evaluation belongs to Question 5.
 3. **Type: Select All That Apply \[Tests Question 2\]**  
    * **Question:** Question 2 asks: "How does the writer show...?" Which skills should you use? (Select all that apply)  
    * **Options:** A) Identify evidence (quotes), B) Analyze language choices (verbs, adjectives), C) Compare with another text, D) Analyze sentence structure.  
@@ -671,11 +944,11 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **AO:** AO6
    * **WhyWrong:** If you answered False, take care here anyway, because the proofreading-style editing task is easily confused between the Wales-only WJEC papers and the Eduqas papers sat in England, so always check your own board's Component 2 specimen rather than a remembered paper shape.
 6. **Type: Fill-in-the-Blank \[Tests Question 3\]**  
-   * **Question:** Question 3 often asks about the writer's use of \[BLANK\] to engage the reader.  
-   * **Answer:** Structure  
-   * **Feedback:** ✓ Correct. Question 3 is typically the structure question, similar to AQA.  
+   * **Question:** Eduqas Question 3 (10 marks) asks you to analyse how the writer uses \[BLANK\] to achieve effects, using subject terminology.  
+   * **Answer:** Language  
+   * **Feedback:** ✓ Correct. Question 3 focuses on language and its effects. Structure joins language a question later, at Question 4 ("exciting and dramatic").  
    * **AO:** AO2
-   * **WhyWrong:** Writing "language" here conflates Q2 and Q3; Q3 typically turns to how the text is organised and sequenced to hold the reader's attention.
+   * **WhyWrong:** Naming "structure" here jumps ahead; the sequencing strand is added at Question 4, whereas Question 3 rewards analysis of language.
 7. **Type: MCQ \[Tests Question 5\]**  
    * **Question:** Question 5 asks you to evaluate. How many marks is it worth?  
    * **Options:** A) 10, B) 5, C) 20, D) 15\.  
@@ -709,6 +982,97 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why A:** One hour covers only the reading section; forgetting the 45-minute writing section cuts the paper short.
     * **Why C:** Two hours overestimates the time available; planning around it can leave you pacing too slowly across both sections.
     * **Why D:** Ninety minutes is a common exam length elsewhere, but this component adds a further quarter of an hour.
+11. **Type: MCQ \[Tests Question 5\]**
+    * **Question:** Eduqas Question 5 is the critical evaluation. What does it ask you to do?
+    * **Options:** A) List five things from the text, B) Say to what extent you agree with a given statement about the text, C) Describe the writer's use of language only, D) Write your own creative prose piece.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Question 5 (AO4, 10 marks) gives a statement and asks "to what extent do you agree with this view?", a critical evaluation supported from the text.
+    * **AO:** AO4
+    * **Why A:** Listing five things is Question 1, the opening AO1 retrieval task.
+    * **Why C:** Describing language is Question 3's AO2 focus, not the whole-text evaluation.
+    * **Why D:** Creative prose is the Section B writing task, not a reading response.
+12. **Type: Fill-in-the-Blank \[Tests Question 5\]**
+    * **Question:** In Eduqas Question 5, 9–10 marks are given to answers that offer a \[BLANK\] evaluation of the text and its effects.
+    * **Answer:** persuasive
+    * **Feedback:** ✓ Correct. The mark scheme awards 7–8 marks for a "critical" evaluation and 9–10 marks for a "persuasive" evaluation of the text and its effects.
+    * **AO:** AO4
+    * **WhyWrong:** Words like "detailed" describe lower work; the top of this 10-mark band is a persuasive evaluation.
+13. **Type: MCQ \[Tests Writing\]**
+    * **Question:** How is the Eduqas Section B creative prose task (40 marks) divided?
+    * **Options:** A) 24 for communication and organisation (AO5) and 16 for vocabulary, sentence structure, spelling and punctuation (AO6), B) 20 for AO5 and 20 for AO6, C) 16 for AO5 and 24 for AO6, D) 30 for AO5 and 10 for AO6.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. Section B awards 24 marks for communication and organisation (AO5) and 16 marks for vocabulary, sentence structure, spelling and punctuation (AO6), 40 in total.
+    * **AO:** AO5
+    * **Why B:** An even split misreads the grid; communication carries more than technical accuracy here.
+    * **Why C:** Reversing the weighting undervalues content; AO5 is the larger 24-mark share.
+    * **Why D:** A 30/10 split overstates content and understates the 16 marks reserved for accuracy.
+14. **Type: Fill-in-the-Blank \[Tests Writing\]**
+    * **Question:** In Eduqas writing, AO5 is worth 60% of the writing marks and AO6 is worth \[BLANK\]%.
+    * **Answer:** 40
+    * **Feedback:** ✓ Correct. AO5 (communication and organisation) is 60% of the writing marks and AO6 (technical accuracy) is 40%, of which technical accuracy must be 20% of the whole specification.
+    * **AO:** AO6
+    * **WhyWrong:** Guessing 20 confuses the writing-task share (40%) with AO6's 20% share of the entire qualification.
+15. **Type: True/False \[Tests Question 1\]**
+    * **Question:** True or False: Eduqas Question 1 asks you to list five things and is worth 5 marks.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Question 1 is a "list five things" AO1 retrieval task, one mark per accurate point, to a maximum of 5.
+    * **AO:** AO1
+    * **WhyWrong:** Assuming four points imports the AQA list question; Eduqas asks for five.
+16. **Type: MCQ \[Tests Question 4\]**
+    * **Question:** Eduqas Question 4 (10 marks) asks how the writer makes the lines exciting and dramatic. Which two craft strands must you cover?
+    * **Options:** A) Vocabulary and spelling, B) Language and structure, C) Plot and character, D) Tone and register.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Question 4 rewards analysis of how language and the organisation of events (structure) create excitement and drama.
+    * **AO:** AO2
+    * **Why A:** Spelling is a writing-accuracy concern, not a reading-analysis strand for this question.
+    * **Why C:** Plot and character describe content, not the language and structural methods the question names.
+    * **Why D:** Tone and register belong to writing tasks; here you analyse language and structure.
+17. **Type: Select All That Apply \[Tests Question 2\]**
+    * **Question:** Eduqas Question 2 (5 marks) asks what impressions the writer creates of a character. A strong answer will: (Select all that apply)
+    * **Options:** A) Give accurate impressions of the character, B) Use some subject terminology, C) Support points with textual reference, D) Retell the whole plot of the passage.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** The mark scheme rewards accurate impressions, supported by reference and some terminology; top answers give 4 marks for accurate, well-supported impressions.
+    * **AO:** AO2
+    * **Why D:** Retelling the plot is not analysis of impression; it earns nothing for this AO2 question.
+18. **Type: Fill-in-the-Blank \[Tests Reading\]**
+    * **Question:** The Eduqas Component 1 reading section (Section A) is worth \[BLANK\] marks in total.
+    * **Answer:** 40
+    * **Feedback:** ✓ Correct. Section A carries 40 marks across five reading questions, and Section B writing carries a further 40, 80 in all.
+    * **AO:** AO1
+    * **WhyWrong:** Guessing a smaller figure undercounts the section; the five reading questions together total 40.
+19. **Type: MCQ \[Tests Question 3\]**
+    * **Question:** Eduqas Question 3 (10 marks) asks you to analyse how the writer uses language to achieve effects. Which objective does it test?
+    * **Options:** A) AO1 retrieval, B) AO2 analysis of language, C) AO4 evaluation, D) AO6 technical accuracy.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Question 3 is an AO2 language-analysis task, rewarding explanation and analysis of language with appropriate subject terminology.
+    * **AO:** AO2
+    * **Why A:** AO1 retrieval is tested by the "list five things" opener, not this analysis.
+    * **Why C:** AO4 evaluation is Question 5, the "to what extent do you agree" task.
+    * **Why D:** AO6 technical accuracy is a writing objective, marked in Section B.
+20. **Type: Select All That Apply \[Tests Creative Writing\]**
+    * **Question:** In the Eduqas creative prose task, which fall under AO5 (communication and organisation)? (Select all that apply)
+    * **Options:** A) A clear sense of direction and structure, B) Coherent sequencing of the narrative, C) Adapting tone and style to the reader, D) Accurate spelling of irregular words.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** AO5 covers communication and organisation: direction, structure, sequencing and adapting tone to the reader. Spelling accuracy is scored under AO6.
+    * **AO:** AO5
+    * **Why D:** Accurate spelling of irregular words is an AO6 technical-accuracy descriptor, marked separately from AO5.
+21. **Type: True/False \[Tests Timing\]**
+    * **Question:** True or False: Component 1 is worth 80 marks in total, split evenly between reading and creative prose writing.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Section A reading (40 marks) and Section B creative prose writing (40 marks) make 80 marks in all, an even split.
+    * **AO:** AO1
+    * **WhyWrong:** Assuming writing is a minor add-on misreads the paper; it carries exactly half the marks.
+22. **Type: MCQ \[Tests Question 5\]**
+    * **Question:** In Eduqas Question 5, what standard of evaluation earns 7–8 marks?
+    * **Options:** A) A simple description of the text, B) A critical evaluation of the text and its effects, C) A persuasive evaluation of the text and its effects, D) A list of the writer's techniques.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The mark scheme gives 7–8 marks for a "critical" evaluation and reserves 9–10 for a "persuasive" one.
+    * **AO:** AO4
+    * **Why A:** A simple description sits far lower; evaluation must weigh and judge, not describe.
+    * **Why C:** A persuasive evaluation is the very top band (9–10), a step above critical.
+    * **Why D:** Listing techniques is feature-spotting, not the reasoned evaluation this question rewards.
 
 ### **SECTION F: OCR (Communicating Information and Ideas)**
 
@@ -722,20 +1086,20 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Why C:** Two fiction texts describes OCR's other paper; this one centres on non-fiction information and ideas.
    * **Why D:** Relating a text to your own life is personal response, not the cross-text comparison this question rewards.
 2. **Type: Fill-in-the-Blank \[Tests Synthesis\]**  
-   * **Question:** OCR Question 3 asks you to \[BLANK\] the main points from both texts.  
+   * **Question:** OCR Question 2 (6 marks) asks you to select and \[BLANK\] evidence from both texts.  
    * **Answer:** Synthesise  
-   * **Feedback:** ✓ Correct. Or "Summarise". You need to bring information together from both sources.  
+   * **Feedback:** ✓ Correct. Question 2 tests AO1: "select and synthesise evidence from different texts," drawing points together from both sources. Question 3 is the separate language-and-structure analysis.  
    * **AO:** AO1
-   * **WhyWrong:** Answers like "analyse" or "compare" name other skills; Q3 asks you to draw points together from both texts into one combined overview.
+   * **WhyWrong:** Answers like "analyse" or "compare" name later questions; Question 2 rewards synthesising evidence from both texts into one connected response.
 3. **Type: Select All That Apply \[Tests Question 4\]**  
-   * **Question:** When answering the OCR Comparison question (Q4), marks are awarded for: (Select all that apply)  
-   * **Options:** A) Identifying similarities/differences (AO3), B) Evaluating the text's success (AO4), C) Analyzing language/structure (AO2), D) Creative writing (AO5).  
-   * **Correct:** A, C  
-   * **Scoring:** 2 marks for A, C. 1 mark if mostly correct.  
-   * **Feedback:** You must Compare ideas (AO3) AND Compare methods/language (AO2).  
+   * **Question:** When answering OCR Question 4 (18 marks), marks are awarded for: (Select all that apply)  
+   * **Options:** A) Comparing the writers' ideas and how they are conveyed (AO3), B) Critically evaluating the texts, supported by references (AO4), C) Correct spelling and punctuation (AO6), D) Writing your own creative piece (AO5).  
+   * **Correct:** A, B  
+   * **Scoring:** 2 marks for A, B. 1 mark if mostly correct.  
+   * **Feedback:** Question 4 is marked out of 6 for AO3 comparison and out of 12 for AO4 critical evaluation, the two marks added together. It rewards comparing and evaluating across both texts.  
    * **AO:** AO3
-   * **Why B:** Evaluating a text's success is a separate skill tested elsewhere; this question credits comparison of ideas and of methods.
-   * **Why D:** Creative writing belongs to Section B; no writing-craft marks are available inside a reading comparison.
+   * **Why C:** Spelling and punctuation are technical-accuracy marks in the writing section, not part of this reading comparison.
+   * **Why D:** Creative writing belongs to Section B; no composition marks are available inside Question 4.
 4. **Type: MCQ \[Tests Writing\]**  
    * **Question:** Section B (Writing) asks you to write:  
    * **Options:** A) A story, B) A non-fiction text (e.g., article, speech), C) A poem, D) A play script.  
@@ -790,6 +1154,98 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why B:** Only modern texts would make the paper feel current, but OCR deliberately spans three centuries of non-fiction writing.
     * **Why C:** Only 19th-century texts describes a Literature habit; this paper mixes older and modern material.
     * **Why D:** Medieval writing predates the paper's range entirely; the earliest texts come from the 1800s.
+11. **Type: MCQ \[Tests Question 3\]**
+    * **Question:** The Level 6 (11–12) descriptor for OCR Question 3 says analysis demonstrates what?
+    * **Options:** A) Sophisticated appreciation of how language and structure achieve effects, B) Limited awareness of language and structure, C) A straightforward commentary on language, D) A descriptive response with little analysis.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. The top AO2 band (11–12) is "analysis demonstrates sophisticated appreciation of how language and structure achieve effects and influence the reader," with precisely selected, integrated terminology.
+    * **AO:** AO2
+    * **Why B:** Limited awareness is the Level 1 floor of this twelve-mark question.
+    * **Why C:** A straightforward commentary describes Level 2, well below sophisticated analysis.
+    * **Why D:** A descriptive response with little analysis is the lowest band, not the top.
+12. **Type: Fill-in-the-Blank \[Tests Question 3\]**
+    * **Question:** OCR Question 3, the language and structure analysis (AO2), is marked across \[BLANK\] levels to a maximum of 12 marks.
+    * **Answer:** six
+    * **Feedback:** ✓ Correct. Question 3 uses a six-level AO2 grid (1–2 up to 11–12), climbing from a descriptive response to sophisticated analysis.
+    * **AO:** AO2
+    * **WhyWrong:** Guessing three or five levels imports another board's grid; OCR marks this question over six levels.
+13. **Type: MCQ \[Tests Question 4\]**
+    * **Question:** OCR Question 4 is worth 18 marks. How are they split between the objectives?
+    * **Options:** A) 6 for AO3 comparison and 12 for AO4 evaluation, B) 12 for AO3 and 6 for AO4, C) 9 for AO3 and 9 for AO4, D) 18 for AO3 alone.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. Question 4 is marked out of 6 for AO3 comparison and out of 12 for AO4 critical evaluation, the two marks added together to make 18.
+    * **AO:** AO4
+    * **Why B:** Reversing the weighting overstates comparison; evaluation carries the larger 12 marks.
+    * **Why C:** An even split misreads the grid, which weights AO4 evaluation twice as heavily as AO3 comparison.
+    * **Why D:** Question 4 rewards evaluation as well as comparison, so AO3 alone cannot hold all 18 marks.
+14. **Type: Select All That Apply \[Tests Question 2\]**
+    * **Question:** OCR Question 2 (6 marks) tests synthesis. A strong response will: (Select all that apply)
+    * **Options:** A) Draw together ideas and evidence from both texts, B) Make connections between the two texts, C) Analyse the writer's language techniques, D) Evaluate how successful the texts are.
+    * **Correct:** A, B
+    * **Scoring:** 2 marks for A, B. 1 mark if mostly correct.
+    * **Feedback:** Question 2 rewards synthesis: drawing together and connecting ideas and evidence from both texts. Analysis and evaluation are credited in later questions.
+    * **AO:** AO1
+    * **Why C:** Analysing language techniques is Question 3's AO2 work, not synthesis.
+    * **Why D:** Evaluating the texts is part of Question 4's AO4, not the synthesis question.
+15. **Type: True/False \[Tests Writing\]**
+    * **Question:** True or False: the OCR Section B writing task is marked out of 24 for AO5 and out of 16 for AO6.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The mark scheme directs examiners to "mark the response out of 24 marks (AO5) and out of 16 marks (AO6)," 40 marks for the composition.
+    * **AO:** AO5
+    * **WhyWrong:** Assuming content and accuracy are weighted equally misreads the grid; AO5 carries 24 and AO6 carries 16.
+16. **Type: MCQ \[Tests Question 4\]**
+    * **Question:** The Level 6 (11–12) AO4 descriptor for OCR Question 4 rewards a response that offers what?
+    * **Options:** A) A sustained critical evaluation with a perceptive, considered response, B) A single developed evaluative comment, C) A description of the texts' ideas, D) A brief personal opinion of the topic.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. The top AO4 band is "a sustained critical evaluation demonstrating a perceptive and considered response," supported by apt, skilfully selected and integrated references.
+    * **AO:** AO4
+    * **Why B:** A single developed comment sits in a middle band, short of sustained critical evaluation.
+    * **Why C:** Describing ideas is low-band work; evaluation must weigh and judge.
+    * **Why D:** A brief personal opinion offers no reasoned evaluation and stays near the bottom.
+17. **Type: Fill-in-the-Blank \[Tests Writing\]**
+    * **Question:** OCR Section B asks you to write a non-fiction, \[BLANK\] piece such as an article or a letter for a stated audience.
+    * **Answer:** transactional
+    * **Feedback:** ✓ Correct. Section B is transactional writing, for example an article about a new invention or a letter of persuasion, where you adapt form and register to purpose and audience.
+    * **AO:** AO5
+    * **WhyWrong:** Answering "narrative" or "creative" misreads this paper; the composition is transactional non-fiction.
+18. **Type: MCQ \[Tests Question 2\]**
+    * **Question:** An OCR Question 2 answer shows "a secure ability to synthesise appropriate ideas and evidence from both texts." Which level is that?
+    * **Options:** A) Level 1 (1–2), B) Level 2 (3–4), C) Level 3 (5–6), D) Level 4 (7–8).
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. "A detailed response which shows a secure ability to synthesise… from both texts" is the top Level 3 (5–6) of this six-mark question.
+    * **AO:** AO1
+    * **Why A:** Level 1 shows only a "limited ability to select and make connections."
+    * **Why B:** Level 2 shows "some ability to make connections," short of the secure synthesis of Level 3.
+    * **Why D:** Question 2 has only three levels; there is no Level 4 on this six-mark synthesis question.
+19. **Type: True/False \[Tests Question 1\]**
+    * **Question:** True or False: OCR Question 1 is a set of short-answer retrieval items, typically worth one mark each.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Question 1 tests AO1, identify and interpret explicit and implicit information, with short answers awarded a mark each.
+    * **AO:** AO1
+    * **WhyWrong:** Expecting extended analysis from the opener misreads the paper, which starts with quick retrieval.
+20. **Type: Select All That Apply \[Tests Question 4\]**
+    * **Question:** The top AO3 band (Level 6) of OCR Question 4 rewards a comparison that is: (Select all that apply)
+    * **Options:** A) Detailed, B) Interwoven, C) Focused on one text only, D) Exploring writers' ideas and how they are conveyed.
+    * **Correct:** A, B, D
+    * **Scoring:** 2 marks for A, B, D. 1 mark if mostly correct.
+    * **Feedback:** Level 6 AO3 is "a detailed, interwoven comparison which explores writers' ideas and perspectives and how they are conveyed."
+    * **AO:** AO3
+    * **Why C:** Focusing on one text abandons the comparison; the band requires both texts woven together.
+21. **Type: MCQ \[Tests AO2\]**
+    * **Question:** What lifts an OCR Question 3 answer from Level 5 to Level 6?
+    * **Options:** A) Naming more techniques from the texts, B) Moving from perceptive understanding to sophisticated appreciation, with integrated terminology, C) Writing about a single text in more depth, D) Adding a personal opinion of the writer.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 5 shows "perceptive understanding"; Level 6 shows "sophisticated appreciation… precisely selected and integrated subject terminology." The lift is depth of appreciation and precision of terminology.
+    * **AO:** AO2
+    * **Why A:** Naming more techniques is feature-spotting; OCR rewards integrated terminology, not quantity.
+    * **Why C:** Question 3 works within the set text; narrowing focus does not lift the band.
+    * **Why D:** A personal opinion of the writer is not analysis of method and does not raise the level.
+22. **Type: Fill-in-the-Blank \[Tests Comparison\]**
+    * **Question:** OCR Question 4 asks you to compare the ways \[BLANK\] texts present a subject, drawing on quotations from both.
+    * **Answer:** two
+    * **Feedback:** ✓ Correct. Question 4 compares two non-fiction texts, rewarding both the comparison of ideas (AO3) and critical evaluation (AO4) across them.
+    * **AO:** AO3
+    * **WhyWrong:** Answering "three" or "both fiction" misreads the task; it compares the two non-fiction sources on the paper.
 
 ### **SECTION G: CAMBRIDGE IGCSE (First Language English 0500\)**
 
@@ -871,6 +1327,100 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Why B:** A scientific report would suit data retrieval, not the imaginative extended response that Text C feeds.
     * **Why C:** Poetry belongs to Literature papers; Cambridge First Language English keeps to prose passages.
     * **Why D:** A list of data could not sustain a developed written response; Text C is chosen for its narrative richness.
+11. **Type: MCQ \[Tests Paper Structure\]**
+    * **Question:** What is the total mark for Cambridge 0500 Paper 1 (Reading)?
+    * **Options:** A) 50 marks, B) 60 marks, C) 80 marks, D) 100 marks.
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. Paper 1 carries a maximum of 80 marks, divided across three questions: Question 1 (30), Question 2 (25) and Question 3 (25).
+    * **AO:** AO1
+    * **Why A:** Fifty marks undercounts the paper; the three questions together reach 80.
+    * **Why B:** Sixty marks omits a full question's worth of the paper's tariff.
+    * **Why D:** One hundred marks overstates it; 80 is the published maximum.
+12. **Type: Fill-in-the-Blank \[Tests Question 1\]**
+    * **Question:** Cambridge Question 1, the comprehension and summary question, is worth \[BLANK\] marks in total.
+    * **Answer:** 30
+    * **Feedback:** ✓ Correct. Question 1 is worth 30 marks: 25 for reading (R1, R2, R5) plus 5 writing marks on the summary task 1(f).
+    * **AO:** AO1
+    * **WhyWrong:** Guessing 15 counts only the summary part; the whole of Question 1, including the short comprehension items, totals 30.
+13. **Type: MCQ \[Tests Summary\]**
+    * **Question:** The summary task 1(f) is worth 15 marks. How are they divided?
+    * **Options:** A) 10 for reading and 5 for writing, B) 5 for reading and 10 for writing, C) 15 for reading alone, D) 7 for reading and 8 for writing.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. Task 1(f) awards up to 10 marks for the content of the summary (reading) and up to 5 marks for expressing it concisely in your own words (writing).
+    * **AO:** AO1
+    * **Why B:** The reading content carries the larger share; writing is the smaller 5-mark part.
+    * **Why C:** Fifteen reading marks ignores the writing marks reserved for concise own-words expression.
+    * **Why D:** A near-even split misreads the grid, which is a clear 10 and 5.
+14. **Type: Select All That Apply \[Tests Summary\]**
+    * **Question:** The 5 writing marks on the Cambridge summary (1f) reward a response that is: (Select all that apply)
+    * **Options:** A) Expressed clearly and with concision, B) Well organised, C) In the candidate's own words where appropriate, D) As long and detailed as possible.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** The top writing band rewards a clear, concise, well-organised response in the candidate's own words. Excessive length works against the summary skill.
+    * **AO:** AO1
+    * **Why D:** Length is not rewarded; overlong responses signal a failure to condense, which lowers the writing mark.
+15. **Type: MCQ \[Tests Question 2\]**
+    * **Question:** Cambridge Question 2 (25 marks) tests understanding of explicit and implicit meanings and one further reading skill. Which?
+    * **Options:** A) How writers achieve effects and influence readers, B) Selecting and using information for a purpose, C) Comparing two texts, D) Articulating personal experience.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. Question 2 tests R1, R2 and R4, R4 being "demonstrate understanding of how writers achieve effects and influence readers." It is the writer's-effect question.
+    * **AO:** AO2
+    * **Why B:** Selecting and using information (R5) is tested in Question 1, not Question 2.
+    * **Why C:** Cambridge Paper 1 questions work within single passages; comparison is not the focus.
+    * **Why D:** Articulating experience is a writing skill (W1), assessed in the Question 3 response, not here.
+16. **Type: Fill-in-the-Blank \[Tests Writer's Effect\]**
+    * **Question:** The Writer's Effect task 2(d) is worth \[BLANK\] marks.
+    * **Answer:** 15
+    * **Feedback:** ✓ Correct. Task 2(d) carries 15 marks, the largest single item in Question 2, rewarding analysis of how the writer's language choices affect the reader.
+    * **AO:** AO2
+    * **WhyWrong:** Confusing it with the 25-mark total for the whole of Question 2 overstates the single 2(d) task, which is worth 15.
+17. **Type: MCQ \[Tests Question 3\]**
+    * **Question:** Cambridge Question 3, the extended response, is worth 25 marks. How are they split?
+    * **Options:** A) 15 for reading and 10 for writing, B) 10 for reading and 15 for writing, C) 25 for reading alone, D) 20 for reading and 5 for writing.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. Question 3 awards up to 15 reading marks (R1, R2, R3) and up to 10 writing marks (W1–W4); the reading content and the quality of the writing are marked together.
+    * **AO:** AO1
+    * **Why B:** The reading content carries the larger share here, at 15 marks.
+    * **Why C:** Twenty-five reading marks ignores the writing marks for expression and register.
+    * **Why D:** A 20/5 split understates the writing, which is worth 10 on this task.
+18. **Type: Select All That Apply \[Tests Question 3\]**
+    * **Question:** The 10 writing marks on Cambridge Question 3 reward which skills? (Select all that apply)
+    * **Options:** A) Articulating and expressing what is thought, felt and imagined, B) Organising and structuring ideas for deliberate effect, C) Using register appropriate to context, D) Comparing the passage with another text.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** The writing objectives are W1 articulate experience, W2 organise for effect, W3 range of vocabulary and sentence structures, and W4 register appropriate to context.
+    * **AO:** AO5
+    * **Why D:** Comparison is not part of this task; Question 3 asks you to write in role from one passage.
+19. **Type: True/False \[Tests Question 3\]**
+    * **Question:** True or False: Cambridge Question 3 asks you to write in a particular role or voice, using ideas from the passage.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The extended response asks you to adopt a role (for example a letter, report or journal) and develop the passage's ideas in your own words, marked for reading and writing together.
+    * **AO:** AO5
+    * **WhyWrong:** Expecting a standard analytical essay misreads the task; it requires writing in role, using and developing the text's details.
+20. **Type: MCQ \[Tests Reading Skills\]**
+    * **Question:** Which reading objective, tested in Question 3, asks you to "analyse, evaluate and develop facts, ideas and opinions"?
+    * **Options:** A) R1, B) R2, C) R3, D) R5.
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. R3 is "analyse, evaluate and develop facts, ideas and opinions, using appropriate support from the text," the higher-order reading skill in the extended response.
+    * **AO:** AO4
+    * **Why A:** R1 is understanding of explicit meanings, the most literal reading skill.
+    * **Why B:** R2 is understanding of implicit meanings and attitudes, still comprehension rather than analysis.
+    * **Why D:** R5 is selecting and using information for a purpose, tested in Question 1's summary, not this analytical strand.
+21. **Type: Fill-in-the-Blank \[Tests Question 2\]**
+    * **Question:** Adding its short items to the 15-mark Writer's Effect task, the whole of Cambridge Question 2 is worth \[BLANK\] marks.
+    * **Answer:** 25
+    * **Feedback:** ✓ Correct. Question 2 totals 25 marks: the short comprehension items 2(a)–2(c) plus the 15-mark Writer's Effect task 2(d).
+    * **AO:** AO2
+    * **WhyWrong:** Counting only the 15-mark effect task undercounts Question 2, whose short items bring the total to 25.
+22. **Type: MCQ \[Tests Reading Skills\]**
+    * **Question:** In Cambridge's reading objectives, which describes "how writers achieve effects and influence readers"?
+    * **Options:** A) R2, B) R4, C) R5, D) R1.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. R4 is "demonstrate understanding of how writers achieve effects and influence readers," the objective behind the Writer's Effect task.
+    * **AO:** AO2
+    * **Why A:** R2 covers implicit meanings and attitudes, not the analysis of a writer's methods.
+    * **Why C:** R5 is selecting and using information for a purpose, a comprehension-and-summary skill.
+    * **Why D:** R1 is understanding of explicit meanings, the most literal reading objective.
 
 ## **5\. KNOWLEDGE BASE (For Clarification Phase)**
 
