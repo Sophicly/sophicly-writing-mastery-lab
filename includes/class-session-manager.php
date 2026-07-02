@@ -712,6 +712,33 @@ class SWML_Session_Manager {
     }
 
     /**
+     * v7.19.811: Latest headline goal recorded for ANY prior attempt of this
+     * board/text/topic (any suffix/attempt except the current one). Lets a
+     * redraft assessment cite the diagnostic's goal deterministically —
+     * captured by code (build_assessment_state_block), never model-remembered.
+     */
+    public static function get_prior_headline_goal($user_id, $board, $text, $topic = 0, $exclude_suffix = '', $exclude_attempt = 1) {
+        $exclude_key = self::build_assessment_state_key($board, $text, $topic, $exclude_suffix, $exclude_attempt);
+        $parts = [sanitize_key($board), sanitize_key($text)];
+        $topic = absint($topic);
+        if ($topic > 0) $parts[] = 't' . $topic;
+        $prefix = implode('_', $parts) . '_';
+        $blob = self::load_assessment_states_blob($user_id);
+        $best = '';
+        $best_at = '';
+        foreach ($blob as $key => $state) {
+            if ($key === $exclude_key || strpos($key, $prefix) !== 0) continue;
+            if (!is_array($state) || empty($state['headline_goal'])) continue;
+            $at = (string) ($state['updated_at'] ?? '');
+            if ($best === '' || $at > $best_at) {
+                $best = (string) $state['headline_goal'];
+                $best_at = $at;
+            }
+        }
+        return $best;
+    }
+
+    /**
      * Ordered list of paragraph keys. Used by progression logic + UI labels.
      */
     public static function assessment_paragraph_order() {

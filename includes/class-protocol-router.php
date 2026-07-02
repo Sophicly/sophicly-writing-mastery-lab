@@ -5850,6 +5850,27 @@ TEMPLATE;
             error_log('WML Assessment State: self-heal cleared premature pending_resume_confirm. user=' . (int) $user_id);
         }
 
+        // v7.19.811: deterministic headline-goal capture. The pre-chain gate
+        // code-asks the goal question, so the reply's position in history is
+        // fixed (first user message after the question). Persist it once into
+        // the attempt's state — the block echoes it every turn (threading) and
+        // redraft attempts retrieve it via get_prior_headline_goal.
+        if (empty($state['headline_goal']) && !empty($swml_chat_history) && is_array($swml_chat_history)) {
+            $hg = self::extract_headline_goal_from_history($swml_chat_history);
+            if ($hg !== '') {
+                $state = SWML_Session_Manager::update_assessment_state(
+                    $user_id, $board, $text, $topic, $suffix, $attempt,
+                    ['headline_goal' => $hg]
+                );
+            }
+        }
+        $headline_goal = trim((string) ($state['headline_goal'] ?? ''));
+        $dt_raw = (string) ($context['draft_type'] ?? '');
+        $is_redraft_attempt = (($context['task'] ?? '') === 'redraft_assessment') || (strpos($dt_raw, 'redraft') !== false);
+        $prior_goal = $is_redraft_attempt
+            ? SWML_Session_Manager::get_prior_headline_goal($user_id, $board, $text, $topic, $suffix, $attempt)
+            : '';
+
         $current = $state['current_paragraph'] ?? 'intro';
         $next    = SWML_Session_Manager::assessment_next_paragraph($current);
         $current_label = SWML_Session_Manager::assessment_paragraph_label($current);
@@ -5886,7 +5907,14 @@ TEMPLATE;
         if ($setup_phase) {
         $block .= "## ASSESSMENT STATE — SETUP PHASE (marking has NOT begun)\n\n";
         $block .= "**Sequence:** Setup (grade target → headline goal → keyword recall) → Introduction → Body Paragraph 1 → Body Paragraph 2 → Body Paragraph 3 → Conclusion\n";
-        $block .= "**Paragraphs scored so far:** none yet\n\n";
+        $block .= "**Paragraphs scored so far:** none yet\n";
+        if ($headline_goal !== '') {
+            $block .= "**Student's headline goal (already captured):** {$headline_goal}\n";
+        }
+        if ($prior_goal !== '') {
+            $block .= "**Prior attempt's headline goal:** {$prior_goal} — acknowledge it when the new goal is set (\"last time you focused on…\").\n";
+        }
+        $block .= "\n";
         $block .= "### RULES — NON-NEGOTIABLE\n\n";
         $block .= "1. The pre-assessment chain MUST be complete before ANY marking output. Check the conversation for ALL THREE student replies: (a) grade target, (b) HEADLINE GOAL (their choice from the goal options — a CONCEPTUAL aim, never a grade number), (c) KEYWORD RECALL (the key aspects the question asks them to explore). If any is missing, ask ONLY the next missing question (in that order) and STOP — nothing else in the turn.\n";
         $block .= "2. Once all three replies are present: give the word-count note ONCE (per the protocol's setup stage, tied to their grade target), acknowledge their keyword recall, then begin the Introduction with its STEP 1 reflection lead-in + `@REFLECT_GATE` panel per the protocol. The reflection lead-in cites the HEADLINE GOAL — never the grade.\n";
@@ -5898,7 +5926,14 @@ TEMPLATE;
         $block .= "**Paragraphs scored so far:** {$scored_list}\n";
         $block .= "**Tables produced:** {$emitted} of {$expected}\n";
         $block .= "**Detour depth:** {$depth}" . ($depth >= 3 ? " (AT CAP — return to assessment now)" : "") . "\n";
-        $block .= "**Pending resume-confirm:** " . ($pending ? 'YES — student has not yet confirmed continue' : 'no') . "\n\n";
+        $block .= "**Pending resume-confirm:** " . ($pending ? 'YES — student has not yet confirmed continue' : 'no') . "\n";
+        if ($headline_goal !== '') {
+            $block .= "**Student's headline goal:** {$headline_goal} — cite THIS (never the grade) in every reflection lead-in; close it in the Final Summary's metacognitive journey.\n";
+        }
+        if ($prior_goal !== '') {
+            $block .= "**Prior attempt's headline goal:** {$prior_goal} — note progress against it in the Final Summary.\n";
+        }
+        $block .= "\n";
         $block .= "### RULES — NON-NEGOTIABLE\n\n";
         if ($pending) {
             $block .= "1. Student has NOT yet confirmed they want to continue. Your turn MUST be a resume-confirm block:\n";
@@ -5981,6 +6016,35 @@ TEMPLATE;
 
         $block .= "\n_You are in v7.17.47 AQA Literature Diagnostic Assessment pilot mode._\n";
         return $block;
+    }
+
+    /**
+     * v7.19.811: Extract the student's headline-goal reply from chat history.
+     * Deterministic: the goal reply is the FIRST user message after the
+     * assistant's headline-goal question (which the pre-chain gate code-asks,
+     * so its wording is fixed). Handles both button replies ("My headline
+     * goal: …") and typed option-F answers.
+     */
+    private static function extract_headline_goal_from_history($history) {
+        $found_q = false;
+        foreach ($history as $m) {
+            $role = is_array($m) ? ($m['role'] ?? '') : '';
+            $text = is_array($m) ? (string) ($m['content'] ?? '') : '';
+            if (!$found_q) {
+                if ($role === 'assistant'
+                    && strpos($text, 'headline goal') !== false
+                    && strpos($text, 'one main goal') !== false) {
+                    $found_q = true;
+                }
+                continue;
+            }
+            if ($role === 'user') {
+                $g = trim((string) preg_replace('/^\s*My headline goal:\s*/i', '', trim($text)));
+                if ($g === '') return '';
+                return function_exists('mb_substr') ? mb_substr($g, 0, 300) : substr($g, 0, 300);
+            }
+        }
+        return '';
     }
 
     /**
