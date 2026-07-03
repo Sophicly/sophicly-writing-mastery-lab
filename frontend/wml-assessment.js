@@ -770,7 +770,21 @@
                 // the question total was pending); label it as the next NUMBERED paragraph —
                 // Intro/Conclusion regions rename it when they actually file (monotonic).
                 const addLive = isActive && !q.marked && markedParas.indexOf('Conclusion') === -1;
-                const liveName = 'Paragraph ' + (markedParas.filter(n => /^Paragraph \d+$/.test(n)).length + 1);
+                let liveName = 'Paragraph ' + (markedParas.filter(n => /^Paragraph \d+$/.test(n)).length + 1);
+                // v7.19.846: the just-finished reply NAMES the next region ("Type Y for the
+                // Conclusion" — protocol gate phrase), so the live beat can be correct
+                // instead of guessed ("Paragraph 4" while the Conclusion was being marked,
+                // Neil's run). Phrase drift → falls back to the numbered guess (old behaviour).
+                if (isActive) {
+                    const _gateM = _lastCanvasReplyForSidebar.match(/Type\s+\**Y\**\s+(?:for|to\s+see)\s+(?:the\s+|your\s+)?\**\s*(Conclusion|Introduction|(?:Body\s+)?Paragraph\s+\d+)/i);
+                    if (_gateM) {
+                        const g = _gateM[1];
+                        const norm = /conclusion/i.test(g) ? 'Conclusion'
+                            : /introduction/i.test(g) ? 'Introduction'
+                            : ('Paragraph ' + ((g.match(/(\d+)/) || [])[1] || ''));
+                        if (norm !== 'Paragraph ' && markedParas.indexOf(norm) === -1) liveName = norm;
+                    }
+                }
                 const names = addLive ? markedParas.concat([liveName]) : markedParas.slice();
                 names.forEach((pName, pIdx) => {
                     const pMarked = behind || q.marked || pIdx < markedParas.length; // this ¶'s mark is filed
@@ -2094,6 +2108,7 @@
     // (b) this auditor enforces the cap on the Q5 card total, the Q5 Total line, and the
     // visible ceiling sentence. Diagnostic assessments only — redraft = HALT rule.
     let _lastQWordCounts = {};   // qId → code-counted words, set by the injection builder
+    let _lastCanvasReplyForSidebar = '';   // v7.19.846: latest raw reply — sidebar live-beat reads its "Type Y for …" gate
     function _q5DomWordCount() {
         let words = 0;
         try {
@@ -2127,6 +2142,7 @@
     function _auditAssessmentArithmetic(reply) {
         try {
             if (!reply) return reply;
+            _lastCanvasReplyForSidebar = String(reply);   // v7.19.846: both pipelines route here
             if (reply.indexOf('@FB_BEGIN') === -1 && !/Q\d+\s*Total:/.test(reply)
                 && !/Penalty (?:& Ceiling )?Ledger/i.test(reply)
                 && !/MIN\(your marks,/i.test(reply)) return reply;
