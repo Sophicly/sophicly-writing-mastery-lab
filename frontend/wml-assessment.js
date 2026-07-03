@@ -1826,6 +1826,32 @@
     // draft into an empty placeholder the AI owns — re-generation should overwrite, not
     // pile up. Malformed/missing marker → row stays empty (graceful, same as the others).
     // Protocol-agnostic: any protocol adopts it by listing row ids + when to emit.
+    // v7.19.844: auto-fill PROVENANCE. Fill-only-if-empty (v830) protected student
+    // edits but froze run-1 content forever — a fresh run's Action Plan silently kept
+    // the previous run's text and (because nothing was written) the filing scroll
+    // never fired (Run 4). Remember a hash of what auto-file wrote (per canvas,
+    // localStorage); a re-fire may REPLACE content only while it still matches that
+    // hash (= untouched auto-fill). Student edits never match → kept. No record
+    // (new device / cleared storage) → kept — worst case is the old behaviour.
+    function _autoFillStoreKey() {
+        return 'swml_autofill:' + (state.board || '') + '|' + (state.text || '') + '|t' + (state.topicNumber || 1);
+    }
+    function _autoFillHash(s) {
+        let h = 5381; const t = String(s);
+        for (let i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) | 0;
+        return String(h);
+    }
+    function _autoFillRecall(field) {
+        try { return (JSON.parse(localStorage.getItem(_autoFillStoreKey()) || '{}'))[field] || ''; } catch (_) { return ''; }
+    }
+    function _autoFillRemember(field, value) {
+        try {
+            const k = _autoFillStoreKey();
+            const m = JSON.parse(localStorage.getItem(k) || '{}');
+            m[field] = _autoFillHash(value);
+            localStorage.setItem(k, JSON.stringify(m));
+        } catch (_) {}
+    }
     function applyFieldSets(aiReply) {
         try {
             if (!aiReply || !canvasEditor) return;
@@ -1846,8 +1872,11 @@
                 // a field node — route its count marker there via a PM paragraph write. Fills
                 // only while the "—" placeholder is still showing (idempotent on replay).
                 if (s.field === 'analytics-optout-count') {
+                    // v7.19.844: match the line regardless of prior value — the count is
+                    // CODE-OWNED analytics, so a fresh run's value always supersedes
+                    // (the old "— placeholder only" gate froze run-1's count forever).
                     const done = _setParagraphContentViaPM(
-                        t => { const tt = (t || '').trim(); return /^Number of opt-outs:/i.test(tt) && /—\s*$/.test(tt); },
+                        t => { const tt = (t || '').trim(); return /^Number of opt-outs:/i.test(tt); },
                         [{ text: 'Number of opt-outs:', italic: true }, { text: ' ' + s.value }]
                     );
                     if (done) { console.log('WML FieldSet: wrote opt-out count →', s.value); wrote = true; }
@@ -1873,13 +1902,19 @@
                 // repair turns re-fire these markers; they must never clobber a student edit.
                 // (outlineRow keeps its original REPLACE semantics — AI-owned CW draft rows.)
                 if (targetKind === 'inputField' && existing) {
-                    console.log('WML FieldSet: field', s.field, 'already has content — kept (student-editable)');
-                    return;
+                    // v7.19.844: replace ONLY untouched auto-fill (hash provenance) — a
+                    // fresh run's feedback supersedes the old run's; student edits win.
+                    if (_autoFillRecall(s.field) !== _autoFillHash(existing)) {
+                        console.log('WML FieldSet: field', s.field, 'has student content — kept');
+                        return;
+                    }
+                    console.log('WML FieldSet: field', s.field, 'held untouched auto-fill — replaced with this run’s value');
                 }
                 const from = targetPos + 1;
                 const to = targetPos + targetNode.nodeSize - 1;
                 canvasEditor.commands.insertContentAt({ from: from, to: to }, { type: 'text', text: s.value });
                 console.log('WML FieldSet: wrote', s.value.length, 'chars →', s.field);
+                if (targetKind === 'inputField') _autoFillRemember(s.field, s.value);
                 wrote = true;
             });
             if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
