@@ -360,6 +360,41 @@
                 };
             }
 
+            // v7.19.828: Sign-off section — the interactive UI (disclaimer/checkbox/
+            // Sign Off button, or the signed badge) renders IN-FLOW inside the section
+            // (the progress-card technique) instead of the old absolutely-positioned
+            // .swml-dropdown-overlay-signoff, which drifted off its section on
+            // resize/zoom until a scroll re-seated it. A firewalled footer div sits
+            // after the PM content; wml-assessment fills it via WML.renderSignoffUI
+            // on every (re)mount, so it survives pagination remounts.
+            if (type === 'signoff') {
+                const contentDOM = document.createElement('div');
+                contentDOM.className = 'swml-section-content';
+                dom.appendChild(contentDOM);
+                const foot = document.createElement('div');
+                foot.className = 'swml-signoff-ui';
+                foot.setAttribute('contenteditable', 'false');
+                dom.appendChild(foot);
+                const _fill = () => {
+                    try {
+                        if (window.WML && typeof window.WML.renderSignoffUI === 'function') {
+                            window.WML.renderSignoffUI();
+                        }
+                    } catch (_) { /* ignore */ }
+                };
+                requestAnimationFrame(_fill);
+                setTimeout(_fill, 250);
+                setTimeout(_fill, 800);
+                return {
+                    dom,
+                    contentDOM,
+                    ignoreMutation: (mutation) => {
+                        if (!mutation || !mutation.target) return false;
+                        return foot === mutation.target || foot.contains(mutation.target);
+                    },
+                };
+            }
+
             const st = getStateRef();
             const showChip = !!st
                 && st.task === 'exam_crib'

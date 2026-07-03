@@ -623,6 +623,26 @@
     // Replaces the generic flat-8 (Setup…Session Complete) with Setup → Q1…Qn →
     // Section B → Total & Grade. Literature (intro/body/conclusion boxes, not "Qn")
     // and single-essay papers fall through to null → unchanged.
+    // v7.19.828: wording/duration predicate — ANY language paper, including Eduqas
+    // components (language_c1/c2) and CCEA units (language_u1/u4), which
+    // isLanguageSubject() deliberately excludes (that helper gates the AQA
+    // question-mode pre-chain + completion detection; these papers don't run it).
+    // Use THIS one for nouns ("response" vs "essay") and durations only.
+    function _isAnyLanguagePaper() {
+        if (typeof isLanguageSubject === 'function' && isLanguageSubject()) return true;
+        const s = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        return /^language[cu][1-9]$/.test(s);
+    }
+
+    // v7.19.828: ONE builder for the greeting duration info-note. Language papers are
+    // multi-question (Q1–Q5; the protocol budgets 45-60 minutes for the full paper) —
+    // the old hardcoded "20-25 minutes" only fits single-essay literature assessments.
+    // All greeting sites (both pipelines + post-clear + resume-refresh) call this.
+    function _assessGreetingInfoNote() {
+        const dur = _isAnyLanguagePaper() ? '45-60 minutes' : '20-25 minutes';
+        return '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">' + dur + '</strong>. Complete all steps to receive your full score, grade, and personalised feedback.</div>';
+    }
+
     function _buildLangSidebarModel() {
         if (state.reviewMode) return null;
         if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return null;
@@ -651,8 +671,8 @@
         // as each paragraph is marked (modern read-from-doc, no protocol stitching / no
         // hardcoded paragraph counts). Monotonic: a paragraph is done once a LATER paragraph
         // appears or the question is marked; the last detected paragraph is in progress.
-        // Before any paragraph is filed, the question shows its element beats (Predict & AO →
-        // Mark & Feedback → Gold) as the fallback. Q1 (retrieval, ≤4) = single Mark & Feedback
+        // Before any paragraph is filed, the question shows question-level Predict & AO +
+        // element beats (Mark & Feedback → Gold) as the fallback. Q1 (retrieval, ≤4) = single Mark & Feedback
         // (no predict/gold — spec). Section B = holistic element beats (no paragraphs). Once a
         // LATER question is marked, earlier beats force-complete so a missed detect can't
         // strand the pointer (sequential Q1→Q5).
@@ -691,24 +711,23 @@
                 beats.push({ label: 'Section Feedback', done: behind || q.marked });
                 beats.push({ label: 'Gold Article', done: behind || (q.marked && q.hasGold) });
             } else {
-                // Reading question → PER-PARAGRAPH, each paragraph carrying its three
-                // element beats (Predict & AO → Mark & Feedback → Gold), matching the
-                // protocol order (¶1 predict→mark→gold, then ¶2 …). Completed paragraphs
-                // are read from the box; for the question currently in progress we add the
-                // one paragraph being worked on (so its Predict/Mark beats show live).
+                // Reading question → ONE question-level Predict & AO beat (v7.19.828:
+                // prediction is per QUESTION — the D1 reflect panel fires once before ¶1,
+                // so the beat belongs to the question, not to every paragraph), then
+                // PER-PARAGRAPH Mark & Feedback → Gold beats matching the protocol order.
+                // Completed paragraphs are read from the box; for the question currently
+                // in progress we add the one paragraph being worked on (live beats).
+                beats.push({ label: 'Predict & AO', done: behind || predicted || q.marked });
                 const markedParas = _extractParas(q.text, q.max);
                 const isActive = (i === firstUnmarkedIdx);
                 const totalParas = markedParas.length + ((isActive && !q.marked) ? 1 : 0);
                 for (let p = 1; p <= totalParas; p++) {
                     const pName = markedParas[p - 1] || ('Paragraph ' + p);
                     const pMarked = behind || q.marked || p <= markedParas.length; // this ¶'s mark is filed
-                    const pPredict = pMarked || predicted;                         // prediction committed
-                    beats.push({ label: pName + ' · Predict & AO', done: pPredict });
                     beats.push({ label: pName + ' · Mark & Feedback', done: pMarked });
                     beats.push({ label: pName + ' · Gold', done: pMarked });
                 }
                 if (totalParas === 0) {                       // not yet started — element fallback
-                    beats.push({ label: 'Predict & AO', done: behind || predicted });
                     beats.push({ label: 'Mark & Feedback', done: behind });
                     beats.push({ label: 'Gold Models', done: behind });
                 }
@@ -4214,18 +4233,29 @@
     function _computeAssessmentProgress(editor) {
         const firstDiag = _isFirstDiagnostic();
         const secs = editor.querySelectorAll('.swml-section-block[data-section-complete]');
-        let total = 0, done = 0; const incomplete = [];
+        let total = 0, done = 0, raw = 0; const incomplete = [];
         secs.forEach(s => {
+            raw++;
             const type = s.getAttribute('data-section-type') || '';
             const label = s.getAttribute('data-section-label') || 'Section';
             if (type === 'question' || type === 'response' || type === 'scores' || type === 'signoff') return;
             if (label === 'Overall Feedback') return;
             if (type === 'plan' && firstDiag) return;
+            // v7.19.828 (Neil 2026-07-03): count only what the student can SEE at this
+            // stage. The diagnostic environment CSS-hides the results family
+            // (feedback/SA/analytics/action — wml-canvas.css ~4767) as cognitive-load
+            // design, but the card still counted them ("2 of 8" with chips for invisible
+            // sections). Visibility is read from the live DOM (offsetParent) rather than
+            // re-deriving the hide list, so stage-reveal attrs and any future hide rule
+            // are respected automatically. `raw` lets the renderer tell "nothing visible
+            // is trackable at this stage" (hide card) from "attrs not mounted yet" (v499
+            // transient — keep paint).
+            if (s.offsetParent === null) return;
             total++;
             if (s.getAttribute('data-section-complete') === 'true') done++;
             else incomplete.push(label);
         });
-        return { total, done, incomplete, pct: total ? Math.round(done / total * 100) : 0 };
+        return { total, done, incomplete, raw, pct: total ? Math.round(done / total * 100) : 0 };
     }
     // v7.19.501: house percentage ramp (Neil's 8 bands). Hexes from the dashboard
     // grade ladder (sophicly-dashboard/src/utils/grade.js + WORD_COUNT_LADDER) — no
@@ -4310,7 +4340,14 @@
         card.appendChild(bar);
     }
     function _renderProgressCardBody(card, editor, computeFn) {
-        const { total, done, incomplete, pct } = (computeFn || _computeCwProgress)(editor);
+        const { total, done, incomplete, pct, raw } = (computeFn || _computeCwProgress)(editor);
+        // v7.19.828: on the assessment compute, raw>0 with total=0 means the sections
+        // ARE mounted but every trackable one is stage-hidden (e.g. T1P1 diagnostic:
+        // plan exempt + results family hidden) — nothing the student can see needs
+        // doing, so hide the whole progress section (Neil 2026-07-03). Restored the
+        // moment a later stage reveals trackable sections (recompute passes re-run this).
+        const _progressBlock = card.closest('.swml-section-block');
+        if (_progressBlock) _progressBlock.style.display = (raw > 0 && !total) ? 'none' : '';
         // v7.19.499: total=0 is transient on first mount (sibling completion attrs
         // not set yet). NEVER hide/blank — that left the card stuck-collapsed until a
         // user click triggered a recompute. Just keep the current paint and wait for
@@ -5428,13 +5465,13 @@
                         const tn = state.textName || state.text || 'your text';
                         const wc = getResponseWordCount(canvasEditor);
                         const qText = extractEssayQuestion(canvasEditor) || state.question || ''; // v7.19.810: state.question fallback (stale-editor '' dropped the question recap)
-                        const _isLang = isLanguageSubject();
+                        const _isLang = _isAnyLanguagePaper(); // v7.19.828: covers Eduqas c1/c2 + CCEA u1/u4 for the noun
                         const workNoun = _isLang ? 'response' : 'essay';
                         const questionInfo = qText ? `\n\nYour ${workNoun} question: **${qText}**` : '';
                         const questionHTML = qText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${workNoun} question:</p><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
                         const essayLabel = (state.mode === 'exam_prep') ? `${tn} ${workNoun}` : (state.phase === 'redraft') ? `${tn} redraft ${workNoun}` : `${tn} diagnostic ${workNoun}`;
                         const gt = `Hi ${fn}! Welcome to the assessment phase. I've received your ${essayLabel} (${wc} words). Let's review your writing together.${questionInfo}\n\nBefore I begin marking, I need to know: **what grade are you aiming for?** This helps me tailor my feedback to where you want to be.`;
-                        const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all steps to receive your full score, grade, and personalised feedback.</div>';
+                        const infoNote = _assessGreetingInfoNote();
                         const gtHTML = `${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${tn}</strong> ${(state.mode === 'exam_prep') ? workNoun : (state.phase === 'redraft') ? `redraft ${workNoun}` : `diagnostic ${workNoun}`} (<strong>${wc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`;
                         addChatMessage(gtHTML, 'ai', gt);
                         canvasChatHistory.push({ role: 'assistant', content: gt });
@@ -12127,7 +12164,7 @@
                             if (_wc0 > 0) {
                                 const _firstName0 = (config.userName || '').split(' ')[0] || 'there';
                                 const _textName0 = state.textName || state.text || 'your text';
-                                const _isLangPaper0 = ['language1','language2','language_p1','language_p2','language_c1','language_c2','language_u1','language_u4'].includes(state.subject);
+                                const _isLangPaper0 = _isAnyLanguagePaper(); // v7.19.828: normalised, covers Eduqas c1/c2 + CCEA u1/u4 — never exact-match state.subject (827 slug-drift rule)
                                 const _workLabel0 = _isLangPaper0 ? 'response' : 'essay';
                                 const _qText0 = extractEssayQuestion(canvasEditor);
                                 if (_qText0) state.question = _qText0;
@@ -12218,13 +12255,13 @@
                                 const _assessWc = getResponseWordCount(canvasEditor);
                                 const _questionText = extractEssayQuestion(canvasEditor);
                                 if (_questionText) state.question = _questionText;
-                                const _isLangPaper2 = ['language1','language2','language_p1','language_p2','language_c1','language_c2','language_u1','language_u4'].includes(state.subject);
+                                const _isLangPaper2 = _isAnyLanguagePaper(); // v7.19.828: normalised, covers Eduqas c1/c2 + CCEA u1/u4 — never exact-match state.subject (827 slug-drift rule)
                                 const _workLabel2 = _isLangPaper2 ? 'response' : 'essay';
                                 const _qSnippet2 = _questionText ? `\n\nYour ${_workLabel2} question: **${_questionText}**` : '';
                                 const _qHTML2 = _questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${_workLabel2} question:</p><p style="font-size:13px;font-style:italic">${_questionText}</p></div>` : '';
                                 const _essayLabel2 = (state.mode === 'exam_prep') ? `${_assessTextName} ${_workLabel2}` : (state.phase === 'redraft') ? `${_assessTextName} redraft ${_workLabel2}` : `${_assessTextName} diagnostic ${_workLabel2}`;
                                 const _newPlain = `Hi ${_firstName}! Welcome to the assessment phase. I've received your ${_essayLabel2} (${_assessWc} words). Let's review your writing together.${_qSnippet2}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
-                                const _infoNote2 = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all steps to receive your full score, grade, and personalised feedback.</div>';
+                                const _infoNote2 = _assessGreetingInfoNote();
                                 const _newHTML = `${_infoNote2}<div style="margin-bottom:12px"><p>Hi <strong>${_firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${_assessTextName}</strong> ${(state.mode === 'exam_prep') ? _workLabel2 : (state.phase === 'redraft') ? `redraft ${_workLabel2}` : `diagnostic ${_workLabel2}`} (<strong>${_assessWc} words</strong>). Let's review your writing together.</p></div>${_qHTML2}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`;
                                 // Replace bubble HTML in DOM
                                 const _firstBubble = tp.chatMessages?.firstElementChild;
@@ -12491,13 +12528,13 @@
                     // paper's answers across Q1-Q5 are not essays. Literature papers
                     // remain "essay" because that's what the student writes for a
                     // literature paper (single extended essay).
-                    const _isLangPaper = ['language1','language2','language_p1','language_p2','language_c1','language_c2','language_u1','language_u4'].includes(state.subject);
+                    const _isLangPaper = _isAnyLanguagePaper(); // v7.19.828: normalised, covers Eduqas c1/c2 + CCEA u1/u4 — never exact-match state.subject (827 slug-drift rule)
                     const _workLabel = _isLangPaper ? 'response' : 'essay';
                     const questionSnippet = questionText ? `\n\nYour ${_workLabel} question: **${questionText}**` : '';
                     const questionHTML = questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${_workLabel} question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
                     const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} ${_workLabel}` : (state.phase === 'redraft') ? `${assessTextName} redraft ${_workLabel}` : `${assessTextName} diagnostic ${_workLabel}`;
                     const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
-                    const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all steps to receive your full score, grade, and personalised feedback.</div>';
+                    const infoNote = _assessGreetingInfoNote();
                     tp.addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? _workLabel : (state.phase === 'redraft') ? `redraft ${_workLabel}` : `diagnostic ${_workLabel}`} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
                     tp.canvasChatHistory.push({ role: 'assistant', content: greetingText });
                     saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
@@ -14806,14 +14843,15 @@
                                             // Extract essay question from document + store in state (v7.12.33)
                                             const questionText = extractEssayQuestion(canvasEditor);
                                             if (questionText) state.question = questionText;
-                                            const questionSnippet = questionText ? `\n\nYour essay question: **${questionText}**` : '';
-                                            const questionHTML = questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your essay question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
+                                            const _workLabel4 = _isAnyLanguagePaper() ? 'response' : 'essay'; // v7.19.828: this twin missed the v7.15.116 response/essay split
+                                            const questionSnippet = questionText ? `\n\nYour ${_workLabel4} question: **${questionText}**` : '';
+                                            const questionHTML = questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${_workLabel4} question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
                                             const firstName = (config.userName || '').split(' ')[0] || 'there';
                                             // v7.14.43: Context-aware greeting — exam practice has no "diagnostic"
-                                            const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} essay` : (state.phase === 'redraft') ? `${assessTextName} redraft essay` : `${assessTextName} diagnostic essay`;
+                                            const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} ${_workLabel4}` : (state.phase === 'redraft') ? `${assessTextName} redraft ${_workLabel4}` : `${assessTextName} diagnostic ${_workLabel4}`;
                                             const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
-                                            const infoNote = '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">20-25 minutes</strong>. Complete all steps to receive your full score, grade, and personalised feedback.</div>';
-                                            addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? 'essay' : (state.phase === 'redraft') ? 'redraft essay' : 'diagnostic essay'} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
+                                            const infoNote = _assessGreetingInfoNote();
+                                            addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? _workLabel4 : (state.phase === 'redraft') ? `redraft ${_workLabel4}` : `diagnostic ${_workLabel4}`} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
                                             canvasChatHistory.push({ role: 'assistant', content: greetingText });
                                             saveCanvasChat(canvasChatHistory, canvasChatId);
 
@@ -19990,170 +20028,15 @@
                 }
             }
 
-            // ── Tutor Sign-off Button ──
-            const signoffSection = editor.querySelector('[data-section-type="signoff"]') || editor.querySelector('[data-section-label="Tutor Sign-off"]');
-            if (signoffSection) {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'swml-dropdown-overlay swml-dropdown-overlay-signoff';
-                wrapper.style.pointerEvents = 'auto';
-
-                if (config.canSignOff) {
-                    // Checkbox disclaimer — tutor must confirm before signing off
-                    const disclaimerRow = document.createElement('div');
-                    disclaimerRow.className = 'swml-signoff-disclaimer';
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.id = 'swml-signoff-confirm';
-                    checkbox.className = 'swml-signoff-checkbox';
-                    const disclaimerLabel = document.createElement('label');
-                    disclaimerLabel.htmlFor = 'swml-signoff-confirm';
-                    disclaimerLabel.className = 'swml-signoff-disclaimer-text';
-                    const isDiagnosticT1 = state.topicNumber === 1 && state.draftType === 'diagnostic';
-                    // v7.19.452: CW exploration steps (cw_step_*) get optional, step-appropriate
-                    // wording — the old "...including the essay plan" is assessment language and made
-                    // no sense on an exploration step (Neil). Trials (cw_trial_*) keep the strict text.
-                    const isCwExplorationStep = state.task && state.task.startsWith('cw_step_');
-                    disclaimerLabel.textContent = isCwExplorationStep
-                        ? "Tick to confirm you've reviewed this step together and agreed the next focus."
-                        : isDiagnosticT1
-                            ? 'I confirm the student has completed all sections of this document. Essay plan is not required for the first diagnostic.'
-                            : 'I confirm the student has completed all sections of this document, including the essay plan.';
-                    disclaimerRow.appendChild(checkbox);
-                    disclaimerRow.appendChild(disclaimerLabel);
-                    wrapper.appendChild(disclaimerRow);
-
-                    // v7.19.247: marks-complete gate. Sign-off is the completion event
-                    // (stamps Date Completed), so it must not fire on an unmarked doc.
-                    // Only gates docs that HAVE feedback sections — Codex / Conceptual
-                    // Notes / CW have none, so _marksReadyForSignoff returns true for them
-                    // and sign-off stays available on the tutor's judgement.
-                    const marksHint = document.createElement('div');
-                    marksHint.className = 'swml-signoff-marks-hint';
-                    marksHint.textContent = '⚠ Enter all marks before signing off.';
-                    marksHint.style.cssText = 'display:none;font-size:12px;color:#ffb432;margin-top:6px;';
-                    wrapper.appendChild(marksHint);
-
-                    const signBtn = document.createElement('button');
-                    signBtn.className = 'swml-signoff-btn';
-                    signBtn.textContent = '🔒 Sign Off';
-                    signBtn.disabled = true;
-                    signBtn.style.opacity = '0.5';
-                    signBtn.style.cursor = 'not-allowed';
-
-                    const _refreshSignBtnState = () => {
-                        const marksReady = _marksReadyForSignoff(editor);
-                        const ready = checkbox.checked && marksReady;
-                        signBtn.disabled = !ready;
-                        signBtn.style.opacity = ready ? '' : '0.5';
-                        signBtn.style.cursor = ready ? '' : 'not-allowed';
-                        signBtn.textContent = ready ? '✍ Sign Off' : '🔒 Sign Off';
-                        marksHint.style.display = (checkbox.checked && !marksReady) ? '' : 'none';
-                        if (!ready) signBtn.dataset.confirming = 'false';
-                    };
-                    checkbox.addEventListener('change', _refreshSignBtnState);
-
-                    signBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        // v7.19.247: re-check marks at click — they may have changed since render.
-                        if (signBtn.disabled || !_marksReadyForSignoff(editor)) { _refreshSignBtnState(); return; }
-                        console.log('WML: Sign-off button clicked, canSignOff:', config.canSignOff);
-                        // Two-step confirmation: first click shows "Confirm?", second click signs off
-                        if (signBtn.dataset.confirming === 'true') {
-                            signBtn.textContent = '⏳ Signing…';
-                            signBtn.disabled = true;
-                            signBtn.classList.remove('swml-signoff-btn-armed');
-                            // v7.15.84: when tutor reviews a student, send targetUserId (the student),
-                            // not the tutor's own userId — REST rejects self-signoff otherwise.
-                            const targetStudentId = config.targetUserId || config.reviewStudentId || config.userId;
-                            fetch(config.restUrl + 'canvas/signoff', {
-                                method: 'POST', headers,
-                                body: JSON.stringify({
-                                    board: state.board, text: state.text,
-                                    topicNumber: state.topicNumber || null,
-                                    // v7.15.112: sign-off stamps the canvas doc
-                                    suffix: WML.resolveCanvasSuffix(state.task, state.phase) || '',
-                                    studentId: targetStudentId,
-                                    task: state.task, // v7.19.525: flat-doc routing (Mastery Codex)
-                                })
-                            }).then(r => r.json()).then(res => {
-                                console.log('WML: Sign-off response:', res);
-                                if (res.success) {
-                                    // v7.19.247: sign-off is the completion event → Date Completed.
-                                    _canvasSignoffAt = (res.signoff && res.signoff.timestamp) || _canvasSignoffAt || '';
-                                    applySignoffToSection(signoffSection, res.signoff);
-                                    wrapper.innerHTML = '';
-                                    wrapper.appendChild(buildSignedBadge(res.signoff));
-                                    wrapper.classList.add('swml-signoff-complete');
-                                    showToast('✓ Document signed off', 4000, true);
-                                    if (typeof recalculateScoreSummary === 'function') recalculateScoreSummary();
-                                } else {
-                                    signBtn.textContent = '✍ Sign Off';
-                                    signBtn.disabled = false;
-                                    signBtn.dataset.confirming = 'false';
-                                    showToast('Sign-off failed: ' + (res.message || 'unknown error'), 5000, true);
-                                }
-                            }).catch(err => {
-                                console.warn('WML: Sign-off error:', err);
-                                signBtn.textContent = '✍ Sign Off';
-                                signBtn.disabled = false;
-                                signBtn.dataset.confirming = 'false';
-                                showToast('Sign-off failed — please try again', 5000, true);
-                            });
-                        } else {
-                            signBtn.dataset.confirming = 'true';
-                            // v7.19.496: soft-nudge — if CW doc is under 100%, surface the
-                            // incomplete count in the confirm label but still ALLOW sign-off.
-                            let _confirmLabel = 'Click again to confirm →';
-                            if (state.task && state.task.startsWith('cw_')) {
-                                const _p = _computeCwProgress(editor);
-                                if (_p.total && _p.done < _p.total) {
-                                    _confirmLabel = `Click again to confirm (${_p.done}/${_p.total}) →`;
-                                }
-                            }
-                            signBtn.textContent = _confirmLabel;
-                            // v7.19.527: distinct "armed" state (brighter + pulse + ring) so the
-                            // confirm reads as a second, clickable action — it used to be the same
-                            // green as the resting button, which is why it didn't look clickable.
-                            signBtn.classList.add('swml-signoff-btn-armed');
-                            // Reset after 4 seconds if not confirmed
-                            setTimeout(() => {
-                                if (signBtn.dataset.confirming === 'true') {
-                                    signBtn.dataset.confirming = 'false';
-                                    signBtn.textContent = '✍ Sign Off';
-                                    signBtn.classList.remove('swml-signoff-btn-armed');
-                                }
-                            }, 4000);
-                        }
-                    });
-                    wrapper.appendChild(signBtn);
-                } else {
-                    // Students see read-only status
-                    const label = document.createElement('span');
-                    label.className = 'swml-signoff-pending';
-                    label.textContent = '⏳ Awaiting tutor';
-                    wrapper.appendChild(label);
-                }
-
-                dropdownLayer.appendChild(wrapper);
-
-                // Load existing sign-off data
-                // v7.15.84: pass studentId so tutor review sees the student's signoff
-                const loadTargetId = config.targetUserId || config.reviewStudentId || config.userId;
-                fetch(config.restUrl + `canvas/load-signoff?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(WML.resolveCanvasSuffix(state.task, state.phase) || '')}&studentId=${encodeURIComponent(loadTargetId)}&task=${encodeURIComponent(state.task || '')}`, { headers })
-                    .then(r => r.ok ? r.json() : null)
-                    .then(res => {
-                        if (res && res.success && res.signoff && !res.signoff.revoked) {
-                            // v7.19.247: existing sign-off → fill Date Completed in the summary.
-                            _canvasSignoffAt = res.signoff.timestamp || _canvasSignoffAt || '';
-                            applySignoffToSection(signoffSection, res.signoff);
-                            wrapper.innerHTML = '';
-                            wrapper.appendChild(buildSignedBadge(res.signoff));
-                            wrapper.classList.add('swml-signoff-complete');
-                            if (typeof recalculateScoreSummary === 'function') recalculateScoreSummary();
-                        }
-                    }).catch(() => { /* No signoff yet — leave as pending */ });
-            }
+            // ── Tutor Sign-off UI (v7.19.828: IN-FLOW — the progress-card technique) ──
+            // The old .swml-dropdown-overlay-signoff lived in the absolute dropdown layer
+            // and drifted off its section on resize/zoom until a scroll re-seated it
+            // (Neil screenshot 2026-07-03). The signoff nodeView (wml-section-block.js)
+            // now renders a PM-firewalled .swml-signoff-ui footer INSIDE the section and
+            // calls WML.renderSignoffUI on every (re)mount, so the UI occupies real
+            // layout space and moves with its section — no positioning pass at all.
+            // Overlay rebuilds re-render it here with a sign-off refetch (old cadence).
+            renderSignoffInline(true);
 
             // Position overlays
             // v7.19.482: run again across the next frames + a short settle delay. On a
@@ -20207,6 +20090,192 @@
                 }
             }
         }
+
+        // ── Tutor Sign-off UI, IN-FLOW (v7.19.828 — the progress-card technique) ──
+        // Builds the interactive sign-off UI (tutor: disclaimer + checkbox + Sign Off
+        // button; student: awaiting label; signed: badge) INTO the section's
+        // .swml-signoff-ui footer, which the signoff nodeView (wml-section-block.js)
+        // renders as a PM-firewalled child and re-fills via WML.renderSignoffUI on
+        // every (re)mount. Replaces the absolute .swml-dropdown-overlay-signoff, which
+        // drifted off its section on resize/zoom until a scroll re-seated it.
+        // `refetch` refreshes the cached load-signoff response (overlay rebuilds pass
+        // true — the old per-rebuild cadence); nodeView remount fills reuse the cache.
+        let _signoffLoadPromise = null;
+        function renderSignoffInline(refetch) {
+            const editor = document.getElementById('swml-tiptap-editor');
+            if (!editor || !canvasEditor) return;
+            const signoffSection = editor.querySelector('[data-section-type="signoff"]') || editor.querySelector('[data-section-label="Tutor Sign-off"]');
+            if (!signoffSection) return;
+            const ui = signoffSection.querySelector('.swml-signoff-ui');
+            if (!ui) { console.warn('WML signoff: .swml-signoff-ui container missing — nodeView not mounted yet, skipping this pass'); return; }
+            // A rebuild must not lose an in-flight confirmation tick (rebuilds fire on
+            // every mark change via _scoreOverlaysRefresh, mid-flow for the tutor).
+            const wasChecked = !!ui.querySelector('.swml-signoff-checkbox:checked');
+            ui.innerHTML = '';
+            ui.classList.remove('swml-signoff-complete');
+
+            const _renderSigned = (signoff) => {
+                // v7.19.247: sign-off is the completion event → Date Completed.
+                _canvasSignoffAt = (signoff && signoff.timestamp) || _canvasSignoffAt || '';
+                applySignoffToSection(signoffSection, signoff);
+                ui.innerHTML = '';
+                ui.appendChild(buildSignedBadge(signoff));
+                ui.classList.add('swml-signoff-complete');
+            };
+
+            if (config.canSignOff) {
+                // Checkbox disclaimer — tutor must confirm before signing off
+                const disclaimerRow = document.createElement('div');
+                disclaimerRow.className = 'swml-signoff-disclaimer';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = 'swml-signoff-confirm';
+                checkbox.className = 'swml-signoff-checkbox';
+                const disclaimerLabel = document.createElement('label');
+                disclaimerLabel.htmlFor = 'swml-signoff-confirm';
+                disclaimerLabel.className = 'swml-signoff-disclaimer-text';
+                const isDiagnosticT1 = state.topicNumber === 1 && state.draftType === 'diagnostic';
+                // v7.19.452: CW exploration steps (cw_step_*) get optional, step-appropriate
+                // wording — the old "...including the essay plan" is assessment language and made
+                // no sense on an exploration step (Neil). Trials (cw_trial_*) keep the strict text.
+                const isCwExplorationStep = state.task && state.task.startsWith('cw_step_');
+                disclaimerLabel.textContent = isCwExplorationStep
+                    ? "Tick to confirm you've reviewed this step together and agreed the next focus."
+                    : isDiagnosticT1
+                        ? 'I confirm the student has completed all sections of this document. Essay plan is not required for the first diagnostic.'
+                        : 'I confirm the student has completed all sections of this document, including the essay plan.';
+                disclaimerRow.appendChild(checkbox);
+                disclaimerRow.appendChild(disclaimerLabel);
+                ui.appendChild(disclaimerRow);
+
+                // v7.19.247: marks-complete gate. Sign-off is the completion event
+                // (stamps Date Completed), so it must not fire on an unmarked doc.
+                // Only gates docs that HAVE feedback sections — Codex / Conceptual
+                // Notes / CW have none, so _marksReadyForSignoff returns true for them
+                // and sign-off stays available on the tutor's judgement.
+                const marksHint = document.createElement('div');
+                marksHint.className = 'swml-signoff-marks-hint';
+                marksHint.textContent = '⚠ Enter all marks before signing off.';
+                marksHint.style.cssText = 'display:none;font-size:12px;color:#ffb432;margin-top:6px;';
+                ui.appendChild(marksHint);
+
+                const signBtn = document.createElement('button');
+                signBtn.className = 'swml-signoff-btn';
+                signBtn.textContent = '🔒 Sign Off';
+                signBtn.disabled = true;
+                signBtn.style.opacity = '0.5';
+                signBtn.style.cursor = 'not-allowed';
+
+                const _refreshSignBtnState = () => {
+                    const marksReady = _marksReadyForSignoff(editor);
+                    const ready = checkbox.checked && marksReady;
+                    signBtn.disabled = !ready;
+                    signBtn.style.opacity = ready ? '' : '0.5';
+                    signBtn.style.cursor = ready ? '' : 'not-allowed';
+                    signBtn.textContent = ready ? '✍ Sign Off' : '🔒 Sign Off';
+                    marksHint.style.display = (checkbox.checked && !marksReady) ? '' : 'none';
+                    if (!ready) signBtn.dataset.confirming = 'false';
+                };
+                checkbox.addEventListener('change', _refreshSignBtnState);
+
+                signBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    // v7.19.247: re-check marks at click — they may have changed since render.
+                    if (signBtn.disabled || !_marksReadyForSignoff(editor)) { _refreshSignBtnState(); return; }
+                    console.log('WML: Sign-off button clicked, canSignOff:', config.canSignOff);
+                    // Two-step confirmation: first click shows "Confirm?", second click signs off
+                    if (signBtn.dataset.confirming === 'true') {
+                        signBtn.textContent = '⏳ Signing…';
+                        signBtn.disabled = true;
+                        signBtn.classList.remove('swml-signoff-btn-armed');
+                        // v7.15.84: when tutor reviews a student, send targetUserId (the student),
+                        // not the tutor's own userId — REST rejects self-signoff otherwise.
+                        const targetStudentId = config.targetUserId || config.reviewStudentId || config.userId;
+                        fetch(config.restUrl + 'canvas/signoff', {
+                            method: 'POST', headers,
+                            body: JSON.stringify({
+                                board: state.board, text: state.text,
+                                topicNumber: state.topicNumber || null,
+                                // v7.15.112: sign-off stamps the canvas doc
+                                suffix: WML.resolveCanvasSuffix(state.task, state.phase) || '',
+                                studentId: targetStudentId,
+                                task: state.task, // v7.19.525: flat-doc routing (Mastery Codex)
+                            })
+                        }).then(r => r.json()).then(res => {
+                            console.log('WML: Sign-off response:', res);
+                            if (res.success) {
+                                _renderSigned(res.signoff);
+                                _signoffLoadPromise = Promise.resolve({ success: true, signoff: res.signoff });
+                                showToast('✓ Document signed off', 4000, true);
+                                if (typeof recalculateScoreSummary === 'function') recalculateScoreSummary();
+                            } else {
+                                signBtn.textContent = '✍ Sign Off';
+                                signBtn.disabled = false;
+                                signBtn.dataset.confirming = 'false';
+                                showToast('Sign-off failed: ' + (res.message || 'unknown error'), 5000, true);
+                            }
+                        }).catch(err => {
+                            console.warn('WML: Sign-off error:', err);
+                            signBtn.textContent = '✍ Sign Off';
+                            signBtn.disabled = false;
+                            signBtn.dataset.confirming = 'false';
+                            showToast('Sign-off failed — please try again', 5000, true);
+                        });
+                    } else {
+                        signBtn.dataset.confirming = 'true';
+                        // v7.19.496: soft-nudge — if CW doc is under 100%, surface the
+                        // incomplete count in the confirm label but still ALLOW sign-off.
+                        let _confirmLabel = 'Click again to confirm →';
+                        if (state.task && state.task.startsWith('cw_')) {
+                            const _p = _computeCwProgress(editor);
+                            if (_p.total && _p.done < _p.total) {
+                                _confirmLabel = `Click again to confirm (${_p.done}/${_p.total}) →`;
+                            }
+                        }
+                        signBtn.textContent = _confirmLabel;
+                        // v7.19.527: distinct "armed" state (brighter + pulse + ring) so the
+                        // confirm reads as a second, clickable action — it used to be the same
+                        // green as the resting button, which is why it didn't look clickable.
+                        signBtn.classList.add('swml-signoff-btn-armed');
+                        // Reset after 4 seconds if not confirmed
+                        setTimeout(() => {
+                            if (signBtn.dataset.confirming === 'true') {
+                                signBtn.dataset.confirming = 'false';
+                                signBtn.textContent = '✍ Sign Off';
+                                signBtn.classList.remove('swml-signoff-btn-armed');
+                            }
+                        }, 4000);
+                    }
+                });
+                ui.appendChild(signBtn);
+                if (wasChecked) { checkbox.checked = true; _refreshSignBtnState(); }
+            } else {
+                // Students see read-only status
+                const label = document.createElement('span');
+                label.className = 'swml-signoff-pending';
+                label.textContent = '⏳ Awaiting tutor';
+                ui.appendChild(label);
+            }
+
+            // Load existing sign-off data (cached — nodeView remounts reuse; rebuilds refetch)
+            // v7.15.84: pass studentId so tutor review sees the student's signoff
+            if (refetch || !_signoffLoadPromise) {
+                const loadTargetId = config.targetUserId || config.reviewStudentId || config.userId;
+                _signoffLoadPromise = fetch(config.restUrl + `canvas/load-signoff?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(WML.resolveCanvasSuffix(state.task, state.phase) || '')}&studentId=${encodeURIComponent(loadTargetId)}&task=${encodeURIComponent(state.task || '')}`, { headers })
+                    .then(r => r.ok ? r.json() : null)
+                    .catch(() => null);
+            }
+            _signoffLoadPromise.then(res => {
+                if (res && res.success && res.signoff && !res.signoff.revoked) {
+                    // v7.19.247: existing sign-off → fill Date Completed in the summary.
+                    _renderSigned(res.signoff);
+                    if (typeof recalculateScoreSummary === 'function') recalculateScoreSummary();
+                }
+            }).catch(() => { /* No signoff yet — leave as pending */ });
+        }
+        // NodeView (re)mount hook — cache-reusing fill (see wml-section-block.js signoff branch).
+        try { window.WML = window.WML || {}; window.WML.renderSignoffUI = () => renderSignoffInline(false); } catch (_) { /* ignore */ }
 
         function positionDropdownOverlays() {
             if (!dropdownLayer) return;
@@ -20343,30 +20412,7 @@
                 }
             }
 
-            // ── Position signoff overlay ──
-            const signoffOverlay = dropdownLayer.querySelector('.swml-dropdown-overlay-signoff');
-            if (signoffOverlay) {
-                const signoffSection = editor.querySelector('[data-section-type="signoff"]') || editor.querySelector('[data-section-label="Tutor Sign-off"]');
-                if (signoffSection) {
-                    const soRect = signoffSection.getBoundingClientRect();
-                    const top = (soRect.top - dwRect.top) / z + 8;
-                    if (signoffOverlay.classList.contains('swml-signoff-complete')) {
-                        // Center badge over the section
-                        const left = (soRect.left - dwRect.left) / z;
-                        const sWidth = soRect.width / z;
-                        signoffOverlay.style.cssText = `position:absolute;top:${top + 16}px;left:${left}px;width:${sWidth}px;display:flex;justify-content:center;pointer-events:auto;z-index:5;`;
-                    } else {
-                        // v7.19.513: full-width footer row at the BOTTOM of the panel — was
-                        // floating top-right ON TOP of the Status/Tutor/Date text (poor
-                        // composition, Neil). The section reserves padding-bottom for it;
-                        // CSS lays disclaimer (left) + Sign-Off button (right) in a row.
-                        const left = (soRect.left - dwRect.left) / z + 22;
-                        const width = (soRect.width / z) - 44;
-                        const footTop = (soRect.bottom - dwRect.top) / z - 58;
-                        signoffOverlay.style.cssText = `position:absolute;top:${footTop}px;left:${left}px;width:${width}px;pointer-events:auto;z-index:5;`;
-                    }
-                }
-            }
+            // (v7.19.828: sign-off UI is IN-FLOW inside its section now — no positioning pass.)
 
             // Show layer after first positioning pass (prevents flash at wrong position on load)
             if (dropdownLayer.style.visibility === 'hidden') dropdownLayer.style.visibility = 'visible';
@@ -20757,12 +20803,32 @@
         statusBar.insertBefore(zoomWrap, saveStatus);
 
         function applyZoom(newZoom, isAutoFit) {
+            const _prevZoom = canvasZoom || 1;
             canvasZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, newZoom));
             // Snap to 100% when close
             if (Math.abs(canvasZoom - 1) < ZOOM_SNAP) canvasZoom = 1;
             // Reset horizontal pan when zooming back to fit (v7.12.41)
             if (canvasZoom <= 1) panOffsetX = 0;
+            // v7.19.828: preserve the scroll anchor across the zoom change. scale()
+            // (origin top) moves every rendered point proportionally while scrollTop
+            // stays numerically fixed, so the resize-driven auto-fit (98%→100% chip)
+            // visually leapt the viewport — and when the rescale shrank the scroll
+            // extent, the browser clamp-scrolled past the content ("document
+            // disappears", Neil 2026-07-03). Capture the doc point at the viewport top
+            // (docWrap's top edge is scale-stable under a top origin), re-derive
+            // scrollTop after the transform so that SAME point stays put.
+            let _anchorDocY = null, _dwTopInScroll = 0;
+            if (contentWrap && docWrap && Math.abs(canvasZoom - _prevZoom) > 0.001) {
+                try {
+                    _dwTopInScroll = (docWrap.getBoundingClientRect().top - contentWrap.getBoundingClientRect().top) + contentWrap.scrollTop;
+                    const _y = (contentWrap.scrollTop - _dwTopInScroll) / _prevZoom;
+                    if (_y > 0) _anchorDocY = _y;
+                } catch (_) { _anchorDocY = null; }
+            }
             updateDocTransform();
+            if (_anchorDocY !== null) {
+                contentWrap.scrollTop = Math.max(0, _anchorDocY * canvasZoom + _dwTopInScroll);
+            }
             // Show indicator briefly
             const pct = Math.round(canvasZoom * 100);
             zoomIndicator.textContent = isAutoFit ? `${pct}% ← 100%` : `${pct}%`;
