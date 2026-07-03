@@ -1541,6 +1541,34 @@
     // 'Conclusion' / '1' / '2' / '3', and Language 'Q2' → '2' (backward-compatible). Mirrors
     // _buildLitSidebarModel's name match + the .700 calibration readout keys so filing,
     // mark-set, max-lookup, predict panel + readout all agree (CLAUDE.md canvas-rule #3).
+    // v7.19.848: the student's HEADLINE GOAL as a per-turn injection block ('' if not yet
+    // answered). Pass 1: the goal-button message ("My headline goal: …"). Pass 2 (free-typed):
+    // the user reply directly after the code-asked "one main goal" pre-chain question. Never
+    // matched loosely against "headline goal" mentions in later AI replies — those would
+    // shadow the real answer.
+    function _headlineGoalBlock(history) {
+        try {
+            const h = Array.isArray(history) ? history : [];
+            let goal = '';
+            for (let i = h.length - 1; i >= 0 && !goal; i--) {
+                if (h[i] && h[i].role === 'user') {
+                    const mm = String(h[i].content || '').match(/^My headline goal:\s*(.+)$/i);
+                    if (mm) goal = mm[1].trim();
+                }
+            }
+            if (!goal) {
+                for (let i = h.length - 1; i > 0 && !goal; i--) {
+                    if (h[i] && h[i].role === 'user' && h[i].preChain
+                        && h[i - 1] && h[i - 1].role === 'assistant'
+                        && /one main goal/i.test(String(h[i - 1].content || ''))) {
+                        goal = String(h[i].content || '').trim();
+                    }
+                }
+            }
+            if (!goal) return '';
+            return "[STUDENT'S HEADLINE GOAL (stored) — whenever the protocol says cite the HEADLINE GOAL, cite THIS verbatim; never substitute a different option: " + goal + ']\n';
+        } catch (_) { return ''; }
+    }
     function _paraKey(s) {
         const t = String(s == null ? '' : s).toLowerCase();
         // v7.19.773: match 'intro' (not 'introduc') so this is IDEMPOTENT — _paraKey's own
@@ -1761,6 +1789,9 @@
                 }
                 wrote = true;
             });
+            // v7.19.848: a filed card = marking progressed past the reflection → the
+            // reflect gate is no longer pending; re-arm the repair budget for the next q.
+            if (wrote) { _reflectPending = null; _reflectRepairCount = 0; }
             // v7.19.601 FAIL-LOUD: a marking turn produced feedback cards but NONE filed.
             // This is the silent-skip class (wrong box label / no feedback boxes in this
             // canvas / task-name gating) — surface it instead of failing quietly.
@@ -2096,6 +2127,16 @@
     // ACTUALLY deducted. Keyed per card (qKey|para) so re-fires overwrite, never double-count.
     let _penLedgerCards = {};
     let _penLedgerComplete = false; // saw the Q2 reflect gate THIS session → cards are complete
+    // v7.19.848: ONE reflection per question — CODE-OWNED (Run 5: after the Q2 reflection was
+    // submitted, the model invented a per-paragraph reflection ask; _detectReflectAsk rendered
+    // it as a real panel and the re-ask looped). _reflectDone keys via _paraKey ('2', 'Intro',
+    // 'Conclusion'); _reflectPending is set on panel submit and cleared when the next feedback
+    // card files. While pending, any prose-detected or unresolvable reflection ask is a
+    // duplicate: panel suppressed + at most ONE silent repair turn (AP-FILE pattern). A real
+    // @REFLECT_GATE marker for a NOT-yet-done question always renders (new question is legit).
+    let _reflectDone = {};
+    let _reflectPending = null;
+    let _reflectRepairCount = 0;
     const _PEN_NAMES = { W1: 'weak analytical verb', C1: 'clarity/flow', T1: 'imprecise technique naming',
         H1: 'hanging/mis-punctuated quote', P1: 'comma splice/run-on', S1: 'weak sentence starters',
         S2: 'underdeveloped sentence', L1: 'lacks sustained detail', B1: 'beyond text boundaries',
@@ -3548,6 +3589,11 @@
             msg += `Self-rating: ${rating}/5.`;
             if (aoStr) msg += ` AO targeting: ${aoStr}.`;
             if (detail) msg += ` ${detail}`;
+            // v7.19.848: record the submit in the ONE-per-question ledger — the render
+            // gate suppresses any further reflection ask until the next feedback card files.
+            const _subKey = _paraKey(parsed && parsed.q ? parsed.q : '') || (predictQ ? String(predictQ) : '');
+            if (_subKey) _reflectDone[_subKey] = true;
+            _reflectPending = _subKey || '?';
             wrap.style.opacity = '0.5'; wrap.style.pointerEvents = 'none';
             onSubmit(msg);
         };
@@ -4730,6 +4776,8 @@
             }
             // 3) Drop stored predictions so the predict-mark row shows again on the re-mark.
             try { _clearPredictionsForDoc(); } catch (_) {}
+            // v7.19.848: fresh chat = fresh reflection ledger (every question reflects again).
+            _reflectDone = {}; _reflectPending = null; _reflectRepairCount = 0;
             // 4) Refresh ticks + Score Summary readout + sidebar AFTER the DOM reflects the PM
             //    changes. recalc reads the now-empty boxes → "Total Marks: 0 / N (in progress)";
             //    _refreshLangSidebar repaints the Protocol Progress beats back to not-started.
@@ -5540,16 +5588,42 @@
                 }
 
                 // v7.19.596: render the composite reflection panel after body.
+                // v7.19.848: ONE reflection per question, code-enforced. Duplicate = (a) a gate
+                // whose question already submitted its reflection, or (b) while a reflection is
+                // pending (submitted, no feedback card filed yet) any prose-DETECTED ask or any
+                // ask whose question can't be resolved. A real @REFLECT_GATE marker for a fresh
+                // question always renders. Duplicates get NO panel + ONE silent repair turn.
                 if (_reflectData) {
-                    try {
-                        const widget = _renderReflectPanel(_reflectData, (answer) => {
-                            if (chatTextarea) { chatTextarea.value = answer; }
-                            sendCanvasMessage();
-                        });
-                        body.appendChild(widget);
-                    } catch (err) {
-                        console.warn('WML @REFLECT_GATE render failed', err);
-                        body.appendChild(el('div', { className: 'swml-reflect-fallback', textContent: 'Please type your 1–5 self-rating and which AO(s) you were targeting.' }));
+                    const _rk = _paraKey(_reflectData.q || '');
+                    const _dup = (_rk && _reflectDone[_rk])
+                        || (_reflectPending !== null && (_reflectData._detected || !_rk));
+                    if (_dup) {
+                        console.warn('WML @REFLECT_GATE: duplicate reflection ask suppressed (q=' + (_rk || 'unresolved') + ', pending=' + _reflectPending + ', detected=' + !!_reflectData._detected + ')');
+                        body.appendChild(el('div', { className: 'swml-reflect-dup-note', innerHTML: '<p style="font-size:12px;opacity:0.7;"><em>Reflection already recorded — continuing with the marking.</em></p>' }));
+                        if (_reflectRepairCount < 1) {
+                            _reflectRepairCount++;
+                            let _rTries = 0;
+                            const _rLabel = (_reflectPending && _reflectPending !== '?') ? ('Q' + _reflectPending).replace('QIntro', 'the Introduction').replace('QConclusion', 'the Conclusion') : 'the current question';
+                            const _rFire = () => {
+                                if (canvasChatLoading) { if (++_rTries < 20) setTimeout(_rFire, 300); return; }
+                                canvasSilentSend = true;
+                                chatTextarea.value = 'SYSTEM (not from the student): the reflection for ' + _rLabel + ' is ALREADY recorded — the student has submitted their self-rating, prediction and AO target. The protocol allows exactly ONE reflection panel per question: do NOT re-ask it, do NOT ask a separate AO-targeting question, and NEVER split reflections per paragraph. Resume the protocol at the NEXT step now — emit the Y-gate line if one is due, otherwise the next feedback card.';
+                                sendCanvasMessage();
+                            };
+                            setTimeout(_rFire, 400);
+                        }
+                    } else {
+                        if (_rk) _reflectPending = null; // fresh question's gate — clear stale pending
+                        try {
+                            const widget = _renderReflectPanel(_reflectData, (answer) => {
+                                if (chatTextarea) { chatTextarea.value = answer; }
+                                sendCanvasMessage();
+                            });
+                            body.appendChild(widget);
+                        } catch (err) {
+                            console.warn('WML @REFLECT_GATE render failed', err);
+                            body.appendChild(el('div', { className: 'swml-reflect-fallback', textContent: 'Please type your 1–5 self-rating and which AO(s) you were targeting.' }));
+                        }
                     }
                 }
 
@@ -6640,6 +6714,12 @@
                         _essayRepulled = false;
                         console.log('[WML pull] essay-updated re-read notice injected for reassessment');
                     }
+                    // v7.19.848: deterministic HEADLINE GOAL echo — the protocol tells the model
+                    // to "cite the HEADLINE GOAL" from chat memory; Run 5 cited a different option
+                    // off the protocol's own list. The answer is code-captured (pre-chain), so
+                    // inject it verbatim every turn. Derived from history — survives reload.
+                    const _hgBlock = _headlineGoalBlock(canvasChatHistory);
+                    if (_hgBlock) promptText = _hgBlock + '\n---\n\n' + promptText;
                     const sectionLabels = (essayForInjection.match(/=== .+? ===/g) || []).join(', ');
                     console.log('WML Canvas: Essay injected (' + wc + ' words). Sections: [' + (sectionLabels || 'no labels') + ']. First 200 chars:', essayForInjection.substring(0, 200));
                 } else if (userMsgCount === 1) {
@@ -14819,6 +14899,10 @@
                                         // Subsequent messages: re-inject essay as reminder
                                         promptText = `[REMINDER — STUDENT'S ACTUAL ESSAY (${wc} words) — assess ONLY this text, quote from it directly]\n\n${essay}\n\n---\n\n[STUDENT'S RESPONSE]\n${msg}`;
                                     }
+                                    // v7.19.848: deterministic HEADLINE GOAL echo (twin of the
+                                    // training-panels composer — dual-pipeline rule).
+                                    const _hgBlock = _headlineGoalBlock(canvasChatHistory);
+                                    if (_hgBlock) promptText = _hgBlock + '\n---\n\n' + promptText;
                                     const sectionLabels = (essay.match(/=== .+? ===/g) || []).join(', ');
                                     console.log('WML Canvas: Essay injected (' + wc + ' words). Sections: [' + (sectionLabels || 'no labels') + ']. First 200 chars:', essay.substring(0, 200));
                                 } else if (userMsgCount === 1) {
