@@ -2,200 +2,194 @@
 
 Deterministic, code-scored MARK-SCHEME-LITERACY assessment bank (parsed by `SWML_Quiz_Bank::pick_session_msa`).
 Examiner-level — harder + more precise than the Mark Scheme Quiz drill. Every question makes the student
-JUDGE authentic student writing about a Worlds and Lives poetry comparison against the EXACT AQA mark-scheme
-descriptor wording, and forces them to USE the mark scheme's own vocabulary rather than a simplified paraphrase.
-Keys + feedback live server-side and are stripped before questions reach the client. The AI is never the scorekeeper.
+JUDGE real comparative writing about the Worlds and Lives poems against the EXACT AQA mark-scheme descriptor
+wording, and forces them to USE the mark scheme's own vocabulary rather than a simplified paraphrase. Keys +
+feedback live server-side and are stripped before questions reach the client. The AI is never the scorekeeper.
 
-AOs tagged per question for stratified random selection. AQA marks the 30-mark anthology comparison across SIX levels:
-AO1 (argument + comparison, 12 marks), AO2 (methods, 12 marks), AO3 (ideas/contexts, 6 marks). The AQA poetry-anthology
-Level descriptors are identical across every AQA cluster, so they apply to Worlds and Lives unchanged.
+AOs tagged per question for stratified random selection (the picker spreads the selection across the board's AO split).
+AQA marks the anthology comparison out of 30 across six levels (Level 1 = 1–5 up to Level 6 = 26–30): AO1 (argument +
+comparison) = 12, AO2 (methods + effects) = 12, AO3 (ideas/contexts) = 6. Question types: MCQ · Select All · Fill · Ranking.
 
-*Worlds and Lives is a NEWER AQA cluster (first exams 2025) set ONLY by AQA — so this bank has a SINGLE section by design;
-there is no parallel board to mislabel. Because the cluster's poems are less widely known, every question is built on the
-cluster's THEMES (people's relationships with places, identity, belonging, the natural and built world, displacement) and on
-mark-scheme literacy — NEVER on poem-specific trivia, named poems, or quoted lines.*
+**AQA-exclusive cluster.** The Worlds and Lives anthology (first exams 2025) is set only by AQA (8702), so this bank is complete with a single AQA section by design.
 
 ### **SECTION A: AQA (8702 — Worlds and Lives)**
 
 1. **Type: MCQ [Tests AO1]**
-   * **Question:** A student's Worlds and Lives comparison opens: "Both poems are about places. The first poem is about a city and the second is about the countryside." For AO1, which AQA Level does this sit at, and why?
-   * **Options:** A) Level 6 — a critical, exploratory comparison conceptualised around an idea, B) Level 5 — a thoughtful, developed consideration with apt references integrated into interpretation, C) Level 2 — a supported comparison developed with clear comment on method, D) Level 1 — narrative and/or descriptive, naming each poem's subject with only a simple comment relevant to comparison
-   * **Correct:** D
+   * **Question:** A student writes about *Homing* (Liz Berry): "Berry describes how her mother's accent was kept in a box beneath the bed, and later the lost dialect words spill out." For AO1, which AQA level does this response sit at, and why?
+   * **Options:** A) Level 6 — a conceptualised approach treating the poem as an argument about reclaiming a suppressed identity, B) Level 5 — thoughtful, developed consideration with apt references integrated into interpretation, C) Level 1 — it is narrative and/or descriptive in approach, retelling the poem rather than interpreting it, D) Level 3 — an explained, structured comparison of both poems' methods
+   * **Correct:** C
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. AQA Level 1 AO1 is "narrative and/or descriptive in approach" with "simple comments relevant to comparison". Naming each poem's subject describes the poems; it neither compares the poets' methods nor argues an idea. To climb, treat each poem as a construct exploring a shared concept — how place shapes the self — rather than reporting what each is about.
-   * **Why A:** A conceptualised, exploratory comparison is entirely absent — this describes subjects, it does not argue an idea across both poems.
-   * **Why B:** A thoughtful, developed consideration needs apt references integrated into interpretation, and there is neither development nor evidence here.
-   * **Why C:** A supported comparison offers comment backed by reference; this offers only a bare statement of each poem's topic.
+   * **Feedback:** ✓ Correct. Retelling what happens in the poem is "narrative and/or descriptive in approach", the AQA Level 1 hallmark. To climb, the response must treat the box and the spilling dialect as a construct — Berry's argument about an identity suppressed by elocution and then reclaimed — not recount the events.
+   * **Why A:** A conceptualised approach argues an idea; this recounts the poem's content, so the top band is out of reach.
+   * **Why B:** Thoughtful, developed consideration needs interpretation and integrated references, and this offers neither.
+   * **Why D:** No comparison and no analysis of method are present — it stays at retelling, below the explained, structured band.
 
 2. **Type: Fill [Tests AO1]**
-   * **Question:** Complete the AQA Level 6 AO1 descriptor. A top-band anthology response takes a "[BLANK] approach to the full task supported by a range of judicious references."
+   * **Question:** Complete the AQA Level 6 AO1 descriptor: a top-band response takes a "[BLANK] approach to the full task supported by a range of judicious references."
    * **Answer:** conceptualised
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. The AQA Level 6 marker is a "conceptualised approach to the full task supported by a range of judicious references". "Conceptualised" separates the top band — each poem is treated as an argument about a big idea (place, belonging, identity), not as a subject to describe.
-   * **WhyWrong:** The missing AQA word is "conceptualised" — treating each poem as a vehicle for a concept is what lifts AO1 into Level 6.
+   * **Feedback:** ✓ Correct. The AQA Level 6 marker is a "conceptualised approach to the full task supported by a range of judicious references." "Conceptualised" means the response is organised around an idea — treating each poem as an argument about place, identity or belonging, not as a story to be retold.
+   * **WhyWrong:** The missing AQA word is "conceptualised" — treating each poem as a construct exploring the anthology's big ideas is what lifts AO1 into Level 6.
 
 3. **Type: MCQ [Tests AO1]**
-   * **Question:** Two responses cover the same two Worlds and Lives poems. One analyses the first poem in full, then the second in full. The other weaves both poems through every paragraph. For AO1, why does the second sit higher?
-   * **Options:** A) It quotes more lines from each poem to widen its evidence base, B) It sustains an integrated, critical, exploratory comparison rather than block-treating one poem then the other, C) It writes longer paragraphs that cover more of each poem, D) It names more techniques across the two poems
+   * **Question:** Two responses compare *England in 1819* (Shelley) and *In a London Drawingroom* (Eliot). One analyses Shelley's poem in full, then Eliot's poem in full. The other weaves both poets through every paragraph. Which structure targets the AQA top band, and why?
+   * **Options:** A) The block structure — treating each poem separately keeps the analysis of each poem clear and detailed, B) The interwoven structure — "critical, exploratory comparison" runs through every paragraph, whereas block treatment of one poem then the other caps the response lower, C) The block structure — AQA rewards depth on each poem over comparison between them, D) Neither — comparison belongs only in a final summarising paragraph
    * **Correct:** B
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. AQA rewards "critical, exploratory comparison". Sustained integrated (interwoven) comparison across every paragraph is the top-band habit; block treatment — one poem in full, then the other — caps the response lower because the poets' methods are never held against each other.
-   * **Why A:** Quotation quantity is not the AO1 distinction — judicious selection is.
-   * **Why C:** Paragraph length and coverage are not Level descriptors.
-   * **Why D:** Naming more techniques is AO2 feature-spotting, not the comparison AO1 credits.
+   * **Feedback:** ✓ Correct. Sustained, integrated comparison — weaving both poets' critiques of England into each paragraph — is the AQA Level 6 habit, described as "critical, exploratory comparison". Handling one poem in full then the other prevents genuine comparison and holds the response in the lower bands.
+   * **Why A:** Block treatment feels orderly, but separating the poems is exactly what stops the interwoven comparison the top band requires.
+   * **Why C:** Depth matters, but on the anthology question comparison is the skill being marked; parallel single-poem essays do not compare.
+   * **Why D:** One comparative paragraph at the end is not enough; comparison must run through every paragraph.
 
 4. **Type: Ranking [Tests AO1]**
-   * **Question:** Rank these four Worlds and Lives opening sentences from WEAKEST to STRONGEST by AQA AO1 Level (type the letters in order, weakest first).
-   * **Options:** A) "Both poems construct place as something that makes and unmakes the self, so belonging becomes a question each poet deliberately refuses to settle.", B) "The first poem is about a city and the second is about a village.", C) "Both poems present place as important, which is a fair comparison to make about them.", D) "Both poems present place as shaping identity, using contrasting settings to make the reader feel how belonging is won or lost."
+   * **Question:** Rank these four openings comparing *A Portable Paradise* (Robinson) and *Homing* (Berry) from WEAKEST to STRONGEST by AQA level (type the letters in order, weakest first).
+   * **Options:** A) "Robinson constructs paradise as an inheritance carried inwardly while Berry forges a suppressed dialect into voice, so both poets frame belonging not as something possessed but as something actively reclaimed.", B) "A Portable Paradise is about a grandmother's advice and Homing is about an accent kept in a box.", C) "Both poems are about belonging, which is an important idea in the anthology.", D) "Robinson's image of 'white sands, green hills and fresh fish' and Berry's spilled dialect words both name a method that makes the reader feel the pull of home."
    * **Correct:** B, C, D, A
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. Each rung is a clear AQA band higher. The descriptive rung, naming each poem's subject, is Level 1 (narrative and/or descriptive). The bare value-comparison with no method and no evidence is Level 2 (supported comparison, undeveloped). The clear rung that names a shared idea, a method and its effect on the reader is Level 4 (clear comparison). The conceptualised rung, arguing an idea across both poems from the first line, is Level 6. The ladder is describe, comment, clear method-and-effect, concept.
-   * **WhyWrong:** Weakest to strongest runs from describing each poem's subject, to an undeveloped value-comparison, to a clear method-and-effect comparison, to a conceptualised argument spanning both poems. The jump to Level 6 is the move from comparing topics to arguing a shared concept.
+   * **Feedback:** ✓ Correct. Each rung is one clear AQA band higher. The paired plot-retelling is Level 1 (narrative and/or descriptive). The bare value-comment naming a shared theme with no method is Level 2 (supported comparison). The clear comparison that names a method in each poem and its effect on the reader is Level 4 (clear understanding). The conceptualised, exploratory comparison, arguing one idea across both poems from the first line, is Level 6. The ladder is retell, to theme-comment, to method-and-effect, to concept.
+   * **WhyWrong:** Weakest to strongest runs from a paired retelling, to a theme-comment with no method, to a clear method-and-effect comparison, to a conceptualised argument holding both poems. Each rung is exactly one AQA level higher; the jump to Level 6 is the move from comparing content to arguing a shared concept.
 
 5. **Type: MCQ [Tests AO1]**
-   * **Question:** Two responses both support the idea that a poem unsettles the reader's sense of home. One lists several quotations after the point. The other selects a single precise phrase to pin the argument. Which AQA wording distinguishes the second?
-   * **Options:** A) It embeds more quotations to demonstrate the breadth of its supporting evidence, B) It makes "judicious use of precise references to support interpretation(s)" rather than general reference, C) It clearly explains the effect of each quotation it lists, D) It identifies more of the poet's methods using subject terminology
+   * **Question:** On the AQA anthology comparison, how does the treatment of references at Level 6 AO1 differ from Level 5?
+   * **Options:** A) Level 6 simply requires a greater number of quotations from both poems than Level 5, B) Level 6 requires "judicious use of precise references to support interpretation(s)", whereas Level 5 has "apt references integrated into interpretation(s)", C) Level 6 requires quotations only from the more difficult of the two poems, D) Level 6 requires every quotation to be at least a full line long
    * **Correct:** B
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. AQA Level 6 AO1 is "judicious use of precise references to support interpretation(s)". "Judicious" means the reference is chosen to do argumentative work, not listed. A single precise phrase tied to a concept outweighs several general ones.
-   * **Why A:** AQA rewards judicious selection, not quantity — more quotations often dilute precision.
-   * **Why C:** Explaining the effect of a quotation is AO2 work; the AO1 move is how the reference is SELECTED to support interpretation.
-   * **Why D:** Naming methods and terminology is AO2 surface behaviour, not the AO1 distinction of judicious selection.
+   * **Feedback:** ✓ Correct. The climb is from "apt references integrated into interpretation(s)" (Level 5) to "judicious use of precise references to support interpretation(s)" (Level 6). "Judicious" means each reference is chosen to do argumentative work — precision and selection, not quantity or length.
+   * **Why A:** AQA rewards judicious selection, not volume — more quotations can dilute the precision the top band wants.
+   * **Why C:** Difficulty of the source poem is irrelevant; aptness to the argument is what earns credit.
+   * **Why D:** A precise half-line often outperforms a full line; length is not the descriptor.
 
-6. **Type: Select All [Tests AO1]**
-   * **Question:** Select ALL statements that are true of an AQA Level 6 AO1 anthology response (and none that are not).
-   * **Options:** A) It sustains an integrated, critical, exploratory comparison across the whole response, B) It takes a conceptualised approach to the full task, C) It analyses one poem in full, then the other in full, D) It makes judicious use of precise references to support interpretation
-   * **Correct:** A, B, D
-   * **AO:** AO1
-   * **Feedback:** ✓ Correct. AQA Level 6 AO1 is a "critical, exploratory comparison" that takes a "conceptualised approach to the full task supported by a range of judicious references". Integrated comparison, a conceptualised argument and judicious references are all top-band. Full block treatment prevents the interwoven comparison the top band requires.
-   * **Why C:** Block treatment — one poem in full, then the other — prevents integrated comparison and caps the response below the top band.
-
-7. **Type: MCQ [Tests AO2]**
-   * **Question:** A paragraph reads: "The poet uses a metaphor of a locked door. This is a technique. It tells us the place feels closed off." For AO2, which AQA Level fits, and what is the ceiling?
-   * **Options:** A) Level 6 — analysis of the writer's methods with terminology used judiciously, B) Level 5 — examination of how the writer's method works, C) Level 2 — identification of the writer's method with only a general comment on effect, D) Level 4 — clear explanation of the method and its effect
+6. **Type: MCQ [Tests AO2]**
+   * **Question:** A paragraph on *England in 1819* reads: "Shelley uses a list of adjectives — 'old, mad, blind, despised, and dying'. This is a technique. It tells us the King is bad." For AO2, which AQA level fits, and what is the ceiling?
+   * **Options:** A) Level 6 — analysis of the writer's methods with exploration of effects, B) Level 5 — sustained examination of how the method works, C) Level 2 — identification of the writer's methods with only a general comment, D) Level 4 — a clear explanation of the effect of the method
    * **Correct:** C
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. Naming the metaphor and asserting a general effect is AQA Level 2 AO2, "identification of the writer's methods". Level 6 needs "analysis of the writer's methods with subject terminology used judiciously" — fine-grained, insightful analysis of how the method works on the reader.
-   * **Why A:** There is no analysis and no explored effect — the top band is out of reach here.
-   * **Why B:** Examination requires sustained working-through of how the method makes meaning, which is absent.
-   * **Why D:** A clear explanation needs the effect explained, not merely asserted.
+   * **Feedback:** ✓ Correct. Naming the piled adjectives and adding "it tells us the King is bad" is AQA Level 2 AO2: "identification of the writer's methods" with a general comment. The AO2 ladder rises to "analysis of the writer's methods with subject terminology used judiciously" at Level 6 — reading how the accumulating adjectives crush the reader before the delayed volta.
+   * **Why A:** No analysis and no exploration of layered effects — the top band is not reached.
+   * **Why B:** Sustained examination of how the method works is absent; the comment is a bare assertion.
+   * **Why D:** A clear explanation would work through the effect, not merely assert that the King is bad.
 
-8. **Type: Fill [Tests AO2]**
+7. **Type: Fill [Tests AO2]**
    * **Question:** Complete the AQA Level 6 AO2 descriptor: "Analysis of the writer's methods with subject terminology used [BLANK]."
    * **Answer:** judiciously
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. AQA Level 6 AO2 is "analysis of the writer's methods with subject terminology used judiciously". "Judiciously" warns against feature-spotting: terminology earns marks only when it is selected to serve the analysis of effect.
-   * **WhyWrong:** The AQA word is "judiciously" — terminology used to serve analysis of effect, not scattered to impress.
+   * **Feedback:** ✓ Correct. AQA Level 6 AO2 is "analysis of the writer's methods with subject terminology used judiciously." "Judiciously" warns against feature-spotting: naming "enjambment" or "free verse" earns marks only when the term is selected to serve analysis of effect.
+   * **WhyWrong:** The AQA word is "judiciously" — terminology used to serve the analysis of effect, not scattered to impress.
+
+8. **Type: Select All [Tests AO2]**
+   * **Question:** Select ALL statements that are true of an AQA Level 6 AO2 comparison of two Worlds and Lives poems (and none that are not).
+   * **Options:** A) It moves from identifying a method to analysing how it creates meaning, B) It compares the two poets' differing methods and their differing effects on the reader, C) It names as many techniques as possible across both poems to demonstrate range, D) It uses subject terminology judiciously, only where it serves the analysis
+   * **Correct:** A, B, D
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. AQA Level 6 AO2 is "analysis of the writer's methods with subject terminology used judiciously." Analysing how methods make meaning, comparing the two poets' differing methods and effects, and using terminology judiciously are all top-band. Maximising technique-count across both poems is feature-spotting, which the mark scheme penalises.
+   * **Why C:** Naming many techniques is feature-spotting — AQA rewards judicious selection and analysis of effect, not quantity.
 
 9. **Type: Ranking [Tests AO2]**
-   * **Question:** Rank these four AO2 comments on a poem's imagery of an encroaching landscape from WEAKEST to STRONGEST by AQA Level (type the letters in order, weakest first).
-   * **Options:** A) "The poet's imagery of the encroaching landscape fuses word choice and structure so the setting itself seems to dispossess the speaker, the analysis opening several ways the reader feels place turn hostile.", B) "The poet uses imagery of the landscape.", C) "The poet's image of the encroaching landscape examines how the setting slowly overpowers the speaker's sense of home.", D) "The poet uses landscape imagery to make the place seem unwelcoming."
+   * **Question:** Rank these AO2 comments on the war imagery in *A Century Later* (Dharker) from WEAKEST to STRONGEST by AQA level (type the letters in order, weakest first).
+   * **Options:** A) "Dharker's sustained battlefield metaphor — the 'school-bell' as 'a call to battle', each schoolgirl taking a place 'on the front line' — analyses ordinary education as an act of courage, the martial register unsettling the reader into seeing the classroom as contested ground.", B) "Dharker uses imagery in the poem.", C) "Dharker uses war imagery such as 'firing-line' to make the girl seem in danger.", D) "Dharker compares school to a battle, which is a metaphor, so this is subject terminology."
    * **Correct:** B, D, C, A
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. Each rung is a clear AQA AO2 band higher. The bare identification of a method with no effect is Level 2. The clear explanation of one simple effect is Level 4. The sustained examination of how the method works is Level 5. The analysis exploring several effects, tied to an idea, is Level 6, "fine-grained and insightful analysis of methods". The ladder is identify, explain one effect, examine, analyse-and-explore.
-   * **WhyWrong:** Weakest to strongest runs from identifying imagery, to explaining one effect, to examining how the method works, to analysing and exploring layered effects. Level 6 explores several effects, not a single stated one.
+   * **Feedback:** ✓ Correct. Each rung is one clear AQA AO2 band higher. The bare mention of imagery, with no method named, is the lowest rung. Naming the metaphor and offering terminology is identification (Level 2–3). The clear explanation of one simple effect (danger) is Level 4. The analysis with an explored effect, reading the sustained metaphor as a whole, is Level 6. The ladder is mention, to identify-with-terminology, to explain one effect, to analyse-and-explore.
+   * **WhyWrong:** Weakest to strongest runs from a bare mention, to identification with terminology, to one explained effect, to analysis exploring the sustained metaphor. Level 6 explores the method across the poem, not a single stated effect.
 
 10. **Type: MCQ [Tests AO2]**
-    * **Question:** A response names enjambment, caesura, sibilance and a metaphor in one paragraph, labelling each in turn. For AO2, why does this cap lower than the student expects?
-    * **Options:** A) It uses too few quotations to support the techniques named, B) It is feature-spotting — AQA rewards "analysis of the writer's methods with subject terminology used judiciously", where each method is tied to its effect on the reader, not merely listed, C) The techniques named are too simple to reach the top band, D) It should analyse each poem in a separate paragraph
+    * **Question:** One response explains that Berry's dialect words in *Homing* make the reader feel warmth toward the lost accent. Another reads the same dialect as a sustained recovery of a suppressed working-class voice, opening up several effects. For AO2, what single move takes the second to Level 6?
+    * **Options:** A) It quotes more dialect words to widen the range of its supporting evidence, B) It moves from explaining a single effect to analysis with exploration of the effects of the writer's methods, C) It uses rarer, more technical terminology across the response, D) It develops the point across longer, more sustained paragraphs
     * **Correct:** B
     * **AO:** AO2
-    * **Feedback:** ✓ Correct. AQA Level 6 AO2 is analysis with "subject terminology used judiciously". Listing devices without exploring their effect is the feature-spotting the mark scheme penalises. The remedy is to tie each named method to what it makes the reader focus on, feel, think or do.
-    * **Why A:** Quotation count is not an AO2 criterion; judicious selection tied to effect is.
-    * **Why C:** Even a simple method reaches the top band when its effect is analysed — naming is the fault, not the method.
-    * **Why D:** Paragraph arrangement is not the AO2 issue; feature-spotting is.
+    * **Feedback:** ✓ Correct. The AQA move into Level 6 AO2 is explanation of one effect becoming "analysis... exploration of effects of the writer's methods." Reading the dialect as a sustained pattern and opening up several meanings is the top-band move; length, rare terms and quote-count do not change the level.
+    * **Why A:** Quote quantity is not an AO2 criterion; judicious selection is.
+    * **Why C:** Rarer terms without explored effect is feature-spotting.
+    * **Why D:** Paragraph length is not a level descriptor.
 
-11. **Type: Select All [Tests AO2]**
-    * **Question:** Select ALL that count as valid AO2 writer's methods for a Worlds and Lives comparison (and none that do not).
-    * **Options:** A) Imagery and specific word connotations, B) Form (sonnet, dramatic monologue, free verse), C) Structure (volta, stanza breaks, enjambment), D) The poet's biography
-    * **Correct:** A, B, C
-    * **AO:** AO2
-    * **Feedback:** ✓ Correct. Imagery, form and structure are all AO2 methods — the deliberate choices the poet makes on the page. A poet's biography is contextual information about the writer, not a method within the poem.
-    * **Why D:** Biography is background about the poet, not a method deployed in the poem; AO2 analyses language, form and structure in the text.
-
-12. **Type: MCQ [Tests AO3]**
-    * **Question:** A student adds a sentence of historical background about migration or industrial change to the end of a paragraph. On the AQA anthology (AO3 worth 6 marks), why does it stay low in the bands?
-    * **Options:** A) The historical detail is factually inaccurate, B) It is bolt-on context — AQA Level 6 AO3 needs "specific, detailed links between context, text and task", where context drives the reading, C) It is too brief to score on a 6-mark strand, D) Context is not assessed on the poetry comparison
+11. **Type: MCQ [Tests AO3]**
+    * **Question:** On the AQA anthology question AO3 is worth 6 of the 30 marks — proportionally lighter than on the 19th-century novel. How should context behind *A Century Later* be handled?
+    * **Options:** A) Skip it entirely, since 6 marks are not worth the effort, B) Integrate it lightly where it genuinely drives the poet's concept, with "specific, detailed links between context/text/task" — not a bolt-on history paragraph, C) Write a full paragraph of background before the analysis begins, D) Double the context to compensate for the small allocation
     * **Correct:** B
     * **AO:** AO3
-    * **Feedback:** ✓ Correct. AQA Level 6 AO3 is "exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task". A free-standing fact is bolt-on. Context must DRIVE the concept — the history of a place must shape how the poet constructs belonging — not sit beside the analysis.
-    * **Why A:** Accuracy is not the problem; integration is.
-    * **Why C:** Length is not the issue — a short linked point can be top-band.
-    * **Why D:** Context is assessed — AO3 carries 6 marks on this question.
-
-13. **Type: Fill [Tests AO3]**
-    * **Question:** Complete the AQA Level 6 AO3 descriptor: context should be shown by "specific, detailed [BLANK] between context, text and task."
-    * **Answer:** links
-    * **AO:** AO3
-    * **Feedback:** ✓ Correct. AQA Level 6 AO3 is "specific, detailed links between context/text/task". Context earns top marks only when it is connected to the poem and the question, never when it sits alone as a fact.
-    * **WhyWrong:** The AQA word is "links" — context, text and task must be linked, not listed separately.
-
-14. **Type: MCQ [Tests AO3]**
-    * **Question:** AO3 is worth 6 of the 30 marks on the AQA anthology — proportionally lighter than on the 19th-century novel. How should context be handled?
-    * **Options:** A) Skip it, since 6 marks is negligible, B) Integrate it lightly where it genuinely drives the poet's concept — never as a standalone history paragraph, C) Write a full paragraph of background for each poem to be safe, D) Double the context to compensate for the small allocation
-    * **Correct:** B
-    * **AO:** AO3
-    * **Feedback:** ✓ Correct. AO3 is proportionally lighter on poetry than on prose. Integrate context briefly where it genuinely drives the poet's concept, so it forms "specific, detailed links between context, text and task", rather than a detachable block.
-    * **Why A:** Skipping surrenders 6 marks that brief, well-placed context would secure.
-    * **Why C:** A bolt-on paragraph per poem scores poorly — context must drive the analysis, not sit beside it.
+    * **Feedback:** ✓ Correct. AO3 is proportionally lighter on poetry, and the top band credits "exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task." Context earns credit only when it drives the concept — the struggle for girls to be educated shaping Dharker's martial framing — never when it sits alone as a fact.
+    * **Why A:** Ignoring AO3 surrenders 6 marks that light, well-placed context would secure.
+    * **Why C:** A standalone background paragraph is the bolt-on the descriptor discourages.
     * **Why D:** Extra context cannot earn beyond its 6 marks and steals time from argument and methods.
 
-15. **Type: MCQ [Tests Vocabulary]**
-    * **Question:** AQA Level 6 rewards a "conceptualised" anthology response. A conceptualised response is one that...
-    * **Options:** A) uses difficult, complicated vocabulary to signal sophistication, B) is organised around an idea, treating each poem as a construct exploring that idea rather than a subject to describe, C) packs in as much context about each poem as possible, D) is very long and dense with closely-detailed observation
+12. **Type: Fill [Tests AO3]**
+    * **Question:** Complete the AQA Level 6 AO3 descriptor: context should be shown by "specific, detailed [BLANK] between context/text/task."
+    * **Answer:** links
+    * **AO:** AO3
+    * **Feedback:** ✓ Correct. AQA Level 6 AO3 is "specific, detailed links between context/text/task." Context earns top marks only when it is connected to the text and the question, never when it sits alone as a fact.
+    * **WhyWrong:** The AQA word is "links" — context, text and task must be linked, not listed separately.
+
+13. **Type: MCQ [Tests AO3]**
+    * **Question:** A student ends a paragraph on *England in 1819* with: "This poem is about political problems in England at the time." For AO3, why does this stay low in the AQA bands?
+    * **Options:** A) It is factually inaccurate about the period, B) It is a vague, bolt-on statement — AQA Level 6 AO3 needs "specific, detailed links between context/text/task" where context drives the interpretation, C) It is too brief — a contextual point must run to several sentences to score, D) Context is not assessed on the poetry comparison at all
+    * **Correct:** B
+    * **AO:** AO3
+    * **Feedback:** ✓ Correct. A vague gesture at "political problems" makes no specific, detailed link. To reach the top band the context must drive the concept — the repression the poem catalogues, "a people starved and stabbed", shaping Shelley's inverted-sonnet indictment and its delayed hope of a "glorious Phantom".
+    * **Why A:** The statement is broadly accurate — vagueness, not accuracy, is the problem.
+    * **Why C:** Length is not the issue; a short, precisely linked point can be top-band.
+    * **Why D:** AO3 is assessed on the anthology comparison, carrying 6 of the 30 marks.
+
+14. **Type: MCQ [Tests AO3]**
+    * **Question:** Which handling of context earns Level 6 AO3 on *In a London Drawingroom* (Eliot)?
+    * **Options:** A) A dedicated opening paragraph of Victorian facts before the analysis begins, B) Context integrated so it drives the poet's concept — the oppressive uniformity of the industrial city shaping Eliot's monotonous urban vision — with specific, detailed links to text and task, C) Listing as many historical facts about London as possible across the response, D) Naming only the year the poem was written
+    * **Correct:** B
+    * **AO:** AO3
+    * **Feedback:** ✓ Correct. AQA Level 6 AO3 rewards "exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task." Context that drives Eliot's vision of urban monotony and social observation, linked to the text, is top-band; a detachable history block is not.
+    * **Why A:** A standalone facts paragraph is exactly the bolt-on the descriptor discourages.
+    * **Why C:** Volume of facts is not rewarded; unlinked context earns little however much is supplied.
+    * **Why D:** A composition date is an isolated fact that makes no link between context and task.
+
+15. **Type: MCQ [Tests AO1]**
+    * **Question:** In an AQA anthology comparison of *Like an Heiress* (Nichols) and *A Century Later* (Dharker), which paragraph structure best targets the top band?
+    * **Options:** A) Full analysis of Nichols's poem, then full analysis of Dharker's poem, B) Integrated comparison within every paragraph — "Whereas Nichols frames the land as a threatened inheritance, Dharker frames education as embattled ground..." — weaving both poets throughout, C) Only the most famous lines of each poem, quoted in turn, D) A list of techniques found in each poem, without interpretation
+    * **Correct:** B
+    * **AO:** AO1
+    * **Feedback:** ✓ Correct. Sustained integrated comparison — weaving both poets through each paragraph — is the AQA Level 6 habit and the "critical, exploratory comparison" the top band names. Block treatment of one poem then the other holds the response lower.
+    * **Why A:** Block-by-block analysis prevents the interwoven comparison the top band requires.
+    * **Why C:** Evidence must be chosen because it proves a point, not because a line is well known.
+    * **Why D:** Naming devices without interpreting their effect is feature-spotting and scores low.
+
+16. **Type: MCQ [Tests Vocabulary]**
+    * **Question:** AQA Level 6 rewards a "conceptualised" response. Reading Shelley's *England in 1819* as an argument about the corruption and decay of political power, rather than retelling its catalogue of ills, is conceptualised because...
+    * **Options:** A) it uses difficult, complicated vocabulary to signal sophistication, B) it is organised around an idea, treating the poem as an argument and its content as evidence for that idea, C) it packs in as much relevant historical context as it can, D) it is very long and dense with closely-detailed observation
     * **Correct:** B
     * **AO:** Vocabulary
-    * **Feedback:** ✓ Correct. "Conceptualised" means built around a concept — reading each poem as an argument about place, belonging or identity, with details as evidence. It is about organising ideas, not complexity, length or context-stuffing.
+    * **Feedback:** ✓ Correct. "Conceptualised" means built around a concept — reading the poem as an argument (here, about power's decay) with its images and structure as evidence. It is about organising ideas, not complexity, length or context-stuffing.
     * **Why A:** Hard vocabulary is not a concept — conceptualised is about the idea, not the wording.
     * **Why C:** Context supports AO3; it does not make a response conceptualised.
     * **Why D:** Length is not conceptualisation — a short response can be conceptualised.
 
-16. **Type: MCQ [Tests Vocabulary]**
-    * **Question:** Two students support the idea that a poem strains against belonging. One quotes several lines. The other selects a single precise phrase to pin the point. Whose reference is "judicious" — and what does "judicious" mean?
-    * **Options:** A) The first — judicious means marshalling as much supporting evidence as possible, B) The second — judicious means a well-judged, selective reference chosen to do the most argumentative work, C) Both equally — judicious simply means quoting the poem accurately, D) Neither — judicious means choosing the longest, most detailed quotation available
+17. **Type: MCQ [Tests Vocabulary]**
+    * **Question:** Two students support a reading of *Homing* as the reclaiming of a suppressed identity. One quotes six lines. The other selects the single dialect list "bibble, fittle, tay, wum" to pin the point. Whose reference is "judicious" — and what does "judicious" mean?
+    * **Options:** A) The first — judicious means marshalling as much supporting evidence as possible, B) The second — judicious means a well-judged, selective reference chosen to do the most argumentative work, C) Both equally — judicious simply means quoting the poem accurately, D) Neither — judicious means choosing the longest available quotation
     * **Correct:** B
     * **AO:** Vocabulary
-    * **Feedback:** ✓ Correct. "Judicious" means well-judged and selective — the reference is chosen because it does real work, not because it is long or abundant. A precise phrase outperforms several general ones. This is why AQA Level 6 says "judicious use of precise references".
+    * **Feedback:** ✓ Correct. "Judicious" means well-judged and selective — the reference is chosen because it does real work, not because it is long or abundant. The precise dialect list outperforms six general lines. This is why AQA Level 6 asks for "judicious use of precise references".
     * **Why A:** Judicious is about wise selection, not quantity — more can mean less precise.
-    * **Why C:** Accuracy alone is not judiciousness; the CHOICE must serve the argument.
+    * **Why C:** Accuracy alone is not judiciousness; the choice must serve the argument.
     * **Why D:** Length is irrelevant; aptness to the point is what counts.
 
-17. **Type: MCQ [Tests Vocabulary]**
-    * **Question:** AQA asks for a "critical, exploratory" comparison. In a mark scheme, what does "critical" actually mean?
-    * **Options:** A) Pointing out the poems' faults and the things the poets did badly, B) Forming an evaluative, argued judgement and taking a position on interpretation, C) Writing in a consistently serious, formal and academic tone, D) Disagreeing with the interpretations other readers have offered
-    * **Correct:** B
-    * **AO:** Vocabulary
-    * **Feedback:** ✓ Correct. In a mark scheme "critical" does NOT mean fault-finding. It means evaluative and argued — you weigh interpretations and commit to a position. AQA pairs it as "critical, exploratory": an argued reading that opens up meaning across both poems.
-    * **Why A:** This is the everyday sense of "critical" (negative), not the assessment sense.
-    * **Why C:** Tone is not what "critical" rewards — an argued judgement is.
-    * **Why D:** Critical means evaluating the poems, not other students.
+18. **Type: Select All [Tests AO2]**
+    * **Question:** Select ALL that are valid AO2 writer's methods to analyse in *Homing* (Liz Berry) (and none that are not).
+    * **Options:** A) Dialect lexis and its connotations, B) The free-verse, stream-of-consciousness form, C) The structural movement from suppression to release, D) The biography of the poet
+    * **Correct:** A, B, C
+    * **AO:** AO2
+    * **Feedback:** ✓ Correct. Word-level dialect choice, the free-verse stream-of-consciousness form and the structural shift from suppression to release are all AO2 methods — the deliberate choices Berry made on the page. A method counts as analysis only when paired with its effect on the reader; naming the form alone is feature-spotting.
+    * **Why D:** A poet's biography is context about the writer, not a method deployed within the poem.
 
-18. **Type: MCQ [Tests Vocabulary]**
-    * **Question:** Top-band AQA anthology responses use "integrated" comparison. What does integrated comparison require?
-    * **Options:** A) A single comparative paragraph at the end that draws the two poems together, B) Weaving both poems into every paragraph, comparing the poets' methods and their differing effects as the argument unfolds, C) Equal word-counts for each poem, measured line by line, D) One quotation from each poem in every paragraph as a fixed rule
-    * **Correct:** B
-    * **AO:** Vocabulary
-    * **Feedback:** ✓ Correct. Integrated comparison interweaves both poems throughout, holding the poets' methods and their differing effects against each other as the argument develops. It is the "critical, exploratory comparison" AQA credits, and the Grade 9 separator from block treatment.
-    * **Why A:** A single comparative paragraph at the end is block treatment, not integration.
-    * **Why C:** Integration is about interwoven argument, not equal measurement.
-    * **Why D:** A mechanical quota is not integration; the poems must be compared as the argument develops.
-
-19. **Type: MCQ [Tests AO1]**
-    * **Question:** A paragraph reads: "The first poem is about the sea. The second poem is about a mountain." For AO1 comparison, what is missing?
-    * **Options:** A) Nothing — naming both poems' subjects is comparison, B) A linking idea — placing two subjects side by side with no connecting argument is juxtaposition, not comparison, C) More quotations from each poem, D) A separate paragraph for each poem
-    * **Correct:** B
+19. **Type: Fill [Tests AO1]**
+    * **Question:** Complete the AQA Level 5 band heading: "Thoughtful, developed [BLANK]."
+    * **Answer:** consideration
     * **AO:** AO1
-    * **Feedback:** ✓ Correct. Stating two subjects side by side is juxtaposition, not comparison. AQA credits a "critical, exploratory comparison" — the poems must be linked by a shared idea and their methods held against each other, not merely mentioned in sequence.
-    * **Why A:** Mentioning both poems is not comparing them; a shared idea must link them.
-    * **Why C:** Quotation quantity does not create comparison.
-    * **Why D:** Separating the poems is block treatment, the opposite of integrated comparison.
+    * **Feedback:** ✓ Correct. The AQA Level 5 (21–25) heading is "Thoughtful, developed consideration"; its AO1 bullet asks for "apt references integrated into interpretation(s)." Level 6 lifts this to a conceptualised approach with judicious references.
+    * **WhyWrong:** "Comparison" or "analysis" appear inside the band, but the exact Level 5 heading word is "consideration".
 
-20. **Type: MCQ [Tests Vocabulary]**
-    * **Question:** The AQA anthology Level 6 heading is "Convincing, critical analysis and exploration." What does "exploration" add that "explanation" does not?
-    * **Options:** A) It names a greater number of techniques across the two poems, B) It opens up several possible effects or meanings and how they shift the reader, rather than stating a single fixed effect, C) It develops the same single effect at greater length, D) It works without relying on direct quotations
-    * **Correct:** B
-    * **AO:** Vocabulary
-    * **Feedback:** ✓ Correct. "Explanation" states one effect; "exploration" opens up several possible meanings across both poems and how they work on the reader. That shift from a single stated effect to layered, opened-up meaning is the climb into the AQA Level 6 band.
-    * **Why A:** Naming more techniques is feature-spotting, not exploration.
-    * **Why C:** Length is not the difference — depth of opened-up meaning is.
-    * **Why D:** Quotations are still needed; exploration works through precise references.
+20. **Type: MCQ [Tests AO1]**
+    * **Question:** A comparison of two Worlds and Lives poems that is "narrative and/or descriptive in approach" falls into which AQA level?
+    * **Options:** A) Level 6, the top band, B) Level 4, "clear understanding", C) Level 1 (1–5), D) Level 5, "thoughtful, developed consideration"
+    * **Correct:** C
+    * **AO:** AO1
+    * **Feedback:** ✓ Correct. "Narrative and/or descriptive in approach" is the AQA Level 1 (1–5) hallmark — retelling or describing the poems rather than comparing their methods and ideas. The climb to the top band is from description to conceptualised, exploratory comparison.
+    * **Why A:** Level 6 is critical and exploratory — the opposite of narrative retelling.
+    * **Why B:** Level 4 already shows clear comparison, well beyond description.
+    * **Why D:** Level 5 is thoughtful and developed; description belongs to the bottom band.
