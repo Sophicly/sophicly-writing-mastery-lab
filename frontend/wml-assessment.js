@@ -2223,7 +2223,10 @@
                     const cells = t.split('|').slice(1, -1).map(c => c.trim());
                     if (cells.length < 3) return;
                     if (/^-{2,}/.test(cells[0]) || /worth/i.test(cells[1]) || /score/i.test(cells[2])) return;
-                    if (!/^\+?\d+(\.\d+)?$/.test(cells[1]) || !/^\d+(\.\d+)?$/.test(cells[2])) return;
+                    // v7.19.851: BONUS rows write the awarded score with a leading '+' too
+                    // ("+0.3") — Run 6 Q2 ¶1: the score regex rejected it, the row was skipped,
+                    // and the auditor "corrected" 2.95 down to 2.65, deleting an earned bonus.
+                    if (!/^\+?\d+(\.\d+)?$/.test(cells[1]) || !/^\+?\d+(\.\d+)?$/.test(cells[2])) return;
                     scoreSum += parseFloat(cells[2]); scoredRows++;
                 });
                 // penalties: prefer the "Total penalties: −X" line, else sum applied bullets
