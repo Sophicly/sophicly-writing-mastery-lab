@@ -2052,15 +2052,71 @@
         S2: 'underdeveloped sentence', L1: 'lacks sustained detail', B1: 'beyond text boundaries',
         R1: 'retelling instead of analysing', E1: 'lacks evaluative language', K1: 'misses the statement keywords',
         STR2: 'structure divergence' };
+    // v7.19.841: Section B (Q5) word-count CEILING is CODE-OWNED. The protocol had the
+    // LLM compute ROUND(deficit × 5/100) itself — Run 4 invented "12.5 rounded to 10"
+    // (cap 30 instead of 27, +3 marks, grade 6→7). Now: (a) the injection pipeline sends
+    // the code-computed penalty+cap with the Q5 response (AI echoes, never derives);
+    // (b) this auditor enforces the cap on the Q5 card total, the Q5 Total line, and the
+    // visible ceiling sentence. Diagnostic assessments only — redraft = HALT rule.
+    let _lastQWordCounts = {};   // qId → code-counted words, set by the injection builder
+    function _q5DomWordCount() {
+        let words = 0;
+        try {
+            const editorEl = document.getElementById('swml-tiptap-editor');
+            if (!editorEl) return 0;
+            editorEl.querySelectorAll('[data-section-type="response"]').forEach(sec => {
+                if (!/^Q5\b/i.test(sec.getAttribute('data-section-label') || '')) return;
+                const clone = sec.cloneNode(true);
+                clone.querySelectorAll('[data-checklist-item], em').forEach(el => el.remove());
+                const t = (clone.textContent || '').replace(/ /g, ' ').trim();
+                if (t) words += t.split(/\s+/).filter(Boolean).length;
+            });
+        } catch (_) { return 0; }
+        return words;
+    }
+    function _sectionBWcCeiling(qKey, den) {
+        try {
+            if (qKey !== 'Q5' || !(den > 0)) return null;
+            if (state.task !== 'assessment') return null;      // redraft = HALT, no ceiling
+            const key = _multiqTargetKey();
+            const tgt = key && MULTIQ_RESPONSE_TARGETS[key] && MULTIQ_RESPONSE_TARGETS[key].Q5;
+            if (!tgt) return null;
+            let wc = _lastQWordCounts.Q5;
+            if (!(wc > 0)) wc = _q5DomWordCount();
+            if (!(wc > 0) || wc >= tgt) return null;
+            const pen = Math.round((tgt - wc) * 5 / 100);      // half-up: 12.5 → 13
+            if (pen <= 0) return null;
+            return { cap: Math.max(0, den - pen), pen: pen, wc: wc, tgt: tgt };
+        } catch (_) { return null; }
+    }
     function _auditAssessmentArithmetic(reply) {
         try {
             if (!reply) return reply;
             if (reply.indexOf('@FB_BEGIN') === -1 && !/Q\d+\s*Total:/.test(reply)
-                && !/Penalty (?:& Ceiling )?Ledger/i.test(reply)) return reply;
+                && !/Penalty (?:& Ceiling )?Ledger/i.test(reply)
+                && !/MIN\(your marks,/i.test(reply)) return reply;
             const r2 = x => Math.round(x * 100) / 100;
             let out = String(reply);
             // fresh assessment run starting (Q2's reflect gate is emitted once) → reset ledger
             if (out.indexOf('@REFLECT_GATE{"q":"Q2"') !== -1) { _penLedgerCards = {}; _penLedgerComplete = true; }
+            // ---- Pass 0 (v7.19.841): code-own the visible Q5 ceiling SENTENCE. The AI
+            // computed ROUND(12.5)→"10" in Run 4; the injected numbers are authoritative.
+            // Line-scoped so ledger/penalty lines elsewhere in the message are untouched.
+            if (/MIN\(your marks,\s*\d+\)/i.test(out)) {
+                const bSent = _sectionBWcCeiling('Q5', 40);   // AQA Section B = 40 (P1 + P2)
+                if (bSent) {
+                    out = out.replace(/[^\n]*MIN\(your marks[^\n]*/gi, (line) => {
+                        let s = line.replace(/MIN\(your marks,\s*(\d+)\)/gi, (m, n) =>
+                            parseInt(n, 10) === bSent.cap ? m : 'MIN(your marks, ' + bSent.cap + ')');
+                        s = s.replace(/([−–-]\s*)(\d+(?:\.\d+)?)(\s*marks\b)/gi, (m, pre, n, post) =>
+                            parseFloat(n) === bSent.pen ? m : pre + bSent.pen + post);
+                        s = s.replace(/rise above\s*(\*{0,2})(\d+)\s*\/\s*(\d+)/gi, (m, b, n, d) =>
+                            parseInt(n, 10) === bSent.cap ? m : 'rise above ' + b + bSent.cap + '/' + d);
+                        if (s !== line) console.warn('WML MarkAudit: Q5 ceiling sentence corrected → penalty', bSent.pen, 'cap', bSent.cap + '/40');
+                        return s;
+                    });
+                }
+            }
             // ---- Pass 1: each card — recompute total from its own table ----
             out = out.replace(/@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)@FB_END/g, (whole, metaRaw, body) => {
                 let meta = null;
@@ -2109,7 +2165,14 @@
                 }
                 const den = parseFloat(tm[3]);
                 const stated = parseFloat(tm[2]);
-                const computed = Math.min(den, Math.max(0, r2(scoreSum - pen)));
+                let computed = Math.min(den, Math.max(0, r2(scoreSum - pen)));
+                // v7.19.841: Section B card total respects the code-owned WC ceiling
+                const bCeil = _sectionBWcCeiling(qKey, den);
+                if (bCeil && computed > bCeil.cap) {
+                    console.warn('WML MarkAudit: Q5 word-count ceiling enforced on card —', computed, '→', bCeil.cap,
+                        '(wc', bCeil.wc + '/' + bCeil.tgt, 'penalty', bCeil.pen + ')');
+                    computed = bCeil.cap;
+                }
                 (_fbAudit.totals[qKey] = _fbAudit.totals[qKey] || []).push(computed);
                 const suffixBad = /round/i.test(tm[4] || '');
                 if (Math.abs(computed - stated) <= 0.049 && !suffixBad) return whole;
@@ -2123,7 +2186,16 @@
                 const arr = _fbAudit.totals[qKey];
                 const bad = _fbAudit.failed[qKey];
                 delete _fbAudit.totals[qKey]; delete _fbAudit.failed[qKey];
-                if (qn === '5' || bad || !arr || arr.length < 2) return whole;
+                if (qn === '5') {
+                    // v7.19.841: Q5 is single-card (no sum-verify), but its Total line must
+                    // respect the code-owned WC ceiling — Run 4 filed 30/40 past a 27 cap.
+                    const denNum5 = parseInt(String(den).replace(/\D/g, ''), 10) || 0;
+                    const bCeil5 = _sectionBWcCeiling('Q5', denNum5);
+                    if (!bCeil5 || !(parseFloat(val) > bCeil5.cap)) return whole;
+                    console.warn('WML MarkAudit: corrected Q5 Total', val, '→', bCeil5.cap, '(word-count ceiling)');
+                    return prefix + bCeil5.cap + den;
+                }
+                if (bad || !arr || arr.length < 2) return whole;
                 // v7.19.838: respect the question's MIN(sum, max) cap — Q4's sections total
                 // 22 raw (Intro 2 + 3×6 + Conclusion 2) but the question is out of 20. Never
                 // "correct" a properly-capped total past its own denominator.
@@ -23463,6 +23535,7 @@
                 const isExtendedQ = qType === 'extended_writing' || qType === 'choice' || qMarks >= 24;
                 const paras = _mqParas(section);
                 const qWords = paras.length ? paras.join(' ').split(/\s+/).filter(Boolean).length : 0;
+                _lastQWordCounts[qId] = qWords;   // v7.19.841: auditor's Q5-ceiling source
                 if (!paras.length) {
                     parts.push(`=== ${qId} RESPONSE — NOT ATTEMPTED (empty) ===`);
                     return;
@@ -23472,7 +23545,13 @@
                     return;
                 }
                 if (isExtendedQ) {
-                    parts.push(`=== ${qId} RESPONSE — ${qWords} words (code-counted — use THIS count for the word-count rule; never recount) — HOLISTIC: no paragraph rules ===\n${paras.join('\n\n')}`);
+                    // v7.19.841: the WC ceiling is CODE-COMPUTED and injected — the AI echoes
+                    // it, never derives it (Run 4: AI "rounded" 12.5 to 10 → cap 30 not 27).
+                    const _bc = _sectionBWcCeiling(qId, qMarks);
+                    const _ceilNote = _bc
+                        ? ` | CODE-COMPUTED WORD-COUNT CEILING: penalty ${_bc.pen} → ceiling ${_bc.cap}/${qMarks} (MIN(your marks, ${_bc.cap})) — state THESE numbers exactly; NEVER compute or round the penalty yourself`
+                        : '';
+                    parts.push(`=== ${qId} RESPONSE — ${qWords} words (code-counted — use THIS count for the word-count rule; never recount)${_ceilNote} — HOLISTIC: no paragraph rules ===\n${paras.join('\n\n')}`);
                     return;
                 }
                 // Reading question: taught paragraph count = marks ÷ 4
