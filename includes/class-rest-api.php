@@ -4015,6 +4015,46 @@ class SWML_REST_API {
             $attempt = $idx['current'] ?? 1;
         }
 
+        // v7.19.843: RE-MARK = NEW ATTEMPT ROW (Neil 2026-07-03). A Clear-Chat re-run
+        // re-marks the same doc and used to UPDATE the prior attempt's stored grade
+        // (student-data keys its session_records row by attempt_number), silently
+        // discarding the earlier run — violating "every attempt is saved; nothing
+        // discarded". A same-attempt re-commit is only legitimate when IDEMPOTENT
+        // (reload-heal re-sends identical values). So: if this attempt already holds a
+        // COMPLETED record whose grade/total differ from the incoming ones, file this
+        // commit as the next free attempt number — the student-data listener's
+        // exact-match finds no row and INSERTs fresh; read-MAX keeps the highest.
+        // Server-side + value-based → device-independent, no client state involved.
+        // Deliberately does NOT touch the canvas attempt index (doc stays :a1 —
+        // re-marks share the document; only the grade history forks).
+        $incoming_grade = sanitize_text_field($params['grade'] ?? '');
+        $incoming_total = sanitize_text_field($params['total_score'] ?? '');
+        if ($incoming_grade !== '' || $incoming_total !== '') {
+            $decode_phase_meta = static function ($raw) {
+                if (!$raw) return null;
+                $d = json_decode($raw, true);
+                if (!is_array($d)) $d = json_decode(wp_unslash($raw), true);
+                return is_array($d) ? $d : null;
+            };
+            $prior = $decode_phase_meta(get_user_meta($user_id, $this->phase_meta_key($board, $text, $topic, $phase, $attempt), true));
+            if ($prior && ($prior['status'] ?? '') === 'complete'
+                && (($prior['grade'] ?? '') !== '' || ($prior['total_score'] ?? '') !== '')
+                && (($prior['grade'] ?? '') !== $incoming_grade || ($prior['total_score'] ?? '') !== $incoming_total)) {
+                $next = $attempt + 1;
+                while ($next < $attempt + 50) {
+                    $probe = $decode_phase_meta(get_user_meta($user_id, $this->phase_meta_key($board, $text, $topic, $phase, $next), true));
+                    if (!$probe) break; // free slot
+                    // A later attempt already holding THESE values = this same re-mark
+                    // re-committing after a reload — land on it (idempotent UPDATE).
+                    if (($probe['grade'] ?? '') === $incoming_grade && ($probe['total_score'] ?? '') === $incoming_total) break;
+                    $next++;
+                }
+                error_log(sprintf('WML complete_phase: re-mark of attempt %d (%s g%s → %s g%s) — filing as attempt %d',
+                    $attempt, $prior['total_score'] ?? '', $prior['grade'] ?? '', $incoming_total, $incoming_grade, $next));
+                $attempt = $next;
+            }
+        }
+
         $data = [
             'status'       => 'complete',
             'grade'        => sanitize_text_field($params['grade'] ?? ''),
