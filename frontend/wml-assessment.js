@@ -3106,6 +3106,42 @@
         return !['mark_scheme', 'mark_scheme_unit', 'foundational_quiz'].includes(state.task);
     }
 
+    // v7.19.834: one-time mic coach mark (Neil 2026-07-03 — Gemini-style "ask faster
+    // without typing"). Shows ONCE ever (localStorage), anchored above the chat mic
+    // button, ONLY when the student is typing a LONG reply (≥60 chars) AND no
+    // quick-action buttons are on screen (buttons mean the expected reply is a tap —
+    // the tip would be noise; Neil's rule). Auto-dismisses after 8s or on any pointer
+    // press. Never in review mode; never if SpeechRecognition is unavailable; any
+    // dictation use sets the same flag so mic users never see it.
+    const MIC_TIP_KEY = 'swml_mic_tip_done';
+    function _maybeShowMicTip(textarea) {
+        try {
+            if (!textarea || state.reviewMode) return;
+            if ((textarea.value || '').length < 60) return;
+            if (localStorage.getItem(MIC_TIP_KEY)) return;
+            const wrap = textarea.closest('.swml-chat-input');
+            const micBtn = wrap && wrap.querySelector('.swml-mic-btn');
+            if (!micBtn || micBtn.style.display === 'none') return;
+            const qaVisible = Array.from(document.querySelectorAll('.swml-quick-actions'))
+                .some(q => q.offsetParent !== null);
+            if (qaVisible) return;
+            localStorage.setItem(MIC_TIP_KEY, '1');
+            const tip = document.createElement('div');
+            tip.className = 'swml-mic-tip';
+            tip.innerHTML = '<strong>Faster to speak 🎙</strong><br>Tap the mic and talk naturally — it types for you.';
+            tip.style.cssText = 'position:absolute;bottom:calc(100% + 10px);right:0;max-width:230px;background:#1c1d1f;color:#fff;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.45;z-index:60;box-shadow:0 8px 24px rgba(0,0,0,0.35);pointer-events:none;';
+            const arrow = document.createElement('div');
+            arrow.style.cssText = 'position:absolute;top:100%;right:14px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid #1c1d1f;';
+            tip.appendChild(arrow);
+            const host = micBtn.parentElement || wrap;
+            if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+            host.appendChild(tip);
+            const kill = () => { try { tip.remove(); } catch (_) {} document.removeEventListener('pointerdown', kill, true); };
+            setTimeout(kill, 8000);
+            document.addEventListener('pointerdown', kill, true);
+        } catch (_) { /* cosmetic — never break the input */ }
+    }
+
     // Self-contained mic for the panel's own textarea (the doc-editor dictation at
     // toggleDictation targets the canvas, not this field — keep them independent).
     function _attachPanelMic(textarea, micBtn, onChange) {
@@ -5837,7 +5873,7 @@
 
         const chatTextarea = el('textarea', { id: 'swml-canvas-chat-input', rows: '1', placeholder: 'Type your response...' });
         chatTextarea.style.cssText = 'flex:1;border:none;background:transparent;font-size:13px;outline:none;color:var(--swml-text);font-family:inherit;resize:none;line-height:1.5;max-height:200px;min-height:22px;overflow-y:auto;';
-        chatTextarea.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; });
+        chatTextarea.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; _maybeShowMicTip(this); });
         function autoGrowChatTextarea() {
             requestAnimationFrame(() => {
                 chatTextarea.style.height = 'auto';
@@ -5877,7 +5913,7 @@
                         canvasListening = true; finalTranscript = chatTextarea.value || '';
                         console.log('WML Mic: onstart — canvasChatLoading:', canvasChatLoading, 'retries:', _micNoSpeechRetries);
                         chatMicBtn.innerHTML = SVG_MIC_STOP;
-                        chatMicBtn.classList.add('swml-mic-active');
+                        chatMicBtn.classList.add('swml-mic-active'); try { localStorage.setItem(MIC_TIP_KEY, '1'); } catch (_) {} // v7.19.834: mic users never see the tip
                         // v7.15.14: Auto-start timer when mic starts in Exam mode
                         if (_examTimerMode === 'exam' && window.WML._startCanvasTimer) {
                             window.WML._startCanvasTimer(_examTimerDuration, true);
@@ -13919,7 +13955,7 @@
                         // Textarea (same class as original)
                         const chatTextarea = el('textarea', { id: 'swml-canvas-chat-input', rows: '1', placeholder: 'Type your response...' });
                         chatTextarea.style.cssText = 'flex:1;border:none;background:transparent;font-size:13px;outline:none;color:var(--swml-text);font-family:inherit;resize:none;line-height:1.5;max-height:200px;min-height:22px;overflow-y:auto;';
-                        chatTextarea.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; });
+                        chatTextarea.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; _maybeShowMicTip(this); });
                         // Helper: trigger auto-grow after programmatic value changes
                         function autoGrowChatTextarea() {
                             requestAnimationFrame(() => {
@@ -13955,7 +13991,7 @@
                                     canvasRecognition.onstart = () => {
                                         canvasListening = true; finalTranscript = chatTextarea.value || '';
                                         chatMicBtn.innerHTML = SVG_MIC_STOP;
-                                        chatMicBtn.classList.add('swml-mic-active');
+                                        chatMicBtn.classList.add('swml-mic-active'); try { localStorage.setItem(MIC_TIP_KEY, '1'); } catch (_) {} // v7.19.834: mic users never see the tip
                                     };
                                     canvasRecognition.onend = () => {
                                         canvasListening = false;
