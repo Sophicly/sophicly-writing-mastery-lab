@@ -1,17 +1,30 @@
-# PROTOCOL-STANDARD.md — the contract every WML protocol must meet
+# PROTOCOL-STANDARD.md — the contract every WML protocol must meet (v2)
 
-**What this is:** the codified gold standard for WML assessment (Part B) and planning (Part C) protocols,
-extracted from the proven reference — `protocols/aqa/literature/modules/protocol-a-assessment.md` (the
-"R&J standard") — plus Neil's locked expectations (2026-07-01 walkthrough) and the settled house rules.
-**Before touching ANY assessment or planning protocol, read this file. It is the acceptance bar.**
+**What this is:** the codified gold standard for WML assessment (Part B) and planning (Part C)
+protocols, plus the **PORT SOP** — the mechanical checklist for converting any board/paper to the
+standard. **Before touching ANY assessment or planning protocol, read this file. It is the
+acceptance bar. A protocol change that fails its checks does not ship.**
+
+**v2 (2026-07-03, Neil ruling): the standard has TWO NAMED GOLD ANCHORS.** Every port copies from
+the nearer anchor — never from memory, never from an older port:
+
+| Anchor | File | Covers |
+|---|---|---|
+| **LANGUAGE** | `protocols/aqa/language1/modules/protocol-a-assessment.md` (as of v7.19.852) | multi-question papers — unit = QUESTION, sub-unit = paragraph; Section B/extended writing holistic |
+| **LIT** | `protocols/aqa/literature/modules/protocol-a-assessment.md` (the R&J standard) | single-essay papers — unit = SECTION (Intro / Body 1–3 / Conclusion), TTECEA+C |
+
+**Poetry comparison questions are NOT a third anchor** (Neil, 2026-07-03): most poetry questions
+compare two poems but keep the five-paragraph essay structure — they use the LIT anchor plus the
+COMPARISON VARIANT (§B-LIT.4).
 
 - Part A = universal invariants (apply to BOTH assessment and planning).
-- Part B = the assessment spec (component by component, with enforcement + grep checks).
-- Part C = the planning spec (stub — fill after the assessment standard is proven; planning is the
-  flip side of assessment and borrows Part A wholesale).
-- Appendix = known-gap register (live violations observed + which lane owns each fix).
+- Part B = the assessment spec: B-COMMON (the invariant spine, both anchors) → B-LANG → B-LIT
+  (incl. comparison variant) → B-CHECKS (grep table).
+- PORT SOP = the three-way ENGINE / PROTOCOL / CONFIG split + the phased playbook.
+- Part C = the planning spec (stub — fill after the assessment standard is proven).
+- Appendices = P1 first-live-run lessons (items 1–14, still binding) + known-gap register.
 
-Authority order when documents conflict: Neil's latest decision > this file > the reference protocol file.
+Authority order when documents conflict: Neil's latest decision > this file > the anchor files.
 When you change this file, note WHY in the changelog at the bottom.
 
 ---
@@ -31,25 +44,25 @@ gated step fired reliably. **Every mandatory step must chain to one of the four 
 3. **HARD STOP turn-split** — "your turn ENDS on that line"; the next content requires a student
    keypress (type **Y**). Separates reflection from marks, prevents same-turn skipping.
 4. **4-button progression gate** — exact literal strings `[✓ Got it — continue]` `[🤔 Still confused]`
-   `[💬 Different question]` `[⏸ Pause here]` (frontend hard-codes detection). Emitted ONCE per section,
+   `[💬 Different question]` `[⏸ Pause here]` (frontend hard-codes detection). Emitted ONCE per unit,
    only when the turn contains ALL required artifacts (listed in the precondition); anti-loop rule:
-   after ✓, the next message MUST begin the next section's STEP 1 — never re-emit a confirmed gate.
+   after ✓, the next message MUST begin the next unit's STEP 1 — never re-emit a confirmed gate.
 
 When you add a new mandatory step, write its gate in the same edit. A step without a gate is a bug.
+**Escalation path (sessions 5–10 lesson): every observed drift gets its gate CODE-OWNED same-day** —
+the prose gate is the first line, the engine gate is the net (see A14).
 
 ## A2. Markers are the API
 Function-calling is disabled — text markers + deterministic frontend extraction are the only channel
 (`reference_wml_function_calling_disabled_use_markers`). Emission rules, always: marker on its OWN line,
-no code block, no backticks, nothing after it on the line; `q`/`title` labels EXACTLY from the section's
-allowed set; JSON keys exactly as specified. The frontend contract (Part B §B9) lists every marker the
+no code block, no backticks, nothing after it on the line; `q`/`title` labels EXACTLY from the unit's
+allowed set; JSON keys exactly as specified. The frontend contract (§B-COMMON.12) lists every marker the
 canvas consumes. Never invent a new marker without wiring the frontend first (that's a cross-lane ask).
 
 ## A3. Anti-fabrication (penalties + evidence)
-A penalty MUST quote the offending phrase **verbatim from THAT section's submitted text**. Cannot find it
+A penalty MUST quote the offending phrase **verbatim from THAT unit's submitted text**. Cannot find it
 verbatim → the fault does not exist there → no penalty. 0 penalties is a valid outcome; never fill slots.
 Protocol example phrases are FORMAT templates — never present one as the student's writing.
-(Live violation observed 2026-07-01: W1 penalty quoted a phrase not present in the paragraph. A code-side
-verbatim validator is queued — Chat B. Until then the prose rule is the only guard: enforce it hard.)
 
 **CRITERION EVIDENCE (Neil, 2026-07-02 — universal, every assessed paper):** the same standard applies to
 CRITERION scoring, not just penalties. Every criterion scored below full worth must be anchored in the
@@ -58,49 +71,63 @@ for "surface-level, no word-level zoom", quote the analysis sentence that stayed
 the word they failed to zoom into — or (b) stating the element is entirely absent ("no effects sentence
 exists — nothing to quote"). A judgment without the evidence it judges is unusable feedback. The mark
 table's Why column stays ≤10 words; the evidence lives in My Assessment. Every board's
-`protocol-a-assessment.md` must carry this rule (R&J gold has it as of v7.19.813 — replicate on refactor).
+`protocol-a-assessment.md` must carry this rule (both anchors carry it — replicate on every port).
 
 ## A4. Never invent mark-scheme claims
 Level descriptors, band names, mark allocations: quoted from the REAL board mark scheme only
 (`feedback_never_invent_mark_scheme_claims`). No descriptor available in the protocol's reference
-sections → don't cite one. Same for AO definitions (e.g. Edexcel IGCSE AO4 = Context, NOT SPaG).
+sections → don't cite one ("no descriptor available" — never fabricate). Same for AO definitions
+(e.g. Edexcel IGCSE AO4 = Context, NOT SPaG; Edexcel IGCSE Spec A writing AOs = AO4+AO5, same criteria
+as AQA AO5/AO6 under different names). Source: Neil's mark-scheme PDFs on Drive
+("Sophicly Etch Mark Scheme Resources/"), extracted verbatim into the paper's
+`knowledge-mark-scheme-<paper>.md`, tagged with source + page.
 
 ## A5. Output hygiene — never show your working
 All mark arithmetic is internal. No visible calculation, recalculation, rounding narration, running sums,
 or mid-reply self-corrections. Output finished values only. **One carve-out (Neil, 2026-07-01):** the
-word-count penalty MAY display its formula (e.g. "−4 marks (rounded from 77 × 5/100 = 3.85)") — students
-should see exactly how the WC penalty is derived. Everything else: silent.
+word-count penalty/ceiling MAY display its formula — students should see exactly how it is derived
+(on Language papers the numbers themselves arrive CODE-COMPUTED; the model echoes them — §B-LANG.4).
+Everything else: silent. Penalties are APPLIED-ONLY: a considered-but-rejected penalty is internal
+deliberation and never appears; never cite the protocol in student-facing feedback (no "(protocol: …)").
 
-## A6. Numbers have ONE source of truth
-Totals, percentages, grades are COMPUTED BY CODE from the per-section marks; the model echoes, never
-derives. (Live evidence of why: one run produced chat total 3/34, doc summary 4.75/34, actual box-sum
-1.75/34 — three numbers, all different.) Until the code-computed pipeline ships (Chat B), the protocol
-must at minimum: state each section total ONLY in the canonical line `Total Mark for [section]: A/B`,
-and compute the final total ONLY as `MIN(sum of those five lines, max − WC penalty)`.
+## A6. Numbers have ONE source of truth — and since v7.19.832 that source is CODE
+Totals, percentages, grades are COMPUTED BY CODE; the model echoes, never derives. The engine
+(universal, both pipelines — `frontend/wml-assessment.js`, v7.19.832–852) recomputes every feedback
+card's total from its own `Worth | Your Score` table minus its `Total penalties:` line and corrects
+mismatches (bonus `+X` scores accepted since 851); re-bands every %/grade line on the canonical ladder;
+rebuilds the Penalty & Ceiling Ledger from the actual cards; verifies question/final totals; strips
+forbidden "Base total:" lines (852). **The code is the net, not the excuse** — protocols still state
+the rules, and must keep the AUDITABLE SHAPES the engine parses (A14).
 
-**WC penalty = CEILING, never a deduction (Neil, 2026-07-02 — SETTLED, universal):** an under-length
-essay already loses marks organically, so the penalty must not double-punish. It lowers the MAXIMUM
-achievable (`max − penalty`); the section sum is never reduced. The ceiling only bites when the sum
-exceeds it. Doc Score Summary + Auto grade chip apply the same MIN (v7.19.816).
-
-**One ladder everywhere:** every grade the assessment outputs — per-section "Percentage & Grade" lines
-AND the final grade — bands on the SAME canonical Sophicly ladder (9≥85% … 2≥15%). Never real-exam
-boundaries for sections. (Live 2026-07-02: sections banded on the real-exam scale while the final used
-the canonical ladder — two scales in one assessment.)
+- **Rounding happens exactly ONCE** — at the question total (Language) / final total (Lit). Sub-unit
+  totals stay DECIMAL: never round a paragraph/section total, no "→ rounded" suffix, no "Base total:"
+  line.
+- **WC penalty = CEILING, never a deduction (Neil, 2026-07-02 — SETTLED, universal):** an under-length
+  piece already loses marks organically; the penalty lowers the MAXIMUM achievable (`MIN(sum, max −
+  penalty)`); the sum is never reduced. Doc Score Summary + Auto grade chip apply the same MIN.
+- **One ladder everywhere:** every grade output — per-unit "Percentage & Grade" lines AND the final
+  grade — bands on the SAME canonical Sophicly ladder (9 ≥ 85 · 8 ≥ 75 · 7 ≥ 65 · 6 ≥ 55 · 5 ≥ 45 ·
+  4 ≥ 35 · 3 ≥ 25 · 2 ≥ 15 · else 1). NEVER real-exam boundaries anywhere. Code-enforced since 832;
+  protocols still state the ladder (grep: "CANONICAL GRADE LADDER").
+- Chat total, Overall Feedback and Score Summary must derive from the same whole-mark unit totals —
+  identical wherever they appear.
 
 ## A7. Golds are never shortened
-Every gold/model rewrite is COMPLETE (full paragraph counts per section spec), every time, both models,
-all sections (`feedback_never_shorten_model_answers`). "..." or "continue in this style" = violation.
+Every gold/model rewrite is COMPLETE (full sentence/paragraph counts per unit spec), every time, both
+models, all units (`feedback_never_shorten_model_answers`). "..." or "continue in this style" = violation.
 
 ## A8. Deterministic structure mapping + hard caps
-Map student work to canvas sections by POSITION with a hard cap equal to the box count — never re-select,
-re-order, or invent new section labels. Overflow content is acknowledged in prose (Final Summary teaching
-note) but NEVER gets a marker/box/section mark. (Live evidence: a 7-paragraph essay pushed the model past
-the cap; it filed "Body Paragraph 5" into Body 2's box, destroying real feedback.)
+Map student work to canvas units by POSITION with a hard cap equal to the box count — never re-select,
+re-order, or invent new unit labels. Paragraphs arrive PRE-LABELLED by code (v807) — trust the labels,
+never re-detect. Overflow content is acknowledged in prose (Final Summary teaching note) but NEVER gets
+a marker/box/unit mark. (Live evidence: a 7-paragraph essay pushed the model past the cap; it filed
+"Body Paragraph 5" into Body 2's box, destroying real feedback.)
 
 ## A9. One question per turn; options render as buttons
-Ask exactly one thing, wait. Multi-option asks use lettered options (quick-action detection renders them);
-the 4-button gate strings are byte-exact. Never two questions in a turn — the second dies.
+Ask exactly one thing, wait. Multi-option asks use lettered options (quick-action detection renders
+them); the 4-button gate strings are byte-exact. Never two questions in a turn — the second dies.
+Since v7.19.852 the frontend sends the FULL label ("A) Paragraph 1"), not the bare letter, so the
+model cannot mismap the choice — protocols must keep option labels self-describing.
 
 ## A10. Protocol separation
 Assessment never asks for rewrites/new content (that's Planning/Polishing). Planning never marks.
@@ -110,7 +137,9 @@ Cross-references between protocols go through the menu handoff, not inline blend
 The #1 recurring bug class (see WML CLAUDE.md "CANVAS TASK-SCOPING"): behaviour gated on a name string
 silently no-ops for every sibling. In protocol text, board-specific rules carry an explicit BOARD-GATE
 note stating the capability condition (e.g. "applies when the question assesses AO3(context)"), not a
-bare board name — so replication to other boards forces a conscious keep/adapt decision.
+bare board name — so replication to other boards forces a conscious keep/adapt decision. In engine
+code, prefer capability lookups (`WML.isLanguageSubject()`) over subject-literal lists; where a literal
+list is unavoidable it is a REGISTERED PORT SURFACE (PORT SOP §E2) that every port must extend.
 
 ## A12. House language
 British English. The AI is **Sophia**. Banned: "Units" for sub-parts, "1-to-1" (except platinum Assessment
@@ -119,189 +148,365 @@ answers, "patriarchy/patriarchal", magic/spellbook framing, "move" as a noun. Sc
 
 ## A13. Golds follow the taught sentence order — rigidly (Neil, 2026-07-02)
 Students copy gold models as templates: a gold that deviates from the taught structure UNTEACHES the
-method even when it would score full marks. Every gold (BOTH models, EVERY section, EVERY assessed
+method even when it would score full marks. Every gold (BOTH models, EVERY unit, EVERY assessed
 protocol — language, literature, poetry, Shakespeare, modern) follows that paper's taught sentence order
 exactly. For lit essays (TTECEA+C): (1) conceptual-ONLY topic sentence — **no technique words in the
 topic sentence, ever** (that's what we penalise students for); (2) technique + anchor quote + inference —
 anchor quotes sequenced Body 1 = beginning, Body 2 = middle, Body 3 = end of text/extract; (3) word-level
 close analysis; (4) effect on reader ×2; (5) author's purpose; (6) context. Intro golds: hook = conceptual/
 contextual claim, building sentences = the HISTORICAL/SOCIAL context itself (not craft commentary), then
-context→author link, then three-point thesis. Other families (Language TTECEA, Section B IUMVCC, poetry)
-apply the same principle to THEIR taught order. The AI self-checks each gold sentence-by-sentence before
-emitting. (R&J gold protocol carries the rule as of v7.19.812 — replicate on every refactor.)
+context→author link, then three-point thesis. Other families (Language TTECEA, Section B IUMVCC, poetry
+comparison) apply the same principle to THEIR taught order. The AI self-checks each gold sentence-by-
+sentence before emitting.
+
+## A14. Engine-owned gates — protocols echo, never derive (the v832–852 settlement)
+The following are CODE-OWNED, universal across every paper, both chat pipelines. A protocol NEVER
+re-implements them, and every port keeps the auditable shapes they parse:
+
+| Engine gate | Since | Auditable shape the protocol must keep |
+|---|---|---|
+| Mark auditor (card totals recomputed from own table − penalties; '+X' bonus scores accepted) | 832 / 851 | `\| Criterion \| Worth \| Your Score \| Why \|` table + `Total penalties: −X` line + `Total Mark for [unit]: X/Y` line |
+| Canonical grade ladder re-banding | 832 | "[X]%, which is a **Grade [N]**" lines; `Grade: N` line |
+| Question/final total verification + missing-unit zeros | 832–841 | whole-mark `Qn Total: A/B` / `Total: X/max`, nothing after the value |
+| Penalty & Ceiling Ledger rebuild (from actual cards) | 838–841 | per-code `CODE — plain name (−X)` penalty lines in cards |
+| Q5/Section-B word-count ceiling computed + injected | 841 | protocol block ECHOES injected P and C only (§B-LANG.4) |
+| "Base total:" line strip | 852 | protocol forbids the line; engine strips as net |
+| Reflection one-per-question ledger (duplicate panel suppressed + silent repair) | 849 | ONE `@REFLECT_GATE` per unit, before its marking |
+| Deterministic headline-goal echo (stored block injected per-turn, both composers) | 849 | lead-ins cite the injected stored goal verbatim |
+| Closing-buttons renderer (end-of-assessment row) | 842 | exact closing 4-button row (§B-COMMON.9) |
+| New-attempt rows | 843 | — (engine-side) |
+| Auto-file provenance + scroll-on-file | 830/839/844 | twelve `@FIELD_SET` markers + `@SECTION_BEGIN{"section":"Overall Feedback"}` |
+| Chat-furniture strip (gate lines/buttons never reach the doc) | 829 | keep the gate AFTER the total; engine strips regardless |
+| Chat fetch auto-retry; lettered options send full label | 852 | self-describing option labels (A9) |
 
 ---
 
 # PART B — ASSESSMENT PROTOCOL SPEC
 
-The reference implementation is AQA Literature (`protocols/aqa/literature/modules/protocol-a-assessment.md`).
-Mark VALUES/criteria differ per board+paper (read that paper's real mark scheme); the COMPONENTS and their
-enforcement below are the invariant standard. Unit of assessment: **paragraph** (Literature essays),
-**question** (Language papers), IUMVCC-section feedback + holistic mark (extended writing / Section B).
+Mark VALUES/criteria differ per board+paper (read that paper's real mark scheme); the COMPONENTS and
+their enforcement are the invariant standard. **Unit of assessment:** QUESTION (Language papers,
+sub-unit = paragraph), SECTION (Literature essays), IUMVCC-section feedback + holistic mark (extended
+writing / Section B). Granularity rule (Neil, SETTLED): every sub-unit gets mark + feedback + two golds
+at EQUAL depth — except Q1-style retrieval (per-statement feedback, no golds) and extended writing
+(holistic mark, per-IUMVCC/beat feedback, ONE labelled holistic gold).
 
-## B0. Opening message
-- Time-expectation note: "This assessment takes approximately 20–25 minutes. Complete **all steps** to
-  receive your full score, grade, and personalised feedback." — NEVER a hardcoded step count ("all 8
-  steps" shipped wrong; counts drift). Greet by first name. State text + assessment type + word count.
-- **Word count comes from the code-computed value** (must equal the editor's word-count widget exactly);
-  the model never re-counts.
+## B-COMMON — the invariant spine (both anchors; ports carry ALL of it verbatim-adapted)
 
-## B1. Pre-assessment chain (ALL gated, in order — each precondition names the previous reply)
-**TWO distinct goals are captured — never conflate them (live failure 2026-07-02: the model threaded the
-grade goal as the headline goal because the conceptual question never fired):**
-- **Grade goal** = the number (7/8/9). Used for the WC-adjusted ceiling note + Final Summary framing.
-- **Headline goal** = the CONCEPTUAL aim (convincing argument / effects / structure / …). This is the one
-  that threads through every section and closes in the Final Summary. The grade goal is NOT a substitute.
-1. **Grade-goal ask** — "what grade are you aiming for?" Selector limited to 7 / 8 / 9.
-2. **Headline-goal question** (essay-level) — stem declares the hierarchy: "Looking at your essay as a
-   whole: what was the **one main goal** you were working toward? You'll set a mini-goal for each
-   paragraph as we go — this is your headline goal for the whole piece." Lettered options (close
-   analysis AO2 / context AO3 / conceptual topic sentences AO1 / reader effects AO2 /
-   strengths-and-weaknesses / F something else, free-text). Options, not open text — AO-anchored
-   answers stay comparable with per-section targeting.
-   **THREADING RULE (the hierarchy made visible):** every section's STEP 1 reflection lead-in cites the
-   stored headline goal back ("Your headline goal was *[goal]* — as you rate this paragraph, consider
-   how far it served that goal…"), and the Final Summary closes it (B6). Headline goal (essay) →
-   mini-goal (paragraph) → calibration per paragraph → closure at the end: one thread, five stitches,
-   one knot.
-3. **Keyword-recall checkpoint** — "what were the key aspects this question asked you to explore?" +
-   validate/correct against the actual question. Question-focus check BEFORE marking begins.
-4. Only then: Introduction STEP 1. **The Introduction @REFLECT_GATE's precondition explicitly requires
-   replies 1–3 to be present in the conversation** (this is the fix for the months-long silent skip).
+### 1. Opening message
+Greet by first name. State text + assessment type (mode is PRE-SET from SESSION CONTEXT — never ask
+diagnostic/redraft; "Exam Practice" is retired) + the code-computed word count (the model NEVER counts
+words). Time expectation with the HONEST per-family duration — Lit essay: "approximately 20–25
+minutes"; Language full paper: "approximately 30–45 minutes" — and "Complete **all steps**…" NEVER a
+hardcoded step count. No setup questions.
 
-## B2. Submission validation
-- **First-ever diagnostic (Topic 1 Phase 1):** accept ANY structure (2 paragraphs or 8) — assess what
-  exists against the 5-section map; be generous + teach. Essay plan optional (sole exemption).
-- **Everything else:** 5-paragraph structure required (re-request if missing); essay plan required.
-- **Word count:** Diagnostic → penalty `ROUND((target − wc) × 5 / 100)`, formula displayed (A5 carve-out),
-  stated ONCE with the adjusted ceiling, tied to the student's grade target ("ceiling is now 30/34 —
-  Grade 8 territory; your next full-length essay is where we chase the 9"). Redraft/Exam Practice →
-  HALT below target until resubmitted. Target is per-paper (AQA Lit Shakespeare/modern: 650 / 34 marks).
-- Once validated + stored: NEVER ask the student to re-paste any part of the essay.
+### 2. Pre-assessment chain (ALL gated, in order; nothing marks until all three replies exist)
+**TWO distinct goals — never conflate** (the grade goal is a NUMBER; the HEADLINE GOAL is CONCEPTUAL
+and threads through every unit's reflection lead-in and closes in the Final Summary; "Your headline
+goal was Grade 8" = you skipped the headline-goal question — STOP and ask it):
+1. **Grade goal** — selector limited to 7 / 8 / 9.
+2. **Headline goal** — stem declares the hierarchy ("…what was the **one main goal**… You'll
+   reflect on each [unit] as we go — this is your headline goal for the whole [piece/paper]").
+   Lettered options = THAT PAPER's real AOs (+ F free-text). Options, not open text.
+3. **Keyword-recall checkpoint** — "what were the key aspects [the question] asked you to explore?"
+   + validate/correct against the actual question. Language papers: the recall TARGET question
+   ROTATES per attempt, named by the state block, with a one-line reason per question (§B-LANG.5).
+**CODE-ASKED note:** WML asks 1–2 programmatically (replies tagged `preChain` may already exist —
+store, don't re-ask; ask only what is missing). **HARD PRECONDITION:** marking is FORBIDDEN until the
+conversation contains ALL THREE replies — the first unit's gate names them explicitly.
 
-## B3. Paragraph mapping (position-only + hard cap — A8 applied)
-Paragraphs arrive PRE-LABELLED by code (v807) — the model trusts the labels, never re-detects. Two regimes:
-- **First diagnostic (T1P1), under 5 paragraphs:** 1–3 paragraphs = BODY 1–N only; 4 = INTRODUCTION + BODY 1–3.
-  Rationale (Neil, 11 yrs): first-time students write analysis chunks — almost none write an intro, none a
-  conclusion. **Missing sections score 0 with TEACHING feedback** (normal-at-this-stage line + what the
-  section does + ONE optimal gold from the coherent Model-2 essay; no reflection panel, no elevated model),
-  card still emitted so the box fills.
-- **5+ paragraphs, or any later attempt:** strict position map — First → Introduction; 2nd/3rd/4th →
-  Body 1/2/3; LAST → Conclusion; anything between 4th and last = EXTRA.
-AT MOST five `@FB` cards per assessment, labels only from {Introduction, Body 1, Body 2, Body 3, Conclusion}.
-After the Conclusion's progression gate the ONLY remaining output is the Final Summary — never another
-section, never another `@FB` card.
+### 3. Submission validation + structure mapping
+- **First-ever diagnostic (Topic 1 Phase 1):** accept ANY structure — assess what exists against the
+  taught map; be generous + teach. Essay plan optional (sole exemption).
+- **Everything else:** taught structure required; essay plan required (where the paper has one).
+- **Word count:** diagnostic → ceiling per A6 (formula display allowed), stated ONCE, tied to the
+  grade goal; redraft → HALT below target until resubmitted. Targets per paper (CONFIG).
+- Once validated: NEVER ask the student to re-paste any part of their work.
+- **MISSING units** score 0 with TEACHING, not critique: card still emitted (box fills) with
+  `Total Mark for [label]: 0/[max]`, one warm normal-at-this-stage line, one line on what the unit
+  does, ONE optimal gold. No reflection panel for a missing unit; never scold on a first diagnostic.
+- **EXTRA units — TWO-TIER (never soften Tier 2 into Tier 1):** Tier 1 (first-ever diagnostic ONLY) —
+  extras named + characterised in the wrap-up, rough extra-marks estimate, then the repeatable-
+  structure lesson. Tier 2 (everything else) — extras score ZERO, stated plainly, no estimate,
+  stern-but-caring warning, explicit instruction to redo the planning step. Extras NEVER get a card,
+  a mark, or a re-used label.
 
-**EXTRA-paragraph response is TWO-TIER (Neil, 2026-07-02) — scope: Literature essays ≥20 marks (any text
-incl. poetry anthology, one-part or Part a/b). Unseen-poetry short questions (e.g. AQA Q2 = 8 marks,
-2 paragraphs) are a different shape — out of scope, handled when unseen is built:**
-- **Tier 1 — Topic 1 Phase 1 diagnostic ONLY (the one attempt before we teach the structure): generous.**
-  Extras named + briefly characterised in the Final Summary, a rough extra-marks estimate ("might earn
-  another 2–4 marks in a real exam"), then the repeatable-structure lesson — five-paragraph essay is the
-  conventional, transferable structure; consolidate the strongest analysis into three body paragraphs.
-- **Tier 2 — EVERYTHING else (any later diagnostic, redraft, Topic 2+, exam practice): stern.** By now the
-  student has been walked through planning step-by-step — >5 paragraphs per question means the process was
-  skipped. Extras score **ZERO** (stated plainly, no estimate), a stern-but-caring warning, and an explicit
-  instruction to go back and redo the planning step properly before their next submission. Never soften
-  Tier 2 into Tier 1.
+### 4. Reflection contract — ONE `@REFLECT_GATE` per unit, code-enforced (849)
+Emitted BEFORE that unit's marking begins (retrieval-only units like Lang Q1 have none). Lead-in:
+one-to-two lines restating the unit's focus + **citing the student's stored HEADLINE GOAL back**
+(the engine injects the stored goal per-turn — cite THAT, verbatim). Then the marker on its own line.
+Panel captures predicted mark + self-rating 1–5 + AO chips + free-text intent — **the AO chips list
+EVERY AO the paper assesses** (choosing is the calibration act; mis-targeting = ONE kind teaching
+sentence, never a penalty, and feeds the Final Summary metacog journey). WAIT for the single combined
+reply; NEVER re-ask in prose anything the panel captured. The engine suppresses duplicate panels for
+an already-reflected unit and runs a silent repair turn — the protocol's job is to never ask for one.
 
-## B4. Per-section cycle (×5 — identical shape, every section, equal depth)
-1. **STEP 1 — Reflection panel.** One-line contextual lead-in (section's function in the argument arc:
-   intro=set up, B1=foundation, B2=development, B3=climax, conclusion=synthesis) **+ the headline-goal
-   thread (B1.2: cite their stored essay-level goal back in the lead-in)**, then on its own line:
-   `@REFLECT_GATE{"q":"<label>","skill":"<section skill>","ao":[...],"max":<section max>}`
-   Panel captures: predicted mark + self-rating 1–5 + AO chips + free-text intent. WAIT for the single
-   combined reply. Never ask these as prose questions.
-2. **STEP 2a — Acknowledge + gate.** Echo their rating/prediction/AOs, then "type **Y** to see your mark
-   breakdown." HARD STOP — turn ends. (Reflection and marks always land in separate turns.)
-3. **STEP 2b — the feedback card.** In order, all inside `@FB_BEGIN{"q":"<label>","title":"<label>"}` …
-   `@FB_END`:
-   - Quote the section's submitted text (reference for the student).
-   - **Mark Breakdown table** `| Criterion | Worth | Your Score | Why |` — every criterion from the
-     paper's scheme with its worth; Why ≤10 words, fragment.
-   - **Penalties** — capped (2 intro/conclusion, 3 body), each `CODE (−X.X): "<student's verbatim
-     phrase>" → Fix: "<worked rewrite>"` (A3 + fix-example rule). Priority order: structural →
-     analysis → mechanics.
-   - Totals: raw, total penalties, then the canonical line `Total Mark for [section]: A/B`.
-   - Percentage + Grade for the section (canonical band).
-   - **Level Alignment** — real descriptor quoted + specific path to the next level (A4).
-   - **Calibration Check** — (a) self-rating vs actual; (b) predicted vs actual, DIRECTION-adaptive:
-     over-predicted → which ONE criterion did you over-rate and what does it actually reward;
-     accurate (±1) → which criterion were you surest of and what exact evidence earned it;
-     under-predicted → which strength did you undervalue. ONE question. (c) AO-targeting vs the
-     section's canonical AO profile (intro AO1+AO3; body AO2-dominant; conclusion AO1+AO3).
-   - **My Assessment** — What You Did Well / Where You Lost Marks (per criterion) / Penalties Explained /
-     exactly 3 Priority Improvements ranked by mark gain.
-   - **Gold Standard model 1 — the student's section elevated.** MUST rewrite to the TRUE target shape,
-     ADDING any missing ingredient (no context → the rewrite supplies context; changing their content is
-     expected and is the point). Complete (intro 4–5 sentences, body 7–10, conclusion 5–7).
-   - **Gold Standard model 2 — the optimal model, coherent across the essay (SELF-ANCHORING).** The
-     Introduction's model 2 commits to a three-point thesis. Each Body N model 2 MUST develop point N of
-     that thesis, explicitly continuing the previously OUTPUT model-2 sections (they are in the
-     conversation — they ARE the persistent state; no hidden plan to lose). The Conclusion's model 2
-     resolves that same argument. Result: the five model-2 sections read as ONE coherent Grade-9 essay.
-   - **"Why these work"** breakdown (hook/building/thesis for intro; TTECEA+C for bodies; restated
-     thesis/synthesis for conclusion) + offer of clarification.
-4. **Progression gate** — 4-item precondition (STEP 1 artifact, mark table + canonical Total line,
-   calibration, both golds) then the exact continue line + the 4 literal buttons. Anti-loop per A1.4.
+### 5. Feedback card anatomy (the auditable shape — every marked sub-unit)
+All inside `@FB_BEGIN{...}` … `@FB_END` (labels EXACTLY from the unit's allowed set — the canvas
+files by title and OVERWRITES by match; a drifted title creates a duplicate region). In order:
+- Quote the sub-unit's submitted text (short reference).
+- **Mark Breakdown table** `| Criterion | Worth | Your Score | Why |` — every criterion from the
+  paper's REAL scheme with its worth; Why ≤10 words, fragment. **Bonus rows** are formatted
+  `+X` in Worth AND Score, add on top capped at the sub-unit max, and are OMITTED entirely when
+  absent (never a deduction, never listed as a weakness).
+- **Penalties** — capped per sub-unit spec; each `CODE — plain name (−X): "[student's verbatim
+  phrase]" → Fix: "[one-line worked rewrite of that exact phrase]"` (students never meet a bare
+  code; A3 verbatim rule; every penalty carries its fix-example). Priority order: structural →
+  analysis → mechanics. Overflow faults → "Additional issues" (named + quote + fix, no deduction).
+  **ONE FAULT, ONE CHARGE (839):** a fault reflected in a criterion score takes NO penalty and vice
+  versa — the same words are never charged twice. **C1 is clarity/flow ONLY** — relevance faults are
+  R1; stance/structure shortfalls live in the criteria.
+- Totals: `Total penalties: −X`, then the canonical `Total Mark for [label]: X/max` line
+  (decimal allowed — NEVER rounded here; no "Base total:" line; rounding once, per A6).
+- **My Assessment** — What You Did Well / Where You Lost Marks (every bullet OPENS with a verbatim
+  quote or "Absent" — criterion-evidence rule) / Penalties Explained / exactly 3 Priority
+  Improvements ranked by mark gain.
+- **Gold Standard model 1 — the student's sub-unit elevated:** rewrite THEIR content to the true
+  target shape, ADDING any missing ingredient (changing their content is the point). Scored 0 on a
+  diagnostic → replaced by a warm note + the ONE optimal gold.
+- **Gold Standard model 2 — the optimal model, SELF-ANCHORING across the piece:** the essay/mini-
+  essay's model 2s read as ONE coherent Grade-9 piece — the Introduction's model 2 commits to a
+  three-point thesis; each Body/BP model 2 develops point N of THAT thesis (re-read your own
+  already-output model 2s — they ARE the persistent plan); the Conclusion's resolves it. Two-
+  paragraph questions (Lang Q2/Q3): the two model 2s analyse DIFFERENT quotations/features.
+Both golds complete (A7), taught order (A13), TTECEA-labelled where taught.
 
-**Canvas effects the protocol relies on (must hold on every section):** card auto-files to the correct
-box (replace-not-append), actual mark auto-selects from the canonical Total line, Predicted/Actual/Δ chip
-renders, view scrolls to the section as it files, section check mark appears on completion.
+### 6. Canonical number lines (the engine parses these — byte-discipline)
+- Sub-unit: `Total Mark for [label]: X/max` — decimal allowed, nothing else on the line.
+- Question (Language): `Qn Total: A/B` — **A is a WHOLE number** (round half-up ONCE here);
+  **NOTHING follows `A/B` on the line** (the engine files the line's LAST X/Y as the mark — a
+  trailing "(ceilinged at 27/40)" files the ceiling as the mark). Ceiling notes and any visible
+  arithmetic go on their own lines BEFORE the total.
+- Final: `Total: X/max` + `Grade: N` on their own lines, OUTSIDE section markers.
+- After each unit total: **Percentage & Grade** ("[X]%, which is a **Grade [N]**", canonical ladder)
+  + **Level Alignment** (real descriptor quoted verbatim from the paper's knowledge-mark-scheme
+  file, level + mark range named, + the specific path to the next level in the next level's own
+  wording — A4).
 
-## B5. Section shapes (AQA Literature values — per-paper equivalents live in that paper's file)
-Intro 3 marks / 4 criteria · Body 8 marks / 11 criteria (TTECEA+C: topic-concept, embedded quotes,
-strategic selection, terminology, link-to-topic, close analysis 1.5, interplay, effects ×2 (Focus/Feel/
-Think/Act chain), author's purpose, context) · Conclusion 7 marks / 7 criteria. Sequencing safeguard
-(AQA Lit): B1=beginning, B2=middle, B3=end of text. The STANDARD is: granular per-criterion worths
-summing to the section total, every criterion scored with a Why — never a holistic single number
-(EXCEPT extended-writing/Section-B tasks: holistic mark + per-IUMVCC-section feedback + ONE labelled
-holistic gold — see WML CLAUDE.md per-paragraph rule).
+### 7. Calibration Check — after every unit's total (retrieval units exempt)
+Compare PREDICTED to ACTUAL, direction-adaptive: over-predicted → which ONE criterion did you
+over-rate and what does it actually reward; accurate (tolerance scales with unit size: ~1 mark small,
+~2 medium, ~3 large) → which criterion were you surest of and the exact evidence that earned it;
+under-predicted → which strength did you undervalue. ONE question only. Also reflect self-rating +
+AO-targeting against the unit's real AO. No prediction captured → skip that part. **When the question
+offers choices, the lettered options are the REAL units just marked** (¶1/¶2; Intro/BP1–3/Conclusion;
+AO5/AO6) — each on its own line; NEVER feedback bullets as the choice list.
 
-## B6. Final Summary (after Conclusion's ✓)
-In order: Final Total (sum of the five canonical lines minus WC penalty — A6) → overall %/grade (always
-`Y%, which is a Grade Z`) → Technical Accuracy note → overall Level alignment (real descriptor) →
-**Metacognitive journey**: self-rating pattern across all five sections, AO-targeting pattern, and
-**closure of the B1 main goal** ("you set out to improve X — here's what this essay shows") →
-extra-paragraph note if applicable (B3) → WC advice if penalty applied → **Action Plan** (Hattie: Where
-am I going? / How am I going? / Where to next?) → **Transfer prompt** (apply the chosen skill to another
-subject — one concrete example) → offer to rebuild one body paragraph line-by-line → Session Conclusion →
-Closing gate: 5-item precondition (Final Total, %/grade, Technical+Level, Action Plan, `[ASSESSMENT_COMPLETE]`)
-then the exact wrap line + 4 buttons. Overall Feedback files to the Overall Feedback section; Score Summary
-(dates, word count, totals, %, grade + boundaries) populates; Date Completed stamps; sidebar shows the grade.
+### 8. Progression gates
+The 4-button Q-GATE shown ONCE per unit, AFTER complete feedback, behind a HARD PRECONDITION listing
+that unit's required artifacts (reflection reply, every sub-unit's table + canonical line, the unit
+total line, calibration, golds). Exact line: `Does that clear it up? Shall we continue with
+**[next]**?` + the 4 buttons byte-exact. After ✓: next unit's STEP 1 immediately (anti-loop).
+HARD-STOP Y-gates split reflection from marks and card from card (one card per turn where the anchor
+says so). Keep the gate AFTER the total line (engine strips chat furniture from filed cards).
 
-## B7. Detours (student questions mid-assessment)
-Welcome, Socratic, ONE concept + example + understanding check; no mark table during a detour; always end
-with the resume-confirm block; depth cap 3 then nudge back; the state block (`current_paragraph`) is
-authoritative — never guess the resume point.
+### 9. Final Summary (after the last unit's ✓ — the ONLY thing after it)
+In order: **Final Score** (`Total: X/max` + `Grade: N` lines — sum of the whole-mark unit totals,
+ceiling already applied) → `@SECTION_BEGIN{"section":"Overall Feedback"}` containing: Total & Grade
+(the MARK shown, not just the percentage) · Technical Accuracy note · overall Level pattern (reference
+levels already cited; never invent a whole-paper descriptor) · **Metacognitive journey** (self-rating
+pattern vs actuals, AO-targeting pattern vs real AOs, prediction-accuracy pattern, **closure of the
+HEADLINE GOAL** — specific and unit-referenced) · extra/missing-unit note if applicable · WC advice if
+ceiling applied · **Penalty & Ceiling Ledger** (per-code sums with plain-English names and counts +
+ceiling cost, then the reframe: "**Without penalties you'd be on [X+P]/[max] = [Y]% — a Grade [N]**…
+cheapest marks to reclaim: habits, not skills" — honest sums from the actual cards; engine rebuilds as
+net) · **Key Strength** (one, with evidence) + **Priority Targets** (two, ranked by mark gain) ·
+Optimal Structure Reminder (diagnostic only) → `@SECTION_END` + ONE chat line pointing to the doc →
+**Action Plan** (Hattie, three separate turns: Where am I going? [lettered, paper-true AO options] /
+How am I going? / Where to next?) → **Transfer prompt** (one concrete other-subject example) →
+**FILE THE ACTION PLAN + ANALYTICS**: twelve `@FIELD_SET{"field":"<id>","value":"<text>"}` markers
+(one per line, valid JSON, no line breaks in values, invisible to the student, + ONE chat line
+naming the filled sections; everything filed stays student-EDITABLE; REDRAFT adds `action-next-topic`
++ `action-next-reason`; never re-emit unless a SYSTEM message asks) → offer to rebuild one sub-unit
+line-by-line to gold → Session Conclusion (warm, one real moment from the session) → **Closing gate**:
+HARD PRECONDITION counts (1) `Total:`+`Grade:` lines, (2) overall %/grade, (3) Technical + level
+pattern, (4) completed Action Plan, (5) the twelve `@FIELD_SET` markers, (6) `[ASSESSMENT_COMPLETE]`
+on its own line (emitted in THIS closing turn, ONCE) — then the exact wrap line
+`That wraps the assessment. Anything you'd like to revisit before you mark this complete?` + the
+END-OF-ASSESSMENT row (NOT the Q-GATE row): `[✓ Nothing to revisit — finish]` `[🔁 Revisit a
+question]` `[💬 One more question]` `[⏸ Pause here]`. After ✓: point at **Mark Complete** — no task
+menu (retired).
 
-## B8. Data pipeline
-Everything persists: marks per section, predicted/actual/Δ, grade, dates → student-data listener →
+### 10. Detours (student questions mid-assessment)
+Welcome, Socratic, ONE concept + one example from their work + one understanding check; no mark table
+during a detour; always end with the resume-confirm block (Q-GATE row); depth cap 3 then nudge back;
+the state block is authoritative — never guess the resume point.
+
+### 11. Data pipeline
+Everything persists: marks per unit, predicted/actual/Δ, grade, dates → student-data listener →
 dashboard (MyWork, grades ring, course steps). Producer-consumer rule (CHAT-OWNERSHIP §7): a protocol
 change that alters emissions is not "shipped" until the data lands in the dashboard.
 
-## B9. Frontend contract (markers/strings the canvas hard-codes — breaking any = silent feature loss)
-- `@REFLECT_GATE{"q","skill","ao","max"}` — q from the five labels; max REQUIRED (predict row depends on it).
-- `@FB_BEGIN{"q","title"}` / `@FB_END` — labels from the five, exactly; balanced pairs; 5 per assessment.
-- `Total Mark for [section]: A/B` — the auto-fill regex target (score may be decimal; 0.5 steps).
-- `[ASSESSMENT_COMPLETE]` — activates Mark Complete.
-- The four gate buttons, byte-exact incl. emoji.
-- Lettered options `A)`…`F)` for quick-action rendering.
+### 12. Frontend contract (markers/strings the canvas hard-codes — breaking any = silent feature loss)
+- `@REFLECT_GATE{"q","skill","ao","max"[,"target"]}` — q from the unit's allowed labels; max REQUIRED.
+- `@FB_BEGIN{"q","para","title"}` / `@FB_END` — labels exact; balanced pairs; distinct titles =
+  distinct box regions (title-match overwrites).
+- `Total Mark for [label]: X/max` (sub-unit, decimal OK) · `Qn Total: A/B` (whole, line-final) ·
+  `Total: X/max` + `Grade: N` (completion readout).
+- `[ASSESSMENT_COMPLETE]` — activates Mark Complete (closing turn only).
+- `@SECTION_BEGIN{"section":"Overall Feedback"}` / `@SECTION_END`.
+- `@FIELD_SET{"field","value"}` — the twelve (+2 redraft) filing ids (grep `action-grade-goal`).
+- The four Q-GATE buttons AND the four closing buttons, byte-exact incl. emoji.
+- Lettered options `A)`…`F)` for quick-action rendering (full label sent since 852 — keep labels
+  self-describing).
 
-## B10. Grep-able acceptance checks (run on any assessment protocol before ship)
+## B-LANG — the LANGUAGE anchor (AQA Language Paper 1 @ v7.19.852)
+
+1. **Paper map is fixed data at the top of the protocol:** Q / marks / AO / shape-we-teach / taught
+   structure. Taught paragraph count per reading question = its marks ÷ 4. State which AOs the paper
+   does NOT assess ("AO3 is NOT assessed on Paper 1 — never mention it as a target"). Where granular
+   worths sum above the question max (Q4: 22 > 20), the question total is `MIN(sum, max)` — silent cap.
+2. **Per-question flow:** pre-chain → per question: ONE `@REFLECT_GATE` (lead-in cites headline goal)
+   → STEP 2a acknowledge + Y-gate (HARD STOP) → per-paragraph cards ONE PER TURN, each Y-gated →
+   question wrap in the final card's turn: `Qn Total: A/B` (whole) → Percentage & Grade → Level
+   Alignment → Calibration Check (real-unit options) → Q-GATE → next question. Retrieval Q1 is LEAN:
+   no panel, no golds, no calibration, no level alignment — per-statement feedback + `Q1 Total: X/4`.
+3. **Criteria tables per question type** live in the protocol with per-element worths (TTECEA
+   elements 0.5–1.0; bonus interplay `+0.5` row). Penalty codes with the enumerated W1 banned family
+   ("shows", "tells us", "is about", "acts as (a symbol of)", "creates the idea that", "represents
+   that" (bare assertion), "illustrates", "aims to [verb]" — while "reveals", "demonstrates",
+   "crystallises", "embodies", "externalises" are acceptable) so marking is consistent run-to-run.
+4. **Section B / Q5 (extended writing) — HOLISTIC:** AO5+AO6 marks judged whole-piece against real
+   band descriptors (one band sentence each); per-beat/per-IUMVCC-section feedback anchored with
+   verbatim quotes (or "Absent"); penalties do NOT apply (AO6 carries accuracy) — flag up to 3
+   recurring technical patterns with quote + fix, no deduction; ONE labelled-holistic gold (~full
+   target length, beats labelled inline, never two, never shortened). **Word-count ceiling is
+   ECHO-ONLY:** penalty P and ceiling C arrive CODE-COMPUTED with the response injection
+   (`MULTIQ_RESPONSE_TARGETS` + `_sectionBWcCeiling`) — the protocol echoes P and C exactly, never
+   derives; formula display allowed; `Qn Total = MIN(AO5+AO6, C)`; ceiling restated on its OWN line
+   before the total line. Redraft below target → HALT the question until resubmitted. Reading
+   questions have NO word-count penalty.
+5. **Recall-target rotation:** the pre-chain's keyword-recall question rotates per attempt (P1:
+   Q4 → Q2 → Q3 → Q5), named by the router state block, with a one-line paper-true reason per
+   question. Router rotation and frontend `_recallTargetQ` must stay identical (engine, per-port
+   verify).
+6. **Q4-style evaluation questions:** never award/deduct for agreeing or disagreeing with the
+   statement — marks come from execution against the evaluative keywords. Present-but-misfiled
+   conclusion content is credited where it stands (never charged twice, never also zeroed).
+
+## B-LIT — the LIT anchor (R&J / AQA Literature)
+
+1. **Five sections** (Introduction / Body 1–3 / Conclusion), each: ONE reflection panel → Y-gate →
+   feedback card (granular criteria summing to the section total — e.g. AQA Lit: Intro 3/4 criteria,
+   Body 8/11 TTECEA+C criteria, Conclusion 7/7) → canonical `Total Mark for [section]: X/max`
+   (DECIMAL, never rounded) → Percentage & Grade → Level Alignment → Calibration → Q-GATE.
+2. **AO mix is per-paper — never assume:** AQA Lit = AO1+AO2+AO3 (+AO4 SPaG on Shakespeare/modern);
+   Eduqas Shakespeare/modern = AO1+AO2; Edexcel varies per Q; Edexcel IGCSE Lit = AO1+AO2+AO4 where
+   AO4 = Context. TTECEA+C: +C = CONTEXT, Lit-only. Author's purpose compulsory for Lit.
+3. **Final Total** = `MIN(sum of the five section totals, max − WC penalty)` — rounding ONCE here;
+   WC formula display allowed (A5 carve-out). Anchor-quote sequencing safeguard: B1 = beginning,
+   B2 = middle, B3 = end of text/extract.
+4. **COMPARISON VARIANT (poetry + any compare-two-texts essay — Neil, 2026-07-03; NOT a third
+   anchor):** the five-paragraph essay structure is KEPT. Adaptations, each per the paper's real
+   mark scheme (A4): topic sentences are comparative-conceptual (one conceptual claim spanning both
+   poems — still no technique words); every body paragraph carries evidence from BOTH poems with an
+   explicit comparative pivot; golds follow the taught comparative sentence order (poem A analysis →
+   pivot → poem B analysis → combined effect/purpose); AO chips + criteria include the board's
+   comparison AO where assessed; calibration options remain the five real sections. Everything else
+   is the LIT anchor unchanged. Per-paper worths/descriptors come from that paper's scheme file when
+   each poetry paper is ported.
+
+## B-CHECKS — grep-able acceptance (run on any assessment protocol before ship)
+
 | Check | Expect |
 |---|---|
-| `grep -c '@REFLECT_GATE'` | ≥ 1 per assessed section (5 for Lit essay) |
-| `@FB_BEGIN`/`@FB_END` instruction SITES ("Now output …" lines) | one balanced pair per section template (raw string counts differ — prose rules mention the markers; that's fine) |
-| `grep -c 'Total Mark for'` | = section count (canonical line present per section) |
-| `grep -c 'ASSESSMENT_COMPLETE'` | ≥ 1 |
-| `grep -c 'HARD PRECONDITION'` | ≥ 1 per gate (each REFLECT/mark/progression chained) |
-| `grep -c 'Got it — continue'` | = section count + 1 (per-section + closing) |
+| `grep -c '@REFLECT_GATE'` | = assessed units (Lit essay: 5; Lang P1: 4 — Q1 has none) |
+| `@FB_BEGIN`/`@FB_END` instruction SITES ("output …" lines) | one balanced pair per sub-unit template (raw string counts differ — prose mentions are fine) |
+| `grep -c 'Total Mark for'` | ≥ sub-unit count (canonical line present per marked sub-unit) |
+| `grep -c 'Qn Total\|Q[0-9] Total'` (Language) | one per question, whole-mark + line-final rules stated |
+| `grep -c 'ASSESSMENT_COMPLETE'` | ≥ 1, closing-turn-only wording |
+| `grep -c 'HARD PRECONDITION'` | ≥ 1 per gate (pre-chain, per-unit gate, closing gate) |
+| `grep -c 'Got it — continue'` | = unit count + detour block (+ closing row is the OTHER 4 strings) |
+| `grep -c 'Nothing to revisit'` | ≥ 1 (end-of-assessment row, distinct from Q-GATE) |
 | `grep -ci 'all [0-9]+ steps'` | 0 (no hardcoded step counts) |
-| Level descriptors | quoted from the paper's real scheme section, none invented |
-| Every penalty instruction | includes verbatim-quote requirement + fix-example |
-| Grade-target + main-goal + keyword-recall | present AND named in the Introduction gate's precondition |
-| Gold model instructions | "COMPLETE"/never-shorten language present; model-2 self-anchoring rule present |
+| `grep -c 'action-grade-goal'` | ≥ 1 (the @FIELD_SET filing block; closing gate counts it) |
+| `grep -c 'CANONICAL GRADE LADDER'` | ≥ 1 (ladder stated even though code-enforced) |
+| `grep -ci 'NEVER round'` | ≥ 1 (round-once discipline stated) |
+| `grep -c 'Base total'` | only as a prohibition, never as a format |
+| `grep -c 'Penalty & Ceiling Ledger\|Penalty Ledger'` | ≥ 1 in the Final Summary |
+| Level descriptors | quoted from the paper's real scheme file, none invented |
+| Every penalty instruction | verbatim-quote requirement + fix-example + plain name |
+| Grade goal + headline goal + keyword recall | present AND named in the first gate's precondition |
+| Gold model instructions | "COMPLETE"/never-shorten + model-2 self-anchoring + taught-order self-check present |
+| Duration line | honest per-family figure (20–25 lit / 30–45 language) |
+
+---
+
+# PORT SOP — converting any board/paper to the standard
+
+The three-way split. Structure every port (and its delta doc) around these buckets. First validated
+port: AQA Language P1 (v7.19.826–852). Pilot for this SOP: AQA Language P2.
+
+## E — ENGINE (universal — ZERO port work, VERIFY only)
+Code-owned for every paper, both pipelines (`frontend/wml-assessment.js` unless noted). Per port you
+only VERIFY these fire (staging smoke), never re-implement:
+mark auditor + grade ladder + penalty ledger + missing-unit zeros (832–841) · '+X' bonus-row scores
+(851) · Section-B WC ceiling compute (`MULTIQ_RESPONSE_TARGETS` + `_sectionBWcCeiling` ~2182 —
+**VERIFY the paper's key exists**, e.g. `aqa|lang_paper_2` present as of 852) · reflection
+one-per-question ledger (849, decls ~2107) · deterministic headline-goal echo (`_headlineGoalBlock`
+~1544, injected both composers) · closing-buttons renderer (842) · attempt rows (843) · auto-file
+provenance + scroll (830/839/844) · chat fetch retry + full-label lettered options (852) ·
+chat-furniture strip (829) · caps registry parity (`wml-assessment.js` board caps map ~22889 —
+verify the paper's entry + marks).
+
+### E2 — ENGINE-ENABLE (the ONLY engine edits a port makes: registered per-paper switches)
+Subject-literal lists that every language-paper port must extend (A11 registered surfaces — as of
+852 they name language1 forms only):
+1. Router `$question_subjects` — BOTH sites (`class-protocol-router.php` ~4377 + ~4401) so the
+   paper enters question-mode + the state machine.
+2. Pre-chain goal options — `PRECHAIN_GOAL_OPTIONS_LANG` exists in BOTH pipelines (~6418 + ~14755)
+   and is P1-worded; a new paper needs PAPER-TRUE options (P2: viewpoints/comparison AO3,
+   transactional AO5 — NOT "creative writing") keyed by paper, in BOTH sites. Dual-pipeline rule.
+3. Recall-target rotation — router setup block (~5713) + frontend `_recallTargetQ` (~643): add the
+   paper's rotation + reasons; the two must stay identical.
+4. SA descriptor sets + heal — `_isLangP1`-style subject lists (~26182, `healLangP1SelfAssessment`
+   ~29750): add the paper's set.
+5. `getResponseText` labeller — per-question paragraph labels vs the paper's taught counts
+   (marks ÷ 4); code word counts.
+6. Harvest regexes accept the protocol's canonical lines (`extract_question_result_from_message`,
+   `Qn Total` form) — usually already generic; verify.
+
+## P — PROTOCOL .md (the actual port — rewrite, never patch the monolith)
+Written fresh against Part B from the NEARER ANCHOR + the paper's REAL mark scheme (A4 — Neil's
+PDFs on Drive; never memory):
+question/section structure + paper map · REAL board descriptors into
+`knowledge-mark-scheme-<paper>.md` (verbatim, source+page, manifest-loaded LAST) · criteria tables
+per question type with worths summing correctly · penalty-code set (+ paper-specific codes like
+E1/K1) · golds discipline (complete, taught order, self-anchoring; ONE labelled holistic for
+extended writing) · SA set text · reflection lead-ins + paper-true AO chips · pre-chain options +
+recall rotation reasons · echo-only ceiling block (extended writing) · the twelve-marker filing
+block · Final Summary + ledger + closing gate · honest duration line · prune EVERY contradiction
+source in the paper's loaded module set (manifest audit — old step files, second ladders, retired
+modes; a contradiction left loaded is a coin-flip at runtime).
+
+## C — CONFIG
+Word-count targets (per-Q sum model — `MULTIQ_RESPONSE_TARGETS` entry values verified against the
+paper's real question set) · `$SLUG_ALIASES` entries (`class-rest-api.php` — every inbound slug form
+normalises; canonical = live user_meta form, NEVER flipped) · caps registry entry · bridge picker
+mapping sanity (`wml_topic` per LD lesson) · manifest `assessment.always` list.
+
+## Phased playbook (run IN ORDER; each phase's output is the next's input)
+
+**Phase 0 — Recon (parallel, before any writing):** audit the current protocol against Part B
+(B-CHECKS is the checklist) · map the engine (E + E2 file:line for THIS paper) · audit the paper's
+loaded module set for contradiction sources · extract the real mark-scheme descriptors (A4).
+
+**Phase 1 — Delta doc → Neil sign-off (the gate before build):** VERDICT (audit) / PAPER SHAPE
+(marks ÷ 4 map, question set verified against the real paper PDFs — not memory) / PORTS VERBATIM
+(the B-COMMON spine) / SWAPPED (paper content) / ENGINE-ENABLE work / CONFIG / DECISIONS for Neil.
+No build until every decision is ruled.
+
+**Phase 2 — Build:** P (protocol rewrite) + E2 (enable switches, BOTH pipelines) + C (config) +
+prune contradictions — one ship.
+
+**Phase 3 — Self-verify (before Neil touches it):** B-CHECKS greps adapted to the paper's shape ·
+`php -l` / `node --check` / manifest JSON-parse / brace-count · state-block dry run (assessment +
+redraft) · synthetic replay on staging (scripted AI replies through the full marker path for every
+question — boxes fill right box/right region, marks auto-set, sidebar advances, Score Summary
+computes, `[ASSESSMENT_COMPLETE]` activates) · both pipelines × {diagnostic, redraft} ·
+the applicable WML-SMOKE-TEST.md rows.
+
+**Phase 4 — Neil's one-shot live run:** staging (uid 1355), full paper end-to-end, any red console
+error = fail. Then prod (lane-A-gated, deploy lock, SOP).
 
 ---
 
@@ -310,181 +515,90 @@ change that alters emissions is not "shipped" until the data lands in the dashbo
 Planning is the flip side of assessment — same Part A invariants, mirrored components (assessment's
 predict-mark reflection ↔ planning's anchor-quote commitment; per-criterion mark table ↔ per-element
 scaffold check; calibration ↔ plan-vs-execution review). **Fill this part only after the assessment
-standard has survived contact** (P1/P2 conversions built against Part B, Neil signed off). Reference
-candidates for the planning gold: `protocols/aqa/literature/planning/` b-modules — evaluate and pick
-the reference explicitly with Neil before codifying.
+standard has survived contact** (P2 + Edexcel IGCSE ports built against Part B, Neil signed off).
+Reference candidates for the planning gold: `protocols/aqa/literature/planning/` b-modules — evaluate
+and pick the reference explicitly with Neil before codifying.
 
 ---
 
-# APPENDIX — KNOWN-GAP REGISTER (2026-07-01 live-run audit, R&J AQA diagnostic on staging)
+# APPENDIX — P1 FIRST-LIVE-RUN LESSONS (items 1–14 — still binding; grep-check on every port)
 
-Violations observed with the standard above, and the owning lane:
+Neil's first full AQA Lang P1 runs (2026-07-03, v7.19.829–852) surfaced defects that generalise.
+Each is engine-enforced (E) and/or a protocol contract rule (P):
 
-| # | Gap | Fix | Lane |
-|---|---|---|---|
-| 1 | Box overwrite: 7-para essay → model assessed "Body Paragraph 5 (Paragraph 6)" INTO Body 2's box | Code guard: a filled+confirmed box refuses re-file; protocol: sharpen post-Conclusion stop | B (code) + A (protocol) |
-| 2 | Three different totals (chat 3/34, doc 4.75/34, box-sum 1.75/34) | Code-computed totals from canonical lines; model echoes (A6) | B (code) + A (protocol wording) |
-| 3 | Fabricated penalty quote (B3 W1 quoted phrase absent from paragraph) | Code validator: penalty quote must appear verbatim in section text, else strip+log; protocol A3 stays | B (code) |
-| 4 | Keyword-recall + main-goal silently skipped (prose, ungated) | Gate both into the Introduction precondition chain (B1) | A |
-| 5 | "Complete all 8 steps" hardcoded in greeting | "all steps" (greeting lives in class-protocol-router.php) | B |
-| 6 | Score Summary section missing its ✓ check mark | completion-island handoff item | B |
-| 7 | No progress card above tutor sign-off | completion-island item 3 (doc structure + migration — careful) | B |
-| 8 | Essay-plan T1P1-only exemption not enforced | completion-island item 4 | B |
-| 9 | Optimal golds not coherent across sections | Self-anchoring rule (B4 model 2) | A |
-| 10 | Grade-target selector: verify limited to 7/8/9 | verify + wire if not | B |
+1. **(P) Qn Total line hygiene.** Whole number; NOTHING after `A/B` on the line (the engine files
+   the line's LAST X/Y). Ceiling/arithmetic notes on their own lines BEFORE the total.
+   (E: `_extractQuestionMark` strips parentheticals — belt and braces.)
+2. **(P) Penalties are applied-only, protocol-blind.** No considered-but-rejected penalties; no
+   "(protocol: …)" citations; W1 banned family enumerated for run-to-run consistency.
+3. **(P) Reflect panels: full paper AO set + never re-ask.** Choosing is the calibration act.
+   Router preamble carries the PROTOCOL-PANEL OVERRIDE (panels supersede the legacy two-question
+   cycle).
+4. **(E) Chat furniture never reaches the document** (`_stripChatFurniture`). Keep the gate after
+   the total; engine strips regardless.
+5. **(E/P) Per-question reflection is state-gated** — the state block derives "panel emitted since
+   last question closed" and mandates the panel before marking. (Since 849 also ledger-enforced:
+   ONE per question, duplicates suppressed + silent repair.)
+6. **(E) Recall-target rotation** code-owned in BOTH router setup block and frontend pre-chain —
+   keep the two identical.
+7. **(E) Sidebar paragraph detection anchors on `Mark Breakdown — <name>` headings only.**
+8. **(P) Overall Feedback shows the MARK, not just the percentage** — chat, Overall Feedback and
+   Score Summary derive from the same whole-mark totals.
+9. **(P/E) Action Plan + Analytics AUTO-FILE (Neil RULED 2026-07-03; v7.19.830).** Twelve
+   `@FIELD_SET` markers (+2 on redraft); `applyFieldSets` fills ONLY while empty (student edits
+   never clobbered); `applySectionFills` refuses wholesale replace of field-bearing sections;
+   silent repair re-requests missing markers; doc-heal replays from transcript. **Every port
+   carries the filing block** (grep `action-grade-goal`); the closing gate counts it. Filed
+   sections stay student-editable.
+10. **(E/P) Mark arithmetic is CODE-VERIFIED (832; '+X' bonus scores 851).** Cards keep the
+    auditable shape: `Worth`/`Your Score` table + `Total penalties:` line + canonical total line.
+    Sub-totals DECIMAL, round ONCE, no "Base total:" lines (852 strips as net; protocol says
+    "NEVER round").
+11. **(E/P) Canonical grade ladder is CODE-ENFORCED (832).** Protocols still state it
+    (grep "CANONICAL GRADE LADDER") — the code is the net, not the excuse.
+12. **(P) Calibration-check choices = the REAL units of THAT paper's structure.** Never feedback
+    bullets as buttons. (Since 852 the frontend sends the full label — labels must self-describe.)
+13. **(P) Penalty (& Ceiling) Ledger in the final summary.** Per-code sums with plain names +
+    counts, ceiling cost, + the "without penalties you'd be on…" reframe. Honest sums from the
+    actual cards (engine rebuilds as net).
+14. **(P) Honest duration estimate.** Realistic per-family figure (Language full papers: 30–45
+    min; Lit essay: 20–25) — never an inflated figure that scares students off.
+
+---
+
+# APPENDIX — KNOWN-GAP REGISTER
+
+From the 2026-07-01 live-run audit (R&J AQA diagnostic) + status as of v7.19.852:
+
+| # | Gap | Status |
+|---|---|---|
+| 1 | Box overwrite past the cap (7-¶ essay filed "BP5" into Body 2's box) | Protocol: post-Conclusion stop + Tier rules shipped (both anchors). Code refuse-refile guard still open — lane A backlog |
+| 2 | Three different totals (chat/doc/box-sum) | **CLOSED** — mark arithmetic code-owned (832–841), one ladder, ledger rebuilt from cards |
+| 3 | Fabricated penalty quote | Protocol rule (A3) hard in both anchors; code verbatim-validator still open — backlog |
+| 4 | Keyword-recall + main-goal silently skipped | **CLOSED** — pre-chain code-asked + gated (826); headline echo deterministic (849) |
+| 5 | "Complete all 8 steps" hardcoded | **CLOSED** — "all steps" + honest duration (B-COMMON.1) |
+| 6 | Score Summary missing its ✓ | completion-island — lane B |
+| 7 | No progress card above tutor sign-off | completion-island — lane B |
+| 8 | Essay-plan T1P1-only exemption not enforced | completion-island — lane B |
+| 9 | Optimal golds not coherent across sections | **CLOSED** — self-anchoring rule (B-COMMON.5), both anchors |
+| 10 | Grade-target selector limited to 7/8/9 | verify on next lit run (language pre-chain confirmed) |
 
 ---
 
 ## Changelog
-- 2026-07-01 — v1. Extracted from the R&J gold file (full read) + Neil's walkthrough (screenshots +
-  transcript) + live-run audit. Decisions locked: keep+gate keyword-recall AND main-goal (hierarchical,
-  not redundant); WC-formula display carve-out; self-anchoring optimal golds; gold-1 adds missing
-  ingredients; "all steps" not counts. Author: wml-chat-A (Fable).
-- 2026-07-02 — v1.1. Added the REPLICATION PLAYBOOK appendix (below). First execution: AQA Language
-  P1 (v7.19.826). Author: wml-chat-A (Fable).
-
----
-
-# APPENDIX — REPLICATION PLAYBOOK (porting the standard to a new paper)
-
-The proven step-by-step procedure for converting any paper's assessment protocol to this standard.
-First executed on AQA Language P1 (v7.19.826) — the per-step references point at that build.
-Run the phases IN ORDER; each phase's output is the next phase's input.
-
-## Phase 0 — Recon (parallel, before any writing)
-1. **Audit the current protocol** against Part B: count HARD PRECONDITIONs, 4-button gates,
-   canonical Total lines, pre-chain gating, descriptor sources, WC rule shape. (The B10 table is
-   the checklist.)
-2. **Map the engine**: (a) router — is the paper in `is_assessment_state_machine_enabled` +
-   `assessment_mode()` (`$question_subjects` — BOTH lists)? Does `assessment_question_order()`
-   resolve its spec JSON? (b) frontend — marker contracts (`_parseReflectGate`, `applyAssessmentFeedback`
-   region filing, `_detectQuestionTotal` regex), pre-chain gating in BOTH `sendCanvasMessage`
-   pipelines, the `getResponseText` labeller path (single-section lit vs multi-section language),
-   SA skill sets. Get file:line for every hook.
-3. **Audit the paper's LOADED MODULE SET** (its `manifest.json` `assessment.always`) for
-   contradiction sources: second grade ladders, workbook-copy relics, retired-mode branches
-   ("Exam Practice"), task menus, gold-suppression rules, "model counts words" instructions,
-   table-vs-bullets conflicts. Every file the manifest loads is in the AI's context — a
-   contradiction anywhere is a coin-flip at runtime.
-4. **Extract the REAL mark-scheme descriptors** (A4): pdftotext the board's actual mark scheme
-   (Drive: "Sophicly Etch Mark Scheme Resources/"), verbatim, into
-   `modules/knowledge-mark-scheme-<paper>.md`, tagged with source + page. Add it to the manifest
-   (reference data LAST). If a descriptor can't be sourced, the protocol says "no descriptor
-   available" — never invent.
-
-## Phase 1 — Delta doc → Neil sign-off (the gate before build)
-Write the delta doc: VERDICT (audit) / PAPER SHAPE (marks ÷ 4 taught-structure map) / PORTS
-VERBATIM (the invariant spine below) / SWAPPED (paper content) / ENGINE WORK / DECISIONS for Neil.
-No build until every decision is ruled.
-
-**The invariant spine (ports verbatim, every paper):** gate mechanism texts (HARD PRECONDITION
-naming the previous artifact; HARD STOP turn-split; 4-button gate + anti-loop), the Internal AI
-Notes (feedback card, calibration-gap direction-adaptive, output hygiene, anti-fabrication,
-criterion-evidence quote-or-Absent, gold self-anchoring, gold sentence-order self-check,
-never-shorten), WC ceiling MIN rule, ONE canonical ladder, canonical Total lines, Final Summary
-sequence + 5-item closing gate + `[ASSESSMENT_COMPLETE]`, detour protocol (depth cap 3 +
-resume-confirm), missing-section teaching-not-critique, two-tier EXTRA rule, pre-chain
-(grade goal → headline goal → keyword recall, all named in the first gate's precondition).
-
-**What swaps per paper:** unit of assessment (paragraph/question/IUMVCC), element lists + worths
-(from the paper's real spec), taught sentence orders, AO chips (paper-true only), penalty-code
-set, descriptor file, word targets, headline-goal options (paper's real AOs), reflection
-granularity (Lit = per section; Language = per question, D1).
-
-## Phase 2 — Build
-1. **Rewrite `protocol-a-assessment.md`** from scratch against Part B + the delta doc. Do not
-   patch the monolith — port the spine, swap the paper content. Keep the frontend contract exact:
-   `@REFLECT_GATE{"q","skill","ao","max"}`, `@FB_BEGIN{"q","para","title"}` (distinct titles =
-   distinct box regions), `Total Mark for [label]: X/max` (per paragraph), `Qn Total: A/B`
-   (question auto-fill), `Total: X/max` + `Grade: N` + `[ASSESSMENT_COMPLETE]` (completion),
-   the four gate buttons byte-exact, `@SECTION_BEGIN{"section":"Overall Feedback"}`.
-2. **Engine items** (language question-mode reference, v7.19.826): enable the paper in BOTH
-   `$question_subjects` lists; verify the harvest regexes accept the protocol's canonical lines
-   (`extract_question_result_from_message` — the `Qn Total` form); port the setup-phase block +
-   headline-goal capture/echo + pending self-heal into the paper's state-block builder; un-gate
-   the pre-chain in BOTH sendCanvasMessage pipelines with paper-true goal options; extend the
-   `getResponseText` labeller (per-question paragraph labels vs taught count, code word counts);
-   add SA descriptor sets. EVERY chat feature lands in BOTH pipelines — the dual-pipeline rule.
-3. **Prune every contradiction source found in Phase 0.3** in the same ship — a contradiction
-   left loaded is a coin-flip the model arbitrates at runtime.
-
-## Phase 3 — Self-verify (before Neil touches it)
-1. **B10 grep checks** on the new protocol file (adapt expectations to the paper's shape).
-2. **Validation**: `php -l` every touched PHP file, `node --check` every JS, JSON-parse the
-   manifest, brace-count.
-3. **State-block dry run**: assessment + redraft contexts through the router (setup phase →
-   mid-flight → wrap-up mandate).
-4. **Synthetic replay on staging**: scripted AI replies through `applyAssessmentFeedback` /
-   reflect panel / summary for every question — boxes fill (right box, right region), actual
-   marks auto-set from the canonical lines, sidebar advances, Score Summary computes,
-   `[ASSESSMENT_COMPLETE]` activates Mark Complete. Both pipelines × {diagnostic, redraft}.
-
-## Phase 4 — Neil's one-shot live run
-Staging (uid 1355), full paper end-to-end. Any red console error = fail. Then prod.
-
-# APPENDIX — P1 FIRST-LIVE-RUN LESSONS (2026-07-03, v7.19.829 — apply to EVERY future port)
-
-Neil's first full AQA Lang P1 run surfaced defects that generalise. Each is now either
-engine-enforced (E) or a protocol contract rule (P). Grep-check them on every new paper:
-
-1. **(P) Qn Total line hygiene.** `Qn Total: A/B` — A is a WHOLE number; NOTHING after `A/B`
-   on the line. The engine files the line's LAST X/Y as the awarded mark, so a trailing
-   "(ceilinged at 27/40)" filed the CEILING as the mark → Score Summary said 55/80 while the
-   honest sum was 53/80. Ceiling/arithmetic notes go on their own line BEFORE the total.
-   (E: `_extractQuestionMark` now also strips parentheticals — belt and braces.)
-2. **(P) Penalties are applied-only, protocol-blind.** Never show a considered-but-rejected
-   penalty ("W1 … no deduction applied" = leaked deliberation); never cite "(protocol: …)" in
-   student-facing feedback. Enumerate the W1 banned-verb family explicitly so marking is
-   consistent run-to-run.
-3. **(P) Reflect panels: full paper AO set + never re-ask.** AO chips list EVERY AO the paper
-   assesses (choosing is the calibration act; mis-targeting = teaching moment). Nothing the
-   panel captured is ever re-asked in prose. Router preamble now carries a PROTOCOL-PANEL
-   OVERRIDE: @REFLECT_GATE protocols supersede the legacy per-paragraph two-question cycle.
-4. **(E) Chat furniture never reaches the document.** Q-GATE lines ("Does that clear it up…")
-   + `[button]` rows are stripped by every feedback-card detector (`_stripChatFurniture`).
-   Protocol: keep the gate AFTER the total; engine strips it regardless.
-5. **(E/P) Per-question reflection is state-gated.** The router state block derives "panel
-   emitted since last question closed" from chat truth and mandates the panel before any
-   marking of the current question (the model had rolled Q2's rating into Q3).
-6. **(E) Recall-target rotation.** The pre-chain keyword-recall question rotates by attempt
-   (Q4 → Q2 → Q3 → Q5), code-owned in BOTH the router setup block and the frontend pre-chain —
-   keep the two rotations identical.
-7. **(E) Sidebar paragraph detection anchors on `Mark Breakdown — <name>` headings only** —
-   prose mentions of "Paragraph 2" (calibration checks) created phantom beats.
-8. **(P) Overall Feedback shows the MARK (`Total: X/80`), not just the percentage** — students
-   must be able to trace the number. Chat total, Overall Feedback and Score Summary must derive
-   from the same five whole-mark totals.
-9. **(P/E) Action Plan + Analytics AUTO-FILE (Neil RULED 2026-07-03; built v7.19.830).** Date
-   Completed requires SA + Analytics + Action Plan complete. The Final Summary now FILES Action
-   Plan + Analytics into the doc via TWELVE `@FIELD_SET` markers (one per field id, single-line
-   JSON values — see the filing step in the AQA lang1/lit protocols); Self-Assessment stays the
-   student's manual act (stage-revealed + listed by the Document Progress card). Engine
-   guarantees: `applyFieldSets` fills inputFields ONLY while empty (a student edit is never
-   clobbered — replay/heal/re-emit safe); `applySectionFills` REFUSES wholesale replace of any
-   field-bearing section (inputField/selectField nodes survive by construction); a silent repair
-   turn re-requests missing markers on the closing-gate turn; the doc-heal replays filing
-   markers from the transcript. **Every board port MUST carry the filing step** — grep
-   `action-grade-goal` in the protocol; the closing-gate precondition must count the filing
-   block. Filed sections stay student-EDITABLE.
-10. **(E/P) Mark arithmetic is CODE-VERIFIED (v7.19.832 — universal engine).** The Run1-vs-Run2
-    audit (2026-07-03) proved a 4-mark grade-boundary gap from pure LLM arithmetic (penalties
-    declared but not subtracted; invented per-section rounding). The engine now recomputes every
-    @FB card's total from its own `Worth | Your Score` table − `Total penalties:` line and
-    corrects mismatches, and verifies `Qn Total` lines (word-count-ceilinged totals exempt).
-    PORT REQUIREMENT: every protocol's cards must keep the auditable shape — a `Worth`/`Your
-    Score` markdown table, a `Total penalties: −X` line, a `Total Mark for [unit]: X/Y` line.
-    Sub-totals stay DECIMAL (round ONCE, at the question/final total); no "Base total: X/Z"
-    lines; protocol text must say so (grep: "NEVER round").
-11. **(E/P) Canonical grade ladder is CODE-ENFORCED (v7.19.832 — universal engine).** Every
-    "X%, which is a Grade N" line and post-Total `Grade: N` line is re-banded in code on the
-    ONE ladder (9≥85 · 8≥75 · 7≥65 · 6≥55 · 5≥45 · 4≥35 · 3≥25 · 2≥15). Protocols still state
-    the ladder (grep: "CANONICAL GRADE LADDER") — the code is the net, not the excuse.
-12. **(P) Calibration-check choices = the REAL units of THAT paper's structure.** Generic rule,
-    instantiated per paper: lettered options must be the units just marked (Lang P1 Q4:
-    Introduction/BP1-3/Conclusion; Q2/Q3: ¶1/¶2; Q5: AO5/AO6; Lit essay: Intro/Body 1-3/
-    Conclusion; multi-part papers: their real parts). NEVER feedback bullets as buttons.
-13. **(P) Penalty (& Ceiling) Ledger in the final summary.** Per-code sums with counts, ceiling
-    cost where a word-count ceiling exists, + the reframe "without penalties you'd be on
-    [X+P]/[max] ≈ Grade [N] — cheapest marks to reclaim". Honest sums from the actual cards.
-14. **(P) Honest duration estimate.** State the realistic completion time for THAT paper family
-    (Language full papers: 30–45 min) — never an inflated figure that scares students off.
+- 2026-07-01 — v1. Extracted from the R&J gold file (full read) + Neil's walkthrough + live-run
+  audit. Decisions locked: keep+gate keyword-recall AND main-goal (hierarchical); WC-formula display
+  carve-out; self-anchoring optimal golds; gold-1 adds missing ingredients; "all steps" not counts.
+  Author: wml-chat-A (Fable).
+- 2026-07-02 — v1.1. Added the REPLICATION PLAYBOOK appendix. First execution: AQA Language P1
+  (v7.19.826). Author: wml-chat-A (Fable).
+- 2026-07-03 — v2. Neil ruling: restructure around TWO NAMED GOLD ANCHORS (AQA Lang P1 v852 =
+  LANGUAGE; R&J = LIT) + poetry comparison as a LIT variant, not a third anchor. Folded in
+  everything sessions 5–10 settled: engine-owned gates register (A14 — auditor/ladder/ledger 832–841,
+  '+X' bonus 851, WC ceiling echo-only 841, reflection ledger + headline echo 849, closing buttons
+  842, attempt rows 843, auto-file 830/839/844, retry + full-label options + Base-total strip 852);
+  ONE-FAULT-ONE-CHARGE; round-once discipline; whole-mark line-final Qn totals; real-unit calibration
+  options; Penalty & Ceiling Ledger; @FIELD_SET filing in the closing gate; honest durations.
+  Replaced the replication playbook with the PORT SOP (ENGINE verify / ENGINE-ENABLE registered
+  surfaces w/ file:line / PROTOCOL / CONFIG + phases). Updated B-CHECKS + gap register statuses.
+  Author: wml-chat-A (Fable 5, session 11).
