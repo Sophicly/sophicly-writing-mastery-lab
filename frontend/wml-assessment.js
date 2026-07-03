@@ -673,7 +673,7 @@
     // the old hardcoded "20-25 minutes" only fits single-essay literature assessments.
     // All greeting sites (both pipelines + post-clear + resume-refresh) call this.
     function _assessGreetingInfoNote() {
-        const dur = _isAnyLanguagePaper() ? '45-60 minutes' : '20-25 minutes';
+        const dur = _isAnyLanguagePaper() ? '30-45 minutes' : '20-25 minutes'; // v7.19.832: Neil — don't scare students
         return '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">' + dur + '</strong>. Complete all steps to receive your full score, grade, and personalised feedback.</div>';
     }
 
@@ -2007,6 +2007,135 @@
             chatTextarea.value = 'SYSTEM (not from the student): the Action Plan / Analytics filing markers were NOT saved to the document. Re-emit them now — output one @FIELD_SET marker per line for each of these field ids: ' + missing.join(', ') + '. Each marker is {"field":"<id>","value":"<text>"} — valid JSON with straight double quotes, no line breaks inside the value (separate items with " · "). Derive each value from this assessment and the student\'s three action-plan answers exactly as the protocol\'s filing step specifies. Then add one short visible line confirming the Action Plan and Analytics sections are saved. Do not show the markers to the student.';
             sendCanvasMessage();
         } catch (e) { console.warn('WML AP-FILE: repair skipped —', e && e.message); }
+    }
+
+    // v7.19.832: DETERMINISTIC MARK ARITHMETIC (code owns numbers). The Run-1-vs-Run-2
+    // audit (2026-07-03) showed two runs of the SAME response diverged by 4 marks almost
+    // entirely through LLM arithmetic, not judgment: penalties declared but never
+    // subtracted (+3.5 in one run), a base under-sum, and invented per-paragraph rounding.
+    // Mark arithmetic is a deterministic transform, so it is computed here, not trusted:
+    // every @FB card's stated paragraph total is recomputed from ITS OWN table (sum of the
+    // "Your Score" column − "Total penalties") and rewritten when it disagrees; any
+    // "→ rounded: X/Y" suffix is stripped (rounding happens ONCE, at the question total);
+    // each Qn Total is then verified against the half-up-rounded sum of that question's
+    // audited paragraph totals — only when EVERY card for the question parsed cleanly.
+    // Q5 is exempt from the Qn-Total pass (word-count ceiling = MIN rule lives AI-side).
+    // Runs on the RAW reply before display/history/filing, so chat, doc cards, sidebar
+    // and Score Summary all read the same corrected numbers.
+    const _fbAudit = { totals: {}, failed: {} };
+    function _auditAssessmentArithmetic(reply) {
+        try {
+            if (!reply) return reply;
+            if (reply.indexOf('@FB_BEGIN') === -1 && !/Q\d+\s*Total:/.test(reply)) return reply;
+            const r2 = x => Math.round(x * 100) / 100;
+            let out = String(reply);
+            // ---- Pass 1: each card — recompute total from its own table ----
+            out = out.replace(/@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)@FB_END/g, (whole, metaRaw, body) => {
+                let meta = null;
+                try { meta = JSON.parse(metaRaw); } catch (_) { return whole; }
+                const qKey = String((meta && meta.q) || '').toUpperCase().replace(/[^Q0-9]/g, '');
+                if (!qKey) return whole;
+                // element rows: | criterion | worth | your score | why |
+                let scoreSum = 0, scoredRows = 0;
+                body.split('\n').forEach(line => {
+                    const t = line.trim();
+                    if (!t.startsWith('|')) return;
+                    const cells = t.split('|').slice(1, -1).map(c => c.trim());
+                    if (cells.length < 3) return;
+                    if (/^-{2,}/.test(cells[0]) || /worth/i.test(cells[1]) || /score/i.test(cells[2])) return;
+                    if (!/^\+?\d+(\.\d+)?$/.test(cells[1]) || !/^\d+(\.\d+)?$/.test(cells[2])) return;
+                    scoreSum += parseFloat(cells[2]); scoredRows++;
+                });
+                // penalties: prefer the "Total penalties: −X" line, else sum applied bullets
+                let pen = 0;
+                const penLine = body.match(/Total penalties:\s*[−–-]\s*([\d.]+)/i);
+                if (penLine) pen = parseFloat(penLine[1]);
+                else {
+                    let pm; const penRe = /(?:^|\n)\s*(?:[·•*-]\s*)?\*{0,2}[A-Z]\d\*{0,2}\s*\([−–-]\s*([\d.]+)\)/g;
+                    while ((pm = penRe.exec(body)) !== null) pen += parseFloat(pm[1]);
+                }
+                const totalRe = /(Total Mark for [^:\n]{1,50}:\s*)([\d.]+)\s*\/\s*(\d+(?:\.\d+)?)([^\n]*)/;
+                const tm = body.match(totalRe);
+                if (!tm || scoredRows < 3) {
+                    _fbAudit.failed[qKey] = true;   // card unauditable — never "correct" its Qn Total
+                    return whole;
+                }
+                const den = parseFloat(tm[3]);
+                const stated = parseFloat(tm[2]);
+                const computed = Math.min(den, Math.max(0, r2(scoreSum - pen)));
+                (_fbAudit.totals[qKey] = _fbAudit.totals[qKey] || []).push(computed);
+                const suffixBad = /round/i.test(tm[4] || '');
+                if (Math.abs(computed - stated) <= 0.049 && !suffixBad) return whole;
+                console.warn('WML MarkAudit:', qKey, String(tm[1]).trim(), 'stated', tm[2] + '/' + tm[3],
+                    '→ corrected', computed + '/' + tm[3], '(elements', r2(scoreSum), '− penalties', pen + ')');
+                return whole.replace(totalRe, (m, pre, v, d) => pre + computed + '/' + d);
+            });
+            // ---- Pass 2: verify each Qn Total against its audited paragraph totals ----
+            out = out.replace(/(Q(\d+)\s*Total:\s*)([\d.]+)(\s*\/\s*\d+)/g, (whole, prefix, qn, val, den) => {
+                const qKey = 'Q' + qn;
+                const arr = _fbAudit.totals[qKey];
+                const bad = _fbAudit.failed[qKey];
+                delete _fbAudit.totals[qKey]; delete _fbAudit.failed[qKey];
+                if (qn === '5' || bad || !arr || arr.length < 2) return whole;
+                const expected = Math.floor(arr.reduce((a, b) => a + b, 0) + 0.5); // half-up, ONCE
+                if (expected === Math.round(parseFloat(val)) && String(parseFloat(val)) === String(Math.round(parseFloat(val)))) return whole;
+                if (expected !== parseFloat(val)) {
+                    console.warn('WML MarkAudit: corrected', qKey, 'Total', val, '→', expected,
+                        '(sum of', arr.length, 'audited paragraph totals)');
+                }
+                return prefix + expected + den;
+            });
+            return out;
+        } catch (e) { console.warn('WML MarkAudit: skipped (non-fatal)', e && e.message); return reply; }
+    }
+
+    // v7.19.832: canonical-ladder enforcement — ONE ladder (9≥85 · 8≥75 · 7≥65 · 6≥55 ·
+    // 5≥45 · 4≥35 · 3≥25 · 2≥15 · else 1) for every %/grade the assessment prints. The
+    // ladder is already in the protocol, but a live run still printed "60%, which is a
+    // Grade 8". Numbers are code's job: when a "X%, which is a Grade N" line follows a
+    // `Total: A/B` line, the % is recomputed from A/B; every such line is then re-banded.
+    function _ladderGrade(pct) {
+        return pct >= 85 ? 9 : pct >= 75 ? 8 : pct >= 65 ? 7 : pct >= 55 ? 6 : pct >= 45 ? 5
+            : pct >= 35 ? 4 : pct >= 25 ? 3 : pct >= 15 ? 2 : 1;
+    }
+    function _enforceGradeLadder(reply) {
+        try {
+            if (!reply || !/%\s*,?\s*which is a\s*\*{0,2}Grade|Grade:\s*\d/i.test(reply)) return reply;
+            const lines = String(reply).split('\n');
+            let lastTotal = null, sinceTotal = 99;
+            const gradeLineRe = /([\d.]+)\s*%(\s*,?\s*which is a\s*\*{0,2}Grade\s*)(\d)/i;
+            for (let i = 0; i < lines.length; i++) {
+                const totalM = lines[i].match(/^\s*\*{0,2}(?:Q\d+\s*)?Total:\s*\*{0,2}\s*([\d.]+)\s*\/\s*(\d+)/i);
+                if (totalM) { lastTotal = { a: parseFloat(totalM[1]), b: parseFloat(totalM[2]) }; sinceTotal = 0; continue; }
+                sinceTotal++;
+                const gm = lines[i].match(gradeLineRe);
+                if (gm) {
+                    let pct = parseFloat(gm[1]);
+                    if (lastTotal && sinceTotal <= 3 && lastTotal.b > 0) {
+                        pct = Math.round((lastTotal.a / lastTotal.b) * 1000) / 10;
+                    }
+                    const trueG = _ladderGrade(pct);
+                    const pctStr = String(Number(pct.toFixed(1)));
+                    if (String(gm[3]) !== String(trueG) || parseFloat(gm[1]) !== pct) {
+                        if (String(gm[3]) !== String(trueG)) console.warn('WML Ladder: corrected grade —', gm[1] + '% Grade ' + gm[3], '→', pctStr + '% Grade ' + trueG);
+                        lines[i] = lines[i].replace(gradeLineRe, pctStr + '%$2' + trueG);
+                    }
+                    lastTotal = null;
+                    continue;
+                }
+                // standalone `Grade: N` line straight after a Total line (final-score readout)
+                const sg = lines[i].match(/^(\s*\*{0,2}Grade:\s*\*{0,2})(\d)\b/i);
+                if (sg && lastTotal && sinceTotal <= 2 && lastTotal.b > 0) {
+                    const trueG = _ladderGrade((lastTotal.a / lastTotal.b) * 100);
+                    if (String(sg[2]) !== String(trueG)) {
+                        console.warn('WML Ladder: corrected final Grade line', sg[2], '→', trueG);
+                        lines[i] = lines[i].replace(/^(\s*\*{0,2}Grade:\s*\*{0,2})\d\b/i, '$1' + trueG);
+                    }
+                    lastTotal = null;
+                }
+            }
+            return lines.join('\n');
+        } catch (e) { console.warn('WML Ladder: skipped (non-fatal)', e && e.message); return reply; }
     }
 
     // v7.15.49: state.mode is set once at boot from embedConfig and never updates on
@@ -6330,6 +6459,10 @@
                 removeCanvasTyping();
 
                 if (res.success && res.reply) {
+                    // v7.19.832: deterministic mark integrity BEFORE display/history/filing —
+                    // recompute card arithmetic + re-band %/grades on the canonical ladder,
+                    // so chat, doc cards, sidebar and Score Summary all read corrected numbers.
+                    res.reply = _enforceGradeLadder(_auditAssessmentArithmetic(res.reply));
                     const cleanReply = stripAIInternals(res.reply);
                     const formatted = formatAI(cleanReply);
                     addChatMessage(formatted, 'ai', cleanReply);
@@ -14451,6 +14584,8 @@
                                 removeCanvasTyping();
 
                                 if (res.success && res.reply) {
+                                    // v7.19.832: deterministic mark integrity (see pipeline 1 twin).
+                                    res.reply = _enforceGradeLadder(_auditAssessmentArithmetic(res.reply));
                                     const cleanReply = stripAIInternals(res.reply);
                                     const formatted = formatAI(cleanReply);
                                     addChatMessage(formatted, 'ai', cleanReply);
@@ -19205,6 +19340,8 @@
             };
             // Migrate old documents — inject missing sections + dividers + plans + outlines + InputFields
             _migrateStep('migrateDocument', migrateDocument);
+            // v7.19.832: refresh stale essay-shaped SA on Language P1 docs (untouched sections only)
+            _migrateStep('healLangP1SelfAssessment', healLangP1SelfAssessment);
             _migrateStep('migrateDividers', migrateDividers);
             // v7.19.619: after dividers exist (RESULTS anchor), heal-in the Overall Feedback section.
             _migrateStep('migrateOverallFeedbackSection', migrateOverallFeedbackSection);
@@ -29160,6 +29297,43 @@
         }
         canvasEditor.commands.setContent(newHtml, false);
         console.log('WML Migration: injected General Notes section into conceptual notes doc');
+    }
+
+    // v7.19.832: targeted SA refresh for AQA Language P1 docs seeded BEFORE the tuned set.
+    // v7.19.592/826 removed the essay-only beats (Hook / Building Sentences / Context /
+    // Controlling Concept / Central Purpose / Universal Message) and added the Creative
+    // Writing (Q5) group — but migrateDocument only injects MISSING sections, so existing
+    // docs kept the stale essay-shaped SA their template baked in (Neil hit this live).
+    // Guarded per the 2026-07-02 wipe lessons: language1 docs only, never in review mode,
+    // and ONLY while the section is completely untouched — every rating still the "— / 5"
+    // placeholder. One filled rating and the section is never touched. Replaces just the
+    // SA node via insertContentAt, refreshes the rating overlays, persists.
+    function healLangP1SelfAssessment() {
+        if (!canvasEditor || state.reviewMode) return;
+        if (!WML.hasAssessmentSections(state.task)) return;
+        const subj = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (['language1', 'languagep1', 'languagepaper1', 'langp1', 'aqalangpaper1'].indexOf(subj) === -1) return;
+        let pos = null, node = null;
+        canvasEditor.state.doc.descendants((n, p) => {
+            if (pos !== null) return false;
+            if (n.type.name === 'sectionBlock' && String((n.attrs && n.attrs.label) || '') === 'Self-Assessment') { pos = p; node = n; return false; }
+            return true;
+        });
+        if (pos === null || !node) return;
+        const txt = node.textContent || '';
+        const stale = /Hook|Building Sentences|Controlling Concept|Central Purpose|Universal Message/.test(txt)
+            || txt.indexOf('Creative Writing (Q5)') === -1;
+        if (!stale) return;
+        const placeholders = txt.match(/[—–]\s*\/\s*5/g) || [];
+        const rated = /\b[1-5]\s*\/\s*5/.test(txt);
+        if (rated || !placeholders.length) {
+            console.warn('WML SA-heal: stale Language-P1 Self-Assessment left untouched (student already rated)');
+            return;
+        }
+        canvasEditor.commands.insertContentAt({ from: pos, to: pos + node.nodeSize }, buildSelfAssessmentSection(false));
+        console.warn('WML SA-heal: replaced stale essay-shaped Self-Assessment with the Language P1 set');
+        try { if (typeof _scoreOverlaysRefresh === 'function') _scoreOverlaysRefresh(); } catch (_) {}
+        try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
     }
 
     function migrateDocument() {
