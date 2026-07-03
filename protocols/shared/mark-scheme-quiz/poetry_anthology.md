@@ -220,7 +220,7 @@ Emit it after EVERY question's feedback, using the real values for THIS question
 
 *Note: All Questions are worth 2 Marks each.*
 
-### **SECTION A: AQA (8702 — Power & Conflict / Love & Relationships)**
+### **SECTION A: AQA (8702 — Power & Conflict / Love & Relationships / Worlds and Lives)**
 
 1. **Type: MCQ \[Tests AO Weighting\]**
    * **Question:** How is AQA GCSE Poetry (anthology comparison) marked?
@@ -261,14 +261,14 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **AO:** AO1
    * **WhyWrong:** Answering False usually comes from thinking one comparative paragraph at the end is enough, but top-band comparison must run through every single paragraph.
 6. **Type: MCQ \[Tests Cluster Structure\]**
-   * **Question:** The AQA anthology is divided into two named clusters. Which are they?
-   * **Options:** A) Shakespeare and Modern, B) Power & Conflict and Love & Relationships, C) 19th Century and 20th Century, D) Sonnets and Elegies.
+   * **Question:** The AQA anthology is divided into named thematic clusters. Which trio does AQA now offer?
+   * **Options:** A) Shakespeare, Modern Texts and Unseen, B) Power & Conflict, Love & Relationships and Worlds and Lives, C) 19th Century, 20th Century and 21st Century, D) Sonnets, Elegies and Odes.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Power & Conflict (Ozymandias, Exposure, London, etc.) and Love & Relationships (Porphyria's Lover, Sonnet 29, etc.) are the two AQA clusters. Students typically study one cluster in depth.
+   * **Feedback:** ✓ Correct. There are now three clusters: Power & Conflict (Ozymandias, Exposure, London), Love & Relationships (Porphyria's Lover, Sonnet 29) and Worlds and Lives (Lines Written in Early Spring, A Portable Paradise), the last first examined from 2025. Students study just one cluster in depth.
    * **AO:** AO1
-   * **Why A:** Shakespeare and Modern Texts are separate parts of the Literature course, not the names of the poetry anthology clusters.
+   * **Why A:** Shakespeare, Modern Texts and Unseen are separate parts of the Literature course, not the names of the poetry anthology clusters.
    * **Why C:** The anthology mixes poems from different periods inside each cluster, so a century-based split sounds plausible but is not how AQA groups them.
-   * **Why D:** Sonnets and elegies are poetic forms found within the clusters, not the thematic groupings AQA uses to name them.
+   * **Why D:** Sonnets, elegies and odes are poetic forms found within the clusters, not the thematic groupings AQA uses to name them.
 7. **Type: Fill-in-the-Blank \[Tests AO1 Argument\]**
    * **Question:** AQA Level 6 demands a \[BLANK\] response — one that treats each poem as a construct exploring the cluster's big idea.
    * **Answer:** Conceptualised
@@ -389,6 +389,54 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Feedback:** The 30 marks split AO1=12, AO2=12, AO3=6. AO4 (SPaG) is not assessed on this question at all.
    * **AO:** AO1
    * **Why D:** SPaG is assessed on some Literature questions, which makes it tempting, but AO4 carries no marks on the poetry comparison.
+23. **Type: MCQ \[Tests AO Weighting\]**
+   * **Question:** Worlds and Lives is examined with the same 30-mark comparison grid as the other clusters. How do those 30 marks divide?
+   * **Options:** A) AO1=12, AO2=12, AO3=6 (no AO4), B) AO2=30, methods only, C) AO3=15, context-led, D) AO4=6 SPaG plus AO2=24.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. Worlds and Lives uses the identical anthology grid — 12 for argument (AO1), 12 for methods (AO2), 6 for context (AO3), with no SPaG. The cluster is new but the descriptors are unchanged.
+   * **AO:** AO1
+   * **Why B:** Methods carry real weight, but crediting analysis alone ignores the equal argument marks and the context strand.
+   * **Why C:** Context grounds these place-and-identity poems, yet the contextual strand stays the smallest at six marks, never the largest.
+   * **Why D:** SPaG appeals because some Literature questions assess it, but AO4 plays no part in the anthology comparison for any cluster.
+24. **Type: Fill-in-the-Blank \[Tests Number of Levels\]**
+   * **Question:** However fresh the Worlds and Lives poems feel, the comparison is still marked across \[BLANK\] levels, Level 1 (1–5) up to Level 6 (26–30).
+   * **Answer:** Six
+   * **Feedback:** ✓ Correct. The grid is unchanged — six banded levels — so a Worlds and Lives answer climbs the same ladder as Power & Conflict or Love & Relationships.
+   * **AO:** AO1
+   * **WhyWrong:** "Five" is the Edexcel pattern and "nine" is the grade scale; AQA's 30-mark comparison runs to six levels for every cluster.
+25. **Type: Ranking \[Tests AO1\]**
+   * **Question:** Rank these four openings to a Worlds and Lives comparison of Lines Written in Early Spring and In a London Drawingroom from WEAKEST to STRONGEST by AQA AO1 Level (type the letters in order, weakest first).
+   * **Options:** A) "Both poets frame the human world as an indictment of what people have made of themselves: one measures the city's grey monotony against a nature it has shut out, the other lets spring's quiet joy expose the grief of what man has made of man.", B) "Both poems are about nature and cities; one happens outdoors in spring and the other indoors in London.", C) "Both poems present the modern world as bleak, and each uses imagery of colour and light which supports this.", D) "Whereas one poet contrasts natural delight with human sorrow through vivid spring imagery, the other renders the city lifeless through unrelieved grey imagery, making the reader judge industrial life."
+   * **Correct:** B, C, D, A
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. Each rung climbs one clear AQA band. Pairing the two poems by subject and setting only is Level 1, narrative and/or descriptive in approach. The supported comment that both feel bleak, with a general gesture at imagery, is Level 2. The clear comparison that names each poet's method and its effect on the reader is Level 4. The conceptualised opening, arguing a shared idea about what humanity has made of itself from the first line, is Level 6 — a conceptualised approach to the full task.
+   * **WhyWrong:** Weakest to strongest runs from subject-and-setting pairing, to a supported comment with no method, to a clear method-and-effect comparison, to a conceptualised argument about a shared idea. Each rung is one AQA Level higher.
+26. **Type: MCQ \[Tests AO3 Context\]**
+   * **Question:** England in 1819 was written amid political repression, and A Century Later touches a girl's fight for education. For AO3 on a Worlds and Lives comparison, what earns the six marks?
+   * **Options:** A) A standalone history paragraph on each poem before the analysis, B) "Specific, detailed links between context/text/task" woven where context drives the poet's idea, C) A memorised biography of each poet, D) Accurate spelling and punctuation across the essay.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. AO3 rewards contextual understanding shown through specific, detailed links between context, text and task, integrated where it genuinely drives the concept — never a bolt-on paragraph.
+   * **AO:** AO3
+   * **Why A:** A history paragraph per poem feels thorough, yet bolt-on background scores poorly because context must serve the analysis, not sit beside it.
+   * **Why C:** A memorised biography is exactly the bolt-on background the band rejects; context must be tied to text and task.
+   * **Why D:** Spelling and punctuation is AO4, which is not assessed on the anthology comparison for any cluster.
+27. **Type: Select All That Apply \[Tests AO2 Methods\]**
+   * **Question:** Comparing A Portable Paradise and Homing, which count as valid AO2 Writer's Methods to analyse? (Select all that apply)
+   * **Options:** A) Imagery and specific word connotations, including dialect word choices, B) Form (dramatic monologue, free verse, list-poem), C) Structure (enjambment, stanza breaks, repetition), D) The poet's nationality and upbringing.
+   * **Correct:** A, B, C
+   * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+   * **Feedback:** Imagery, form and structure are all AO2 targets, and a method only counts once you pair it with its effect on the reader (Focus/Feel/Think/Act). Naming "free verse" or "repetition" alone is feature-spotting; the poet's nationality and upbringing is context about the writer, not a method on the page.
+   * **AO:** AO2
+   * **Why D:** Heritage feels relevant because these poems draw on it, but the poet's nationality and upbringing is contextual information, not a crafted method the poem deploys.
+28. **Type: MCQ \[Tests Level 6\]**
+   * **Question:** A Worlds and Lives response on A Portable Paradise and Homing weaves both poems through every paragraph but merely retells each poet's images in turn. What lifts it to Level 6?
+   * **Options:** A) Adding more quotations to prove wider reading, B) A conceptualised approach to the full task with judicious use of precise references, C) Writing about one poem fully, then the other, D) A longer context paragraph on migration.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Level 6 demands a conceptualised approach to the full task supported by a range of judicious references — treating each poem as an argument about belonging, not a set of images to retell.
+   * **AO:** AO1
+   * **Why A:** More quotations chase quantity, but the band rewards judicious, precisely chosen references, not the sheer number of them.
+   * **Why C:** Handling one poem fully, then the other, is block treatment, which prevents the integrated comparison the top band requires.
+   * **Why D:** A longer context paragraph inflates the smallest strand and cannot buy the argument and analysis that Level 6 turns on.
 
 ### **SECTION B: EDEXCEL GCSE (1ET0 — Poetry)**
 
