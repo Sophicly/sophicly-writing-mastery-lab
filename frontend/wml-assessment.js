@@ -2046,6 +2046,7 @@
     // location duplicated, four omitted) — so the ledger is rebuilt here from what the cards
     // ACTUALLY deducted. Keyed per card (qKey|para) so re-fires overwrite, never double-count.
     let _penLedgerCards = {};
+    let _penLedgerComplete = false; // saw the Q2 reflect gate THIS session → cards are complete
     const _PEN_NAMES = { W1: 'weak analytical verb', C1: 'clarity/flow', T1: 'imprecise technique naming',
         H1: 'hanging/mis-punctuated quote', P1: 'comma splice/run-on', S1: 'weak sentence starters',
         S2: 'underdeveloped sentence', L1: 'lacks sustained detail', B1: 'beyond text boundaries',
@@ -2059,7 +2060,7 @@
             const r2 = x => Math.round(x * 100) / 100;
             let out = String(reply);
             // fresh assessment run starting (Q2's reflect gate is emitted once) → reset ledger
-            if (out.indexOf('@REFLECT_GATE{"q":"Q2"') !== -1) _penLedgerCards = {};
+            if (out.indexOf('@REFLECT_GATE{"q":"Q2"') !== -1) { _penLedgerCards = {}; _penLedgerComplete = true; }
             // ---- Pass 1: each card — recompute total from its own table ----
             out = out.replace(/@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)@FB_END/g, (whole, metaRaw, body) => {
                 let meta = null;
@@ -2158,7 +2159,11 @@
                     byCode[c.code].where.push(loc[0] + (loc[1] ? ' ¶' + loc[1] : ''));
                 });
             });
-            if (!penSum) return out; // nothing recorded (resumed mid-session) — leave the AI's version
+            if (!penSum) return out; // nothing recorded — leave the AI's version
+            // v7.19.839: resumed mid-assessment → cards recorded only since the reload; a
+            // rebuilt ledger would UNDERCOUNT. Only rebuild when the whole run happened in
+            // this session (we saw Q2's reflect gate). Otherwise the AI's version stands.
+            if (!_penLedgerComplete) { console.warn('WML MarkAudit: ledger rebuild skipped — session resumed mid-assessment (partial card data)'); return out; }
             const re = /(\*{0,2}Penalty (?:& Ceiling )?Ledger:?\*{0,2})([\s\S]*?Without penalties[^\n]*)/i;
             const oldChunk = out.match(re);
             if (!oldChunk) return out;
