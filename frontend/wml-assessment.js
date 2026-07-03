@@ -11556,6 +11556,11 @@
             // EVERY write path (AI fill, heal replay, auditor rewrite, manual edit)
             // refreshes it — no per-producer wiring (the task-scoping bug class).
             // Self-disconnects once the panel leaves the DOM (any close path).
+            // v7.19.854: pad-local collapse state, label → collapsed?. Lives in the panel
+            // closure so it dies with the panel; keyed by section label (same identity the
+            // doc's localStorage persistence uses). Universal — any board/paper's feedback
+            // sections collapse in the pad exactly as in the doc.
+            const _padFbCollapsed = {};
             const _renderFeedbackPad = () => {
                 // v7.19.829 (Neil): clone every feedback section with real content so the
                 // student can fill Self-Assessment / Analytics / Action Plan with their
@@ -11571,6 +11576,15 @@
                     const cloned = _stripChipsFromClone(f.cloneNode(true));
                     cloned.removeAttribute('contenteditable');
                     cloned.querySelectorAll('[contenteditable]').forEach(n => n.setAttribute('contenteditable', 'false'));
+                    // v7.19.854 (Neil): the doc-side collapse chevron is a NodeView button whose
+                    // click listener cloneNode() never copies — the pad's chevron was dead. The
+                    // pad body carries ONE delegated listener (see isFeedbackMode branch); here
+                    // the pad-local collapse choice is re-applied so the v845 live re-render
+                    // doesn't reset what the student collapsed in the pad (a fresh clone
+                    // otherwise arrives with the DOC's collapse state).
+                    if (Object.prototype.hasOwnProperty.call(_padFbCollapsed, fLbl)) {
+                        cloned.classList.toggle('swml-fb-collapsed', !!_padFbCollapsed[fLbl]);
+                    }
                     body.appendChild(cloned);
                     fbAdded++;
                 });
@@ -11605,6 +11619,25 @@
             };
             if (isFeedbackMode || isEssayMode) {
                 const _renderPad = isFeedbackMode ? _renderFeedbackPad : _renderEssayPad;
+                // v7.19.854 (Neil): make the cloned collapse chevrons WORK in the pad. One
+                // delegated listener on the pad body (survives every re-render — the clones
+                // themselves are disposable); toggles the clone's class and records the choice
+                // in _padFbCollapsed so _renderFeedbackPad re-applies it after live updates.
+                // Doc state is deliberately untouched: collapsing in the pad is a reading aid,
+                // not an edit — the doc's own chevron + localStorage stay authoritative there.
+                if (isFeedbackMode) {
+                    body.addEventListener('click', (ev) => {
+                        const t = ev.target && ev.target.closest && ev.target.closest('.swml-fb-toggle');
+                        if (!t || !body.contains(t)) return;
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        const sec = t.closest('.swml-section-feedback');
+                        if (!sec) return;
+                        const nowCollapsed = sec.classList.toggle('swml-fb-collapsed');
+                        const lbl = sec.getAttribute('data-section-label') || '';
+                        if (lbl) _padFbCollapsed[lbl] = nowCollapsed;
+                    });
+                }
                 _renderPad();
                 try {
                     let _padT = null;
