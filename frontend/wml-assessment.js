@@ -1167,6 +1167,20 @@
                     console.warn('WML SectionFill: no sectionBlock labelled', JSON.stringify(blk.label), '(left as placeholder)');
                     return;
                 }
+                // v7.19.830: NEVER wholesale-replace a section carrying form-field nodes
+                // (inputField/selectField — Action Plan, Analytics, Self-Assessment). A replace
+                // would destroy the field nodes and every overlay anchored on them (e.g. the
+                // grade-goal pill on data-field-id="action-grade-goal"). Field-bearing sections
+                // are @FIELD_SET territory — refuse loudly, leave the section intact.
+                let hasFields = false;
+                targetNode.descendants(n => {
+                    if (n.type.name === 'inputField' || n.type.name === 'selectField') { hasFields = true; return false; }
+                    return true;
+                });
+                if (hasFields) {
+                    console.warn('WML SectionFill: section', JSON.stringify(blk.label), 'holds input/select fields — refusing wholesale replace (use @FIELD_SET per field)');
+                    return;
+                }
                 // AI-authored synthesis into an approved placeholder → REPLACE inner content.
                 // (Contrast @FIELD_COMMIT which appends to protect the student's own words.)
                 const html = cwMarkdownToDocHtml(blk.body);
@@ -1207,7 +1221,8 @@
             // extract the holistic block: from the Holistic Evaluation heading (or just after the
             // Grade line) up to BEFORE the Action Plan dialogue / chat pointer / completion code.
             let body = _stripFeedbackMarkers(t)
-                .replace(/@SECTION_BEGIN\s*\{[^}]*\}/g, '').replace(/@SECTION_END/g, '');
+                .replace(/@SECTION_BEGIN\s*\{[^}]*\}/g, '').replace(/@SECTION_END/g, '')
+                .replace(/@FIELD_SET\s*\{[^}]*\}/g, ''); // v7.19.830: filing markers never leak into the box
             let start = body.search(/\n\s*#{0,4}\s*\*{0,2}\s*Holistic Evaluation/i);
             if (start < 0) { const gm = body.search(/Grade:\s*[1-9U]\b/i); start = gm >= 0 ? body.indexOf('\n', gm) : 0; }
             let chunk = body.slice(Math.max(0, start))
@@ -1248,6 +1263,17 @@
                 respLen += (s.textContent || '').trim().length;
             });
             if (respLen < 100) return; // not hydrated yet — the later scheduled pass retries
+            // v7.19.830: replay @FIELD_SET filing markers (Action Plan / Analytics auto-file)
+            // from the transcript too — the chat is the durable record of the filing turn.
+            // applyFieldSets fills inputFields ONLY while empty, so this is idempotent and can
+            // never clobber a student edit; it only repairs a wiped/stale doc.
+            try {
+                if (_emptyActionPlanFileFields().length) {
+                    history.forEach(m => {
+                        if (m && m.role === 'assistant' && m.content && m.content.indexOf('@FIELD_SET') !== -1) applyFieldSets(m.content);
+                    });
+                }
+            } catch (_) {}
             const PLACEHOLDER_RE = /will appear after assessment|will be assessed here|appear here (?:after|once)/i;
             const placeholderQs = new Set();
             let overallPlaceholder = false;
@@ -1812,20 +1838,40 @@
             if (!sets.length) return;
             let wrote = false;
             sets.forEach(s => {
-                let targetPos = null, targetNode = null;
+                // v7.19.830: the Analytics "Number of opt-outs" line is a static paragraph, not
+                // a field node — route its count marker there via a PM paragraph write. Fills
+                // only while the "—" placeholder is still showing (idempotent on replay).
+                if (s.field === 'analytics-optout-count') {
+                    const done = _setParagraphContentViaPM(
+                        t => { const tt = (t || '').trim(); return /^Number of opt-outs:/i.test(tt) && /—\s*$/.test(tt); },
+                        [{ text: 'Number of opt-outs:', italic: true }, { text: ' ' + s.value }]
+                    );
+                    if (done) { console.log('WML FieldSet: wrote opt-out count →', s.value); wrote = true; }
+                    return;
+                }
+                let targetPos = null, targetNode = null, targetKind = null;
                 canvasEditor.state.doc.descendants((node, pos) => {
                     if (targetPos !== null) return false;
-                    if (node.type.name === 'outlineRow' && node.attrs && node.attrs.fieldId === s.field) {
-                        targetPos = pos; targetNode = node; return false;
+                    const nm = node.type.name;
+                    if ((nm === 'outlineRow' || nm === 'inputField') && node.attrs && node.attrs.fieldId === s.field) {
+                        targetPos = pos; targetNode = node; targetKind = nm; return false;
                     }
                     return true;
                 });
                 if (targetPos === null || !targetNode) {
-                    console.warn('WML FieldSet: no outlineRow for field', s.field, '(left empty)');
+                    console.warn('WML FieldSet: no outlineRow/inputField for field', s.field, '(left empty)');
                     return;
                 }
                 const existing = (targetNode.textContent || '').trim();
                 if (existing === s.value) return; // identical re-fire — skip
+                // v7.19.830: inputField targets (Action Plan / Analytics auto-file) are the
+                // student's EDITABLE boxes — fill only while EMPTY. Heal replays and re-emit
+                // repair turns re-fire these markers; they must never clobber a student edit.
+                // (outlineRow keeps its original REPLACE semantics — AI-owned CW draft rows.)
+                if (targetKind === 'inputField' && existing) {
+                    console.log('WML FieldSet: field', s.field, 'already has content — kept (student-editable)');
+                    return;
+                }
                 const from = targetPos + 1;
                 const to = targetPos + targetNode.nodeSize - 1;
                 canvasEditor.commands.insertContentAt({ from: from, to: to }, { type: 'text', text: s.value });
@@ -1919,6 +1965,48 @@
             chatTextarea.value = 'SYSTEM (not from the student): the three seed loglines were NOT saved to the document. Re-emit them now — output exactly three @FIELD_SET markers on their own lines for cw-step-1-logline-1, cw-step-1-logline-2 and cw-step-1-logline-3, each value the full logline sentence you just presented, valid JSON with straight double quotes, then add one short visible line confirming they are saved. Do not show the markers to the student.';
             sendCanvasMessage();
         } catch (e) { console.warn('WML CW: step-1 logline repair skipped —', e && e.message); }
+    }
+
+    // v7.19.830: Action Plan / Analytics AUTO-FILE self-heal. At the assessment Final
+    // Summary the protocol files the student's Hattie answers + the derived analytics
+    // into the doc via @FIELD_SET markers — but an LLM can omit/mangle markers (markers
+    // are unreliable; see _routeOverallFeedback). On the closing-gate turn
+    // ([ASSESSMENT_COMPLETE] — the filing step sits BEFORE it in the protocol), if any
+    // target inputField that exists in this doc is still empty, fire ONE silent repair
+    // turn asking Sophia to re-emit just the missing markers. At most once per doc load
+    // (no loop). Mirrors _maybeRepairCwStep1Loglines.
+    const _AP_FILE_FIELDS = ['action-grade-goal', 'action-priorities', 'action-short-term',
+        'action-1-resources', 'action-2-lessons', 'action-3-support',
+        'analytics-top-missed', 'analytics-optouts', 'analytics-repeated-errors',
+        'analytics-improvements', 'analytics-challenges'];
+    let _apFileRepairFired = false;
+    function _emptyActionPlanFileFields() {
+        if (!canvasEditor) return [];
+        const found = {}, filled = {};
+        canvasEditor.state.doc.descendants((node) => {
+            if (node.type.name === 'inputField' && node.attrs && _AP_FILE_FIELDS.indexOf(node.attrs.fieldId) !== -1) {
+                found[node.attrs.fieldId] = true;
+                if ((node.textContent || '').trim().length > 0) filled[node.attrs.fieldId] = true;
+            }
+            return true;
+        });
+        // only fields that EXIST in this doc count — older docs without the sections never nag
+        return _AP_FILE_FIELDS.filter(id => found[id] && !filled[id]);
+    }
+    function _maybeRepairActionPlanFile(reply) {
+        try {
+            if (_apFileRepairFired) return;
+            if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return;
+            if (state.reviewMode) return;
+            if (!/\[ASSESSMENT_COMPLETE\]/i.test(reply || '')) return; // closing turn only
+            const missing = _emptyActionPlanFileFields();
+            if (!missing.length) return; // markers landed — nothing to do
+            _apFileRepairFired = true;
+            console.warn('WML AP-FILE: Action Plan/Analytics fields empty at closing gate — firing silent repair turn:', missing.join(', '));
+            canvasSilentSend = true;
+            chatTextarea.value = 'SYSTEM (not from the student): the Action Plan / Analytics filing markers were NOT saved to the document. Re-emit them now — output one @FIELD_SET marker per line for each of these field ids: ' + missing.join(', ') + '. Each marker is {"field":"<id>","value":"<text>"} — valid JSON with straight double quotes, no line breaks inside the value (separate items with " · "). Derive each value from this assessment and the student\'s three action-plan answers exactly as the protocol\'s filing step specifies. Then add one short visible line confirming the Action Plan and Analytics sections are saved. Do not show the markers to the student.';
+            sendCanvasMessage();
+        } catch (e) { console.warn('WML AP-FILE: repair skipped —', e && e.message); }
     }
 
     // v7.15.49: state.mode is set once at boot from embedConfig and never updates on
@@ -6542,6 +6630,16 @@
                         // below. Self-guards (no-op unless the reply carries @FB markers or a marking block).
                         applyAssessmentFeedback(res.reply);
                         _refreshLangSidebar(); // v7.19.625: advance per-Q Language sidebar as marks land
+                        // v7.19.830: SECTION/FIELD marker consumers run UNCONDITIONALLY (self-
+                        // guarding no-ops without markers). The assessment Final Summary now files
+                        // Action Plan + Analytics via @FIELD_SET, so these must not live inside
+                        // the cw_ guard (CANVAS TASK-SCOPING rule 1 — the #1 silent-skip bug class).
+                        applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
+                        applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored field/row-fill (Phase 3)
+                        { // v7.19.830: AP/Analytics filing self-heal — after the turn settles
+                            const _r = res.reply;
+                            setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
+                        }
 
                         // v7.14.68: Planning/polishing step detection — advance sidebar based on AI content
                         if (state.task === 'planning' || state.task === 'polishing') {
@@ -6556,8 +6654,6 @@
                         if (state.task && state.task.startsWith('cw_')) {
                             applyCwSubstepProgress(detectCwSubstep(res.reply));
                             applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
-                            applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
-                            applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored row-fill (Phase 3 — CW Step 3 loglines)
                             applySpineSynthesis(res.reply); // v7.19.651: deterministic Step-4 spine backstop (marker-independent)
                             // v7.19.504: Step-1 seed-logline self-heal — after the turn settles
                             // (loading cleared), re-emit markers if the rows didn't fill.
@@ -14376,13 +14472,20 @@
                                         // v7.19.600: auto-file assessment feedback (runs for ALL tasks, outside the cw_ guard).
                                         applyAssessmentFeedback(res.reply);
                                         _refreshLangSidebar(); // v7.19.625: advance per-Q Language sidebar as marks land
+                                        // v7.19.830: SECTION/FIELD marker consumers run UNCONDITIONALLY (self-guarding
+                                        // no-ops without markers) — Final Summary files Action Plan + Analytics via
+                                        // @FIELD_SET (CANVAS TASK-SCOPING rule 1).
+                                        applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
+                                        applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored field/row-fill (Phase 3)
+                                        { // v7.19.830: AP/Analytics filing self-heal — after the turn settles
+                                            const _r = res.reply;
+                                            setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
+                                        }
 
                                         // v7.14.69: CW sub-step progress tracking (training-env pipeline)
                                         if (state.task && state.task.startsWith('cw_')) {
                                             applyCwSubstepProgress(detectCwSubstep(res.reply));
                             applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
-                            applySectionFills(res.reply); // v7.19.434: chat→canvas AI-synthesis section-fill (Phase 2)
-                            applyFieldSets(res.reply); // v7.19.466: chat→canvas AI-authored row-fill (Phase 3 — CW Step 3 loglines)
                             applySpineSynthesis(res.reply); // v7.19.651: deterministic Step-4 spine backstop (marker-independent)
                                         }
 

@@ -454,9 +454,15 @@ engine-enforced (E) or a protocol contract rule (P). Grep-check them on every ne
 8. **(P) Overall Feedback shows the MARK (`Total: X/80`), not just the percentage** — students
    must be able to trace the number. Chat total, Overall Feedback and Score Summary must derive
    from the same five whole-mark totals.
-9. **OPEN GAP (Neil ruling needed): Date Completed.** The stamp requires Self-Assessment +
-   Analytics + Action Plan sections complete, but the flow leaves all three empty (the Hattie
-   answers live only in chat). Proposed: file Action Plan + Analytics into the doc via
-   @SECTION markers at the Final Summary; SA stays the student's manual act (stage-revealed +
-   listed by the Document Progress card). Do NOT blind-replace sections holding input fields —
-   verify the template's field shape first.
+9. **(P/E) Action Plan + Analytics AUTO-FILE (Neil RULED 2026-07-03; built v7.19.830).** Date
+   Completed requires SA + Analytics + Action Plan complete. The Final Summary now FILES Action
+   Plan + Analytics into the doc via TWELVE `@FIELD_SET` markers (one per field id, single-line
+   JSON values — see the filing step in the AQA lang1/lit protocols); Self-Assessment stays the
+   student's manual act (stage-revealed + listed by the Document Progress card). Engine
+   guarantees: `applyFieldSets` fills inputFields ONLY while empty (a student edit is never
+   clobbered — replay/heal/re-emit safe); `applySectionFills` REFUSES wholesale replace of any
+   field-bearing section (inputField/selectField nodes survive by construction); a silent repair
+   turn re-requests missing markers on the closing-gate turn; the doc-heal replays filing
+   markers from the transcript. **Every board port MUST carry the filing step** — grep
+   `action-grade-goal` in the protocol; the closing-gate precondition must count the filing
+   block. Filed sections stay student-EDITABLE.
