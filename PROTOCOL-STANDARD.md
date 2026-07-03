@@ -143,7 +143,7 @@ list is unavoidable it is a REGISTERED PORT SURFACE (PORT SOP §E2) that every p
 
 ## A12. House language
 British English. The AI is **Sophia**. Banned: "Units" for sub-parts, "1-to-1" (except platinum Assessment
-Review), "crib", "shows" as analytical verb (it's a PENALTY — W1), arrows (→) in student-facing model
+Review), "crib", "shows" as analytical verb (it's a PENALTY — F1), arrows (→) in student-facing model
 answers, "patriarchy/patriarchal", magic/spellbook framing, "move" as a noun. Scholarly, calm, encouraging.
 
 ## A13. Golds follow the taught sentence order — rigidly (Neil, 2026-07-02)
@@ -215,20 +215,36 @@ store, don't re-ask; ask only what is missing). **HARD PRECONDITION:** marking i
 conversation contains ALL THREE replies — the first unit's gate names them explicitly.
 
 ### 3. Submission validation + structure mapping
-- **First-ever diagnostic (Topic 1 Phase 1):** accept ANY structure — assess what exists against the
-  taught map; be generous + teach. Essay plan optional (sole exemption).
-- **Everything else:** taught structure required; essay plan required (where the paper has one).
-- **Word count:** diagnostic → ceiling per A6 (formula display allowed), stated ONCE, tied to the
-  grade goal; redraft → HALT below target until resubmitted. Targets per paper (CONFIG).
-- Once validated: NEVER ask the student to re-paste any part of their work.
+**THE LENIENCY KEY (Neil, 2026-07-03 — SETTLED, universal): "first-ever attempt per FAMILY."**
+One lenient attempt for **Language** (whichever paper) and one for **Literature** (whichever text)
+— NOT per text, NOT per paper, NOT per topic. After one full cycle (marking → feedback → redraft)
+the skills transfer; the ignorance excuse is gone. The flag is CODE-COMPUTED (server checks the
+student's attempt history across the family and injects the regime with the session context — the
+model never decides which regime applies). Word count AND structure leniency key on the SAME flag.
+- **First-ever attempt in the family:** accept ANY structure — assess what exists against the
+  taught map; be generous + teach. Essay plan optional (sole exemption). Word count NOT enforced,
+  but the under-target CEILING penalty applies (per A6, formula display allowed, stated ONCE, tied
+  to the grade goal).
+- **Everything else (any later attempt, any paper/text, diagnostic or redraft):** taught structure
+  required; essay plan required (where the paper has one); word count ENFORCED — HALT before
+  marking: Sophia instructs the student to go back, complete the planning and reach the target,
+  then resubmit. **The re-check is CODE-OWNED:** while a halt is active the frontend shows a
+  persistent re-check button ("↻ Check my word count again"); clicking recomputes the code word
+  count from the canvas — still short → visible shortfall note, button stays; satisfied → the
+  resume turn carries the fresh injected counts and marking begins. The model never re-counts and
+  never lifts the halt itself.
+- Targets per paper (CONFIG). Once validated: NEVER ask the student to re-paste any part of their
+  work.
 - **MISSING units** score 0 with TEACHING, not critique: card still emitted (box fills) with
   `Total Mark for [label]: 0/[max]`, one warm normal-at-this-stage line, one line on what the unit
-  does, ONE optimal gold. No reflection panel for a missing unit; never scold on a first diagnostic.
-- **EXTRA units — TWO-TIER (never soften Tier 2 into Tier 1):** Tier 1 (first-ever diagnostic ONLY) —
-  extras named + characterised in the wrap-up, rough extra-marks estimate, then the repeatable-
-  structure lesson. Tier 2 (everything else) — extras score ZERO, stated plainly, no estimate,
-  stern-but-caring warning, explicit instruction to redo the planning step. Extras NEVER get a card,
-  a mark, or a re-used label.
+  does, ONE optimal gold. No reflection panel for a missing unit; never scold on the family's
+  first-ever attempt.
+- **EXTRA units — TWO-TIER (never soften Tier 2 into Tier 1; both tiers mark ONLY the first
+  [taught count] by position):** Tier 1 (**family's first-ever attempt ONLY**) — extras named +
+  characterised in the wrap-up, rough extra-marks estimate, then the repeatable-structure lesson.
+  Tier 2 (everything else) — extras score ZERO, stated plainly, no estimate, stern-but-caring
+  warning, explicit instruction to redo the planning step. Extras NEVER get a card, a mark, or a
+  re-used label.
 
 ### 4. Reflection contract — ONE `@REFLECT_GATE` per unit, code-enforced (849)
 Emitted BEFORE that unit's marking begins (retrieval-only units like Lang Q1 have none). Lead-in:
@@ -353,18 +369,28 @@ change that alters emissions is not "shipped" until the data lands in the dashbo
 
 1. **Paper map is fixed data at the top of the protocol:** Q / marks / AO / shape-we-teach / taught
    structure. Taught paragraph count per reading question = its marks ÷ 4. State which AOs the paper
-   does NOT assess ("AO3 is NOT assessed on Paper 1 — never mention it as a target"). Where granular
-   worths sum above the question max (Q4: 22 > 20), the question total is `MIN(sum, max)` — silent cap.
+   does NOT assess ("AO3 is NOT assessed on Paper 1 — never mention it as a target"). **Granular
+   worths per question sum EXACTLY to the question max (Neil, 2026-07-03 — SETTLED).** P1 Q4's fixed
+   split is 1 + 6 + 6 + 6 + 1 = 20 (an older "worths sum 22, MIN-cap at 20" note was a stale error —
+   remove it wherever found; never bless a cap). The ONLY above-max mechanism is an explicit BONUS
+   row (adds on top, capped at the sub-unit max, omitted when absent). Worths that don't sum to the
+   max = a wrong allocation: fix the worths, never cap the total.
 2. **Per-question flow:** pre-chain → per question: ONE `@REFLECT_GATE` (lead-in cites headline goal)
    → STEP 2a acknowledge + Y-gate (HARD STOP) → per-paragraph cards ONE PER TURN, each Y-gated →
    question wrap in the final card's turn: `Qn Total: A/B` (whole) → Percentage & Grade → Level
    Alignment → Calibration Check (real-unit options) → Q-GATE → next question. Retrieval Q1 is LEAN:
    no panel, no golds, no calibration, no level alignment — per-statement feedback + `Q1 Total: X/4`.
 3. **Criteria tables per question type** live in the protocol with per-element worths (TTECEA
-   elements 0.5–1.0; bonus interplay `+0.5` row). Penalty codes with the enumerated W1 banned family
-   ("shows", "tells us", "is about", "acts as (a symbol of)", "creates the idea that", "represents
-   that" (bare assertion), "illustrates", "aims to [verb]" — while "reveals", "demonstrates",
-   "crystallises", "embodies", "externalises" are acceptable) so marking is consistent run-to-run.
+   elements 0.5–1.0; bonus interplay `+0.5` row). **Penalty codes use the UNIVERSAL registry
+   (Neil, 2026-07-03 — all papers, Language AND Literature): the newer F1/T1 system. W1 is
+   RETIRED everywhere** — F1 = the "shows" family ("shows", "tells us", "is about", "acts as
+   (a symbol of)", "creates the idea that", "represents that" (bare assertion), "illustrates",
+   "aims to [verb]"); T1 = other imprecise verbs (uses/has/goes/gets/says/makes); one code per
+   fault, never both on the same verb; older W1 mentions read as F1. Canonical analytical verbs
+   are never penalised ("reveals", "demonstrates", "conveys", "crystallises", "embodies",
+   "externalises", …). Enumerate the family in every protocol so marking is consistent
+   run-to-run. Paper-specific codes (e.g. P2's I1 inference, H1-COMP single-source) extend the
+   registry, never fork it.
 4. **Section B / Q5 (extended writing) — HOLISTIC:** AO5+AO6 marks judged whole-piece against real
    band descriptors (one band sentence each); per-beat/per-IUMVCC-section feedback anchored with
    verbatim quotes (or "Absent"); penalties do NOT apply (AO6 carries accuracy) — flag up to 3
@@ -602,3 +628,11 @@ From the 2026-07-01 live-run audit (R&J AQA diagnostic) + status as of v7.19.852
   Replaced the replication playbook with the PORT SOP (ENGINE verify / ENGINE-ENABLE registered
   surfaces w/ file:line / PROTOCOL / CONFIG + phases). Updated B-CHECKS + gap register statuses.
   Author: wml-chat-A (Fable 5, session 11).
+- 2026-07-03 — v2.1 (same day, Neil's P2 delta rulings — four of them universal). (1) Leniency key
+  = FIRST-EVER ATTEMPT PER FAMILY (one lenient attempt for Language, one for Literature; word count
+  penalised-not-enforced on it, ENFORCED with code-owned halt + re-check button after it; structure
+  two-tier keys on the same flag; regime flag code-computed). (2) Penalty registry UNIVERSAL: newer
+  F1/T1 system, W1 retired everywhere (A12 + B-LANG.3 updated); paper codes extend, never fork.
+  (3) Granular worths sum EXACTLY to the question max — the P1 "sum 22, MIN-cap 20" note was stale
+  (fixed split 1+6+6+6+1=20); bonus rows are the only above-max mechanism. (4) WC rate one number:
+  5/100 ceiling (engine) — P2's stray 6/100 dies. Author: wml-chat-A (Fable 5, session 11).
