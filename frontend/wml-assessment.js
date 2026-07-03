@@ -29364,14 +29364,30 @@
         const stale = /Hook|Building Sentences|Controlling Concept|Central Purpose|Universal Message/.test(txt)
             || txt.indexOf('Creative Writing (Q5)') === -1;
         if (!stale) return;
-        const placeholders = txt.match(/[—–]\s*\/\s*5/g) || [];
-        const rated = /\b[1-5]\s*\/\s*5/.test(txt);
-        if (rated || !placeholders.length) {
-            console.warn('WML SA-heal: stale Language-P1 Self-Assessment left untouched (student already rated)');
-            return;
-        }
+        // v7.19.835: RATED stale sections migrate too — a rating against a REMOVED item
+        // (Hook, Context, …) is a rating of the wrong rubric, not student data worth
+        // preserving. Ratings for items that survive in the Language set carry over;
+        // removed-item ratings are dropped (Neil 2026-07-03: his rated stale SA survived
+        // the v832 unfilled-only heal).
+        const oldRatings = {};
+        node.descendants(n => {
+            if (n.type && n.type.name === 'paragraph') {
+                const m = (n.textContent || '').trim().match(/^(.{2,60}?):\s*([1-5])\s*\/\s*5$/);
+                if (m) oldRatings[m[1].trim()] = m[2];
+            }
+            return true;
+        });
         canvasEditor.commands.insertContentAt({ from: pos, to: pos + node.nodeSize }, buildSelfAssessmentSection(false));
-        console.warn('WML SA-heal: replaced stale essay-shaped Self-Assessment with the Language P1 set');
+        let carried = 0;
+        Object.keys(oldRatings).forEach(label => {
+            const ok = _setParagraphContentViaPM(
+                t => (t || '').trim() === label + ': — / 5',
+                [{ text: label + ': ' + oldRatings[label] + ' / 5' }]
+            );
+            if (ok) carried++;
+        });
+        console.warn('WML SA-heal: replaced stale essay-shaped Self-Assessment with the Language P1 set'
+            + (carried ? ' — carried ' + carried + ' rating(s) over' : ''));
         try { if (typeof _scoreOverlaysRefresh === 'function') _scoreOverlaysRefresh(); } catch (_) {}
         try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
     }
