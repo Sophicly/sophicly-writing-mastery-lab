@@ -2084,7 +2084,12 @@
                 const bad = _fbAudit.failed[qKey];
                 delete _fbAudit.totals[qKey]; delete _fbAudit.failed[qKey];
                 if (qn === '5' || bad || !arr || arr.length < 2) return whole;
-                const expected = Math.floor(arr.reduce((a, b) => a + b, 0) + 0.5); // half-up, ONCE
+                // v7.19.838: respect the question's MIN(sum, max) cap — Q4's sections total
+                // 22 raw (Intro 2 + 3×6 + Conclusion 2) but the question is out of 20. Never
+                // "correct" a properly-capped total past its own denominator.
+                const denNum = parseInt(String(den).replace(/\D/g, ''), 10) || 0;
+                let expected = Math.floor(arr.reduce((a, b) => a + b, 0) + 0.5); // half-up, ONCE
+                if (denNum) expected = Math.min(expected, denNum);
                 if (expected === Math.round(parseFloat(val)) && String(parseFloat(val)) === String(Math.round(parseFloat(val)))) return whole;
                 if (expected !== parseFloat(val)) {
                     console.warn('WML MarkAudit: corrected', qKey, 'Total', val, '→', expected,
