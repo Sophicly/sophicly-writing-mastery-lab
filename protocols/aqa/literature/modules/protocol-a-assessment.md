@@ -1144,6 +1144,8 @@ Give me one specific example."
   * `analytics-improvements` — what measurably improved across the essay (or vs a previous attempt if one exists).  
   * `analytics-challenges` — the one or two biggest challenges, named plainly.  
 
+  **REDRAFT assessments only (the doc then also carries these two fields):** `action-next-topic` — the next topic you recommend (from their "Where to next?" answer and this assessment's priorities; if they named a preference in chat, use THEIRS) · `action-next-reason` — one sentence on why, tied to the weakest AO. Both stay editable by the student.  
+
   Do NOT re-emit these markers on any later turn unless a SYSTEM message asks you to.  
     
 * **\[AI\_INTERNAL\]** If the essay was diagnostic assessment AND word count was below 650, add the following advice: "One more practical note for future essays: aim for at least 650 words when writing exam practice. This gives you enough space for the detailed, developed argument needed to reach the higher AQA levels."  

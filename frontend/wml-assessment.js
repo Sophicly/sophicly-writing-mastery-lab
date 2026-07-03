@@ -1982,7 +1982,10 @@
     const _AP_FILE_FIELDS = ['action-grade-goal', 'action-priorities', 'action-short-term',
         'action-1-resources', 'action-2-lessons', 'action-3-support',
         'analytics-top-missed', 'analytics-optouts', 'analytics-repeated-errors',
-        'analytics-improvements', 'analytics-challenges'];
+        'analytics-improvements', 'analytics-challenges',
+        // v7.19.837 (Neil): redraft docs also auto-file Next Topic (student-editable).
+        // Only counted when the field EXISTS in the doc — diagnostic docs don't have them.
+        'action-next-topic', 'action-next-reason'];
     let _apFileRepairFired = false;
     function _emptyActionPlanFileFields() {
         if (!canvasEditor) return [];
