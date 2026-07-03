@@ -1355,7 +1355,7 @@
         // character class matched only one surrogate half, so `[🤔 Still confused]` and
         // `[💬 Different question]` leaked into the visible bubble while `[✓ Got it]`
         // (BMP ✓) stripped fine. Observed live in Neil's v809 run.
-        return String(text).replace(/`?\s*\[\s*(?:[✓🤔💬⏸]\s*)?(?:Got it[^\]]*|Still confused|Different question|Pause here)\s*\]\s*`?/giu, '');
+        return String(text).replace(/`?\s*\[\s*(?:[✓🤔💬⏸🔁]\s*)?(?:Got it[^\]]*|Still confused|Different question|Pause here|Nothing to revisit[^\]]*|Revisit a (?:question|section)|One more question)\s*\]\s*`?/giu, '');
     }
 
     // v7.19.709: deterministic params for a literature section's reflection panel, so the frontend
@@ -6883,6 +6883,31 @@
                             confirmBar.appendChild(_mkBtn('⏸ Pause here',
                                 `I need to pause — we'll continue later.`));
                             if (bc) bc.appendChild(confirmBar);
+                        }, 50);
+                    }
+                    // v7.19.842: END-OF-ASSESSMENT closing row renderer. v839 put the row in
+                    // the protocol but no renderer existed — the Got-it row above has one, and
+                    // generic quick-action detection is suppressed once total+grade are set —
+                    // so students saw raw backtick text with no click path to finish (Run 4).
+                    // Detection is tolerant (Run 4's AI emitted 3 of the 4 buttons): the
+                    // "Nothing to revisit" marker alone triggers the CANONICAL four buttons.
+                    const _hasClosingRow = /\[\s*✓?\s*Nothing to revisit[^\]]*\]/i.test(cleanReply);
+                    if (_hasClosingRow) {
+                        setTimeout(() => {
+                            const closeBubble = chatMessages.lastElementChild;
+                            const cbc = closeBubble ? (closeBubble.querySelector('.swml-bubble-content') || closeBubble) : null;
+                            if (!cbc || cbc.querySelector('.swml-quick-actions')) return;
+                            const rowBar = el('div', { className: 'swml-quick-actions' });
+                            const _mkClose = (label, payload) => el('button', {
+                                className: 'swml-quick-btn',
+                                textContent: label,
+                                onClick: () => { rowBar.remove(); chatTextarea.value = payload; sendCanvasMessage(); }
+                            });
+                            rowBar.appendChild(_mkClose('✓ Nothing to revisit — finish', 'Nothing to revisit — let’s finish.'));
+                            rowBar.appendChild(_mkClose('🔁 Revisit a question', 'I’d like to revisit a question.'));
+                            rowBar.appendChild(_mkClose('💬 One more question', 'I have one more question.'));
+                            rowBar.appendChild(_mkClose('⏸ Pause here', 'I need to pause — we’ll continue later.'));
+                            cbc.appendChild(rowBar);
                         }, 50);
                     }
                     // v7.19.393: legacy v7.17.54 bare [1][2][3][4][5] rating bar REMOVED.
