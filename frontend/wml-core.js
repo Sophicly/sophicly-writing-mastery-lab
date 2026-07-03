@@ -1825,10 +1825,15 @@ window.WML = (function() {
         // chat panel open (Neil: the export toast). Same anchor as the dynamic
         // island. Falls back to viewport centre outside the canvas.
         try {
-            const pane = document.querySelector('.swml-canvas-content');
-            if (pane && pane.offsetParent !== null) {
-                const r = pane.getBoundingClientRect();
-                if (r.width > 200) toast.style.left = Math.round(r.left + r.width / 2) + 'px';
+            // v7.19.839: anchor on the dynamic island ITSELF when present (Neil: toast should
+            // sit exactly like the island) — the v829 pane-centre approximation still read
+            // lopsided. Island → doc pane → CSS viewport centre.
+            const island = document.querySelector('.swml-scroll-index');
+            const anchor = (island && island.offsetParent !== null) ? island
+                : document.querySelector('.swml-canvas-content');
+            if (anchor && anchor.offsetParent !== null) {
+                const r = anchor.getBoundingClientRect();
+                if (r.width > 40) toast.style.left = Math.round(r.left + r.width / 2) + 'px';
             }
         } catch (_) { /* viewport centre */ }
         requestAnimationFrame(() => toast.classList.add('show'));
@@ -2425,6 +2430,10 @@ window.WML = (function() {
         // v7.19.466: Strip @FIELD_SET{...} AI-authored row-fill signals (Phase 3 — CW Step 3
         // loglines are written into the canvas rows, not echoed in the bubble).
         text = text.replace(/@FIELD_SET\s*\{[^}]*\}/g, '').trim();
+        // v7.19.839: collapse the blank-line stack the stripped marker lines leave behind —
+        // the auto-file turn emits 12+ markers on their own lines, which stripped into a huge
+        // empty gap in the bubble (Neil's screenshot).
+        text = text.replace(/\n[ \t]*(?:\n[ \t]*){2,}/g, '\n\n').trim();
         // Strip LaTeX $$ blocks
         text = text.replace(/\$\$[^$]*?\$\$/g, '').trim();
         // Strip Python-style function calls

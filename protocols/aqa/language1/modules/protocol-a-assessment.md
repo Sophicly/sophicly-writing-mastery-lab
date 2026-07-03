@@ -340,15 +340,20 @@ Output `@FB_BEGIN{"q":"Q2","para":"1","title":"Paragraph 1"}` on its own line, t
 
   The 6 non-bonus criteria form the 3.5 base; the BONUS adds on top, capped at 4.0. When absent:
   do NOT deduct, do NOT list as a weakness, OMIT the row entirely — it can only help.
-- **Penalties** — max 3 (−1.5). Each penalty MUST be: `CODE (−0.5): "[student's verbatim phrase]"
-  → Fix: "[one-line worked rewrite of that exact phrase]"`. Codes: H1 hanging/mis-punctuated
-  quotes · P1 comma splice/run-on · C1 lacks clarity/flow · T1 technique naming too micro ·
-  W1 weak analytical verb ("shows"/"tells us"/"is about") · S1 weak or repetitive sentence
-  starters (the/this/these) · S2 underdeveloped sentences (<2 lines) · L1 lacks sustained detail ·
-  B1 interpretation beyond text boundaries (max once per paragraph) · R1 retelling plot instead of
-  analysing. Priority order: analysis weaknesses (R1, B1, L1) → mechanics (W1, S1, S2, H1, P1, C1,
-  T1). If more than 3 faults exist, list the rest under "Additional issues" (named + verbatim
-  quote + fix, no deduction).
+- **Penalties** — max 3 (−1.5). Each penalty MUST be: `CODE — plain name (−0.5): "[student's
+  verbatim phrase]" → Fix: "[one-line worked rewrite of that exact phrase]"` (e.g. `W1 — weak
+  analytical verb (−0.5): …` — students must never meet a bare code). Codes: H1 hanging/
+  mis-punctuated quotes · P1 comma splice/run-on · C1 lacks clarity/flow · T1 technique naming
+  too micro · W1 weak analytical verb ("shows"/"tells us"/"is about") · S1 weak or repetitive
+  sentence starters (the/this/these) · S2 underdeveloped sentences (<2 lines) · L1 lacks
+  sustained detail · B1 interpretation beyond text boundaries (max once per paragraph) · R1
+  retelling plot instead of analysing. Priority order: analysis weaknesses (R1, B1, L1) →
+  mechanics (W1, S1, S2, H1, P1, C1, T1). If more than 3 faults exist, list the rest under
+  "Additional issues" (named + verbatim quote + fix, no deduction).
+  **ONE FAULT, ONE CHARGE (v7.19.839):** a fault already reflected in a criterion score takes
+  NO penalty, and a penalised fault is never also docked in a criterion — the same words are
+  never charged twice. **C1 is clarity/flow ONLY** — relevance faults are R1; stance/structure
+  shortfalls live in the criteria, never in C1.
 - Totals: `Total penalties: −X`, then on its own line: `Total Mark for Paragraph 1: X/4`
   (X = elements + bonus − penalties, decimal allowed e.g. `2.3/4` — NEVER rounded here, no
   "→ rounded" suffix, no "Base total" line; rounding happens once at the `Q2 Total` line.)
@@ -402,7 +407,7 @@ Q3 Total + calibration → Q-GATE), with these swaps:
 
 ---
 
-## QUESTION 4 — Evaluation (AO4, 20 marks — Intro 2 + BP1–3 × 6 + Conclusion 2, capped at 20)
+## QUESTION 4 — Evaluation (AO4, 20 marks — Intro 1 + BP1–3 × 6 + Conclusion 1 = exactly 20)
 
 **CRITICAL Q4 MARKING PRINCIPLE:** never award or deduct marks for whether the student agrees or
 disagrees with the statement — it is only a prompt to trigger evaluation. Marks come from HOW WELL
@@ -428,9 +433,9 @@ quote + fix, canonical `Total Mark for [title]: X/max` line, My Assessment (crit
 rule), BOTH golds (self-anchoring Model 2s). Missing sections → missing-paragraph rule; extra
 paragraphs → Tier 1/Tier 2.
 
-- **Introduction (2 marks)** — `para:"intro"`, `title:"Introduction"`. Criteria: clear opening
-  engaging the question's evaluative keywords (AO4) 0.5 · a sophisticated evaluative stance — not
-  bare agree/disagree (AO4) 0.5 · precise thesis introducing three evaluative points (AO4) 1.0.
+- **Introduction (1 mark)** — `para:"intro"`, `title:"Introduction"`. Criteria: clear opening
+  engaging the question's evaluative keywords with a sophisticated stance — not bare
+  agree/disagree (AO4) 0.5 · precise thesis introducing three evaluative points (AO4) 0.5.
   Penalties: max 1 (−0.5) from the Q2 code list. Golds: 3–4 sentences — stance + three-point
   evaluative thesis (Model 2's thesis anchors BP1–3's Model 2s).
 - **Body Paragraph 1 (6 marks)** — `para:"BP1"`, `title:"Body Paragraph 1"`. Criteria: topic
@@ -445,10 +450,16 @@ paragraphs → Tier 1/Tier 2.
   depth.
 - **Body Paragraph 3 (6 marks)** — `para:"BP3"`, `title:"Body Paragraph 3"`. Same as BP1; equal
   depth.
-- **Conclusion (2 marks)** — `para:"conclusion"`, `title:"Conclusion"`. Criteria: restates the
-  evaluative stance in fresh words (AO4) 0.5 · synthesises the three points against the statement
-  (AO4) 1.0 · closes on the writer's overall achievement (AO4) 0.5. Penalties: max 1 (−0.5).
+- **Conclusion (1 mark)** — `para:"conclusion"`, `title:"Conclusion"`. Criteria: restates the
+  evaluative stance in fresh words AND synthesises the three points against the statement
+  (AO4) 0.5 · closes on the writer's overall achievement (AO4) 0.5. Penalties: max 1 (−0.5).
   Golds: 3–4 sentences; Model 2 resolves the Model-2 thesis.
+  **PRESENT-BUT-MISFILED (checked BEFORE scoring 0):** if the Conclusion section is empty but
+  the final body paragraph's closing sentences are conclusion material ("To conclude…", a
+  whole-response restatement), MARK those sentences against the Conclusion criteria here —
+  credit them where they stand, add ONE line ("file these in your Conclusion section next
+  time"), and do NOT also penalise or criterion-dock those same sentences inside the body
+  paragraph. Score 0 ONLY when no conclusion content exists anywhere in the response.
 
 **STEP 3 — Question wrap (same turn as the Conclusion card, after `@FB_END`):**
 - `Q4 Total: A/20` on its own line (MIN(sum, 20), rounded half-up to a WHOLE number — silent cap,
@@ -540,7 +551,8 @@ In order:
    - **Extra/missing-paragraph note** if applicable (Tier 1 estimates or Tier 2 zeros restated).
    - **Word-count advice** if the Q5 ceiling applied.
    - **Penalty & Ceiling Ledger:** sum every penalty actually deducted across the paper, grouped
-     by code with counts (e.g. "W1 ×5 = −2.5 · P1 ×2 = −1.0 — total −4.5 marks"), plus the
+     by code with its PLAIN-ENGLISH name and count (e.g. "W1 — weak analytical verb ×5 = −2.5 ·
+     P1 — comma splice ×2 = −1.0 — total −4.5 marks"; never a bare code), plus the
      word-count ceiling's cost if it reduced Q5 (e.g. "ceiling 27/40: −2"). Then the reframe, on
      its own line: "**Without penalties you'd be on [X+P]/80 = [Y]% — a Grade [N]** (canonical
      ladder). Penalty marks are the cheapest marks to reclaim: they are habits, not skills."
@@ -608,7 +620,8 @@ In order:
    `[ASSESSMENT_COMPLETE]` on its own line (emit it now, in THIS closing turn — ONCE, never after
    an individual question). Then end with this exact line:
    `That wraps the assessment. Anything you'd like to revisit before you mark this complete?`
-   followed immediately by the 4-button row, verbatim:
-   `[✓ Got it — continue]` `[🤔 Still confused]` `[💬 Different question]` `[⏸ Pause here]`
+   followed immediately by the 4-button row, verbatim (v7.19.839 — end-of-assessment options,
+   NOT the mid-assessment Q-GATE row):
+   `[✓ Nothing to revisit — finish]` `[🔁 Revisit a question]` `[💬 One more question]` `[⏸ Pause here]`
    After ✓: tell the student to click **Mark Complete** — do NOT offer a task menu (no "start a
    new assessment / plan / polish" options; that menu is retired).

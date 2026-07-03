@@ -1883,6 +1883,17 @@
                 wrote = true;
             });
             if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
+            // v7.19.839: show the filing happening — scroll the doc to the Action Plan when
+            // the auto-file lands (Neil: it filled silently off-screen).
+            if (wrote && sets.some(s => /^(action|analytics)-/.test(s.field))) {
+                setTimeout(() => {
+                    try {
+                        const host = (canvasEditor.options && canvasEditor.options.element) || document;
+                        const sec = host.querySelector('.swml-section-block[data-section-label="Action Plan"]');
+                        if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } catch (_) {}
+                }, 400);
+            }
         } catch (e) {
             console.warn('WML FieldSet: error (non-fatal)', e && e.message);
         }
@@ -2030,12 +2041,25 @@
     // Runs on the RAW reply before display/history/filing, so chat, doc cards, sidebar
     // and Score Summary all read the same corrected numbers.
     const _fbAudit = { totals: {}, failed: {} };
+    // v7.19.839: per-card applied-penalty ledger (code-owned). Run 3 showed the AI-authored
+    // "Penalty & Ceiling Ledger" materially wrong (claimed −5.0, cards deducted −6.5, one
+    // location duplicated, four omitted) — so the ledger is rebuilt here from what the cards
+    // ACTUALLY deducted. Keyed per card (qKey|para) so re-fires overwrite, never double-count.
+    let _penLedgerCards = {};
+    const _PEN_NAMES = { W1: 'weak analytical verb', C1: 'clarity/flow', T1: 'imprecise technique naming',
+        H1: 'hanging/mis-punctuated quote', P1: 'comma splice/run-on', S1: 'weak sentence starters',
+        S2: 'underdeveloped sentence', L1: 'lacks sustained detail', B1: 'beyond text boundaries',
+        R1: 'retelling instead of analysing', E1: 'lacks evaluative language', K1: 'misses the statement keywords',
+        STR2: 'structure divergence' };
     function _auditAssessmentArithmetic(reply) {
         try {
             if (!reply) return reply;
-            if (reply.indexOf('@FB_BEGIN') === -1 && !/Q\d+\s*Total:/.test(reply)) return reply;
+            if (reply.indexOf('@FB_BEGIN') === -1 && !/Q\d+\s*Total:/.test(reply)
+                && !/Penalty (?:& Ceiling )?Ledger/i.test(reply)) return reply;
             const r2 = x => Math.round(x * 100) / 100;
             let out = String(reply);
+            // fresh assessment run starting (Q2's reflect gate is emitted once) → reset ledger
+            if (out.indexOf('@REFLECT_GATE{"q":"Q2"') !== -1) _penLedgerCards = {};
             // ---- Pass 1: each card — recompute total from its own table ----
             out = out.replace(/@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)@FB_END/g, (whole, metaRaw, body) => {
                 let meta = null;
@@ -2061,8 +2085,23 @@
                     let pm; const penRe = /(?:^|\n)\s*(?:[·•*-]\s*)?\*{0,2}[A-Z]\d\*{0,2}\s*\([−–-]\s*([\d.]+)\)/g;
                     while ((pm = penRe.exec(body)) !== null) pen += parseFloat(pm[1]);
                 }
+                // v7.19.839: record this card's individually-applied penalty codes for the
+                // code-built ledger (re-fires overwrite the same card key).
+                {
+                    const codes = [];
+                    let cm; const codeRe = /(?:^|\n)\s*(?:[·•*-]\s*)?\*{0,2}([A-Z]{1,3}\d)\*{0,2}[^(\n]{0,60}\((?:−|-|–)\s*([\d.]+)\)/g;
+                    while ((cm = codeRe.exec(body)) !== null) codes.push({ code: cm[1], val: parseFloat(cm[2]) });
+                    _penLedgerCards[qKey + '|' + String((meta && meta.para) || '')] = { q: qKey, codes: codes };
+                }
                 const totalRe = /(Total Mark for [^:\n]{1,50}:\s*)([\d.]+)\s*\/\s*(\d+(?:\.\d+)?)([^\n]*)/;
                 const tm = body.match(totalRe);
+                // v7.19.839: a MISSING-paragraph card legitimately has no table — "Total Mark
+                // for X: 0/2" with zero scored rows is a valid, auditable ZERO (Run 3's absent
+                // Q4 conclusion poisoned the whole Q4 verify and let 9.4→"10" through).
+                if (tm && scoredRows === 0 && parseFloat(tm[2]) === 0) {
+                    (_fbAudit.totals[qKey] = _fbAudit.totals[qKey] || []).push(0);
+                    return whole;
+                }
                 if (!tm || scoredRows < 3) {
                     _fbAudit.failed[qKey] = true;   // card unauditable — never "correct" its Qn Total
                     return whole;
@@ -2097,8 +2136,52 @@
                 }
                 return prefix + expected + den;
             });
+            // ---- Pass 3 (v7.19.839): rebuild the Penalty Ledger from ACTUAL card deductions ----
+            if (/Penalty (?:& Ceiling )?Ledger/i.test(out)) out = _rewritePenaltyLedger(out);
             return out;
         } catch (e) { console.warn('WML MarkAudit: skipped (non-fatal)', e && e.message); return reply; }
+    }
+
+    // v7.19.839: the Final Summary's Penalty Ledger is rebuilt from what the cards ACTUALLY
+    // deducted (Run 3's AI-authored ledger: wrong counts, a duplicated location, four omitted,
+    // wrong counterfactual). Codes carry their plain-English names (Neil: "even I don't know
+    // what W1 means"). Keeps the AI's ceiling sentence if present; the without-penalties
+    // counterfactual is recomputed from the reply's own Total line + the true penalty sum.
+    function _rewritePenaltyLedger(out) {
+        try {
+            const byCode = {}; let penSum = 0;
+            Object.keys(_penLedgerCards).forEach(k => {
+                (_penLedgerCards[k].codes || []).forEach(c => {
+                    if (!byCode[c.code]) byCode[c.code] = { n: 0, sum: 0, where: [] };
+                    byCode[c.code].n++; byCode[c.code].sum += c.val; penSum += c.val;
+                    const loc = k.split('|');
+                    byCode[c.code].where.push(loc[0] + (loc[1] ? ' ¶' + loc[1] : ''));
+                });
+            });
+            if (!penSum) return out; // nothing recorded (resumed mid-session) — leave the AI's version
+            const re = /(\*{0,2}Penalty (?:& Ceiling )?Ledger:?\*{0,2})([\s\S]*?Without penalties[^\n]*)/i;
+            const oldChunk = out.match(re);
+            if (!oldChunk) return out;
+            const r2 = x => Math.round(x * 100) / 100;
+            const codeLines = Object.keys(byCode).sort().map(c => {
+                const b = byCode[c];
+                return '- **' + c + ' — ' + (_PEN_NAMES[c] || 'penalty') + '** ×' + b.n + ' = −' + r2(b.sum) + ' (' + b.where.join(', ') + ')';
+            }).join('\n');
+            let ceilLine = '';
+            const cl = oldChunk[2].match(/[^\n]*ceiling[^\n]*/i);
+            if (cl) ceilLine = '\n' + cl[0].trim();
+            let counter = '';
+            const totM = out.match(/(?:^|\n)\s*\*{0,2}Total:\s*\*{0,2}\s*(\d+)\s*\/\s*(\d+)/);
+            if (totM) {
+                const tot = parseInt(totM[1], 10), max = parseInt(totM[2], 10);
+                const noPen = Math.min(max, Math.round(tot + penSum));
+                const pct = Math.round((noPen / max) * 1000) / 10;
+                counter = '\n\n**Without penalties you\'d be on ' + noPen + '/' + max + ' = ' + pct + '% — a Grade ' + _ladderGrade(pct) + '.** Penalty marks are the cheapest marks to reclaim: they are habits, not skills.';
+            }
+            out = out.replace(re, (m, head) => head + '\n' + codeLines + '\n\n**Total penalties across the paper: −' + r2(penSum) + ' marks**' + ceilLine + counter);
+            console.warn('WML MarkAudit: Penalty Ledger rebuilt from card deductions (−' + r2(penSum) + ')');
+            return out;
+        } catch (e) { console.warn('WML MarkAudit: ledger rebuild skipped', e && e.message); return out; }
     }
 
     // v7.19.832: canonical-ladder enforcement — ONE ladder (9≥85 · 8≥75 · 7≥65 · 6≥55 ·
