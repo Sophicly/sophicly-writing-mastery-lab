@@ -1820,6 +1820,17 @@ window.WML = (function() {
         toast.appendChild(close);
         const root = $('#swml-root') || document.body;
         root.appendChild(toast);
+        // v7.19.829: centre on the DOCUMENT column when the canvas is open — a
+        // viewport-centred toast reads lopsided next to the doc with the sidebar +
+        // chat panel open (Neil: the export toast). Same anchor as the dynamic
+        // island. Falls back to viewport centre outside the canvas.
+        try {
+            const pane = document.querySelector('.swml-canvas-content');
+            if (pane && pane.offsetParent !== null) {
+                const r = pane.getBoundingClientRect();
+                if (r.width > 200) toast.style.left = Math.round(r.left + r.width / 2) + 'px';
+            }
+        } catch (_) { /* viewport centre */ }
         requestAnimationFrame(() => toast.classList.add('show'));
         setTimeout(() => {
             if (toast.parentNode) {

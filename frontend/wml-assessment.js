@@ -634,6 +634,40 @@
         return /^language[cu][1-9]$/.test(s);
     }
 
+    // v7.19.829: keyword-recall target rotates by ATTEMPT (Neil: always-Q4 means the
+    // student rehearses the same answer every run). Deterministic, code-owned:
+    // Q4 (biggest prize) → Q2 → Q3 → Q5, repeat. MUST stay identical to the router's
+    // rotation (class-protocol-router.php, build_questions_state_block setup block).
+    function _recallTargetQ() {
+        const n = Math.max(1, parseInt(String(state.attempt == null ? '' : state.attempt).replace(/\D/g, ''), 10) || 1);
+        return ['Q4', 'Q2', 'Q3', 'Q5'][(n - 1) % 4];
+    }
+    // Builds { plain, html } for the language pre-chain keyword-recall ask. EVERY
+    // variant keeps the literal phrase "key aspects" — the pre-chain stage detector
+    // gates on it (askedBy(/key aspects/i)); dropping it would re-ask forever.
+    function _recallAskForTarget(qText) {
+        const tq = _recallTargetQ();
+        const lead = 'Good — noted. One more check before we begin marking. ';
+        if (tq === 'Q2') return {
+            plain: lead + 'Thinking back to **Question 2** — the language question: what were the **key aspects** it asked you to analyse, and which kinds of language choices did it point you to?',
+            html: '<p>' + lead + 'Thinking back to <strong>Question 2</strong> — the language question:</p><p>What were the <strong>key aspects</strong> it asked you to analyse, and which kinds of language choices did it point you to? (type or use the mic)</p>'
+        };
+        if (tq === 'Q3') return {
+            plain: lead + 'Thinking back to **Question 3** — the structure question: what were the **key aspects** it asked you to analyse, and how is that different from Question 2?',
+            html: '<p>' + lead + 'Thinking back to <strong>Question 3</strong> — the structure question:</p><p>What were the <strong>key aspects</strong> it asked you to analyse — and how is that different from Question 2? (type or use the mic)</p>'
+        };
+        if (tq === 'Q5') return {
+            plain: lead + 'Thinking back to **Question 5** — the creative writing task: what were the **key aspects** it rewards? (Hint: two assessment objectives — what does each one reward?)',
+            html: '<p>' + lead + 'Thinking back to <strong>Question 5</strong> — the creative writing task:</p><p>What were the <strong>key aspects</strong> it rewards? (Hint: two assessment objectives — what does each one reward?) (type or use the mic)</p>'
+        };
+        const qPlain = qText ? "'" + qText + "'" : 'the evaluation question';
+        const qBox = qText ? '<div style="margin:10px 0;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:13px;font-style:italic">' + qText + '</p></div>' : '';
+        return {
+            plain: lead + 'Thinking back to **Question 4** in particular: ' + qPlain + ' — what were the **key aspects** it asked you to evaluate?',
+            html: '<p>' + lead + 'Thinking back to <strong>Question 4</strong> in particular:</p>' + qBox + '<p>What were the <strong>key aspects</strong> it asked you to evaluate? (type or use the mic)</p>'
+        };
+    }
+
     // v7.19.828: ONE builder for the greeting duration info-note. Language papers are
     // multi-question (Q1–Q5; the protocol budgets 45-60 minutes for the full paper) —
     // the old hardcoded "20-25 minutes" only fits single-essay literature assessments.
@@ -678,14 +712,21 @@
         // strand the pointer (sequential Q1→Q5).
         const _extractParas = function (text, qmax) {
             const t = String(text || '');
-            // Intro/Conclusion are real paragraphs only on essay-weight questions (Q4 ~20);
-            // on Q2/Q3 the words can appear in prose feedback → match numbered paragraphs only.
+            // v7.19.829: anchor on the region heading "Mark Breakdown — <name>" ONLY. The old
+            // any-mention scan also counted PROSE references ("…Paragraph 2 drifting into
+            // language analysis" in a calibration check) → phantom paragraph beats (Neil's
+            // live run: Q4 jumped ¶1 → ¶3). Every marked region emits exactly one
+            // "Mark Breakdown — X" heading (protocol card format), so it is the one reliable
+            // region marker. Intro/Conclusion are real regions only on essay-weight Qs (~20).
             const re = qmax >= 16
-                ? /(?:Body\s+Paragraph|Paragraph)\s*(\d+)|Introduction|Conclusion/gi
-                : /(?:Body\s+Paragraph|Paragraph)\s*(\d+)/gi;
+                ? /Mark\s+Breakdown\s*[—–-]+\s*((?:Body\s+Paragraph|Paragraph)\s*\d+|Introduction|Conclusion)/gi
+                : /Mark\s+Breakdown\s*[—–-]+\s*(?:Body\s+Paragraph|Paragraph)\s*(\d+)/gi;
             const out = []; let m;
             while ((m = re.exec(t)) !== null) {
-                const label = m[1] ? ('Paragraph ' + m[1]) : (/Introduction/i.test(m[0]) ? 'Introduction' : 'Conclusion');
+                const raw = String(m[1] || '');
+                const label = /introduction/i.test(raw) ? 'Introduction'
+                    : /conclusion/i.test(raw) ? 'Conclusion'
+                    : ('Paragraph ' + ((raw.match(/(\d+)/) || [])[1] || ''));
                 if (out.indexOf(label) === -1) out.push(label);
             }
             return out;
@@ -720,14 +761,19 @@
                 beats.push({ label: 'Predict & AO', done: behind || predicted || q.marked });
                 const markedParas = _extractParas(q.text, q.max);
                 const isActive = (i === firstUnmarkedIdx);
-                const totalParas = markedParas.length + ((isActive && !q.marked) ? 1 : 0);
-                for (let p = 1; p <= totalParas; p++) {
-                    const pName = markedParas[p - 1] || ('Paragraph ' + p);
-                    const pMarked = behind || q.marked || p <= markedParas.length; // this ¶'s mark is filed
+                // v7.19.829: the live in-progress beat. Never fabricate one after the
+                // Conclusion is filed (that produced a phantom "Paragraph 6" on Q4 while
+                // the question total was pending); label it as the next NUMBERED paragraph —
+                // Intro/Conclusion regions rename it when they actually file (monotonic).
+                const addLive = isActive && !q.marked && markedParas.indexOf('Conclusion') === -1;
+                const liveName = 'Paragraph ' + (markedParas.filter(n => /^Paragraph \d+$/.test(n)).length + 1);
+                const names = addLive ? markedParas.concat([liveName]) : markedParas.slice();
+                names.forEach((pName, pIdx) => {
+                    const pMarked = behind || q.marked || pIdx < markedParas.length; // this ¶'s mark is filed
                     beats.push({ label: pName + ' · Mark & Feedback', done: pMarked });
                     beats.push({ label: pName + ' · Gold', done: pMarked });
-                }
-                if (totalParas === 0) {                       // not yet started — element fallback
+                });
+                if (!names.length) {                          // not yet started — element fallback
                     beats.push({ label: 'Mark & Feedback', done: behind });
                     beats.push({ label: 'Gold Models', done: behind });
                 }
@@ -1327,6 +1373,20 @@
         return "I'm aiming for " + g + ".";
     }
 
+    // v7.19.829: strip CHAT FURNITURE from content bound for the document. The Q-GATE
+    // ("Does that clear it up? Shall we continue with Question 2?" + the button-marker
+    // row `[✓ Got it — continue]` `[🤔 Still confused]` …) sits in the same message as
+    // the marking content, and Neil's live run filed it into the Q1 + Q5 feedback boxes.
+    // Deterministic filter, applied by every card detector (marker pass + both fallbacks)
+    // — gate/button lines are chat UI, never document content.
+    function _stripChatFurniture(s) {
+        return String(s || '')
+            .replace(/\n\s*[^\n]*Does that clear it up[\s\S]*$/i, '')     // gate question + everything after
+            .replace(/\n\s*[^\n]*Shall we continue with[\s\S]*$/i, '')    // gate question (variant without the lead-in)
+            .replace(/^[ \t]*(?:`?\[[^\]\n]{1,60}\]`?[ \t]*){2,}$/gm, '') // rows made only of [button] tokens
+            .trim();
+    }
+
     // v7.19.599: content-fallback feedback parse when the model omits @FB markers
     // entirely. The marking turn is recognisable (a per-paragraph total + the two gold
     // models). We file the whole assessment block into the box for the Question the
@@ -1358,10 +1418,9 @@
         let body = _stripFeedbackMarkers(t);
         const startM = body.search(/(?:Mark Breakdown|STRENGTHS|Statement\s*1\b|(?:Q\d|Question\s*\d|Paragraph\s*\d)[^\n]{0,40}Assessment)/i);
         if (startM > 0) body = body.slice(startM);
-        body = body
+        body = _stripChatFurniture(body
             .replace(/\n\s*[^\n]*\bType\s+\*{0,2}[CY]\*{0,2}\b[\s\S]*$/i, '')               // drop trailing Y/C gate
-            .replace(/\n\s*\*{0,2}\s*Q(?:uestion)?\s*[1-5]\s*Total\b[\s\S]*$/i, '')         // v7.19.606: question total is its OWN card — don't duplicate it inside the paragraph card
-            .trim();
+            .replace(/\n\s*\*{0,2}\s*Q(?:uestion)?\s*[1-5]\s*Total\b[\s\S]*$/i, ''));       // v7.19.606: question total is its OWN card — don't duplicate it inside the paragraph card
         return body ? [{ q: 'Q' + qm[1], title: title, body: body, _detected: true }] : null;
     }
 
@@ -1387,9 +1446,8 @@
         const start = body.search(HDR);
         if (start < 0) return null;
         const q = 'Q' + ((body.slice(start).match(/Q(?:uestion)?\s*([1-5])/i) || [])[1] || '');
-        body = body.slice(start)
-            .replace(/\n\s*[^\n]*\bType\s+\*{0,2}[CY]\*{0,2}\b[\s\S]*$/i, '')
-            .trim();
+        body = _stripChatFurniture(body.slice(start)
+            .replace(/\n\s*[^\n]*\bType\s+\*{0,2}[CY]\*{0,2}\b[\s\S]*$/i, ''));
         return body ? { q: q, title: 'Question Total', body: body, _detected: true } : null;
     }
 
@@ -1492,7 +1550,11 @@
         const t = String(reply || '');
         const lm = t.match(new RegExp('Q(?:uestion)?\\s*' + qNum + '\\s*Total\\b[^\\n]*', 'i'));
         if (!lm) return null;
-        const pairs = lm[0].match(/\d+(?:\.\d+)?\s*\/\s*\d+/g);
+        // v7.19.829: drop parenthesised asides BEFORE taking the last X/Y pair. Neil's live
+        // Q5 line ended "= 25/40 (ceilinged at 27/40 — … does not reduce your mark)" and the
+        // last-pair read filed the CEILING (27) as the awarded mark → Score Summary counted
+        // 55/80 instead of 53/80. The awarded mark is always outside parentheses.
+        const pairs = lm[0].replace(/\([^)]*\)/g, '').match(/\d+(?:\.\d+)?\s*\/\s*\d+/g);
         if (!pairs || !pairs.length) return null;
         const last = pairs[pairs.length - 1].split('/');
         const raw = parseFloat(last[0]);
@@ -1545,11 +1607,10 @@
                 try { meta = JSON.parse(m[1]); } catch (_) { continue; }
                 const q = meta && meta.q ? String(meta.q).trim() : '';
                 const title = meta && meta.title ? String(meta.title).trim() : '';
-                const body = (m[2] || '')
+                const body = _stripChatFurniture((m[2] || '')
                     .replace(/@FB_END[\s\S]*$/, '')
                     .replace(/\n\s*[^\n]*\bType\s+\*{0,2}[CY]\*{0,2}\b[\s\S]*$/i, '') // drop trailing Y/C gate if @FB_END missing
-                    .replace(/\n\s*\*{0,2}\s*Q(?:uestion)?\s*[1-5]\s*Total\b[\s\S]*$/i, '') // v7.19.606: if @FB_END dropped, don't let the marker body swallow the question total (it's its own card)
-                    .trim();
+                    .replace(/\n\s*\*{0,2}\s*Q(?:uestion)?\s*[1-5]\s*Total\b[\s\S]*$/i, '')); // v7.19.606: if @FB_END dropped, don't let the marker body swallow the question total (it's its own card)
                 if (q && body) cards.push({ q: q, title: title, body: body });
             }
             // Fallback: no usable markers → detect the marking block from natural output.
@@ -1592,6 +1653,7 @@
                 const cardHeading = _cardTitle
                     ? (_cardTitle.toLowerCase() === String(card.q || '').trim().toLowerCase() ? _cardTitle : (card.q + ' — ' + _cardTitle))
                     : (card.q + ' — Assessment');
+                card._heading = cardHeading; // v7.19.829: scroll target — the region just filed, not the box top
                 const html = cwMarkdownToDocHtml('### ' + cardHeading + '\n\n' + card.body);
                 const boxInner = targetPos + 1;
                 const boxEnd = targetPos + targetNode.nodeSize - 1;
@@ -1703,8 +1765,17 @@
                             if (key0 && _paraKey(lbl) === key0) tgtEl = b;
                         });
                     if (tgtEl) {
-                        _swmlScrollToTop(tgtEl);
-                        console.log('[WML feedback] auto-scrolled to feedback box', key0);
+                        // v7.19.829: scroll to the REGION just filed, not the box top. Multi-region
+                        // boxes (Q4 = Intro + BP1-3 + Conclusion) grow long — landing at the box top
+                        // put the new feedback below the fold every time (Neil's live run). The card
+                        // heading is the region's identity (v604), so find its <h3> inside the box.
+                        const head0 = (cards[0] || {})._heading || '';
+                        let hEl = null;
+                        if (head0) tgtEl.querySelectorAll('h3').forEach(h => {
+                            if (!hEl && (h.textContent || '').trim() === head0) hEl = h;
+                        });
+                        _swmlScrollToTop(hEl || tgtEl);
+                        console.log('[WML feedback] auto-scrolled to', hEl ? ('region "' + head0 + '"') : ('feedback box ' + key0));
                     }
                 } catch (_) { /* scroll is best-effort, never block */ }
             }
@@ -5047,7 +5118,16 @@
                 const detectText = rawText || text.replace(/<[^>]+>/g, '');
                 const canvasAssessDone = state.task === 'assessment' && state.plan.total_score && state.plan.grade;
                 const isHattieQuestion = /(?:Where\s+am\s+I\s+going|How\s+am\s+I\s+going|Where\s+to\s+next|transfer.*skills|how\s+will\s+you.*apply|Session\s+Complete)/i.test(detectText);
-                const actions = (canvasAssessDone || isHattieQuestion || _reflectData || (opts && opts.suppressActions)) ? [] : detectQuickActions(detectText);
+                let actions = (canvasAssessDone || isHattieQuestion || _reflectData || (opts && opts.suppressActions)) ? [] : detectQuickActions(detectText);
+                // v7.19.829: Hattie / post-completion turns suppress GENERIC detection
+                // (free-text reflection wanted), but when the message itself lists lettered
+                // options ("Where am I going? A) … F)") those are explicit choices the
+                // student must be able to CLICK (Neil: always give a click path to the next
+                // step). Reflect panels + explicit suppressActions stay absolute.
+                if (!actions.length && (canvasAssessDone || isHattieQuestion) && !_reflectData && !(opts && opts.suppressActions)) {
+                    const _letters = detectQuickActions(detectText);
+                    if (_letters.length >= 2 && _letters.every(a => /^[A-Z]\)/.test(a.label || ''))) actions = _letters;
+                }
                 if (actions.length > 0) {
                     const isMulti = /(?:pick|choose|select|commit to)\s*(?:(?:up to|between|at least)?\s*)?(\d)\s*[-\u2013to]+\s*(\d)/i.test(detectText)
                         || /(?:pick|choose|select)\s+(?:multiple|several|a few|some)\b/i.test(detectText)
@@ -5800,13 +5880,11 @@
                 // on a stale editor ref, which dropped the question quote (observed live).
                 const qText = (((typeof extractEssayQuestion === 'function' && canvasEditor) ? (extractEssayQuestion(canvasEditor) || '') : '') || state.question || '');
                 if (_pcLang) {
-                    // v7.19.826: language papers — one paper-start recall anchored on the
-                    // evaluation question (Q4); each question's lead-in restates its own
-                    // focus later (delta-doc D3).
-                    const qPlain = qText ? `'${qText}'` : 'the evaluation question';
-                    plain = `Good — noted. One more check before we begin marking. Thinking back to **Question 4** in particular: ${qPlain} — what were the **key aspects** it asked you to evaluate?`;
-                    const qBox = qText ? `<div style="margin:10px 0;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
-                    html = `<p>Good — noted. One more check before we begin marking. Thinking back to <strong>Question 4</strong> in particular:</p>${qBox}<p>What were the <strong>key aspects</strong> it asked you to evaluate? (type or use the mic)</p>`;
+                    // v7.19.826: language papers — one paper-start recall; v7.19.829: the
+                    // target question ROTATES by attempt (shared _recallAskForTarget —
+                    // identical rotation to the router's setup state block).
+                    const _ra = _recallAskForTarget(qText);
+                    plain = _ra.plain; html = _ra.html;
                 } else {
                     const qPlain = qText ? `'${qText}'` : 'your essay question';
                     plain = `Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering: ${qPlain} — what were the **key aspects** this question asked you to explore?`;
@@ -10841,7 +10919,9 @@
             const srcEl = typeof sourceIdx === 'number' ? sourceEls[sourceIdx] : null;
             const isTabsMode = sourceIdx === 'tabs' && sourceEls && sourceEls.length >= 2;
             const isEssayMode = sourceIdx === 'essay'; // v7.19.813: student's own response(s), for side-by-side feedback reading
-            const label = isEssayMode ? 'My Essay' : (isTabsMode ? 'Extract' : (srcEl ? (srcEl.getAttribute('data-section-label') || ('Source ' + (sourceIdx + 1))) : (sourceEls.length > 0 ? 'Source Material' : 'Extract')));
+            const isFeedbackMode = sourceIdx === 'feedback'; // v7.19.829 (Neil): every question's filed feedback in its own pad
+            const _workPad = _isAnyLanguagePaper() ? 'My Response' : 'My Essay'; // v7.19.829: language papers aren't essays
+            const label = isFeedbackMode ? 'Feedback' : (isEssayMode ? _workPad : (isTabsMode ? 'Extract' : (srcEl ? (srcEl.getAttribute('data-section-label') || ('Source ' + (sourceIdx + 1))) : (sourceEls.length > 0 ? 'Source Material' : 'Extract'))));
             header.appendChild(el('span', { textContent: label }));
             header.appendChild(el('button', {
                 className: 'swml-extract-panel-close', textContent: '✕',
@@ -10851,7 +10931,27 @@
 
             const body = el('div', { className: 'swml-extract-panel-body' });
 
-            if (isEssayMode) {
+            if (isFeedbackMode) {
+                // v7.19.829 (Neil): clone every feedback section with real content so the
+                // student can fill Self-Assessment / Analytics / Action Plan with their
+                // feedback beside them — no scroll ping-pong. Read-only viewing pad.
+                const fbEls = editorEl.querySelectorAll('[data-section-type="feedback"]');
+                let fbAdded = 0;
+                fbEls.forEach((f, i) => {
+                    const txt = (f.textContent || '').trim();
+                    if (!txt || /will appear after assessment|will be assessed here|appear here after/i.test(txt)) return;
+                    const fLbl = f.getAttribute('data-section-label') || ('Feedback ' + (i + 1));
+                    body.appendChild(el('div', { className: 'swml-extract-essay-heading', textContent: fLbl }));
+                    const cloned = _stripChipsFromClone(f.cloneNode(true));
+                    cloned.removeAttribute('contenteditable');
+                    cloned.querySelectorAll('[contenteditable]').forEach(n => n.setAttribute('contenteditable', 'false'));
+                    body.appendChild(cloned);
+                    fbAdded++;
+                });
+                if (!fbAdded) {
+                    body.appendChild(el('p', { textContent: 'No feedback yet — it will appear here once marking begins.' }));
+                }
+            } else if (isEssayMode) {
                 // v7.19.813 (Neil): clone every response section so the student can read
                 // their own writing side-by-side with the feedback boxes. Multi-question
                 // papers (language, Eduqas part a/b) come free: each non-empty response
@@ -10872,7 +10972,7 @@
                     essayAdded++;
                 });
                 if (!essayAdded) {
-                    body.appendChild(el('p', { textContent: 'Nothing written yet — your essay will appear here once you write it.' }));
+                    body.appendChild(el('p', { textContent: 'Nothing written yet — your ' + (_isAnyLanguagePaper() ? 'response' : 'essay') + ' will appear here once you write it.' }));
                 }
             } else if (isTabsMode) {
                 // v7.19.86: Tab strip for multi-extract docs (exam_crib has 10 extracts).
@@ -11025,28 +11125,30 @@
             extractPanels[sourceIdx] = panel;
             extractBtn.classList.add('active');
 
-            // v7.19.813 (Neil): "My Essay" toggle in every non-essay panel header —
-            // spawns an independent floating panel with the student's own response(s)
-            // so feedback can be read side-by-side with the writing it critiques.
-            // Same pattern as the "+ Source B" header button.
-            if (!isEssayMode) {
-                const essayBtn = el('button', {
+            // v7.19.813 (Neil): "My Essay/Response" toggle in every non-essay panel header;
+            // v7.19.829 (Neil): "+ Feedback" toggle likewise — every question's filed
+            // feedback in its own floating pad, side-by-side while completing
+            // Self-Assessment / Analytics / Action Plan. Same pattern as "+ Source B".
+            const _addPadToggle = (key, plusLabel, spawnPos) => {
+                const btn = el('button', {
                     className: 'swml-extract-tab',
-                    textContent: '+ My Essay',
+                    textContent: '+ ' + plusLabel,
                     style: { marginLeft: '8px', fontSize: '10px', padding: '3px 8px' },
                     onClick: (e) => {
                         e.stopPropagation();
-                        if (extractPanels['essay']) {
-                            extractPanels['essay'].remove(); delete extractPanels['essay'];
-                            essayBtn.textContent = '+ My Essay';
+                        if (extractPanels[key]) {
+                            extractPanels[key].remove(); delete extractPanels[key];
+                            btn.textContent = '+ ' + plusLabel;
                         } else {
-                            spawnExtractPanel([], 'essay', { top: '110px', right: '48px' });
-                            essayBtn.textContent = '− My Essay';
+                            spawnExtractPanel([], key, spawnPos);
+                            btn.textContent = '− ' + plusLabel;
                         }
                     }
                 });
-                header.insertBefore(essayBtn, header.querySelector('.swml-extract-panel-close'));
-            }
+                header.insertBefore(btn, header.querySelector('.swml-extract-panel-close'));
+            };
+            if (!isEssayMode) _addPadToggle('essay', _workPad, { top: '110px', right: '48px' });
+            if (!isFeedbackMode) _addPadToggle('feedback', 'Feedback', { top: '140px', right: '76px' });
         }
 
         const extractBtn = el('button', {
@@ -13717,7 +13819,13 @@
                                 const canvasAssessDone = state.task === 'assessment' && state.plan.total_score && state.plan.grade;
                                 // Suppress quick actions on Hattie reflective questions (v7.12.34)
                                 const isHattieQuestion = /(?:Where\s+am\s+I\s+going|How\s+am\s+I\s+going|Where\s+to\s+next|transfer.*skills|how\s+will\s+you.*apply|Session\s+Complete)/i.test(detectText);
-                                const actions = (canvasAssessDone || isHattieQuestion || _reflectData2 || (opts && opts.suppressActions)) ? [] : detectQuickActions(detectText);
+                                let actions = (canvasAssessDone || isHattieQuestion || _reflectData2 || (opts && opts.suppressActions)) ? [] : detectQuickActions(detectText);
+                                // v7.19.829: explicit lettered clusters override the Hattie/post-completion
+                                // suppression (dual-pipeline twin of the main branch — see ~L5090).
+                                if (!actions.length && (canvasAssessDone || isHattieQuestion) && !_reflectData2 && !(opts && opts.suppressActions)) {
+                                    const _letters = detectQuickActions(detectText);
+                                    if (_letters.length >= 2 && _letters.every(a => /^[A-Z]\)/.test(a.label || ''))) actions = _letters;
+                                }
                                 if (actions.length > 0) {
                                     // Multi-select detection (AO selection, "select all that apply")
                                     const isMulti = /(?:pick|choose|select|commit to)\s*(?:(?:up to|between|at least)?\s*)?(\d)\s*[-–to]+\s*(\d)/i.test(detectText)
@@ -14032,11 +14140,10 @@
                 // on a stale editor ref, which dropped the question quote (observed live).
                 const qText = (((typeof extractEssayQuestion === 'function' && canvasEditor) ? (extractEssayQuestion(canvasEditor) || '') : '') || state.question || '');
                                 if (_pcLang) {
-                                    // v7.19.826: one paper-start recall anchored on Q4 (delta-doc D3).
-                                    const qPlain = qText ? `'${qText}'` : 'the evaluation question';
-                                    plain = `Good — noted. One more check before we begin marking. Thinking back to **Question 4** in particular: ${qPlain} — what were the **key aspects** it asked you to evaluate?`;
-                                    const qBox = qText ? `<div style="margin:10px 0;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
-                                    html = `<p>Good — noted. One more check before we begin marking. Thinking back to <strong>Question 4</strong> in particular:</p>${qBox}<p>What were the <strong>key aspects</strong> it asked you to evaluate? (type or use the mic)</p>`;
+                                    // v7.19.829: rotating recall target (shared _recallAskForTarget —
+                                    // dual-pipeline twin of the main branch).
+                                    const _ra = _recallAskForTarget(qText);
+                                    plain = _ra.plain; html = _ra.html;
                                 } else {
                                     const qPlain = qText ? `'${qText}'` : 'your essay question';
                                     plain = `Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering: ${qPlain} — what were the **key aspects** this question asked you to explore?`;

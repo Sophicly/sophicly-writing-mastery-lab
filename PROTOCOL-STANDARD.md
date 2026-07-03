@@ -421,3 +421,42 @@ granularity (Lit = per section; Language = per question, D1).
 
 ## Phase 4 — Neil's one-shot live run
 Staging (uid 1355), full paper end-to-end. Any red console error = fail. Then prod.
+
+# APPENDIX — P1 FIRST-LIVE-RUN LESSONS (2026-07-03, v7.19.829 — apply to EVERY future port)
+
+Neil's first full AQA Lang P1 run surfaced defects that generalise. Each is now either
+engine-enforced (E) or a protocol contract rule (P). Grep-check them on every new paper:
+
+1. **(P) Qn Total line hygiene.** `Qn Total: A/B` — A is a WHOLE number; NOTHING after `A/B`
+   on the line. The engine files the line's LAST X/Y as the awarded mark, so a trailing
+   "(ceilinged at 27/40)" filed the CEILING as the mark → Score Summary said 55/80 while the
+   honest sum was 53/80. Ceiling/arithmetic notes go on their own line BEFORE the total.
+   (E: `_extractQuestionMark` now also strips parentheticals — belt and braces.)
+2. **(P) Penalties are applied-only, protocol-blind.** Never show a considered-but-rejected
+   penalty ("W1 … no deduction applied" = leaked deliberation); never cite "(protocol: …)" in
+   student-facing feedback. Enumerate the W1 banned-verb family explicitly so marking is
+   consistent run-to-run.
+3. **(P) Reflect panels: full paper AO set + never re-ask.** AO chips list EVERY AO the paper
+   assesses (choosing is the calibration act; mis-targeting = teaching moment). Nothing the
+   panel captured is ever re-asked in prose. Router preamble now carries a PROTOCOL-PANEL
+   OVERRIDE: @REFLECT_GATE protocols supersede the legacy per-paragraph two-question cycle.
+4. **(E) Chat furniture never reaches the document.** Q-GATE lines ("Does that clear it up…")
+   + `[button]` rows are stripped by every feedback-card detector (`_stripChatFurniture`).
+   Protocol: keep the gate AFTER the total; engine strips it regardless.
+5. **(E/P) Per-question reflection is state-gated.** The router state block derives "panel
+   emitted since last question closed" from chat truth and mandates the panel before any
+   marking of the current question (the model had rolled Q2's rating into Q3).
+6. **(E) Recall-target rotation.** The pre-chain keyword-recall question rotates by attempt
+   (Q4 → Q2 → Q3 → Q5), code-owned in BOTH the router setup block and the frontend pre-chain —
+   keep the two rotations identical.
+7. **(E) Sidebar paragraph detection anchors on `Mark Breakdown — <name>` headings only** —
+   prose mentions of "Paragraph 2" (calibration checks) created phantom beats.
+8. **(P) Overall Feedback shows the MARK (`Total: X/80`), not just the percentage** — students
+   must be able to trace the number. Chat total, Overall Feedback and Score Summary must derive
+   from the same five whole-mark totals.
+9. **OPEN GAP (Neil ruling needed): Date Completed.** The stamp requires Self-Assessment +
+   Analytics + Action Plan sections complete, but the flow leaves all three empty (the Hattie
+   answers live only in chat). Proposed: file Action Plan + Analytics into the doc via
+   @SECTION markers at the Final Summary; SA stays the student's manual act (stage-revealed +
+   listed by the Document Progress card). Do NOT blind-replace sections holding input fields —
+   verify the template's field shape first.

@@ -3567,6 +3567,7 @@ TEMPLATE;
                 $preamble .= "Applies to every analytical question across AQA, Edexcel, Eduqas, OCR, Edexcel-IGCSE, SQA, CCEA — language reading and literature essays. Creative / extended writing (Q5-type) delivers holistic-structural feedback per the creative-writing protocol instead; this mandate does not cover those questions.\n";
 
                 $preamble .= "### ⛔ METACOGNITIVE REFLECTION CYCLE — UNIVERSAL MANDATE (v7.18.29)\n\n";
+                $preamble .= "**PROTOCOL-PANEL OVERRIDE (v7.19.829):** If the active protocol module defines its OWN reflection panels/gates (@REFLECT_GATE — e.g. AQA Lang P1's ONE per-QUESTION panel capturing predicted mark + self-rating + AO targeting), the protocol's design is AUTHORITATIVE: emit exactly the panels it specifies, at the points it specifies, and nothing more. Do NOT additionally run the two-question cycle below per paragraph, and NEVER re-ask anything the panel already captured (self-rating, AO targeting, \"what were you trying to show\") — the student must never repeat themselves. The cycle below applies ONLY to protocols that define no @REFLECT_GATE of their own.\n\n";
                 $preamble .= "BEFORE marking each individual paragraph in any analytical question (Q2 / Q3 / Q4) and any transactional Q5 (letter, speech, IUMVCC structure), execute a two-question metacognitive reflection cycle:\n\n";
                 $preamble .= "1. **Self-Rate (1-5):** Ask the student to rate (1-5) how well they think they achieved the AO goal for that paragraph. WAIT for response.\n";
                 $preamble .= "2. **AO Targeting:** Ask which Assessment Objectives they were targeting and what they specifically tried to demonstrate. WAIT for response.\n";
@@ -3589,6 +3590,7 @@ TEMPLATE;
                 $preamble .= "When the protocol provides an AO-Targeting prompt, emit it as a SEPARATE question AFTER the student responds to the Self-Rate. Two-question pattern: (1) Self-Rate → WAIT → student types number → (2) AO-Targeting → WAIT → student types explanation → (3) only THEN proceed to marking.\n\n";
 
                 $preamble .= "### ⛔ PER-PARAGRAPH TURN CYCLE (v7.18.31)\n\n";
+                $preamble .= "(v7.19.829: protocols with their own @REFLECT_GATE panels — steps 1-2 below are REPLACED by the protocol's panel schedule. With a per-QUESTION panel, paragraphs after ¶1 go straight from the Y gate to that paragraph's assessment; the per-paragraph mark/feedback/gold delivery and STOP-AND-YIELD still apply in full.)\n";
                 $preamble .= "For analytical questions with multiple paragraphs (Q2 Source A + Source B; Q3 Body Paragraphs 1-3; Q4 Body Paragraphs 1-3; Q5 transactional IUMVCC paragraphs 1-6), each paragraph is its OWN multi-turn exchange. Workflow per paragraph:\n";
                 $preamble .= "1. Self-Rate (1-5) prompt → WAIT for student rating.\n";
                 $preamble .= "2. AO-Targeting prompt → WAIT for student response.\n";
@@ -3596,7 +3598,7 @@ TEMPLATE;
                 $preamble .= "4. Y gate (\"Type Y when ready for next paragraph\") → WAIT.\n";
                 $preamble .= "5. ONLY THEN move to next paragraph metacog cycle.\n\n";
                 $preamble .= "Do NOT consolidate multiple paragraph marks into one message. Do NOT skip the Self-Rate cycle for paragraph 2 because you already did one for paragraph 1. Each paragraph repeats the full cycle.\n\n";
-                $preamble .= "Source-of-truth reference for Markdown DSL pattern AND per-paragraph turn cycle: AQA Lang P1 modularised `protocol-a-assessment.md` (mirrors source `AQA GCSE English Language Paper 1 ... v3.2`). Q2/Q3 each fire 2 paragraph cycles; Q4 fires 3 BP cycles; Q5 creative-writing fires 1 at-start cycle. P1 transcript is the gold pattern.\n\n";
+                $preamble .= "(v7.19.829 NOTE: AQA Lang P1's rebuilt protocol now uses per-QUESTION @REFLECT_GATE panels — it follows the PROTOCOL-PANEL OVERRIDE above, not the per-paragraph reflect cycle. Its per-paragraph mark/gold delivery + STOP-AND-YIELD remain the gold pattern.)\n\n";
 
                 // v7.19.186: STOP-AND-YIELD enforcement. Reeham redraft staging
                 // test (2026-05-19): even with the per-paragraph rule above, the
@@ -5708,8 +5710,15 @@ TEMPLATE;
             if ($prior_goal !== '') {
                 $block .= "**Prior attempt's headline goal:** {$prior_goal} — acknowledge it when the new goal is set (\"last time you focused on…\").\n";
             }
+            // v7.19.829: keyword-recall target rotates by attempt (Neil: always-Q4 means
+            // students rehearse the same answer every run). Deterministic, code-owned:
+            // Q4 first (biggest prize), then Q2 → Q3 → Q5, repeat. Q1 is exempt (retrieval).
+            $recall_rotation = ['Q4', 'Q2', 'Q3', 'Q5'];
+            $attempt_n = max(1, (int) preg_replace('/\D/', '', (string) $attempt) ?: 1);
+            $recall_q = $recall_rotation[($attempt_n - 1) % 4];
+            $block .= "**Keyword-recall target THIS attempt: {$recall_q}** — the pre-chain's keyword-recall question (2c) asks about {$recall_q} this time (restate THAT question's task/statement), never a different question.\n";
             $block .= "### RULES — NON-NEGOTIABLE\n";
-            $block .= "1. The pre-assessment chain MUST be complete before ANY marking output. Check the conversation for ALL THREE student replies: (a) grade goal, (b) HEADLINE GOAL (their choice from the goal options — a CONCEPTUAL aim, never a grade number), (c) KEYWORD RECALL (the key aspects the evaluation question asks them to explore). If any is missing, ask ONLY the next missing question (in that order) and STOP — nothing else in the turn.\n";
+            $block .= "1. The pre-assessment chain MUST be complete before ANY marking output. Check the conversation for ALL THREE student replies: (a) grade goal, (b) HEADLINE GOAL (their choice from the goal options — a CONCEPTUAL aim, never a grade number), (c) KEYWORD RECALL (the key aspects the recall-target question asks them to explore). If any is missing, ask ONLY the next missing question (in that order) and STOP — nothing else in the turn.\n";
             $block .= "2. Once all three replies are present: acknowledge the keyword recall, then begin the FIRST question exactly per the protocol (its own gate first — never a mark in the same turn).\n";
             $block .= "3. Do NOT emit any mark, mark table, `Qn Total` line, `@FB` card or `@REFLECT_GATE` panel during setup.\n";
             $block .= "This block is internal bookkeeping — never quote it, never narrate the state machine to the student. Operate silently.\n";
@@ -5755,6 +5764,31 @@ TEMPLATE;
             $block .= "Prior attempt's headline goal: {$prior_goal} — note progress against it in the Final Summary.\n";
         }
         $block .= "Resume the protocol for {$current} from where the conversation left off. Mark every paragraph/slot of {$current} SEPARATELY exactly as the protocol specifies — its full per-paragraph sub-loop (self-assessment → granular mark table → feedback → gold-standard rewrite(s) → advance). Do NOT collapse the question into a single mark or skip the gold-standard rewrites.\n";
+        // v7.19.829: per-question REFLECTION GATE (deterministic). Neil's live run
+        // 2026-07-03: after Q2 closed, the model rolled Q2's self-rating into Q3
+        // ("you rated yourself 3/5 for Paragraph 1 [of Q3]") without ever offering
+        // Q3's reflection panel. Order-derived from chat truth: a @REFLECT_GATE
+        // emitted since the LAST `Qn Total:` close belongs to the current question;
+        // none since → the panel is still owed. Q1-style retrieval (≤4 marks) has
+        // no panel by design, so it is exempt.
+        if ((int) ($cur_meta['marks'] ?? 0) > 4 && !empty($swml_chat_history) && is_array($swml_chat_history)) {
+            $has_reflect = false;
+            foreach ($swml_chat_history as $m) {
+                if (!is_array($m) || ($m['role'] ?? '') !== 'assistant') continue;
+                $mtext = (string) ($m['content'] ?? '');
+                $g_pos = strrpos($mtext, '@REFLECT_GATE');
+                $t_pos = -1;
+                if (preg_match_all('/Q(?:uestion)?\s*[1-9]\s*Total\s*:/i', $mtext, $mm, PREG_OFFSET_CAPTURE)) {
+                    $last_t = end($mm[0]);
+                    $t_pos  = (int) $last_t[1];
+                }
+                if ($t_pos >= 0 && ($g_pos === false || $g_pos < $t_pos)) $has_reflect = false;
+                elseif ($g_pos !== false) $has_reflect = true;
+            }
+            if (!$has_reflect) {
+                $block .= "REFLECTION GATE — {$current}: no reflection panel (@REFLECT_GATE) for {$current} has been emitted yet. Before marking ANY part of {$current}, your next output MUST be {$current}'s own reflection panel (predicted mark + self-rating + AO targeting) and nothing else. NEVER reuse or re-attribute an earlier question's self-rating — every question gets its own panel and its own rating.\n";
+            }
+        }
         if ($offered_str !== '') {
             $block .= "The last lettered options you offered were: {$offered_str}. If the student replies with a bare letter, it maps to THESE options — do not reinterpret it as essay content.\n";
         }
