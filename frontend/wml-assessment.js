@@ -1541,6 +1541,20 @@
     // 'Conclusion' / '1' / '2' / '3', and Language 'Q2' → '2' (backward-compatible). Mirrors
     // _buildLitSidebarModel's name match + the .700 calibration readout keys so filing,
     // mark-set, max-lookup, predict panel + readout all agree (CLAUDE.md canvas-rule #3).
+    // v7.19.852: long marking turns intermittently die at the network layer on staging
+    // ("Failed to fetch" — connection cut before any HTTP status; Run 6 hit several, each
+    // recovered by a manual Try-again). A fetch that THROWS never delivered a reply, so ONE
+    // automatic retry is exactly what the Try-again button does — automated. HTTP error
+    // statuses (a real 4xx/5xx response) still flow through unchanged.
+    async function _fetchChatWithRetry(url, opts) {
+        try { return await fetch(url, opts); }
+        catch (e) {
+            console.warn('WML chat fetch failed (' + (e && e.message) + ') — auto-retrying once in 1.5s');
+            await new Promise(r => setTimeout(r, 1500));
+            return fetch(url, opts);
+        }
+    }
+
     // v7.19.848: the student's HEADLINE GOAL as a per-turn injection block ('' if not yet
     // answered). Pass 1: the goal-button message ("My headline goal: …"). Pass 2 (free-typed):
     // the user reply directly after the code-asked "one main goal" pre-chain question. Never
@@ -2306,6 +2320,10 @@
             });
             // ---- Pass 3 (v7.19.839): rebuild the Penalty Ledger from ACTUAL card deductions ----
             if (/Penalty (?:& Ceiling )?Ledger/i.test(out)) out = _rewritePenaltyLedger(out);
+            // v7.19.852: the protocol forbids a "Base total:" line inside cards (rounding
+            // happens ONCE at the Qn Total) but the model drifts it back in — strip it
+            // deterministically. Nothing parses this line (the auditor sums table rows).
+            out = out.replace(/^[ \t]*\*{0,2}Base total:\*{0,2}[^\n]*\n?/gmi, '');
             return out;
         } catch (e) { console.warn('WML MarkAudit: skipped (non-fatal)', e && e.message); return reply; }
     }
@@ -5794,7 +5812,11 @@
                                         return;
                                     }
                                     bar.remove();
-                                    chatTextarea.value = action.value;
+                                    // v7.19.852: lettered options send the FULL label ("A) Paragraph 1"),
+                                    // not the bare letter — Run 6 Q3: student sent "A", the model echoed
+                                    // "Paragraph 2 it is". With the semantic text in the turn it can't mismap.
+                                    chatTextarea.value = (/^[A-E]\)\s+\S/.test(action.label || '') && String(action.value || '').length <= 2)
+                                        ? action.label : action.value;
                                     sendCanvasMessage();
                                 }
                             });
@@ -6758,7 +6780,7 @@
                     ? canvasChatHistory.slice(0, -1)
                     : canvasChatHistory.slice(0, -1).slice(-24);
 
-                const response = await fetch(API.chat, {
+                const response = await _fetchChatWithRetry(API.chat, {
                     method: 'POST',
                     headers,
                     body: JSON.stringify({
@@ -14555,7 +14577,10 @@
                                                         return;
                                                     }
                                                     bar.remove();
-                                                    chatTextarea.value = action.value;
+                                                    // v7.19.852: lettered options send the FULL label (twin of the
+                                                    // training-panels sender — dual-pipeline rule).
+                                                    chatTextarea.value = (/^[A-E]\)\s+\S/.test(action.label || '') && String(action.value || '').length <= 2)
+                                                        ? action.label : action.value;
                                                     sendCanvasMessage();
                                                 }
                                             });
@@ -14956,7 +14981,7 @@
                                     ? canvasChatHistory.slice(0, -1)
                                     : canvasChatHistory.slice(0, -1).slice(-24);
 
-                                const response = await fetch(API.chat, {
+                                const response = await _fetchChatWithRetry(API.chat, {
                                     method: 'POST',
                                     headers,
                                     body: JSON.stringify({
