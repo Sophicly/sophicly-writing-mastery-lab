@@ -634,13 +634,17 @@
         return /^language[cu][1-9]$/.test(s);
     }
 
-    // v7.19.829: keyword-recall target rotates by ATTEMPT (Neil: always-Q4 means the
-    // student rehearses the same answer every run). Deterministic, code-owned:
-    // Q4 (biggest prize) → Q2 → Q3 → Q5, repeat. MUST stay identical to the router's
-    // rotation (class-protocol-router.php, build_questions_state_block setup block).
+    // v7.19.829: keyword-recall target rotates — Q4 (biggest prize) → Q2 → Q3 → Q5, repeat.
+    // v7.19.833: rotation keys on TOPIC + PHASE + ATTEMPT, not attempt alone. The same P1
+    // protocol serves phase 1 AND phase 2 of every practice paper, and re-sits are rare —
+    // attempt-only meant a student met Q4 on every topic of the course (Neil 2026-07-03).
+    // Deterministic, no persistence, and MUST stay identical to the router's rotation
+    // (class-protocol-router.php, build_questions_state_block setup block).
     function _recallTargetQ() {
-        const n = Math.max(1, parseInt(String(state.attempt == null ? '' : state.attempt).replace(/\D/g, ''), 10) || 1);
-        return ['Q4', 'Q2', 'Q3', 'Q5'][(n - 1) % 4];
+        const attempt = Math.max(1, parseInt(String(state.attempt == null ? '' : state.attempt).replace(/\D/g, ''), 10) || 1);
+        const topic = Math.max(1, parseInt(String(state.topicNumber == null ? '' : state.topicNumber).replace(/\D/g, ''), 10) || 1);
+        const redraft = (state.task === 'redraft_assessment' || state.phase === 'redraft') ? 1 : 0;
+        return ['Q4', 'Q2', 'Q3', 'Q5'][(attempt - 1 + topic - 1 + redraft) % 4];
     }
     // Builds { plain, html } for the language pre-chain keyword-recall ask. EVERY
     // variant keeps the literal phrase "key aspects" — the pre-chain stage detector

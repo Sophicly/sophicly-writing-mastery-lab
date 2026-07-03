@@ -5710,12 +5710,17 @@ TEMPLATE;
             if ($prior_goal !== '') {
                 $block .= "**Prior attempt's headline goal:** {$prior_goal} — acknowledge it when the new goal is set (\"last time you focused on…\").\n";
             }
-            // v7.19.829: keyword-recall target rotates by attempt (Neil: always-Q4 means
-            // students rehearse the same answer every run). Deterministic, code-owned:
-            // Q4 first (biggest prize), then Q2 → Q3 → Q5, repeat. Q1 is exempt (retrieval).
+            // v7.19.829: keyword-recall target rotates — Q4 first (biggest prize), then
+            // Q2 → Q3 → Q5, repeat. Q1 is exempt (retrieval).
+            // v7.19.833: rotation keys on TOPIC + PHASE + ATTEMPT, not attempt alone — the
+            // same protocol serves both phases of every practice paper, so attempt-only
+            // repeated Q4 across the whole course. MUST stay identical to the frontend's
+            // _recallTargetQ (wml-assessment.js).
             $recall_rotation = ['Q4', 'Q2', 'Q3', 'Q5'];
             $attempt_n = max(1, (int) preg_replace('/\D/', '', (string) $attempt) ?: 1);
-            $recall_q = $recall_rotation[($attempt_n - 1) % 4];
+            $topic_n   = max(1, (int) preg_replace('/\D/', '', (string) $topic) ?: 1);
+            $redraft_n = (stripos((string) $suffix, 'redraft') !== false || stripos((string) $suffix, 'reassess') !== false) ? 1 : 0;
+            $recall_q = $recall_rotation[($attempt_n - 1 + $topic_n - 1 + $redraft_n) % 4];
             $block .= "**Keyword-recall target THIS attempt: {$recall_q}** — the pre-chain's keyword-recall question (2c) asks about {$recall_q} this time (restate THAT question's task/statement), never a different question.\n";
             $block .= "### RULES — NON-NEGOTIABLE\n";
             $block .= "1. The pre-assessment chain MUST be complete before ANY marking output. Check the conversation for ALL THREE student replies: (a) grade goal, (b) HEADLINE GOAL (their choice from the goal options — a CONCEPTUAL aim, never a grade number), (c) KEYWORD RECALL (the key aspects the recall-target question asks them to explore). If any is missing, ask ONLY the next missing question (in that order) and STOP — nothing else in the turn.\n";

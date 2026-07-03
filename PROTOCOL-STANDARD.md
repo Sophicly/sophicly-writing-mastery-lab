@@ -466,3 +466,25 @@ engine-enforced (E) or a protocol contract rule (P). Grep-check them on every ne
    markers from the transcript. **Every board port MUST carry the filing step** — grep
    `action-grade-goal` in the protocol; the closing-gate precondition must count the filing
    block. Filed sections stay student-EDITABLE.
+10. **(E/P) Mark arithmetic is CODE-VERIFIED (v7.19.832 — universal engine).** The Run1-vs-Run2
+    audit (2026-07-03) proved a 4-mark grade-boundary gap from pure LLM arithmetic (penalties
+    declared but not subtracted; invented per-section rounding). The engine now recomputes every
+    @FB card's total from its own `Worth | Your Score` table − `Total penalties:` line and
+    corrects mismatches, and verifies `Qn Total` lines (word-count-ceilinged totals exempt).
+    PORT REQUIREMENT: every protocol's cards must keep the auditable shape — a `Worth`/`Your
+    Score` markdown table, a `Total penalties: −X` line, a `Total Mark for [unit]: X/Y` line.
+    Sub-totals stay DECIMAL (round ONCE, at the question/final total); no "Base total: X/Z"
+    lines; protocol text must say so (grep: "NEVER round").
+11. **(E/P) Canonical grade ladder is CODE-ENFORCED (v7.19.832 — universal engine).** Every
+    "X%, which is a Grade N" line and post-Total `Grade: N` line is re-banded in code on the
+    ONE ladder (9≥85 · 8≥75 · 7≥65 · 6≥55 · 5≥45 · 4≥35 · 3≥25 · 2≥15). Protocols still state
+    the ladder (grep: "CANONICAL GRADE LADDER") — the code is the net, not the excuse.
+12. **(P) Calibration-check choices = the REAL units of THAT paper's structure.** Generic rule,
+    instantiated per paper: lettered options must be the units just marked (Lang P1 Q4:
+    Introduction/BP1-3/Conclusion; Q2/Q3: ¶1/¶2; Q5: AO5/AO6; Lit essay: Intro/Body 1-3/
+    Conclusion; multi-part papers: their real parts). NEVER feedback bullets as buttons.
+13. **(P) Penalty (& Ceiling) Ledger in the final summary.** Per-code sums with counts, ceiling
+    cost where a word-count ceiling exists, + the reframe "without penalties you'd be on
+    [X+P]/[max] ≈ Grade [N] — cheapest marks to reclaim". Honest sums from the actual cards.
+14. **(P) Honest duration estimate.** State the realistic completion time for THAT paper family
+    (Language full papers: 30–45 min) — never an inflated figure that scares students off.
