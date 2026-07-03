@@ -11428,10 +11428,18 @@
 
             const body = el('div', { className: 'swml-extract-panel-body' });
 
-            if (isFeedbackMode) {
+            // v7.19.845: feedback/essay pads LIVE-UPDATE. Pads were clone-based snapshots —
+            // feedback landing in the doc never reached an open pad (only close+reopen did).
+            // The render is now a re-runnable function; ONE MutationObserver on the editor
+            // re-renders the open pad (debounced, scroll-preserving). Observer-based so
+            // EVERY write path (AI fill, heal replay, auditor rewrite, manual edit)
+            // refreshes it — no per-producer wiring (the task-scoping bug class).
+            // Self-disconnects once the panel leaves the DOM (any close path).
+            const _renderFeedbackPad = () => {
                 // v7.19.829 (Neil): clone every feedback section with real content so the
                 // student can fill Self-Assessment / Analytics / Action Plan with their
                 // feedback beside them — no scroll ping-pong. Read-only viewing pad.
+                body.innerHTML = '';
                 const fbEls = editorEl.querySelectorAll('[data-section-type="feedback"]');
                 let fbAdded = 0;
                 fbEls.forEach((f, i) => {
@@ -11448,12 +11456,14 @@
                 if (!fbAdded) {
                     body.appendChild(el('p', { textContent: 'No feedback yet — it will appear here once marking begins.' }));
                 }
-            } else if (isEssayMode) {
+            };
+            const _renderEssayPad = () => {
                 // v7.19.813 (Neil): clone every response section so the student can read
                 // their own writing side-by-side with the feedback boxes. Multi-question
                 // papers (language, Eduqas part a/b) come free: each non-empty response
                 // renders under its own label heading. Clones are forced read-only —
                 // this is a viewing pad, not a second editor.
+                body.innerHTML = '';
                 const respEls = editorEl.querySelectorAll('[data-section-type="response"]');
                 let essayAdded = 0;
                 respEls.forEach((r, i) => {
@@ -11471,6 +11481,24 @@
                 if (!essayAdded) {
                     body.appendChild(el('p', { textContent: 'Nothing written yet — your ' + (_isAnyLanguagePaper() ? 'response' : 'essay') + ' will appear here once you write it.' }));
                 }
+            };
+            if (isFeedbackMode || isEssayMode) {
+                const _renderPad = isFeedbackMode ? _renderFeedbackPad : _renderEssayPad;
+                _renderPad();
+                try {
+                    let _padT = null;
+                    const _padObs = new MutationObserver(() => {
+                        if (!panel.isConnected) { _padObs.disconnect(); return; }
+                        clearTimeout(_padT);
+                        _padT = setTimeout(() => {
+                            if (!panel.isConnected) { _padObs.disconnect(); return; }
+                            const _keep = body.scrollTop;
+                            _renderPad();
+                            body.scrollTop = _keep;
+                        }, 300);
+                    });
+                    _padObs.observe(editorEl, { childList: true, subtree: true, characterData: true });
+                } catch (_) {}
             } else if (isTabsMode) {
                 // v7.19.86: Tab strip for multi-extract docs (exam_crib has 10 extracts).
                 // v7.19.87: pad now shows preamble + extract + question per Q. Frame
