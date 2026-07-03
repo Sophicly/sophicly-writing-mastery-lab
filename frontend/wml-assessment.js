@@ -25798,7 +25798,11 @@
             // self-assessment group (Neil's settled P1 SA spec: reading = Thesis-only
             // intro + TTECEA-no-C + Restated-thesis conclusion + Academic Writing;
             // Q5 = the creative-writing set).
-            skills.push({ cat: 'Creative Writing (Q5)', items: ['Tone & Register', 'Vocabulary & Devices', 'Structural Features', 'Linked Ideas & Paragraphs', 'Sentence Variety', 'Spelling & Punctuation'] });
+            // v7.19.836 (Neil): 'Linked Ideas & Paragraphs' dropped (slimmer set);
+            // SPaG pulled out of the CW group into its own whole-paper group — it
+            // applies to academic AND creative writing alike.
+            skills.push({ cat: 'Creative Writing (Q5)', items: ['Tone & Register', 'Vocabulary & Devices', 'Structural Features', 'Sentence Variety'] });
+            skills.push({ cat: 'Spelling, Punctuation & Grammar', items: ['Spelling', 'Punctuation', 'Grammar & Tense Control'] });
         }
         let inner = `<p><em>Rate your confidence in each skill (1 = basic, 5 = expert):</em></p>`;
         skills.forEach(s => {
@@ -29361,8 +29365,12 @@
         });
         if (pos === null || !node) return;
         const txt = node.textContent || '';
+        // Stale = pre-tuned essay shape OR any earlier revision of the Language set
+        // (v1 carried 'Linked Ideas & Paragraphs' and had no SPaG group — v7.19.836).
         const stale = /Hook|Building Sentences|Controlling Concept|Central Purpose|Universal Message/.test(txt)
-            || txt.indexOf('Creative Writing (Q5)') === -1;
+            || txt.indexOf('Creative Writing (Q5)') === -1
+            || txt.indexOf('Linked Ideas & Paragraphs') !== -1
+            || txt.indexOf('Spelling, Punctuation & Grammar') === -1;
         if (!stale) return;
         // v7.19.835: RATED stale sections migrate too — a rating against a REMOVED item
         // (Hook, Context, …) is a rating of the wrong rubric, not student data worth
