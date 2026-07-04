@@ -7513,6 +7513,13 @@ Before marking the introduction, ask the student to confirm their essay structur
     //       (also covers older Focus SPA versions that don't dispatch).
     // Shared `_lastEmbedPost` makes both paths idempotent against each other.
     let _lastEmbedPost = embedConfig?.postId || 0;
+    // v7.19.857: first-accepted postId per pathname — one URL renders exactly one
+    // post, so a later CONTRADICTING render at the same pathname is a stale SPA
+    // landing (see the stale-render guard inside _doSpaReinit). Seed with the
+    // server-rendered initial lesson: that mapping is authoritative by definition.
+    const _spaPathPost = {};
+    if (_lastEmbedPost) _spaPathPost[location.pathname] = _lastEmbedPost;
+    let _spaStaleTicks = 0;
     function _doSpaReinit() {
         const embedRoot = document.getElementById('swml-embedded-root');
         if (!embedRoot) {
@@ -7531,6 +7538,37 @@ Before marking the introduction, ask the student to confirm their essay structur
         try {
             const cfg = JSON.parse(embedRoot.dataset.swmlEmbed || '{}');
             if (!cfg.postId || cfg.postId === _lastEmbedPost) return;
+            // v7.19.857 STALE-RENDER GUARD. The Focus SPA's lesson fetches are not
+            // cancelled on rapid navigation: an earlier click's response can land AFTER
+            // a later lesson has rendered, stomping the DOM with the PREVIOUS lesson's
+            // fragment. This tick then saw a "new" postId and re-initialised, the SPA
+            // re-landed the other fragment, and the two re-inits ping-ponged forever —
+            // each one a full editor mount + server load + migrate chain + chat resume
+            // (staging lang-P1 freeze, 2026-07-04; reproduced headless: re-init fired
+            // at idle with zero user navigation). Invariant: one URL renders exactly
+            // one post. First render accepted per pathname is the truth; a different
+            // postId later at the SAME pathname is a provably stale landing → resync
+            // once via reload (correct lesson is server-rendered), never remount-loop.
+            const _spaPath = location.pathname;
+            if (_spaPathPost[_spaPath] && _spaPathPost[_spaPath] !== cfg.postId) {
+                // Contradiction must PERSIST before we act: if the SPA renders a
+                // fragment a beat before pushState updates the URL, the very next
+                // tick sees the new pathname and accepts normally. A real stale
+                // landing sits contradicted indefinitely (it has no pending nav).
+                _spaStaleTicks++;
+                if (_spaStaleTicks >= 3) {
+                    console.warn('WML SPA: STALE render — post ' + cfg.postId + ' landed on ' + _spaPath
+                        + ' which already rendered post ' + _spaPathPost[_spaPath] + '; resyncing');
+                    const _lastResync = parseInt(sessionStorage.getItem('swml_stale_resync_ts') || '0', 10);
+                    if (Date.now() - _lastResync > 30000) {
+                        sessionStorage.setItem('swml_stale_resync_ts', String(Date.now()));
+                        location.reload();
+                    }
+                }
+                return; // never re-init on a contradicted render — that's the ping-pong
+            }
+            _spaStaleTicks = 0;
+            _spaPathPost[_spaPath] = cfg.postId;
             _lastEmbedPost = cfg.postId;
             console.log('WML SPA: New lesson detected (post ' + cfg.postId + ') — re-initializing');
 
