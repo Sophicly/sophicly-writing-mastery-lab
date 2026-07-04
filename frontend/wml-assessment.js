@@ -2150,6 +2150,51 @@
         } catch (e) { console.warn('WML AP-FILE: repair skipped —', e && e.message); }
     }
 
+    // v7.19.854 (Neil): CODE-OWNED word-count halt re-check. STRICT regime only
+    // (state.familyFirst === false — any attempt after the family's first): while the
+    // Q5 response sits under its target, a persistent "↻ Check my word count again"
+    // button renders above the chat input. Clicking recomputes the CODE word count
+    // from the canvas: still short → inline shortfall note, button stays; satisfied →
+    // ONE silent SYSTEM turn (AP-FILE pattern) tells Sophia the requirement is met and
+    // marking resumes. The model never re-counts and never lifts the halt itself.
+    // Family-first attempts get the ceiling, never the halt — the button never shows.
+    let _wcRecheckBtn = null;
+    function _wcRecheckTarget() {
+        try {
+            const key = _multiqTargetKey();
+            return (key && MULTIQ_RESPONSE_TARGETS[key] && MULTIQ_RESPONSE_TARGETS[key].Q5) || 0;
+        } catch (_) { return 0; }
+    }
+    function _updateWcRecheckBtn() {
+        try {
+            if (state.reviewMode) return;
+            const wrap = document.querySelector('.swml-chat-input-wrapper');
+            if (!wrap || !wrap.parentNode) return;
+            const isAssess = state.task === 'assessment' || state.task === 'redraft_assessment';
+            const tgt = _wcRecheckTarget();
+            let wc = _lastQWordCounts.Q5;
+            if (!(wc > 0)) wc = _q5DomWordCount();
+            const need = isAssess && state.familyFirst === false && tgt > 0 && wc > 0 && wc < tgt;
+            if (!need) { if (_wcRecheckBtn) { _wcRecheckBtn.remove(); _wcRecheckBtn = null; } return; }
+            if (_wcRecheckBtn && _wcRecheckBtn.isConnected) return;
+            const btn = el('button', { className: 'swml-wc-recheck-btn', textContent: '↻ Check my word count again', onClick: () => {
+                const t2 = _wcRecheckTarget();
+                const w2 = _q5DomWordCount();
+                if (t2 > 0 && w2 >= t2) {
+                    if (_wcRecheckBtn) { _wcRecheckBtn.remove(); _wcRecheckBtn = null; }
+                    canvasSilentSend = true;
+                    chatTextarea.value = 'SYSTEM (not from the student): code word-count re-check PASSED — the Question 5 response is now ' + w2 + ' words against the ' + t2 + '-word target. The requirement is met: lift the halt and resume the assessment exactly where it stopped.';
+                    sendCanvasMessage();
+                } else {
+                    btn.textContent = '↻ Still ' + w2 + '/' + t2 + ' words — keep writing, then check again';
+                    setTimeout(() => { try { if (btn.isConnected) btn.textContent = '↻ Check my word count again'; } catch (_) {} }, 4000);
+                }
+            }});
+            _wcRecheckBtn = btn;
+            wrap.parentNode.insertBefore(btn, wrap);
+        } catch (_) { /* never block chat */ }
+    }
+
     // v7.19.832: DETERMINISTIC MARK ARITHMETIC (code owns numbers). The Run-1-vs-Run-2
     // audit (2026-07-03) showed two runs of the SAME response diverged by 4 marks almost
     // entirely through LLM arithmetic, not judgment: penalties declared but never
@@ -2232,6 +2277,9 @@
         try {
             if (!reply) return reply;
             _lastCanvasReplyForSidebar = String(reply);   // v7.19.846: both pipelines route here
+            // v7.19.854: word-count re-check button rides every AI turn (both pipelines
+            // route here) — deferred so the reply lands in the DOM/labeller state first.
+            setTimeout(_updateWcRecheckBtn, 400);
             if (reply.indexOf('@FB_BEGIN') === -1 && !/Q\d+\s*Total:/.test(reply)
                 && !/Penalty (?:& Ceiling )?Ledger/i.test(reply)
                 && !/MIN\(your marks,/i.test(reply)) return reply;
@@ -28212,6 +28260,7 @@
             // word-count regime (ceiling vs halt + re-check button). Absent (old
             // response shape / error) → LENIENT, matching pre-854 behaviour.
             if (res && typeof res.familyFirst !== 'undefined') state.familyFirst = res.familyFirst !== false;
+            setTimeout(_updateWcRecheckBtn, 1500); // after the editor mounts the loaded doc
             if (res.success && res.doc && res.doc.html) {
                 // v7.19.247: capture the real first-edit start date for the Score Summary.
                 _canvasStartedAt = res.doc.startedAt || _canvasStartedAt || '';

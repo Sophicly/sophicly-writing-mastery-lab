@@ -11522,3 +11522,22 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     transform: none;
     margin-left: auto;
 }
+
+/* v7.19.854: code-owned word-count halt re-check button (strict regime only) */
+.swml-wc-recheck-btn {
+    display: block;
+    width: calc(100% - 24px);
+    margin: 8px 12px 4px;
+    padding: 8px 14px;
+    background: rgba(81, 218, 207, 0.12);
+    color: #51dacf;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.swml-wc-recheck-btn:hover { background: rgba(81, 218, 207, 0.2); }
+.swml-canvas-light .swml-wc-recheck-btn { background: rgba(44, 140, 132, 0.12); color: #2c8c84; }
+.swml-canvas-light .swml-wc-recheck-btn:hover { background: rgba(44, 140, 132, 0.2); }
