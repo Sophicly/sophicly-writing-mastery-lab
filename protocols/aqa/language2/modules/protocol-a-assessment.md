@@ -613,8 +613,11 @@ Output `@FB_BEGIN{"q":"Q5","para":"whole","title":"Transactional Writing"}` on i
 Then output `@FB_END` on its own line, and in the SAME turn:
 
 **STEP 3 — Question wrap:**
-- If the word-count ceiling applied, restate it on its OWN line first ("Word-count ceiling: your
-  total is capped at [C]/40"). THEN, on its own line: `Q5 Total: AO5 [X]/24 + AO6 [Y]/16 = [Z]/40`
+- If the word-count ceiling applied, restate it WITH ITS REASON on its OWN line first — never a
+  bare cap (Neil, 2026-07-04: the filed card must explain itself): "Word-count ceiling: your
+  response was [X] words against the 650-word target, so your total is capped at [C]/40
+  (−[P] marks — a full-length piece removes the cap)". THEN, on its own line:
+  `Q5 Total: AO5 [X]/24 + AO6 [Y]/16 = [Z]/40`
   (Z already ceilinged if applicable; **nothing after `[Z]/40` on the line** — no "(ceilinged
   at …)" parenthetical; WML files the line's last X/Y as the awarded mark).
 - Percentage & Grade (canonical ladder, on the ceilinged total).
@@ -650,8 +653,11 @@ In order:
    - **Word-count advice** if the Q5 ceiling applied (or the halt fired this session).
    - **Penalty & Ceiling Ledger:** sum every penalty actually deducted across the paper, grouped
      by code with its PLAIN-ENGLISH name and count (e.g. "F1 — feature-spotting verb ×4 = −2.0 ·
-     I1 — underdeveloped interpretation ×2 = −1.0 — total −3.0 marks"; never a bare code), plus
-     the word-count ceiling's cost if it reduced Q5 (e.g. "ceiling 27/40: −2"). Then the reframe,
+     I1 — underdeveloped interpretation ×2 = −1.0 — total −3.0 marks"; never a bare code),
+     **each code followed by its itemised instances — location + verbatim phrase + the fix**
+     (e.g. "Q2 ¶1: 'shows' → 'crystallises' · Q4 BP2: 'aims to' → 'urges'") so the student can
+     find and fix every one, plus the word-count ceiling's cost if it reduced Q5 (e.g. "ceiling
+     27/40: −2", with the word count that caused it). Then the reframe,
      on its own line: "**Without penalties you'd be on [X+P]/80 = [Y]% — a Grade [N]** (canonical
      ladder). Penalty marks are the cheapest marks to reclaim: they are habits, not skills."
      Honest numbers only — sum what your cards actually deducted; never estimate.
@@ -697,7 +703,9 @@ In order:
      ("0" if none).
    - `analytics-optouts` — which reflections were opted out, question-labelled ("None" if none).
    - `analytics-repeated-errors` — the error pattern that recurred across questions, from your
-     marking (e.g. "Source B evidence missing from the pair — Q2 ¶2, Q4 BP1, Q4 BP3").
+     marking. PRECISION RULE (Neil, 2026-07-04): pair EACH verbatim phrase with its exact
+     location — never a pooled list (e.g. "Single-source paragraphs — Q2 ¶2: no Source B
+     quotation · Q4 BP1: 'both writers feel…' asserted without Source B evidence").
    - `analytics-improvements` — what measurably improved across the paper (or vs a previous
      attempt if one exists).
    - `analytics-challenges` — the one or two biggest challenges, named plainly.
