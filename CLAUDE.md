@@ -71,6 +71,31 @@ Almost every "it works for X but silently does nothing for Y" bug in WML is **be
 
 ---
 
+## PROSEMIRROR NODEVIEW — never write to a NodeView's DOM outside a transaction (v7.19.866)
+
+**Root of a whole freeze class.** A section is a ProseMirror NodeView. If ANY code writes DOM
+(style / attr / children) onto a NodeView's own `dom` (the `.swml-section-block`) or `contentDOM`
+**outside a PM transaction** and it isn't firewalled by that NodeView's `ignoreMutation`, PM's
+DOMObserver treats it as a foreign edit → `flush()` → `updateState()` → **redraws every section
+NodeView** (removeChild/insertBefore churn). If the write came from the NodeView's own on-(re)mount
+fill, the redraw re-runs the fill → re-writes → **infinite compounding remount loop that freezes the
+tab** — with **NO error, `onUpdate=0`, `txnTotal=0`, `editorMounts=1`** (it's a view redraw, not a
+doc change). Bit the AQA Lang P1 T1 diagnostic on staging (v7.19.866); only there because the big
+53-section shared-lesson doc mounts raggedly so a completed-count flickered and toggled a
+`style.display` every fill. Full story + the 7-step probe method: memory
+`reference_wml_pm_nodeview_foreign_mutation_loop`.
+
+RULES:
+1. **Derived-card NodeViews are display-only** (progress, sign-off, any non-editable card filled by
+   wml-assessment): their `ignoreMutation` MUST firewall their whole rendered UI **including
+   attribute writes on their own `dom`** — `if (mutation.type==='attributes' && mutation.target===dom) return true;`
+2. **Write derived-card content into the firewalled sub-element** (`.swml-progress-card` / `.swml-signoff-ui`), never onto the `.swml-section-block` wrapper.
+3. **Real content changes go through a PM transaction** (`_setParagraphContentViaPM` / `setNodeMarkup`), never a raw `textContent`/`innerHTML`/`style` write PM will revert.
+4. **Idempotent writes** — guard `if (el.style.x !== want) el.style.x = want;` so a same-value write can't fire a needless MutationRecord.
+5. **Circuit-breaker exists** (`_derivedCardFillOk` in wml-assessment.js): progress/sign-off fills bail + `console.warn` once at >50 fills/sec. If you add a new derived-card fill, route it through the same guard.
+
+---
+
 ## TEXT-SLUG REGISTRY — one canonical layer (v7.19.823+)
 
 `$SLUG_ALIASES` in `includes/class-rest-api.php` is THE text-slug registry. Every inbound slug
