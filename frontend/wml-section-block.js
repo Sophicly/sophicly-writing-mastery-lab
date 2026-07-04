@@ -355,6 +355,15 @@
                     contentDOM,
                     ignoreMutation: (mutation) => {
                         if (!mutation || !mutation.target) return false;
+                        // v7.19.866: firewall ALSO the derived-card wrapper's OWN attribute
+                        // writes (wml-assessment._renderProgressCardBody toggles this
+                        // .swml-section-block's style.display to hide the card when nothing is
+                        // trackable). Without this, that runtime style write is a foreign
+                        // mutation → PM's DOMObserver flush → full NodeView redraw → the card
+                        // re-fills (rAF+250+800) → re-writes display → infinite remount loop on
+                        // large docs where `total` flickers during mount (staging lang-P1 T1P1
+                        // freeze, 2026-07-04). The card + our own wrapper attrs are display-only.
+                        if (mutation.type === 'attributes' && mutation.target === dom) return true;
                         return card === mutation.target || card.contains(mutation.target);
                     },
                 };

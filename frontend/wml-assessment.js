@@ -5417,8 +5417,16 @@
         // plan exempt + results family hidden) — nothing the student can see needs
         // doing, so hide the whole progress section (Neil 2026-07-03). Restored the
         // moment a later stage reveals trackable sections (recompute passes re-run this).
+        // v7.19.866: idempotent write — only touch style.display when it actually changes.
+        // A same-value write still fires a MutationRecord that PM's DOMObserver flushes on;
+        // on a large doc `total` flickers during mount, toggling this none↔'' every fill →
+        // flush → NodeView redraw → re-fill → infinite loop. Paired with the progress
+        // NodeView's ignoreMutation attr-firewall (wml-section-block.js), this is belt+braces.
         const _progressBlock = card.closest('.swml-section-block');
-        if (_progressBlock) _progressBlock.style.display = (raw > 0 && !total) ? 'none' : '';
+        if (_progressBlock) {
+            const _wantDisplay = (raw > 0 && !total) ? 'none' : '';
+            if (_progressBlock.style.display !== _wantDisplay) _progressBlock.style.display = _wantDisplay;
+        }
         // v7.19.499: total=0 is transient on first mount (sibling completion attrs
         // not set yet). NEVER hide/blank — that left the card stuck-collapsed until a
         // user click triggered a recompute. Just keep the current paint and wait for
