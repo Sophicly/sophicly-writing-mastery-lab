@@ -2295,8 +2295,13 @@
                 && !/MIN\(your marks,/i.test(reply)) return reply;
             const r2 = x => Math.round(x * 100) / 100;
             let out = String(reply);
-            // fresh assessment run starting (Q2's reflect gate is emitted once) → reset ledger
-            if (out.indexOf('@REFLECT_GATE{"q":"Q2"') !== -1) { _penLedgerCards = {}; _penLedgerComplete = true; }
+            // fresh assessment run starting (the run's FIRST reflect gate is emitted once)
+            // → reset ledger. v7.19.854: the old check only knew Q2 (language papers) —
+            // lit's first gate is "Introduction", so _penLedgerComplete stayed false and
+            // the ledger rebuild NEVER ran on Literature (R&J 04-Jul console: "ledger
+            // rebuild skipped — session resumed mid-assessment" on a fresh run).
+            if (out.indexOf('@REFLECT_GATE{"q":"Q2"') !== -1
+                || out.indexOf('@REFLECT_GATE{"q":"Introduction"') !== -1) { _penLedgerCards = {}; _penLedgerComplete = true; }
             // ---- Pass 0 (v7.19.841): code-own the visible Q5 ceiling SENTENCE. The AI
             // computed ROUND(12.5)→"10" in Run 4; the injected numbers are authoritative.
             // Line-scoped so ledger/penalty lines elsewhere in the message are untouched.
@@ -2319,7 +2324,13 @@
             out = out.replace(/@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)@FB_END/g, (whole, metaRaw, body) => {
                 let meta = null;
                 try { meta = JSON.parse(metaRaw); } catch (_) { return whole; }
-                const qKey = String((meta && meta.q) || '').toUpperCase().replace(/[^Q0-9]/g, '');
+                // v7.19.854: lit labels ("Introduction"/"Conclusion") stripped to '' under
+                // the [^Q0-9] filter, so those cards silently escaped the audit entirely
+                // (R&J 04-Jul: the Conclusion card's 1.5-vs-1.0 mismatch stood). Fall back
+                // to the alphanumeric label so EVERY card is audited; the Qn-Total verify
+                // pass keys on /^Q\d/ so non-question keys never leak into it.
+                const qKey = String((meta && meta.q) || '').toUpperCase().replace(/[^Q0-9]/g, '')
+                    || String((meta && meta.q) || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
                 if (!qKey) return whole;
                 // element rows: | criterion | worth | your score | why |
                 let scoreSum = 0, scoredRows = 0;
@@ -2336,12 +2347,28 @@
                     scoreSum += parseFloat(cells[2]); scoredRows++;
                 });
                 // penalties: prefer the "Total penalties: −X" line, else sum applied bullets
+                // v7.19.854: R&J 04-Jul console proof — lit cards emit the line BOLDED
+                // ("**Total penalties:** −1.0"); the old regex required plain "Total
+                // penalties: −" so it missed, the bullet fallback required the code to sit
+                // DIRECTLY before "(−X)" (lit writes "W1 — weak analytical verb (−0.5)")
+                // so it summed 0, and the auditor then "corrected" every lit total UPWARD
+                // to its pre-penalty sum (stated 2/8 → corrected 3/8, penalties 0) — the
+                // engine, not the model, inflated the doc by +3. Both patterns widened.
                 let pen = 0;
-                const penLine = body.match(/Total penalties:\s*[−–-]\s*([\d.]+)/i);
+                const penLine = body.match(/Total penalties:?\*{0,2}\s*[−–-]\s*([\d.]+)/i);
                 if (penLine) pen = parseFloat(penLine[1]);
                 else {
-                    let pm; const penRe = /(?:^|\n)\s*(?:[·•*-]\s*)?\*{0,2}[A-Z]\d\*{0,2}\s*\([−–-]\s*([\d.]+)\)/g;
+                    let pm; const penRe = /(?:^|\n)\s*(?:[·•*-]\s*)?\*{0,2}[A-Z]{1,3}\d(?:-[A-Z]+)?\*{0,2}[^(\n]{0,60}\([−–-]\s*([\d.]+)\)/g;
                     while ((pm = penRe.exec(body)) !== null) pen += parseFloat(pm[1]);
+                }
+                // v7.19.854 FAIL-OPEN GUARD (engineer out the failure class): if the card
+                // clearly declares penalties but BOTH parses found none, the parse — not
+                // the card — is wrong. Never enforce a pen=0 recompute (that's how marks
+                // get inflated); skip enforcement for this card and say so loudly.
+                if (pen === 0 && /Penalties Applied|Total penalties/i.test(body) && /\([−–-]\s*[\d.]+\)/.test(body)) {
+                    console.warn('WML MarkAudit: penalty parse EMPTY on a card that declares penalties — enforcement skipped (fail-open), card:', qKey, (meta && meta.para) || '');
+                    _fbAudit.failed[qKey] = true;
+                    return whole;
                 }
                 // v7.19.839: record this card's individually-applied penalty codes for the
                 // code-built ledger (re-fires overwrite the same card key).
