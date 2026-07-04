@@ -4227,6 +4227,24 @@ class SWML_REST_API {
         );
     }
 
+    /**
+     * v7.19.856 (Neil 2026-07-04): THE canonical stage order — the ONE place the lesson
+     * sequence lives for seeding. Each stage is its own snapshot and builds from the
+     * nearest EARLIER stage with content. Per-phase, in walk order:
+     *   PHASE 1:  '' (diagnostic) → _assessment → _fbdiscuss (discuss w/ tutor)
+     *   PHASE 2:  _planning → _outlining → _polishing → _reassessment → _redraft
+     *             (_redraft = the Phase-2 discuss-feedback doc, LAST in the phase —
+     *              it reflects the reassessment output)
+     * Phase 2 is a FRESH START (a redraft): its first stage (_planning) may still walk
+     * back into Phase-1 material, but strip_responses_for_planning removes the prose so
+     * only question/extract/plan context carries (v424 rule). Neil WILL reorder lessons
+     * over time (e.g. polishing is new) — reorder THIS array only; nothing else encodes
+     * the sequence. Longer-term option: derive per-course order from the bridge picker.
+     */
+    private static function stage_seed_chain() {
+        return ['', '_assessment', '_fbdiscuss', '_planning', '_outlining', '_polishing', '_reassessment', '_redraft'];
+    }
+
     private function seed_from_sibling_stage($user_id, $board, $text, $topic_number, $exclude_key, $suffix = '', $attempt = 1, $cw_project_id = '') {
         if ($topic_number === null || (int) $topic_number <= 0) return null;
         $text = $this->normalize_text_slug($text);
@@ -4238,8 +4256,7 @@ class SWML_REST_API {
         // usually newest), every fresh attempt's Phase-1 assessment/fbdiscuss doc seeded
         // from a REDRAFT doc — outline leaked into Phase 1 and the student's diagnostic
         // content never carried forward (prod user-1 R&J __a2 corruption, 2026-07-04).
-        // Chain = the lesson sequence a student walks; '' = the diagnostic doc.
-        $chain = ['', '_assessment', '_fbdiscuss', '_redraft', '_planning', '_outlining', '_polishing', '_reassessment'];
+        $chain = self::stage_seed_chain();
         $i = array_search($suffix, $chain, true);
         if ($i !== false && $i > 0) {
             for ($j = $i - 1; $j >= 0; $j--) {
