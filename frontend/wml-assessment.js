@@ -11,6 +11,16 @@
 
     const WML = window.WML;
 
+    // v7.19.858: single opt-in debug flag for the v7.19.136 telemetry suite. That suite
+    // calls getHTML() (full-doc serialize) in the onUpdate (per-keystroke) and migrate
+    // (24×/load) paths. The v658 "perf" fix gated the migrate telemetry to isAdmin — which
+    // turned the heaviest debug path ON for admins (the only users who test) and OFF for
+    // students/headless. That was the ROOT of the "staging canvas slow only in my browser,
+    // fast headless" mystery (big shared-lesson docs amplify it; DevTools-open materialises
+    // the logged objects on top). Now OFF for everyone incl. admins. Re-enable ad hoc with
+    // `window.WML_DEBUG = true` in the console.
+    const SWML_DEBUG = (typeof window !== 'undefined' && window.WML_DEBUG === true);
+
     // ── Destructure core exports as local variables ──
     const { config, API, headers, state } = WML;
     const { TEXT_CATALOGUE, POETRY_ANTHOLOGY_BY_BOARD, PROSE_ANTHOLOGY_BY_BOARD,
@@ -19091,8 +19101,10 @@
                 requestAnimationFrame(updatePageCount);
                 saveStatus.textContent = 'Editing...';
                 saveStatus.classList.remove('saving');
-                // v7.19.136 instrumentation — diagnose close+reopen save loss
-                try {
+                // v7.19.136 instrumentation — diagnose close+reopen save loss.
+                // v7.19.858: gated — editor.getHTML() here serialised the whole doc on EVERY
+                // keystroke. Off by default (window.WML_DEBUG=true to re-enable).
+                if (SWML_DEBUG) try {
                     console.log('[WML save-debug v7.19.136] onUpdate fired', {
                         task: state.task, phase: state.phase, attempt: state.attempt,
                         topic: state.topicNumber, board: state.board, text: state.text,
@@ -20183,13 +20195,16 @@
             // v7.19.136 instrumentation — snapshot doc size before & after each migrate
             // pass. Any step that drops the size significantly is a strip-suspect.
             let _preMigrateSize = 0;
-            try { _preMigrateSize = canvasEditor.getHTML().length; } catch (_) {}
-            try { console.log('[WML load-debug v7.19.136] migrate chain START', { docSize: _preMigrateSize }); } catch (_) {}
+            if (SWML_DEBUG) {
+                try { _preMigrateSize = canvasEditor.getHTML().length; } catch (_) {}
+                try { console.log('[WML load-debug v7.19.136] migrate chain START', { docSize: _preMigrateSize }); } catch (_) {}
+            }
             // v7.19.658 (PERF): the v7.19.136 per-step size instrumentation calls getHTML()
             // (full-doc serialize) TWICE per step — ~24 serializations every canvas load, pure
-            // debug telemetry. Gate it to admins so students skip the cost; the heals (fn())
-            // run identically either way. Big-doc CW loads feel this.
-            const _MIGRATE_DEBUG = !!(window.swmlConfig && window.swmlConfig.isAdmin);
+            // debug telemetry. v7.19.858: gate on the explicit SWML_DEBUG flag, NOT isAdmin —
+            // the admin gate made this run for the exact users who test (root of the "slow only
+            // in my browser" report). Heals (fn()) run identically either way.
+            const _MIGRATE_DEBUG = SWML_DEBUG;
             const _migrateStep = function (label, fn) {
                 if (!_MIGRATE_DEBUG) { try { fn(); } catch (_) {} return; }
                 let _before = 0; try { _before = canvasEditor.getHTML().length; } catch (_) {}
@@ -20250,8 +20265,9 @@
             // correction). Async (own topic fetch + persistence), fire-and-forget; capability-gated
             // + steady-state stable (see migratePoetryFocusPoem).
             try { migratePoetryFocusPoem(); } catch (_) {}
-            // v7.19.136 instrumentation — final migrate-chain doc size
-            try { console.log('[WML load-debug v7.19.136] migrate chain END', { docSize: canvasEditor.getHTML().length, delta: canvasEditor.getHTML().length - _preMigrateSize }); } catch (_) {}
+            // v7.19.136 instrumentation — final migrate-chain doc size (v7.19.858: gated —
+            // two more full-doc serialises per load).
+            if (SWML_DEBUG) try { console.log('[WML load-debug v7.19.136] migrate chain END', { docSize: canvasEditor.getHTML().length, delta: canvasEditor.getHTML().length - _preMigrateSize }); } catch (_) {}
             // Inject cover image if missing from loaded document
             tryInjectCover();
             // v7.19.473: lock scaffold paragraphs AFTER migrations settle (a migration that
@@ -28632,9 +28648,10 @@
                     const _isSeed = !!(res && res.is_seed);
                     const _preferServer = _isSeed || isCwTaskHydrate || isCribHydrate || !localContent || localContent.length < 20;
                     // v7.19.136 instrumentation — prefer-server decision + editor doc size at this moment
+                    // v7.19.858: gated — one more full-doc serialise per load.
                     let _editorDocSize = 0;
-                    try { _editorDocSize = canvasEditor.getHTML().length; } catch (_) {}
-                    try {
+                    if (SWML_DEBUG) try { _editorDocSize = canvasEditor.getHTML().length; } catch (_) {}
+                    if (SWML_DEBUG) try {
                         console.log('[WML load-debug v7.19.136] prefer-server gate', {
                             isCwTaskHydrate: isCwTaskHydrate,
                             isCribHydrate: isCribHydrate,
