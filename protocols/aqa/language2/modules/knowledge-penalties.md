@@ -99,7 +99,7 @@
   Detection: Missing TTECEA components (Q3/Q4 body paragraphs) or TECEA elements (Q2) Fix: Include all required elements  
   **Note:** This was previously labeled F1 but changed to STR1 to avoid confusion with F1 (Feature spotting). Never apply STR1 to material that is entirely missing — an empty element scores 0 and is already priced (Global Rule 3)  
     
-* **STR2** – Paragraph-count deviation from the teaching shape (Mode B / Redraft only) (-0.5 on Q2/Q3 total; -1.0 on Q4 total)  
+* **STR2** – Paragraph-count deviation from the teaching shape (STRICT regime only — never on the family-first attempt) (-0.5 on Q2/Q3 total; -1.0 on Q4 total)  
   Detection: Q2 ≠ 2 paragraphs; Q3 ≠ 3 body paragraphs; Q4 ≠ 5 sections (Intro + 3 BP + Conclusion)  
   Applied ONCE at the question total — outside the per-paragraph penalty cap, never per paragraph, never in Mode A / diagnostic  
   Fix: Restate the expected shape ("one paragraph per 4 marks") and mark what exists  
@@ -131,11 +131,11 @@
 
 **Section B Specific Penalties:**
 
-* **WC** – Word count deficit penalty (Diagnostic only) (-6 per 100 words under 650)
+* **WC** – Word-count CEILING (family-first attempt only; v7.19.854): the penalty and ceiling arrive CODE-COMPUTED (deficit × 5/100, rounded) — Q5 Total = MIN(marks, ceiling); marks are never deducted. Echo the injected numbers only.
   Detection: Diagnostic submission under 650-word target for Section B
   Calculation: ROUND((650 - word\_count) \* 6 / 100)
   Fix: Expand response to 650+ words using full IUMVCC structure (6 paragraphs of ~100-110 words each)
-  Note: For Redraft/Exam Practice, assessment is halted until 650+ words achieved — WC penalty does not apply
+  Note: on every attempt AFTER the family-first one, Q5 is HALTED below 650 words (the code-owned "↻ Check my word count again" button lifts it) — no ceiling applies because marking has not begun
 
 ---
 
@@ -185,7 +185,7 @@ Key requirements include sustained comparison throughout, use of comparative dis
 
 Students must write in a specified form (article, letter, speech, or essay) for a stated purpose and audience. The response must be substantial (650+ words recommended) and demonstrate both excellent content/organization (AO5 \- 24 marks) and technical accuracy (AO6 \- 16 marks).
 
-For Redraft and Exam Practice submissions, students must follow the IUMVCC structure: Introduction (hook and thesis), Urgency (why action is needed now), Main argument with evidence, Vision (compelling future), Counter-argument with refutation, Conclusion (call to action and memorable close).
+On every attempt after the family-first one, students must follow the IUMVCC structure: Introduction (hook and thesis), Urgency (why action is needed now), Main argument with evidence, Vision (compelling future), Counter-argument with refutation, Conclusion (call to action and memorable close).
 
 Students should use a range of rhetorical devices including rule of three, direct address, rhetorical questions, anaphora, metaphor, emotive language, statistics, and anecdote. The tone and register must be consistently matched to the form, purpose, and audience throughout.
 

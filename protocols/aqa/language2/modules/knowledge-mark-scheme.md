@@ -70,7 +70,7 @@ Fogle employs dark humor through surreal metaphor to convey the overwhelming pre
 * **(T) Technique \- Comparative:** Identify technique Source A writer uses, then use comparative connectives to identify technique Source B writer uses, showing how their methods compare  
 * **(E) Evidence \- Comparative:** Quote from Source A, then comparative transition to quote from Source B  
 * **(C) Close Analysis \- Comparative:** Zoom into Source A's specific details and what they suggest, then zoom into Source B's specific details and what they suggest, comparing what the contrast/similarity reveals  
-* **(E) Effects on Reader \- Comparative:** Two sentences analyzing Source A's effects on readers (focus, emotion, thought, reflection), then two sentences analyzing Source B's effects on readers, followed by comparison of whether these effects are similar or different  
+* **(E) Effects on Reader \- Comparative (v7.19.854 — Neil: ONE effect per source):** one detailed sentence analysing Source A's effect on readers, then one detailed sentence analysing Source B's effect — each tied to that source's method, never floating generics  
 * **(A) Author's Purpose \- Comparative:** Discuss Source A writer's purpose with tentative language ("perhaps reveals," "arguably emphasizes"), then discuss Source B writer's purpose, comparing whether purposes are similar or contrasting  
 * **(+C) Comparative Judgement:** Evaluate which writer's approach is more effective for this specific aspect using comparative language
 

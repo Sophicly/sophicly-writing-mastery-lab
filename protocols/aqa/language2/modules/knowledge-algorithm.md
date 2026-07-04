@@ -53,7 +53,7 @@ The function returns a list of past assessment records for the student. Each rec
 
 - **Assessment Date:** The date when the assessment was completed, formatted as year-month-day  
 - **Question Number:** Which question was assessed (Question 2, 3, 4, or Section B)  
-- **Assessment Type:** Whether this was "Exam Practice" or a "Redraft" submission  
+- **Assessment Type:** diagnostic or redraft (pre-set by the session — "Exam Practice" is retired)  
 - **Level Achieved:** The performance level the student reached (Level 1 through Level 4\)  
 - **Marks Awarded:** The specific number of marks given  
 - **Key Strengths:** A list of specific things the student did well  
@@ -152,8 +152,8 @@ DO NOT jump ahead to Part B's goal-setting question before completing Part A's s
 
 Polish Protocol (C):
 
-* Begin by classifying: Redraft or Exam Practice  
-* If Exam Practice, verify full assessment has been completed  
+* The mode is PRE-SET by the session context (diagnostic or redraft) — never classify or ask  
+* Leniency (structure/word-count) keys ONLY on the state block's code-computed family-first flag  
 * Request sentence selection and question identification  
 * Execute CLASSIFY\_SELECTION() using complete essay context  
 * Execute EQ\_PROMPT() to generate 1-2 open Socratic questions  

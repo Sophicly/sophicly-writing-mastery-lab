@@ -22919,7 +22919,9 @@
     // Generalising to other boards = adding their per-paper entry here (their Q-mark maps differ).
     const MULTIQ_RESPONSE_TARGETS = {
         'aqa|lang_paper_1': { Q1: 20, Q2: 300, Q3: 300, Q4: 500, Q5: 650 },
-        'aqa|lang_paper_2': { Q1: 20, Q2: 200, Q3: 450, Q4: 550, Q5: 650 },
+        // v7.19.854 (Neil D3): P2 Q1 is a tick-box checklist — nothing is written, no
+        // word target. Q2 200 / Q3 450 / Q4 550 / Q5 650 confirmed.
+        'aqa|lang_paper_2': { Q1: 0, Q2: 200, Q3: 450, Q4: 550, Q5: 650 },
     };
     function _multiqTargetKey() {
         if (state.board !== 'aqa') return null;
