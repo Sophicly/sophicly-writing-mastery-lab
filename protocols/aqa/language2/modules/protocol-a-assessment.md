@@ -205,11 +205,11 @@ descriptor exists for what you need, say "no descriptor available" — never fab
      detailed sentence (different effect, later in the Focus→Feel→Think→Act chain); (6) writer's
      purpose. Format with TTECEA labels (**(T) Topic Sentence:** … **(A) Author's Purpose:** …).
    - **Q4 golds (comparative TTECEA):** (1) comparative-conceptual topic sentence spanning BOTH
-     writers (no technique words); (2) Source A method + embedded quote + inference; (3) pivot
-     with a comparative discourse marker → Source B method + embedded quote + inference;
-     (4) word-level analysis of the sharpest quotation; (5) effect on reader — first detailed
-     sentence; (6) effect on reader — second detailed sentence (different effect, later in the
-     Focus→Feel→Think→Act chain); (7) writers' purposes compared against the question focus.
+     writers (no technique words); (2) Source A method + embedded quote + inference; (3) effect
+     on the reader — Source A; (4) pivot with a comparative discourse marker → Source B method +
+     embedded quote + inference; (5) effect on the reader — Source B; (6) word-level analysis of
+     the sharpest quotation; (7) writers' purposes compared against the question focus. ONE
+     effect sentence per source — tied to that text's method, never two floating generic ones.
      Every gold paragraph carries evidence from BOTH sources.
    Sentences 2–3 lines, varied starters, never "the/this/these" openers, never any F1-family
    verb. Silently self-check each gold sentence-by-sentence against this order before emitting;
@@ -394,8 +394,11 @@ Output `@FB_BEGIN{"q":"Q2","para":"1","title":"Paragraph 1"}` on its own line, t
   | **BONUS** — integrated cross-source synthesis beyond the pair (AO1) | +0.5 |
 
   The 7 non-bonus criteria form the 4.0 base; the BONUS adds on top, capped at 4.0 for the
-  paragraph. When absent: do NOT deduct, do NOT list as a weakness, OMIT the row entirely — it
-  can only help.
+  paragraph. **The BONUS row exists ONLY on the Topic 1 Phase 1 diagnostic of this paper (Neil,
+  2026-07-04)** — the session context names the topic and mode; on every other attempt (practice
+  papers, redrafts) OMIT the row entirely: once the pair structure has been taught, band-worthy
+  material belongs INSIDE the pairs. When present-but-unearned: do NOT deduct, do NOT list as a
+  weakness, OMIT the row — it can only help.
 - **Penalties** — max 3 (−1.5). Each penalty MUST be: `CODE — plain name (−0.5): "[student's
   verbatim phrase]" → Fix: "[one-line worked rewrite of that exact phrase]"` (students must never
   meet a bare code). Q2 codes: I1 imprecise/underdeveloped interpretation · M1 retelling instead
@@ -512,17 +515,18 @@ paragraphs → Tier 1/Tier 2.
   quote + fix, no deduction. Golds: 3–4 sentences — both perspectives + three-point comparative
   thesis (Model 2's thesis anchors BP1–3's Model 2s). Teaching note where useful: body paragraphs
   carry 15 of Q4's 16 marks — plan and write them FIRST; the frame is added if time allows.
-- **Body Paragraph 1 (5 marks)** — `para:"BP1"`, `title:"Body Paragraph 1"`. Criteria:
-  comparative-conceptual topic sentence spanning both writers (AO3) 0.5 · Source A method +
-  embedded quote + inference (AO3) 0.5 · Source B method + embedded quote + inference, opened
-  with a comparative pivot (AO3) 0.5 · perceptive development of the difference/similarity as a
-  PAIR (AO3) 1.0 · word-level analysis of the sharpest quotation (AO3) 0.5 · first detailed
-  sentence evaluating effects on the reader (AO3) 0.5 · second detailed sentence evaluating
-  effects on the reader — a different effect, later in the Focus→Feel→Think→Act chain (AO3)
-  0.5 · writers' purposes compared against the question focus (AO3) 1.0.
+- **Body Paragraph 1 (5 marks)** — `para:"BP1"`, `title:"Body Paragraph 1"`. Criteria (in the
+  taught order): comparative-conceptual topic sentence spanning both writers (AO3) 0.5 ·
+  Source A method + embedded quote + inference (AO3) 0.5 · effect on the reader — Source A
+  (AO3) 0.5 · Source B method + embedded quote + inference, opened with a comparative pivot
+  (AO3) 0.5 · effect on the reader — Source B (AO3) 0.5 · perceptive development of the
+  difference/similarity as a PAIR (AO3) 1.0 · word-level analysis of the sharpest quotation
+  (AO3) 0.5 · writers' purposes compared against the question focus (AO3) 1.0. (ONE effect
+  sentence per source — the comparison paragraph writes two effects anyway, one tied to each
+  text; never two floating generic ones.)
   Penalties: max 3 (−1.5), Q3 code list + K1 conflated/underdeveloped conceptual links (−0.5) +
   H1-COMP single-source sentence (−0.5 — never where the one-source gap already zeroed a
-  criterion). Golds: full comparative TTECEA order (Gold rule 4, with BOTH effect sentences).
+  criterion). Golds: full comparative TTECEA order (Gold rule 4, one effect per source).
 - **Body Paragraph 2 (5 marks)** — `para:"BP2"`, `title:"Body Paragraph 2"`. Same as BP1; equal
   depth.
 - **Body Paragraph 3 (5 marks)** — `para:"BP3"`, `title:"Body Paragraph 3"`. Same as BP1; equal
