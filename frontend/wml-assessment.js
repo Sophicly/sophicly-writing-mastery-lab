@@ -47,29 +47,38 @@
                 });
             }).observe({ type: 'longtask', buffered: true });
         }
-        // Wrap the observer constructors to count INSTANCES (detects stacking — a re-render
-        // that never disconnects old observers) + FIRES + time (detects a feedback loop).
+        // Wrap the observer constructors and record EACH instance's creation stack, so the
+        // 2s dump can name the exact observer firing thousands of times (aggregate counts
+        // can't distinguish 12 different observers). The hottest instance's stack = the bug.
         ['ResizeObserver', 'MutationObserver'].forEach(function (name) {
             var Orig = window[name];
             if (typeof Orig !== 'function') return;
-            var s = { instances: 0, fires: 0, ms: 0 };
-            window['__wml_' + name] = s;
+            var insts = [];
+            window['__wml_' + name + '_insts'] = insts;
             var Wrapped = function (cb) {
-                s.instances++;
+                var rec = { fires: 0, ms: 0, stack: '' };
+                try { rec.stack = (new Error().stack || '').split('\n').slice(2, 5).map(function (l) { return l.trim(); }).join('  <-  '); } catch (_) {}
+                insts.push(rec);
                 return new Orig(function (entries, obs) {
-                    var t0 = performance.now(); s.fires++;
-                    try { return cb(entries, obs); } finally { s.ms += performance.now() - t0; }
+                    var t0 = performance.now(); rec.fires++;
+                    try { return cb(entries, obs); } finally { rec.ms += performance.now() - t0; }
                 });
             };
             Wrapped.prototype = Orig.prototype;
             window[name] = Wrapped;
         });
-        window.__wmlOnUpdate = 0; window.__wmlSetContent = 0;
+        window.__wmlOnUpdate = 0;
         setInterval(function () {
-            var ro = window.__wml_ResizeObserver || {}, mo = window.__wml_MutationObserver || {};
-            console.log('WML-PERF probe  onUpdate=' + window.__wmlOnUpdate + '  setContent=' + window.__wmlSetContent
-                + '  RO[inst=' + (ro.instances || 0) + ' fires=' + (ro.fires || 0) + ' ' + Math.round(ro.ms || 0) + 'ms]'
-                + '  MO[inst=' + (mo.instances || 0) + ' fires=' + (mo.fires || 0) + ' ' + Math.round(mo.ms || 0) + 'ms]');
+            ['ResizeObserver', 'MutationObserver'].forEach(function (name) {
+                var insts = window['__wml_' + name + '_insts'] || [];
+                var total = insts.reduce(function (a, r) { return a + r.fires; }, 0);
+                var top = insts.slice().sort(function (a, b) { return b.fires - a.fires; })[0];
+                if (top && top.fires > 50) {
+                    console.log('WML-PERF ' + name + '  insts=' + insts.length + '  totalFires=' + total
+                        + '  HOTTEST fires=' + top.fires + ' ' + Math.round(top.ms) + 'ms  created@ ' + top.stack);
+                }
+            });
+            console.log('WML-PERF onUpdate=' + window.__wmlOnUpdate);
         }, 2000);
     } catch (_) {}
 
