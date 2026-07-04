@@ -43,11 +43,34 @@
             new PerformanceObserver(function (list) {
                 list.getEntries().forEach(function (ent) {
                     _wmlLtN++; _wmlLtMs += ent.duration;
-                    var _src = (ent.attribution && ent.attribution[0]) ? (ent.attribution[0].containerName || ent.attribution[0].name || ent.attribution[0].containerType || '') : '';
-                    console.log('WML-PERF longtask ' + Math.round(ent.duration) + 'ms  @' + Math.round(ent.startTime) + 'ms  (running: ' + _wmlLtN + ' tasks / ' + Math.round(_wmlLtMs) + 'ms)  ' + _src);
+                    console.log('WML-PERF longtask ' + Math.round(ent.duration) + 'ms  @' + Math.round(ent.startTime) + 'ms  (running: ' + _wmlLtN + ' tasks / ' + Math.round(_wmlLtMs) + 'ms)');
                 });
-            }).observe({ entryTypes: ['longtask'], buffered: true });
+            }).observe({ type: 'longtask', buffered: true });
         }
+        // Wrap the observer constructors to count INSTANCES (detects stacking — a re-render
+        // that never disconnects old observers) + FIRES + time (detects a feedback loop).
+        ['ResizeObserver', 'MutationObserver'].forEach(function (name) {
+            var Orig = window[name];
+            if (typeof Orig !== 'function') return;
+            var s = { instances: 0, fires: 0, ms: 0 };
+            window['__wml_' + name] = s;
+            var Wrapped = function (cb) {
+                s.instances++;
+                return new Orig(function (entries, obs) {
+                    var t0 = performance.now(); s.fires++;
+                    try { return cb(entries, obs); } finally { s.ms += performance.now() - t0; }
+                });
+            };
+            Wrapped.prototype = Orig.prototype;
+            window[name] = Wrapped;
+        });
+        window.__wmlOnUpdate = 0; window.__wmlSetContent = 0;
+        setInterval(function () {
+            var ro = window.__wml_ResizeObserver || {}, mo = window.__wml_MutationObserver || {};
+            console.log('WML-PERF probe  onUpdate=' + window.__wmlOnUpdate + '  setContent=' + window.__wmlSetContent
+                + '  RO[inst=' + (ro.instances || 0) + ' fires=' + (ro.fires || 0) + ' ' + Math.round(ro.ms || 0) + 'ms]'
+                + '  MO[inst=' + (mo.instances || 0) + ' fires=' + (mo.fires || 0) + ' ' + Math.round(mo.ms || 0) + 'ms]');
+        }, 2000);
     } catch (_) {}
 
     // ── Destructure core exports as local variables ──
@@ -19071,6 +19094,7 @@
                 } : {}),
             },
             onUpdate: ({ editor }) => {
+                try { window.__wmlOnUpdate = (window.__wmlOnUpdate || 0) + 1; } catch (_) {} // v7.19.859 perf probe
                 // Word count — response sections only (v7.11.0)
                 // v7.19.63: live id-lookup for footer + widget. Closure refs
                 // (wcDisplay, wcWidgetLabel) become detached after canvas
