@@ -2183,7 +2183,7 @@ class SWML_REST_API {
             // is INERT until the per-stage suffix split activates it. Returned as a seed;
             // the first autosave persists it under THIS stage's key (frozen per-stage).
             if (!empty($request->get_param('seedFromSiblings'))) {
-                $seed_html = $this->seed_from_sibling_stage($user_id, $board, $text, $topic_number, $meta_key);
+                $seed_html = $this->seed_from_sibling_stage($user_id, $board, $text, $topic_number, $meta_key, $suffix, $attempt, $cw_project_id);
                 if (!empty($seed_html)) {
                     // v7.19.352: clean stale CW-outline sections out of the seed too.
                     if (strpos($text, 'lang_paper') !== false) {
@@ -4227,25 +4227,51 @@ class SWML_REST_API {
         );
     }
 
-    private function seed_from_sibling_stage($user_id, $board, $text, $topic_number, $exclude_key) {
+    private function seed_from_sibling_stage($user_id, $board, $text, $topic_number, $exclude_key, $suffix = '', $attempt = 1, $cw_project_id = '') {
         if ($topic_number === null || (int) $topic_number <= 0) return null;
+        $text = $this->normalize_text_slug($text);
+        // v7.19.855 ROOT FIX (Neil 2026-07-04 — FORWARD-SNAPSHOT model, settled): a new
+        // stage doc seeds from the NEAREST EARLIER stage with content, SAME ATTEMPT —
+        // never from "whichever sibling saved most recently". The old newest-sibling
+        // pick honoured the v714 snapshot chain only while a topic held nothing but
+        // diagnostic+assessment docs; the moment Phase-2 docs existed (outline-bearing,
+        // usually newest), every fresh attempt's Phase-1 assessment/fbdiscuss doc seeded
+        // from a REDRAFT doc — outline leaked into Phase 1 and the student's diagnostic
+        // content never carried forward (prod user-1 R&J __a2 corruption, 2026-07-04).
+        // Chain = the lesson sequence a student walks; '' = the diagnostic doc.
+        $chain = ['', '_assessment', '_fbdiscuss', '_redraft', '_planning', '_outlining', '_polishing', '_reassessment'];
+        $i = array_search($suffix, $chain, true);
+        if ($i !== false && $i > 0) {
+            for ($j = $i - 1; $j >= 0; $j--) {
+                $key = $this->canvas_meta_key($board, $text, (int) $topic_number, $chain[$j], $attempt, $cw_project_id);
+                if ($key === $exclude_key) continue;
+                $raw = get_user_meta($user_id, $key, true);
+                if (empty($raw)) continue;
+                $d = is_array($raw) ? $raw : self::decode_canvas_json($raw);
+                if (!is_array($d) || empty($d['html'])) continue;
+                // v7.19.424: planning is a fresh start — never seed sibling response
+                // prose into a planning-stage doc.
+                return (strpos($exclude_key, '_planning') !== false)
+                    ? self::strip_responses_for_planning($d['html'])
+                    : $d['html'];
+            }
+            return null; // no earlier stage has content — frontend seeds its own template
+        }
+        if (strpos($suffix, '_cw_') !== 0) return null; // unknown stage — never guess a seed
+        // CW workbook steps keep the legacy most-recent pick, SCOPED to _cw_ sibling keys
+        // only (they never held essay-stage docs, so recency stays safe there).
         global $wpdb;
-        $text   = $this->normalize_text_slug($text);
         $prefix = 'swml_canvas_' . $board . '_' . $text . '_t' . (int) $topic_number;
         $rows = $wpdb->get_results($wpdb->prepare(
             "SELECT meta_key, meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key LIKE %s",
             $user_id,
-            $wpdb->esc_like($prefix) . '%'
+            $wpdb->esc_like($prefix . '_cw_') . '%'
         ));
         if (empty($rows)) return null;
         $best_html = null;
         $best_time = '';
         foreach ($rows as $row) {
             if ($row->meta_key === $exclude_key) continue;
-            // Exact-topic guard: the char after the _t{topic} prefix must be '_' or end —
-            // prevents _t1 from matching _t10 / _t11 etc.
-            $after = substr($row->meta_key, strlen($prefix), 1);
-            if ($after !== '' && $after !== '_') continue;
             $d = self::decode_canvas_json($row->meta_value);
             if (!is_array($d) || empty($d['html'])) continue;
             $t = isset($d['savedAt']) ? (string) $d['savedAt'] : '';
@@ -4253,11 +4279,6 @@ class SWML_REST_API {
                 $best_html = $d['html'];
                 $best_time = $t;
             }
-        }
-        // v7.19.424: planning is a fresh start — never seed sibling response prose
-        // into a planning-stage doc (Phase 1 answers were riding into t1_planning).
-        if ($best_html !== null && strpos($exclude_key, '_planning') !== false) {
-            $best_html = self::strip_responses_for_planning($best_html);
         }
         return $best_html;
     }
