@@ -1818,24 +1818,25 @@ window.WML = (function() {
         const close = el('button', { className: 'swml-toast-close', textContent: '✕',
             onClick: () => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); } });
         toast.appendChild(close);
-        const root = $('#swml-root') || document.body;
-        root.appendChild(toast);
-        // v7.19.829: centre on the DOCUMENT column when the canvas is open — a
-        // viewport-centred toast reads lopsided next to the doc with the sidebar +
-        // chat panel open (Neil: the export toast). Same anchor as the dynamic
-        // island. Falls back to viewport centre outside the canvas.
+        // v7.19.854: centre EXACTLY like the dynamic island — SAME technique, SAME
+        // containing block (Neil: the toast drifted further right with each px-math
+        // "fix"; the v829/v839 attempts measured viewport rects but positioned a
+        // fixed-position element, so the two coordinate spaces never agreed). The
+        // island is `position:absolute; left:50%; translateX(-50%)` INSIDE the doc
+        // pane (.swml-canvas-editor, position:relative). The toast now does the
+        // identical thing: appended to the SAME pane with an absolute variant class —
+        // no measured pixels anywhere. Outside the canvas it stays viewport-fixed.
         try {
-            // v7.19.839: anchor on the dynamic island ITSELF when present (Neil: toast should
-            // sit exactly like the island) — the v829 pane-centre approximation still read
-            // lopsided. Island → doc pane → CSS viewport centre.
-            const island = document.querySelector('.swml-scroll-index');
-            const anchor = (island && island.offsetParent !== null) ? island
-                : document.querySelector('.swml-canvas-content');
-            if (anchor && anchor.offsetParent !== null) {
-                const r = anchor.getBoundingClientRect();
-                if (r.width > 40) toast.style.left = Math.round(r.left + r.width / 2) + 'px';
+            const pane = document.querySelector('.swml-canvas-editor');
+            if (pane && pane.offsetParent !== null) {
+                toast.classList.add('swml-toast--pane');
+                pane.appendChild(toast);
+            } else {
+                ($('#swml-root') || document.body).appendChild(toast);
             }
-        } catch (_) { /* viewport centre */ }
+        } catch (_) {
+            ($('#swml-root') || document.body).appendChild(toast);
+        }
         requestAnimationFrame(() => toast.classList.add('show'));
         setTimeout(() => {
             if (toast.parentNode) {
@@ -2430,6 +2431,9 @@ window.WML = (function() {
         // v7.19.466: Strip @FIELD_SET{...} AI-authored row-fill signals (Phase 3 — CW Step 3
         // loglines are written into the canvas rows, not echoed in the bubble).
         text = text.replace(/@FIELD_SET\s*\{[^}]*\}/g, '').trim();
+        // v7.19.854: Strip @SUMMARY_COMPLETE — the closing-chain arming marker the final-summary
+        // mandate requires. It stays in history (the chain keys on it) but never renders.
+        text = text.replace(/@SUMMARY_COMPLETE/g, '').trim();
         // v7.19.839: collapse the blank-line stack the stripped marker lines leave behind —
         // the auto-file turn emits 12+ markers on their own lines, which stripped into a huge
         // empty gap in the bubble (Neil's screenshot).

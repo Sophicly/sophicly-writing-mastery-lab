@@ -2099,9 +2099,7 @@
             if (!_cwStep1LoglineRowsEmpty()) return; // markers landed — nothing to do
             _cwStep1RepairFired = true;
             console.warn('WML CW: Step-1 loglines missing after approval — firing silent repair turn');
-            canvasSilentSend = true;
-            chatTextarea.value = 'SYSTEM (not from the student): the three seed loglines were NOT saved to the document. Re-emit them now — output exactly three @FIELD_SET markers on their own lines for cw-step-1-logline-1, cw-step-1-logline-2 and cw-step-1-logline-3, each value the full logline sentence you just presented, valid JSON with straight double quotes, then add one short visible line confirming they are saved. Do not show the markers to the student.';
-            sendCanvasMessage();
+            _silentSystemSend('SYSTEM (not from the student): the three seed loglines were NOT saved to the document. Re-emit them now — output exactly three @FIELD_SET markers on their own lines for cw-step-1-logline-1, cw-step-1-logline-2 and cw-step-1-logline-3, each value the full logline sentence you just presented, valid JSON with straight double quotes, then add one short visible line confirming they are saved. Do not show the markers to the student.');
         } catch (e) { console.warn('WML CW: step-1 logline repair skipped —', e && e.message); }
     }
 
@@ -2144,10 +2142,164 @@
             if (!missing.length) return; // markers landed — nothing to do
             _apFileRepairFired = true;
             console.warn('WML AP-FILE: Action Plan/Analytics fields empty at closing gate — firing silent repair turn:', missing.join(', '));
-            canvasSilentSend = true;
-            chatTextarea.value = 'SYSTEM (not from the student): the Action Plan / Analytics filing markers were NOT saved to the document. Re-emit them now — output one @FIELD_SET marker per line for each of these field ids: ' + missing.join(', ') + '. Each marker is {"field":"<id>","value":"<text>"} — valid JSON with straight double quotes, no line breaks inside the value (separate items with " · "). Derive each value from this assessment and the student\'s three action-plan answers exactly as the protocol\'s filing step specifies. Then add one short visible line confirming the Action Plan and Analytics sections are saved. Do not show the markers to the student.';
-            sendCanvasMessage();
+            _silentSystemSend('SYSTEM (not from the student): the Action Plan / Analytics filing markers were NOT saved to the document. Re-emit them now — output one @FIELD_SET marker per line for each of these field ids: ' + missing.join(', ') + '. Each marker is {"field":"<id>","value":"<text>"} — valid JSON with straight double quotes, no line breaks inside the value (separate items with " · "). Derive each value from this assessment and the student\'s three action-plan answers exactly as the protocol\'s filing step specifies. Then add one short visible line confirming the Action Plan and Analytics sections are saved. Do not show the markers to the student.');
         } catch (e) { console.warn('WML AP-FILE: repair skipped —', e && e.message); }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // v7.19.854 (Neil ruling 2026-07-04): UNIVERSAL ENGINE-OWNED CLOSING CHAIN.
+    // The R&J runs proved the protocol-scripted ending drifts per paper (lit asked all
+    // three Action-Plan questions in ONE message, never offered the rebuild, filled no
+    // Overall Feedback suite, emitted the wrap line early). Like the pre-chain, the
+    // ending is now CODE-DRIVEN — one implementation for every board/paper:
+    //   summary turn (server-mandated, ends @SUMMARY_COMPLETE, fills Overall Feedback)
+    //   → code verifies the section fill (ONE silent repair turn if still template)
+    //   → code asks the three Hattie Action-Plan questions ONE per turn (no AI round-trip)
+    //   → code asks the Transfer question
+    //   → code fires ONE silent SYSTEM filing directive (AI refines answers + files
+    //     @FIELD_SETs + [ASSESSMENT_COMPLETE] + wrap line — AP-FILE repair backstops)
+    //   → the closing button row renders (engine-owned since 842; now + rebuild offer).
+    // The chain ARMS only on @SUMMARY_COMPLETE (emitted by the code-owned state-block
+    // mandate) — pre-854 transcripts and boards without the state machine never arm it,
+    // so they keep the protocol-scripted ending unchanged. Stage detection is a pure
+    // function over chat history (pre-chain pattern): idempotent, resume-safe.
+    const _CC_Q = {
+        ap1Head: 'Final step: your **action plan** — three short questions, one at a time.',
+        ap1: '**1. Where am I going?** Which ONE criterion will you focus on next? Choose an option or type your own:',
+        ap2: '**2. How am I going?** In one sentence: where are you now against that focus — what was the gap today’s marks showed?',
+        ap3: '**3. Where to next?** One specific sentence: what will you do differently in your next attempt to close that gap?',
+        transfer: 'Last question — **transfer**. How could you apply that skill to another subject you study? One specific example.'
+    };
+    function _closingChainStage() {
+        try {
+            if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return null;
+            if (state.reviewMode) return null;
+            const h = _chatShell && _chatShell.history;
+            if (!h || !h.length) return null;
+            const asked = (re) => h.some(m => m && m.role === 'assistant' && re.test(m.content || ''));
+            if (!asked(/@SUMMARY_COMPLETE/)) return null;       // arms only on the mandated marker
+            if (asked(/\[ASSESSMENT_COMPLETE\]/i)) return null; // closing gate owns the rest
+            if (!asked(/Where am I going\?/i)) return 'ap1';
+            if (!asked(/How am I going\?/i)) return 'ap2';
+            if (!asked(/Where to next\?/i)) return 'ap3';
+            if (!asked(/apply that skill to another subject/i)) return 'transfer';
+            return 'file';
+        } catch (_) { return null; }
+    }
+    function _renderClosingQuestion(stage) {
+        if (!_chatShell || !_chatShell.addMsg) return;
+        let plain;
+        if (stage === 'ap1') {
+            const opts = (typeof _chatShell.goalOptions === 'function' ? (_chatShell.goalOptions() || []) : []);
+            plain = _CC_Q.ap1Head + '\n\n' + _CC_Q.ap1 + '\n\n' + opts.join('\n') + (opts.length ? '\n' : '') + 'F) Something else (type it below)';
+        } else {
+            plain = _CC_Q[stage];
+        }
+        if (!plain) return;
+        // suppressActions: ap1's lettered options would ALSO be auto-detected into a
+        // duplicate button set (pre-chain lesson, v7.19.810) — we render our own bar.
+        _chatShell.addMsg(formatAI(plain), 'ai', plain, { suppressActions: true });
+        _chatShell.history.push({ role: 'assistant', content: plain });
+        try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (_) {}
+        if (stage === 'ap1') {
+            try {
+                const bar = el('div', { className: 'swml-quick-actions' });
+                (_chatShell.goalOptions() || []).forEach(opt => {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: opt,
+                        onClick: () => { bar.remove(); _chatShell.textarea.value = 'My focus: ' + opt.replace(/^[A-E]\)\s*/, ''); _chatShell.send(); }
+                    }));
+                });
+                const bubble = _chatShell.messages && _chatShell.messages.lastElementChild;
+                if (bubble) (bubble.querySelector('.swml-bubble-content') || bubble).appendChild(bar);
+            } catch (_) { /* options bar is progressive enhancement */ }
+        }
+    }
+    let _ccSecRepairFired = false;
+    let _closingFilingFired = false;
+    function _overallFeedbackStillTemplate() {
+        try {
+            if (!canvasEditor) return false;
+            let node = null;
+            canvasEditor.state.doc.descendants((n) => {
+                if (node) return false;
+                if (n.type.name === 'sectionBlock' && n.attrs && /overall\s*feedback/i.test(String(n.attrs.label || ''))) { node = n; return false; }
+                return true;
+            });
+            if (!node) return false; // doc carries no Overall Feedback section — nothing to verify
+            return /will appear here once your assessment is complete/i.test(node.textContent || '');
+        } catch (_) { return false; }
+    }
+    function _fireClosingFiling() {
+        if (_closingFilingFired) return;
+        _closingFilingFired = true;
+        _silentSystemSend('SYSTEM (not from the student): the student has now answered the three action-plan questions and the transfer question (recorded above — the system asked them). Close the assessment in ONE turn, in this exact order: (1) one or two lines acknowledging and, where useful, sharpening their action-plan answers and transfer example — never re-ask them; (2) the @FIELD_SET filing markers exactly as the protocol’s filing step specifies (every field, one marker per line, values derived from this assessment and their answers); (3) the one-line filing confirmation; (4) a brief, warm session conclusion naming one real moment from this session; (5) [ASSESSMENT_COMPLETE] on its own line; (6) end with exactly: "That wraps the assessment. Anything you’d like to revisit before you mark this complete?" Ask no other questions.');
+    }
+    // Runs on every AI canvas reply (both pipelines — same call sites as the AP-FILE
+    // repair). Advances the chain whenever an AI turn lands mid-chain.
+    function _driveClosingChain(reply) {
+        try {
+            const stage = _closingChainStage();
+            if (!stage) return;
+            if (/@SUMMARY_COMPLETE/.test(reply || '') && _overallFeedbackStillTemplate() && !_ccSecRepairFired) {
+                _ccSecRepairFired = true;
+                console.warn('WML closing-chain: Overall Feedback still template after the summary turn — firing silent repair turn');
+                _silentSystemSend('SYSTEM (not from the student): the Overall Feedback document section was NOT filled. Re-emit the full summary suite inside @SECTION_BEGIN{"section":"Overall Feedback"} … @SECTION_END markers now, exactly as the protocol’s Final Summary step specifies, then @SUMMARY_COMPLETE on its own line. Do not repeat the summary outside the markers and do not ask any questions.');
+                return;
+            }
+            if (stage === 'file') { _fireClosingFiling(); return; }
+            _renderClosingQuestion(stage);
+            console.log('WML closing-chain: code-asked "' + stage + '" (no AI turn)');
+        } catch (e) { console.warn('WML closing-chain: drive skipped —', e && e.message); }
+    }
+    // Turn interception (pre-chain pattern) — called by BOTH sendCanvasMessage pipelines
+    // before the AI round-trip. Returns true when code owned the turn.
+    function _interceptClosingChain(msg) {
+        try {
+            const stage = _closingChainStage();
+            if (!stage || !_chatShell) return false;
+            _chatShell.addMsg(msg, 'user');
+            _chatShell.history.push({ role: 'user', content: msg, closingChain: true });
+            _chatShell.textarea.value = '';
+            try { _chatShell.textarea.style.height = '40px'; } catch (_) {}
+            if (stage === 'file') {
+                // transfer answered — the next turn is the AI filing turn
+                try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (_) {}
+                setTimeout(_fireClosingFiling, 150);
+            } else {
+                _renderClosingQuestion(stage);
+            }
+            console.log('WML closing-chain: intercepted student reply at stage "' + stage + '"');
+            return true;
+        } catch (e) { console.warn('WML closing-chain: interception skipped —', e && e.message); return false; }
+    }
+
+    // v7.19.854: REPLY NORMALISER (both pipelines — same call sites as the auditor).
+    // Two deterministic repairs on the raw reply before display/history/filing:
+    // (a) Q-GATE BUTTON-ROW SYNTHESIS — R&J Run-2 transcript: the gate LINE emitted at
+    //     every section end but the 4-button row appeared ZERO times, so sections
+    //     auto-advanced with no visible confirmation. A gate line with no row gets the
+    //     canonical row appended; the existing quick-action detection renders it.
+    // (b) REJECTED-PENALTY BULLET STRIP — verdict defect 2: considered-but-rejected
+    //     penalties ("… — no W1 penalty applied") plus their visible deliberation leaked
+    //     into a FILED card. Applied-only is the rule: any penalty bullet ending in a
+    //     not-applied verdict is stripped (the protocol keeps the rule; code enforces it).
+    function _normalizeAssessmentReply(reply) {
+        try {
+            if (!reply) return reply;
+            if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return reply;
+            let out = String(reply);
+            const preLen = out.length;
+            out = out.replace(/^[ \t]*[-*•][^\n]*(?:no\s+(?:[A-Za-z0-9-]+\s+)?penalt(?:y|ies)\s+(?:is\s+|was\s+)?applied|penalt(?:y|ies)[^\n]*\bnot\s+applied)[^\n]*$\n?/gim, '');
+            if (out.length !== preLen) console.log('WML normalise: stripped rejected-penalty bullet(s) (−' + (preLen - out.length) + ' chars)');
+            const gateRe = /Does that clear it up\?\s*Shall we (?:continue with|move to)/i;
+            if (gateRe.test(out) && !/\[\s*✓?\s*Got it\s*—?\s*continue\s*\]/i.test(out)
+                && !/\[ASSESSMENT_COMPLETE\]/i.test(out) && !/@SUMMARY_COMPLETE/.test(out)) {
+                out = out.replace(/\s*$/, '') + '\n\n`[✓ Got it — continue]` `[🤔 Still confused]` `[💬 Different question]` `[⏸ Pause here]`';
+                console.log('WML normalise: gate line had no button row — canonical Q-GATE row appended');
+            }
+            return out;
+        } catch (_) { return reply; }
     }
 
     // v7.19.854 (Neil): CODE-OWNED word-count halt re-check. STRICT regime only
@@ -2182,9 +2334,7 @@
                 const w2 = _q5DomWordCount();
                 if (t2 > 0 && w2 >= t2) {
                     if (_wcRecheckBtn) { _wcRecheckBtn.remove(); _wcRecheckBtn = null; }
-                    canvasSilentSend = true;
-                    chatTextarea.value = 'SYSTEM (not from the student): code word-count re-check PASSED — the Question 5 response is now ' + w2 + ' words against the ' + t2 + '-word target. The requirement is met: lift the halt and resume the assessment exactly where it stopped.';
-                    sendCanvasMessage();
+                    _silentSystemSend('SYSTEM (not from the student): code word-count re-check PASSED — the Question 5 response is now ' + w2 + ' words against the ' + t2 + '-word target. The requirement is met: lift the halt and resume the assessment exactly where it stopped.');
                 } else {
                     btn.textContent = '↻ Still ' + w2 + '/' + t2 + ' words — keep writing, then check again';
                     setTimeout(() => { try { if (btn.isConnected) btn.textContent = '↻ Check my word count again'; } catch (_) {} }, 4000);
@@ -2238,8 +2388,11 @@
         A1: 'anachronistic interpretation', X1: 'irrelevant/unexplained context',
         STR1: 'structure not followed', STR2: 'structure divergence',
         'H1-COMP': 'single-source sentence in a comparison paragraph',
+        // v7.19.854: lit extension codes (universal-registry port of the lit protocol)
+        TTE1: 'second sentence missing technique+evidence+inference',
+        E2: 'underdeveloped effect on reader',
         // legacy (pre-854 transcripts only)
-        W1: 'weak analytical verb' };
+        W1: 'weak analytical verb', F2: 'TTECEA order violation' };
     // v7.19.841: Section B (Q5) word-count CEILING is CODE-OWNED. The protocol had the
     // LLM compute ROUND(deficit × 5/100) itself — Run 4 invented "12.5 rounded to 10"
     // (cap 30 instead of 27, +3 marks, grade 6→7). Now: (a) the injection pipeline sends
@@ -4928,10 +5081,50 @@
                 if (!target) break;
                 canvasEditor.commands.insertContentAt({ from: target.pos + 1, to: target.pos + target.size - 1 }, PLACEHOLDER);
             }
+            // 2b) v7.19.854 (Neil): CONSISTENT attempt-boundary clear — the feedback boxes
+            //     cleared but Analytics/Action Plan/Overall Feedback kept the PRIOR attempt's
+            //     content, and the v830 never-clobber guard then (correctly) refused to
+            //     overwrite it mid-run, so stale answers survived into the new attempt. A new
+            //     attempt clears ALL assessment-owned output; the guard keeps protecting
+            //     content typed DURING a run. Explicit Clear-chat action only — never on load.
+            try {
+                const CLEAR_FIELDS = _AP_FILE_FIELDS.concat(['analytics-optout-count']);
+                let fGuard = 0;
+                while (fGuard++ < 40) {
+                    let ft = null;
+                    canvasEditor.state.doc.descendants((node, pos) => {
+                        if (ft) return false;
+                        if (node.type.name === 'inputField' && node.attrs
+                            && CLEAR_FIELDS.indexOf(node.attrs.fieldId) !== -1
+                            && (node.textContent || '').trim().length > 0) {
+                            ft = { pos: pos, size: node.nodeSize };
+                            return false;
+                        }
+                        return true;
+                    });
+                    if (!ft) break;
+                    canvasEditor.commands.insertContentAt({ from: ft.pos + 1, to: ft.pos + ft.size - 1 }, '<p></p>');
+                }
+            } catch (e) { console.warn('WML reset-marking: field clear skipped —', e && e.message); }
+            // 2c) Overall Feedback section back to its placeholder.
+            try {
+                let ofPos = null, ofNode = null;
+                canvasEditor.state.doc.descendants((n, p) => {
+                    if (ofPos !== null) return false;
+                    if (n.type.name === 'sectionBlock' && n.attrs && /overall\s*feedback/i.test(String(n.attrs.label || ''))) { ofPos = p; ofNode = n; return false; }
+                    return true;
+                });
+                if (ofPos !== null && ofNode && !/will appear here once your assessment is complete/i.test(ofNode.textContent || '')) {
+                    canvasEditor.commands.insertContentAt({ from: ofPos + 1, to: ofPos + ofNode.nodeSize - 1 },
+                        '<p><em>Your examiner’s overall summary — holistic evaluation, key strength, and priority targets — will appear here once your assessment is complete.</em></p>');
+                }
+            } catch (e) { console.warn('WML reset-marking: Overall Feedback reset skipped —', e && e.message); }
             // 3) Drop stored predictions so the predict-mark row shows again on the re-mark.
             try { _clearPredictionsForDoc(); } catch (_) {}
             // v7.19.848: fresh chat = fresh reflection ledger (every question reflects again).
             _reflectDone = {}; _reflectPending = null; _reflectRepairCount = 0;
+            // v7.19.854: fresh chat = fresh closing-chain + filing-repair arming (once-per-run guards).
+            _ccSecRepairFired = false; _closingFilingFired = false; _apFileRepairFired = false;
             // 4) Refresh ticks + Score Summary readout + sidebar AFTER the DOM reflects the PM
             //    changes. recalc reads the now-empty boxes → "Total Marks: 0 / N (in progress)";
             //    _refreshLangSidebar repaints the Protocol Progress beats back to not-started.
@@ -5300,6 +5493,27 @@
     let _currentUpdateCommentGutter = null; // v7.15.30: Module-level ref
     let _currentResetCanvasChat = null; // v7.17.38: CW project switch chat flush
     let _migrationActive = false; // v7.15.21: allows migrations to remove sections (module-scope for guard access)
+    // v7.19.854: ACTIVE CHAT-SHELL REGISTRY. chatTextarea/sendCanvasMessage/addChatMessage/
+    // canvasChatHistory are LOCALS of each chat-shell builder (buildTrainingPanels + the canvas
+    // pipeline) — module-scope helpers (AP-FILE repair, WC re-check, CW step-1 repair, closing
+    // chain) referenced them bare, which is a ReferenceError at call time that the repairs'
+    // try/catch silently swallowed: every module-scope silent-SYSTEM send was dead code. Each
+    // shell registers its live refs here; the LAST registration is the active chat. All
+    // module-scope sends go through _silentSystemSend — never a bare chatTextarea again.
+    let _chatShell = null;
+    function _registerChatShell(refs) { _chatShell = refs; }
+    function _silentSystemSend(text) {
+        try {
+            if (!_chatShell || !_chatShell.textarea || !_chatShell.send) {
+                console.warn('WML silent-send: no chat shell registered — send dropped');
+                return false;
+            }
+            canvasSilentSend = true;
+            _chatShell.textarea.value = text;
+            _chatShell.send();
+            return true;
+        } catch (e) { console.warn('WML silent-send failed —', e && e.message); return false; }
+    }
 
     function saveCanvasChat(history, chatId) {
         // 1. Instant localStorage write (include step + task for resume and stale detection)
@@ -6699,6 +6913,11 @@
                 return;
             }
 
+            // v7.19.854: CLOSING CHAIN gate — while the engine-owned ending is collecting
+            // the action-plan/transfer answers, code owns the turn (no AI round-trip).
+            // Silent SYSTEM sends (repairs, the filing directive) always reach the AI.
+            if (!canvasSilentSend && _interceptClosingChain(msg)) return;
+
             // v7.19.244: Paragraph-boundary preflight. Runs once per assessment
             // chat (first user turn only) when an essay is present in the canvas.
             // Diagnostic phase = silent diagnosis only (no modal).
@@ -6972,7 +7191,7 @@
                     // v7.19.832: deterministic mark integrity BEFORE display/history/filing —
                     // recompute card arithmetic + re-band %/grades on the canonical ladder,
                     // so chat, doc cards, sidebar and Score Summary all read corrected numbers.
-                    res.reply = _enforceGradeLadder(_auditAssessmentArithmetic(res.reply));
+                    res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(res.reply))); // v7.19.854: + gate-row synthesis + rejected-penalty strip
                     const cleanReply = stripAIInternals(res.reply);
                     const formatted = formatAI(cleanReply);
                     addChatMessage(formatted, 'ai', cleanReply);
@@ -7193,7 +7412,13 @@
                     // so students saw raw backtick text with no click path to finish (Run 4).
                     // Detection is tolerant (Run 4's AI emitted 3 of the 4 buttons): the
                     // "Nothing to revisit" marker alone triggers the CANONICAL four buttons.
-                    const _hasClosingRow = /\[\s*✓?\s*Nothing to revisit[^\]]*\]/i.test(cleanReply);
+                    // v7.19.854: the closing turn no longer emits the literal button row (the
+                    // engine owns the buttons) — trigger on the wrap line / [ASSESSMENT_COMPLETE]
+                    // (raw reply: the marker is stripped from cleanReply) as well as the legacy
+                    // literal row, so every closing turn gets a click path to finish.
+                    const _hasClosingRow = /\[\s*✓?\s*Nothing to revisit[^\]]*\]/i.test(cleanReply)
+                        || /That wraps the assessment\./i.test(cleanReply)
+                        || /\[ASSESSMENT_COMPLETE\]/i.test(res.reply || '');
                     if (_hasClosingRow) {
                         setTimeout(() => {
                             const closeBubble = chatMessages.lastElementChild;
@@ -7207,6 +7432,9 @@
                             });
                             rowBar.appendChild(_mkClose('✓ Nothing to revisit — finish', 'Nothing to revisit — let’s finish.'));
                             rowBar.appendChild(_mkClose('🔁 Revisit a question', 'I’d like to revisit a question.'));
+                            // v7.19.854 (closing chain step 5): the rebuild offer is engine-rendered —
+                            // the R&J Run-2 transcript proved the protocol-scripted offer never appears.
+                            rowBar.appendChild(_mkClose('🔧 Rebuild a paragraph to gold standard', 'Yes — rebuild one of my paragraphs line-by-line to gold standard. Help me pick which one.'));
                             rowBar.appendChild(_mkClose('💬 One more question', 'I have one more question.'));
                             rowBar.appendChild(_mkClose('⏸ Pause here', 'I need to pause — we’ll continue later.'));
                             cbc.appendChild(rowBar);
@@ -7307,6 +7535,8 @@
                         { // v7.19.830: AP/Analytics filing self-heal — after the turn settles
                             const _r = res.reply;
                             setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
+                            // v7.19.854: engine-owned closing chain — after section fills settle
+                            setTimeout(() => _driveClosingChain(_r), 600);
                         }
 
                         // v7.14.68: Planning/polishing step detection — advance sidebar based on AI content
@@ -7470,6 +7700,11 @@
 
         // Send handlers
         chatSendBtn.addEventListener('click', sendCanvasMessage);
+        // v7.19.854: register this shell's live refs for module-scope helpers
+        // (silent-SYSTEM repairs + the engine-owned closing chain).
+        _registerChatShell({ textarea: chatTextarea, send: sendCanvasMessage,
+            addMsg: addChatMessage, history: canvasChatHistory, messages: chatMessages,
+            goalOptions: _preChainGoalOptions, getChatId: () => canvasChatId });
         chatTextarea.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -15035,6 +15270,10 @@
                                 return;
                             }
 
+                            // v7.19.854: CLOSING CHAIN gate (mirrors primary pipeline) — code owns
+                            // the turn while the engine-owned ending collects answers.
+                            if (!canvasSilentSend && _interceptClosingChain(msg)) return;
+
                             canvasChatLoading = true;
 
                             // Stop mic if recording
@@ -15198,7 +15437,7 @@
 
                                 if (res.success && res.reply) {
                                     // v7.19.832: deterministic mark integrity (see pipeline 1 twin).
-                                    res.reply = _enforceGradeLadder(_auditAssessmentArithmetic(res.reply));
+                                    res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(res.reply))); // v7.19.854: + gate-row synthesis + rejected-penalty strip
                                     const cleanReply = stripAIInternals(res.reply);
                                     const formatted = formatAI(cleanReply);
                                     addChatMessage(formatted, 'ai', cleanReply);
@@ -15228,6 +15467,8 @@
                                         { // v7.19.830: AP/Analytics filing self-heal — after the turn settles
                                             const _r = res.reply;
                                             setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
+                                            // v7.19.854: engine-owned closing chain — after section fills settle
+                                            setTimeout(() => _driveClosingChain(_r), 600);
                                         }
 
                                         // v7.14.69: CW sub-step progress tracking (training-env pipeline)
@@ -15301,6 +15542,11 @@
 
                         // Send handler
                         chatSendBtn.addEventListener('click', sendCanvasMessage);
+                        // v7.19.854: register this shell's live refs (module-scope silent-SYSTEM
+                        // repairs + engine-owned closing chain) — mirrors the training-panels shell.
+                        _registerChatShell({ textarea: chatTextarea, send: sendCanvasMessage,
+                            addMsg: addChatMessage, history: canvasChatHistory, messages: chatMessages,
+                            goalOptions: _preChainGoalOptions, getChatId: () => canvasChatId });
                         chatTextarea.addEventListener('keydown', (e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();

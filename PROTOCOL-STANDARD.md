@@ -173,8 +173,12 @@ re-implements them, and every port keeps the auditable shapes they parse:
 | "Base total:" line strip | 852 | protocol forbids the line; engine strips as net |
 | Reflection one-per-question ledger (duplicate panel suppressed + silent repair) | 849 | ONE `@REFLECT_GATE` per unit, before its marking |
 | Deterministic headline-goal echo (stored block injected per-turn, both composers) | 849 | lead-ins cite the injected stored goal verbatim |
-| Closing-buttons renderer (end-of-assessment row) | 842 | exact closing 4-button row (§B-COMMON.9) |
+| Closing-buttons renderer (end-of-assessment row incl. rebuild offer) | 842 / 854 | protocol emits NO button row; renderer fires on the wrap line / `[ASSESSMENT_COMPLETE]` |
+| **CLOSING CHAIN — the whole ending is code-driven** (854, Neil ruling 2026-07-04): state block mandates the summary turn (must end `@SUMMARY_COMPLETE` + fill Overall Feedback, ask nothing); engine verifies the section fill (ONE silent repair); engine code-asks the three Hattie questions + transfer ONE per turn (pre-chain mechanics); engine fires the silent SYSTEM filing directive; AP-FILE repair backstops | 854 | summary step ends `@SUMMARY_COMPLETE`; protocol keeps ONLY the summary CONTENT spec + the filing-marker spec + "system-asked" notes; model never asks the closing questions |
+| Q-GATE button-row synthesis (gate line with no row → canonical row appended) | 854 | keep the gate LINE (`Does that clear it up? Shall we continue with …?`) byte-recognisable |
+| Rejected-penalty bullet strip (considered-but-not-applied lines never reach display/doc) | 854 | applied-only rule stays in the protocol; engine strips "no penalty applied" bullets as net |
 | New-attempt rows | 843 | — (engine-side) |
+| Attempt-boundary full clear (feedback boxes + Analytics + Action Plan + Overall Feedback reset on explicit Clear-chat; never-clobber guard still protects mid-run typing) | 774 / 854 | — (engine-side) |
 | Auto-file provenance + scroll-on-file | 830/839/844 | twelve `@FIELD_SET` markers + `@SECTION_BEGIN{"section":"Overall Feedback"}` |
 | Chat-furniture strip (gate lines/buttons never reach the doc) | 829 | keep the gate AFTER the total; engine strips regardless |
 | Chat fetch auto-retry; lettered options send full label | 852 | self-describing option labels (A9) |
@@ -327,20 +331,23 @@ ceiling cost, then the reframe: "**Without penalties you'd be on [X+P]/[max] = [
 cheapest marks to reclaim: habits, not skills" — honest sums from the actual cards; engine rebuilds as
 net) · **Key Strength** (one, with evidence) + **Priority Targets** (two, ranked by mark gain) ·
 Optimal Structure Reminder (diagnostic only) → `@SECTION_END` + ONE chat line pointing to the doc →
-**Action Plan** (Hattie, three separate turns: Where am I going? [lettered, paper-true AO options] /
-How am I going? / Where to next?) → **Transfer prompt** (one concrete other-subject example) →
-**FILE THE ACTION PLAN + ANALYTICS**: twelve `@FIELD_SET{"field":"<id>","value":"<text>"}` markers
-(one per line, valid JSON, no line breaks in values, invisible to the student, + ONE chat line
-naming the filled sections; everything filed stays student-EDITABLE; REDRAFT adds `action-next-topic`
-+ `action-next-reason`; never re-emit unless a SYSTEM message asks) → offer to rebuild one sub-unit
-line-by-line to gold → Session Conclusion (warm, one real moment from the session) → **Closing gate**:
-HARD PRECONDITION counts (1) `Total:`+`Grade:` lines, (2) overall %/grade, (3) Technical + level
-pattern, (4) completed Action Plan, (5) the twelve `@FIELD_SET` markers, (6) `[ASSESSMENT_COMPLETE]`
-on its own line (emitted in THIS closing turn, ONCE) — then the exact wrap line
-`That wraps the assessment. Anything you'd like to revisit before you mark this complete?` + the
-END-OF-ASSESSMENT row (NOT the Q-GATE row): `[✓ Nothing to revisit — finish]` `[🔁 Revisit a
-question]` `[💬 One more question]` `[⏸ Pause here]`. After ✓: point at **Mark Complete** — no task
-menu (retired).
+**`@SUMMARY_COMPLETE` on its own line, asking NOTHING** (v854 — the summary turn ends there).
+
+**THE ENGINE-OWNED CLOSING CHAIN (v854, Neil ruling 2026-07-04 — universal, code-driven; the
+protocol keeps ONLY content specs):** after `@SUMMARY_COMPLETE` the engine (a) verifies the Overall
+Feedback section actually filled (ONE silent repair turn if still template); (b) code-asks the three
+Hattie questions ONE per turn (Where am I going? [the paper's goal options] / How am I going? /
+Where to next?) then the Transfer question — the model NEVER asks these; (c) fires ONE silent SYSTEM
+filing directive. **THE FILING TURN** (model, on that directive only): brief acknowledgement/
+sharpening of the four answers → the twelve `@FIELD_SET{"field":"<id>","value":"<text>"}` markers
+(one per line, valid JSON, no line breaks in values, invisible to the student; everything filed
+stays student-EDITABLE; REDRAFT adds `action-next-topic` + `action-next-reason`; never re-emit
+unless a SYSTEM message asks) → ONE chat line naming the filled sections → Session Conclusion (warm,
+one real moment) → `[ASSESSMENT_COMPLETE]` on its own line (ONCE, here only) → the exact wrap line
+`That wraps the assessment. Anything you'd like to revisit before you mark this complete?`.
+The platform renders the closing buttons itself (finish / revisit / **rebuild-a-paragraph** /
+question / pause) — protocols emit NO button row and NO task menu (retired). The rebuild offer is
+the engine's button; the protocol keeps only the model's response spec for when it's clicked.
 
 ### 10. Detours (student questions mid-assessment)
 Welcome, Socratic, ONE concept + one example from their work + one understanding check; no mark table
@@ -358,10 +365,13 @@ change that alters emissions is not "shipped" until the data lands in the dashbo
   distinct box regions (title-match overwrites).
 - `Total Mark for [label]: X/max` (sub-unit, decimal OK) · `Qn Total: A/B` (whole, line-final) ·
   `Total: X/max` + `Grade: N` (completion readout).
-- `[ASSESSMENT_COMPLETE]` — activates Mark Complete (closing turn only).
+- `@SUMMARY_COMPLETE` — ends the Final Summary turn (v854); arms the engine-owned closing chain
+  (code-asked Action Plan / Transfer / filing directive). Stripped from display; stays in history.
+- `[ASSESSMENT_COMPLETE]` — activates Mark Complete (FILING turn only, v854 — never the summary).
 - `@SECTION_BEGIN{"section":"Overall Feedback"}` / `@SECTION_END`.
 - `@FIELD_SET{"field","value"}` — the twelve (+2 redraft) filing ids (grep `action-grade-goal`).
-- The four Q-GATE buttons AND the four closing buttons, byte-exact incl. emoji.
+- The four Q-GATE buttons, byte-exact incl. emoji (v854: engine appends the canonical row if the
+  gate line arrives without one). Closing buttons are ENGINE-RENDERED (v854) — protocols emit none.
 - Lettered options `A)`…`F)` for quick-action rendering (full label sent since 852 — keep labels
   self-describing).
 
@@ -439,10 +449,12 @@ change that alters emissions is not "shipped" until the data lands in the dashbo
 | `@FB_BEGIN`/`@FB_END` instruction SITES ("output …" lines) | one balanced pair per sub-unit template (raw string counts differ — prose mentions are fine) |
 | `grep -c 'Total Mark for'` | ≥ sub-unit count (canonical line present per marked sub-unit) |
 | `grep -c 'Qn Total\|Q[0-9] Total'` (Language) | one per question, whole-mark + line-final rules stated |
-| `grep -c 'ASSESSMENT_COMPLETE'` | ≥ 1, closing-turn-only wording |
+| `grep -c 'ASSESSMENT_COMPLETE'` | ≥ 1, FILING-turn-only wording (never the summary turn) |
+| `grep -c 'SUMMARY_COMPLETE'` (v854) | ≥ 1 — the Final Summary step ends with it and asks nothing |
+| `grep -ci 'SYSTEM-ASKED'` (v854) | ≥ 1 — Action Plan + Transfer marked system-asked, never model-asked |
 | `grep -c 'HARD PRECONDITION'` | ≥ 1 per gate (pre-chain, per-unit gate, closing gate) |
-| `grep -c 'Got it — continue'` | = unit count + detour block (+ closing row is the OTHER 4 strings) |
-| `grep -c 'Nothing to revisit'` | ≥ 1 (end-of-assessment row, distinct from Q-GATE) |
+| `grep -c 'Got it — continue'` | = unit count + detour block (Q-GATE rows only) |
+| `grep -c 'Nothing to revisit'` | 0 as an emission instruction (v854: the closing row is engine-rendered — protocols emit NO button row) |
 | `grep -ci 'all [0-9]+ steps'` | 0 (no hardcoded step counts) |
 | `grep -c 'action-grade-goal'` | ≥ 1 (the @FIELD_SET filing block; closing gate counts it) |
 | `grep -c 'CANONICAL GRADE LADDER'` | ≥ 1 (ladder stated even though code-enforced) |
@@ -612,6 +624,19 @@ From the 2026-07-01 live-run audit (R&J AQA diagnostic) + status as of v7.19.852
 ---
 
 ## Changelog
+- 2026-07-04 — v2.2. **ENGINE-OWNED CLOSING CHAIN (v7.19.854, Neil ruling):** the whole assessment
+  ending is code-driven — state-block summary mandate (ends `@SUMMARY_COMPLETE`, fills Overall
+  Feedback, asks nothing) → code-side section-fill verify (ONE silent repair) → code-asked Hattie
+  ×3 + Transfer (pre-chain mechanics, one per turn) → silent SYSTEM filing directive →
+  `[ASSESSMENT_COMPLETE]` + wrap line on the filing turn → engine-rendered closing buttons incl.
+  the rebuild offer. A14 rows added (closing chain, Q-GATE row synthesis, rejected-penalty strip,
+  attempt-boundary full clear); B-COMMON.9 rewritten; B-CHECKS updated (`SUMMARY_COMPLETE` /
+  `SYSTEM-ASKED` present, `Nothing to revisit` emission = 0); §12 contract gains
+  `@SUMMARY_COMPLETE`. Lit hardened to the standard: universal penalty registry (W1→F1, T1→T2,
+  K1→L1, structure-F1→STR1, old-T2→TTE1, F2→STR2; dup L1 retired), 4-col card table re-pinned
+  (protocol + lit state block), family-first re-key (code-computed line in the lit state block),
+  P1 summary suite ported into the lit Final Summary. Applied to P1 + P2 + lit protocols.
+  Author: wml-chat-A (Fable, session 12).
 - 2026-07-01 — v1. Extracted from the R&J gold file (full read) + Neil's walkthrough + live-run
   audit. Decisions locked: keep+gate keyword-recall AND main-goal (hierarchical); WC-formula display
   carve-out; self-anchoring optimal golds; gold-1 adds missing ingredients; "all steps" not counts.

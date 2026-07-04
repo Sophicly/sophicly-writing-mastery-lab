@@ -2,6 +2,8 @@
 
 Instructions: Apply penalties using codes for consistency. Show before→after fixes when deducting marks. Maximum deductions: Intro (2), Body (3), Conclusion (2).
 
+**\[AI\_INTERNAL\] UNIVERSAL REGISTRY (v7.19.854):** penalty codes are shared across every WML paper — one code, one meaning, everywhere. Renames from the legacy lit set: **W1→F1** (weak analytical verb) · **T1→T2** (lacks discourse markers) · **K1→L1** (missing causal/conceptual link) · **structure-F1→STR1** · **old T2→TTE1** (missing TTE in second sentence) · **F2→STR2** (TTECEA order violation). NEVER emit a legacy code.
+
 #### **Core Writing Penalties (All Sections):**
 
 H1 – Hanging/incorrectly punctuated quotes (-0.5) Detection: Quote dropped without integration or incorrect punctuation Fix: "I ran out." → The narrator's panic surfaces as she "ran out"
@@ -10,15 +12,13 @@ P1 – Comma splice/run-on/fused sentence (-0.5) Detection: Independent clauses 
 
 C1 – Clarity/flow lapse creating ambiguity (-0.5) Detection: Muddled cause→effect, vague pronouns, logical gaps Fix: Clarify referents, tighten verbs, add sequence markers
 
-T1 – Lacks transitional phrases/discourse markers (-0.5) Detection: Missing connectives between concepts Fix: Add Furthermore, Consequently, Specifically, Moreover
+T2 – Lacks transitional phrases/discourse markers (-0.5) Detection: Missing connectives between concepts Fix: Add Furthermore, Consequently, Specifically, Moreover
 
-W1 – Weak analytical verb (-0.5 per instance) Detection: Using vague verbs like "shows," "tells us," "is about" for analysis Upgrade: conveys, constructs, positions, depicts, portrays, emphasizes, highlights, reveals, suggests, illustrates, evokes, underscores, reinforces, critiques, challenges, exposes, examines
+F1 – Weak analytical verb (-0.5 per instance) Detection: Using vague verbs like "shows," "tells us," "is about" for analysis Upgrade: conveys, constructs, positions, depicts, portrays, emphasizes, highlights, reveals, suggests, illustrates, evokes, underscores, reinforces, critiques, challenges, exposes, examines
 
 S1 – Weak/repetitive sentence starters (-0.5 per instance) Detection: the SAME starter word ("The", "This" or "These") opening two or more sentences in one paragraph, or multiple sentences starting the same way. Allowance: one sentence starting with "The", one with "This" and one with "These" per paragraph is permitted — never penalise the first instance of each word; deduct only when the SAME word opens a second sentence in that paragraph. Upgrade: Use discourse markers, prepositional phrases, adverbial openers, varied structures
 
 S2 – Underdeveloped sentences (less than 2 lines) (-0.5) Detection: Sentences lacking detail (except hooks/topic sentences) Fix: Expand with analysis, examples, developed explanation
-
-L1 – Underdeveloped sentences (less than 2 lines) (-0.5) Detection: Sentences lacking detail (except hooks/topic sentences) Fix: Expand with analysis, examples, developed explanation
 
 R1 – Unstrategic repetition of words (-0.5) Detection: Same words used without rhetorical purpose Fix: Use synonyms or pronouns strategically
 
@@ -44,15 +44,15 @@ D1 – Lacks sustained detail (-0.5) Detection: Points made but not developed Fi
 
 U1 – Unsophisticated/informal vocabulary (-0.5) Detection: Colloquial language in formal essay Fix: Elevate to academic register
 
-K1 – Conflated/underdeveloped conceptual links (-0.5) Detection: Weak connections between ideas Fix: Explicitly show how concepts connect
+L1 – Missing causal/conceptual link (-0.5) Detection: Weak or conflated connections between ideas Fix: Explicitly show how concepts connect
 
-F1 – Failure to follow required structure (-0.5) Detection: Missing TTECEA+C components (Body only) Fix: Include all required elements
+STR1 – Failure to follow required structure (-0.5) Detection: Missing TTECEA+C components (Body only) Fix: Include all required elements
 
-**F1 Pattern Detection \- Incomplete Frameworks:** If student's body paragraph follows PEE/PETL/PEAK style structure (typically: Point/Topic \+ Evidence/Quote \+ Explain/Analysis \+ maybe Link), it will often be missing: Close Analysis (micro-level word/sound examination), **Effects** on Reader/Audience (emotional/intellectual impact), and/or Author's Purpose (why writer made choices). When this pattern detected, provide targeted feedback: "Your paragraph shows strong understanding but appears to follow a PEE/PETL framework which misses key mark scheme criteria. To increase marks, ensure you include: \[list specific missing elements from TTECEA+C\]. Each missing element represents potential lost marks. TTECEA+C is designed to systematically cover all assessable criteria—you're not adding 'extra' analysis, you're ensuring comprehensive mark scheme coverage." Then guide student toward including omitted elements.
+**STR1 Pattern Detection \- Incomplete Frameworks:** If student's body paragraph follows PEE/PETL/PEAK style structure (typically: Point/Topic \+ Evidence/Quote \+ Explain/Analysis \+ maybe Link), it will often be missing: Close Analysis (micro-level word/sound examination), **Effects** on Reader/Audience (emotional/intellectual impact), and/or Author's Purpose (why writer made choices). When this pattern detected, provide targeted feedback: "Your paragraph shows strong understanding but appears to follow a PEE/PETL framework which misses key mark scheme criteria. To increase marks, ensure you include: \[list specific missing elements from TTECEA+C\]. Each missing element represents potential lost marks. TTECEA+C is designed to systematically cover all assessable criteria—you're not adding 'extra' analysis, you're ensuring comprehensive mark scheme coverage." Then guide student toward including omitted elements.
 
-T2 – Missing TTE in second sentence (Body only) (-0.5) Detection: Second sentence lacks Technique \+ Evidence \+ Inference structure Fix: "Shakespeare uses metaphor." → "The disease metaphor in 'infected minds' reveals how guilt contaminates conscience." Exception: First diagnostic assessment (baseline only)
+TTE1 – Missing TTE in second sentence (Body only) (-0.5) Detection: Second sentence lacks Technique \+ Evidence \+ Inference structure Fix: "Shakespeare uses metaphor." → "The disease metaphor in 'infected minds' reveals how guilt contaminates conscience." Exception: family-first (first-ever) assessment only (baseline)
 
-F2 – TTECEA order violation (Body only) (-0.5) Detection: All elements present but in wrong sequence (e.g., **Effects** before Close Analysis) Fix: Reorganize to logical progression: **Topic** → TTE → Close Analysis → Effects → Purpose → Context. **Note:** Content marks preserved, structure mark deducted. Exception: First diagnostic assessment (baseline only)
+STR2 – TTECEA order violation (Body only) (-0.5) Detection: All elements present but in wrong sequence (e.g., **Effects** before Close Analysis) Fix: Reorganize to logical progression: **Topic** → TTE → Close Analysis → Effects → Purpose → Context. **Note:** Content marks preserved, structure mark deducted. Exception: family-first (first-ever) assessment only (baseline)
 
 E2 – Underdeveloped effect on reader (Body only) (-0.5) Detection: Reader effect less than 2 sentences Fix: Expand emotional/intellectual impact analysis
 

@@ -2728,6 +2728,10 @@ body.swml-page {
 .swml-toast-msg { flex: 1; }
 .swml-toast-msg svg { display: inline-block; vertical-align: middle; margin-right: 6px; color: var(--swml-teal); position: relative; top: -1px; }
 .swml-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* v7.19.854: in-pane variant — appended to .swml-canvas-editor (position:relative), so it
+   centres by the SAME technique as the dynamic island (absolute + left:50% + translateX).
+   Sits just above the island (island bottom: 56px). No JS-measured pixels. */
+.swml-toast--pane { position: absolute; bottom: 110px; }
 .swml-toast strong { color: #7DF9E9; }
 .swml-toast-close {
     position: absolute; top: 8px; right: 10px;

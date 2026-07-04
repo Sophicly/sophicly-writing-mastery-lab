@@ -5157,8 +5157,13 @@ TEMPLATE;
                 $oid = $order[$qi]['id'];
                 if (empty($scored[$oid]['mark']) && empty($pending[$oid]['mark'])) { $abl = false; break; }
             }
+            // v7.19.854: a @SUMMARY_COMPLETE turn is the closing chain's SUMMARY step —
+            // it carries Total+Grade but the paper is NOT over (the code-asked closing
+            // questions + filing turn follow). Only the literal [ASSESSMENT_COMPLETE]
+            // completes such a turn; the Total+Grade dual signal stays for legacy runs.
             if (preg_match('/\[ASSESSMENT_COMPLETE\]/i', $content)
-                || ($max_total_all > 0 && $abl
+                || (strpos($content, '@SUMMARY_COMPLETE') === false
+                    && $max_total_all > 0 && $abl
                     && preg_match('/\bTotal[:\s\*]+\d+(?:\.\d+)?\s*\/\s*' . $max_total_all . '\b/i', $content)
                     && preg_match('/\bGrade[:\s\*]+\d\b/i', $content))) {
                 $complete = true;
@@ -5249,7 +5254,10 @@ TEMPLATE;
             return true;
         };
         $all_but_last = $abl();
+        // v7.19.854: the closing chain's SUMMARY turn (@SUMMARY_COMPLETE) carries
+        // Total+Grade but is NOT terminal — code-asked questions + the filing turn follow.
         $tg_signal = ($max_total_all > 0
+            && strpos((string) $reply, '@SUMMARY_COMPLETE') === false
             && preg_match('/\bTotal[:\s\*]+\d+(?:\.\d+)?\s*\/\s*' . $max_total_all . '\b/i', (string) $reply)
             && preg_match('/\bGrade[:\s\*]+\d\b/i', (string) $reply));
         $marker = (bool) preg_match('/\[ASSESSMENT_COMPLETE\]/i', (string) $reply);
@@ -5899,11 +5907,46 @@ TEMPLATE;
     }
 
     /**
+     * v7.19.854: has any assistant turn in this conversation carried $marker?
+     * Drives the two-phase closing chain (summary mandate → closing-questions phase).
+     */
+    private static function assessment_history_marker_seen($marker) {
+        global $swml_chat_history;
+        if (empty($swml_chat_history) || !is_array($swml_chat_history)) return false;
+        foreach ($swml_chat_history as $m) {
+            if (is_array($m) && ($m['role'] ?? '') === 'assistant'
+                && strpos((string) ($m['content'] ?? ''), $marker) !== false) return true;
+        }
+        return false;
+    }
+
+    /**
+     * v7.19.854 (Neil ruling): ENGINE-OWNED CLOSING CHAIN, phase 2 — the summary is
+     * done (@SUMMARY_COMPLETE seen); the FRONTEND is code-asking the action-plan +
+     * transfer questions. The model stays quiet until the SYSTEM filing directive.
+     * Shared by BOTH progress models (questions + paragraphs).
+     */
+    private static function assessment_closing_questions_block() {
+        $block  = "\n\n---\n\n<assessment_state authoritative=\"true\">\n";
+        $block .= "## CLOSING PHASE — the system is asking the closing questions\n";
+        $block .= "The Final Summary is done. The SYSTEM (code) is asking the student the three action-plan questions and the transfer question itself — their answers arrive in the conversation. Do NOT ask or re-ask any of these questions and do NOT summarise again.\n";
+        $block .= "When a SYSTEM message directs you to close the assessment, follow it EXACTLY: acknowledge/sharpen their recorded answers, emit every `@FIELD_SET` filing marker exactly as the protocol's filing step specifies, the one-line filing confirmation, a brief warm conclusion, `[ASSESSMENT_COMPLETE]` on its own line, then the exact wrap line. Until that directive arrives, if the student asks a question, answer it briefly and wait — never start the filing yourself.\n";
+        $block .= "This block is internal bookkeeping — never quote it or mention it to the student.\n";
+        $block .= "</assessment_state>\n";
+        return $block;
+    }
+
+    /**
      * v7.19.355 (FIX D): wrap-up block for a fully-marked paper that hasn't yet
      * emitted [ASSESSMENT_COMPLETE]. Supplies server-recorded marks and mandates
      * the Total + Grade headline in the final summary.
+     * v7.19.854: two-phase — once the summary turn has landed (@SUMMARY_COMPLETE),
+     * this delegates to the closing-questions block (engine-owned closing chain).
      */
     private function assessment_final_summary_mandate($order, $scored) {
+        if (self::assessment_history_marker_seen('@SUMMARY_COMPLETE')) {
+            return self::assessment_closing_questions_block();
+        }
         $max_total = 0;
         $sum  = 0.0;
         $all  = true;
@@ -5937,6 +5980,36 @@ TEMPLATE;
                     . " (marks not listed here were not captured server-side — use the marks you awarded earlier in this conversation for those, then map the total with ONLY the boundaries line above).\n";
             }
         }
+        // v7.19.854: THE SUMMARY TURN — engine-owned closing chain, phase 1. The
+        // action-plan/transfer/rebuild asks are CODE-DRIVEN after this turn; the
+        // model's job here is the summary + the Overall Feedback section fill ONLY.
+        $block .= "THE SUMMARY TURN (engine-owned closing chain):\n";
+        $block .= "1. Emit the FULL Final Summary exactly as the protocol's Final Summary step specifies — the chat result lines above AND the complete Overall Feedback `@SECTION_BEGIN{\"section\":\"Overall Feedback\"}` … `@SECTION_END` fill (Total & Grade with the mark, Technical Accuracy, level pattern, metacognitive journey + headline-goal closure, itemised Penalty & Ceiling Ledger, Key Strength, Priority Targets, word-count advice and extra/missing-paragraph note where applicable).\n";
+        $block .= "2. End the message with `@SUMMARY_COMPLETE` on its own line (system marker — the platform strips it from display).\n";
+        $block .= "3. Ask NOTHING in this turn: the system asks the action-plan and transfer questions itself, one per turn. Do NOT emit `[ASSESSMENT_COMPLETE]`, do NOT declare the assessment wrapped, do NOT offer to rebuild a paragraph — those come later, code-driven.\n";
+        $block .= "This block is internal bookkeeping — never quote it or mention it to the student.\n";
+        $block .= "</assessment_state>\n";
+        return $block;
+    }
+
+    /**
+     * v7.19.854: paragraphs-mode (Literature) twin of the wrap-up mandate. Lit had
+     * NO wrap-up state at all — after the Conclusion the model free-styled the
+     * ending (R&J 04-Jul: 3-in-one action plan, early wrap line, no section fill,
+     * no rebuild offer). Same two-phase engine-owned closing chain as language.
+     */
+    private function assessment_lit_final_summary_mandate() {
+        if (self::assessment_history_marker_seen('@SUMMARY_COMPLETE')) {
+            return self::assessment_closing_questions_block();
+        }
+        $block  = "\n\n---\n\n<assessment_state authoritative=\"true\">\n";
+        $block .= "Every section of this essay is now marked (Introduction → Conclusion). This is the wrap-up stretch.\n";
+        $block .= "If the final section's calibration/gate exchange is still open, finish that first. Then, in ONE message, emit the Final Summary:\n";
+        $block .= "1. Chat result lines on their own lines: `Total: X/34` then `Grade: N` — Total = sum of the five section totals from this conversation, with the word-count ceiling applied as a MIN (never a deduction); grade from the canonical ladder.\n";
+        $block .= "GRADE BOUNDARIES (/34): " . self::grade_boundaries_table_line(34) . ".\n";
+        $block .= "2. The complete Overall Feedback `@SECTION_BEGIN{\"section\":\"Overall Feedback\"}` … `@SECTION_END` fill exactly as the protocol's Final Summary step specifies (Total & Grade with the mark, Technical Accuracy, per-section level pattern, metacognitive journey + headline-goal closure, itemised Penalty & Ceiling Ledger, Key Strength, Priority Targets, word-count-ceiling explanation and extra-paragraph note where applicable).\n";
+        $block .= "3. End the message with `@SUMMARY_COMPLETE` on its own line (system marker — the platform strips it from display).\n";
+        $block .= "4. Ask NOTHING in this turn: the system asks the action-plan and transfer questions itself, one per turn. Do NOT emit `[ASSESSMENT_COMPLETE]`, do NOT declare the assessment wrapped, do NOT offer to rebuild a paragraph — those come later, code-driven.\n";
         $block .= "This block is internal bookkeeping — never quote it or mention it to the student.\n";
         $block .= "</assessment_state>\n";
         return $block;
@@ -6070,6 +6143,19 @@ TEMPLATE;
             : '';
 
         $current = $state['current_paragraph'] ?? 'intro';
+        // v7.19.854: closing stretch — every paragraph marked, [ASSESSMENT_COMPLETE]
+        // not yet emitted → engine-owned closing chain (summary mandate, then the
+        // code-asked questions phase). Lit previously had NO wrap-up state here: after
+        // the Conclusion the model free-styled the ending (R&J 04-Jul verdict).
+        if ($current === 'done') {
+            return $this->assessment_lit_final_summary_mandate();
+        }
+        // v7.19.854: family-first leniency flag (lit family) — code-computed; the
+        // protocol's first-diagnostic vs trained branches key on THIS line, never on
+        // topic/phase guesses.
+        $ff_lit_line = (class_exists('SWML_REST_API') ? SWML_REST_API::family_first_assessment($user_id, 'lit') : true)
+            ? "**Family-first attempt (code-computed): YES** — this is the student's first-ever Literature assessment: apply every LENIENT branch (generous structure mapping, extra-paragraph mark estimates, teach the structure).\n"
+            : "**Family-first attempt (code-computed): NO** — the student has completed a marked Literature assessment before: apply every STRICT branch (trained-structure expectations, extras score zero, stern planning-process warning).\n";
         $next    = SWML_Session_Manager::assessment_next_paragraph($current);
         $current_label = SWML_Session_Manager::assessment_paragraph_label($current);
         $next_label    = SWML_Session_Manager::assessment_paragraph_label($next);
@@ -6112,6 +6198,7 @@ TEMPLATE;
         if ($prior_goal !== '') {
             $block .= "**Prior attempt's headline goal:** {$prior_goal} — acknowledge it when the new goal is set (\"last time you focused on…\").\n";
         }
+        $block .= $ff_lit_line;
         $block .= "\n";
         $block .= "### RULES — NON-NEGOTIABLE\n\n";
         $block .= "1. The pre-assessment chain MUST be complete before ANY marking output. Check the conversation for ALL THREE student replies: (a) grade target, (b) HEADLINE GOAL (their choice from the goal options — a CONCEPTUAL aim, never a grade number), (c) KEYWORD RECALL (the key aspects the question asks them to explore). If any is missing, ask ONLY the next missing question (in that order) and STOP — nothing else in the turn.\n";
@@ -6131,6 +6218,7 @@ TEMPLATE;
         if ($prior_goal !== '') {
             $block .= "**Prior attempt's headline goal:** {$prior_goal} — note progress against it in the Final Summary.\n";
         }
+        $block .= $ff_lit_line;
         $block .= "\n";
         $block .= "### RULES — NON-NEGOTIABLE\n\n";
         if ($pending) {
@@ -6144,7 +6232,10 @@ TEMPLATE;
             // the old flat "NEXT output MUST be the mark table" contradicted the
             // @REFLECT_GATE reflection-panel-first rule on every section.
             $block .= "1. Follow the protocol's per-section sequence for **{$current_label}**: if the student's reflection-panel reply for {$current_label} (arrives as \"Self-rating: N/5 …\") is NOT yet in the conversation, emit {$current_label}'s STEP 1 reflection lead-in + `@REFLECT_GATE` marker and WAIT. Once their reflection reply IS in, your NEXT output MUST be the granular mark table for **{$current_label}** UNLESS the student asked a clarifying question.\n";
-            $block .= "2. Mark-table format: columns `Element | AO | Worth | Score | Why`. End with `Total Mark for {$current_label}: X / Y` on its own line.\n";
+            // v7.19.854: ONE canonical card table — the auditor parses `| Criterion |
+            // Worth | Your Score | Why |` (numeric cols 2+3); the old `Element | AO |…`
+            // 5-col shape here contradicted the protocol AND broke the row parse.
+            $block .= "2. Mark-table format: columns `| Criterion | Worth | Your Score | Why |` (this exact 4-column shape — the platform audits it). End with `Total Mark for {$current_label}: X / Y` on its own line.\n";
             $block .= "3. If the student's last turn is a clarifying question (not an answer), engage Socratically. Do NOT produce a mark table during a detour.\n";
             $block .= "4. After resolving a detour, you MUST emit a resume-confirm block:\n";
             $block .= "   \"Does that clear it up? Shall we continue with **{$current_label}**?\"\n";
@@ -6156,8 +6247,11 @@ TEMPLATE;
             $block .= "6. Detour depth is at cap. Politely nudge: \"Let's pause the detour and come back to your assessment.\"\n";
         }
         if ($current === 'conclusion') {
-            $block .= "\nAfter the Conclusion table, emit on a single line:\n";
-            $block .= "`Total: X/34` then `Grade: N` then `[ASSESSMENT_COMPLETE]` (all three in the SAME message).\n";
+            // v7.19.854: the Conclusion turn no longer carries Total/Grade/
+            // [ASSESSMENT_COMPLETE] — that legacy mandate was the "wrap line before
+            // the action plan" bug. The engine-owned closing chain (done-pointer
+            // mandate above) now owns everything after the Conclusion's calibration.
+            $block .= "\nThe Conclusion is the FINAL section. After its table + calibration exchange, the Final Summary follows (the state block will mandate it) — do NOT emit `Total:`, `Grade:` or `[ASSESSMENT_COMPLETE]` in the Conclusion turns themselves.\n";
         }
         $block .= "\n### VOICE RULES — STATE BLOCK IS INTERNAL ONLY\n";
         $block .= "This ASSESSMENT STATE block is system-side bookkeeping. The student MUST NOT see any of it.\n";
@@ -6304,8 +6398,11 @@ TEMPLATE;
         }
 
         // ── AI-turn classification ──────────────────────────────────────────
+        // v7.19.854: a @SUMMARY_COMPLETE turn (closing chain's summary step) carries
+        // Total+Grade but is NOT completion — the code-asked questions + filing turn follow.
         $has_complete_marker = preg_match('/\[ASSESSMENT_COMPLETE\]/i', $reply)
-            || (preg_match('/Total[:\s]+\d+(?:\.\d+)?\s*\/\s*\d+/i', $reply) && preg_match('/\bGrade[:\s]+\d/i', $reply));
+            || (strpos($reply, '@SUMMARY_COMPLETE') === false
+                && preg_match('/Total[:\s]+\d+(?:\.\d+)?\s*\/\s*\d+/i', $reply) && preg_match('/\bGrade[:\s]+\d/i', $reply));
 
         // Per-paragraph table detection (match current_paragraph first; allow
         // catch-up advance if AI produced a later table than expected).
@@ -7074,8 +7171,12 @@ TEMPLATE;
                     $scored[] = $pkey;
                 }
             }
+            // v7.19.854: the closing chain's SUMMARY turn (@SUMMARY_COMPLETE) carries
+            // Total+Grade but is NOT completion — only the filing turn's literal
+            // [ASSESSMENT_COMPLETE] ends the run. Legacy transcripts keep the dual signal.
             if (preg_match('/\[ASSESSMENT_COMPLETE\]/i', $content)
-                || (preg_match('/Total[:\s]+\d+(?:\.\d+)?\s*\/\s*\d+/i', $content) && preg_match('/\bGrade[:\s]+\d/i', $content))) {
+                || (strpos($content, '@SUMMARY_COMPLETE') === false
+                    && preg_match('/Total[:\s]+\d+(?:\.\d+)?\s*\/\s*\d+/i', $content) && preg_match('/\bGrade[:\s]+\d/i', $content))) {
                 $complete = true;
             }
         }
