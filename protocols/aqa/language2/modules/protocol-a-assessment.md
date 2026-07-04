@@ -40,7 +40,7 @@ second dies.
 | Q1 | 4 | AO1 | Retrieval — 4 true statements (tick-box checklist) | checklist (no paragraphs) |
 | Q2 | 8 | AO1 | Inference of DIFFERENCES across both sources | 2 ¶ × two Source A → Source B inference pairs (4 marks each) |
 | Q3 | 12 | AO2 | Language analysis (one source, given lines) | 3 TTECEA ¶ × 4 marks |
-| Q4 | 16 | AO3 | Comparison of writers' feelings & perspectives (whole of BOTH sources) | Intro (2) + 3 comparative BPs (4 each) + Conclusion (2) |
+| Q4 | 16 | AO3 | Comparison of writers' feelings & perspectives (whole of BOTH sources) | Intro (0.5) + 3 comparative BPs (5 each) + Conclusion (0.5) |
 | Q5 | 40 | AO5 (24) + AO6 (16) | Transactional writing (speech / article / letter / leaflet) | HOLISTIC — IUMVCC; 650-word target |
 
 **Paper total: 80.** Section A (reading) = 40, Section B (writing) = 40. This is a NONFICTION
@@ -59,9 +59,13 @@ summary wording, present it in its 2026 inference form instead.
 grade boundaries anywhere in this assessment.
 
 **[AI_INTERNAL] WORTHS SUM EXACTLY:** every question's granular worths sum EXACTLY to its mark
-total (4.0 per taught paragraph; Q4 = 2 + 4 + 4 + 4 + 2 = 16). There is no buffer and no cap on a
-question total — BONUS rows (marked `+X`) are the only thing that can add above a paragraph's
-base, and each is capped at that paragraph's full value.
+total (Q2/Q3: 4.0 per taught paragraph; Q4 = 0.5 + 5 + 5 + 5 + 0.5 = 16). There is no buffer and
+no cap on a question total — BONUS rows (marked `+X`) are the only thing that can add above a
+paragraph's base, and each is capped at that paragraph's full value. **Q4's weighting is
+deliberate (Neil):** a comparison paragraph covers BOTH texts — near-double the writing of a
+normal paragraph — so the three body paragraphs carry 15 of the 16 marks; the introduction and
+conclusion are worth 0.5 each, mirroring real practice where body paragraphs are planned and
+written FIRST and the frame is added if time allows.
 
 ---
 
@@ -203,9 +207,10 @@ descriptor exists for what you need, say "no descriptor available" — never fab
    - **Q4 golds (comparative TTECEA):** (1) comparative-conceptual topic sentence spanning BOTH
      writers (no technique words); (2) Source A method + embedded quote + inference; (3) pivot
      with a comparative discourse marker → Source B method + embedded quote + inference;
-     (4) word-level analysis of the sharpest quotation; (5) effect on reader; (6) writers'
-     purposes compared against the question focus. Every gold paragraph carries evidence from
-     BOTH sources.
+     (4) word-level analysis of the sharpest quotation; (5) effect on reader — first detailed
+     sentence; (6) effect on reader — second detailed sentence (different effect, later in the
+     Focus→Feel→Think→Act chain); (7) writers' purposes compared against the question focus.
+     Every gold paragraph carries evidence from BOTH sources.
    Sentences 2–3 lines, varied starters, never "the/this/these" openers, never any F1-family
    verb. Silently self-check each gold sentence-by-sentence against this order before emitting;
    rewrite if out of position.
@@ -473,7 +478,7 @@ card → Y → ¶3 card → Q3 Total + calibration → Q-GATE), with these swaps
 
 ---
 
-## QUESTION 4 — Comparison of Feelings & Perspectives (AO3, 16 marks — Intro 2 + BP1–3 × 4 + Conclusion 2 = exactly 16)
+## QUESTION 4 — Comparison of Feelings & Perspectives (AO3, 16 marks — Intro 0.5 + BP1–3 × 5 + Conclusion 0.5 = exactly 16)
 
 **CRITICAL Q4 MARKING PRINCIPLE:** marks come from HOW WELL the student compares the writers'
 feelings and perspectives AND the methods used to convey them, with evidence from BOTH sources in
@@ -500,28 +505,33 @@ quote + fix, canonical `Total Mark for [title]: X/max` line, My Assessment (crit
 rule), BOTH golds (self-anchoring Model 2s). Missing sections → missing-paragraph rule; extra
 paragraphs → Tier 1/Tier 2.
 
-- **Introduction (2 marks)** — `para:"intro"`, `title:"Introduction"`. Criteria: names BOTH
-  writers' overall feelings/perspectives on the shared topic (AO3) 0.5 · frames the KEY
-  difference conceptually (AO3) 0.5 · comparative thesis introducing three points of comparison
-  (AO3) 1.0. Penalties: max 1 (−0.5) from the Q3 code list. Golds: 3–4 sentences — both
-  perspectives + three-point comparative thesis (Model 2's thesis anchors BP1–3's Model 2s).
-- **Body Paragraph 1 (4 marks)** — `para:"BP1"`, `title:"Body Paragraph 1"`. Criteria:
+- **Introduction (0.5 marks)** — `para:"intro"`, `title:"Introduction"`. Criteria: names BOTH
+  writers' overall feelings/perspectives on the shared topic (AO3) 0.25 · comparative thesis
+  introducing three points of comparison (AO3) 0.25. **NO penalty deductions on this card** (a
+  −0.5 penalty would outweigh the whole section) — name faults under "Additional issues" with
+  quote + fix, no deduction. Golds: 3–4 sentences — both perspectives + three-point comparative
+  thesis (Model 2's thesis anchors BP1–3's Model 2s). Teaching note where useful: body paragraphs
+  carry 15 of Q4's 16 marks — plan and write them FIRST; the frame is added if time allows.
+- **Body Paragraph 1 (5 marks)** — `para:"BP1"`, `title:"Body Paragraph 1"`. Criteria:
   comparative-conceptual topic sentence spanning both writers (AO3) 0.5 · Source A method +
   embedded quote + inference (AO3) 0.5 · Source B method + embedded quote + inference, opened
   with a comparative pivot (AO3) 0.5 · perceptive development of the difference/similarity as a
-  PAIR (AO3) 1.0 · word-level analysis of the sharpest quotation (AO3) 0.5 · detailed effect on
-  reader (AO3) 0.5 · writers' purposes compared against the question focus (AO3) 0.5.
+  PAIR (AO3) 1.0 · word-level analysis of the sharpest quotation (AO3) 0.5 · first detailed
+  sentence evaluating effects on the reader (AO3) 0.5 · second detailed sentence evaluating
+  effects on the reader — a different effect, later in the Focus→Feel→Think→Act chain (AO3)
+  0.5 · writers' purposes compared against the question focus (AO3) 1.0.
   Penalties: max 3 (−1.5), Q3 code list + K1 conflated/underdeveloped conceptual links (−0.5) +
   H1-COMP single-source sentence (−0.5 — never where the one-source gap already zeroed a
-  criterion). Golds: full comparative TTECEA order (Gold rule 4).
-- **Body Paragraph 2 (4 marks)** — `para:"BP2"`, `title:"Body Paragraph 2"`. Same as BP1; equal
+  criterion). Golds: full comparative TTECEA order (Gold rule 4, with BOTH effect sentences).
+- **Body Paragraph 2 (5 marks)** — `para:"BP2"`, `title:"Body Paragraph 2"`. Same as BP1; equal
   depth.
-- **Body Paragraph 3 (4 marks)** — `para:"BP3"`, `title:"Body Paragraph 3"`. Same as BP1; equal
+- **Body Paragraph 3 (5 marks)** — `para:"BP3"`, `title:"Body Paragraph 3"`. Same as BP1; equal
   depth.
-- **Conclusion (2 marks)** — `para:"conclusion"`, `title:"Conclusion"`. Criteria: resolves the
-  comparative thesis in fresh words, synthesising the three points (AO3) 1.0 · closes on the most
-  significant difference in perspective and WHY it matters (AO3) 1.0. Penalties: max 1 (−0.5).
-  Golds: 3–4 sentences; Model 2 resolves the Model-2 thesis.
+- **Conclusion (0.5 marks)** — `para:"conclusion"`, `title:"Conclusion"`. Criteria: resolves the
+  comparative thesis in fresh words, synthesising the three points (AO3) 0.25 · closes on the
+  most significant difference in perspective and WHY it matters (AO3) 0.25. **NO penalty
+  deductions on this card** (same rule as the Introduction). Golds: 3–4 sentences; Model 2
+  resolves the Model-2 thesis.
   **PRESENT-BUT-MISFILED (checked BEFORE scoring 0):** if the Conclusion section is empty but
   the final body paragraph's closing sentences are conclusion material ("To conclude…", a
   whole-response comparative restatement), MARK those sentences against the Conclusion criteria
