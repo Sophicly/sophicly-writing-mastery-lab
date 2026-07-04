@@ -21,6 +21,35 @@
     // `window.WML_DEBUG = true` in the console.
     const SWML_DEBUG = (typeof window !== 'undefined' && window.WML_DEBUG === true);
 
+    // v7.19.858 (TEMP perf probe — remove once AQA Lang P1 diagnostic slowness is diagnosed):
+    // deterministic capture of the real cost. (1) full text/stack of any uncaught error or
+    // promise rejection (the truncated ":5752 Uncaught" in Neil's console); (2) every
+    // main-thread long task (>50ms) with its duration + running total — one 2s block = a
+    // synchronous mount/render; many small blocks = a loop. buffered:true backfills tasks
+    // fired before this observer attached (GSAP/orchestrator/theme boot).
+    try {
+        window.addEventListener('error', function (e) {
+            try {
+                console.error('WML-PERF error:', e.message, '@',
+                    ((e.filename || '').split('/').pop() || '') + ':' + e.lineno + ':' + e.colno,
+                    (e.error && e.error.stack) ? '\n' + e.error.stack : '');
+            } catch (_) {}
+        });
+        window.addEventListener('unhandledrejection', function (e) {
+            try { console.error('WML-PERF unhandledrejection:', (e.reason && e.reason.stack) || (e.reason && e.reason.message) || e.reason); } catch (_) {}
+        });
+        if (typeof PerformanceObserver === 'function') {
+            var _wmlLtN = 0, _wmlLtMs = 0;
+            new PerformanceObserver(function (list) {
+                list.getEntries().forEach(function (ent) {
+                    _wmlLtN++; _wmlLtMs += ent.duration;
+                    var _src = (ent.attribution && ent.attribution[0]) ? (ent.attribution[0].containerName || ent.attribution[0].name || ent.attribution[0].containerType || '') : '';
+                    console.log('WML-PERF longtask ' + Math.round(ent.duration) + 'ms  @' + Math.round(ent.startTime) + 'ms  (running: ' + _wmlLtN + ' tasks / ' + Math.round(_wmlLtMs) + 'ms)  ' + _src);
+                });
+            }).observe({ entryTypes: ['longtask'], buffered: true });
+        }
+    } catch (_) {}
+
     // ── Destructure core exports as local variables ──
     const { config, API, headers, state } = WML;
     const { TEXT_CATALOGUE, POETRY_ANTHOLOGY_BY_BOARD, PROSE_ANTHOLOGY_BY_BOARD,
