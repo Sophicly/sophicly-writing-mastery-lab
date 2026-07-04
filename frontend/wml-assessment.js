@@ -105,7 +105,8 @@
                         + '  HOTTEST fires=' + top.fires + ' ' + Math.round(top.ms) + 'ms  created@ ' + top.stack);
                 }
             });
-            console.log('WML-PERF onUpdate=' + window.__wmlOnUpdate + '   mutations total=' + _mutTotal);
+            console.log('WML-PERF onUpdate=' + window.__wmlOnUpdate + '   mutations total=' + _mutTotal
+                + '   renderCanvasWorkspace=' + (window.__swmlRCW || 0) + '   editorMounts=' + (window.__swmlEditorMounts || 0));
             Object.keys(_mutHist).sort(function (a, b) { return _mutHist[b] - _mutHist[a]; }).slice(0, 6).forEach(function (k) {
                 console.log('   WML-PERF mut ' + _mutHist[k] + '  ' + k + '   e.g. ' + (_mutSample[k] || ''));
             });
@@ -8991,6 +8992,7 @@
         if (_canvasGuard) return;
         _canvasGuard = true;
         setTimeout(() => { _canvasGuard = false; }, 500);
+        try { window.__swmlRCW = (window.__swmlRCW || 0) + 1; if (window.__swmlRCW <= 6) console.log('WML-PERF renderCanvasWorkspace #' + window.__swmlRCW + '  caller@ ' + ((new Error().stack || '').split('\n').slice(2, 5).map(function (l) { return l.trim(); }).join('  <-  '))); } catch (_) {}
 
         // v7.15.56: first-load review entry modal
         setTimeout(maybeShowReviewEntryModal, 400);
@@ -18918,6 +18920,7 @@
             });
         }
 
+        try { window.__swmlEditorMounts = (window.__swmlEditorMounts || 0) + 1; console.log('WML-PERF new Editor mount #' + window.__swmlEditorMounts); } catch (_) {}
         canvasEditor = new Editor({
             element: editorEl,
             // v7.15.30: editor stays editable so programmatic comment marks work,
