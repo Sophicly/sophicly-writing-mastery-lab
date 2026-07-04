@@ -2342,6 +2342,12 @@ class SWML_REST_API {
             'quizResult'          => $quiz_result,
             // v7.19.263: drives the header "previous stage updated" dot.
             'pullUpdateAvailable' => $this->pull_update_available($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id),
+            // v7.19.854: family-first leniency flag (Neil) — frontend keys the WC
+            // ceiling-vs-halt regime + re-check button on it. Family from the slug.
+            'familyFirst'         => self::family_first_assessment(
+                $user_id,
+                (strpos($text, 'lang') !== false || strpos($text, 'language') !== false) ? 'lang' : 'lit'
+            ),
         ]);
     }
 
@@ -4579,6 +4585,56 @@ class SWML_REST_API {
     private function save_attempt_index($user_id, $board, $text, $topic, $suffix, $idx) {
         $idx_key = $this->attempt_index_key($board, $text, $topic, $suffix);
         update_user_meta($user_id, $idx_key, wp_slash(wp_json_encode($idx)));
+    }
+
+    /**
+     * v7.19.854 (Neil ruling 2026-07-03): is this the student's FIRST-EVER assessment
+     * attempt in the subject FAMILY ('lang' = any Language paper, 'lit' = any Literature
+     * text)? Leniency (structure acceptance, WC ceiling-not-halt, Tier-1 extras) applies
+     * ONLY on the family's first attempt; after one full marked cycle the skills transfer
+     * and every later attempt runs the strict regimes.
+     *
+     * Source of truth: the swml_attempts_* indexes. A prior attempt counts once it was
+     * MARKED — status 'completed' or a grade/score stamped (v361 stamps at completion).
+     * Task-suffixed exercises (_eq/_ma/_vr/_ep/_cn/_mp/_fq — quizzes, notes, plans) are
+     * NOT assessments and never count. Family from the key's text slug: language canvas
+     * slugs all carry 'lang'/'language'. FAIL-OPEN LENIENT: any decode problem → true
+     * (an extra soft attempt costs little; halting a genuine first-timer is worse).
+     * Static (the router calls it per chat turn) + request-cached.
+     */
+    public static function family_first_assessment($user_id, $family = 'lang') {
+        static $cache = [];
+        $user_id = (int) $user_id;
+        $family  = $family === 'lit' ? 'lit' : 'lang';
+        $ck = $user_id . '|' . $family;
+        if (isset($cache[$ck])) return $cache[$ck];
+        if ($user_id <= 0) return $cache[$ck] = true;
+        global $wpdb;
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT meta_key, meta_value FROM {$wpdb->usermeta}
+             WHERE user_id = %d AND meta_key LIKE %s",
+            $user_id,
+            'swml_attempts_%'
+        ));
+        foreach ((array) $rows as $r) {
+            $key = (string) $r->meta_key;
+            if (preg_match('/_(eq|ma|vr|ep|cn|mp|fq)(__|$)/', $key)) continue; // not an assessment doc
+            $is_lang = (strpos($key, '_lang') !== false || strpos($key, 'language') !== false);
+            if (($family === 'lang') !== $is_lang) continue;
+            $val = (string) $r->meta_value;
+            $idx = json_decode($val, true);
+            if (!is_array($idx)) $idx = json_decode(wp_unslash($val), true);
+            if (!is_array($idx)) $idx = maybe_unserialize($val);
+            $attempts = (is_array($idx) && isset($idx['attempts']) && is_array($idx['attempts'])) ? $idx['attempts'] : [];
+            foreach ($attempts as $a) {
+                if (!is_array($a)) continue;
+                $marked = (isset($a['status']) && $a['status'] === 'completed')
+                    || (isset($a['grade']) && $a['grade'] !== null && $a['grade'] !== '')
+                    || (isset($a['score']) && $a['score'] !== null && $a['score'] !== '');
+                if ($marked) return $cache[$ck] = false;
+            }
+        }
+        return $cache[$ck] = true;
     }
 
     /**

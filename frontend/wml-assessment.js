@@ -2212,6 +2212,11 @@
         try {
             if (qKey !== 'Q5' || !(den > 0)) return null;
             if (state.task !== 'assessment') return null;      // redraft = HALT, no ceiling
+            // v7.19.854 (Neil): the ceiling is the FAMILY-FIRST leniency. Any later
+            // attempt (even a new paper's diagnostic) = HALT regime, no ceiling — the
+            // re-check button + protocol handle the halt. Undefined flag → lenient
+            // (pre-854 behaviour; server omissions must never halt a first-timer).
+            if (state.familyFirst === false) return null;
             const key = _multiqTargetKey();
             const tgt = key && MULTIQ_RESPONSE_TARGETS[key] && MULTIQ_RESPONSE_TARGETS[key].Q5;
             if (!tgt) return null;
@@ -28202,6 +28207,11 @@
             // v7.19.263: surface the "previous stage updated" dot. False unless the
             // server reports the upstream stage changed since last pull/dismiss.
             _updatePullDot(!!(res && res.pullUpdateAvailable));
+            // v7.19.854 (Neil): family-first leniency flag — server-computed from the
+            // student's attempt history across the subject family. Drives the Q5
+            // word-count regime (ceiling vs halt + re-check button). Absent (old
+            // response shape / error) → LENIENT, matching pre-854 behaviour.
+            if (res && typeof res.familyFirst !== 'undefined') state.familyFirst = res.familyFirst !== false;
             if (res.success && res.doc && res.doc.html) {
                 // v7.19.247: capture the real first-edit start date for the Score Summary.
                 _canvasStartedAt = res.doc.startedAt || _canvasStartedAt || '';

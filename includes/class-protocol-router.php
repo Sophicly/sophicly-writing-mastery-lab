@@ -5729,6 +5729,13 @@ TEMPLATE;
             $redraft_n = (stripos((string) $suffix, 'redraft') !== false || stripos((string) $suffix, 'reassess') !== false) ? 1 : 0;
             $recall_q = $recall_rotation[($attempt_n - 1 + $topic_n - 1 + $redraft_n) % 4];
             $block .= "**Keyword-recall target THIS attempt: {$recall_q}** — the pre-chain's keyword-recall question (2c) asks about {$recall_q} this time (restate THAT question's task/statement), never a different question.\n";
+            // v7.19.854 (Neil): family-first leniency flag — CODE-COMPUTED from the
+            // student's attempt history across the whole subject family. The protocol's
+            // LENIENT/STRICT branches key on THIS line, never on topic/phase guesses.
+            $ff = class_exists('SWML_REST_API') ? SWML_REST_API::family_first_assessment($user_id, 'lang') : true;
+            $block .= $ff
+                ? "**Family-first attempt (code-computed): YES** — this is the student's first-ever Language assessment: apply every LENIENT branch (accept any structure, word-count ceiling not halt, Tier-1 extras).\n"
+                : "**Family-first attempt (code-computed): NO** — the student has completed a marked Language assessment before: apply every STRICT branch (taught structure required, word-count HALT below target — the re-check button lifts it, Tier-2 extras).\n";
             $block .= "### RULES — NON-NEGOTIABLE\n";
             $block .= "1. The pre-assessment chain MUST be complete before ANY marking output. Check the conversation for ALL THREE student replies: (a) grade goal, (b) HEADLINE GOAL (their choice from the goal options — a CONCEPTUAL aim, never a grade number), (c) KEYWORD RECALL (the key aspects the recall-target question asks them to explore). If any is missing, ask ONLY the next missing question (in that order) and STOP — nothing else in the turn.\n";
             $block .= "2. Once all three replies are present: acknowledge the keyword recall, then begin the FIRST question exactly per the protocol (its own gate first — never a mark in the same turn).\n";
@@ -5769,6 +5776,12 @@ TEMPLATE;
         if ($cur_marks) $block .= " ({$cur_marks} marks" . ($cur_aos ? ", {$cur_aos}" : '') . ")";
         $block .= ".\n";
         $block .= "Do NOT re-mark any question already listed as marked. Do NOT restart from Q1. Do NOT reopen with \"thanks for providing your full responses\" — the responses arrived earlier; the assessment is mid-flight.\n";
+        // v7.19.854 (Neil): the family-first flag rides EVERY turn's block — the Q5
+        // word-count regime (ceiling vs halt) and the extras tiers are decided mid-flight.
+        $ff_mid = class_exists('SWML_REST_API') ? SWML_REST_API::family_first_assessment($user_id, 'lang') : true;
+        $block .= $ff_mid
+            ? "Family-first attempt (code-computed): YES — LENIENT regimes (any structure accepted; Q5 word-count ceiling, never a halt; Tier-1 extras).\n"
+            : "Family-first attempt (code-computed): NO — STRICT regimes (taught structure required; Q5 below target = HALT until the code-owned re-check passes; Tier-2 extras).\n";
         if ($headline_goal !== '') {
             $block .= "Student's headline goal: {$headline_goal} — cite THIS (never the grade) in every question's reflection lead-in; close it in the Final Summary's metacognitive journey.\n";
         }
