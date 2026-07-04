@@ -106,7 +106,8 @@
                 }
             });
             console.log('WML-PERF onUpdate=' + window.__wmlOnUpdate + '   mutations total=' + _mutTotal
-                + '   renderCanvasWorkspace=' + (window.__swmlRCW || 0) + '   editorMounts=' + (window.__swmlEditorMounts || 0));
+                + '   renderCanvasWorkspace=' + (window.__swmlRCW || 0) + '   editorMounts=' + (window.__swmlEditorMounts || 0)
+                + '   txnDocChanged=' + (window.__swmlTxnDoc || 0));
             Object.keys(_mutHist).sort(function (a, b) { return _mutHist[b] - _mutHist[a]; }).slice(0, 6).forEach(function (k) {
                 console.log('   WML-PERF mut ' + _mutHist[k] + '  ' + k + '   e.g. ' + (_mutSample[k] || ''));
             });
@@ -19219,6 +19220,13 @@
                 updateCommentCount();
             },
             onTransaction: ({ editor, transaction }) => {
+                try {
+                    window.__swmlTxn = (window.__swmlTxn || 0) + 1;
+                    if (transaction.docChanged) {
+                        window.__swmlTxnDoc = (window.__swmlTxnDoc || 0) + 1;
+                        if (window.__swmlTxnDoc <= 12) console.log('WML-PERF txn #' + window.__swmlTxnDoc + ' docChanged  migrationActive=' + _migrationActive + ' undoGuard=' + _undoGuardActive + '  caller@ ' + ((new Error().stack || '').split('\n').slice(2, 8).map(function (l) { return l.trim(); }).join('  <-  ')));
+                    }
+                } catch (_) {}
                 // v7.13.92: Section Guard — revert if sections were deleted
                 // v7.14.68: Guard flag prevents undo cascade (guard triggers undo → undo triggers guard → loop)
                 if (transaction.docChanged && _sectionCount > 0) {
