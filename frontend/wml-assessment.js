@@ -47,6 +47,32 @@
                 });
             }).observe({ type: 'longtask', buffered: true });
         }
+        // Capture the SYNCHRONOUS remover of section blocks. txnDocChanged=0 proves the churn
+        // is NOT a ProseMirror doc transaction — so either PM view-redraw (decoration change) or
+        // raw DOM is tearing section NodeViews out. This stack names which + the exact caller.
+        try {
+            var _rcLogged = 0;
+            var _origRemoveChild = Node.prototype.removeChild;
+            Node.prototype.removeChild = function (child) {
+                try {
+                    if (_rcLogged < 6 && child && child.nodeType === 1 && child.classList && child.classList.contains('swml-section-block')) {
+                        _rcLogged++;
+                        console.log('WML-PERF removeChild .swml-section-block #' + _rcLogged + '  by@ ' + ((new Error().stack || '').split('\n').slice(2, 10).map(function (l) { return l.trim(); }).join('  <-  ')));
+                    }
+                } catch (_) {}
+                return _origRemoveChild.apply(this, arguments);
+            };
+            var _origReplaceChild = Node.prototype.replaceChild;
+            Node.prototype.replaceChild = function (nu, old) {
+                try {
+                    if (_rcLogged < 6 && old && old.nodeType === 1 && old.classList && old.classList.contains('swml-section-block')) {
+                        _rcLogged++;
+                        console.log('WML-PERF replaceChild .swml-section-block #' + _rcLogged + '  by@ ' + ((new Error().stack || '').split('\n').slice(2, 10).map(function (l) { return l.trim(); }).join('  <-  ')));
+                    }
+                } catch (_) {}
+                return _origReplaceChild.apply(this, arguments);
+            };
+        } catch (_) {}
         // Capture the NATIVE MutationObserver BEFORE wrapping — used by the mutation-source
         // sampler below (the wrapped one would recurse into the instance counters).
         var _NativeMO = window.MutationObserver;
@@ -107,7 +133,7 @@
             });
             console.log('WML-PERF onUpdate=' + window.__wmlOnUpdate + '   mutations total=' + _mutTotal
                 + '   renderCanvasWorkspace=' + (window.__swmlRCW || 0) + '   editorMounts=' + (window.__swmlEditorMounts || 0)
-                + '   txnDocChanged=' + (window.__swmlTxnDoc || 0));
+                + '   txnTotal=' + (window.__swmlTxn || 0) + '   txnDocChanged=' + (window.__swmlTxnDoc || 0));
             Object.keys(_mutHist).sort(function (a, b) { return _mutHist[b] - _mutHist[a]; }).slice(0, 6).forEach(function (k) {
                 console.log('   WML-PERF mut ' + _mutHist[k] + '  ' + k + '   e.g. ' + (_mutSample[k] || ''));
             });
