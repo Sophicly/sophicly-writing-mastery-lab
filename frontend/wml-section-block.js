@@ -399,6 +399,10 @@
                     contentDOM,
                     ignoreMutation: (mutation) => {
                         if (!mutation || !mutation.target) return false;
+                        // v7.19.866: same wrapper-attr firewall as the progress card — any runtime
+                        // style/attr write on THIS section-block dom is display-only, never a doc
+                        // change, so it must not trigger a DOMObserver flush/redraw loop.
+                        if (mutation.type === 'attributes' && mutation.target === dom) return true;
                         return foot === mutation.target || foot.contains(mutation.target);
                     },
                 };

@@ -21,125 +21,6 @@
     // `window.WML_DEBUG = true` in the console.
     const SWML_DEBUG = (typeof window !== 'undefined' && window.WML_DEBUG === true);
 
-    // v7.19.858 (TEMP perf probe — remove once AQA Lang P1 diagnostic slowness is diagnosed):
-    // deterministic capture of the real cost. (1) full text/stack of any uncaught error or
-    // promise rejection (the truncated ":5752 Uncaught" in Neil's console); (2) every
-    // main-thread long task (>50ms) with its duration + running total — one 2s block = a
-    // synchronous mount/render; many small blocks = a loop. buffered:true backfills tasks
-    // fired before this observer attached (GSAP/orchestrator/theme boot).
-    try {
-        window.addEventListener('error', function (e) {
-            try {
-                console.error('WML-PERF error:', e.message, '@',
-                    ((e.filename || '').split('/').pop() || '') + ':' + e.lineno + ':' + e.colno,
-                    (e.error && e.error.stack) ? '\n' + e.error.stack : '');
-            } catch (_) {}
-        });
-        window.addEventListener('unhandledrejection', function (e) {
-            try { console.error('WML-PERF unhandledrejection:', (e.reason && e.reason.stack) || (e.reason && e.reason.message) || e.reason); } catch (_) {}
-        });
-        if (typeof PerformanceObserver === 'function') {
-            var _wmlLtN = 0, _wmlLtMs = 0;
-            new PerformanceObserver(function (list) {
-                list.getEntries().forEach(function (ent) {
-                    _wmlLtN++; _wmlLtMs += ent.duration;
-                    console.log('WML-PERF longtask ' + Math.round(ent.duration) + 'ms  @' + Math.round(ent.startTime) + 'ms  (running: ' + _wmlLtN + ' tasks / ' + Math.round(_wmlLtMs) + 'ms)');
-                });
-            }).observe({ type: 'longtask', buffered: true });
-        }
-        // Capture the SYNCHRONOUS remover of section blocks. txnDocChanged=0 proves the churn
-        // is NOT a ProseMirror doc transaction — so either PM view-redraw (decoration change) or
-        // raw DOM is tearing section NodeViews out. This stack names which + the exact caller.
-        try {
-            var _rcLogged = 0;
-            var _origRemoveChild = Node.prototype.removeChild;
-            Node.prototype.removeChild = function (child) {
-                try {
-                    if (_rcLogged < 6 && child && child.nodeType === 1 && child.classList && child.classList.contains('swml-section-block')) {
-                        _rcLogged++;
-                        console.log('WML-PERF removeChild .swml-section-block #' + _rcLogged + '  by@ ' + ((new Error().stack || '').split('\n').slice(2, 10).map(function (l) { return l.trim(); }).join('  <-  ')));
-                    }
-                } catch (_) {}
-                return _origRemoveChild.apply(this, arguments);
-            };
-            var _origReplaceChild = Node.prototype.replaceChild;
-            Node.prototype.replaceChild = function (nu, old) {
-                try {
-                    if (_rcLogged < 6 && old && old.nodeType === 1 && old.classList && old.classList.contains('swml-section-block')) {
-                        _rcLogged++;
-                        console.log('WML-PERF replaceChild .swml-section-block #' + _rcLogged + '  by@ ' + ((new Error().stack || '').split('\n').slice(2, 10).map(function (l) { return l.trim(); }).join('  <-  ')));
-                    }
-                } catch (_) {}
-                return _origReplaceChild.apply(this, arguments);
-            };
-        } catch (_) {}
-        // Capture the NATIVE MutationObserver BEFORE wrapping — used by the mutation-source
-        // sampler below (the wrapped one would recurse into the instance counters).
-        var _NativeMO = window.MutationObserver;
-        // Wrap the observer constructors and record EACH instance's creation stack, so the
-        // 2s dump can name the exact observer firing thousands of times.
-        ['ResizeObserver', 'MutationObserver'].forEach(function (name) {
-            var Orig = window[name];
-            if (typeof Orig !== 'function') return;
-            var insts = [];
-            window['__wml_' + name + '_insts'] = insts;
-            var Wrapped = function (cb) {
-                var rec = { fires: 0, ms: 0, stack: '' };
-                try { rec.stack = (new Error().stack || '').split('\n').slice(2, 5).map(function (l) { return l.trim(); }).join('  <-  '); } catch (_) {}
-                insts.push(rec);
-                return new Orig(function (entries, obs) {
-                    var t0 = performance.now(); rec.fires++;
-                    try { return cb(entries, obs); } finally { rec.ms += performance.now() - t0; }
-                });
-            };
-            Wrapped.prototype = Orig.prototype;
-            window[name] = Wrapped;
-        });
-        window.__wmlOnUpdate = 0;
-        // MUTATION-SOURCE histogram. The observers above are cheap WITNESSES; the real cost is
-        // whatever mutates the DOM 100k+ times with growing per-cycle work. Tally each
-        // added/removed element's signature (±tag.class in parent) + one sample of its HTML, so
-        // the 2s dump names WHAT is churning → points straight at the producing code.
-        var _mutHist = {}, _mutTotal = 0, _mutSample = {};
-        if (typeof _NativeMO === 'function') {
-            new _NativeMO(function (list) {
-                for (var i = 0; i < list.length; i++) {
-                    var m = list[i];
-                    var added = m.addedNodes && m.addedNodes.length ? m.addedNodes : null;
-                    var nodes = added || m.removedNodes || [];
-                    for (var j = 0; j < nodes.length; j++) {
-                        var nd = nodes[j];
-                        if (!nd || nd.nodeType !== 1) continue;
-                        _mutTotal++;
-                        var cls = (typeof nd.className === 'string' && nd.className) ? '.' + nd.className.split(/\s+/)[0] : '';
-                        var tgt = m.target;
-                        var par = (tgt && tgt.nodeType === 1) ? (tgt.tagName.toLowerCase() + ((typeof tgt.className === 'string' && tgt.className) ? '.' + tgt.className.split(/\s+/)[0] : '')) : '?';
-                        var sig = (added ? '+' : '-') + nd.tagName.toLowerCase() + cls + '  in  ' + par;
-                        _mutHist[sig] = (_mutHist[sig] || 0) + 1;
-                        if (!_mutSample[sig]) { try { _mutSample[sig] = (nd.outerHTML || '').replace(/\s+/g, ' ').slice(0, 140); } catch (_) {} }
-                    }
-                }
-            }).observe(document.body, { childList: true, subtree: true });
-        }
-        setInterval(function () {
-            ['ResizeObserver', 'MutationObserver'].forEach(function (name) {
-                var insts = window['__wml_' + name + '_insts'] || [];
-                var total = insts.reduce(function (a, r) { return a + r.fires; }, 0);
-                var top = insts.slice().sort(function (a, b) { return b.fires - a.fires; })[0];
-                if (top && top.fires > 50) {
-                    console.log('WML-PERF ' + name + '  insts=' + insts.length + '  totalFires=' + total
-                        + '  HOTTEST fires=' + top.fires + ' ' + Math.round(top.ms) + 'ms  created@ ' + top.stack);
-                }
-            });
-            console.log('WML-PERF onUpdate=' + window.__wmlOnUpdate + '   mutations total=' + _mutTotal
-                + '   renderCanvasWorkspace=' + (window.__swmlRCW || 0) + '   editorMounts=' + (window.__swmlEditorMounts || 0)
-                + '   txnTotal=' + (window.__swmlTxn || 0) + '   txnDocChanged=' + (window.__swmlTxnDoc || 0));
-            Object.keys(_mutHist).sort(function (a, b) { return _mutHist[b] - _mutHist[a]; }).slice(0, 6).forEach(function (k) {
-                console.log('   WML-PERF mut ' + _mutHist[k] + '  ' + k + '   e.g. ' + (_mutSample[k] || ''));
-            });
-        }, 2000);
-    } catch (_) {}
-
     // ── Destructure core exports as local variables ──
     const { config, API, headers, state } = WML;
     const { TEXT_CATALOGUE, POETRY_ANTHOLOGY_BY_BOARD, PROSE_ANTHOLOGY_BY_BOARD,
@@ -5541,8 +5422,32 @@
     // Module-scope → query the live DOM. The card is a nodeView-rendered child of
     // the "progress" section node inside the editor (v7.19.497); fill it from the
     // current completion state after each recompute.
+    // v7.19.866: CIRCUIT-BREAKER for derived-card fills (progress + sign-off). These run on
+    // every NodeView (re)mount. If code ever writes DOM into a section-block NodeView in a way
+    // ProseMirror's DOMObserver treats as foreign, PM flushes → redraws the NodeView → the fill
+    // re-runs → re-writes → an infinite compounding remount loop that freezes the tab with NO
+    // error and NO doc transaction (the v7.19.866 freeze took 7 perf-probe iterations to find).
+    // A real fill fires a handful of times per mount; >CAP/sec is only physically possible inside
+    // that loop. So: warn ONCE naming the exact cause, and suppress the fill for the rest of the
+    // 1s window — breaking the loop's foreign-write step so it can't sustain. Self-recovers next
+    // window. See CLAUDE.md "PROSEMIRROR NODEVIEW" rule + memory reference_wml_pm_nodeview_foreign_mutation_loop.
+    const _cardFillWin = {};
+    function _derivedCardFillOk(name) {
+        try {
+            const now = (window.performance && performance.now) ? performance.now() : (0);
+            let r = _cardFillWin[name];
+            if (!r || now - r.start > 1000) { r = _cardFillWin[name] = { start: now, n: 0, warned: (r && r.warned) || false }; }
+            r.n++;
+            if (r.n > 50) {
+                if (!r.warned) { r.warned = true; console.warn('WML: "' + name + '" derived-card fill storm (>50/s) — a ProseMirror NodeView DOM write is not firewalled by ignoreMutation, causing a DOMObserver flush loop. Suppressing fills to break it. See CLAUDE.md PROSEMIRROR NODEVIEW rule.'); }
+                return false;
+            }
+            return true;
+        } catch (_) { return true; }
+    }
     function _updateProgressSummary() {
         try {
+            if (!_derivedCardFillOk('progress')) return;
             const editor = document.getElementById('swml-tiptap-editor');
             if (!editor) return;
             const card = editor.querySelector('.swml-progress-card');
@@ -9027,7 +8932,6 @@
         if (_canvasGuard) return;
         _canvasGuard = true;
         setTimeout(() => { _canvasGuard = false; }, 500);
-        try { window.__swmlRCW = (window.__swmlRCW || 0) + 1; if (window.__swmlRCW <= 6) console.log('WML-PERF renderCanvasWorkspace #' + window.__swmlRCW + '  caller@ ' + ((new Error().stack || '').split('\n').slice(2, 5).map(function (l) { return l.trim(); }).join('  <-  '))); } catch (_) {}
 
         // v7.15.56: first-load review entry modal
         setTimeout(maybeShowReviewEntryModal, 400);
@@ -18955,7 +18859,6 @@
             });
         }
 
-        try { window.__swmlEditorMounts = (window.__swmlEditorMounts || 0) + 1; console.log('WML-PERF new Editor mount #' + window.__swmlEditorMounts); } catch (_) {}
         canvasEditor = new Editor({
             element: editorEl,
             // v7.15.30: editor stays editable so programmatic comment marks work,
@@ -19254,13 +19157,6 @@
                 updateCommentCount();
             },
             onTransaction: ({ editor, transaction }) => {
-                try {
-                    window.__swmlTxn = (window.__swmlTxn || 0) + 1;
-                    if (transaction.docChanged) {
-                        window.__swmlTxnDoc = (window.__swmlTxnDoc || 0) + 1;
-                        if (window.__swmlTxnDoc <= 12) console.log('WML-PERF txn #' + window.__swmlTxnDoc + ' docChanged  migrationActive=' + _migrationActive + ' undoGuard=' + _undoGuardActive + '  caller@ ' + ((new Error().stack || '').split('\n').slice(2, 8).map(function (l) { return l.trim(); }).join('  <-  ')));
-                    }
-                } catch (_) {}
                 // v7.13.92: Section Guard — revert if sections were deleted
                 // v7.14.68: Guard flag prevents undo cascade (guard triggers undo → undo triggers guard → loop)
                 if (transaction.docChanged && _sectionCount > 0) {
@@ -21461,6 +21357,7 @@
         // true — the old per-rebuild cadence); nodeView remount fills reuse the cache.
         let _signoffLoadPromise = null;
         function renderSignoffInline(refetch) {
+            if (!_derivedCardFillOk('signoff')) return; // v7.19.866: same flush-loop circuit-breaker as the progress card
             const editor = document.getElementById('swml-tiptap-editor');
             if (!editor || !canvasEditor) return;
             const signoffSection = editor.querySelector('[data-section-type="signoff"]') || editor.querySelector('[data-section-label="Tutor Sign-off"]');
