@@ -2225,11 +2225,21 @@
     let _reflectDone = {};
     let _reflectPending = null;
     let _reflectRepairCount = 0;
-    const _PEN_NAMES = { W1: 'weak analytical verb', C1: 'clarity/flow', T1: 'imprecise technique naming',
+    // v7.19.854: UNIVERSAL registry names (Neil — one registry, all papers; W1 retired →
+    // F1). Legacy codes kept so older transcripts/replays still render a plain name.
+    const _PEN_NAMES = { F1: 'weak analytical verb ("shows" family)', T1: 'imprecise analytical verb',
+        N1: 'technique naming too micro/inaccurate', C1: 'clarity/flow',
         H1: 'hanging/mis-punctuated quote', P1: 'comma splice/run-on', S1: 'weak sentence starters',
-        S2: 'underdeveloped sentence', L1: 'lacks sustained detail', B1: 'beyond text boundaries',
-        R1: 'retelling instead of analysing', E1: 'lacks evaluative language', K1: 'misses the statement keywords',
-        STR2: 'structure divergence' };
+        S2: 'underdeveloped sentence', D1: 'lacks sustained detail', B1: 'beyond text boundaries',
+        M1: 'retelling instead of analysing', E1: 'lacks evaluative language', K1: 'misses the statement keywords',
+        I1: 'imprecise/underdeveloped interpretation', Q1: 'quotation without analysis',
+        L1: 'missing causal link', G1: 'SPaG undermining clarity', T2: 'lacks discourse markers',
+        R1: 'unstrategic repetition', U1: 'informal vocabulary', P2: 'lacks perceptive insight',
+        A1: 'anachronistic interpretation', X1: 'irrelevant/unexplained context',
+        STR1: 'structure not followed', STR2: 'structure divergence',
+        'H1-COMP': 'single-source sentence in a comparison paragraph',
+        // legacy (pre-854 transcripts only)
+        W1: 'weak analytical verb' };
     // v7.19.841: Section B (Q5) word-count CEILING is CODE-OWNED. The protocol had the
     // LLM compute ROUND(deficit × 5/100) itself — Run 4 invented "12.5 rounded to 10"
     // (cap 30 instead of 27, +3 marks, grade 6→7). Now: (a) the injection pipeline sends
@@ -2335,10 +2345,18 @@
                 }
                 // v7.19.839: record this card's individually-applied penalty codes for the
                 // code-built ledger (re-fires overwrite the same card key).
+                // v7.19.854 (Neil): also capture the verbatim phrase + the fix from the same
+                // penalty line, so the ledger itemises every instance (location + phrase +
+                // fix) — a count alone gave the student nothing to find and correct.
                 {
                     const codes = [];
-                    let cm; const codeRe = /(?:^|\n)\s*(?:[·•*-]\s*)?\*{0,2}([A-Z]{1,3}\d)\*{0,2}[^(\n]{0,60}\((?:−|-|–)\s*([\d.]+)\)/g;
-                    while ((cm = codeRe.exec(body)) !== null) codes.push({ code: cm[1], val: parseFloat(cm[2]) });
+                    let cm; const codeRe = /(?:^|\n)\s*(?:[·•*-]\s*)?\*{0,2}([A-Z]{1,3}\d(?:-[A-Z]+)?)\*{0,2}[^(\n]{0,60}\((?:−|-|–)\s*([\d.]+)\)(:?[^\n]*)/g;
+                    while ((cm = codeRe.exec(body)) !== null) {
+                        const rest = cm[3] || '';
+                        const qm = rest.match(/["“”]([^"“”]{1,90})["“”]/);
+                        const fm = rest.match(/Fix:\s*["“”]([^"“”]{1,140})["“”]/i);
+                        codes.push({ code: cm[1], val: parseFloat(cm[2]), quote: qm ? qm[1] : '', fix: fm ? fm[1] : '' });
+                    }
                     _penLedgerCards[qKey + '|' + String((meta && meta.para) || '')] = { q: qKey, codes: codes };
                 }
                 const totalRe = /(Total Mark for [^:\n]{1,50}:\s*)([\d.]+)\s*\/\s*(\d+(?:\.\d+)?)([^\n]*)/;
@@ -2420,10 +2438,15 @@
             const byCode = {}; let penSum = 0;
             Object.keys(_penLedgerCards).forEach(k => {
                 (_penLedgerCards[k].codes || []).forEach(c => {
-                    if (!byCode[c.code]) byCode[c.code] = { n: 0, sum: 0, where: [] };
+                    if (!byCode[c.code]) byCode[c.code] = { n: 0, sum: 0, items: [] };
                     byCode[c.code].n++; byCode[c.code].sum += c.val; penSum += c.val;
                     const loc = k.split('|');
-                    byCode[c.code].where.push(loc[0] + (loc[1] ? ' ¶' + loc[1] : ''));
+                    // v7.19.854 (Neil): itemise — location + verbatim phrase + the fix, so
+                    // the student can find and correct every single instance.
+                    const where = loc[0] + (loc[1] ? ' ' + (/^\d+$/.test(loc[1]) ? '¶' + loc[1] : loc[1]) : '');
+                    byCode[c.code].items.push(where
+                        + (c.quote ? ': “' + c.quote + '”' : '')
+                        + (c.fix ? ' → “' + c.fix + '”' : ''));
                 });
             });
             if (!penSum) return out; // nothing recorded — leave the AI's version
@@ -2437,7 +2460,8 @@
             const r2 = x => Math.round(x * 100) / 100;
             const codeLines = Object.keys(byCode).sort().map(c => {
                 const b = byCode[c];
-                return '- **' + c + ' — ' + (_PEN_NAMES[c] || 'penalty') + '** ×' + b.n + ' = −' + r2(b.sum) + ' (' + b.where.join(', ') + ')';
+                return '- **' + c + ' — ' + (_PEN_NAMES[c] || 'penalty') + '** ×' + b.n + ' = −' + r2(b.sum)
+                    + '\n' + b.items.map(i => '    · ' + i).join('\n');
             }).join('\n');
             let ceilLine = '';
             const cl = oldChunk[2].match(/[^\n]*ceiling[^\n]*/i);
