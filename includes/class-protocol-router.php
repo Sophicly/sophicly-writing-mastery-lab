@@ -4374,7 +4374,12 @@ TEMPLATE;
         // (language1 manifest assessment.steps stays {} → monolith flow, no
         // step-stitching). Brings P1 the setup-phase chain enforcement,
         // headline-goal capture/echo, self-heals, advancer and wrap-up mandate.
-        $question_subjects = ['language1', 'language_p1', 'language_paper_1', 'lang_p1'];
+        // v7.19.854: AQA Language P2 RE-ENABLED on the P1 pattern (P2 protocol now
+        // ported to the P1 gold standard; manifest assessment.steps stays {} → monolith
+        // load, so the v632 step-stitching loop cannot recur — only the question-pointer
+        // state block returns).
+        $question_subjects = ['language1', 'language_p1', 'language_paper_1', 'lang_p1',
+                              'language2', 'language_p2', 'language_paper_2', 'lang_p2'];
         return in_array($subject, $lit_subjects, true)
             || in_array($sq, $question_subjects, true);
     }
@@ -4398,7 +4403,9 @@ TEMPLATE;
         // v7.19.632 Phase 2b: P2 monolith — P2 resolves to 'paragraphs' (machine
         // off). See is_assessment_state_machine_enabled for the fallback restore note.
         // v7.19.826: language1 runs question-mode (P1 R&J-standard build).
-        $question_subjects = ['language1', 'language_p1', 'language_paper_1', 'lang_p1'];
+        // v7.19.854: language2 runs question-mode too (P2 ported to the P1 standard).
+        $question_subjects = ['language1', 'language_p1', 'language_paper_1', 'lang_p1',
+                              'language2', 'language_p2', 'language_paper_2', 'lang_p2'];
         return in_array($s, $question_subjects, true) ? 'questions' : 'paragraphs';
     }
 

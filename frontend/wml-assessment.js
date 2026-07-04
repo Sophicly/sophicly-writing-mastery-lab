@@ -633,6 +633,12 @@
         const s = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         return /^language[cu][1-9]$/.test(s);
     }
+    // v7.19.854: AQA-style Paper 2 (nonfiction, inference/comparison/transactional).
+    // Registered port surface (PORT SOP §E2) — paper-true wording branches key on this.
+    function _isLangPaper2() {
+        const s = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        return /^(language2|languagep2|languagepaper2|langp2)$/.test(s);
+    }
 
     // v7.19.829: keyword-recall target rotates — Q4 (biggest prize) → Q2 → Q3 → Q5, repeat.
     // v7.19.833: rotation keys on TOPIC + PHASE + ATTEMPT, not attempt alone. The same P1
@@ -652,6 +658,29 @@
     function _recallAskForTarget(qText) {
         const tq = _recallTargetQ();
         const lead = 'Good — noted. One more check before we begin marking. ';
+        // v7.19.854: P2 wording — its questions are inference (Q2), language (Q3),
+        // comparison (Q4), transactional writing (Q5). The P1 wording below calls Q3
+        // "the structure question" and Q5 "creative writing", both wrong for P2.
+        if (_isLangPaper2()) {
+            if (tq === 'Q2') return {
+                plain: lead + 'Thinking back to **Question 2** — the inference question: what were the **key aspects** it asked you to infer about the two sources, and what must every inference be anchored to?',
+                html: '<p>' + lead + 'Thinking back to <strong>Question 2</strong> — the inference question:</p><p>What were the <strong>key aspects</strong> it asked you to infer about the two sources — and what must every inference be anchored to? (type or use the mic)</p>'
+            };
+            if (tq === 'Q3') return {
+                plain: lead + 'Thinking back to **Question 3** — the language question: what were the **key aspects** it asked you to analyse, and which part of which source did it point you to?',
+                html: '<p>' + lead + 'Thinking back to <strong>Question 3</strong> — the language question:</p><p>What were the <strong>key aspects</strong> it asked you to analyse, and which part of which source did it point you to? (type or use the mic)</p>'
+            };
+            if (tq === 'Q5') return {
+                plain: lead + 'Thinking back to **Question 5** — the transactional writing task: what were the **key aspects** it rewards? (Hint: two assessment objectives — what does each one reward?)',
+                html: '<p>' + lead + 'Thinking back to <strong>Question 5</strong> — the transactional writing task:</p><p>What were the <strong>key aspects</strong> it rewards? (Hint: two assessment objectives — what does each one reward?) (type or use the mic)</p>'
+            };
+            const q4Plain = qText ? "'" + qText + "'" : 'the comparison question';
+            const q4Box = qText ? '<div style="margin:10px 0;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:13px;font-style:italic">' + qText + '</p></div>' : '';
+            return {
+                plain: lead + 'Thinking back to **Question 4** in particular: ' + q4Plain + ' — what were the **key aspects** it asked you to compare across the two sources?',
+                html: '<p>' + lead + 'Thinking back to <strong>Question 4</strong> in particular:</p>' + q4Box + '<p>What were the <strong>key aspects</strong> it asked you to compare across the two sources? (type or use the mic)</p>'
+            };
+        }
         if (tq === 'Q2') return {
             plain: lead + 'Thinking back to **Question 2** — the language question: what were the **key aspects** it asked you to analyse, and which kinds of language choices did it point you to?',
             html: '<p>' + lead + 'Thinking back to <strong>Question 2</strong> — the language question:</p><p>What were the <strong>key aspects</strong> it asked you to analyse, and which kinds of language choices did it point you to? (type or use the mic)</p>'
@@ -6422,8 +6451,21 @@
             'D) Crafting an engaging piece of creative writing (AO5)',
             'E) Improving my technical accuracy (AO6)',
         ];
+        // v7.19.854: goal options are PAPER-TRUE (P2 is nonfiction — AO3 comparison +
+        // transactional AO5; P1's "creative writing"/AO4 options are wrong there).
+        // Must match the P2 protocol's 2b options verbatim. Registered port surface
+        // (PORT SOP §E2) — every new language paper adds its set here AND in the
+        // training-pipeline twin (dual-pipeline rule).
+        const PRECHAIN_GOAL_OPTIONS_LANG_P2 = [
+            'A) Inferring ideas and differences across two sources (AO1)',
+            'B) Analysing how writers use language for effect (AO2)',
+            'C) Comparing writers’ feelings and perspectives (AO3)',
+            'D) Crafting persuasive transactional writing (AO5)',
+            'E) Improving my technical accuracy (AO6)',
+        ];
         const _preChainIsLang = () => (typeof WML !== 'undefined' && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject());
-        const _preChainGoalOptions = () => (_preChainIsLang() ? PRECHAIN_GOAL_OPTIONS_LANG : PRECHAIN_GOAL_OPTIONS);
+        const _preChainIsLangP2 = () => /^(language2|languagep2|languagepaper2|langp2)$/.test(String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
+        const _preChainGoalOptions = () => (_preChainIsLang() ? (_preChainIsLangP2() ? PRECHAIN_GOAL_OPTIONS_LANG_P2 : PRECHAIN_GOAL_OPTIONS_LANG) : PRECHAIN_GOAL_OPTIONS);
         function _assessPreChainStage() {
             if (state.task !== 'assessment') return null;
             const askedBy = (re) => canvasChatHistory.some(m => m.role === 'assistant' && re.test(m.content || ''));
@@ -14792,8 +14834,18 @@
                             'D) Crafting an engaging piece of creative writing (AO5)',
                             'E) Improving my technical accuracy (AO6)',
                         ];
+                        // v7.19.854: paper-true P2 set — twin of the main-pipeline block
+                        // (dual-pipeline rule; keep the two IDENTICAL).
+                        const PRECHAIN_GOAL_OPTIONS_LANG_P2 = [
+                            'A) Inferring ideas and differences across two sources (AO1)',
+                            'B) Analysing how writers use language for effect (AO2)',
+                            'C) Comparing writers’ feelings and perspectives (AO3)',
+                            'D) Crafting persuasive transactional writing (AO5)',
+                            'E) Improving my technical accuracy (AO6)',
+                        ];
                         const _preChainIsLang = () => (typeof WML !== 'undefined' && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject());
-                        const _preChainGoalOptions = () => (_preChainIsLang() ? PRECHAIN_GOAL_OPTIONS_LANG : PRECHAIN_GOAL_OPTIONS);
+                        const _preChainIsLangP2 = () => /^(language2|languagep2|languagepaper2|langp2)$/.test(String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
+                        const _preChainGoalOptions = () => (_preChainIsLang() ? (_preChainIsLangP2() ? PRECHAIN_GOAL_OPTIONS_LANG_P2 : PRECHAIN_GOAL_OPTIONS_LANG) : PRECHAIN_GOAL_OPTIONS);
                         function _assessPreChainStage() {
                             if (state.task !== 'assessment') return null;
                             const askedBy = (re) => canvasChatHistory.some(m => m.role === 'assistant' && re.test(m.content || ''));
@@ -23805,8 +23857,14 @@
                 }
                 // Reading question: taught paragraph count = marks ÷ 4
                 // (Q2/Q3: 2 paragraphs; Q4: 5 = Intro + 3 BPs + Conclusion).
-                const taught = qMarks > 0 ? Math.max(1, Math.round(qMarks / 4)) : 0;
-                const isEssayShape = taught >= 5;
+                // v7.19.854: essay shape is SPEC-DRIVEN, not marks-derived — P2's Q4 is
+                // 16 marks (÷4 = 4) but its taught structure is still Intro + 3 BPs +
+                // Conclusion. The paper spec types the big reading essay 'evaluation'
+                // (P1 Q4) / 'comparison' (P2 Q4); marks÷4 alone mislabelled P2 Q4 as a
+                // flat 4-paragraph question and flagged the 5th paragraph as EXTRA.
+                const isEssayShape = qType === 'evaluation' || qType === 'comparison'
+                    || (qMarks > 0 && Math.round(qMarks / 4) >= 5);
+                const taught = isEssayShape ? 5 : (qMarks > 0 ? Math.max(1, Math.round(qMarks / 4)) : 0);
                 const mapQLabel = (i, n) => {
                     if (!isEssayShape) {
                         if (!taught || i < taught) return `${qId} PARAGRAPH ${i + 1} of ${taught || n}`;
@@ -26171,6 +26229,10 @@
         'Vocabulary Precision': ['I used simple, everyday words.', 'My vocabulary is mostly clear, with some repetition.', 'I used accurate academic and subject-specific vocabulary.', 'I used a wide range of precise and effective vocabulary.', 'My vocabulary is consistently sophisticated and nuanced.'],
         'Sentence Structure': ['My sentences are mostly short and simple.', 'I connected some ideas, but sentences are often basic.', 'I correctly used compound and complex sentences.', 'I consistently used long, detailed sentences to build arguments.', 'I used complex and compound sentences for a sophisticated academic style.'],
         'Discourse Markers': ['I mainly rely on connecting with \'the\' or \'this\'.', 'I used a few basic connecting words.', 'I used some appropriate discourse markers.', 'I used a good range of discourse markers for logical relationships.', 'I used sophisticated discourse markers seamlessly for a fluent, coherent argument.'],
+        // v7.19.854: Paper 2 reading set — rungs mirror the real AQA 8700/2 level ladder
+        // (simple → some → clear → developed/effective → perceptive/judicious).
+        'Inference': ['I mostly repeated what the text says.', 'I made simple inferences from one source.', 'I made clear inferences from both sources, supported by quotations.', 'I made developed inferences from both sources with well-chosen quotations.', 'My inferences are perceptive across both sources, each anchored in a judicious quotation.'],
+        'Comparison': ['I wrote about the sources separately.', 'I made simple links between the two sources.', 'I compared ideas and perspectives clearly, with relevant detail from both sources.', 'I compared perspectives and the writers\' methods effectively, with well-chosen detail from both.', 'I compared perspectives and methods perceptively, weaving judicious detail from both sources into every paragraph.'],
         // v7.19.826: Creative Writing (Language Q5) set — rungs mirror the real AQA 8700
         // AO5/AO6 band ladder (simple → some success → clear → consistent → convincing/compelling).
         'Tone & Register': ['My tone doesn\'t really match the task.', 'I attempted to match my tone to the purpose and audience.', 'My tone, style and register generally match the purpose and audience.', 'My tone is clearly and consistently matched to purpose and audience.', 'My tone, style and register are assuredly matched — the voice feels deliberate and controlled throughout.'],
@@ -26226,6 +26288,21 @@
             // SPaG pulled out of the CW group into its own whole-paper group — it
             // applies to academic AND creative writing alike.
             skills.push({ cat: 'Creative Writing (Q5)', items: ['Tone & Register', 'Vocabulary & Devices', 'Structural Features', 'Sentence Variety'] });
+            skills.push({ cat: 'Spelling, Punctuation & Grammar', items: ['Spelling', 'Punctuation', 'Grammar & Tense Control'] });
+        }
+        // v7.19.854: AQA Lang P2 set — same reading spine as P1 (Thesis-only intro,
+        // TTECEA-no-C, Academic Writing) plus the paper's own skills: Inference (Q2) +
+        // Comparison (Q4), and Q5 is TRANSACTIONAL (same AO5/AO6 craft items as the CW
+        // set — identical descriptors — under the paper-true label). Registered port
+        // surface (PORT SOP §E2).
+        const _isLangP2sa = ['language2', 'languagep2', 'languagepaper2', 'langp2'].indexOf(_saSubj) !== -1;
+        if (_isLangP2sa) {
+            const _removeLangP2 = ['Hook', 'Building Sentences', 'Context', 'Controlling Concept', 'Central Purpose', 'Universal Message'];
+            skills = skills
+                .map(s => ({ cat: s.cat, items: s.items.filter(it => _removeLangP2.indexOf(it) === -1) }))
+                .filter(s => s.items.length > 0);
+            skills.push({ cat: 'Reading Across Two Sources', items: ['Inference', 'Comparison'] });
+            skills.push({ cat: 'Transactional Writing (Q5)', items: ['Tone & Register', 'Vocabulary & Devices', 'Structural Features', 'Sentence Variety'] });
             skills.push({ cat: 'Spelling, Punctuation & Grammar', items: ['Spelling', 'Punctuation', 'Grammar & Tense Control'] });
         }
         let inner = `<p><em>Rate your confidence in each skill (1 = basic, 5 = expert):</em></p>`;
@@ -29780,7 +29857,10 @@
         if (!canvasEditor || state.reviewMode) return;
         if (!WML.hasAssessmentSections(state.task)) return;
         const subj = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-        if (['language1', 'languagep1', 'languagepaper1', 'langp1', 'aqalangpaper1'].indexOf(subj) === -1) return;
+        // v7.19.854: P2 added — buildSelfAssessmentSection is subject-aware, so the heal
+        // rebuilds the correct paper's SA set.
+        if (['language1', 'languagep1', 'languagepaper1', 'langp1', 'aqalangpaper1',
+             'language2', 'languagep2', 'languagepaper2', 'langp2', 'aqalangpaper2'].indexOf(subj) === -1) return;
         let pos = null, node = null;
         canvasEditor.state.doc.descendants((n, p) => {
             if (pos !== null) return false;
