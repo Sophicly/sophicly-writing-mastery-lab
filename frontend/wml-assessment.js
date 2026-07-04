@@ -47,9 +47,11 @@
                 });
             }).observe({ type: 'longtask', buffered: true });
         }
+        // Capture the NATIVE MutationObserver BEFORE wrapping — used by the mutation-source
+        // sampler below (the wrapped one would recurse into the instance counters).
+        var _NativeMO = window.MutationObserver;
         // Wrap the observer constructors and record EACH instance's creation stack, so the
-        // 2s dump can name the exact observer firing thousands of times (aggregate counts
-        // can't distinguish 12 different observers). The hottest instance's stack = the bug.
+        // 2s dump can name the exact observer firing thousands of times.
         ['ResizeObserver', 'MutationObserver'].forEach(function (name) {
             var Orig = window[name];
             if (typeof Orig !== 'function') return;
@@ -68,6 +70,31 @@
             window[name] = Wrapped;
         });
         window.__wmlOnUpdate = 0;
+        // MUTATION-SOURCE histogram. The observers above are cheap WITNESSES; the real cost is
+        // whatever mutates the DOM 100k+ times with growing per-cycle work. Tally each
+        // added/removed element's signature (±tag.class in parent) + one sample of its HTML, so
+        // the 2s dump names WHAT is churning → points straight at the producing code.
+        var _mutHist = {}, _mutTotal = 0, _mutSample = {};
+        if (typeof _NativeMO === 'function') {
+            new _NativeMO(function (list) {
+                for (var i = 0; i < list.length; i++) {
+                    var m = list[i];
+                    var added = m.addedNodes && m.addedNodes.length ? m.addedNodes : null;
+                    var nodes = added || m.removedNodes || [];
+                    for (var j = 0; j < nodes.length; j++) {
+                        var nd = nodes[j];
+                        if (!nd || nd.nodeType !== 1) continue;
+                        _mutTotal++;
+                        var cls = (typeof nd.className === 'string' && nd.className) ? '.' + nd.className.split(/\s+/)[0] : '';
+                        var tgt = m.target;
+                        var par = (tgt && tgt.nodeType === 1) ? (tgt.tagName.toLowerCase() + ((typeof tgt.className === 'string' && tgt.className) ? '.' + tgt.className.split(/\s+/)[0] : '')) : '?';
+                        var sig = (added ? '+' : '-') + nd.tagName.toLowerCase() + cls + '  in  ' + par;
+                        _mutHist[sig] = (_mutHist[sig] || 0) + 1;
+                        if (!_mutSample[sig]) { try { _mutSample[sig] = (nd.outerHTML || '').replace(/\s+/g, ' ').slice(0, 140); } catch (_) {} }
+                    }
+                }
+            }).observe(document.body, { childList: true, subtree: true });
+        }
         setInterval(function () {
             ['ResizeObserver', 'MutationObserver'].forEach(function (name) {
                 var insts = window['__wml_' + name + '_insts'] || [];
@@ -78,7 +105,10 @@
                         + '  HOTTEST fires=' + top.fires + ' ' + Math.round(top.ms) + 'ms  created@ ' + top.stack);
                 }
             });
-            console.log('WML-PERF onUpdate=' + window.__wmlOnUpdate);
+            console.log('WML-PERF onUpdate=' + window.__wmlOnUpdate + '   mutations total=' + _mutTotal);
+            Object.keys(_mutHist).sort(function (a, b) { return _mutHist[b] - _mutHist[a]; }).slice(0, 6).forEach(function (k) {
+                console.log('   WML-PERF mut ' + _mutHist[k] + '  ' + k + '   e.g. ' + (_mutSample[k] || ''));
+            });
         }, 2000);
     } catch (_) {}
 
