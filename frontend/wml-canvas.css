@@ -6063,9 +6063,18 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 
 /* Sign-off — force left alignment (overrides saved inline text-align: right) */
+/* v7.19.870: + theme-aware text colour. The saved Status/Tutor/Date <p>s carry a
+   light-theme inline colour (authored dark), so in DARK theme they stayed dark-on-dark
+   and never inverted. Same !important precedent already used here for text-align — beat
+   the saved inline colour and flip with the theme. Dark is the base; light overrides. */
 .swml-section-signoff p,
 [data-section-label="Tutor Sign-off"] p {
     text-align: left !important;
+    color: rgba(255,255,255,0.72) !important;
+}
+[data-swml-theme="light"] .swml-section-signoff p,
+[data-swml-theme="light"] [data-section-label="Tutor Sign-off"] p {
+    color: rgba(0,0,0,0.7) !important;
 }
 /* Sign-off — keep entire section on one page (prevents badge orphan between pages) */
 .swml-section-signoff,

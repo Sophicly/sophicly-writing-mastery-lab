@@ -5261,6 +5261,8 @@
         const secs = editor.querySelectorAll('.swml-section-block[data-section-complete]');
         let total = 0, done = 0; const incomplete = [];
         secs.forEach(s => {
+            // v7.19.869: never count the progress card itself (it carries data-section-complete).
+            if ((s.getAttribute('data-section-type') || '') === 'progress') return;
             total++;
             if (s.getAttribute('data-section-complete') === 'true') done++;
             else incomplete.push(s.getAttribute('data-section-label') || 'Section');
@@ -5285,7 +5287,10 @@
             raw++;
             const type = s.getAttribute('data-section-type') || '';
             const label = s.getAttribute('data-section-label') || 'Section';
-            if (type === 'question' || type === 'response' || type === 'scores' || type === 'signoff') return;
+            // v7.19.869: exclude the progress card ITSELF — it is a section-block with
+            // data-section-complete, so without this it counted itself as a trackable
+            // section ("8 of 9 · Still to do: Document Progress"). Same in _computeCwProgress.
+            if (type === 'question' || type === 'response' || type === 'scores' || type === 'signoff' || type === 'progress') return;
             if (label === 'Overall Feedback') return;
             if (type === 'plan' && firstDiag) return;
             // v7.19.828 (Neil 2026-07-03): count only what the student can SEE at this
@@ -7567,7 +7572,26 @@
                                 textContent: label,
                                 onClick: () => { rowBar.remove(); chatTextarea.value = payload; sendCanvasMessage(); }
                             });
-                            rowBar.appendChild(_mkClose('✓ Nothing to revisit — finish', 'Nothing to revisit — let’s finish.'));
+                            // v7.19.871: "finish" is TERMINAL — code-owned, NOT round-tripped
+                            // to the AI. The assessment already emitted [ASSESSMENT_COMPLETE];
+                            // sending "nothing to revisit" back to the model made it re-ask
+                            // "Anything you’d like to revisit before you mark this complete?" a
+                            // SECOND time (closing-chain loop, Neil's run lines 2674/2683). Record
+                            // the student's choice + a canned wrap; no AI turn = no re-ask.
+                            rowBar.appendChild(el('button', {
+                                className: 'swml-quick-btn',
+                                textContent: '✓ Nothing to revisit — finish',
+                                onClick: () => {
+                                    rowBar.remove();
+                                    const _uMsg = 'Nothing to revisit — let’s finish.';
+                                    addChatMessage(_uMsg, 'user');
+                                    canvasChatHistory.push({ role: 'user', content: _uMsg });
+                                    const _done = 'Perfect — that wraps your assessment. When you’re ready, click <strong>Mark Complete</strong> to save it.';
+                                    addChatMessage(_done, 'ai', _done, { suppressActions: true });
+                                    canvasChatHistory.push({ role: 'assistant', content: _done });
+                                    try { saveCanvasChat(canvasChatHistory, canvasChatId); } catch (_) {}
+                                }
+                            }));
                             rowBar.appendChild(_mkClose('🔁 Revisit a question', 'I’d like to revisit a question.'));
                             // v7.19.854 (closing chain step 5): the rebuild offer is engine-rendered —
                             // the R&J Run-2 transcript proved the protocol-scripted offer never appears.
