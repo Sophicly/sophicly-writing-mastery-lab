@@ -2362,6 +2362,14 @@
     }
     function _updateWcRecheckBtn() {
         try {
+            // v7.19.875: SCRAPPED. The floating "↻ Check my word count again" button is a polling
+            // anti-pattern in an awkward position, and it showed even at assessment START (before any
+            // marking). Never render it; remove any existing instance. The proper replacement —
+            // entry-time auto-check + in-chat guidance + auto-resume — is the word-count ENGINE
+            // rebuild (handoff wml-CHATA-PLANNING-automate-student-facing-section-inputs, surface 3).
+            if (_wcRecheckBtn) { try { _wcRecheckBtn.remove(); } catch (_) {} _wcRecheckBtn = null; }
+            return;
+            // eslint-disable-next-line no-unreachable  (legacy body kept for the rebuild reference)
             if (state.reviewMode) return;
             const wrap = document.querySelector('.swml-chat-input-wrapper');
             if (!wrap || !wrap.parentNode) return;
@@ -31950,10 +31958,10 @@
                 const b = parseInt(color.slice(5,7), 16);
                 // Use setProperty with 'important' to override CSS class specificity
                 section.style.setProperty('border-left-color', `rgba(${r},${g},${b},0.5)`, 'important');
-                // v7.19.874: the progress card renders its OWN rounded card (.swml-progress-card),
-                // so the group-tint background made a faint box AROUND it (Neil: looks unprofessional).
-                // Skip the outer background for the progress section — the inner card is the visual.
-                if (type !== 'progress') section.style.setProperty('background', `rgba(${r},${g},${b},0.05)`, 'important');
+                // v7.19.875: NO group-tint background anywhere. Neil dislikes the faint box as a
+                // recurring pattern (WML sections + components e.g. the video card). Group identity =
+                // the border-left accent only — cleaner, matches the no-faint-panels brand. (The
+                // component-side equivalent is a separate plugin → handoff.)
             }
         });
     }
