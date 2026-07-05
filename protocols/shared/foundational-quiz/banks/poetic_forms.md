@@ -15,12 +15,12 @@ Types: MCQ · Fill · True-False · Select All
 
 1. **Type: MCQ [Tests Recognising Forms]**
    * **Question:** Which form originated in oral folk culture, uses quatrains in an alternating rhythm, and relies on strong repetition to aid memorability?
-   * **Options:** A) The ballad, B) The ode, C) Interior monologue, D) The villanelle
+   * **Options:** A) The ballad, B) The ode, C) Interior monologue, D) Dramatic monologue
    * **Correct:** A
    * **Feedback:** ✓ Correct. The ballad grew out of oral storytelling and uses memorable quatrains and refrains so that its narrative could be retained and passed on aloud.
    * **Why B:** The ode is a formal poem of elevated praise, not a folk narrative form.
    * **Why C:** Interior monologue presents a character's raw, unfiltered thought rather than an oral narrative tradition.
-   * **Why D:** The villanelle is defined by its two refrains and nineteen-line structure, not by an oral folk origin.
+   * **Why D:** Dramatic monologue centres on a single speaker addressing a silent listener, not an oral folk narrative tradition.
 
 2. **Type: MCQ [Tests Recognising Forms]**
    * **Question:** Which form is characterised by great length, elevated style, heroic deeds, and often an opening that begins in the middle of the action?
@@ -53,13 +53,12 @@ Types: MCQ · Fill · True-False · Select All
    * **WhyWrong:** The word is "ode" — a formal poem of praise for its subject.
 
 6. **Type: Select All [Tests Recognising Forms]**
-   * **Question:** Which of these forms are defined by a fixed, prescribed line count?
-   * **Options:** A) The sonnet, B) The villanelle, C) Free verse, D) The lyric
-   * **Correct:** A, B
-   * **Scoring:** 2 marks for A,B. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. The sonnet is fixed at fourteen lines and the villanelle at nineteen; both are defined partly by an exact length.
-   * **Why C:** Free verse deliberately has no fixed length or pattern.
-   * **Why D:** The lyric has no set line count — it is defined by its subjective, musical focus rather than by length.
+   * **Question:** Which of these forms are defined by having NO fixed, prescribed line count?
+   * **Options:** A) The sonnet, B) Free verse, C) The lyric, D) The epic
+   * **Correct:** B, C, D
+   * **Scoring:** 2 marks for B,C,D. 1 mark if mostly correct.
+   * **Feedback:** ✓ Correct. Free verse, the lyric and the epic can all vary in length — none is fixed to an exact line count the way the sonnet is.
+   * **Why A:** The sonnet is fixed at exactly fourteen lines, so it does NOT belong with the open-length forms.
 
 7. **Type: MCQ [Tests Recognising Forms]**
    * **Question:** A poem in which a single speaker addresses a silent listener, unintentionally revealing their true character through what they say, is called a...
@@ -92,20 +91,20 @@ Types: MCQ · Fill · True-False · Select All
    * **WhyWrong:** The word is "narrative" — a poem whose central purpose is telling a story.
 
 11. **Type: MCQ [Tests Recognising Forms]**
-   * **Question:** Which form is a nineteen-line poem built from two recurring refrains and only two rhyme sounds throughout?
-   * **Options:** A) The sonnet, B) The elegy, C) The villanelle, D) Free verse
-   * **Correct:** C
-   * **Feedback:** ✓ Correct. The villanelle's nineteen lines circle around two refrains and two rhyme sounds, producing an obsessive, ritual-like quality.
-   * **Why A:** The sonnet is fourteen lines built around a single turn, not nineteen lines with recurring refrains.
-   * **Why B:** The elegy is defined by its mourning subject matter rather than a fixed refrain structure.
-   * **Why D:** Free verse has no fixed rhyme sounds or repeating refrains at all.
+   * **Question:** Which form is defined by great length, elevated style and a hero's journey, often beginning in the middle of the action?
+   * **Options:** A) The lyric, B) The epic, C) The elegy, D) Narrative form
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The epic's scale, elevated diction and in medias res opening recount a hero's deeds across a vast setting.
+   * **Why A:** The lyric is short and inward-looking, the opposite of the epic's grand scale.
+   * **Why C:** The elegy mourns loss rather than recounting a hero's journey on an epic scale.
+   * **Why D:** Narrative form broadly tells any story through character and plot; it lacks the epic's specific scale and elevated convention.
 
 12. **Type: MCQ [Tests Recognising Forms]**
    * **Question:** Which form is fourteen lines long and organised around a turn, or volta, in its argument or feeling?
-   * **Options:** A) The villanelle, B) The sonnet, C) Narrative form, D) The lyric
+   * **Options:** A) The ballad, B) The sonnet, C) Narrative form, D) The lyric
    * **Correct:** B
    * **Feedback:** ✓ Correct. The sonnet's fourteen lines build towards the volta, the pivot where the poem's argument or mood shifts.
-   * **Why A:** The villanelle is nineteen lines, defined by refrains rather than a single turn.
+   * **Why A:** The ballad is built from alternating quatrains for oral storytelling, not a fixed fourteen-line turn.
    * **Why C:** Narrative form is defined by storytelling, not by a fixed fourteen-line turn.
    * **Why D:** The lyric has no fixed length or turn — it is defined by personal, musical expression.
 
@@ -120,20 +119,20 @@ Types: MCQ · Fill · True-False · Select All
 
 14. **Type: MCQ [Tests Form Features]**
    * **Question:** Which structural features are typical of epic poetry in the English tradition?
-   * **Options:** A) Blank verse and an opening that begins in the middle of the action, B) Strict fourteen-line stanzas with a single rhyming couplet, C) Two alternating refrains repeated throughout, D) Compound words that mimic a child's speech
+   * **Options:** A) Blank verse and an opening that begins in the middle of the action, B) Strict fourteen-line stanzas with a single rhyming couplet, C) Short, songlike quatrains built for oral memorability, D) Compound words that mimic a child's speech
    * **Correct:** A
    * **Feedback:** ✓ Correct. English epic tradition favours unrhymed iambic pentameter, or blank verse, together with an in medias res opening that plunges the reader into ongoing action.
    * **Why B:** Fourteen-line stanzas with a closing couplet describes the sonnet's structure, not the epic's.
-   * **Why C:** Two alternating refrains describes the villanelle's structure, not the epic's.
+   * **Why C:** Short, songlike quatrains built for oral memorability describes the ballad, not the epic's grand, unrhymed scale.
    * **Why D:** Compound words mimicking a child's speech is a specific stylistic device, not a defining epic feature.
 
 15. **Type: MCQ [Tests Form Features]**
    * **Question:** Which combination of features defines the lyric form?
-   * **Options:** A) A shorter, subjective poem built on musicality, rhythm and rich figurative language, B) A lengthy, panoramic poem recounting heroic deeds across vast settings, C) A nineteen-line poem circling around two fixed refrains, D) A poem entirely without metre, rhyme, or figurative language
+   * **Options:** A) A shorter, subjective poem built on musicality, rhythm and rich figurative language, B) A lengthy, panoramic poem recounting heroic deeds across vast settings, C) A poem structured entirely around characters, plot and setting, D) A poem entirely without metre, rhyme, or figurative language
    * **Correct:** A
    * **Feedback:** ✓ Correct. The lyric is typically shorter and inward-looking, relying on musical patterning, rhythm and figurative language to express personal feeling.
    * **Why B:** A lengthy, panoramic poem of heroic deeds describes the epic, not the lyric.
-   * **Why C:** A nineteen-line poem built on two fixed refrains describes the villanelle, not the lyric.
+   * **Why C:** A poem structured around character, plot and setting describes narrative form, not the lyric.
    * **Why D:** The lyric frequently uses figurative language and musical devices, so a poem entirely without them would not fit its definition.
 
 16. **Type: True-False [Tests Form Features]**
@@ -150,19 +149,19 @@ Types: MCQ · Fill · True-False · Select All
 
 18. **Type: Select All [Tests Form Features]**
    * **Question:** Which statements correctly describe the two main sonnet types?
-   * **Options:** A) The Petrarchan sonnet divides into an eight-line octave that poses a problem and a six-line sestet that offers a resolution, B) The Shakespearean sonnet divides into three four-line quatrains followed by a two-line couplet that delivers a summary, C) Both sonnet types abandon rhyme entirely and rely on varied, unpatterned line lengths instead, D) A sonnet's fourteen lines are organised into six short stanzas built around two alternating refrains
+   * **Options:** A) The Petrarchan sonnet divides into an eight-line octave that poses a problem and a six-line sestet that offers a resolution, B) The Shakespearean sonnet divides into three four-line quatrains followed by a two-line couplet that delivers a summary, C) Both sonnet types abandon rhyme entirely and rely on varied, unpatterned line lengths instead, D) Both sonnet types run to twenty lines, divided into five rhyming quatrains
    * **Correct:** A, B
    * **Scoring:** 2 marks for A,B. 1 mark if mostly correct.
    * **Feedback:** ✓ Correct. The Petrarchan octave-and-sestet and the Shakespearean quatrains-and-couplet are the two classic sonnet structures.
    * **Why C:** Sonnets rely on fixed, patterned rhyme schemes rather than abandoning rhyme entirely.
-   * **Why D:** Six short stanzas built around two alternating refrains describes the villanelle, not the sonnet.
+   * **Why D:** Both sonnet types are fixed at exactly fourteen lines, not twenty.
 
 19. **Type: MCQ [Tests Form Features]**
    * **Question:** Which feature is central to the structure of a dramatic monologue?
-   * **Options:** A) A single speaker addressing a silent, implied listener within a specific dramatic situation, B) Two alternating refrains repeated across nineteen lines, C) No addressed listener at all, only raw stream of consciousness, D) A chorus of multiple speakers responding to one another
+   * **Options:** A) A single speaker addressing a silent, implied listener within a specific dramatic situation, B) An unrhymed, elevated address recounting deeds across a vast timescale, C) No addressed listener at all, only raw stream of consciousness, D) A chorus of multiple speakers responding to one another
    * **Correct:** A
    * **Feedback:** ✓ Correct. The dramatic monologue is built on one speaker addressing an implied, silent listener inside a defined dramatic situation, which lets the speaker's character emerge through what they say.
-   * **Why B:** Two alternating refrains across nineteen lines describes the villanelle's structure, not the dramatic monologue's.
+   * **Why B:** An unrhymed, elevated address across a vast timescale describes the epic, not the dramatic monologue.
    * **Why C:** No addressed listener at all describes interior monologue rather than dramatic monologue.
    * **Why D:** A chorus of multiple speakers does not match the dramatic monologue's single-speaker structure.
 
@@ -188,13 +187,13 @@ Types: MCQ · Fill · True-False · Select All
    * **WhyWrong:** The word is "dialogue" — a feature narrative poems often employ to bring their story to life.
 
 23. **Type: MCQ [Tests Form Features]**
-   * **Question:** How is a villanelle structurally organised?
-   * **Options:** A) Nineteen lines across six stanzas, built on two refrains and only two rhyme sounds, B) Fourteen lines organised around a single turning point, C) An unlimited number of lines with no fixed metre or rhyme, D) Four-line stanzas alternating four-beat and three-beat lines
+   * **Question:** Which feature most clearly distinguishes free verse from fixed forms like the sonnet or ballad?
+   * **Options:** A) It abandons a set metrical pattern and rhyme scheme, though it may still use occasional rhyme or other devices, B) It is fixed to exactly fourteen lines built around a single turning point, C) It alternates four-beat and three-beat lines within rhyming quatrains, D) It recounts heroic deeds on a grand scale in elevated, unrhymed verse
    * **Correct:** A
-   * **Feedback:** ✓ Correct. The villanelle's nineteen lines, across six stanzas, circle around two recurring refrains and just two rhyme sounds.
-   * **Why B:** Fourteen lines organised around one turning point describes the sonnet, not the villanelle.
-   * **Why C:** An unlimited line count with no fixed metre or rhyme describes free verse, not the tightly patterned villanelle.
-   * **Why D:** Four-line stanzas alternating four-beat and three-beat lines describes ballad metre, not the villanelle.
+   * **Feedback:** ✓ Correct. Free verse is defined by dropping a fixed metrical pattern and set rhyme scheme, though it can still draw on devices like imagery or occasional rhyme.
+   * **Why B:** Fourteen lines organised around one turning point describes the sonnet, not free verse.
+   * **Why C:** Alternating four-beat and three-beat lines within rhyming quatrains describes ballad metre, not free verse.
+   * **Why D:** Recounting heroic deeds in elevated, unrhymed verse describes the epic, not free verse.
 
 24. **Type: MCQ [Tests Form Features]**
    * **Question:** Which metrical foot falls from a stressed syllable through two unstressed syllables (DUM-da-da)?
@@ -216,10 +215,10 @@ Types: MCQ · Fill · True-False · Select All
 
 26. **Type: MCQ [Tests Form Effects]**
    * **Question:** What effect does the epic's vast scale and elevated style typically have on the reader?
-   * **Options:** A) A sense of awe and admiration at witnessing something monumental, B) An obsessive, circling feeling of being trapped, C) Uncomfortable complicity with a speaker's hidden confession, D) A fragmented, disoriented sense of time
+   * **Options:** A) A sense of awe and admiration at witnessing something monumental, B) An intimate, uncomfortable sense of eavesdropping on private thought, C) Uncomfortable complicity with a speaker's hidden confession, D) A fragmented, disoriented sense of time
    * **Correct:** A
    * **Feedback:** ✓ Correct. The epic's grand scale and elevated diction create a sense of awe, positioning the reader as a witness to monumental events.
-   * **Why B:** An obsessive, circling feeling describes the villanelle's effect, not the epic's.
+   * **Why B:** An intimate sense of eavesdropping on private thought describes interior monologue's effect, not the epic's.
    * **Why C:** Uncomfortable complicity with a hidden confession describes the dramatic monologue's effect, not the epic's.
    * **Why D:** A fragmented, disoriented sense of time is not a defining epic effect, which instead builds a coherent, panoramic sweep.
 
@@ -263,12 +262,12 @@ Types: MCQ · Fill · True-False · Select All
 
 32. **Type: MCQ [Tests Form Effects]**
    * **Question:** What effect does interior monologue's unmediated access to a character's thought typically create?
-   * **Options:** A) Intimate connection with the character, or a sense of uncomfortable voyeurism, B) A meditative, slowed pace of contemplation, C) A sense of awe at witnessing a heroic deed, D) A hypnotic, circling feeling of obsession
+   * **Options:** A) Intimate connection with the character, or a sense of uncomfortable voyeurism, B) A meditative, slowed pace of contemplation, C) A sense of awe at witnessing a heroic deed, D) Catharsis following a plot's rising tension and resolution
    * **Correct:** A
    * **Feedback:** ✓ Correct. Because interior monologue drops all filters, the reader gains such direct access to a character's mind that it can feel intimate, or uncomfortably like eavesdropping.
    * **Why B:** A meditative, slowed pace of contemplation describes the ode's effect, not interior monologue's.
    * **Why C:** Awe at a heroic deed describes the epic's effect, not interior monologue's.
-   * **Why D:** A hypnotic, circling feeling of obsession describes the villanelle's effect, not interior monologue's.
+   * **Why D:** Catharsis following a plot's tension and resolution describes narrative form's effect, not interior monologue's.
 
 33. **Type: True-False [Tests Form Effects]**
    * **Question:** Free verse's rejection of fixed rules only ever produces disorientation, and it has no capacity to validate marginalised voices or challenge established norms.
@@ -283,13 +282,13 @@ Types: MCQ · Fill · True-False · Select All
    * **WhyWrong:** The word is "catharsis" — the emotional release narrative form can produce as its plot resolves.
 
 35. **Type: MCQ [Tests Form Effects]**
-   * **Question:** What effect does the villanelle's forced repetition of its two refrains typically create?
-   * **Options:** A) A hypnotic intensity and a feeling of being trapped in a loop, unable to move on, B) A panoramic sense of awe at vast, heroic events, C) A meditative calm that slows the reader towards philosophical acceptance, D) A detached, objective distance from the events described
+   * **Question:** What effect can occur when a poet deliberately blends two forms within a single poem?
+   * **Options:** A) It can produce complex, sometimes contradictory effects that neither form alone would create, B) It always cancels out the effects of both forms, leaving the reader with no response at all, C) It automatically weakens the poem, since mixing forms is a sign of technical failure, D) It has no effect at all — a reader cannot perceive when forms are combined
    * **Correct:** A
-   * **Feedback:** ✓ Correct. Because the same refrains keep recurring, the villanelle can enact psychological states such as grief, denial or obsession, trapping the reader in its loop.
-   * **Why B:** A panoramic sense of awe at heroic events describes the epic's effect, not the villanelle's.
-   * **Why C:** A meditative calm building towards acceptance describes the ode's effect, not the villanelle's.
-   * **Why D:** A detached, objective distance is more typical of a panoramic narrating perspective than of the villanelle's obsessive circling.
+   * **Feedback:** ✓ Correct. Hybridity lets a poet layer one form's effects over another's, producing a richer, sometimes contradictory response that neither form alone could create.
+   * **Why B:** Blended forms compound and complicate effects rather than cancelling them out entirely.
+   * **Why C:** Deliberate hybridity is a sophisticated technique, not a sign of technical failure.
+   * **Why D:** A reader can and does register the tension or richness that blending forms produces.
 
 36. **Type: MCQ [Tests Form Effects]**
    * **Question:** According to the Effect Chain, in what order does a poem's form typically shape a reader's response?
