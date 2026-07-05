@@ -2369,7 +2369,12 @@
             const tgt = _wcRecheckTarget();
             let wc = _lastQWordCounts.Q5;
             if (!(wc > 0)) wc = _q5DomWordCount();
-            const need = isAssess && state.familyFirst === false && tgt > 0 && wc > 0 && wc < tgt;
+            // v7.19.873: NEVER on a wrapped/complete assessment (Neil saw it on a marked,
+            // Grade-6 doc). Once the phase is committed / marked complete, the halt is moot.
+            // (The full redesign — only on the re-seed/return path, rendered in-chat not
+            // floating — rides the word-count ENGINE rebuild, which owns the re-seed signal.)
+            const _assessDone = !!(state._phaseCommitted || state._phaseMarkedComplete);
+            const need = isAssess && !_assessDone && state.familyFirst === false && tgt > 0 && wc > 0 && wc < tgt;
             if (!need) { if (_wcRecheckBtn) { _wcRecheckBtn.remove(); _wcRecheckBtn = null; } return; }
             if (_wcRecheckBtn && _wcRecheckBtn.isConnected) return;
             const btn = el('button', { className: 'swml-wc-recheck-btn', textContent: '↻ Check my word count again', onClick: () => {
