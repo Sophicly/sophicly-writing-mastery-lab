@@ -31950,7 +31950,10 @@
                 const b = parseInt(color.slice(5,7), 16);
                 // Use setProperty with 'important' to override CSS class specificity
                 section.style.setProperty('border-left-color', `rgba(${r},${g},${b},0.5)`, 'important');
-                section.style.setProperty('background', `rgba(${r},${g},${b},0.05)`, 'important');
+                // v7.19.874: the progress card renders its OWN rounded card (.swml-progress-card),
+                // so the group-tint background made a faint box AROUND it (Neil: looks unprofessional).
+                // Skip the outer background for the progress section — the inner card is the visual.
+                if (type !== 'progress') section.style.setProperty('background', `rgba(${r},${g},${b},0.05)`, 'important');
             }
         });
     }

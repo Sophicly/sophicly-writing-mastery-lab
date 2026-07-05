@@ -6126,6 +6126,17 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     z-index: 0;
 }
 
+/* v7.19.874: sign-off label badge — theme-aware (was dark-on-dark in dark theme; the other
+   type badges carry an explicit colour, sign-off had none so it inherited an unreadable one).
+   Green accent to match the section; light text in dark, dark-green text in light. */
+.swml-section-signoff::before {
+    background: rgba(28, 217, 145, 0.18);
+    color: rgba(255, 255, 255, 0.9);
+}
+[data-swml-theme="light"] .swml-section-signoff::before {
+    background: rgba(28, 217, 145, 0.14);
+    color: #17805a;
+}
 /* Lock icon for read-only */
 .swml-section-readonly::before {
     content: '🔒 ' counter(swml-major) '.' counter(swml-minor) '. ' attr(data-section-label);
