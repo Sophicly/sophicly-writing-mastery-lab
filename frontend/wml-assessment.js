@@ -874,6 +874,14 @@
     // deterministic doc/commit grade. Returns 0 (★) until a mark is filed.
     let _docWcPenalty = 0; // v7.19.815: set by the Score Summary recalc — WC penalty in marks
     function _deterministicDocGrade() {
+        // v7.19.868: the single audited grade for THIS doc wins when present (set atomically
+        // from the completion reply) — the DOM sum below is only the pre-completion
+        // provisional / load fallback. Same source as the persisted grade → the protocol
+        // sidebar and the LearnDash badge cannot diverge (was 6 vs 7).
+        if (_lastAuditedResult && _lastAuditedResult.docKey === _assessDocKey()) {
+            const ag = parseInt(_lastAuditedResult.grade, 10);
+            if (ag > 0) return ag;
+        }
         const editor = document.getElementById('swml-tiptap-editor');
         if (!editor || typeof _gradeFromPctRef !== 'function') return 0;
         let total = 0, max = 0, any = false;
@@ -2369,6 +2377,46 @@
     // Runs on the RAW reply before display/history/filing, so chat, doc cards, sidebar
     // and Score Summary all read the same corrected numbers.
     const _fbAudit = { totals: {}, failed: {} };
+    // ── v7.19.868: THE single audited grade for the current assessment doc ──────────────
+    // {total,max,pct,grade,perQ,docKey}. Set ONCE, atomically, from the completion reply
+    // (all Qn Totals + a grand Total / completion marker present). Persist
+    // (_autoCommitAssessment via recalculateScoreSummary) AND the sidebar
+    // (_deterministicDocGrade) both read THIS instead of independently re-summing the DOM.
+    // Root cause it kills: three "deterministic" recomputes drifted — the sidebar summed a
+    // settled DOM (audited 51/80 → G6), the one-shot commit summed a HALF-settled DOM and
+    // froze it (53/80 → G7 in session_records → the LearnDash badge), and the AI prose held
+    // 58/80. One source → the doc, the persisted row and the LD badge cannot disagree.
+    let _lastAuditedResult = null;
+    // Stable identity for the doc a grade belongs to, so a grade never leaks across docs
+    // (navigate away → docKey mismatch → the reader falls back to the live DOM).
+    function _assessDocKey() {
+        try {
+            const ph = (state.task === 'redraft_assessment' || state.phase === 'redraft') ? 'redraft' : 'initial';
+            return [state.board, state.text, state.topicNumber || 1, ph, state.attempt || 1].join('|');
+        } catch (_) { return ''; }
+    }
+    // Sum the ALREADY-CORRECTED per-Q Total lines in the finished reply (Pass 1/2 fixed
+    // them) → one authoritative {total,max,perQ}. Paper-agnostic: keys off whatever
+    // "Qn Total:" lines exist (not a fixed 5), and takes the LAST a/b on each line so the
+    // AQA Q5 form "AO5 18/24 + AO6 13/16 = 31/40" yields 31/40, not 18/24.
+    function _auditedGrandFromText(txt) {
+        try {
+            const q = {};
+            String(txt).split('\n').forEach(line => {
+                const qm = line.match(/\bQ(\d+)\s*Total:/i);
+                if (!qm) return;
+                const pairs = [...line.matchAll(/(\d+(?:\.\d+)?)\s*\/\s*(\d+)/g)];
+                if (!pairs.length) return;
+                const last = pairs[pairs.length - 1];
+                q['Q' + qm[1]] = { a: parseFloat(last[1]), b: parseInt(last[2], 10) };
+            });
+            const keys = Object.keys(q);
+            if (keys.length < 2) return null;               // partial (per-Q) turn — not a grade
+            let a = 0, b = 0; keys.forEach(k => { a += q[k].a; b += q[k].b; });
+            if (!(b > 0)) return null;
+            return { total: Math.round(a * 100) / 100, max: b, perQ: q };
+        } catch (_) { return null; }
+    }
     // v7.19.839: per-card applied-penalty ledger (code-owned). Run 3 showed the AI-authored
     // "Penalty & Ceiling Ledger" materially wrong (claimed −5.0, cards deducted −6.5, one
     // location duplicated, four omitted) — so the ledger is rebuilt here from what the cards
@@ -2608,7 +2656,54 @@
                 }
                 return prefix + expected + den;
             });
+            // ---- v7.19.868: set THE single audited grade + reconcile the summary ----
+            // Runs BEFORE the Penalty Ledger rebuild (so the "without penalties"
+            // counterfactual reads the audited grand total) and BEFORE _enforceGradeLadder
+            // (next in the chain, so the Grade line rebands from the audited sum, not the
+            // AI's inflated one). Only on a SUMMARY turn (a bare grand `Total: x/grandMax`
+            // line OR a completion marker) so per-Q turns never publish a partial grade.
+            try {
+                const grand = _auditedGrandFromText(out);
+                if (grand) {
+                    // Wrapper-tolerant: the AI's grand readout is often `Total: 58/80` /
+                    // `Grade: 7` (backtick inline-code) or **Total: …** (bold) — the old
+                    // `\s*\*{0,2}` prefix missed the backtick, so the inflated readout (and
+                    // its Grade) survived. Allow leading/trailing ` and * around the labels.
+                    const grandTotalRe = new RegExp('((?:^|\\n)\\s*[`*]{0,3}\\s*(?:Grand\\s+)?Total:\\s*[`*]{0,3}\\s*)([\\d.]+)(\\s*\\/\\s*' + grand.max + '\\b)', 'i');
+                    const hasSummary = grandTotalRe.test(out)
+                        || /\[ASSESSMENT_COMPLETE\]|##\s*Session Complete|Grand Total/i.test(out);
+                    if (hasSummary) {
+                        const pct = Math.round((grand.total / grand.max) * 100);
+                        const g = _ladderGrade(pct);
+                        _lastAuditedResult = { total: grand.total, max: grand.max, pct: pct, grade: g, perQ: grand.perQ, docKey: _assessDocKey() };
+                        out = out.replace(grandTotalRe, (m, pre, v, post) => {
+                            if (parseFloat(v) === grand.total) return m;
+                            console.warn('WML MarkAudit: grand Total', v + '/' + grand.max, '→', grand.total + '/' + grand.max, '— Grade', g);
+                            return pre + grand.total + post;
+                        });
+                        // The grand `Grade: N` readout — owned directly from the audited grade
+                        // (not left to _enforceGradeLadder, which also can't see the backtick
+                        // wrapper). Matches a standalone Grade readout line; the per-Q "…which
+                        // is a Grade N" prose has no colon so it stays with the ladder.
+                        out = out.replace(/((?:^|\n)\s*[`*]{0,3}\s*Grade:\s*[`*]{0,3}\s*)(\d)\b/g, (m, pre, d) => {
+                            if (parseInt(d, 10) === g) return m;
+                            console.warn('WML MarkAudit: summary Grade', d, '→', g);
+                            return pre + g;
+                        });
+                        // Per-Question Marks list: "**Qn — … (AO..)** — a · b" → audited a.
+                        // Self-guarding: only rewrites a row whose Q is in perQ AND whose
+                        // out-of matches, so other boards / unrelated tables no-op safely.
+                        out = out.replace(/(\*\*Q(\d+)\b[^\n]*?—\s*)([\d.]+)(\s*·\s*(\d+))/g, (m, pre, qn, a, tail, outof) => {
+                            const pq = grand.perQ['Q' + qn];
+                            if (!pq || parseInt(outof, 10) !== pq.b || parseFloat(a) === pq.a) return m;
+                            console.warn('WML MarkAudit: Per-Q summary Q' + qn, a + '·' + outof, '→', pq.a + '·' + outof);
+                            return pre + pq.a + tail;
+                        });
+                    }
+                }
+            } catch (e) { console.warn('WML MarkAudit: grand-total reconcile skipped (non-fatal)', e && e.message); }
             // ---- Pass 3 (v7.19.839): rebuild the Penalty Ledger from ACTUAL card deductions ----
+            // (now reads the corrected grand Total → correct "without penalties" figure)
             if (/Penalty (?:& Ceiling )?Ledger/i.test(out)) out = _rewritePenaltyLedger(out);
             // v7.19.852: the protocol forbids a "Base total:" line inside cards (rounding
             // happens ONCE at the Qn Total) but the model drifts it back in — strip it
@@ -21815,9 +21910,21 @@
                 }
             } catch (_) { _wcPen = 0; }
             _docWcPenalty = _wcPen; // share with _deterministicDocGrade (grade chip)
-            const finalMarks = Math.min(totalMarks, Math.max(0, maxTotal - _wcPen));
-            const pct = Math.round((finalMarks / maxTotal) * 100);
-            const grade = getGradeFromPercentage(pct);
+            let finalMarks = Math.min(totalMarks, Math.max(0, maxTotal - _wcPen));
+            let pct = Math.round((finalMarks / maxTotal) * 100);
+            let grade = getGradeFromPercentage(pct);
+            // v7.19.868: the single audited result for THIS doc overrides the DOM sum for
+            // BOTH the Score Summary render AND the auto-commit below — so the persisted
+            // grade can never again be a half-settled DOM capture (the 53/80 → G7 that
+            // drifted from the audited 51/80 → G6). Provisional/in-progress turns (no
+            // audited result yet) still show the live DOM number.
+            if (_lastAuditedResult && _lastAuditedResult.docKey === _assessDocKey()) {
+                totalMarks = _lastAuditedResult.total;
+                maxTotal = _lastAuditedResult.max;
+                finalMarks = _lastAuditedResult.total;
+                pct = _lastAuditedResult.pct;
+                grade = String(_lastAuditedResult.grade);
+            }
 
             const scoreSection = editor.querySelector('[data-section-type="scores"]');
             if (!scoreSection) return;
