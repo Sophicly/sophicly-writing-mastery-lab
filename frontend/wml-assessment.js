@@ -1958,6 +1958,23 @@
             localStorage.setItem(k, JSON.stringify(m));
         } catch (_) {}
     }
+    // v7.19.872: the target grade the STUDENT chose at kickoff ("I'm aiming for Grade N",
+    // from the picker at ~6627 or typed), read from the canvas chat history. The action-plan
+    // grade goal is a RECONFIRMATION of this — the student's choice must win over the model's
+    // re-guess (Neil picked Grade 9, the model filed Grade 8). Last stated aim wins.
+    function _studentAimGrade() {
+        try {
+            const h = (_chatShell && _chatShell.history) || [];
+            let found = '';
+            h.forEach(msg => {
+                if (msg && msg.role === 'user') {
+                    const mm = String(msg.content || '').match(/aiming for\s+\**\s*Grade\s*(\d)/i);
+                    if (mm) found = 'Grade ' + mm[1];
+                }
+            });
+            return found;
+        } catch (_) { return ''; }
+    }
     function applyFieldSets(aiReply) {
         try {
             if (!aiReply || !canvasEditor) return;
@@ -1974,6 +1991,14 @@
             if (!sets.length) return;
             let wrote = false;
             sets.forEach(s => {
+                // v7.19.872: student's own target-grade choice wins over the AI's re-guess.
+                if (s.field === 'action-grade-goal') {
+                    const aim = _studentAimGrade();
+                    if (aim && aim !== s.value) {
+                        console.log('WML FieldSet: action-grade-goal — student chose', aim, '(AI filed', s.value + ') → student choice wins');
+                        s.value = aim;
+                    }
+                }
                 // v7.19.830: the Analytics "Number of opt-outs" line is a static paragraph, not
                 // a field node — route its count marker there via a PM paragraph write. Fills
                 // only while the "—" placeholder is still showing (idempotent on replay).
