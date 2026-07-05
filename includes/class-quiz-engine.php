@@ -416,6 +416,17 @@ class SWML_Quiz_Engine {
                 $ret['rounds']  = (int) ($d['rounds'] ?? 0);
             }
         }
+        // v7.19.876: weak-area categories sidecar (parity with FQ) so the mirror/reload card
+        // can show gaps ("where to next"), not just the grade. Keyed by the SAME quiz_type the
+        // persist path wrote ('mark_scheme' for MSQ, 'mark_scheme_assessment' for MSA).
+        $ck   = 'swml_qcats_' . sanitize_key($quiz_type) . '_' . sanitize_key($board) . '_'
+            . sanitize_key($text) . '_' . (int) $topic;
+        $craw = get_user_meta($user_id, $ck, true);
+        if (!empty($craw)) {
+            $cats = is_array($craw) ? $craw : json_decode($craw, true);
+            if (!is_array($cats)) $cats = json_decode(wp_unslash($craw), true);
+            if (is_array($cats)) $ret['categories'] = array_values($cats);
+        }
         return $ret;
     }
 
@@ -493,6 +504,7 @@ class SWML_Quiz_Engine {
             // the reload card shows this round's real grade, not a previous 5/5.
             delete_user_meta($user_id, $mk);
         }
+        $this->persist_weak_categories($user_id, $accumulator, $summary);
         // v7.19.321: the in-doc "Quiz Result" card is rendered by the frontend
         // (the canvas is a schema-locked TipTap editor whose autosave clobbers
         // any server-written section). The result reaches the frontend two ways:
@@ -538,6 +550,24 @@ class SWML_Quiz_Engine {
             '_msa',
             $quiz_extra
         );
+        $this->persist_weak_categories($user_id, $accumulator, $summary);
+    }
+
+    /**
+     * v7.19.876: persist the weak-area categories (parity with the FQ path's last_categories)
+     * into a WML-owned user_meta sidecar so the dashboard feedback MIRROR can show "where to
+     * next" for MSQ + MSA, not just a bare grade. session_records has no column for this, so
+     * keyed by quiz_type+board+text+topic and read back by get_persisted_result(). Latest
+     * attempt wins (matches FQ's last_categories, which is also latest-only). Emit-only — no
+     * UI effect until the dashboard reads it; see handoff wml-CHATA-1c-feedback-emit-trace.
+     */
+    private function persist_weak_categories($user_id, $accumulator, $summary) {
+        $ck = 'swml_qcats_' . sanitize_key($accumulator['quiz_type']) . '_'
+            . sanitize_key($accumulator['board']) . '_'
+            . sanitize_key($accumulator['text']) . '_' . (int) $accumulator['topic_number'];
+        update_user_meta($user_id, $ck, wp_slash(wp_json_encode(
+            array_values($summary['categories_with_errors'] ?? [])
+        )));
     }
 
     /**
