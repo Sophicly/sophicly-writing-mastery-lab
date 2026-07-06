@@ -2533,7 +2533,28 @@
         try {
             const rank = _rankMarkedAreas();
             if (rank) {
-                _facts += ' CODE-DERIVED RANKING (authoritative — do not recompute): strongest area = ' + rank.strongest.label + ' (' + rank.strongest.score + '/' + rank.strongest.max + '); weakest area = ' + rank.weakest.label + ' (' + rank.weakest.score + '/' + rank.weakest.max + '). The FIRST of the three Action-Plan Priority Targets MUST be this weakest area, and the Analytics "Top Missed Areas" MUST name it. Present the strongest area as the key strength.';
+                // v7.19.890: gain/loss by area ordered by RAW MARKS LOST (max − score), not just
+                // lowest percentage — Neil/Ericsson: the deliberate-practice target is where the
+                // most marks actually bleed (magnitude of the weakness), which is what the student
+                // needs to feel. Feed the ordered losses so the Analytics "Top Missed Areas" lists
+                // them in that order and the Action-Plan priorities draw from them, in order.
+                // (Per-skill blind-spot weighting rides Phase-3's SA↔AO map; this is the lowest-mark
+                // half of the agreed blend.)
+                const losses = (rank.ranked || [])
+                    .map(a => ({ label: a.label, score: a.score, max: a.max, lost: Math.max(0, a.max - a.score) }))
+                    .filter(a => a.lost > 0)
+                    .sort((x, y) => y.lost - x.lost);
+                const topMissed = losses.slice(0, 3)
+                    .map(a => a.label + ' (' + a.score + '/' + a.max + ', −' + (Math.round(a.lost * 100) / 100) + ')')
+                    .join('; ');
+                _facts += ' CODE-DERIVED RANKING (authoritative — do not recompute): key strength = '
+                    + rank.strongest.label + ' (' + rank.strongest.score + '/' + rank.strongest.max + ').';
+                if (topMissed) {
+                    _facts += ' Biggest mark losses, in order (area, mark, marks lost): ' + topMissed
+                        + '. The Analytics "Top Missed Areas" MUST list these in this exact order, naming the area and marks lost. The FIRST Action-Plan Priority Target MUST be the biggest loss (' + losses[0].label + '); the next two priorities draw from the remaining losses in order. Present the key strength as the strength.';
+                } else {
+                    _facts += ' The Analytics "Top Missed Areas" MUST name the weakest area (' + rank.weakest.label + '), and it MUST be the first Action-Plan Priority Target.';
+                }
             }
         } catch (_) {}
         _facts += _saCalibrationFact();
