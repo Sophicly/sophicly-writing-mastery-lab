@@ -231,6 +231,19 @@ if (studentText.length > THRESHOLD) return ' ✓';
 
 (Universal validation rules in `../../../CLAUDE.md`. WML adds:)
 
+0. **MECHANICAL GATE FIRST — do not rely on memory.** Run `bin/pre-ship-check.sh` on your staged
+   changes before commit/deploy: `node --check` + `eslint no-undef` (JS) and `php -l` + brace
+   parity (PHP). `node --check` catches SYNTAX only; **`eslint no-undef` catches the out-of-scope
+   reference class** — e.g. a module-scope helper calling a closure-local `sendCanvasMessage`
+   (the v7.19.898 crash: `sendCanvasMessage is not defined`, invisible to `node --check`). When
+   extracting a function across scopes, EVERY free variable it uses must be reachable in the new
+   scope (module-scope + params only — closure-locals do NOT hoist); the gate proves it, so you
+   don't have to eyeball it.
+0b. **RUN THE FLOW — a syntax/scope-clean file can still be logically wrong.** For any change
+   touching a runtime path (a chat pipeline, a submit handler, marking, boot), DRIVE that path
+   once (or `/verify`) before shipping. Syntax-checking a submit handler is not testing it. The
+   .898 crash shipped because it was checked, not run.
+
 1. **Trace the full click path.** User clicks → function → screen render → state change. Check no other handler also fires.
 2. **Check for dual event bindings.** Search for `.onclick =` and `.addEventListener` on the same element.
 3. **Verify screen transitions.** Old screen cleared before new one renders.
