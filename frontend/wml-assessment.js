@@ -942,6 +942,26 @@
         return (g === 'U' || !g) ? 0 : (parseInt(g, 10) || 0);
     }
 
+    // v7.19.889: does THIS doc currently carry any filed mark? Reads PM state (not the DOM —
+    // reliable at load, before the editor DOM settles). A completed assessment always has marks;
+    // a Clear-chat'd doc has none (reset to "(— / N)"). Used to CONTENT-GATE the load-time
+    // phase-complete flag: the DB records that a prior attempt was completed, but if the doc has
+    // since been cleared to redo, the sidebar must reflect the empty doc (in-progress), not the
+    // stale DB record (Neil 2026-07-06: hard-refresh re-ticked a cleared assessment).
+    function _docHasFiledMarks() {
+        if (!canvasEditor) return false;
+        let found = false;
+        try {
+            canvasEditor.state.doc.descendants((n) => {
+                if (found) return false;
+                if (n.type && n.type.name === 'sectionBlock' && n.attrs && n.attrs.sectionType === 'feedback'
+                    && /\(\s*\d+(?:\.\d+)?\s*\/\s*\d+\s*\)/.test(String(n.attrs.label || ''))) { found = true; return false; }
+                return true;
+            });
+        } catch (_) {}
+        return found;
+    }
+
     function _buildLitSidebarModel() {
         if (state.reviewMode) return null;
         if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return null;
@@ -13730,7 +13750,10 @@
                         const phaseUrl = `${API.phaseStatus}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topic=${state.topicNumber || 1}`;
                         const phaseRes = await apiGet(phaseUrl);
                         const currentPhase = state.phase === 'redraft' ? 'redraft' : 'initial';
-                        if (phaseRes[currentPhase]?.status === 'complete') {
+                        // v7.19.889: content-gate the flag. The DB says a prior attempt was
+                        // completed, but if the doc has since been Clear-chat'd (no filed marks)
+                        // the sidebar must reflect the empty doc, not force every step green.
+                        if (phaseRes[currentPhase]?.status === 'complete' && _docHasFiledMarks()) {
                             state._phaseMarkedComplete = true;
                             console.log('WML initAssessmentState: Phase already complete');
                             return;
@@ -16246,7 +16269,9 @@
                                                 const phaseUrl = `${API.phaseStatus}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}&topic=${state.topicNumber || 1}`;
                                                 const phaseRes = await apiGet(phaseUrl);
                                                 const currentPhase = state.phase === 'redraft' ? 'redraft' : 'initial';
-                                                if (phaseRes[currentPhase]?.status === 'complete') {
+                                                // v7.19.889: content-gate — see the twin pipeline. A Clear-chat'd
+                                                // (unmarked) doc must not force the sidebar complete off the DB record.
+                                                if (phaseRes[currentPhase]?.status === 'complete' && _docHasFiledMarks()) {
                                                     state._phaseMarkedComplete = true;
                                                     // Phase already complete — keep button hidden, step checkmarks show completion (v7.12.33)
                                                     console.log('WML initAssessmentState: Phase already complete');
@@ -28221,12 +28246,12 @@
                 '<p><em>The rest of this document — feedback, scores, and your action plan — will appear when you move on to your <strong>assessment</strong> exercise. For now, focus on writing the best essay you can.</em></p>');
         }
 
-        // v7.19.877: Self-Assessment moved ABOVE Feedback. The blind self-assessment walk
-        // runs BEFORE marking, so the section must render before any feedback box exists
-        // (research-optimal: self-judge first, then compare). Reorder affects fresh templates
-        // only — migrateDocument never reorders existing docs, so no reseed / no wipe risk
-        // for in-progress attempts (forward-snapshot doc chain).
-        html += buildSelfAssessmentSection(isDual);
+        // v7.19.889: Self-Assessment is the FIRST part of Feedback — inserted just AFTER the
+        // FEEDBACK divider in each branch below (was before it, which grouped it under the
+        // preceding RESPONSE section in the outline — Neil 2026-07-06). The blind walk still
+        // runs BEFORE any mark is filed (research-optimal: self-judge first), it just lives
+        // under the Feedback heading now. Fresh templates only; the reposition heal moves
+        // existing docs to the same spot.
 
         // Feedback + scores + improvement + sign-off (always appended, populated later by AI)
         // Mark splits from protocol data (MARK_SPLITS lookup) rather than generic scaling
@@ -28237,6 +28262,7 @@
             const questions = meta.questions || [];
             let totalMarks = 0;
             html += dividerHTML('FEEDBACK');
+            html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
             questions.forEach(function(q) {
                 const qMarks = parseInt(q.marks) || 0;
                 totalMarks += qMarks;
@@ -28250,6 +28276,7 @@
             const marksA = parseInt(topicData.part_a_marks) || 15;
             const marksB = parseInt(topicData.part_b_marks) || 25;
             html += dividerHTML('FEEDBACK — PART A');
+            html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
             html += buildFeedbackSection(getMarkSplit(marksA), 'Part A');
             html += dividerHTML('FEEDBACK — PART B');
             html += buildFeedbackSection(getMarkSplit(marksB), 'Part B');
@@ -28259,6 +28286,7 @@
             // Single format
             const feedbackMarks = parseInt(topicData.marks) || getDefaultMarks(state.board, state.subject);
             html += dividerHTML('FEEDBACK');
+            html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
             html += buildFeedbackSection(getMarkSplit(feedbackMarks));
             html += dividerHTML('RESULTS');
             html += buildScoresSection(feedbackMarks);
@@ -30817,15 +30845,15 @@
         try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
     }
 
-    // v7.19.887 (Neil 2026-07-06): UNIVERSAL Self-Assessment reposition. The blind self-assessment
-    // walk runs BEFORE marking, so the Self-Assessment section must sit directly ABOVE the Feedback
-    // divider (self-judge first, then compare). v7.19.877 fixed the FRESH template order, but
-    // migrateDocument never reorders existing docs (forward-snapshot chain) — so every doc seeded
-    // before .877 kept SA down under Score Summary in RESULTS. This heal MOVES the existing SA node
-    // (with its ratings intact — a node move, not a rebuild) to just above the first FEEDBACK
-    // divider / feedback section, on EVERY board/paper. Idempotent: if SA already sits directly
-    // above the anchor it returns before any mutation, so already-correct docs never re-save (the
-    // v817 mutate-every-load wipe lesson). Runs after migrateDividers so the FEEDBACK anchor exists.
+    // v7.19.887/889 (Neil 2026-07-06): UNIVERSAL Self-Assessment reposition. The Self-Assessment
+    // section is the FIRST part of Feedback — it sits just AFTER the FEEDBACK divider (v889: was
+    // just BEFORE it, which grouped it under the preceding RESPONSE section in the outline). The
+    // blind walk still runs before any mark is filed (self-judge first). v7.19.877 fixed the FRESH
+    // template order, but migrateDocument never reorders existing docs (forward-snapshot chain) —
+    // so this heal MOVES the existing SA node (ratings intact — a node move, not a rebuild) to
+    // directly after the FEEDBACK divider, on EVERY board/paper. Idempotent: if SA already sits at
+    // that spot it returns before any mutation, so already-correct docs never re-save (the v817
+    // mutate-every-load wipe lesson). Runs after migrateDividers so the FEEDBACK anchor exists.
     function healSelfAssessmentAboveFeedback() {
         if (!canvasEditor || state.reviewMode) return;
         if (!WML.hasAssessmentSections(state.task)) return;
@@ -30836,27 +30864,31 @@
             return true;
         });
         if (saPos === null || !saNode) return;
-        // Anchor = the first FEEDBACK divider, else the first feedback section (either is a stable
-        // "marking starts here" boundary across single-Q / multi-Q / dual-part docs).
-        let fbPos = null;
+        // Anchor: prefer the first FEEDBACK divider (SA goes just AFTER it → first under Feedback);
+        // fall back to the first feedback section (SA goes just BEFORE it). Either keeps SA the
+        // first item of the Feedback group across single-Q / multi-Q / dual-part docs.
+        let divPos = null, divSize = 0, fbSecPos = null;
         canvasEditor.state.doc.descendants((n, p) => {
-            if (fbPos !== null) return false;
+            if (divPos !== null) return false;
             if (n.type.name === 'sectionBlock') {
                 const st = n.attrs && n.attrs.sectionType;
                 const lbl = String((n.attrs && n.attrs.label) || '');
-                if ((st === 'divider' && /^FEEDBACK/i.test(lbl)) || st === 'feedback') { fbPos = p; return false; }
+                if (st === 'divider' && /^FEEDBACK/i.test(lbl)) { divPos = p; divSize = n.nodeSize; return false; }
+                if (st === 'feedback' && fbSecPos === null) { fbSecPos = p; }
             }
             return true;
         });
-        if (fbPos === null) return;   // no feedback boundary yet (e.g. a pure diagnostic doc) — nothing to sit above
-        if (saPos < fbPos && saPos + saNode.nodeSize === fbPos) return;   // already directly above → idempotent no-op
+        // target = the position SA should occupy (in current-doc coords, pre-deletion).
+        let target = divPos !== null ? (divPos + divSize) : fbSecPos;
+        if (target === null) return;  // no feedback boundary yet (e.g. a pure diagnostic doc)
+        if (saPos === target) return; // already in place → idempotent no-op
         try {
             const tr = canvasEditor.state.tr;
             tr.delete(saPos, saPos + saNode.nodeSize);          // remove SA from its current spot
-            const insertAt = tr.mapping.map(fbPos);             // map the anchor across the deletion
-            tr.insert(insertAt, saNode);                        // reinsert the SAME node (ratings preserved) above Feedback
+            const insertAt = tr.mapping.map(target);            // map the anchor across the deletion
+            tr.insert(insertAt, saNode);                        // reinsert the SAME node (ratings preserved) under Feedback
             canvasEditor.view.dispatch(tr);
-            console.warn('WML SA-reposition: moved Self-Assessment above the Feedback boundary (was below Score Summary)');
+            console.warn('WML SA-reposition: moved Self-Assessment to the first slot under the FEEDBACK divider');
         } catch (e) { console.warn('WML SA-reposition skipped —', e && e.message); return; }
         try { if (typeof _scoreOverlaysRefresh === 'function') _scoreOverlaysRefresh(); } catch (_) {}
         try { if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion(); } catch (_) {}
