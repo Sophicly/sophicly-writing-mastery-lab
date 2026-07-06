@@ -11,9 +11,17 @@ the client. The AI is never the scorekeeper.
 Categories: Recognising Forms · Form Features · Form Effects · Forms & Meaning
 Types: MCQ · Fill · True-False · Select All
 
+Each question also carries a `@part:N` token (N = 1/2/3) marking which teaching part it
+belongs to, by the form it tests: part 1 = Ballad/Epic/Lyric, part 2 = Elegy/Ode/Sonnet/
+Dramatic Monologue, part 3 = every remaining form (Free Verse, Narrative, Interior Monologue,
+Hybridity) plus general/meta questions (metre, perspective, mnemonic, form-analysis frameworks).
+The token is kept OUT of the `[Tests …]` stratification key — the current parser ignores it
+(live quiz stays 12/12/12/12); only the future unit-filter engine reads it via `fq_part=N`.
+
 ### Quiz: Poetic Forms
 
 1. **Type: MCQ [Tests Recognising Forms]**
+   @part:1
    * **Question:** Which form originated in oral folk culture, uses quatrains in an alternating rhythm, and relies on strong repetition to aid memorability?
    * **Options:** A) The ballad, B) The ode, C) Interior monologue, D) Dramatic monologue
    * **Correct:** A
@@ -23,6 +31,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** Dramatic monologue centres on a single speaker addressing a silent listener, not an oral folk narrative tradition.
 
 2. **Type: MCQ [Tests Recognising Forms]**
+   @part:1
    * **Question:** Which form is characterised by great length, elevated style, heroic deeds, and often an opening that begins in the middle of the action?
    * **Options:** A) The elegy, B) The epic, C) The lyric, D) Free verse
    * **Correct:** B
@@ -32,6 +41,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** Free verse has no fixed metre or elevated convention of the kind epic tradition relies on.
 
 3. **Type: MCQ [Tests Recognising Forms]**
+   @part:1
    * **Question:** Which form prioritises musicality and the poet's own inner feelings over telling a story?
    * **Options:** A) The narrative poem, B) The epic, C) The lyric, D) The ballad
    * **Correct:** C
@@ -41,18 +51,21 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** The ballad is built to carry a story, even though it also uses musical rhythm.
 
 4. **Type: True-False [Tests Recognising Forms]**
+   @part:2
    * **Question:** An elegy is a poem of mourning that explores loss and often moves towards some form of consolation.
    * **Answer:** True
    * **Feedback:** ✓ Correct. The elegy processes grief — for a death, a relationship, or a way of life — and traditionally works towards comfort or acceptance.
    * **WhyWrong:** This is true — the elegy mourns loss and traditionally moves from grief towards consolation, though modern elegies may resist that movement.
 
 5. **Type: Fill [Tests Recognising Forms]**
+   @part:2
    * **Question:** A formal, elevated poem of praise for its subject, often using apostrophe and complex rhyme, is called an [BLANK].
    * **Answer:** ode
    * **Feedback:** ✓ Correct. The ode raises its subject — an object, a season, an idea — to something worthy of contemplation through elevated language.
    * **WhyWrong:** The word is "ode" — a formal poem of praise for its subject.
 
 6. **Type: Select All [Tests Recognising Forms]**
+   @part:3
    * **Question:** Which of these forms are defined by having NO fixed, prescribed line count?
    * **Options:** A) The sonnet, B) Free verse, C) The lyric, D) The epic
    * **Correct:** B, C, D
@@ -61,6 +74,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why A:** The sonnet is fixed at exactly fourteen lines, so it does NOT belong with the open-length forms.
 
 7. **Type: MCQ [Tests Recognising Forms]**
+   @part:2
    * **Question:** A poem in which a single speaker addresses a silent listener, unintentionally revealing their true character through what they say, is called a...
    * **Options:** A) Dramatic monologue, B) Interior monologue, C) Elegy, D) Epic
    * **Correct:** A
@@ -70,6 +84,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** An epic recounts heroic deeds across a vast scale rather than centring on one speaker's address to a listener.
 
 8. **Type: MCQ [Tests Recognising Forms]**
+   @part:3
    * **Question:** Which form presents a character's raw, unfiltered private thought, with no addressed listener and no performance for an audience?
    * **Options:** A) Dramatic monologue, B) Interior monologue, C) Ballad, D) Ode
    * **Correct:** B
@@ -79,18 +94,21 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** An ode is an elevated, formal address of praise, not unfiltered private thought.
 
 9. **Type: True-False [Tests Recognising Forms]**
+   @part:3
    * **Question:** Free verse has no fixed metre and no set rhyme scheme.
    * **Answer:** True
    * **Feedback:** ✓ Correct. Free verse abandons regular metre and rhyme, and that openness can itself carry meaning.
    * **WhyWrong:** This is true — free verse is defined by having no fixed metre and no set rhyme scheme.
 
 10. **Type: Fill [Tests Recognising Forms]**
+   @part:3
    * **Question:** A poem that tells a story through characters, plot and setting is broadly called a [BLANK] poem.
    * **Answer:** narrative
    * **Feedback:** ✓ Correct. A narrative poem's central purpose is storytelling, following characters through a sequence of events.
    * **WhyWrong:** The word is "narrative" — a poem whose central purpose is telling a story.
 
 11. **Type: MCQ [Tests Recognising Forms]**
+   @part:1
    * **Question:** Which form is defined by great length, elevated style and a hero's journey, often beginning in the middle of the action?
    * **Options:** A) The lyric, B) The epic, C) The elegy, D) Narrative form
    * **Correct:** B
@@ -100,6 +118,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** Narrative form broadly tells any story through character and plot; it lacks the epic's specific scale and elevated convention.
 
 12. **Type: MCQ [Tests Recognising Forms]**
+   @part:2
    * **Question:** Which form is fourteen lines long and organised around a turn, or volta, in its argument or feeling?
    * **Options:** A) The ballad, B) The sonnet, C) Narrative form, D) The lyric
    * **Correct:** B
@@ -109,6 +128,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** The lyric has no fixed length or turn — it is defined by personal, musical expression.
 
 13. **Type: MCQ [Tests Form Features]**
+   @part:1
    * **Question:** Traditional ballad metre alternates which two line lengths, typically within rhyming quatrains?
    * **Options:** A) Iambic tetrameter and iambic trimeter, B) Iambic pentameter throughout, C) A single unrhymed long line repeated, D) Irregular free verse lines
    * **Correct:** A
@@ -118,6 +138,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** Irregular free verse lines lack the ballad's fixed, alternating metrical pattern.
 
 14. **Type: MCQ [Tests Form Features]**
+   @part:1
    * **Question:** Which structural features are typical of epic poetry in the English tradition?
    * **Options:** A) Blank verse and an opening that begins in the middle of the action, B) Strict fourteen-line stanzas with a single rhyming couplet, C) Short, songlike quatrains built for oral memorability, D) Compound words that mimic a child's speech
    * **Correct:** A
@@ -127,6 +148,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** Compound words mimicking a child's speech is a specific stylistic device, not a defining epic feature.
 
 15. **Type: MCQ [Tests Form Features]**
+   @part:1
    * **Question:** Which combination of features defines the lyric form?
    * **Options:** A) A shorter, subjective poem built on musicality, rhythm and rich figurative language, B) A lengthy, panoramic poem recounting heroic deeds across vast settings, C) A poem structured entirely around characters, plot and setting, D) A poem entirely without metre, rhyme, or figurative language
    * **Correct:** A
@@ -136,18 +158,21 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** The lyric frequently uses figurative language and musical devices, so a poem entirely without them would not fit its definition.
 
 16. **Type: True-False [Tests Form Features]**
+   @part:2
    * **Question:** An elegy has no formal structural conventions at all and is always written in irregular free verse.
    * **Answer:** False
    * **Feedback:** ✓ Correct. An elegy typically relies on a formal structure — iambic pentameter, couplets, or a set stanza pattern — rather than always being written in irregular free verse.
    * **WhyWrong:** This is false — the elegy generally follows a formal structural convention rather than abandoning structure altogether.
 
 17. **Type: Fill [Tests Form Features]**
+   @part:2
    * **Question:** Direct address to the poem's subject, used to elevate and dwell on it, is a device the ode relies on called [BLANK].
    * **Answer:** apostrophe
    * **Feedback:** ✓ Correct. Apostrophe — speaking directly to the subject, whether an object, season or idea — is one of the ode's defining formal devices.
    * **WhyWrong:** The word is "apostrophe" — direct address to the subject the ode is praising.
 
 18. **Type: Select All [Tests Form Features]**
+   @part:2
    * **Question:** Which statements correctly describe the two main sonnet types?
    * **Options:** A) The Petrarchan sonnet divides into an eight-line octave that poses a problem and a six-line sestet that offers a resolution, B) The Shakespearean sonnet divides into three four-line quatrains followed by a two-line couplet that delivers a summary, C) Both sonnet types abandon rhyme entirely and rely on varied, unpatterned line lengths instead, D) Both sonnet types run to twenty lines, divided into five rhyming quatrains
    * **Correct:** A, B
@@ -157,6 +182,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** Both sonnet types are fixed at exactly fourteen lines, not twenty.
 
 19. **Type: MCQ [Tests Form Features]**
+   @part:2
    * **Question:** Which feature is central to the structure of a dramatic monologue?
    * **Options:** A) A single speaker addressing a silent, implied listener within a specific dramatic situation, B) An unrhymed, elevated address recounting deeds across a vast timescale, C) No addressed listener at all, only raw stream of consciousness, D) A chorus of multiple speakers responding to one another
    * **Correct:** A
@@ -166,6 +192,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** A chorus of multiple speakers does not match the dramatic monologue's single-speaker structure.
 
 20. **Type: MCQ [Tests Form Features]**
+   @part:3
    * **Question:** What structurally distinguishes interior monologue from dramatic monologue?
    * **Options:** A) Interior monologue has no addressed listener, presenting raw, unfiltered thought rather than a performed address, B) Interior monologue always rhymes in alternating quatrains, C) Interior monologue is always exactly fourteen lines long, D) Interior monologue requires a chorus of multiple narrators
    * **Correct:** A
@@ -175,18 +202,21 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** Interior monologue presents one character's private thought, not a chorus of narrators.
 
 21. **Type: True-False [Tests Form Features]**
+   @part:3
    * **Question:** Free verse abandons a fixed metrical pattern and a set rhyme scheme, although it may still use occasional rhyme or other poetic devices.
    * **Answer:** True
    * **Feedback:** ✓ Correct. Free verse drops regular metre and set rhyme, though it can still draw on devices such as imagery, symbolism or occasional rhyme.
    * **WhyWrong:** This is true — free verse has no fixed metrical pattern or set rhyme scheme, even though it may still use other poetic devices.
 
 22. **Type: Fill [Tests Form Features]**
+   @part:3
    * **Question:** Narrative poems, which tell a story through characters and plot, often make use of [BLANK] to bring events and characters to life.
    * **Answer:** dialogue
    * **Feedback:** ✓ Correct. Dialogue lets narrative poems dramatise their events directly through characters' own words.
    * **WhyWrong:** The word is "dialogue" — a feature narrative poems often employ to bring their story to life.
 
 23. **Type: MCQ [Tests Form Features]**
+   @part:3
    * **Question:** Which feature most clearly distinguishes free verse from fixed forms like the sonnet or ballad?
    * **Options:** A) It abandons a set metrical pattern and rhyme scheme, though it may still use occasional rhyme or other devices, B) It is fixed to exactly fourteen lines built around a single turning point, C) It alternates four-beat and three-beat lines within rhyming quatrains, D) It recounts heroic deeds on a grand scale in elevated, unrhymed verse
    * **Correct:** A
@@ -196,6 +226,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** Recounting heroic deeds in elevated, unrhymed verse describes the epic, not free verse.
 
 24. **Type: MCQ [Tests Form Features]**
+   @part:3
    * **Question:** Which metrical foot falls from a stressed syllable through two unstressed syllables (DUM-da-da)?
    * **Options:** A) The iamb, B) The trochee, C) The dactyl, D) The spondee
    * **Correct:** C
@@ -205,6 +236,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** The spondee is two stressed syllables together, with no unstressed syllable at all.
 
 25. **Type: MCQ [Tests Form Effects]**
+   @part:1
    * **Question:** What effect does the ballad's driving, regular rhythm typically have on the reader?
    * **Options:** A) It creates a somatic empathy, synchronising the reader's pulse with the story's momentum towards its conclusion, B) It slows the reader down into a meditative, contemplative pace, C) It forces the reader to judge a speaker's hidden motives like a detective, D) It removes all sense of rhythm, leaving the reader disoriented
    * **Correct:** A
@@ -214,6 +246,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** The ballad's regular, driving metre creates momentum rather than removing all sense of rhythm.
 
 26. **Type: MCQ [Tests Form Effects]**
+   @part:1
    * **Question:** What effect does the epic's vast scale and elevated style typically have on the reader?
    * **Options:** A) A sense of awe and admiration at witnessing something monumental, B) An intimate, uncomfortable sense of eavesdropping on private thought, C) Uncomfortable complicity with a speaker's hidden confession, D) A fragmented, disoriented sense of time
    * **Correct:** A
@@ -223,6 +256,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** A fragmented, disoriented sense of time is not a defining epic effect, which instead builds a coherent, panoramic sweep.
 
 27. **Type: MCQ [Tests Form Effects]**
+   @part:1
    * **Question:** What cognitive effect can lyric poetry have on a reader processing strong emotion?
    * **Options:** A) It can act as a container for grief, helping the reader process and validate strong feeling, B) It forces the reader to resolve a logical argument as though it were proven fact, C) It positions the reader as a detective decoding a speaker's hidden guilt, D) It disorients the reader through constantly shifting, unstable perspective
    * **Correct:** A
@@ -232,18 +266,21 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** Constantly shifting, unstable perspective is not a defining lyric effect, which instead centres on one voice's feeling.
 
 28. **Type: True-False [Tests Form Effects]**
+   @part:2
    * **Question:** An elegy makes grief communal, inviting the reader to share in mourning and to reflect on mortality and loss.
    * **Answer:** True
    * **Feedback:** ✓ Correct. The elegy shares grief with the reader, offering a space to process mortality and find meaning in loss.
    * **WhyWrong:** This is true — the elegy's effect is to make private grief communal, inviting the reader to reflect on mortality alongside the speaker.
 
 29. **Type: Fill [Tests Form Effects]**
+   @part:2
    * **Question:** The ode's dense, elevated language slows the reader's pace, inducing a calm, focused state of [BLANK] on its subject.
    * **Answer:** contemplation
    * **Feedback:** ✓ Correct. The ode's complex rhyme and heavy syllables force a meditative pace, so the reader's attention settles into deep contemplation.
    * **WhyWrong:** The word is "contemplation" — the calm, focused state the ode's slow, elevated language induces.
 
 30. **Type: Select All [Tests Form Effects]**
+   @part:2
    * **Question:** Which statements correctly describe an effect of the sonnet form?
    * **Options:** A) The sonnet creates tension as passion strains against the poem's structural walls, releasing at the turn, B) The sonnet trains the reader to accept a resolved argument as though it were logically proven, C) The sonnet's tightly organised structure has, in some cases, been used to voice serious political dissent, D) The sonnet's chief effect is to disorient the reader through constantly shifting, unpredictable line lengths
    * **Correct:** A, B, C
@@ -252,6 +289,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** The sonnet keeps a fixed fourteen-line, iambic pentameter structure, so it does not shift line lengths unpredictably.
 
 31. **Type: MCQ [Tests Form Effects]**
+   @part:2
    * **Question:** What role does the dramatic monologue's structure typically place the reader in?
    * **Options:** A) A kind of judge or detective, decoding the truth a speaker unintentionally reveals, B) A passive witness to a monumental, heroic event, C) A mourner sharing communally in a speaker's grief, D) A performer reciting a formal address of praise
    * **Correct:** A
@@ -261,6 +299,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** Performing a formal address of praise describes the ode, not the dramatic monologue.
 
 32. **Type: MCQ [Tests Form Effects]**
+   @part:3
    * **Question:** What effect does interior monologue's unmediated access to a character's thought typically create?
    * **Options:** A) Intimate connection with the character, or a sense of uncomfortable voyeurism, B) A meditative, slowed pace of contemplation, C) A sense of awe at witnessing a heroic deed, D) Catharsis following a plot's rising tension and resolution
    * **Correct:** A
@@ -270,18 +309,21 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** Catharsis following a plot's tension and resolution describes narrative form's effect, not interior monologue's.
 
 33. **Type: True-False [Tests Form Effects]**
+   @part:3
    * **Question:** Free verse's rejection of fixed rules only ever produces disorientation, and it has no capacity to validate marginalised voices or challenge established norms.
    * **Answer:** False
    * **Feedback:** ✓ Correct. Free verse's break from fixed rules can in fact validate marginalised voices and challenge established norms and canons, alongside its effects of authenticity and immediacy.
    * **WhyWrong:** This is false — free verse's rejection of imposed structure can validate marginalised voices and challenge norms, not merely disorient the reader.
 
 34. **Type: Fill [Tests Form Effects]**
+   @part:3
    * **Question:** As a narrative poem's plot builds towards resolution, readers often feel identification with its characters, tension, suspense, and eventual [BLANK].
    * **Answer:** catharsis
    * **Feedback:** ✓ Correct. Catharsis — the emotional release that follows tension and suspense — is a key effect of narrative form as its plot resolves.
    * **WhyWrong:** The word is "catharsis" — the emotional release narrative form can produce as its plot resolves.
 
 35. **Type: MCQ [Tests Form Effects]**
+   @part:3
    * **Question:** What effect can occur when a poet deliberately blends two forms within a single poem?
    * **Options:** A) It can produce complex, sometimes contradictory effects that neither form alone would create, B) It always cancels out the effects of both forms, leaving the reader with no response at all, C) It automatically weakens the poem, since mixing forms is a sign of technical failure, D) It has no effect at all — a reader cannot perceive when forms are combined
    * **Correct:** A
@@ -291,6 +333,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** A reader can and does register the tension or richness that blending forms produces.
 
 36. **Type: MCQ [Tests Form Effects]**
+   @part:3
    * **Question:** According to the Effect Chain, in what order does a poem's form typically shape a reader's response?
    * **Options:** A) Form, then focus, then emotion, then thought, and sometimes action, B) Emotion, then form, then action, then focus, C) Action, then thought, then form, then emotion, D) Focus, then action, then form, then emotion
    * **Correct:** A
@@ -300,6 +343,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** This scrambles the sequence, placing focus and action before the form that produces them.
 
 37. **Type: MCQ [Tests Forms & Meaning]**
+   @part:3
    * **Question:** Which question is NOT one of the Four Key Questions used to analyse a poem's form?
    * **Options:** A) Focus — what does this form make the reader concentrate on?, B) Emotion — what feelings does this form generate in the reader?, C) Cognition — how does this form shape the reader's thinking?, D) Rhyme — how many rhyming words does this form contain?
    * **Correct:** D
@@ -309,6 +353,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why C:** Cognition is genuinely one of the Four Key Questions.
 
 38. **Type: MCQ [Tests Forms & Meaning]**
+   @part:3
    * **Question:** What does "hybridity" mean when analysing a poem's form?
    * **Options:** A) When a poet blends two or more forms together, creating complex, sometimes contradictory effects, B) When a poem is translated from one language into another, C) When a poem is set to music and performed aloud, D) When a poem strictly follows only one traditional form without variation
    * **Correct:** A
@@ -318,6 +363,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** Strictly following a single form without variation is the opposite of hybridity.
 
 39. **Type: MCQ [Tests Forms & Meaning]**
+   @part:3
    * **Question:** Why might a poet deliberately pair a simple, songlike form with dark or tragic subject matter?
    * **Options:** A) Because the contrast between simple form and tragic content can intensify the poem's emotional power, B) Because simple forms are incapable of carrying serious subject matter, C) Because tragic content always requires an elaborate, complex form to be taken seriously, D) Because form and content have no bearing on one another
    * **Correct:** A
@@ -327,18 +373,21 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** Form and content interact closely — their relationship is central to how a poem generates its effects.
 
 40. **Type: True-False [Tests Forms & Meaning]**
+   @part:3
    * **Question:** The mnemonic MAD FATHERS CROPS is a memory aid for a set of linguistic, structural and rhetorical devices.
    * **Answer:** True
    * **Feedback:** ✓ Correct. Each letter in MAD FATHERS CROPS stands for a device — from metaphor and alliteration through to sibilance — used to analyse a poem's language.
    * **WhyWrong:** This is true — MAD FATHERS CROPS is a mnemonic for remembering a set of linguistic, structural and rhetorical devices.
 
 41. **Type: Fill [Tests Forms & Meaning]**
+   @part:3
    * **Question:** The mnemonic MAD FATHERS CROPS helps students remember a set of linguistic, structural and rhetorical [BLANK].
    * **Answer:** devices
    * **Feedback:** ✓ Correct. Each letter of the mnemonic stands for a distinct linguistic, structural or rhetorical device that a poet might use.
    * **WhyWrong:** The word is "devices" — what the mnemonic MAD FATHERS CROPS is designed to help students remember.
 
 42. **Type: Select All [Tests Forms & Meaning]**
+   @part:3
    * **Question:** Which of these correctly describe a recognised narrative perspective type?
    * **Options:** A) Third-person narrative, using "she" or "he", offering a panoramic view across multiple characters, B) First-person narrative, using "I", immersing the reader directly in one speaker's experience, C) First-person plural narrative, using "we", expressing the collective psyche of a group, D) Second-person omniscient narrative, using "you", giving the reader complete knowledge of every character's thoughts
    * **Correct:** A, B, C
@@ -347,6 +396,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** A second-person omniscient perspective is not one of the recognised types — only third-person, first-person and first-person plural are covered.
 
 43. **Type: MCQ [Tests Forms & Meaning]**
+   @part:3
    * **Question:** What effect does a first-person narrative perspective, using "I", typically have on the reader?
    * **Options:** A) It creates a potent, immersive connection with events but prompts questioning of the narrator's reliability, B) It gives a detached, panoramic view across many characters at once, C) It expresses the collective psyche and shared experience of a whole group, D) It removes the reader entirely from any single character's viewpoint
    * **Correct:** A
@@ -356,6 +406,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** First-person perspective centres the reader firmly inside one character's viewpoint, rather than removing them from it.
 
 44. **Type: MCQ [Tests Forms & Meaning]**
+   @part:3
    * **Question:** What effect does a third-person narrative perspective, using "she" or "he", typically have on the reader?
    * **Options:** A) It offers a panoramic view and insight into multiple characters, creating a more detached, objective response, B) It immerses the reader directly inside a single speaker's internal world, C) It expresses the shared, collective experience of a whole group, D) It forces the reader to question the reliability of a single speaker's biased account
    * **Correct:** A
@@ -365,6 +416,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** Questioning a single speaker's reliability is a first-person effect, not a defining feature of third-person perspective.
 
 45. **Type: MCQ [Tests Forms & Meaning]**
+   @part:3
    * **Question:** What does a first-person plural perspective, using "we", typically achieve?
    * **Options:** A) It expresses the collective psyche of a group, prompting reflection on communal or societal dynamics, B) It offers a detached, panoramic view of many separate individuals, C) It immerses the reader in a single speaker's private, internal world, D) It removes any sense of belonging to, or rebelling against, a group
    * **Correct:** A
@@ -374,18 +426,21 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** First-person plural perspective foregrounds exactly this sense of belonging to, or rebelling against, a group, rather than removing it.
 
 46. **Type: True-False [Tests Forms & Meaning]**
+   @part:3
    * **Question:** Accentual-syllabic metre is defined by having both a fixed number of stresses and a fixed number of syllables per line.
    * **Answer:** True
    * **Feedback:** ✓ Correct. Accentual-syllabic metre combines fixed stresses with fixed syllable counts, unlike purely syllabic or purely accentual metre.
    * **WhyWrong:** This is true — accentual-syllabic metre is defined by fixing both stresses and syllables together.
 
 47. **Type: Fill [Tests Forms & Meaning]**
+   @part:3
    * **Question:** A metrical foot moving from an unstressed to a stressed syllable (da-DUM) is called an [BLANK].
    * **Answer:** iamb
    * **Feedback:** ✓ Correct. The iamb's unstressed-stressed pattern (da-DUM) is one of the most common feet in English metre.
    * **WhyWrong:** The word is "iamb" — the unstressed-then-stressed foot (da-DUM).
 
 48. **Type: MCQ [Tests Forms & Meaning]**
+   @part:3
    * **Question:** Why might a poet combine features of dramatic monologue and interior monologue within the same poem?
    * **Options:** A) To let a speaker address someone directly while also revealing raw, unfiltered private thought, creating a more complex psychological effect, B) To ensure the poem has no speaker or listener of any kind, C) To guarantee the poem follows a strict fourteen-line structure, D) To remove any possibility of the reader accessing the speaker's inner thoughts
    * **Correct:** A
