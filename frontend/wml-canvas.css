@@ -3668,6 +3668,13 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 .swml-canvas-light .swml-clear-chat-btn { color: rgba(0,0,0,0.25); }
 .swml-canvas-light .swml-clear-chat-btn:hover { color: rgba(0,0,0,0.6); background: rgba(0,0,0,0.04); }
+/* v7.19.894: assessment duration info-note — theme-aware text (was hardcoded inline white,
+   invisible in light theme, Neil). Purple bg/border set inline read on both themes. */
+.swml-assess-info-note { color: rgba(255,255,255,0.6); }
+.swml-assess-info-note strong { color: rgba(255,255,255,0.85); }
+.swml-canvas-light .swml-assess-info-note { color: rgba(44,0,62,0.7); }
+.swml-canvas-light .swml-assess-info-note strong { color: rgba(44,0,62,0.92); }
+
 .swml-canvas-chat-messages {
     flex: 1;
     overflow-y: auto;

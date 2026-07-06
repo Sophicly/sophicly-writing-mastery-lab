@@ -717,7 +717,10 @@
     // All greeting sites (both pipelines + post-clear + resume-refresh) call this.
     function _assessGreetingInfoNote() {
         const dur = _isAnyLanguagePaper() ? '30-45 minutes' : '20-25 minutes'; // v7.19.832: Neil — don't scare students
-        return '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">' + dur + '</strong>. Complete all steps to receive your full score, grade, and personalised feedback.</div>';
+        // v7.19.894: text colour lives in CSS (.swml-assess-info-note), theme-aware — the old
+        // hardcoded inline white was invisible in light theme (Neil). Bg/border are the purple
+        // tint, which reads on both themes.
+        return '<div class="swml-assess-info-note" style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px">This assessment takes approximately <strong>' + dur + '</strong>. Complete all steps to receive your full score, grade, and personalised feedback.</div>';
     }
 
     // v7.19.878: Universal Self-Assessment sidebar step. The Self-Assessment section is
