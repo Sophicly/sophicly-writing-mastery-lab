@@ -5545,6 +5545,15 @@
                 try { _recomputeAllCompletion(); } catch (_) {}
                 try { if (typeof _recalcScoreSummaryRef === 'function') _recalcScoreSummaryRef(); } catch (_) {}
                 try { _refreshLangSidebar(); } catch (_) {}
+                // v7.19.886 (Neil 2026-07-06): rebuild the dropdown overlays too. The reset reverts
+                // the SA row TEXT ("Skill: N / 5" → "— / 5") and the feedback labels ("(3/8)" →
+                // "(—/8)") via PM, but the overlay layer caches each widget's selected value at BUILD
+                // time — without a rebuild the FIRST N SA dropdowns (the ones rated in the PRIOR
+                // attempt) kept showing 1-5 while the row text read "—" (Neil: "first three dropdowns
+                // already selected on a fresh assessment, but the numbers weren't"). Same root as the
+                // .884 walk-write refresh: overlay value must be re-derived from the doc after any
+                // text/label mutation. Rebuilds feedback + SA + grade selectors from the cleared doc.
+                try { if (typeof _scoreOverlaysRefresh === 'function') _scoreOverlaysRefresh(); } catch (_) {}
                 try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
             });
             console.log('WML v7.19.774: assessment marking output reset on fresh chat');
