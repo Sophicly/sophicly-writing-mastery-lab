@@ -2339,8 +2339,19 @@
         // yet) is the only walk-start state — after any rating idx advances, so this can't repeat
         // mid-walk. A fresh Clear-chat walk resets to idx 0 and correctly re-shows the intro.
         if (idx === 0 && typeof SA_WALK_INTRO !== 'undefined') {
-            _chatShell.addMsg(formatAI(SA_WALK_INTRO), 'ai', SA_WALK_INTRO, { suppressActions: true });
-            _chatShell.history.push({ role: 'assistant', content: SA_WALK_INTRO, saWalk: true });
+            // v7.19.904: coherence (Neil 2026-07-06) — the student's keyword-recall answer
+            // used to vanish until the marking turn, AFTER the whole walk. Acknowledge it
+            // here at walk start (when it was answered this conversation); Sophia's real
+            // verdict on it OPENS the marking turn (hand-back directive + router setup
+            // block step 2, changed in the same version).
+            let _intro = SA_WALK_INTRO;
+            try {
+                if (_chatShell.history.some(m => m.role === 'assistant' && /key aspects/i.test(m.content || ''))) {
+                    _intro = 'Good — your recall answer is noted; I’ll give you feedback on it as soon as the marking begins. ' + SA_WALK_INTRO;
+                }
+            } catch (_) {}
+            _chatShell.addMsg(formatAI(_intro), 'ai', _intro, { suppressActions: true });
+            _chatShell.history.push({ role: 'assistant', content: _intro, saWalk: true });
         }
         // v7.19.885: conversational per-skill prompt — define the skill in plain terms (attempt-1
         // students don't know "thesis"), with a rotating lead + closing question so it reads as a
@@ -2416,7 +2427,7 @@
                 try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (_) {}
             }
         } catch (_) {}
-        _silentSystemSend('SYSTEM (not from the student): the student has completed their blind self-assessment and the pre-marking setup. Begin marking now, exactly per the protocol’s first marking step. Do not re-ask the grade, goal, or key-aspects questions.');
+        _silentSystemSend('SYSTEM (not from the student): the student has completed their blind self-assessment and the pre-marking setup. Open with brief FEEDBACK on their earlier key-aspects recall answer (2–3 lines: what they recalled correctly, what they missed vs what the question actually asks — a verdict, not a thank-you), then begin marking exactly per the protocol’s first marking step. Do not re-ask the grade, goal, or key-aspects questions.');
     }
 
     // ─────────────────────────────────────────────────────────────────────────

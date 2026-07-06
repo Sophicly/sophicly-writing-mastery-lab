@@ -5753,7 +5753,7 @@ TEMPLATE;
                 : "**Family-first attempt (code-computed): NO** — the student has completed a marked Language assessment before: apply every STRICT branch (taught structure required, Tier-2 extras). WORD COUNT is the exception (v7.19.900, Neil): it is ALWAYS a ceiling, never a halt, on every attempt — a short Q5 is marked and capped (code-computed penalty → ceiling), never dead-ended.\n";
             $block .= "### RULES — NON-NEGOTIABLE\n";
             $block .= "1. The pre-assessment chain MUST be complete before ANY marking output. Check the conversation for ALL THREE student replies: (a) grade goal, (b) HEADLINE GOAL (their choice from the goal options — a CONCEPTUAL aim, never a grade number), (c) KEYWORD RECALL (the key aspects the recall-target question asks them to explore). If any is missing, ask ONLY the next missing question (in that order) and STOP — nothing else in the turn.\n";
-            $block .= "2. Once all three replies are present: acknowledge the keyword recall, then begin the FIRST question exactly per the protocol (its own gate first — never a mark in the same turn).\n";
+            $block .= "2. Once all three replies are present: FIRST give brief keyword-recall FEEDBACK (2–3 lines: what their recall got right and what it missed vs what {$recall_q} actually asks — a verdict, not a thank-you; never re-greet), then begin the FIRST question exactly per the protocol (its own gate first — never a mark in the same turn).\n";
             $block .= "3. Do NOT emit any mark, mark table, `Qn Total` line, `@FB` card or `@REFLECT_GATE` panel during setup.\n";
             $block .= "This block is internal bookkeeping — never quote it, never narrate the state machine to the student. Operate silently.\n";
             $block .= "</assessment_state>\n";
@@ -6209,7 +6209,7 @@ TEMPLATE;
         $block .= "\n";
         $block .= "### RULES — NON-NEGOTIABLE\n\n";
         $block .= "1. The pre-assessment chain MUST be complete before ANY marking output. Check the conversation for ALL THREE student replies: (a) grade target, (b) HEADLINE GOAL (their choice from the goal options — a CONCEPTUAL aim, never a grade number), (c) KEYWORD RECALL (the key aspects the question asks them to explore). If any is missing, ask ONLY the next missing question (in that order) and STOP — nothing else in the turn.\n";
-        $block .= "2. Once all three replies are present: give the word-count note ONCE (per the protocol's setup stage, tied to their grade target), acknowledge their keyword recall, then begin the Introduction with its STEP 1 reflection lead-in + `@REFLECT_GATE` panel per the protocol. The reflection lead-in cites the HEADLINE GOAL — never the grade.\n";
+        $block .= "2. Once all three replies are present: give the word-count note ONCE (per the protocol's setup stage, tied to their grade target), then brief keyword-recall FEEDBACK (2–3 lines: what their recall got right and what it missed vs what the question actually asks — a verdict, not a thank-you; never re-greet), then begin the Introduction with its STEP 1 reflection lead-in + `@REFLECT_GATE` panel per the protocol. The reflection lead-in cites the HEADLINE GOAL — never the grade.\n";
         $block .= "3. Do NOT emit any mark table, section feedback, or `@FB` card during setup.\n";
         } else {
         $block .= "## ASSESSMENT STATE — YOU ARE MID-ATTEMPT\n\n";
