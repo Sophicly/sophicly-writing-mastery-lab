@@ -20696,6 +20696,9 @@
             // v7.19.832: refresh stale essay-shaped SA on Language P1 docs (untouched sections only)
             _migrateStep('healLangP1SelfAssessment', healLangP1SelfAssessment);
             _migrateStep('migrateDividers', migrateDividers);
+            // v7.19.887: move Self-Assessment above the Feedback boundary on existing docs (all
+            // boards). After migrateDividers so the FEEDBACK divider anchor exists; idempotent.
+            _migrateStep('healSelfAssessmentAboveFeedback', healSelfAssessmentAboveFeedback);
             // v7.19.619: after dividers exist (RESULTS anchor), heal-in the Overall Feedback section.
             _migrateStep('migrateOverallFeedbackSection', migrateOverallFeedbackSection);
             _migrateStep('migrateExtractQuestionDivider', migrateExtractQuestionDivider);
@@ -30811,6 +30814,52 @@
         console.warn('WML SA-heal: replaced stale essay-shaped Self-Assessment with the Language P1 set'
             + (carried ? ' — carried ' + carried + ' rating(s) over' : ''));
         try { if (typeof _scoreOverlaysRefresh === 'function') _scoreOverlaysRefresh(); } catch (_) {}
+        try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
+    }
+
+    // v7.19.887 (Neil 2026-07-06): UNIVERSAL Self-Assessment reposition. The blind self-assessment
+    // walk runs BEFORE marking, so the Self-Assessment section must sit directly ABOVE the Feedback
+    // divider (self-judge first, then compare). v7.19.877 fixed the FRESH template order, but
+    // migrateDocument never reorders existing docs (forward-snapshot chain) — so every doc seeded
+    // before .877 kept SA down under Score Summary in RESULTS. This heal MOVES the existing SA node
+    // (with its ratings intact — a node move, not a rebuild) to just above the first FEEDBACK
+    // divider / feedback section, on EVERY board/paper. Idempotent: if SA already sits directly
+    // above the anchor it returns before any mutation, so already-correct docs never re-save (the
+    // v817 mutate-every-load wipe lesson). Runs after migrateDividers so the FEEDBACK anchor exists.
+    function healSelfAssessmentAboveFeedback() {
+        if (!canvasEditor || state.reviewMode) return;
+        if (!WML.hasAssessmentSections(state.task)) return;
+        let saPos = null, saNode = null;
+        canvasEditor.state.doc.descendants((n, p) => {
+            if (saPos !== null) return false;
+            if (n.type.name === 'sectionBlock' && String((n.attrs && n.attrs.label) || '') === 'Self-Assessment') { saPos = p; saNode = n; return false; }
+            return true;
+        });
+        if (saPos === null || !saNode) return;
+        // Anchor = the first FEEDBACK divider, else the first feedback section (either is a stable
+        // "marking starts here" boundary across single-Q / multi-Q / dual-part docs).
+        let fbPos = null;
+        canvasEditor.state.doc.descendants((n, p) => {
+            if (fbPos !== null) return false;
+            if (n.type.name === 'sectionBlock') {
+                const st = n.attrs && n.attrs.sectionType;
+                const lbl = String((n.attrs && n.attrs.label) || '');
+                if ((st === 'divider' && /^FEEDBACK/i.test(lbl)) || st === 'feedback') { fbPos = p; return false; }
+            }
+            return true;
+        });
+        if (fbPos === null) return;   // no feedback boundary yet (e.g. a pure diagnostic doc) — nothing to sit above
+        if (saPos < fbPos && saPos + saNode.nodeSize === fbPos) return;   // already directly above → idempotent no-op
+        try {
+            const tr = canvasEditor.state.tr;
+            tr.delete(saPos, saPos + saNode.nodeSize);          // remove SA from its current spot
+            const insertAt = tr.mapping.map(fbPos);             // map the anchor across the deletion
+            tr.insert(insertAt, saNode);                        // reinsert the SAME node (ratings preserved) above Feedback
+            canvasEditor.view.dispatch(tr);
+            console.warn('WML SA-reposition: moved Self-Assessment above the Feedback boundary (was below Score Summary)');
+        } catch (e) { console.warn('WML SA-reposition skipped —', e && e.message); return; }
+        try { if (typeof _scoreOverlaysRefresh === 'function') _scoreOverlaysRefresh(); } catch (_) {}
+        try { if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion(); } catch (_) {}
         try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
     }
 
