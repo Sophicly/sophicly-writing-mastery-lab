@@ -5485,12 +5485,31 @@
             //     Rated rows ("Skill: N / 5") revert to the "— / 5" seed via the canonical SA
             //     PM-write; unrated rows are left untouched. Same helpers the walk itself uses.
             try {
-                _saWalkRows().filter(r => r.rated).forEach(r => {
-                    _setParagraphContentViaPM(
-                        t => t.indexOf(r.skill + ':') === 0 && /\/\s*5\s*$/.test(t),
-                        [{ text: r.skill + ': — / 5' }]
-                    );
-                });
+                // Read + rewrite straight from PM doc state (NOT a DOM read — the DOM lags behind
+                // the many transactions this reset just dispatched, so a DOM read returned no rows
+                // and nothing cleared, v7.19.882). Scope to the Self-Assessment section; revert each
+                // rated "Skill: N / 5" paragraph to the "— / 5" seed. Mirrors the feedback clear above.
+                let saGuard = 0;
+                while (saGuard++ < 60) {
+                    let hit = null;
+                    canvasEditor.state.doc.descendants((node, pos) => {
+                        if (hit) return false;
+                        if (node.type.name === 'sectionBlock' && String((node.attrs && node.attrs.label) || '') === 'Self-Assessment') {
+                            node.forEach((child, offset) => {
+                                if (hit || child.type.name !== 'paragraph') return;
+                                const m = (child.textContent || '').match(/^(.+?):\s*[1-5]\s*\/\s*5$/);
+                                if (m) hit = { start: pos + 1 + offset, size: child.nodeSize, skill: m[1].trim() };
+                            });
+                            return false;   // found the section — no need to walk deeper
+                        }
+                        return true;
+                    });
+                    if (!hit) break;
+                    canvasEditor.chain().command(({ tr }) => {
+                        tr.replaceWith(hit.start + 1, hit.start + hit.size - 1, canvasEditor.schema.text(hit.skill + ': — / 5'));
+                        return true;
+                    }).run();
+                }
                 _saWalkHandBack._fired = false;   // let the walk hand back to marking again on the re-do
             } catch (e) { console.warn('WML reset-marking: Self-Assessment reset skipped —', e && e.message); }
             // 3) Drop stored predictions so the predict-mark row shows again on the re-mark.
