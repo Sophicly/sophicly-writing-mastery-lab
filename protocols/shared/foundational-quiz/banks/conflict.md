@@ -1,4 +1,4 @@
-# Foundational Quiz Bank — OCR GCSE Literature Poetry: Conflict ("Towards a World Unknown") (Poems)
+# Foundational Quiz Bank — OCR Poetry Anthologies (Poems)
 
 Deterministic, code-scored foundational recall bank (parsed by `SWML_Quiz_Bank`).
 45 questions on the actual ANTHOLOGY POEMS (Tier B) — three per poem across Neil's three
@@ -12,440 +12,434 @@ Categories: Recognising the Poem · Form & Features · Meaning & Effects
 Types: MCQ · Fill · True-False · Select All
 
 Each question carries an `@set:N` token (N = 1/2/3) staging the poems 5-at-a-time by the
-course's reading order, so the quiz only serves poems the student has read:
-- **@set:1** — The Destruction of Sennacherib (Byron) · Vergissmeinnicht (Douglas) · We Lived Happily during the War (Kaminsky) · What Were They Like? (Levertov) · Lament (Clarke)
-- **@set:2** — Boat Stealing / Extract from The Prelude (Wordsworth) · Envy (Lamb) · There's a Certain Slant of Light (Dickinson) · Honour Killing (Dharker) · Partition (Bhatt)
-- **@set:3** — Flag (Agard) · Colonization in Reverse (Bennett) · Songs for the People (Harper) · Papa-T (D'Aguiar) · Thirteen (Femi)
+anthology's three thematic sections, so the quiz only serves poems the student has read:
+- **@set:1** — Love and Relationships (Love & Identity): Flirtation (Dove) · Poem for my Love (Jordan) · Lullaby (Asghar) · The Perseverance (Antrobus) · Looking at Your Hands (Carter)
+- **@set:2** — Conflict: Papa-T (D'Aguiar) · Songs for the People (Harper) · We Lived Happily during the War (Kaminsky) · Colonization in Reverse (Bennett) · Thirteen (Femi)
+- **@set:3** — Youth and Age: Equilibrium (Lola) · Prayer (Kunial) · Happy Birthday Moon (Antrobus) · Tea With Our Grandmothers (Shire) · Theme for English B (Hughes)
 
 The token is kept OUT of the `[Tests …]` stratification key — the current parser ignores it
 (live quiz stays category-stratified); only the future set-filter engine reads it via `fq_set=N`
 (mirrors Tier A's `@part:N` / `fq_part=N`). Mastery redo-to-100% walks every poem in the
 unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the draw by poem.
 
-### Quiz: OCR Conflict Poetry (Poems)
+### Quiz: OCR Poetry Anthologies
 
 <!-- ============================ SET 1 ============================ -->
 
 1. **Type: MCQ [Tests Recognising the Poem]**
    @set:1
-   * **Question:** Which poem tells how a mighty army is destroyed overnight, its host wasted "like the leaves of the forest", after coming down "like the wolf on the fold"?
-   * **Options:** A) Vergissmeinnicht, B) The Destruction of Sennacherib, C) What Were They Like?, D) Boat Stealing
-   * **Correct:** B
-   * **Feedback:** ✓ Correct. Byron's "The Destruction of Sennacherib" retells the biblical account of the Assyrian army struck down in a single night, its ranks left as scattered and lifeless as autumn leaves.
-   * **Why A:** Vergissmeinnicht follows a single dead German gunner found by soldiers in the desert, not a whole army destroyed overnight.
-   * **Why C:** What Were They Like? questions and answers about a vanished culture, not a biblical army.
-   * **Why D:** Boat Stealing follows a boy's night on a lake, not a besieging army.
+   * **Question:** Which poem imagines "An orange, peeled and quartered" flaring "like a tulip on a wedgewood plate" as a small ritual before "Anything can happen" between two people?
+   * **Options:** A) Flirtation, B) Poem for my Love, C) Lullaby, D) Looking at Your Hands
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. Rita Dove's "Flirtation" builds its hesitant, expectant mood from small domestic details — the peeled orange "like a tulip on a wedgewood plate" — before "Anything can happen."
+   * **Why B:** Poem for my Love pictures a settled night beside a sleeping partner, not an orange on a plate.
+   * **Why C:** Lullaby is a bedtime story about two dead parents reunited underground, not a shared meal.
+   * **Why D:** Looking at Your Hands is a declaration of political commitment, with no orange or plate.
 
 2. **Type: MCQ [Tests Form & Features]**
    @set:1
-   * **Question:** How does Byron shape "The Destruction of Sennacherib" to suit its subject?
-   * **Options:** A) Free verse with no metre or rhyme, B) Rhymed four-line stanzas driven by a galloping, three-beat (anapaestic) rhythm, C) A single unbroken verse paragraph, D) A question-and-answer structure
+   * **Question:** How is "Flirtation" by Rita Dove shaped on the page?
+   * **Options:** A) A single unbroken block of prose, B) Short, unrhymed two-line stanzas (couplets) in free verse, C) A strict rhyming sonnet, D) A repeating pantoum
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Byron's rhymed quatrains ride a rolling anapaestic beat, so the verse itself seems to charge like the advancing host before it collapses into stillness.
-   * **Why A:** The poem is tightly metred and rhymed, the opposite of free verse.
-   * **Why C:** It is divided into six clear stanzas, not run together as one paragraph.
-   * **Why D:** That question-and-answer shape belongs to "What Were They Like?", not to Byron's narrative.
+   * **Feedback:** ✓ Correct. Dove's poem unfolds in brief, unrhymed two-line stanzas, its light, unhurried pacing matching the poem's hesitant, expectant mood.
+   * **Why A:** The poem is broken into distinct short stanzas, not run together as prose.
+   * **Why C:** There is no fixed rhyme scheme or fourteen-line structure here.
+   * **Why D:** The Moon poem, "Happy Birthday Moon," uses repeating lines, not this poem.
 
-3. **Type: Select All [Tests Meaning & Effects]**
+3. **Type: MCQ [Tests Meaning & Effects]**
    @set:1
-   * **Question:** Which statements correctly describe the meaning and effect of "The Destruction of Sennacherib"?
-   * **Options:** A) The poem retells a biblical account of a besieging army destroyed in a single night, B) The galloping rhythm mirrors the army's swift advance and then its sudden collapse, C) The poem presents earthly military power as fragile beside a greater, unseen force, D) The poem celebrates the Assyrian army's ultimate victory
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Byron dramatises the biblical destruction of Sennacherib's army, using a driving rhythm that charges and then stalls, to show how swiftly imposing military power can be undone.
-   * **Why D:** The Assyrian host is annihilated, not victorious — the poem's force comes from that reversal.
+   * **Question:** What does the closing image of a "topiary" walked "through" suggest about the poem's central moment?
+   * **Options:** A) That the moment should be rushed to its conclusion, B) That delaying the point of contact is itself part of the pleasure, C) That the garden setting matters more than the two people, D) That the moment ends in disappointment
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Shaping the moment "so the pleasure's in / walking through" suggests that lingering in anticipation, rather than rushing to a conclusion, is where the delight lies.
+   * **Why A:** The image values a slow approach, not haste.
+   * **Why C:** The topiary is a metaphor for the moment itself, not a literal garden.
+   * **Why D:** The tone throughout is expectant and pleasurable, not disappointed.
 
-4. **Type: MCQ [Tests Recognising the Poem]**
+4. **Type: Fill [Tests Recognising the Poem]**
    @set:1
-   * **Question:** Which poem describes soldiers returning to a battlefield to find the body of an enemy gunner they had killed weeks before, a photograph of his sweetheart still beside him?
-   * **Options:** A) Vergissmeinnicht, B) The Destruction of Sennacherib, C) Lament, D) Boat Stealing
+   * **Question:** In June Jordan's poem, the speaker says: "I am amazed by [BLANK]", naming the quiet contentment found beside a sleeping partner.
+   * **Answer:** peace
+   * **Feedback:** ✓ Correct. "I am amazed by peace" names the quiet wonder Jordan's speaker feels simply lying beside someone she loves.
+   * **WhyWrong:** The word is "peace" — the speaker marvels at the stillness and peace of the shared night, not at anything more dramatic.
+
+5. **Type: MCQ [Tests Form & Features]**
+   @set:1
+   * **Question:** How is "Poem for my Love" structured?
+   * **Options:** A) A single unbroken stanza with no end punctuation, letting the thought flow continuously, B) Four rhymed quatrains, C) A dramatic monologue addressed to a stranger, D) A pantoum with repeating lines
    * **Correct:** A
-   * **Feedback:** ✓ Correct. Keith Douglas's "Vergissmeinnicht" (German for "forget-me-not") follows soldiers who return three weeks on to find the enemy gunner they killed, his body still lying beside a photograph of his girlfriend.
-   * **Why B:** Sennacherib describes a whole army struck down overnight, not one gunner found by returning soldiers.
-   * **Why C:** Lament mourns a wider list of war's victims, not one specific dead gunner and his photograph.
-   * **Why D:** Boat Stealing follows a boy on a lake, with no soldiers or battlefield.
+   * **Feedback:** ✓ Correct. Jordan lets the poem run as one continuous stanza without full stops, so the speaker's wonder flows uninterrupted, mirroring the quiet, unbroken night.
+   * **Why B:** There is no rhyme scheme or stanza break here.
+   * **Why C:** The poem is addressed intimately to a sleeping loved one, not a stranger.
+   * **Why D:** The repeating-line pantoum shape belongs to "Happy Birthday Moon," not this poem.
 
-5. **Type: Fill [Tests Form & Features]**
+6. **Type: True-False [Tests Meaning & Effects]**
    @set:1
-   * **Question:** Douglas arranges "Vergissmeinnicht" into six four-line stanzas, known as [BLANK].
-   * **Answer:** quatrains
-   * **Feedback:** ✓ Correct. Each measured quatrain holds one stage of the soldiers' return to the dead gunner, containing the scene's horror within a controlled shape.
-   * **WhyWrong:** The word is "quatrains" — the four-line stanzas that structure the poem's six-part account.
-
-6. **Type: MCQ [Tests Meaning & Effects]**
-   @set:1
-   * **Question:** What paradox does "Vergissmeinnicht" centre on?
-   * **Options:** A) The dead gunner is shown as purely evil, with no humanity at all, B) The same man is both a "lover and killer... mingled" — tender in the photograph, but also the soldier who nearly killed the speaker, C) The poem argues that all enemies deserve equal cruelty, D) The poem celebrates the soldiers' victory with no reflection
-   * **Correct:** B
-   * **Feedback:** ✓ Correct. Douglas holds the dead gunner as both dangerous combatant and someone loved — "the lover and killer... mingled" — complicating any simple hatred of the enemy.
-   * **Why A:** The photograph and inscription "Vergissmeinnicht" ("forget-me-not") insist on his tenderness and humanity, not pure evil.
-   * **Why C:** The poem unsettles easy judgement of the enemy rather than arguing for cruelty.
-   * **Why D:** The tone is uneasy and reflective, not celebratory.
+   * **Question:** "Poem for my Love" finds profundity in an ordinary, undramatic moment — simply lying beside someone breathing in the quiet air.
+   * **Answer:** True
+   * **Feedback:** ✓ Correct. Jordan elevates a small, undramatic moment — a partner "asleep and breathing in the quiet air" — into a source of amazement and peace.
+   * **WhyWrong:** This is the poem's method — its wonder comes from an ordinary shared stillness, not from any dramatic event.
 
 7. **Type: MCQ [Tests Recognising the Poem]**
    @set:1
-   * **Question:** Which poem reflects on ordinary people continuing their comfortable daily lives while a war rages elsewhere, admitting their own complicity in looking away?
-   * **Options:** A) We Lived Happily during the War, B) The Destruction of Sennacherib, C) What Were They Like?, D) Envy
+   * **Question:** Which poem imagines a dead father buried in Pakistan and a dead mother buried in New York City meeting each other in a dream each night?
+   * **Options:** A) Lullaby, B) Flirtation, C) The Perseverance, D) Looking at Your Hands
    * **Correct:** A
-   * **Feedback:** ✓ Correct. Ilya Kaminsky's "We Lived Happily during the War" confronts the guilt of a comfortable life continuing undisturbed while war and suffering happen to others, protested against only weakly.
-   * **Why B:** Sennacherib retells a biblical battle, not a modern reflection on guilt and complicity.
-   * **Why C:** What Were They Like? mourns an already-destroyed culture, rather than confessing present-day complicity.
-   * **Why D:** Envy is a moral poem about the vice of envy, not about war and complicity.
+   * **Feedback:** ✓ Correct. Fatimah Asghar's "Lullaby" imagines "a man buried in pakistan" and "a woman buried in new york city" meeting through a tunnel that opens between their two worlds each night.
+   * **Why B:** Flirtation is about anticipation before a meeting between living people, not deceased parents.
+   * **Why C:** The Perseverance is set outside a pub, not in an imagined underworld.
+   * **Why D:** Looking at Your Hands is a political declaration, with no buried parents.
 
-8. **Type: True-False [Tests Form & Features]**
+8. **Type: MCQ [Tests Form & Features]**
    @set:1
-   * **Question:** "We Lived Happily during the War" is written in free verse, without a fixed rhyme scheme or regular metre.
-   * **Answer:** True
-   * **Feedback:** ✓ Correct. Kaminsky lets the lines break irregularly and without rhyme, the unsettled form matching the poem's uneasy, confessional tone.
-   * **WhyWrong:** This is true — the poem moves in free verse, its irregular lines suiting its unsettled, confessional voice.
+   * **Question:** What is distinctive about how "Lullaby" appears on the page?
+   * **Options:** A) It is written in short two-line stanzas entirely without capital letters, B) It uses a strict rhyme scheme and formal capitalisation, C) It is a fourteen-line sonnet, D) It is written as a single justified prose block
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. Asghar's couplets run in lower case throughout, giving the poem the hushed, informal intimacy of a story told quietly at bedtime.
+   * **Why B:** The poem has no fixed rhyme scheme, and deliberately avoids capital letters.
+   * **Why C:** At eleven couplets, it is far longer than a fourteen-line sonnet.
+   * **Why D:** The poem is broken into short two-line stanzas, not one prose block.
 
 9. **Type: MCQ [Tests Meaning & Effects]**
    @set:1
-   * **Question:** What does "We Lived Happily during the War" ultimately confront?
-   * **Options:** A) The heroism of soldiers on the front line, B) The uncomfortable guilt of continuing an untroubled, comfortable life while others suffer a war close by, C) The joy of a nation's peacetime celebrations, D) A detailed account of a specific battle
+   * **Question:** What comfort does the story-within-the-poem offer in "Lullaby"?
+   * **Options:** A) It proves that death ends all connection between people, B) It imagines a tender reunion between the speaker's dead parents, easing sadness with an invented myth, C) It warns the listener never to sleep, D) It argues that separated people should stop dreaming of each other
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The poem's central discomfort is complicity — the speaker admits that life carried on in comfort while war and suffering continued elsewhere, protested against only weakly.
-   * **Why A:** The poem is not concerned with the front line but with civilian life continuing at a distance from the war.
-   * **Why C:** The tone is uneasy and self-critical, not celebratory.
-   * **Why D:** The poem stays general and reflective rather than narrating one battle's events.
+   * **Feedback:** ✓ Correct. The sister's bedtime story reimagines the dead parents dancing together underground, turning grief and separation into a tender, comforting myth.
+   * **Why A:** The poem imagines ongoing connection after death, not its end.
+   * **Why C:** Sleep is what opens the tunnel between the two worlds, not something to avoid.
+   * **Why D:** The dreaming and dancing of "the lovers" is presented warmly, not as a warning against it.
 
 10. **Type: MCQ [Tests Recognising the Poem]**
     @set:1
-    * **Question:** Which poem is structured as a series of numbered questions about a vanished people, followed by numbered answers admitting how much has been destroyed and forgotten?
-    * **Options:** A) What Were They Like?, B) Lament, C) Vergissmeinnicht, D) Boat Stealing
+    * **Question:** Which poem is named after a pub, with the speaker waiting outside while his father drinks inside?
+    * **Options:** A) The Perseverance, B) Looking at Your Hands, C) Lullaby, D) Poem for my Love
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Denise Levertov's "What Were They Like?" asks a series of numbered questions about a people's vanished way of life, answered by a voice that can recall only devastation and loss.
-    * **Why B:** Lament proceeds as a litany of "For the..." stanzas, not a question-and-answer structure.
-    * **Why C:** Vergissmeinnicht follows one dead gunner, not a whole erased culture.
-    * **Why D:** Boat Stealing recounts a personal childhood memory, not a lost civilisation.
+    * **Feedback:** ✓ Correct. Raymond Antrobus's "The Perseverance" takes its title from the pub where the speaker waits, "outside the perseverance", for his drinking father.
+    * **Why B:** Looking at Your Hands is a political declaration with no pub setting.
+    * **Why C:** Lullaby is set in an imagined underworld, not outside a pub.
+    * **Why D:** Poem for my Love is set beside a sleeping partner at night, not outside a pub.
 
 11. **Type: Fill [Tests Form & Features]**
     @set:1
-    * **Question:** Levertov divides "What Were They Like?" into two clearly labelled parts, [BLANK] and Answers.
-    * **Answer:** Questions
-    * **Feedback:** ✓ Correct. The poem's "Questions" and "Answers" halves mirror each other, so every hopeful enquiry about the vanished culture returns only loss.
-    * **WhyWrong:** The word is "Questions" — paired with the "Answers" that follow, the two halves stage an interrogation about a destroyed people.
+    * **Question:** "The Perseverance" is structured as a sestina, cycling six end-words — including "laughter", "minute", "father" and "[BLANK]" — through its stanzas and closing envoi.
+    * **Answer:** disappear
+    * **Feedback:** ✓ Correct. "Disappear" is one of the six recurring end-words, tracking how the father — and the coins, and the minutes — keep vanishing into the pub.
+    * **WhyWrong:** The word is "disappear" — its repeated return marks how the father, the coins and the time all keep slipping away.
 
 12. **Type: MCQ [Tests Meaning & Effects]**
     @set:1
-    * **Question:** What effect does the question-and-answer form create in "What Were They Like?"?
-    * **Options:** A) It makes the poem read as a lighthearted quiz, B) The measured questions expect an intact, living culture, but the answers return only devastation, so the form itself enacts the loss it describes, C) It proves that the culture in question still thrives unharmed, D) It argues that no war ever really happened
+    * **Question:** What double meaning does the poem draw from the pub's name, "the Perseverance"?
+    * **Options:** A) It refers only to the strength of the beer served there, B) It names both the pub and the child's own endurance of a drinking father, C) It refers to the father's determination to stop drinking, D) It has no significance beyond being a place name
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The calm, almost anthropological questions expect ordinary details of a living culture; the answers instead admit destruction and forgetting, so the poem's shape performs the erasure it describes.
-    * **Why A:** The tone is elegiac and grave, not lighthearted.
-    * **Why C:** The answers report loss and destruction, not survival.
-    * **Why D:** The poem mourns a real devastation rather than denying it.
+    * **Feedback:** ✓ Correct. "The Perseverance" names the literal pub and, at the same time, the quiet endurance the child must show while waiting for his father, again and again, outside it.
+    * **Why A:** The title's weight falls on endurance, not on the strength of the drink.
+    * **Why C:** The father keeps returning to drink rather than resisting it.
+    * **Why D:** The epigraph and the poem's repeated waiting show the title carries real emotional weight.
 
 13. **Type: MCQ [Tests Recognising the Poem]**
     @set:1
-    * **Question:** Which poem takes the form of a litany, each stanza opening "For the...", mourning a widening list of casualties of war?
-    * **Options:** A) Lament, B) Songs for the People, C) Envy, D) Papa-T
+    * **Question:** Which poem declares, "I do not sleep to dream, but dream to change the world", as a statement of political commitment?
+    * **Options:** A) Looking at Your Hands, B) The Perseverance, C) Poem for my Love, D) Flirtation
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Gillian Clarke's "Lament" repeats "For the..." through a roll-call of war's casualties, gathering both human and natural victims into one act of mourning.
-    * **Why B:** Songs for the People looks towards hope and unity through song, not a litany of casualties.
-    * **Why C:** Envy is a moral poem about the vice of envy, not a lament for war's victims.
-    * **Why D:** Papa-T reflects on a family figure, not a litany of war casualties.
+    * **Feedback:** ✓ Correct. Martin Carter's "Looking at Your Hands" closes on this declaration, turning private dreaming into a public, active commitment to change.
+    * **Why B:** The Perseverance is concerned with a father's drinking, not political struggle.
+    * **Why C:** Poem for my Love is a quiet, private love poem, not a political declaration.
+    * **Why D:** Flirtation concerns romantic anticipation, not political commitment.
 
 14. **Type: True-False [Tests Form & Features]**
     @set:1
-    * **Question:** "Lament" is written in seven unrhymed three-line stanzas (tercets).
+    * **Question:** "Looking at Your Hands" uses exclamations and direct address to a "dear friend", giving the poem an urgent, declarative voice.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. The poem's seven tercets, each without rhyme, let the roll-call of mourning accumulate steadily, stanza by stanza.
-    * **WhyWrong:** This is true — "Lament" proceeds in seven three-line, unrhymed stanzas that build its steady litany.
+    * **Feedback:** ✓ Correct. Exclamation marks ("No! / I will not still my voice!") and the direct address to a "dear friend" give the poem the urgent voice of a public declaration.
+    * **WhyWrong:** This is accurate — the poem's exclamations and direct address to a "dear friend" build its urgent, declarative tone.
 
-15. **Type: MCQ [Tests Meaning & Effects]**
+15. **Type: Select All [Tests Meaning & Effects]**
     @set:1
-    * **Question:** What is the effect of the repeated "For the..." openings across "Lament"?
-    * **Options:** A) It builds a widening litany that extends mourning beyond soldiers to the wider natural world affected by war, B) It lists a set of cheerful blessings, C) It narrates a single soldier's journey home, D) It argues a legal case
-    * **Correct:** A
-    * **Feedback:** ✓ Correct. Each repeated "For the..." adds another casualty to the roll-call, so the mourning widens from human victims to the wider natural world caught up in war's damage.
-    * **Why B:** The repeated openings mourn loss, not celebrate blessings.
-    * **Why C:** The poem gathers many losses rather than following one soldier's story.
-    * **Why D:** The anaphora builds grief, not a legal argument.
+    * **Question:** Which statements correctly describe the meaning and effect of "Looking at Your Hands"?
+    * **Options:** A) It presents political commitment as being felt with the same intensity as love, B) Everyday acts — looking at hands, marching in ranks — become signs of solidarity and shared purpose, C) The repeated refrain "dream to change the world" reframes private dreaming as active, collective resolve, D) The poem concludes that change is impossible and dreaming should be abandoned
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
+    * **Feedback:** ✓ Correct. Carter's poem fuses the intensity of love with political conviction, turns ordinary gestures of solidarity into meaningful acts, and transforms the refrain of dreaming into a declaration of active, collective resolve.
+    * **Why D:** The poem's whole force builds towards continued commitment to change, not resignation.
 
 <!-- ============================ SET 2 ============================ -->
 
 16. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** In which poem does a boy steal a rowing boat at night, only to feel a huge dark peak seem to stride after him across the water?
-    * **Options:** A) Boat Stealing (Extract from The Prelude), B) Vergissmeinnicht, C) Partition, D) Thirteen
+    * **Question:** Which poem recalls a grandfather reciting Tennyson, picturing "companies of redcoats tin-soldiering it" through danger as a child listens?
+    * **Options:** A) Papa-T, B) Songs for the People, C) Colonization in Reverse, D) Thirteen
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Wordsworth's "Boat Stealing" extract from "The Prelude" recounts stealing a boat at night, then a "huge peak, black and huge" that seems to pursue him, leaving lasting awe and guilt.
-    * **Why B:** Vergissmeinnicht is set on a desert battlefield, not a boy alone on a lake.
-    * **Why C:** Partition recalls a mother's memory of a divided homeland, not a night on the water.
-    * **Why D:** Thirteen reflects on urban adolescence, not a solitary boat theft.
+    * **Feedback:** ✓ Correct. Fred D'Aguiar's "Papa-T" recalls his grandfather's dramatic recitations of Tennyson, the child picturing "companies of redcoats tin-soldiering it" through danger as he listens.
+    * **Why B:** Songs for the People is a manifesto about the purpose of poetry, not a memory of a grandfather reciting.
+    * **Why C:** Colonization in Reverse celebrates Jamaican migration to England, not a grandfather's storytelling.
+    * **Why D:** Thirteen follows a boy stopped by police, not a grandfather's recitations.
 
 17. **Type: MCQ [Tests Form & Features]**
     @set:2
-    * **Question:** "Boat Stealing" is written in which form?
-    * **Options:** A) Blank verse — unrhymed iambic pentameter, B) Rhyming couplets, C) A villanelle, D) A ballad in song-like stanzas
-    * **Correct:** A
-    * **Feedback:** ✓ Correct. Wordsworth recounts the episode in a single unbroken passage of unrhymed iambic pentameter, its steady onward movement carrying the boy from confidence into dread.
-    * **Why B:** The lines do not rhyme in pairs; they run on without a rhyme scheme.
-    * **Why C:** It has no refrains or fixed nineteen-line shape, so it is not a villanelle.
-    * **Why D:** It is a continuous meditation, not a story told in regular ballad stanzas.
+    * **Question:** What distinctive feature runs through "Papa-T"?
+    * **Options:** A) A refrain sung at the end of every stanza, B) Code-switching between standard English narration and the grandfather's Caribbean dialect speech, quoted directly, C) A strict, unbroken sonnet form, D) Second-person address throughout
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. D'Aguiar shifts between standard English narration and the grandfather's directly quoted Caribbean dialect — "If yu all don't pay me mind" — capturing two voices and two heritages in one poem.
+    * **Why A:** There is no repeated sung refrain in the poem.
+    * **Why C:** At eighteen lines across three six-line stanzas, it is not a fourteen-line sonnet.
+    * **Why D:** The poem is narrated in the first person, recalling the grandfather, not addressed to "you".
 
 18. **Type: MCQ [Tests Meaning & Effects]**
     @set:2
-    * **Question:** What does the episode in "Boat Stealing" reveal about nature?
-    * **Options:** A) Nature is harmless and purely decorative, B) Nature is a powerful, almost moral force that can awe, humble and instruct the human mind, C) Nature is entirely indifferent to people, D) Nature exists only to be conquered
+    * **Question:** How does "Papa-T" close, and what does this suggest?
+    * **Options:** A) By repeating Tennyson's line "theirs not to reason why" unchanged, praising blind obedience, B) By reworking Tennyson's ending into "to hear, to disobey", suggesting the child values questioning over unthinking obedience, C) By condemning the grandfather's storytelling as pointless, D) By abandoning all reference to Tennyson
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The looming peak leaves the boy with "huge and mighty forms" in his mind, presenting nature as a sublime power that teaches humility and shapes the self.
-    * **Why A:** The overwhelming, guilt-inducing peak is the opposite of harmless decoration.
-    * **Why C:** Nature acts on him so strongly that indifference cannot be the point.
-    * **Why D:** The boy is humbled, not triumphant; nature masters him, not the reverse.
+    * **Feedback:** ✓ Correct. The poem's close reworks Tennyson's famous line into "to hear, to disobey" — inheriting the grandfather's voice and heritage while quietly favouring questioning over unthinking obedience.
+    * **Why A:** The poem deliberately alters Tennyson's line rather than repeating it unchanged.
+    * **Why C:** The poem treats the grandfather's recitals with real affection and reverence, not dismissal.
+    * **Why D:** Tennyson's "Light Brigade" is directly named in the poem's final lines.
 
-19. **Type: MCQ [Tests Recognising the Poem]**
+19. **Type: Fill [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem offers moral counsel on the vice of envy, contrasting the envious person's misery with the ease of contentment?
-    * **Options:** A) Envy, B) Lament, C) Flag, D) Colonization in Reverse
-    * **Correct:** A
-    * **Feedback:** ✓ Correct. Mary Lamb's "Envy" reflects on envy as a self-destructive vice, weighing the envious person's discontent against the quiet ease of a contented life.
-    * **Why B:** Lament mourns victims of war, not the vice of envy.
-    * **Why C:** Flag questions the power of a national symbol, not personal envy.
-    * **Why D:** Colonization in Reverse satirises empire and migration, not an individual vice.
+    * **Question:** The poem opens: "Let me make the songs for the [BLANK], / Songs for the old and young", declaring poetry's civic purpose.
+    * **Answer:** people
+    * **Feedback:** ✓ Correct. "Let me make the songs for the people" opens Frances E. W. Harper's poem, announcing songs meant for everyone, "old and young" alike.
+    * **WhyWrong:** The word is "people" — the poem is a manifesto for songs written for the whole community, not for any single listener.
 
-20. **Type: Fill [Tests Form & Features]**
+20. **Type: MCQ [Tests Form & Features]**
     @set:2
-    * **Question:** "Envy" by Mary Lamb is written in six-line stanzas, known as [BLANK], held together by a tail-rhyme pattern.
-    * **Answer:** sestets
-    * **Feedback:** ✓ Correct. Each sestet pairs two rhymed couplets with a shorter tail line, the neat, controlled pattern suiting the poem's measured moral counsel.
-    * **WhyWrong:** The word is "sestets" — the six-line stanzas whose tail-rhyme gives the poem its measured, didactic shape.
-
-21. **Type: MCQ [Tests Meaning & Effects]**
-    @set:2
-    * **Question:** What is the central message of "Envy"?
-    * **Options:** A) Envy is a harmless, even admirable trait, B) Envy corrodes the person who feels it, while contentment with one's own lot brings greater ease, C) Envy always leads to material success, D) Envy should be encouraged in children
+    * **Question:** How is "Songs for the People" shaped?
+    * **Options:** A) Free verse with no rhyme, B) Regular, rhymed quatrains built on repeated phrases such as "Let me make" and "Let me sing", C) A single unbroken stanza, D) A sestina with six recurring end-words
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Lamb's moral verse presents envy as self-harming, urging instead the quieter reward of contentment with what one already has.
-    * **Why A:** The poem treats envy as damaging, not harmless or admirable.
-    * **Why C:** Envy is shown as corrosive, not a path to success.
-    * **Why D:** As a piece of moral counsel, the poem discourages envy rather than encouraging it.
+    * **Feedback:** ✓ Correct. Harper's regular, rhymed quatrains and their repeated openings ("Let me make", "Let me sing") give the poem the steady, song-like insistence of the very songs it calls for.
+    * **Why A:** The poem keeps a consistent rhyme scheme throughout, unlike free verse.
+    * **Why C:** It is divided into eight distinct quatrains, not run together as one stanza.
+    * **Why D:** The sestina's six recurring end-words describe "The Perseverance", not this poem.
+
+21. **Type: True-False [Tests Meaning & Effects]**
+    @set:2
+    * **Question:** "Songs for the People" presents song and poetry as a healing, unifying force, set against "the clashing of sabres" and "carnage".
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Harper explicitly rejects songs "for the clashing of sabres" or "carnage", calling instead for music that soothes sorrow and helps "hearts of men grown tender" bring peace to the world.
+    * **WhyWrong:** This is the poem's central claim — it sets healing, unifying song directly against violence and strife.
 
 22. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem describes a wintry "certain Slant of light" that brings an unexplained, oppressive despair, likened to "the Heft of Cathedral Tunes"?
-    * **Options:** A) There's a Certain Slant of Light, B) Lament, C) What Were They Like?, D) Songs for the People
+    * **Question:** Which poem admits, "we (forgive us) / lived happily during the war", confessing a comfortable citizen's guilt?
+    * **Options:** A) We Lived Happily during the War, B) Colonization in Reverse, C) Thirteen, D) Papa-T
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Emily Dickinson's "There's a Certain Slant of Light" describes a winter light that presses down like the weight of cathedral music, bringing an inward "Heavenly Hurt" with no visible cause.
-    * **Why B:** Lament mourns named casualties of war, not an unexplained inward despair.
-    * **Why C:** What Were They Like? mourns an erased culture through questions and answers, not a described light.
-    * **Why D:** Songs for the People looks towards hope and song, the opposite of the poem's oppressive mood.
+    * **Feedback:** ✓ Correct. Ilya Kaminsky's poem closes on this confession — "we (forgive us) / lived happily during the war" — admitting the guilt of continuing an ordinary, comfortable life while conflict rages elsewhere.
+    * **Why B:** Colonization in Reverse celebrates migration in a joyful, comic voice, not guilt over war.
+    * **Why C:** Thirteen concerns a police stop, not a confession of wartime complacency.
+    * **Why D:** Papa-T recalls a grandfather's storytelling, not a confession about war.
 
-23. **Type: True-False [Tests Form & Features]**
+23. **Type: MCQ [Tests Form & Features]**
     @set:2
-    * **Question:** "There's a Certain Slant of Light" is written in four quatrains using Dickinson's characteristic dashes and slant (near) rhyme.
-    * **Answer:** True
-    * **Feedback:** ✓ Correct. Dickinson's dashes interrupt the flow and her rhymes only half-chime, so the hymn-like quatrain form is strained from within, matching the poem's inward disturbance.
-    * **WhyWrong:** This is true — the poem's four quatrains, broken by dashes and unsettled by slant rhyme, embody the "internal difference" it describes.
+    * **Question:** What technique dominates the poem's account of America "falling" during the war?
+    * **Options:** A) A single, unbroken rhyming couplet, B) Fragmented lineation and repetition, such as "invisible house by invisible house by invisible house", C) A tightly rhymed ballad quatrain, D) Second-person address throughout
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Kaminsky breaks the lines apart and repeats phrases such as "invisible house by invisible house by invisible house", the fractured form enacting the numbing repetition of watching disaster from a safe distance.
+    * **Why A:** The poem is written in loosely broken free verse, not rhyming couplets.
+    * **Why C:** There is no regular rhyme scheme here.
+    * **Why D:** The poem is narrated in the first person plural ("we"), not addressed to "you".
 
-24. **Type: Select All [Tests Meaning & Effects]**
+24. **Type: MCQ [Tests Meaning & Effects]**
     @set:2
-    * **Question:** Which statements correctly describe the meaning and effect of "There's a Certain Slant of Light"?
-    * **Options:** A) The poem describes an unexplained, inward despair brought on by a particular quality of winter light, B) Dickinson calls this despair an "internal difference" that leaves "no scar", C) The poem's dashes and slant rhyme unsettle its hymn-like form, mirroring the speaker's inward disturbance, D) The poem concludes that the despair is easily explained and quickly cured
-    * **Correct:** A, B, C
-    * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-    * **Feedback:** ✓ Correct. Dickinson locates an unexplained, scarless despair in a particular slant of winter light, calling it an "internal difference"; the poem's disturbed hymn form, unsettled by dashes and slant rhyme, enacts that inward wound.
-    * **Why D:** The despair is described as mysterious and un-teachable, not easily explained or resolved.
+    * **Question:** What does the repetition "in the street of money in the city of money in the country of money" suggest?
+    * **Options:** A) That the speaker's country is admirably wealthy, B) That comfort and materialism dulled the urgency to act while war continued elsewhere, C) That money can end any war, D) That the speaker has personally profited from war
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The insistent repetition of "money" indicts a society absorbed in wealth and comfort, protesting "but not enough" while war continues unseen.
+    * **Why A:** The repetition reads as an indictment of materialism, not admiration.
+    * **Why C:** Money is presented as a distraction from the war, not a solution to it.
+    * **Why D:** The guilt described is collective and passive ("we lived happily"), not personal profiteering.
 
 25. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem presents a speaker stripping away layer after layer of clothing and imposed identity, asserting the right to define herself?
-    * **Options:** A) Honour Killing, B) Envy, C) Boat Stealing, D) Vergissmeinnicht
+    * **Question:** Which poem, written in Jamaican patois and addressed to "miss Mattie", celebrates Jamaican people "colonizin / Englan in reverse"?
+    * **Options:** A) Colonization in Reverse, B) Songs for the People, C) We Lived Happily during the War, D) Thirteen
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Imtiaz Dharker's "Honour Killing" has its speaker remove one imposed garment and expectation after another, reclaiming ownership of her own identity.
-    * **Why B:** Envy is moral counsel about a personal vice, not about imposed identity.
-    * **Why C:** Boat Stealing is a childhood memory of nature, unrelated to imposed identity.
-    * **Why D:** Vergissmeinnicht concerns a dead soldier on a battlefield, not a speaker reclaiming selfhood.
+    * **Feedback:** ✓ Correct. Louise Bennett's "Colonization in Reverse" opens with joyful news for "miss Mattie": Jamaican people are "colonizin / Englan in reverse."
+    * **Why B:** Songs for the People is a manifesto about poetry's purpose, not about migration.
+    * **Why C:** We Lived Happily during the War is set in an unnamed wealthy country during conflict, not about Jamaican migration.
+    * **Why D:** Thirteen follows a boy stopped by police, not a celebration of migration.
 
-26. **Type: MCQ [Tests Form & Features]**
+26. **Type: Fill [Tests Form & Features]**
     @set:2
-    * **Question:** How does the form of "Honour Killing" suit its meaning?
-    * **Options:** A) Loosening, free-verse lines without regular punctuation enact the speaker's gradual casting-off of every imposed identity, B) A strict sonnet argues a single legal case, C) Rhymed couplets celebrate a public victory, D) Regular ballad stanzas tell a heroic story
-    * **Correct:** A
-    * **Feedback:** ✓ Correct. As the speaker sheds one imposed layer after another, the free verse loosens with her, the open form enacting her move towards self-definition.
-    * **Why B:** The poem's shape is open and shifting, not the tight fourteen lines of a sonnet.
-    * **Why C:** It is an act of reclamation, not a celebration in rhymed couplets.
-    * **Why D:** It is an unfolding meditation, not a story in regular ballad stanzas.
+    * **Question:** Louise Bennett writes the whole poem in Jamaican [BLANK] (dialect), giving her satire of empire an authentic, spoken voice.
+    * **Answer:** patois
+    * **Feedback:** ✓ Correct. Writing entirely in Jamaican patois — "Wat a devilment a Englan!" — lets Bennett satirise empire in a genuine, spoken Caribbean voice rather than standard English.
+    * **WhyWrong:** The word is "patois" — the poem's Jamaican dialect voice is essential to its comic, satirical effect.
 
 27. **Type: MCQ [Tests Meaning & Effects]**
     @set:2
-    * **Question:** What does "Honour Killing" ultimately assert?
-    * **Options:** A) That imposed expectations of identity should be accepted without question, B) That the speaker has the right to remove every identity imposed on her and define herself on her own terms, C) That clothing has no symbolic significance at all, D) That the poem is only about fashion
+    * **Question:** What is the effect of Bennett's comic, celebratory tone in "Colonization in Reverse"?
+    * **Options:** A) It trivialises the seriousness of migration and empire, B) It makes a serious political point about empire and migration accessible and memorable through humour, C) It proves the speaker disapproves of migration, D) It has no relationship to the poem's meaning
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Dharker's speaker casts off each imposed marker of identity in turn, asserting her right to define who she is for herself.
-    * **Why A:** The poem resists imposed expectations rather than accepting them.
-    * **Why C:** The clothing and objects removed are treated as heavily symbolic, not incidental.
-    * **Why D:** The stripping-away is symbolic of identity and control, not a poem about fashion.
+    * **Feedback:** ✓ Correct. Bennett's playful, comic voice — "tun history upside dung!" — carries a serious point about empire being reversed through migration, making the political inversion vivid and memorable rather than solemn.
+    * **Why A:** The comic tone sharpens the political point rather than trivialising it.
+    * **Why C:** The speaker's "joyful news" reveals delight in migration, not disapproval.
+    * **Why D:** The humour is central to how the poem makes its point about empire.
 
 28. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem recalls a mother's memory of the 1947 Partition of India, ending on a single haunting question about dividing a country?
-    * **Options:** A) Partition, B) Lament, C) Songs for the People, D) Colonization in Reverse
+    * **Question:** Which poem addresses "you" as a boy "four minutes from home" when "cornered by an officer" who accuses him of matching a robbery description?
+    * **Options:** A) Thirteen, B) Papa-T, C) Songs for the People, D) Colonization in Reverse
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Sujata Bhatt's "Partition" follows a mother's remembered experience of the 1947 Partition, closing on a stark question about how a country can be divided.
-    * **Why B:** Lament mourns casualties of war generally, not one family's memory of Partition.
-    * **Why C:** Songs for the People looks towards collective hope, not a specific family memory.
-    * **Why D:** Colonization in Reverse satirises empire and migration, not the Partition of India.
+    * **Feedback:** ✓ Correct. Caleb Femi's "Thirteen" addresses a boy stopped just "four minutes from home" by an officer investigating a robbery, though he is only thirteen years old.
+    * **Why B:** Papa-T is narrated in the first person about a grandfather, not addressed to "you".
+    * **Why C:** Songs for the People is a manifesto about poetry, not a narrative about a police stop.
+    * **Why D:** Colonization in Reverse celebrates migration, not a police encounter.
 
 29. **Type: True-False [Tests Form & Features]**
     @set:2
-    * **Question:** "Partition" is written as a single unbroken verse paragraph, without stanza breaks, before an isolated closing question.
+    * **Question:** "Thirteen" is narrated in the second person ("you") and builds an extended metaphor of stars, supernovas and black holes.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. The poem runs on without a break, like memory spilling out, before the indented final question falls into that flow with sudden weight.
-    * **WhyWrong:** This is true — Bhatt lets the poem run as one continuous verse paragraph, so the closing question lands in isolation.
+    * **Feedback:** ✓ Correct. Femi addresses the boy throughout as "you", and extends the metaphor of "supernovas" and "dying stars / on the verge of becoming black holes" across the poem.
+    * **WhyWrong:** This is accurate — the second-person address and the star/supernova/black hole metaphor both run through the whole poem.
 
-30. **Type: MCQ [Tests Meaning & Effects]**
+30. **Type: Select All [Tests Meaning & Effects]**
     @set:2
-    * **Question:** What is the effect of the poem's closing, isolated question in "Partition"?
-    * **Options:** A) It resolves the poem with a clear, comforting answer, B) It leaves the trauma of Partition unresolved, forcing the reader to sit with a question that has no easy answer, C) It changes the subject to something unrelated, D) It celebrates the drawing of the new border
-    * **Correct:** B
-    * **Feedback:** ✓ Correct. By ending on an unanswered question, Bhatt refuses any tidy resolution, leaving the reader to confront the lasting, unresolved pain of Partition.
-    * **Why A:** The poem deliberately withholds a comforting resolution.
-    * **Why C:** The question returns directly to the poem's central concern with division.
-    * **Why D:** The tone is one of grief and unease, not celebration.
+    * **Question:** Which statements correctly describe the meaning and effect of "Thirteen"?
+    * **Options:** A) It exposes the racial profiling of a Black child through a police stop-and-search, B) It contrasts a teacher's earlier praise of the child as a "supernova" with the officer's dehumanising treatment of him, C) The extended metaphor of "dying stars" and "black holes" suggests a loss of childhood potential, D) The poem concludes that the officer's actions were entirely justified
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
+    * **Feedback:** ✓ Correct. Femi exposes racial profiling in a police stop, sets a teacher's praise of the child as a "supernova" against an officer's dehumanising treatment, and turns the extended metaphor of "dying stars" and "black holes" into an image of potential extinguished.
+    * **Why D:** The poem's whole force is a protest against the officer's treatment of the child, not an endorsement of it.
 
 <!-- ============================ SET 3 ============================ -->
 
 31. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem repeats a dismissive refrain about a flag being "just a piece of cloth", even as it reveals the terrible power people invest in it?
-    * **Options:** A) Flag, B) Colonization in Reverse, C) Songs for the People, D) Thirteen
+    * **Question:** Which poem describes a grandfather's eyes becoming "two stopwatches / counting down his own exit" as a new-born brother arrives?
+    * **Options:** A) Equilibrium, B) Prayer, C) Happy Birthday Moon, D) Theme for English B
     * **Correct:** A
-    * **Feedback:** ✓ Correct. John Agard's "Flag" returns again and again to a refrain that shrugs off the flag as mere fabric, even as the poem reveals people killing and dying in its name.
-    * **Why B:** Colonization in Reverse satirises empire through migration, not a repeated refrain about a flag.
-    * **Why C:** Songs for the People looks towards unifying song, not a symbol of division like a flag.
-    * **Why D:** Thirteen reflects on adolescence, not a national emblem.
+    * **Feedback:** ✓ Correct. Theresa Lola's "Equilibrium" opens with the new-born brother's arrival turning the grandfather's eyes into "two stopwatches / counting down his own exit."
+    * **Why B:** Prayer is framed by a birth and a death at the very start and end of a life, not a grandfather's ageing.
+    * **Why C:** Happy Birthday Moon is about a father reading to his deaf son, not a grandfather's decline.
+    * **Why D:** Theme for English B concerns a college assignment and identity, not a family's births and declines.
 
-32. **Type: Fill [Tests Form & Features]**
+32. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** "Flag" is built from three-line stanzas known as [BLANK], each holding a question, a dismissive refrain, and its consequence.
-    * **Answer:** tercets
-    * **Feedback:** ✓ Correct. Each tercet's tight three-line shape holds the poem's call-and-response between question, refrain and consequence.
-    * **WhyWrong:** The word is "tercets" — the three-line stanzas from which Agard builds the poem's structure.
+    * **Question:** How is "Equilibrium" shaped, and what extended image does it use?
+    * **Options:** A) A long, rhymed ballad using a nautical metaphor, B) Five short, unrhymed couplets built around an extended metaphor of mathematics and balance, C) A pantoum with repeating lines, D) A sestina with six recurring end-words
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Lola's ten lines fall into five spare, unrhymed couplets, built around the extended metaphor of an "equation of equilibrium" balancing a life beginning against a life fading.
+    * **Why A:** The poem is short and unrhymed, with no nautical imagery.
+    * **Why C:** The repeating-line pantoum shape belongs to "Happy Birthday Moon", not this poem.
+    * **Why D:** The sestina's six recurring end-words describe "The Perseverance", not this poem.
 
-33. **Type: Select All [Tests Meaning & Effects]**
+33. **Type: True-False [Tests Meaning & Effects]**
     @set:3
-    * **Question:** Which statements correctly describe the meaning and effect of "Flag"?
-    * **Options:** A) The poem repeats a refrain that dismisses the flag as mere cloth, B) The gap between the dismissive refrain and the flag's real power to provoke war and death creates irony, C) The poem questions how a simple object can command such extreme loyalty and violence, D) The poem concludes that flags have no real influence on people's actions
-    * **Correct:** A, B, C
-    * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-    * **Feedback:** ✓ Correct. Agard's refrain keeps insisting the flag is "just a piece of cloth", but the irony sharpens with every return, since the poem reveals how much death and loyalty a flag can command.
-    * **Why D:** The poem's whole point is that the flag commands enormous, often violent, influence over people.
+    * **Question:** "Equilibrium" explores a moment where a new life beginning and an older life declining seem to be held in balance within the same family.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. As the new-born brother "was crowned with a name", the grandfather's "brain began to forget his" — the poem holds arrival and decline in a single, poised balance.
+    * **WhyWrong:** This is the poem's central idea — the "equation of equilibrium" balances a birth against a grandfather's fading memory.
 
 34. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem, written in Jamaican dialect, satirically reverses the story of empire — instead of Britain colonising Jamaica, Jamaicans now migrate to Britain in large numbers?
-    * **Options:** A) Colonization in Reverse, B) Flag, C) Envy, D) Boat Stealing
+    * **Question:** Which poem begins with the Islamic call to prayer, "Allah hu Akbar", spoken by a father "in the Queen Elizabeth maternity ward"?
+    * **Options:** A) Prayer, B) Equilibrium, C) Happy Birthday Moon, D) Tea With Our Grandmothers
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Louise Bennett's "Colonization in Reverse" comically inverts the colonial narrative, imagining Jamaican migration to Britain as a reversal of empire's direction.
-    * **Why B:** Flag concerns a national symbol, not migration and empire.
-    * **Why C:** Envy is moral counsel on a personal vice, unrelated to colonial history.
-    * **Why D:** Boat Stealing is a childhood memory of nature, unrelated to empire or migration.
+    * **Feedback:** ✓ Correct. Zaffar Kunial's "Prayer" opens with the father's whispered "Allah hu Akbar – God is great" at his son's birth in "the Queen Elizabeth maternity ward."
+    * **Why B:** Equilibrium is set at a naming ceremony, not a maternity ward, and includes no Islamic prayer.
+    * **Why C:** Happy Birthday Moon is about a father reading a picture book, not a call to prayer.
+    * **Why D:** Tea With Our Grandmothers is set around a death and shared tea, not a birth.
 
-35. **Type: True-False [Tests Form & Features]**
+35. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** "Colonization in Reverse" uses a song-like ballad stanza and Jamaican dialect to carry its satire of empire.
-    * **Answer:** True
-    * **Feedback:** ✓ Correct. Bennett sets her reversal of colonial history to a lively, song-like ballad metre in dialect, and the cheerful, familiar tune sharpens the satire.
-    * **WhyWrong:** This is true — the bouncing ballad stanza and dialect voice are exactly what carry the poem's comic, pointed satire.
+    * **Question:** What distinctive technique does "Prayer" use?
+    * **Options:** A) It weaves in quotation from the seventeenth-century poet George Herbert alongside the Islamic call to prayer, B) It repeats a full stanza verbatim as a refrain, C) It is written entirely in Jamaican patois, D) It uses only single-word lines throughout
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. Kunial interlaces his own family's births and deaths with quotation from George Herbert ("God's breath in man returning to his birth, / says Herbert, is prayer"), placing Islamic and Christian traditions of prayer side by side.
+    * **Why B:** The poem develops through new detail stanza to stanza rather than repeating one stanza as a refrain.
+    * **Why C:** Colonization in Reverse is written in Jamaican patois, not this poem.
+    * **Why D:** The poem is written in longer, flowing lines, not single words.
 
 36. **Type: MCQ [Tests Meaning & Effects]**
     @set:3
-    * **Question:** What is the effect of Bennett's comic tone in "Colonization in Reverse"?
-    * **Options:** A) It trivialises the history of empire completely, B) The light, comic surface makes the serious reversal of colonial history land more sharply, C) It proves that migration never really happened, D) It celebrates British colonial rule
+    * **Question:** What does the poem's closing line, "She stared on, ahead. I won't know if she heard", convey?
+    * **Options:** A) Certainty that the mother heard every word, B) The helplessness and uncertainty of grief, as love is spoken without any confirmation it was received, C) Anger at the mother for not responding, D) Relief that the ordeal is over
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The poem's playful, song-like humour makes its serious point about the reversal of colonial power all the more pointed and memorable.
-    * **Why A:** The comedy sharpens the satire rather than trivialising the history it addresses.
-    * **Why C:** The poem's whole premise is the reality of large-scale migration to Britain.
-    * **Why D:** The satire questions and reverses colonial power, rather than celebrating it.
+    * **Feedback:** ✓ Correct. The unresolved close — "I won't know if she heard" — leaves the speaker's whispered love unanswered, capturing grief's helplessness at the edge of death.
+    * **Why A:** The line's whole force is uncertainty, not confirmation.
+    * **Why C:** The tone is tender and grieving, with no trace of anger.
+    * **Why D:** The poem ends in irresolution, not relief.
 
-37. **Type: MCQ [Tests Recognising the Poem]**
+37. **Type: Fill [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem expresses a poet's wish to create songs that can unite and uplift ordinary people, offering hope in place of division?
-    * **Options:** A) Songs for the People, B) Lament, C) Vergissmeinnicht, D) Partition
-    * **Correct:** A
-    * **Feedback:** ✓ Correct. Frances E. W. Harper's "Songs for the People" voices a wish to write songs that can reach and unite ordinary people, offering comfort and hope.
-    * **Why B:** Lament is a mourning litany for war's victims, not a wish to unite people through song.
-    * **Why C:** Vergissmeinnicht concerns one dead soldier, not a hopeful vision of collective song.
-    * **Why D:** Partition recalls one family's memory of a divided homeland, not a wish for unifying song.
+    * **Question:** In Raymond Antrobus's poem, a father reads a picture book each night to his [BLANK] son "who slurs his speech".
+    * **Answer:** deaf
+    * **Feedback:** ✓ Correct. The father reads nightly to "his deaf son who slurs his speech", the pair's shared ritual built around the boy's deafness.
+    * **WhyWrong:** The word is "deaf" — the whole poem turns on the father's patient reading ritual with his deaf son.
 
 38. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** Given that Harper wrote in the accessible, rhymed, song-like tradition typical of nineteenth-century verse meant to be recited and sung, what kind of form would you expect "Songs for the People" to use?
-    * **Options:** A) Regular, rhymed stanzas in a simple, song-like metre, B) Unrhymed free verse with no regular metre, C) A single unbroken prose paragraph, D) A strict Petrarchan sonnet
+    * **Question:** What structural technique shapes "Happy Birthday Moon"?
+    * **Options:** A) A pantoum-like form, where lines from one stanza recur as lines in the next, B) A sestina cycling six end-words, C) An unrhymed sonnet, D) A ballad with a sung refrain
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Harper's verse favours regular, rhymed, song-like stanzas, fitting a poem that is itself a plea for unifying "songs for the people".
-    * **Why B:** Harper's accessible, singable style favours regular rhyme and metre, not unrhymed free verse.
-    * **Why C:** The poem is written in verse, not prose.
-    * **Why D:** Harper's accessible style does not follow the tight fourteen-line argument of a Petrarchan sonnet.
+    * **Feedback:** ✓ Correct. Antrobus repeats lines from each stanza in the next — "Sometimes his finger moves past words, tracing white space" recurs, then "to his deaf son who slurs his speech" — a pantoum-like circling that mirrors the pair's repeated, patient ritual.
+    * **Why B:** The sestina's six recurring end-words describe "The Perseverance", not this poem.
+    * **Why C:** The poem runs far longer than fourteen lines and has no fixed rhyme.
+    * **Why D:** There is no sung refrain here, though lines do recur in a different way.
 
 39. **Type: MCQ [Tests Meaning & Effects]**
     @set:3
-    * **Question:** What vision does "Songs for the People" offer?
-    * **Options:** A) A vision of songs that divide people further, B) A hopeful vision of song as something that can comfort, unite and uplift people across differences, C) A rejection of music and poetry altogether, D) A demand that songs be reserved only for the powerful
+    * **Question:** What does the invented word "Rain-nan Akabok" come to represent in the poem?
+    * **Options:** A) A mistake that the father is determined to correct, B) An affectionate, private language shared between father and deaf son, born from mispronunciation, C) A word borrowed from another poem in the anthology, D) A term of frustration between them
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Harper imagines songs as a shared gift capable of comforting and uniting people, offering hope rather than division.
-    * **Why A:** The poem's wish is for songs that unite, not divide.
-    * **Why C:** The poem itself is a celebration of song's power, not a rejection of it.
-    * **Why D:** Harper's "people" are ordinary and shared, not reserved for the powerful alone.
+    * **Feedback:** ✓ Correct. Rather than correcting it, the father laughs and calls his son "something else" — "Rain-nan Akabok" becomes a private, affectionate language of their own, part of "really hear[ing] each other."
+    * **Why A:** The father embraces the mispronunciation with laughter rather than insisting it be fixed.
+    * **Why C:** The word belongs only to this poem, invented between father and son.
+    * **Why D:** The moment is warm and joyful, not frustrated.
 
 40. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem takes its title from a family nickname, reflecting on a father or grandfather figure and the experience passed down through a family?
-    * **Options:** A) Papa-T, B) Flag, C) The Destruction of Sennacherib, D) There's a Certain Slant of Light
+    * **Question:** Which poem moves through four grandmothers — including one who died "grinding cardamom" and one who "broke cinnamon barks between her palms" — to comfort a grieving friend?
+    * **Options:** A) Tea With Our Grandmothers, B) Equilibrium, C) Prayer, D) Theme for English B
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Fred D'Aguiar's "Papa-T" reflects on a family elder figure, considering the experience and memory carried down through the family.
-    * **Why B:** Flag concerns a national symbol, not a family figure.
-    * **Why C:** The Destruction of Sennacherib retells a biblical battle, unrelated to a family nickname.
-    * **Why D:** There's a Certain Slant of Light describes an inward, wintry despair, not a family elder.
+    * **Feedback:** ✓ Correct. Warsan Shire's "Tea With Our Grandmothers" moves through four grandmothers in turn, including one who "died grinding cardamom" and one who "broke cinnamon barks between her palms", to comfort a friend whose habooba has died.
+    * **Why B:** Equilibrium concerns one grandfather, not four grandmothers.
+    * **Why C:** Prayer concerns a father and a dying mother, not a catalogue of grandmothers.
+    * **Why D:** Theme for English B is set in a college classroom, with no grandmothers.
 
 41. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** As a piece of contemporary free verse reflecting on personal and family memory, how would you expect "Papa-T" to be shaped?
-    * **Options:** A) In loose, unrhymed free verse rather than a fixed traditional form, B) As a strict fourteen-line sonnet, C) In rhymed heroic couplets, D) As a repeating villanelle refrain
+    * **Question:** How is "Tea With Our Grandmothers" structured?
+    * **Options:** A) Four unrhymed stanzas of equal length, each devoted to a different grandmother, linked in one cumulative sentence, B) A single rhyming quatrain, C) A sestina with six recurring end-words, D) A pantoum with repeating lines
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Contemporary reflective poems of this kind typically favour loose, unrhymed free verse over a fixed inherited form, letting personal memory shape the lines.
-    * **Why B:** A fixed fourteen-line sonnet argument does not suit this kind of open, reflective family memory.
-    * **Why C:** Rhymed heroic couplets belong to a more formal, historical register than this reflective piece.
-    * **Why D:** A villanelle's repeating refrains do not fit an open reflection on personal memory.
+    * **Feedback:** ✓ Correct. Shire builds four matching stanzas, one for each grandmother, joined by semicolons into a single cumulative sentence — a structure of parallel tribute.
+    * **Why B:** The poem runs to four full stanzas, not one quatrain, and has no fixed rhyme.
+    * **Why C:** The sestina's six recurring end-words describe "The Perseverance", not this poem.
+    * **Why D:** The repeating-line pantoum shape belongs to "Happy Birthday Moon", not this poem.
 
-42. **Type: MCQ [Tests Meaning & Effects]**
+42. **Type: Select All [Tests Meaning & Effects]**
     @set:3
-    * **Question:** What is "Papa-T" most concerned with?
-    * **Options:** A) A biblical battle from the ancient world, B) The memory and inheritance carried down through a family, shaped by experiences of displacement and history, C) A national flag as a symbol, D) A photographer's darkroom
-    * **Correct:** B
-    * **Feedback:** ✓ Correct. D'Aguiar's poem centres on a family figure and the inherited memory of experience shaped by displacement and history.
-    * **Why A:** The poem's focus is a personal, family relationship, not an ancient battle.
-    * **Why C:** There is no flag or national symbol at the centre of this poem.
-    * **Why D:** The poem is concerned with family memory, not a photographer's work.
+    * **Question:** Which statements correctly describe the meaning and effect of "Tea With Our Grandmothers"?
+    * **Options:** A) It draws solidarity in grief by cataloguing different grandmothers' shared endurance of illness, loss and hardship, B) Spices and tea act as symbols of ritual, comfort and inherited female labour across cultures, C) The closing image of steam that "would rise like a ghost" fuses loss with lingering memory, D) The poem argues that only one culture's grief truly matters
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
+    * **Feedback:** ✓ Correct. Shire draws solidarity across cultures by cataloguing grandmothers' shared endurance, uses spices and tea as symbols of ritual and inherited labour, and closes on steam that "would rise like a ghost", fusing loss with memory.
+    * **Why D:** The poem's whole structure honours grandmothers across several different cultures equally, not one alone.
 
 43. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem reflects on being thirteen years old, growing up amid the pressures and tensions of inner-city life?
-    * **Options:** A) Thirteen, B) Envy, C) Boat Stealing, D) Partition
+    * **Question:** Which poem opens with a college instructor's assignment — "Go home and write / a page tonight" — before the speaker reflects on being "the only colored student" in his class?
+    * **Options:** A) Theme for English B, B) Prayer, C) Happy Birthday Moon, D) Tea With Our Grandmothers
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Caleb Femi's "Thirteen" reflects on the experience of being thirteen, growing up within a community shaped by the pressures of inner-city life.
-    * **Why B:** Envy is moral counsel on a personal vice, not a coming-of-age reflection.
-    * **Why C:** Boat Stealing recalls a rural, solitary childhood memory, not urban adolescence.
-    * **Why D:** Partition recalls a mother's memory of the 1947 Partition, not a coming-of-age poem.
+    * **Feedback:** ✓ Correct. Langston Hughes's "Theme for English B" opens with the instructor's assignment before the speaker reflects on being "the only colored student in my class."
+    * **Why B:** Prayer concerns birth and death within a family, not a college classroom.
+    * **Why C:** Happy Birthday Moon is about a father and deaf son at home, not a classroom assignment.
+    * **Why D:** Tea With Our Grandmothers concerns grief and grandmothers, not a college assignment.
 
-44. **Type: MCQ [Tests Form & Features]**
+44. **Type: Fill [Tests Form & Features]**
     @set:3
-    * **Question:** As a contemporary poem reflecting on adolescence and community, how would you expect "Thirteen" to be shaped?
-    * **Options:** A) In free verse with a contemporary, reflective voice, rather than a strict historical form, B) As a strict Shakespearean sonnet, C) In rhymed heroic couplets, D) As a repeating villanelle refrain
-    * **Correct:** A
-    * **Feedback:** ✓ Correct. Contemporary reflective poems on adolescence and community typically favour free verse and a direct, present-day voice over an inherited fixed form.
-    * **Why B:** A tightly argued fourteen-line sonnet does not suit this open, contemporary reflection.
-    * **Why C:** Rhymed heroic couplets belong to a far more formal, historical register.
-    * **Why D:** A villanelle's fixed repeating refrains do not fit this open, reflective poem.
+    * **Question:** The poem opens by directly quoting the [BLANK]'s assignment in short, indented lines, before shifting into the speaker's own first-person voice.
+    * **Answer:** instructor
+    * **Feedback:** ✓ Correct. The poem opens with the instructor's assignment quoted directly, then moves into the speaker's own reflective, conversational first-person voice addressed back to that same instructor.
+    * **WhyWrong:** The word is "instructor" — his assignment opens the poem before the speaker takes over in his own voice.
 
 45. **Type: MCQ [Tests Meaning & Effects]**
     @set:3
-    * **Question:** What does "Thirteen" ultimately explore?
-    * **Options:** A) A biblical battle from the ancient world, B) The experience of coming of age within a community shaped by the tensions of inner-city life, C) A grieving mother visiting a war memorial, D) A soldier's guilt over a killing
+    * **Question:** What conclusion does the speaker reach about his relationship with his white instructor?
+    * **Options:** A) That they share nothing at all in common, B) That despite racial and social inequality, each is "a part of" the other, and both shape and are shaped by each other, C) That the instructor is entirely wrong to have set the assignment, D) That only the instructor can ever learn anything from the other
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Femi's poem explores the experience of growing up at thirteen, within a community shaped by the pressures and tensions of inner-city life.
-    * **Why A:** The poem's focus is personal and contemporary, not an ancient battle.
-    * **Why C:** There is no grieving mother or war memorial in this poem.
-    * **Why D:** The poem is not about a soldier's guilt, but coming of age.
+    * **Feedback:** ✓ Correct. Hughes concludes that speaker and instructor are mutually bound — "a part of you, instructor... yet a part of me" — even as he notes the instructor remains "older—and white—and somewhat more free."
+    * **Why A:** The poem insists on shared, intertwined identity, not total separation.
+    * **Why C:** The poem questions the assignment's premise but does not reject it outright.
+    * **Why D:** The closing lines insist that learning runs both ways between them.
