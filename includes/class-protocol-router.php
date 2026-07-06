@@ -1052,6 +1052,16 @@ class SWML_Protocol_Router {
             $parts[] = $modular_protocol;
             $query->instructions = implode("\n\n---\n\n", $parts);
 
+            // v7.19.901 (Neil): pin marking-turn temperature LOW so the same essay scores the
+            // same run-to-run — the leniency-drift lever. Assessment turns ONLY (teaching &
+            // planning keep the bot default). Per-query override; never touches the shared bot
+            // config. Measured lever: if a re-run still wobbles on interpretive marks, the next
+            // step is per-band anchor exemplars.
+            $ctx_task = $context['task'] ?? '';
+            if ($ctx_task === 'assessment' || $ctx_task === 'redraft_assessment') {
+                $query->temperature = 0.3;
+            }
+
             // v7.18.12: TEXT-ISOLATION + placeholder substitution.
             //
             // Layer 1: prepend an ACTIVE TEXT isolation header so any worked-example

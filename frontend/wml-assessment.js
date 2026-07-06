@@ -3043,6 +3043,7 @@
                 if (!qKey) return whole;
                 // element rows: | criterion | worth | your score | why |
                 let scoreSum = 0, scoredRows = 0;
+                const _snapRepl = [];   // v7.19.901: 0.25-grid rewrites to apply to the card
                 body.split('\n').forEach(line => {
                     const t = line.trim();
                     if (!t.startsWith('|')) return;
@@ -3053,8 +3054,24 @@
                     // ("+0.3") — Run 6 Q2 ¶1: the score regex rejected it, the row was skipped,
                     // and the auditor "corrected" 2.95 down to 2.65, deleting an earned bonus.
                     if (!/^\+?\d+(\.\d+)?$/.test(cells[1]) || !/^\+?\d+(\.\d+)?$/.test(cells[2])) return;
-                    scoreSum += parseFloat(cells[2]); scoredRows++;
+                    // v7.19.901 (Neil): snap each element score to the 0.25 best-fit grid — code-owned.
+                    // 0.05-level marker noise (0.65 vs 0.7) is false precision no mark scheme can
+                    // justify; snapping makes the numeric progress signal trustworthy (mark-to-train).
+                    // Rewrite the visible cell so display == counted; feedback words untouched.
+                    const rawNum = parseFloat(cells[2]);
+                    const worthNum = parseFloat(cells[1]);
+                    let snapped = Math.round(rawNum * 4) / 4;
+                    if (worthNum > 0) snapped = Math.min(worthNum, Math.max(0, snapped));
+                    scoreSum += snapped; scoredRows++;
+                    if (snapped !== rawNum) {
+                        const segs = line.split('|');           // score cell = index 3 (after lead|criterion|worth)
+                        if (segs.length > 3) {
+                            segs[3] = ' ' + (/^\+/.test(cells[2]) ? '+' : '') + snapped + ' ';
+                            _snapRepl.push([line, segs.join('|')]);
+                        }
+                    }
                 });
+                if (_snapRepl.length) _snapRepl.forEach(function (r) { whole = whole.replace(r[0], r[1]); });
                 // penalties: prefer the "Total penalties: −X" line, else sum applied bullets
                 // v7.19.854: R&J 04-Jul console proof — lit cards emit the line BOLDED
                 // ("**Total penalties:** −1.0"); the old regex required plain "Total
