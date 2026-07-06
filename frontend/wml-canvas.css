@@ -6157,6 +6157,15 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-section-block h3:first-child {
     margin-top: 8px;
 }
+/* v7.19.888: the editor's TextAlign extension applies to headings, so a stray
+   textAlign:right can get baked into a saved doc's group heading (Neil hit this on
+   the Self-Assessment "Introduction" heading — right-aligned + persistent across
+   reload). The Self-Assessment and Action Plan sections are structured forms whose
+   group headings are ALWAYS left-aligned labels, never free-writing — so force left,
+   beating the inline attr. Fixes existing docs with no doc mutation (universal). */
+.swml-section-block[data-section-type="action"] h3 {
+    text-align: left !important;
+}
 
 /* Italic prompts inside sections */
 .swml-section-block em {
