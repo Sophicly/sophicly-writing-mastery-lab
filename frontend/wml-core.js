@@ -2849,19 +2849,24 @@ window.WML = (function() {
             + '</div>';
     }
 
-    // v7.19.906: strip the three legacy inline progress renders formatAI produces
-    // (superseded by the beat-chip), then prepend the unified chip built from the raw
-    // reply. Returns the transformed HTML. Canvas pipelines call this; the main planning
-    // chat keeps its own inline renders untouched.
+    // v7.19.906/907: STRIP the three legacy inline progress renders formatAI produces
+    // (step-header + step-blocks + ASCII bar) from a canvas AI reply. These were driven by
+    // the model's own "Step N of M", which is documented-unreliable on marking turns (it
+    // stalls across turns — wml-assessment.js:558) and also leaked setup noise ("Type M for
+    // menu"). We remove them; the AUTHORITATIVE marking progress lives in the sidebar.
+    //
+    // v7.19.907: this helper NO LONGER auto-adds a chip from the model beat — the chip is
+    // added ONLY where the count is frontend-authoritative and exact (setup pre-chain + the
+    // self-assessment walk, via progressChipHTML). A marking-turn chip would render BEFORE
+    // that turn's feedback is filed to the doc, so any in-chat count there would be wrong;
+    // the sidebar (built post-fill from the doc) is the source of truth for marking.
     function withProgressChip(html, raw) {
         if (!html) return html;
-        html = html
+        void raw;
+        return html
             .replace(/<div class="swml-step-header">[\s\S]*?<\/div>/gi, '')
             .replace(/<span class="swml-step-blocks">[\s\S]*?swml-step-blocks-label">[^<]*<\/span>\s*<\/span>/gi, '')
             .replace(/<div class="swml-chat-progress-bar">[\s\S]*?swml-chat-progress-label">[^<]*<\/span>\s*<\/div>/gi, '');
-        const beat = parseProgressBeat(raw);
-        if (beat) html = progressChipHTML(beat) + html;
-        return html;
     }
 
     function renderLogo() {

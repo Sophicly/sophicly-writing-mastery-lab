@@ -6206,6 +6206,9 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     font-size: 11px; font-weight: 600; line-height: 1.4;
     color: rgba(255,255,255,0.55); white-space: nowrap;
     overflow: hidden;   /* one line in the reserved band; clip the tail before overlapping the heading */
+    /* v7.19.907: reserve the section's ✓/✕ action-button band on the right so the
+       clipped tail can't run underneath them (Neil). */
+    padding-right: 72px;
 }
 .swml-ana-seg { display: inline-flex; align-items: center; gap: 5px; }
 .swml-ana-lbl { opacity: 0.6; text-transform: uppercase; letter-spacing: 0.3px; font-size: 10px; }

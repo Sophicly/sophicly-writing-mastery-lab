@@ -1055,6 +1055,37 @@
         // path, so every marks-land hook that calls _refreshLangSidebar advances lit too.
         try { const lm = _buildLitSidebarModel(); if (lm) { _applyServerSidebar(lm); _styleTotalGradeCircle(lm); } } catch (_) {}
     }
+    // v7.19.907: sync the marking-turn beat-chip from the SAME dynamic, doc-derived model
+    // the sidebar uses (_buildLangSidebarModel / _buildLitSidebarModel) — so the step count
+    // is generated at runtime from the marked paragraphs, NEVER hardcoded per protocol
+    // (Neil). Called ONLY from the two post-fill marking sites (after applyAssessmentFeedback
+    // + _refreshLangSidebar), where the last AI bubble IS the marking reply and the doc is
+    // fresh — so the count is authoritative, not the model's unreliable self-declared "Step
+    // N of M" and not the stale pre-fill state. Setup / SA-walk bubbles set their own exact
+    // chip and are never touched here (this only fires on the marking path). The chip mirrors
+    // the sidebar's active pointer, so the two can never contradict.
+    function _syncMarkingBeatChip() {
+        try {
+            if (typeof WML === 'undefined' || !WML.progressChipHTML) return;
+            const host = document.getElementById('swml-canvas-chat-messages');
+            if (!host) return;
+            const m = (typeof _buildLangSidebarModel === 'function' && _buildLangSidebarModel())
+                   || (typeof _buildLitSidebarModel === 'function' && _buildLitSidebarModel());
+            if (!m || !Array.isArray(m.steps) || !m.current) return;
+            const cur = m.steps.find(s => s.step === m.current);
+            if (!cur || !cur.group) return;   // Setup / Total & Grade carry no group → no marking chip
+            const grp = m.steps.filter(s => s.group === cur.group);
+            const pos = grp.findIndex(s => s.step === cur.step) + 1;
+            if (pos < 1 || !grp.length) return;
+            const chip = WML.progressChipHTML({ section: cur.group, step: pos, total: grp.length });
+            const bodies = host.querySelectorAll('.swml-bubble.ai .swml-bubble-body');
+            const body = bodies[bodies.length - 1];
+            if (!body) return;
+            const existing = body.querySelector('.swml-beat');
+            if (existing) existing.outerHTML = chip;
+            else body.insertAdjacentHTML('afterbegin', chip);
+        } catch (_) { /* chip is best-effort, never block marking */ }
+    }
     // v7.19.628: paint the final "Total & Grade" circle with the achieved grade in its
     // ladder colour (reusing _GRADE_BG / _GRADE_DARK_TEXT). Runs AFTER _applyServerSidebar
     // (which repaints every circle) so it wins; no-op until a grade exists (★ stays).
@@ -2384,7 +2415,11 @@
             : '**' + row.skill + '** — before I mark, how would you rate what you actually did? ' + closer;
         const progress = 'Self-assessment · ' + row.group + ' · ' + (idx + 1) + ' of ' + total;
         const plain = progress + '\n\n' + question + '\n\nTap the closest description (or type 1–5).';
-        const html = '<p style="font-size:12px;opacity:0.6;margin-bottom:6px">' + progress + '</p>'
+        // v7.19.907: the beat-chip carries the group + count (Neil — chip on all phases).
+        const _beatHtml = (typeof WML !== 'undefined' && WML.progressChipHTML)
+            ? WML.progressChipHTML({ section: 'Self-assessment · ' + row.group, step: idx + 1, total: total })
+            : '<p style="font-size:12px;opacity:0.6;margin-bottom:6px">' + progress + '</p>';
+        const html = _beatHtml
             + formatAI(question)
             + '<p style="font-size:12px;opacity:0.7">Tap the closest description below (or type 1–5).</p>';
         _chatShell.addMsg(html, 'ai', plain, { suppressActions: true });
@@ -7594,6 +7629,15 @@
                     html = `<p>Good — noted. One more check before we begin assessing your essay. Thinking back to the question you're answering:</p>${qBox}<p>What were the <strong>key aspects</strong> this question asked you to explore? (type or use the mic)</p>`;
                 }
             }
+            // v7.19.907: beat-chip on the setup phase (Neil — chip on all phases).
+            // The pre-chain is EXACTLY three steps (grade → headline → keyword); grade is
+            // step 1 (rendered in the greeting), headline 2, keyword 3. Frontend-authoritative
+            // counts, so the "N of 3" is always accurate.
+            if (typeof WML !== 'undefined' && WML.progressChipHTML) {
+                const _suStep = stage === 'headline' ? 2 : 3;
+                const _suLabel = stage === 'headline' ? 'Setup · Goal' : 'Setup · Key aspects';
+                html = WML.progressChipHTML({ section: _suLabel, step: _suStep, total: 3 }) + html;
+            }
             // v7.19.810: suppressActions — the plain text carries the lettered options
             // for the AI's context, which auto-detection would ALSO turn into buttons
             // (duplicate truncated set observed live). Our own goalBar renders them.
@@ -8314,6 +8358,7 @@
                         // below. Self-guards (no-op unless the reply carries @FB markers or a marking block).
                         applyAssessmentFeedback(res.reply);
                         _refreshLangSidebar(); // v7.19.625: advance per-Q Language sidebar as marks land
+                        _syncMarkingBeatChip(); // v7.19.907: mirror the fresh sidebar pointer into the reply's beat-chip
                         // v7.19.830: SECTION/FIELD marker consumers run UNCONDITIONALLY (self-
                         // guarding no-ops without markers). The assessment Final Summary now files
                         // Action Plan + Analytics via @FIELD_SET, so these must not live inside
@@ -16260,6 +16305,7 @@
                                         // v7.19.600: auto-file assessment feedback (runs for ALL tasks, outside the cw_ guard).
                                         applyAssessmentFeedback(res.reply);
                                         _refreshLangSidebar(); // v7.19.625: advance per-Q Language sidebar as marks land
+                                        _syncMarkingBeatChip(); // v7.19.907: mirror the fresh sidebar pointer into the reply's beat-chip (twin)
                                         // v7.19.830: SECTION/FIELD marker consumers run UNCONDITIONALLY (self-guarding
                                         // no-ops without markers) — Final Summary files Action Plan + Analytics via
                                         // @FIELD_SET (CANVAS TASK-SCOPING rule 1).

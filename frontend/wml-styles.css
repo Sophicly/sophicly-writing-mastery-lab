@@ -2337,23 +2337,15 @@ body.swml-page {
     position: relative;
     height: 100%; min-width: 6px;
     border-radius: 999px;
-    background: linear-gradient(90deg, var(--swml-purple) 0%, #8b6dff 100%);
+    /* brand turquoise + the existing subtle LD shimmer (reuses @keyframes
+       swml-progress-shimmer — same treatment as the sidebar step-blocks). */
+    background: linear-gradient(90deg, var(--swml-teal), var(--swml-teal-light), var(--swml-teal));
+    background-size: 200% 100%;
+    animation: swml-progress-shimmer 2s ease infinite;
     transition: width 0.6s cubic-bezier(0.22,1,0.36,1);
 }
-/* subtle one-off sheen sweep on the fill */
-.swml-beat-fill::after {
-    content: ''; position: absolute; inset: 0; border-radius: 999px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
-    background-size: 200% 100%;
-    animation: swml-beat-sheen 2.4s ease-in-out infinite;
-}
-@keyframes swml-beat-sheen {
-    0% { background-position: 150% 0; }
-    100% { background-position: -150% 0; }
-}
 @media (prefers-reduced-motion: reduce) {
-    .swml-beat-fill { transition: none; }
-    .swml-beat-fill::after { animation: none; }
+    .swml-beat-fill { transition: none; animation: none; }
 }
 :root[data-theme="dark"] .swml-beat-track,
 [data-theme="dark"] .swml-beat-track {
