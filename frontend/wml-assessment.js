@@ -4263,6 +4263,56 @@
         return { q: q, para: '', skill: skill, ao: ao, _detected: true };
     }
 
+    // v7.19.897 (Neil 2026-07-06 — ROOT FIX for the recurring double self-rating/AO): ONE
+    // reflection-render path shared by BOTH canvas-chat addChatMessage pipelines (primary ~6582 +
+    // "mirrors primary" twin ~15530). The v7.19.848 one-per-question dup guard lived ONLY in the
+    // primary; the twin (resume / second-shell render) had a bare `if (reflectData) renderPanel`
+    // with NO guard, so on the resume path the AI's per-PARAGRAPH re-ask (self-rating then AO)
+    // leaked straight through — the protocol's "ONE reflection panel per question" rule was
+    // enforced in code, but only in one of two identical renderers, so it silently failed whenever
+    // the twin fired. Extracting the guard+repair+render here makes it ONE source of truth that
+    // cannot drift out of a pipeline again (the class of bug, not just this instance). Returns true
+    // when a reflection was handled (so the caller suppresses quick-actions, as before).
+    function _renderReflectInto(reflectData, body, chatTextarea) {
+        if (!reflectData) return false;
+        const _rk = _paraKey(reflectData.q || '');
+        // Duplicate = (a) a gate whose question already submitted its reflection, or (b) while a
+        // reflection is pending (submitted, no feedback card filed yet) any prose-DETECTED ask or
+        // any ask whose question can't be resolved (the per-paragraph re-ask has no Q token). A
+        // real @REFLECT_GATE marker for a fresh question always renders.
+        const _dup = (_rk && _reflectDone[_rk])
+            || (_reflectPending !== null && (reflectData._detected || !_rk));
+        if (_dup) {
+            console.warn('WML @REFLECT_GATE: duplicate reflection ask suppressed (q=' + (_rk || 'unresolved') + ', pending=' + _reflectPending + ', detected=' + !!reflectData._detected + ')');
+            body.appendChild(el('div', { className: 'swml-reflect-dup-note', innerHTML: '<p style="font-size:12px;opacity:0.7;"><em>Reflection already recorded — continuing with the marking.</em></p>' }));
+            if (_reflectRepairCount < 1) {
+                _reflectRepairCount++;
+                let _rTries = 0;
+                const _rLabel = (_reflectPending && _reflectPending !== '?') ? ('Q' + _reflectPending).replace('QIntro', 'the Introduction').replace('QConclusion', 'the Conclusion') : 'the current question';
+                const _rFire = () => {
+                    if (canvasChatLoading) { if (++_rTries < 20) setTimeout(_rFire, 300); return; }
+                    canvasSilentSend = true;
+                    chatTextarea.value = 'SYSTEM (not from the student): the reflection for ' + _rLabel + ' is ALREADY recorded — the student has submitted their self-rating, prediction and AO target. The protocol allows exactly ONE reflection panel per question: do NOT re-ask it, do NOT ask a separate AO-targeting question, and NEVER split reflections per paragraph. Resume the protocol at the NEXT step now — emit the Y-gate line if one is due, otherwise the next feedback card.';
+                    sendCanvasMessage();
+                };
+                setTimeout(_rFire, 400);
+            }
+            return true;
+        }
+        if (_rk) _reflectPending = null; // fresh question's gate — clear stale pending
+        try {
+            const widget = _renderReflectPanel(reflectData, (answer) => {
+                if (chatTextarea) { chatTextarea.value = answer; }
+                sendCanvasMessage();
+            });
+            body.appendChild(widget);
+        } catch (err) {
+            console.warn('WML @REFLECT_GATE render failed', err);
+            body.appendChild(el('div', { className: 'swml-reflect-fallback', textContent: 'Please type your 1–5 self-rating and which AO(s) you were targeting.' }));
+        }
+        return true;
+    }
+
     // v7.19.738: the @REFLECT_GATE / prose-fallback reflection panel is an ESSAY-assessment
     // capability (per-paragraph self-rating 1–5 + AO targeting). The chat-quiz tasks
     // (mark_scheme = Mark Scheme Assessment, mark_scheme_unit = MSQ/FYW, foundational_quiz)
@@ -6631,45 +6681,10 @@
                     } catch (err) { console.warn('WML @MATCH render failed', err); }
                 }
 
-                // v7.19.596: render the composite reflection panel after body.
-                // v7.19.848: ONE reflection per question, code-enforced. Duplicate = (a) a gate
-                // whose question already submitted its reflection, or (b) while a reflection is
-                // pending (submitted, no feedback card filed yet) any prose-DETECTED ask or any
-                // ask whose question can't be resolved. A real @REFLECT_GATE marker for a fresh
-                // question always renders. Duplicates get NO panel + ONE silent repair turn.
-                if (_reflectData) {
-                    const _rk = _paraKey(_reflectData.q || '');
-                    const _dup = (_rk && _reflectDone[_rk])
-                        || (_reflectPending !== null && (_reflectData._detected || !_rk));
-                    if (_dup) {
-                        console.warn('WML @REFLECT_GATE: duplicate reflection ask suppressed (q=' + (_rk || 'unresolved') + ', pending=' + _reflectPending + ', detected=' + !!_reflectData._detected + ')');
-                        body.appendChild(el('div', { className: 'swml-reflect-dup-note', innerHTML: '<p style="font-size:12px;opacity:0.7;"><em>Reflection already recorded — continuing with the marking.</em></p>' }));
-                        if (_reflectRepairCount < 1) {
-                            _reflectRepairCount++;
-                            let _rTries = 0;
-                            const _rLabel = (_reflectPending && _reflectPending !== '?') ? ('Q' + _reflectPending).replace('QIntro', 'the Introduction').replace('QConclusion', 'the Conclusion') : 'the current question';
-                            const _rFire = () => {
-                                if (canvasChatLoading) { if (++_rTries < 20) setTimeout(_rFire, 300); return; }
-                                canvasSilentSend = true;
-                                chatTextarea.value = 'SYSTEM (not from the student): the reflection for ' + _rLabel + ' is ALREADY recorded — the student has submitted their self-rating, prediction and AO target. The protocol allows exactly ONE reflection panel per question: do NOT re-ask it, do NOT ask a separate AO-targeting question, and NEVER split reflections per paragraph. Resume the protocol at the NEXT step now — emit the Y-gate line if one is due, otherwise the next feedback card.';
-                                sendCanvasMessage();
-                            };
-                            setTimeout(_rFire, 400);
-                        }
-                    } else {
-                        if (_rk) _reflectPending = null; // fresh question's gate — clear stale pending
-                        try {
-                            const widget = _renderReflectPanel(_reflectData, (answer) => {
-                                if (chatTextarea) { chatTextarea.value = answer; }
-                                sendCanvasMessage();
-                            });
-                            body.appendChild(widget);
-                        } catch (err) {
-                            console.warn('WML @REFLECT_GATE render failed', err);
-                            body.appendChild(el('div', { className: 'swml-reflect-fallback', textContent: 'Please type your 1–5 self-rating and which AO(s) you were targeting.' }));
-                        }
-                    }
-                }
+                // v7.19.596/848: composite reflection panel + ONE-per-question dup guard.
+                // v7.19.897: the guard+repair+render now lives in the shared _renderReflectInto so
+                // this primary pipeline and the "mirrors primary" twin can't diverge again.
+                _renderReflectInto(_reflectData, body, chatTextarea);
 
                 // v7.15.101: Fill-in-the-blank submit wiring for canvas chat.
                 // Mirrors the wml-app.js handler (main chat). Without this the
@@ -15571,18 +15586,11 @@
                                         body.appendChild(widget);
                                     } catch (err) { console.warn('WML @MATCH render failed', err); }
                                 }
-                                if (_reflectData2) {
-                                    try {
-                                        const widget = _renderReflectPanel(_reflectData2, (answer) => {
-                                            if (chatTextarea) { chatTextarea.value = answer; }
-                                            sendCanvasMessage();
-                                        });
-                                        body.appendChild(widget);
-                                    } catch (err) {
-                                        console.warn('WML @REFLECT_GATE render failed', err);
-                                        body.appendChild(el('div', { className: 'swml-reflect-fallback', textContent: 'Please type your 1–5 self-rating and which AO(s) you were targeting.' }));
-                                    }
-                                }
+                                // v7.19.897: route through the SHARED reflection helper so this
+                                // "mirrors primary" twin gets the SAME one-per-question dup guard +
+                                // repair as the primary — the fix for the resume-path double
+                                // self-rating/AO leak (this block previously had NO guard at all).
+                                _renderReflectInto(_reflectData2, body, chatTextarea);
 
                                 // Quick action buttons — detect from raw (unformatted) text
                                 const detectText = rawText || text.replace(/<[^>]+>/g, '');

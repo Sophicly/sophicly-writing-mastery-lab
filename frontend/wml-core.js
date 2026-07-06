@@ -2765,6 +2765,16 @@ window.WML = (function() {
         // v7.13.41: Auto-link URLs — convert bare https:// URLs to clickable links
         html = html.replace(/(?<![="'])(https?:\/\/[^\s<>"']+)/g, '<a href="$1" target="_blank" rel="noopener" class="swml-chat-link">$1</a>');
 
+        // v7.19.897 (Neil 2026-07-06 — dislikes emojis): swap the three feedback STATUS glyphs
+        // (correct / partial / incorrect) the marker AI emits per-statement for house SVG badges
+        // (matches the section-tick badge). One chokepoint here → applies in chat AND filed cards
+        // (both render through formatAI). Only these status glyphs are touched, nothing else.
+        // Alternation (longest-first) so ✔️'s variation selector isn't left as a stray glyph.
+        html = html
+            .replace(/✅|✔️|✔/g, '<span class="swml-fb-glyph swml-fb-ok" role="img" aria-label="correct"></span>')
+            .replace(/⚠️|⚠/g, '<span class="swml-fb-glyph swml-fb-warn" role="img" aria-label="partially correct"></span>')
+            .replace(/❌/g, '<span class="swml-fb-glyph swml-fb-no" role="img" aria-label="incorrect"></span>');
+
         return html;
     }
 
