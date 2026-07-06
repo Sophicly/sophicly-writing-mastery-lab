@@ -1333,19 +1333,17 @@ class SWML_REST_API {
         }
 
         // ════════════════════════════════════════════════════════════
-        // Fallback: simpleTextQuery (no conversation support, last resort)
+        // v7.19.903: simpleTextQuery last-resort fallback REMOVED — fail loud.
+        // It silently swapped to the AI Engine DEFAULT env/model (gpt-4.1-mini)
+        // with NO conversation history, producing garbage marking that looked
+        // like a WML regression (the 2026-07-06 "temp-pin incident" was really
+        // an Anthropic credit-balance outage degrading every turn this way).
+        // When Claude is down, the student must see the retry message — never
+        // an amnesiac off-model answer recorded into their attempt history.
+        // DO NOT RE-ADD a silent model fallback here.
         // ════════════════════════════════════════════════════════════
-        if (!$reply && $api && method_exists($api, 'simpleTextQuery')) {
-            try {
-                error_log('WML: Fallback to simpleTextQuery');
-                $result = $api->simpleTextQuery($message_text);
-                if (!empty($result)) {
-                    $reply = is_string($result) ? $result : (string) $result;
-                    $method_used = 'simpleTextQuery (fallback)';
-                }
-            } catch (\Throwable $e) {
-                $errors[] = 'simpleTextQuery: ' . $e->getMessage();
-            }
+        if (!$reply && !empty($errors)) {
+            error_log('WML: NO METHOD WORKED — failing loud. Errors: ' . implode(' | ', $errors));
         }
 
         $stray_output = ob_get_clean();
@@ -1476,6 +1474,10 @@ class SWML_REST_API {
         return rest_ensure_response([
             'success' => false, 'code' => 'no_method_worked', 'reply' => null,
             'message' => 'The AI tutor is temporarily unavailable. Please try again in a moment.',
+            // v7.19.903: surface the underlying provider error so a degraded
+            // session is diagnosable from the browser console (student sees
+            // only `message`; this never renders in chat).
+            'detail' => $errors ? implode(' | ', array_slice($errors, 0, 3)) : null,
         ]);
     }
 
