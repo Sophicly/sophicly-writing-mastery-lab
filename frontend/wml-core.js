@@ -2789,6 +2789,86 @@ window.WML = (function() {
             .replace(/❌/g, span('no', 'swml-fb-no', 'incorrect'));
     }
 
+    // v7.19.906: ONE root parser for Sophia's per-turn micro-progress breadcrumb.
+    // Every protocol emits a "📌 <Task> > <Section> > Step N of M" pin line (and,
+    // legacy, an ASCII "[Progress bar: ███░ NN%]"). This turns whatever the model
+    // declared into a structured beat — the % is COMPUTED from N/M in code (never
+    // trusted from the model's ASCII bar), falling back to the bar's own % only when
+    // there is no Step count. Universal by construction: any board/paper/future task
+    // that emits the pin gets a chip for free; no per-step wiring. Returns null when
+    // the turn declared no progress (e.g. the SA-walk turns) → no chip that turn.
+    function parseProgressBeat(raw) {
+        if (!raw) return null;
+        const s = String(raw);
+        // Require the 📌 pin line — a standalone "Step N of M" in feedback prose must NOT
+        // trigger a chip. Step is parsed from the pin line only; the % fallback may read the
+        // separate "[Progress bar: …NN%]" line.
+        const crumbLine = (s.match(/📌[^\n]*/) || [''])[0];
+        if (!crumbLine) return null;
+        const stepM = crumbLine.match(/Step\s+(\d+)\s+of\s+(\d+)/i);
+        let step = null, total = null, pct = null;
+        if (stepM) {
+            step = parseInt(stepM[1], 10);
+            total = parseInt(stepM[2], 10);
+            if (total > 0) pct = Math.round((step / total) * 100);
+        }
+        if (pct == null) {
+            const barM = s.match(/\[Progress(?:\s*bar)?:[^\]]*?(\d{1,3})\s*%/i);
+            if (barM) pct = parseInt(barM[1], 10);
+        }
+        if (pct != null) pct = Math.max(0, Math.min(100, pct));
+        // Section label = the pin minus 📌, minus a trailing "> Step N of M".
+        let label = crumbLine
+            .replace(/📌\s*/, '')
+            .replace(/\s*(?:&gt;|›|>)\s*Step\s+\d+\s+of\s+\d+\s*$/i, '')
+            .trim();
+        const parts = label.split(/\s*(?:&gt;|›|>)\s*/).filter(Boolean);
+        let task = '', section = label;
+        if (parts.length >= 2) { task = parts[0]; section = parts.slice(1).join(' · '); }
+        else if (parts.length === 1) { section = parts[0]; }
+        if (pct == null && !section) return null;
+        return { task: task, section: section, step: step, total: total, pct: pct == null ? 0 : pct };
+    }
+
+    // v7.19.906: the single stylish micro-progress chip. Slim, brand-styled, theme-aware
+    // (styles live in wml-styles.css .swml-beat*). Replaces the three legacy inline renders
+    // (step-header + step-blocks + ASCII bar) with ONE element. Width is the code-computed %.
+    function progressChipHTML(beat) {
+        if (!beat) return '';
+        const pct = Math.max(0, Math.min(100, beat.pct || 0));
+        const esc = (t) => String(t == null ? '' : t).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+        const stepTxt = (beat.step != null && beat.total != null)
+            ? ('Step ' + beat.step + ' of ' + beat.total)
+            : (pct + '%');
+        const eyebrow = beat.task ? '<span class="swml-beat-eyebrow">' + esc(beat.task) + '</span>' : '';
+        const section = beat.section ? '<span class="swml-beat-section">' + esc(beat.section) + '</span>' : '';
+        // Step count rendered "4 of 5" with the current number weighted (like a game "Level 2 / 52").
+        const stepLabel = (beat.step != null && beat.total != null)
+            ? '<span class="swml-beat-step"><b>' + beat.step + '</b> of ' + beat.total + '</span>'
+            : '<span class="swml-beat-step">' + esc(stepTxt) + '</span>';
+        return '<div class="swml-beat" role="status" aria-label="' + esc(beat.section || 'Progress') + ' — ' + esc(stepTxt) + '">'
+            + '<div class="swml-beat-top">' + eyebrow + section + stepLabel + '</div>'
+            + '<div class="swml-beat-track">'
+            +   '<div class="swml-beat-fill" style="width:' + pct + '%"><span class="swml-beat-badge">' + pct + '%</span></div>'
+            + '</div>'
+            + '</div>';
+    }
+
+    // v7.19.906: strip the three legacy inline progress renders formatAI produces
+    // (superseded by the beat-chip), then prepend the unified chip built from the raw
+    // reply. Returns the transformed HTML. Canvas pipelines call this; the main planning
+    // chat keeps its own inline renders untouched.
+    function withProgressChip(html, raw) {
+        if (!html) return html;
+        html = html
+            .replace(/<div class="swml-step-header">[\s\S]*?<\/div>/gi, '')
+            .replace(/<span class="swml-step-blocks">[\s\S]*?swml-step-blocks-label">[^<]*<\/span>\s*<\/span>/gi, '')
+            .replace(/<div class="swml-chat-progress-bar">[\s\S]*?swml-chat-progress-label">[^<]*<\/span>\s*<\/div>/gi, '');
+        const beat = parseProgressBeat(raw);
+        if (beat) html = progressChipHTML(beat) + html;
+        return html;
+    }
+
     function renderLogo() {
         const logo = el('div', { className: 'swml-logo' });
         const img = el('img', {
@@ -2870,6 +2950,8 @@ window.WML = (function() {
         SVG_GUIDE_ARM, SVG_GUIDE_WRITING, SVG_GUIDE_GRAPH, SVG_GUIDE_BRAIN,
         // Text processing
         stripAIInternals, detectAssessmentStep, formatAI, svgifyStatusGlyphs, countWords,
+        // v7.19.906: unified micro-progress beat-chip (canvas chat)
+        parseProgressBeat, progressChipHTML, withProgressChip,
         // v7.17.11: topic-flow detection (suppresses attempts UX inside numbered topics)
         isTopicFlow,
         // Rendering

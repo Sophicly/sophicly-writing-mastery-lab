@@ -6730,6 +6730,12 @@
                 text = _stripFeedbackMarkers(text);
                 text = _stripResumeMarkers(text); // v7.19.709: strip leaked [✓ Got it…] gate markers (buttons render separately)
 
+                // v7.19.906: unify the legacy inline progress renders (step-header +
+                // step-blocks + ASCII bar) into ONE stylish beat-chip, built from the raw
+                // reply's "📌 … Step N of M" breadcrumb. No-op when the turn declared no
+                // progress (SA-walk / synthetic setup turns have no breadcrumb).
+                try { text = WML.withProgressChip(text, rawText || ''); } catch (_) {}
+
                 const body = el('div', { className: 'swml-bubble-body' });
                 body.innerHTML = text;
                 content.appendChild(body);
@@ -15641,6 +15647,8 @@
                                 // v7.19.598: strip @FB markers; feedback auto-files to per-Q boxes, text stays in chat.
                                 text = _stripFeedbackMarkers(text);
                                 text = _stripResumeMarkers(text); // v7.19.709: strip leaked [✓ Got it…] gate markers
+                                // v7.19.906: unified beat-chip (shared helper — mirrors primary pipeline).
+                                try { text = WML.withProgressChip(text, rawText || ''); } catch (_) {}
                                 const body = el('div', { className: 'swml-bubble-body' });
                                 body.innerHTML = text;
                                 content.appendChild(body);
