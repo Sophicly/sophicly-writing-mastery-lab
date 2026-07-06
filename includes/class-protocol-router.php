@@ -1051,11 +1051,13 @@ class SWML_Protocol_Router {
             if ($skip_block) $parts[] = $skip_block;
             $parts[] = $modular_protocol;
             $query->instructions = implode("\n\n---\n\n", $parts);
-            // v7.19.902 (Neil): REVERTED the v901 assessment temperature pin — setting
-            // $query->temperature in this filter degraded marking output (no SVG feedback glyphs,
-            // very short gold models) = a fallback off Sonnet. Determinism must come from the
-            // deterministic auditor + anchors, NOT a raw temperature override here. Do NOT re-add
-            // without confirming AI Engine keeps the primary Sonnet model when temperature is set.
+            // v7.19.902 (Neil): REVERTED the v901 assessment temperature pin.
+            // v7.19.903 CORRECTION: the "temp-pin incident" root cause was an Anthropic
+            // CREDIT-BALANCE outage (debug.log 2026-07-06: every wml-claude call errored
+            // 'credit balance is too low', fell to simpleTextQuery = default gpt-4.1-mini
+            // with no history) — the pin itself was almost certainly innocent. It stays
+            // reverted anyway: determinism must come from the deterministic auditor +
+            // anchors. If re-adding, verify with the model-log that Sonnet still answers.
 
             // v7.18.12: TEXT-ISOLATION + placeholder substitution.
             //
