@@ -2528,22 +2528,47 @@
     // Whole-assessment calibration: mean blind self-rating (/5 → %) vs the actual total %.
     // Never grades, never sets priorities — a metacognitive readout only. Element↔section
     // mapping isn't 1:1 (SA is per-element, marks are per-section), so MVP is whole-assessment.
-    function _saCalibrationFact() {
+    // v7.19.893: the calibration NUMBERS (mean blind self-rating % vs actual total %), shared by
+    // the closing-filing fact AND the code-owned Analytics readout so they can never drift.
+    function _saCalibrationData() {
         try {
             const rows = _saWalkRows().filter(r => r.value != null);
-            if (rows.length < 2) return '';
+            if (rows.length < 2) return null;
             const rank = _rankMarkedAreas();
-            if (!rank || !rank.ranked.length) return '';
+            if (!rank || !rank.ranked.length) return null;
             const saPct = Math.round((rows.reduce((s, r) => s + r.value, 0) / (rows.length * 5)) * 100);
             let tot = 0, mx = 0; rank.ranked.forEach(a => { tot += a.score; mx += a.max; });
-            if (!(mx > 0)) return '';
+            if (!(mx > 0)) return null;
             const actPct = Math.round((tot / mx) * 100);
             const gap = saPct - actPct;
-            const verdict = Math.abs(gap) <= 10 ? 'well-calibrated'
-                : gap > 0 ? 'over-confident (rated higher than the marks)'
-                : 'under-confident (rated lower than the marks)';
-            return ' BLIND SELF-ASSESSMENT CALIBRATION (code-derived, annotation only — never change a mark or a priority): the student rated themselves ' + saPct + '% on average before marking; they scored ' + actPct + '%. That is ' + verdict + '. Note this calibration insight in the Overall Feedback / Analytics as encouragement to self-monitor — do NOT let it alter any mark, grade, or the Priority Targets.';
-        } catch (_) { return ''; }
+            const verdict = Math.abs(gap) <= 10 ? 'well-calibrated' : gap > 0 ? 'over-confident' : 'under-confident';
+            return { saPct: saPct, actPct: actPct, gap: gap, verdict: verdict };
+        } catch (_) { return null; }
+    }
+    function _saCalibrationFact() {
+        const c = _saCalibrationData();
+        if (!c) return '';
+        const long = c.verdict === 'well-calibrated' ? 'well-calibrated'
+            : c.verdict === 'over-confident' ? 'over-confident (rated higher than the marks)'
+            : 'under-confident (rated lower than the marks)';
+        return ' BLIND SELF-ASSESSMENT CALIBRATION (code-derived, annotation only — never change a mark or a priority): the student rated themselves ' + c.saPct + '% on average before marking; they scored ' + c.actPct + '%. That is ' + long + '. Note this calibration insight in the Overall Feedback / Analytics as encouragement to self-monitor — do NOT let it alter any mark, grade, or the Priority Targets.';
+    }
+    // v7.19.893: code-owned model for the tier-coloured Analytics readout (Strongest area /
+    // Most marks lost / Calibration). Reads the SAME auditor-marked feedback boxes + SA rows as
+    // the closing facts, so the visible readout can never disagree with what the AI files. Returns
+    // null until ≥2 areas are marked (nothing to rank yet). Tier = the 1–9 ladder rank of a mark
+    // ratio (identical mapping to the mark pills / grade chip), so colours mean the same everywhere.
+    function _analyticsReadoutModel() {
+        const rank = _rankMarkedAreas();
+        if (!rank) return null;
+        const _tier = (a) => String(Math.max(1, Math.min(9, Math.round(1 + (a.max > 0 ? a.score / a.max : 0) * 8))));
+        const strength = { label: rank.strongest.label, score: rank.strongest.score, max: rank.strongest.max, tier: _tier(rank.strongest) };
+        const missed = (rank.ranked || [])
+            .map(a => ({ label: a.label, score: a.score, max: a.max, lost: Math.max(0, a.max - a.score), tier: _tier(a) }))
+            .filter(a => a.lost > 0)
+            .sort((x, y) => y.lost - x.lost)
+            .slice(0, 3);
+        return { strength: strength, missed: missed, calib: _saCalibrationData() };
     }
     function _fireClosingFiling() {
         if (_closingFilingFired) return;
@@ -21801,6 +21826,37 @@
                 }
             }
 
+            // ── Analytics: code-owned tier-coloured readout (v7.19.893) ──
+            // Strongest area / Most marks lost / Calibration, from the SAME auditor-marked feedback
+            // boxes + SA rows the closing facts use (_analyticsReadoutModel) → the visible readout
+            // can never disagree with what the AI files. Rendered into the absolute overlay LAYER,
+            // NEVER the section's nodeView contentDOM → PM-firewalled, no foreign-mutation flush loop
+            // (reference_wml_pm_nodeview_foreign_mutation_loop). One compact line so it sits in the
+            // Analytics section's reserved top band (CSS padding-top) without overlapping the fields
+            // below. Colours reuse the swml-tier-N ladder (no invented colours). Absent until ≥2
+            // areas are marked, so it appears only once marking has produced a ranking.
+            if (analyticsSection) {
+                const _ana = _analyticsReadoutModel();
+                if (_ana) {
+                    const ro = document.createElement('div');
+                    ro.className = 'swml-dropdown-overlay swml-analytics-readout';
+                    ro.style.pointerEvents = 'none';
+                    const chip = (a) => '<span class="swml-ana-chip swml-tier-' + a.tier + '">' + escapeHTML(a.label) + ' ' + a.score + '/' + a.max + '</span>';
+                    const parts = [];
+                    parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Strongest</span>' + chip(_ana.strength) + '</span>');
+                    if (_ana.missed.length) {
+                        parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Most marks lost</span>' + _ana.missed.map(chip).join('') + '</span>');
+                    }
+                    if (_ana.calib) {
+                        const c = _ana.calib;
+                        const cCol = c.verdict === 'well-calibrated' ? '#1cd991' : (Math.abs(c.gap) <= 20 ? '#f1c40f' : '#ff9800');
+                        parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Self-assessment</span><span class="swml-ana-calib" style="color:' + cCol + '">rated ' + c.saPct + '% · scored ' + c.actPct + '% · ' + c.verdict + '</span></span>');
+                    }
+                    ro.innerHTML = parts.join('<span class="swml-ana-div">·</span>');
+                    dropdownLayer.appendChild(ro);
+                }
+            }
+
             // ── Tutor Sign-off UI (v7.19.828: IN-FLOW — the progress-card technique) ──
             // The old .swml-dropdown-overlay-signoff lived in the absolute dropdown layer
             // and drifted off its section on resize/zoom until a scroll re-seated it
@@ -22188,6 +22244,21 @@
                         const right = (dwRect.right - anRect.right) / z + 24;
                         optOutsOverlay.style.cssText = `position:absolute;top:${top}px;right:${right}px;pointer-events:auto;z-index:5;`;
                     }
+                }
+            }
+
+            // ── Position the Analytics readout in the section's reserved top band (v7.19.893) ──
+            const anaReadout = dropdownLayer.querySelector('.swml-analytics-readout');
+            if (anaReadout) {
+                const anaSection = editor.querySelector('[data-section-label="Analytics"]');
+                if (anaSection) {
+                    const anRect = anaSection.getBoundingClientRect();
+                    const top = (anRect.top - dwRect.top) / z + 11;
+                    const left = (anRect.left - dwRect.left) / z + 16;
+                    const width = anRect.width / z - 32;
+                    anaReadout.style.cssText = `position:absolute;top:${top}px;left:${left}px;max-width:${width}px;pointer-events:none;z-index:5;`;
+                } else {
+                    anaReadout.style.display = 'none';
                 }
             }
 
