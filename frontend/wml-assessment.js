@@ -1982,32 +1982,52 @@
             // canvas, not the page. Targets the box for the FIRST card's question (the one being marked).
             if (wrote) {
                 try {
-                    // v7.19.758: match by the canonical _paraKey, NOT the first digit. The
-                    // old numOf(q) → (lbl.match(/\d+/)) matched only boxes with a digit, so
-                    // INTRODUCTION + CONCLUSION (no digit → qn '') silently never scrolled —
-                    // body 1/2/3 did. _paraKey resolves "Introduction"→"Intro",
-                    // "Body 2"→"2", "Conclusion"→"Conclusion" on BOTH the card.q and the box
-                    // label (same key the fill-loop uses at ~1418), so every section scrolls.
+                    // v7.19.758: match by the canonical _paraKey, NOT the first digit —
+                    // Intro/Conclusion have no digit and silently never scrolled.
+                    // v7.19.829: scroll to the REGION just filed (its <h3>), not the box top.
+                    // v7.19.905: DETERMINISTIC, self-healing scroll. The single-shot scroll
+                    // raced ProseMirror's post-fill redraw: the queried node could be swapped/
+                    // detached by the time the rect math ran, so the scroll landed where the
+                    // doc already was (parked on Self-Assessment after the SA walk — Neil live
+                    // 2026-07-06). Fix: requery FRESH on every fire, fire now, then RE-ASSERT
+                    // once PM + the smooth animation settle; if the target isn't in the top
+                    // band, fire again. Idempotent; fail-loud when the target is missing.
                     const key0 = _paraKey((cards[0] || {}).q);
-                    let tgtEl = null;
-                    (canvasEditor.view && canvasEditor.view.dom ? canvasEditor.view.dom : document)
-                        .querySelectorAll('.swml-section-feedback').forEach((b) => {
-                            const lbl = b.getAttribute('data-section-label') || '';
-                            if (key0 && _paraKey(lbl) === key0) tgtEl = b;
-                        });
-                    if (tgtEl) {
-                        // v7.19.829: scroll to the REGION just filed, not the box top. Multi-region
-                        // boxes (Q4 = Intro + BP1-3 + Conclusion) grow long — landing at the box top
-                        // put the new feedback below the fold every time (Neil's live run). The card
-                        // heading is the region's identity (v604), so find its <h3> inside the box.
-                        const head0 = (cards[0] || {})._heading || '';
+                    const head0 = (cards[0] || {})._heading || '';
+                    const _findScrollTarget = () => {
+                        let tgtEl = null;
+                        (canvasEditor.view && canvasEditor.view.dom ? canvasEditor.view.dom : document)
+                            .querySelectorAll('.swml-section-feedback').forEach((b) => {
+                                const lbl = b.getAttribute('data-section-label') || '';
+                                if (key0 && _paraKey(lbl) === key0) tgtEl = b;
+                            });
+                        if (!tgtEl) return null;
                         let hEl = null;
                         if (head0) tgtEl.querySelectorAll('h3').forEach(h => {
                             if (!hEl && (h.textContent || '').trim() === head0) hEl = h;
                         });
-                        _swmlScrollToTop(hEl || tgtEl);
-                        console.log('[WML feedback] auto-scrolled to', hEl ? ('region "' + head0 + '"') : ('feedback box ' + key0));
-                    }
+                        return hEl || tgtEl;
+                    };
+                    const _fireScroll = (why) => {
+                        const t = _findScrollTarget();
+                        if (!t || !t.isConnected) {
+                            console.warn('[WML feedback] scroll target missing (' + why + ') for', key0);
+                            return;
+                        }
+                        _swmlScrollToTop(t);
+                        console.log('[WML feedback] auto-scrolled to', (t.tagName && t.tagName.toLowerCase() === 'h3') ? ('region "' + head0 + '"') : ('feedback box ' + key0), '(' + why + ')');
+                    };
+                    _fireScroll('fill');
+                    setTimeout(() => {
+                        try {
+                            const t = _findScrollTarget();
+                            if (!t || !t.isConnected) return;
+                            const cw = t.closest('.swml-canvas-content');
+                            if (!cw) return;
+                            const d = t.getBoundingClientRect().top - cw.getBoundingClientRect().top;
+                            if (d < -8 || d > 160) _fireScroll('re-assert');
+                        } catch (_) {}
+                    }, 600);
                 } catch (_) { /* scroll is best-effort, never block */ }
             }
         } catch (e) {
@@ -2384,6 +2404,20 @@
             const bubble = _chatShell.messages && _chatShell.messages.lastElementChild;
             if (bubble) (bubble.querySelector('.swml-bubble-content') || bubble).appendChild(bar);
         } catch (_) { /* descriptor buttons are progressive enhancement; typed 1–5 is the fallback */ }
+        // v7.19.905: scroll the CHAT pane so this question's TOP is in view. addMsg
+        // auto-scrolls to BOTTOM, which parked the tall SA bubble's descriptor buttons
+        // under the input bar — Neil had to scroll up manually on every one of the 19
+        // rows (live test 2026-07-06). rAF runs after the button bar's layout.
+        try {
+            const _scroller = _chatShell.messages;
+            const _saBubble = _scroller && _scroller.lastElementChild;
+            if (_scroller && _saBubble) {
+                requestAnimationFrame(() => {
+                    const _d = _saBubble.getBoundingClientRect().top - _scroller.getBoundingClientRect().top;
+                    _scroller.scrollTo({ top: Math.max(0, _scroller.scrollTop + _d - 10), behavior: 'smooth' });
+                });
+            }
+        } catch (_) {}
         _saWalkScrollToSection();
     }
     function _saWalkRate(skill, value) {
