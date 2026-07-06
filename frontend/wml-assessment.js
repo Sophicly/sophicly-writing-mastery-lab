@@ -2320,6 +2320,10 @@
             );
         } catch (_) {}
         try { if (typeof _refreshLangSidebar === 'function') _refreshLangSidebar(); } catch (_) {}
+        // v7.19.884: rebuild the doc dropdown overlays so the row's "— ▼" selector reflects the
+        // walk's write (the overlay caches its value at build time — without this the row text
+        // showed "1 / 5" but the dropdown stayed on "—", Neil 2026-07-06).
+        try { if (typeof _scoreOverlaysRefresh === 'function') _scoreOverlaysRefresh(); } catch (_) {}
         try { if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion(); } catch (_) {}
         try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
         if (_saWalkComplete()) _saWalkHandBack();
