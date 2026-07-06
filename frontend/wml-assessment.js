@@ -961,6 +961,29 @@
         } catch (_) {}
         return found;
     }
+    // v7.19.891: is this an assessment doc that's been CLEARED/reset — mark boxes present but
+    // NONE filled? Used to content-gate the tutor sign-off badge: a fresh/cleared attempt is
+    // unsigned, so show "Awaiting" on the DOCUMENT even though the prior attempt's sign-off
+    // record still exists on the server (Neil 2026-07-06: keep the server record as history,
+    // just reset the badge on the doc). Non-feedback docs (Codex / Conceptual Notes / CW) have
+    // no mark boxes → returns false → their sign-off badge is unaffected.
+    function _assessmentDocCleared() {
+        if (!canvasEditor) return false;
+        let hasBox = false, hasMark = false;
+        try {
+            canvasEditor.state.doc.descendants((n) => {
+                if (n.type && n.type.name === 'sectionBlock' && n.attrs && n.attrs.sectionType === 'feedback') {
+                    const lbl = String(n.attrs.label || '');
+                    if (/\/\s*\d+\s*\)\s*$/.test(lbl)) {            // "... (— / 8)" or "... (3 / 8)" — a mark box
+                        hasBox = true;
+                        if (/\(\s*\d+(?:\.\d+)?\s*\//.test(lbl)) hasMark = true;
+                    }
+                }
+                return true;
+            });
+        } catch (_) {}
+        return hasBox && !hasMark;
+    }
 
     function _buildLitSidebarModel() {
         if (state.reviewMode) return null;
@@ -22019,6 +22042,11 @@
             }
             _signoffLoadPromise.then(res => {
                 if (res && res.success && res.signoff && !res.signoff.revoked) {
+                    // v7.19.891: content-gate. If this assessment doc has been cleared/reset
+                    // (mark boxes present but none filled), the CURRENT attempt is unsigned —
+                    // show the pending/tutor UI, NOT the prior badge. The server sign-off record
+                    // is left untouched (Neil: keep the history, reset only the badge on the doc).
+                    if (_assessmentDocCleared()) return;
                     // v7.19.247: existing sign-off → fill Date Completed in the summary.
                     _renderSigned(res.signoff);
                     if (typeof recalculateScoreSummary === 'function') recalculateScoreSummary();
