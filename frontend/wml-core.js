@@ -2765,17 +2765,28 @@ window.WML = (function() {
         // v7.13.41: Auto-link URLs — convert bare https:// URLs to clickable links
         html = html.replace(/(?<![="'])(https?:\/\/[^\s<>"']+)/g, '<a href="$1" target="_blank" rel="noopener" class="swml-chat-link">$1</a>');
 
-        // v7.19.897 (Neil 2026-07-06 — dislikes emojis): swap the three feedback STATUS glyphs
-        // (correct / partial / incorrect) the marker AI emits per-statement for house SVG badges
-        // (matches the section-tick badge). One chokepoint here → applies in chat AND filed cards
-        // (both render through formatAI). Only these status glyphs are touched, nothing else.
-        // Alternation (longest-first) so ✔️'s variation selector isn't left as a stray glyph.
-        html = html
-            .replace(/✅|✔️|✔/g, '<span class="swml-fb-glyph swml-fb-ok" role="img" aria-label="correct"></span>')
-            .replace(/⚠️|⚠/g, '<span class="swml-fb-glyph swml-fb-warn" role="img" aria-label="partially correct"></span>')
-            .replace(/❌/g, '<span class="swml-fb-glyph swml-fb-no" role="img" aria-label="incorrect"></span>');
+        // v7.19.898 (Neil): swap the AI's per-statement feedback STATUS emojis for Iconoir SVG
+        // badges — via the SHARED helper so chat (this raw-HTML path) AND the canvas card
+        // (cwMarkdownToDocHtml → fbGlyph schema node) render the SAME glyph and can't diverge.
+        html = svgifyStatusGlyphs(html);
 
         return html;
+    }
+
+    // v7.19.898 (Neil dislikes emojis): ONE source of truth that turns the three feedback status
+    // emojis into a house glyph span. In chat the span renders directly (CSS bg = Iconoir SVG); in
+    // the canvas card the SAME span is parsed by the fbGlyph inline schema node (span[data-fb-glyph])
+    // so it survives ProseMirror's schema + the save/reload round-trip. Emits data-fb-glyph (the
+    // node hook) AND the swml-fb-* class (the CSS art) so both surfaces style identically. Only the
+    // three status glyphs are touched. Alternation longest-first so ✔️'s variation selector can't
+    // be left as a stray. Idempotent-ish: an already-swapped span has no emoji to re-match.
+    function svgifyStatusGlyphs(html) {
+        if (!html || html.indexOf('✅') === -1 && html.indexOf('✔') === -1 && html.indexOf('⚠') === -1 && html.indexOf('❌') === -1) return html;
+        const span = (kind, cls, label) => '<span data-fb-glyph="' + kind + '" class="swml-fb-glyph ' + cls + '" role="img" aria-label="' + label + '"></span>';
+        return html
+            .replace(/✅|✔️|✔/g, span('ok', 'swml-fb-ok', 'correct'))
+            .replace(/⚠️|⚠/g, span('warn', 'swml-fb-warn', 'partially correct'))
+            .replace(/❌/g, span('no', 'swml-fb-no', 'incorrect'));
     }
 
     function renderLogo() {
@@ -2858,7 +2869,7 @@ window.WML = (function() {
         SVG_GUIDE_LOCK, SVG_GUIDE_TARGET, SVG_GUIDE_STOPWATCH,
         SVG_GUIDE_ARM, SVG_GUIDE_WRITING, SVG_GUIDE_GRAPH, SVG_GUIDE_BRAIN,
         // Text processing
-        stripAIInternals, detectAssessmentStep, formatAI, countWords,
+        stripAIInternals, detectAssessmentStep, formatAI, svgifyStatusGlyphs, countWords,
         // v7.17.11: topic-flow detection (suppresses attempts UX inside numbered topics)
         isTopicFlow,
         // Rendering

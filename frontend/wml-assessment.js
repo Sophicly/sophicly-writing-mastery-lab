@@ -1273,7 +1273,10 @@
             html += '<p>' + inline(line) + '</p>';
         }
         closeList();
-        return html || '<p></p>';
+        // v7.19.898: same shared status-glyph swap the chat uses (WML.svgifyStatusGlyphs) — emits
+        // span[data-fb-glyph] which the fbGlyph inline schema node parses + round-trips, so the
+        // card shows the SAME Iconoir SVG badge as the chat (no raw emoji reaches the doc).
+        return (WML.svgifyStatusGlyphs ? WML.svgifyStatusGlyphs(html) : html) || '<p></p>';
     }
 
     // v7.19.434: Phase 2 of the chat→canvas primitive — SECTION fills for AI-authored
@@ -17176,6 +17179,37 @@
             }
         }
 
+        // v7.19.898 (Neil): inline atom node for the feedback STATUS badge (correct / partial /
+        // incorrect). Lets the shared WML.svgifyStatusGlyphs span (span[data-fb-glyph]) survive
+        // insertion into the card's ProseMirror schema (StarterKit has no image node, so a bare
+        // styled <span> would be stripped) AND survive the doc's save→reload round-trip
+        // (parseHTML/renderHTML define serialization). Leaf, non-selectable, non-editable — a pure
+        // display badge; the CSS (.swml-fb-glyph + .swml-fb-*) draws the Iconoir SVG.
+        const FbGlyph = Node.create({
+            name: 'fbGlyph',
+            inline: true,
+            group: 'inline',
+            atom: true,
+            selectable: false,
+            draggable: false,
+            addAttributes() {
+                return {
+                    kind: {
+                        default: 'ok',
+                        parseHTML: el => el.getAttribute('data-fb-glyph') || 'ok',
+                        renderHTML: attrs => ({ 'data-fb-glyph': attrs.kind }),
+                    },
+                };
+            },
+            parseHTML() { return [{ tag: 'span[data-fb-glyph]' }]; },
+            renderHTML({ HTMLAttributes }) {
+                const kind = HTMLAttributes['data-fb-glyph'] || 'ok';
+                const cls = { ok: 'swml-fb-ok', warn: 'swml-fb-warn', no: 'swml-fb-no' }[kind] || 'swml-fb-ok';
+                const label = { ok: 'correct', warn: 'partially correct', no: 'incorrect' }[kind] || 'correct';
+                return ['span', { 'data-fb-glyph': kind, class: 'swml-fb-glyph ' + cls, role: 'img', 'aria-label': label }];
+            },
+        });
+
         // Custom Comment Mark — wraps selected text with a comment ID
         const CommentMark = Mark.create({
             name: 'comment',
@@ -19595,6 +19629,7 @@
                 ChecklistItem,
                 SelectField,
                 ClozeCheck,
+                FbGlyph, // v7.19.898: feedback status-badge inline node (SVG in cards)
                 // v7.14.76: PaginationPlus DISABLED — continuous scroll mode.
                 // Eliminates scroll-jump bugs, criteria splitting across page breaks,
                 // and NodeView recreation issues. Pages added no pedagogical value
