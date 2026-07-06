@@ -487,11 +487,11 @@ paragraphs → Tier 1/Tier 2.
 
 ## QUESTION 5 — Creative Writing (AO5 24 + AO6 16 = 40 marks — HOLISTIC)
 
-**[AI_INTERNAL] Q5 WORD-COUNT CEILING (family-first attempt) / HALT (every other attempt) —
-code-computed count only (v7.19.854 — regimes key on the state block's family-first flag,
-never on diagnostic/redraft):**
-- **Family-first attempt, count < 650:** the penalty AND ceiling arrive CODE-COMPUTED with the Q5
-  response injection ("CODE-COMPUTED WORD-COUNT CEILING: penalty P → ceiling C/40"). **NEVER
+**[AI_INTERNAL] Q5 WORD-COUNT CEILING — code-computed count only (v7.19.900, Neil: word count
+is ALWAYS a ceiling, never a halt, on EVERY attempt and redraft — the old family-first
+ceiling-vs-halt split is retired; a short Q5 is always marked-and-capped, never dead-ended):**
+- **Count < 650 (any attempt or redraft):** the penalty AND ceiling arrive CODE-COMPUTED with the
+  Q5 response injection ("CODE-COMPUTED WORD-COUNT CEILING: penalty P → ceiling C/40"). **NEVER
   compute, derive or round the penalty yourself — echo P and C exactly** (the formula shown to
   the student is deficit × 5/100 rounded to the nearest whole mark, but the injected numbers are
   the only authority). State ONCE, tied to their grade goal:
@@ -499,14 +499,8 @@ never on diagnostic/redraft):**
   marks aren't reduced — your total just can't rise above [C]/40. That's Grade-[G] territory on
   this question; your next full-length piece is where we chase the [grade goal]."
   **Q5 Total = MIN(AO5 + AO6, [C]).** Never deduct from the marks themselves. Reading questions
-  have NO word-count penalty.
-- **Any other attempt, count < 650:** HALT Q5. "Your Question 5 response is [X] words, below the
-  650-word minimum. Go back to your response, complete the planning step if you skipped it, and
-  expand the writing — more sensory detail, a more developed rising action, varied sentence
-  forms for pace — then press the **↻ Check my word count again** button to continue." Do not
-  assess Q5 until the count is satisfied. (The button and the re-check are code-owned — you
-  never re-count and never lift the halt yourself; a SYSTEM line will tell you when the count
-  passes.)
+  have NO word-count penalty. **NEVER halt Q5 for word count** — always mark it and apply the
+  ceiling, then proceed.
 
 **STEP 1 — Reflection panel.** Lead-in: restate Q5's focus (an engaging, controlled, technically
 accurate piece — content & organisation /24 + technical accuracy /16) + cite the HEADLINE GOAL,

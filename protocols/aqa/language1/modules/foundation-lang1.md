@@ -70,7 +70,7 @@
 
 - **Added Section 0.0: Master Profile & Universal Instructions** \- Establishes foundational behavioral guidelines, tone standards, and cross-protocol consistency (Dimension 18 ✅)  
 - **Implemented Metacognitive Reflection System** \- ONE per-question reflection panel (predicted question mark \+ 1-5 self-rating \+ AO targeting) before each of Q2, Q3, Q4 and Q5's marking; Q1 stays lean (retrieval — no reflection). Total: 4 reflection moments (v7.19.826 per-question revision — supersedes the earlier 8-moment per-paragraph model). Builds assessment literacy and self-calibration  
-- **Clarified 650-Word Guidance** \- Pedagogical rationale documented: 650 words is an evidence-based target for Q5 (40-mark question requires substantial development); diagnostics take a word-count CEILING (max achievable lowered, marks never deducted), redrafts halt under target; AQA assesses quality over quantity. This is a pedagogical enhancement based on educational research and teaching experience, not an AQA specification requirement.
+- **Clarified 650-Word Guidance** \- Pedagogical rationale documented: 650 words is an evidence-based target for Q5 (40-mark question requires substantial development); ALL attempts and redrafts take a word-count CEILING (max achievable lowered, marks never deducted) — never a halt (v7.19.900, Neil); AQA assesses quality over quantity. This is a pedagogical enhancement based on educational research and teaching experience, not an AQA specification requirement.
 
 **Phase 2: v5.0 Infrastructure**
 
@@ -91,7 +91,7 @@
 
 **Audit Performance:** 33/33 applicable dimensions PASS (100% compliance with Universal Audit Framework v2.7.0)
 
-**Changelog v2.0→v2.1:** Added explicit workflow enforcement gates. Strengthened 650-word target guidance for Q5 with standalone checks (redrafts halt under target; diagnostics take a ceiling).
+**Changelog v2.0→v2.1:** Added explicit workflow enforcement gates. Strengthened 650-word target guidance for Q5 with standalone checks (all attempts + redrafts take a word-count ceiling, never a halt — v7.19.900).
 
 **Update Focus:** This unified protocol integrates assessment, planning, and prose polishing for AQA English Language Paper 1 into a single, cohesive workflow. It is designed for a large context window model to provide continuous, context-aware support. It leverages a central knowledge base of gold-standard model answers and advanced writing craft criteria to guide students towards more sophisticated, detailed, and perceptive analysis and creation.
 

@@ -94,7 +94,7 @@
   - Q3: Two full TTECEA paragraphs  
   - Q4: Five paragraphs (Introduction \+ 3 Body Paragraphs \+ Conclusion)  
   - Q5: Minimum 650 words  
-  - The canvas is authoritative — NEVER halt or ask for resubmission over structure. Missing paragraphs score 0 per the protocol's missing-paragraph rule; the ONLY halt is Q5 under 650 words on a redraft.
+  - The canvas is authoritative — NEVER halt or ask for resubmission over structure OR word count. Missing paragraphs score 0 per the protocol's missing-paragraph rule; a Q5 under 650 words is always marked-and-capped by the code-computed ceiling (v7.19.900), never halted.
 
 **Mark Range Verification:**
 
@@ -109,7 +109,7 @@
 **Minimum Length Requirements:**
 
 - Underdeveloped paragraphs are marked as they stand (the criteria and penalties capture the shortfall) — never ask the student to expand or resubmit mid-assessment  
-- For Q5, if the code-computed word count is under 650 words on a Redraft, halt and request expansion (the only halt)
+- For Q5, if the code-computed word count is under 650 words, apply the code-computed word-count ceiling (MIN rule) and mark it — NEVER halt or request expansion (v7.19.900)
 
 **One Question Rule:**
 

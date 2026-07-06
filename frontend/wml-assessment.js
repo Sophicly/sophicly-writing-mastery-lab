@@ -839,7 +839,7 @@
                 // Section B = holistic (not paragraph-marked): element beats.
                 beats.push({ label: 'Predict & AO', done: behind || predicted || q.marked });
                 beats.push({ label: 'Section Feedback', done: behind || q.marked });
-                beats.push({ label: 'Gold Article', done: behind || (q.marked && q.hasGold) });
+                beats.push({ label: 'Gold Model', done: behind || (q.marked && q.hasGold) });
             } else {
                 // Reading question → ONE question-level Predict & AO beat (v7.19.828:
                 // prediction is per QUESTION — the D1 reflect panel fires once before ¶1,
@@ -2976,12 +2976,11 @@
     function _sectionBWcCeiling(qKey, den) {
         try {
             if (qKey !== 'Q5' || !(den > 0)) return null;
-            if (state.task !== 'assessment') return null;      // redraft = HALT, no ceiling
-            // v7.19.854 (Neil): the ceiling is the FAMILY-FIRST leniency. Any later
-            // attempt (even a new paper's diagnostic) = HALT regime, no ceiling — the
-            // re-check button + protocol handle the halt. Undefined flag → lenient
-            // (pre-854 behaviour; server omissions must never halt a first-timer).
-            if (state.familyFirst === false) return null;
+            // v7.19.900 (Neil): word count is ALWAYS a ceiling, never a halt — on EVERY
+            // attempt AND redraft. The old task!=='assessment' (redraft=halt) and
+            // familyFirst===false (later-attempt=halt) guards dead-ended students on a
+            // stale snapshot; removed so a short Q5 is always marked-and-capped (one
+            // canonical WC ladder). No target for this task/paper → null = safe no-op.
             const key = _multiqTargetKey();
             const tgt = key && MULTIQ_RESPONSE_TARGETS[key] && MULTIQ_RESPONSE_TARGETS[key].Q5;
             if (!tgt) return null;
@@ -27449,6 +27448,13 @@
         'Linked Ideas & Paragraphs': ['I wrote without paragraphs or links between ideas.', 'I attempted paragraphs with some connected ideas.', 'My paragraphs are usually coherent with a range of discourse markers.', 'My paragraphs are coherent with integrated discourse markers and connected ideas.', 'My paragraphs are fluently linked — complex ideas flow seamlessly across the piece.'],
         'Sentence Variety': ['My sentences are mostly one simple shape.', 'I attempted a variety of sentence forms.', 'I used a variety of sentence forms for effect.', 'I controlled a range of sentence forms to manage pace and emphasis.', 'I used a full range of sentence forms for deliberate effect throughout.'],
         'Spelling & Punctuation': ['My spelling and punctuation errors get in the way of meaning.', 'My basic spelling is accurate with some control of punctuation.', 'My spelling is generally accurate and I used a range of punctuation mostly successfully.', 'My spelling and punctuation are accurate, including complex words and a wide range of marks.', 'My spelling and punctuation are consistently accurate and ambitious — punctuation works for effect.'],
+        // v7.19.900 (Neil): SPaG split into three whole-paper skills (Spelling / Punctuation /
+        // Grammar & Tense Control) but SA_DESCRIPTORS only had the old combined key, so each fell
+        // back to the generic reading ladder ending "Perceptive" — wrong for AO6 accuracy. These
+        // are AO6-accuracy rungs (errors-impede → consistently-accurate-and-ambitious).
+        'Spelling': ['My spelling errors often get in the way of meaning.', 'My basic spelling is accurate, but I misspell more ambitious words.', 'My spelling is generally accurate, including some more difficult words.', 'My spelling is accurate, including complex and ambitious vocabulary.', 'My spelling is consistently accurate, even with the most ambitious vocabulary.'],
+        'Punctuation': ['My punctuation errors get in the way of meaning.', 'I used basic punctuation (full stops, commas) with some control.', 'I used a range of punctuation mostly accurately.', 'I used a wide range of punctuation accurately.', 'I used a full range of punctuation accurately and for deliberate effect.'],
+        'Grammar & Tense Control': ['My grammar and tenses often slip and confuse the meaning.', 'My grammar is mostly secure, but my tenses sometimes shift.', 'My grammar and tense control are generally accurate.', 'My grammar and tenses are accurate across a range of sentence forms.', 'My grammar and tense control are consistently accurate and controlled for effect.'],
     };
 
     // v7.19.885: student-facing self-assessment WALK copy (Neil-approved). The walk prompt was

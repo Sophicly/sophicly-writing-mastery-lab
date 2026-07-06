@@ -5743,7 +5743,7 @@ TEMPLATE;
             $ff = class_exists('SWML_REST_API') ? SWML_REST_API::family_first_assessment($user_id, 'lang') : true;
             $block .= $ff
                 ? "**Family-first attempt (code-computed): YES** — this is the student's first-ever Language assessment: apply every LENIENT branch (accept any structure, word-count ceiling not halt, Tier-1 extras).\n"
-                : "**Family-first attempt (code-computed): NO** — the student has completed a marked Language assessment before: apply every STRICT branch (taught structure required, word-count HALT below target — the re-check button lifts it, Tier-2 extras).\n";
+                : "**Family-first attempt (code-computed): NO** — the student has completed a marked Language assessment before: apply every STRICT branch (taught structure required, Tier-2 extras). WORD COUNT is the exception (v7.19.900, Neil): it is ALWAYS a ceiling, never a halt, on every attempt — a short Q5 is marked and capped (code-computed penalty → ceiling), never dead-ended.\n";
             $block .= "### RULES — NON-NEGOTIABLE\n";
             $block .= "1. The pre-assessment chain MUST be complete before ANY marking output. Check the conversation for ALL THREE student replies: (a) grade goal, (b) HEADLINE GOAL (their choice from the goal options — a CONCEPTUAL aim, never a grade number), (c) KEYWORD RECALL (the key aspects the recall-target question asks them to explore). If any is missing, ask ONLY the next missing question (in that order) and STOP — nothing else in the turn.\n";
             $block .= "2. Once all three replies are present: acknowledge the keyword recall, then begin the FIRST question exactly per the protocol (its own gate first — never a mark in the same turn).\n";
@@ -5789,7 +5789,7 @@ TEMPLATE;
         $ff_mid = class_exists('SWML_REST_API') ? SWML_REST_API::family_first_assessment($user_id, 'lang') : true;
         $block .= $ff_mid
             ? "Family-first attempt (code-computed): YES — LENIENT regimes (any structure accepted; Q5 word-count ceiling, never a halt; Tier-1 extras).\n"
-            : "Family-first attempt (code-computed): NO — STRICT regimes (taught structure required; Q5 below target = HALT until the code-owned re-check passes; Tier-2 extras).\n";
+            : "Family-first attempt (code-computed): NO — STRICT regimes (taught structure required; Tier-2 extras). Q5 word count is ALWAYS a ceiling, never a halt — a short Q5 is marked and capped, never dead-ended.\n";
         if ($headline_goal !== '') {
             $block .= "Student's headline goal: {$headline_goal} — cite THIS (never the grade) in every question's reflection lead-in; close it in the Final Summary's metacognitive journey.\n";
         }
