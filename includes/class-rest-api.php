@@ -821,7 +821,14 @@ class SWML_REST_API {
             }
             $picked = SWML_Quiz_Bank::pick_session_msa($text, $board, $count, $avoid);
         } elseif ($is_fq) {
-            $picked = SWML_Quiz_Bank::pick_session_fq($text, $count);
+            // v7.19.899: poem / poetic-form quiz STAGING. Bridge sends fq_stage=N (@set — poem
+            // reading stage) or fq_part=N (@part — poetic form). One canonical mapping here; do
+            // NOT rename the bank tokens (live student-facing content). fq_part wins if both sent.
+            $fq_part  = isset($p['fq_part'])  ? absint($p['fq_part'])  : 0;
+            $fq_stage = isset($p['fq_stage']) ? absint($p['fq_stage']) : 0;
+            $stage    = $fq_part ?: ($fq_stage ?: null);
+            $kind     = $fq_part ? 'part' : 'set';
+            $picked = SWML_Quiz_Bank::pick_session_fq($text, $count, $stage, $kind);
         } else {
             $picked = SWML_Quiz_Bank::pick_session($subject, $board, $count);
         }

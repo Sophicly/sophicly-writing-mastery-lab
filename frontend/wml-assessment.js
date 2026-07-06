@@ -4276,7 +4276,7 @@
     // the twin fired. Extracting the guard+repair+render here makes it ONE source of truth that
     // cannot drift out of a pipeline again (the class of bug, not just this instance). Returns true
     // when a reflection was handled (so the caller suppresses quick-actions, as before).
-    function _renderReflectInto(reflectData, body, chatTextarea) {
+    function _renderReflectInto(reflectData, body, chatTextarea, send, isLoading) {
         if (!reflectData) return false;
         const _rk = _paraKey(reflectData.q || '');
         // Duplicate = (a) a gate whose question already submitted its reflection, or (b) while a
@@ -4293,10 +4293,10 @@
                 let _rTries = 0;
                 const _rLabel = (_reflectPending && _reflectPending !== '?') ? ('Q' + _reflectPending).replace('QIntro', 'the Introduction').replace('QConclusion', 'the Conclusion') : 'the current question';
                 const _rFire = () => {
-                    if (canvasChatLoading) { if (++_rTries < 20) setTimeout(_rFire, 300); return; }
+                    if (isLoading && isLoading()) { if (++_rTries < 20) setTimeout(_rFire, 300); return; }
                     canvasSilentSend = true;
                     chatTextarea.value = 'SYSTEM (not from the student): the reflection for ' + _rLabel + ' is ALREADY recorded — the student has submitted their self-rating, prediction and AO target. The protocol allows exactly ONE reflection panel per question: do NOT re-ask it, do NOT ask a separate AO-targeting question, and NEVER split reflections per paragraph. Resume the protocol at the NEXT step now — emit the Y-gate line if one is due, otherwise the next feedback card.';
-                    sendCanvasMessage();
+                    if (send) send();
                 };
                 setTimeout(_rFire, 400);
             }
@@ -4306,7 +4306,7 @@
         try {
             const widget = _renderReflectPanel(reflectData, (answer) => {
                 if (chatTextarea) { chatTextarea.value = answer; }
-                sendCanvasMessage();
+                if (send) send();
             });
             body.appendChild(widget);
         } catch (err) {
@@ -6687,7 +6687,10 @@
                 // v7.19.596/848: composite reflection panel + ONE-per-question dup guard.
                 // v7.19.897: the guard+repair+render now lives in the shared _renderReflectInto so
                 // this primary pipeline and the "mirrors primary" twin can't diverge again.
-                _renderReflectInto(_reflectData, body, chatTextarea);
+                // v7.19.899: sendCanvasMessage + canvasChatLoading are CLOSURE-LOCAL to each
+                // pipeline (not module scope) — pass them in so the module-scope helper can drive
+                // the correct chat shell (the .898 crash: helper called a local it couldn't see).
+                _renderReflectInto(_reflectData, body, chatTextarea, sendCanvasMessage, () => canvasChatLoading);
 
                 // v7.15.101: Fill-in-the-blank submit wiring for canvas chat.
                 // Mirrors the wml-app.js handler (main chat). Without this the
@@ -15593,7 +15596,9 @@
                                 // "mirrors primary" twin gets the SAME one-per-question dup guard +
                                 // repair as the primary — the fix for the resume-path double
                                 // self-rating/AO leak (this block previously had NO guard at all).
-                                _renderReflectInto(_reflectData2, body, chatTextarea);
+                                // v7.19.899: pass the twin's OWN closure-local sendCanvasMessage +
+                                // canvasChatLoading (each pipeline has its own — not module scope).
+                                _renderReflectInto(_reflectData2, body, chatTextarea, sendCanvasMessage, () => canvasChatLoading);
 
                                 // Quick action buttons — detect from raw (unformatted) text
                                 const detectText = rawText || text.replace(/<[^>]+>/g, '');

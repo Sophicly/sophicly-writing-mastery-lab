@@ -128,10 +128,18 @@ class SWML_Quiz_Bank {
                     'why'       => [],   // per-distractor why-wrong glosses, letter => gloss
                     'why_generic' => '', // why-wrong gloss for fill/true-false
                     'max_marks' => 2,
+                    'set'       => null, // v7.19.899: poem-quiz reading STAGE (@set:N) — bridge fq_stage
+                    'part'      => null, // v7.19.899: forms-quiz STAGE (@part:N) — bridge fq_part
                 ];
                 continue;
             }
             if ($q === null) continue;
+
+            // v7.19.899: capture the staging tokens the poem/forms banks carry on the line
+            // after Type (indented, own line) — the parser previously dropped them silently, so
+            // every stage served at once. @set = poem reading-stage; @part = poetic-form stage.
+            if (preg_match('/^\s*@set:(\d+)\s*$/i', $ln, $m))  { $q['set']  = (int) $m[1]; continue; }
+            if (preg_match('/^\s*@part:(\d+)\s*$/i', $ln, $m)) { $q['part'] = (int) $m[1]; continue; }
 
             if (preg_match('/^\s*\*\s*\*\*Question:\*\*\s*(.+)$/i', $ln, $m)) { $q['question'] = self::clean($m[1]); continue; }
             if (preg_match('/^\s*\*\s*\*\*Options:\*\*\s*(.+)$/i', $ln, $m)) {
@@ -227,10 +235,41 @@ class SWML_Quiz_Bank {
         return empty($sections) ? [] : reset($sections);
     }
 
-    public static function pick_session_fq($text, $n = 5) {
+    /**
+     * v7.19.899: FQ session pick — now STAGE-aware for the poem / poetic-form quizzes.
+     * $stage + $stage_kind ('set' = poem reading-stage @set:N via bridge fq_stage; 'part' =
+     * poetic-form @part:N via bridge fq_part). Behaviour (Neil — no random-N subset for these):
+     *   • Bank carries the stage token AND a valid stage is requested → serve the FULL matching
+     *     part (every poem/form in the part tested each attempt), shuffled.
+     *   • No stage requested / bank has no stage tokens (e.g. igcse_lang single-stage) → serve the
+     *     WHOLE bank, shuffled. Empty stage match → whole bank + a fail-loud log (never silent).
+     * Serving the full set bypasses the REST count cap (a 15/18-Q part exceeds min(10,…)). Question
+     * numbering is global per bank, so the 'fq:{text}:{q_num}' ids stay unique across sets → scoring
+     * (stateless-by-id) is unaffected. Order + MCQ options shuffle via pick_from_pool as before.
+     */
+    public static function pick_session_fq($text, $n = 5, $stage = null, $stage_kind = 'set') {
         $pool = self::questions_for_fq($text);
         if (empty($pool)) return [];
-        return self::pick_from_pool($pool, 'fq:' . sanitize_key((string) $text), $n);
+
+        $key = ($stage_kind === 'part') ? 'part' : 'set';
+        $has_tokens = false;
+        foreach ($pool as $q) { if (isset($q[$key]) && $q[$key] !== null) { $has_tokens = true; break; } }
+
+        $serve = $pool;
+        if ($has_tokens && $stage !== null && (int) $stage > 0) {
+            $stage = (int) $stage;
+            $sub = array_values(array_filter($pool, function ($q) use ($key, $stage) {
+                return isset($q[$key]) && (int) $q[$key] === $stage;
+            }));
+            if (!empty($sub)) {
+                $serve = $sub;
+            } elseif (function_exists('error_log')) {
+                error_log('WML FQ: stage ' . $key . '=' . $stage . ' matched 0 questions in bank "' . $text . '" — serving whole bank instead');
+            }
+        }
+
+        // n = count($serve) → pick_from_pool returns the ENTIRE served set, shuffled + id-stamped.
+        return self::pick_from_pool($serve, 'fq:' . sanitize_key((string) $text), count($serve));
     }
 
     /**
