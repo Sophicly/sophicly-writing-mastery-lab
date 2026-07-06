@@ -80,18 +80,18 @@ Types: MCQ · Fill · True-False · Select All
 
 8. **Type: MCQ [Tests Form & Features]**
    * **Question:** How does the free-verse form of "An Unknown Girl" support its meaning?
-   * **Options:** A) Its loose, unrhymed lines and returning phrases echo the flowing henna design and the speaker's uncertain sense of belonging between two cultures, B) Its strict sonnet form argues a single fixed idea, C) Its rhyming couplets march the poem forward in orderly pairs, D) A repeating refrain builds mounting anger
+   * **Options:** A) Its loose, unrhymed lines and the returning refrain "In the evening bazaar ... an unknown girl / is hennaing my hand" echo the flowing henna design and the speaker's uncertain sense of belonging between two cultures, B) Its strict sonnet form argues a single fixed idea, C) Its rhyming couplets march the poem forward in orderly pairs, D) A repeating refrain builds mounting anger
    * **Correct:** A
-   * **Feedback:** ✓ Correct. The thin, drifting, unrhymed lines trace the henna pattern's flowing lines and the speaker's own unfixed identity, caught between her British life and a heritage she can touch but not fully claim.
+   * **Feedback:** ✓ Correct. The thin, drifting, unrhymed lines trace the henna pattern's flowing lines — "a peacock spreads its lines / across my palm" — and the speaker's own unfixed identity, caught between her British life and a heritage she can touch but not fully claim.
    * **Why B:** The poem has neither a fixed fourteen-line shape nor a single rhymed argument; it is open free verse.
    * **Why C:** Rhyming couplets belong to The Bright Lights of Sarajevo, not this loosely flowing poem.
    * **Why D:** The tone is tender and reflective, not driven by an angry refrain.
 
 9. **Type: MCQ [Tests Meaning & Effects]**
    * **Question:** What tension does "An Unknown Girl" explore through the henna design placed on the speaker's hand?
-   * **Options:** A) A quarrel between two rival stallholders, B) The speaker's longing to hold on to a fleeting, intimate connection with a cultural heritage that feels both close to her and slightly unfamiliar, C) A dispute over the price of goods in the bazaar, D) A soldier's fear on the eve of battle
+   * **Options:** A) A quarrel between two rival stallholders, B) The speaker's longing to hold on to a fleeting, intimate connection with a cultural heritage that feels both close to her and slightly unfamiliar — she gains "new brown veins" yet knows the pattern "will fade in a week", C) A dispute over the price of goods in the bazaar, D) A soldier's fear on the eve of battle
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The henna is beautiful but temporary, and the speaker's wish to keep it — and the moment of connection with the unknown girl — captures her yearning to hold on to a heritage she experiences as both hers and, in some ways, distant from her London life.
+   * **Feedback:** ✓ Correct. The henna gives her "new brown veins" but she knows it "will fade in a week", and the poem's closing image — reaching out "with my hands outstretched longing for the unknown girl / in the neon bazaar" — captures her yearning to hold on to a heritage she experiences as both hers and, in some ways, distant from her London life.
    * **Why A:** No quarrel between stallholders appears in the poem.
    * **Why C:** The poem is not concerned with trade or bargaining.
    * **Why D:** There is no soldier or battle in this poem; that belongs to Disabled and Out, Out—.

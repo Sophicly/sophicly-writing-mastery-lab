@@ -144,27 +144,27 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 13. **Type: MCQ [Tests Recognising the Poem]**
     @set:1
-    * **Question:** Which poem directly challenges a listener's assumptions about someone based on their class background?
+    * **Question:** Which poem repeats the refrain "How can you tell what class I'm from?", contrasting a "corpy" home with a "pretty little semi, out Wirral way"?
     * **Options:** A) The Class Game, B) A Poison Tree, C) Extract from The Prelude, D) Catrin
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Mary Casey's "The Class Game" confronts the listener over judging her by class, insisting she cannot be reduced to a label.
+    * **Feedback:** ✓ Correct. Mary Casey's "The Class Game" repeats "How can you tell what class I'm from?" as its refrain, setting the speaker's own "corpy" against the "pretty little semi" she is measured beside.
     * **Why B:** A Poison Tree concerns private, nursed anger, not class prejudice.
     * **Why C:** The Prelude extract is a memory of nature and guilt, not a challenge about class.
     * **Why D:** Catrin is about a family bond, not class judgement.
 
 14. **Type: True-False [Tests Form & Features]**
     @set:1
-    * **Question:** "The Class Game" uses a direct, confrontational, first-person voice with colloquial, conversational phrasing, challenging the listener as though in speech.
+    * **Question:** "The Class Game" is written in phonetic, eye-dialect spelling of a working-class Liverpool voice — "an 'olly in me mouth", "me Ma", "toilet instead of bog" — as the speaker confronts the listener directly.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. Casey's speaker addresses the listener head-on in an informal, spoken register, making the challenge to class prejudice feel immediate and personal.
-    * **WhyWrong:** This is true — the poem's direct, conversational address puts the listener on the spot, much like a spoken-word confrontation.
+    * **Feedback:** ✓ Correct. Casey renders her speaker's voice phonetically ("me", "'ave", "toilet instead of bog"), making the direct, conversational challenge to class prejudice feel immediate and spoken rather than written.
+    * **WhyWrong:** This is true — the eye-dialect spelling captures a real spoken voice, sharpening the poem's direct challenge to the listener's assumptions.
 
 15. **Type: MCQ [Tests Meaning & Effects]**
     @set:1
-    * **Question:** What is the central argument of "The Class Game"?
+    * **Question:** What is the central argument of "The Class Game", shown when the speaker declares "A cleaner is me mother / A docker is me brother" and closes "I'm proud of the class that I come from"?
     * **Options:** A) That class background should be celebrated above all else, B) That a person cannot be reduced to assumptions made from their class, accent or background, C) That class no longer exists in society, D) That only one class faces prejudice
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The speaker rejects being pre-judged and labelled by class, insisting she should be seen and accepted as herself, not as a stereotype.
+    * **Feedback:** ✓ Correct. The speaker rejects being pre-judged and labelled by class, naming her mother a cleaner and her brother a docker with defiance, and asserting pride rather than shame in where she comes from.
     * **Why A:** The poem resists class-based judgement altogether, not celebrating any one class.
     * **Why C:** The poem's whole premise is that class prejudice is still very much alive.
     * **Why D:** The poem's argument is about class prejudice in general, not confined to one group.
@@ -345,27 +345,27 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 34. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem, in a confident, performance-style voice, rejects being seen as a "problem" because of racial stereotyping?
+    * **Question:** Which poem opens each stanza with the refrain "I am not de problem", rejecting being "branded athletic" and put "in a pigeon hole"?
     * **Options:** A) No Problem, B) Half-caste, C) The Class Game, D) Belfast Confetti
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Zephaniah's speaker asserts his own identity with confidence and defiance, refusing the label of "problem" that racist assumptions try to attach to him.
+    * **Feedback:** ✓ Correct. Zephaniah's "No Problem" repeats "I am not de problem" as its refrain, as the speaker refuses being "branded athletic" or filed away "in a pigeon hole".
     * **Why B:** Half-caste challenges the specific term "half-caste" and mixed heritage, a related but distinct target.
     * **Why C:** The Class Game challenges prejudice based on social class, not race.
     * **Why D:** Belfast Confetti describes a riot and its disorientating aftermath, not racial stereotyping.
 
 35. **Type: True-False [Tests Form & Features]**
     @set:3
-    * **Question:** "No Problem" uses a loose, spoken-word style with a confident, direct first-person voice, in the tradition of performance poetry.
+    * **Question:** "No Problem" is written in Jamaican patois-influenced spelling ("de", "dey", "yu"), giving the speaker a loose, rhythmic, performance-poetry voice.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. Zephaniah, known for performance and dub poetry, gives the speaker a rhythmic, spoken-word voice that suits his confident, public rejection of stereotyping.
-    * **WhyWrong:** This is true — the poem's loose, rhythmic, spoken-word style reflects Zephaniah's performance-poetry roots and suits its confident, confrontational tone.
+    * **Feedback:** ✓ Correct. Zephaniah, known for performance and dub poetry, spells the speaker's voice phonetically ("de problem", "dey got me", "yu give I a chance"), giving it a rhythmic, spoken-word delivery that suits its confident, public rejection of stereotyping.
+    * **WhyWrong:** This is true — the patois spelling and loose, rhythmic delivery reflect Zephaniah's performance-poetry roots and suit its confident, confrontational tone.
 
 36. **Type: MCQ [Tests Meaning & Effects]**
     @set:3
-    * **Question:** What is the overall stance of the speaker in "No Problem"?
+    * **Question:** What is the overall stance of the speaker in "No Problem", who declares "I have no chips on me shoulders" and ends "Sum of me best friends are white"?
     * **Options:** A) Apologetic and ashamed of his background, B) Self-assured and defiant, asserting his identity and achievements against those who stereotype him, C) Indifferent to how he is perceived, D) Angry only at other members of his own community
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Rather than apologising for who he is, the speaker meets prejudice with pride and self-assurance, standing his ground against being reduced to a stereotype.
+    * **Feedback:** ✓ Correct. Rather than apologising for who he is, the speaker meets prejudice with pride and self-assurance — insisting he has "no chips on me shoulders" — while still standing his ground against being reduced to a stereotype.
     * **Why A:** The tone is confident and unapologetic, not ashamed.
     * **Why C:** The speaker cares enough to directly confront the stereotyping he faces.
     * **Why D:** His challenge is aimed at those who stereotype him, not at his own community.
@@ -402,29 +402,29 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 40. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem centres on a war photographer, contrasting the horror of what his images show with the reactions of those who view them?
+    * **Question:** Which poem's speaker admits he "seek[s] out the tragic, the absurd, to make a subject", against a caption claiming "even in hell the human spirit triumphs over all"?
     * **Options:** A) War Photographer, B) Belfast Confetti, C) The Destruction of Sennacherib, D) A Poison Tree
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Satyamurti's "War Photographer" sets the suffering captured in the photographer's images against the more detached, distanced responses of those who later view them.
+    * **Feedback:** ✓ Correct. Satyamurti's "War Photographer" has its speaker admit he "seek[s] out the tragic, the absurd, to make a subject", setting the suffering he witnesses against the reassuring caption that "even in hell the human spirit triumphs over all".
     * **Why B:** Belfast Confetti is the speaker's own first-hand experience of a riot, not a photographer's images of it.
     * **Why C:** Sennacherib recounts an ancient battle narrative, not a modern photographer's work.
     * **Why D:** A Poison Tree concerns private anger, not war photography.
 
 41. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** What effect does Satyamurti create by structuring the poem around contrast?
+    * **Question:** What effect does Satyamurti create by structuring the poem around contrast, such as the "peach, sun-gilded girls" laughing at Ascot set against a small girl "staggering down some devastated street"?
     * **Options:** A) It reveals the photographer's world of suffering has no connection to any other, B) It juxtaposes the reality the photographer has witnessed with the more comfortable distance of those who later encounter the images, sharpening the poem's unease, C) It makes the poem read as a straightforward celebration of photography, D) It removes any sense of the photographer's own feelings
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The poem's structure holds the photographer's direct experience of suffering against the more removed reactions of an audience encountering it afterwards, exposing the gap between the two.
+    * **Feedback:** ✓ Correct. The poem's structure holds moments like the carefree "peach, sun-gilded girls" at Ascot against the small girl "staggering down some devastated street", exposing the gap between comfortable distance and lived suffering.
     * **Why A:** The contrast is the poem's whole point — connecting two very different responses to the same suffering.
     * **Why C:** The poem is unsettling rather than celebratory in tone.
     * **Why D:** The photographer's own discomfort and complex feelings run through the poem.
 
 42. **Type: True-False [Tests Meaning & Effects]**
     @set:3
-    * **Question:** "War Photographer" by Satyamurti explores the uneasy gap between witnessing suffering directly and encountering it only as a distant image.
+    * **Question:** "War Photographer" by Satyamurti closes by declaring that "hell, like heaven, is untidy, its boundaries arbitrary as a blood stain on a wall", exploring the uneasy gap between witnessing suffering directly and encountering it only as a distant image.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. The poem probes the difference between the photographer's direct, visceral experience of conflict and the more detached way that suffering is later received by others.
+    * **Feedback:** ✓ Correct. The poem probes the difference between the photographer's direct, visceral experience of conflict and the more detached way that suffering is later received by others, closing on the unsettled image of hell's boundaries as "arbitrary as a blood stain on a wall".
     * **WhyWrong:** This is true — the poem's central concern is that unsettling gap between direct witness and distanced reception of suffering.
 
 43. **Type: MCQ [Tests Recognising the Poem]**

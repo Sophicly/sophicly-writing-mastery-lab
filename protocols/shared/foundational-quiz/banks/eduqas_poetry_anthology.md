@@ -139,20 +139,20 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 13. **Type: MCQ [Tests Recognising the Poem]**
     @set:1
-    * **Question:** Which poem uses the language of a comic-book "origin story" to reflect on how the speaker's parents first met and fell in love?
+    * **Question:** Which poem opens "This is true:" and retells how the speaker's parents met at "the Greyhound bus station in the mid-eighties in Chicago", her mother buying her father's comic book for "one dollar"?
     * **Options:** A) Origin Story, B) Sonnet 29, C) Drummer Hodge, D) Decomposition
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Ewing's "Origin Story" borrows the superhero "origin story" idea to retell how her parents' relationship began, treating an ordinary, imperfect love as its own kind of legend.
+    * **Feedback:** ✓ Correct. Ewing's "Origin Story" opens "This is true:" and recounts her parents meeting at "the Greyhound bus station" in Chicago, her mother buying her father's hand-drawn comic book for "one dollar" — the ordinary beginning of a lasting love.
     * **Why B:** Sonnet 29 addresses the speaker's own overwhelming love directly, not a parents' backstory.
     * **Why C:** Drummer Hodge mourns a soldier buried far from home, unconnected to a parents' romance.
     * **Why D:** Decomposition reflects on a photograph of a stranger, not the speaker's own family history.
 
 14. **Type: MCQ [Tests Form & Features]**
     @set:1
-    * **Question:** How is "Origin Story" written?
-    * **Options:** A) As a strict rhyming sonnet, B) In free verse with conversational, unconventional punctuation, giving it a modern, personal storytelling feel, C) As a formal ballad with a chorus, D) In rigid, numbered stanzas of equal length
+    * **Question:** How is "Origin Story" written, and what does its central comparison — "love is like a comic book. it's fragile" — suggest?
+    * **Options:** A) As a strict rhyming sonnet, suggesting a formal, timeless love, B) In free verse with conversational, unconventional punctuation, its comic-book comparison suggesting an ordinary love is fragile yet worth carefully protecting, C) As a formal ballad with a chorus, suggesting the parents' story is legendary, D) In rigid, numbered stanzas of equal length, suggesting a case study
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The poem's free verse and loose, everyday punctuation let it read like spoken storytelling, suiting its casual, contemporary retelling of a family history.
+    * **Feedback:** ✓ Correct. The poem's free verse and loose, lower-case punctuation read like spoken storytelling, while likening the parents' love to a comic book that is "fragile" and kept safe in "plastic and cardboard, dark rooms and boxes" suggests an ordinary love is still worth preserving.
     * **Why A:** The poem has no fixed rhyme scheme or fourteen-line shape.
     * **Why C:** There is no sung refrain or chorus structure.
     * **Why D:** Its loose, conversational form resists rigid, equal-length stanzas.
@@ -160,10 +160,10 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 15. **Type: Select All [Tests Meaning & Effects]**
     @set:1
     * **Question:** Which statements correctly describe the meaning and effect of "Origin Story"?
-    * **Options:** A) It reframes the parents' courtship using the language of a comic-book origin story, B) It suggests that ordinary, imperfect love can still be meaningful and worth preserving, C) Its free verse and casual punctuation give it a modern, conversational storytelling voice, D) It concludes that real relationships are less significant than fictional ones
+    * **Options:** A) It reframes the parents' courtship, from meeting at "the Greyhound bus station" to the comic book sold for "one dollar", using the language of a superhero origin story, B) Comparing their love to a comic book that could "find its way to another decade, another home" suggests ordinary, imperfect love can still be preserved and cherished, C) Its free verse and casual, lower-case punctuation give it a modern, conversational storytelling voice, D) It concludes that real relationships are less significant than fictional ones
     * **Correct:** A, B, C
     * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-    * **Feedback:** ✓ Correct. Ewing borrows superhero "origin story" language, treats imperfect love as worth keeping, and tells it all in a free, conversational voice suited to modern storytelling.
+    * **Feedback:** ✓ Correct. Ewing borrows superhero "origin story" language, likens the parents' love to a comic book that could "find its way to another decade, another home", and tells it all in a free, conversational voice suited to modern storytelling.
     * **Why D:** The poem elevates the parents' real story rather than diminishing it against fiction.
 
 <!-- ============================ SET 2 ============================ -->
@@ -369,30 +369,30 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 37. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem is a monologue of a woman anxiously waiting for a single phone call from the man she loves, unsettled by the silence?
+    * **Question:** Which poem depicts a woman polishing and dressing for a silent telephone — "Silver service. I polish it. I dress for it." — as she waits for her lover to call?
     * **Options:** A) Dusting the Phone, B) Sonnet 29, C) Cousin Kate, D) I Shall Return
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Jackie Kay's "Dusting the Phone" voices a woman's obsessive, anxious waiting for her lover to call, her hope and self-doubt built around the silent telephone.
+    * **Feedback:** ✓ Correct. Jackie Kay's "Dusting the Phone" depicts the speaker polishing and dressing for the telephone — "Silver service. I polish it. I dress for it." — her ritual devotion to the silent object standing in for her anxious wait for her lover's call.
     * **Why B:** Sonnet 29 addresses a beloved directly and confidently, not through anxious waiting for contact.
     * **Why C:** Cousin Kate narrates a completed betrayal, not present-tense waiting for a call.
     * **Why D:** I Shall Return is a vow to return to a homeland, not a wait for a lover's call.
 
 38. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** How is "Dusting the Phone" written?
-    * **Options:** A) As a fixed, rhyming sonnet, B) As a free-verse monologue, using sentence fragments and personification of the phone to convey anxious, obsessive longing, C) As a formal ballad, D) As a strict villanelle
+    * **Question:** How is "Dusting the Phone" written, and what effect does its clipped line "The phone rings heralding some disaster. Sirens." create?
+    * **Options:** A) As a fixed, rhyming sonnet, building calm certainty, B) As a free-verse monologue, its sentence fragments and personified phone conveying anxious, obsessive longing, C) As a formal ballad, narrating events at a distance, D) As a strict villanelle, its refrains offering reassurance
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Kay's free verse and clipped, fragmented sentences enact the woman's restless, obsessive waiting, while the phone itself is personified as if it holds power over her.
+    * **Feedback:** ✓ Correct. Kay's free verse and clipped, fragmented sentences — "The phone rings heralding some disaster. Sirens." — enact the woman's restless, obsessive waiting, while the phone is personified as if it holds power over her.
     * **Why A:** The poem has no fixed rhyme scheme or sonnet shape.
     * **Why C:** There is no narrative ballad structure or refrain.
     * **Why D:** The poem does not use a villanelle's strict repeating refrains.
 
 39. **Type: MCQ [Tests Meaning & Effects]**
     @set:3
-    * **Question:** What does "Dusting the Phone" suggest about the effect of waiting for a lover's call?
-    * **Options:** A) That waiting brings only calm confidence, B) That prolonged uncertainty and dependency on someone else's contact can wear away at a person's emotional balance and hope, C) That the phone itself is broken, D) That the speaker no longer cares about the relationship
+    * **Question:** What does "Dusting the Phone" suggest about the effect of waiting for a lover's call, given the speaker admits "I am trapped in it. I can't move."?
+    * **Options:** A) That waiting brings only calm confidence, B) That prolonged uncertainty and dependency on someone else's contact can wear away at a person's emotional balance, trapping her even as she longs for the call, C) That the phone itself is broken, D) That the speaker no longer cares about the relationship
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The poem reveals how silence and uncertainty, stretched out over time, erode confidence and hope, however much the speaker longs to control her own feelings.
+    * **Feedback:** ✓ Correct. The poem reveals how silence and uncertainty, stretched out over time, erode confidence and hope — "I am trapped in it. I can't move." — however much the speaker longs to control her own feelings.
     * **Why A:** The speaker's anxious fragments show unease, not calm confidence.
     * **Why C:** The poem's focus is emotional, not a literal fault with the telephone.
     * **Why D:** Her obsessive attention to the phone reveals she cares intensely, not that she has stopped caring.

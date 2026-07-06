@@ -139,10 +139,10 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 13. **Type: MCQ [Tests Recognising the Poem]**
     @set:1
-    * **Question:** Which poem gives the same first date twice, once from a hopeful woman's viewpoint and once from a more detached man's, so the reader sees the mismatch between them?
+    * **Question:** Which poem gives the same first date twice — she hoping he'll think her "brow was acceptably high", he admitting "Perhaps she is out of my league" — so the reader sees the mismatch between a hopeful woman's viewpoint and a more detached man's?
     * **Options:** A) 1st Date – She and 1st Date – He, B) One Flesh, C) Neutral Tones, D) A Complaint
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Cope's paired poems present the identical evening from two contrasting first-person perspectives, exposing the gap between the woman's hope and the man's detachment.
+    * **Feedback:** ✓ Correct. Cope's paired poems present the identical evening from two contrasting first-person perspectives — she hoping her "brow was acceptably high", he wondering if "she is out of my league" — exposing the gap between hope and detachment.
     * **Why B:** One Flesh reflects on a long, faded marriage, not a single first date told twice.
     * **Why C:** Neutral Tones recalls the end of a relationship beside a pond, not a paired first-date structure.
     * **Why D:** A Complaint mourns love that has already dried up, not a first meeting.
@@ -150,9 +150,9 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 14. **Type: MCQ [Tests Form & Features]**
     @set:1
     * **Question:** How is the pairing of "1st Date – She" and "1st Date – He" structured?
-    * **Options:** A) As two independent poems with no connection, B) As matching, parallel monologues describing the same event, so the reader can directly compare each speaker's private thoughts, C) As a single ballad narrated by an outside voice, D) As a strict Petrarchan sonnet pair
+    * **Options:** A) As two independent poems with no connection, B) As matching, parallel monologues describing the same event — each closing on the near-identical line "quite undistracted by me" — so the reader can directly compare each speaker's private thoughts, C) As a single ballad narrated by an outside voice, D) As a strict Petrarchan sonnet pair
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Cope deliberately mirrors the two poems' structure and setting so the reader measures one speaker's private hopes directly against the other's private indifference.
+    * **Feedback:** ✓ Correct. Cope mirrors the two poems' structure and setting right down to their closing lines — she notices he is "quite undistracted by me", and he notices exactly the same of her — so the reader measures one speaker's private hopes directly against the other's private indifference.
     * **Why A:** The poems are designed to be read together, their parallel structure inviting direct comparison.
     * **Why C:** There is no single outside narrator; each poem is a distinct first-person voice.
     * **Why D:** The poems are conversational free verse, not fixed-form sonnets.
@@ -160,10 +160,10 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 15. **Type: Select All [Tests Meaning & Effects]**
     @set:1
     * **Question:** Which statements correctly describe the meaning and effect of "1st Date – She" and "1st Date – He"?
-    * **Options:** A) They reveal a mismatch between the woman's hopeful investment in the date and the man's more casual, detached attitude, B) The ironic contrast between the two viewpoints creates the poem's wry, comic effect, C) Reading both perspectives together lets the reader judge the gap between private feeling and outward behaviour, D) Both speakers openly reveal their true feelings to each other during the date
+    * **Options:** A) They reveal a mismatch between the woman's hopeful investment in the date — hoping to seem "tastefully sexy" and to have "something clever to say" — and the man's more casual admission that he merely "implied" a shared interest, B) The ironic contrast between the two viewpoints creates the poem's wry, comic effect, C) Reading both perspectives together lets the reader judge the gap between private feeling and outward behaviour, D) Both speakers openly reveal their true feelings to each other during the date
     * **Correct:** A, B, C
     * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-    * **Feedback:** ✓ Correct. Cope's paired structure exposes the mismatch between hope and detachment, generates gentle irony and comedy, and lets the reader judge a gap neither speaker admits openly.
+    * **Feedback:** ✓ Correct. Cope's paired structure exposes the mismatch between the woman's hope — wanting to seem "tastefully sexy" and worth "something clever to say" — and the man's admission that he only "implied" an interest he doesn't fully share, generating gentle irony and comedy, and letting the reader judge a gap neither speaker admits openly.
     * **Why D:** Neither speaker voices their private feelings to the other — the reader alone sees both sides.
 
 <!-- ============================ SET 2 ============================ -->
@@ -254,30 +254,30 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 25. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem builds an extended comparison between love and a dog, exploring loyalty, training and the difficulty of taming something wild?
+    * **Question:** Which poem catalogues love's contradictions through a chain of odd, surreal images — its "Eat-me/Drink-me", its "petting zoo", its "zookeeper — you"?
     * **Options:** A) Love's Dog, B) i wanna be yours, C) Sonnet 43, D) The Manhunt
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Hadfield's "Love's Dog" develops love through the sustained image of a dog, weighing its loyalty and affection against its unruly, untameable instincts.
-    * **Why B:** i wanna be yours pictures the speaker as household objects, not as a dog.
-    * **Why C:** Sonnet 43 uses abstract counting rather than an animal conceit.
-    * **Why D:** The Manhunt traces a partner's war wounds, with no dog imagery.
+    * **Feedback:** ✓ Correct. Hadfield's "Love's Dog" builds love from a run of strange, often contradictory images, from its "Eat-me/Drink-me" to its "zookeeper — you".
+    * **Why B:** i wanna be yours pictures the speaker as household objects, not this catalogue of surreal images.
+    * **Why C:** Sonnet 43 uses formal counting ("Let me count the ways") rather than a surreal list of images.
+    * **Why D:** The Manhunt traces a partner's war wounds, with no such playful catalogue.
 
 26. **Type: MCQ [Tests Form & Features]**
     @set:2
-    * **Question:** How does "Love's Dog" use its central animal image?
-    * **Options:** A) As a brief, one-line simile with no further development, B) As a sustained, extended metaphor running through the poem, using the dog's behaviour to explore the demands of love, C) As a strict refrain repeated unchanged in every stanza, D) As a direct address to a silent listener, as in a dramatic monologue
+    * **Question:** How does "Love's Dog" build its picture of love?
+    * **Options:** A) As a single fixed metaphor stated once and left undeveloped, B) Through anaphora — repeating "What I love about love is its..." and "What I hate about love is its..." — to build a list of contrasting, often absurd images, C) As a strict Petrarchan sonnet with one octave and one sestet, D) As a direct address to a silent listener, as in a dramatic monologue
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Hadfield develops the dog comparison as a sustained, extended metaphor, returning to the animal's behaviour to think through love's mix of devotion and difficulty.
-    * **Why A:** The image is built up and returned to, not used just once.
-    * **Why C:** The poem develops and varies the image rather than repeating one fixed refrain.
-    * **Why D:** The poem reflects on love in general terms; it is not a monologue addressed to one silent figure.
+    * **Feedback:** ✓ Correct. Hadfield repeats the anaphoric frame "What I love/hate about love is its..." to build a list of contrasting images — from its "truth serum" to its "shrinking potion" — that keeps flipping between delight and complaint.
+    * **Why A:** The poem develops many images across many lines, not one static metaphor.
+    * **Why C:** The poem is a list of short, repeated lines, not a fourteen-line sonnet.
+    * **Why D:** The poem reflects on love in general terms rather than addressing one silent figure.
 
 27. **Type: True-False [Tests Meaning & Effects]**
     @set:2
-    * **Question:** In "Love's Dog", the comparison between love and a dog suggests that love, like an animal, needs patience and care but can never be fully controlled.
+    * **Question:** In "Love's Dog", the poem's closing pair of images — love as "its pirate", then love as "its sick parrot" — undercuts the earlier images with something comic and faintly deflating.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. The dog conceit captures love as something that responds to devotion and care yet keeps an unpredictable, untameable side.
-    * **WhyWrong:** This is the poem's central idea — love, like the dog, rewards care and patience but resists total control.
+    * **Feedback:** ✓ Correct. After the run of stranger, sometimes tender images, ending on "its pirate" then "its sick parrot" turns the poem's last note comic and slightly bathetic, refusing a neat, solemn close.
+    * **WhyWrong:** This is the poem's effect — the "pirate" and "sick parrot" pairing deliberately deflates the ending into something comic rather than solemn.
 
 28. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
@@ -312,10 +312,10 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 31. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem is spoken by a child trying gently to comfort a dying grandfather, recalling happier times together?
+    * **Question:** Which poem opens "Grand-dad, they say you're old and frail" and closes each stanza with the same tender address, "dad", as a child tries to comfort a dying grandfather?
     * **Options:** A) A Child to his Sick Grandfather, B) My Father Would Not Show Us, C) Nettles, D) One Flesh
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Baillie's poem gives voice to a child addressing a sick grandfather directly, offering comfort and remembered affection as he nears death.
+    * **Feedback:** ✓ Correct. Baillie's poem opens with the child noticing "you're old and frail" and returns every stanza to the plain, repeated address "dad", offering comfort as the grandfather nears death.
     * **Why B:** My Father Would Not Show Us is narrated by an adult recalling a father's decision, not a child comforting a grandfather.
     * **Why C:** Nettles is spoken by a parent protecting a young child, the reverse relationship.
     * **Why D:** One Flesh is a reflection on a parents' marriage, not a child's direct address to a grandparent.
@@ -323,19 +323,19 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 32. **Type: MCQ [Tests Form & Features]**
     @set:3
     * **Question:** How is "A Child to his Sick Grandfather" structured?
-    * **Options:** A) As a dramatic monologue spoken directly by a child to the grandfather, in simple, tender language, B) As a Petrarchan sonnet, C) As a free-verse catalogue of objects, D) As a paired poem giving two contrasting viewpoints
+    * **Options:** A) As a dramatic monologue spoken directly by a child to the grandfather, its plain, repeated "dad" and its closing tales of "a partlet and her brood" and men "clad in coats of mail" building tender, childlike comfort, B) As a Petrarchan sonnet, C) As a free-verse catalogue of objects, D) As a paired poem giving two contrasting viewpoints
     * **Correct:** A
-    * **Feedback:** ✓ Correct. The poem is a direct address from the child to the grandfather, its plain, affectionate language suiting a young speaker's genuine tenderness.
+    * **Feedback:** ✓ Correct. The child speaks directly to the grandfather throughout, its plain, repeated "dad" and its closing stories — the fox that stole "by dead of midnight through a hole" and the knights in "coats of mail" — offering a young speaker's unaffected comfort as sleep overtakes him.
     * **Why B:** The poem is not shaped as a fourteen-line sonnet.
     * **Why C:** It is a direct, tender address, not a list of objects.
     * **Why D:** There is only one speaker throughout, not two paired viewpoints.
 
 33. **Type: MCQ [Tests Meaning & Effects]**
     @set:3
-    * **Question:** What effect does the child's simple, direct voice have in "A Child to his Sick Grandfather"?
+    * **Question:** What effect does the child's simple, direct voice have in "A Child to his Sick Grandfather", from "I love my own old dad" to the final, unanswered "You do not hear me, dad"?
     * **Options:** A) It makes the grandfather's illness seem trivial, B) It makes the love and sorrow feel especially sincere, since a child's plain words carry no artifice, C) It reveals that the child resents the grandfather, D) It turns the poem into a comic piece
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The child's unaffected, simple language makes the tenderness and sorrow feel genuine and unforced, without adult artifice or performance.
+    * **Feedback:** ✓ Correct. The child's plain, affectionate lines — "I love my own old dad" — and the quiet, unanswered close, "You do not hear me, dad", make the tenderness and sorrow feel genuine and unforced, without adult artifice or performance.
     * **Why A:** The child's care for the grandfather takes his illness seriously, not lightly.
     * **Why C:** The child's words are affectionate and comforting, not resentful.
     * **Why D:** The tone is tender and sorrowful, not comic.
@@ -375,7 +375,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Feedback:** ✓ Correct. Scannell's "Nettles" follows a father who "slashed in fury" at the nettle bed after his young son fell among the "green spears" and was badly stung.
     * **Why B:** The Manhunt follows a wife tracing her husband's war wounds, not a father and a nettle bed.
     * **Why C:** A Child to his Sick Grandfather is a child's address to a dying grandfather, not a parent's protective fury.
-    * **Why D:** My Father Would Not Show Us concerns a mining disaster, not a garden injury.
+    * **Why D:** My Father Would Not Show Us concerns a grieving child viewing a dead father, not a garden injury.
 
 38. **Type: MCQ [Tests Form & Features]**
     @set:3
@@ -426,26 +426,26 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 43. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem recalls a father, involved in recovering victims of a disaster, who refused to let his children see the bodies?
+    * **Question:** Which poem describes viewing a father "five days dead", his face "organised for me to see" beside a borrowed coffin that "gleams unnaturally", built around the refrain that he "would not show us how to die"?
     * **Options:** A) My Father Would Not Show Us, B) Nettles, C) The Manhunt, D) A Child to his Sick Grandfather
     * **Correct:** A
-    * **Feedback:** ✓ Correct. De Kok's poem recalls a father whose work brought him close to a disaster's dead, and who chose to shield his children from that horror.
+    * **Feedback:** ✓ Correct. De Kok's poem recalls viewing her father's face "five days dead" beside the "borrowed coffin", returning to the refrain that "my father would not show us how to die."
     * **Why B:** Nettles concerns a father protecting a son from nettle stings, a far smaller, everyday harm.
-    * **Why C:** The Manhunt concerns a returning soldier's wounds, not a father shielding children from a disaster's aftermath.
-    * **Why D:** A Child to his Sick Grandfather is a child comforting a dying grandparent, not a father's protective silence.
+    * **Why C:** The Manhunt concerns a returning soldier's wounds, not a father's death.
+    * **Why D:** A Child to his Sick Grandfather is a child comforting a dying grandparent, not an adult recalling a father already dead.
 
 44. **Type: True-False [Tests Form & Features]**
     @set:3
-    * **Question:** "My Father Would Not Show Us" is a reflective free-verse poem built around the repeated idea of the title, returning to what the father chose to withhold.
+    * **Question:** "My Father Would Not Show Us" is a reflective free-verse poem whose refrain shifts across the poem, from "My father would not show us how to die" to the final "My father could not show us how to die."
     * **Answer:** True
-    * **Feedback:** ✓ Correct. The poem's loose, reflective free verse circles back to the father's refusal, using that repeated idea to structure its meditation on protection and memory.
-    * **WhyWrong:** This is true — the poem's free verse repeatedly returns to the father's refusal, structuring its reflection around that withheld sight.
+    * **Feedback:** ✓ Correct. The repeated refrain changes its verb across the poem — from the deliberate "would not" to the final, more helpless "could not" — tracing how the father's silence shifts from choice to incapacity as death closes in.
+    * **WhyWrong:** This is true — the refrain's shift from "would not" to "could not" is exactly how the poem's free verse structures its meditation on the father's withheld death.
 
 45. **Type: Select All [Tests Meaning & Effects]**
     @set:3
-    * **Question:** Which statements correctly describe the meaning and effect of "My Father Would Not Show Us"?
-    * **Options:** A) The father's silence is presented as an act of protective love, shielding his children from horror, B) The poem reflects on how a parent's decision to withhold something shapes a child's later understanding of them, C) The poem contrasts the innocence of childhood with an adult awareness of disaster and death, D) The poem states plainly and directly everything the children were kept from seeing
+    * **Question:** Which statements correctly describe the meaning and effect of "My Father Would Not Show Us", from its opening, "organised" viewing of his body to its closing image of him turning "face to the wall"?
+    * **Options:** A) The father's withdrawal — "he hid, he hid away" — is presented as withholding from his children the sight of his own dying, as much as retreating from them, B) The poem reflects on how a parent's silence and withdrawal shape a child's later understanding of him, C) The poem contrasts a remembered, "louder, braver" childhood with the present hush beside the coffin, D) The poem states plainly and directly everything the father experienced as he died
     * **Correct:** A, B, C
     * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-    * **Feedback:** ✓ Correct. De Kok presents the father's silence as protective love, explores how withheld knowledge shapes the children's later understanding, and sets childhood innocence against adult horror.
-    * **Why D:** The poem's whole point is what remains unseen and unspoken — the withheld sight is never directly described.
+    * **Feedback:** ✓ Correct. De Kok presents the father's withdrawal — "he hid, he hid away" — as both a withholding and a retreat, reflects on how his silence shapes the speaker's later understanding, and sets a remembered "louder, braver" childhood against the present's cold hush.
+    * **Why D:** The poem's whole point is what remains unseen and unspoken — the father's dying is never plainly narrated, only circled around.

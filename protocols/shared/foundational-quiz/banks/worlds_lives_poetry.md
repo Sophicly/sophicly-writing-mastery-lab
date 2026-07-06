@@ -85,57 +85,57 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 7. **Type: MCQ [Tests Recognising the Poem]**
    @set:1
-   * **Question:** Which poem explores a speaker's name being mispronounced and misunderstood in England, drawing on references to Indian mythology such as Rama and Sita?
+   * **Question:** Which poem opens "Like Rama I have felt the Wilderness", casting Sita as "loyal pure and true of heart" to parallel the speaker's own trials as her name crosses continents?
    * **Options:** A) Name Journeys, B) Homing, C) The Jewellery Maker, D) Like an Heiress
    * **Correct:** A
-   * **Feedback:** ✓ Correct. Mundair's "Name Journeys" traces the speaker's name through migration and mythology, using figures such as Sita to parallel the speaker's own trials of identity.
+   * **Feedback:** ✓ Correct. Mundair's "Name Journeys" opens "Like Rama I have felt the Wilderness", casting Sita as "loyal pure and true of heart" to parallel the speaker's own trials of identity as her name crosses continents.
    * **Why B:** Homing concerns a mother's suppressed dialect, not a mispronounced name.
    * **Why C:** The Jewellery Maker follows a craftsman's working day, not a personal name.
    * **Why D:** Like an Heiress reflects on a remembered coastline, not mythological naming.
 
 8. **Type: MCQ [Tests Form & Features]**
    @set:1
-   * **Question:** What effect does Mundair create through the loose punctuation and free verse of "Name Journeys"?
+   * **Question:** What effect does Mundair create through the loose punctuation and free verse of "Name Journeys", as her name "became a stumble / that filled English mouths / with a discordant rhyme"?
    * **Options:** A) A strict, formal argument, B) A sense of continuous, unresolved flow, echoing the speaker's ongoing search for identity, C) A comic, sing-song rhythm, D) A rigid list of facts
    * **Correct:** B
-   * **Feedback:** ✓ Correct. The free verse and sparse punctuation let the lines run on without firm stops, mirroring an identity still in motion between cultures.
+   * **Feedback:** ✓ Correct. The free verse and sparse punctuation let lines such as "my name / a journey between rough and smooth" run on without firm stops, mirroring an identity still in motion between cultures.
    * **Why A:** The poem is personal and reflective, not a formal argument.
-   * **Why C:** Its tone is searching and serious, not comic.
+   * **Why C:** Its tone is searching and serious, not comic — the name becomes "a discordant rhyme", not a sing-song one.
    * **Why D:** The poem explores feeling and memory, not a factual list.
 
 9. **Type: True-False [Tests Meaning & Effects]**
    @set:1
-   * **Question:** In "Name Journeys", the speaker's name becomes a symbol of the wider struggle to hold on to cultural heritage while adapting to life in England.
+   * **Question:** In "Name Journeys", the speaker's name becomes a symbol of the wider struggle to hold on to cultural heritage while adapting to life in England, her voice ending "a mystery / in the Anglo Echo chamber – / void of history and memory".
    * **Answer:** True
-   * **Feedback:** ✓ Correct. The mispronunciation and reshaping of the speaker's name stands for the larger tension between preserving heritage and assimilating into a new culture.
-   * **WhyWrong:** This is the poem's central idea — the name carries the weight of heritage under pressure to assimilate.
+   * **Feedback:** ✓ Correct. The mispronunciation and reshaping of the speaker's name — from the Punjabi "dislodged as milk teeth fell" to the "Anglo Echo chamber" — stands for the larger tension between preserving heritage and assimilating into a new culture.
+   * **WhyWrong:** This is the poem's central idea — the name carries the weight of heritage under pressure to assimilate, its history left "void" in the "Anglo Echo chamber".
 
 10. **Type: MCQ [Tests Recognising the Poem]**
     @set:1
-    * **Question:** Which poem imagines a great-great-grandfather working long hours in a nineteenth-century Leeds mill, still finding space to "stack his dreams"?
+    * **Question:** Which poem imagines a great-great-grandfather "combing flax beneath / the conicals of light in Marshall's Temple Mill", still finding space to "stack his dreams" above the smoke?
     * **Options:** A) A Wider View, B) In a London Drawingroom, C) Thirteen, D) Shall Earth No More Inspire Thee
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Seneviratne's "A Wider View" imagines an ancestor's gruelling mill labour in industrial Leeds, who nonetheless holds on to hope and dreams beyond the smoke-filled sky.
+    * **Feedback:** ✓ Correct. Seneviratne's "A Wider View" imagines an ancestor labouring "twelve hours combing flax" in Marshall's Temple Mill, his eyes "dry with dust", yet still holding on to dreams beyond the "smoke-filled sky".
     * **Why B:** In a London Drawingroom looks out from a Victorian window at a bleak cityscape, not a mill.
     * **Why C:** Thirteen is set among the police and an inner-city estate, not a Victorian mill.
     * **Why D:** Shall Earth No More Inspire Thee is addressed to a grieving dreamer by personified Nature, not an ancestor in a mill.
 
 11. **Type: MCQ [Tests Form & Features]**
     @set:1
-    * **Question:** How is "A Wider View" structured?
+    * **Question:** How is "A Wider View" structured, as lines such as "he took the long way home because / he craved the comfort of a wider view" carry the narrative forward?
     * **Options:** A) As a strict sonnet, B) As five mostly regular, unrhymed free-verse stanzas, using enjambment to carry a first-person narrative, C) As a single rhyming couplet, D) As a dramatic monologue addressed to a silent Duke
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The five unrhymed, loosely regular stanzas and frequent enjambment let the narrative move forward steadily, carrying the reader through the ancestor's working day.
+    * **Feedback:** ✓ Correct. The five unrhymed, loosely regular stanzas and frequent enjambment — as in "he craved the comfort of a wider view" — let the narrative move forward steadily, carrying the reader through the ancestor's working day.
     * **Why A:** The poem runs across five stanzas, not a fourteen-line sonnet.
     * **Why C:** It is a developed narrative, not a single couplet.
     * **Why D:** There is no addressed listener being manipulated, unlike a dramatic monologue.
 
 12. **Type: MCQ [Tests Meaning & Effects]**
     @set:1
-    * **Question:** What does "A Wider View" suggest about the relationship between the speaker and their ancestor?
+    * **Question:** What does "A Wider View" suggest about the relationship between the speaker and their ancestor, closing with the two "timeless in the flux of time, anchored / only by the axis of our gaze"?
     * **Options:** A) That the past has no bearing on the present, B) That the hardship and hope of the ancestor's industrial labour still echo in the speaker's own sense of family and continuity, C) That the ancestor was wealthy and idle, D) That the speaker resents their family history
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Seneviratne bridges past and present, tracing how the ancestor's gruelling labour and enduring hope still shape the speaker's sense of family legacy.
+    * **Feedback:** ✓ Correct. Seneviratne bridges past and present, tracing how the ancestor's gruelling labour and enduring hope still shape the speaker's sense of family legacy, the two "anchored / only by the axis of our gaze" across generations.
     * **Why A:** The poem's whole structure connects past labour to present reflection.
     * **Why C:** The ancestor is depicted labouring gruelling hours, not living in comfort.
     * **Why D:** The tone is one of connection and respect, not resentment.
@@ -173,30 +173,30 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 16. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem uses the image of homing pigeons to describe a mother's regional dialect finally returning to where it belongs, after being suppressed?
+    * **Question:** Which poem uses the closing image "send your words, like pigeons, / fluttering for home" to describe a mother's regional dialect, kept "in a box beneath the bed", finally returning to where it belongs?
     * **Options:** A) Homing, B) A Portable Paradise, C) Pot, D) With Birds You're Never Lonely
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Liz Berry's "Homing" uses the homing-pigeon image for a Black Country accent that finally journeys back to where it belongs, after years of suppression.
+    * **Feedback:** ✓ Correct. Liz Berry's "Homing" keeps the mother's accent "in a box beneath the bed" until, in the closing image, her words are sent "like pigeons, / fluttering for home".
     * **Why B:** A Portable Paradise concerns a grandmother's advice about carrying inner peace, not a returning accent.
     * **Why C:** Pot addresses a museum artefact and colonial history, not a dialect.
     * **Why D:** With Birds You're Never Lonely compares London and New Zealand through birdsong, not homing pigeons.
 
 17. **Type: MCQ [Tests Form & Features]**
     @set:2
-    * **Question:** How is "Homing" structured?
+    * **Question:** How is "Homing" structured, moving from suppressed dialect words such as "bibble, fittle, tay, wum" to the closing pigeon image?
     * **Options:** A) A strict rhyming sonnet, B) Free verse across five equal stanzas, its lack of fixed rhyme or metre echoing the natural, unforced quality of dialect, C) A single rhyming couplet, D) A ballad with a repeated chorus
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The five free-verse stanzas, without regular rhyme or metre, mirror the organic, unforced sound of the Black Country dialect the poem reclaims.
+    * **Feedback:** ✓ Correct. The five free-verse stanzas, without regular rhyme or metre, mirror the organic, unforced sound of words such as "bibble, fittle, tay, wum" — the Black Country dialect the poem reclaims.
     * **Why A:** The poem uses no fixed rhyme scheme, so it is not a sonnet.
     * **Why C:** It develops across five stanzas, not a single couplet.
     * **Why D:** There is no repeated sung chorus, as in a ballad.
 
 18. **Type: MCQ [Tests Meaning & Effects]**
     @set:2
-    * **Question:** What does the blacksmith's forge imagery in "Homing" suggest?
+    * **Question:** What does the blacksmith's forge imagery — "I wanted to forge your voice / in my mouth, a blacksmith's furnace" — suggest in "Homing"?
     * **Options:** A) That the speaker rejects her mother's heritage entirely, B) That the speaker wants to reshape and reclaim her mother's suppressed accent in her own voice, C) That the family worked as blacksmiths, D) That language cannot be changed once learned
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The forging image suggests the speaker actively reshaping her inheritance, taking her mother's suppressed dialect and remaking it, unashamed, in her own voice.
+    * **Feedback:** ✓ Correct. The forging image suggests the speaker actively reshaping her inheritance, taking her mother's suppressed dialect — once silenced by "the teacher's ruler across your legs" — and remaking it, unashamed, in her own voice.
     * **Why A:** The poem embraces heritage rather than rejecting it.
     * **Why C:** The forge is used as a metaphor for reshaping language, not a literal trade.
     * **Why D:** The whole poem is built on language being reclaimed and remade.
@@ -230,57 +230,57 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 22. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem, written by a Deaf poet, compares the isolation of grey London trees with the harmony of birds and people in New Zealand?
+    * **Question:** Which poem, written by a Deaf poet, compares the isolation of grey London trees with the "sun-syrupped Kauri trees" and "brazen Tui birds" of Zealandia?
     * **Options:** A) With Birds You're Never Lonely, B) Homing, C) Thirteen, D) A Century Later
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Raymond Antrobus's "With Birds You're Never Lonely" sets London's isolated, grey trees against the connectedness he finds among birds and people in New Zealand.
+    * **Feedback:** ✓ Correct. Raymond Antrobus's "With Birds You're Never Lonely" sets London's isolated, grey trees against the "sun-syrupped Kauri trees" and "brazen Tui birds" he finds in New Zealand's forest.
     * **Why B:** Homing concerns a mother's dialect, not birdsong and two countries.
     * **Why C:** Thirteen is set on a London estate with the police, not New Zealand.
     * **Why D:** A Century Later concerns a schoolgirl's courage, not birdsong across two countries.
 
 23. **Type: True-False [Tests Form & Features]**
     @set:2
-    * **Question:** "With Birds You're Never Lonely" is written mostly in couplets, ending on a single standalone line.
+    * **Question:** "With Birds You're Never Lonely" is written mostly in couplets, ending on the single standalone line "who said with birds you're never lonely."
     * **Answer:** True
-    * **Feedback:** ✓ Correct. The couplets suggest harmony and togetherness, while the isolated final line, left open to interpretation, breaks that pattern at the close.
-    * **WhyWrong:** This is true — the poem's couplets suggest togetherness, and the final standalone line deliberately breaks that pattern.
+    * **Feedback:** ✓ Correct. The couplets suggest harmony and togetherness, while the isolated closing line — "who said with birds you're never lonely" — breaks that pattern at the close.
+    * **WhyWrong:** This is true — the poem's couplets suggest togetherness, and the final standalone line, "who said with birds you're never lonely", deliberately breaks that pattern.
 
 24. **Type: MCQ [Tests Meaning & Effects]**
     @set:2
-    * **Question:** What does the young Māori woman's knowledge of bird calls represent in the poem?
+    * **Question:** What does the young Māori woman's knowledge of bird calls — a skill "she learned from her grandfather" — represent in the poem?
     * **Options:** A) A trivial hobby, B) A traditional, inherited connection to nature and community that the speaker contrasts with urban isolation, C) A scientific classification system, D) A rejection of her grandfather's teaching
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Her inherited skill in recognising bird calls stands for a living connection to nature and community passed down through family, set against the disconnection Antrobus feels in the city.
+    * **Feedback:** ✓ Correct. Her inherited skill in recognising bird calls stands for a living connection to nature and community passed down through family, set against the isolation Antrobus feels for "any grey tree in London, / for the family they don't have".
     * **Why A:** The poem treats this knowledge as meaningful and rooted, not trivial.
     * **Why C:** The focus is on inherited cultural connection, not formal science.
     * **Why D:** She embraces rather than rejects her grandfather's teaching.
 
 25. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** In which poem does the speaker address a museum artefact directly, aware they only know "half of the story" of how it came to be there?
+    * **Question:** In which poem does the speaker address a museum artefact directly as "pot", admitting "I know half of the story pot / of where you come from"?
     * **Options:** A) Pot, B) The Jewellery Maker, C) In a London Drawingroom, D) Like an Heiress
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Shamshad Khan's "Pot" speaks directly to a displaced artefact in a museum, questioning the "half" of its story that colonial history has obscured.
+    * **Feedback:** ✓ Correct. Shamshad Khan's "Pot" speaks directly to a displaced artefact — "I know half of the story pot" — questioning the half of its history that colonial theft has obscured.
     * **Why B:** The Jewellery Maker concerns a living craftsman, not a museum object.
     * **Why C:** In a London Drawingroom describes a bleak city view, not a spoken-to artefact.
     * **Why D:** Like an Heiress reflects on a coastline, not a museum object.
 
 26. **Type: MCQ [Tests Form & Features]**
     @set:2
-    * **Question:** How does Khan structure "Pot"?
+    * **Question:** How does Khan structure "Pot", repeating questions such as "did they say you were bought pot" and "did they say you were lost pot"?
     * **Options:** A) As a strict rhyming ballad, B) As a questioning, speculative address to the pot, using its uncertain history to mirror the speaker's own questions about belonging, C) As a list of museum facts, D) As a fixed fourteen-line sonnet
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The poem's questioning, speculative address to the pot mirrors the speaker's own uncertain search for belonging and identity as part of the diaspora.
+    * **Feedback:** ✓ Correct. The poem's questioning, speculative address — "did they say you were bought pot", "did they say you were lost pot" — mirrors the speaker's own uncertain search for belonging and identity as part of the diaspora.
     * **Why A:** There is no song-like refrain or strict rhyme scheme.
     * **Why C:** The poem is reflective and personal, not a factual list.
     * **Why D:** It is not confined to fourteen lines or a sonnet's rhyme scheme.
 
 27. **Type: MCQ [Tests Meaning & Effects]**
     @set:2
-    * **Question:** What does the pot come to symbolise in the poem?
+    * **Question:** What does the pot come to symbolise in the poem, as the speaker admits "you think they wouldn't recognise you pot / say diaspora / you left now / you're not really one of us"?
     * **Options:** A) Purely a decorative museum piece with no wider meaning, B) Displaced cultural artefacts and people alike, caught between their origins and a foreign setting, C) A celebration of British museum collections, D) An object with a fully known, uncontested history
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The pot becomes a symbol for objects and people displaced by colonial history and migration, unsettled between where they came from and where they now sit.
+    * **Feedback:** ✓ Correct. The pot becomes a symbol for objects and people displaced by colonial history and migration, unsettled between where they came from and a new setting where it is told "you're not really one of us".
     * **Why A:** The poem treats the pot as carrying deep, unresolved meaning, not mere decoration.
     * **Why C:** The tone questions rather than celebrates how the pot came to be there.
     * **Why D:** The speaker openly admits only knowing "half of the story".
@@ -402,30 +402,30 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 40. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem recounts the poet's real experience of being questioned by police at the age of thirteen, recognising one officer from a school visit where he had once called the pupils "supernovas"?
+    * **Question:** Which poem recounts the poet's real experience of being questioned by police at thirteen — "Thirteen, you'll tell him: you're thirteen" — recognising an officer from a school visit where he had once called the pupils "supernovas"?
     * **Options:** A) Thirteen, B) Pot, C) Homing, D) With Birds You're Never Lonely
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Caleb Femi's "Thirteen" recalls being confronted by police as a child, the "supernova" praise from an earlier school visit now bitterly at odds with how he is treated.
+    * **Feedback:** ✓ Correct. Caleb Femi's "Thirteen" recalls being confronted by police as a child — "Thirteen, you'll tell him: you're thirteen" — the "supernova" praise from an earlier school visit now bitterly at odds with how he is treated.
     * **Why B:** Pot addresses a museum artefact, not a childhood police encounter.
     * **Why C:** Homing concerns a mother's suppressed dialect, not policing.
     * **Why D:** With Birds You're Never Lonely compares London and New Zealand through birdsong, not a police encounter.
 
 41. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** What effect does Femi's use of the second-person perspective have in "Thirteen"?
+    * **Question:** What effect does Femi's use of the second-person perspective have in "Thirteen", as in "You will be four minutes from home / when you are cornered by an officer"?
     * **Options:** A) It distances the reader from the events, B) It draws the reader directly into the experience, making the injustice feel immediate and shared, C) It makes the poem read like a formal report, D) It removes any sense of feeling from the poem
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Addressing the reader as "you" pulls them directly into the encounter, making the racial profiling and injustice feel immediate rather than distant.
+    * **Feedback:** ✓ Correct. Addressing the reader as "you" pulls them directly into the encounter — "You will watch the two men cast lots for your organs" — making the racial profiling and injustice feel immediate rather than distant.
     * **Why A:** The second person draws the reader closer, not further away.
     * **Why C:** The voice is personal and charged, not clinically formal.
     * **Why D:** The direct address intensifies feeling rather than removing it.
 
 42. **Type: MCQ [Tests Meaning & Effects]**
     @set:3
-    * **Question:** What does the "supernova" image come to represent across the poem?
+    * **Question:** What does the "supernova" image come to represent, as the poem closes recalling that supernovas "are, in fact, dying stars / on the verge of becoming black holes"?
     * **Options:** A) A literal astronomy lesson, B) The painful gap between the childhood promise once seen in the speaker and the way systemic racism later treats him, C) A celebration of the police officer's kindness, D) A description of the weather that day
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The bright promise once seen in the "supernova" image collapses into the harsh reality of being profiled, exposing how systemic racism crushes youthful potential.
+    * **Feedback:** ✓ Correct. The bright promise once seen in the "supernova" image collapses into the harsh reality of being profiled and seen as "powerless – plump", exposing how systemic racism crushes youthful potential.
     * **Why A:** The image is symbolic, not a literal science lesson.
     * **Why C:** The poem exposes the officer's hypocrisy rather than celebrating him.
     * **Why D:** The image concerns identity and potential, not weather.

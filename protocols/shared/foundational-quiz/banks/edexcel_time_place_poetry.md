@@ -111,30 +111,30 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 10. **Type: MCQ [Tests Recognising the Poem]**
     @set:1
-    * **Question:** Which poem follows a speaker walking along a sea wall at dusk through the flat marshland landscape of the Kent coast, absorbed in the changing light and the sounds of sea and land?
+    * **Question:** Which poem describes a speaker walking along "Dymchurch Wall" as the telegraph wire "rang out from Hythe to Romney town", the marsh lit by a "veil of purple vapour" and a crimson sunset?
     * **Options:** A) In Romney Marsh, B) Nothing's Changed, C) Hurricane Hits England, D) Presents from my Aunts in Pakistan
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Davidson's poem traces a walk across the flat coastal marsh at evening, the speaker absorbed by the landscape's changing light and sound.
+    * **Feedback:** ✓ Correct. Davidson's poem traces a walk along Dymchurch Wall on the Kent coast, its shrill telegraph wire and shifting evening colours — purple vapour, crimson sunset — building a vivid sense of place.
     * **Why B:** Nothing's Changed is set in apartheid-era District Six, not the English coast.
     * **Why C:** Hurricane Hits England follows a Caribbean-born speaker reconnecting with elemental storm-gods.
     * **Why D:** Presents from my Aunts in Pakistan concerns gifts and cultural identity, not a coastal walk.
 
 11. **Type: MCQ [Tests Form & Features]**
     @set:1
-    * **Question:** How is "In Romney Marsh" built?
-    * **Options:** A) As a descriptive, regularly rhymed narrative following the walk in ordered stanzas, B) As a free-verse interior monologue, C) As a strict villanelle with a repeating refrain, D) As a dramatic monologue exposing the speaker's snobbery
+    * **Question:** How is "In Romney Marsh" built, and what structural device frames it?
+    * **Options:** A) In regular rhymed quatrains, framed by the speaker going "down to Dymchurch Wall" then, at the close, coming "up from Dymchurch Wall", B) As a free-verse interior monologue, C) As a strict villanelle with a repeating refrain, D) As a dramatic monologue exposing the speaker's snobbery
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Davidson uses regular rhymed stanzas to move steadily through the walk, the ordered form matching the measured pace of a coastal evening stroll.
+    * **Feedback:** ✓ Correct. Davidson uses regular rhymed quatrains, framing the poem by the walk down to Dymchurch Wall at dusk and back up as night falls, the return echoing the wire's cry "from Hythe to Romney town".
     * **Why B:** The poem is patterned and rhymed, not loose free verse.
     * **Why C:** It has no repeating refrain of the kind a villanelle demands.
     * **Why D:** The poem observes landscape outward; it does not expose a speaker's own pretension.
 
 12. **Type: True-False [Tests Meaning & Effects]**
     @set:1
-    * **Question:** "In Romney Marsh" presents the marshland landscape as a place of quiet beauty, observed closely as light and weather shift across it.
+    * **Question:** In "In Romney Marsh", Davidson compares the beach's roaring waves to "all its organ stops" pealing, building a sense of the marsh landscape as a place of ordered, almost musical beauty.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. The poem's close attention to changing light and coastal detail builds a sense of quiet, absorbed appreciation for the marsh landscape.
-    * **WhyWrong:** This is true — the poem's careful observation of shifting light and scene creates its sense of quiet coastal beauty.
+    * **Feedback:** ✓ Correct. The closing image of the beach "with all its organ stops / Pealing again" turns the natural roar of the waves into something ordered and musical, reinforcing the poem's quiet, absorbed appreciation of the marsh.
+    * **WhyWrong:** This is true — the "organ stops" image turns the waves' roar into something ordered and almost musical, part of the poem's sense of quiet coastal beauty.
 
 13. **Type: Fill [Tests Recognising the Poem]**
     @set:1
@@ -221,10 +221,10 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 22. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem describes a speaker returning to a garden or place once shared with someone now absent, expecting powerful memories but instead finding the place strangely ordinary?
+    * **Question:** Which poem describes a speaker returning to "the place where we last met", where the "fountains sprayed their usual steady jet" and nothing seemed changed, until an "earthquake tremor" of feeling shakes the calm?
     * **Options:** A) Absence, B) Hurricane Hits England, C) Presents from my Aunts in Pakistan, D) Stewart Island
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Jennings's "Absence" returns the speaker to a once-shared place, where the expected flood of memory fails to arrive, leaving only an ordinary scene.
+    * **Feedback:** ✓ Correct. Jennings's "Absence" returns the speaker to a once-shared place where the fountains still "sprayed their usual steady jet", the ordinary calm made suddenly to feel an inward "earthquake tremor" of grief.
     * **Why B:** Hurricane Hits England follows a storm reconnecting the speaker to ancestral elemental forces, not a place of past love.
     * **Why C:** Presents from my Aunts in Pakistan concerns gifts and cultural identity, not a revisited garden.
     * **Why D:** Stewart Island describes a remote landscape, not a place tied to a lost relationship.
@@ -232,19 +232,19 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 23. **Type: MCQ [Tests Form & Features]**
     @set:2
     * **Question:** How is "Absence" by Jennings shaped?
-    * **Options:** A) As a quiet, reflective free-verse meditation on a single visited place, B) As a strict rhymed sonnet, C) As a ballad telling an adventure story, D) As a dramatic monologue exposing the speaker's pretension
+    * **Options:** A) As three five-line stanzas in a tight rhyme scheme, its ordered calm mirroring the outwardly unchanged place, B) As a strict Petrarchan sonnet, C) As a ballad telling an adventure story, D) As a dramatic monologue exposing the speaker's pretension
     * **Correct:** A
-    * **Feedback:** ✓ Correct. The poem's loose, reflective free verse suits its quiet, searching meditation on a place and an absence.
-    * **Why B:** The poem does not hold to the fixed fourteen-line sonnet form.
+    * **Feedback:** ✓ Correct. The poem's three tightly rhymed five-line stanzas hold a calm, ordered surface, matching the visited place's deceptive, unchanged appearance before the final stanza's "earthquake tremor" of feeling breaks through.
+    * **Why B:** The poem runs across three five-line stanzas, not a fourteen-line sonnet.
     * **Why C:** There is no narrative adventure told in song-like stanzas.
-    * **Why D:** The speaker reflects honestly rather than unwittingly exposing pretension.
+    * **Why D:** The speaker reflects honestly on private feeling rather than unwittingly exposing pretension.
 
 24. **Type: True-False [Tests Meaning & Effects]**
     @set:2
-    * **Question:** In "Absence", the ordinariness of the revisited place makes the absence of the loved person feel more powerful, not less.
+    * **Question:** In "Absence", the ordinariness of the revisited place — the fountains still spraying "their usual steady jet" — makes the final "earthquake tremor" of feeling for the absent person hit harder, not less.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. Because the place offers no dramatic reminder, the plain, unchanged scene throws the person's absence into sharper relief.
-    * **WhyWrong:** This is true — the very ordinariness of the place is what makes the absence felt so strongly.
+    * **Feedback:** ✓ Correct. Because the fountains and gardens seem unchanged, the sudden "earthquake tremor" that shakes "fountain, birds and grass" in the final stanza lands with far greater force than an obviously altered scene would.
+    * **WhyWrong:** This is true — the very ordinariness of the fountains and gardens is what makes the final "earthquake tremor" of feeling hit so powerfully.
 
 25. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
@@ -274,30 +274,30 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 28. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem describes the experience of a first journey by aeroplane, weighing the strangeness and wonder of modern air travel against an older, more traditional sense of place?
+    * **Question:** Which poem describes a nervous first-time flyer thinking "I don't like the feel of it" as the plane climbs above "the broad meringue kingdom / Of cumulus", contrasting new air travel with an older sense of place?
     * **Options:** A) First Flight, B) Home Thoughts from Abroad, C) Where the Picnic Was, D) London
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Fanthorpe's "First Flight" reflects on the disorientating newness of air travel, set against older, more grounded ways of experiencing distance and place.
+    * **Feedback:** ✓ Correct. Fanthorpe's "First Flight" opens on the speaker's unease — "Plane moves. I don't like the feel of it" — before the flight rises above clouds she pictures as a "broad meringue kingdom", weighing the strangeness of air travel against older, grounded ways of knowing distance.
     * **Why B:** Home Thoughts from Abroad longs for a remembered English spring, not the experience of flying itself.
     * **Why C:** Where the Picnic Was mourns a remembered gathering, not a journey by air.
     * **Why D:** London surveys a city's suffering on foot, not a flight.
 
 29. **Type: MCQ [Tests Form & Features]**
     @set:2
-    * **Question:** How is "First Flight" by Fanthorpe shaped?
-    * **Options:** A) As a wry, conversational free-verse reflection, B) As a strict Petrarchan sonnet, C) As a ballad with a sung refrain, D) As rhyming couplets throughout
+    * **Question:** How is "First Flight" by Fanthorpe shaped, and what technique interrupts the speaker's thoughts?
+    * **Options:** A) As wry, conversational free verse, interrupted by italicised snippets of a fellow passenger's small talk ("This is rather a short hop for me"), B) As a strict Petrarchan sonnet, C) As a ballad with a sung refrain, D) As rhyming couplets throughout
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Fanthorpe's characteristically wry, conversational free verse suits her reflective, questioning treatment of a modern experience.
+    * **Feedback:** ✓ Correct. Fanthorpe's wry, conversational free verse is repeatedly broken by italicised fragments of a seasoned traveller's chatter — "This is rather a short hop for me" — undercutting the speaker's own private unease.
     * **Why B:** The poem does not hold to the fixed fourteen-line sonnet shape.
     * **Why C:** There is no repeated sung refrain of the kind a ballad uses.
     * **Why D:** The poem is not built from continuous rhyming couplets.
 
 30. **Type: True-False [Tests Meaning & Effects]**
     @set:2
-    * **Question:** "First Flight" explores a sense of dislocation and wonder at how far modern travel has changed the human experience of distance and place.
+    * **Question:** In "First Flight", the line "We have come too high for history" suggests that air travel has lifted the speaker into a strange, disorientating remove from ordinary time and place.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. The poem sets the speed and strangeness of flight against older, slower ways of understanding distance, producing both wonder and unease.
-    * **WhyWrong:** This is true — the poem holds modern flight's speed and strangeness against older, slower ideas of distance and place.
+    * **Feedback:** ✓ Correct. Declaring "We have come too high for history", the speaker registers a flight so far above the ordinary world that even time itself seems suspended, capturing the poem's sense of dislocation and wonder at modern travel.
+    * **WhyWrong:** This is true — "We have come too high for history" captures precisely this sense of being lifted clear of ordinary time and place.
 
 <!-- ============================ SET 3 ============================ -->
 
@@ -387,47 +387,47 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 40. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem is a comic dramatic monologue in the voice of a boastful traveller, who sneers at conventional tourists while unwittingly revealing their own pretension?
+    * **Question:** Which poem is a comic dramatic monologue that opens "I do not wish that anyone were here", its boastful speaker sneering at "sun-and-sangria-two-weeks... package-philistine" tourists while unwittingly revealing their own pretension?
     * **Options:** A) Postcard from a Travel Snob, B) Nothing's Changed, C) Hurricane Hits England, D) I started Early – Took my Dog
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Hannah's monologue lets a self-satisfied traveller's own boasting expose their snobbery, the comedy sharpening the poem's gentle satire.
+    * **Feedback:** ✓ Correct. Hannah's monologue opens on the boast "I do not wish that anyone were here", the speaker's contempt for "package-philistine" tourists exposing their own snobbery through comic irony.
     * **Why B:** Nothing's Changed protests apartheid-era segregation, not a tourist's pretension.
     * **Why C:** Hurricane Hits England reconnects a speaker to ancestral storm-gods, not tourist boasting.
     * **Why D:** Dickinson's poem personifies the sea as a suitor, not a travelling snob.
 
 41. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** How does the dramatic monologue form shape "Postcard from a Travel Snob"?
-    * **Options:** A) It lets the speaker's own words expose their snobbery and pretension without the poet needing to state it directly, B) It mourns a lost companion, C) It praises a season's abundance, D) It tells a heroic battle story
+    * **Question:** How does the dramatic monologue form shape "Postcard from a Travel Snob", closing on the boast "I am an anthropologist in trunks"?
+    * **Options:** A) It lets the speaker's own words — like the final "anthropologist in trunks" — expose their snobbery and pretension without the poet needing to state it directly, B) It mourns a lost companion, C) It praises a season's abundance, D) It tells a heroic battle story
     * **Correct:** A
-    * **Feedback:** ✓ Correct. By letting the traveller speak in their own boastful voice, the form itself delivers the poem's satirical judgement.
+    * **Feedback:** ✓ Correct. By letting the traveller boast in their own voice, right down to the closing claim to be "an anthropologist in trunks" rather than "a British tourist in the sea", the form itself delivers the poem's satirical judgement.
     * **Why B:** The poem is comic satire, not an elegy for someone lost.
     * **Why C:** It mocks pretension, not celebrates a season.
     * **Why D:** There is no battle narrative; the target is social snobbery.
 
 42. **Type: True-False [Tests Meaning & Effects]**
     @set:3
-    * **Question:** The comic tone of "Postcard from a Travel Snob" works to mock a certain kind of pretentious, superior attitude towards travel and other tourists.
+    * **Question:** The comic tone of "Postcard from a Travel Snob" — boasting of "sleeping in a local farmer's van" while sneering at "seaside-town-consumer-hell" — works to mock a certain kind of pretentious, superior attitude towards travel and other tourists.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. The poem's wit targets the speaker's self-satisfied superiority, using comedy to expose snobbery rather than celebrate it.
-    * **WhyWrong:** This is true — the poem's humour is aimed squarely at mocking the traveller's pretension and condescension.
+    * **Feedback:** ✓ Correct. The poem's wit, from the boast about sleeping in "a local farmer's van" to the sneer at "seaside-town-consumer-hell", targets the speaker's self-satisfied superiority, using comedy to expose snobbery rather than celebrate it.
+    * **WhyWrong:** This is true — the poem's humour, from the farmer's-van boast to its sneers at ordinary tourists, is aimed squarely at mocking the traveller's pretension and condescension.
 
 43. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem describes a remote island landscape at the edge of the world, its wildness and isolation prompting quiet reflection?
+    * **Question:** Which poem opens with the hotel manager's wife saying "But look at all this beauty", describing "a fine bay, all hills and atmosphere" and a seagull that "jetted down / to jab its claws and beak" into a child's head?
     * **Options:** A) Stewart Island, B) Adlestrop, C) Home Thoughts from Abroad, D) London
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Adcock's poem sets its reflection against the wild, isolated landscape of Stewart Island, off New Zealand's southern coast.
+    * **Feedback:** ✓ Correct. Adcock's poem opens on the hotel manager's wife's claim "But look at all this beauty", before the speaker's own colder, more guarded account of the bay — including a seagull's sudden attack on her son.
     * **Why B:** Adlestrop is a brief English railway stop, not a remote southern island.
     * **Why C:** Home Thoughts from Abroad longs for England, rather than dwelling on a remote landscape's isolation.
     * **Why D:** London surveys a crowded, oppressive city, the opposite of a remote, sparsely populated island.
 
 44. **Type: MCQ [Tests Form & Features]**
     @set:3
-    * **Question:** How is "Stewart Island" by Adcock shaped?
-    * **Options:** A) As a reflective free-verse description of landscape and isolation, B) As a strict Petrarchan sonnet, C) As a comic dramatic monologue, D) As a ballad narrating a battle
+    * **Question:** How is "Stewart Island" by Adcock shaped, and how does it use another voice?
+    * **Options:** A) As reflective free verse, opening with the hotel manager's wife's quoted claim "But look at all this beauty" before the speaker's own more detached account, B) As a strict Petrarchan sonnet, C) As a comic dramatic monologue, D) As a ballad narrating a battle
     * **Correct:** A
-    * **Feedback:** ✓ Correct. The open, reflective free verse suits the poem's quiet dwelling on a remote landscape's wildness and isolation.
+    * **Feedback:** ✓ Correct. The open, reflective free verse frames another woman's quoted enthusiasm — "But look at all this beauty" — against the speaker's own quieter, more ambivalent response to the island.
     * **Why B:** The poem does not hold to a fixed fourteen-line sonnet shape.
     * **Why C:** The poem's tone is reflective, not comic self-exposure.
     * **Why D:** There is no narrated battle in the poem's quiet landscape description.
@@ -435,8 +435,8 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 45. **Type: Select All [Tests Meaning & Effects]**
     @set:3
     * **Question:** Which statements correctly describe the meaning and effect of "Stewart Island"?
-    * **Options:** A) It reflects on the isolation and wildness of a remote southern landscape, B) Its quiet, open form suits a mood of reflection rather than drama, C) The stark setting prompts a meditation on distance and solitude, D) It concludes that the island is crowded and unremarkable
+    * **Options:** A) The hotel manager's wife's enthusiasm for the island's beauty is not shared by the speaker, who ends by deciding "to leave the country", B) Its quiet, open form suits a mood of reflection rather than drama, C) The seagull's attack on the speaker's son adds a note of discomfort beneath the island's beauty, D) It concludes that the island is crowded and unremarkable
     * **Correct:** A, B, C
     * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-    * **Feedback:** ✓ Correct. Adcock's poem dwells on a remote, wild landscape, its calm reflective form matching a mood of solitude and distance.
-    * **Why D:** The island's isolation and stark wildness are central, not any sense of crowding.
+    * **Feedback:** ✓ Correct. Adcock's speaker resists the wife's easy praise, closing on her decision "to leave the country" after a seagull attacks her son, the calm free verse holding this quiet discomfort beneath the island's beauty.
+    * **Why D:** The island's isolation and stark wildness are central; the poem never suggests it is crowded.

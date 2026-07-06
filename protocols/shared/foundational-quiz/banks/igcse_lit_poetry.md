@@ -150,9 +150,9 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 14. **Type: MCQ [Tests Form & Features]**
     @set:1
     * **Question:** What form does Alice Walker use for "Poem at Thirty-Nine"?
-    * **Options:** A) A strict villanelle with two refrains, B) Free verse, its loose, conversational lines suiting intimate, reflective memory, C) A traditional ballad, D) A Shakespearean sonnet
+    * **Options:** A) A strict villanelle with two refrains, B) Free verse, its loose, conversational lines — "Writing deposit slips and checks I think of him" — suiting intimate, reflective memory, C) A traditional ballad, D) A Shakespearean sonnet
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The unrhymed, flowing free verse lets the poem move naturally between memory, regret and quiet affection, like a private reflection rather than a formal argument.
+    * **Feedback:** ✓ Correct. The unrhymed, flowing free verse lets the poem move naturally between memory, regret and quiet affection, closing on an unpunctuated list — "cooking, writing, chopping wood, staring into the fire" — that reads like a private reflection rather than a formal argument.
     * **Why A:** There are no repeating refrains; the poem does not follow villanelle rules.
     * **Why C:** It reflects rather than narrates a single dramatic story, and does not use ballad stanzas.
     * **Why D:** It is not fourteen lines and carries no fixed rhyme scheme.
@@ -160,10 +160,10 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 15. **Type: Select All [Tests Meaning & Effects]**
     @set:1
     * **Question:** Which statements correctly describe the meaning and effect of "Poem at Thirty-Nine"?
-    * **Options:** A) The speaker reflects fondly on her father's practical skill and care, now that she is an adult herself, B) The poem voices regret at questions left unasked before her father's death, C) The speaker recognises, by the poem's end, that she has inherited something of her father's qualities, D) The poem depicts a father the speaker barely knew or thought about
+    * **Options:** A) The speaker reflects fondly on her father's practical skill and care — "He taught me / that telling the truth / did not always mean a beating" — now that she is an adult herself, B) The poem voices regret at questions left unasked before her father's death, C) The speaker recognises, by the poem's end, that she has inherited something of her father's qualities — "Now I look and cook just like him", D) The poem depicts a father the speaker barely knew or thought about
     * **Correct:** A, B, C
     * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-    * **Feedback:** ✓ Correct. Walker's poem moves from fond, specific memory, through regret at things left unsaid, towards a quiet recognition of inheritance from her father.
+    * **Feedback:** ✓ Correct. Walker's poem moves from fond, specific memory — "He taught me / that telling the truth / did not always mean a beating" — through regret at things left unsaid, towards a quiet recognition of inheritance from her father, admitting "Now I look and cook just like him".
     * **Why D:** The poem is built from close, affectionate memory, not distance or indifference towards her father.
 
 <!-- ============================ SET 2 ============================ -->
@@ -181,19 +181,19 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 17. **Type: MCQ [Tests Form & Features]**
     @set:2
     * **Question:** What form does Dharker use for "Blessing", and how does it suit the poem's subject?
-    * **Options:** A) A strict sonnet arguing a case, B) Free verse, with short, irregular lines that mimic the unpredictable, precious flow of water, C) A villanelle with two recurring refrains, D) A regular ballad telling a folk tale
+    * **Options:** A) A strict sonnet arguing a case, B) Free verse, with short, irregular lines — the pipe bursts and "silver crashes to the ground" — that mimic the unpredictable, precious flow of water, C) A villanelle with two recurring refrains, D) A regular ballad telling a folk tale
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The poem's uneven, free-verse lines rush and pause like water itself, reflecting how scarce and unpredictable this "blessing" really is.
+    * **Feedback:** ✓ Correct. The poem's uneven, free-verse lines rush and pause like water itself, listing the "brass, copper, aluminium, plastic buckets" people snatch up, reflecting how scarce and unpredictable this "blessing" really is.
     * **Why A:** There is no fixed sonnet argument here; the form stays loose and irregular.
     * **Why C:** The poem does not repeat any refrain in the villanelle manner.
     * **Why D:** It is not a narrative ballad with regular song-like stanzas.
 
 18. **Type: True-False [Tests Meaning & Effects]**
     @set:2
-    * **Question:** In "Blessing", water becomes a symbol of scarcity, and the joy it brings is fragile and only occasionally seized.
+    * **Question:** In "Blessing", water becomes a symbol of scarcity — "The skin cracks like a pod. There never is enough water" — and the joy it brings is fragile and only occasionally seized.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. The rare, sudden abundance of water, treated almost as a miracle, underlines how precious and scarce it usually is for this community.
-    * **WhyWrong:** This is true — the poem's celebration of water only makes sense because it is normally so scarce, making the "blessing" fragile and fleeting.
+    * **Feedback:** ✓ Correct. The rare, sudden abundance of water, treated almost as a miracle in "the voice of a kindly god", underlines how precious and scarce it usually is, and the poem closes on children "screaming in the liquid sun" as "the blessing sings over their small bones" — joy that is intense but fleeting.
+    * **WhyWrong:** This is true — the poem's celebration of water only makes sense because it is normally so scarce ("There never is enough water"), making the "blessing" fragile and fleeting.
 
 19. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
@@ -208,19 +208,19 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 20. **Type: MCQ [Tests Form & Features]**
     @set:2
     * **Question:** How does the form of "Search For My Tongue" reflect its subject?
-    * **Options:** A) It stays in strict rhyming couplets throughout, B) Free verse that shifts between English and another script embodies living between two languages and cultures, C) It is a tightly argued sonnet, D) It follows a fixed ballad refrain
+    * **Options:** A) It stays in strict rhyming couplets throughout, B) Free verse that shifts into Gujarati script mid-poem embodies living between two languages and cultures, C) It is a tightly argued sonnet, D) It follows a fixed ballad refrain
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The poem's shifting, unrhymed form, moving between English and Gujarati, enacts the very experience of holding two languages and identities at once.
+    * **Feedback:** ✓ Correct. The poem's shifting, unrhymed form breaks into untransliterated Gujarati script before returning to English, enacting the very experience of holding two languages and identities at once; the repeated "rot, rot and die in your mouth" mimics the mother tongue's feared decay.
     * **Why A:** The poem has no regular rhyme scheme; its form is loose and shifting.
     * **Why C:** It does not build a single fourteen-line argument like a sonnet.
     * **Why D:** There is no repeating refrain in the ballad sense.
 
 21. **Type: MCQ [Tests Meaning & Effects]**
     @set:2
-    * **Question:** What does the central image of the mother tongue "growing back" suggest in "Search For My Tongue"?
+    * **Question:** What does the central image of the mother tongue "growing back" — it "grows longer, grows moist, grows strong veins" until "the bud opens" — suggest in "Search For My Tongue"?
     * **Options:** A) That the mother tongue is lost forever once a second language takes over, B) That a mother tongue, even when suppressed by daily use of another language, can quietly persist and reassert itself, C) That the speaker regrets ever learning English, D) That language has no real connection to identity
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The image of the tongue growing back suggests the mother tongue is never truly lost — it can return and flourish again, however dominant the second language becomes.
+    * **Feedback:** ✓ Correct. The image of the tongue growing back, until "it blossoms out of my mouth", suggests the mother tongue is never truly lost — it can return and flourish again, however dominant the second language becomes.
     * **Why A:** The image is one of survival and return, not permanent loss.
     * **Why C:** The poem reveals both languages coexisting, not straightforward regret at learning English.
     * **Why D:** The whole poem hinges on language being bound up with identity and self.
@@ -326,9 +326,9 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 32. **Type: MCQ [Tests Form & Features]**
     @set:3
     * **Question:** What form does Fanthorpe use for "Half-past Two", and how does it suit the subject?
-    * **Options:** A) A regular ballad with a repeating refrain, B) Free verse, with invented words for the child's own private sense of time, breaking from ordinary clock-time language, C) A strict villanelle, D) A traditional sonnet
+    * **Options:** A) A regular ballad with a repeating refrain, B) Free verse, with invented compound words — "Gettinguptime, timeyouwereofftime, / Timetogohomenowtime" — for the child's own private sense of time, breaking from ordinary clock-time language, C) A strict villanelle, D) A traditional sonnet
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The loose free verse and the child's own invented time-words capture a private, imaginative logic that ordinary clock-time cannot express.
+    * **Feedback:** ✓ Correct. The loose free verse and the child's own invented time-words, opening on the fairy-tale-like "Once upon a schooltime", capture a private, imaginative logic that ordinary clock-time cannot express.
     * **Why A:** There is no repeating refrain or song-like ballad structure here.
     * **Why C:** The poem does not use the villanelle's two fixed refrains.
     * **Why D:** It is not fourteen lines, and it has no fixed rhyme scheme.
@@ -337,8 +337,8 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     @set:3
     * **Question:** In "Half-past Two", the child's eventual return to ordinary, clock-measured "Time" suggests something valuable about childhood imagination is lost as we grow up.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. Once released back into adult "Time", the child's private, imaginative world of timelessness is lost, implying growing up narrows a more open, wondering way of experiencing the world.
-    * **WhyWrong:** This is true — the poem frames the return to clock-time as a kind of loss, closing off the child's freer, more imaginative sense of time.
+    * **Feedback:** ✓ Correct. Once "slotted ... back into schooltime", the child's private, imaginative world — where he had escaped "into the clockless land for ever" — is lost, implying growing up narrows a more open, wondering way of experiencing the world.
+    * **WhyWrong:** This is true — the poem frames the return to clock-time as a kind of loss, closing off the child's freer, more imaginative world where "time hides tick-less waiting to be born".
 
 34. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
