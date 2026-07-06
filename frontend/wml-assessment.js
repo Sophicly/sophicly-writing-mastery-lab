@@ -2286,10 +2286,26 @@
         if (idx === -1) { _saWalkHandBack(); return; }
         const row = rows[idx];
         const descriptors = (typeof SA_DESCRIPTORS !== 'undefined' && SA_DESCRIPTORS[row.skill]) || null;
+        // v7.19.885: fire the warm intro ONCE, before the first skill. idx === 0 (no row rated
+        // yet) is the only walk-start state — after any rating idx advances, so this can't repeat
+        // mid-walk. A fresh Clear-chat walk resets to idx 0 and correctly re-shows the intro.
+        if (idx === 0 && typeof SA_WALK_INTRO !== 'undefined') {
+            _chatShell.addMsg(formatAI(SA_WALK_INTRO), 'ai', SA_WALK_INTRO, { suppressActions: true });
+            _chatShell.history.push({ role: 'assistant', content: SA_WALK_INTRO, saWalk: true });
+        }
+        // v7.19.885: conversational per-skill prompt — define the skill in plain terms (attempt-1
+        // students don't know "thesis"), with a rotating lead + closing question so it reads as a
+        // real conversation, not a form. Skills with no def entry fall back to the bare prompt.
+        const def = (typeof SA_SKILL_DEFS !== 'undefined' && SA_SKILL_DEFS[row.skill]) || null;
+        const lead = idx === 0 ? 'Let’s start with ' : ['Next, ', 'Now ', ''][(idx - 1) % 3];
+        const closer = ['Which is closest to yours?', 'How would you rate yours?', 'Which sounds most like what you did?'][idx % 3];
+        const question = def
+            ? lead + '**' + row.skill + '** — ' + def + '. ' + closer
+            : '**' + row.skill + '** — before I mark, how would you rate what you actually did? ' + closer;
         const progress = 'Self-assessment · ' + row.group + ' · ' + (idx + 1) + ' of ' + total;
-        const plain = progress + '\n\n**' + row.skill + '** — before I mark, how would you rate what you actually did? Tap the closest description (or type 1–5).';
+        const plain = progress + '\n\n' + question + '\n\nTap the closest description (or type 1–5).';
         const html = '<p style="font-size:12px;opacity:0.6;margin-bottom:6px">' + progress + '</p>'
-            + '<p><strong>' + row.skill + '</strong> — before I mark, how would you rate what you actually did?</p>'
+            + formatAI(question)
             + '<p style="font-size:12px;opacity:0.7">Tap the closest description below (or type 1–5).</p>';
         _chatShell.addMsg(html, 'ai', plain, { suppressActions: true });
         _chatShell.history.push({ role: 'assistant', content: plain, saWalk: true });
@@ -27076,6 +27092,42 @@
         'Linked Ideas & Paragraphs': ['I wrote without paragraphs or links between ideas.', 'I attempted paragraphs with some connected ideas.', 'My paragraphs are usually coherent with a range of discourse markers.', 'My paragraphs are coherent with integrated discourse markers and connected ideas.', 'My paragraphs are fluently linked — complex ideas flow seamlessly across the piece.'],
         'Sentence Variety': ['My sentences are mostly one simple shape.', 'I attempted a variety of sentence forms.', 'I used a variety of sentence forms for effect.', 'I controlled a range of sentence forms to manage pace and emphasis.', 'I used a full range of sentence forms for deliberate effect throughout.'],
         'Spelling & Punctuation': ['My spelling and punctuation errors get in the way of meaning.', 'My basic spelling is accurate with some control of punctuation.', 'My spelling is generally accurate and I used a range of punctuation mostly successfully.', 'My spelling and punctuation are accurate, including complex words and a wide range of marks.', 'My spelling and punctuation are consistently accurate and ambitious — punctuation works for effect.'],
+    };
+
+    // v7.19.885: student-facing self-assessment WALK copy (Neil-approved). The walk prompt was
+    // bare ("Thesis — how would you rate…"); attempt-1 students don't know what a "thesis" is.
+    // SA_WALK_INTRO fires ONCE at walk start; SA_SKILL_DEFS gives each skill a conversational
+    // definition clause. Keyed by skill (NOT per paper) so every paper reuses it — Phase-3-ready.
+    // Any skill with no def entry falls back to the bare prompt in _saWalkRenderCurrent (no crash).
+    const SA_WALK_INTRO = 'Before I mark anything, let’s do a quick **self-assessment** together. I’ll take you through each skill one at a time — for each, just tap the description that honestly matches what you did this time. There are no wrong answers, and it won’t affect your grade: the point is to sharpen your eye for your *own* writing, which is exactly what the strongest students learn to do. Ready when you are.';
+    const SA_SKILL_DEFS = {
+        'Hook': 'your opening line: the striking idea or image that pulls a reader in and hints at where your argument is going',
+        'Building Sentences': 'the lines just after your hook that set your argument up, giving a little context about the text or its ideas before you state your thesis',
+        'Thesis': 'your main argument: the clear position you took on the question, plus the key points you set out to prove',
+        'Topic Sentence': 'the opening line of each paragraph, where you state that paragraph’s idea about the text (a concept about meaning, not the name of a technique)',
+        'Technical Terms': 'the subject vocabulary you use to name the writer’s methods, used accurately and in the right place',
+        'Evidence': 'the quotations you chose to support each point, ideally short, precise, and rich enough to really analyse',
+        'Close Analysis': 'how closely you examined your quotations, digging into specific words, their connotations and effects, rather than just retelling what happens',
+        'Effects on Reader': 'how well you explained what the writer’s choices make a reader feel, think, or notice',
+        "Author's Purpose": 'how clearly you linked the writer’s methods to what they were trying to achieve',
+        'Context': 'how you used relevant background (the period, its ideas, the writer’s world) to deepen your reading, rather than bolting on a fact',
+        'Restated Thesis': 'how you returned to your main argument at the end, rephrasing it with new confidence rather than simply repeating it',
+        'Controlling Concept': 'the single big idea that governs the whole text, and how you tied it back to your argument',
+        'Central Purpose': 'the writer’s overall aim across the whole text, and how well you captured it',
+        'Universal Message': 'the wider truth about people or the world the text leaves us with: your final, memorable thought',
+        'Language Sophistication': 'how precise, varied and genuinely academic your own writing was across the whole response',
+        'Vocabulary Precision': 'how accurately and effectively you chose your words: precise and deliberate, not vague or repetitive',
+        'Sentence Structure': 'how well you varied and controlled your sentences to build a clear, flowing argument',
+        'Discourse Markers': 'the linking words that guide a reader through your argument (however, consequently, in contrast…)',
+        'Tone & Register': 'how well your tone and level of formality matched the purpose and audience',
+        'Vocabulary & Devices': 'how deliberately you chose vocabulary and crafted devices for effect',
+        'Structural Features': 'how you shaped the piece (its opening, any shifts, its ending) to guide the reader’s journey',
+        'Sentence Variety': 'how you varied your sentence forms to control pace and emphasis',
+        'Spelling': 'how accurate your spelling was, including the more ambitious words',
+        'Punctuation': 'how accurately and effectively you used a range of punctuation',
+        'Grammar & Tense Control': 'how consistent and correct your grammar and tenses were throughout',
+        'Inference': 'how well you read between the lines of both sources, with each inference anchored to a quotation',
+        'Comparison': 'how well you compared the two sources’ ideas, perspectives and methods, weaving both together rather than treating them separately',
     };
 
     function buildSelfAssessmentSection(isDual) {
