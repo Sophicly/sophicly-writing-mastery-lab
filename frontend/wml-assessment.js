@@ -720,6 +720,46 @@
         return '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(83,51,237,0.08);border-left:3px solid rgba(83,51,237,0.3);border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.6)">This assessment takes approximately <strong style="color:rgba(255,255,255,0.8)">' + dur + '</strong>. Complete all steps to receive your full score, grade, and personalised feedback.</div>';
     }
 
+    // v7.19.878: Universal Self-Assessment sidebar step. The Self-Assessment section is
+    // appended to EVERY assessment doc (buildSelfAssessmentSection) but had no sidebar
+    // representation — so the blind self-assessment walk (v7.19.879) had no progress anchor.
+    // Read the section's <h3> skill GROUPS (Introduction / Body Paragraphs / Conclusion /
+    // Academic Writing / paper extras) from the live doc and emit one substep per group in
+    // the shared {step,label,group,display} shape, so it rides the existing
+    // _renderSidebarSteps / _applyServerSidebar / updateProgress path unchanged (one render
+    // path — forward-compatible with the Phase-2 universal step schema). Substeps are
+    // GROUP-level (not per-row) so the sidebar stays legible — the walk's own
+    // "Body Paragraphs 3/6" progress line carries the per-element detail. A group is complete
+    // when every "Skill: N / 5" row under it carries a numeric rating (not the "—" seed).
+    // Returns { steps, n, firstIncomplete, present } starting the ordinal at startN.
+    function _saSidebarSteps(startN) {
+        const out = { steps: [], n: startN, firstIncomplete: 0, present: false };
+        const editor = document.getElementById('swml-tiptap-editor');
+        if (!editor) return out;
+        const sec = editor.querySelector('[data-section-label="Self-Assessment"]');
+        if (!sec) return out;
+        const groups = [];
+        let cur = null;
+        // querySelectorAll returns document order, so <p> rows associate with their preceding <h3>.
+        sec.querySelectorAll('h3, p').forEach(node => {
+            if (node.tagName === 'H3') { cur = { name: (node.textContent || '').trim(), rows: [] }; groups.push(cur); }
+            else if (cur) {
+                const m = (node.textContent || '').match(/^(.+?):\s*(?:—|(\d))\s*\/\s*5$/);
+                if (m) cur.rows.push(!!m[2]); // true = a numeric rating is filed
+            }
+        });
+        const withRows = groups.filter(g => g.rows.length > 0);
+        if (!withRows.length) return out;
+        out.present = true;
+        let di = 0;
+        withRows.forEach(g => {
+            const done = g.rows.every(Boolean);
+            out.steps.push({ step: ++out.n, label: g.name, group: 'Self-Assessment', display: String(++di) });
+            if (out.firstIncomplete === 0 && !done) out.firstIncomplete = out.n;
+        });
+        return out;
+    }
+
     function _buildLangSidebarModel() {
         if (state.reviewMode) return null;
         if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return null;
@@ -780,6 +820,9 @@
         const steps = [];
         let n = 0, firstIncomplete = 0;
         steps.push({ step: ++n, label: 'Setup & Goals', group: null, display: '1' });
+        // v7.19.878: universal Self-Assessment step, between Setup & Goals and marking.
+        const _saL = _saSidebarSteps(n);
+        if (_saL.present) { _saL.steps.forEach(s => steps.push(s)); n = _saL.n; if (firstIncomplete === 0 && _saL.firstIncomplete) firstIncomplete = _saL.firstIncomplete; }
         qs.forEach((q, i) => {
             const isB = q.max >= 40;                       // Section B writing question
             const isRetrieval = !isB && q.max <= 4;        // Q1 true/false retrieval
@@ -931,6 +974,9 @@
         const steps = [];
         let n = 0, firstIncomplete = 0;
         steps.push({ step: ++n, label: 'Setup & Goals', group: null, display: '1' });
+        // v7.19.878: universal Self-Assessment step, between Setup & Goals and marking.
+        const _saP = _saSidebarSteps(n);
+        if (_saP.present) { _saP.steps.forEach(s => steps.push(s)); n = _saP.n; if (firstIncomplete === 0 && _saP.firstIncomplete) firstIncomplete = _saP.firstIncomplete; }
         paras.forEach((p, i) => {
             const behind = i < maxMarkedIdx;               // a later paragraph already marked → done
             const pMarked = behind || p.marked;
@@ -2190,6 +2236,121 @@
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // v7.19.879 (Neil, Phase-1 enhancement a): BLIND SELF-ASSESSMENT WALK.
+    // Research-optimal metacognition — the student self-rates each skill element BEFORE
+    // any mark is revealed (post-reveal self-rating = echoing, not judgement). Built as
+    // the LAST pre-marking pre-chain stage (grade → headline goal → key-aspects recall →
+    // SELF-ASSESS → marking) so it reuses the proven code-driven pre-chain machinery
+    // (deterministic trigger over chat history, both pipelines, no AI round-trip) rather
+    // than a fragile @SELF_ASSESS_WALK marker an LLM can omit. Button-driven + client-side:
+    // each of the doc's Self-Assessment rows is presented one at a time with its 5 descriptor
+    // buttons (SA_DESCRIPTORS); a tap writes "Skill: N / 5" via the SAME PM-transaction core
+    // the dropdowns use (_setParagraphContentViaPM), advances the sidebar SA step
+    // (_refreshLangSidebar) + canvas scroll, and moves on. When every row is rated the walk
+    // hands back with ONE silent SYSTEM directive that begins marking. Typed "1"–"5" is a
+    // first-class fallback (reload-safe — matches how headline/keyword/closing resume by
+    // typing). SA ratings never touch marks, so no recalc is needed here. Scoped to the 3 AQA
+    // anchors for the B-CHECKS lock before the 24-paper port; the mechanism is paper-agnostic
+    // (reads the doc's own SA rows) so Phase 2/4 widen it by relaxing _saWalkEligible.
+    function _saWalkEligible() {
+        if (state.task !== 'assessment' || state.reviewMode) return false;
+        return String(state.board || '').toLowerCase() === 'aqa';   // AQA P1 / P2 / Literature = the 3 anchors
+    }
+    function _saWalkRows() {
+        const out = [];
+        const editor = document.getElementById('swml-tiptap-editor');
+        if (!editor) return out;
+        const sec = editor.querySelector('[data-section-label="Self-Assessment"]');
+        if (!sec) return out;
+        let group = '';
+        sec.querySelectorAll('h3, p').forEach(node => {
+            if (node.tagName === 'H3') { group = (node.textContent || '').trim(); return; }
+            const m = (node.textContent || '').match(/^(.+?):\s*(?:—|(\d))\s*\/\s*5$/);
+            if (m) out.push({ group: group, skill: m[1].trim(), rated: !!m[2], value: m[2] ? parseInt(m[2], 10) : null });
+        });
+        return out;
+    }
+    function _saWalkComplete() { const r = _saWalkRows(); return r.length === 0 || r.every(x => x.rated); }
+    function _saWalkScrollToSection() {
+        try {
+            const host = (canvasEditor && canvasEditor.options && canvasEditor.options.element) || document;
+            const sec = host.querySelector('.swml-section-block[data-section-label="Self-Assessment"]');
+            if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (_) {}
+    }
+    function _saWalkRenderCurrent() {
+        if (!_chatShell || !_chatShell.addMsg) return;
+        const rows = _saWalkRows();
+        const total = rows.length;
+        const idx = rows.findIndex(x => !x.rated);
+        if (idx === -1) { _saWalkHandBack(); return; }
+        const row = rows[idx];
+        const descriptors = (typeof SA_DESCRIPTORS !== 'undefined' && SA_DESCRIPTORS[row.skill]) || null;
+        const progress = 'Self-assessment · ' + row.group + ' · ' + (idx + 1) + ' of ' + total;
+        const plain = progress + '\n\n**' + row.skill + '** — before I mark, how would you rate what you actually did? Tap the closest description (or type 1–5).';
+        const html = '<p style="font-size:12px;opacity:0.6;margin-bottom:6px">' + progress + '</p>'
+            + '<p><strong>' + row.skill + '</strong> — before I mark, how would you rate what you actually did?</p>'
+            + '<p style="font-size:12px;opacity:0.7">Tap the closest description below (or type 1–5).</p>';
+        _chatShell.addMsg(html, 'ai', plain, { suppressActions: true });
+        _chatShell.history.push({ role: 'assistant', content: plain, saWalk: true });
+        try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (_) {}
+        try {
+            const bar = el('div', { className: 'swml-quick-actions swml-sa-walk-bar' });
+            const FALLBACK = ['1 — Basic', '2 — Developing', '3 — Secure', '4 — Good', '5 — Perceptive'];
+            for (let v = 1; v <= 5; v++) {
+                const label = descriptors ? (v + '. ' + descriptors[v - 1]) : FALLBACK[v - 1];
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn swml-sa-walk-btn',
+                    textContent: label,
+                    onClick: () => { bar.remove(); _saWalkRate(row.skill, v); }
+                }));
+            }
+            const bubble = _chatShell.messages && _chatShell.messages.lastElementChild;
+            if (bubble) (bubble.querySelector('.swml-bubble-content') || bubble).appendChild(bar);
+        } catch (_) { /* descriptor buttons are progressive enhancement; typed 1–5 is the fallback */ }
+        _saWalkScrollToSection();
+    }
+    function _saWalkRate(skill, value) {
+        const v = parseInt(value, 10);
+        if (!(v >= 1 && v <= 5)) return;
+        try {
+            _setParagraphContentViaPM(
+                t => t.indexOf(skill + ':') === 0 && /\/\s*5\s*$/.test(t),
+                [{ text: skill + ': ' + v + ' / 5' }]
+            );
+        } catch (_) {}
+        try { if (typeof _refreshLangSidebar === 'function') _refreshLangSidebar(); } catch (_) {}
+        try { if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion(); } catch (_) {}
+        try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
+        if (_saWalkComplete()) _saWalkHandBack();
+        else _saWalkRenderCurrent();
+    }
+    // Typed "1"–"5" fallback (reload-safe). Consumes a bare digit as the CURRENT row's rating.
+    function _saWalkConsumeTyped(msg) {
+        const m = String(msg || '').trim().match(/^([1-5])(?:\s*\/\s*5)?$/);
+        if (!m) return false;
+        const cur = _saWalkRows().find(x => !x.rated);
+        if (!cur) return false;
+        try { if (_chatShell && _chatShell.addMsg) _chatShell.addMsg(String(m[1]), 'user'); } catch (_) {}
+        try { if (_chatShell && _chatShell.history) _chatShell.history.push({ role: 'user', content: m[1], preChain: true }); } catch (_) {}
+        _saWalkRate(cur.skill, parseInt(m[1], 10));
+        return true;
+    }
+    function _saWalkHandBack() {
+        if (_saWalkHandBack._fired) return;   // once per doc load
+        _saWalkHandBack._fired = true;
+        try {
+            if (_chatShell && _chatShell.addMsg) {
+                const done = 'Thanks — that’s your blind self-assessment saved. Now let’s see how it compares. Beginning marking…';
+                _chatShell.addMsg(formatAI(done), 'ai', done, { suppressActions: true });
+                _chatShell.history.push({ role: 'assistant', content: done });
+                try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (_) {}
+            }
+        } catch (_) {}
+        _silentSystemSend('SYSTEM (not from the student): the student has completed their blind self-assessment and the pre-marking setup. Begin marking now, exactly per the protocol’s first marking step. Do not re-ask the grade, goal, or key-aspects questions.');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // v7.19.854 (Neil ruling 2026-07-04): UNIVERSAL ENGINE-OWNED CLOSING CHAIN.
     // The R&J runs proved the protocol-scripted ending drifts per paper (lit asked all
     // three Action-Plan questions in ONE message, never offered the rebuild, filled no
@@ -2273,10 +2434,70 @@
             return /will appear here once your assessment is complete/i.test(node.textContent || '');
         } catch (_) { return false; }
     }
+    // ── v7.19.880 (Neil, Phase-1 enhancement c): CODE-DERIVED STRENGTH/WEAKNESS RANKING ──
+    // Pure, reusable: [{label,score,max}] → {strongest,weakest,ranked} by mark ratio. The
+    // Phase-3 manifest-driven caller reuses _rankAreas unchanged.
+    function _rankAreas(areas) {
+        const valid = (areas || []).filter(a => a && a.max > 0 && typeof a.score === 'number' && a.score >= 0);
+        if (valid.length < 2) return null;
+        const ranked = valid.map(a => ({ label: a.label, score: a.score, max: a.max, pct: a.score / a.max }))
+            .sort((x, y) => y.pct - x.pct);
+        return { strongest: ranked[0], weakest: ranked[ranked.length - 1], ranked: ranked };
+    }
+    // Read the marked per-question / per-paragraph feedback boxes → ranked areas. Actual marks
+    // live per feedback SECTION (per-Q / per-paragraph), so ranking is at that granularity.
+    function _rankMarkedAreas() {
+        const editor = document.getElementById('swml-tiptap-editor');
+        if (!editor) return null;
+        const areas = [];
+        editor.querySelectorAll('[data-section-type="feedback"]').forEach(section => {
+            const label = section.getAttribute('data-section-label') || '';
+            const m = label.match(/^(.*?)\s*\((\S+)\s*\/\s*(\d+)\)\s*$/);
+            if (!m || m[2] === '—') return;
+            const score = parseFloat(m[2]), max = parseInt(m[3], 10);
+            if (!(max > 0) || isNaN(score)) return;
+            const name = m[1].replace(/^feedback\s*[:\-]?\s*/i, '').trim();
+            if (name) areas.push({ label: name, score: score, max: max });
+        });
+        return _rankAreas(areas);
+    }
+    // ── v7.19.881 (Neil, Phase-1 enhancement b): BLIND-SA CALIBRATION (annotation only) ──
+    // Whole-assessment calibration: mean blind self-rating (/5 → %) vs the actual total %.
+    // Never grades, never sets priorities — a metacognitive readout only. Element↔section
+    // mapping isn't 1:1 (SA is per-element, marks are per-section), so MVP is whole-assessment.
+    function _saCalibrationFact() {
+        try {
+            const rows = _saWalkRows().filter(r => r.value != null);
+            if (rows.length < 2) return '';
+            const rank = _rankMarkedAreas();
+            if (!rank || !rank.ranked.length) return '';
+            const saPct = Math.round((rows.reduce((s, r) => s + r.value, 0) / (rows.length * 5)) * 100);
+            let tot = 0, mx = 0; rank.ranked.forEach(a => { tot += a.score; mx += a.max; });
+            if (!(mx > 0)) return '';
+            const actPct = Math.round((tot / mx) * 100);
+            const gap = saPct - actPct;
+            const verdict = Math.abs(gap) <= 10 ? 'well-calibrated'
+                : gap > 0 ? 'over-confident (rated higher than the marks)'
+                : 'under-confident (rated lower than the marks)';
+            return ' BLIND SELF-ASSESSMENT CALIBRATION (code-derived, annotation only — never change a mark or a priority): the student rated themselves ' + saPct + '% on average before marking; they scored ' + actPct + '%. That is ' + verdict + '. Note this calibration insight in the Overall Feedback / Analytics as encouragement to self-monitor — do NOT let it alter any mark, grade, or the Priority Targets.';
+        } catch (_) { return ''; }
+    }
     function _fireClosingFiling() {
         if (_closingFilingFired) return;
         _closingFilingFired = true;
-        _silentSystemSend('SYSTEM (not from the student): the student has now answered the three action-plan questions and the transfer question (recorded above — the system asked them). Close the assessment in ONE turn, in this exact order: (1) one or two lines acknowledging and, where useful, sharpening their action-plan answers and transfer example — never re-ask them; (2) the @FIELD_SET filing markers exactly as the protocol’s filing step specifies (every field, one marker per line, values derived from this assessment and their answers); (3) the one-line filing confirmation; (4) a brief, warm session conclusion naming one real moment from this session; (5) [ASSESSMENT_COMPLETE] on its own line; (6) end with exactly: "That wraps the assessment. Anything you’d like to revisit before you mark this complete?" Ask no other questions.');
+        // v7.19.880/881: append the code-derived weakest-area + calibration FACTS so the AI
+        // files an Action Plan whose top Priority Target is the code's weakest area and an
+        // Analytics that names the strongest/weakest + calibration — deterministic inputs,
+        // not the model's own re-ranking (mark arithmetic is code-owned; so is this).
+        let _facts = '';
+        try {
+            const rank = _rankMarkedAreas();
+            if (rank) {
+                _facts += ' CODE-DERIVED RANKING (authoritative — do not recompute): strongest area = ' + rank.strongest.label + ' (' + rank.strongest.score + '/' + rank.strongest.max + '); weakest area = ' + rank.weakest.label + ' (' + rank.weakest.score + '/' + rank.weakest.max + '). The FIRST of the three Action-Plan Priority Targets MUST be this weakest area, and the Analytics "Top Missed Areas" MUST name it. Present the strongest area as the key strength.';
+            }
+        } catch (_) {}
+        _facts += _saCalibrationFact();
+        _silentSystemSend('SYSTEM (not from the student): the student has now answered the three action-plan questions and the transfer question (recorded above — the system asked them). Close the assessment in ONE turn, in this exact order: (1) one or two lines acknowledging and, where useful, sharpening their action-plan answers and transfer example — never re-ask them; (2) the @FIELD_SET filing markers exactly as the protocol’s filing step specifies (every field, one marker per line, values derived from this assessment and their answers); (3) the one-line filing confirmation; (4) a brief, warm session conclusion naming one real moment from this session; (5) [ASSESSMENT_COMPLETE] on its own line; (6) end with exactly: "That wraps the assessment. Anything you’d like to revisit before you mark this complete?" Ask no other questions.' + _facts);
     }
     // Runs on every AI canvas reply (both pipelines — same call sites as the AP-FILE
     // repair). Advances the chain whenever an AI turn lands mid-chain.
@@ -6976,10 +7197,13 @@
             if (!askedBy(/what grade are you aiming for/i)) return null;
             if (!askedBy(/headline goal/i)) return 'headline';
             if (!askedBy(/key aspects/i)) return 'keyword';
+            // v7.19.879: blind self-assessment walk — the final pre-marking stage (AQA anchors).
+            if (_saWalkEligible() && !_saWalkComplete()) return 'selfassess';
             return null;
         }
         function _renderPreChainQuestion(stage) {
             let plain, html;
+            if (stage === 'selfassess') { _saWalkRenderCurrent(); return; }
             const _pcLang = _preChainIsLang();
             if (stage === 'headline') {
                 const optsPlain = _preChainGoalOptions().join('\n') + '\nF) Something else (type it below)';
@@ -7079,6 +7303,8 @@
             // first AI-bound turn still counts as userMsgCount === 1 (essay
             // injection [CONTEXT] path + structure preflight).
             const _pcStage = _assessPreChainStage();
+            // v7.19.879: typed "1"–"5" during the self-assessment walk rates the current row.
+            if (_pcStage === 'selfassess' && _saWalkConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }
             if (_pcStage) {
                 // v7.19.810: respect silent sends (mirrors the main path below) — a
                 // directive-style send must never render as a user bubble.
@@ -15393,10 +15619,13 @@
                             if (!askedBy(/what grade are you aiming for/i)) return null;
                             if (!askedBy(/headline goal/i)) return 'headline';
                             if (!askedBy(/key aspects/i)) return 'keyword';
+                            // v7.19.879: blind self-assessment walk — final pre-marking stage (AQA anchors).
+                            if (_saWalkEligible() && !_saWalkComplete()) return 'selfassess';
                             return null;
                         }
                         function _renderPreChainQuestion(stage) {
                             let plain, html;
+                            if (stage === 'selfassess') { _saWalkRenderCurrent(); return; }
                             const _pcLang = _preChainIsLang();
                             if (stage === 'headline') {
                                 const optsPlain = _preChainGoalOptions().join('\n') + '\nF) Something else (type it below)';
@@ -15456,6 +15685,8 @@
                             // training-panel pipeline. While the setup chain is
                             // incomplete, code owns the turn (no AI round-trip).
                             const _pcStage = _assessPreChainStage();
+                            // v7.19.879: typed "1"–"5" during the self-assessment walk rates the current row.
+                            if (_pcStage === 'selfassess' && _saWalkConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }
                             if (_pcStage) {
                                 // v7.19.810: respect silent sends (mirrors primary pipeline).
                                 const _pcSilent = canvasSilentSend;
@@ -27893,6 +28124,13 @@
                 '<p><em>The rest of this document — feedback, scores, and your action plan — will appear when you move on to your <strong>assessment</strong> exercise. For now, focus on writing the best essay you can.</em></p>');
         }
 
+        // v7.19.877: Self-Assessment moved ABOVE Feedback. The blind self-assessment walk
+        // runs BEFORE marking, so the section must render before any feedback box exists
+        // (research-optimal: self-judge first, then compare). Reorder affects fresh templates
+        // only — migrateDocument never reorders existing docs, so no reseed / no wipe risk
+        // for in-progress attempts (forward-snapshot doc chain).
+        html += buildSelfAssessmentSection(isDual);
+
         // Feedback + scores + improvement + sign-off (always appended, populated later by AI)
         // Mark splits from protocol data (MARK_SPLITS lookup) rather than generic scaling
         const isMultiQ = format === 'multi_question' || format === 'multi_option' || format === 'dual_task';
@@ -27928,7 +28166,7 @@
             html += dividerHTML('RESULTS');
             html += buildScoresSection(feedbackMarks);
         }
-        html += buildSelfAssessmentSection(isDual);
+        // v7.19.877: Self-Assessment now appended ABOVE Feedback (see reorder note earlier).
         html += buildAnalyticsSection();
         html += buildActionPlanSection(mode);
         html += buildSignoffSection();

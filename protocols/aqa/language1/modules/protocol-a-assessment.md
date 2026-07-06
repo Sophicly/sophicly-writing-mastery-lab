@@ -588,6 +588,11 @@ In order:
      Honest numbers only — sum what your cards actually deducted; never estimate.
    - **Key Strength** (one, named with evidence) and **Priority Targets** (two, ranked by mark
      gain).
+   - **Weakest area is CODE-PROVIDED (v7.19.880).** The SYSTEM filing turn appends the
+     code-derived weakest area (lowest mark ratio). The FIRST Priority Target and the Analytics
+     "Top Missed Areas" MUST be that area — never re-rank it yourself. An appended blind-SA
+     CALIBRATION note is annotation only: record it as encouragement to self-monitor — it MUST
+     NOT change any mark, grade, or Priority Target.
    - **Optimal Structure Reminder (diagnostic only):** Q1 four points · Q2 two TTECEA ¶ · Q3 two
      TTECEA ¶ · Q4 Intro + 3 BP + Conclusion · Q5 650+ words.
    Then `@SECTION_END` on its own line, followed by ONE chat line: "📋 Your full examiner's
