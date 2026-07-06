@@ -53,7 +53,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
    * **Correct:** B
    * **Feedback:** ✓ Correct. Nichols presents belonging as split rather than settled — the island persists as a felt presence even as the man rises into another ordinary London day.
    * **Why A:** The island memory returns vividly every morning; it has not been forgotten.
-   * **Why C:** He does rise into his London day — the poem shows co-existence, not a refusal to leave.
+   * **Why C:** He does rise into his London day — the poem reveals co-existence, not a refusal to leave.
    * **Why D:** The pull of both places is exactly what gives the poem its emotional weight.
 
 4. **Type: MCQ [Tests Recognising the Poem]**
@@ -303,7 +303,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 30. **Type: Select All [Tests Meaning & Effects]**
     @set:2
     * **Question:** Which statements correctly describe the meaning of "In Wales, wanting to be Italian"?
-    * **Options:** A) The poem shows how imagination can offer an escape from a place that feels unlike home, B) It suggests belonging can be complicated by wishing you were somewhere else entirely, C) The speaker feels completely at home in Wales with no complications, D) It presents Italy as somewhere the speaker has clear, lived memories of
+    * **Options:** A) The poem reveals how imagination can offer an escape from a place that feels unlike home, B) It suggests belonging can be complicated by wishing you were somewhere else entirely, C) The speaker feels completely at home in Wales with no complications, D) It presents Italy as somewhere the speaker has clear, lived memories of
     * **Correct:** A, B
     * **Scoring:** 2 marks for A,B. 1 mark if mostly correct.
     * **Feedback:** ✓ Correct. Dharker explores an unsettled sense of belonging, where imagination reaches for a brighter elsewhere rather than accepting the place the speaker actually inhabits.
@@ -393,7 +393,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Correct:** B
     * **Feedback:** ✓ Correct. Kunial lets his dual heritage sit within language rather than forcing it into a single resolved identity, treating the layering itself as meaningful.
     * **Why A:** The poem's tone is reflective and curious, not purely conflicted.
-    * **Why C:** The poem shows both heritages coexisting within the speaker.
+    * **Why C:** The poem reveals both heritages coexisting within the speaker.
     * **Why D:** Heritage and family are exactly what the poem's exploration of language returns to.
 
 40. **Type: MCQ [Tests Recognising the Poem]**

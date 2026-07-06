@@ -74,7 +74,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 6. **Type: MCQ [Tests Meaning & Effects]**
    @set:1
    * **Question:** What does the survival of the same refrain from cricket pitch to battlefield reveal about the poem's attitude to war?
-   * **Options:** A) It questions whether the schoolboy code of honour has any place on a real battlefield, B) It transfers the code uncritically, treating duty in war as a natural extension of sporting spirit rather than something to be doubted, C) It shows the speaker regretting ever having played cricket, D) It proves the soldiers refuse to fight
+   * **Options:** A) It questions whether the schoolboy code of honour has any place on a real battlefield, B) It transfers the code uncritically, treating duty in war as a natural extension of sporting spirit rather than something to be doubted, C) It reveals the speaker regretting ever having played cricket, D) It proves the soldiers refuse to fight
    * **Correct:** B
    * **Feedback:** ✓ Correct. Newbolt carries the cricketing cry straight into the "sand of the desert" without irony, treating patriotic duty as a natural extension of schoolboy sportsmanship rather than something the poem questions.
    * **Why A:** The poem endorses the transfer rather than doubting it.
@@ -217,7 +217,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     @set:2
     * **Question:** In "Bayonet Charge", the soldier's patriotism dissolves under fire, replaced by raw instinct, while the wounded hare comes to stand for war's indifferent damage to the natural world.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. The abstract "patriotic tear" burns away into bare survival instinct, and the yellow hare that "rolled like a flame" shows nature caught up as collateral in a violence that has no regard for it.
+    * **Feedback:** ✓ Correct. The abstract "patriotic tear" burns away into bare survival instinct, and the yellow hare that "rolled like a flame" casts nature as collateral caught up in a violence that has no regard for it.
     * **WhyWrong:** This is true — patriotism collapses into instinct, and the hare's suffering figures nature as an indifferent casualty of the charge.
 
 22. **Type: MCQ [Tests Recognising the Poem]**
@@ -272,7 +272,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Question:** The broken, fragmented imagery of bone in "Mametz Wood" reflects how war reduces individual young men to scattered, unresolved pieces that the land continues to surface long after the battle.
     * **Answer:** True
     * **Feedback:** ✓ Correct. Images such as "a chit of bone" and "the blown and broken bird's egg of a skull" reduce whole young lives to scattered fragments that the earth keeps yielding up, unresolved, for years afterwards.
-    * **WhyWrong:** This is true — the poem's broken bone imagery shows individual lives reduced to fragments that surface, unresolved, long after the battle.
+    * **WhyWrong:** This is true — the poem's broken bone imagery reduces individual lives to fragments that surface, unresolved, long after the battle.
 
 28. **Type: Fill [Tests Recognising the Poem]**
     @set:2
@@ -352,7 +352,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Options:** A) That war can be genuinely undone if we try hard enough, B) That imagining the dead restored only underlines how completely and irrecoverably war has taken from them, C) That the soldiers were never really in danger, D) That poetry has no power to affect how we see war
     * **Correct:** B
     * **Feedback:** ✓ Correct. By imagining what cannot happen — the dead living out "love, work, children" — Duffy makes the true, irreversible scale of war's loss felt all the more sharply.
-    * **Why A:** The reversal is explicitly impossible; the poem shows loss, not genuine undoing.
+    * **Why A:** The reversal is explicitly impossible; the poem registers loss, not genuine undoing.
     * **Why C:** The men are shown dying from a gas attack; the danger was real.
     * **Why D:** The poem itself demonstrates poetry's power to reframe how war's cost is felt.
 

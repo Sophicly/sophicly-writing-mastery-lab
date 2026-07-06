@@ -312,7 +312,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Question:** Which poem repeats a dismissive refrain about a flag being "just a piece of cloth", even as it reveals the terrible power people invest in it?
     * **Options:** A) Flag, B) Colonization in Reverse, C) Songs for the People, D) Thirteen
     * **Correct:** A
-    * **Feedback:** ✓ Correct. John Agard's "Flag" returns again and again to a refrain that shrugs off the flag as mere fabric, even as the poem shows people killing and dying in its name.
+    * **Feedback:** ✓ Correct. John Agard's "Flag" returns again and again to a refrain that shrugs off the flag as mere fabric, even as the poem reveals people killing and dying in its name.
     * **Why B:** Colonization in Reverse satirises empire through migration, not a repeated refrain about a flag.
     * **Why C:** Songs for the People looks towards unifying song, not a symbol of division like a flag.
     * **Why D:** Thirteen reflects on adolescence, not a national emblem.
@@ -330,7 +330,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Options:** A) The poem repeats a refrain that dismisses the flag as mere cloth, B) The gap between the dismissive refrain and the flag's real power to provoke war and death creates irony, C) The poem questions how a simple object can command such extreme loyalty and violence, D) The poem concludes that flags have no real influence on people's actions
     * **Correct:** A, B, C
     * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-    * **Feedback:** ✓ Correct. Agard's refrain keeps insisting the flag is "just a piece of cloth", but the irony sharpens with every return, since the poem shows how much death and loyalty a flag can command.
+    * **Feedback:** ✓ Correct. Agard's refrain keeps insisting the flag is "just a piece of cloth", but the irony sharpens with every return, since the poem reveals how much death and loyalty a flag can command.
     * **Why D:** The poem's whole point is that the flag commands enormous, often violent, influence over people.
 
 34. **Type: MCQ [Tests Recognising the Poem]**

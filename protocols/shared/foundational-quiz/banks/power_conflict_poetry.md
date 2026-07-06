@@ -174,7 +174,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Question:** In which poem are soldiers killed not by the enemy but by the "merciless iced east winds", with the refrain "But nothing happens"?
     * **Options:** A) Storm on the Island, B) Exposure, C) Remains, D) Poppies
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Owen's "Exposure" shows the true enemy as the freezing weather and endless waiting, punctuated by the hopeless refrain "But nothing happens".
+    * **Feedback:** ✓ Correct. Owen's "Exposure" presents the true enemy as the freezing weather and endless waiting, punctuated by the hopeless refrain "But nothing happens".
     * **Why A:** Storm on the Island braces a community against a storm, not trench cold.
     * **Why C:** Remains concerns a soldier's guilt over a shooting, not death by weather.
     * **Why D:** Poppies voices a grieving mother at home, not soldiers in the snow.
@@ -198,7 +198,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 19. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
-    * **Question:** Which poem shows an island community that has built its houses "squat" to withstand a storm, only to fear "a huge nothing"?
+    * **Question:** Which poem depicts an island community that has built its houses "squat" to withstand a storm, only to fear "a huge nothing"?
     * **Options:** A) Storm on the Island, B) The Prelude, C) Ozymandias, D) Checking Out Me History
     * **Correct:** A
     * **Feedback:** ✓ Correct. Heaney's "Storm on the Island" opens "We are prepared: we build our houses squat", ending on "It is a huge nothing that we fear".
@@ -406,7 +406,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 41. **Type: MCQ [Tests Form & Features]**
     @set:3
     * **Question:** How does the loose, non-standard form of "Checking Out Me History" serve its meaning?
-    * **Options:** A) It shows the speaker cannot write properly, B) It acts as resistance — breaking imposed rules of spelling and form to reclaim identity and a hidden history, C) It has no effect on meaning, D) It makes the poem a traditional sonnet
+    * **Options:** A) It suggests the speaker cannot write properly, B) It acts as resistance — breaking imposed rules of spelling and form to reclaim identity and a hidden history, C) It has no effect on meaning, D) It makes the poem a traditional sonnet
     * **Correct:** B
     * **Feedback:** ✓ Correct. Rejecting standard spelling and form becomes an act of resistance, reclaiming a suppressed history and asserting the speaker's own voice and identity.
     * **Why A:** The non-standard form is a deliberate, meaningful choice, not a failure.

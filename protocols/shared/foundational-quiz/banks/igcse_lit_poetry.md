@@ -108,7 +108,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
    * **Feedback:** ✓ Correct. The image of a god taming a wild creature mirrors the Duke's own need to control and own beauty — the same impulse that destroyed his Duchess.
    * **Why A:** He prizes the statue as a "rarity" he possesses, not for art's own sake alone.
    * **Why C:** He is already negotiating a new dowry, showing possession rather than romantic feeling.
-   * **Why D:** He shows no remorse; he moves straight from her death to negotiating his next match.
+   * **Why D:** He voices no remorse; he moves straight from her death to negotiating his next match.
 
 10. **Type: MCQ [Tests Recognising the Poem]**
     @set:1
@@ -160,7 +160,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 15. **Type: Select All [Tests Meaning & Effects]**
     @set:1
     * **Question:** Which statements correctly describe the meaning and effect of "Poem at Thirty-Nine"?
-    * **Options:** A) The speaker reflects fondly on her father's practical skill and care, now that she is an adult herself, B) The poem voices regret at questions left unasked before her father's death, C) The speaker recognises, by the poem's end, that she has inherited something of her father's qualities, D) The poem shows a father the speaker barely knew or thought about
+    * **Options:** A) The speaker reflects fondly on her father's practical skill and care, now that she is an adult herself, B) The poem voices regret at questions left unasked before her father's death, C) The speaker recognises, by the poem's end, that she has inherited something of her father's qualities, D) The poem depicts a father the speaker barely knew or thought about
     * **Correct:** A, B, C
     * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
     * **Feedback:** ✓ Correct. Walker's poem moves from fond, specific memory, through regret at things left unsaid, towards a quiet recognition of inheritance from her father.
@@ -222,7 +222,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Correct:** B
     * **Feedback:** ✓ Correct. The image of the tongue growing back suggests the mother tongue is never truly lost — it can return and flourish again, however dominant the second language becomes.
     * **Why A:** The image is one of survival and return, not permanent loss.
-    * **Why C:** The poem shows both languages coexisting, not straightforward regret at learning English.
+    * **Why C:** The poem reveals both languages coexisting, not straightforward regret at learning English.
     * **Why D:** The whole poem hinges on language being bound up with identity and self.
 
 22. **Type: MCQ [Tests Recognising the Poem]**
@@ -252,7 +252,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Correct:** B
     * **Feedback:** ✓ Correct. By repeatedly demanding "explain yuself", the speaker puts the burden of justification onto anyone who uses the term, asserting his identity rather than defending it apologetically.
     * **Why A:** The tone is challenging and assertive, not merely polite.
-    * **Why C:** The speaker shows no uncertainty; he is confident throughout.
+    * **Why C:** The speaker betrays no uncertainty; he is confident throughout.
     * **Why D:** There is no apology — the poem confronts prejudice rather than excusing it.
 
 25. **Type: MCQ [Tests Recognising the Poem]**
@@ -342,7 +342,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 34. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem shows an adult overwhelmed by nostalgia as a woman's singing carries him back to childhood evenings under the piano, listening to his mother play?
+    * **Question:** Which poem depicts an adult overwhelmed by nostalgia as a woman's singing carries him back to childhood evenings under the piano, listening to his mother play?
     * **Options:** A) Piano, B) Half-past Two, C) Hide and Seek, D) The Tyger
     * **Correct:** A
     * **Feedback:** ✓ Correct. D. H. Lawrence's "Piano" has an adult speaker undone by a woman's singing, which carries him back to childhood evenings under the piano with his mother.
@@ -367,7 +367,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Correct:** A
     * **Feedback:** ✓ Correct. Despite resisting the "clamour" of the present performance, the speaker is defeated by memory, reduced to childlike tears for a past he cannot recover.
     * **Why B:** The poem is not about learning an instrument, but about the emotional pull of memory.
-    * **Why C:** The vividness of his memory shows the opposite — the past remains powerfully present to him.
+    * **Why C:** The vividness of his memory reveals the opposite — the past remains powerfully present to him.
     * **Why D:** The whole poem depends on music's power to overwhelm him emotionally.
 
 37. **Type: MCQ [Tests Recognising the Poem]**

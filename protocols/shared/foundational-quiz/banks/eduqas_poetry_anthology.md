@@ -75,10 +75,10 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 6. **Type: True-False [Tests Meaning & Effects]**
    @set:1
-   * **Question:** In "I Wandered Lonely as a Cloud", the final stanza shows the memory of the daffodils continuing to bring the speaker comfort long after the walk itself, in "the bliss of solitude".
+   * **Question:** In "I Wandered Lonely as a Cloud", the final stanza reveals the memory of the daffodils continuing to bring the speaker comfort long after the walk itself, in "the bliss of solitude".
    * **Answer:** True
    * **Feedback:** ✓ Correct. The daffodils "flash upon that inward eye" whenever the speaker lies "in vacant or in pensive mood", proving that a single moment in nature can become a lasting source of joy.
-   * **WhyWrong:** This is true — the closing stanza shows memory alone reviving the same pleasure the daffodils first gave, recollected in tranquillity.
+   * **WhyWrong:** This is true — the closing stanza reveals memory alone reviving the same pleasure the daffodils first gave, recollected in tranquillity.
 
 7. **Type: MCQ [Tests Recognising the Poem]**
    @set:1
@@ -220,7 +220,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Question:** In "Disabled", Owen suggests the young man enlisted partly out of a naive, romantic idea of war and to impress a girl, only to return maimed and ignored.
     * **Answer:** True
     * **Feedback:** ✓ Correct. He joined for the romance of glinting "jewelled hilts" and to look smart in uniform for a girl, lying about his age — an illusion Owen exposes as hollow once the soldier returns broken and overlooked.
-    * **WhyWrong:** This is true — the poem shows the soldier's youthful, romanticised reasons for enlisting curdling into isolation and neglect on his return.
+    * **WhyWrong:** This is true — the poem reveals the soldier's youthful, romanticised reasons for enlisting curdling into isolation and neglect on his return.
 
 22. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
@@ -392,10 +392,10 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Question:** What does "Dusting the Phone" suggest about the effect of waiting for a lover's call?
     * **Options:** A) That waiting brings only calm confidence, B) That prolonged uncertainty and dependency on someone else's contact can wear away at a person's emotional balance and hope, C) That the phone itself is broken, D) That the speaker no longer cares about the relationship
     * **Correct:** B
-    * **Feedback:** ✓ Correct. The poem shows how silence and uncertainty, stretched out over time, erode confidence and hope, however much the speaker longs to control her own feelings.
+    * **Feedback:** ✓ Correct. The poem reveals how silence and uncertainty, stretched out over time, erode confidence and hope, however much the speaker longs to control her own feelings.
     * **Why A:** The speaker's anxious fragments show unease, not calm confidence.
     * **Why C:** The poem's focus is emotional, not a literal fault with the telephone.
-    * **Why D:** Her obsessive attention to the phone shows she cares intensely, not that she has stopped caring.
+    * **Why D:** Her obsessive attention to the phone reveals she cares intensely, not that she has stopped caring.
 
 40. **Type: MCQ [Tests Recognising the Poem]**
     @set:3

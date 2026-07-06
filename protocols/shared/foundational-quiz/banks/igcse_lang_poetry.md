@@ -22,7 +22,7 @@ Types: MCQ · Fill · True-False · Select All
 ### Quiz: IGCSE Language A Poetry (Poems)
 
 1. **Type: MCQ [Tests Recognising the Poem]**
-   * **Question:** Which poem shows a young soldier "waiting for dark" in a wheelchair, in his "ghastly suit of grey", pitied by the same town that once admired him?
+   * **Question:** Which poem depicts a young soldier "waiting for dark" in a wheelchair, in his "ghastly suit of grey", pitied by the same town that once admired him?
    * **Options:** A) Disabled, B) Out, Out—, C) The Bright Lights of Sarajevo, D) Still I Rise
    * **Correct:** A
    * **Feedback:** ✓ Correct. Owen's "Disabled" opens with the maimed soldier "waiting for dark" in his "ghastly suit of grey", his legs lost to the war that once made him a local hero.
@@ -65,7 +65,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Options:** A) The others are shown grieving for the rest of their lives, B) The survivors' abrupt return to their own business — "turned to their affairs" — reveals an unsettling, almost indifferent acceptance that life simply carries on, C) The poem closes with a lengthy funeral scene, D) The doctor arrives in time and saves the boy
    * **Correct:** B
    * **Feedback:** ✓ Correct. The clipped, unceremonious close cuts the poem off just as the boy's life is cut off, exposing how quickly the living move past a death that was not their own.
-   * **Why A:** The text shows the opposite — a fast, almost cold return to ordinary business, not prolonged mourning.
+   * **Why A:** The text reveals the opposite — a fast, almost cold return to ordinary business, not prolonged mourning.
    * **Why C:** No funeral appears; the poem ends abruptly at the moment of loss.
    * **Why D:** "Little—less—nothing!—and that ended it" makes clear the boy dies; the doctor cannot save him.
 
@@ -97,7 +97,7 @@ Types: MCQ · Fill · True-False · Select All
    * **Why D:** There is no soldier or battle in this poem; that belongs to Disabled and Out, Out—.
 
 10. **Type: MCQ [Tests Recognising the Poem]**
-    * **Question:** Which poem shows ordinary life and courtship continuing between citizens of a besieged city, even as it is shelled around them?
+    * **Question:** Which poem depicts ordinary life and courtship continuing between citizens of a besieged city, even as it is shelled around them?
     * **Options:** A) The Bright Lights of Sarajevo, B) An Unknown Girl, C) Disabled, D) Still I Rise
     * **Correct:** A
     * **Feedback:** ✓ Correct. Harrison's "The Bright Lights of Sarajevo" follows the city's people queuing, bartering and courting through the shelling and blackouts of the siege, insisting on ordinary tenderness inside extraordinary danger.

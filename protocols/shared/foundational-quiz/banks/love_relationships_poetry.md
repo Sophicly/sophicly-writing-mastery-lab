@@ -76,7 +76,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 6. **Type: MCQ [Tests Meaning & Effects]**
    @set:1
    * **Question:** What is the effect of the final turn in "Follower", where the father now stumbles behind the speaker?
-   * **Options:** A) It shows the father was always incompetent, B) It reverses the roles of admiration and dependence, exposing time, ageing and the son's guilt or discomfort, C) It proves the son never loved his father, D) It celebrates a happy family outing
+   * **Options:** A) It suggests the father was always incompetent, B) It reverses the roles of admiration and dependence, exposing time, ageing and the son's guilt or discomfort, C) It proves the son never loved his father, D) It celebrates a happy family outing
    * **Correct:** B
    * **Feedback:** ✓ Correct. The reversal — once the follower, now the followed — captures the passing of time, the father's decline and the son's uneasy mix of love and impatience.
    * **Why A:** The father is shown as an "expert"; the point is change, not incompetence.
@@ -276,7 +276,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Options:** A) Because the love was secret, so his sorrow and the lover's betrayal cannot be spoken openly, B) Because he no longer cares, C) Because the lover has died, D) Because he is proud of the relationship
     * **Correct:** A
     * **Feedback:** ✓ Correct. The affair was hidden, so the pain of the lover's later dishonour must be borne privately — the silence deepens the sense of secret, festering grief.
-    * **Why B:** The intensity of the grief shows he cares deeply.
+    * **Why B:** The intensity of the grief reveals he cares deeply.
     * **Why C:** The lover lives on and is heard of; the loss is of trust, not life.
     * **Why D:** He grieves the betrayal; there is shame, not pride.
 

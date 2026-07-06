@@ -52,7 +52,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
    * **Options:** A) Voicing anger to a friend lets it end, while hiding it from a foe lets it grow, B) The nursed anger is fed with "fears" (tears) and "smiles" (deceit) until it ripens into a poisoned apple, C) The simple, sing-song rhyme heightens the horror of the ending, where the speaker is "glad" to see his foe dead, D) The poem argues that expressing anger openly is always the most dangerous choice
    * **Correct:** A, B, C
    * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Blake shows honest anger dissolving while hidden anger is nursed into poison, its tidy rhyme jarring against the speaker's chilling satisfaction at his foe's death.
+   * **Feedback:** ✓ Correct. Blake reveals honest anger dissolving while hidden anger is nursed into poison, its tidy rhyme jarring against the speaker's chilling satisfaction at his foe's death.
    * **Why D:** The poem argues the opposite — concealing and nursing anger is what proves destructive, not voicing it.
 
 4. **Type: Fill [Tests Recognising the Poem]**
@@ -78,7 +78,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
    * **Options:** A) She has nothing left and regrets everything, B) Although shamed as "an unclean thing", she takes pride in her son, a "gift" Kate lacks, complicating simple victimhood, C) She forgives the lord completely, D) She and Kate become friends
    * **Correct:** B
    * **Feedback:** ✓ Correct. Though shamed by society, the speaker asserts a quiet triumph: she has "a gift" — her son — that childless Kate does not have, giving her a measure of defiance alongside her grief.
-   * **Why A:** Her pride in her son shows she has not lost everything.
+   * **Why A:** Her pride in her son reveals she has not lost everything.
    * **Why C:** She indicts the lord's cruelty rather than forgiving him.
    * **Why D:** The cousins remain rivals; there is no reconciliation in the poem.
 
@@ -203,7 +203,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Question:** In which poem are soldiers killed not by the enemy but by the "merciless iced east winds", with the refrain "But nothing happens"?
     * **Options:** A) The Man He Killed, B) Exposure, C) Belfast Confetti, D) The Destruction of Sennacherib
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Owen's "Exposure" shows the true enemy as the freezing weather and endless waiting, punctuated by the hopeless refrain "But nothing happens".
+    * **Feedback:** ✓ Correct. Owen's "Exposure" presents the true enemy as the freezing weather and endless waiting, punctuated by the hopeless refrain "But nothing happens".
     * **Why A:** The Man He Killed reflects on a single killing, not a whole platoon suffering the cold.
     * **Why C:** Belfast Confetti is set amid a riot and explosion, not frozen trenches.
     * **Why D:** The Destruction of Sennacherib recounts an ancient army's destruction, not modern trench warfare.
@@ -261,7 +261,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Correct:** A
     * **Feedback:** ✓ Correct. Byron's poem recounts the Assyrian army's overnight destruction by the "Angel of Death", its might melting away "like snow in the glance of the Lord".
     * **Why B:** The Charge of the Light Brigade narrates a doomed but very real cavalry battle, not divine destruction.
-    * **Why C:** Exposure shows soldiers dying slowly of cold, not a single overnight catastrophe.
+    * **Why C:** Exposure reveals soldiers dying slowly of cold, not a single overnight catastrophe.
     * **Why D:** Belfast Confetti is set during a modern riot, not an ancient biblical destruction.
 
 26. **Type: True-False [Tests Form & Features]**
@@ -279,7 +279,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Feedback:** ✓ Correct. The mighty Assyrian host, boastfully arrayed "gleaming in purple and gold", is annihilated in a single night, showing how quickly earthly power can be undone.
     * **Why B:** The army is utterly destroyed, not victorious.
     * **Why C:** The destruction comes from a divine force, not superior human weaponry.
-    * **Why D:** The poem shows conquest collapsing into ruin, not something to celebrate.
+    * **Why D:** The poem reveals conquest collapsing into ruin, not something to celebrate.
 
 28. **Type: MCQ [Tests Recognising the Poem]**
     @set:2
@@ -308,7 +308,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Correct:** A
     * **Feedback:** ✓ Correct. The riot doesn't just wreck the streets — it unmakes the speaker's sense of place and self, leaving him unable to answer basic questions about who he is and where he belongs.
     * **Why B:** This is his own home city, not unfamiliar territory to a visitor.
-    * **Why C:** His disorientation shows the riot has a deep, lasting effect on him.
+    * **Why C:** His disorientation reveals the riot has a deep, lasting effect on him.
     * **Why D:** The ending is unsettling and fractured, not celebratory.
 
 <!-- ============================ SET 3 ============================ -->
@@ -326,7 +326,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 32. **Type: MCQ [Tests Form & Features]**
     @set:3
     * **Question:** How does the loose, phonetic-spelling form of "Half-caste" serve its meaning?
-    * **Options:** A) It shows the speaker cannot write standard English, B) It acts as resistance, using the speaker's own voice and rhythm to reject the imposed, reductive label "half-caste", C) It has no effect on meaning, D) It makes the poem a traditional sonnet
+    * **Options:** A) It suggests the speaker cannot write standard English, B) It acts as resistance, using the speaker's own voice and rhythm to reject the imposed, reductive label "half-caste", C) It has no effect on meaning, D) It makes the poem a traditional sonnet
     * **Correct:** B
     * **Feedback:** ✓ Correct. The dialect spelling and free, conversational rhythm assert the speaker's own identity and voice, refusing to accept a label imposed by someone else.
     * **Why A:** The non-standard spelling is a deliberate, purposeful choice, not a failing.
@@ -413,7 +413,7 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 41. **Type: MCQ [Tests Form & Features]**
     @set:3
     * **Question:** What effect does Satyamurti create by structuring the poem around contrast?
-    * **Options:** A) It shows the photographer's world of suffering has no connection to any other, B) It juxtaposes the reality the photographer has witnessed with the more comfortable distance of those who later encounter the images, sharpening the poem's unease, C) It makes the poem read as a straightforward celebration of photography, D) It removes any sense of the photographer's own feelings
+    * **Options:** A) It reveals the photographer's world of suffering has no connection to any other, B) It juxtaposes the reality the photographer has witnessed with the more comfortable distance of those who later encounter the images, sharpening the poem's unease, C) It makes the poem read as a straightforward celebration of photography, D) It removes any sense of the photographer's own feelings
     * **Correct:** B
     * **Feedback:** ✓ Correct. The poem's structure holds the photographer's direct experience of suffering against the more removed reactions of an audience encountering it afterwards, exposing the gap between the two.
     * **Why A:** The contrast is the poem's whole point — connecting two very different responses to the same suffering.
@@ -454,4 +454,4 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
     * **Correct:** A, B, C
     * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
     * **Feedback:** ✓ Correct. Weir centres a mother's private grief on the home front, ties it to the public ritual of the poppy and memorial, and lets free verse blend memory and present loss.
-    * **Why D:** The poem shows an enduring, aching bond with her son, not a loss of connection.
+    * **Why D:** The poem reveals an enduring, aching bond with her son, not a loss of connection.
