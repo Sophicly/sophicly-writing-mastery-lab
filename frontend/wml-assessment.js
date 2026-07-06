@@ -5452,23 +5452,18 @@
             //     attempt clears ALL assessment-owned output; the guard keeps protecting
             //     content typed DURING a run. Explicit Clear-chat action only — never on load.
             try {
-                const CLEAR_FIELDS = _AP_FILE_FIELDS.concat(['analytics-optout-count']);
-                let fGuard = 0;
-                while (fGuard++ < 40) {
-                    let ft = null;
-                    canvasEditor.state.doc.descendants((node, pos) => {
-                        if (ft) return false;
-                        if (node.type.name === 'inputField' && node.attrs
-                            && CLEAR_FIELDS.indexOf(node.attrs.fieldId) !== -1
-                            && (node.textContent || '').trim().length > 0) {
-                            ft = { pos: pos, size: node.nodeSize };
-                            return false;
-                        }
-                        return true;
-                    });
-                    if (!ft) break;
-                    canvasEditor.commands.insertContentAt({ from: ft.pos + 1, to: ft.pos + ft.size - 1 }, '<p></p>');
-                }
+                // v7.19.882 (Neil 2026-07-06): ROOT FIX — the prior clear inserted a BLOCK
+                // '<p></p>' into inline-only inputFields, which ProseMirror REJECTS, so the loop
+                // threw on the first field and Analytics + Action Plan SURVIVED Clear-chat (Neil
+                // confirmed live). Clear each field via the proven _setInputFieldText (tr.delete on
+                // its inline range — the same helper the grade-goal 'auto' reset uses). The opt-out
+                // COUNT is a PARAGRAPH ("Number of opt-outs: N"), not an inputField, so it never
+                // matched the old inputField loop either — reset it via the paragraph PM-write.
+                _AP_FILE_FIELDS.forEach(id => { try { _setInputFieldText(id, ''); } catch (_) {} });
+                _setParagraphContentViaPM(
+                    t => /^Number of opt-outs:/i.test((t || '').trim()),
+                    [{ text: 'Number of opt-outs:', italic: true }, { text: ' —' }]
+                );
             } catch (e) { console.warn('WML reset-marking: field clear skipped —', e && e.message); }
             // 2c) Overall Feedback section back to its placeholder.
             try {
@@ -5483,6 +5478,21 @@
                         '<p><em>Your examiner’s overall summary — holistic evaluation, key strength, and priority targets — will appear here once your assessment is complete.</em></p>');
                 }
             } catch (e) { console.warn('WML reset-marking: Overall Feedback reset skipped —', e && e.message); }
+            // 2d) v7.19.882 (Neil 2026-07-06): reset the blind Self-Assessment ratings too. A new
+            //     attempt re-does the blind self-assessment walk BEFORE marking, so its ratings are
+            //     attempt-owned output exactly like the feedback / analytics / action-plan cleared
+            //     above. Without this the walk saw a fully-rated section and skipped on the re-do.
+            //     Rated rows ("Skill: N / 5") revert to the "— / 5" seed via the canonical SA
+            //     PM-write; unrated rows are left untouched. Same helpers the walk itself uses.
+            try {
+                _saWalkRows().filter(r => r.rated).forEach(r => {
+                    _setParagraphContentViaPM(
+                        t => t.indexOf(r.skill + ':') === 0 && /\/\s*5\s*$/.test(t),
+                        [{ text: r.skill + ': — / 5' }]
+                    );
+                });
+                _saWalkHandBack._fired = false;   // let the walk hand back to marking again on the re-do
+            } catch (e) { console.warn('WML reset-marking: Self-Assessment reset skipped —', e && e.message); }
             // 3) Drop stored predictions so the predict-mark row shows again on the re-mark.
             try { _clearPredictionsForDoc(); } catch (_) {}
             // v7.19.848: fresh chat = fresh reflection ledger (every question reflects again).
