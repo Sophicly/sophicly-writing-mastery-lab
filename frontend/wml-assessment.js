@@ -22370,12 +22370,17 @@
             // Optimistic client stamp so the date appears the moment the last section completes;
             // the save sends assessmentComplete:true and the server set-once stamp is authoritative
             // on reload (same day → no drift). Set-once client-side via the empty guard.
-            if (!_canvasCompletedAt && typeof _isAssessmentComplete === 'function' && _isAssessmentComplete()) {
+            // v7.19.892: a cleared/reset assessment (mark boxes present but ALL unmarked) is no
+            // longer complete → blank Date Completed + Days Elapsed, the same content-gate as the
+            // sign-off badge. Distinct from the load-order flicker the "only upgrade" rule guards
+            // against: _assessmentDocCleared is a definitive reset, not a transient empty value.
+            const _docCleared = _assessmentDocCleared();
+            if (!_docCleared && !_canvasCompletedAt && typeof _isAssessmentComplete === 'function' && _isAssessmentComplete()) {
                 try { _canvasCompletedAt = new Date().toISOString(); } catch (_) {}
             }
-            const completedStr = _fmtDMY(_canvasCompletedAt);
+            const completedStr = _docCleared ? '' : _fmtDMY(_canvasCompletedAt);
             let elapsedStr = '';
-            if (_canvasStartedAt && _canvasCompletedAt) {
+            if (!_docCleared && _canvasStartedAt && _canvasCompletedAt) {
                 const ms = new Date(_canvasCompletedAt).getTime() - new Date(_canvasStartedAt).getTime();
                 if (!isNaN(ms) && ms >= 0) {
                     const days = Math.round(ms / 86400000);
@@ -22416,8 +22421,10 @@
                 } else if (text.includes('Date Completed:')) {
                     // v7.19.770: stamps when the STUDENT completes every required section
                     // (server set-once docCompletedAt); "—" until then. Only UPGRADE (never blank
-                    // a server-baked date), mirroring Date Started.
-                    if (completedStr) p.innerHTML = `<em>Date Completed:</em> ${completedStr}`;
+                    // a server-baked date), mirroring Date Started — UNLESS the doc has been reset
+                    // (v892), in which case blank it so a cleared attempt shows no completion date.
+                    if (_docCleared) p.innerHTML = `<em>Date Completed:</em> —`;
+                    else if (completedStr) p.innerHTML = `<em>Date Completed:</em> ${completedStr}`;
                 } else if (text.includes('Days Elapsed:')) {
                     p.innerHTML = `<em>Days Elapsed:</em> ${elapsedStr || '—'}`;
                 } else if (text.includes('Word Count:')) {
