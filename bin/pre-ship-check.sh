@@ -15,10 +15,14 @@
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 2
 
+# Portable file collection — macOS ships bash 3.2 which has no `mapfile` (v7.19.900 fix).
+FILES=()
 if [ "${1:-}" = "--all" ]; then
-  mapfile -t FILES < <(git ls-files '*.js' '*.php' | grep -v -E 'wml-tiptap.min.js|\.min\.js')
+  while IFS= read -r line; do [ -n "$line" ] && FILES+=("$line"); done \
+    < <(git ls-files '*.js' '*.php' | grep -v -E 'wml-tiptap.min.js|\.min\.js')
 else
-  mapfile -t FILES < <(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|php)$' | grep -v -E 'wml-tiptap.min.js|\.min\.js')
+  while IFS= read -r line; do [ -n "$line" ] && FILES+=("$line"); done \
+    < <(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|php)$' | grep -v -E 'wml-tiptap.min.js|\.min\.js')
 fi
 
 [ ${#FILES[@]} -eq 0 ] && { echo "pre-ship: no JS/PHP staged — nothing to check."; exit 0; }
