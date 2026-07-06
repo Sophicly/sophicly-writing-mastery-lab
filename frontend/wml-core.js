@@ -2830,27 +2830,22 @@ window.WML = (function() {
         return { task: task, section: section, step: step, total: total, pct: pct == null ? 0 : pct };
     }
 
-    // v7.19.906: the single stylish micro-progress chip. Slim, brand-styled, theme-aware
-    // (styles live in wml-styles.css .swml-beat*). Replaces the three legacy inline renders
-    // (step-header + step-blocks + ASCII bar) with ONE element. Width is the code-computed %.
+    // v7.19.906: the single micro-progress chip. Minimal (Neil): the section label
+    // + "Step X of N" on one row, a thin brand-gradient bar below. No pin, no floating
+    // badge. Theme-aware; styles live in wml-styles.css .swml-beat*. Width = code-computed %.
     function progressChipHTML(beat) {
         if (!beat) return '';
         const pct = Math.max(0, Math.min(100, beat.pct || 0));
         const esc = (t) => String(t == null ? '' : t).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
-        const stepTxt = (beat.step != null && beat.total != null)
-            ? ('Step ' + beat.step + ' of ' + beat.total)
-            : (pct + '%');
-        const eyebrow = beat.task ? '<span class="swml-beat-eyebrow">' + esc(beat.task) + '</span>' : '';
         const section = beat.section ? '<span class="swml-beat-section">' + esc(beat.section) + '</span>' : '';
-        // Step count rendered "4 of 5" with the current number weighted (like a game "Level 2 / 52").
+        // Step count rendered "Step 4 of 5" with the current number weighted.
         const stepLabel = (beat.step != null && beat.total != null)
-            ? '<span class="swml-beat-step"><b>' + beat.step + '</b> of ' + beat.total + '</span>'
-            : '<span class="swml-beat-step">' + esc(stepTxt) + '</span>';
-        return '<div class="swml-beat" role="status" aria-label="' + esc(beat.section || 'Progress') + ' — ' + esc(stepTxt) + '">'
-            + '<div class="swml-beat-top">' + eyebrow + section + stepLabel + '</div>'
-            + '<div class="swml-beat-track">'
-            +   '<div class="swml-beat-fill" style="width:' + pct + '%"><span class="swml-beat-badge">' + pct + '%</span></div>'
-            + '</div>'
+            ? '<span class="swml-beat-step">Step <b>' + beat.step + '</b> of ' + beat.total + '</span>'
+            : '<span class="swml-beat-step">' + pct + '%</span>';
+        const aria = (beat.section ? esc(beat.section) + ' — ' : '') + (beat.step != null ? 'step ' + beat.step + ' of ' + beat.total : pct + '%');
+        return '<div class="swml-beat" role="status" aria-label="' + aria + '">'
+            + '<div class="swml-beat-top">' + section + stepLabel + '</div>'
+            + '<div class="swml-beat-track"><div class="swml-beat-fill" style="width:' + pct + '%"></div></div>'
             + '</div>';
     }
 
