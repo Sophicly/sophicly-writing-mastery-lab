@@ -2500,6 +2500,71 @@
             return /will appear here once your assessment is complete/i.test(node.textContent || '');
         } catch (_) { return false; }
     }
+    // ── v7.19.895 (Neil): ANCHOR AO MAP — board+subject keyed (the Phase-3 gold seed) ──
+    // AO LABELS DIVERGE BY BOARD (Neil): Edexcel IGCSE Lit context = AO4 (not AO3); IGCSE
+    // language AO4/AO5 = GCSE language AO5/AO6; SQA / CCEA / Cambridge IGCSE differ again.
+    // Skills are the same everywhere; only the AO LABEL differs. So NEVER key AO off subject
+    // alone — key off (board, subject). Only the 3 AQA anchors are populated now; Phase-3/Fable
+    // adds the other boards' rows from the mark-scheme folder. Any board/subject with no row →
+    // no AO label + no blind-spot (fail-safe: an absent label, never a wrong one).
+    //   areaAO:    feedback-area name → AO label (item 1 chips + filed facts).
+    //   blindUnits: item-2 comparison units {label, ao?, groups[], groupSkills?[], areas[]}.
+    //     self%  = mean rating of the groups' rated skills (groupSkills narrows within a group);
+    //     actual% = Σ(area score)/Σ(area max). Language = per-AO; Literature = per-paragraph
+    //     (boxes ARE Intro/Body/Conclusion; Lit fuses AO1-3 so per-AO isn't code-separable).
+    const _ANCHOR_AO = {
+        aqa: {
+            language1: {
+                areaAO: { Q1: 'AO1', Q2: 'AO2', Q3: 'AO2', Q4: 'AO4', Q5: 'AO5·6' },
+                blindUnits: [
+                    { label: 'Analysis', ao: 'AO2', groups: ['Body Paragraphs'], areas: ['Q2', 'Q3'] },
+                    { label: 'Creative writing', ao: 'AO5·6', groups: ['Creative Writing (Q5)'], areas: ['Q5'] },
+                ],
+            },
+            language2: {
+                areaAO: { Q1: 'AO1', Q2: 'AO1', Q3: 'AO2', Q4: 'AO3', Q5: 'AO5·6' },
+                blindUnits: [
+                    { label: 'Inference', ao: 'AO1', groups: ['Reading Across Two Sources'], groupSkills: ['Inference'], areas: ['Q1', 'Q2'] },
+                    { label: 'Analysis', ao: 'AO2', groups: ['Body Paragraphs'], areas: ['Q3'] },
+                    { label: 'Comparison', ao: 'AO3', groups: ['Reading Across Two Sources'], groupSkills: ['Comparison'], areas: ['Q4'] },
+                    { label: 'Transactional writing', ao: 'AO5·6', groups: ['Transactional Writing (Q5)'], areas: ['Q5'] },
+                ],
+            },
+            literature: {
+                // Lit boxes are holistic AO1-3 → every chip shows AO1·2·3 (Neil). Blind-spot is
+                // PARAGRAPH-level (SA groups already ARE Introduction/Body/Conclusion), not per-AO.
+                areaAO: { 'Introduction': 'AO1·2·3', 'Body 1': 'AO1·2·3', 'Body 2': 'AO1·2·3', 'Body 3': 'AO1·2·3', 'Conclusion': 'AO1·2·3' },
+                blindUnits: [
+                    { label: 'Introductions', groups: ['Introduction'], areas: ['Introduction'] },
+                    { label: 'Body paragraphs', groups: ['Body Paragraphs'], areas: ['Body 1', 'Body 2', 'Body 3'] },
+                    { label: 'Conclusions', groups: ['Conclusion'], areas: ['Conclusion'] },
+                ],
+            },
+        },
+    };
+    // Normalise a feedback-area name to an areaAO key. Language boxes → 'Q<n>' (casing/label
+    // drift tolerant); Literature paragraph boxes pass through (Introduction / Body 1 / …).
+    function _normAreaKey(name) {
+        const s = String(name || '').trim();
+        const qm = s.match(/^q(?:uestion)?\s*0*(\d+)\b/i);
+        return qm ? 'Q' + qm[1] : s;
+    }
+    // The anchor spec for the current board+subject, or null. AQA-gated (the 3 anchors); P1/P2
+    // split via the existing _isLangPaper2 port helper; non-language AQA → the Literature
+    // single-essay spec (self-guards to nothing for poetry/unseen, whose boxes won't match).
+    function _anchorSpec() {
+        if (String(state.board || '').toLowerCase() !== 'aqa') return null;
+        const A = _ANCHOR_AO.aqa;
+        const s = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (typeof _isLangPaper2 === 'function' && _isLangPaper2()) return A.language2;
+        if (/^language/.test(s)) return A.language1;
+        return A.literature;
+    }
+    // AO label for a feedback-area name ('' when unmapped → fail-safe, never a wrong label).
+    function _areaAO(name) {
+        const spec = _anchorSpec();
+        return (spec && spec.areaAO[_normAreaKey(name)]) || '';
+    }
     // ── v7.19.880 (Neil, Phase-1 enhancement c): CODE-DERIVED STRENGTH/WEAKNESS RANKING ──
     // Pure, reusable: [{label,score,max}] → {strongest,weakest,ranked} by mark ratio. The
     // Phase-3 manifest-driven caller reuses _rankAreas unchanged.
@@ -2548,6 +2613,53 @@
             return { saPct: saPct, actPct: actPct, gap: gap, verdict: verdict };
         } catch (_) { return null; }
     }
+    // v7.19.896 (Neil): code-owned CONSERVATIVE blind-spot — a unit the student rated HIGH but
+    // scored LOW. Unit = per-AO (language: Analysis=Q2+Q3, etc.) or per-paragraph (literature:
+    // Introductions/Body/Conclusions), from _anchorSpec().blindUnits. self% = mean of that unit's
+    // rated SA skills (/5); actual% = Σ(area score)/Σ(area max) from the marked feedback boxes.
+    // Fires ONLY on a strong, unambiguous gap (self ≥ 70 AND actual ≤ 50 AND gap ≥ 20) so it can
+    // never surface a soft/disputable claim. Both sides must resolve or the unit is skipped; if an
+    // eligible anchor resolves NO unit at all, warn once (fail-loud — the canvas name-guard bug
+    // class). Feeds the readout + the blended Action-Plan #1 fact; arithmetic stays code-owned.
+    function _blindSpotData() {
+        try {
+            const spec = _anchorSpec();
+            if (!spec || !spec.blindUnits || !spec.blindUnits.length) return null;
+            const saRows = _saWalkRows().filter(r => r.value != null);
+            if (saRows.length < 2) return null;
+            const rank = _rankMarkedAreas();
+            if (!rank || !rank.ranked.length) return null;
+            const areaByKey = {};
+            rank.ranked.forEach(a => { areaByKey[_normAreaKey(a.label)] = a; });
+            let resolvedAny = false;
+            const cands = [];
+            spec.blindUnits.forEach(u => {
+                const skills = saRows.filter(r => u.groups.indexOf(r.group) !== -1
+                    && (!u.groupSkills || u.groupSkills.indexOf(r.skill) !== -1));
+                if (!skills.length) return;
+                const areas = u.areas.map(k => areaByKey[k]).filter(Boolean);
+                if (!areas.length) return;
+                resolvedAny = true;
+                const selfPct = Math.round((skills.reduce((s, r) => s + r.value, 0) / (skills.length * 5)) * 100);
+                let tot = 0, mx = 0; areas.forEach(a => { tot += a.score; mx += a.max; });
+                if (!(mx > 0)) return;
+                const actualPct = Math.round((tot / mx) * 100);
+                const gap = selfPct - actualPct;
+                if (selfPct >= 70 && actualPct <= 50 && gap >= 20) {
+                    cands.push({ label: u.label, ao: u.ao || '', selfPct: selfPct, actualPct: actualPct, gap: gap });
+                }
+            });
+            if (!resolvedAny) {
+                // fail-loud ONCE per subject (this runs on every overlay rebuild — don't spam).
+                const _sk = String(state.subject || '');
+                if (_blindSpotData._warnedSubj !== _sk) { _blindSpotData._warnedSubj = _sk; console.warn('WML BlindSpot: no unit resolved on an eligible anchor — check SA group / feedback label names vs the anchor map (subject=' + _sk + ')'); }
+                return null;
+            }
+            if (!cands.length) return null;
+            cands.sort((x, y) => y.gap - x.gap);
+            return cands[0];
+        } catch (e) { console.warn('WML BlindSpot: skipped —', e && e.message); return null; }
+    }
     function _saCalibrationFact() {
         const c = _saCalibrationData();
         if (!c) return '';
@@ -2565,13 +2677,13 @@
         const rank = _rankMarkedAreas();
         if (!rank) return null;
         const _tier = (a) => String(Math.max(1, Math.min(9, Math.round(1 + (a.max > 0 ? a.score / a.max : 0) * 8))));
-        const strength = { label: rank.strongest.label, score: rank.strongest.score, max: rank.strongest.max, tier: _tier(rank.strongest) };
+        const strength = { label: rank.strongest.label, score: rank.strongest.score, max: rank.strongest.max, tier: _tier(rank.strongest), ao: _areaAO(rank.strongest.label) };
         const missed = (rank.ranked || [])
-            .map(a => ({ label: a.label, score: a.score, max: a.max, lost: Math.max(0, a.max - a.score), tier: _tier(a) }))
+            .map(a => ({ label: a.label, score: a.score, max: a.max, lost: Math.max(0, a.max - a.score), tier: _tier(a), ao: _areaAO(a.label) }))
             .filter(a => a.lost > 0)
             .sort((x, y) => y.lost - x.lost)
             .slice(0, 3);
-        return { strength: strength, missed: missed, calib: _saCalibrationData() };
+        return { strength: strength, missed: missed, calib: _saCalibrationData(), blindSpot: _blindSpotData() };
     }
     function _fireClosingFiling() {
         if (_closingFilingFired) return;
@@ -2595,20 +2707,33 @@
                     .map(a => ({ label: a.label, score: a.score, max: a.max, lost: Math.max(0, a.max - a.score) }))
                     .filter(a => a.lost > 0)
                     .sort((x, y) => y.lost - x.lost);
+                // v7.19.895: carry the AO label with each area name when the anchor map resolves
+                // it, so the filed Analytics/Action-Plan read 'Q4 · AO4' (fail-safe: bare label
+                // when unmapped).
+                const _aoName = a => a.label + (_areaAO(a.label) ? ' · ' + _areaAO(a.label) : '');
                 const topMissed = losses.slice(0, 3)
-                    .map(a => a.label + ' (' + a.score + '/' + a.max + ', −' + (Math.round(a.lost * 100) / 100) + ')')
+                    .map(a => _aoName(a) + ' (' + a.score + '/' + a.max + ', −' + (Math.round(a.lost * 100) / 100) + ')')
                     .join('; ');
                 _facts += ' CODE-DERIVED RANKING (authoritative — do not recompute): key strength = '
-                    + rank.strongest.label + ' (' + rank.strongest.score + '/' + rank.strongest.max + ').';
+                    + _aoName(rank.strongest) + ' (' + rank.strongest.score + '/' + rank.strongest.max + ').';
                 if (topMissed) {
                     _facts += ' Biggest mark losses, in order (area, mark, marks lost): ' + topMissed
-                        + '. The Analytics "Top Missed Areas" MUST list these in this exact order, naming the area and marks lost. The FIRST Action-Plan Priority Target MUST be the biggest loss (' + losses[0].label + '); the next two priorities draw from the remaining losses in order. Present the key strength as the strength.';
+                        + '. The Analytics "Top Missed Areas" MUST list these in this exact order, naming the area and marks lost. The FIRST Action-Plan Priority Target MUST be the biggest loss (' + _aoName(losses[0]) + '); the next two priorities draw from the remaining losses in order. Present the key strength as the strength.';
                 } else {
-                    _facts += ' The Analytics "Top Missed Areas" MUST name the weakest area (' + rank.weakest.label + '), and it MUST be the first Action-Plan Priority Target.';
+                    _facts += ' The Analytics "Top Missed Areas" MUST name the weakest area (' + _aoName(rank.weakest) + '), and it MUST be the first Action-Plan Priority Target.';
                 }
             }
         } catch (_) {}
         _facts += _saCalibrationFact();
+        // v7.19.896: blended Action-Plan #1 — when a conservative blind spot exists (rated high,
+        // scored low), the FIRST priority names BOTH the biggest-loss area AND the blind spot as
+        // the reason it matters. Code-derived; the AI renders, never recomputes; no mark changes.
+        try {
+            const bs = _blindSpotData();
+            if (bs) {
+                _facts += ' CODE-DERIVED BLIND SPOT (authoritative — the student rated themselves high here yet scored low): ' + bs.label + (bs.ao ? ' (' + bs.ao + ')' : '') + ' — rated ' + bs.selfPct + '%, scored ' + bs.actualPct + '%. BLEND this into the FIRST Action-Plan Priority Target together with the biggest mark loss (do NOT add a fourth priority — the first priority names BOTH the biggest-loss area AND this blind spot as why it matters most), and name this blind spot in the Overall Feedback / Analytics as a calibration insight to self-monitor. Do NOT change any mark, grade, or the number of priorities.';
+            }
+        } catch (_) {}
         _silentSystemSend('SYSTEM (not from the student): the student has now answered the three action-plan questions and the transfer question (recorded above — the system asked them). Close the assessment in ONE turn, in this exact order: (1) one or two lines acknowledging and, where useful, sharpening their action-plan answers and transfer example — never re-ask them; (2) the @FIELD_SET filing markers exactly as the protocol’s filing step specifies (every field, one marker per line, values derived from this assessment and their answers); (3) the one-line filing confirmation; (4) a brief, warm session conclusion naming one real moment from this session; (5) [ASSESSMENT_COMPLETE] on its own line; (6) end with exactly: "That wraps the assessment. Anything you’d like to revisit before you mark this complete?" Ask no other questions.' + _facts);
     }
     // Runs on every AI canvas reply (both pipelines — same call sites as the AP-FILE
@@ -11666,9 +11791,17 @@
                         // v7.19.219: Mastery Codex — stamp computed section number on
                         // DOM as data-codex-num. CSS reads via attr() in ::before, bypassing
                         // unreliable CSS counter behaviour in TipTap nodeView rendering.
+                        // v7.19.897: same escape for ALL docs — stamp data-section-num (the SAME
+                        // sectionNumbers[i] the TOC uses) so the assessment doc's section tabs read
+                        // the reliable attr instead of TipTap-flaky CSS counters (assessment-scoped
+                        // ::before in wml-canvas.css). Idempotent write (rule #4) so a same-value
+                        // pass fires no MutationRecord; firewalled on the section-block dom exactly
+                        // like data-section-complete above (proven no PM flush-loop).
+                        const _num = sectionNumbers[i] || '';
+                        const _numAttr = _num ? _num + '. ' : '';
+                        if (domSection.getAttribute('data-section-num') !== _numAttr) domSection.setAttribute('data-section-num', _numAttr);
                         if (_isCodexNumbering) {
-                            const _num = sectionNumbers[i] || '';
-                            domSection.setAttribute('data-codex-num', _num ? _num + '. ' : '');
+                            domSection.setAttribute('data-codex-num', _numAttr);
                         }
                     }
                 });
@@ -21844,7 +21977,9 @@
                     const ro = document.createElement('div');
                     ro.className = 'swml-dropdown-overlay swml-analytics-readout';
                     ro.style.pointerEvents = 'none';
-                    const chip = (a) => '<span class="swml-ana-chip swml-tier-' + a.tier + '">' + escapeHTML(a.label) + ' ' + a.score + '/' + a.max + '</span>';
+                    // v7.19.895: AO label rides inside the chip ('Q2 · AO2 5/8') when the anchor
+                    // map resolves it; absent (fail-safe) for unmapped boards/areas.
+                    const chip = (a) => '<span class="swml-ana-chip swml-tier-' + a.tier + '">' + escapeHTML(a.label) + (a.ao ? ' · ' + escapeHTML(a.ao) : '') + ' ' + a.score + '/' + a.max + '</span>';
                     const parts = [];
                     parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Strongest</span>' + chip(_ana.strength) + '</span>');
                     if (_ana.missed.length) {
@@ -21854,6 +21989,13 @@
                         const c = _ana.calib;
                         const cCol = c.verdict === 'well-calibrated' ? '#1cd991' : (Math.abs(c.gap) <= 20 ? '#f1c40f' : '#ff9800');
                         parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Self-assessment</span><span class="swml-ana-calib" style="color:' + cCol + '">rated ' + c.saPct + '% · scored ' + c.actPct + '% · ' + c.verdict + '</span></span>');
+                    }
+                    // v7.19.896: conservative blind spot (rated high, scored low) — code-owned,
+                    // only present on a strong gap. Amber to read as a target, not a failure.
+                    if (_ana.blindSpot) {
+                        const b = _ana.blindSpot;
+                        const bName = escapeHTML(b.label) + (b.ao ? ' (' + escapeHTML(b.ao) + ')' : '');
+                        parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Blind spot</span><span class="swml-ana-calib" style="color:#ff9800">' + bName + ' · rated ' + b.selfPct + '% · scored ' + b.actualPct + '%</span></span>');
                     }
                     ro.innerHTML = parts.join('<span class="swml-ana-div">·</span>');
                     dropdownLayer.appendChild(ro);

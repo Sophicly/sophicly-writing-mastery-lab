@@ -6152,6 +6152,29 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     content: '🔒 ' counter(swml-major) '. ' attr(data-section-label);
 }
 
+/* v7.19.897 (Neil): ASSESSMENT-DOC section tabs = the JS-stamped data-section-num (the SAME
+   number sectionNumbers[i]/the TOC computes) instead of TipTap-flaky CSS counters — the exact
+   escape .swml-codex-doc already uses (see the codex rule near the top). Scoped to
+   .swml-canvas-diagnostic (the assessment/diagnostic doc, present on all 3 entry paths + kept on
+   completed docs) so CW / crib / other docs stay on the global counter rules, untouched.
+   data-section-num already encodes major-only (standalone) vs major.minor (grouped), so one set
+   of rules covers both. All four carry :not(.swml-section-divider) to keep the ✓/🔒 ordering
+   correct and to exclude divider group-headers (mirrors codex). Ordered base → complete →
+   readonly → readonly-complete so equal-specificity ties resolve to the right badge. Placed after
+   every global counter rule → wins for diagnostic docs by the extra .swml-canvas-diagnostic. */
+.swml-canvas-diagnostic .swml-section-block:not(.swml-section-divider)::before {
+    content: attr(data-section-num) attr(data-section-label);
+}
+.swml-canvas-diagnostic .swml-section-block:not(.swml-section-divider)[data-section-complete="true"]::before {
+    content: '✓ ' attr(data-section-num) attr(data-section-label);
+}
+.swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)::before {
+    content: '🔒 ' attr(data-section-num) attr(data-section-label);
+}
+.swml-canvas-diagnostic .swml-section-readonly:not(.swml-section-divider)[data-section-complete="true"]::before {
+    content: '✓ 🔒 ' attr(data-section-num) attr(data-section-label);
+}
+
 /* Headings inside sections */
 .swml-section-block h3 {
     font-size: 13px;
