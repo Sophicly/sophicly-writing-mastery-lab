@@ -184,6 +184,12 @@ re-implements them, and every port keeps the auditable shapes they parse:
 | Auto-file provenance + scroll-on-file | 830/839/844 | twelve `@FIELD_SET` markers + `@SECTION_BEGIN{"section":"Overall Feedback"}` |
 | Chat-furniture strip (gate lines/buttons never reach the doc) | 829 | keep the gate AFTER the total; engine strips regardless |
 | Chat fetch auto-retry; lettered options send full label | 852 | self-describing option labels (A9) |
+| Q5/Section-B ceiling ONE-SOURCE: cap applied AT the label write (`_setFeedbackMark`) — every downstream surface inherits it; ceiling sentence CODE-BUILT with derivation | 917 | protocol still ECHOES injected P and C only (extends the 841 row — no protocol change) |
+| Code-tallied penalty Trend: closing filing carries exact codes/counts/instances from the ledger cards — the model never tallies | 921 | per-code `CODE — plain name (−X)` lines stay INSIDE their unit's feedback card |
+| RESUME-PROOF ledger: card store rebuilt from the SAVED doc when the in-session store is incomplete; ¶-attribution via headings; ×N tally lines can't re-parse (double-count-safe by format) | 924 | keep `Mark Breakdown — <name>` heading form + per-code penalty lines byte-recognisable |
+| Fix→Learn chips: penalty codes tagged in raw text → deep-link buttons (display layer only; PM doc excluded) | 922 | penalty code-form and ×N tally shapes are what the tagger matches — keep byte-stable |
+| TIER-LIST NET: any F1/T1 whose QUOTED phrase contains no banned/weak-tier verb is code-stripped BEFORE audit/ledger/Trend (protocol states the rule; code is the net) | 927 | penalty bullet QUOTES the offending student phrase; tier registry lives in the protocol — any registry edit updates the code twin in the SAME commit |
+| GRAND-TOTAL ONE-SOURCE: text-parse primary (needs ≥2 per-Q total lines); label-sum fallback only when fully marked, DOWNWARD-ONLY (lit ceilings never raised); bare-Total summary turns enter the auditor | 928/929 | keep per-Q `Qn Total: A/B` lines + line-final `Total: X/max`; a summary turn may be bare-Total — it is still re-banded |
 
 ---
 
@@ -651,6 +657,13 @@ From the 2026-07-01 live-run audit (R&J AQA diagnostic) + status as of v7.19.852
 ---
 
 ## Changelog
+- 2026-07-07 — v2.4 (the CODIFY session, post-Run-9 green at v7.19.929). A14 rows added for the
+  v917–929 engine nets: Q5 ceiling one-source-at-label-write (917), code-tallied penalty Trend
+  (921), Fix→Learn chip tagging shapes (922), resume-proof ledger doc-reconstruction (924),
+  TIER-LIST NET (927 — protocol states the rule, code is the net), GRAND-TOTAL ONE-SOURCE with
+  downward-only label fallback + bare-Total auditor entry (928/929). Companion:
+  ASSESSMENT-MECHANICS.md rewritten to v2 (full v915→929 contract + §0b universality map + §9
+  potential-errors register + §10 harness method) — a port is done only when BOTH docs are met.
 - 2026-07-07 — v2.3 (Neil's Run-8 doc-audit rulings, v7.19.923). (1) **ANALYTICAL-VERB TIER
   LIST** (B-LANG.3, A13): F1/T1 deterministic via BANNED/WEAK/STRONG tiers; unlisted verbs
   default to no penalty; "illustrates" conflict resolved BANNED (P2's old canonical list

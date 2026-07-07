@@ -1,14 +1,18 @@
-# ASSESSMENT-MECHANICS.md — the engine/UX contract for WML assessments (v1)
+# ASSESSMENT-MECHANICS.md — the engine/UX contract for WML assessments (v2)
 
 **What this is.** The universal MECHANICS standard: how the assessment engine and canvas UX
 actually work, why they work that way, and the failure classes that bite when you forget.
 It pairs with **PROTOCOL-STANDARD.md** (the protocol CONTENT contract): a port is done when the
-protocol meets PROTOCOL-STANDARD and the experience meets THIS document. Written 2026-07-07
-(Fable's last session) so every later session — any model — executes at the same depth.
-Anchor state: **v7.19.914**, AQA Lang P1 = the reference experience (Reeham Run 7 = the
-reference transcript, `Model Answer Resources/AQA_aqa_lang_paper_1_2026-07-07 Reeham Run 7.md`).
+protocol meets PROTOCOL-STANDARD and the experience meets THIS document.
 
-File anchors drift with edits — treat every `file:line` here as "grep this symbol", never as a
+**v2 (2026-07-07).** Anchor state: **v7.19.929** (prod + staging), AQA Lang P1 = the reference
+experience. Reference transcript: **Reeham Run 9** (diagnostic, 51/80 Grade 6 — box labels, Score
+Summary, calibration readout, and committed grade all agree; totals 49/50/51 across Runs 7–9 =
+the consistency Neil signed off as "massive success"). v2 folds in every mechanic shipped
+v915→929 and expands the failure-class index into the full POTENTIAL-ERRORS REGISTER (§9) Neil
+asked for, plus the harness testing method (§10).
+
+File anchors drift with edits — treat every `file:symbol` here as "grep this symbol", never as a
 hard line number.
 
 ---
@@ -28,7 +32,11 @@ Every fix/feature must pass all three tests BEFORE it ships:
    untouched?"* Mechanically: gate on **capability/family, never a literal name**
    (`task.startsWith('cw_')` is how features silently no-op for siblings — the #1 WML bug
    class); cross-cutting consumers run **unconditionally + self-guard** (no-op internally when
-   there's nothing for them); new tasks opt in via **config**, not new code branches.
+   there's nothing for them); new tasks opt in via **config**, not new code branches. The v925
+   tick/chevron fix is the template: a **capability class** (`.swml-collapsible`) stamped by the
+   NodeView WHEREVER it installs a chevron, and every consumer (tick clearance,
+   position:relative, collapse-all) keys off the class — the v762 enumerated selector list it
+   replaced missed every section type added after it was written.
 3. **DYNAMIC** — counts, targets, labels, and structures are derived from the live document /
    protocol / config at runtime, never hardcoded. Test: *"if Neil reorders or renames sections
    in the template, does this still work?"* (v911 beat-chip counts come from the doc-derived
@@ -38,6 +46,40 @@ Every fix/feature must pass all three tests BEFORE it ships:
 Plus the standing bar (CLAUDE.md NORTH STAR, restated for the port): if you can NAME a failure
 mode, engineer it out in the same change; "test and see" is only for genuine unknowns; batch the
 whole fix-list into one Neil test cycle; fail loud (`console.warn` on every silent-skip path).
+
+**The protocol states the rule; CODE is the net.** v923 wrote the analytical-verb tier list into
+the protocol; Run 9 charged 'frames' anyway. The v927 net (`_stripStrongVerbPenalties`) is why it
+can never reach a student. Every rule that matters gets this pair: protocol instruction (so the
+model usually behaves) + engine net (so it doesn't matter when it doesn't).
+
+---
+
+## §0b. THE UNIVERSALITY MAP — what ports for FREE vs what each board adapts (Neil, 2026-07-07)
+
+AQA Lang P1 is the gold standard; every other board/paper is brought UP to it. The port cost is
+low because the machine splits three ways:
+
+**Tier 1 — ENGINE-UNIVERSAL (zero per-board work; already works for every port by construction):**
+the whole session lifecycle (pre-chain, blind SA walk, marking loop, closing chain, Mark
+Complete); ALL arithmetic nets (§4 — auditor, ladder, ledgers, ceilings, grand total, tier-list
+net); collapsibles + ticks + collapse-all + strips + feedback pad + beat chip + scroll + queued
+sends (§2–3); Learn chips + emoji layer (§8); analytics/calibration/blind-spot readouts (§5);
+persistence, reseed, replay (§7); the naming layer (§6); Overall Feedback / Score Summary /
+Analytics / Action Plan filing. **If a port session finds itself re-implementing ANY of this,
+stop — that's a §9.1 name-guard bug in the engine to fix universally, never a per-board copy.**
+
+**Tier 2 — DOC-DERIVED (adapts AUTOMATICALLY because it reads the live document/config, §0.3):**
+SA-walk rows (parsed from that paper's SA section); sidebar model + beat counts; strip contents
+(from labels); feedback-box set + Q-identity; word-count section model; `_paperFullyMarked`.
+A new paper with a different question structure gets all of this right by seeding the right
+template — no code.
+
+**Tier 3 — PROTOCOL-PORTED (the actual per-board work, spec'd in PROTOCOL-STANDARD Part B +
+PORT SOP):** question structure + AO mapping + mark values + band anchors from that paper's REAL
+mark scheme; SA rubric rows (constant core + variable rows derived from the paper's longest-Q +
+Section-B scheme); recall-rotation targets; golds' taught order per family (TTECEA / TTECEA+C /
+IUMVCC / story-spine); leniency family; holistic scope (which units mark holistically). This is
+CONTENT, not mechanics — the machine never changes.
 
 ---
 
@@ -62,21 +104,37 @@ walk is paper-agnostic. Typed 1–5 = first-class fallback (reload-safe). Walk o
 (PROTOCOL-STANDARD B-COMMON §5); the engine files, audits, scrolls, chips, and counts. The
 student's only job per turn is reflection + continue.
 
-**Closing chain** (`_fireClosingFiling`): code-derived FACTS (ranking, losses in
-marks-lost order, calibration, blind-spot) are APPENDED to the closing directive so the AI
-files Analytics/Action-Plan from authoritative inputs — the AI renders, never recomputes.
-Commit = auto-committed grade (`assessment auto-committed` log line) + server flush.
+**Beat chip** (assessment micro-progress, v906–921 arc): in-progress gradient bar + Playfair
+label on every marking turn. The marking count comes from the doc-derived sidebar model, never
+the model's own beat claim; a completed group falls back to its group label (v918); the closing
+chain shows its own arc ("Action Plan · N of 4", v921). The beat is **stored on the history
+message** and re-rendered by both resume loops — the refresh-replay pattern every per-turn UI
+must follow.
 
-## §2. DUAL PIPELINE — the standing tax on every chat feature
+**Closing chain** (`_fireClosingFiling`): code-derived FACTS (ranking, losses in
+marks-lost order, calibration, blind-spot, **and the code-tallied penalty Trend** — exact codes /
+counts / instances from the penalty-ledger card store, v921/v924) are APPENDED to the closing
+directive so the AI files Analytics/Action-Plan from authoritative inputs — the AI renders,
+never recomputes. Commit = auto-committed grade (`assessment auto-committed` log line) + server
+flush.
+
+## §2. DUAL PIPELINE + UI SENDS — the standing tax on every chat feature
 
 Two `sendCanvasMessage` pipelines exist (primary + twin; plus main-chat planning). EVERY
 cross-cutting consumer (`applySectionFills`, `applyAssessmentFeedback`, `applyFieldSets`,
-beat-chip sync, pre-chain drivers, closing chain) must be called from BOTH canvas pipelines and
-must self-guard. The checklist in CLAUDE.md §DUAL CHAT PIPELINE is mandatory per feature. Replay
-(refresh/cross-device) re-renders from `canvasChatHistory` — anything a live path renders into a
-bubble must ALSO be stored on the history message and re-prepended in BOTH resume loops
-(v911 beat pattern: store `{section,step,total}` on the message; replay calls
-`progressChipHTML(msg.beat)`).
+beat-chip sync, pre-chain drivers, closing chain, learn-chip tagging, strip rendering) must be
+called from BOTH canvas pipelines and must self-guard. The checklist in CLAUDE.md §DUAL CHAT
+PIPELINE is mandatory per feature. Replay (refresh/cross-device) re-renders from
+`canvasChatHistory` — anything a live path renders into a bubble must ALSO be stored on the
+history message and re-prepended in BOTH resume loops (v911 beat pattern: store
+`{section,step,total}` on the message; replay calls `progressChipHTML(msg.beat)`).
+
+**QUEUED UI SENDS (v926 — the anti-silent-drop rule).** While `canvasChatLoading` is true, a
+direct `sendCanvasMessage()` call is silently eaten by the in-flight guard (Run 9: the Q3
+quick-action click did NOTHING). Every **UI-driven** send (buttons, quick actions, gate rows)
+goes through `sendCanvasMessageQueued()` — exists in BOTH pipelines, exported on the tp handle —
+which polls until idle then sends. Boot-time silent directives keep DIRECT calls deliberately
+(they must not queue behind user turns). New button = queued form, no exceptions.
 
 ## §3. THE CANVAS DOC — ProseMirror law + the section model
 
@@ -92,34 +150,81 @@ bubble must ALSO be stored on the history message and re-prepended in BOTH resum
   section via a firewalled child (progress card → sign-off UI → analytics strip all migrated to
   this shape) — absolute overlays in `dropdownLayer` drift on resize/zoom and clip. Only true
   overlays (dropdown selectors positioned over text) stay absolute.
+- **Collapsibles are a CAPABILITY (v925/926):** the NodeView stamps `.swml-collapsible` wherever
+  it installs a chevron; completion-tick clearance, `position:relative`, and the collapse-all
+  button all key off that class — never an enumerated list of section types. Score Summary joined
+  the capability at v926 ('scores' type, collapsible + Total·%·Grade preview strip).
 - **Collapse mechanics (v912 class):** feedback boxes collapse (`swml-fb-collapsed`),
   persisted in localStorage per page+label — collapse SURVIVES sessions and new runs. Anything
   measuring inside a collapsed box reads 0×0 rects and computes garbage. Rule: before
   measuring/scrolling inside `.swml-section-feedback`, auto-expand (class + localStorage `'0'`,
   because the NodeView remount re-reads localStorage) or target the always-visible wrapper.
   Fresh feedback ALWAYS auto-expands its box — collapse is a reading aid for read feedback.
+- **Collapsed-summary strips (v920, ALWAYS-ON since v928):** every collapsible that has a
+  summary shows a strip (`.swml-ana-strip`) — visible collapsed AND expanded. Capability table
+  `_STRIP_MODE` in wml-section-block.js says which section types get one; ONE renderer
+  (`_renderSectionStrips()`) fills EVERY strip in the document (including pad clones); builders
+  are per label — SA = average + calibration, Action Plan = priorities, Overall Feedback =
+  strength + priority, Score Summary = Total · % · Grade. Strips carry the **"so far" suffix**
+  until `_paperFullyMarked()` (label-derived) says the paper is fully marked — a partial total
+  must never read as final.
+- **Feedback pad = the whole feedback lane (v928):** the pad clones every `.swml-collapsible`
+  section in doc order (not just feedback boxes); strips live and update inside the pad because
+  the renderer targets every `.swml-ana-strip` in the document; cloned form controls are
+  disabled. Any new feedback-lane UI must survive the clone (no id-keyed lookups).
 - **Scroll:** ONE helper (`_swmlScrollToTop`) lands targets' top just inside the viewport;
   requery FRESH on every fire; fire + re-assert after PM/animation settle (the v905 shape).
   Never `scrollIntoView({block:'center'})` scattered per call-site; never CSS.escape attribute
   selectors (loop + `getAttribute`).
 - **Doc chain:** forward-only snapshots (diagnostic → assessment → … ). Students WRITE only in
-  write-stages; assessment stages are mark-only. Target rule (design ready, unbuilt):
-  **freeze-on-MARKED, not freeze-on-first-save** — an unmarked stage re-seeds from the latest
-  upstream stage on load (`load_canvas()` seed gate). Load-time mutations are the most dangerous
+  write-stages; assessment stages are mark-only. **RESEED-UNTIL-MARKED is BUILT (v920,
+  class-rest-api):** `load_canvas` re-seeds `_assessment` / `_reassessment` / `_fbdiscuss` from
+  the latest upstream stage until `stage_is_frozen()` — freeze-on-MARKED, not
+  freeze-on-first-save. `stage_is_frozen()` biases FROZEN on ambiguity; write stages are
+  EXCLUDED from reseed — never widen it to them. Load-time mutations remain the most dangerous
   code in WML (a migrate once wiped a marked doc) — hydration-gated, additive only.
 
-## §4. NUMBERS ARE CODE-OWNED (the v832–852 settlement — never re-litigate)
+## §4. NUMBERS ARE CODE-OWNED (the v832–929 settlement — never re-litigate)
 
-The LLM never does arithmetic that reaches a student. The engine: parses the canonical number
-lines (byte-disciplined formats in PROTOCOL-STANDARD B-COMMON §6), **audits** per-element sums,
-snaps element marks to the 0.25 band grid, applies the word-count CEILING (MIN, never a
-deduction; ONE ladder incl. per-section), recomputes question totals, rounds the grand total to
-WHOLE (half-up), maps grade via the canonical band ladder (`GRADE_BOUNDARIES` = server
-`grade_band_percent` — one ladder, two mirrors, keep in sync). **One helper feeds every
-surface** — display "Total:", Score Summary "Total Marks:", committed grade must be the same
-number by construction (Run 6's 46.75/46/47 disagreement = GPT-taint + surfaces drifting;
-Run 7 clean = 48/80 everywhere). Marks land in feedback-box labels `(score / max)` via
-`_setFeedbackMark` — labels are then the SOURCE for ranking/analytics (`_rankMarkedAreas`).
+The LLM never does arithmetic — or number RECALL — that reaches a student. The engine: parses
+the canonical number lines (byte-disciplined formats in PROTOCOL-STANDARD B-COMMON §6),
+**audits** per-element sums, snaps element marks to the 0.25 band grid, applies the word-count
+CEILING (MIN, never a deduction; ONE ladder incl. per-section), recomputes question totals,
+rounds the grand total to WHOLE (half-up), maps grade via the canonical band ladder
+(`GRADE_BOUNDARIES` = server `grade_band_percent` — one ladder, two mirrors, keep in sync).
+**One helper feeds every surface** — display "Total:", Score Summary "Total Marks:", committed
+grade must be the same number by construction (Run 6's 46.75/46/47 disagreement = GPT-taint +
+surfaces drifting; Runs 7–9 clean). Marks land in feedback-box labels `(score / max)` via
+`_setFeedbackMark` — **labels are then THE grade source** every downstream surface reads
+(ranking, analytics, strips, grand-total fallback).
+
+The nets, in parse order:
+
+- **Q5 / Section-B word-count ceiling ONE-SOURCE (v917):** the cap is applied AT the label write
+  (`_setFeedbackMark`), so every consumer inherits it by construction. The ceiling sentence
+  students read is CODE-BUILT with its derivation — the model echoes injected P and C only.
+- **TIER-LIST NET (v927, `_stripStrongVerbPenalties` — Pass 0b):** any F1/T1 penalty whose
+  quoted phrase contains NO banned/weak-tier verb is stripped BEFORE audit/ledger/Trend see it.
+  The regex is the TWIN of the protocol's analytical-verb registry — any registry edit updates
+  both in the same commit (cross-copy drift, §9.8).
+- **Card auditor + ladder + missing-unit zeros (v832–852):** per-card recompute from the card's
+  own table minus penalties; canonical re-banding; whole-mark question totals.
+- **RESUME-PROOF penalty ledger (v924):** the in-session card store (`_penLedgerCards`) is the
+  primary source only when `_penLedgerComplete`; otherwise `_penLedgerCardsFromDoc()`
+  reconstructs it from the SAVED doc's feedback sections — penalty lines per block,
+  ¶-attribution via `Mark Breakdown — <name>` headings. Both consumers (rebuilt Ledger + closing
+  Trend) follow that rule; they skip only when the doc yields nothing. Tally lines are ×N-form,
+  so re-parsing a rebuilt ledger cannot double-count BY FORMAT.
+- **GRAND-TOTAL ONE-SOURCE (v928/929):** text-parse is primary (`_auditedGrandFromText` — needs
+  ≥2 per-Q total lines); fallback is `_labelGrandFromDoc()` — summed from the capped,
+  card-audited box labels, used only when `_paperFullyMarked()`, and **DOWNWARD-ONLY**: a lit
+  final-stage ceiling is never raised by the fallback. Bare-Total summary turns (no per-Q lines)
+  enter the auditor via their own entry (v929) so a summary-turn grand total is still re-banded.
+  Run-9 escape this kills: chat said 53/80 Grade 7; true audited total 51/80 Grade 6.
+
+**Review grep for every new feature:** any number the model states that code doesn't own is a
+defect — grep the reply-shaping code for totals/counts/percentages and trace each to a
+code-owned source.
 
 ## §5. READOUTS — every count/claim has one authoritative source
 
@@ -131,10 +236,15 @@ Run 7 clean = 48/80 everywhere). Marks land in feedback-box labels `(score / max
   (mean blind SA % vs actual %, ±10 well-calibrated); conservative blind-spot (rated ≥70,
   scored ≤50, gap ≥20 — never a soft claim). The SAME model feeds the closing-filing facts and
   the visible strip — readout and filed text cannot disagree by construction.
+- **Strips (§3) are readouts too:** built from labels / the analytics model, never from the
+  model's prose; "so far" until `_paperFullyMarked()`.
 - **Colour = the brand rating ladder everywhere** (1–9 tier from mark ratio), with ONE settled
   exception (Neil 2026-07-07): "Most marks lost" chips colour by LOSS RANK
   (red/orange/yellow) — severity of the bleed, not quality of the score; full-marks chips get
   the brand purple gradient.
+- **Theme-owned colours only:** every readout styles via theme-owned classes
+  (`.swml-calib-readout`, v928 — was inline white, invisible on light theme). Review grep:
+  `rgba(255,255,255` in any NEW inline style is a defect.
 
 ## §6. ONE CANONICAL NAMING LAYER (the anti-silent-skip infrastructure)
 
@@ -154,27 +264,139 @@ Run 7 clean = 48/80 everywhere). Marks land in feedback-box labels `(score / max
 - localStorage = per-browser UX state (collapse, drafts pre-flush); server = truth. Anything
   that must survive refresh/cross-device rides the SAVED doc or the SAVED chat history, nothing
   else (v911 beat lesson).
+- **Every in-memory accumulator needs a DOC TWIN.** The penalty-ledger card store taught this
+  (v924): a store filled per-turn is empty after refresh, and the resumed session silently
+  undercounts. Pattern: primary = in-session store when provably complete; fallback =
+  reconstruction from the saved doc; skip only when the doc yields nothing. Beat replay (§2) and
+  the label-derived grand total (§4) are the same pattern. New accumulator with no doc twin =
+  known-fragile, does not ship.
 - SPA boot: `__swmlBooted` single-boot guard; inline IIFEs re-run every nav (run-once guards);
   stale-template wipes and uncancelled fetches are the known killers (memories:
   `reference_wml_canvas_blank_on_refresh_stale_template_wipe`,
   `reference_focus_spa_stale_render_remount_pingpong`).
 
-## §8. FAILURE-CLASS INDEX (name the class before you fix the instance)
+## §8. THE DISPLAY LAYER — presentation never touches the data
 
-| Class | Signature | Rule that kills it |
+- **svgifyEmojis (v916):** emojis render as inline SVGs at DISPLAY time only. Raw history keeps
+  the original emoji characters, so every detector/parser is untouched BY CONSTRUCTION (they
+  read raw text, not rendered DOM). The PM canvas is EXCLUDED — the PM schema drops `<img>`
+  (the v898-era lesson: what the schema doesn't know, it deletes on round-trip).
+- **Fix→Learn chips (v922):** `PENALTY_LEARN_MAP` maps penalty codes → Table-of-Techniques /
+  Toolkit destinations. Tagging happens at the TOP of `formatAI` (matches code-form AND ×N tally
+  lines) so it sees raw text; the button is injected AFTER svgifyEmojis; `<pre>/<code>` tokens
+  are dropped from matching. The pad gets chips via `WML.appendLearnChips` on non-PM clones; the
+  PM doc is excluded v1. ONE delegated click handler, NEVER a bare `open()` per chip. The two
+  destination halves are **feature-detected dormant** — the Toolkit half lit up the day the
+  notes plugin deployed, with ZERO WML change (proof of the pattern: integrate by detection,
+  not by coordinated deploys). Technique-name resolution: 245 names from the GENERATED
+  `protocols/shared/reference/table-of-techniques.md` — hosted in THIS tree, re-sync on
+  regeneration (§9.8) — PHP filemtime-cached into `swmlConfig`.
+- Known cosmetic bleed: chip labels appear in copy-pasted doc exports ("Learn: … →"). Accepted
+  for now; revisit if Neil exports for parents (§9.9).
+
+## §9. THE POTENTIAL-ERRORS REGISTER (Neil's ask — name the class before you fix the instance)
+
+Per class: **trigger → symptom → the net that catches it → residual risk.** When a new bug
+lands, file it under a class first; a bug that fits no class means a NEW class row in this table
+in the same commit.
+
+**1. Name-guard scoping** (task/board/label literals).
+Trigger: behaviour gated on `task.startsWith(...)`, an enumerated selector list, a label
+literal. Symptom: works for X, silently nothing for sibling Y — reads as success until a human
+tests Y. Nets: capability classes/lookups (`.swml-collapsible`, `_STRIP_MODE`, task-family
+config), cross-cutting consumers unconditional + self-guarded, SILENT-SKIP `console.warn`s.
+Residual: any NEW enumerated list — reject at review.
+
+**2. Model-recalled numbers** (totals, tallies, ceilings, keywords).
+Trigger: the model states a number it "remembers". Symptom: drift from the audited cards
+(Run 9: 53/80 vs true 51/80). Nets: card auditor, grade ladder, ledger rebuild + doc
+reconstruction, code-tallied Trend, label-grand fallback (downward-only), ceiling ONE-SOURCE,
+tier-list net, keyword-verbatim rule. Residual: any NEW number the model states that code
+doesn't own — grep for it at review (§4).
+
+**3. Two-line / format drift** (dual Q5 Total lines, backtick/bold wrappers, label suffix
+drift). Trigger: the model emits a canonical line twice or wrapped. Symptom: parsers take the
+wrong value. Nets: line-final rule, wrapper-tolerant regexes, LAST-pair parse. Residual: any new
+parser written against the pretty format instead of the tolerant shape.
+
+**4. Session-memory dependence** (in-memory stores vs refresh).
+Trigger: per-turn accumulator with no doc twin. Symptom: resume/refresh undercounts or blanks —
+works live, wrong tomorrow. Nets: doc-derived reconstruction (ledger, sidebar model, label
+grand), RESEED-until-marked, beat replay on history. Residual: any new accumulator without a doc
+twin (§7).
+
+**5. Silent UI drops** (in-flight guards eating clicks; bars removing themselves).
+Trigger: UI-driven send while `canvasChatLoading`. Symptom: click does nothing, no error, user
+re-clicks or gives up. Net: `sendCanvasMessageQueued()` for every UI-driven send. Residual: NEW
+buttons calling `sendCanvasMessage` directly — use the queued form.
+
+**6. PM foreign mutation** (DOM writes on NodeView dom outside txn/firewall).
+Trigger: style/attr/child write on a NodeView wrapper outside a PM transaction. Symptom: tab
+freeze, NO error, onUpdate=0, txnTotal=0, editorMounts=1 (view redraw loop, not a doc change).
+Nets: firewalled sub-elements (`ignoreMutation` incl. wrapper attributes), idempotent writes,
+`_derivedCardFillOk` circuit breaker. Residual: new derived-card fills not routed through the
+breaker.
+
+**7. Theme blindness** (inline dark-only colours).
+Trigger: inline `rgba(255,255,255,…)` / hex styled for the dark theme only. Symptom: invisible
+text on light theme (v928 calibration readout). Net: theme-owned classes. Review grep:
+`rgba(255,255,255` in any NEW inline style is a defect.
+
+**8. Cross-copy drift** (a generated/derived artifact with a live twin). Each pair has a named
+re-sync rule — breaking one silently forks behaviour:
+
+| Copy A | Copy B | Re-sync rule |
 |---|---|---|
-| Name-guard silent skip | works for X, silently nothing for sibling Y | §0 UNIVERSAL: capability-gate + unconditional-call + fail-loud warn |
-| PM foreign-mutation loop | tab freeze, no error, onUpdate=0, editorMounts=1 | §3 PM law: firewall + idempotent + circuit breaker |
-| Zero-rect scroll | "scrolled to where it used to be"; log shows success | §3 collapse mechanics: expand before measure |
-| Overlay drift/clip | UI off its section after resize/zoom; runs under controls | §3 in-flow beats absolute |
-| Surface drift (numbers) | two UIs show different totals/grades | §4 one helper feeds all surfaces |
-| Model-claimed counts | beat/step numbers contradict sidebar | §5 doc-derived model only |
-| Slug/name drift | bank/canvas/quiz no-ops for one course form | §6 one alias registry line |
-| Lost-on-refresh | feature works live, gone after reload | §7 store on saved doc/history + replay |
-| Out-of-scope ref (.898) | ReferenceError only when path runs | pre-ship gate (`bin/pre-ship-check.sh`) + module-scope hooks for closure-locals |
-| Load-time doc wipe | marked doc blanks on entry | §3 doc chain: hydration-gated, additive, freeze-on-marked |
+| Analytical-verb tier registry (protocol, v923) | `_stripStrongVerbPenalties` regex (v927) | same commit, both sides |
+| `protocols/shared/reference/table-of-techniques.md` (generated) | Learn-chip name resolution (§8) | re-copy on every regeneration; never hand-edit |
+| Recall-rotation router (PHP) | frontend recall pair | same commit, both sides |
+| `GRADE_BOUNDARIES` (JS) | `grade_band_percent` (server) | same commit, both sides |
 
-## §9. SHIP GATES (mechanical, in order — never from memory)
+**9. Export/display bleed.** Trigger: display-layer decoration reaching a copy-paste/export
+surface. Symptom: "Learn: … →" labels in exported markdown (Run 9). Cosmetic — known/accepted;
+becomes a real defect if Neil exports for parents.
+
+**10. Zero-rect scroll** (collapsed geometry). Trigger: measuring/scrolling inside a collapsed
+box. Symptom: scroll lands garbage; log claims success. Net: auto-expand before measure (§3).
+Residual: new measurement paths that don't expand first.
+
+**11. Slug/name drift.** Trigger: new course slug / picker id / dash-underscore variant.
+Symptom: bank/canvas/quiz silently no-ops for one course form. Net: ONE `$SLUG_ALIASES` line +
+the fail-loud FQ fallback warn. Residual: reconciling slugs anywhere other than the registry.
+
+**12. Out-of-scope reference** (the .898 class). Trigger: function extracted across scopes;
+free variable no longer reachable. Symptom: ReferenceError only when that path RUNS —
+`node --check` clean. Net: the pre-ship gate (`eslint no-undef`) is WIRED (pre-commit + deploys,
+v915). Residual: none if the gate runs; that's why it's mechanical, not memory.
+
+**13. Load-time doc wipe.** Trigger: load-path doc mutation (migrate/heal/seed). Symptom: marked
+doc blanks on entry. Nets: hydration-gated additive-only mutations; `stage_is_frozen()` biased
+FROZEN; write stages excluded from reseed. Residual: any widening of the reseed set.
+
+**14. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
+the cap (gap register #1), verbatim-quote validator for penalties (#3), completion-island items
+(#6–8), dropdown NATIVIZATION design arc, emoji sweep phase 2, K1 toolkit destination (contract
+TBD). See `~/.claude/handoffs/open/wml-backlog.md`.
+
+## §10. THE HARNESS METHOD — how nets get proven before Neil ever tests
+
+Every v915→929 net shipped with a Node harness that drove it against REAL run lines before
+staging (chip tag/render 14 cases; formatAI end-to-end with DOM stubs; doc-ledger reconstruction
+9 cases; tier-list net 10; label-grand decision table 7). The method:
+
+1. **Extract the pure function** (or expose it on the namespace) so it runs outside the browser.
+2. **Stub the DOM** minimally — only what the function touches.
+3. **Drive it with REAL lines from saved run transcripts** (`Model Answer Resources/…Run N.md`),
+   never invented fixtures — invented fixtures encode your assumptions, real lines encode the
+   model's actual format drift.
+4. **Assert the decision table** — enumerate the input classes (complete store / partial store /
+   doc-only / nothing; capped / uncapped; banned / weak / strong / unlisted) and assert each row,
+   not just the happy path.
+
+The harness is evidence for §0 ROOT ("the net catches the real line") — it does not replace
+RUN-THE-FLOW (§11.2), which proves the wiring.
+
+## §11. SHIP GATES (mechanical, in order — never from memory)
 
 1. `bin/pre-ship-check.sh` on staged changes (node --check + eslint no-undef; php -l authoritative,
    raw brace-count warn-only when php -l passes — string braces double-fire it).
@@ -182,26 +404,48 @@ Run 7 clean = 48/80 everywhere). Marks land in feedback-box labels `(score / max
    NOT a symlink — Google Drive mangles symlinks), and both deploy scripts run `--all` before rsync
    and abort on failure. Node authoring scripts get `tools/.eslintrc.json` (node env); page-injected
    globals (`Hls`, `sophiclyCursorConfig`, `module`) live in root `.eslintrc.json` globals.
-2. **RUN THE FLOW** — drive the changed path once; scope-clean ≠ correct.
+   The gate is the FLOOR; RUN-THE-FLOW is the BAR.
+2. **RUN THE FLOW** — drive the changed path once; scope-clean ≠ correct (the .898 crash was
+   checked, not run).
 3. Regression matrix for canvas/pipeline/doc-chain/boot changes: WML-SMOKE-TEST.md
    ({P1,P2}×{diagnostic,redraft}×topic + CW 1–4 + quiz + boot). Any red console error = fail.
 4. Batch discipline: ONE version bump per distinct fix, ONE commit, ONE Neil test cycle with
    "TEST THIS" + "QUEUED" lists. Staging → Neil → prod (`echo y | deploy-production.sh`).
 
-## §10. SIGN-OFF CHECKLIST — what "sharp" means for the anchor (and every port after it)
+## §12. SIGN-OFF CHECKLIST — what "sharp" means for the anchor (and every port after it)
 
 An assessment experience is signed off when, on a clean staging run by Neil:
 - [ ] Pre-chain: all four stages fire in order, buttons + typed fallbacks, both pipelines.
 - [ ] Every marked sub-unit: card filed into the right box, box auto-expands, doc scrolls to the
       region, beat chip matches the sidebar, calibration line correct.
 - [ ] Element marks all on the 0.25 grid; penalties each carry a fix-example; two golds per ¶
-      (holistic exception: Section B); golds obey the taught order and house language bans.
-- [ ] Grand total WHOLE and identical on all three surfaces; grade matches the canonical ladder.
-- [ ] Analytics strip + filed Analytics/Action-Plan agree (same code-owned model), ladder colours.
-- [ ] Hard refresh mid-run: chips, cards, marks, chat all replay; nothing lost, nothing doubled.
+      (holistic exception: Section B); golds obey the taught order and house language bans; no
+      F1/T1 charge whose quoted phrase lacks a banned/weak verb survives to display.
+- [ ] Grand total WHOLE and identical on ALL surfaces — chat text, box labels, Score Summary
+      strip, calibration readout, committed grade; grade matches the canonical ladder.
+- [ ] Analytics strip + filed Analytics/Action-Plan agree (same code-owned model), ladder
+      colours; penalty Trend counts match the ledger cards.
+- [ ] Strips render on every collapsible incl. inside the feedback pad; "so far" clears when the
+      paper is fully marked; readable in BOTH themes.
+- [ ] Every quick-action/button click mid-marking lands (queued, never dropped); Learn chips
+      open the right destination via the delegated handler.
+- [ ] Hard refresh mid-run: chips, cards, marks, ledger/Trend, chat all replay; nothing lost,
+      nothing doubled (doc-twin reconstruction proves out).
 - [ ] Clear-chat: doc gates reset, server records kept, fresh run seeds correctly.
 - [ ] Console: zero red errors, zero SILENT-SKIP warns.
 
 ---
 *Update this doc in the same commit as any change to the mechanics it describes — it is a
 contract, and a stale contract is worse than none.*
+
+**Changelog**
+- 2026-07-07 — v2 (the CODIFY session, post-Run-9 green). Folded in every v915→929 mechanic:
+  wired pre-ship gate, svgifyEmojis display layer, Q5 ceiling one-source, beat-chip full arc,
+  always-on strips, RESEED-until-marked, code-tallied Trend, resume-proof ledger, Fix→Learn
+  chips, v923 ruling nets, tier-list net, collapsible capability class, queued UI sends,
+  grand-total one-source (downward-only fallback), theme-owned readouts, feedback-pad lane.
+  Expanded §8 failure index into the full POTENTIAL-ERRORS REGISTER (§9, 14 classes with
+  trigger/symptom/net/residual). Added §0b UNIVERSALITY MAP (engine-universal / doc-derived /
+  protocol-ported — Neil's gold-standard ruling) and §10 HARNESS METHOD. Anchor moved
+  v914/Run-7 → v929/Run-9.
+- 2026-07-07 — v1 (initial codification at v7.19.914, Run-7 anchor).
