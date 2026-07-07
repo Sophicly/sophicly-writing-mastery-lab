@@ -3360,6 +3360,29 @@
             return { cap: Math.max(0, den - pen), pen: pen, wc: wc, tgt: tgt };
         } catch (_) { return null; }
     }
+    // v7.19.927: the ANALYTICAL-VERB TIER LIST's code twin (keep in sync with the protocol
+    // registry — protocols/aqa/*/modules/protocol-a-assessment.md + knowledge-penalties.md).
+    // BANNED = the F1 family; WEAK = the T1 family. A charged F1/T1 must quote a phrase
+    // containing at least one of its tier's triggers, or the charge is unsupportable.
+    const _F1_BANNED_RE = /\b(?:shows?|showing|shown|tells us|is about|acts as|symbolic of|to be symbolic|creates? the idea|represents? that|illustrat\w*|aims? to|seems? to|appears? to)\b/i;
+    const _T1_WEAK_RE = /\b(?:uses?|using|has|have|goes|gets?|says?|makes?|does)\b/i;
+    function _stripStrongVerbPenalties(text) {
+        try {
+            let n = 0;
+            const outText = String(text).replace(/(^|\n)[ \t]*(?:[·•*-][ \t]*)?\*{0,2}(F1|T1)\*{0,2}[^(\n]{0,60}\((?:−|-|–)[ \t]*[\d.]+\)[^\n]*/g, (whole, lead, code) => {
+                const flat = whole.replace(/\*/g, '');
+                const qm = flat.match(/["“”]([^"“”]{1,140})["“”]/);   // first quoted phrase = the charged wording
+                if (!qm) return whole;
+                const supportable = code === 'F1' ? (_F1_BANNED_RE.test(qm[1]) || _T1_WEAK_RE.test(qm[1])) : _T1_WEAK_RE.test(qm[1]);
+                if (supportable) return whole;
+                n++;
+                console.warn('WML MarkAudit: ' + code + ' charge stripped — quoted phrase has no banned/weak-tier verb: "' + qm[1].slice(0, 80) + '"');
+                return lead;
+            });
+            if (n) console.warn('WML MarkAudit: tier-list net removed ' + n + ' unsupported verb penalt' + (n === 1 ? 'y' : 'ies') + ' — card totals recomputed without ' + (n === 1 ? 'it' : 'them'));
+            return outText;
+        } catch (_) { return text; }
+    }
     function _auditAssessmentArithmetic(reply) {
         try {
             if (!reply) return reply;
@@ -3401,6 +3424,14 @@
                     });
                 }
             }
+            // ---- Pass 0b (v7.19.927): TIER-LIST NET — an F1/T1 charge whose quoted phrase
+            // contains NO banned/weak-tier trigger cannot be a real verb fault. Run 9:
+            // 'frames' (STRONG tier) was charged F1 despite the v923 protocol tier list —
+            // the same reply even recommends 'frames' as an upgrade verb elsewhere. Code is
+            // the net: strip the line BEFORE the card auditor recomputes totals, so display,
+            // card arithmetic, ledger and Trend never see it and the marks come back.
+            // Conservative by design: no quote, or ANY banned/weak token present → charge stands.
+            out = _stripStrongVerbPenalties(out);
             // ---- Pass 1: each card — recompute total from its own table ----
             out = out.replace(/@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)@FB_END/g, (whole, metaRaw, body) => {
                 let meta = null;
