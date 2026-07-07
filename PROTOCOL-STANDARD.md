@@ -278,6 +278,13 @@ model never decides which regime applies). Word count AND structure leniency key
   warning, explicit instruction to redo the planning step. Extras NEVER get a card, a mark, or a
   re-used label.
 
+**CONTENT-FIRST MAPPING + SINGLE-CHARGE (Neil ruling, 2026-07-07 — universal):** when a
+submission has MORE paragraphs than taught, choose which to mark by CONTENT (the paragraphs
+doing the question's actual work), never by position — a short intro/overview never displaces a
+content paragraph. And ONE structural fault = ONE charge: a mistake already costing marks inside
+a criterion (e.g. no Source B in the paragraph → comparison criteria score 0) must never ALSO
+zero the displaced material as "extra". (Reeham P2 run: block structure double-hit — forbidden.)
+
 ### 4. Reflection contract — ONE `@REFLECT_GATE` per unit, code-enforced (849)
 Emitted BEFORE that unit's marking begins (retrieval-only units like Lang Q1 have none). Lead-in:
 one-to-two lines restating the unit's focus + **citing the student's stored HEADLINE GOAL back**

@@ -254,8 +254,18 @@ count per reading question: Q2 = 2; Q3 = 3; Q4 = Intro + 3 BPs + Conclusion. Two
   ONE optimal gold model. No reflection change; never scold on the family-first attempt. On any
   LATER attempt, state plainly that the missing paragraph scored 0 and that the planning step is
   where it gets built — redo it before the next submission.
-- **EXTRA (more than taught):** mark ONLY the first [taught count] by position — hard cap; extras
-  NEVER get a card, a mark, or a re-used label.
+- **EXTRA (more than taught): CONTENT-FIRST MAPPING (Neil ruling, 2026-07-07 — supersedes
+  mark-the-first-N-by-position).** Choose WHICH [taught count] paragraphs to mark by CONTENT,
+  never by position: prefer the paragraphs carrying the question's actual work over a short
+  intro/overview. On a two-source weaving question, a block-structured answer (short intro +
+  Source-A ¶ + Source-B ¶) maps the TWO SOURCE paragraphs as the taught two — each loses its
+  weaving/comparison criteria (the structural fault is charged there, ONCE), but its real
+  inference content earns its marks. NEVER zero a paragraph of genuine content while marking a
+  thinner one merely because it came first, and NEVER charge one structural mistake twice
+  (Reeham run: the Source-B ¶ scored 0 as "extra" WHILE ¶2 also lost its comparison marks for
+  containing no Source B — double-hit, now forbidden). Paragraphs still unmapped after
+  content-first selection are the true extras — hard cap; they NEVER get a card, a mark, or a
+  re-used label:
   - **Tier 1 — the family-first attempt ONLY:** in the question's wrap-up, name each extra + one
     line on what it was doing, give a rough estimate ("might earn another N marks in a real
     exam"), then teach: the taught structure is the repeatable, transferable way to maximise
