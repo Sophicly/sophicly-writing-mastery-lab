@@ -2910,13 +2910,16 @@ window.WML = (function() {
                 + '">Learn: ' + attr(label) + ' →</button>')
         ).join('');
     }
+    // Rendered-block detection shape shared by the two DOM-phase consumers below —
+    // textContent form (no markdown asterisks / leading bullet chars).
+    const _LEARN_BLOCK_RE = /^([A-Z]{1,3}\d(?:-[A-Z]+)?)(?:[^(]{0,60}\((?:−|-|–)\s*[\d.]+\)|[^×]{0,60}×\d+)/;
     // DOM phase for non-PM clones (the pop-out Feedback pad; PM doc itself stays chip-free
     // v1). Same detection on textContent — rendered blocks have no markdown asterisks or
     // leading bullet chars. Idempotent: a block that already carries a chip is skipped.
     function appendLearnChips(rootEl) {
         try {
             if (!rootEl || !rootEl.querySelectorAll) return;
-            const blockRe = /^([A-Z]{1,3}\d(?:-[A-Z]+)?)(?:[^(]{0,60}\((?:−|-|–)\s*[\d.]+\)|[^×]{0,60}×\d+)/;
+            const blockRe = _LEARN_BLOCK_RE;
             rootEl.querySelectorAll('p, li').forEach(bl => {
                 if (bl.querySelector('.swml-learn-chip')) return;
                 const t = (bl.textContent || '').trim();
@@ -2934,6 +2937,31 @@ window.WML = (function() {
                 bl.appendChild(btn);
             });
         } catch (e) { console.warn('WML learn-chip: DOM inject skipped —', e && e.message); }
+    }
+    // v7.19.948 (Neil ruling 2026-07-07): chips-in-DOC. Scan a feedback box's rendered
+    // content and return DEDUPED chip descriptors — the caller (wml-assessment's
+    // _renderLearnChipRows) renders them into the box's PM-firewalled chip row, never into
+    // PM content itself (schema drops <button> — the v898 fbGlyph lesson). Same detection
+    // + _learnChipFor gating as every other surface, so dormant destinations stay dormant
+    // and new penalty codes light up via PENALTY_LEARN_MAP alone — zero per-protocol wiring.
+    function collectLearnChips(rootEl) {
+        const out = [];
+        try {
+            if (!rootEl || !rootEl.querySelectorAll) return out;
+            const seen = {};
+            rootEl.querySelectorAll('p, li').forEach(bl => {
+                const t = (bl.textContent || '').trim();
+                const m = t.match(_LEARN_BLOCK_RE);
+                if (!m) return;
+                const chip = _learnChipFor(m[1], t);
+                if (!chip) return;
+                const key = chip.dest + ':' + chip.arg;
+                if (seen[key]) return;
+                seen[key] = true;
+                out.push(chip);
+            });
+        } catch (e) { console.warn('WML learn-chip: collect skipped —', e && e.message); }
+        return out;
     }
     // ONE delegated click for every chip surface (bubbles, pad). Window-level guard so the
     // two-bundle double-load / SPA re-run can't bind twice (the __swmlBooted lesson).
@@ -3136,6 +3164,7 @@ window.WML = (function() {
         // v7.19.906: unified micro-progress beat-chip (canvas chat)
         parseProgressBeat, progressChipHTML, withProgressChip,
         appendLearnChips,   // v7.19.922: Fix→Learn chips on non-PM clones (Feedback pad)
+        collectLearnChips,  // v7.19.948: chip descriptors for the in-doc firewalled chip rows
         // v7.17.11: topic-flow detection (suppresses attempts UX inside numbered topics)
         isTopicFlow,
         // Rendering

@@ -11616,6 +11616,17 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-section-block.swml-fb-collapsed .swml-section-content {
     display: none;
 }
+/* v7.19.948: in-doc Fix→Learn chip row — PM-firewalled footer after the content
+   (filled by wml-assessment's _renderLearnChipRows). Chip pill styling itself lives in
+   wml-styles.css (.swml-learn-chip, shared with chat + pad). Hidden while collapsed —
+   the detail belongs with the content; the headline strip stays the collapsed preview.
+   !important wins over the fill's inline display:'' write. */
+.swml-learn-chip-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 8px;
+}
+.swml-learn-chip-row .swml-learn-chip { margin-left: 0; }
+.swml-section-block.swml-fb-collapsed .swml-learn-chip-row { display: none !important; }
 /* the absolute .swml-fb-toggle needs a positioned ancestor on the action forms too */
 .swml-section-block[data-section-type="action"] { position: relative; }
 /* v7.19.926 UNIVERSAL: any chevron-carrying section is its toggle's positioned ancestor —

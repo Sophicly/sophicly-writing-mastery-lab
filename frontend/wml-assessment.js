@@ -3003,6 +3003,42 @@
         } catch (e) { console.warn('WML section strips: skipped —', e && e.message); }
     }
     try { window.WML = window.WML || {}; window.WML.renderAnalyticsReadout = _renderSectionStrips; } catch (_) {}
+    // ── v7.19.948 (Neil): Fix→Learn chips INSIDE the doc's feedback boxes ──────────────
+    // Fills every .swml-learn-chip-row (the PM-firewalled footer the collapsible-section
+    // NodeView mounts, wml-section-block.js) from that box's OWN penalty lines via
+    // WML.collectLearnChips — content-driven + PENALTY_LEARN_MAP-gated, so any board/paper/
+    // future protocol chips for free and dormant destinations render nothing. Same markup
+    // as the chat/pad chips → the ONE document-level delegated click in wml-core handles
+    // them (capture phase — works in v947 display-locked lessons too). Idempotent via a
+    // data-sig compare (innerHTML readback normalises entities, so compare the signature,
+    // not the markup); routed through the derived-card circuit-breaker per the PM NodeView
+    // law (CLAUDE.md rule 5).
+    function _renderLearnChipRows() {
+        try {
+            const rows = document.querySelectorAll('.swml-learn-chip-row');
+            if (!rows.length) return;
+            if (!_derivedCardFillOk('learnchips')) return;
+            if (!(window.WML && typeof window.WML.collectLearnChips === 'function')) return;
+            const attr = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+            rows.forEach(row => {
+                const sec = row.closest('.swml-section-block');
+                const content = sec ? sec.querySelector('.swml-section-content') : null;
+                const chips = content ? window.WML.collectLearnChips(content) : [];
+                const sig = chips.map(c => c.dest + ':' + c.arg).join('|');
+                if (row.getAttribute('data-sig') !== sig) {
+                    row.setAttribute('data-sig', sig);
+                    row.innerHTML = chips.map(c =>
+                        '<button type="button" class="swml-learn-chip" data-learn-dest="' + attr(c.dest)
+                        + '" data-learn-arg="' + attr(c.arg) + '" title="Open '
+                        + (c.dest === 'table' ? 'the Table of Techniques' : 'the Mastery Toolkit')
+                        + '">Learn: ' + attr(c.label) + ' →</button>').join('');
+                }
+                const want = sig ? '' : 'none';
+                if (row.style.display !== want) row.style.display = want;
+            });
+        } catch (e) { console.warn('WML learn-chip rows: skipped —', e && e.message); }
+    }
+    try { window.WML.renderLearnChipRows = _renderLearnChipRows; } catch (_) {}
     function _fireClosingFiling() {
         if (_closingFilingFired) return;
         _closingFilingFired = true;
@@ -13374,6 +13410,10 @@
         function _stripChipsFromClone(node) {
             if (!node || !node.querySelectorAll) return node;
             node.querySelectorAll('.swml-section-select-all').forEach(c => c.remove());
+            // v7.19.948: the in-doc Fix→Learn chip row must not clone into the pads — the
+            // feedback pad keeps its own v922 inline chips (appendLearnChips), so a cloned
+            // row would double them.
+            node.querySelectorAll('.swml-learn-chip-row').forEach(c => c.remove());
             return node;
         }
 
@@ -22897,6 +22937,7 @@
             // .swml-ana-strip the feedback nodeView mounts) — refresh it on every overlay
             // rebuild so it tracks new marks at the old cadence. No absolute overlay.
             _renderSectionStrips();   // v7.19.920: fills every headline strip (self-guarding), not just Analytics
+            _renderLearnChipRows();   // v7.19.948: in-doc Fix→Learn chip rows track new marks at the same cadence
 
             // ── Tutor Sign-off UI (v7.19.828: IN-FLOW — the progress-card technique) ──
             // The old .swml-dropdown-overlay-signoff lived in the absolute dropdown layer
