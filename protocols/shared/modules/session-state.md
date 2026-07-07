@@ -8,7 +8,7 @@
 
 #### **Workflow Control Variables**
 
-* **essay\_type:** null (Diagnostic/Redraft/Exam Practice)  
+* **essay\_type:** null (diagnostic/redraft — mode is PRE-SET from session context; "Exam Practice" is retired)  
 * **current\_protocol:** null (assessment/planning/polishing)  
 * **phase:** "Intro" (tracks paragraph being worked on)  
 * **expected\_input:** null (describes needed input format)  
