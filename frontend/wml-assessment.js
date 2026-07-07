@@ -3417,7 +3417,11 @@
             setTimeout(_updateWcRecheckBtn, 400);
             if (reply.indexOf('@FB_BEGIN') === -1 && !/Q\d+\s*Total:/.test(reply)
                 && !/Penalty (?:& Ceiling )?Ledger/i.test(reply)
-                && !/MIN\(your marks,/i.test(reply)) return reply;
+                && !/MIN\(your marks,/i.test(reply)
+                // v7.19.929: a grand `Total:` readout alone must enter the auditor — a summary
+                // turn with no ledger heading / per-Q lines / cards would otherwise skip the
+                // grand-total reconcile entirely (the 53-vs-51 class through a second door).
+                && !/(?:^|\n)\s*[`*]{0,3}\s*(?:Grand\s+)?Total:\s*[`*]{0,3}\s*\d/.test(reply)) return reply;
             const r2 = x => Math.round(x * 100) / 100;
             let out = String(reply);
             // fresh assessment run starting (the run's FIRST reflect gate is emitted once)
@@ -3608,9 +3612,23 @@
             try {
                 // v7.19.928: text parse primary; DOC-LABEL grand as the fallback for summary
                 // turns that don't restate per-question totals (the Run-9 53-vs-51 escape).
+                // v7.19.929: the label fallback corrects DOWNWARD ONLY. Labels don't know
+                // final-total-stage ceilings (Literature's WC ceiling applies at the final
+                // total, not per-label) — a stated total BELOW the label sum can be a
+                // legitimately ceilinged total and must never be raised; a stated total
+                // ABOVE the label sum can only be inflation (labels are already capped).
                 const _grandText = _auditedGrandFromText(out);
-                const grand = _grandText || _labelGrandFromDoc();
-                if (grand && !_grandText) console.warn('WML MarkAudit: grand total sourced from DOC labels —', grand.total + '/' + grand.max);
+                let grand = _grandText;
+                if (!grand) {
+                    const _lg = _labelGrandFromDoc();
+                    if (_lg) {
+                        const _probe = new RegExp('(?:^|\\n)\\s*[`*]{0,3}\\s*(?:Grand\\s+)?Total:\\s*[`*]{0,3}\\s*([\\d.]+)\\s*\\/\\s*' + _lg.max + '\\b', 'i').exec(out);
+                        if (_probe && parseFloat(_probe[1]) > _lg.total) {
+                            grand = _lg;
+                            console.warn('WML MarkAudit: grand total sourced from DOC labels —', _probe[1], '→', grand.total + '/' + grand.max);
+                        }
+                    }
+                }
                 if (grand) {
                     // Wrapper-tolerant: the AI's grand readout is often `Total: 58/80` /
                     // `Grade: 7` (backtick inline-code) or **Total: …** (bold) — the old
