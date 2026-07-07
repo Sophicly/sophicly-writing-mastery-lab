@@ -122,7 +122,7 @@ If the canvas has no populated `Q1-stmt-*` statements (placeholders only / empty
 Protocol A's Part A Step 3 ("Question 1 Validation") previously **rejected** Q1. v7.17.31 updates that step to:
 
 - **Remove** the "Q1 is simple retrieval, complete independently" block.
-- **Add** a route: if Q1 is in `selected_questions`, branch to this Q1-MSQ module BEFORE Part B source collection. After Q1 assessment completes, return to Protocol A Part B with Q1 removed from the remaining-questions list.
+- **Add** a route: Q1 is marked FIRST, per Protocol A's fixed sequence (Q1 → Q2 → Q3 → Q4 → Q5 → Final Summary). *(Historical note: the old "Part B source collection" flow this paragraph once described is retired — Protocol A's Q-GATE owns all progression.)*
 
 No planning is required for Q1 (correct — planning manifest has no Q1 group). Planning remains excluded.
 

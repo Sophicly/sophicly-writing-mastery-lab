@@ -82,7 +82,7 @@ When the protocol executes this function, it stores the returned assessment hist
 
 **\[CONDITIONAL\]** Execute this function at these workflow entry points:
 
-* **Protocol A (Assessment):** At start of Part B (Source Collection) \- before assessment begins  
+* **Protocol A (Assessment):** before marking begins (sources and answers are PRE-SET via the canvas — the old "Part B Source Collection" step is retired)  
 * **Protocol B (Planning):** At start of Part B (Pre-Planning Goal Setting & Review)  
 * **Protocol C (Polishing):** At start of Socratic Polishing Process (Step 6\)
 

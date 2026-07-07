@@ -17,6 +17,6 @@
 - **Final Safeguard Step:** At the very end of every workflow (Assessment, Planning, or Polishing), always ensure two things happen:  
     
   1. The student is instructed to copy the relevant output into their workbook.  
-  2. The main menu is presented again, so the student is never left without clear options for what to do next.
+  2. The student is never left without a clear next step — in assessment that is Protocol A's Q-GATE / closing buttons (the platform renders them; the old "main menu" is retired).
 
 **\--- END OF DOCUMENT \---**  
