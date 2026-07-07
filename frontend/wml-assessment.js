@@ -1064,27 +1064,32 @@
     // N of M" and not the stale pre-fill state. Setup / SA-walk bubbles set their own exact
     // chip and are never touched here (this only fires on the marking path). The chip mirrors
     // the sidebar's active pointer, so the two can never contradict.
+    // v7.19.911: returns the beat it rendered (or null) so the caller can STORE it on the
+    // history message — a hard-refresh replays history, and without a stored beat the chip
+    // vanished on refresh (Neil: "only updates when I clear the chat").
     function _syncMarkingBeatChip() {
         try {
-            if (typeof WML === 'undefined' || !WML.progressChipHTML) return;
+            if (typeof WML === 'undefined' || !WML.progressChipHTML) return null;
             const host = document.getElementById('swml-canvas-chat-messages');
-            if (!host) return;
+            if (!host) return null;
             const m = (typeof _buildLangSidebarModel === 'function' && _buildLangSidebarModel())
                    || (typeof _buildLitSidebarModel === 'function' && _buildLitSidebarModel());
-            if (!m || !Array.isArray(m.steps) || !m.current) return;
+            if (!m || !Array.isArray(m.steps) || !m.current) return null;
             const cur = m.steps.find(s => s.step === m.current);
-            if (!cur || !cur.group) return;   // Setup / Total & Grade carry no group → no marking chip
+            if (!cur || !cur.group) return null;   // Setup / Total & Grade carry no group → no marking chip
             const grp = m.steps.filter(s => s.group === cur.group);
             const pos = grp.findIndex(s => s.step === cur.step) + 1;
-            if (pos < 1 || !grp.length) return;
-            const chip = WML.progressChipHTML({ section: cur.group, step: pos, total: grp.length });
+            if (pos < 1 || !grp.length) return null;
+            const beat = { section: cur.group, step: pos, total: grp.length };
+            const chip = WML.progressChipHTML(beat);
             const bodies = host.querySelectorAll('.swml-bubble.ai .swml-bubble-body');
             const body = bodies[bodies.length - 1];
-            if (!body) return;
+            if (!body) return beat;
             const existing = body.querySelector('.swml-beat');
             if (existing) existing.outerHTML = chip;
             else body.insertAdjacentHTML('afterbegin', chip);
-        } catch (_) { /* chip is best-effort, never block marking */ }
+            return beat;
+        } catch (_) { return null; /* chip is best-effort, never block marking */ }
     }
     // v7.19.628: paint the final "Total & Grade" circle with the achieved grade in its
     // ladder colour (reusing _GRADE_BG / _GRADE_DARK_TEXT). Runs AFTER _applyServerSidebar
@@ -2416,14 +2421,16 @@
         const progress = 'Self-assessment · ' + row.group + ' · ' + (idx + 1) + ' of ' + total;
         const plain = progress + '\n\n' + question + '\n\nTap the closest description (or type 1–5).';
         // v7.19.907: the beat-chip carries the group + count (Neil — chip on all phases).
+        // v7.19.911: beat STORED on the history message so a refresh replay re-renders it.
+        const _saBeat = { section: 'Self-assessment · ' + row.group, step: idx + 1, total: total };
         const _beatHtml = (typeof WML !== 'undefined' && WML.progressChipHTML)
-            ? WML.progressChipHTML({ section: 'Self-assessment · ' + row.group, step: idx + 1, total: total })
+            ? WML.progressChipHTML(_saBeat)
             : '<p style="font-size:12px;opacity:0.6;margin-bottom:6px">' + progress + '</p>';
         const html = _beatHtml
             + formatAI(question)
             + '<p style="font-size:12px;opacity:0.7">Tap the closest description below (or type 1–5).</p>';
         _chatShell.addMsg(html, 'ai', plain, { suppressActions: true });
-        _chatShell.history.push({ role: 'assistant', content: plain, saWalk: true });
+        _chatShell.history.push({ role: 'assistant', content: plain, saWalk: true, beat: _saBeat });
         try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (_) {}
         try {
             const bar = el('div', { className: 'swml-quick-actions swml-sa-walk-bar' });
@@ -7633,16 +7640,20 @@
             // The pre-chain is EXACTLY three steps (grade → headline → keyword); grade is
             // step 1 (rendered in the greeting), headline 2, keyword 3. Frontend-authoritative
             // counts, so the "N of 3" is always accurate.
+            // v7.19.911: the beat is STORED on the history message so a hard-refresh replay
+            // re-renders the chip (live-render-only chips vanished on refresh — Neil).
+            let _suBeat = null;
             if (typeof WML !== 'undefined' && WML.progressChipHTML) {
                 const _suStep = stage === 'headline' ? 2 : 3;
                 const _suLabel = stage === 'headline' ? 'Setup · Goal' : 'Setup · Key aspects';
-                html = WML.progressChipHTML({ section: _suLabel, step: _suStep, total: 3 }) + html;
+                _suBeat = { section: _suLabel, step: _suStep, total: 3 };
+                html = WML.progressChipHTML(_suBeat) + html;
             }
             // v7.19.810: suppressActions — the plain text carries the lettered options
             // for the AI's context, which auto-detection would ALSO turn into buttons
             // (duplicate truncated set observed live). Our own goalBar renders them.
             addChatMessage(html, 'ai', plain, { suppressActions: true });
-            canvasChatHistory.push({ role: 'assistant', content: plain });
+            canvasChatHistory.push({ role: 'assistant', content: plain, beat: _suBeat });
             saveCanvasChat(canvasChatHistory, canvasChatId);
             if (stage === 'headline') {
                 const goalBar = el('div', { className: 'swml-quick-actions' });
@@ -8358,7 +8369,13 @@
                         // below. Self-guards (no-op unless the reply carries @FB markers or a marking block).
                         applyAssessmentFeedback(res.reply);
                         _refreshLangSidebar(); // v7.19.625: advance per-Q Language sidebar as marks land
-                        _syncMarkingBeatChip(); // v7.19.907: mirror the fresh sidebar pointer into the reply's beat-chip
+                        { // v7.19.907/911: mirror the fresh sidebar pointer into the reply's beat-chip AND store it for refresh replay
+                            const _mb = _syncMarkingBeatChip();
+                            if (_mb && canvasChatHistory.length) {
+                                canvasChatHistory[canvasChatHistory.length - 1].beat = _mb;
+                                saveCanvasChat(canvasChatHistory, canvasChatId);
+                            }
+                        }
                         // v7.19.830: SECTION/FIELD marker consumers run UNCONDITIONALLY (self-
                         // guarding no-ops without markers). The assessment Final Summary now files
                         // Action Plan + Analytics via @FIELD_SET, so these must not live inside
@@ -14191,7 +14208,10 @@
                         }
                         if (msg.role === 'assistant') {
                             const clean = stripAIInternals(msg.content);
-                            tp.addChatMessage(formatAI(clean), 'ai', clean);
+                            // v7.19.911: re-render the stored beat-chip on refresh replay.
+                            let _h = formatAI(clean);
+                            if (msg.beat && typeof WML !== 'undefined' && WML.progressChipHTML) _h = WML.progressChipHTML(msg.beat) + _h;
+                            tp.addChatMessage(_h, 'ai', clean);
                         } else if (msg.role === 'user') {
                             tp.addChatMessage(msg.content, 'user');
                         }
@@ -16305,7 +16325,13 @@
                                         // v7.19.600: auto-file assessment feedback (runs for ALL tasks, outside the cw_ guard).
                                         applyAssessmentFeedback(res.reply);
                                         _refreshLangSidebar(); // v7.19.625: advance per-Q Language sidebar as marks land
-                                        _syncMarkingBeatChip(); // v7.19.907: mirror the fresh sidebar pointer into the reply's beat-chip (twin)
+                                        { // v7.19.907/911: sidebar-derived beat-chip + store for refresh replay (twin)
+                                            const _mb = _syncMarkingBeatChip();
+                                            if (_mb && canvasChatHistory.length) {
+                                                canvasChatHistory[canvasChatHistory.length - 1].beat = _mb;
+                                                saveCanvasChat(canvasChatHistory, canvasChatId);
+                                            }
+                                        }
                                         // v7.19.830: SECTION/FIELD marker consumers run UNCONDITIONALLY (self-guarding
                                         // no-ops without markers) — Final Summary files Action Plan + Analytics via
                                         // @FIELD_SET (CANVAS TASK-SCOPING rule 1).
@@ -16634,7 +16660,10 @@
                                                 }
                                                 if (msg.role === 'assistant') {
                                                     const clean = stripAIInternals(msg.content);
-                                                    addChatMessage(formatAI(clean), 'ai', clean);
+                                                    // v7.19.911: re-render the stored beat-chip on refresh replay (twin).
+                                                    let _h = formatAI(clean);
+                                                    if (msg.beat && typeof WML !== 'undefined' && WML.progressChipHTML) _h = WML.progressChipHTML(msg.beat) + _h;
+                                                    addChatMessage(_h, 'ai', clean);
                                                 } else if (msg.role === 'user') {
                                                     addChatMessage(msg.content, 'user');
                                                 }
