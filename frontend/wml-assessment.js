@@ -5016,7 +5016,10 @@
 
     function _renderReflectPanel(parsed, onSubmit) {
         const wrap = el('div', { className: 'swml-reflect-panel' });
-        wrap.style.cssText = 'margin-top:12px;padding:14px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:14px;';
+        // v7.19.936 (Neil): NO outline strokes — the panel separates by surface tone alone
+        // (house rule: no generic strokes on elements; the predict-button tint pattern is
+        // the standard for every control in this panel).
+        wrap.style.cssText = 'margin-top:12px;padding:14px;border-radius:12px;background:rgba(255,255,255,0.05);border:none;display:flex;flex-direction:column;gap:14px;';
 
         let rating = null;
         const selectedAO = new Set();
@@ -5070,13 +5073,15 @@
             const c = _REFLECT_LADDER[n];
             const b = el('button', { textContent: String(n) });
             b.type = 'button';
-            b.style.cssText = `flex:1;padding:6px 0;border-radius:8px;border:1px solid ${c};background:transparent;color:${c};font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;`;
+            // v7.19.936: borderless ladder — colour tint at rest, solid fill when picked
+            // (same pattern as the predict-mark buttons; no outline stroke).
+            b.style.cssText = `flex:1;padding:6px 0;border-radius:8px;border:none;background:${c}22;color:${c};font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;`;
             b.addEventListener('click', () => {
                 rating = n;
                 rateBtns.forEach((bb, i) => {
                     const cc = _REFLECT_LADDER[i + 1];
                     if (i + 1 === n) { bb.style.background = cc; bb.style.color = '#fff'; }
-                    else { bb.style.background = 'transparent'; bb.style.color = cc; }
+                    else { bb.style.background = cc + '22'; bb.style.color = cc; }
                 });
                 refreshSubmit();
             });
@@ -5117,7 +5122,7 @@
         const ta = el('textarea', {});
         ta.rows = 2;
         ta.placeholder = 'What were you trying to show? (type or use the mic)';
-        ta.style.cssText = 'flex:1;resize:vertical;min-height:42px;padding:8px 10px;border-radius:9px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.25);color:#fff;font-size:13px;font-family:inherit;';
+        ta.style.cssText = 'flex:1;resize:vertical;min-height:42px;padding:8px 10px;border-radius:9px;border:none;background:rgba(255,255,255,0.07);color:#fff;font-size:13px;font-family:inherit;';
         ta.addEventListener('input', refreshSubmit);
         const mic = el('button', { innerHTML: SVG_MIC, title: 'Dictate' });
         mic.type = 'button';
@@ -5218,7 +5223,7 @@
                 predWrap.appendChild(predRow);
             } else {
                 const sel = el('select', {});
-                sel.style.cssText = 'padding:9px 12px;border-radius:9px;border:1px solid rgba(255,255,255,0.18);background:rgba(0,0,0,0.3);color:#fff;font-size:14px;font-weight:600;cursor:pointer;';
+                sel.style.cssText = 'padding:9px 12px;border-radius:9px;border:none;background:rgba(255,255,255,0.08);color:#fff;font-size:14px;font-weight:600;cursor:pointer;';
                 const ph = el('option', { textContent: '— pick your predicted mark —' }); ph.value = '';
                 sel.appendChild(ph);
                 for (let n = 0; n <= predictMax; n++) { const o = el('option', { textContent: n + ' / ' + predictMax }); o.value = String(n); sel.appendChild(o); }
