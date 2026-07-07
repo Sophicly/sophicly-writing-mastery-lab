@@ -2169,20 +2169,42 @@ class SWML_REST_API {
         // re-read upstream, so editing the diagnostic never reached the assessment doc. New rule
         // (design: wml-CHATA-universal-forward-chain-reseed-until-marked-design-2026-07-06):
         // while such a stage is NOT yet marked, every load re-seeds it from the latest upstream
-        // stage; once marked, it freezes to protect the marks. SCOPE (engineered-out failure
-        // mode): only stages where the student never writes — '_assessment', '_reassessment',
-        // '_fbdiscuss'. Write stages (diagnostic, planning, outlining, polishing, redraft) keep
-        // freeze-on-save — reseeding those would wipe in-progress student work; they keep the
-        // confirm-gated "Pull from Previous Stage" instead. stage_is_frozen() biases FROZEN on
-        // any ambiguity: a wrong-frozen just needs a manual pull, a wrong-unfrozen wipes marks.
+        // stage; once marked, it freezes to protect the marks.
+        //
+        // v7.19.943 (UNIVERSAL RESEED, Neil spec 2026-07-07): the v920 suffix list grew into
+        // the CONFIG SEED-GRAPH — reseed_stage_config() maps each in-scope stage suffix to its
+        // freeze signal, per-phase forward-only:
+        //   Phase 1: '' (diagnostic) → _assessment → _fbdiscuss                 (v920 scope)
+        //   Phase 2: _planning → _outlining → _polishing → _reassessment → _redraft (v943)
+        // ONE rule: a seeded stage re-seeds from its nearest earlier stage on every load until
+        // STARTED — marked (assessment stages), phase-complete (discussion docs), or TYPED-IN
+        // (write stages, detected via the seed fingerprint stored when the seed was served).
+        // CW (_cw_*) stages are deliberately ABSENT from the graph — one long project, its own
+        // later pass (Neil ruling). stage_is_frozen() biases FROZEN on any ambiguity: a wrong
+        // "frozen" costs one manual "Pull from Previous Stage"; a wrong "unfrozen" wipes
+        // student work (the doc-wipe incident class).
         if (!empty($raw)
             && !empty($request->get_param('seedFromSiblings'))
-            && in_array($suffix, array('_assessment', '_reassessment', '_fbdiscuss'), true)
-            && !$this->stage_is_frozen($user_id, $board, $text, $topic_number, $suffix, $attempt, $raw)) {
+            && array_key_exists($suffix, self::reseed_stage_config())
+            && !$this->stage_is_frozen($user_id, $board, $text, $topic_number, $suffix, $attempt, $raw, $meta_key)) {
             $reseed_html = $this->seed_from_sibling_stage($user_id, $board, $text, $topic_number, $meta_key, $suffix, $attempt, $cw_project_id);
             if (!empty($reseed_html)) {
                 if (strpos($text, 'lang_paper') !== false) {
                     $reseed_html = self::strip_stale_cw_outline_sections($reseed_html);
+                }
+                // Typed-freeze stages: re-baseline the seed fingerprint to THIS seed so the
+                // next load compares the stored doc against what we just served.
+                $this->store_seed_fingerprint($user_id, $meta_key, $suffix, $reseed_html);
+                // A reseed IS a pull — advance the update-dot baseline to the upstream doc
+                // we just reflected (same stamp logic as the empty-doc seed path below).
+                if (self::previous_stage_suffix($suffix) !== null) {
+                    $up_doc   = $this->previous_stage_doc($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
+                    $up_saved = ($up_doc && !empty($up_doc['savedAt'])) ? (string) $up_doc['savedAt'] : '';
+                    $existing = $this->get_pull_stamp($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id);
+                    $this->set_pull_stamp($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id, [
+                        'pulled'    => $up_saved,
+                        'dismissed' => $existing['dismissed'],
+                    ]);
                 }
                 return rest_ensure_response([
                     'success'      => true,
@@ -2229,6 +2251,9 @@ class SWML_REST_API {
                     if (strpos($text, 'lang_paper') !== false) {
                         $seed_html = self::strip_stale_cw_outline_sections($seed_html);
                     }
+                    // v7.19.943: typed-freeze stages baseline their seed fingerprint here —
+                    // first-load seeds must be reseedable until the student types.
+                    $this->store_seed_fingerprint($user_id, $meta_key, $suffix, $seed_html);
                     // v7.19.263: stamp the "update dot" baseline at auto-seed time
                     // (first-pass forward fill), so a LATER edit to the upstream
                     // stage correctly advances past it and lights the dot. Without
@@ -4286,20 +4311,96 @@ class SWML_REST_API {
     }
 
     /**
-     * v7.19.920 (reseed-until-marked): is this stage's doc FROZEN (protect it — never
-     * re-seed), or may load_canvas() refresh it from the latest upstream stage?
+     * v7.19.943 (universal reseed): THE config SEED-GRAPH — every stage suffix that
+     * participates in reseed-until-STARTED, mapped to its freeze signal:
+     *   'marked'        — frozen once this attempt is marked (attempt-index stamp / marks in doc)
+     *   'phase:{name}'  — frozen once that phase is marked complete (discussion docs; marks
+     *                     flowing in from the upstream marked doc also freeze via content guard)
+     *   'typed'         — frozen once the student TYPED in the doc (text drifted from the
+     *                     seed fingerprint stored when the seed was served)
+     * Phase-1 chain: '' (diagnostic, never reseeds — first stage) → _assessment → _fbdiscuss.
+     * Phase-2 chain: _planning → _outlining → _polishing → _reassessment → _redraft.
+     * Upstream edges stay in stage_seed_chain() (nearest earlier stage with content).
+     * CW (_cw_*) is deliberately ABSENT — one long project, separate pass (Neil ruling
+     * 2026-07-07). Neil WILL evolve the sequences — edit THIS map + stage_seed_chain() only.
+     */
+    private static function reseed_stage_config() {
+        return [
+            '_assessment'   => 'marked',
+            '_reassessment' => 'marked',
+            '_fbdiscuss'    => 'phase:initial',
+            '_redraft'      => 'phase:redraft',
+            '_planning'     => 'typed',
+            '_outlining'    => 'typed',
+            '_polishing'    => 'typed',
+        ];
+    }
+
+    /**
+     * v7.19.943: fingerprint of a canvas doc's visible TEXT — the typed-freeze signal.
+     * Whole-doc text (not just input fields) because sectionBlock is content:'block+' —
+     * students type paragraphs directly into section bodies. Tags stripped + entities
+     * decoded + whitespace collapsed so ProseMirror round-trip serialisation noise
+     * (attribute order, inter-tag whitespace, escaping) cannot fake a "typed" signal;
+     * any REAL text change (typing, chat-driven plan fills via PM txn) does change it.
+     */
+    private static function canvas_seed_fingerprint($html) {
+        $txt = wp_strip_all_tags((string) $html);
+        $txt = html_entity_decode($txt, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $collapsed = preg_replace('/\s+/u', ' ', $txt);
+        if ($collapsed === null) {
+            // Invalid UTF-8 would make the /u pattern return null on BOTH sides —
+            // equal-empty fingerprints would fake "unstarted" and reseed over typed
+            // work. Bytewise collapse can't fail and stays deterministic.
+            $collapsed = preg_replace('/\s+/', ' ', $txt);
+        }
+        return md5(trim((string) $collapsed));
+    }
+
+    /** Meta key holding the last-served seed's fingerprint for a canvas key. */
+    private static function seed_fp_meta_key($canvas_meta_key) {
+        return 'swml_seedfp_' . substr((string) $canvas_meta_key, strlen('swml_canvas_'));
+    }
+
+    /**
+     * v7.19.943: baseline the seed fingerprint for typed-freeze stages whenever a seed
+     * is served (first load AND every reseed). No-op for other stages — their freeze
+     * signals are marks/phase stamps, not content drift.
+     */
+    private function store_seed_fingerprint($user_id, $canvas_meta_key, $suffix, $seed_html) {
+        $cfg = self::reseed_stage_config();
+        // '_redraft' also baselines: its fingerprint is not a typed-signal but a
+        // "mechanism-managed" marker — legacy shared docs ALSO lived under the
+        // _redraft suffix (old student redraft essays; see the v249 comment in
+        // load_canvas), and those must never be reseeded over. No fp → frozen.
+        if (($cfg[$suffix] ?? '') !== 'typed' && $suffix !== '_redraft') return;
+        update_user_meta($user_id, self::seed_fp_meta_key($canvas_meta_key), self::canvas_seed_fingerprint($seed_html));
+    }
+
+    /**
+     * v7.19.920 (reseed-until-marked) + v7.19.943 (universal reseed): is this stage's
+     * doc FROZEN (protect it — never re-seed), or may load_canvas() refresh it from
+     * the latest upstream stage?
      *
      * FAIL-SAFE BIAS: any ambiguity → frozen. A wrong "frozen" costs one manual
-     * "Pull from Previous Stage"; a wrong "unfrozen" re-seeds over a marked doc
+     * "Pull from Previous Stage"; a wrong "unfrozen" re-seeds over student work
      * (the doc-wipe incident class). Signals, strongest first:
+     *   0. TYPED stages (Phase-2 write stages) — frozen once the doc's text drifts from
+     *      the fingerprint stored when its seed was served. No fingerprint (legacy /
+     *      pre-943 doc) → ambiguous → frozen. The content guard below deliberately does
+     *      NOT apply here: _planning seeds from the marked Phase-1 doc, so marks inside
+     *      a typed-stage doc are seeded artefacts, not local grading.
      *   1. CONTENT — the stored doc already carries marks (a filled feedback-box
      *      label "(N / M)" or a filled "Total Marks:") → frozen, whatever stamps say.
      *   2. Graded stages (_assessment/_reassessment) — this attempt's index entry
      *      has status 'completed' or a grade/score recorded → frozen.
-     *   3. _fbdiscuss — frozen once Phase 1 is marked complete (phase meta key).
+     *   3. Discussion docs (_fbdiscuss/_redraft) — frozen once their phase is marked
+     *      complete (phase meta key).
      */
-    private function stage_is_frozen($user_id, $board, $text, $topic_number, $suffix, $attempt, $raw) {
-        // 1. Content guard.
+    private function stage_is_frozen($user_id, $board, $text, $topic_number, $suffix, $attempt, $raw, $canvas_meta_key = '') {
+        $cfg = self::reseed_stage_config();
+        if (!isset($cfg[$suffix])) return true; // not in the graph → frozen (e.g. CW, diagnostic)
+        $signal = $cfg[$suffix];
         $html = '';
         if (is_array($raw)) {
             $html = isset($raw['html']) ? (string) $raw['html'] : '';
@@ -4307,12 +4408,20 @@ class SWML_REST_API {
             $dec  = self::decode_canvas_json($raw);
             $html = (is_array($dec) && isset($dec['html'])) ? (string) $dec['html'] : (string) $raw;
         }
+        // 0. Typed-freeze stages: content drift vs the served seed decides; nothing else.
+        if ($signal === 'typed') {
+            if ($canvas_meta_key === '') return true; // no key to look up → ambiguous → frozen
+            $seed_fp = get_user_meta($user_id, self::seed_fp_meta_key($canvas_meta_key), true);
+            if (empty($seed_fp)) return true; // never baselined → ambiguous → frozen
+            return self::canvas_seed_fingerprint($html) !== $seed_fp;
+        }
+        // 1. Content guard.
         if ($html !== '') {
             if (preg_match('/data-section-label="[^"]*\(\s*\d[\d.]*\s*\/\s*\d+\s*\)/', $html)) return true;
             if (preg_match('/Total Marks:\s*(?:<[^>]+>\s*)*\d/', $html)) return true;
         }
         // 2. Graded stages — attempt-index stamp.
-        if ($suffix === '_assessment' || $suffix === '_reassessment') {
+        if ($signal === 'marked') {
             $idx = $this->get_attempt_index($user_id, $board, $text, $topic_number, $suffix);
             if (!is_array($idx) || empty($idx['attempts']) || !is_array($idx['attempts'])) return true; // ambiguous → frozen
             foreach ($idx['attempts'] as $a) {
@@ -4323,13 +4432,20 @@ class SWML_REST_API {
             }
             return true; // no entry for this attempt → ambiguous → frozen
         }
-        // 3. Discussion doc — frozen once its phase is marked complete.
-        if ($suffix === '_fbdiscuss') {
-            $phase_key = $this->phase_meta_key($board, $text, (int) $topic_number, 'initial', max(1, (int) $attempt));
+        // 3. Discussion docs — frozen once their phase is marked complete.
+        if (strpos($signal, 'phase:') === 0) {
+            // _redraft doubles as a LEGACY shared-doc suffix (old student redraft
+            // essays, pre-per-stage split). Only reseed docs this mechanism itself
+            // seeded — fp baseline present. Legacy doc → no fp → frozen.
+            if ($suffix === '_redraft') {
+                if ($canvas_meta_key === '') return true;
+                if (empty(get_user_meta($user_id, self::seed_fp_meta_key($canvas_meta_key), true))) return true;
+            }
+            $phase_key = $this->phase_meta_key($board, $text, (int) $topic_number, substr($signal, 6), max(1, (int) $attempt));
             if (!empty(get_user_meta($user_id, $phase_key, true))) return true;
             return false;
         }
-        return true; // any other suffix: not in scope → frozen (write stages keep freeze-on-save)
+        return true; // unknown signal → frozen
     }
 
     private function seed_from_sibling_stage($user_id, $board, $text, $topic_number, $exclude_key, $suffix = '', $attempt = 1, $cw_project_id = '') {
