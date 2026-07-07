@@ -2681,9 +2681,9 @@ window.WML = (function() {
             .replace(/\n/g, '<br>');
 
         // Replace emoji icons with SVG equivalents
-        html = html.replace(/💡/g, '<span class="swml-inline-icon">' + SVG_ICON_BULB + '</span>');
+        // v7.19.916: 💡/📋 moved to the svgifyEmojis brand-icon map (end of this function) —
+        // Neil's illustrative pack replaces the old stroke icons for decorative emojis.
         html = html.replace(/🎲/g, '<span class="swml-inline-icon">' + SVG_ICON_GENERATE + '</span>');
-        html = html.replace(/📋/g, '<span class="swml-inline-icon">' + SVG_ICON_HAND_SELECT + '</span>');
         html = html.replace(/✏️/g, '<span class="swml-inline-icon">' + SVG_ICON_PASTE + '</span>');
         html = html.replace(/✅/g, '<span class="swml-inline-icon swml-icon-save">' + SVG_ICON_SAVE + '</span>');
 
@@ -2770,7 +2770,38 @@ window.WML = (function() {
         // (cwMarkdownToDocHtml → fbGlyph schema node) render the SAME glyph and can't diverge.
         html = svgifyStatusGlyphs(html);
 
+        // v7.19.916 (Neil): decorative emojis → brand illustrative icons (see svgifyEmojis).
+        html = svgifyEmojis(html);
+
         return html;
+    }
+
+    // v7.19.916 (Neil dislikes emojis, pt2): decorative emojis → brand illustrative SVG icons
+    // (frontend/icons/emoji/, hand-picked from Neil's "SVG Icons for Sophicly" pack; 📊 chart is
+    // the icon Neil attached). DISPLAY layer only — runs on rendered chat HTML; raw chatHistory
+    // keeps the emoji, so every raw-text consumer (quick-action detection, parseProgressBeat's
+    // 📌 pin, assessment-complete detection, marker extraction) is untouched by construction.
+    // Deliberately NOT mapped (functional, or owned elsewhere): ✅ ✔ ⚠ ❌ (svgifyStatusGlyphs),
+    // 📌 (beat-chip pin), 🤔 💬 (quick-action tokens), 🎲 ✏️ (existing stroke-icon swaps above),
+    // ✕ ☰ ❮ ❯ and arrows (controls). Chat bubbles ONLY — canvas cards go through the PM schema,
+    // which silently drops <img>; mapping there needs a schema node first (the v898 fbGlyph lesson).
+    const EMOJI_ICON_MAP = {
+        '📊': 'chart', '📈': 'progress', '💡': 'idea', '🎯': 'target', '📚': 'book',
+        '📖': 'education', '📝': 'marker', '✍': 'marker', '📋': 'clipboard', '🧠': 'brain',
+        '🚀': 'rocket', '🔍': 'search', '🔎': 'search', '🎉': 'fun', '😊': 'happiness',
+        '💪': 'motivation', '🏆': 'trophy', '🕐': 'time', '🔒': 'padlock', '❤': 'heart',
+        '🔥': 'torch', '⭐': 'rating', '🌟': 'rating', '📄': 'document',
+    };
+    let _emojiIconRe = null;
+    function svgifyEmojis(html) {
+        const iconBase = (typeof swmlConfig !== 'undefined' && swmlConfig.iconsUrl) || '';
+        if (!iconBase || !html) return html;
+        if (!_emojiIconRe) _emojiIconRe = new RegExp('(' + Object.keys(EMOJI_ICON_MAP).join('|') + ')\\uFE0F?', 'gu');
+        // Split keeps <pre>/<code> segments (odd indices) verbatim — protocol snippets may quote emojis.
+        return html.split(/(<pre[\s\S]*?<\/pre>|<code[^>]*>[\s\S]*?<\/code>)/g).map((seg, i) => (i % 2) ? seg
+            : seg.replace(_emojiIconRe, (m, e) =>
+                '<img src="' + iconBase + EMOJI_ICON_MAP[e] + '.svg" class="swml-emoji-ico" alt="" aria-hidden="true" loading="lazy">')
+        ).join('');
     }
 
     // v7.19.898 (Neil dislikes emojis): ONE source of truth that turns the three feedback status

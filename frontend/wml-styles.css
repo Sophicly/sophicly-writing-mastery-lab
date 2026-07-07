@@ -1420,6 +1420,13 @@ body.swml-page {
 .swml-inline-icon.swml-icon-save svg {
     color: var(--swml-green);
 }
+/* v7.19.916: decorative emoji → brand illustrative icon (svgifyEmojis, chat bubbles only).
+   em-sized so it scales with headings vs body text; slight negative align sits it on the baseline. */
+.swml-emoji-ico {
+    width: 1.3em; height: 1.3em;
+    display: inline-block; vertical-align: -0.28em;
+    margin: 0 0.08em;
+}
 .swml-quick-btn svg {
     display: inline-block; vertical-align: middle; margin-right: 4px; flex-shrink: 0;
     color: currentColor;
