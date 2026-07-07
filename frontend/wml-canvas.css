@@ -11685,3 +11685,40 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-canvas-light .swml-calib-readout { color: rgba(20,22,28,0.55); }
 [data-swml-theme="light"] .swml-calib-readout strong,
 .swml-canvas-light .swml-calib-readout strong { color: rgba(20,22,28,0.82); }
+
+/* ── v7.19.947: DISPLAY-LOCK (Neil ruling 2026-07-08). Assessment + discuss-feedback
+   lessons show student prose (response/plan/outline sections) READ-ONLY — it is edited
+   only in its authoring lesson, and the reseed chain carries edits forward until marking.
+   JS input handlers enforce the lock (_swmlNodeLocked display-lock branch); this renders
+   the "go back" indicator above each locked section. Keyed off the editor-root attribute
+   set at mount (view-state — never serialised into the doc). */
+#swml-tiptap-editor[data-swml-display-lock] .swml-section-response::before,
+#swml-tiptap-editor[data-swml-display-lock] .swml-section-plan::before,
+#swml-tiptap-editor[data-swml-display-lock] .swml-section-outline::before {
+    content: 'Read-only in this lesson — to make changes, go back to the previous writing step. Your edits appear here automatically until marking is complete.';
+    display: block;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.55);
+    background: rgba(83, 51, 237, 0.10);
+    border-left: 2px solid rgba(83, 51, 237, 0.45);
+    border-radius: 0 6px 6px 0;
+    padding: 6px 12px;
+    margin: 0 0 12px;
+}
+.swml-canvas-light #swml-tiptap-editor[data-swml-display-lock] .swml-section-response::before,
+.swml-canvas-light #swml-tiptap-editor[data-swml-display-lock] .swml-section-plan::before,
+.swml-canvas-light #swml-tiptap-editor[data-swml-display-lock] .swml-section-outline::before,
+[data-swml-theme="light"] #swml-tiptap-editor[data-swml-display-lock] .swml-section-response::before,
+[data-swml-theme="light"] #swml-tiptap-editor[data-swml-display-lock] .swml-section-plan::before,
+[data-swml-theme="light"] #swml-tiptap-editor[data-swml-display-lock] .swml-section-outline::before {
+    color: rgba(20, 22, 28, 0.6);
+    background: rgba(83, 51, 237, 0.07);
+    border-left-color: rgba(83, 51, 237, 0.4);
+}
+#swml-tiptap-editor[data-swml-display-lock] .swml-section-response,
+#swml-tiptap-editor[data-swml-display-lock] .swml-section-plan,
+#swml-tiptap-editor[data-swml-display-lock] .swml-section-outline {
+    caret-color: transparent;
+    cursor: default;
+}

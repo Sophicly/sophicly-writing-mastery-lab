@@ -10271,12 +10271,30 @@
     // v7.19.471: scaffold-lock helpers — a node is locked if it carries the `locked`
     // attribute (template scaffold: section titles + instruction text). User input inside
     // a locked node is blocked by the editorProps handlers; programmatic writes are unaffected.
+    // v7.19.947 (Neil ruling 2026-07-08): assessment + discuss-feedback lessons are DISPLAY
+    // lessons — student prose (response/plan/outline sections) is edited ONLY in its
+    // authoring lesson (diagnostic / planning / outlining / polishing); the reseed chain
+    // carries edits forward until marking freezes the doc. Without this lock, an edit made
+    // here would be silently WIPED by the next reseed. The lock is VIEW-state (these input
+    // handlers + a root attr for CSS), never a doc attribute — a persisted readonly attr
+    // would ride the reseed html back into the authoring lessons. Comment marks stay live:
+    // they are applied programmatically (same reason review mode keeps editable:true,
+    // v7.15.30), and Sophia's fills use commands, which never pass through these handlers.
+    const DISPLAY_LOCK_TASKS = ['assessment', 'redraft_assessment', 'feedback_discussion'];
+    const DISPLAY_LOCK_SECTION_TYPES = ['response', 'plan', 'outline'];
+    function _docDisplayLocked() {
+        return DISPLAY_LOCK_TASKS.includes(String(state.task || ''));
+    }
     function _swmlNodeLocked(node) {
         if (!node || !node.type) return false;
         // Headings are ALWAYS scaffold (section titles) — locked structurally so the rule
         // works on existing + new docs and survives the wp_kses round-trip with no attr.
         // (Students fill rows / write free-prose; they don't author headings in these docs.)
         if (node.type.name === 'heading') return true;
+        // v7.19.947: display-lock — in assessment/discuss lessons the student-authored
+        // sections are read-only carryovers from the authoring lesson.
+        if (node.type.name === 'sectionBlock' && _docDisplayLocked()
+            && DISPLAY_LOCK_SECTION_TYPES.includes(String((node.attrs && node.attrs.sectionType) || ''))) return true;
         // Instruction paragraphs opt in via the persisted data-locked attribute.
         return !!(node.attrs && (node.attrs.locked === true || node.attrs.locked === 'true'));
     }
@@ -20425,6 +20443,14 @@
             });
         }
 
+        // v7.19.947: display-lock indicator hook — root attr set BEFORE ProseMirror mounts
+        // (no DOMObserver yet, so this is not a foreign mutation). CSS renders the
+        // "go back to the previous writing step" banner above each locked section.
+        // View-state only — never serialised into the doc.
+        try {
+            if (_docDisplayLocked()) editorEl.setAttribute('data-swml-display-lock', '1');
+            else editorEl.removeAttribute('data-swml-display-lock');
+        } catch (_) {}
         canvasEditor = new Editor({
             element: editorEl,
             // v7.15.30: editor stays editable so programmatic comment marks work,
@@ -20610,7 +20636,10 @@
                 },
                 handleKeyDown(view, event) {
                     const k = event.key;
-                    if (k !== 'Backspace' && k !== 'Delete' && k !== 'Enter') return false;
+                    // v7.19.947: Cmd/Ctrl+X deletes the selection without passing through
+                    // handleTextInput — treat cut like Delete so locked ranges survive it.
+                    const isCut = (k === 'x' || k === 'X') && (event.metaKey || event.ctrlKey);
+                    if (k !== 'Backspace' && k !== 'Delete' && k !== 'Enter' && !isCut) return false;
                     const sel = view.state.selection;
                     // v7.19.649: no typing/splitting in a doc-root gap (outside every section)
                     if (!_swmlInSection(view.state, sel.from)) return true;
@@ -34784,7 +34813,10 @@ ${html}
                 },
                 handleKeyDown(view, event) {
                     const k = event.key;
-                    if (k !== 'Backspace' && k !== 'Delete' && k !== 'Enter') return false;
+                    // v7.19.947: Cmd/Ctrl+X deletes the selection without passing through
+                    // handleTextInput — treat cut like Delete so locked ranges survive it.
+                    const isCut = (k === 'x' || k === 'X') && (event.metaKey || event.ctrlKey);
+                    if (k !== 'Backspace' && k !== 'Delete' && k !== 'Enter' && !isCut) return false;
                     const sel = view.state.selection;
                     if (!_swmlInSection(view.state, sel.from)) return true;
                     if (!sel.empty) return _swmlRangeLocked(view.state, sel.from, sel.to);
