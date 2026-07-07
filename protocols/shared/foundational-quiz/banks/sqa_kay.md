@@ -1,165 +1,172 @@
-# Foundational Quiz Bank — SQA National 5 / Higher: Jackie Kay Poetry (Forms)
+# Foundational Quiz Bank — SQA National 5: Jackie Kay Poetry (Poems)
 
 Deterministic, code-scored foundational recall bank (parsed by `SWML_Quiz_Bank`).
-20 questions on the FORMS of the set Jackie Kay poems + mixed types. The picker draws a
-random 5 per round, stratified across categories. Keys + feedback live server-side and
-are stripped before questions reach the client. The AI is never the scorekeeper.
+18 questions on the actual PRESCRIBED POEMS (Tier B) — three per poem across Neil's three
+understanding dimensions: Recognising the Poem · Form & Features · Meaning & Effects. Unlike
+the universal forms bank (`sqa_kay.md`'s earlier Forms edition), these are poem-specific,
+testing what the student has actually read. The picker draws a random 5 per round, stratified
+across categories. Keys + feedback live server-side and are stripped before questions reach
+the client. The AI is never the scorekeeper.
 
-Categories: Identifying Form · Form Features · Form Effects · Form & Meaning
+**Jackie Kay is National 5 ONLY in the 2026 refreshed SQA Scottish-texts set** (per the SQA
+list published November 2024, live from session 2025–26 / first examined 2026 diet) — Higher
+English instead sets Liz Lochhead for its Scottish poet. There is only one stage here, so
+(unlike the Power and Conflict bank) questions carry NO `@set:N` token — all 18 questions
+are live from the start.
+
+Categories: Recognising the Poem · Form & Features · Meaning & Effects
 Types: MCQ · Fill · True-False · Select All
 
-### Quiz: SQA Kay Poetry
+The six prescribed poems: Gap Year · Keeping Orchids · Whilst Leila Sleeps · Grandpa's Soup ·
+Darling · Maw Broon Visits a Therapist.
 
-1. **Type: MCQ [Tests Identifying Form]**
-   * **Question:** "Brendon Gallacher" by Jackie Kay is written in which form?
-   * **Options:** A) A ballad, B) A sonnet, C) A villanelle, D) An ode
+### Quiz: SQA National 5 Jackie Kay Poetry
+
+1. **Type: MCQ [Tests Recognising the Poem]**
+   * **Question:** Which poem opens with a mother remembering her son's Moses basket before he was born, then follows him travelling through South America on his gap year?
+   * **Options:** A) Gap Year, B) Keeping Orchids, C) Whilst Leila Sleeps, D) Darling
    * **Correct:** A
-   * **Feedback:** ✓ Correct. Kay gives the poem the ballad's rhythmic, song-like stanzas and the returning refrain "my Brendon Gallacher", telling the story of an imaginary childhood friend.
-   * **Why B:** A sonnet is a fixed fourteen-line poem; this piece runs through several song-like narrative stanzas.
-   * **Why C:** A villanelle turns on two fixed refrains across nineteen lines; here Kay tells a story in ballad stanzas.
-   * **Why D:** An ode formally praises its subject; this poem narrates a child's friendship and its sudden loss.
+   * **Feedback:** ✓ Correct. Kay's "Gap Year" opens "I remember your Moses basket before you were born", then traces her son's travels through Costa Rica, Peru and Bolivia as an eighteen-year-old.
+   * **Why B:** Keeping Orchids concerns meeting a birth mother, not a son's travels.
+   * **Why C:** Whilst Leila Sleeps follows a mother fleeing at night with her daughter, not a son abroad.
+   * **Why D:** Darling mourns a dying friend, not a travelling son.
 
-2. **Type: MCQ [Tests Identifying Form]**
-   * **Question:** "Old Tongue" by Jackie Kay is written in which form?
-   * **Options:** A) Free verse, B) A sonnet, C) A ballad, D) A villanelle
+2. **Type: MCQ [Tests Form & Features]**
+   * **Question:** How is "Gap Year" structured?
+   * **Options:** A) A single unbroken sonnet, B) Two numbered sections — a short first part on birth, a longer second part on the gap year — framed by the returning image of the Moses basket, C) A villanelle with two repeating refrains, D) Regular rhyming ballad quatrains
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The poem falls into two numbered sections — birth, then travel — and the basket image that opens Section I returns at the close of Section II ("A flip and a skip ago, you were dreaming in your basket"), framing the whole poem.
+   * **Why A:** The poem runs far longer than fourteen lines and is not a sonnet.
+   * **Why C:** There is no repeating villanelle refrain; the basket image returns once, as a closing echo.
+   * **Why D:** The poem is written in free verse, not a regular rhyming ballad.
+
+3. **Type: MCQ [Tests Meaning & Effects]**
+   * **Question:** What tension does "Gap Year" explore?
+   * **Options:** A) A mother's pride in her son's growing independence set against her own sense of loss and longing now he is far away, B) A father's anger at his son's recklessness, C) A rivalry between two brothers, D) A celebration of a wedding
    * **Correct:** A
-   * **Feedback:** ✓ Correct. Old Tongue unfolds in free verse, its irregular lines and lack of fixed rhyme mirroring the loss of the speaker's Scottish voice.
-   * **Why B:** A sonnet holds fourteen lines and a turn; this poem moves in uneven, unrhymed lines.
-   * **Why C:** A ballad tells a story in regular song-like stanzas; here the open form drifts through memory.
-   * **Why D:** A villanelle repeats two fixed refrains; Old Tongue follows no such pattern.
+   * **Feedback:** ✓ Correct. Kay balances pride in her son's confident travels with an aching sense of absence — she becomes "a home-alone mother", "flip-flopping" into his empty bedroom, even as she is glad he is out in the world.
+   * **Why B:** The grandfather's brief, worried phone calls voice caution, not anger, and he is not the poem's central parental voice.
+   * **Why C:** The poem is a mother-son relationship, with no sibling rivalry.
+   * **Why D:** There is no wedding in the poem; its occasion is travel and separation.
 
-3. **Type: MCQ [Tests Identifying Form]**
-   * **Question:** "Keeping Orchids" by Jackie Kay is written in which form?
-   * **Options:** A) Free verse, B) A ballad, C) A sonnet, D) An ode
+4. **Type: Fill [Tests Recognising the Poem]**
+   * **Question:** In "Keeping Orchids", the orchids given by the speaker's birth mother when they "first met" are still alive [BLANK] days later, though some buds remain closed.
+   * **Answer:** twelve
+   * **Feedback:** ✓ Correct. "The orchids my mother gave me when we first met / are still alive, twelve days later" opens the poem, the closed buds already hinting at a relationship not yet fully open.
+   * **WhyWrong:** The number is "twelve" — twelve days after the meeting, with some buds still closed "as secrets".
+
+5. **Type: MCQ [Tests Form & Features]**
+   * **Question:** What form does "Keeping Orchids" mostly take?
+   * **Options:** A) Loose couplets, ending on a single isolated line, B) A strict sonnet, C) A ballad with a repeated refrain, D) Free verse with no punctuation at all
    * **Correct:** A
-   * **Feedback:** ✓ Correct. Keeping Orchids is free verse, its unrhymed, uneven stanzas suiting the fragile, uncertain reunion with the birth mother.
-   * **Why B:** A ballad narrates in regular song-like stanzas; here the open form follows the wavering feelings of reunion.
-   * **Why C:** A sonnet is a fixed fourteen-line form; this poem spreads across looser stanzas.
-   * **Why D:** An ode is a formal poem of praise; this poem traces private, mixed emotion.
+   * **Feedback:** ✓ Correct. The poem moves largely in two-line stanzas, its final line — "cutting the stems with a sharp knife" — standing alone, closing the poem on a small, practical act.
+   * **Why B:** The poem runs well beyond fourteen lines and follows no fixed sonnet form.
+   * **Why C:** There is no returning refrain; each couplet advances the memory.
+   * **Why D:** Kay uses full, careful punctuation and sentences throughout.
 
-4. **Type: True-False [Tests Identifying Form]**
-   * **Question:** "Gap Year" by Jackie Kay is written in free verse rather than a fixed metrical form.
+6. **Type: True-False [Tests Meaning & Effects]**
+   * **Question:** The poem's closing image — that boiling water and cutting the stems "makes flowers live longer" — hints that the birth mother's earlier decision to give up her daughter may, painfully, have been the right one.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Gap Year runs in free verse, its long, list-like lines carrying the mother's rush of anxious thoughts as her son travels far away.
-   * **WhyWrong:** This is true — Gap Year uses open free verse, not a fixed metre, to hold the mother's spilling worry.
+   * **Feedback:** ✓ Correct. The clinical, practical advice about caring for cut flowers sits alongside the poem's ache of separation, suggesting that some difficult, cutting decisions can still help something fragile survive.
+   * **WhyWrong:** This is true — the closing horticultural detail carries an ambiguous echo of the mother's own difficult choice, framed gently rather than bitterly.
 
-5. **Type: Fill [Tests Identifying Form]**
-   * **Question:** "Lucozade" by Jackie Kay is written in [BLANK] verse, its irregular lines suiting the raw emotion of a hospital visit.
-   * **Answer:** free
-   * **Feedback:** ✓ Correct. Lucozade is free verse; its unrhymed, uneven lines let the fear and tenderness of the ward move naturally.
-   * **WhyWrong:** The word is "free" — free verse, whose open lines carry the shifting emotion of the hospital scene.
-
-6. **Type: Select All [Tests Identifying Form]**
-   * **Question:** Which of these Jackie Kay poems are written in free verse?
-   * **Options:** A) My Grandmother's Houses, B) Old Tongue, C) Keeping Orchids, D) Brendon Gallacher
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. My Grandmother's Houses, Old Tongue and Keeping Orchids all use open, unrhymed free verse suited to memory and shifting feeling.
-   * **Why D:** Brendon Gallacher is instead a ballad, told in rhythmic, song-like stanzas with a returning refrain.
-
-7. **Type: MCQ [Tests Form Features]**
-   * **Question:** What defines free verse, the form of most of these Jackie Kay poems?
-   * **Options:** A) Lines without a fixed metre or regular rhyme scheme, B) Fourteen lines ending in a couplet, C) Two refrains repeated across nineteen lines, D) Song-like stanzas telling a story
+7. **Type: MCQ [Tests Recognising the Poem]**
+   * **Question:** Which poem follows a mother driving through the night with her sleeping daughter, only to be stopped and arrested by "the men in plain suits"?
+   * **Options:** A) Whilst Leila Sleeps, B) Gap Year, C) Grandpa's Soup, D) Maw Broon Visits a Therapist
    * **Correct:** A
-   * **Feedback:** ✓ Correct. Free verse abandons fixed metre and regular rhyme, letting line and rhythm follow feeling rather than a set pattern.
-   * **Why B:** Fourteen lines closing on a couplet describes the sonnet, not free verse.
-   * **Why C:** Two refrains across nineteen lines describes the villanelle.
-   * **Why D:** Song-like narrative stanzas describe the ballad.
+   * **Feedback:** ✓ Correct. "Whilst Leila Sleeps" follows a mother fleeing in "the dead of night" with her daughter Leila, stopped by authority figures who take her "licence" and "papers".
+   * **Why B:** Gap Year follows a son's travels, not a night-time flight.
+   * **Why C:** Grandpa's Soup is a fond, comic memory of a grandfather's cooking.
+   * **Why D:** Maw Broon Visits a Therapist is a comic monologue in Scots, not a tense flight scene.
 
-8. **Type: MCQ [Tests Form Features]**
-   * **Question:** What is a refrain, such as the returning "my Brendon Gallacher"?
-   * **Options:** A) A line or phrase repeated at intervals through a poem, B) The turn in a sonnet's argument, C) A poem's closing rhymed couplet, D) The opening line of an ode
+8. **Type: MCQ [Tests Form & Features]**
+   * **Question:** How does Kay create urgency and fear in "Whilst Leila Sleeps"?
+   * **Options:** A) A first-person, present-tense free-verse voice that moves moment by moment through the night, B) A calm, distanced third-person narrator, C) A comic Scots monologue, D) A strict rhyming ballad
    * **Correct:** A
-   * **Feedback:** ✓ Correct. A refrain is a repeated line or phrase; the returning "my Brendon Gallacher" gives the ballad its insistent, song-like pulse.
-   * **Why B:** The turn in an argument is the volta of a sonnet, not a refrain.
-   * **Why C:** A closing rhymed couplet ends a sonnet; a refrain instead recurs throughout.
-   * **Why D:** The opening of an ode is not a repeated refrain.
+   * **Feedback:** ✓ Correct. The immediate first-person, present-tense voice — "My headlights are paranoic eyes / sweeping the streets for – what?" — pulls the reader directly into the mother's escalating fear.
+   * **Why B:** The poem is intensely first-person and immediate, not distanced.
+   * **Why C:** There is no comic Scots voice here, unlike Maw Broon Visits a Therapist.
+   * **Why D:** The poem runs in free verse, not a regular rhyming ballad.
 
-9. **Type: True-False [Tests Form Features]**
-   * **Question:** A ballad is a narrative poem told in rhythmic, song-like stanzas, often using repetition or a refrain.
-   * **Answer:** True
-   * **Feedback:** ✓ Correct. The ballad tells a story in regular, musical stanzas with strong rhythm and repetition — the shape Kay draws on in Brendon Gallacher.
-   * **WhyWrong:** This is true — a ballad narrates in song-like stanzas, often carrying a refrain.
-
-10. **Type: Fill [Tests Form Features]**
-   * **Question:** Because it follows no fixed metre or rhyme scheme, the form used in most of these poems is called [BLANK] verse.
-   * **Answer:** free
-   * **Feedback:** ✓ Correct. Free verse is defined by its freedom from set metre and regular rhyme, shaping rhythm to meaning instead.
-   * **WhyWrong:** The word is "free" — free verse, the open form without fixed metre or rhyme.
-
-11. **Type: MCQ [Tests Form Effects]**
-   * **Question:** What is the effect of the free-verse form in "Old Tongue"?
-   * **Options:** A) Its loose, unpatterned lines mirror the speaker's fading sense of her Scottish identity, B) Its strict rhyme creates comic order, C) Its refrains build a triumphant march, D) Its metre imitates a marching drum
+9. **Type: MCQ [Tests Meaning & Effects]**
+   * **Question:** What does the closing image of the mother whispering "her cradle song" while Leila "holds on" suggest?
+   * **Options:** A) That the mother's tenderness and protective love persist even at her most frightened and powerless moment, B) That the mother has given up on her daughter, C) That Leila is unaware anything has happened, D) That the authorities have shown mercy
    * **Correct:** A
-   * **Feedback:** ✓ Correct. The unpatterned free-verse lines enact the loss of a settled voice, the form itself loosening as the old accent slips away.
-   * **Why B:** The poem has no strict rhyme, and its mood is loss rather than comedy.
-   * **Why C:** There is no triumphant refrain; the movement is towards disappearance.
-   * **Why D:** No steady marching metre governs the poem; its lines run free.
+   * **Feedback:** ✓ Correct. Even as she is being arrested and cannot promise safety, the mother still soothes her daughter with a lullaby, love holding steady against fear.
+   * **Why B:** The mother's whispered song is an act of care, the opposite of giving up.
+   * **Why C:** Leila wakes and needs soothing, so she is not unaware.
+   * **Why D:** The poem gives no sign of mercy from the men in plain suits; the mother is taken regardless.
 
-12. **Type: MCQ [Tests Form Effects]**
-   * **Question:** What is the effect of the list-like free-verse structure in "Gap Year"?
-   * **Options:** A) The piling-up of imagined details conveys the mother's overwhelming, restless anxiety, B) It creates a calm, ordered lullaby, C) It tells a fast comic adventure, D) It argues a formal case in strict quatrains
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. The accumulating, list-like lines spill on almost without pause, embodying a mother's crowding worry as her son travels beyond her reach.
-   * **Why B:** The effect is restless anxiety, not a calm lullaby.
-   * **Why C:** The mood is tender and fearful, not a comic adventure.
-   * **Why D:** The poem runs in open free verse, not strict argued quatrains.
+10. **Type: MCQ [Tests Recognising the Poem]**
+    * **Question:** Which poem lovingly describes a grandfather's soup, with its "diced carrots the perfect size" and a "big bit of hough, which rhymes with loch"?
+    * **Options:** A) Grandpa's Soup, B) Darling, C) Keeping Orchids, D) Gap Year
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. "Grandpa's Soup" savours the exact detail of the grandfather's cooking, right down to the "wee soft bits" whose name the speaker finally recalls in the poem's closing line.
+    * **Why B:** Darling is an elegy for a dying friend, not a poem about food.
+    * **Why C:** Keeping Orchids centres on flowers and a birth mother, not soup.
+    * **Why D:** Gap Year follows a son's travels, not a grandfather's cooking.
 
-13. **Type: True-False [Tests Form Effects]**
-   * **Question:** In free verse, the absence of fixed rhyme and metre can itself carry meaning, such as raw honesty or a loss of control.
-   * **Answer:** True
-   * **Feedback:** ✓ Correct. Free verse is a deliberate choice; in Kay's poems its openness can suggest unguarded emotion or a self that no longer feels ordered and whole.
-   * **WhyWrong:** This is true — free verse's freedom from fixed rules can itself be meaningful.
+11. **Type: Fill [Tests Form & Features]**
+    * **Question:** "Grandpa's Soup" ends on a single isolated line in which the speaker finally remembers the name of the "wee soft bits" in the soup: "[BLANK]! That's the name of the wee soft bits."
+    * **Answer:** Barley
+    * **Feedback:** ✓ Correct. The poem's affectionate, list-like free verse builds to this small, joyful moment of memory recovered — "Barley! That's the name of the wee soft bits. Barley."
+    * **WhyWrong:** The word is "Barley" — the standalone closing line lets this small, recovered detail carry real weight.
 
-14. **Type: Fill [Tests Form Effects]**
-   * **Question:** The returning phrase "my Brendon Gallacher" acts as a [BLANK], giving the ballad its insistent, song-like pulse.
-   * **Answer:** refrain
-   * **Feedback:** ✓ Correct. The repeated phrase works as a refrain, its return lending the poem a haunting, childlike rhythm that makes the final loss sting.
-   * **WhyWrong:** The word is "refrain" — the repeated line that gives the ballad its song-like return.
+12. **Type: True-False [Tests Meaning & Effects]**
+    * **Question:** The line "Every soup will become sad and wrong after he is gone" reveals that the poem is not only nostalgic comfort but also carries an anticipation of grief.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Beneath the warm, present-tense memory of the grandfather's cooking runs a quiet awareness that his soup — and his presence — cannot last forever.
+    * **WhyWrong:** This is true — the poem's fond detail is shadowed by the knowledge that his soup, and his company, will one day be lost.
 
-15. **Type: MCQ [Tests Form & Meaning]**
-   * **Question:** How does the free-verse form of "Keeping Orchids" serve its meaning?
-   * **Options:** A) Its fragile, uneven stanzas mirror the delicate, uncertain bond with the birth mother, B) Its strict sonnet argument settles the relationship neatly, C) Its ballad refrain tells a heroic quest, D) Its ode celebrates a joyful reunion
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. The open, unsteady free verse mirrors the wilting orchids and the wavering, unresolved feeling between the speaker and her birth mother.
-   * **Why B:** There is no neat sonnet argument; the bond is left uncertain, not resolved.
-   * **Why C:** The poem is not a heroic ballad quest but an intimate, tentative meeting.
-   * **Why D:** The reunion is fraught and disappointing, far from an ode's celebration.
+13. **Type: MCQ [Tests Recognising the Poem]**
+    * **Question:** Which poem is an elegy for a dying friend, recalling how the speaker sang "Heel y'ho boys, let her go boys" as she slipped away?
+    * **Options:** A) Darling, B) Whilst Leila Sleeps, C) Maw Broon Visits a Therapist, D) Grandpa's Soup
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. "Darling" remembers holding a dying friend's hand and singing an old song as she "slipped away", her face at the last "almost smiling".
+    * **Why B:** Whilst Leila Sleeps concerns a mother and daughter fleeing at night, not a dying friend.
+    * **Why C:** Maw Broon Visits a Therapist is a comic Scots monologue, not an elegy.
+    * **Why D:** Grandpa's Soup is about a grandfather's cooking, not a dying friend.
 
-16. **Type: MCQ [Tests Form & Meaning]**
-   * **Question:** How does the form of "Brendon Gallacher" serve its meaning?
-   * **Options:** A) Its ballad rhythm and childlike refrain build the imaginary friend so vividly that his sudden loss lands hard, B) Its sonnet volta argues a philosophical case, C) Its villanelle refrains refuse the fact of death, D) Its free verse drifts without any pattern
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. The song-like ballad stanzas and the returning name make Brendon feel real and alive, so the closing revelation of his invention strikes with full force.
-   * **Why B:** The poem tells a story rather than arguing a case through a sonnet's turn.
-   * **Why C:** It is a ballad of childhood, not a villanelle circling death.
-   * **Why D:** Its rhythmic stanzas and refrain give it clear ballad pattern, not drifting free verse.
+14. **Type: MCQ [Tests Form & Features]**
+    * **Question:** How is "Darling" structured?
+    * **Options:** A) Four quatrains in free verse, using loose near-rhyme rather than a strict rhyme scheme, B) A single fourteen-line sonnet, C) A villanelle with two repeating refrains, D) Rhyming couplets throughout
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. The poem's four four-line stanzas move in gentle free verse, its near-rhymes ("voice"/"weeping", "sleeping"/"weeping") giving it a soft, elegiac chime rather than a fixed rhyme scheme.
+    * **Why B:** The poem runs across four stanzas, not a single fourteen-line sonnet.
+    * **Why C:** There is no pair of repeating refrains; the poem moves forward through memory instead.
+    * **Why D:** Its rhymes are loose and occasional, not a full scheme of couplets.
 
-17. **Type: Select All [Tests Form & Meaning]**
-   * **Question:** Which of these correctly link a Jackie Kay poem's form to its meaning?
-   * **Options:** A) Old Tongue uses free verse's loosening lines to enact a fading Scottish identity, B) Gap Year uses list-like free verse to convey a mother's crowding anxiety, C) Brendon Gallacher uses a ballad's refrain to make an imaginary friend feel real, D) Lucozade uses a strict villanelle to circle the fact of death
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Free-verse-as-loss, list-verse-as-anxiety and ballad-refrain-as-vivid-life all show Kay shaping form to meaning.
-   * **Why D:** Lucozade is written in free verse, not a villanelle; its open lines carry the raw feeling of the hospital visit.
+15. **Type: MCQ [Tests Meaning & Effects]**
+    * **Question:** What comfort does the closing statement — "The dead don't go till you do, loved ones. / The dead are still here holding our hands" — offer?
+    * **Options:** A) That those we love remain present to us through memory and love even after death, B) That death can be reversed, C) That grief should be avoided altogether, D) That the dead return only when summoned
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. Kay reframes death as something the living carry, not a final absence — the dead persist through the love and memory of those left behind.
+    * **Why B:** The poem accepts death as final; its comfort is about presence in memory, not literal return.
+    * **Why C:** The poem does not urge avoiding grief; it sits with loss tenderly.
+    * **Why D:** There is no ritual or summoning in the poem — the dead's presence is described as ongoing, not conjured.
 
-18. **Type: True-False [Tests Form & Meaning]**
-   * **Question:** "Divorce" by Jackie Kay is spoken by a single child's voice addressing her parents, borrowing the language of divorce proceedings to voice a wish to be free of them.
-   * **Answer:** True
-   * **Feedback:** ✓ Correct. The child speaks alone in a mock-legal register, so the borrowed courtroom voice makes both the dark humour and the real hurt land.
-   * **WhyWrong:** This is true — a single child's voice, in legal-sounding terms, drives the poem's mix of dark comedy and pain.
+16. **Type: MCQ [Tests Recognising the Poem]**
+    * **Question:** Which poem gives voice to a well-known Scottish comic-strip character, opening with the exclamation "Crivens! This is jist typical" as she visits a therapist?
+    * **Options:** A) Maw Broon Visits a Therapist, B) Gap Year, C) Keeping Orchids, D) Darling
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. Kay borrows the voice of Maw Broon, the comic-strip matriarch, for a wry monologue that opens "Crivens! This is jist typical" as she airs her frustrations to a silent therapist.
+    * **Why B:** Gap Year is spoken in Standard English by a mother of a travelling son, not a comic-strip character.
+    * **Why C:** Keeping Orchids concerns a birth mother, not a comic character in therapy.
+    * **Why D:** Darling is a quiet elegy, not a comic Scots monologue.
 
-19. **Type: MCQ [Tests Form & Meaning]**
-   * **Question:** How does the free-verse form of "My Grandmother's Houses" serve its meaning?
-   * **Options:** A) Its open, shifting stanzas let the child's memory move between two very different homes and identities, B) Its sonnet couplet settles a single argument, C) Its villanelle refrains circle one fixed idea, D) Its ballad narrates a fast-moving quest
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. The flexible free-verse stanzas move fluidly between the two grandmothers' houses, mirroring a child navigating a dual, mixed heritage.
-   * **Why B:** There is no single sonnet argument closed by a couplet; the poem holds two worlds in tension.
-   * **Why C:** The poem opens outwards between two homes rather than circling one fixed refrain.
-   * **Why D:** It reflects on memory and belonging rather than narrating a fast ballad quest.
+17. **Type: MCQ [Tests Form & Features]**
+    * **Question:** How is "Maw Broon Visits a Therapist" written, and what effect does this have?
+    * **Options:** A) As a dramatic monologue in Scots dialect addressed to a silent therapist, giving Maw Broon's frustration an authentic, conversational voice, B) As a formal sonnet in Standard English, C) As a rhyming ballad celebrating a heroic journey, D) As a silent third-person description with no direct speech
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. The poem is a one-sided dramatic monologue in Scots — "Ma hale faimily taks me for grantit" — the dialect and rambling, conversational shape making Maw Broon's frustration feel authentic and immediate.
+    * **Why B:** The poem is a loose, conversational monologue, not a formal fourteen-line sonnet.
+    * **Why C:** There is no heroic quest or ballad refrain; Maw Broon airs everyday domestic frustration.
+    * **Why D:** The poem is entirely spoken in Maw Broon's own voice, not described from outside.
 
-20. **Type: Fill [Tests Form & Meaning]**
-   * **Question:** Written in [BLANK] verse, "Way Down" uses its bare, repetitive lines to convey the sinking, consuming experience of low mood.
-   * **Answer:** free
-   * **Feedback:** ✓ Correct. Way Down is free verse; its stripped, repeating lines enact the pull of descent into despair, the form matching the downward feeling.
-   * **WhyWrong:** The word is "free" — free verse, whose spare repetition mirrors the sinking mood.
+18. **Type: Select All [Tests Meaning & Effects]**
+    * **Question:** Which statements correctly describe the meaning and effect of "Maw Broon Visits a Therapist"?
+    * **Options:** A) Beneath its comic surface, the poem voices real exhaustion at being taken for granted, as in "Ma hale faimily taks me for grantit", B) The Scots dialect makes Maw Broon's frustration feel authentic and rooted in ordinary domestic life, C) The poem gently satirises the unfamiliar rituals of therapy — the clock, the "wee box of tissues" — from Maw Broon's sceptical point of view, D) The poem concludes that therapy is entirely useless and should be avoided
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
+    * **Feedback:** ✓ Correct. Kay uses comedy and Scots dialect to voice a real undercurrent of exhaustion and being taken for granted, while gently sending up the unfamiliar rituals of therapy from Maw Broon's own sceptical viewpoint.
+    * **Why D:** The poem pokes affectionate fun at therapy's unfamiliarity rather than dismissing it outright; Maw Broon's real feelings still surface within the session.

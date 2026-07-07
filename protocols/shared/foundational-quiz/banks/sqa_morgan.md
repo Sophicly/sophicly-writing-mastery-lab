@@ -1,165 +1,168 @@
-# Foundational Quiz Bank — SQA National 5 / Higher: Edwin Morgan Scottish Text Poetry (Forms)
+# Foundational Quiz Bank — SQA Edwin Morgan Poetry (Scottish Set Texts)
 
 Deterministic, code-scored foundational recall bank (parsed by `SWML_Quiz_Bank`).
-20 questions on the FORMS of Edwin Morgan's set poems + mixed types. The picker draws a
-random 5 per round, stratified across categories. Keys + feedback live server-side and
-are stripped before questions reach the client. The AI is never the scorekeeper.
+18 questions on the six Edwin Morgan poems (Tier B) — three per poem across Neil's three
+understanding dimensions: Recognising the Poem · Form & Features · Meaning & Effects. Unlike
+the universal forms bank (`poetic_forms.md`, Tier A), these are poem-specific, testing what the
+student has actually read. The picker draws a random 5 per round, stratified across categories.
+Keys + feedback live server-side and are stripped before questions reach the client. The AI is
+never the scorekeeper.
 
-Categories: Identifying Form · Form Features · Form Effects · Form & Meaning
+Categories: Recognising the Poem · Form & Features · Meaning & Effects
 Types: MCQ · Fill · True-False · Select All
 
-### Quiz: SQA Morgan Poetry
+**Edwin Morgan is National-5-only in the 2026 refreshed SQA Scottish set-text list** — he carries
+no Higher poems, so this bank has a single stage covering all six National 5 poems, with no
+`@set` staging tokens: In the Snack-bar · Trio · Glasgow Sonnet i · Strawberries · Love · Death
+in Duke Street.
 
-1. **Type: MCQ [Tests Identifying Form]**
-   * **Question:** "Glasgow Sonnet (i)" by Edwin Morgan is written in which form?
-   * **Options:** A) A Petrarchan sonnet, B) A ballad, C) Free verse, D) A dramatic monologue
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. As its title announces, "Glasgow Sonnet (i)" is a Petrarchan sonnet — fourteen lines divided into an octave and a sestet, its elegant inherited form set against a squalid high-rise scene.
-   * **Why B:** A ballad tells a story across song-like stanzas; this poem holds to the fourteen-line sonnet shape.
-   * **Why C:** The poem obeys a strict sonnet structure and rhyme, so it is not free verse.
-   * **Why D:** No single persona addresses a silent listener here; the poem surveys a tenement from outside, in sonnet form.
+### Quiz: Edwin Morgan Poetry
 
-2. **Type: MCQ [Tests Identifying Form]**
-   * **Question:** "Hyena" by Edwin Morgan takes the form of which kind of poem?
-   * **Options:** A) A dramatic monologue, B) A Petrarchan sonnet, C) A ballad, D) A villanelle
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. "Hyena" is a dramatic monologue: the scavenging animal speaks throughout in its own unsettling voice, addressing the reader directly and justifying its place in the world.
-   * **Why B:** The poem runs well beyond fourteen lines and follows no octave-and-sestet pattern, so it is not a sonnet.
-   * **Why C:** A ballad narrates events in regular rhymed stanzas; here a single voice speaks rather than telling a song-like tale.
-   * **Why D:** A villanelle turns on two repeating refrains, which the hyena's loose, prowling speech never uses.
+1. **Type: MCQ [Tests Recognising the Poem]**
+   * **Question:** Which poem follows a narrator helping an elderly, disabled man to the toilet in a Glasgow café, introduced as "Long blind, hunchback born, half paralysed"?
+   * **Options:** A) Death in Duke Street, B) In the Snack-bar, C) Trio, D) Glasgow Sonnet i
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Morgan's "In the Snack-bar" follows the narrator's patient assistance of an elderly disabled man, introduced as "Long blind, hunchback born, half paralysed".
+   * **Why A:** Death in Duke Street depicts a stranger's sudden collapse and death on a street, not an assisted trip to the toilet.
+   * **Why C:** Trio follows three joyful young people passing on a winter street, not a disabled man in a snack-bar.
+   * **Why D:** Glasgow Sonnet i pictures a decaying tenement block, not a café encounter.
 
-3. **Type: MCQ [Tests Identifying Form]**
-   * **Question:** "Slate", which opens Morgan's sequence "Sonnets from Scotland", is written in which form?
-   * **Options:** A) A sonnet, B) Free verse, C) A dramatic monologue, D) An ode
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. "Slate" is a sonnet — fourteen lines opening the "Sonnets from Scotland" sequence, compressing the whole geological birth of the land into the form's tight span.
-   * **Why B:** The poem holds to fourteen lines and a sonnet's turn, so it is not free verse.
-   * **Why C:** No speaker confesses to a silent listener; the sonnet surveys the making of Scotland itself.
-   * **Why D:** An ode sustains praise of a single subject; this compact sonnet narrates deep time rather than praising.
+2. **Type: MCQ [Tests Form & Features]**
+   * **Question:** What form and viewpoint does Morgan use in "In the Snack-bar"?
+   * **Options:** A) A rhyming ballad narrated in the third person, B) Free verse in the first person present tense, following the narrator's own effort alongside the old man's, C) A Petrarchan sonnet, D) A series of unconnected fragments with no narrator
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The poem unfolds in long, flowing free-verse lines and the first-person present tense, so the reader experiences the narrator's strain step by step, alongside the old man's own "persisting patience of the undefeated".
+   * **Why A:** There is no rhyme or song-like refrain; the lines flow as continuous free verse.
+   * **Why C:** The sonnet's fixed fourteen lines belong to Glasgow Sonnet i, not this poem.
+   * **Why D:** The poem is a continuous first-person narrative, not disconnected fragments.
 
-4. **Type: True-False [Tests Identifying Form]**
-   * **Question:** "In the Snack-bar" by Edwin Morgan is written in free verse, without a fixed rhyme scheme or regular metre.
+3. **Type: MCQ [Tests Meaning & Effects]**
+   * **Question:** What does the phrase "persisting patience of the undefeated" suggest about the old man in "In the Snack-bar"?
+   * **Options:** A) That he has given up and resents his condition, B) That, despite severe disability, his quiet endurance and dignity are a form of victory, C) That he is angry at the narrator for helping him, D) That he does not notice his own disability
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Morgan reframes physical struggle as a kind of triumph — the old man's patient, unhurried persistence becomes its own quiet victory over his condition, earning the narrator's respect rather than only pity.
+   * **Why A:** The phrase stresses endurance and dignity, not resignation or resentment.
+   * **Why C:** The old man depends gratefully on the narrator's help; there is no anger between them.
+   * **Why D:** His careful, deliberate movements reveal how keenly aware he is of his own condition.
+
+4. **Type: Fill [Tests Recognising the Poem]**
+   * **Question:** In Morgan's "Trio", a young man and two girls pass along Buchanan Street on a "sharp winter evening", carrying a guitar, a baby, and a [BLANK].
+   * **Answer:** chihuahua
+   * **Feedback:** ✓ Correct. The three friends carry a new guitar, a very young baby, and a chihuahua in a tiny tartan coat, their breath rising "in a cloud of happiness".
+   * **WhyWrong:** The third figure carries a chihuahua — its tiny Royal Stewart tartan coat is one of the poem's most memorable images.
+
+5. **Type: MCQ [Tests Form & Features]**
+   * **Question:** How does Morgan build meaning in "Trio" as the trio passes the speaker?
+   * **Options:** A) Through a rhyming ballad refrain, B) Through exclamatory apostrophe — "Orphean sprig! Melting baby! Warm chihuahua!" — that elevates the ordinary objects, C) Through a strict sonnet form, D) Through dry, unemotional reportage
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The sudden exclamations address the mistletoe, baby and dog directly, lifting these everyday things to something almost sacred against "the vale of tears".
+   * **Why A:** There is no rhyme scheme or musical refrain; the poem is free verse.
+   * **Why C:** Trio runs across four irregular verse paragraphs, not a fourteen-line sonnet.
+   * **Why D:** The excited exclamations are the opposite of dry, detached reporting.
+
+6. **Type: True-False [Tests Meaning & Effects]**
+   * **Question:** In "Trio", the speaker presents the trio's ordinary happiness as powerful enough to push back the "monsters of the year" and the cold of winter, if only for a moment.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. "In the Snack-bar" unfolds in free verse; its irregular, unrhymed lines let the halting progress of the old man's journey set the poem's pace.
-   * **WhyWrong:** This is true — the poem has no fixed rhyme or metre, its free-verse lines following the slow, uneven movement across the cafe.
+   * **Feedback:** ✓ Correct. Morgan claims that "the vale of tears is powerless" before the trio and that "monsters of the year go blank" before their joy — an ordinary moment of warmth outshining hardship, however briefly.
+   * **WhyWrong:** This is true — the poem insists that "monsters of the year... can't bear this march of three", making simple human happiness a force against the year's darkness.
 
-5. **Type: Fill [Tests Identifying Form]**
-   * **Question:** With its fourteen lines split into an octave and a sestet, "Glasgow Sonnet (i)" belongs to the [BLANK] form.
-   * **Answer:** sonnet
-   * **Feedback:** ✓ Correct. The fourteen-line shape, its octave and sestet, marks it out as a sonnet, a form Morgan borrows to frame urban deprivation.
-   * **WhyWrong:** The word is "sonnet" — the fourteen-line form, divided into octave and sestet, that gives the poem its title.
+7. **Type: MCQ [Tests Recognising the Poem]**
+   * **Question:** Which poem opens "A mean wind wanders through the backcourt trash" and pictures "Roses of mould" growing "from ceiling to wall" in a condemned tenement?
+   * **Options:** A) Death in Duke Street, B) Glasgow Sonnet i, C) Strawberries, D) In the Snack-bar
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. "Glasgow Sonnet i" opens on the "mean wind" through backcourt rubbish and moves inside to a mother and daughter's flat, its "Roses of mould" a bitter image of decay.
+   * **Why A:** Death in Duke Street is a street scene around a dying man, not a decaying tenement interior.
+   * **Why C:** Strawberries is a sensory memory of a summer afternoon, not urban decay.
+   * **Why D:** In the Snack-bar is set in a café, not a condemned housing block.
 
-6. **Type: Select All [Tests Identifying Form]**
-   * **Question:** Which of these Morgan poems are written in free verse?
-   * **Options:** A) In the Snack-bar, B) Trio, C) Winter, D) Glasgow Sonnet (i)
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. "In the Snack-bar", "Trio" and "Winter" all use free verse, its unrhymed flexibility suiting a halting journey, a fleeting street scene and the chill of a failing relationship in turn.
-   * **Why D:** "Glasgow Sonnet (i)" is, as its title states, a sonnet, not free verse.
+8. **Type: MCQ [Tests Form & Features]**
+   * **Question:** What form does Morgan use for "Glasgow Sonnet i", and why is this an ironic choice?
+   * **Options:** A) A ballad, whose folk associations suit the working-class subject, B) A traditional Petrarchan sonnet, whose associations with order and elegance are set against scenes of poverty and decay, C) Free verse, reflecting the chaos of the tenement, D) A villanelle, whose refrains mirror the family's repeated hardship
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Morgan uses the disciplined octave-and-sestet structure of the Petrarchan sonnet — a form associated with elegant, ordered subjects — to frame Glasgow's poverty and decay, sharpening the poem's social criticism through that contrast.
+   * **Why A:** The poem keeps the tight fourteen-line sonnet structure, not a loose ballad form.
+   * **Why C:** The rhymed octave and sestet are a controlled sonnet shape, not free verse.
+   * **Why D:** There is no repeating refrain; the poem is a sonnet, not a villanelle.
 
-7. **Type: MCQ [Tests Form Features]**
-   * **Question:** What is the defining structure of a Petrarchan sonnet, the form of "Glasgow Sonnet (i)"?
-   * **Options:** A) An eight-line octave followed by a six-line sestet, across fourteen lines, B) Nineteen lines built on two refrains, C) A single speaker addressing a silent listener, D) Song-like stanzas telling a story
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. A Petrarchan sonnet runs to fourteen lines, an eight-line octave setting a situation and a six-line sestet answering or turning it.
-   * **Why B:** Nineteen lines built on two refrains describes the villanelle, not the sonnet.
-   * **Why C:** A single speaker addressing a silent listener defines the dramatic monologue.
-   * **Why D:** Song-like narrative stanzas describe the ballad, a different form entirely.
+9. **Type: MCQ [Tests Meaning & Effects]**
+   * **Question:** What social criticism does "Glasgow Sonnet i" make through the mother, daughter and jobless man in the tenement?
+   * **Options:** A) That poverty is a personal failing of those affected, B) That ordinary people are left enduring severe poverty and neglect within a decaying, "condemned" building that has failed them, C) That Glasgow has no housing problems, D) That the family are content with their conditions
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The family "condemned to stand, not crash" endures cracks, rats and mould around them; Morgan directs blame outward, at neglect and social failure, rather than at the people who must endure it.
+   * **Why A:** The poem's sympathy lies with the family; it does not blame them for their poverty.
+   * **Why C:** The vivid decay — cracks, rats, mould — insists the opposite: housing conditions are severe.
+   * **Why D:** There is no contentment in the poem, only quiet, grim endurance.
 
-8. **Type: True-False [Tests Form Features]**
-   * **Question:** A dramatic monologue, the form of "Hyena", has a single speaker who is not the poet, revealing themselves through their own words.
-   * **Answer:** True
-   * **Feedback:** ✓ Correct. In a dramatic monologue one invented speaker holds the whole poem; in "Hyena" the animal's own voice exposes its nature as it talks.
-   * **WhyWrong:** This is true — a dramatic monologue gives the poem over to one crafted speaker, as the hyena speaks entirely for itself.
+10. **Type: MCQ [Tests Recognising the Poem]**
+    * **Question:** Which poem recalls two people sharing fruit from "blue plates" on a step, with "summer lightning / on the Kilpatrick hills"?
+    * **Options:** A) Love, B) Strawberries, C) Trio, D) Death in Duke Street
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. "Strawberries" remembers a "sultry afternoon" of shared strawberries and closeness, ending on "summer lightning" over the Kilpatrick hills near Glasgow.
+    * **Why A:** Love defines love through abstract paradoxes, not one remembered afternoon.
+    * **Why C:** Trio is a chance street encounter with strangers, not two people alone together.
+    * **Why D:** Death in Duke Street is a street death scene, not a summer memory.
 
-9. **Type: Fill [Tests Form Features]**
-   * **Question:** Free verse, the form of "Trio" and "In the Snack-bar", has no fixed rhyme scheme or regular [BLANK].
-   * **Answer:** metre
-   * **Feedback:** ✓ Correct. Free verse abandons regular metre, letting the rhythm follow sense and feeling rather than a set beat.
-   * **WhyWrong:** The word is "metre" — free verse keeps no regular metre, shaping its rhythm around meaning instead.
+11. **Type: MCQ [Tests Form & Features]**
+    * **Question:** How does Morgan's form in "Strawberries" suit its subject?
+    * **Options:** A) Strict rhyme and full punctuation give the memory formal precision, B) Free verse with no punctuation lets the memory flow without interruption, mirroring the moment's ease, C) A repeating ballad refrain drives the narrative, D) A tightly argued sonnet structure builds a case
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Without commas or full stops, the lines run on into one another, so the memory unfolds as a single, unbroken flow — matching the unhurried intimacy it describes.
+    * **Why A:** The poem is markedly unpunctuated and unrhymed, the opposite of formal precision.
+    * **Why C:** There is no refrain; the poem moves as continuous free verse.
+    * **Why D:** The poem drifts through memory rather than building a structured argument.
 
-10. **Type: MCQ [Tests Form Features]**
-   * **Question:** In a sonnet, what is the "turn" or volta?
-   * **Options:** A) The point where the poem's argument or feeling shifts direction, B) The repeated refrain that closes each stanza, C) The narrator's direct address to a silent listener, D) The regular drumbeat of its metre
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. The volta is the sonnet's turn, the moment its thought or mood changes course, often as the octave gives way to the sestet.
-   * **Why B:** A repeated closing refrain belongs to forms such as the villanelle, not to the sonnet's single turn.
-   * **Why C:** A direct address to a silent listener describes the dramatic monologue.
-   * **Why D:** A regular drumbeat of metre is a matter of rhythm, not the thematic pivot the volta names.
+12. **Type: True-False [Tests Meaning & Effects]**
+    * **Question:** The final line, "let the storm wash the plates", suggests that even as time passes over the moment, the memory of it survives intact for the speaker.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The storm can wash away the physical plates, but not the memory itself — the poem has already fixed the afternoon "in my memory", so what is lost is only the literal scene, not its meaning.
+    * **WhyWrong:** This is true — the closing image lets time and weather erase the physical trace of the afternoon while the memory itself, already held "in my memory", endures.
 
-11. **Type: MCQ [Tests Form Effects]**
-   * **Question:** What is the effect of Morgan choosing the elegant sonnet form for the deprived tenement of "Glasgow Sonnet (i)"?
-   * **Options:** A) The clash between the refined form and the squalid subject sharpens the poem's protest at urban poverty, B) It makes the scene feel comic and light, C) It signals that the tenement is a place of romantic beauty, D) It hides the poet's attitude to poverty entirely
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. Housing images of damp and neglect inside a form long associated with love and beauty, Morgan lets the mismatch itself indict the conditions he describes.
-   * **Why B:** The controlled form deepens the bleakness rather than turning the scene comic.
-   * **Why C:** The sonnet's beauty is set ironically against the squalor, not used to romanticise it.
-   * **Why D:** The formal irony sharpens Morgan's protest rather than concealing his view.
+13. **Type: Fill [Tests Recognising the Poem]**
+    * **Question:** Morgan's poem "[BLANK]" opens with the triple statement "Love rules. Love laughs. Love marches."
+    * **Answer:** Love
+    * **Feedback:** ✓ Correct. The poem "Love" opens with this driving triple statement before unfolding a sequence of paradoxical images of love's power.
+    * **WhyWrong:** The poem is "Love" — its title states directly what its opening lines assert with such force.
 
-12. **Type: MCQ [Tests Form Effects]**
-   * **Question:** What is the effect of the dramatic monologue form in "Hyena"?
-   * **Options:** A) Giving the predator its own voice forces the reader into unsettling intimacy with a creature of death, B) It keeps the hyena at a safe, comfortable distance, C) It turns the poem into a cheerful celebration of wildlife, D) It removes any sense of a speaker from the poem
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. Because the hyena addresses us directly and reasons in its own voice, we are drawn uneasily close to its predatory logic and cannot simply look away.
-   * **Why B:** The direct address creates discomforting closeness, not safe distance.
-   * **Why C:** The voice is menacing and coldly patient, far from a cheerful celebration.
-   * **Why D:** The whole poem rests on the speaker's voice, so the form foregrounds a speaker rather than removing one.
+14. **Type: MCQ [Tests Form & Features]**
+    * **Question:** What technique structures most of "Love", as in "Love is terror. Love is sweat. Love is bashed / pillow, crumpled sheet..."?
+    * **Options:** A) A single rhyming couplet repeated throughout, B) Anaphora — repeating "Love is / rules / laughs" to build a cumulative, many-sided definition, C) A strict fourteen-line sonnet form, D) Dialogue between two speakers
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The insistent repetition of "Love is" (and "Love rules", "Love laughs") piles up contrasting images — terror, sweat, honour, ice — building an ever-expanding, paradoxical definition of love's power.
+    * **Why A:** The poem does not rhyme in regular couplets; its power comes from repeated sentence openings, not rhyme.
+    * **Why C:** The poem runs longer and more irregularly than a fourteen-line sonnet.
+    * **Why D:** There is one speaking voice offering definitions, not a dialogue between speakers.
 
-13. **Type: True-False [Tests Form Effects]**
-   * **Question:** In "In the Snack-bar", the loose free-verse lines and irregular rhythm help mirror the slow, halting journey of the blind old man.
-   * **Answer:** True
-   * **Feedback:** ✓ Correct. The unmetred lines stall and stretch with the old man's difficult movement, so the poem's shape enacts the effort of the journey it describes.
-   * **WhyWrong:** This is true — the free-verse rhythm falters with the man's progress, letting the form embody the painful, uneven journey.
+15. **Type: MCQ [Tests Meaning & Effects]**
+    * **Question:** What view of love does Morgan present through paradoxes such as "Love is the honour that kills and saves"?
+    * **Options:** A) That love is simple, safe and easily defined, B) That love is an enormous, contradictory force — both destructive and life-giving — too vast to be pinned to one meaning, C) That love always causes harm and should be avoided, D) That love is purely a matter of music and art
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. By yoking opposites — love that "kills and saves", terrifies and creates — Morgan presents love as an immense, uncontainable force that resists any single, tidy definition.
+    * **Why A:** The poem's whole method is to present love as complex and contradictory, not simple.
+    * **Why C:** Love is presented as both dangerous and vital, not only harmful.
+    * **Why D:** Music and art are named as one image among many, not love's only aspect.
 
-14. **Type: Fill [Tests Form Effects]**
-   * **Question:** The moment in a sonnet where the argument or feeling changes direction is called the [BLANK].
-   * **Answer:** volta
-   * **Feedback:** ✓ Correct. The volta is the sonnet's turn; in "Glasgow Sonnet (i)" the shift lets Morgan press his bleak observation home.
-   * **WhyWrong:** The word is "volta" — the turn where a sonnet's thought or mood changes course.
+16. **Type: MCQ [Tests Recognising the Poem]**
+    * **Question:** Which poem captures a crowd gathering around a collapsed old man on a Glasgow street, with bystanders asking "Whit's wrang?" and "Can ye see'm?"
+    * **Options:** A) In the Snack-bar, B) Death in Duke Street, C) Glasgow Sonnet i, D) Trio
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. "Death in Duke Street" captures the moment strangers gather around a dying old man, their overheard Glasgow speech — "Whit's wrang?", "Can ye see'm?" — anchoring the scene in a real, ordinary street.
+    * **Why A:** In the Snack-bar concerns one narrator helping one man in a café, not a street crowd.
+    * **Why C:** Glasgow Sonnet i pictures a decaying tenement, not a street death.
+    * **Why D:** Trio is a joyful encounter with three young people, not a death scene.
 
-15. **Type: MCQ [Tests Form & Meaning]**
-   * **Question:** How does the sonnet form of "Glasgow Sonnet (i)" serve its meaning?
-   * **Options:** A) Confining images of poverty within a beautiful, ordered form makes the neglect feel all the more damning, B) The sonnet form proves the tenement is a place of comfort, C) It tells the tenants' life story as a flowing narrative ballad, D) It praises the city authorities for their housing
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. The tension between the sonnet's graceful order and its grim content is exactly the point: beauty of form throws the ugliness of the conditions into sharp relief.
-   * **Why B:** The form's beauty is set against the squalor to expose it, not to suggest comfort.
-   * **Why C:** The poem holds to a compact fourteen-line sonnet, not a flowing narrative ballad.
-   * **Why D:** The controlled irony condemns the neglect rather than praising those responsible for it.
+17. **Type: MCQ [Tests Form & Features]**
+    * **Question:** What kind of poem is "Death in Duke Street", and how does its form work?
+    * **Options:** A) A rhyming elegy in regular stanzas, B) An "Instamatic" free-verse poem — like a snapshot capturing one real, unfolding moment, including overheard dialect speech, C) A tightly argued Petrarchan sonnet, D) A song-like ballad with a refrain
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Morgan's "Instamatic" poems work like photographs of real, reported moments — free verse capturing the scene as it happens, including the authentic overheard Glasgow speech of the crowd.
+    * **Why A:** The poem is unrhymed free verse, not a formal rhyming elegy.
+    * **Why C:** It has none of the sonnet's fixed fourteen-line, rhymed structure.
+    * **Why D:** There is no refrain or song-like repetition; it reads as reported, real-time observation.
 
-16. **Type: MCQ [Tests Form & Meaning]**
-   * **Question:** How does the free-verse form of "Trio" suit its meaning?
-   * **Options:** A) The open, flowing lines capture a fleeting, spontaneous moment of joy as three young people pass on Buchanan Street, B) A strict rhyme scheme mirrors a rigid, joyless routine, C) The refrains circle obsessively to enact grief, D) An octave-and-sestet structure argues a formal case
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. Free verse lets "Trio" move with the unforced spontaneity of the moment it catches, its lines opening out towards the sudden declaration that this happiness defeats "the vale of tears".
-   * **Why B:** The poem is unrhymed free verse celebrating joy, not a strict rhyme enacting joyless routine.
-   * **Why C:** There are no circling refrains here; the poem lifts towards triumph rather than grief.
-   * **Why D:** There is no octave and sestet; "Trio" is open free verse, not a sonnet arguing a case.
-
-17. **Type: Select All [Tests Form & Meaning]**
-   * **Question:** Which of these correctly link a Morgan poem's form to its meaning?
-   * **Options:** A) "Glasgow Sonnet (i)" sets the elegant sonnet form against squalor to protest urban poverty, B) "Hyena" uses the dramatic monologue to trap the reader in a predator's voice, C) "In the Snack-bar" uses free verse to mirror a slow, halting journey, D) "Trio" uses a strict villanelle to circle obsessively around despair
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Sonnet-against-squalor, monologue-as-entrapment and free-verse-as-halting-journey all show Morgan matching form to meaning.
-   * **Why D:** "Trio" is a free-verse celebration of joy, not a villanelle circling despair.
-
-18. **Type: True-False [Tests Form & Meaning]**
-   * **Question:** In "Slate", Morgan uses the compression of the sonnet form to hold the vast geological making of Scotland within just fourteen lines.
-   * **Answer:** True
-   * **Feedback:** ✓ Correct. The sonnet's tight fourteen-line frame lets "Slate" compress deep geological time into a single controlled span, opening the "Sonnets from Scotland" sequence with striking economy.
-   * **WhyWrong:** This is true — the sonnet's compression gathers the whole birth of the land into fourteen tightly worked lines.
-
-19. **Type: MCQ [Tests Form & Meaning]**
-   * **Question:** How does the free-verse form of "The Starlings in George Square" serve the poem's meaning?
-   * **Options:** A) Its loose, unruly lines match the birds' anarchic energy and their refusal to be controlled, B) A rigid sonnet structure enforces the authorities' order over the square, C) Repeated refrains mourn the loss of the starlings, D) A ballad narrates a single hero's quest
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. The free-verse form spills and swarms like the starlings themselves, its lack of imposed order echoing the birds' cheerful defiance of the authorities trying to drive them out.
-   * **Why B:** The poem is open free verse, not a rigid sonnet enforcing order; its shape sides with the birds' disorder.
-   * **Why C:** There are no mourning refrains; the tone celebrates the starlings' vitality.
-   * **Why D:** The poem observes a whole square of birds, not a single hero's quest in ballad stanzas.
-
-20. **Type: Fill [Tests Form & Meaning]**
-   * **Question:** By speaking the whole of "Hyena" in the animal's own voice, Morgan writes the poem as a dramatic [BLANK].
-   * **Answer:** monologue
-   * **Feedback:** ✓ Correct. As a dramatic monologue, "Hyena" hands the poem entirely to the predator's voice, making its patient menace speak for itself.
-   * **WhyWrong:** The word is "monologue" — a dramatic monologue gives the whole poem to the hyena's single, self-revealing voice.
+18. **Type: Select All [Tests Meaning & Effects]**
+    * **Question:** Which statements correctly describe the meaning and effect of "Death in Duke Street"?
+    * **Options:** A) Strangers unite in spontaneous compassion around the dying man, supporting him "into death", B) The overheard dialect speech makes the scene feel authentic and immediate, C) The closing image of the "hungry ambulance" that "howls... through the staring squares" hints at the city's indifference beyond this one moment of care, D) The poem celebrates the ambulance crew as its true heroes
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
+    * **Feedback:** ✓ Correct. Ordinary strangers hold the dying man "very tight" though he is already beyond them; their real Glasgow speech grounds the moment; and the "hungry" ambulance howling through "staring squares" hints at a wider indifference beyond this one act of kindness.
+    * **Why D:** The ambulance never appears alongside the man in life — it arrives after, a distant, almost predatory image, not a celebrated hero.

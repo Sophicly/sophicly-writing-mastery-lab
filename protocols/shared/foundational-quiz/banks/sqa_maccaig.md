@@ -1,165 +1,166 @@
-# Foundational Quiz Bank — SQA National 5 / Higher — Norman MacCaig Poetry (Forms)
+# Foundational Quiz Bank — SQA Scottish Set Text: Norman MacCaig (Poems)
 
 Deterministic, code-scored foundational recall bank (parsed by `SWML_Quiz_Bank`).
-20 questions on the FORMS of MacCaig's Scottish Text poems + mixed types. The picker draws a
-random 5 per round, stratified across categories. Keys + feedback live server-side and
-are stripped before questions reach the client. The AI is never the scorekeeper.
+18 questions on the six 2026-refreshed SQA National 5 / Higher crossover Norman MacCaig
+poems (Tier B) — three per poem across Neil's three understanding dimensions: Recognising
+the Poem · Form & Features · Meaning & Effects. Unlike the universal forms bank
+(`poetic_forms.md`, Tier A), these are poem-specific, testing what the student has actually
+read. The picker draws a random 5 per round, stratified across categories. Keys + feedback
+live server-side and are stripped before questions reach the client. The AI is never the
+scorekeeper.
 
-Categories: Identifying Form · Form Features · Form Effects · Form & Meaning
+Categories: Recognising the Poem · Form & Features · Meaning & Effects
 Types: MCQ · Fill · True-False · Select All
 
-### Quiz: SQA MacCaig Poetry
+Single stage — no `@set` staging. All six poems (Aunt Julia · Hotel Room, 12th Floor ·
+Basking Shark · On Lachie's Croft · Landscape and I · Old Highland Woman) form one
+undivided SQA National 5 / Higher crossover set-text list, so every question is live
+from the start of the course.
 
-1. **Type: MCQ [Tests Identifying Form]**
-   * **Question:** In what form is "Assisi" by Norman MacCaig written?
-   * **Options:** A) Free verse, B) A Shakespearean sonnet, C) A ballad, D) A villanelle
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. "Assisi" is written in free verse — its three uneven stanzas follow no regular rhyme or metre, letting the bitter contrast between the beggar and the basilica speak plainly.
-   * **Why B:** The poem falls into three uneven stanzas rather than a fixed fourteen-line sonnet shape.
-   * **Why C:** It observes and judges a scene rather than telling a song-like story in regular stanzas, as a ballad does.
-   * **Why D:** There are no recurring refrains circling through the poem, so it is not a villanelle.
+### Quiz: Norman MacCaig Poetry
 
-2. **Type: MCQ [Tests Identifying Form]**
-   * **Question:** "Visiting Hour" is best described as which form?
-   * **Options:** A) Free verse in the present tense, B) A rhyming sonnet, C) A ballad, D) A formal ode
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. "Visiting Hour" is free verse, and its present tense makes the walk through the hospital feel as though it is happening before us, line by line.
-   * **Why B:** Its stanzas vary in length and carry no sonnet rhyme scheme.
-   * **Why C:** The poem has no regular rhyme driving a story forward, unlike a ballad.
-   * **Why D:** It is an intimate, unfolding observation rather than a formal ode of praise.
+1. **Type: MCQ [Tests Recognising the Poem]**
+   * **Question:** Which poem recalls a Gaelic-speaking aunt on Harris, remembered by the speaker not through her words but as "buckets / and water flouncing into them"?
+   * **Options:** A) Old Highland Woman, B) Aunt Julia, C) On Lachie's Croft, D) Hotel Room, 12th Floor
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. "Aunt Julia" recalls a childhood spent unable to understand his aunt's Gaelic, so he remembers her instead through action and objects — "She was buckets / and water flouncing into them."
+   * **Why A:** Old Highland Woman portrays a different, unnamed elderly woman confined to her fireside, not the speaker's own aunt.
+   * **Why C:** On Lachie's Croft observes a bedraggled rooster, not a remembered relative.
+   * **Why D:** Hotel Room, 12th Floor is set in a New York skyscraper, not a childhood croft.
 
-3. **Type: True-False [Tests Identifying Form]**
-   * **Question:** "Basking Shark" is unusual among MacCaig's set poems because it is written in rhyming three-line stanzas rather than free verse.
+2. **Type: MCQ [Tests Form & Features]**
+   * **Question:** What structural device does MacCaig use in "Aunt Julia" to give the poem a sense of return and unresolved continuity?
+   * **Options:** A) A strict rhyming sonnet, B) The poem's opening lines are echoed again near its close, framing the memory as something that circles back rather than settles, C) A single refrain repeated identically after every stanza, D) Regular rhyming quatrains throughout
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. The poem opens "Aunt Julia spoke Gaelic / very loud and very fast" and returns to that same voice near its close, so the memory keeps circling back rather than reaching a settled ending.
+   * **Why A:** The poem is free verse of five irregular stanzas, not a fourteen-line rhyming sonnet.
+   * **Why C:** The echo occurs once, near the close, not as a refrain repeated after every stanza.
+   * **Why D:** The stanzas vary in length (4, 7, 5, 7, 13 lines) with no fixed rhyme, unlike regular quatrains.
+
+3. **Type: True-False [Tests Meaning & Effects]**
+   * **Question:** In "Aunt Julia", even after her death the speaker imagines he can still "hear her still, welcoming me / with a seagull's voice", suggesting the connection he missed in life is not fully closed.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Each stanza of "Basking Shark" is a tercet whose three lines chime on a single rhyme — a tighter, more patterned shape than the free verse MacCaig usually favours.
-   * **WhyWrong:** This is true — "Basking Shark" moves in rhymed tercets, standing apart from the free verse of poems such as "Assisi" and "Visiting Hour".
+   * **Feedback:** ✓ Correct. The closing image keeps Aunt Julia's voice alive in memory, "getting angry, getting angry / with so many questions / unanswered" — the language barrier is mourned, not resolved, even by her death.
+   * **WhyWrong:** This is true — the poem's close hears her voice still, "welcoming" and "getting angry" in the same breath, showing the unresolved regret survives her death.
 
-4. **Type: Fill [Tests Identifying Form]**
-   * **Question:** Like most of MacCaig's set poems, "Aunt Julia" is written in [BLANK] verse, with no fixed rhyme scheme or metre.
-   * **Answer:** free
-   * **Feedback:** ✓ Correct. "Aunt Julia" is free verse; its unrhymed, irregular stanzas let the poet's warm, spoken memories of his great-aunt flow naturally.
-   * **WhyWrong:** The word is "free" — free verse, whose lack of set rhyme or metre suits the poem's conversational, remembering voice.
+4. **Type: MCQ [Tests Recognising the Poem]**
+   * **Question:** Which poem watches "a helicopter skirting like a damaged insect" around the Empire State Building, before turning at midnight to hear sounds of violence rising through the city?
+   * **Options:** A) Basking Shark, B) Hotel Room, 12th Floor, C) Landscape and I, D) Old Highland Woman
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. "Hotel Room, 12th Floor" opens with a daytime view of a helicopter "skirting like a damaged insect" around the Empire State Building, then shifts to midnight sirens and violence heard from the same window.
+   * **Why A:** Basking Shark is set at sea beside a boat, not in a city hotel room.
+   * **Why C:** Landscape and I personifies loch, lark and mountain, not a skyscraper skyline.
+   * **Why D:** Old Highland Woman is set by a Highland fireside, not in New York.
 
-5. **Type: Select All [Tests Identifying Form]**
-   * **Question:** Which of these MacCaig poems are written in free verse?
-   * **Options:** A) Sounds of the Day, B) Memorial, C) Brooklyn Cop, D) Basking Shark
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. "Sounds of the Day", "Memorial" and "Brooklyn Cop" all use free verse, shaping their lines by feeling and emphasis rather than by rhyme or metre.
-   * **Why D:** "Basking Shark" is the exception — it is built from rhyming tercets, not free verse.
+5. **Type: MCQ [Tests Form & Features]**
+   * **Question:** How does MacCaig's structure in "Hotel Room, 12th Floor" shape its meaning?
+   * **Options:** A) A single three-line stanza states one clean argument, B) Two long, heavily enjambed stanzas describing day and midnight build to a short final tercet that delivers an aphoristic conclusion, C) A rhyming sonnet builds an argument across fourteen lines, D) Four regular ballad stanzas narrate a journey
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Two flowing nine-line stanzas — the daytime helicopter, then midnight's violence — lead into a short three-line close, "The frontier is never / somewhere else. And no stockades / can keep the midnight out", which delivers the poem's conclusion like a compressed proverb.
+   * **Why A:** The poem runs to three stanzas of 9, 9 and 3 lines, not a single tercet.
+   * **Why C:** There is no rhyme scheme or fourteen-line sonnet structure; the poem is unrhymed free verse.
+   * **Why D:** Nothing here resembles a song-like ballad quatrain narrating a journey.
 
-6. **Type: MCQ [Tests Identifying Form]**
-   * **Question:** What form does "Brooklyn Cop" take?
-   * **Options:** A) Free verse built around an extended simile, B) A tightly rhymed sonnet, C) A ballad with a refrain, D) A villanelle
+6. **Type: Fill [Tests Meaning & Effects]**
+   * **Question:** "Hotel Room, 12th Floor" closes with the paradox that the [BLANK] is never somewhere else, and that no stockades can keep the midnight out.
+   * **Answer:** frontier
+   * **Feedback:** ✓ Correct. "The frontier is never / somewhere else" insists that danger and violence are built into the city itself, not confined to some distant edge.
+   * **WhyWrong:** The word is "frontier" — the poem's closing paradox states the frontier of danger is never elsewhere, it is here.
+
+7. **Type: MCQ [Tests Recognising the Poem]**
+   * **Question:** In which poem does the speaker's oar bump on a shark that "rose with a slounge out of the sea", provoking a meditation on evolution?
+   * **Options:** A) Basking Shark, B) Aunt Julia, C) On Lachie's Croft, D) Hotel Room, 12th Floor
    * **Correct:** A
-   * **Feedback:** ✓ Correct. "Brooklyn Cop" is free verse; its unrhymed, uneven lines carry the extended simile that likens the hulking officer to a gorilla.
-   * **Why B:** The lines do not rhyme in the fixed pattern a sonnet needs.
-   * **Why C:** There is no song-like refrain or regular stanza rhythm, as a ballad would have.
-   * **Why D:** The poem has no repeating refrains, so it is not a villanelle.
+   * **Feedback:** ✓ Correct. "Basking Shark" recalls the moment an oar stubbed on a rock "where none should be" and the shark rose "with a slounge out of the sea", shaking the speaker "centuries back" through evolutionary time.
+   * **Why B:** Aunt Julia is a memory of a Gaelic-speaking relative, not an encounter at sea.
+   * **Why C:** On Lachie's Croft observes a rooster on land, not a shark from a boat.
+   * **Why D:** Hotel Room, 12th Floor is set in a New York skyscraper, not on the water.
 
-7. **Type: MCQ [Tests Form Features]**
-   * **Question:** What is the defining feature of free verse?
-   * **Options:** A) It has no regular rhyme scheme or fixed metre, B) It always has fourteen lines, C) It repeats two refrains throughout, D) It must be written in rhyming couplets
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. Free verse is defined by its freedom from a fixed rhyme scheme and regular metre, so the poet shapes each line by sense, rhythm and emphasis instead.
-   * **Why B:** A fixed count of fourteen lines describes the sonnet, not free verse.
-   * **Why C:** Repeating two refrains throughout describes the villanelle.
-   * **Why D:** Compulsory rhyming couplets are a set pattern, which free verse deliberately avoids.
-
-8. **Type: True-False [Tests Form Features]**
-   * **Question:** Free verse can still use stanzas, enjambment and repetition, even though it has no regular rhyme or metre.
+8. **Type: True-False [Tests Form & Features]**
+   * **Question:** "Basking Shark" is written in five three-line stanzas (tercets), each closing on a rhyming or near-rhyming triplet — an unusually tight, controlled form for MacCaig.
    * **Answer:** True
-   * **Feedback:** ✓ Correct. Free verse is not shapeless — MacCaig still groups lines into stanzas and uses enjambment and repetition to control pace and emphasis, as in "Aunt Julia".
-   * **WhyWrong:** This is true — losing fixed rhyme and metre does not stop free verse from using stanzas, enjambment and repetition for effect.
+   * **Feedback:** ✓ Correct. Stanzas such as "To stub an oar on a rock where none should be, / To have it rise with a slounge out of the sea / Is a thing that happened once (too often) to me" show the tight triplet rhyme MacCaig sustains across all five stanzas.
+   * **WhyWrong:** This is true — the poem's five tercets each close on a rhyming or near-rhyming triplet, giving an unusually tight form to a philosophically weighty subject.
 
-9. **Type: Fill [Tests Form Features]**
-   * **Question:** When a sentence runs on past the end of a line without a pause, the technique is called [BLANK].
-   * **Answer:** enjambment
-   * **Feedback:** ✓ Correct. Enjambment carries the sense over the line-break, and MacCaig uses it in his free verse to keep thought and feeling flowing, as through the corridors of "Visiting Hour".
-   * **WhyWrong:** The word is "enjambment" — the run-on of a sentence past the line-ending without a pause.
+9. **Type: MCQ [Tests Meaning & Effects]**
+   * **Question:** What does the rhetorical question "So who's the monster?" in "Basking Shark" challenge?
+   * **Options:** A) Whether the shark is physically dangerous, B) The assumption that humans are more advanced or civilised than "primitive" nature, C) Whether the boat is seaworthy, D) The size of the shark's brain
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Having called the shark a "roomsized monster with a matchbox brain" and himself a "decadent townee" shaken onto "a wrong branch of his family tree", the speaker's question undercuts human assumptions of superiority over the natural world.
+   * **Why A:** The shark's danger is barely the point — the poem is a meditation on shared origins, not a threat assessment.
+   * **Why C:** The boat itself is never in question; the encounter is unsettling rather than perilous.
+   * **Why D:** The "matchbox brain" phrase is a passing paradox, not the poem's central concern.
 
-10. **Type: MCQ [Tests Form Features]**
-   * **Question:** The stanzas of "Basking Shark" are tercets. How many lines does a tercet contain?
-   * **Options:** A) Three, B) Two, C) Five, D) Fourteen
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. A tercet is a three-line stanza, and in "Basking Shark" each tercet is bound together by a single rhyme.
-   * **Why B:** A two-line stanza is a couplet, not a tercet.
-   * **Why C:** A five-line stanza is a quintet; a tercet is shorter.
-   * **Why D:** Fourteen lines describe a whole sonnet, not a single tercet.
+10. **Type: MCQ [Tests Recognising the Poem]**
+    * **Question:** Which poem observes a bedraggled rooster hiding under a wheelbarrow, and draws a direct parallel with the speaker's own low mood?
+    * **Options:** A) On Lachie's Croft, B) Landscape and I, C) Old Highland Woman, D) Basking Shark
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. "On Lachie's Croft" opens "the cock stands / under the wheelbarrow. What's wrong? - He's bedraggled", before the speaker admits "I, too, feel bedraggled and haphazard."
+    * **Why B:** Landscape and I personifies loch, lark, hawk and mountain, not a farmyard rooster.
+    * **Why C:** Old Highland Woman portrays an elderly woman by her fire, not a bird on a croft.
+    * **Why D:** Basking Shark is set at sea, not on Lachie's croft.
 
-11. **Type: MCQ [Tests Form Effects]**
-   * **Question:** What is the main effect of the present-tense free verse in "Visiting Hour"?
-   * **Options:** A) It makes the hospital visit feel as if it is unfolding in the moment, drawing us into the speaker's dread, B) It makes the poem feel like a distant historical record, C) It creates a light, comic mood, D) It turns the poem into a sung ballad
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. Because the free verse moves in the present tense, each step through the ward seems to happen as we read, so we share the speaker's mounting unease.
-   * **Why B:** The present tense pulls the moment close rather than setting it at a historical distance.
-   * **Why C:** The mood is tense and grief-laden, not light or comic.
-   * **Why D:** The unrhymed lines never take on the song-like rhythm of a ballad.
+11. **Type: Fill [Tests Form & Features]**
+    * **Question:** In "On Lachie's Croft", MacCaig mockingly elevates the rooster's former swagger with the phrase "his [BLANK] manners", before revealing that he is now bedraggled.
+    * **Answer:** gauleiter
+    * **Feedback:** ✓ Correct. Borrowing the word "gauleiter" (a Nazi-era regional governor) for the rooster's former "military elegance" makes his fall to "bedraggled" sting by contrast with his old, self-important swagger.
+    * **WhyWrong:** The word is "gauleiter" — the mock-heroic term inflates the rooster's former pride so his diminished state feels sharper.
 
-12. **Type: True-False [Tests Form Effects]**
-   * **Question:** In "Basking Shark", the insistent single rhyme binding each tercet gives the encounter a sense of neat containment, as though the unsettling meeting is being pinned down and controlled.
-   * **Answer:** True
-   * **Feedback:** ✓ Correct. The tight, self-contained tercets and their chiming rhyme hold the disturbing encounter within a controlled shape, matching the speaker's effort to master a moment that shook him far back through evolution.
-   * **WhyWrong:** This is true — the controlled, rhymed tercets contain the unsettling encounter, in contrast to the openness of MacCaig's free-verse poems.
+12. **Type: MCQ [Tests Meaning & Effects]**
+    * **Question:** How does the closing line "I'm master of nothing I survey" work in "On Lachie's Croft"?
+    * **Options:** A) It reasserts the speaker's confidence and control, B) It ironically inverts the confident cliché "I am monarch of all I survey", underlining the speaker's lost self-assurance, C) It celebrates the rooster's recovery, D) It has no connection to the poem's earlier imagery
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Twisting the boastful cliché "monarch of all I survey" into "master of nothing I survey" completes the identification between the disorientated speaker and the fallen rooster he has been describing.
+    * **Why A:** The line is a deliberate deflation, not a reassertion of control.
+    * **Why C:** The rooster remains "bedraggled" throughout; there is no recovery to celebrate.
+    * **Why D:** The line directly echoes the earlier "bedraggled" and "rumpled feathers" imagery shared between man and bird.
 
-13. **Type: Fill [Tests Form Effects]**
-   * **Question:** Because "Visiting Hour" is written in the present [BLANK], the visit seems to happen moment by moment as we read.
-   * **Answer:** tense
-   * **Feedback:** ✓ Correct. The present tense makes the walk to the bedside feel immediate and ongoing, heightening the speaker's helplessness in the face of a loved one's dying.
-   * **WhyWrong:** The word is "tense" — the present tense, which makes the hospital visit unfold as if it were happening now.
+13. **Type: MCQ [Tests Recognising the Poem]**
+    * **Question:** Which poem personifies a loch, a lark, a hawk and the mountain Schiehallion as a quiet companion offering meaning to those who seek it out?
+    * **Options:** A) Landscape and I, B) Old Highland Woman, C) Hotel Room, 12th Floor, D) Aunt Julia
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. "Landscape and I" opens "Landscape and I get on together well" and moves through Loch Rannoch, a lark, a hawk and finally Schiehallion, treating the land as a companion with something to communicate.
+    * **Why B:** Old Highland Woman is a portrait of a specific elderly woman, not a personified landscape.
+    * **Why C:** Hotel Room, 12th Floor is set in a city skyscraper, not among loch, lark and mountain.
+    * **Why D:** Aunt Julia is a memory of a person, not a meditation on landscape.
 
-14. **Type: MCQ [Tests Form Effects]**
-   * **Question:** What does the free-verse form contribute to "Aunt Julia"?
-   * **Options:** A) Its loose, unrhymed lines echo natural, spoken memory, suiting the poet's affectionate recollection, B) Its strict rhyme makes the poem feel formal and ceremonial, C) Its refrains make it hypnotic and circular, D) Its fourteen-line argument builds to a couplet
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. The free verse of "Aunt Julia" reads like remembered speech, its uneven lines mirroring the way memories of his great-aunt return in vivid, unpolished bursts.
-   * **Why B:** The poem is unrhymed, so it does not gain a formal, ceremonial rhyme.
-   * **Why C:** There are no circling refrains, so the effect is not hypnotic repetition.
-   * **Why D:** The poem is not a fourteen-line argument closing on a couplet.
+14. **Type: True-False [Tests Form & Features]**
+    * **Question:** "Landscape and I" is built from six quatrains, each with a rhyming or near-rhyming triplet across its first three lines followed by a shorter, unrhymed fourth line.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. A stanza such as "Loch Rannoch lapses dimpling in the sun. / Its hieroglyphs of light fade one by one / But re-create themselves, their message done, / For ever and ever" carries the rhyming triplet followed by the shorter fourth line, repeated across all six stanzas.
+    * **WhyWrong:** This is true — the poem's unusually regular quatrain form, triplet-plus-short-line, suits its measured, argumentative tone.
 
-15. **Type: MCQ [Tests Form & Meaning]**
-   * **Question:** How does the free-verse form of "Assisi" serve its meaning?
-   * **Options:** A) Its plain, unadorned lines strip away decoration, mirroring the poem's attack on hollow religious show, B) Its rich rhyme scheme celebrates the beauty of the basilica, C) Its ballad rhythm turns the beggar into a folk hero, D) Its refrains mimic a church prayer
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. The bareness of the free verse matches the poem's judgement: where the church surrounds itself with gilded art, MacCaig's unornamented lines side with the neglected beggar.
-   * **Why B:** The poem criticises hollow display, so an ornate, celebratory rhyme would work against its meaning.
-   * **Why C:** The speaker exposes injustice rather than turning the beggar into a folk-ballad hero.
-   * **Why D:** There are no prayer-like refrains shaping the poem.
+15. **Type: MCQ [Tests Meaning & Effects]**
+    * **Question:** What does the closing instruction "climb it" mean in "Landscape and I"?
+    * **Options:** A) That mountains are dangerous and best avoided, B) That any landscape holds meaning, but only active engagement — not passive looking — can uncover it, C) That Schiehallion is the only mountain worth visiting, D) That meaning can be found without any effort
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. "There's a Schiehallion anywhere you go. / The thing is, climb it" universalises the single mountain into a metaphor: meaning is available everywhere, but only to those willing to actively seek it.
+    * **Why A:** The poem treats the mountain as a source of meaning, not a danger to avoid.
+    * **Why C:** Schiehallion stands for any landscape, not a unique, singular destination.
+    * **Why D:** The instruction to "climb it" is precisely a demand for effort, not passive ease.
 
-16. **Type: MCQ [Tests Form & Meaning]**
-   * **Question:** How does the tightly rhymed tercet form of "Basking Shark" support its meaning?
-   * **Options:** A) The compact, ordered stanzas contain a moment that unsettles the speaker's sense of human superiority, B) The loose free verse shows the speaker's total calm, C) The refrains enact a refusal to accept death, D) The sonnet's volta marks a change of lover
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. The neat, rhymed tercets impose order on a jolting encounter, so their control plays against the deeper unease as the speaker feels humbled by the ancient creature.
-   * **Why B:** The poem is in rhymed tercets rather than loose free verse, and the speaker is unsettled rather than calm.
-   * **Why C:** The poem has no circling refrains and is not about resisting death.
-   * **Why D:** There is no sonnet volta, and the subject is a shark, not a lover.
+16. **Type: MCQ [Tests Recognising the Poem]**
+    * **Question:** Which poem portrays an elderly woman whose "walking days are over", reflecting on the generations of Gaelic history "assembled in her bones"?
+    * **Options:** A) Old Highland Woman, B) Aunt Julia, C) On Lachie's Croft, D) Basking Shark
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. "Old Highland Woman" pictures a woman who now "sits all day by the fire" and describes her as a living record of history — "Her people / are assembled in her bones. / She's their summation."
+    * **Why B:** Aunt Julia is remembered through action and sound during her active life, not portrayed as immobile by a fire.
+    * **Why C:** On Lachie's Croft concerns a rooster and the speaker's own mood, not an elderly woman.
+    * **Why D:** Basking Shark is set at sea, unconnected to a Highland fireside.
 
-17. **Type: Select All [Tests Form & Meaning]**
-   * **Question:** Which of these correctly connect a MacCaig poem's form to its meaning?
-   * **Options:** A) The free verse of Assisi strips away ornament to expose religious hypocrisy, B) The rhymed tercets of Basking Shark contain an encounter that shakes human pride, C) The present-tense free verse of Visiting Hour makes grief feel immediate, D) The strict villanelle refrains of Memorial enact acceptance of death
-   * **Correct:** A, B, C
-   * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-   * **Feedback:** ✓ Correct. Assisi's plainness, Basking Shark's contained tercets and Visiting Hour's unfolding present tense all show form working with meaning.
-   * **Why D:** "Memorial" is free verse, not a villanelle, and it dwells on the constant presence of the dead rather than enacting neat acceptance.
+17. **Type: MCQ [Tests Form & Features]**
+    * **Question:** How does the stanza structure of "Old Highland Woman" develop across the poem?
+    * **Options:** A) Three stanzas of equal length throughout, B) Two six-line stanzas followed by a longer ten-line final stanza, expanding as the poem broadens from her physical stillness into the fuller weight of who she is, C) A single unbroken stanza with no divisions, D) Four short rhyming quatrains
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. The poem moves from two compact six-line stanzas describing her stillness into a longer ten-line final stanza that widens out to her laughter, her gossip, and the "holy psalms" of her past — form expanding alongside meaning.
+    * **Why A:** The three stanzas are of increasing, not equal, length.
+    * **Why C:** The poem is clearly divided into three distinct stanzas, not one unbroken block.
+    * **Why D:** There is no rhyme scheme and no four-part quatrain structure.
 
-18. **Type: True-False [Tests Form & Meaning]**
-   * **Question:** The free-verse form of "Sounds of the Day" helps convey meaning: when the flow of vivid sounds gives way to silence, the open form lets that emptiness land with sudden force.
-   * **Answer:** True
-   * **Feedback:** ✓ Correct. Free verse lets MacCaig build a rush of Highland sounds and then break it off, so the silence of loss falls abruptly, unsoftened by any comforting rhyme.
-   * **WhyWrong:** This is true — the open free-verse form lets the accumulation of sounds stop dead, making the final silence of the ended relationship strike hard.
-
-19. **Type: MCQ [Tests Form & Meaning]**
-   * **Question:** How does the free-verse form of "Brooklyn Cop" work with its meaning?
-   * **Options:** A) Its unrhymed, uneven lines hold the extended gorilla simile, keeping the officer's violence and fragility uneasily side by side, B) Its steady rhyme reassures us the cop is safe, C) Its refrain celebrates law and order, D) Its ode form praises the city
-   * **Correct:** A
-   * **Feedback:** ✓ Correct. The unruly free verse refuses a tidy pattern, letting the gorilla simile and the question of whether the cop will return home sit in unresolved tension.
-   * **Why B:** There is no steady rhyme, and the poem leaves the cop's safety in doubt rather than reassuring us.
-   * **Why C:** The poem questions the thin line between order and violence rather than celebrating it in a refrain.
-   * **Why D:** It is uneasy free verse, not an ode praising the city.
-
-20. **Type: Fill [Tests Form & Meaning]**
-   * **Question:** The absence of a fixed rhyme scheme in "Assisi" lets MacCaig's voice sound like plain, direct [BLANK] rather than decorated verse.
-   * **Answer:** speech
-   * **Feedback:** ✓ Correct. By writing in unrhymed free verse close to ordinary speech, MacCaig keeps attention on the beggar's suffering rather than on poetic ornament.
-   * **WhyWrong:** The word is "speech" — plain, direct speech, which the unrhymed free verse of "Assisi" imitates.
+18. **Type: Select All [Tests Meaning & Effects]**
+    * **Question:** Which statements correctly describe the meaning and effect of "Old Highland Woman"?
+    * **Options:** A) The metaphor "Her people / are assembled in her bones" makes her a living embodiment of Gaelic cultural history, B) The simile comparing her hands to "holy psalms / that once had a meaning for her" ties her personal ageing to a fading tradition, C) The poem presents her only with sentimental nostalgia, with no complexity in her character, D) Her laughter "with love in it" alongside "relishing... the malice" of gossip gives her a complex, unsentimental character
+    * **Correct:** A, B, D
+    * **Scoring:** 2 marks for A,B,D. 1 mark if mostly correct.
+    * **Feedback:** ✓ Correct. MacCaig makes her a living embodiment of Gaelic history ("assembled in her bones"), ties her ageing hands to the fading tradition of "holy psalms", and gives her a complex, unsentimental character who relishes both love and malice in equal measure.
+    * **Why C:** The poem is not purely nostalgic — her laughter carries both "love" and "malice", giving her real complexity rather than sentimental simplicity.
