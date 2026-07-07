@@ -3000,10 +3000,14 @@
         // deducted. Each instance carries the faulty phrase → its fix, so "weak analytical
         // verb" always SHOWS the weak verb and its upgrade (Neil: super-clear, name it).
         try {
-            if (_penLedgerComplete) {
+            // v7.19.924: resumed session → reconstruct the tally from the persisted doc cards
+            // instead of silently dropping the code-tallied Trend (Run-8 class: model recall).
+            const _trendCards = _penLedgerComplete ? _penLedgerCards : _penLedgerCardsFromDoc();
+            if (_trendCards && !_penLedgerComplete) console.log('WML MarkAudit: penalty trend rebuilt from DOC cards (resumed session)');
+            if (_trendCards && Object.keys(_trendCards).length) {
                 const _byCode = {};
-                Object.keys(_penLedgerCards).forEach(k => {
-                    (_penLedgerCards[k].codes || []).forEach(c => {
+                Object.keys(_trendCards).forEach(k => {
+                    (_trendCards[k].codes || []).forEach(c => {
                         if (!_byCode[c.code]) _byCode[c.code] = { n: 0, items: [] };
                         _byCode[c.code].n++;
                         const loc = k.split('|');
@@ -3202,6 +3206,60 @@
     // ACTUALLY deducted. Keyed per card (qKey|para) so re-fires overwrite, never double-count.
     let _penLedgerCards = {};
     let _penLedgerComplete = false; // saw the Q2 reflect gate THIS session → cards are complete
+    // v7.19.924 (Neil): RESUME-PROOF ledger source. _penLedgerCards only knows cards streamed
+    // THIS session — a mid-assessment reload made the rebuilt Penalty Ledger + code-tallied
+    // Trend fall back to model-recalled numbers (Run 8: Trend said "F1 ×5", the cards deducted
+    // ×8; console: "ledger rebuild skipped — resumed mid-assessment"). The DOC persists every
+    // filed card, so on resume the ledger reconstructs from the feedback sections themselves:
+    // penalty lines (`CODE — name (−X): "quote" → Fix: "fix"`) parsed per block, paragraph
+    // attribution via the same "Mark Breakdown — <name>" headings the sidebar anchors on
+    // (v829 — the one reliable region marker). Double-count-safe BY FORMAT: rebuilt-ledger and
+    // Trend lines are ×N-form (no "(−X)" after the code), so they never re-parse as penalties;
+    // summary sections are additionally label-skipped. Returns null when nothing reconstructs
+    // (template doc, no canvas) — callers keep the old fail-safe skip.
+    function _penLedgerCardsFromDoc() {
+        try {
+            const editorEl = document.getElementById('swml-tiptap-editor');
+            if (!editorEl) return null;
+            const SKIP = /^(Overall Feedback|Analytics|Self-Assessment|Action Plan|Score Summary)/i;
+            const penRe = /^([A-Z]{1,3}\d(?:-[A-Z]+)?)[^(]{0,60}\((?:−|-|–)\s*([\d.]+)\)(.*)$/;
+            const headRe = /^Mark\s+Breakdown\s*[—–-]+\s*((?:Body\s+Paragraph|Paragraph)\s*\d+|Introduction|Conclusion|.{1,40})$/i;
+            const cards = {};
+            let found = 0;
+            editorEl.querySelectorAll('[data-section-type="feedback"]').forEach(sec => {
+                const lbl = (sec.getAttribute('data-section-label') || '').trim();
+                const base = lbl.replace(/^Feedback:\s*/i, '')
+                    .replace(/\s*\(\s*(?:—|\d+(?:\.\d+)?)\s*\/\s*\d+\s*\)\s*$/, '').trim();
+                if (!base || SKIP.test(base)) return;
+                const whole = (sec.textContent || '').trim();
+                if (!whole || /will appear after assessment|will be assessed here|appear here after/i.test(whole)) return;
+                let para = '';
+                sec.querySelectorAll('p, li, h3, h4').forEach(bl => {
+                    const t = (bl.textContent || '').trim();
+                    if (!t) return;
+                    const hb = t.match(headRe);
+                    if (hb) {
+                        const name = hb[1].trim();
+                        const digit = name.match(/(?:paragraph|¶)\s*(\d+)/i) || name.match(/^¶?\s*(\d+)$/);
+                        para = digit ? digit[1] : (/introduction/i.test(name) ? 'Introduction'
+                            : /conclusion/i.test(name) ? 'Conclusion' : name);
+                        if (para.toLowerCase() === base.toLowerCase()) para = '';
+                        return;
+                    }
+                    const pm = t.match(penRe);
+                    if (!pm) return;
+                    const rest = pm[3] || '';
+                    const qm = rest.match(/["“”]([^"“”]{1,90})["“”]/);
+                    const fm = rest.match(/Fix:\s*["“”]([^"“”]{1,140})["“”]/i);
+                    const key = base + '|' + para;
+                    if (!cards[key]) cards[key] = { q: base, codes: [] };
+                    cards[key].codes.push({ code: pm[1], val: parseFloat(pm[2]), quote: qm ? qm[1] : '', fix: fm ? fm[1] : '' });
+                    found++;
+                });
+            });
+            return found ? cards : null;
+        } catch (e) { console.warn('WML MarkAudit: doc ledger reconstruction failed —', e && e.message); return null; }
+    }
     // v7.19.848: ONE reflection per question — CODE-OWNED (Run 5: after the Q2 reflection was
     // submitted, the model invented a per-paragraph reflection ask; _detectReflectAsk rendered
     // it as a real panel and the re-ask looped). _reflectDone keys via _paraKey ('2', 'Intro',
@@ -3519,9 +3577,19 @@
     // counterfactual is recomputed from the reply's own Total line + the true penalty sum.
     function _rewritePenaltyLedger(out) {
         try {
+            // v7.19.924: RESUME-PROOF source selection — the in-session store when the whole
+            // run happened here, else the doc reconstruction (_penLedgerCardsFromDoc). The old
+            // behaviour (skip + let the AI's ledger stand) remains ONLY when the doc yields
+            // nothing to reconstruct from.
+            let srcCards = _penLedgerCards;
+            if (!_penLedgerComplete) {
+                srcCards = _penLedgerCardsFromDoc();
+                if (!srcCards) { console.warn('WML MarkAudit: ledger rebuild skipped — resumed mid-assessment and no doc cards to reconstruct from'); return out; }
+                console.log('WML MarkAudit: ledger rebuilt from DOC cards (resumed session)');
+            }
             const byCode = {}; let penSum = 0;
-            Object.keys(_penLedgerCards).forEach(k => {
-                (_penLedgerCards[k].codes || []).forEach(c => {
+            Object.keys(srcCards).forEach(k => {
+                (srcCards[k].codes || []).forEach(c => {
                     if (!byCode[c.code]) byCode[c.code] = { n: 0, sum: 0, items: [] };
                     byCode[c.code].n++; byCode[c.code].sum += c.val; penSum += c.val;
                     const loc = k.split('|');
@@ -3534,10 +3602,8 @@
                 });
             });
             if (!penSum) return out; // nothing recorded — leave the AI's version
-            // v7.19.839: resumed mid-assessment → cards recorded only since the reload; a
-            // rebuilt ledger would UNDERCOUNT. Only rebuild when the whole run happened in
-            // this session (we saw Q2's reflect gate). Otherwise the AI's version stands.
-            if (!_penLedgerComplete) { console.warn('WML MarkAudit: ledger rebuild skipped — session resumed mid-assessment (partial card data)'); return out; }
+            // (v7.19.839's resumed-mid-assessment skip moved UP into the source selection —
+            // a resumed session now reconstructs from the doc instead of skipping.)
             const re = /(\*{0,2}Penalty (?:& Ceiling )?Ledger:?\*{0,2})([\s\S]*?Without penalties[^\n]*)/i;
             const oldChunk = out.match(re);
             if (!oldChunk) return out;
