@@ -14,7 +14,7 @@ C1 – Clarity/flow lapse creating ambiguity (-0.5) Detection: Muddled cause→e
 
 T2 – Lacks transitional phrases/discourse markers (-0.5) Detection: Missing connectives between concepts Fix: Add Furthermore, Consequently, Specifically, Moreover
 
-F1 – Weak analytical verb (-0.5 per instance) Detection: Using vague verbs like "shows," "tells us," "is about" for analysis Upgrade: conveys, constructs, positions, depicts, portrays, emphasizes, highlights, reveals, suggests, illustrates, evokes, underscores, reinforces, critiques, challenges, exposes, examines
+F1 – Weak analytical verb (-0.5 per instance) Detection: any banned/weak-tier verb ("shows," "tells us," "is about," "acts as," "illustrates," "aims to/seems to [verb]," uses/has/says/makes — v7.19.923 tier list) doing the analytical work Upgrade: conveys, constructs, positions, depicts, portrays, emphasizes, highlights, reveals, suggests, evokes, underscores, reinforces, critiques, challenges, exposes, examines
 
 S1 – Weak/repetitive sentence starters (-0.5 per instance) Detection: the SAME starter word ("The", "This" or "These") opening two or more sentences in one paragraph, or multiple sentences starting the same way. Allowance: one sentence starting with "The", one with "This" and one with "These" per paragraph is permitted — never penalise the first instance of each word; deduct only when the SAME word opens a second sentence in that paragraph. Upgrade: Use discourse markers, prepositional phrases, adverbial openers, varied structures
 

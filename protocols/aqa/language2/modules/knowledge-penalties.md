@@ -7,8 +7,8 @@
 1. **Once per paragraph.** Each code may be deducted at most ONCE per paragraph. Further instances of the same fault in that paragraph are listed as additional issues, not deducted.
 2. **Same paragraph only.** A penalty is deducted in the paragraph where the fault occurs. NEVER dock one paragraph for a fault that sits in another paragraph.
 3. **Written material only — and never re-price an element gap (v7.19.379).** A unit/element that scored 0 (or lost marks) because content is missing or underdeveloped is ALREADY the full cost of that gap — never also deduct a penalty for the same gap. Examples: effect elements scored 0 → NO E2 for the same missing/thin effects; a unit's inference mark zeroed for summary-instead-of-inference → NO I1 and NO M1 for that same summary. Penalties price only faults in written material that the element marks did NOT already price.
-4. **Canonical analytical verbs are never penalised.** depicts, portrays, emphasizes, highlights, reveals, suggests, illustrates, conveys, evokes, underscores, reinforces, critiques, challenges, exposes, examines, establishes, crafts, constructs, demonstrates — a sentence using any of these never triggers F1 or T1 for that verb.
-5. **One code per fault.** When two codes could price the same fault, apply the more specific one only: F1 for the "shows" family; T1 for other imprecise verbs (uses/has/goes/gets/says/makes); never both on the same verb. (W1 is RETIRED — if any older text mentions W1, read it as T1.)
+4. **ANALYTICAL-VERB TIER LIST (v7.19.923, Neil Run-8 ruling — F1/T1 are DETERMINISTIC; the same verb gets the same ruling every run).** **BANNED — F1** (asserts a meaning without analysing): "shows/showing/shown", "tells us", "is about", "acts as (a symbol of)", "is/to be symbolic of" (bare assertion), "creates the idea that", "represents that" (bare assertion), "illustrates", "aims to [verb]", "seems to/appears to [verb]" (hedge-verb replacing analysis — distinct from REQUIRED evaluative tentativeness such as "arguably"/"perhaps", never penalised). **WEAK — T1** (imprecise, non-analytical): uses, has, goes, gets, says, makes, does. **STRONG — never penalised:** reveals, demonstrates, conveys, suggests, depicts, portrays, emphasises, highlights, evokes, underscores, reinforces, critiques, challenges, exposes, examines, establishes, crafts, constructs, frames, positions, foregrounds, mirrors, juxtaposes, interrogates, crystallises, embodies, externalises, distils, encapsulates, heightens. **Any verb on NO tier: NO penalty by default** (anti-fabrication — never fill slots); charge an unlisted verb ONLY when it plainly asserts without analysing AND you can name which tier definition it meets. (Note: "illustrates" was on an older canonical list — it is BANNED as of v7.19.923; the universal registry wins.)
+5. **One code per fault.** When two codes could price the same fault, apply the more specific one only: F1 for the banned tier; T1 for the weak tier; never both on the same verb. (W1 is RETIRED — if any older text mentions W1, read it as F1.)
 6. **Every deduction shows its fix.** Quote the student's offending phrase AND give a one-line worked rewrite of that exact phrase. Never name a fault without an example fix.
 
 ### **COMPLETE PENALTY CODES REFERENCE**
@@ -41,10 +41,10 @@
 
 **Question-Specific Analytical Penalties (Q3 and Q4):**
 
-* **F1** – Feature spotting: "shows/showing/shown" usage (-0.5, once per paragraph; further instances = noted issues)  
-  Detection: Using "shows" for analysis instead of precise analytical verbs  
-  Never apply: to any verb on the canonical analytical verbs list (Global Rule 4), or to faults T1 already covers  
-  Upgrade: depicts, portrays, emphasizes, highlights, reveals, suggests, illustrates, conveys, evokes, underscores, reinforces, critiques, challenges, exposes, examines  
+* **F1** – Weak analytical verb: any BANNED-tier verb (Global Rule 4 tier list — "shows" family incl. "illustrates", "acts as", "creates the idea that", "aims to/seems to [verb]") (-0.5, once per paragraph; further instances = noted issues)  
+  Detection: A banned-tier verb doing the analytical work instead of a precise analytical verb  
+  Never apply: to any STRONG-tier verb (Global Rule 4), to unlisted verbs (no-penalty default), or to faults T1 already covers  
+  Upgrade: depicts, portrays, emphasises, highlights, reveals, suggests, conveys, evokes, underscores, reinforces, critiques, challenges, exposes, examines  
     
 * **S1** – Weak sentence starters (the/this/these) (-0.5)  
   Detection: the SAME starter word (the/this/these) opening TWO or more sentences in the same paragraph. Allowance: one sentence starting with "The", one with "This" and one with "These" per paragraph is permitted — never penalise the first instance of each word; deduct only when the SAME word opens a second sentence in that paragraph. A single weak starter = noted issue only, no deduction  

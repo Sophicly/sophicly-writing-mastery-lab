@@ -70,7 +70,7 @@ While a reader can certainly agree that the extract portrays Alexander as a char
 
 (T)opic Sentence: Furthermore, Allende demonstrates how Alexander's internal battle manifests in his external behaviour, linking his psychological struggle to destructive and escapist impulses.
 
-(T)echnique, (E)vidence, (I)nference: Allende powerfully illustrates this connection through the symbolic action of him wanting to 'smash his flute,' an instrument that represents creativity and harmony, but which he now sees as a 'mockery of the silence in his house.'
+(T)echnique, (E)vidence, (I)nference: Allende powerfully crystallises this connection through the symbolic action of him wanting to 'smash his flute,' an instrument that represents creativity and harmony, but which he now sees as a 'mockery of the silence in his house.'
 
 (C)lose Analysis: Use of the violent verb 'smash' reveals the depth of his rage, while the personification of music as a 'mockery' suggests his worldview has been poisoned by grief, turning sources of joy into reminders of his loss.
 
@@ -193,7 +193,7 @@ You must use the following criteria to guide your Socratic questioning during th
 * **Sentence Length and Detail:** Each sentence in the TTECEA paragraph should be 2-3 lines long to ensure adequate detail and development. Sentences shorter than 2 lines often lack the depth required for perceptive analysis.  
 * **Quote Integration:** Integrates all quotations smoothly and grammatically into the prose.  
 * **Vocabulary:** Uses sophisticated, formal, and precise academic vocabulary. Replaces vague verbs like 'shows' with stronger analytical verbs.  
-* **Precision in Analysis:** NEVER uses the imprecise verb "shows" when explaining effects or techniques. Instead, employs precise analytical verbs such as: depicts, portrays, emphasizes, highlights, reveals, suggests, illustrates, conveys, evokes, underscores, reinforces, critiques, challenges, exposes, or examines. **For guidance on replacing "shows" with more precise verbs, students should refer to the "Verbs for Replacing Shows" section in the Sophicly GCSE English Mastery Toolkit:** [https://sophicly.b-cdn.net/Documents/Sophicly%20Analysis%20Toolkit/Sophicly%20GCSE%20English%20Mastery%20Toolkit%20v8.9.pdf](https://sophicly.b-cdn.net/Documents/Sophicly%20Analysis%20Toolkit/Sophicly%20GCSE%20English%20Mastery%20Toolkit%20v8.9.pdf)  
+* **Precision in Analysis:** NEVER uses a banned/weak-tier analytical verb ("shows", "illustrates", "tells us", "is about", "acts as", "aims to/seems to [verb]", uses/has/says/makes — v7.19.923 tier list) when explaining effects or techniques. Instead, employs precise analytical verbs such as: depicts, portrays, emphasizes, highlights, reveals, suggests, conveys, evokes, underscores, reinforces, critiques, challenges, exposes, or examines. **For guidance on replacing "shows" with more precise verbs, students should refer to the "Verbs for Replacing Shows" section in the Sophicly GCSE English Mastery Toolkit:** [https://sophicly.b-cdn.net/Documents/Sophicly%20Analysis%20Toolkit/Sophicly%20GCSE%20English%20Mastery%20Toolkit%20v8.9.pdf](https://sophicly.b-cdn.net/Documents/Sophicly%20Analysis%20Toolkit/Sophicly%20GCSE%20English%20Mastery%20Toolkit%20v8.9.pdf)  
 * **Argument:** Focuses on analysing the author's methods, not retelling the plot, and maintains sustained, relevant detail. Uses evaluative and tentative language (e.g., 'perhaps,' 'suggests').  
 * **Interpretation:** Provides a precise, developed, and perceptive interpretation of evidence, including a detailed analysis of the effect on the reader.  
 * **Strategic Evidence:** Selects quotes strategically to build a powerful argument.  
@@ -219,7 +219,7 @@ You must use the following criteria to guide your Socratic questioning during th
 
 **W1 – Weak analytical verb**
 *Cue:* using vague verbs like "shows," "tells us," "is about" for analysis.
-*Upgrade:* Replace with precise analytical verbs: conveys, constructs, positions, depicts, portrays, emphasizes, highlights, reveals, suggests, illustrates, evokes, underscores, reinforces, critiques, challenges, exposes, examines. **See Sophicly Toolkit section "Verbs for Replacing Shows":** [https://sophicly.b-cdn.net/Documents/Sophicly%20Analysis%20Toolkit/Sophicly%20GCSE%20English%20Mastery%20Toolkit%20v8.9.pdf](https://sophicly.b-cdn.net/Documents/Sophicly%20Analysis%20Toolkit/Sophicly%20GCSE%20English%20Mastery%20Toolkit%20v8.9.pdf)
+*Upgrade:* Replace with precise analytical verbs: conveys, constructs, positions, depicts, portrays, emphasizes, highlights, reveals, suggests, evokes, underscores, reinforces, critiques, challenges, exposes, examines. **See Sophicly Toolkit section "Verbs for Replacing Shows":** [https://sophicly.b-cdn.net/Documents/Sophicly%20Analysis%20Toolkit/Sophicly%20GCSE%20English%20Mastery%20Toolkit%20v8.9.pdf](https://sophicly.b-cdn.net/Documents/Sophicly%20Analysis%20Toolkit/Sophicly%20GCSE%20English%20Mastery%20Toolkit%20v8.9.pdf)
 
 **S1 – Weak/repetitive sentence starters**
 *Cue:* the SAME starter word ("The", "This" or "These") opening two or more sentences in one paragraph, or multiple sentences starting the same way (one "The" + one "This" + one "These" per paragraph is permitted — never penalise the first instance of each word).

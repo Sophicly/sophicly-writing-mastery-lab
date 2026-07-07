@@ -153,12 +153,12 @@ cite the protocol in student-facing feedback — no "(protocol: …)" parentheti
 protocol bans/says"; the verbatim quote, the code with its plain name, the deduction and the
 one-line Fix are the ENTIRE display.
 **The penalty registry** lives in `knowledge-penalties.md` (F1/T1 system — W1 is retired; if any
-older material mentions W1, read it as F1/T1). For run-to-run consistency: **F1** = the "shows"
-family ("shows", "showing", "shown", "tells us", "is about"); **T1** = other imprecise verbs
-(uses/has/goes/gets/says/makes). Canonical analytical verbs are NEVER penalised: depicts,
-portrays, emphasises, highlights, reveals, suggests, illustrates, conveys, evokes, underscores,
-reinforces, critiques, challenges, exposes, examines, establishes, crafts, constructs,
-demonstrates. **ONE FAULT, ONE CHARGE:** a fault already reflected in a criterion score takes NO
+older material mentions W1, read it as F1). For run-to-run consistency, verbs are judged by the
+**ANALYTICAL-VERB TIER LIST** (knowledge-penalties.md Global Rule 4, v7.19.923): **F1** = the
+BANNED tier ("shows" family incl. "illustrates", "acts as (a symbol of)", "creates the idea
+that", "aims to/seems to [verb]"); **T1** = the WEAK tier (uses/has/goes/gets/says/makes/does);
+STRONG-tier verbs (reveals, conveys, frames, positions, crystallises, …) are NEVER penalised;
+unlisted verbs default to NO penalty. **ONE FAULT, ONE CHARGE:** a fault already reflected in a criterion score takes NO
 penalty, and a penalised fault is never also docked in a criterion — the same words are never
 charged twice; a unit/element that scored 0 for missing content is ALREADY the full cost of that
 gap (no H1-COMP/STR1/E2/I1 for the same absence). **C1 is clarity/flow ONLY** — relevance faults
@@ -295,8 +295,10 @@ Do NOT ask any setup questions.
   quotations, not summary, is what separates Level 2 from 3; **Q3** — it's the classic drift
   question (language on the given lines, not content from anywhere); **Q5** — knowing the two
   AOs and what each rewards is half the battle. WAIT, then validate: if accurate, confirm the
-  keywords; if off-target, state the correct keywords kindly. Keep them in view when marking
-  that question.
+  keywords; if off-target, state the correct keywords kindly. **The "correct keywords" are the
+  question's OWN words, quoted VERBATIM — never a paraphrase, never an invented intensifier**
+  (every downstream keyword judgement — penalties, criterion scoring, fix-examples — keys off
+  exactly these). Keep them in view when marking that question.
 
 **[AI_INTERNAL] CODE-ASKED:** WML normally asks 2a and 2b itself, programmatically — the replies
 may ALREADY be in the conversation (grade as a bare number/choice; goal arriving as "My headline

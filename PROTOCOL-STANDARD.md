@@ -157,7 +157,9 @@ close analysis; (4) effect on reader ×2; (5) author's purpose; (6) context. Int
 contextual claim, building sentences = the HISTORICAL/SOCIAL context itself (not craft commentary), then
 context→author link, then three-point thesis. Other families (Language TTECEA, Section B IUMVCC, poetry
 comparison) apply the same principle to THEIR taught order. The AI self-checks each gold sentence-by-
-sentence before emitting.
+sentence before emitting — **and against the ANALYTICAL-VERB TIER LIST (v7.19.923): no gold sentence
+uses a banned/weak-tier verb; golds model the STRONG tier only** (a gold containing "shows" unteaches
+the very habit F1 penalises — Run-7/8 lesson).
 
 ## A14. Engine-owned gates — protocols echo, never derive (the v832–852 settlement)
 The following are CODE-OWNED, universal across every paper, both chat pipelines. A protocol NEVER
@@ -393,14 +395,31 @@ change that alters emissions is not "shipped" until the data lands in the dashbo
 3. **Criteria tables per question type** live in the protocol with per-element worths (TTECEA
    elements 0.5–1.0; bonus interplay `+0.5` row). **Penalty codes use the UNIVERSAL registry
    (Neil, 2026-07-03 — all papers, Language AND Literature): the newer F1/T1 system. W1 is
-   RETIRED everywhere** — F1 = the "shows" family ("shows", "tells us", "is about", "acts as
-   (a symbol of)", "creates the idea that", "represents that" (bare assertion), "illustrates",
-   "aims to [verb]"); T1 = other imprecise verbs (uses/has/goes/gets/says/makes); one code per
-   fault, never both on the same verb; older W1 mentions read as F1. Canonical analytical verbs
-   are never penalised ("reveals", "demonstrates", "conveys", "crystallises", "embodies",
-   "externalises", …). Enumerate the family in every protocol so marking is consistent
-   run-to-run. Paper-specific codes (e.g. P2's I1 inference, H1-COMP single-source) extend the
+   RETIRED everywhere; older W1 mentions read as F1.** One code per fault, never both on the
+   same verb. Paper-specific codes (e.g. P2's I1 inference, H1-COMP single-source) extend the
    registry, never fork it.
+   **ANALYTICAL-VERB TIER LIST (Neil Run-8 ruling, 2026-07-07 / v7.19.923 — F1/T1 are
+   DETERMINISTIC; every protocol carries the three tiers so the same verb gets the same ruling
+   every run):** **BANNED = F1** ("shows/showing/shown", "tells us", "is about", "acts as (a
+   symbol of)", "is/to be symbolic of" (bare assertion), "creates the idea that", "represents
+   that" (bare assertion), "illustrates", "aims to [verb]", "seems to/appears to [verb]" as a
+   hedge-verb replacing analysis — distinct from REQUIRED evaluative tentativeness like
+   "arguably", never penalised). **WEAK = T1** (uses/has/goes/gets/says/makes/does). **STRONG =
+   never penalised** (reveals, demonstrates, conveys, suggests, depicts, portrays, emphasises,
+   highlights, evokes, underscores, reinforces, critiques, challenges, exposes, examines,
+   establishes, crafts, constructs, frames, positions, foregrounds, mirrors, juxtaposes,
+   interrogates, crystallises, embodies, externalises, distils, encapsulates, heightens).
+   **Unlisted verbs default to NO penalty** (anti-fabrication — never fill slots). Conflict
+   resolved 2026-07-07: "illustrates" sat on P2's old canonical list — it is BANNED; the
+   universal registry wins.
+   **N1 RULING STANDARD (Neil Run-8 ruling — every protocol that judges technique naming,
+   penalty N1 or terminology criterion):** technique identifications are judged by the
+   technique's CONCEPTUAL definition, never an invented stricter one (worked standard:
+   sibilance = consonance of sibilant sounds /s/ /z/ /ʃ/, position-agnostic — "start of
+   stressed syllables" is a FALSE definition). Grammatical-endings caveat: sibilants that are
+   merely plural -s / possessive 's / "was" are "grammatical, not crafted sound patterning —
+   analyse the crafted device instead", never a false-definition refusal. A charged N1's Fix
+   names the ACCURATE technique.
 4. **Section B / Q5 (extended writing) — HOLISTIC:** AO5+AO6 marks judged whole-piece against real
    band descriptors (one band sentence each); per-beat/per-IUMVCC-section feedback anchored with
    verbatim quotes (or "Absent"); penalties do NOT apply (AO6 carries accuracy) — flag up to 3
@@ -418,6 +437,14 @@ change that alters emissions is not "shipped" until the data lands in the dashbo
 6. **Q4-style evaluation questions:** never award/deduct for agreeing or disagreeing with the
    statement — marks come from execution against the evaluative keywords. Present-but-misfiled
    conclusion content is credited where it stands (never charged twice, never also zeroed).
+   **KEYWORD-VERBATIM RULE (Neil Run-8 ruling, 2026-07-07 / v7.19.923):** evaluative keywords
+   are EXTRACTED VERBATIM from the printed statement/question — a word the statement does not
+   contain is NOT a keyword; never charge K1, suppress a criterion, or coach a fix against it
+   (live failure: three K1 charges coached "completely", which appeared nowhere in the
+   statement). Degree/extent evaluation comes only from the question's own framing ("To what
+   extent do you agree?"), never an invented intensifier. The keyword-recall validation states
+   the "correct keywords" as the question's own words, verbatim. Anti-fabrication (A3) applies
+   to the statement side exactly as to the student side.
 
 ## B-LIT — the LIT anchor (R&J / AQA Literature)
 
@@ -624,6 +651,20 @@ From the 2026-07-01 live-run audit (R&J AQA diagnostic) + status as of v7.19.852
 ---
 
 ## Changelog
+- 2026-07-07 — v2.3 (Neil's Run-8 doc-audit rulings, v7.19.923). (1) **ANALYTICAL-VERB TIER
+  LIST** (B-LANG.3, A13): F1/T1 deterministic via BANNED/WEAK/STRONG tiers; unlisted verbs
+  default to no penalty; "illustrates" conflict resolved BANNED (P2's old canonical list
+  corrected); "frames"/"positions" explicitly STRONG; "seems to" banned as hedge-verb with the
+  evaluative-tentativeness carve-out; golds self-check verbs (STRONG tier only). (2) **N1
+  RULING STANDARD** (B-LANG.3): conceptual definitions only — sibilance worked standard
+  (position-agnostic) + grammatical-endings caveat; lit twin governs the terminology criterion.
+  (3) **KEYWORD-VERBATIM RULE** (B-LANG.6): statement keywords extracted verbatim; never charge
+  K1/suppress a criterion/coach a fix against a word the statement doesn't contain; degree only
+  from "To what extent" framing; recall-validation states keywords verbatim. Applied to: aqa
+  language1 (anchor — registry+N1+recall+Q4 rule+K1 line+golds), aqa language2
+  (knowledge-penalties.md Global Rules 4/5 + F1 entry, inline registry, recall), aqa literature
+  (golds verb check + TECHNIQUE-DEFINITION STANDARD). Un-ported boards inherit at port time via
+  the anchors. Author: wml-chat-A (Fable, Run-9 prep session).
 - 2026-07-04 — v2.2. **ENGINE-OWNED CLOSING CHAIN (v7.19.854, Neil ruling):** the whole assessment
   ending is code-driven — state-block summary mandate (ends `@SUMMARY_COMPLETE`, fills Overall
   Feedback, asks nothing) → code-side section-fill verify (ONE silent repair) → code-asked Hattie
