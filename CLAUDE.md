@@ -178,6 +178,8 @@ When the AI misbehaves in WML but works in the raw AI Engine chatbot, the preamb
 
 **⭐ Before touching ANY assessment or planning protocol, read `PROTOCOL-STANDARD.md` (plugin root). It is the codified contract — R&J gold standard + Neil's locked expectations + grep-able acceptance checks. A protocol change that fails its checks does not ship.**
 
+**⭐ Before touching the assessment ENGINE or canvas UX, read `ASSESSMENT-MECHANICS.md` (plugin root, added at v7.19.914). It is the engine/UX contract — the root/universal/dynamic doctrine made testable, the session-lifecycle spine, PM law, code-owned arithmetic, the failure-class index, and the sign-off checklist. PROTOCOL-STANDARD = what the protocol says; ASSESSMENT-MECHANICS = how the machine behaves; a port is done only when BOTH are met. Update it in the same commit as any mechanics change.**
+
 Every protocol (board + paper + question) has its own AO structure, paragraph scaffold, marking granularity. Do NOT assume uniformity.
 
 - **Language Section A reading Qs** (AQA / Edexcel / Eduqas): single AO per Q from schema. TTECEA ×N paragraphs. Q1 typically retrieval (mark-per-statement); Q2-Q4 analysis/evaluation.
