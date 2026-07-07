@@ -13,6 +13,9 @@
     "gsap": "readonly",
     "ScrollTrigger": "readonly",
     "jQuery": "readonly",
-    "$": "readonly"
+    "$": "readonly",
+    "Hls": "readonly",
+    "sophiclyCursorConfig": "readonly",
+    "module": "readonly"
   }
 }

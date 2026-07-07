@@ -8,6 +8,10 @@ set -e
 source "$(dirname "$0")/.deploy/deploy-helpers.sh"
 sophicly_predeploy_guard
 
+# v7.19.915: mechanical pre-ship gate — syntax + eslint no-undef on the whole tree.
+# BLOCKS the deploy; do not bypass (the .898 crash class ships past node --check).
+"$(dirname "$0")/bin/pre-ship-check.sh" --all || { echo "❌ pre-ship gate failed — deploy aborted."; exit 1; }
+
 REMOTE_USER="runcloud"
 REMOTE_HOST="18.133.5.229"
 SSH_KEY="$HOME/.ssh/sophicly_staging"

@@ -176,9 +176,12 @@ Run 7 clean = 48/80 everywhere). Marks land in feedback-box labels `(score / max
 
 ## §9. SHIP GATES (mechanical, in order — never from memory)
 
-1. `bin/pre-ship-check.sh` on staged changes (node --check + eslint no-undef; php -l + braces).
-   **Wire it:** `ln -sf ../../bin/pre-ship-check.sh .git/hooks/pre-commit` + deploy-script call —
-   as of v914 it is NOT wired, which is how 10 latent no-undef sites shipped.
+1. `bin/pre-ship-check.sh` on staged changes (node --check + eslint no-undef; php -l authoritative,
+   raw brace-count warn-only when php -l passes — string braces double-fire it).
+   **WIRED as of v915:** `.git/hooks/pre-commit` is a wrapper file calling the gate (regular file,
+   NOT a symlink — Google Drive mangles symlinks), and both deploy scripts run `--all` before rsync
+   and abort on failure. Node authoring scripts get `tools/.eslintrc.json` (node env); page-injected
+   globals (`Hls`, `sophiclyCursorConfig`, `module`) live in root `.eslintrc.json` globals.
 2. **RUN THE FLOW** — drive the changed path once; scope-clean ≠ correct.
 3. Regression matrix for canvas/pipeline/doc-chain/boot changes: WML-SMOKE-TEST.md
    ({P1,P2}×{diagnostic,redraft}×topic + CW 1–4 + quiz + boot). Any red console error = fail.

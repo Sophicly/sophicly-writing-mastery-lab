@@ -7120,7 +7120,13 @@
                         } });
                     const startBtn = el('button', { className: 'swml-quick-btn swml-timer-start-btn', innerHTML: '\u23F1 Start 4-Minute Timer',
                         onClick: () => {
-                            if (window.WML._startCanvasTimer) window.WML._startCanvasTimer(_examTimerDuration, true);
+                            // v7.19.915: pass the send capability — startCanvasTimer lives in a
+                            // different closure and cannot name THIS pipeline's sendCanvasMessage
+                            // (the .898 out-of-scope crash class; fired at 0:00 on timed runs).
+                            if (window.WML._startCanvasTimer) window.WML._startCanvasTimer(_examTimerDuration, () => {
+                                if (!chatTextarea.value.trim()) chatTextarea.value = '[Timer expired — no response submitted]';
+                                sendCanvasMessage();
+                            });
                             startBtn.disabled = true;
                             startBtn.textContent = '\u23F1 Timer Running...';
                             startBtn.classList.add('swml-timer-running');
@@ -7473,7 +7479,11 @@
                         chatMicBtn.classList.add('swml-mic-active'); try { localStorage.setItem(MIC_TIP_KEY, '1'); } catch (_) {} // v7.19.834: mic users never see the tip
                         // v7.15.14: Auto-start timer when mic starts in Exam mode
                         if (_examTimerMode === 'exam' && window.WML._startCanvasTimer) {
-                            window.WML._startCanvasTimer(_examTimerDuration, true);
+                            // v7.19.915: send capability passed in (see timer-start button note).
+                            window.WML._startCanvasTimer(_examTimerDuration, () => {
+                                if (!chatTextarea.value.trim()) chatTextarea.value = '[Timer expired — no response submitted]';
+                                sendCanvasMessage();
+                            });
                             const manualBtn = document.querySelector('.swml-timer-start-btn');
                             if (manualBtn) { manualBtn.disabled = true; manualBtn.textContent = '\u23F1 Timer Running...'; manualBtn.classList.add('swml-timer-running'); }
                             console.log('WML: Timer auto-started on mic click (Exam mode)');
@@ -12737,15 +12747,12 @@
                     canvasTimerDisplay.style.color = '#ff6b6b';
                     canvasTimerDisplay.style.fontWeight = '700';
                     canvasTimerDisplay.style.animation = ''; // v7.15.22: Stop throb at 0
-                    if (autoSubmit) {
-                        const _ta = document.querySelector('.swml-canvas-chat-input textarea');
-                        if (_ta && _ta.value.trim()) {
-                            sendCanvasMessage();
-                        } else if (_ta) {
-                            // v7.15.23: Send expiry marker so AI can respond (protocol handles this case)
-                            _ta.value = '[Timer expired — no response submitted]';
-                            sendCanvasMessage();
-                        }
+                    // v7.19.915: autoSubmit is the CALLER's send callback (or falsy). The old
+                    // code named a bare sendCanvasMessage that doesn't exist in this closure —
+                    // ReferenceError at 0:00 on every timed assessment (.898 crash class). The
+                    // caller owns its textarea + send pipeline; this timer stays pipeline-blind.
+                    if (typeof autoSubmit === 'function') {
+                        try { autoSubmit(); } catch (e) { console.warn('WML timer: auto-submit at expiry failed', e); }
                     }
                     return;
                 }
@@ -13263,6 +13270,10 @@
         let hasPlan = false;
         // Hoisted refs for word count (used in onUpdate closure)
         let diagProgressFill = null, diagWcLabel = null, diagCompleteBtn = null, assessCompleteBtn = null;
+        // v7.19.915: hoisted — training-panels handle, assigned in the useTrainingEnv branch.
+        // The planning/polishing clear-chat resend (below) lives outside that branch and
+        // referenced a block-scoped const → ReferenceError (.898 crash class).
+        let tp = null;
 
         planSections.forEach(s => {
             const val = planData[s.key];
@@ -13627,7 +13638,7 @@
             // Exercises with environment:'training' (assessment, mark_scheme, planning, polishing, exam_prep, CW SI)
             // build chat + sidebar panels DIRECTLY — no diagnostic canvas, no flash, no auto-trigger.
             const _assessBtnRef = { value: null };
-            const tp = buildTrainingPanels({
+            tp = buildTrainingPanels({
                 canvas, canvasEditor, exerciseConfig,
                 boardLabel, subjectLabel, textLabel,
                 isCwTask, cwStepDef, isCwSi, isExamPrep,
@@ -13636,6 +13647,9 @@
                 assessCompleteBtnRef: _assessBtnRef,
             });
             assessCompleteBtn = _assessBtnRef.value;
+            // v7.19.915: wml-app.js showPhaseCompleteCard styles this button but lives in
+            // another file/scope — hand it over via WML (bare cross-file read crashed).
+            WML._assessCompleteBtn = assessCompleteBtn;
 
             // Insert panels directly — no animation needed, they render with the canvas
             canvas.insertBefore(tp.protoPanel, editorPane);
@@ -15552,6 +15566,7 @@
                         assessBtn.style.display = 'none';
                         assessBtn.classList.add('swml-assess-complete-btn');
                         assessCompleteBtn = assessBtn;
+                        WML._assessCompleteBtn = assessCompleteBtn; // v7.19.915: see training-env note
                         // v7.19.359: same embedded-env unmount as the training-panel
                         // instance — LD owns completion; CW SI keeps its button.
                         if (!WML.isEmbedded || isCwSi) protoSpacer.appendChild(assessBtn);
@@ -15629,7 +15644,10 @@
                                             // button — detector emits "▶ Let's go".
                                         } else if (state.task === 'planning' || state.task === 'polishing') {
                                         // v7.14.68: Planning/polishing — silent auto-send after clear
-                                        canvasSilentSend = true; tp.chatTextarea.value = "Let's begin!"; tp.sendCanvasMessage();
+                                        // v7.19.915: tp is the hoisted training-panels handle — null if this
+                                        // canvas rendered outside the training-env branch. Fail loud, not dead.
+                                        if (tp) { canvasSilentSend = true; tp.chatTextarea.value = "Let's begin!"; tp.sendCanvasMessage(); }
+                                        else console.warn('WML clear-chat: no training panels handle — auto-resend skipped for', state.task);
                                         } else {
                                         // Show fresh assessment greeting with essay question if available
                                         const tn = state.textName || state.text || 'your text';
@@ -32146,7 +32164,6 @@
         _migrationActive = true;
         try { canvasEditor.commands.setContent(div.innerHTML, false); }
         finally { _migrationActive = false; }
-        try { _sectionCount = countSections(canvasEditor.state.doc); } catch (e) {}
         if (typeof saveCanvasContent === 'function') saveCanvasContent();
         console.log('WML CW: Step-1 questions healed to current template (' + (sameSet ? 'prompt refresh' : 'structural rebuild + stash') + ')');
     }
@@ -34131,7 +34148,11 @@ ${html}
                 // v7.17.6: Canonical word-counter (see note above).
                 CharacterCount.configure({ wordCounter: (WML && WML.countWords) ? WML.countWords : undefined }),
                 TextStyle, Color,
-                SectionBlock, InputField, ChecklistItem, SelectField, ClozeCheck,
+                // v7.19.915: SectionBlock only. InputField/ChecklistItem/SelectField/ClozeCheck
+                // are closure-locals of the MAIN canvas boot — naming them here was a
+                // ReferenceError (.898 crash class), and exam-prep docs/templates never
+                // contain those field nodes anyway.
+                SectionBlock,
             ],
             content: savedContent || getExamPrepDocTemplate(state.task),
             editorProps: {

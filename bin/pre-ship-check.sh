@@ -38,9 +38,15 @@ for f in "${FILES[@]}"; do
       if [ -n "$out" ]; then echo "❌ eslint no-undef (out-of-scope reference) in $f:"; echo "$out"; fail=1; fi
       ;;
     *.php)
-      php -l "$f" >/dev/null || { echo "❌ php -l: $f"; fail=1; }
-      o=$(grep -o '{' "$f" | wc -l); c=$(grep -o '}' "$f" | wc -l)
-      [ "$o" -ne "$c" ] && { echo "❌ brace mismatch in $f (open=$o close=$c)"; fail=1; }
+      if php -l "$f" >/dev/null; then
+        # php -l is authoritative for syntax. Raw brace counting double-fires on
+        # braces inside string literals ("{$var}", JSON) — v7.19.915: warn-only
+        # when php -l passed, hard-fail only when php -l itself is unavailable/broken.
+        o=$(grep -o '{' "$f" | wc -l); c=$(grep -o '}' "$f" | wc -l)
+        [ "$o" -ne "$c" ] && echo "⚠️  brace count differs in $f (open=$o close=$c) — php -l clean, likely braces in strings."
+      else
+        echo "❌ php -l: $f"; fail=1
+      fi
       ;;
   esac
 done

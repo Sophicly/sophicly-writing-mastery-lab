@@ -5360,6 +5360,10 @@
     function showPhaseCompleteCard() {
         if (state._phaseMarkedComplete) return;
         state._phaseMarkedComplete = true; // Set immediately to prevent double-click (v7.12.53)
+        // v7.19.915: the sidebar assess button lives in wml-assessment.js's canvas closure —
+        // handed over via WML._assessCompleteBtn (the bare cross-file read was a ReferenceError
+        // that killed this whole function — the .898 out-of-scope crash class).
+        const assessCompleteBtn = (window.WML && WML._assessCompleteBtn) || null;
         // Disable sidebar assess button immediately too
         if (assessCompleteBtn) {
             assessCompleteBtn.disabled = true;
@@ -6932,7 +6936,7 @@ Before marking the introduction, ask the student to confirm their essay structur
             if (window.swmlShader) {
                 try {
                     destroyShader();
-                    if (swmlShader.init(shaderBg)) shaderInitialized = true;
+                    if (window.swmlShader.init(shaderBg)) shaderInitialized = true;
                 } catch(e) { console.warn('Portfolio shader init failed:', e); }
             }
         });
