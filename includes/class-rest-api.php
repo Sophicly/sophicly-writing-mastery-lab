@@ -4418,7 +4418,14 @@ class SWML_REST_API {
         // 1. Content guard.
         if ($html !== '') {
             if (preg_match('/data-section-label="[^"]*\(\s*\d[\d.]*\s*\/\s*\d+\s*\)/', $html)) return true;
-            if (preg_match('/Total Marks:\s*(?:<[^>]+>\s*)*\d/', $html)) return true;
+            // v7.19.945 ROOT FIX (Neil live test 2026-07-08: diagnostic edits never reached
+            // the assessment doc): recalculateScoreSummary writes "Total Marks: 0 / N
+            // (in progress)" into UNMARKED docs on every recalc (wml-assessment.js ~23472,
+            // v816 ceiling semantics) — the v920 any-digit match froze every such doc, so
+            // reseed-until-marked never fired. Freeze only on a POSITIVE total; a marked
+            // doc is still caught by the label guard above (labels carry "(N / M)" incl.
+            // zeros) and by the attempt-index stamp below.
+            if (preg_match('/Total Marks:\s*(?:<[^>]+>\s*)*([\d.]+)/', $html, $tm) && (float) $tm[1] > 0) return true;
         }
         // 2. Graded stages — attempt-index stamp.
         if ($signal === 'marked') {
