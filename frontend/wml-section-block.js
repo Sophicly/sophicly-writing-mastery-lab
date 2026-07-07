@@ -264,23 +264,32 @@
             // contentDOM so the toggle button can be a sibling OUTSIDE the editable content,
             // and ignoreMutation firewalls it from ProseMirror. (Auto-collapse-on-complete is
             // deferred to the calibration tier — it needs the engagement/gap-reflection signal.)
-            if (type === 'feedback') {
+            // v7.19.920 (Neil Run 8 ruling): CAPABILITY-KEYED, not type-guarded — the two
+            // 'action' assessment forms (Self-Assessment / Action Plan) collapse too, and a
+            // capability table names which sections carry a code-owned headline strip and
+            // whether it shows always (Analytics, the v913 readout) or as the collapsed
+            // preview (the others). wml-assessment's _renderSectionStrips fills them all.
+            const _cvLabel = String((node.attrs && node.attrs.label) || dom.getAttribute('data-section-label') || '');
+            const _STRIP_MODE = { 'Analytics': 'always', 'Self-Assessment': 'collapsed', 'Action Plan': 'collapsed', 'Overall Feedback': 'collapsed' };
+            const _collapsible = type === 'feedback'
+                || (type === 'action' && (_cvLabel === 'Self-Assessment' || _cvLabel === 'Action Plan'));
+            if (_collapsible) {
                 const contentDOM = document.createElement('div');
                 contentDOM.className = 'swml-section-content';
                 dom.appendChild(contentDOM);
 
-                const fbLabel = (node.attrs && node.attrs.label) || dom.getAttribute('data-section-label') || '';
+                const fbLabel = _cvLabel;
 
-                // v7.19.913: Analytics readout strip — IN-FLOW (the progress-card/sign-off
-                // technique). The old absolute overlay was a single nowrap line clipped into
-                // the section's reserved top band, running under the ✓/chevron cluster (Neil
-                // 2026-07-07). A firewalled strip ABOVE the content wraps freely and occupies
+                // v7.19.913: headline readout strip — IN-FLOW (the progress-card/sign-off
+                // technique). A firewalled strip ABOVE the content wraps freely and occupies
                 // real layout space; wml-assessment fills it via WML.renderAnalyticsReadout
-                // on every (re)mount + overlay rebuild.
+                // on every (re)mount + overlay rebuild. 'collapsed' mode = visible only while
+                // the section is collapsed (the preview); 'always' = the Analytics readout.
                 let anaStrip = null;
-                if (fbLabel === 'Analytics') {
+                if (_STRIP_MODE[fbLabel]) {
                     anaStrip = document.createElement('div');
-                    anaStrip.className = 'swml-ana-strip';
+                    anaStrip.className = 'swml-ana-strip' + (_STRIP_MODE[fbLabel] === 'collapsed' ? ' swml-strip-collapsed-only' : '');
+                    anaStrip.setAttribute('data-strip', fbLabel);
                     anaStrip.setAttribute('contenteditable', 'false');
                     dom.insertBefore(anaStrip, contentDOM);
                     const _fillAna = () => {
@@ -313,6 +322,8 @@
                     ev.stopPropagation();
                     const nowCollapsed = dom.classList.toggle('swml-fb-collapsed');
                     try { if (COLLAPSE_KEY) localStorage.setItem(COLLAPSE_KEY, nowCollapsed ? '1' : '0'); } catch (_) { /* storage off */ }
+                    // v7.19.920: refresh headline strips so a just-collapsed section previews live data.
+                    try { if (window.WML && window.WML.renderAnalyticsReadout) window.WML.renderAnalyticsReadout(); } catch (_) { /* best-effort */ }
                     if (window.console) console.log('[WML feedback] collapse toggle', JSON.stringify(fbLabel), '→', nowCollapsed ? 'collapsed' : 'expanded');
                     // v7.19.814 (Neil): expanding while sat near the viewport top made the
                     // section appear to grow UPWARDS (scroll anchoring holds the content

@@ -2164,6 +2164,37 @@ class SWML_REST_API {
                 }
             }
         }
+        // v7.19.920 (Neil, reseed arc): RESEED-UNTIL-MARKED for the MARK-ONLY/DISPLAY stages.
+        // The old line was freeze-on-first-save: opening a stage persisted a snapshot that never
+        // re-read upstream, so editing the diagnostic never reached the assessment doc. New rule
+        // (design: wml-CHATA-universal-forward-chain-reseed-until-marked-design-2026-07-06):
+        // while such a stage is NOT yet marked, every load re-seeds it from the latest upstream
+        // stage; once marked, it freezes to protect the marks. SCOPE (engineered-out failure
+        // mode): only stages where the student never writes — '_assessment', '_reassessment',
+        // '_fbdiscuss'. Write stages (diagnostic, planning, outlining, polishing, redraft) keep
+        // freeze-on-save — reseeding those would wipe in-progress student work; they keep the
+        // confirm-gated "Pull from Previous Stage" instead. stage_is_frozen() biases FROZEN on
+        // any ambiguity: a wrong-frozen just needs a manual pull, a wrong-unfrozen wipes marks.
+        if (!empty($raw)
+            && !empty($request->get_param('seedFromSiblings'))
+            && in_array($suffix, array('_assessment', '_reassessment', '_fbdiscuss'), true)
+            && !$this->stage_is_frozen($user_id, $board, $text, $topic_number, $suffix, $attempt, $raw)) {
+            $reseed_html = $this->seed_from_sibling_stage($user_id, $board, $text, $topic_number, $meta_key, $suffix, $attempt, $cw_project_id);
+            if (!empty($reseed_html)) {
+                if (strpos($text, 'lang_paper') !== false) {
+                    $reseed_html = self::strip_stale_cw_outline_sections($reseed_html);
+                }
+                return rest_ensure_response([
+                    'success'      => true,
+                    'doc'          => ['html' => $reseed_html],
+                    'attempt'      => $attempt,
+                    'generalNotes' => $general_notes,
+                    'is_seed'      => true,
+                ]);
+            }
+            // No upstream content — fall through and return this stage's stored doc.
+        }
+
         if (empty($raw)) {
             // v7.19.19+: Exam Prep Crib seed-on-mount.
             // When suffix='_crib' (task='exam_crib' per manifest) AND no canvas
@@ -4252,6 +4283,53 @@ class SWML_REST_API {
      */
     private static function stage_seed_chain() {
         return ['', '_assessment', '_fbdiscuss', '_planning', '_outlining', '_polishing', '_reassessment', '_redraft'];
+    }
+
+    /**
+     * v7.19.920 (reseed-until-marked): is this stage's doc FROZEN (protect it — never
+     * re-seed), or may load_canvas() refresh it from the latest upstream stage?
+     *
+     * FAIL-SAFE BIAS: any ambiguity → frozen. A wrong "frozen" costs one manual
+     * "Pull from Previous Stage"; a wrong "unfrozen" re-seeds over a marked doc
+     * (the doc-wipe incident class). Signals, strongest first:
+     *   1. CONTENT — the stored doc already carries marks (a filled feedback-box
+     *      label "(N / M)" or a filled "Total Marks:") → frozen, whatever stamps say.
+     *   2. Graded stages (_assessment/_reassessment) — this attempt's index entry
+     *      has status 'completed' or a grade/score recorded → frozen.
+     *   3. _fbdiscuss — frozen once Phase 1 is marked complete (phase meta key).
+     */
+    private function stage_is_frozen($user_id, $board, $text, $topic_number, $suffix, $attempt, $raw) {
+        // 1. Content guard.
+        $html = '';
+        if (is_array($raw)) {
+            $html = isset($raw['html']) ? (string) $raw['html'] : '';
+        } else {
+            $dec  = self::decode_canvas_json($raw);
+            $html = (is_array($dec) && isset($dec['html'])) ? (string) $dec['html'] : (string) $raw;
+        }
+        if ($html !== '') {
+            if (preg_match('/data-section-label="[^"]*\(\s*\d[\d.]*\s*\/\s*\d+\s*\)/', $html)) return true;
+            if (preg_match('/Total Marks:\s*(?:<[^>]+>\s*)*\d/', $html)) return true;
+        }
+        // 2. Graded stages — attempt-index stamp.
+        if ($suffix === '_assessment' || $suffix === '_reassessment') {
+            $idx = $this->get_attempt_index($user_id, $board, $text, $topic_number, $suffix);
+            if (!is_array($idx) || empty($idx['attempts']) || !is_array($idx['attempts'])) return true; // ambiguous → frozen
+            foreach ($idx['attempts'] as $a) {
+                if ((int) ($a['num'] ?? 0) !== max(1, (int) $attempt)) continue;
+                if (($a['status'] ?? '') === 'completed') return true;
+                if (($a['grade'] ?? null) !== null || ($a['score'] ?? null) !== null) return true;
+                return false; // entry found, no completion signal → reflect upstream
+            }
+            return true; // no entry for this attempt → ambiguous → frozen
+        }
+        // 3. Discussion doc — frozen once its phase is marked complete.
+        if ($suffix === '_fbdiscuss') {
+            $phase_key = $this->phase_meta_key($board, $text, (int) $topic_number, 'initial', max(1, (int) $attempt));
+            if (!empty(get_user_meta($user_id, $phase_key, true))) return true;
+            return false;
+        }
+        return true; // any other suffix: not in scope → frozen (write stages keep freeze-on-save)
     }
 
     private function seed_from_sibling_stage($user_id, $board, $text, $topic_number, $exclude_key, $suffix = '', $attempt = 1, $cw_project_id = '') {

@@ -489,6 +489,7 @@
         });
         groups.forEach(group => {
             if (!group.label || (!alwaysGroup && group.steps.length <= 1)) {
+                // (standalone steps already collapse to their numbered circle — labels hide via CSS)
                 group.steps.forEach(s => {
                     const cls = s.step === 1 ? 'active' : '';
                     container.appendChild(el('div', { className: `swml-step ${cls}`, 'data-step': s.step, 'data-display': s.display || '' }, [
@@ -501,6 +502,10 @@
                 const isFirstGroup = container.querySelectorAll('.swml-step-group').length === 0;
                 const headerEl = el('div', {
                     className: `swml-step-group-header${isFirstGroup ? ' open' : ''}`,
+                    // v7.19.920 (Neil): collapsed sidebar renders group headers as lettered/numbered
+                    // circles (CSS ::before reads this) — "Question 2" → 2, "Section B" → B,
+                    // anything else → its initial. Derived, never per-protocol wired.
+                    'data-abbrev': _groupAbbrev(group.label),
                     onClick: (e) => {
                         const parent = e.currentTarget.parentElement;
                         const wasOpen = e.currentTarget.classList.contains('open');
@@ -1075,10 +1080,20 @@
             const m = (typeof _buildLangSidebarModel === 'function' && _buildLangSidebarModel())
                    || (typeof _buildLitSidebarModel === 'function' && _buildLitSidebarModel());
             if (!m || !Array.isArray(m.steps) || !m.current) return null;
-            const cur = m.steps.find(s => s.step === m.current);
-            if (!cur || !cur.group) return null;   // Setup / Total & Grade carry no group → no marking chip
+            let cur = m.steps.find(s => s.step === m.current);
+            let posOverride = null;
+            if (cur && !cur.group) {
+                // v7.19.918 (Neil Run 8): a marking fill that COMPLETES a group advances the
+                // pointer onto a groupless step (Total & Grade) — the chip vanished exactly
+                // when Section B finished. Fall back to the last grouped step BEFORE the
+                // pointer and show that group FULL (its marking just landed).
+                const before = m.steps.filter(s => s.group && s.step < m.current);
+                cur = before[before.length - 1] || null;
+                posOverride = 'full';
+            }
+            if (!cur || !cur.group) return null;   // Setup with no marked group yet → no marking chip
             const grp = m.steps.filter(s => s.group === cur.group);
-            const pos = grp.findIndex(s => s.step === cur.step) + 1;
+            const pos = posOverride === 'full' ? grp.length : (grp.findIndex(s => s.step === cur.step) + 1);
             if (pos < 1 || !grp.length) return null;
             const beat = { section: cur.group, step: pos, total: grp.length };
             const chip = WML.progressChipHTML(beat);
@@ -1773,6 +1788,17 @@
         const m = t.match(/(\d+)/);
         return m ? m[1] : '';
     }
+    // v7.19.920 (Neil): collapsed-sidebar circle glyph for a step-group header —
+    // "Question 2" → "2", "Section B" → "B", anything else → its initial. Derived
+    // from the label so every board/paper gets it free (no per-protocol wiring).
+    function _groupAbbrev(label) {
+        const s = String(label == null ? '' : label).trim();
+        const q = s.match(/question\s*(\d+)/i);
+        if (q) return q[1];
+        const sec = s.match(/section\s+([a-z0-9])\b/i);
+        if (sec) return sec[1].toUpperCase();
+        return (s.charAt(0) || '•').toUpperCase();
+    }
     // max marks for a question/paragraph, from its feedback box label "… (— / MAX)".
     function _feedbackMaxForQ(qNum) {
         if (!canvasEditor || !qNum) return null;
@@ -1836,7 +1862,19 @@
                 const lbl = String(node.attrs.label || '');
                 if (_paraKey(lbl) === _paraKey(qNum) && _paraKey(qNum)) {
                     const base = lbl.replace(/\s*\(\s*(?:—|\d+(?:\.\d+)?)\s*\/\s*\d+\s*\)\s*$/, ''); // v7.19.707: half-mark aware
-                    const newLabel = base + ' (' + score + ' / ' + max + ')';
+                    // v7.19.917: Section-B WC ceiling enforced AT the label write — the label is
+                    // the grade source every downstream surface reads (rank → Analytics chips,
+                    // Score Summary, sidebar). Run 8: raw 28/40 sailed past a 27 cap into the
+                    // Analytics chip because only the reply-text passes were capping.
+                    let _award = score;
+                    try {
+                        const _bc = _sectionBWcCeiling('Q' + _paraKey(qNum), max);
+                        if (_bc && _award > _bc.cap) {
+                            console.warn('WML MarkAudit: label write capped Q' + _paraKey(qNum) + ' ' + _award + ' → ' + _bc.cap + ' (word-count ceiling)');
+                            _award = _bc.cap;
+                        }
+                    } catch (_) { /* ceiling is best-effort; raw mark stands */ }
+                    const newLabel = base + ' (' + _award + ' / ' + max + ')';
                     if (newLabel !== lbl) {
                         canvasEditor.view.dispatch(canvasEditor.state.tr.setNodeMarkup(pos, undefined, Object.assign({}, node.attrs, { label: newLabel })));
                     }
@@ -2825,15 +2863,49 @@
     // rank on the brand ladder — biggest loss red, then orange, then yellow — while the
     // Strongest chip keeps the 1–9 pct-tier ladder, with FULL MARKS in the brand
     // purple gradient.
-    function _renderAnalyticsStrip() {
+    // v7.19.920 (Neil Run 8 ruling — collapsed-summary previews): ONE filler for EVERY
+    // section headline strip (.swml-ana-strip[data-strip]), not just Analytics. Each strip's
+    // content comes from the code-owned models (_analyticsReadoutModel / _saWalkRows /
+    // _saCalibrationData) — no LLM. Capability-keyed by the data-strip attribute the
+    // nodeView stamps (never label string-guards scattered here). Analytics shows its strip
+    // always (the v913 in-flow readout); Self-Assessment / Action Plan / Overall Feedback
+    // show theirs ONLY while collapsed (CSS .swml-strip-collapsed-only) as the preview.
+    function _renderSectionStrips() {
         try {
             const strips = document.querySelectorAll('.swml-ana-strip');
             if (!strips.length) return;
             const _ana = _analyticsReadoutModel();
+            const chip = (a, cls) => '<span class="swml-ana-chip ' + (cls || ('swml-tier-' + a.tier)) + '">'
+                + escapeHTML(a.label) + (a.ao ? ' · ' + escapeHTML(a.ao) : '') + ' ' + a.score + '/' + a.max + '</span>';
+            const seg = (lbl, inner) => '<span class="swml-ana-seg"><span class="swml-ana-lbl">' + lbl + '</span>' + inner + '</span>';
+            const BUILDERS = {
+                'Self-Assessment': () => {
+                    const rows = _saWalkRows().filter(r => r.value != null);
+                    if (!rows.length) return '';
+                    const avg = rows.reduce((s, r) => s + r.value, 0) / rows.length;
+                    const pct = Math.round((avg / 5) * 100);
+                    let html = seg('Average rating', '<span class="swml-ana-calib">' + (Math.round(avg * 10) / 10) + '/5 · ' + pct + '%</span>');
+                    const c = _saCalibrationData();
+                    if (c) {
+                        const cCol = c.verdict === 'well-calibrated' ? '#1cd991' : (Math.abs(c.gap) <= 20 ? '#f1c40f' : '#ff9800');
+                        html += seg('Calibration', '<span class="swml-ana-calib" style="color:' + cCol + '">scored ' + c.actPct + '% · ' + c.verdict + '</span>');
+                    }
+                    return html;
+                },
+                'Action Plan': () => {
+                    if (!_ana || !_ana.missed.length) return '';
+                    return seg('Priorities', _ana.missed.map((a, i) => chip(a, 'swml-loss-' + Math.min(i + 1, 3))).join(''));
+                },
+                'Overall Feedback': () => {
+                    if (!_ana) return '';
+                    let html = seg('Key strength', chip(_ana.strength, _ana.strength.score >= _ana.strength.max ? 'swml-ana-full' : null));
+                    if (_ana.missed.length) html += seg('Top priority', chip(_ana.missed[0], 'swml-loss-1'));
+                    return html;
+                },
+            };
+            const _analyticsHtml = () => {
             let html = '';
             if (_ana) {
-                const chip = (a, cls) => '<span class="swml-ana-chip ' + (cls || ('swml-tier-' + a.tier)) + '">'
-                    + escapeHTML(a.label) + (a.ao ? ' · ' + escapeHTML(a.ao) : '') + ' ' + a.score + '/' + a.max + '</span>';
                 const parts = [];
                 parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Strongest</span>'
                     + chip(_ana.strength, _ana.strength.score >= _ana.strength.max ? 'swml-ana-full' : null) + '</span>');
@@ -2853,14 +2925,19 @@
                 }
                 html = parts.join('');
             }
+            return html;
+            };
             strips.forEach(s => {
+                const key = s.getAttribute('data-strip') || 'Analytics';
+                let html = '';
+                try { html = BUILDERS[key] ? BUILDERS[key]() : _analyticsHtml(); } catch (_) { html = ''; }
                 if (s.innerHTML !== html) s.innerHTML = html;
                 const want = html ? '' : 'none';
                 if (s.style.display !== want) s.style.display = want;
             });
-        } catch (e) { console.warn('WML Analytics strip: skipped —', e && e.message); }
+        } catch (e) { console.warn('WML section strips: skipped —', e && e.message); }
     }
-    try { window.WML = window.WML || {}; window.WML.renderAnalyticsReadout = _renderAnalyticsStrip; } catch (_) {}
+    try { window.WML = window.WML || {}; window.WML.renderAnalyticsReadout = _renderSectionStrips; } catch (_) {}
     function _fireClosingFiling() {
         if (_closingFilingFired) return;
         _closingFilingFired = true;
@@ -3190,15 +3267,19 @@
             if (/MIN\(your marks,\s*\d+\)/i.test(out)) {
                 const bSent = _sectionBWcCeiling('Q5', 40);   // AQA Section B = 40 (P1 + P2)
                 if (bSent) {
+                    // v7.19.917 (Neil Run 8): the whole line is now CODE-BUILT, not just
+                    // number-corrected — students saw the cap but never HOW it was derived.
+                    // One canonical sentence: shortfall → 5-per-100 ladder → rounded penalty → cap.
+                    const _short = bSent.tgt - bSent.wc;
+                    const _canon = '**Word count: ' + bSent.wc + '/' + bSent.tgt + ' target — ' + _short + ' words short.** '
+                        + 'How the ceiling is calculated: 5 marks per 100 missing words (' + _short + ' × 5 ÷ 100 = '
+                        + bSent.pen + ' after rounding), so your total is capped at MIN(your marks, ' + bSent.cap + ') = '
+                        + bSent.cap + '/40. Your marks aren’t reduced — the cap only bites if you earn above '
+                        + bSent.cap + '. A full-length piece removes it entirely.';
                     out = out.replace(/[^\n]*MIN\(your marks[^\n]*/gi, (line) => {
-                        let s = line.replace(/MIN\(your marks,\s*(\d+)\)/gi, (m, n) =>
-                            parseInt(n, 10) === bSent.cap ? m : 'MIN(your marks, ' + bSent.cap + ')');
-                        s = s.replace(/([−–-]\s*)(\d+(?:\.\d+)?)(\s*marks\b)/gi, (m, pre, n, post) =>
-                            parseFloat(n) === bSent.pen ? m : pre + bSent.pen + post);
-                        s = s.replace(/rise above\s*(\*{0,2})(\d+)\s*\/\s*(\d+)/gi, (m, b, n, d) =>
-                            parseInt(n, 10) === bSent.cap ? m : 'rise above ' + b + bSent.cap + '/' + d);
-                        if (s !== line) console.warn('WML MarkAudit: Q5 ceiling sentence corrected → penalty', bSent.pen, 'cap', bSent.cap + '/40');
-                        return s;
+                        if (line.trim() === _canon) return line;
+                        console.warn('WML MarkAudit: Q5 ceiling sentence rebuilt → penalty', bSent.pen, 'cap', bSent.cap + '/40');
+                        return _canon;
                     });
                 }
             }
@@ -12642,6 +12723,7 @@
                                 el('span', { className: 'swml-step-group-count', textContent: `${group.steps.length} steps` }),
                                 el('span', { className: 'swml-step-group-icon', textContent: '+' }),
                             ]);
+                            headerEl.setAttribute('data-abbrev', _groupAbbrev(group.label)); // v7.19.920: collapsed-circle glyph
                             groupEl.appendChild(headerEl);
 
                             const bodyEl = el('div', {
@@ -12905,6 +12987,37 @@
                     if (!txt || /will appear after assessment|will be assessed here|appear here after/i.test(txt)) return;
                     const fLbl = f.getAttribute('data-section-label') || ('Feedback ' + (i + 1));
                     body.appendChild(el('div', { className: 'swml-extract-essay-heading', textContent: fLbl }));
+                    // v7.19.920 (Neil Run 8): pad parity — the doc's Predicted·Actual·Δ readout
+                    // lives in the absolute dropdown overlay, which cloneNode can't carry.
+                    // Rebuild it as a static line from the SAME code-owned primitives
+                    // (_getPredicted / label mark / _calibVerdict) so pad and doc can't diverge.
+                    try {
+                        const mLbl = fLbl.match(/^(.*?)\s*\(\s*(—|\d+(?:\.\d+)?)\s*\/\s*(\d+)\s*\)\s*$/);
+                        const qk = mLbl && _paraKey(mLbl[1]);
+                        if (mLbl && qk) {
+                            const pred = _getPredicted(qk);
+                            const act = mLbl[2] === '—' ? null : parseFloat(mLbl[2]);
+                            const maxM = parseInt(mLbl[3], 10);
+                            const dim = 'opacity:0.45';
+                            const sep = '<span style="opacity:0.3">·</span>';
+                            let dTxt;
+                            if (pred != null && act != null) {
+                                const v = _calibVerdict(pred, act, maxM);
+                                const lab = v.verdict === 'accurate' ? 'examiner-accurate' : (v.verdict === 'slightly' ? 'slightly off' : 'recalibrate');
+                                dTxt = '<span style="color:' + v.color + '">Δ ' + (v.delta > 0 ? '+' : '') + v.delta + ' (' + lab + ')</span>';
+                            } else {
+                                dTxt = '<span style="' + dim + '">Δ —</span>';
+                            }
+                            const row = el('div', { className: 'swml-calib-readout swml-pad-calib' });
+                            row.style.cssText = 'display:flex;gap:7px;align-items:center;font-size:11px;font-weight:600;margin:0 0 4px;color:rgba(255,255,255,0.6);';
+                            row.innerHTML = (pred == null ? '<span style="' + dim + '">Predicted —</span>'
+                                    : '<span>Predicted <strong style="color:rgba(255,255,255,0.85)">' + pred + '</strong></span>')
+                                + sep + (act == null ? '<span style="' + dim + '">Actual —</span>'
+                                    : '<span>Actual <strong style="color:rgba(255,255,255,0.85)">' + act + ' / ' + maxM + '</strong></span>')
+                                + sep + dTxt;
+                            body.appendChild(row);
+                        }
+                    } catch (_) { /* pad preview is best-effort */ }
                     const cloned = _stripChipsFromClone(f.cloneNode(true));
                     cloned.removeAttribute('contenteditable');
                     cloned.querySelectorAll('[contenteditable]').forEach(n => n.setAttribute('contenteditable', 'false'));
@@ -22280,7 +22393,7 @@
             // v7.19.913: readout now renders IN-FLOW inside the Analytics section (the
             // .swml-ana-strip the feedback nodeView mounts) — refresh it on every overlay
             // rebuild so it tracks new marks at the old cadence. No absolute overlay.
-            if (analyticsSection) _renderAnalyticsStrip();
+            _renderSectionStrips();   // v7.19.920: fills every headline strip (self-guarding), not just Analytics
 
             // ── Tutor Sign-off UI (v7.19.828: IN-FLOW — the progress-card technique) ──
             // The old .swml-dropdown-overlay-signoff lived in the absolute dropdown layer
@@ -22308,40 +22421,48 @@
                 positionDropdownOverlays();
                 _swmlClosePopover();
             }, { passive: true });
+            // v7.19.920 (Neil Run 8): the resize listener + ResizeObserver were BOUND ONCE
+            // (window._swml*Bound guards) capturing the FIRST render's positionDropdownOverlays
+            // closure and observing the FIRST render's nodes — after any canvas rebuild / SPA
+            // nav they repositioned a dead layer while the live overlays sat stale until a
+            // scroll (whose listener IS rebound per render) fired. The run-once-guard landmine
+            // class (reference_wml_focus_inline_iife_reruns_every_nav). Fix: window-level
+            // indirection re-assigned every render + observer rebound to the CURRENT nodes.
+            window._swmlPositionOverlaysLive = () => {
+                positionDropdownOverlays();
+                _swmlClosePopover();
+            };
             if (!window._swmlOverlayResizeBound) {
                 let resizeRaf = 0;
                 window.addEventListener('resize', () => {
                     if (resizeRaf) cancelAnimationFrame(resizeRaf);
                     resizeRaf = requestAnimationFrame(() => {
-                        positionDropdownOverlays();
-                        _swmlClosePopover();
+                        try { if (window._swmlPositionOverlaysLive) window._swmlPositionOverlaysLive(); } catch (_) {}
                     });
                 }, { passive: true });
                 window._swmlOverlayResizeBound = true;
             }
             // v7.19.174: ResizeObserver on canvas overlay AND canvas-doc catches
             // container size changes that don't fire window.resize — fullscreen
-            // toggle (overlay), sidebar collapse / content flex transition (doc).
+            // toggle (overlay), sidebar collapse/expand / content flex transition (doc).
             // Doc is critical: overlay resizes instantly, but .swml-canvas-doc
             // animates via 0.6s flex transition (wml-canvas.css line 252) — RO
             // fires on every transition frame, last fire = final size.
-            if (!window._swmlOverlayResizeObserverBound && typeof ResizeObserver !== 'undefined') {
+            // v7.19.920: rebound EVERY render to the current nodes (see note above).
+            if (typeof ResizeObserver !== 'undefined') {
+                try { if (window._swmlOverlayResizeObserver) window._swmlOverlayResizeObserver.disconnect(); } catch (_) {}
                 const canvasOverlay = document.getElementById('swml-canvas-overlay');
                 const canvasDoc = document.querySelector('.swml-canvas-doc');
                 let roRaf = 0;
                 const ro = new ResizeObserver(() => {
                     if (roRaf) cancelAnimationFrame(roRaf);
                     roRaf = requestAnimationFrame(() => {
-                        positionDropdownOverlays();
-                        _swmlClosePopover();
+                        try { if (window._swmlPositionOverlaysLive) window._swmlPositionOverlaysLive(); } catch (_) {}
                     });
                 });
                 if (canvasOverlay) ro.observe(canvasOverlay);
                 if (canvasDoc) ro.observe(canvasDoc);
-                if (canvasOverlay || canvasDoc) {
-                    window._swmlOverlayResizeObserver = ro;
-                    window._swmlOverlayResizeObserverBound = true;
-                }
+                if (canvasOverlay || canvasDoc) window._swmlOverlayResizeObserver = ro;
             }
         }
 

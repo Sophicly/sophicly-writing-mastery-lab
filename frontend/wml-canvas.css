@@ -3615,6 +3615,25 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-proto.collapsed .swml-step-group-count,
 .swml-canvas-proto.collapsed .swml-step-group-icon,
 .swml-canvas-proto.collapsed .swml-step-group-body { display: none; }
+/* v7.19.920 (Neil): collapsed sidebar — group headers become lettered/numbered CIRCLES
+   (glyph from data-abbrev: "Question 2" → 2, "Section B" → B, "Self-Assessment" → S).
+   Complete group = green disc, white glyph (matches the step-circle complete state). */
+.swml-canvas-proto.collapsed .swml-step-group-title { display: none; }
+.swml-canvas-proto.collapsed .swml-step-group-header {
+    width: 26px; height: 26px; padding: 0;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 4px auto;
+    background: rgba(255,255,255,0.10);
+}
+.swml-canvas-proto.collapsed .swml-step-group-header::before {
+    content: attr(data-abbrev);
+    font-size: 12px; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.85);
+}
+.swml-canvas-proto.collapsed .swml-step-group-header.group-complete { background: #1CD991; }
+.swml-canvas-proto.collapsed .swml-step-group-header.group-complete::before { color: #fff; }
+.swml-canvas-proto.collapsed .swml-step-group-header.group-active { box-shadow: 0 0 0 2px rgba(83,51,237,0.65); }
 
 /* ── Panel entering state (v7.12.46) — background visible, children hidden ── */
 /* Background slides in via maxWidth, then children stagger-fade in */
@@ -6229,11 +6248,17 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-ana-chip.swml-loss-1 { background: rgba(229, 57, 53, 0.42); }
 .swml-ana-chip.swml-loss-2 { background: rgba(255, 152, 0, 0.38); color: rgba(20, 20, 20, 0.92); }
 .swml-ana-chip.swml-loss-3 { background: rgba(241, 196, 15, 0.36); color: rgba(20, 20, 20, 0.92); }
-/* Full marks = the brand purple gradient (push-button canonical). */
-.swml-ana-chip.swml-ana-full { background: linear-gradient(135deg, #5333ed, #4D76FD); color: #fff; }
+/* Full marks = THE brand purple gradient (v7.19.919, Neil Run 8 ruling: exactly the
+   message-bubble gradient — --swml-gradient, 135deg purple → deep-purple — not the
+   blue-leaning 5333ed→4D76FD it first shipped with). */
+.swml-ana-chip.swml-ana-full { background: var(--swml-gradient, linear-gradient(135deg, #5333ed, #2c003e)); color: #fff; }
 [data-swml-theme="light"] .swml-ana-strip { color: rgba(44, 0, 62, 0.6); }
 [data-swml-theme="light"] .swml-ana-chip { color: rgba(20, 20, 20, 0.92); }
 [data-swml-theme="light"] .swml-ana-chip.swml-ana-full { color: #fff; }
+/* v7.19.920: collapsed-summary previews — SA / Action Plan / Overall Feedback strips
+   render ONLY while their section is collapsed (Analytics' strip shows always). */
+.swml-ana-strip.swml-strip-collapsed-only { display: none; }
+.swml-section-block.swml-fb-collapsed .swml-ana-strip.swml-strip-collapsed-only { display: flex; }
 
 /* Italic prompts inside sections */
 .swml-section-block em {
@@ -11571,19 +11596,24 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     transition: transform 0.18s ease;
     margin-top: -3px;
 }
-.swml-section-feedback.swml-fb-collapsed .swml-fb-chevron {
+/* v7.19.920: selectors generalised from .swml-section-feedback to any collapsed block —
+   the Self-Assessment / Action Plan forms (type 'action') collapse too. */
+.swml-section-block.swml-fb-collapsed .swml-fb-chevron {
     transform: rotate(-45deg);           /* points right = collapsed */
     margin-top: 0;
 }
 
 /* Collapsed: hide the inner content, keep the box label tag + toggle + tick visible */
-.swml-section-feedback .swml-section-content {
+.swml-section-feedback .swml-section-content,
+.swml-section-block[data-section-type="action"] .swml-section-content {
     overflow: hidden;
     transition: max-height 0.2s ease;
 }
-.swml-section-feedback.swml-fb-collapsed .swml-section-content {
+.swml-section-block.swml-fb-collapsed .swml-section-content {
     display: none;
 }
+/* the absolute .swml-fb-toggle needs a positioned ancestor on the action forms too */
+.swml-section-block[data-section-type="action"] { position: relative; }
 @media (prefers-reduced-motion: reduce) {
     .swml-fb-chevron, .swml-section-feedback .swml-section-content { transition: none; }
 }

@@ -417,26 +417,26 @@ unlocked sets, so per-poem coverage is guaranteed once the engine stratifies the
 
 43. **Type: MCQ [Tests Recognising the Poem]**
     @set:3
-    * **Question:** Which poem, one of a sequence of sonnets for the poet's mother, recalls the father speaking quietly to her in her final moments, recalling their early life together at "New Row"?
+    * **Question:** Which poem opens "In the last minutes he said more to her / Almost than in all their life together", the father recalling their courtship at "New Row"?
     * **Options:** A) Clearances 7: In the Last Minutes, B) Long Distance II, C) Funeral Blues, D) On My First Son
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Heaney's "Clearances 7" recalls his father's few last, tender words to his dying mother, the children sensing they held more feeling than a lifetime of silence.
+    * **Feedback:** ✓ Correct. Heaney's "Clearances 7" has the father promise "you'll be glad / When I walk in the door", his dying wife unable to hear him — a handful of words that outweigh a lifetime's silence.
     * **Why B:** Long Distance II is spoken by the son years after his mother's death, not at the deathbed itself.
     * **Why C:** Funeral Blues is a public-facing lament with no remembered deathbed dialogue.
     * **Why D:** On My First Son mourns a son through epitaph, not a mother's final moments.
 
 44. **Type: True-False [Tests Form & Features]**
     @set:3
-    * **Question:** "Clearances 7: In the Last Minutes" is a sonnet, one of a linked sequence of eight sonnets Heaney wrote in memory of his mother.
+    * **Question:** "Clearances 7: In the Last Minutes" is a sonnet, one of a linked sequence of eight sonnets Heaney wrote in memory of his mother, closing its fourteen lines on the compressed statement "High cries were felled and a pure change happened."
     * **Answer:** True
-    * **Feedback:** ✓ Correct. Heaney's "Clearances" sequence gathers eight sonnets around his mother's life and death; this is the seventh, set at her final moments.
-    * **WhyWrong:** This is true — it is a sonnet within Heaney's eight-part "Clearances" sequence for his mother.
+    * **Feedback:** ✓ Correct. Heaney's "Clearances" sequence gathers eight sonnets around his mother's life and death; this seventh sonnet holds her death inside that one understated closing line.
+    * **WhyWrong:** This is true — it is a sonnet within Heaney's eight-part "Clearances" sequence, closing on that single compressed line marking her death.
 
 45. **Type: Select All [Tests Meaning & Effects]**
     @set:3
     * **Question:** Which statements correctly describe the meaning and effect of "Clearances 7: In the Last Minutes"?
-    * **Options:** A) The father's brief, quiet words to the dying mother carry more feeling than a lifetime of talk, B) The reserved, undemonstrative manner of the father reflects a habitual reluctance to voice emotion openly, C) The scale of the moment is measured against how little is usually said, making the tenderness stand out, D) The poem portrays a marriage that had grown cold and distant
+    * **Options:** A) The father's words — "more to her / Almost than in all their life together" — carry more feeling than a lifetime of talk, B) The reserved, undemonstrative manner of the father reflects a habitual reluctance to voice emotion openly, C) The scale of the moment is measured against how little is usually said, making the tenderness stand out, D) The poem portrays a marriage that had grown cold and distant
     * **Correct:** A, B, C
     * **Scoring:** 2 marks for A,B,C. 1 mark if mostly correct.
-    * **Feedback:** ✓ Correct. Heaney sets the father's rare, tender last words against a habitual reserve, so a single quiet sentence carries the weight of their whole life together.
+    * **Feedback:** ✓ Correct. Heaney sets the father's rare, tender last words against a habitual reserve, so a few quiet phrases outweigh a lifetime's silence, and the family's grief opens as "clearances that suddenly stood open".
     * **Why D:** The moment reveals deep, quiet devotion, not coldness or distance.
