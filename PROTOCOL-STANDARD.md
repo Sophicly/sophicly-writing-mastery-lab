@@ -17,6 +17,17 @@ the nearer anchor — never from memory, never from an older port:
 compare two poems but keep the five-paragraph essay structure — they use the LIT anchor plus the
 COMPARISON VARIANT (§B-LIT.4).
 
+**ANCHOR DEMOTION (Neil ruling, 2026-07-07): AQA Language Paper 1 is THE gold standard — the
+LIT/R&J protocol is NO LONGER a trusted reference until re-audited against it.** Facts: the "R&J"
+protocol is the AQA **Shakespeare** protocol (R&J is the text), and AQA serves Shakespeare, modern
+texts and 19th-century through the SAME literature protocol — so its quality level propagates to
+every AQA lit text. It predates most of the v900→v934 hardening. Rule: ports of essay-family
+papers may still take the essay SHAPE (unit = section, TTECEA+C) from the lit protocol, but every
+element must be VERIFIED against the P1 anchor's rules and this standard — never copied on trust.
+**QUEUED (next lane-A arc): full audit of protocols/aqa/literature/ against the P1 gold standard
++ ASSESSMENT-MECHANICS**, same method as the P2 port (recon → B-CHECKS → one-template audit →
+delta → fix batch).
+
 - Part A = universal invariants (apply to BOTH assessment and planning).
 - Part B = the assessment spec: B-COMMON (the invariant spine, both anchors) → B-LANG → B-LIT
   (incl. comparison variant) → B-CHECKS (grep table).

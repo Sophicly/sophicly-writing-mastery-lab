@@ -5,8 +5,10 @@ actually work, why they work that way, and the failure classes that bite when yo
 It pairs with **PROTOCOL-STANDARD.md** (the protocol CONTENT contract): a port is done when the
 protocol meets PROTOCOL-STANDARD and the experience meets THIS document.
 
-**v2 (2026-07-07).** Anchor state: **v7.19.929** (prod + staging), AQA Lang P1 = the reference
-experience. Reference transcript: **Reeham Run 9** (diagnostic, 51/80 Grade 6 — box labels, Score
+**v2 (2026-07-07).** Anchor state: **v7.19.934** (prod + staging), **AQA Lang P1 = THE gold
+standard and the ONLY trusted reference** (Neil ruling 2026-07-07: the R&J/AQA-Shakespeare
+protocol is demoted until re-audited against P1 — one AQA lit protocol serves Shakespeare,
+modern AND 19th-century, so its gaps propagate; audit queued as the next lane-A arc). Reference transcript: **Reeham Run 9** (diagnostic, 51/80 Grade 6 — box labels, Score
 Summary, calibration readout, and committed grade all agree; totals 49/50/51 across Runs 7–9 =
 the consistency Neil signed off as "massive success"). v2 folds in every mechanic shipped
 v915→929 and expands the failure-class index into the full POTENTIAL-ERRORS REGISTER (§9) Neil
@@ -240,6 +242,10 @@ The nets, in parse order:
 - **Q5 / Section-B word-count ceiling ONE-SOURCE (v917):** the cap is applied AT the label write
   (`_setFeedbackMark`), so every consumer inherits it by construction. The ceiling sentence
   students read is CODE-BUILT with its derivation — the model echoes injected P and C only.
+  **The "↻ Check my word count again" button is RETIRED (v875) — never resurrect it** (Neil,
+  re-confirmed 2026-07-07): entry-time auto-check + the always-on ceiling replaced the whole
+  halt/lift/button flow; `_updateWcRecheckBtn` exists only to REMOVE any legacy instance. No
+  protocol may reference a re-check button or a SYSTEM lift line.
 - **TIER-LIST NET (v927, `_stripStrongVerbPenalties` — Pass 0b):** any F1/T1 penalty whose
   quoted phrase contains NO banned/weak-tier verb is stripped BEFORE audit/ledger/Trend see it.
   The regex is the TWIN of the protocol's analytical-verb registry — any registry edit updates

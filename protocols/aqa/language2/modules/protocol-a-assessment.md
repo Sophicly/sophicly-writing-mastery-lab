@@ -243,9 +243,11 @@ never re-emit a confirmed gate, never re-ask "shall we continue?", never re-prin
 Re-showing a confirmed gate freezes the assessment. The ASSESSMENT STATE block is authoritative
 for which question is current.
 
-**Internal AI Note — MISSING/EXTRA PARAGRAPHS (labels are law; regime = the family-first flag):**
-the injected paragraph labels carry the mapping — trust them, never re-detect or re-select.
-Paragraph boundaries were detected by TOPIC/CONCEPT SHIFT, not blank lines — never tell the
+**Internal AI Note — MISSING/EXTRA PARAGRAPHS (labels are law for BOUNDARIES; regime = the
+family-first flag):** the injected paragraph labels carry the paragraph BOUNDARIES and identities
+— trust them, never re-split or re-label. (Which labelled paragraphs form the TAUGHT SET when
+there are extras is the CONTENT-FIRST rule below — that selection is yours; the boundaries are
+not.) Paragraph boundaries were detected by TOPIC/CONCEPT SHIFT, not blank lines — never tell the
 student they "wrote one continuous block" when distinct concept-paragraphs are labelled. Taught
 count per reading question: Q2 = 2; Q3 = 3; Q4 = Intro + 3 BPs + Conclusion. Two regimes:
 - **MISSING (fewer than taught):** each missing paragraph scores 0 and gets TEACHING, not
