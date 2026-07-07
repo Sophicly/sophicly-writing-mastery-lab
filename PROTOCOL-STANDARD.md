@@ -161,6 +161,15 @@ sentence before emitting — **and against the ANALYTICAL-VERB TIER LIST (v7.19.
 uses a banned/weak-tier verb; golds model the STRONG tier only** (a gold containing "shows" unteaches
 the very habit F1 penalises — Run-7/8 lesson).
 
+**GOLD DISTINCTNESS (Neil, 2026-07-07 — universal, every protocol):** across ALL gold models within
+a question/section — both models, every paragraph — never reuse an anchor quotation, example, or
+central line of argument. Before emitting any gold, the AI checks its quotations against every gold
+already emitted for that question; if one repeats, it chooses different textual material. (Reeham P2
+run: the Shiva invocation anchored BOTH Q2 paragraphs' optimal golds. Two golds sharing a quote teach
+the student that one idea is "the answer", which is false and narrows their reading.) Coherence
+(self-anchoring, A13 above) is NOT repetition — Model 2s develop one plan, each with its OWN
+quotations. Engine net: `_auditGoldDistinctness` (v7.19.932) warns on any reused gold quotation.
+
 ## A14. Engine-owned gates — protocols echo, never derive (the v832–852 settlement)
 The following are CODE-OWNED, universal across every paper, both chat pipelines. A protocol NEVER
 re-implements them, and every port keeps the auditable shapes they parse:
@@ -190,6 +199,17 @@ re-implements them, and every port keeps the auditable shapes they parse:
 | Fix→Learn chips: penalty codes tagged in raw text → deep-link buttons (display layer only; PM doc excluded) | 922 | penalty code-form and ×N tally shapes are what the tagger matches — keep byte-stable |
 | TIER-LIST NET: any F1/T1 whose QUOTED phrase contains no banned/weak-tier verb is code-stripped BEFORE audit/ledger/Trend (protocol states the rule; code is the net) | 927 | penalty bullet QUOTES the offending student phrase; tier registry lives in the protocol — any registry edit updates the code twin in the SAME commit |
 | GRAND-TOTAL ONE-SOURCE: text-parse primary (needs ≥2 per-Q total lines); label-sum fallback only when fully marked, DOWNWARD-ONLY (lit ceilings never raised); bare-Total summary turns enter the auditor | 928/929 | keep per-Q `Qn Total: A/B` lines + line-final `Total: X/max`; a summary turn may be bare-Total — it is still re-banded |
+| PER-QUESTION PROSE OWNERSHIP: %—Grade lines (canonical AND dash form) recomputed from the audited `(Qn) Total:`; calibration "actual … X/B" / "you scored X/B" rewritten to the audited numerator (denominator-matched; predictions untouched) | 932 | keep the `Qn Total: A/B` line ABOVE the %/grade + Calibration lines in the same message; "predicted"/"actual" wording stays byte-recognisable |
+| GOLD-DISTINCTNESS warn net: quotations inside Gold sections stored per question; any reuse across golds warns (protocol A13 rule is the root; the net makes a breach loud) | 932 | keep `### Gold Standard Model` headings + quotation marks around anchor quotes |
+
+## A15. Grade-9 line-of-sight (Neil, 2026-07-07)
+
+Every feedback element — each criterion's Why, each penalty fix, each Priority Improvement, each
+gold's framing, each taught-structure note — states in ONE clause how it moves the student toward
+Grade 9: what the skill unlocks at the top band, in band language ("this dual focus is what
+separates Level 3 from Level 4"), never generic praise. The student should never have to guess
+what a point is FOR. "How does this get me to the Grade 9?" must be answerable from every element
+on the page.
 
 ---
 
@@ -317,7 +337,10 @@ over-rate and what does it actually reward; accurate (tolerance scales with unit
 under-predicted → which strength did you undervalue. ONE question only. Also reflect self-rating +
 AO-targeting against the unit's real AO. No prediction captured → skip that part. **When the question
 offers choices, the lettered options are the REAL units just marked** (¶1/¶2; Intro/BP1–3/Conclusion;
-AO5/AO6) — each on its own line; NEVER feedback bullets as the choice list.
+AO5/AO6) — each on its own line; NEVER feedback bullets as the choice list. **When the student
+answers a lettered option, restate THEIR letter + label verbatim from their message before
+commenting — never attribute a different choice** (Reeham P2 run: student chose "A) Paragraph 1",
+the reply praised "Paragraph 2" as their pick — the v904 coherence class).
 
 ### 8. Progression gates
 The 4-button Q-GATE shown ONCE per unit, AFTER complete feedback, behind a HARD PRECONDITION listing

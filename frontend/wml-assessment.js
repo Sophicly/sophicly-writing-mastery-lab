@@ -1072,7 +1072,7 @@
     // v7.19.911: returns the beat it rendered (or null) so the caller can STORE it on the
     // history message — a hard-refresh replays history, and without a stored beat the chip
     // vanished on refresh (Neil: "only updates when I clear the chat").
-    function _syncMarkingBeatChip() {
+    function _syncMarkingBeatChip(reply) {
         try {
             if (typeof WML === 'undefined' || !WML.progressChipHTML) return null;
             const host = document.getElementById('swml-canvas-chat-messages');
@@ -1090,6 +1090,25 @@
                 const before = m.steps.filter(s => s.group && s.step < m.current);
                 cur = before[before.length - 1] || null;
                 posOverride = 'full';
+            }
+            // v7.19.932 (Reeham P2 run): the chip labels what THIS TURN marked, never the
+            // pointer's next stop. A fill that completed Q1 advanced the pointer into the
+            // Q2 group, so the Q1-marking turn wore a "Question 2 · Step 1 of 3" chip.
+            // Derive the marked question from the reply itself (@FB_BEGIN q / `Qn Total:`);
+            // when it names an EARLIER group than the pointer's, show that group instead
+            // (full — its marking just landed). Same doc-derived model, no hardcoding.
+            if (reply && cur) {
+                const rq = String(reply).match(/@FB_BEGIN\{[^}]*"q"\s*:\s*"Q(\d+)"/i) || String(reply).match(/\bQ(\d+)\s*Total:/i);
+                if (rq) {
+                    const markedGrp = m.steps.find(s => s.group && new RegExp('\\b' + rq[1] + '\\b').test(s.group));
+                    if (markedGrp && markedGrp.group !== cur.group) {
+                        const markedSteps = m.steps.filter(s => s.group === markedGrp.group);
+                        if (markedSteps.length && markedSteps[0].step < cur.step) {
+                            cur = markedSteps[markedSteps.length - 1];
+                            posOverride = 'full';
+                        }
+                    }
+                }
             }
             if (!cur || !cur.group) return null;   // Setup with no marked group yet → no marking chip
             const grp = m.steps.filter(s => s.group === cur.group);
@@ -3749,14 +3768,20 @@
     }
     function _enforceGradeLadder(reply) {
         try {
-            if (!reply || !/%\s*,?\s*which is a\s*\*{0,2}Grade|Grade:\s*\d/i.test(reply)) return reply;
+            if (!reply || !/%\s*[,—–-]?\s*(?:which is a\s*)?\*{0,2}Grade|Grade:\s*\d|\bactual\b[^\n]{0,24}[\d.]+\s*\/|\byou scored\b[^\n]{0,10}[\d.]+\s*\//i.test(reply)) return reply;
             const lines = String(reply).split('\n');
             let lastTotal = null, sinceTotal = 99;
-            const gradeLineRe = /([\d.]+)\s*%(\s*,?\s*which is a\s*\*{0,2}Grade\s*)(\d)/i;
+            // v7.19.932 (Reeham P2 run): a second, LONGER window for calibration prose —
+            // the %—Grade line nulls lastTotal, but "Calibration Check: … the actual mark
+            // is X/8" arrives several lines later and must still see the audited total.
+            let lastQ = null, sinceQ = 99;
+            // v7.19.932: tolerate the dash form ("25% — Grade 2") alongside the canonical
+            // "X%, which is a Grade N" — the run emitted the dash form and this net skipped.
+            const gradeLineRe = /([\d.]+)\s*%(\s*,?\s*which is a\s*\*{0,2}|\s*[—–-]\s*\*{0,2})(Grade\s*)(\d)/i;
             for (let i = 0; i < lines.length; i++) {
                 const totalM = lines[i].match(/^\s*\*{0,2}(?:Q\d+\s*)?Total:\s*\*{0,2}\s*([\d.]+)\s*\/\s*(\d+)/i);
-                if (totalM) { lastTotal = { a: parseFloat(totalM[1]), b: parseFloat(totalM[2]) }; sinceTotal = 0; continue; }
-                sinceTotal++;
+                if (totalM) { lastTotal = { a: parseFloat(totalM[1]), b: parseFloat(totalM[2]) }; sinceTotal = 0; lastQ = lastTotal; sinceQ = 0; continue; }
+                sinceTotal++; sinceQ++;
                 const gm = lines[i].match(gradeLineRe);
                 if (gm) {
                     let pct = parseFloat(gm[1]);
@@ -3765,9 +3790,9 @@
                     }
                     const trueG = _ladderGrade(pct);
                     const pctStr = String(Number(pct.toFixed(1)));
-                    if (String(gm[3]) !== String(trueG) || parseFloat(gm[1]) !== pct) {
-                        if (String(gm[3]) !== String(trueG)) console.warn('WML Ladder: corrected grade —', gm[1] + '% Grade ' + gm[3], '→', pctStr + '% Grade ' + trueG);
-                        lines[i] = lines[i].replace(gradeLineRe, pctStr + '%$2' + trueG);
+                    if (String(gm[4]) !== String(trueG) || parseFloat(gm[1]) !== pct) {
+                        console.warn('WML Ladder: corrected grade line —', gm[1] + '% Grade ' + gm[4], '→', pctStr + '% Grade ' + trueG);
+                        lines[i] = lines[i].replace(gradeLineRe, pctStr + '%$2$3' + trueG);
                     }
                     lastTotal = null;
                     continue;
@@ -3781,10 +3806,58 @@
                         lines[i] = lines[i].replace(/^(\s*\*{0,2}Grade:\s*\*{0,2})\d\b/i, '$1' + trueG);
                     }
                     lastTotal = null;
+                    continue;
+                }
+                // v7.19.932: calibration-prose ownership — after a (Qn) Total line, any
+                // "actual … X/B" or "you scored X/B" whose denominator MATCHES that total's
+                // is rewritten to the audited numerator (Reeham P2: total said 1/8, prose
+                // said "actual mark is 2/8"). The denominator guard keeps per-question refs
+                // out of grand-total scope and vice versa; anchoring on "actual"/"you scored"
+                // leaves "predicted X/B" untouched — the prediction is the student's number,
+                // only the ACTUAL is code's.
+                if (lastQ && sinceQ <= 12 && lastQ.b > 0 && /\b(actual|you scored)\b/i.test(lines[i])) {
+                    const before = lines[i];
+                    const aStr = String(Number(lastQ.a.toFixed(2)));
+                    const bStr = String(lastQ.b);
+                    lines[i] = lines[i]
+                        .replace(new RegExp('(\\bactual\\b[^\\d\\n]{0,24})([\\d.]+)(\\s*\\/\\s*' + bStr + '\\b)', 'i'), '$1' + aStr + '$3')
+                        .replace(new RegExp('(\\byou scored\\b[^\\d\\n]{0,10})([\\d.]+)(\\s*\\/\\s*' + bStr + '\\b)', 'i'), '$1' + aStr + '$3');
+                    if (lines[i] !== before) console.warn('WML Ladder: corrected calibration/scored value to audited', aStr + '/' + bStr);
                 }
             }
             return lines.join('\n');
         } catch (e) { console.warn('WML Ladder: skipped (non-fatal)', e && e.message); return reply; }
+    }
+
+    // v7.19.932 (Neil, Reeham P2 run): GOLD DISTINCTNESS net — the same anchor material
+    // (the Shiva invocation, Caroline Randall) appeared in the golds of BOTH Q2 paragraphs.
+    // Neil's rule: no quotation may be reused across any two gold models within a question,
+    // in ANY protocol. The rule lives in the protocols (root); this net FAILS LOUD when a
+    // run breaches it so a repeat can't ship silently. Warn-only — gold content is the
+    // protocol's job, never a regex rewrite's.
+    const _goldQuoteStore = {};   // qKey -> { normalisedQuote: 1 }
+    function _auditGoldDistinctness(reply) {
+        try {
+            if (!reply || String(reply).indexOf('Gold Standard Model') === -1) return reply;
+            const qm = String(reply).match(/@FB_BEGIN\{[^}]*"q"\s*:\s*"(Q\d+)"/i) || String(reply).match(/\b(Q\d+)\s*Total:/i);
+            const qKey = qm ? qm[1].toUpperCase() : '_';
+            const store = _goldQuoteStore[qKey] = _goldQuoteStore[qKey] || {};
+            const parts = String(reply).split(/###\s*Gold Standard Model[^\n]*/i);
+            for (let p = 1; p < parts.length; p++) {
+                const seg = parts[p].split(/\n###\s/)[0];   // this gold only — stop at next heading
+                const quotes = seg.match(/["“”]([^"“”\n]{18,140})["“”]/g) || [];
+                for (const raw of quotes) {
+                    const key = raw.replace(/["“”]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+                    if (!key) continue;
+                    if (store[key]) {
+                        console.warn('WML GoldDistinct: quotation reused across golds for ' + qKey + ' — "' + key.slice(0, 60) + '…" (GOLD DISTINCTNESS rule breached — protocol drift)');
+                    } else {
+                        store[key] = 1;
+                    }
+                }
+            }
+        } catch (_) { /* observer only */ }
+        return reply;
     }
 
     // v7.15.49: state.mode is set once at boot from embedConfig and never updates on
@@ -8412,7 +8485,7 @@
                     // v7.19.832: deterministic mark integrity BEFORE display/history/filing —
                     // recompute card arithmetic + re-band %/grades on the canonical ladder,
                     // so chat, doc cards, sidebar and Score Summary all read corrected numbers.
-                    res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(res.reply))); // v7.19.854: + gate-row synthesis + rejected-penalty strip
+                    res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(_auditGoldDistinctness(res.reply)))); // v7.19.854: + gate-row synthesis + rejected-penalty strip · v7.19.932: + gold-distinctness warn net
                     const cleanReply = stripAIInternals(res.reply);
                     const formatted = formatAI(cleanReply);
                     addChatMessage(formatted, 'ai', cleanReply);
@@ -8767,7 +8840,7 @@
                         applyAssessmentFeedback(res.reply);
                         _refreshLangSidebar(); // v7.19.625: advance per-Q Language sidebar as marks land
                         { // v7.19.907/911: mirror the fresh sidebar pointer into the reply's beat-chip AND store it for refresh replay
-                            const _mb = _syncMarkingBeatChip();
+                            const _mb = _syncMarkingBeatChip(res.reply);
                             if (_mb && canvasChatHistory.length) {
                                 canvasChatHistory[canvasChatHistory.length - 1].beat = _mb;
                                 saveCanvasChat(canvasChatHistory, canvasChatId);
@@ -16814,7 +16887,7 @@
 
                                 if (res.success && res.reply) {
                                     // v7.19.832: deterministic mark integrity (see pipeline 1 twin).
-                                    res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(res.reply))); // v7.19.854: + gate-row synthesis + rejected-penalty strip
+                                    res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(_auditGoldDistinctness(res.reply)))); // v7.19.854: + gate-row synthesis + rejected-penalty strip · v7.19.932: + gold-distinctness warn net
                                     const cleanReply = stripAIInternals(res.reply);
                                     const formatted = formatAI(cleanReply);
                                     addChatMessage(formatted, 'ai', cleanReply);
@@ -16837,7 +16910,7 @@
                                         applyAssessmentFeedback(res.reply);
                                         _refreshLangSidebar(); // v7.19.625: advance per-Q Language sidebar as marks land
                                         { // v7.19.907/911: sidebar-derived beat-chip + store for refresh replay (twin)
-                                            const _mb = _syncMarkingBeatChip();
+                                            const _mb = _syncMarkingBeatChip(res.reply);
                                             if (_mb && canvasChatHistory.length) {
                                                 canvasChatHistory[canvasChatHistory.length - 1].beat = _mb;
                                                 saveCanvasChat(canvasChatHistory, canvasChatId);

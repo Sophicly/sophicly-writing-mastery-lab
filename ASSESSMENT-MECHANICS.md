@@ -252,6 +252,14 @@ The nets, in parse order:
   ¶-attribution via `Mark Breakdown — <name>` headings. Both consumers (rebuilt Ledger + closing
   Trend) follow that rule; they skip only when the doc yields nothing. Tally lines are ×N-form,
   so re-parsing a rebuilt ledger cannot double-count BY FORMAT.
+- **PER-QUESTION PROSE OWNERSHIP (v932, Reeham P2 run):** `_enforceGradeLadder` owns not just the
+  canonical "which is a Grade" lines but the DASH form ("25% — Grade 2"), and rewrites the
+  calibration prose — "actual … X/B" and "you scored X/B" after a `(Qn) Total:` line, denominator-
+  matched — to the audited numerator. Predictions stay the student's own. (Run escape this kills:
+  total said 1/8, prose said 25%/Grade 2/"actual mark is 2/8" in one message.)
+- **GOLD-DISTINCTNESS NET (v932, warn-only):** `_auditGoldDistinctness` stores every quotation
+  emitted inside a Gold section per question and `console.warn`s on reuse — the protocol GOLD
+  DISTINCTNESS rule (PROTOCOL-STANDARD A13) is the root; the net makes a breach loud.
 - **GRAND-TOTAL ONE-SOURCE (v928/929):** text-parse is primary (`_auditedGrandFromText` — needs
   ≥2 per-Q total lines); fallback is `_labelGrandFromDoc()` — summed from the capped,
   card-audited box labels, used only when `_paperFullyMarked()`, and **DOWNWARD-ONLY**: a lit
@@ -267,7 +275,11 @@ code-owned source.
 
 - **Counts** (beat chip "Step X of N", sidebar steps): the doc-derived sidebar model
   (`_buildLangSidebarModel`/`_buildLitSidebarModel`), synced POST-fill. The model's own claimed
-  step numbers are documented-unreliable — never render them.
+  step numbers are documented-unreliable — never render them. **The chip labels what THIS TURN
+  marked, never the pointer's next stop (v932):** a fill that completes Qn advances the pointer
+  into Qn+1's group, so `_syncMarkingBeatChip(reply)` derives the marked question from the reply
+  (`@FB_BEGIN` q / `Qn Total:`) and, when it names an earlier group than the pointer's, shows
+  THAT group full (Reeham run: the Q1-marking turn wore a "Question 2 · Step 1 of 3" chip).
 - **Ranking/analytics** (`_analyticsReadoutModel`): strongest + marks-lost (ordered by RAW marks
   lost, not pct — Ericsson: target where marks bleed) from the marked box labels; calibration
   (mean blind SA % vs actual %, ±10 well-calibrated); conservative blind-spot (rated ≥70,
@@ -476,6 +488,11 @@ An assessment experience is signed off when, on a clean staging run by Neil:
 contract, and a stale contract is worse than none.*
 
 **Changelog**
+- 2026-07-07 — v2.1 (Reeham P2 run findings, v7.19.932). Per-question prose ownership + dash-form
+  grade lines + calibration-actual rewrite in `_enforceGradeLadder`; gold-distinctness warn net;
+  chip labels the marked group, not the pointer; q1-msq emission template deleted (Protocol A owns
+  the Q1 turn — the double-mark root); protocol rules added universally: GOLD DISTINCTNESS,
+  echo-the-choice-verbatim, GRADE-9 LINE-OF-SIGHT (A15).
 - 2026-07-07 — v2 (the CODIFY session, post-Run-9 green). Folded in every v915→929 mechanic:
   wired pre-ship gate, svgifyEmojis display layer, Q5 ceiling one-source, beat-chip full arc,
   always-on strips, RESEED-until-marked, code-tallied Trend, resume-proof ledger, Fix→Learn

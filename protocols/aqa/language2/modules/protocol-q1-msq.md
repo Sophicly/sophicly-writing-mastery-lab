@@ -71,39 +71,29 @@ Scoring rule (AQA-authentic):
 
 **Evidence must stay IN RANGE.** When you justify any TRUE/FALSE label, quote ONLY from within the question's specified line range (e.g. lines 1–12). Every statement is answerable from that section alone — including the implicit ones, which are supported by inference from the in-range text. NEVER cite a line outside the range, even when a later line states the point more explicitly. If the clearest wording sits outside the range, still explain the statement from the in-range evidence (an explicit detail, or a supported inference from it).
 
-### Step 2.4 — Emit assessment
+### Step 2.4 — Emit assessment (v7.19.932: OUTPUT SHAPE IS OWNED BY PROTOCOL A — this module supplies INPUTS only)
 
-**[SAY]** — use this exact structure:
+**[AI_INTERNAL] The old emission template that lived here is DELETED — it competed with Protocol
+A's Q1 step and caused a double-marking (Reeham run, 2026-07-07: the model emitted this module's
+"Score: 2/4" shape first, which the engine does not parse, so Q1 never registered as marked and
+the next turn re-marked it in Protocol A's shape).** Q1's output shape is defined ONCE, in
+`protocol-a-assessment.md`: the `@FB_BEGIN{"q":"Q1","para":"1","title":"Retrieval"}` card →
+per-statement feedback (quote each ticked statement, correct/incorrect against the injected key,
+1 mark per correct tick, one source-quoting line per incorrect tick, then the missed true
+statements) → the canonical `Q1 Total: X/4` line on its own line → `@FB_END` → one encouraging
+line → Protocol A's Q-GATE. Emit NOTHING beyond that shape:
 
-```markdown
-📌 Assessment Protocol > Question 1 > Step 1 of 1
+- **Never a `Score: N/4` line** — the engine registers Q1 as marked from `Q1 Total: X/4` ONLY.
+- **Never a 📌 breadcrumb line** (retired).
+- **Never `[ASSESSMENT_COMPLETE Q1]` or any `ASSESSMENT_COMPLETE` string** — that marker family
+  signals END OF THE WHOLE ASSESSMENT and appears ONLY on the closing filing turn.
+- Continuation is Protocol A's Q-GATE, not a bespoke "Type Y" cue.
 
-## Q1 Assessment
+This module's job ends at the INPUTS: the injected tick block (Step 2.2), the injected answer key
+(Step 2.3), the scoring rule, and the in-range evidence discipline.
 
-**Score: N/4**
-
-### Your ticks
-- **Statement X** — ✅ Correct. [1-sentence why it is true, cite a phrase or line from Source A.]
-- **Statement Y** — ❌ Incorrect. [1-sentence why it is false: name the flaw type — contradicts line Z, conflates two details, adds detail not in source, or wrong subject.]
-- [...one bullet per ticked statement...]
-
-### Missed true statements
-- **Statement Z** — [the statement text]. [1-sentence why it is true, cite line.]
-- [...one bullet per un-ticked true statement — omit section entirely if student ticked all 4 true.]
-
-### Takeaway
-[One short sentence: what the student did well + one specific thing to practice. Max 25 words.]
-
-Type **Y** to move to your next question.
-
-[ASSESSMENT_COMPLETE Q1]
-```
-
-**[AI_INTERNAL] (v7.19.379):** The closing cue line ("Type **Y** to move to your next question") is MANDATORY — the assessment must never end without telling the student how to continue (Neil's 11 Jun run stalled here; the student had to guess). The 📌 breadcrumb line and the `[ASSESSMENT_COMPLETE Q1]` marker are also mandatory — the server's progress tracking reads them.
-
-**[AI_INTERNAL]** Store `SESSION_STATE.q1_score = N` where N is the integer 0–4.
-
-**[AI_INTERNAL]** After the assessment, if `SESSION_STATE.selected_questions` contains more questions, PROCEED to Part B Source Collection (for the remaining questions). If Q1 was the only selected question, offer the main menu again.
+**[AI_INTERNAL]** After Q1's card is filed, Protocol A continues to Q2 via the Q-GATE — there is
+no Part B source collection and no menu in the assessment flow.
 
 ---
 
