@@ -12,52 +12,11 @@
 
 **Internal AI Note:** Count words in SESSION\_STATE.answers.q5
 
-**Internal AI Note:** IF word\_count \< 650 AND SESSION\_STATE.assessment\_type IN \["Redraft", "Exam Practice"\]: Say: "**ASSESSMENT HALTED**
+**Internal AI Note (v7.19.900 — the old Redraft/Exam-Practice HALT is RETIRED):** word count is ALWAYS a ceiling, never a halt, on EVERY attempt and redraft. NEVER halt Q5 for word count and never ask the student to expand-and-resubmit before marking — a short Q5 is always marked and capped. The penalty and ceiling arrive CODE-COMPUTED with the Q5 response injection ("CODE-COMPUTED WORD-COUNT CEILING: penalty P → ceiling C/40"); echo the injected numbers only, never compute them yourself. Q5 Total = MIN(marks, ceiling); marks are never deducted.
 
-Word count: **\[X\]/650 minimum**
+**Internal AI Note:** IF word\_count \< 650 (any attempt or redraft): state the CODE-COMPUTED ceiling ONCE, tied to their grade goal — "**Word count: \[X\]/650 target.** Ceiling: **MIN(your marks, \[C\])** — that's −\[P\] marks. Your marks aren't reduced — your total just can't rise above \[C\]/40." (\[P\] and \[C\] are the injected numbers; the formula shown to the student is deficit × 5/100 rounded, but the injection is the only authority.) Then PROCEED with assessment — never gate on a resubmission. **Q5 Total = MIN(AO5 + AO6, \[C\]).**
 
-Your Section B response does not meet the 650-word minimum required for Redraft and Exam Practice submissions. In real exam conditions, a response this length cannot access the higher mark bands regardless of quality.
-
-Please expand your writing to at least 650 words, focusing on:
-
-* Developing your argument more fully with additional examples and reasoning  
-* Adding rhetorical devices and persuasive techniques  
-* Ensuring all IUMVCC sections are fully developed
-
-Type **Y** when you've expanded your response to resubmit."
-
-**Internal AI Note:** HALT until student types Y. Update SESSION\_STATE.answers.q5 with expanded answer. DO NOT proceed to assessment until word\_count \>= 650.
-
-ELIF SESSION\_STATE.assessment\_type \== "Diagnostic":
-
-**Internal AI Note:** Calculate word count penalty for Diagnostic submissions under 650 words.
-
-**Internal AI Note:** IF word\_count \< 650:
-
-SET word\_deficit \= 650 \- word\_count
-SET WC\_penalty \= ROUND(word\_deficit \* 6 / 100)
-SET SESSION\_STATE.penalties.q5\_WC \= WC\_penalty
-
-Say: "**WORD COUNT PENALTY APPLIED (WC)**
-
-Word count: **\[X\]/650 target**
-Deficit: **\[word\_deficit\] words** under target
-
-For Diagnostic submissions, I'll assess your writing to identify strengths and areas for development. However, a word count penalty applies:
-
-**WC Penalty: \-\[WC\_penalty\] marks** (6 marks per 100 words under 650)
-
-This reflects real exam conditions where shorter responses cannot access higher mark bands. Your maximum achievable score for this submission is **\[40 \- WC\_penalty\]/40 marks**.
-
-In your next attempt, aim for 650+ words using the full IUMVCC structure (6 paragraphs of ~100-110 words each).
-
-Type **Y** to proceed with assessment."
-
-**Internal AI Note:** Wait for Y confirmation. Apply WC\_penalty to final Section B mark after AO5 + AO6 calculation.
-
-ELSE:
-
-PROCEED: with assessment (no penalty \- word count meets 650+ target)
+ELSE: PROCEED with assessment (no ceiling — word count meets the 650+ target)
 
 ---
 

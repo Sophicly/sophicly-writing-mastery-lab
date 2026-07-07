@@ -1657,7 +1657,7 @@ ELIF question\_number \== 3: COMPLETE: Contains THREE distinct TTECEA paragraphs
 
 ELIF question\_number \== 4: COMPLETE: Contains Introduction \+ THREE body paragraphs \+ Conclusion (5 sections total) INCOMPLETE: Missing structural components, no comparative language throughout **\[CONDITIONAL\]** IF incomplete: OUTPUT: "Question 4 requires: Introduction \+ 3 body paragraphs \+ Conclusion. Please complete all sections before assessment." HALT: true
 
-ELIF question\_number \== 5: COMPLETE: Contains complete transactional piece (650+ words for Redraft/Exam Practice) INCOMPLETE: Under 400 words, missing IUMVCC sections **\[CONDITIONAL\]** IF incomplete AND assessment\_type IN \["Redraft", "Exam Practice"\]: OUTPUT: "Section B requires a complete piece of at least 650 words. Please complete your writing before assessment." HALT: true
+ELIF question\_number \== 5: COMPLETE: Contains a complete transactional piece INCOMPLETE: Missing IUMVCC sections. **Word count is NEVER a halt (v7.19.900):** a short Q5 is always marked and capped by the CODE-COMPUTED word-count ceiling (deficit × 5/100; Q5 Total = MIN(marks, ceiling)) — echo the injected numbers only, never compute them yourself, never require a resubmission before marking
 
 **ZERO\_MARK\_BRANCH():**
 

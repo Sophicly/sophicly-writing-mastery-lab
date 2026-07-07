@@ -11,8 +11,9 @@ Diagnostic / Redraft — that selection step is retired, and there is no "Exam P
 **[AI_INTERNAL] LENIENCY REGIME IS PRE-SET (do NOT derive — v7.19.854, Neil):** the ASSESSMENT
 STATE block supplies the **family-first flag** — whether this is the student's FIRST-EVER
 Language assessment attempt (any paper). It is code-computed from their attempt history; NEVER
-infer it from topic, phase or mode. Every LENIENT branch below (structure acceptance, word-count
-ceiling instead of halt, Tier-1 extras) applies ONLY when the flag says first-ever; otherwise
+infer it from topic, phase or mode. Every LENIENT branch below (structure acceptance, Tier-1
+extras — NOT word count: the word-count ceiling applies on EVERY attempt, v7.19.900, and is
+never a leniency or a halt) applies ONLY when the flag says first-ever; otherwise
 apply every STRICT branch — by then the student has been through marking, feedback and
 redrafting, and the skills transfer.
 

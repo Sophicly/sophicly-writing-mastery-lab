@@ -131,11 +131,11 @@
 
 **Section B Specific Penalties:**
 
-* **WC** – Word-count CEILING (family-first attempt only; v7.19.854): the penalty and ceiling arrive CODE-COMPUTED (deficit × 5/100, rounded) — Q5 Total = MIN(marks, ceiling); marks are never deducted. Echo the injected numbers only.
-  Detection: Diagnostic submission under 650-word target for Section B
-  Calculation: ROUND((650 - word\_count) \* 6 / 100)
+* **WC** – Word-count CEILING (EVERY attempt and redraft; v7.19.900): the penalty and ceiling arrive CODE-COMPUTED (deficit × 5/100, rounded) — Q5 Total = MIN(marks, ceiling); marks are never deducted. Echo the injected numbers only.
+  Detection: Any Q5 submission under the 650-word target for Section B
+  Calculation: code-owned — ROUND((650 - word\_count) \* 5 / 100); never compute or round it yourself, echo the injected P and C
   Fix: Expand response to 650+ words using full IUMVCC structure (6 paragraphs of ~100-110 words each)
-  Note: on every attempt AFTER the family-first one, Q5 is HALTED below 650 words (the code-owned "↻ Check my word count again" button lifts it) — no ceiling applies because marking has not begun
+  Note: NEVER halt Q5 for word count — the old family-first ceiling-vs-halt split is retired (v7.19.900); a short Q5 is always marked-and-capped, never dead-ended
 
 ---
 

@@ -136,6 +136,43 @@ goes through `sendCanvasMessageQueued()` — exists in BOTH pipelines, exported 
 which polls until idle then sends. Boot-time silent directives keep DIRECT calls deliberately
 (they must not queue behind user turns). New button = queued form, no exceptions.
 
+## §2b. THE AUTO-FILL CONTRACT — how chat fills the document (Neil, 2026-07-07: codified
+because it generalises — assessment, planning, creative writing, conceptual notes all use it)
+
+Function-calling is DISABLED (settled): **text markers are the API.** The AI emits a typed marker
+on its own line inside its normal reply; the frontend extracts it and writes the document. The
+whole mechanism is five steps, and every current and future auto-fill follows them:
+
+1. **MARKER — a byte-stable typed line the model emits.** Assessment: `@FB_BEGIN{json}…@FB_END`
+   (feedback cards), `@FIELD_SET` (the twelve Analytics/Action-Plan fields),
+   `@SECTION_BEGIN{"section":"…"}` (section fills, e.g. Overall Feedback), `@REFLECT_GATE{json}`
+   (reflection panels), `@SUMMARY_COMPLETE` / `[ASSESSMENT_COMPLETE]` (stage transitions).
+   Planning: `@CONFIRM_ELEMENT` (plan elements save ONLY through the confirm interceptor — the
+   old fallback regex extractors are retired, never re-add). Every marker's exact form is pinned
+   in PROTOCOL-STANDARD B-COMMON §12 (the frontend contract) — breaking a byte breaks the fill.
+2. **EXTRACTOR — one consumer per marker family, runs on EVERY turn in BOTH pipelines,
+   self-guards.** `applyAssessmentFeedback`, `applySectionFills`, `applyFieldSets`, reflection
+   detection: called unconditionally, no-op internally when the reply has nothing for them.
+   NEVER gate an extractor on a task name (§9.1 — the #1 recurring bug class).
+3. **TARGET RESOLUTION — canonical key, never position or literal label.** Feedback cards land
+   by question NUMBER (`_paraKey`: "Q2"/"Question 2"/"2" → "2"); sections by canonical section
+   name; fields by field id. New surfaces resolve through the same helpers.
+4. **WRITE — a PM transaction into the section's content** (`insertContentAt`,
+   `_setParagraphContentViaPM`; labels/attrs via `setNodeMarkup`) — §3 PM law applies in full.
+   Numbers pass through the code auditor BEFORE they are written (§4); fresh-filled boxes
+   auto-expand + scroll (§3); the fill is idempotent (re-running on the same reply changes
+   nothing).
+5. **PERSIST + REPLAY — the fill must survive refresh.** Non-reproducible fills flush to the
+   server immediately (§7); anything rendered per-turn is stored on the history message and
+   re-rendered by both resume loops (§2). ONE silent repair when a mandated fill is missing
+   (closing chain); every unresolvable marker `console.warn`s loudly — a marker that names a
+   target that doesn't resolve is a defect, never a silent skip.
+
+Porting auto-fill to a NEW surface (planning boards, CW scaffolds, conceptual notes) = define
+the marker in the protocol + B-COMMON §12, add ONE self-guarding extractor called from both
+pipelines, resolve targets by canonical key, write via PM transaction, store for replay. No new
+architecture — the five steps ARE the architecture.
+
 ## §3. THE CANVAS DOC — ProseMirror law + the section model
 
 - Sections are `sectionBlock` nodes rendered by NodeViews (wml-section-block.js). Types:
@@ -446,6 +483,7 @@ contract, and a stale contract is worse than none.*
   grand-total one-source (downward-only fallback), theme-owned readouts, feedback-pad lane.
   Expanded §8 failure index into the full POTENTIAL-ERRORS REGISTER (§9, 14 classes with
   trigger/symptom/net/residual). Added §0b UNIVERSALITY MAP (engine-universal / doc-derived /
-  protocol-ported — Neil's gold-standard ruling) and §10 HARNESS METHOD. Anchor moved
-  v914/Run-7 → v929/Run-9.
+  protocol-ported — Neil's gold-standard ruling), §2b AUTO-FILL CONTRACT (the five-step
+  chat→document machinery, Neil's codify ask — generalises to planning/CW/notes) and §10
+  HARNESS METHOD. Anchor moved v914/Run-7 → v929/Run-9.
 - 2026-07-07 — v1 (initial codification at v7.19.914, Run-7 anchor).

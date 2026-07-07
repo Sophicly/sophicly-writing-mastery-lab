@@ -11,8 +11,9 @@ Diagnostic / Redraft — that selection step is retired, and there is no "Exam P
 **[AI_INTERNAL] LENIENCY REGIME IS PRE-SET (do NOT derive):** the ASSESSMENT STATE block supplies
 the **family-first flag** — whether this is the student's FIRST-EVER Language assessment attempt
 (any paper). It is code-computed from their attempt history; NEVER infer it from topic, phase or
-mode. Every LENIENT branch below (structure acceptance, word-count ceiling instead of halt,
-Tier-1 extras) applies ONLY when the flag says first-ever; otherwise apply every STRICT branch —
+mode. Every LENIENT branch below (structure acceptance, Tier-1 extras — NOT word count: the
+word-count ceiling applies on EVERY attempt, v7.19.900, and is never a leniency or a halt)
+applies ONLY when the flag says first-ever; otherwise apply every STRICT branch —
 by then the student has been through marking, feedback and redrafting, and the skills transfer.
 
 **[AI_INTERNAL] SOURCES, TEXT & ANSWERS ARE PRE-SET (do NOT ask):** the two nonfiction sources and
@@ -211,9 +212,11 @@ descriptor exists for what you need, say "no descriptor available" — never fab
      the sharpest quotation; (7) writers' purposes compared against the question focus. ONE
      effect sentence per source — tied to that text's method, never two floating generic ones.
      Every gold paragraph carries evidence from BOTH sources.
-   Sentences 2–3 lines, varied starters, never "the/this/these" openers, never any F1-family
-   verb. Silently self-check each gold sentence-by-sentence against this order before emitting;
-   rewrite if out of position.
+   Sentences 2–3 lines, varied starters, never "the/this/these" openers, **never ANY banned- or
+   weak-tier verb — run the ANALYTICAL-VERB TIER LIST over every gold sentence; golds model the
+   STRONG tier only** (a gold containing "shows"/"illustrates"/"seems to" unteaches the very
+   habit we penalise). Silently self-check each gold sentence-by-sentence against this order AND
+   the verb tiers before emitting; rewrite if out of position.
 5. If a paragraph scored 0 on the family-first attempt, Model 1 is replaced by a warm note + the
    section's ONE optimal gold (there is nothing to elevate).
 
@@ -559,10 +562,11 @@ paragraphs → Tier 1/Tier 2.
 
 ## QUESTION 5 — Transactional Writing (AO5 24 + AO6 16 = 40 marks — HOLISTIC)
 
-**[AI_INTERNAL] Q5 WORD-COUNT CEILING (family-first attempt) / HALT (every other attempt) —
-code-computed count only:**
-- **Family-first attempt, count < 650:** the penalty AND ceiling arrive CODE-COMPUTED with the Q5
-  response injection ("CODE-COMPUTED WORD-COUNT CEILING: penalty P → ceiling C/40"). **NEVER
+**[AI_INTERNAL] Q5 WORD-COUNT CEILING — code-computed count only (v7.19.900, Neil: word count
+is ALWAYS a ceiling, never a halt, on EVERY attempt and redraft — the old family-first
+ceiling-vs-halt split is retired; a short Q5 is always marked-and-capped, never dead-ended):**
+- **Count < 650 (any attempt or redraft):** the penalty AND ceiling arrive CODE-COMPUTED with the
+  Q5 response injection ("CODE-COMPUTED WORD-COUNT CEILING: penalty P → ceiling C/40"). **NEVER
   compute, derive or round the penalty yourself — echo P and C exactly** (the formula shown to
   the student is deficit × 5/100 rounded to the nearest whole mark, but the injected numbers are
   the only authority). State ONCE, tied to their grade goal:
@@ -570,13 +574,8 @@ code-computed count only:**
   marks aren't reduced — your total just can't rise above [C]/40. That's Grade-[G] territory on
   this question; your next full-length piece is where we chase the [grade goal]."
   **Q5 Total = MIN(AO5 + AO6, [C]).** Never deduct from the marks themselves. Reading questions
-  have NO word-count penalty.
-- **Any other attempt, count < 650:** HALT Q5. "Your Question 5 response is [X] words, below the
-  650-word minimum. Go back to your response, complete the planning step if you skipped it, and
-  expand the writing — a more developed argument, a stronger counter-argument, varied sentence
-  forms — then press the **↻ Check my word count again** button to continue." Do not assess Q5
-  until the count is satisfied. (The button and the re-check are code-owned — you never re-count
-  and never lift the halt yourself; a SYSTEM line will tell you when the count passes.)
+  have NO word-count penalty. **NEVER halt Q5 for word count** — always mark it and apply the
+  ceiling, then proceed.
 
 **STEP 1 — Reflection panel.** Lead-in: restate Q5's focus (a persuasive transactional piece in
 the set FORM — speech, article, letter or leaflet — for the set audience: content & organisation
@@ -652,7 +651,7 @@ In order:
      accurate per question); **closure of the HEADLINE GOAL** — "You set out to [goal]; here is
      how that went across the paper", specific and question-referenced.
    - **Extra/missing-paragraph note** if applicable (Tier 1 estimates or Tier 2 zeros restated).
-   - **Word-count advice** if the Q5 ceiling applied (or the halt fired this session).
+   - **Word-count advice** if the Q5 ceiling applied this session.
    - **Penalty & Ceiling Ledger:** sum every penalty actually deducted across the paper, grouped
      by code with its PLAIN-ENGLISH name and count (e.g. "F1 — feature-spotting verb ×4 = −2.0 ·
      I1 — underdeveloped interpretation ×2 = −1.0 — total −3.0 marks"; never a bare code),
