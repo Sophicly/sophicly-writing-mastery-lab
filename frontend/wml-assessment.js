@@ -3230,6 +3230,31 @@
             return { total: Math.round(a * 100) / 100, max: b, perQ: q };
         } catch (_) { return null; }
     }
+    // v7.19.928 (Run 9): the summary turn often does NOT restate the per-question totals, so
+    // _auditedGrandFromText returned null and the AI's grand Total stood — chat said 53/80
+    // Grade 7 (Q5 uncapped 29 recalled) while the capped doc labels, Score Summary and
+    // calibration all said 51/80 Grade 6. Fallback grand source: the DOC LABELS — the capped,
+    // card-audited numbers every other surface already reads (ONE-SOURCE rule). Only valid
+    // when the paper is fully marked (a partial label sum is not a grade).
+    function _labelGrandFromDoc() {
+        try {
+            if (!_paperFullyMarked()) return null;
+            const editorEl = document.getElementById('swml-tiptap-editor');
+            if (!editorEl) return null;
+            let tot = 0, mx = 0; const perQ = {};
+            editorEl.querySelectorAll('[data-section-type="feedback"]').forEach(sec => {
+                const lbl = sec.getAttribute('data-section-label') || '';
+                const m = lbl.match(/\(\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)\s*\)\s*$/);
+                if (!m) return;
+                const a = parseFloat(m[1]), b = parseInt(m[2], 10);
+                tot += a; mx += b;
+                const qm = lbl.match(/\bQ(\d+)\b/);
+                if (qm) perQ['Q' + qm[1]] = { a: a, b: b };
+            });
+            if (!(mx > 0)) return null;
+            return { total: Math.round(tot * 100) / 100, max: mx, perQ: perQ };
+        } catch (_) { return null; }
+    }
     // v7.19.839: per-card applied-penalty ledger (code-owned). Run 3 showed the AI-authored
     // "Penalty & Ceiling Ledger" materially wrong (claimed −5.0, cards deducted −6.5, one
     // location duplicated, four omitted) — so the ledger is rebuilt here from what the cards
@@ -3581,7 +3606,11 @@
             // AI's inflated one). Only on a SUMMARY turn (a bare grand `Total: x/grandMax`
             // line OR a completion marker) so per-Q turns never publish a partial grade.
             try {
-                const grand = _auditedGrandFromText(out);
+                // v7.19.928: text parse primary; DOC-LABEL grand as the fallback for summary
+                // turns that don't restate per-question totals (the Run-9 53-vs-51 escape).
+                const _grandText = _auditedGrandFromText(out);
+                const grand = _grandText || _labelGrandFromDoc();
+                if (grand && !_grandText) console.warn('WML MarkAudit: grand total sourced from DOC labels —', grand.total + '/' + grand.max);
                 if (grand) {
                     // Wrapper-tolerant: the AI's grand readout is often `Total: 58/80` /
                     // `Grade: 7` (backtick inline-code) or **Total: …** (bold) — the old
@@ -13187,7 +13216,12 @@
                 // student can fill Self-Assessment / Analytics / Action Plan with their
                 // feedback beside them — no scroll ping-pong. Read-only viewing pad.
                 body.innerHTML = '';
-                const fbEls = editorEl.querySelectorAll('[data-section-type="feedback"]');
+                // v7.19.928 (Neil Run 9): the pad carries the WHOLE feedback lane — the same
+                // .swml-collapsible capability set as collapse-all (per-question feedback,
+                // Self-Assessment, Score Summary, Analytics, Overall Feedback, Action Plan),
+                // in document order. Cloned strips stay LIVE: _renderSectionStrips targets
+                // every .swml-ana-strip in the document, pad clones included.
+                const fbEls = editorEl.querySelectorAll('.swml-section-block.swml-collapsible');
                 let fbAdded = 0;
                 fbEls.forEach((f, i) => {
                     const txt = (f.textContent || '').trim();
@@ -13216,11 +13250,12 @@
                                 dTxt = '<span style="' + dim + '">Δ —</span>';
                             }
                             const row = el('div', { className: 'swml-calib-readout swml-pad-calib' });
-                            row.style.cssText = 'display:flex;gap:7px;align-items:center;font-size:11px;font-weight:600;margin:0 0 4px;color:rgba(255,255,255,0.6);';
+                            // v7.19.928: theme-owned colors (see .swml-calib-readout CSS).
+                            row.style.cssText = 'display:flex;gap:7px;align-items:center;font-size:11px;font-weight:600;margin:0 0 4px;';
                             row.innerHTML = (pred == null ? '<span style="' + dim + '">Predicted —</span>'
-                                    : '<span>Predicted <strong style="color:rgba(255,255,255,0.85)">' + pred + '</strong></span>')
+                                    : '<span>Predicted <strong>' + pred + '</strong></span>')
                                 + sep + (act == null ? '<span style="' + dim + '">Actual —</span>'
-                                    : '<span>Actual <strong style="color:rgba(255,255,255,0.85)">' + act + ' / ' + maxM + '</strong></span>')
+                                    : '<span>Actual <strong>' + act + ' / ' + maxM + '</strong></span>')
                                 + sep + dTxt;
                             body.appendChild(row);
                         }
@@ -13228,6 +13263,10 @@
                     const cloned = _stripChipsFromClone(f.cloneNode(true));
                     cloned.removeAttribute('contenteditable');
                     cloned.querySelectorAll('[contenteditable]').forEach(n => n.setAttribute('contenteditable', 'false'));
+                    // v7.19.928: action-form clones (SA / Action Plan) carry live controls —
+                    // the pad is a viewing surface, so disable them (chevron button excluded:
+                    // the pad's delegated toggle listener owns it).
+                    cloned.querySelectorAll('select, textarea, input').forEach(n => { n.disabled = true; });
                     // v7.19.854 (Neil): the doc-side collapse chevron is a NodeView button whose
                     // click listener cloneNode() never copies — the pad's chevron was dead. The
                     // pad body carries ONE delegated listener (see isFeedbackMode branch); here
@@ -22344,13 +22383,15 @@
                         const _pred = _getPredicted(_qForCalib);
                         const calibEl = document.createElement('div');
                         calibEl.className = 'swml-calib-readout';
-                        calibEl.style.cssText = 'display:flex;gap:7px;align-items:center;font-size:11px;font-weight:600;white-space:nowrap;color:rgba(255,255,255,0.6);';
+                        // v7.19.928: colors THEME-OWNED via .swml-calib-readout CSS — the old
+                        // inline white rgba was invisible on the light theme (Neil Run 9).
+                        calibEl.style.cssText = 'display:flex;gap:7px;align-items:center;font-size:11px;font-weight:600;white-space:nowrap;';
                         const dim = 'opacity:0.45';
                         const predTxt = _pred == null
                             ? '<span style="' + dim + '">Predicted —</span>'
-                            : '<span>Predicted <strong style="color:rgba(255,255,255,0.85)">' + _pred + '</strong></span>';
+                            : '<span>Predicted <strong>' + _pred + '</strong></span>';
                         const actTxt = currentMarks >= 0
-                            ? '<span>Actual <strong style="color:rgba(255,255,255,0.85)">' + currentMarks + '</strong></span>'
+                            ? '<span>Actual <strong>' + currentMarks + '</strong></span>'
                             : '<span style="' + dim + '">Actual —</span>';
                         let deltaTxt;
                         if (_pred != null && currentMarks >= 0) {

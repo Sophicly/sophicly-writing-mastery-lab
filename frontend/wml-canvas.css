@@ -11675,3 +11675,13 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-wc-recheck-btn:hover { background: rgba(81, 218, 207, 0.2); }
 .swml-canvas-light .swml-wc-recheck-btn { background: rgba(44, 140, 132, 0.12); color: #2c8c84; }
 .swml-canvas-light .swml-wc-recheck-btn:hover { background: rgba(44, 140, 132, 0.2); }
+
+/* ── v7.19.928: calibration readout (Predicted · Actual · Δ) — THEME-OWNED colors.
+   Was inline white rgba, invisible on the light theme (Neil Run 9). Applies to the
+   in-doc overlay readout AND the Feedback-pad rebuild (both carry .swml-calib-readout). */
+.swml-calib-readout { color: rgba(255,255,255,0.6); }
+.swml-calib-readout strong { color: rgba(255,255,255,0.85); }
+[data-swml-theme="light"] .swml-calib-readout,
+.swml-canvas-light .swml-calib-readout { color: rgba(20,22,28,0.55); }
+[data-swml-theme="light"] .swml-calib-readout strong,
+.swml-canvas-light .swml-calib-readout strong { color: rgba(20,22,28,0.82); }
