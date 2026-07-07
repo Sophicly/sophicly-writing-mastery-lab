@@ -24960,11 +24960,15 @@
 
     // Literature essay word count targets (by total marks)
     // minimum = mark complete threshold (lower bar), target = "aim for" display
+    // v7.19.946 (Neil ruling 2026-07-08, the essay Word Count Model ladder):
+    // 15 (Eduqas Shakespeare part) → ~450 · 20 → ~550 · 24 (unseen) → ~600 ·
+    // 25 (Eduqas) → ~550 · 30/34 → 650 · 40 → 700. Minimums stay ≈70% of target.
+    // NOTE: 24 > 25 on purpose (unseen poetry 600 vs Eduqas 25-marker 550) — ruled, not a typo.
     const LIT_WORD_TARGETS = {
-        15: { minimum: 200, target: 300, ideal: 600 },
-        20: { minimum: 300, target: 400, ideal: 650 },
-        24: { minimum: 350, target: 500, ideal: 900 },
-        25: { minimum: 350, target: 500, ideal: 900 },
+        15: { minimum: 300, target: 450, ideal: 700 },
+        20: { minimum: 400, target: 550, ideal: 850 },
+        24: { minimum: 420, target: 600, ideal: 900 },
+        25: { minimum: 400, target: 550, ideal: 900 },
         30: { minimum: 450, target: 650, ideal: 1000 },
         34: { minimum: 450, target: 650, ideal: 1000 },
         40: { minimum: 500, target: 700, ideal: 1100 },
