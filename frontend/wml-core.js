@@ -2829,6 +2829,10 @@ window.WML = (function() {
         F1: { dest: 'toolkit', arg: 'inference-verbs', label: 'Inference Verbs' },
         T1: { dest: 'toolkit', arg: 'inference-verbs', label: 'Inference Verbs' },
         N1: { dest: 'table' },   // arg = technique name resolved from the penalty line itself
+        // v7.19.939: K1 → the notes chat's new Toolkit section (built 2026-07-07, staging
+        // v2.6.62; id FROZEN). Feature-detected — dormant until their prod push, lights up
+        // automatically after (the v922 dormant-half pattern). Closes the last unmapped code.
+        K1: { dest: 'toolkit', arg: 'evaluative-keywords', label: 'Evaluative Keywords' },
     };
     // Detection = the pen-ledger codeRe shape (keep in sync with _penLedgerCards' codeRe in
     // wml-assessment.js) PLUS the tally form the rebuilt Penalty Ledger / code-tallied Trend
