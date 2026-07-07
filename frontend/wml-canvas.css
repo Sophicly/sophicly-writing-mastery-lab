@@ -6197,22 +6197,18 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     text-align: left !important;
 }
 
-/* v7.19.893: code-owned tier-coloured Analytics readout — one compact line in the Analytics
-   section's reserved top band (mirrors the feedback sections' reserved band for the calibration
-   chip). Rendered in the absolute overlay layer, so it never touches the section's nodeView. */
-.swml-section-block[data-section-label="Analytics"] { padding-top: 34px; }
-.swml-analytics-readout {
-    display: flex; align-items: center; flex-wrap: nowrap; gap: 6px;
+/* v7.19.913: code-owned tier-coloured Analytics readout — IN-FLOW strip rendered by the
+   feedback nodeView (wml-section-block.js), filled by WML.renderAnalyticsReadout. Replaces
+   the absolute overlay: wraps freely instead of clipping one nowrap line; the right padding
+   clears the ✓/chevron cluster so no row can run underneath it (Neil 2026-07-07). */
+.swml-ana-strip {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px;
     font-size: 11px; font-weight: 600; line-height: 1.4;
-    color: rgba(255,255,255,0.55); white-space: nowrap;
-    overflow: hidden;   /* one line in the reserved band; clip the tail before overlapping the heading */
-    /* v7.19.907: reserve the section's ✓/✕ action-button band on the right so the
-       clipped tail can't run underneath them (Neil). */
-    padding-right: 72px;
+    color: rgba(255,255,255,0.55);
+    padding: 2px 76px 8px 0;
 }
-.swml-ana-seg { display: inline-flex; align-items: center; gap: 5px; }
+.swml-ana-seg { display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; }
 .swml-ana-lbl { opacity: 0.6; text-transform: uppercase; letter-spacing: 0.3px; font-size: 10px; }
-.swml-ana-div { opacity: 0.3; margin: 0 2px; }
 .swml-ana-calib { font-weight: 700; }
 .swml-ana-chip {
     display: inline-block; padding: 2px 7px; border-radius: 6px;
@@ -6228,8 +6224,16 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-ana-chip.swml-tier-3,
 .swml-ana-chip.swml-tier-2,
 .swml-ana-chip.swml-tier-1 { background: rgba(229, 57, 53, 0.42); }
-[data-swml-theme="light"] .swml-analytics-readout { color: rgba(44, 0, 62, 0.6); }
+/* v7.19.913 (Neil ruling): "Most marks lost" chips read SEVERITY by loss rank on the
+   brand ladder — biggest loss red, then orange, then yellow — regardless of their pct. */
+.swml-ana-chip.swml-loss-1 { background: rgba(229, 57, 53, 0.42); }
+.swml-ana-chip.swml-loss-2 { background: rgba(255, 152, 0, 0.38); color: rgba(20, 20, 20, 0.92); }
+.swml-ana-chip.swml-loss-3 { background: rgba(241, 196, 15, 0.36); color: rgba(20, 20, 20, 0.92); }
+/* Full marks = the brand purple gradient (push-button canonical). */
+.swml-ana-chip.swml-ana-full { background: linear-gradient(135deg, #5333ed, #4D76FD); color: #fff; }
+[data-swml-theme="light"] .swml-ana-strip { color: rgba(44, 0, 62, 0.6); }
 [data-swml-theme="light"] .swml-ana-chip { color: rgba(20, 20, 20, 0.92); }
+[data-swml-theme="light"] .swml-ana-chip.swml-ana-full { color: #fff; }
 
 /* Italic prompts inside sections */
 .swml-section-block em {

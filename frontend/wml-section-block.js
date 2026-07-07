@@ -270,6 +270,30 @@
                 dom.appendChild(contentDOM);
 
                 const fbLabel = (node.attrs && node.attrs.label) || dom.getAttribute('data-section-label') || '';
+
+                // v7.19.913: Analytics readout strip — IN-FLOW (the progress-card/sign-off
+                // technique). The old absolute overlay was a single nowrap line clipped into
+                // the section's reserved top band, running under the ✓/chevron cluster (Neil
+                // 2026-07-07). A firewalled strip ABOVE the content wraps freely and occupies
+                // real layout space; wml-assessment fills it via WML.renderAnalyticsReadout
+                // on every (re)mount + overlay rebuild.
+                let anaStrip = null;
+                if (fbLabel === 'Analytics') {
+                    anaStrip = document.createElement('div');
+                    anaStrip.className = 'swml-ana-strip';
+                    anaStrip.setAttribute('contenteditable', 'false');
+                    dom.insertBefore(anaStrip, contentDOM);
+                    const _fillAna = () => {
+                        try {
+                            if (window.WML && typeof window.WML.renderAnalyticsReadout === 'function') {
+                                window.WML.renderAnalyticsReadout();
+                            }
+                        } catch (_) { /* ignore */ }
+                    };
+                    requestAnimationFrame(_fillAna);
+                    setTimeout(_fillAna, 250);
+                    setTimeout(_fillAna, 800);
+                }
                 let COLLAPSE_KEY = '';
                 try { COLLAPSE_KEY = 'swml_fbcollapse:' + location.pathname + ':' + fbLabel; } catch (_) { COLLAPSE_KEY = ''; }
                 let collapsed = false;
@@ -317,6 +341,14 @@
                     contentDOM,
                     ignoreMutation: (mutation) => {
                         if (!mutation || !mutation.target) return false;
+                        // v7.19.912: wrapper-attr firewall (the v7.19.866 rule) — collapse-class
+                        // writes on this dom (manual chevron toggle + the fill's auto-expand in
+                        // wml-assessment) are display-only, never a doc change; without this each
+                        // toggle fires a DOMObserver flush → needless full NodeView redraw.
+                        if (mutation.type === 'attributes' && mutation.target === dom) return true;
+                        // v7.19.913: the in-flow Analytics readout strip is derived display —
+                        // firewall its fills like the progress card / sign-off UI.
+                        if (anaStrip && (anaStrip === mutation.target || anaStrip.contains(mutation.target))) return true;
                         return toggle === mutation.target || toggle.contains(mutation.target);
                     },
                 };

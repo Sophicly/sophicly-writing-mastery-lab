@@ -2038,6 +2038,20 @@
                                 if (key0 && _paraKey(lbl) === key0) tgtEl = b;
                             });
                         if (!tgtEl) return null;
+                        // v7.19.912 ROOT: a COLLAPSED box hides its content (.swml-section-content
+                        // display:none), so the target h3's rect is 0×0 and the scroll math lands
+                        // "where the section used to be" (Run 7: Q1 + Q4 misses = boxes left
+                        // collapsed by a previous session's localStorage). Fresh feedback must be
+                        // SEEN: auto-expand the box being filled and persist '0' so the NodeView
+                        // remount (which re-reads localStorage) can't re-collapse it.
+                        if (tgtEl.classList.contains('swml-fb-collapsed')) {
+                            tgtEl.classList.remove('swml-fb-collapsed');
+                            try {
+                                const _cl = tgtEl.getAttribute('data-section-label') || '';
+                                localStorage.setItem('swml_fbcollapse:' + location.pathname + ':' + _cl, '0');
+                            } catch (_) { /* storage off */ }
+                            console.log('[WML feedback] auto-expanded collapsed box for fresh feedback:', key0);
+                        }
                         let hEl = null;
                         if (head0) tgtEl.querySelectorAll('h3').forEach(h => {
                             if (!hEl && (h.textContent || '').trim() === head0) hEl = h;
@@ -2357,6 +2371,11 @@
     // typing). SA ratings never touch marks, so no recalc is needed here. Scoped to the 3 AQA
     // anchors for the B-CHECKS lock before the 24-paper port; the mechanism is paper-agnostic
     // (reads the doc's own SA rows) so Phase 2/4 widen it by relaxing _saWalkEligible.
+    // v7.19.914 (Neil): the SA walk offers a one-tap "pop out my writing" — the pad opener
+    // (spawnExtractPanel) is closure-local to the canvas render, so it exposes this hook
+    // for the module-scope walk to call (the v7.19.898 lesson: closure-locals never
+    // referenced directly across scopes). Null until the canvas mounts.
+    let _openEssayPadHook = null;
     function _saWalkEligible() {
         if (state.task !== 'assessment' || state.reviewMode) return false;
         return String(state.board || '').toLowerCase() === 'aqa';   // AQA P1 / P2 / Literature = the 3 anchors
@@ -2408,6 +2427,28 @@
             } catch (_) {}
             _chatShell.addMsg(formatAI(_intro), 'ai', _intro, { suppressActions: true });
             _chatShell.history.push({ role: 'assistant', content: _intro, saWalk: true });
+            // v7.19.914 (Neil): one-tap pop-out of the student's own writing, offered at walk
+            // start — self-assessing against the real text beats guessing from memory. Opens
+            // the "My Response" pad directly (no second tab-click needed). Progressive
+            // enhancement: hook unset (pad system not mounted) → no button, typed flow intact.
+            if (typeof _openEssayPadHook === 'function' && _openEssayPadHook) {
+                try {
+                    const popBar = el('div', { className: 'swml-quick-actions swml-sa-walk-bar' });
+                    const popBtn = el('button', {
+                        className: 'swml-quick-btn swml-sa-walk-btn',
+                        textContent: '📄 Pop out my writing so I can see it while I self-assess',
+                        onClick: () => {
+                            try { _openEssayPadHook(); } catch (_) { /* pad open is best-effort */ }
+                            popBtn.textContent = '✓ Your writing is floating on the right — drag it wherever helps';
+                            popBtn.style.opacity = '0.7';
+                            popBtn.style.pointerEvents = 'none';
+                        }
+                    });
+                    popBar.appendChild(popBtn);
+                    const _introBubble = _chatShell.messages && _chatShell.messages.lastElementChild;
+                    if (_introBubble) (_introBubble.querySelector('.swml-bubble-content') || _introBubble).appendChild(popBar);
+                } catch (_) { /* enhancement only — never block the walk */ }
+            }
         }
         // v7.19.885: conversational per-skill prompt — define the skill in plain terms (attempt-1
         // students don't know "thesis"), with a rotating lead + closing question so it reads as a
@@ -2775,6 +2816,51 @@
             .slice(0, 3);
         return { strength: strength, missed: missed, calib: _saCalibrationData(), blindSpot: _blindSpotData() };
     }
+    // v7.19.913: fill the Analytics section's IN-FLOW readout strip (rendered by the
+    // feedback nodeView, wml-section-block.js) from the code-owned model. Replaces the
+    // absolute .swml-analytics-readout overlay — one clipped nowrap line that ran under
+    // the ✓/chevron cluster (Neil 2026-07-07). Idempotent (same-HTML writes skipped) so
+    // remount fills can't feed the DOMObserver; the strip is ignoreMutation-firewalled.
+    // COLOURS (Neil ruling 2026-07-07): "Most marks lost" chips read SEVERITY by loss
+    // rank on the brand ladder — biggest loss red, then orange, then yellow — while the
+    // Strongest chip keeps the 1–9 pct-tier ladder, with FULL MARKS in the brand
+    // purple gradient.
+    function _renderAnalyticsStrip() {
+        try {
+            const strips = document.querySelectorAll('.swml-ana-strip');
+            if (!strips.length) return;
+            const _ana = _analyticsReadoutModel();
+            let html = '';
+            if (_ana) {
+                const chip = (a, cls) => '<span class="swml-ana-chip ' + (cls || ('swml-tier-' + a.tier)) + '">'
+                    + escapeHTML(a.label) + (a.ao ? ' · ' + escapeHTML(a.ao) : '') + ' ' + a.score + '/' + a.max + '</span>';
+                const parts = [];
+                parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Strongest</span>'
+                    + chip(_ana.strength, _ana.strength.score >= _ana.strength.max ? 'swml-ana-full' : null) + '</span>');
+                if (_ana.missed.length) {
+                    parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Most marks lost</span>'
+                        + _ana.missed.map((a, i) => chip(a, 'swml-loss-' + Math.min(i + 1, 3))).join('') + '</span>');
+                }
+                if (_ana.calib) {
+                    const c = _ana.calib;
+                    const cCol = c.verdict === 'well-calibrated' ? '#1cd991' : (Math.abs(c.gap) <= 20 ? '#f1c40f' : '#ff9800');
+                    parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Self-assessment</span><span class="swml-ana-calib" style="color:' + cCol + '">rated ' + c.saPct + '% · scored ' + c.actPct + '% · ' + c.verdict + '</span></span>');
+                }
+                if (_ana.blindSpot) {
+                    const b = _ana.blindSpot;
+                    const bName = escapeHTML(b.label) + (b.ao ? ' (' + escapeHTML(b.ao) + ')' : '');
+                    parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Blind spot</span><span class="swml-ana-calib" style="color:#ff9800">' + bName + ' · rated ' + b.selfPct + '% · scored ' + b.actualPct + '%</span></span>');
+                }
+                html = parts.join('');
+            }
+            strips.forEach(s => {
+                if (s.innerHTML !== html) s.innerHTML = html;
+                const want = html ? '' : 'none';
+                if (s.style.display !== want) s.style.display = want;
+            });
+        } catch (e) { console.warn('WML Analytics strip: skipped —', e && e.message); }
+    }
+    try { window.WML = window.WML || {}; window.WML.renderAnalyticsReadout = _renderAnalyticsStrip; } catch (_) {}
     function _fireClosingFiling() {
         if (_closingFilingFired) return;
         _closingFilingFired = true;
@@ -13069,6 +13155,13 @@
             if (!isFeedbackMode) _addPadToggle('feedback', 'Feedback', { top: '140px', right: '76px' });
         }
 
+        // v7.19.914 (Neil): expose the "My Response" pad opener to the module-scope SA walk
+        // (one-tap pop-out of the student's own writing before they self-assess). Idempotent —
+        // no-op when the essay pad is already open.
+        _openEssayPadHook = () => {
+            if (!extractPanels['essay']) spawnExtractPanel([], 'essay', { top: '110px', right: '48px' });
+        };
+
         const extractBtn = el('button', {
             className: 'swml-extract-btn',
             title: 'Pop out the question extract so you can view it while writing',
@@ -15466,7 +15559,10 @@
                         // v7.19.479: Save Progress button removed — autosave handles it (debounce + 30s periodic + onBlur; saved status shown).
 
                         // Past Work
-                        protoSpacer.appendChild(iconBtn(SVG_FOLDER, 'Past Work', () => { closeCanvasOverlay(); showPortfolio(); }));
+                        // v7.19.914: WML.showPortfolio — the bare ref was out of scope here
+                        // (wml-app closure-local; exposed on WML at wml-app.js). The .898 class:
+                        // clicking Past Work threw ReferenceError.
+                        protoSpacer.appendChild(iconBtn(SVG_FOLDER, 'Past Work', () => { closeCanvasOverlay(); if (WML && typeof WML.showPortfolio === 'function') WML.showPortfolio(); }));
 
                         // v7.15.102: Attempts menu — training-env, student-only
                         if (isExamPrep && state.viewerMode === 'edit') {
@@ -22163,36 +22259,10 @@
             // Analytics section's reserved top band (CSS padding-top) without overlapping the fields
             // below. Colours reuse the swml-tier-N ladder (no invented colours). Absent until ≥2
             // areas are marked, so it appears only once marking has produced a ranking.
-            if (analyticsSection) {
-                const _ana = _analyticsReadoutModel();
-                if (_ana) {
-                    const ro = document.createElement('div');
-                    ro.className = 'swml-dropdown-overlay swml-analytics-readout';
-                    ro.style.pointerEvents = 'none';
-                    // v7.19.895: AO label rides inside the chip ('Q2 · AO2 5/8') when the anchor
-                    // map resolves it; absent (fail-safe) for unmapped boards/areas.
-                    const chip = (a) => '<span class="swml-ana-chip swml-tier-' + a.tier + '">' + escapeHTML(a.label) + (a.ao ? ' · ' + escapeHTML(a.ao) : '') + ' ' + a.score + '/' + a.max + '</span>';
-                    const parts = [];
-                    parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Strongest</span>' + chip(_ana.strength) + '</span>');
-                    if (_ana.missed.length) {
-                        parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Most marks lost</span>' + _ana.missed.map(chip).join('') + '</span>');
-                    }
-                    if (_ana.calib) {
-                        const c = _ana.calib;
-                        const cCol = c.verdict === 'well-calibrated' ? '#1cd991' : (Math.abs(c.gap) <= 20 ? '#f1c40f' : '#ff9800');
-                        parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Self-assessment</span><span class="swml-ana-calib" style="color:' + cCol + '">rated ' + c.saPct + '% · scored ' + c.actPct + '% · ' + c.verdict + '</span></span>');
-                    }
-                    // v7.19.896: conservative blind spot (rated high, scored low) — code-owned,
-                    // only present on a strong gap. Amber to read as a target, not a failure.
-                    if (_ana.blindSpot) {
-                        const b = _ana.blindSpot;
-                        const bName = escapeHTML(b.label) + (b.ao ? ' (' + escapeHTML(b.ao) + ')' : '');
-                        parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Blind spot</span><span class="swml-ana-calib" style="color:#ff9800">' + bName + ' · rated ' + b.selfPct + '% · scored ' + b.actualPct + '%</span></span>');
-                    }
-                    ro.innerHTML = parts.join('<span class="swml-ana-div">·</span>');
-                    dropdownLayer.appendChild(ro);
-                }
-            }
+            // v7.19.913: readout now renders IN-FLOW inside the Analytics section (the
+            // .swml-ana-strip the feedback nodeView mounts) — refresh it on every overlay
+            // rebuild so it tracks new marks at the old cadence. No absolute overlay.
+            if (analyticsSection) _renderAnalyticsStrip();
 
             // ── Tutor Sign-off UI (v7.19.828: IN-FLOW — the progress-card technique) ──
             // The old .swml-dropdown-overlay-signoff lived in the absolute dropdown layer
@@ -22584,22 +22654,8 @@
                 }
             }
 
-            // ── Position the Analytics readout in the section's reserved top band (v7.19.893) ──
-            const anaReadout = dropdownLayer.querySelector('.swml-analytics-readout');
-            if (anaReadout) {
-                const anaSection = editor.querySelector('[data-section-label="Analytics"]');
-                if (anaSection) {
-                    const anRect = anaSection.getBoundingClientRect();
-                    const top = (anRect.top - dwRect.top) / z + 11;
-                    const left = (anRect.left - dwRect.left) / z + 16;
-                    const width = anRect.width / z - 32;
-                    anaReadout.style.cssText = `position:absolute;top:${top}px;left:${left}px;max-width:${width}px;pointer-events:none;z-index:5;`;
-                } else {
-                    anaReadout.style.display = 'none';
-                }
-            }
-
             // (v7.19.828: sign-off UI is IN-FLOW inside its section now — no positioning pass.)
+            // (v7.19.913: Analytics readout is IN-FLOW inside its section now — no positioning pass.)
 
             // Show layer after first positioning pass (prevents flash at wrong position on load)
             if (dropdownLayer.style.visibility === 'hidden') dropdownLayer.style.visibility = 'visible';
