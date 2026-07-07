@@ -56,5 +56,5 @@ STR2 – TTECEA order violation (Body only) (-0.5) Detection: All elements prese
 
 E2 – Underdeveloped effect on reader (Body only) (-0.5) Detection: Reader effect less than 2 sentences Fix: Expand emotional/intellectual impact analysis
 
-WC – Word count deficit penalty (Diagnostic only) Detection: Diagnostic submission under 650-word target Calculation: ROUND((650 - word\_count) \* 5 / 100) marks deducted from final total Fix: Expand response to 650+ words using full TTECEA+C structure Note: For Redraft/Exam Practice, assessment is halted until 650+ words achieved — WC penalty does not apply.
+WC – Word-count CEILING (EVERY attempt and redraft; v7.19.900) Detection: any submission under the 650-word target Calculation: P = ROUND((650 - word\_count) \* 5 / 100); **Final Total = MIN(sum of section totals, essay max − P)** — a CEILING, never a deduction; section marks are never reduced Fix: Expand response to 650+ words using full TTECEA+C structure Note: NEVER halt for word count — the old Diagnostic-vs-Redraft/Exam-Practice split is retired; a short essay is always marked and capped, never dead-ended.
 

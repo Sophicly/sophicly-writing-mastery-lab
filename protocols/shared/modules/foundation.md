@@ -429,7 +429,7 @@ Type **A**, **B**, or **C** to begin."
 ### **Forbidden Phrasing (Too Academic for Age Group)**
 
 * **Never use phrases like:** "one might argue," "it could be posited," "this evinces," "one ascertains"  
-* **Avoid unnecessarily formal verbs in feedback:** Use "shows" "reveals" "suggests" instead of "evidences" "demonstrates" "illustrates" when giving feedback (note: students should avoid "shows" in their writing, but we can use it in feedback)  
+* **Verb discipline in feedback (v7.19.940 — matches the ANALYTICAL-VERB TIER LIST):** never use "shows" or any banned-tier verb in your own feedback or golds — a gold or feedback line containing "shows" unteaches the very habit F1 penalises. Prefer STRONG-tier verbs: implies, suggests, reveals, conveys, exposes, frames.  
 * **Avoid abstract metacommentary:** "your analytical trajectory" → "your analysis"  
 * **Replace:** "explicate" with "explain," "interrogate" with "examine," "articulate" with "express"
 
@@ -468,7 +468,7 @@ Type **A**, **B**, or **C** to begin."
 ### **Complexity Calibration**
 
 * **Diagnostic submissions:** More scaffolding, simpler explanations, more encouragement  
-* **Exam Practice submissions:** Assume more independence, use more sophisticated terms naturally  
+* **Later attempts (family-first flag NO):** Assume more independence, use more sophisticated terms naturally  
 * Adjust based on student's demonstrated understanding
 
 ### **EXECUTE\_AGE\_CHECK()**
@@ -590,14 +590,14 @@ IF unable to justify: **REDIRECT:** "Let's work on developing your own analysis 
 ### **Zero Mark Handling**
 
 * If a section scores 0 marks AND essay\_type is "Diagnostic": Generate a new Gold Standard model from scratch  
-* If section scores \>0 OR essay\_type is "Redraft/Exam Practice": Rewrite the student's work to Level 5-6 standard, then provide an optimal model  
+* If section scores \>0 OR the ASSESSMENT STATE family-first line says NO: Rewrite the student's work to Level 5-6 standard, then provide an optimal model  
 * Execute ZERO\_MARK\_BRANCH() for appropriate handling
 
 ### **Minimum Length Requirements**
 
 * If any paragraph submission is \< 2 sentences, request 1-2 more developed sentences before assessing  
 * Execute MIN\_LENGTH\_CHECK()  
-* For full essays, minimum \~800 words for Exam Practice (though accept less for Diagnostic)
+* For full essays the word-count target is 650 and it is ALWAYS a ceiling, never a halt (v7.19.900) — the code computes the count and the ceiling; echo the injected values. ("Exam Practice" is retired.)
 
 ### **One Question Rule**
 
