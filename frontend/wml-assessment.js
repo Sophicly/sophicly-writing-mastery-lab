@@ -2876,6 +2876,23 @@
     // nodeView stamps (never label string-guards scattered here). Analytics shows its strip
     // always (the v913 in-flow readout); Self-Assessment / Action Plan / Overall Feedback
     // show theirs ONLY while collapsed (CSS .swml-strip-collapsed-only) as the preview.
+    // v7.19.926 (Neil Run 9): TRUE once every gradable feedback box label carries a chosen
+    // mark ("(X / Y)", not "(— / Y)"). Label-derived — universal across papers, no per-board
+    // wiring. Drives the strips' "so far" suffixes: the live mid-marking readout stays
+    // (Neil likes it), but it never reads as a final verdict while unmarked boxes remain.
+    function _paperFullyMarked() {
+        try {
+            const editorEl = document.getElementById('swml-tiptap-editor');
+            if (!editorEl) return false;
+            let marked = 0, unmarked = 0;
+            editorEl.querySelectorAll('[data-section-type="feedback"]').forEach(sec => {
+                const m = (sec.getAttribute('data-section-label') || '').match(/\(\s*(—|\d+(?:\.\d+)?)\s*\/\s*\d+\s*\)\s*$/);
+                if (!m) return;
+                if (m[1] === '—') unmarked++; else marked++;
+            });
+            return marked > 0 && unmarked === 0;
+        } catch (_) { return false; }
+    }
     function _renderSectionStrips() {
         try {
             const strips = document.querySelectorAll('.swml-ana-strip');
@@ -2894,9 +2911,22 @@
                     const c = _saCalibrationData();
                     if (c) {
                         const cCol = c.verdict === 'well-calibrated' ? '#1cd991' : (Math.abs(c.gap) <= 20 ? '#f1c40f' : '#ff9800');
-                        html += seg('Calibration', '<span class="swml-ana-calib" style="color:' + cCol + '">scored ' + c.actPct + '% · ' + c.verdict + '</span>');
+                        // v7.19.926: mid-marking the % covers MARKED questions only — say so.
+                        html += seg('Calibration', '<span class="swml-ana-calib" style="color:' + cCol + '">scored ' + c.actPct + '%' + (_paperFullyMarked() ? '' : ' so far') + ' · ' + c.verdict + '</span>');
                     }
                     return html;
+                },
+                'Score Summary': () => {
+                    // v7.19.926 (Neil Run 9): collapsed preview — code-owned total from the
+                    // SAME marked box labels the ledger/analytics rank on (post-ceiling: labels
+                    // are capped at write since v917). Grade from the canonical ladder.
+                    const rank = _rankMarkedAreas();
+                    if (!rank || !rank.ranked.length) return '';
+                    let tot = 0, mx = 0; rank.ranked.forEach(a => { tot += a.score; mx += a.max; });
+                    if (!(mx > 0)) return '';
+                    const pct = Math.round((tot / mx) * 100);
+                    return seg(_paperFullyMarked() ? 'Total' : 'Total so far', '<span class="swml-ana-calib">'
+                        + (Math.round(tot * 100) / 100) + '/' + mx + ' · ' + pct + '% · Grade ' + _ladderGrade(pct) + '</span>');
                 },
                 'Action Plan': () => {
                     if (!_ana || !_ana.missed.length) return '';
@@ -2922,7 +2952,7 @@
                 if (_ana.calib) {
                     const c = _ana.calib;
                     const cCol = c.verdict === 'well-calibrated' ? '#1cd991' : (Math.abs(c.gap) <= 20 ? '#f1c40f' : '#ff9800');
-                    parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Self-assessment</span><span class="swml-ana-calib" style="color:' + cCol + '">rated ' + c.saPct + '% · scored ' + c.actPct + '% · ' + c.verdict + '</span></span>');
+                    parts.push('<span class="swml-ana-seg"><span class="swml-ana-lbl">Self-assessment</span><span class="swml-ana-calib" style="color:' + cCol + '">rated ' + c.saPct + '% · scored ' + c.actPct + '%' + (_paperFullyMarked() ? '' : ' so far') + ' · ' + c.verdict + '</span></span>');
                 }
                 if (_ana.blindSpot) {
                     const b = _ana.blindSpot;
@@ -6996,6 +7026,22 @@
         const canvasChatHistory = [];
         let canvasChatId = '';
         let canvasChatLoading = false;
+        // v7.19.926 (Neil Run 9): a quick-action/widget/timer click must NEVER die silently.
+        // sendCanvasMessage refuses turns while a reply is in flight (canvasChatLoading) — but
+        // the click has already removed its button bar, so the refusal ate the choice (Run 9:
+        // the Q3 calibration click did nothing; the letter had to be typed). Every UI-driven
+        // send routes here: idle → immediate; in flight → poll until clear, then send (30s cap,
+        // fail-loud; the composed text stays in the box either way). Boot-time silent greetings
+        // keep the direct call — loading is impossible there, and a stray queue could double-greet.
+        function sendCanvasMessageQueued() {
+            if (!canvasChatLoading) { sendCanvasMessage(); return; }
+            console.log('WML QuickAction: reply in flight — send queued');
+            let _qaTries = 0;
+            const _qaTimer = setInterval(() => {
+                if (!canvasChatLoading) { clearInterval(_qaTimer); sendCanvasMessage(); }
+                else if (++_qaTries >= 100) { clearInterval(_qaTimer); console.warn('WML QuickAction: queued send gave up after 30s — choice left in the input box'); }
+            }, 300);
+        }
 
         // Chat message helper
         function addChatMessage(text, role, rawText, opts) {
@@ -7050,7 +7096,7 @@
                     try {
                         const widget = _renderMatchWidget(_matchData, (answer) => {
                             if (chatTextarea) { chatTextarea.value = answer; }
-                            sendCanvasMessage();
+                            sendCanvasMessageQueued();
                         });
                         body.appendChild(widget);
                     } catch (err) { console.warn('WML @MATCH render failed', err); }
@@ -7082,7 +7128,7 @@
                             blankSubmit.disabled = true;
                             blankInputs.forEach(inp => { inp.disabled = true; });
                             if (chatTextarea) { chatTextarea.value = answers.join(', '); }
-                            sendCanvasMessage();
+                            sendCanvasMessageQueued();
                         };
                         blankSubmit.addEventListener('click', submitBlanks);
                         // v7.17.67: in multi-blank mode, Enter on inputs 1..N-1 advances focus.
@@ -7153,7 +7199,7 @@
                             onClick: () => {
                                 bar.remove();
                                 chatTextarea.value = Array.from(selected).join(', ');
-                                sendCanvasMessage();
+                                sendCanvasMessageQueued();
                             }
                         });
                         bar.appendChild(submitBtn);
@@ -7168,7 +7214,7 @@
                             onClick: () => {
                                 bar.remove();
                                 chatTextarea.value = ranked.map((v, i) => `${i + 1}${i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'}: ${v}`).join(', ');
-                                sendCanvasMessage();
+                                sendCanvasMessageQueued();
                             }
                         });
                         const updateRankLabels = () => {
@@ -7233,7 +7279,7 @@
                                     // "Paragraph 2 it is". With the semantic text in the turn it can't mismap.
                                     chatTextarea.value = (/^[A-E]\)\s+\S/.test(action.label || '') && String(action.value || '').length <= 2)
                                         ? action.label : action.value;
-                                    sendCanvasMessage();
+                                    sendCanvasMessageQueued();
                                 }
                             });
                             bar.appendChild(btn);
@@ -7302,7 +7348,7 @@
                             // (the .898 out-of-scope crash class; fired at 0:00 on timed runs).
                             if (window.WML._startCanvasTimer) window.WML._startCanvasTimer(_examTimerDuration, () => {
                                 if (!chatTextarea.value.trim()) chatTextarea.value = '[Timer expired — no response submitted]';
-                                sendCanvasMessage();
+                                sendCanvasMessageQueued();
                             });
                             startBtn.disabled = true;
                             startBtn.textContent = '\u23F1 Timer Running...';
@@ -7558,7 +7604,7 @@
                             gradeBarCC.appendChild(el('button', {
                                 className: 'swml-quick-btn',
                                 textContent: g,
-                                onClick: () => { gradeBarCC.remove(); chatTextarea.value = _gradeKickoffValue(g); sendCanvasMessage(); }
+                                onClick: () => { gradeBarCC.remove(); chatTextarea.value = _gradeKickoffValue(g); sendCanvasMessageQueued(); }
                             }));
                         });
                         const ccBubble = chatMessages.lastElementChild;
@@ -7659,7 +7705,7 @@
                             // v7.19.915: send capability passed in (see timer-start button note).
                             window.WML._startCanvasTimer(_examTimerDuration, () => {
                                 if (!chatTextarea.value.trim()) chatTextarea.value = '[Timer expired — no response submitted]';
-                                sendCanvasMessage();
+                                sendCanvasMessageQueued();
                             });
                             const manualBtn = document.querySelector('.swml-timer-start-btn');
                             if (manualBtn) { manualBtn.disabled = true; manualBtn.textContent = '\u23F1 Timer Running...'; manualBtn.classList.add('swml-timer-running'); }
@@ -7934,7 +7980,7 @@
                     goalBar.appendChild(el('button', {
                         className: 'swml-quick-btn',
                         textContent: opt,
-                        onClick: () => { goalBar.remove(); chatTextarea.value = 'My headline goal: ' + opt.replace(/^[A-E]\)\s*/, ''); sendCanvasMessage(); }
+                        onClick: () => { goalBar.remove(); chatTextarea.value = 'My headline goal: ' + opt.replace(/^[A-E]\)\s*/, ''); sendCanvasMessageQueued(); }
                     }));
                 });
                 const bubble = chatMessages.lastElementChild;
@@ -8460,7 +8506,7 @@
                                 try {
                                     const panel = _renderReflectPanel(_loopParams, (answer) => {
                                         if (chatTextarea) { chatTextarea.value = answer; }
-                                        sendCanvasMessage();
+                                        sendCanvasMessageQueued();
                                     });
                                     bc.appendChild(panel);
                                     console.warn('WML: progression loop broken — frontend rendered ' + _loopParams.q + ' reflection panel');
@@ -8476,7 +8522,7 @@
                                     confirmBar.remove();
                                     canvasSilentSend = false;
                                     chatTextarea.value = payload;
-                                    sendCanvasMessage();
+                                    sendCanvasMessageQueued();
                                 }
                             });
                             // ✓ continue: REMEMBER the target (so a re-emitted gate is caught as a loop above)
@@ -8490,7 +8536,7 @@
                                     _assessConfirmedTarget = nextLabel;
                                     canvasSilentSend = true;
                                     chatTextarea.value = `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}: go straight to its STEP 1 reflection and emit the @REFLECT_GATE panel for ${nextLabel} now. Do NOT repeat this confirmation or re-ask whether to continue.`;
-                                    sendCanvasMessage();
+                                    sendCanvasMessageQueued();
                                 }
                             });
                             confirmBar.appendChild(_continueBtn);
@@ -8525,7 +8571,7 @@
                             const _mkClose = (label, payload) => el('button', {
                                 className: 'swml-quick-btn',
                                 textContent: label,
-                                onClick: () => { rowBar.remove(); chatTextarea.value = payload; sendCanvasMessage(); }
+                                onClick: () => { rowBar.remove(); chatTextarea.value = payload; sendCanvasMessageQueued(); }
                             });
                             // v7.19.871: "finish" is TERMINAL — code-owned, NOT round-tripped
                             // to the AI. The assessment already emitted [ASSESSMENT_COMPLETE];
@@ -9819,6 +9865,7 @@
             chatSendBtn,
             addChatMessage,
             sendCanvasMessage,
+            sendCanvasMessageQueued,   // v7.19.926: UI-driven sends defer instead of dropping
             quizCtl: _quizCtl,
             cwProfileCtl: _cwProfileCtl,
             canvasChatHistory,
@@ -10886,6 +10933,39 @@
             onClick: (e) => { e.stopPropagation(); toggleOutlinePanel(); }
         });
         btnColumn.appendChild(outlineBtn);
+
+        // v7.19.926 (Neil Run 9): collapse/expand EVERY collapsible section in one click.
+        // Operates on the same .swml-collapsible capability class the chevrons stamp — any
+        // future collapsible type is covered by construction (no section list). Persists
+        // through the SAME localStorage keys the per-section toggle uses (page+label), so
+        // reloads and the pop-out pad see one consistent state. Class toggle on the section
+        // dom is the identical write the per-section chevron has done since v607 (PM-safe).
+        const SVG_COLLAPSE_ALL = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l5 5 5-5"/><path d="M7 20l5-5 5 5"/></svg>';
+        const collapseAllBtn = el('button', {
+            className: 'swml-outline-btn swml-collapse-all-btn',
+            'data-tooltip': 'Collapse / expand all sections',
+            'data-tooltip-pos': 'right',
+            'aria-label': 'Collapse or expand all sections',
+            innerHTML: SVG_COLLAPSE_ALL,
+            onClick: (e) => {
+                e.stopPropagation();
+                try {
+                    const secs = Array.from(document.querySelectorAll('#swml-tiptap-editor .swml-section-block.swml-collapsible'));
+                    if (!secs.length) return;
+                    const collapse = secs.some(s => !s.classList.contains('swml-fb-collapsed')); // any open → collapse all; all closed → expand all
+                    secs.forEach(s => {
+                        s.classList.toggle('swml-fb-collapsed', collapse);
+                        try {
+                            const lbl = s.getAttribute('data-section-label') || '';
+                            if (lbl) localStorage.setItem('swml_fbcollapse:' + location.pathname + ':' + lbl, collapse ? '1' : '0');
+                        } catch (_) { /* storage off */ }
+                    });
+                    try { if (window.WML && window.WML.renderAnalyticsReadout) window.WML.renderAnalyticsReadout(); } catch (_) { /* best-effort */ }
+                    console.log('[WML] collapse-all →', collapse ? 'collapsed' : 'expanded', secs.length, 'sections');
+                } catch (err) { console.warn('WML collapse-all: skipped —', err && err.message); }
+            }
+        });
+        btnColumn.appendChild(collapseAllBtn);
 
         // Panel
         const outlinePanel = el('div', { className: 'swml-outline-panel' });
@@ -14654,7 +14734,7 @@
                                     gradeBar.appendChild(el('button', {
                                         className: 'swml-quick-btn',
                                         textContent: g,
-                                        onClick: () => { gradeBar.remove(); tp.chatTextarea.value = _gradeKickoffValue(g); tp.sendCanvasMessage(); }
+                                        onClick: () => { gradeBar.remove(); tp.chatTextarea.value = _gradeKickoffValue(g); tp.sendCanvasMessageQueued(); }
                                     }));
                                 });
                                 const bc = lastBubble.querySelector('.swml-bubble-content') || lastBubble;
@@ -14782,7 +14862,7 @@
                             }));
                         } else {
                             startBar.appendChild(el('button', { className: 'swml-quick-btn', textContent: "Let's begin",
-                                onClick: () => { startBar.remove(); tp.chatTextarea.value = "Let's begin!"; tp.sendCanvasMessage(); }
+                                onClick: () => { startBar.remove(); tp.chatTextarea.value = "Let's begin!"; tp.sendCanvasMessageQueued(); }
                             }));
                         }
                         const greetBubble = tp.chatMessages.lastElementChild;
@@ -14891,7 +14971,7 @@
                             gradeBar.appendChild(el('button', {
                                 className: 'swml-quick-btn',
                                 textContent: g,
-                                onClick: () => { gradeBar.remove(); tp.chatTextarea.value = _gradeKickoffValue(g); tp.sendCanvasMessage(); }
+                                onClick: () => { gradeBar.remove(); tp.chatTextarea.value = _gradeKickoffValue(g); tp.sendCanvasMessageQueued(); }
                             }));
                         });
                         const greetBubble = tp.chatMessages.lastElementChild;
@@ -14915,7 +14995,7 @@
                     setTimeout(() => {
                         const startBar = el('div', { className: 'swml-quick-actions' });
                         startBar.appendChild(el('button', { className: 'swml-quick-btn', textContent: "Let's begin",
-                            onClick: () => { startBar.remove(); canvasSilentSend = true; tp.chatTextarea.value = "Let's begin the mark scheme quiz."; tp.sendCanvasMessage(); }
+                            onClick: () => { startBar.remove(); canvasSilentSend = true; tp.chatTextarea.value = "Let's begin the mark scheme quiz."; tp.sendCanvasMessageQueued(); }
                         }));
                         const greetBubble = tp.chatMessages.lastElementChild;
                         if (greetBubble) {
@@ -15880,7 +15960,7 @@
                                             gradeBarCC.appendChild(el('button', {
                                                 className: 'swml-quick-btn',
                                                 textContent: g,
-                                                onClick: () => { gradeBarCC.remove(); chatTextarea.value = _gradeKickoffValue(g); sendCanvasMessage(); }
+                                                onClick: () => { gradeBarCC.remove(); chatTextarea.value = _gradeKickoffValue(g); sendCanvasMessageQueued(); }
                                             }));
                                         });
                                         const ccBubble = chatMessages.lastElementChild;
@@ -16048,7 +16128,7 @@
                                     try {
                                         const widget = _renderMatchWidget(_matchData2, (answer) => {
                                             if (chatTextarea) { chatTextarea.value = answer; }
-                                            sendCanvasMessage();
+                                            sendCanvasMessageQueued();
                                         });
                                         body.appendChild(widget);
                                     } catch (err) { console.warn('WML @MATCH render failed', err); }
@@ -16116,7 +16196,7 @@
                                             onClick: () => {
                                                 bar.remove();
                                                 chatTextarea.value = Array.from(selected).join(', ');
-                                                sendCanvasMessage();
+                                                sendCanvasMessageQueued();
                                             }
                                         });
                                         bar.appendChild(submitBtn);
@@ -16131,7 +16211,7 @@
                                             onClick: () => {
                                                 bar.remove();
                                                 chatTextarea.value = ranked.map((v, i) => `${i + 1}${i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'}: ${v}`).join(', ');
-                                                sendCanvasMessage();
+                                                sendCanvasMessageQueued();
                                             }
                                         });
                                         const updateRankLabels = () => {
@@ -16183,7 +16263,7 @@
                                                     // training-panels sender — dual-pipeline rule).
                                                     chatTextarea.value = (/^[A-E]\)\s+\S/.test(action.label || '') && String(action.value || '').length <= 2)
                                                         ? action.label : action.value;
-                                                    sendCanvasMessage();
+                                                    sendCanvasMessageQueued();
                                                 }
                                             });
                                             bar.appendChild(btn);
@@ -16316,6 +16396,22 @@
                         const canvasChatHistory = [];
                         let canvasChatId = '';
                         let canvasChatLoading = false;
+                        // v7.19.926 (Neil Run 9): a quick-action/widget/timer click must NEVER die silently.
+                        // sendCanvasMessage refuses turns while a reply is in flight (canvasChatLoading) — but
+                        // the click has already removed its button bar, so the refusal ate the choice (Run 9:
+                        // the Q3 calibration click did nothing; the letter had to be typed). Every UI-driven
+                        // send routes here: idle → immediate; in flight → poll until clear, then send (30s cap,
+                        // fail-loud; the composed text stays in the box either way). Boot-time silent greetings
+                        // keep the direct call — loading is impossible there, and a stray queue could double-greet.
+                        function sendCanvasMessageQueued() {
+                            if (!canvasChatLoading) { sendCanvasMessage(); return; }
+                            console.log('WML QuickAction: reply in flight — send queued');
+                            let _qaTries = 0;
+                            const _qaTimer = setInterval(() => {
+                                if (!canvasChatLoading) { clearInterval(_qaTimer); sendCanvasMessage(); }
+                                else if (++_qaTries >= 100) { clearInterval(_qaTimer); console.warn('WML QuickAction: queued send gave up after 30s — choice left in the input box'); }
+                            }, 300);
+                        }
 
                         // v7.17.38: expose a chat-reset helper to module scope so
                         // _resolveCWProjectOnEntry (outside this closure) can flush
@@ -17032,7 +17128,7 @@
                                                             gradeBar.appendChild(el('button', {
                                                                 className: 'swml-quick-btn',
                                                                 textContent: g,
-                                                                onClick: () => { gradeBar.remove(); chatTextarea.value = _gradeKickoffValue(g); sendCanvasMessage(); }
+                                                                onClick: () => { gradeBar.remove(); chatTextarea.value = _gradeKickoffValue(g); sendCanvasMessageQueued(); }
                                                             }));
                                                         });
                                                         const bc = lastBubble.querySelector('.swml-bubble-content') || lastBubble;
@@ -17229,7 +17325,7 @@
                                                     startBar.appendChild(el('button', {
                                                         className: 'swml-quick-btn',
                                                         textContent: "Let's begin",
-                                                        onClick: () => { startBar.remove(); chatTextarea.value = "Let's begin!"; sendCanvasMessage(); }
+                                                        onClick: () => { startBar.remove(); chatTextarea.value = "Let's begin!"; sendCanvasMessageQueued(); }
                                                     }));
                                                 }
                                                 const greetBubble = chatMessages.lastElementChild;

@@ -11618,6 +11618,9 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 }
 /* the absolute .swml-fb-toggle needs a positioned ancestor on the action forms too */
 .swml-section-block[data-section-type="action"] { position: relative; }
+/* v7.19.926 UNIVERSAL: any chevron-carrying section is its toggle's positioned ancestor —
+   keyed off the same .swml-collapsible capability class (covers 'scores' + future types). */
+.swml-section-block.swml-collapsible { position: relative; }
 @media (prefers-reduced-motion: reduce) {
     .swml-fb-chevron, .swml-section-feedback .swml-section-content { transition: none; }
 }

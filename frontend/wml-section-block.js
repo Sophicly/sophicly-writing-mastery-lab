@@ -270,8 +270,10 @@
             // whether it shows always (Analytics, the v913 readout) or as the collapsed
             // preview (the others). wml-assessment's _renderSectionStrips fills them all.
             const _cvLabel = String((node.attrs && node.attrs.label) || dom.getAttribute('data-section-label') || '');
-            const _STRIP_MODE = { 'Analytics': 'always', 'Self-Assessment': 'collapsed', 'Action Plan': 'collapsed', 'Overall Feedback': 'collapsed' };
-            const _collapsible = type === 'feedback'
+            const _STRIP_MODE = { 'Analytics': 'always', 'Self-Assessment': 'collapsed', 'Action Plan': 'collapsed', 'Overall Feedback': 'collapsed', 'Score Summary': 'collapsed' };
+            // v7.19.926 (Neil Run 9): Score Summary ('scores') collapses too, with a
+            // Total·%·Grade preview strip (builder in wml-assessment's _renderSectionStrips).
+            const _collapsible = type === 'feedback' || type === 'scores'
                 || (type === 'action' && (_cvLabel === 'Self-Assessment' || _cvLabel === 'Action Plan'));
             if (_collapsible) {
                 const contentDOM = document.createElement('div');
