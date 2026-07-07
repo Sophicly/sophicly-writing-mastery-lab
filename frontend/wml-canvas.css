@@ -5323,11 +5323,15 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     background: #1CD991 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
     box-shadow: 0 2px 6px rgba(28,217,145,0.35);
 }
-/* feedback boxes carry the collapse chevron at right:8px — shift the badge left to clear it.
+/* Any collapsible box carries the chevron at right:8px — shift the badge left to clear it.
    v7.19.762: MUST match the base rule's specificity (it has two :not() classes) + come later,
    or right:12px wins and the badge sits UNDER the chevron (Neil: "chevron on top of the green
-   check"). The :not()s here equalise specificity so this override actually applies. */
-.swml-section-feedback[data-section-complete]:not(.swml-section-divider):not(.swml-section-progress)::after { right: 44px; }
+   check"). The :not()s here equalise specificity so this override actually applies.
+   v7.19.925 UNIVERSAL: keyed off .swml-collapsible — stamped by the NodeView WHEREVER it
+   installs the chevron (wml-section-block.js) — instead of the enumerated
+   .swml-section-feedback, which silently skipped the v920 action-form chevrons (Neil's
+   Self-Assessment overlap screenshot). New collapsible types are covered by construction. */
+.swml-section-block.swml-collapsible[data-section-complete]:not(.swml-section-divider):not(.swml-section-progress)::after { right: 44px; }
 /* light theme — fainter grey on light bg + darker incomplete check */
 [data-swml-theme="light"] .swml-section-block[data-section-complete]:not(.swml-section-divider):not(.swml-section-progress)::after {
     background: rgba(0,0,0,0.07) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-opacity='0.4' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 12px 12px no-repeat;

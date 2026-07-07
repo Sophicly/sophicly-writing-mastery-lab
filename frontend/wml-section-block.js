@@ -309,6 +309,12 @@
                 try { collapsed = COLLAPSE_KEY && localStorage.getItem(COLLAPSE_KEY) === '1'; } catch (_) { collapsed = false; }
                 if (collapsed) dom.classList.add('swml-fb-collapsed');
 
+                // v7.19.925: ANY section that carries the collapse chevron stamps this class —
+                // the completion-tick clearance (right:44px) keys off it, so the tick can never
+                // sit under the chevron on a new collapsible type (the v762 bug re-appeared on
+                // Self-Assessment when v920 gave action forms the chevron but the CSS shift was
+                // still enumerated to .swml-section-feedback only). Capability class, no type list.
+                dom.classList.add('swml-collapsible');
                 const toggle = document.createElement('button');
                 toggle.type = 'button';
                 toggle.className = 'swml-fb-toggle';
