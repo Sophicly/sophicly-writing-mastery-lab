@@ -2635,10 +2635,16 @@
             plain = _CC_Q[stage];
         }
         if (!plain) return;
+        // v7.19.921 (Neil): the beat-chip rides the closing chain to the very END — students
+        // calibrate right through Action Plan + Transfer. Beat stored on the history message
+        // (the v911 refresh-replay pattern), same as the SA-walk chips.
+        const _CC_STEP = { ap1: 1, ap2: 2, ap3: 3, transfer: 4 };
+        const _ccBeat = _CC_STEP[stage] ? { section: 'Action Plan', step: _CC_STEP[stage], total: 4 } : null;
+        const _ccChip = (_ccBeat && typeof WML !== 'undefined' && WML.progressChipHTML) ? WML.progressChipHTML(_ccBeat) : '';
         // suppressActions: ap1's lettered options would ALSO be auto-detected into a
         // duplicate button set (pre-chain lesson, v7.19.810) — we render our own bar.
-        _chatShell.addMsg(formatAI(plain), 'ai', plain, { suppressActions: true });
-        _chatShell.history.push({ role: 'assistant', content: plain });
+        _chatShell.addMsg(_ccChip + formatAI(plain), 'ai', plain, { suppressActions: true });
+        _chatShell.history.push(_ccBeat ? { role: 'assistant', content: plain, beat: _ccBeat } : { role: 'assistant', content: plain });
         try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (_) {}
         if (stage === 'ap1') {
             try {
@@ -2985,6 +2991,30 @@
             const bs = _blindSpotData();
             if (bs) {
                 _facts += ' CODE-DERIVED BLIND SPOT (authoritative — the student rated themselves high here yet scored low): ' + bs.label + (bs.ao ? ' (' + bs.ao + ')' : '') + ' — rated ' + bs.selfPct + '%, scored ' + bs.actualPct + '%. BLEND this into the FIRST Action-Plan Priority Target together with the biggest mark loss (do NOT add a fourth priority — the first priority names BOTH the biggest-loss area AND this blind spot as why it matters most), and name this blind spot in the Overall Feedback / Analytics as a calibration insight to self-monitor. Do NOT change any mark, grade, or the number of priorities.';
+            }
+        } catch (_) {}
+        // v7.19.921 (Neil Run 8): CODE-TALLIED penalty trend. The filed "Trend: Repeated
+        // Errors" said F1 ×5 while the ledgers actually deducted F1 ×8 — the model recalled
+        // instead of counting. Counts + instances now come from _penLedgerCards (the SAME
+        // store the rebuilt Penalty Ledger uses) so the Trend can never drift from what was
+        // deducted. Each instance carries the faulty phrase → its fix, so "weak analytical
+        // verb" always SHOWS the weak verb and its upgrade (Neil: super-clear, name it).
+        try {
+            if (_penLedgerComplete) {
+                const _byCode = {};
+                Object.keys(_penLedgerCards).forEach(k => {
+                    (_penLedgerCards[k].codes || []).forEach(c => {
+                        if (!_byCode[c.code]) _byCode[c.code] = { n: 0, items: [] };
+                        _byCode[c.code].n++;
+                        const loc = k.split('|');
+                        const where = loc[0] + (loc[1] ? ' ' + (/^\d+$/.test(loc[1]) ? '¶' + loc[1] : loc[1]) : '');
+                        _byCode[c.code].items.push(where + (c.quote ? " '" + c.quote + "'" : '') + (c.fix ? " → '" + c.fix + "'" : ''));
+                    });
+                });
+                const _penLines = Object.keys(_byCode).map(cd => cd + ' ×' + _byCode[cd].n + ': ' + _byCode[cd].items.join(' · '));
+                if (_penLines.length) {
+                    _facts += ' CODE-TALLIED PENALTY TREND (authoritative — the "Trend: Repeated Errors" field MUST use these EXACT codes, counts and instances, nothing recalled from memory; keep each instance\'s faulty phrase → fix pair so the student sees the exact weak wording and its upgrade): ' + _penLines.join(' | ');
+                }
             }
         } catch (_) {}
         _silentSystemSend('SYSTEM (not from the student): the student has now answered the three action-plan questions and the transfer question (recorded above — the system asked them). Close the assessment in ONE turn, in this exact order: (1) one or two lines acknowledging and, where useful, sharpening their action-plan answers and transfer example — never re-ask them; (2) the @FIELD_SET filing markers exactly as the protocol’s filing step specifies (every field, one marker per line, values derived from this assessment and their answers); (3) the one-line filing confirmation; (4) a brief, warm session conclusion naming one real moment from this session; (5) [ASSESSMENT_COMPLETE] on its own line; (6) end with exactly: "That wraps the assessment. Anything you’d like to revisit before you mark this complete?" Ask no other questions.' + _facts);
