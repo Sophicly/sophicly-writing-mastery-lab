@@ -549,6 +549,13 @@ The three-way split. Structure every port (and its delta doc) around these bucke
 port: AQA Language P1 (v7.19.826–852). Pilot for this SOP: AQA Language P2.
 
 ## E — ENGINE (universal — ZERO port work, VERIFY only)
+**ENGINE-PARITY TABLE (v7.19.942 — the lit word-count-cap lesson):** "universal" engine nets can
+still be KEYED to one paper family (the WC-ceiling injection was Q5-keyed, so lit essays got no
+injected cap while the protocol promised one). For EVERY audit or port — including protocol-only
+audits — build a table: each A14 net → the code key/gate that triggers it → does it fire for THIS
+paper family? (grep the key, don't assume). A protocol that states a rule whose engine trigger
+never fires for its family is a FAIL, not a pass.
+
 Code-owned for every paper, both pipelines (`frontend/wml-assessment.js` unless noted). Per port you
 only VERIFY these fire (staging smoke), never re-implement:
 mark auditor + grade ladder + penalty ledger + missing-unit zeros (832–841) · '+X' bonus-row scores
