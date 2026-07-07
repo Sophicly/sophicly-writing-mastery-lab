@@ -2835,7 +2835,11 @@ window.WML = (function() {
     // badge. Theme-aware; styles live in wml-styles.css .swml-beat*. Width = code-computed %.
     function progressChipHTML(beat) {
         if (!beat) return '';
-        const pct = Math.max(0, Math.min(100, beat.pct || 0));
+        // Derive the fill % from step/total when an explicit pct wasn't supplied
+        // (the setup / SA-walk / marking chips pass {section,step,total} only).
+        let _p = beat.pct;
+        if (_p == null && beat.step != null && beat.total > 0) _p = Math.round((beat.step / beat.total) * 100);
+        const pct = Math.max(0, Math.min(100, _p || 0));
         const esc = (t) => String(t == null ? '' : t).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
         const section = beat.section ? '<span class="swml-beat-section">' + esc(beat.section) + '</span>' : '';
         // Step count rendered "Step 4 of 5" with the current number weighted.
