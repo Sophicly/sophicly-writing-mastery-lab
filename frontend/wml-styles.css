@@ -2318,7 +2318,8 @@ body.swml-page {
     margin-bottom: 5px;
 }
 .swml-beat-section {
-    font-size: 12px; font-weight: 600; color: var(--swml-bubble-ai-text);
+    font-family: 'Playfair Display Complete', Georgia, serif; font-style: italic;
+    font-size: 14px; font-weight: 600; color: var(--swml-bubble-ai-text);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .swml-beat-step {
