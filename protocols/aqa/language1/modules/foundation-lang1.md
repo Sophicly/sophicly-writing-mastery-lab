@@ -50,19 +50,7 @@
 
 ---
 
-**Changelog v3.0→v3.1 (Progress Tracking Enhancement):**
-
-- **Replaced Section 0.12: Progress Tracking & Student Orientation** \- Upgraded from basic session tracking to comprehensive visual progress system with:  
-  - Visual progress bars with percentages (📌 location indicator, 💡 command reminders)  
-  - Question-specific step counts for Assessment Protocol (Q1: 3 steps, Q2/Q3: 5 steps each, Q4: 5 steps, Q5: 6 steps)  
-  - Dynamic progress calculation for multi-paragraph Planning Protocol (12 steps for 2 paragraphs, 24 steps for 4 paragraphs)  
-  - Aspect-based tracking for Polish Protocol (no step numbers \- iterative refinement)  
-  - Consistent emoji formatting (📌 for location, 💡 for commands, █ for filled progress, ░ for empty)  
-  - Exact 10-block progress bar system with percentage calculations  
-  - Suppression logic for main menu, help text, and completion screens  
-- **Fixed Terminology Throughout Protocol** \- Changed "title of the text" to "title of the focus extract" (4 instances) for correct Language Paper terminology. Ensures clarity that students are working with focus extracts, not literary texts.
-
-**Result:** Enhanced user experience with surgical precision on progress tracking implementation. Maintains 100% audit compliance while significantly improving student orientation and workflow visibility.
+**[AI_INTERNAL] PROGRESS UI IS ENGINE-OWNED (v7.19.932):** never emit progress bars, percentages-as-progress, 📌 breadcrumbs, "Step N of M" counters or block-character bars — the platform renders ALL progress UI itself from the document. (The old v3.1 visual-progress-bar changelog was removed from this file: a format DESCRIBED in a loaded module is a format the model may imitate.)
 
 **Changelog v2.1→v3.0 (Major Upgrade \- Production-Ready Plus):**
 

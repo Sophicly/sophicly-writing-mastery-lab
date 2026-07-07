@@ -583,6 +583,12 @@ mapping sanity (`wml_topic` per LD lesson) · manifest `assessment.always` list.
 **Phase 0 — Recon (parallel, before any writing):** audit the current protocol against Part B
 (B-CHECKS is the checklist) · map the engine (E + E2 file:line for THIS paper) · audit the paper's
 loaded module set for contradiction sources · extract the real mark-scheme descriptors (A4).
+**ONE-TEMPLATE LAW (v7.19.932 — the Q1 double-mark lesson):** the loaded module set must contain
+EXACTLY ONE emission template per question/stage — grep every loaded module for competing output
+shapes (`Score:` lines, 📌 breadcrumbs, `[SAY]` emission blocks, bespoke completion markers,
+"Type Y" cues outside protocol-a). A second template — even inside a changelog or a "scoring-only"
+helper module — WILL eventually be imitated; the model ran protocol-q1-msq's dead template first
+and protocol-a's second, marking Q1 twice. Helper modules supply INPUTS; protocol-a owns turns.
 
 **Phase 1 — Delta doc → Neil sign-off (the gate before build):** VERDICT (audit) / PAPER SHAPE
 (marks ÷ 4 map, question set verified against the real paper PDFs — not memory) / PORTS VERBATIM

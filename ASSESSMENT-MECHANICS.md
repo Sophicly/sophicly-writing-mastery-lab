@@ -427,6 +427,41 @@ the cap (gap register #1), verbatim-quote validator for penalties (#3), completi
 (#6–8), dropdown NATIVIZATION design arc, emoji sweep phase 2, K1 toolkit destination (contract
 TBD). See `~/.claude/handoffs/open/wml-backlog.md`.
 
+## §9b. THE PRE-SHIP INTERROGATION (Neil, 2026-07-07: "what would a senior developer ask,
+short of endless testing?") — ask ALL of these of any assessment-flow change before it ships
+
+1. **Can it DOUBLE?** Can this step run twice (double-mark, double-file, double-count)? What
+   registers it as done, and is that registration byte-reliable (canonical line, not prose)?
+   Nets: one emission template per question (see below), `Q1 Total:`-only registration,
+   RE-MARK warn in `_setFeedbackMark`, one-per-Q labels (label-derived totals can't double).
+2. **Can it SKIP?** If the model jumps a question/stage, what catches it? Nets: state-block
+   sequence + Q-GATE preconditions (prevention), missing-unit ZEROS in the final audit +
+   `_paperFullyMarked` keeping the "so far" suffix (detection — a skip can never inflate a
+   grade, only visibly lower it).
+3. **Whose NUMBER is it?** Every number the student reads — where does code derive it from the
+   audited cards? Chain: element marks → card auditor → `Qn Total` → per-question %/grade/
+   calibration prose (v932) → grand total → committed grade. A number with no code owner = defect.
+4. **Is there exactly ONE template?** Grep the paper's LOADED module set: exactly one emission
+   shape per question/stage. Two templates = the Q1 double-mark class. Also: no RETIRED format
+   may even be DESCRIBED in a loaded file (the v3.1 progress-bar changelog taught this — a
+   described format is a format the model may imitate).
+5. **Can the quote be FAKE?** Any charge/claim quoting the student — verified against the doc?
+   Net: verbatim-quote strip (v932).
+6. **Can output REPEAT itself?** Golds/examples across turns — distinctness enforced + warned?
+7. **Both PIPELINES? Replay? Clone?** Called from both sendCanvasMessage paths, re-rendered
+   from history on refresh, alive inside the feedback-pad clone?
+8. **Where does it LAND visually?** Auto-fill must scroll to the filled region via the ONE
+   helper (fresh requery, auto-expand collapsed targets, re-assert post-settle) — never a new
+   ad-hoc scroll.
+9. **What happens on the WORST reply?** Malformed/half reply: does every parser no-op + warn
+   (fail loud), or does it half-apply?
+10. **If it breaks silently, what makes it LOUD?** Every net warns; a silent skip is a §9.1 bug
+   by definition. Console output IS the observability — any run doubles as a test because the
+   nets narrate what they caught.
+
+Settled UI rule (Neil, 2026-07-07): **mark-prediction control = buttons when max ≤ 8, dropdown
+above 8** (already engine behaviour — Q2/8 buttons, Q3/12 dropdown).
+
 ## §10. THE HARNESS METHOD — how nets get proven before Neil ever tests
 
 Every v915→929 net shipped with a Node harness that drove it against REAL run lines before

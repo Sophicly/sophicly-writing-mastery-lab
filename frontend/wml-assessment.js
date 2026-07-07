@@ -1893,6 +1893,16 @@
                             _award = _bc.cap;
                         }
                     } catch (_) { /* ceiling is best-effort; raw mark stands */ }
+                    // v7.19.932: duplicate-marking net — a box whose label is already lit
+                    // receiving a DIFFERENT score is a re-mark (Reeham P2: Q1 marked twice).
+                    // Warn loud; the overwrite stands (labels are one-per-Q, so label-derived
+                    // totals can never double-count).
+                    try {
+                        const _oldScore = String(lbl).match(/\(\s*([\d.]+)\s*\/\s*[\d.]+\s*\)\s*$/);
+                        if (_oldScore && parseFloat(_oldScore[1]) !== _award) {
+                            console.warn('WML MarkAudit: RE-MARK detected for Q' + _paraKey(qNum) + ' — lit label ' + _oldScore[1] + ' overwritten with ' + _award + ' (duplicate marking turn?)');
+                        }
+                    } catch (_) {}
                     const newLabel = base + ' (' + _award + ' / ' + max + ')';
                     if (newLabel !== lbl) {
                         canvasEditor.view.dispatch(canvasEditor.state.tr.setNodeMarkup(pos, undefined, Object.assign({}, node.attrs, { label: newLabel })));
@@ -3427,6 +3437,45 @@
             return outText;
         } catch (_) { return text; }
     }
+    // v7.19.932: VERBATIM-QUOTE NET (gap register #3 closed). Protocol law since v839:
+    // a penalty MUST quote the student's real words — "if you cannot find it verbatim,
+    // that fault does not exist there". Code is now the net: any penalty whose quoted
+    // phrase (normalised; ≥12 chars, or one ellipsis fragment ≥12) appears NOWHERE in
+    // the canvas document is stripped BEFORE the card auditor, so display, arithmetic,
+    // ledger and Trend never see it. Conservative: no quote / short quote / doc
+    // unavailable → the charge stands.
+    function _normQuote(s) {
+        return String(s).replace(/[‘’]/g, "'").replace(/[“”]/g, '"')
+            .replace(/\s+/g, ' ').trim().toLowerCase();
+    }
+    function _docPlainText() {
+        try {
+            if (typeof canvasEditor !== 'undefined' && canvasEditor && canvasEditor.state) {
+                return _normQuote(canvasEditor.state.doc.textContent || '');
+            }
+        } catch (_) {}
+        return '';
+    }
+    function _stripUnverbatimPenalties(text) {
+        try {
+            const doc = _docPlainText();
+            if (!doc || doc.length < 40) return text;   // no doc context → never strip
+            let n = 0;
+            const outText = String(text).replace(/(^|\n)[ \t]*(?:[·•*-][ \t]*)?\*{0,2}([A-Z]{1,3}\d(?:-[A-Z]{2,6})?)\*{0,2}[^(\n]{0,60}\((?:−|-|–)[ \t]*[\d.]+\)[^\n]*/g, (whole, lead, code) => {
+                const flat = whole.replace(/\*/g, '');
+                const qm = flat.match(/["“”]([^"“”]{1,160})["“”]/);
+                if (!qm) return whole;                      // quote-less charge → stands (protocol governs)
+                const frags = _normQuote(qm[1]).split(/(?:\.\.\.|…|\[\.\.\.\]|\[…\])/).map(f => f.trim()).filter(f => f.length >= 12);
+                if (!frags.length) return whole;            // too short to verify → stands
+                if (frags.some(f => doc.indexOf(f) !== -1)) return whole;
+                n++;
+                console.warn('WML MarkAudit: ' + code + ' charge stripped — quoted phrase not found verbatim in the document: "' + qm[1].slice(0, 80) + '"');
+                return lead;
+            });
+            if (n) console.warn('WML MarkAudit: verbatim-quote net removed ' + n + ' fabricated-quote penalt' + (n === 1 ? 'y' : 'ies') + ' — card totals recomputed without ' + (n === 1 ? 'it' : 'them'));
+            return outText;
+        } catch (_) { return text; }
+    }
     function _auditAssessmentArithmetic(reply) {
         try {
             if (!reply) return reply;
@@ -3480,6 +3529,8 @@
             // card arithmetic, ledger and Trend never see it and the marks come back.
             // Conservative by design: no quote, or ANY banned/weak token present → charge stands.
             out = _stripStrongVerbPenalties(out);
+            // ---- Pass 0c (v7.19.932): VERBATIM-QUOTE NET — see _stripUnverbatimPenalties.
+            out = _stripUnverbatimPenalties(out);
             // ---- Pass 1: each card — recompute total from its own table ----
             out = out.replace(/@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)@FB_END/g, (whole, metaRaw, body) => {
                 let meta = null;
