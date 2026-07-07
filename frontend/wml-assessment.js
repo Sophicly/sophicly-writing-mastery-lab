@@ -3414,6 +3414,46 @@
             return { cap: Math.max(0, den - pen), pen: pen, wc: wc, tgt: tgt };
         } catch (_) { return null; }
     }
+    // v7.19.944 (Neil ruling 2026-07-07, ENGINE-PARITY gap): the ESSAY-FAMILY twin of
+    // _sectionBWcCeiling. Lit protocol law since v900 (aqa/literature protocol-a-assessment
+    // §WC + penalty-codes WC): P = ROUND((target − word_count) × 5/100), Final Total =
+    // MIN(sum of section totals, essay max − P) — a FINAL-TOTAL ceiling (Q5's is per-Q);
+    // section marks are never reduced. The trigger was Q5-keyed, so lit essays never got
+    // the injected numbers. Target comes from the Word Count Model (canvasWordTarget,
+    // LIT_WORD_TARGETS via setWordTargetsFromTopic); den = the paper's essay max
+    // (_essayMaxMarks). Family-gated by CAPABILITY, not task name: language papers out
+    // (they have the Q5 ceiling), quiz/crib/notes engines out, no word-count model out.
+    function _essayWcCeiling(den, wcOverride) {
+        try {
+            if (!(den > 0) || den < 15) return null;                  // sub-15-mark Qs: no WC tracking
+            if (_isAnyLanguagePaper()) return null;                   // language papers → Q5 ceiling owns this
+            if (/quiz|mark_scheme|crib|notes|foundational/i.test(String(state.task || ''))) return null;
+            if (!canvasUsesWordCount) return null;
+            const tgt = canvasWordTarget;
+            if (!(tgt > 0)) return null;
+            let wc = (wcOverride > 0) ? wcOverride : 0;
+            if (!(wc > 0)) wc = (canvasEditor && typeof getResponseWordCount === 'function') ? getResponseWordCount(canvasEditor) : 0;
+            if (!(wc > 0) || wc >= tgt) return null;
+            const pen = Math.round((tgt - wc) * 5 / 100);             // ONE ladder — same formula as Q5
+            if (pen <= 0) return null;
+            return { cap: Math.max(0, den - pen), pen: pen, wc: wc, tgt: tgt };
+        } catch (_) { return null; }
+    }
+    // v7.19.944 (Neil ruling §8, 2026-07-07): the cap is stated RIGHT AT THE START — in the
+    // opening greeting, paired with the code-computed word count, BEFORE the grade goal —
+    // so the student sets their goal already knowing the ceiling. ONE builder for every
+    // greeting site (ONE-TEMPLATE LAW). Returns null when no cap applies (at/over target,
+    // language paper, no model) — greeting stays exactly as before.
+    function _essayCapGreetingNote(wc) {
+        try {
+            const den = _essayMaxMarks;
+            const c = _essayWcCeiling(den, wc);
+            if (!c) return null;
+            const plain = `One thing to know before you set your goal: at ${c.wc} words against the ${c.tgt}-word target, your final total is capped at ${c.cap}/${den} (a −${c.pen} ceiling). None of your marks are deducted — your total simply can't rise above ${c.cap} at this length.`;
+            const html = `<div style="margin-bottom:12px"><p>One thing to know before you set your goal: at <strong>${c.wc} words</strong> against the <strong>${c.tgt}-word target</strong>, your final total is capped at <strong>${c.cap}/${den}</strong> (a −${c.pen} ceiling). None of your marks are deducted — your total simply can't rise above ${c.cap} at this length.</p></div>`;
+            return { plain: plain, html: html };
+        } catch (_) { return null; }
+    }
     // v7.19.927: the ANALYTICAL-VERB TIER LIST's code twin (keep in sync with the protocol
     // registry — protocols/aqa/*/modules/protocol-a-assessment.md + knowledge-penalties.md).
     // BANNED = the F1 family; WEAK = the T1 family. A charged F1/T1 must quote a phrase
@@ -3697,6 +3737,19 @@
                             grand = _lg;
                             console.warn('WML MarkAudit: grand total sourced from DOC labels —', _probe[1], '→', grand.total + '/' + grand.max);
                         }
+                    }
+                }
+                // v7.19.944: essay-family WC ceiling enforced at the GRAND total — the lit
+                // protocol's Final Total = MIN(sum of section totals, essay max − P) is now
+                // code-owned (Q5's per-Q enforcement has had this since v841). Keyed on the
+                // audited denominator BEING the paper's essay max, so quiz totals / other
+                // tables no-op; _essayWcCeiling itself no-ops on language papers.
+                if (grand && grand.max === _essayMaxMarks) {
+                    const eCeil = _essayWcCeiling(grand.max);
+                    if (eCeil && grand.total > eCeil.cap) {
+                        console.warn('WML MarkAudit: essay word-count ceiling enforced on grand total —', grand.total, '→', eCeil.cap,
+                            '(wc', eCeil.wc + '/' + eCeil.tgt, 'penalty', eCeil.pen + ')');
+                        grand.total = eCeil.cap;
                     }
                 }
                 if (grand) {
@@ -7800,9 +7853,10 @@
                         const questionInfo = qText ? `\n\nYour ${workNoun} question: **${qText}**` : '';
                         const questionHTML = qText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${workNoun} question:</p><p style="font-size:13px;font-style:italic">${qText}</p></div>` : '';
                         const essayLabel = (state.mode === 'exam_prep') ? `${tn} ${workNoun}` : (state.phase === 'redraft') ? `${tn} redraft ${workNoun}` : `${tn} diagnostic ${workNoun}`;
-                        const gt = `Hi ${fn}! Welcome to the assessment phase. I've received your ${essayLabel} (${wc} words). Let's review your writing together.${questionInfo}\n\nBefore I begin marking, I need to know: **what grade are you aiming for?** This helps me tailor my feedback to where you want to be.`;
+                        const _capN = _essayCapGreetingNote(wc); // v7.19.944: cap stated in the opening, before the grade goal (Neil ruling)
+                        const gt = `Hi ${fn}! Welcome to the assessment phase. I've received your ${essayLabel} (${wc} words). Let's review your writing together.${_capN ? '\n\n' + _capN.plain : ''}${questionInfo}\n\nBefore I begin marking, I need to know: **what grade are you aiming for?** This helps me tailor my feedback to where you want to be.`;
                         const infoNote = _assessGreetingInfoNote();
-                        const gtHTML = `${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${tn}</strong> ${(state.mode === 'exam_prep') ? workNoun : (state.phase === 'redraft') ? `redraft ${workNoun}` : `diagnostic ${workNoun}`} (<strong>${wc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`;
+                        const gtHTML = `${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${tn}</strong> ${(state.mode === 'exam_prep') ? workNoun : (state.phase === 'redraft') ? `redraft ${workNoun}` : `diagnostic ${workNoun}`} (<strong>${wc} words</strong>). Let's review your writing together.</p></div>${_capN ? _capN.html : ''}${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`;
                         addChatMessage(gtHTML, 'ai', gt);
                         canvasChatHistory.push({ role: 'assistant', content: gt });
                         saveCanvasChat(canvasChatHistory, canvasChatId);
@@ -14810,7 +14864,8 @@
                                 if (_qText0) state.question = _qText0;
                                 const _qSnippet0 = _qText0 ? `\n\nYour ${_workLabel0} question: **${_qText0}**` : '';
                                 const _essayLabel0 = (state.mode === 'exam_prep') ? `${_textName0} ${_workLabel0}` : (state.phase === 'redraft') ? `${_textName0} redraft ${_workLabel0}` : `${_textName0} diagnostic ${_workLabel0}`;
-                                _firstAi.content = `Hi ${_firstName0}! Welcome to the assessment phase. I've received your ${_essayLabel0} (${_wc0} words). Let's review your writing together.${_qSnippet0}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
+                                const _capN0 = _essayCapGreetingNote(_wc0); // v7.19.944: cap in the opening, before the grade goal
+                                _firstAi.content = `Hi ${_firstName0}! Welcome to the assessment phase. I've received your ${_essayLabel0} (${_wc0} words). Let's review your writing together.${_capN0 ? '\n\n' + _capN0.plain : ''}${_qSnippet0}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
                                 console.log('WML v7.17.57: stale (0 words) detected, regen pre-paint wc=' + _wc0);
                             }
                         }
@@ -14903,9 +14958,10 @@
                                 const _qSnippet2 = _questionText ? `\n\nYour ${_workLabel2} question: **${_questionText}**` : '';
                                 const _qHTML2 = _questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${_workLabel2} question:</p><p style="font-size:13px;font-style:italic">${_questionText}</p></div>` : '';
                                 const _essayLabel2 = (state.mode === 'exam_prep') ? `${_assessTextName} ${_workLabel2}` : (state.phase === 'redraft') ? `${_assessTextName} redraft ${_workLabel2}` : `${_assessTextName} diagnostic ${_workLabel2}`;
-                                const _newPlain = `Hi ${_firstName}! Welcome to the assessment phase. I've received your ${_essayLabel2} (${_assessWc} words). Let's review your writing together.${_qSnippet2}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
+                                const _capN2 = _essayCapGreetingNote(_assessWc); // v7.19.944: cap in the opening, before the grade goal
+                                const _newPlain = `Hi ${_firstName}! Welcome to the assessment phase. I've received your ${_essayLabel2} (${_assessWc} words). Let's review your writing together.${_capN2 ? '\n\n' + _capN2.plain : ''}${_qSnippet2}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
                                 const _infoNote2 = _assessGreetingInfoNote();
-                                const _newHTML = `${_infoNote2}<div style="margin-bottom:12px"><p>Hi <strong>${_firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${_assessTextName}</strong> ${(state.mode === 'exam_prep') ? _workLabel2 : (state.phase === 'redraft') ? `redraft ${_workLabel2}` : `diagnostic ${_workLabel2}`} (<strong>${_assessWc} words</strong>). Let's review your writing together.</p></div>${_qHTML2}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`;
+                                const _newHTML = `${_infoNote2}<div style="margin-bottom:12px"><p>Hi <strong>${_firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${_assessTextName}</strong> ${(state.mode === 'exam_prep') ? _workLabel2 : (state.phase === 'redraft') ? `redraft ${_workLabel2}` : `diagnostic ${_workLabel2}`} (<strong>${_assessWc} words</strong>). Let's review your writing together.</p></div>${_capN2 ? _capN2.html : ''}${_qHTML2}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`;
                                 // Replace bubble HTML in DOM
                                 const _firstBubble = tp.chatMessages?.firstElementChild;
                                 if (_firstBubble) {
@@ -15176,9 +15232,10 @@
                     const questionSnippet = questionText ? `\n\nYour ${_workLabel} question: **${questionText}**` : '';
                     const questionHTML = questionText ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(81,218,207,0.06);border-left:3px solid rgba(81,218,207,0.3);border-radius:0 8px 8px 0"><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px">Your ${_workLabel} question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
                     const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} ${_workLabel}` : (state.phase === 'redraft') ? `${assessTextName} redraft ${_workLabel}` : `${assessTextName} diagnostic ${_workLabel}`;
-                    const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
+                    const _capN3 = _essayCapGreetingNote(assessWc); // v7.19.944: cap in the opening, before the grade goal
+                    const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${_capN3 ? '\n\n' + _capN3.plain : ''}${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
                     const infoNote = _assessGreetingInfoNote();
-                    tp.addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? _workLabel : (state.phase === 'redraft') ? `redraft ${_workLabel}` : `diagnostic ${_workLabel}`} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
+                    tp.addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? _workLabel : (state.phase === 'redraft') ? `redraft ${_workLabel}` : `diagnostic ${_workLabel}`} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${_capN3 ? _capN3.html : ''}${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
                     tp.canvasChatHistory.push({ role: 'assistant', content: greetingText });
                     saveCanvasChat(tp.canvasChatHistory, tp.canvasChatId);
 
@@ -16167,7 +16224,8 @@
                                         const questionInfo = qText ? `\n\nYour essay question: **${qText}**` : '';
                                         // v7.14.43: Context-aware greeting — exam practice has no "diagnostic"
                                         const essayLabel = (state.mode === 'exam_prep') ? `${tn} essay` : (state.phase === 'redraft') ? `${tn} redraft essay` : `${tn} diagnostic essay`;
-                                        const gt = `Hi ${fn}! Welcome to the assessment phase. I've received your ${essayLabel} (${wc} words). Let's review your writing together.${questionInfo}\n\nBefore I begin marking, I need to know: **what grade are you aiming for?** This helps me tailor my feedback to where you want to be.`;
+                                        const _capN4 = _essayCapGreetingNote(wc); // v7.19.944: cap in the opening, before the grade goal
+                                        const gt = `Hi ${fn}! Welcome to the assessment phase. I've received your ${essayLabel} (${wc} words). Let's review your writing together.${_capN4 ? '\n\n' + _capN4.plain : ''}${questionInfo}\n\nBefore I begin marking, I need to know: **what grade are you aiming for?** This helps me tailor my feedback to where you want to be.`;
                                         addChatMessage(formatAI(gt), 'ai', gt);
                                         canvasChatHistory.push({ role: 'assistant', content: gt });
                                         saveCanvasChat(canvasChatHistory, canvasChatId);
@@ -17571,9 +17629,10 @@
                                             const firstName = (config.userName || '').split(' ')[0] || 'there';
                                             // v7.14.43: Context-aware greeting — exam practice has no "diagnostic"
                                             const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} ${_workLabel4}` : (state.phase === 'redraft') ? `${assessTextName} redraft ${_workLabel4}` : `${assessTextName} diagnostic ${_workLabel4}`;
-                                            const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
+                                            const _capN5 = _essayCapGreetingNote(assessWc); // v7.19.944: cap in the opening, before the grade goal
+                                            const greetingText = `Hi ${firstName}! Welcome to the assessment phase. I've received your ${assessEssayLabel} (${assessWc} words). Let's review your writing together.${_capN5 ? '\n\n' + _capN5.plain : ''}${questionSnippet}\n\nBefore I begin marking, I need to know: what grade are you aiming for? This helps me tailor my feedback to where you want to be.`;
                                             const infoNote = _assessGreetingInfoNote();
-                                            addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? _workLabel4 : (state.phase === 'redraft') ? `redraft ${_workLabel4}` : `diagnostic ${_workLabel4}`} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
+                                            addChatMessage(`${infoNote}<div style="margin-bottom:12px"><p>Hi <strong>${firstName}</strong>! Welcome to the assessment phase.</p></div><div style="margin-bottom:12px"><p>I've received your <strong>${assessTextName}</strong> ${(state.mode === 'exam_prep') ? _workLabel4 : (state.phase === 'redraft') ? `redraft ${_workLabel4}` : `diagnostic ${_workLabel4}`} (<strong>${assessWc} words</strong>). Let's review your writing together.</p></div>${_capN5 ? _capN5.html : ''}${questionHTML}<p>Before I begin marking, I need to know: <strong>what grade are you aiming for?</strong> This helps me tailor my feedback to where you want to be.</p>`, 'ai', greetingText);
                                             canvasChatHistory.push({ role: 'assistant', content: greetingText });
                                             saveCanvasChat(canvasChatHistory, canvasChatId);
 
@@ -24703,6 +24762,10 @@
     let canvasWordMinimum = 450;
     let canvasWordIdeal = 800;
     let canvasUsesWordCount = true;  // false for short-form (<20 marks)
+    // v7.19.944: the paper's essay max marks (single/dual total) — the denominator for the
+    // essay-family WC ceiling (_essayWcCeiling). Set wherever word targets are set; 0 = unknown
+    // (ceiling stays a safe no-op).
+    let _essayMaxMarks = 0;
 
     // v7.19.285: Mastery Codex word count. The Codex is a cumulative reflection
     // journal filled across the week-long Grade 9 Core Skills course — NOT a
@@ -25910,6 +25973,21 @@
         const isLangPaper = /^language/.test((state.subject || '').toLowerCase());
         const isFirstDiagnosticMap = ((state.topicNumber === 1 || state.topicNumber === '1') && state.phase === 'initial');
 
+        // v7.19.944: essay-family header — code-counted words + the CODE-COMPUTED
+        // FINAL-TOTAL word-count ceiling (the Q5 injection's essay twin; lit protocol
+        // WC law had no injected numbers before this). '' when no cap applies.
+        const _essayHeader = (paraCount) => {
+            try {
+                const ewc = (editor && typeof getResponseWordCount === 'function') ? getResponseWordCount(editor) : 0;
+                if (!(ewc > 0)) return '';
+                const ec = _essayWcCeiling(_essayMaxMarks, ewc);
+                const ceilNote = ec
+                    ? ` | CODE-COMPUTED WORD-COUNT CEILING: penalty ${ec.pen} → FINAL-TOTAL ceiling ${ec.cap}/${_essayMaxMarks} (Final Total = MIN(sum of section totals, ${ec.cap})) — state THESE numbers exactly; NEVER compute or round the penalty yourself; section marks are never reduced`
+                    : '';
+                return `=== ESSAY — ${paraCount} paragraph(s), ${ewc} words (code-counted — use THIS count for the word-count rule; never recount)${ceilNote} ===\n`;
+            } catch (_) { return ''; }
+        };
+
         // Single block or no blocks
         if (blocks.length <= 1) {
             // v7.17.53: editor may be null — guard tail fallback
@@ -25920,7 +25998,7 @@
             // analysis chunks, not intros/conclusions); Introduction + Conclusion score 0
             // as missing, with teaching feedback per the protocol.
             if (single && !isLangPaper && blocks.length === 1) {
-                return `=== PARAGRAPH 1 of 1 — BODY 1 ===\n${single}`;
+                return `${_essayHeader(1)}=== PARAGRAPH 1 of 1 — BODY 1 ===\n${single}`;
             }
             return single;
         }
@@ -25949,7 +26027,7 @@
             return `PARAGRAPH ${i + 1} of ${n} — EXTRA (do not assess — scores zero)`;
         };
         const labelled = blocks.map((block, i) => `=== ${mapLabel(i, blocks.length)} ===\n${block}`);
-        return labelled.join('\n\n');
+        return (isLangPaper ? '' : _essayHeader(blocks.length)) + labelled.join('\n\n');
     }
 
     // v7.18.35: Extract source extracts (Source A, Source B, etc.) from the canvas.
@@ -29611,6 +29689,7 @@
         canvasWordMinimum = targets.minimum || 450;
         canvasWordIdeal = targets.ideal || 800;
         canvasUsesWordCount = targets.usesWordCount;
+        _essayMaxMarks = totalMarks || 0;   // v7.19.944: essay-family WC-ceiling denominator
         // v7.19.723: Topic 1 Phase 1 diagnostic carries NO length gate (the first-ever attempt is a
         // pure diagnostic). Zero the minimum at init so Mark Complete is reachable before the painter
         // (_paintWcWidgetLabel) next runs — closes the first-tick stale-minimum edge.
@@ -31569,6 +31648,7 @@
                 canvasWordMinimum = targets.minimum || 450;
                 canvasWordIdeal = targets.ideal || 800;
                 canvasUsesWordCount = targets.usesWordCount;
+                _essayMaxMarks = fallbackMarks || 0;   // v7.19.944: essay-family WC-ceiling denominator
                 console.log(`WML: Word targets (board default fallback) — ${fallbackMarks} marks → min: ${canvasWordMinimum}, target: ${canvasWordTarget}, ideal: ${canvasWordIdeal}`);
             }
         }

@@ -104,13 +104,17 @@ short preamble never displaces a real body paragraph), and one structural fault 
 charged twice. NEVER demand a resubmission, NEVER offer a menu, NEVER halt for structure.
 
 **[AI_INTERNAL] WORD COUNT IS ALWAYS A CEILING, NEVER A HALT (v7.19.900 — every attempt and
-redraft; the old Diagnostic-vs-Redraft/Exam-Practice split is retired):** if the code-computed
-count is under the 650 target: P = ROUND((650 − word_count) × 5 / 100), and
-**Final Total = MIN(sum of the five section totals, [essay max] − P)**. Section marks are NEVER
-reduced; the ceiling only bites if the subtotal exceeds it. State it ONCE, with its derivation
-("5 marks per 100 missing words"), then proceed straight to marking — never dead-end, never ask
-for expansion before assessing. In the Final Score table: Subtotal row, "Word-count ceiling:
-max [X]/[max]" row, Final Total = the MIN.
+redraft; the old Diagnostic-vs-Redraft/Exam-Practice split is retired):** when the essay is
+under the 650 target, the penalty and ceiling arrive **CODE-COMPUTED** (v7.19.944) in the essay
+header — `CODE-COMPUTED WORD-COUNT CEILING: penalty P → FINAL-TOTAL ceiling C/[essay max]` —
+and the opening greeting has already stated them to the student. **Echo the injected P and C
+only; NEVER compute or round the penalty yourself** (the formula shown to the student is
+5 marks per 100 missing words, ROUND(deficit × 5/100), but the injection is the only
+authority). **Final Total = MIN(sum of the five section totals, C)**. Section marks are NEVER
+reduced; the ceiling only bites if the subtotal exceeds it. State it ONCE, then proceed
+straight to marking — never dead-end, never ask for expansion before assessing. In the Final
+Score table: Subtotal row, "Word-count ceiling: max [C]/[max]" row, Final Total = the MIN.
+No injected ceiling in the header → the essay is at/over target → no cap, no ceiling row.
 
 **[AI_INTERNAL] CANONICAL GRADE LADDER (the ONLY scale — sections AND final):** Grade 9 ≥ 85% ·
 8 ≥ 75% · 7 ≥ 65% · 6 ≥ 55% · 5 ≥ 45% · 4 ≥ 35% · 3 ≥ 25% · 2 ≥ 15% · else 1. NEVER use

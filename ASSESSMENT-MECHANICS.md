@@ -246,6 +246,19 @@ The nets, in parse order:
   re-confirmed 2026-07-07): entry-time auto-check + the always-on ceiling replaced the whole
   halt/lift/button flow; `_updateWcRecheckBtn` exists only to REMOVE any legacy instance. No
   protocol may reference a re-check button or a SYSTEM lift line.
+- **ESSAY-FAMILY word-count ceiling (v944, `_essayWcCeiling` — the Q5 twin; closes the lit
+  ENGINE-PARITY gap Neil caught 2026-07-07):** ONE ladder, same formula (P = ROUND(deficit ×
+  5/100)); target = the Word Count Model (`canvasWordTarget`, LIT_WORD_TARGETS); denominator =
+  the paper's essay max (`_essayMaxMarks`, stashed wherever word targets are set). It is a
+  **FINAL-TOTAL ceiling** (Q5's is per-question): section marks are never reduced; enforcement
+  lives in the grand-total reconcile (`grand.total = MIN(grand.total, C)`, keyed on
+  `grand.max === _essayMaxMarks`). Injection points: (1) the OPENING greeting — the cap is
+  stated up-front, paired with the code-computed count, BEFORE the grade goal (Neil ruling
+  2026-07-07: students set their goal knowing the ceiling; ONE builder,
+  `_essayCapGreetingNote`, feeds all six greeting sites); (2) the essay payload header
+  (`=== ESSAY — … | CODE-COMPUTED WORD-COUNT CEILING … ===` in `getResponseText`) — the model
+  echoes injected P and C only. Capability-gated: language papers no-op (Q5 owns them),
+  quiz/crib/notes tasks no-op, no word-count model no-op.
 - **TIER-LIST NET (v927, `_stripStrongVerbPenalties` — Pass 0b):** any F1/T1 penalty whose
   quoted phrase contains NO banned/weak-tier verb is stripped BEFORE audit/ledger/Trend see it.
   The regex is the TWIN of the protocol's analytical-verb registry — any registry edit updates
